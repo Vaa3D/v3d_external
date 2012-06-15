@@ -29,6 +29,7 @@ public:
     static const int MODE_ANNOTATE;
     static const int MODE_COMPARTMENT_INDEX;
     static const int MODE_INDEX;
+    static const int MODE_MASK_GUIDE;
 
     ScreenPatternAnnotator();
 
@@ -67,6 +68,13 @@ public:
 	usage.append("   -outputIndexFile <output index file>                                                                 \n");
 	usage.append("   -outputNameIndexFile <output name index file>                                                        \n");
 	usage.append("   -outputRGBFile <output RGB file>                                                                     \n");
+	usage.append("                                                                                                        \n");
+	usage.append(" To generate a Mask Guide directory:                                                                    \n");
+	usage.append("                                                                                                        \n");
+	usage.append("   -inputNameIndexFile <name index file>                                                                \n");
+	usage.append("   -inputRGBFile <mask rgb file>                                                                        \n");
+	usage.append("   -outputMaskDirectory <directory path>                                                                \n");
+	usage.append("                                                                                                        \n");
         return usage;
     }
 
@@ -81,6 +89,11 @@ public:
 private:
 
     int mode;
+
+    // For Mask Guide
+    QString inputNameIndexFile;
+    QString inputMaskRGBFile;
+    QString outputMaskDirectoryPath;
 
     // For updating index file
     QString compartmentIndexFile;
@@ -138,6 +151,8 @@ private:
     bool createOrVerifyDirectory(QString dirPath);
     bool updateIndex();
 
+    bool createMaskGuide();
+    My4DImage * createMaskIndexGhostImage(My4DImage * rgbSourceMask, int maskIndex, QList<int> redList, QList<int> greenList, QList<int> blueList);
 
 };
 

@@ -6,6 +6,7 @@ const int ScreenPatternAnnotator::MODE_UNDEFINED=-1;
 const int ScreenPatternAnnotator::MODE_ANNOTATE=0;
 const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
 const int ScreenPatternAnnotator::MODE_INDEX=2;
+const int ScreenPatternAnnotator::MODE_MASK_GUIDE=3;
 
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
@@ -69,10 +70,175 @@ bool ScreenPatternAnnotator::execute()
         return annotate();
     } else if (mode==MODE_INDEX) {
         return updateIndex();
+    } else if (mode==MODE_MASK_GUIDE) {
+      return createMaskGuide();
     } else if (mode==MODE_UNDEFINED) {
         return false;
     }
     return false;
+}
+
+bool ScreenPatternAnnotator::createMaskGuide() {
+
+  // Step 1: Load the Name Index File
+  QList<QString> maskNameList;
+  QList<int> redList;
+  QList<int> greenList;
+  QList<int> blueList;
+  QFile nameIndexQFile(inputNameIndexFile);
+  if (!nameIndexQFile.open(QIODevice::ReadOnly)) {
+    qDebug() << "Could not open file=" << inputNameIndexFile << " to read";
+    return false;
+  }
+  int listIndex=0;
+  while(!nameIndexQFile.atEnd()) {
+    QString nameLine=nameIndexQFile.readLine();
+    nameLine=nameLine.trimmed();
+    if (nameLine.length()>0) {
+      QList<QString> nameList=nameLine.split(QRegExp("\\s+"));
+      QString indexString=nameList.at(0);
+      int indexKey=indexString.toInt();
+      if (indexKey!=listIndex+1) {
+	qDebug() << "Out of sync with index parse at line=" << nameLine;
+	return false;
+      }
+      QString name=nameList.at(1);
+      int listLength=nameList.length();
+      if (listLength<8) {
+	qDebug() << "Could not parse numbers from line=" << nameLine;
+	return false;
+      }
+      QString redString=nameList.at(listLength-4);
+      QString greenString=nameList.at(listLength-3);
+      QString blueString=nameList.at(listLength-2);
+      int red=redString.toInt();
+      int green=greenString.toInt();
+      int blue=blueString.toInt();
+      maskNameList.append(name);
+      redList.append(red);
+      greenList.append(green);
+      blueList.append(blue);
+      listIndex++;
+    }
+  }
+  nameIndexQFile.close();
+
+  // Step 2: Create Mask Output Directory
+  QDir maskOutputQDir(outputMaskDirectoryPath);
+  if (!maskOutputQDir.exists()) {
+    QDir().mkdir(outputMaskDirectoryPath);
+  }
+  
+  // Step 3: Load RGB File and save copy to mask dir
+  QFile rgbMaskQFile(inputMaskRGBFile);
+  QFileInfo rgbMaskQFileInfo=QFileInfo(rgbMaskQFile);
+  ImageLoader rgbSourceImageLoader;
+  
+  My4DImage * rgbSourceMask = rgbSourceImageLoader.loadImage(rgbMaskQFileInfo.absoluteFilePath());
+  QString maskPath(outputMaskDirectoryPath);
+  maskPath.append(QDir::separator());
+  maskPath.append("Mask.v3dpbd");
+  rgbSourceImageLoader.saveImage(rgbSourceMask, maskPath);
+  
+  // Step 4: Create MIP for main RGB file
+  My4DImage * rgbSourceMIP = createMIPFromImage(rgbSourceMask);
+  ImageLoader rgbSourceMIPSaver;
+  rgbSourceMIPSaver.saveImage(rgbSourceMIP, "MaskMIP.v3dpbd");
+  delete rgbSourceMIP;
+
+  // Step 5: Step through each mask, and create a mask stack with ghost frame
+  for (int maskIndex=0;maskIndex<maskNameList.length();maskIndex++) {
+    QString maskName=maskNameList.at(maskIndex);
+    
+    // Create ghost stack
+    My4DImage * ghostImage = createMaskIndexGhostImage(rgbSourceMask, maskIndex+1, redList, greenList, blueList);
+    ImageLoader ghostSaver;
+    QString ghostStackFilename(outputMaskDirectoryPath);
+    ghostStackFilename.append(QDir::separator());
+    ghostStackFilename.append(maskName);
+    ghostStackFilename.append(".v3dpbd");
+    ghostSaver.saveImage(ghostImage, ghostStackFilename);
+
+    // Create MIP
+    My4DImage * ghostImageMIP = createMIPFromImage(ghostImage);
+    ImageLoader ghostMIPSaver;
+    QString ghostMIPFilename(outputMaskDirectoryPath);
+    ghostMIPFilename.append(QDir::separator());
+    ghostMIPFilename.append(maskName);
+    ghostMIPFilename.append("_MIP");
+    ghostMIPFilename.append(".v3dpbd");
+    ghostMIPSaver.saveImage(ghostImageMIP, ghostMIPFilename);
+
+    // Cleanup
+    delete ghostImageMIP;
+    delete ghostImage;
+  }
+
+  // Final cleanup
+  delete rgbSourceMask;
+}
+
+// This method creates an image stack which is entirely empty, except for two
+// subspaces: (1) mask corresponding to index is copied from mask (2) area outside
+// the mask is made a shade of gray.
+
+My4DImage * ScreenPatternAnnotator::createMaskIndexGhostImage(My4DImage * rgbMask, int index, QList<int> redList, QList<int> greenList, QList<int> blueList) {
+  V3DLONG cdim=rgbMask->getCDim();
+  V3DLONG xdim=rgbMask->getXDim();
+  V3DLONG ydim=rgbMask->getYDim();
+  V3DLONG zdim=rgbMask->getZDim();
+  My4DImage * ghostImage = new My4DImage();
+  ghostImage->loadImage(xdim, ydim, zdim, 3, V3D_UINT8);
+
+  v3d_uint8 * rChan=rgbMask->getRawDataAtChannel(0);
+  v3d_uint8 * gChan=rgbMask->getRawDataAtChannel(1);
+  v3d_uint8 * bChan=rgbMask->getRawDataAtChannel(2);
+
+  v3d_uint8 * rG=ghostImage->getRawDataAtChannel(0);
+  v3d_uint8 * gG=ghostImage->getRawDataAtChannel(1);
+  v3d_uint8 * bG=ghostImage->getRawDataAtChannel(2);
+
+  int maskIndexLength=redList.length();
+  for (V3DLONG z=0;z<zdim;z++) {
+    for (V3DLONG y=0;y<ydim;y++) {
+      for (V3DLONG x=0;x<xdim;x++) {
+	V3DLONG p=z*ydim*xdim+y*xdim+x;
+	int r=rChan[p];
+	int g=gChan[p];
+	int b=bChan[p];
+	if (r==0 && g==0 && b==0) {
+	  rG[p]=0;
+	  gG[p]=0;
+	  bG[p]=0;
+	} else {
+	  int m=0;
+	  for (;m<maskIndexLength;m++) {
+	    if (redList.at(m)==r &&
+		greenList.at(m)==g &&
+		blueList.at(m)==b) {
+	      break;
+	    }
+	  }
+	  if (m==maskIndexLength) {
+	    qDebug() << "Could not locate color in mask color list r=" << r << " g=" << g << " b=" << b;
+	    return NULL;
+	  }
+	  if (m==index) {
+	    rG[p]=rChan[p];
+	    gG[p]=gChan[p];
+	    bG[p]=bChan[p];
+	  } else {
+	    V3DLONG grayValue=(m*7633997)%32;
+	    char gray=grayValue+16;
+	    rG[p]=gray;
+	    gG[p]=gray;
+	    bG[p]=gray;
+	  }
+	}
+      }
+    }
+  }
+  return ghostImage;
 }
 
 bool ScreenPatternAnnotator::createCompartmentIndex() {
@@ -1217,12 +1383,20 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
 	  outputNameIndexFile=(*argList)[++i];
 	} else if (arg=="-outputRGBFile") {
 	  outputRGBFile=(*argList)[++i];
+	} else if (arg=="-inputNameIndexFile") {
+	  inputNameIndexFile=(*argList)[++i];
+	} else if (arg=="-inputRGBFile") {
+	  inputMaskRGBFile=(*argList)[++i];
+	} else if (arg=="-outputMaskDirectory") {
+	  outputMaskDirectoryPath=(*argList)[++i];
 	}
     }
     if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0 && flipYSet) {
         mode=MODE_COMPARTMENT_INDEX;
     } else if (compartmentIndexFile.length()>0) {
         mode=MODE_INDEX;
+    } else if (outputMaskDirectoryPath.length()>0) {
+        mode=MODE_MASK_GUIDE;
     } else {
         if (inputStackFilepath.length()<1) {
             qDebug() << "inputStackFilepath has invalid length";
