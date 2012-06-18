@@ -143,7 +143,7 @@ bool ScreenPatternAnnotator::createMaskGuide() {
   // Step 4: Create MIP for main RGB file
   My4DImage * rgbSourceMIP = createMIPFromImage(rgbSourceMask);
   ImageLoader rgbSourceMIPSaver;
-  rgbSourceMIPSaver.saveImage(rgbSourceMIP, "MaskMIP.v3dpbd");
+  rgbSourceMIPSaver.saveImage(rgbSourceMIP, "Mask_MIP.tif");
   delete rgbSourceMIP;
 
   // Step 5: Step through each mask, and create a mask stack with ghost frame
@@ -166,7 +166,7 @@ bool ScreenPatternAnnotator::createMaskGuide() {
     ghostMIPFilename.append(QDir::separator());
     ghostMIPFilename.append(maskName);
     ghostMIPFilename.append("_MIP");
-    ghostMIPFilename.append(".v3dpbd");
+    ghostMIPFilename.append(".tif");
     ghostMIPSaver.saveImage(ghostImageMIP, ghostMIPFilename);
 
     // Cleanup
