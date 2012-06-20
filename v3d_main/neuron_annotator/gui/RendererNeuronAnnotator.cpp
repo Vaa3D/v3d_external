@@ -721,10 +721,7 @@ void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
 {
 }
 
-// Sets various size-related internal variables
-// Try to call this whenever setupData() is called
-void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
-        const jfrc::VolumeTexture::Reader& textureReader)
+void RendererNeuronAnnotator::setOriginalVolumeDimensions(long x, long y, long z)
 {
     // Set values as if empty volume
     start1 = 0;
@@ -740,9 +737,9 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
     sampleScaleX = sampleScaleY = sampleScaleZ = sampleScale[0] = sampleScale[1] = sampleScale[2] = sampleScale[3] = sampleScale[4] = 1.0;
 
     // Set (subset of) values as if full size unresampled volume
-    size1 = dim1 = textureReader.originalImageSize().x();
-    size2 = dim2 = textureReader.originalImageSize().y();
-    size3 = dim3 = textureReader.originalImageSize().z();
+    size1 = dim1 = x;
+    size2 = dim2 = y;
+    size3 = dim3 = z;
     size4 = dim4 = 4; // RGBA
     size5 = dim5 = 1;
     bufSize[0] = size1;
@@ -751,41 +748,72 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
     bufSize[3] = size4;
     bufSize[4] = size5;
     boundingBox.x0 = boundingBox.y0 = boundingBox.z0 = 0.0;
-    boundingBox.x1 = textureReader.originalImageSize().x();
-    boundingBox.y1 = textureReader.originalImageSize().y();
-    boundingBox.z1 = textureReader.originalImageSize().z();
+    boundingBox.x1 = x;
+    boundingBox.y1 = y;
+    boundingBox.z1 = z;
     VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
     VOL_X1 = VOL_Y1 = VOL_Z1 = 1;
     dataViewProcBox = dataBox = BoundingBox(start1, start2, start3, start1+(size1-1), start2+(size2-1), start3+(size3-1));
+}
 
+void RendererNeuronAnnotator::setResampledVolumeDimensions(long x, long y, long z)
+{
     // Set (subset of) values using resampled size
-    realX = textureReader.usedTextureSize().x();
-    realY = textureReader.usedTextureSize().y();
-    realZ = textureReader.usedTextureSize().z();
+    realX = x;
+    realY = y;
+    realZ = z;
     safeX = realX; // necessary
     safeY = realY;
     safeZ = realZ;
-    imageX = textureReader.usedTextureSize().x();
-    imageY = textureReader.usedTextureSize().y();
-    imageZ = textureReader.usedTextureSize().z();
-    b_limitedsize = (textureReader.originalImageSize() != textureReader.usedTextureSize());
-    if (b_limitedsize)
-    {
-        bufSize[0] = textureReader.paddedTextureSize().x();
-        bufSize[1] = textureReader.paddedTextureSize().y();
-        bufSize[2] = textureReader.paddedTextureSize().z();
-        sampleScaleX = sampleScale[0] = (float)textureReader.usedTextureSize().x() / (float)textureReader.originalImageSize().x();
-        sampleScaleY = sampleScale[1] = (float)textureReader.usedTextureSize().y() / (float)textureReader.originalImageSize().y();
-        sampleScaleZ = sampleScale[2] = (float)textureReader.usedTextureSize().z() / (float)textureReader.originalImageSize().z();
-        // qDebug() << "  Down sampling to" << bufSize[0] << bufSize[1] << bufSize[2];
-    }
+    imageX = x;
+    imageY = y;
+    imageZ = z;
+    b_limitedsize = false;
+    if (realX != size1) b_limitedsize = true;
+    if (realY != size2) b_limitedsize = true;
+    if (realZ != size3) b_limitedsize = true;
+
+    sampleScaleX = sampleScale[0] = (float)x / (float)size1;
+    sampleScaleY = sampleScale[1] = (float)y / (float)size2;
+    sampleScaleZ = sampleScale[2] = (float)z / (float)size3;
+}
+
+void RendererNeuronAnnotator::setPaddedVolumeDimensions(long x, long y, long z)
+{
+    bufSize[0] = x;
+    bufSize[1] = y;
+    bufSize[2] = z;
+}
+
+// for use by initial testing of mpegTexture
+void RendererNeuronAnnotator::setSingleVolumeDimensions(long x, long y, long z)
+{
+    setOriginalVolumeDimensions(x, y, z);
+    setResampledVolumeDimensions(x, y, z);
+    setPaddedVolumeDimensions(x, y, z);
+}
+
+// Sets various size-related internal variables
+// Try to call this whenever setupData() is called
+void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
+        const jfrc::VolumeTexture::Reader& textureReader)
+{
+    setOriginalVolumeDimensions(textureReader.originalImageSize().x(),
+                                textureReader.originalImageSize().y(),
+                                textureReader.originalImageSize().z());
+
+    setResampledVolumeDimensions(textureReader.usedTextureSize().x(),
+                                 textureReader.usedTextureSize().y(),
+                                 textureReader.usedTextureSize().z());
+
+    setPaddedVolumeDimensions(textureReader.paddedTextureSize().x(),
+                              textureReader.paddedTextureSize().y(),
+                              textureReader.paddedTextureSize().z());
 
     // Copy pointers to openGL texture ID lists
     Xtex_list = const_cast<GLuint*>(textureReader.Xtex_list());
     Ytex_list = const_cast<GLuint*>(textureReader.Ytex_list());
     Ztex_list = const_cast<GLuint*>(textureReader.Ztex_list());
-
-    // TODO - implement local subvolume
 }
 
 /* virtual */
@@ -1403,6 +1431,15 @@ void RendererNeuronAnnotator::paint()
         paint_mono();
         break;
     }
+}
+
+/* virtual */
+void RendererNeuronAnnotator::renderVol()
+{
+    // Don't render unless we have some sort of texture assigned
+    if ( (NULL == tex3D) && (NULL == Ztex_list) )
+        return;
+    Renderer_gl1::renderVol();
 }
 
 // Copied from Renderer_gl1::paint() 27 Sep 2011 CMB

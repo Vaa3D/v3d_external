@@ -98,10 +98,32 @@ Na3DWidget::~Na3DWidget()
 void Na3DWidget::start3dTextureMode(int textureId)
 {
     RendererNeuronAnnotator* ra = getRendererNa();
-    if (!ra) return;
+    if (!ra)
+    {
+        choiceRenderer();
+        ra = getRendererNa();
+        ra->loadShader();
+    }
+    if (! ra->has_image()) {
+        // TODO - dummy volume size for testing
+        ra->setSingleVolumeDimensions(20,20,20);
+    }
     ra->start3dTextureMode(textureId);
     update();
 }
+
+void Na3DWidget::set3dTextureSize(int x, int y, int z)
+{
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (!ra)
+    {
+        choiceRenderer();
+        ra = getRendererNa();
+        ra->loadShader();
+    }
+    ra->setSingleVolumeDimensions(x, y, z);
+}
+
 
 /* slot */
 void Na3DWidget::updateScreenPosition()  // for stencil based 3D modes
@@ -1223,7 +1245,7 @@ void Na3DWidget::onVolumeTextureDataChanged()
             renderer = NULL;
         }
         choiceRenderer();
-        uploadVolumeTexturesGL();
+        // uploadVolumeTexturesGL(); redundant with settingRenderer
         settingRenderer();
 
         rend = getRendererNa();

@@ -20,6 +20,7 @@ public:
         return (int)channelColors.size(); // +1 for reference
     }
     bool initialize(const NaVolumeData::Reader& volumeReader);
+    bool initializeRgba32();
     bool autoCorrect(const NaVolumeData::Reader& volumeReader);
     const ChannelColorModel& getReferenceChannel() const;
     QRgb blend(const double channelIntensities[]) const;

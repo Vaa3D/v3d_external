@@ -52,6 +52,8 @@ public:
     MipFragmentColors& getMipFragmentColors() {return mipFragmentColors;}
     GalleryMipImages& getGalleryMipImages() {return galleryMipImages;}
     MipMergedData& getMipMergedData() {return mipMergedData;}
+    DataColorModel& getFast3DColorModel() {return fast3DColorModel;}
+    DataColorModel& getSlow3DColorModel() {return slow3DColorModel;}
     // VolumeColors& getVolumeColors() {return volumeColors;}
 
     // Data flow accessors (const versions)

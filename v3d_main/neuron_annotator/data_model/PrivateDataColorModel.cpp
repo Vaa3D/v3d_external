@@ -82,6 +82,52 @@ bool PrivateDataColorModel::autoCorrect(const NaVolumeData::Reader& volumeReader
     }
 }
 
+bool PrivateDataColorModel::initializeRgba32()
+{
+    setSharedGamma(1.0);
+    int numChannels = 4;
+    channelColors.clear();
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        // Channel color
+        // The Janelia Zeiss microscope computers are configured to show the data channels as blue/green/red/gray
+        // from pairs of images gray/blue/green and gray/red.
+        // Single channel gets colored white
+        QRgb color = qRgb(255, 255, 255);
+        if (numChannels > 1) {
+            int remainder = channel % 4; // cycle through blue, green, red, gray
+            if (remainder == 0) {
+                color = qRgb(255, 0, 0); // red
+            }
+            else if (remainder == 1) {
+                color = qRgb(0, 255, 0); // green
+            }
+            else if (remainder == 2) {
+                color = qRgb(0, 0, 255); // blue
+            }
+            else {
+                color = qRgb(170, 170, 170); // white/gray reference
+            }
+        }
+        ChannelColorModel channelModel(color);
+        // Initialize intensity range to entire observed range
+        if (channel < 3) // fragments and background
+        {
+            channelModel.setDataRange(0, 255);
+            channelModel.resetHdrRange();
+        }
+        else // reference channel
+        {
+            channelModel.setDataRange(0, 255); // darken reference by giving it a higher hdr max
+            channelModel.resetHdrRange();
+            channelModel.bUseSharedGamma = false; // Don't apply shared gamma to reference channel
+        }
+        channelColors.push_back(channelModel);
+        // qDebug() << "Channel color " << channelColors.size() << qRed(color) << qGreen(color) << qBlue(color);
+    }
+    return true;
+}
+
 bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
 {
     setSharedGamma(1.0);

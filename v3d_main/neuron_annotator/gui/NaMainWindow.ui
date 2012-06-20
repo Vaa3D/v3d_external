@@ -2223,7 +2223,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
   </action>
   <action name="actionLoad_texture_into_Reference">
    <property name="text">
-    <string>Load texture into Reference...</string>
+    <string>Open fast loading folder...</string>
    </property>
   </action>
  </widget>

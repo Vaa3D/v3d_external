@@ -102,6 +102,7 @@ public slots:
     void clipSlab(); // Apply clip plane to current slab
     void updateScreenPosition(); // for stencil based 3D modes
     void start3dTextureMode(int textureId);
+    void set3dTextureSize(int x, int y, int z);
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

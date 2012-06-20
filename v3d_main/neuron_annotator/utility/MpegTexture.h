@@ -121,6 +121,7 @@ signals:
     void loadRequested(QString fileName);
     void loadFinished(bool bSucceeded);
     void textureUploaded(int textureId);
+    void headerLoaded(int, int, int);
 
 public slots:
     void onHeaderLoaded(int, int, int);

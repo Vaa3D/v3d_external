@@ -86,6 +86,14 @@ void DataColorModel::initialize()
     emit dataChanged();
 }
 
+bool DataColorModel::initializeRgba32()
+{
+    if (! d->initializeRgba32())
+        return false;
+    emit colorsInitialized();
+    emit dataChanged();
+}
+
 void DataColorModel::setChannelColor(int index, /*QRgb*/ int color)
 {
     if (d.constData()->getNumberOfDataChannels() <= index) return;
@@ -110,7 +118,7 @@ void DataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxPara
 void DataColorModel::setSharedGamma(qreal gammaParam) // for all channels
 {
     if (d.constData()->getSharedGamma() == gammaParam) return;
-    // qDebug() << "DataColorModel::setGamma" << gammaParam;
+    // qDebug() << "DataColorModel::setGamma" << gammaParam << (long)this;
     // Combine backlog of setGamma signals
     latestGamma = gammaParam;  // back up new value before aborting
     SlotMerger gammaMerger(statusOfSetGammaSlot);

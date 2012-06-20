@@ -258,6 +258,9 @@ MpegTexture::MpegTexture(GLenum textureUnit, QGLWidget * widget, QObject * paren
             &mpegLoader, SLOT(loadMpegFile(QString)));
     connect(&mpegLoader, SIGNAL(headerLoaded(int, int, int)),
             this, SLOT(onHeaderLoaded(int, int, int)));
+    // Repeat header loaded signal
+    connect(&mpegLoader, SIGNAL(headerLoaded(int,int,int)),
+            this, SIGNAL(headerLoaded(int,int,int)));
     connect(&mpegLoader, SIGNAL(frameDecoded(int)),
             this, SLOT(gotFrame(int)));
     // Immediately and automatically upload texture to video card

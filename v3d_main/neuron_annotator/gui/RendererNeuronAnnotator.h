@@ -38,6 +38,7 @@ public:
     virtual int  _getTexFillSize(int w);
     virtual void loadVol();
     virtual void cleanVol();
+    virtual void renderVol();
     virtual void loadShader();
     virtual void equAlphaBlendingProjection();
     //
@@ -60,8 +61,14 @@ public:
     bool hasBadMarkerViewMatrix() const;
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>& landmarks);
+
     void updateSettingsFromVolumeTexture(
             const jfrc::VolumeTexture::Reader& textureReader);
+    void setOriginalVolumeDimensions(long x, long y, long z);
+    void setResampledVolumeDimensions(long x, long y, long z);
+    void setPaddedVolumeDimensions(long x, long y, long z);
+    void setSingleVolumeDimensions(long x, long y, long z);
+
     // expose sampleScale[XYZ], thickness[XYZ]
     void setShowClipGuide(bool b) {bShowClipGuide = b;}
     void applyCustomCut(const CameraModel&);

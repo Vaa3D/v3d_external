@@ -145,6 +145,8 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     mpegTexture = new MpegTexture(GL_TEXTURE0_ARB, ui.v3dr_glwidget, this);
     connect(mpegTexture, SIGNAL(textureUploaded(int)),
             ui.v3dr_glwidget, SLOT(start3dTextureMode(int)));
+    connect(mpegTexture, SIGNAL(headerLoaded(int, int, int)),
+            ui.v3dr_glwidget, SLOT(set3dTextureSize(int, int, int)));
     ui.actionLoad_movie_as_texture->setVisible(true);
     ui.actionLoad_texture_into_Reference->setVisible(true);
 #else
@@ -447,6 +449,51 @@ void NaMainWindow::setFullScreen(bool b)
     }
 }
 
+QString NaMainWindow::getDataDirectoryPathWithDialog()
+{
+    QString initialDialogPath = QDir::currentPath();
+    // Use previous annotation path as initial file browser location
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+    QString previousAnnotationDirString = settings.value("NeuronAnnotatorPreviousAnnotationPath").toString();
+    if (! previousAnnotationDirString.isEmpty()) {
+        QDir previousAnnotationDir(previousAnnotationDirString);
+        if (previousAnnotationDir.exists() && previousAnnotationDir.isReadable())
+        {
+            initialDialogPath = previousAnnotationDir.path();
+            // qDebug() << "Annotation directory path = " << initialDialogPath;
+        }
+    }
+
+    QString dirName = QFileDialog::getExistingDirectory(
+            this,
+            "Select neuron separation directory",
+            initialDialogPath,
+            QFileDialog::ShowDirsOnly);
+    if (dirName.isEmpty())
+        return "";
+
+    QDir dir(dirName);
+    if (! dir.exists() )
+    {
+        QMessageBox::warning(this, tr("No such directory"),
+                             QString("'%1'\n No such directory.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
+        return "";
+    }
+
+    // Remember parent directory to ease browsing next time
+    if (dir.cdUp()) {
+        if (dir.exists()) {
+            // qDebug() << "Saving annotation dir parent path " << parentDir.path();
+            settings.setValue("NeuronAnnotatorPreviousAnnotationPath", dir.path());
+        }
+        else {
+            qDebug() << "Problem saving parent directory of " << dirName;
+        }
+    }
+
+    return dirName;
+}
+
 QString NaMainWindow::getStackPathWithDialog()
 {
     QString initialDialogPath = QDir::currentPath();
@@ -506,8 +553,13 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
 {
 #ifdef USE_FFMPEG
+    // TODO - move data flow model construction upstream
+    deleteDataFlowModel();
+    DataFlowModel* dfm = new DataFlowModel();
+    setDataFlowModel(*dfm);
+
     // Hijack this method to load a sequence of volumes
-    QString dirName = QFileDialog::getExistingDirectory();
+    QString dirName = getDataDirectoryPathWithDialog();
     if (dirName.isEmpty()) return;
     QDir dir(dirName);
     mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2.mp4"),
@@ -523,9 +575,11 @@ void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
 
     mpegTexture->loadNextVolume();
 
-    // QString fileName = getStackPathWithDialog();
-    // if (fileName.isEmpty()) return;
-    // mpegTexture->loadFile(fileName, BlockScaler::CHANNEL_ALPHA);
+    dfm->getDataColorModel().initializeRgba32();
+    dfm->getSlow3DColorModel().initializeRgba32();
+    // Apply gamma bias already applied to input images
+    dfm->getSlow3DColorModel().setSharedGamma(0.46);
+    dfm->getSlow3DColorModel().setReferenceGamma(0.46);
 #endif
 }
 
@@ -893,6 +947,8 @@ void NaMainWindow::onColorModelChanged()
         bReferenceColorIsVisible = colorReader.getChannelVisibility(refIndex);
         NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
         if (! selectionReader.hasReadLock()) return;
+        if (selectionReader.getMaskStatusList().size() < 1)
+            return; // selection model is not active, single stack being viewed?
         bReferenceOverlayIsVisible = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
     } // release read locks
     // Communicate reference visibility change, if any, to NeuronSelectionModel

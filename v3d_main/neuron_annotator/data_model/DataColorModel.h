@@ -35,6 +35,7 @@ signals:
 
 public slots:
     void initialize();
+    bool initializeRgba32(); // For fast loading directly to OpenGL texture
     void colorizeIncremental();
     void setChannelColor(int index, /*QRgb*/ int color);
     void setChannelHdrRange(int index, qreal min, qreal max);

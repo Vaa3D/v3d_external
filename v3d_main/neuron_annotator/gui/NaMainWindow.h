@@ -92,6 +92,7 @@ public:
     bool deleteDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
     QString getStackPathWithDialog();
+    QString getDataDirectoryPathWithDialog();
 
 signals:
     void channelVisibilityChanged(int, bool);
