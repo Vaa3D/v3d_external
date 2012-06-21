@@ -226,7 +226,7 @@ My4DImage * ScreenPatternAnnotator::createMaskIndexGhostImage(My4DImage * rgbMas
 	    qDebug() << "Could not locate color in mask color list r=" << r << " g=" << g << " b=" << b;
 	    return NULL;
 	  }
-	  if (m==index) {
+	  if (m==index-1) {
 	    rG[p]=rChan[p];
 	    gG[p]=gChan[p];
 	    bG[p]=bChan[p];
