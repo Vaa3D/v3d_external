@@ -1,6 +1,8 @@
 #ifndef NA_ZSTACK_WIDGET_H
 #define NA_ZSTACK_WIDGET_H
 
+class ZSliceColors;
+
 #include <QObject>
 #include <QWidget>
 #include <QSize>

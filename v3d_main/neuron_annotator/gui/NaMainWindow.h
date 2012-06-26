@@ -15,8 +15,6 @@
 #include "DynamicRangeTool.h"
 #include "../NeuronSelector.h"
 
-class MpegTexture;
-
 class NutateThread : public QThread
 {
     Q_OBJECT
@@ -210,10 +208,6 @@ private:
 
     std::vector<OpenFileAction*> recentFileActions;
     QTime mainWindowStopWatch;
-
-#ifdef USE_FFMPEG
-    MpegTexture* mpegTexture;
-#endif
 };
 
 #endif // NAMAINWINDOW_H

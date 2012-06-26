@@ -9,7 +9,7 @@
 #include <cmath>
 #include "NeuronContextMenu.h"
 #include "../data_model/VolumeTexture.h"
-#include "Stereo3DMode.h"
+#include "Stereo3dMode.h"
 
 class RendererNeuronAnnotator;
 
@@ -67,6 +67,7 @@ signals:
     void showCornerAxesChanged(bool);
     void slabThicknessChanged(int);
     void slabPositionChanged(int);
+    void volume3DUploaded();
 
 public slots:
     void setShowCornerAxes(bool b);
@@ -103,8 +104,7 @@ public slots:
     void setSlabPosition(int); // range -500 - +500 voxels
     void clipSlab(); // Apply clip plane to current slab
     void updateScreenPosition(); // for stencil based 3D modes
-    void start3dTextureMode(int textureId);
-    void set3dTextureSize(int x, int y, int z);
+    bool upload3DVolumeTexture(int w, int h, int d, void* texture_data);
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

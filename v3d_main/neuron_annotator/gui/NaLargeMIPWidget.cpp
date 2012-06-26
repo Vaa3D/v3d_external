@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include "NeuronQAction.h"
+#include "../data_model/MipMergedData.h"
 
 
 //////////////////////////////
@@ -39,6 +40,13 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
 {
+}
+
+void NaLargeMIPWidget::setMipMergedData(const MipMergedData& mipMergedDataParam)
+{
+    mipMergedData = &mipMergedDataParam;
+    connect(mipMergedData, SIGNAL(dataChanged()),
+            this, SLOT(initializePixmap()));
 }
 
 void NaLargeMIPWidget::setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu)

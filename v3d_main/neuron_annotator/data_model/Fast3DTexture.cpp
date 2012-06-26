@@ -1,8 +1,12 @@
-#include "MpegTexture.h"
+#include "Fast3DTexture.h"
 
 #ifdef USE_FFMPEG
 
-#include "FFMpegVideo.h"
+#include "../utility/FFMpegVideo.h"
+extern "C"
+{
+#include <libswscale/swscale.h>
+}
 #include <QWriteLocker>
 #include <QReadLocker>
 #include <QCoreApplication>
@@ -19,7 +23,7 @@
 /////////////////////
 
 // Populates internal YUV pixel format image in one thread
-MpegLoader::MpegLoader(PixelFormat pixelFormat)
+MpegLoader::MpegLoader(int pixelFormat)
     : QObject(NULL)
     , thread(new QThread(this))
     , pixelFormat(pixelFormat)
@@ -62,7 +66,7 @@ bool MpegLoader::loadMpegFile(QString fileName)
     timer.start();
     bool bSucceeded = true; // start optimistic
     try {
-        FFMpegVideo video(fileName.toStdString().c_str(), pixelFormat);
+        FFMpegVideo video(fileName.toStdString().c_str(), (PixelFormat)pixelFormat);
         {
             QWriteLocker locker(&lock);
             deleteData();
@@ -239,18 +243,14 @@ void BlockScaler::load()
 
 
 ///////////////////////
-// class MpegTexture //
+// class Fast3DTexture //
 ///////////////////////
 
-MpegTexture::MpegTexture(GLenum textureUnit, QGLWidget * widget, QObject * parent)
-    : QObject(parent)
-    , glWidget(widget)
-    , texture_data(NULL)
+Fast3DTexture::Fast3DTexture()
+    : texture_data(NULL)
     , width(0)
     , height(0)
     , depth(0)
-    , textureUnit(textureUnit)
-    , textureId(0)
     , mpegLoader(PIX_FMT_YUV420P) // Use internal format for fast first pass of rescaling
 {
     FFMpegVideo::maybeInitFFMpegLib();
@@ -264,40 +264,33 @@ MpegTexture::MpegTexture(GLenum textureUnit, QGLWidget * widget, QObject * paren
     connect(&mpegLoader, SIGNAL(frameDecoded(int)),
             this, SLOT(gotFrame(int)));
     // Immediately and automatically upload texture to video card
-    // This requires that the "home" thread of the MpegTexture object
+    // This requires that the "home" thread of the Fast3DTexture object
     // be the same as the OpenGL thread
-    connect(this, SIGNAL(loadFinished(bool)),
-            this, SLOT(uploadToVideoCard()));
-
-    // Load a sequence of volumes
-    connect(this, SIGNAL(textureUploaded(int)),
-            this, SLOT(loadNextVolume()));
 }
 
 /* virtual */
-MpegTexture::~MpegTexture()
+Fast3DTexture::~Fast3DTexture()
 {
+    Writer(*this);
     deleteData();
-    if (0 != textureId)
-        glDeleteTextures(1, &textureId);
 }
 
-void MpegTexture::loadFile(QString fileName, BlockScaler::Channel channel)
+void Fast3DTexture::loadFile(QString fileName, BlockScaler::Channel channel)
 {
-    // qDebug() << "MpegTexture::loadFile()" << fileName << __FILE__ << __LINE__;
+    // qDebug() << "Fast3DTexture::loadFile()" << fileName << __FILE__ << __LINE__;
     currentLoadChannel = channel;
     timer.start();
     emit loadRequested(fileName);
 }
 
 /* slot */
-void MpegTexture::onHeaderLoaded(int x, int y, int z)
+void Fast3DTexture::onHeaderLoaded(int x, int y, int z)
 {
     // TODO - kill any outstanding scaling jobs
     scalers.clear();
     blockScaleWatchers.clear();
 
-    // qDebug() << "MpegTexture::onHeaderLoaded" << x << y << z;
+    // qDebug() << "Fast3DTexture::onHeaderLoaded" << x << y << z;
     // Only allocate memory if we need to, especially for loading single channels
     if ( (width != x)
         || (height != y)
@@ -317,7 +310,7 @@ void MpegTexture::onHeaderLoaded(int x, int y, int z)
     }
 
     // Ready a set of scalers for the new data
-    for (int i = 0; i < MpegTexture::numScalingThreads; ++i) {
+    for (int i = 0; i < Fast3DTexture::numScalingThreads; ++i) {
         scalers << new BlockScaler(this);
         blockScaleWatchers << new QFutureWatcher<void>(this);
     }
@@ -325,12 +318,12 @@ void MpegTexture::onHeaderLoaded(int x, int y, int z)
 }
 
 /* slot */
-void MpegTexture::gotFrame(int f)
+void Fast3DTexture::gotFrame(int f)
 {
     // Chunk format conversion tasks into threadable blocks of consecutive slices
     // First we ask: Is this the final frame of a threadable block?
     // "numSections" is the number of threads we will use to unpack frames
-    double numSections = MpegTexture::numScalingThreads; // divide stack scaling into this many threads
+    double numSections = Fast3DTexture::numScalingThreads; // divide stack scaling into this many threads
     // "section" is an index between 1.0 and numSections
     double section = 1.0 + int( f * numSections / depth );
     // "firstInSection" is the index of the first frame in this section
@@ -352,88 +345,18 @@ void MpegTexture::gotFrame(int f)
 }
 
 /* slot */
-void MpegTexture::blockScaleFinished()
+void Fast3DTexture::blockScaleFinished()
 {
     ++completedBlocks;
     // qDebug() << completedBlocks << "scaling blocks completed";
-    if (completedBlocks >= MpegTexture::numScalingThreads) {
+    if (completedBlocks >= Fast3DTexture::numScalingThreads) {
         completedBlocks = 0;
         qDebug() << "Total load time =" << timer.elapsed()/1000.0 << "seconds";
-        emit loadFinished(true);
+        emit volumeUploadRequested(width, height, depth, texture_data);
     }
 }
 
-/* slot */
-bool MpegTexture::uploadToVideoCard()
-{
-    // qDebug() << "MpegTexture::uploadToVideoCard()";
-    QTime stopwatch;
-    stopwatch.start();
-    if (NULL != glWidget)
-        glWidget->makeCurrent();
-    {
-        // check for previous errors
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            return false;
-        }
-    }
-    if (NULL == texture_data)
-        return false;
-    // Upload volume image as an OpenGL 3D texture
-    glPushAttrib(GL_TEXTURE_BIT); // remember previous OpenGL state
-    if (0 == textureId)
-        glGenTextures(1, &textureId); // allocate a handle for this texture
-    glEnable(GL_TEXTURE_3D); // we are using a 3D texture
-    glActiveTextureARB(textureUnit); // multitexturing index, because there are other textures
-    glBindTexture(GL_TEXTURE_3D, textureId); // make this the current texture
-    // Black/zero beyond edge of texture
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    // Interpolate between texture values
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    {
-        // check for new errors
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            return false;
-        }
-    }
-    // qDebug() << width << height << depth << (long)texture_data;
-    // Load the data onto video card
-    glTexImage3D(GL_TEXTURE_3D,
-        0, ///< mipmap level; zero means base level
-        GL_RGBA8, ///< texture format, in bytes per pixel
-        width,
-        height,
-        depth,
-        0, // border
-        GL_BGRA, // image format
-        GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-        (GLvoid*)texture_data);
-    glPopAttrib(); // restore OpenGL state
-    {
-        // check for new errors
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            return false;
-        }
-    }
-    if (NULL != glWidget)
-        glWidget->doneCurrent();
-    qDebug() << "Uploading 3D volume texture took"
-             << stopwatch.elapsed()
-             << "milliseconds";
-    emit textureUploaded(textureId);
-    return true;
-}
-
-void MpegTexture::deleteData()
+void Fast3DTexture::deleteData()
 {
     if (NULL != texture_data) {
         free(texture_data);

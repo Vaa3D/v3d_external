@@ -78,6 +78,70 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     }
 }
 
+/* slot */
+bool RendererNeuronAnnotator::upload3DVolumeTexture(int w, int h, int d, void* texture_data)
+{
+    qDebug() << "RendererNeuronAnnotator::upload3DTexture()" << w << h << d;
+    {
+        // check for previous errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            return false;
+        }
+    }
+    if (NULL == texture_data)
+        return false;
+    // Upload volume image as an OpenGL 3D texture
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
+    if (0 == defaultTextureIds[0])
+        glGenTextures(1, &defaultTextureIds[0]); // allocate a handle for this texture
+    glEnable(GL_TEXTURE_3D); // we are using a 3D texture
+    glActiveTextureARB(GL_TEXTURE0_ARB); // multitexturing index, because there are other textures
+    glBindTexture(GL_TEXTURE_3D, defaultTextureIds[0]); // make this the current texture
+    // Black/zero beyond edge of texture
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    // Interpolate between texture values
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    {
+        // check for new errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            return false;
+        }
+    }
+    // qDebug() << width << height << depth << (long)texture_data;
+    // Load the data onto video card
+    glTexImage3D(GL_TEXTURE_3D,
+        0, ///< mipmap level; zero means base level
+        GL_RGBA8, ///< texture format, in bytes per pixel
+        w,
+        h,
+        d,
+        0, // border
+        GL_BGRA, // image format
+        GL_UNSIGNED_INT_8_8_8_8_REV, // image type
+        (GLvoid*)texture_data);
+    glPopAttrib(); // restore OpenGL state
+    {
+        // check for new errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            return false;
+        }
+    }
+    setSingleVolumeDimensions(w, h, d);
+    tex3D = defaultTextureIds[0];
+    tryTex3D = (tex3D > 0);
+    texture_unit0_3D = tryTex3D;
+    return true;
+}
+
 void RendererNeuronAnnotator::setUndoStack(QUndoStack& undoStackParam)
 {
     customClipPlanes.setUndoStack(undoStackParam);
@@ -852,14 +916,6 @@ void RendererNeuronAnnotator::cleanVol()
     Xtex_list = Ytex_list = Ztex_list = NULL;
     tex3D = 0;
     Renderer_gl1::cleanVol();
-}
-
-/* slot */
-void RendererNeuronAnnotator::start3dTextureMode(int textureId)
-{
-    tex3D = textureId;
-    tryTex3D = (tex3D > 0);
-    texture_unit0_3D = tryTex3D;
 }
 
 /* slot */

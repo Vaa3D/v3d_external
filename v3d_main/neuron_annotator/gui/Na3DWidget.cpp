@@ -94,6 +94,36 @@ Na3DWidget::~Na3DWidget()
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
 }
 
+/* slot */
+bool Na3DWidget::upload3DVolumeTexture(int w, int h, int d, void* texture_data)
+{
+    qDebug() << "Na3DWidget::upload3DTexture()" << w << h << d;
+    makeCurrent();
+    QTime stopwatch;
+    stopwatch.start();
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (NULL == ra)
+    {
+        choiceRenderer();
+        ra = getRendererNa();
+        if (NULL == ra)
+            return false;
+        ra->loadShader();
+    }
+    ra->setSingleVolumeDimensions(w, h, d);
+
+    bool bSucceeded = getRendererNa()->upload3DVolumeTexture(w,h,d,texture_data);
+    doneCurrent();
+    if (bSucceeded) {
+        qDebug() << "Uploading 3D volume texture took"
+                << stopwatch.elapsed()
+                << "milliseconds";
+        emit volume3DUploaded();
+        update();
+    }
+    return bSucceeded;
+}
+
 /* virtual */
 RendererNeuronAnnotator* Na3DWidget::getRendererNa()
 {
@@ -105,37 +135,6 @@ const RendererNeuronAnnotator* Na3DWidget::getRendererNa() const
 {
     return dynamic_cast<RendererNeuronAnnotator*>(renderer);
 } // const version CMB
-
-/* slot */
-void Na3DWidget::start3dTextureMode(int textureId)
-{
-    RendererNeuronAnnotator* ra = getRendererNa();
-    if (!ra)
-    {
-        choiceRenderer();
-        ra = getRendererNa();
-        ra->loadShader();
-    }
-    if (! ra->has_image()) {
-        // TODO - dummy volume size for testing
-        ra->setSingleVolumeDimensions(20,20,20);
-    }
-    ra->start3dTextureMode(textureId);
-    update();
-}
-
-void Na3DWidget::set3dTextureSize(int x, int y, int z)
-{
-    RendererNeuronAnnotator* ra = getRendererNa();
-    if (!ra)
-    {
-        choiceRenderer();
-        ra = getRendererNa();
-        ra->loadShader();
-    }
-    ra->setSingleVolumeDimensions(x, y, z);
-}
-
 
 /* slot */
 void Na3DWidget::updateScreenPosition()  // for stencil based 3D modes
@@ -1228,6 +1227,13 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
     incrementalDataColorModel = &dataFlowModelParam.getFast3DColorModel();
     connect(incrementalDataColorModel, SIGNAL(dataChanged()),
             this, SLOT(updateIncrementalColors()));
+
+#ifdef USE_FFMPEG
+    connect(&dataFlowModel->getFast3DTexture(), SIGNAL(volumeUploadRequested(int,int,int,void*)),
+            this, SLOT(upload3DVolumeTexture(int,int,int,void*)));
+    connect(this, SIGNAL(volume3DUploaded()),
+            &dataFlowModel->getFast3DTexture(), SLOT(loadNextVolume()));
+#endif
 }
 
 // Refactor to respond to changes in VolumeTexture, not to NaVolumeData

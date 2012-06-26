@@ -1,6 +1,6 @@
 
 #include "../utility/loadV3dFFMpeg.h"
-#include "../utility/MpegTexture.h"
+#include "../data_model/Fast3DTexture.h"
 #include <QCoreApplication>
 
 using namespace std;
@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 
     QCoreApplication theApp(argc, argv);
 
-    MpegTexture mpegTexture;
+    Fast3DTexture mpegTexture;
     mpegTexture.loadFile(argv[1]);
 
     qDebug() << "starting app";

@@ -1,16 +1,15 @@
 #ifndef MPEGTEXTURE_H
 #define MPEGTEXTURE_H
 
-// MpegTexture class is designed to help load an MPEG4 movie file
+// Fast3DTexture class is designed to help load an MPEG4 movie file
 // directly into a 3D OpenGL texture.
 
 #ifdef USE_FFMPEG
 
-#include "FFMpegVideo.h"
-extern "C"
-{
-#include <libswscale/swscale.h>
-}
+#include "NaLockableData.h"
+
+class AVFrame;
+class SwsContext;
 
 #include <QObject>
 #include <QThread>
@@ -37,7 +36,7 @@ class MpegLoader : public QObject
     Q_OBJECT
 
 public:
-    MpegLoader(PixelFormat pixelFormat);
+    MpegLoader(int pixelFormat);
     virtual ~MpegLoader();
     void deleteData();
 
@@ -53,7 +52,7 @@ public:
     QReadWriteLock lock;
     size_t width, height, depth;
     QThread * thread;
-    PixelFormat pixelFormat;
+    int pixelFormat;
     size_t frameBytes;
     uint8_t * frame_data;
     std::vector<AVFrame*> frames;
@@ -92,6 +91,7 @@ public:
     Channel channel;
 };
 
+
 struct QueuedVolume
 {
     QueuedVolume(QString fn, BlockScaler::Channel c)
@@ -100,17 +100,16 @@ struct QueuedVolume
     BlockScaler::Channel channel;
 };
 
-class MpegTexture : public QObject
+
+class Fast3DTexture : public NaLockableData
 {
     Q_OBJECT
 
 public:
     static const int numScalingThreads = 6;
 
-    MpegTexture(GLenum textureUnit = GL_TEXTURE0_ARB,
-                QGLWidget * glWidget = NULL,
-                QObject * parent = NULL);
-    virtual ~MpegTexture();
+    Fast3DTexture();
+    virtual ~Fast3DTexture();
     void loadFile(QString fileName, BlockScaler::Channel channel=BlockScaler::CHANNEL_RGB);
 
     void queueVolume(QString fileName, BlockScaler::Channel channel) {
@@ -119,15 +118,12 @@ public:
 
 signals:
     void loadRequested(QString fileName);
-    void loadFinished(bool bSucceeded);
-    void textureUploaded(int textureId);
+    void volumeUploadRequested(int w, int h, int d, void* texture_data);
     void headerLoaded(int, int, int);
 
 public slots:
     void onHeaderLoaded(int, int, int);
     void gotFrame(int);
-    // uploadToVideoCard() MUST be called from OpenGL thread!
-    bool uploadToVideoCard();
     void loadNextVolume() {
         if (volumeQueue.empty()) return;
         QueuedVolume v = volumeQueue.front();
@@ -145,14 +141,41 @@ protected:
     QList<QFutureWatcher<void>* > blockScaleWatchers;
     int completedBlocks;
     GLsizei width, height, depth;
-    GLuint textureId;
-    GLenum textureUnit;
     uint8_t * texture_data; // z*y*x*BGRA, ready for glTexImage3D()
     MpegLoader mpegLoader;
     QList<BlockScaler*> scalers;
     BlockScaler::Channel currentLoadChannel;
-    QGLWidget* glWidget;
     std::deque<QueuedVolume> volumeQueue;
+
+
+public:
+
+    class Reader; friend class Reader;
+    class Reader : public BaseReadLocker
+    {
+    public:
+        Reader(const Fast3DTexture& texture)
+            : BaseReadLocker(texture)
+            , m_data(&texture)
+        {}
+
+    private:
+        const Fast3DTexture * m_data;
+    };
+
+
+    class Writer; friend class Writer;
+    class Writer : public BaseWriteLocker
+    {
+    public:
+        Writer(Fast3DTexture& texture)
+            : BaseWriteLocker(texture)
+            , m_data(&texture)
+        {}
+
+    private:
+        Fast3DTexture * m_data;
+    };
 };
 
 #endif // USE_FFMPEG

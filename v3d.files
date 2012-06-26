@@ -2380,6 +2380,8 @@ v3d_main/neuron_annotator/data_model/MipFragmentData.h
 v3d_main/neuron_annotator/data_model/MipFragmentData.cpp
 v3d_main/neuron_annotator/data_model/MipFragmentColors.h
 v3d_main/neuron_annotator/data_model/MipFragmentColors.cpp
+v3d_main/neuron_annotator/data_model/Fast3DTexture.h
+v3d_main/neuron_annotator/data_model/Fast3DTexture.cpp
 v3d_main/neuron_annotator/data_model/DataColorModel.h
 v3d_main/neuron_annotator/data_model/DataColorModel.cpp
 v3d_main/neuron_annotator/data_model/GalleryMipImages.h
@@ -2491,7 +2493,5 @@ v3d_main/neuron_annotator/utility/loadV3dFFMpeg.cpp
 v3d_main/neuron_annotator/data_model/IntensityHistogram.cpp
 v3d_main/neuron_annotator/data_model/IntensityHistogram.h
 v3d_main/neuron_annotator/tests/test_write_mp4.cpp
-v3d_main/neuron_annotator/utility/MpegTexture.h
-v3d_main/neuron_annotator/utility/MpegTexture.cpp
 v3d_main/neuron_annotator/tests/test_mpeg_texture.cpp
 v3d_main/neuron_annotator/gui/Stereo3dMode.h

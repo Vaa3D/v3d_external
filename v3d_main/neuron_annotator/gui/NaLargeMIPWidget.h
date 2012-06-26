@@ -9,6 +9,7 @@
 #include "MouseClickManager.h"
 #include "NeuronContextMenu.h"
 
+class MipMergedData;
 
 // Large maximum intensity projection viewer for Neuron Annotator
 // mode of V3D
@@ -29,12 +30,7 @@ public:
     int neuronAt(const QPoint& p) const;
     bool saveImage(QString filename);
     void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
-    void setMipMergedData(const MipMergedData& mipMergedDataParam)
-    {
-        mipMergedData = &mipMergedDataParam;
-        connect(mipMergedData, SIGNAL(dataChanged()),
-                this, SLOT(initializePixmap()));
-    }
+    void setMipMergedData(const MipMergedData& mipMergedDataParam);
 
 signals:
     // message intended for main window status area

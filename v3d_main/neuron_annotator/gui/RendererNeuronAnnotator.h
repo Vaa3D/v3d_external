@@ -83,7 +83,6 @@ signals:
     void slabThicknessChanged(int);
 
 public slots:
-    void start3dTextureMode(int textureId);
     void initializeDefaultTextures(); // ensure all 4 textures are non-pathological
     void setAlphaBlending(bool);
     void setStereoMode(int);
@@ -106,6 +105,7 @@ public slots:
     void setShowCornerAxes(bool b);
     bool setSlabThickness(int); // range 2-1000 voxels
     void clipSlab(const CameraModel& cameraModel); // Apply clip plane to current slab
+    bool upload3DVolumeTexture(int w, int h, int d, void* texture_data);
 
 protected:
     virtual void shaderTexBegin(bool stream);

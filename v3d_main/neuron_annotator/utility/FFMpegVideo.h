@@ -60,7 +60,7 @@ public:
     bool readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet, AVFrame* pYuv);
     int seekToFrame(int targetFrameIndex = 0);
 
-    // make certain members public, for use by MpegTexture class
+    // make certain members public, for use by Fast3DTexture class
     AVFrame *pFrameRGB;
     AVFrame *pRaw;
     AVFormatContext *container;

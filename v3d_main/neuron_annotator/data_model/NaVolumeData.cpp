@@ -5,7 +5,7 @@
 
 #include "../utility/ImageLoader.h"
 #include "../utility/loadV3dFFMpeg.h"
-#include "../utility/MpegTexture.h"
+#include "Fast3DTexture.h"
 
 using namespace std;
 
@@ -120,7 +120,7 @@ NaVolumeData::~NaVolumeData()
     volumeWriter.clearImageData();
 }
 
-void NaVolumeData::setTextureInput(MpegTexture* texture)
+void NaVolumeData::setTextureInput(Fast3DTexture* texture)
 {
     mpegTexture = texture;
 }
@@ -618,7 +618,7 @@ bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
     return false;
 }
 
-bool NaVolumeData::Writer::loadVolumeFromTexture(MpegTexture* texture)
+bool NaVolumeData::Writer::loadVolumeFromTexture(Fast3DTexture* texture)
 {
     // TODO
     return false;

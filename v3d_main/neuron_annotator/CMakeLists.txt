@@ -44,7 +44,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     utility/ConsoleObserver.h
     utility/DataThread.h
     utility/ImageLoader.h
-    utility/MpegTexture.h
+    data_model/Fast3DTexture.h
     DataFlowModel.h
     ExportFile.h
     NeuronSelector.h

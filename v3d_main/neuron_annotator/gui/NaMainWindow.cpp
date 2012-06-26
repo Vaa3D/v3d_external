@@ -26,7 +26,7 @@
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
 #include "../utility/loadV3dFFMpeg.h"
-#include "../utility/MpegTexture.h"
+#include "../data_model/Fast3DTexture.h"
 
 using namespace std;
 
@@ -83,9 +83,6 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     , bShowCrosshair(true) // default to on
     , viewMode(VIEW_SINGLE_STACK)
     , recentFileActions(NaMainWindow::maxRecentFiles, NULL)
-#ifdef USE_FFMPEG
-    , mpegTexture(NULL)
-#endif
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
 #ifdef ENABLE_STEREO
@@ -141,12 +138,6 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
 
 #ifdef USE_FFMPEG
-    // Alert the renderer the moment an mp4 texture is loaded
-    mpegTexture = new MpegTexture(GL_TEXTURE0_ARB, ui.v3dr_glwidget, this);
-    connect(mpegTexture, SIGNAL(textureUploaded(int)),
-            ui.v3dr_glwidget, SLOT(start3dTextureMode(int)));
-    connect(mpegTexture, SIGNAL(headerLoaded(int, int, int)),
-            ui.v3dr_glwidget, SLOT(set3dTextureSize(int, int, int)));
     ui.actionLoad_movie_as_texture->setVisible(true);
     ui.actionLoad_texture_into_Reference->setVisible(true);
 #else
@@ -545,7 +536,8 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 #ifdef USE_FFMPEG
     QString fileName = getStackPathWithDialog();
     if (fileName.isEmpty()) return;
-    mpegTexture->loadFile(fileName);
+    if (! dataFlowModel) return;
+    dataFlowModel->getFast3DTexture().loadFile(fileName);
 #endif
 }
 
@@ -562,6 +554,8 @@ void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
     QString dirName = getDataDirectoryPathWithDialog();
     if (dirName.isEmpty()) return;
     QDir dir(dirName);
+
+    Fast3DTexture* mpegTexture = &dfm->getFast3DTexture();
     mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2.mp4"),
                              BlockScaler::CHANNEL_RGB);
     mpegTexture->queueVolume(dir.filePath("Reference2.mp4"),

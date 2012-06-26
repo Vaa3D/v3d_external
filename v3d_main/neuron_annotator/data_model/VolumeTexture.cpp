@@ -1,5 +1,5 @@
-#include "VolumeTexture.h"
 #include "PrivateVolumeTexture.h"
+#include "VolumeTexture.h"
 #include "PrivateDataColorModel.h" // avoid compile error on msvc?
 #include "PrivateNeuronFragmentData.h" // avoid compile error on msvc?
 #include "NaSharedDataModel.cpp"

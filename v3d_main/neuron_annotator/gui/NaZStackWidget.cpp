@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <cmath>
 #include <iostream>
+#include "../data_model/ZSliceColors.h"
 
 using namespace std;
 
