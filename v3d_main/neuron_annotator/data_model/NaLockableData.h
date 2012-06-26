@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QReadWriteLock>
 #include <QTime>
-#include <QDebug>
 #include "SlotMerger.h"
 
 class NaLockableDataBaseReadLocker;

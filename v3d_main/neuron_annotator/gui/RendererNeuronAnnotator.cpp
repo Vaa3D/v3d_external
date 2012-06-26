@@ -4,6 +4,7 @@
 #include "../3drenderer/v3dr_common.h"
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../geometry/Rotation3D.h"
+#include <stdint.h>
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL)

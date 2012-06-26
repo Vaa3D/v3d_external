@@ -38,3 +38,6 @@ if(V3D_USE_OWN_TIFF)
     add_dependencies(v3dbase1 CustomTiffLibrary)
 endif(V3D_USE_OWN_TIFF)
 
+# Dependency of interface on some overly included ui headers (cellseg)
+add_dependencies(V3DInterface v3dbase1)
+

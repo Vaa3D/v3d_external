@@ -168,6 +168,8 @@ add_definitions(-D_ALLOW_WORKMODE_MENU_)
 
 add_subdirectory( graph )
 
+# V3DInterface needs some generated ui headers
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/v3dbase)
 add_subdirectory( basic_c_fun )
 
 add_subdirectory( neuron_editing )

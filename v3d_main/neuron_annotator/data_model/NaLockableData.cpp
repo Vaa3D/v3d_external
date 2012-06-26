@@ -1,5 +1,6 @@
 #include "NaLockableData.h"
 #include <QThread>
+#include <QDebug>
 
 NaLockableData::NaLockableData()
     : thread(NULL)

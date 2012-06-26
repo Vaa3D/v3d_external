@@ -1,6 +1,7 @@
 #ifndef PRIVATE_VOLUMETEXTURE_H
 #define PRIVATE_VOLUMETEXTURE_H
 
+#include <QtGui>
 #include "../../3drenderer/GLee_r.h"
 #include "DataColorModel.h"
 #include "NeuronSelectionModel.h"
