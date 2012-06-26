@@ -19,7 +19,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , bClickIsWaiting(false)
         , undoStack(NULL)
         , cachedRelativeScale(1.0)
-        , stereo3DMode(RendererNeuronAnnotator::STEREO_OFF)
+        , stereo3DMode(jfrc::STEREO_OFF)
         , bStereoSwapEyes(false)
 {
     if (renderer) {
@@ -93,6 +93,18 @@ Na3DWidget::~Na3DWidget()
     delete _idep; _idep = NULL;
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
 }
+
+/* virtual */
+RendererNeuronAnnotator* Na3DWidget::getRendererNa()
+{
+    return dynamic_cast<RendererNeuronAnnotator*>(renderer);
+}
+
+/* virtual */
+const RendererNeuronAnnotator* Na3DWidget::getRendererNa() const
+{
+    return dynamic_cast<RendererNeuronAnnotator*>(renderer);
+} // const version CMB
 
 /* slot */
 void Na3DWidget::start3dTextureMode(int textureId)
@@ -257,19 +269,19 @@ void Na3DWidget::settingRenderer() // before renderer->setupData & init
 void Na3DWidget::setStereoOff(bool b)
 {
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_OFF);
+        setStereoMode(jfrc::STEREO_OFF);
 }
 
 void Na3DWidget::setStereoLeftEye(bool b)
 {
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_LEFT_EYE);
+        setStereoMode(jfrc::STEREO_LEFT_EYE);
 }
 
 void Na3DWidget::setStereoRightEye(bool b)
 {
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_RIGHT_EYE);
+        setStereoMode(jfrc::STEREO_RIGHT_EYE);
 }
 
 void Na3DWidget::setStereoQuadBuffered(bool b)
@@ -280,46 +292,46 @@ void Na3DWidget::setStereoQuadBuffered(bool b)
         qDebug() << "Error: Quad buffered stereo is not supported on this computer.";
         return;
     }
-    setStereoMode(RendererNeuronAnnotator::STEREO_QUAD_BUFFERED);
+    setStereoMode(jfrc::STEREO_QUAD_BUFFERED);
 }
 
 void Na3DWidget::setStereoAnaglyphRedCyan(bool b)
 {
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_ANAGLYPH_RED_CYAN);
+        setStereoMode(jfrc::STEREO_ANAGLYPH_RED_CYAN);
 }
 
 void Na3DWidget::setStereoAnaglyphGreenMagenta(bool b)
 {
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_ANAGLYPH_GREEN_MAGENTA);
+        setStereoMode(jfrc::STEREO_ANAGLYPH_GREEN_MAGENTA);
 }
 
 void Na3DWidget::setStereoRowInterleaved(bool b)
 {
     // qDebug() << "Na3DWidget::setStereoRowInterleaved(" << b << __FILE__ << __LINE__;
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_ROW_INTERLEAVED);
+        setStereoMode(jfrc::STEREO_ROW_INTERLEAVED);
 }
 
 void Na3DWidget::setStereoColumnInterleaved(bool b)
 {
     // qDebug() << "Na3DWidget::setStereoColumnInterleaved(" << b << __FILE__ << __LINE__;
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_COLUMN_INTERLEAVED);
+        setStereoMode(jfrc::STEREO_COLUMN_INTERLEAVED);
 }
 
 void Na3DWidget::setStereoCheckerInterleaved(bool b)
 {
     // qDebug() << "Na3DWidget::setStereoCheckerInterleaved(" << b << __FILE__ << __LINE__;
     if (b)
-        setStereoMode(RendererNeuronAnnotator::STEREO_CHECKER_INTERLEAVED);
+        setStereoMode(jfrc::STEREO_CHECKER_INTERLEAVED);
 }
 
 void Na3DWidget::setStereoMode(int m)
 {
     // qDebug() << "Na3DWidget::setStereoMode()" << m << __FILE__ << __LINE__;
-    stereo3DMode = (RendererNeuronAnnotator::Stereo3DMode)m;
+    stereo3DMode = (jfrc::Stereo3DMode)m;
     if (! getRendererNa()) return;
     getRendererNa()->setStereoMode(m);
     update();
@@ -1064,6 +1076,9 @@ void Na3DWidget::choiceRenderer()
         // Retain setting for stereo3D
         getRendererNa()->setStereoMode(stereo3DMode);
         updateScreenPosition();
+
+        // Is this too early to upload default textures?
+        getRendererNa()->initializeDefaultTextures();
     }
 }
 

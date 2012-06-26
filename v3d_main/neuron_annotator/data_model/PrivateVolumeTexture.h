@@ -1,12 +1,12 @@
 #ifndef PRIVATE_VOLUMETEXTURE_H
 #define PRIVATE_VOLUMETEXTURE_H
 
+#include "../../3drenderer/GLee_r.h"
 #include "DataColorModel.h"
 #include "NeuronSelectionModel.h"
 #include "NaVolumeData.h"
 #include "Dimension.h"
 #include "../DataFlowModel.h"
-#include "../../3drenderer/GLee_r.h"
 #include <QObject>
 #include <vector>
 #include <cassert>

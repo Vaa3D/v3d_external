@@ -2494,3 +2494,4 @@ v3d_main/neuron_annotator/tests/test_write_mp4.cpp
 v3d_main/neuron_annotator/utility/MpegTexture.h
 v3d_main/neuron_annotator/utility/MpegTexture.cpp
 v3d_main/neuron_annotator/tests/test_mpeg_texture.cpp
+v3d_main/neuron_annotator/gui/Stereo3dMode.h

@@ -7,9 +7,11 @@
 #include "../geometry/Rotation3D.h"
 #include "MouseClickManager.h"
 #include <cmath>
-#include "RendererNeuronAnnotator.h"
 #include "NeuronContextMenu.h"
 #include "../data_model/VolumeTexture.h"
+#include "Stereo3DMode.h"
+
+class RendererNeuronAnnotator;
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -40,8 +42,8 @@ public:
     virtual void moveEvent(QMoveEvent * event);
     virtual void setDataFlowModel(const DataFlowModel&);
     void resetVolumeBoundary();
-    virtual RendererNeuronAnnotator* getRendererNa()   {return dynamic_cast<RendererNeuronAnnotator*>(renderer);}
-    virtual const RendererNeuronAnnotator* getRendererNa() const {return dynamic_cast<RendererNeuronAnnotator*>(renderer);} // const version CMB
+    virtual RendererNeuronAnnotator* getRendererNa();
+    virtual const RendererNeuronAnnotator* getRendererNa() const;
     void setResizeEnabled(bool b) {bResizeEnabled = b;}
     int neuronAt(QPoint pos);
     void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
@@ -144,7 +146,7 @@ protected:
     jfrc::VolumeTexture volumeTexture;
     QUndoStack* undoStack;
     qreal cachedRelativeScale;
-    RendererNeuronAnnotator::Stereo3DMode stereo3DMode;
+    jfrc::Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
 };
 

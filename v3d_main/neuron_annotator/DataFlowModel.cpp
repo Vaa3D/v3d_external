@@ -1,5 +1,4 @@
 #include "DataFlowModel.h"
-#include "gui/RendererNeuronAnnotator.h"
 #include <QtAlgorithms>
 #include <iostream>
 #include <cassert>

@@ -5,8 +5,7 @@
 #include "../../v3d/v3d_core.h"
 #include "IntensityHistogram.h"
 
-// At default display, show reference channel at max 60% gray
-// #define REF_CHANNEL_DIMNESS_FACTOR 0.6
+class MpegTexture;
 
 // NaVolumeDataLoadableStack used to be an inner class of NaVolumeData,
 // but inner classes cannot be QObjects.
@@ -71,6 +70,11 @@ protected slots:
     bool loadOneChannel(QString fileName, int channel_index = 0);
     bool loadNeuronMask(QString fileName);
 
+    // TODO
+    void setTextureInput(MpegTexture* texture);
+    bool loadReferenceFromTexture();
+    bool loadVolumeFromTexture();
+
 private:
     QString originalImageStackFilePath;
     QString maskLabelFilePath;
@@ -85,6 +89,7 @@ private:
     std::vector<int> stackLoadProgressValues;
     std::vector<IntensityHistogram> histograms;
     int currentProgress;
+    MpegTexture* mpegTexture;
 
 public:
     typedef NaVolumeDataLoadableStack LoadableStack;
@@ -151,6 +156,8 @@ public:
         bool loadOneChannel(QString fileName, int channel_index = 0);
         int  loadChannels(QString fileName); // includes loading general volumes
         bool loadNeuronMask(QString fileName);
+
+        bool loadVolumeFromTexture(MpegTexture* texture);
 
     private:
         NaVolumeData * m_data;

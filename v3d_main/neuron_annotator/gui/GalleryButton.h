@@ -1,9 +1,9 @@
 #ifndef GALLERYBUTTON_H
 #define GALLERYBUTTON_H
 
-#include <QtGui>
 #include "Na3DWidget.h"
 #include "NeuronContextMenu.h"
+#include <QtGui>
 
 class GalleryButton : public QWidget
 {

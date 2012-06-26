@@ -9,24 +9,12 @@
 #include "../data_model/Dimension.h"
 #include "../data_model/CustomClipPlanes.h"
 #include "../geometry/CameraModel.h"
+#include "Stereo3dMode.h"
 
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
 
 Q_OBJECT
-
-public:
-    enum Stereo3DMode {
-        STEREO_OFF,
-        STEREO_LEFT_EYE,
-        STEREO_RIGHT_EYE,
-        STEREO_QUAD_BUFFERED,
-        STEREO_ANAGLYPH_RED_CYAN,
-        STEREO_ANAGLYPH_GREEN_MAGENTA,
-        STEREO_ROW_INTERLEAVED,
-        STEREO_COLUMN_INTERLEAVED,
-        STEREO_CHECKER_INTERLEAVED
-    };
 
 public:
     RendererNeuronAnnotator(void* widget);
@@ -74,7 +62,7 @@ public:
     void applyCustomCut(const CameraModel&);
     void applyCutPlaneInImageFrame(Vector3D point, Vector3D direction);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
-    Stereo3DMode getStereoMode() const {return stereo3DMode;}
+    jfrc::Stereo3DMode getStereoMode() const {return stereo3DMode;}
     bool getStereoSwapEyes() const {return bStereoSwapEyes;}
     bool getScreenRowParity() const {return screenRowParity;}
     bool getScreenColumnParity() const {return screenColumnParity;}
@@ -96,6 +84,7 @@ signals:
 
 public slots:
     void start3dTextureMode(int textureId);
+    void initializeDefaultTextures(); // ensure all 4 textures are non-pathological
     void setAlphaBlending(bool);
     void setStereoMode(int);
     // For use in stencilled display modes
@@ -137,7 +126,7 @@ protected:
     virtual void _streamTex(int stack_i, int slice_i, int step, int slice0, int slice1) {}
     virtual void _streamTex_end() {}
 
-    Stereo3DMode stereo3DMode;
+    jfrc::Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
     bool screenRowParity; // is the topmost pixel on an odd scan line?
     bool screenColumnParity; // is the leftmost pixel on an odd screen column?
@@ -148,6 +137,7 @@ protected:
 
     int slabThickness;
     int slabDepth;
+    unsigned int defaultTextureIds[4];
 };
 
 #endif // RENDERERNEURONANNOTATOR_H

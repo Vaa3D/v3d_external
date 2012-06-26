@@ -8,7 +8,7 @@
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL)
     , Renderer_gl2(w)
-    , stereo3DMode(STEREO_OFF)
+    , stereo3DMode(jfrc::STEREO_OFF)
     , bStereoSwapEyes(false)
     , bShowCornerAxes(true)
     , bShowClipGuide(false)
@@ -20,6 +20,9 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
     shaderTex3D = NULL;
     shaderTex2D = NULL;
+
+    for (int t = 0; t < 4; ++t)
+        defaultTextureIds[t] = 0;
 
     // black background for consistency with other viewers
     RGBA32f bg_color;
@@ -68,6 +71,11 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     total_rgbaBuf = rgbaBuf = NULL;
     rgbaBuf_Xzy = NULL;
     rgbaBuf_Yzx = NULL;
+    for (int t = 0; t < 4; ++t) {
+        if (0 != defaultTextureIds[t])
+            glDeleteTextures(1, &defaultTextureIds[t]);
+        defaultTextureIds[t] = 0;
+    }
 }
 
 void RendererNeuronAnnotator::setUndoStack(QUndoStack& undoStackParam)
@@ -122,7 +130,7 @@ void RendererNeuronAnnotator::clipSlab(const CameraModel& cameraModel) // Apply 
 void RendererNeuronAnnotator::setStereoMode(int m)
 {
     // qDebug() << "Stereo mode = " << (Stereo3DMode) m << __FILE__ << __LINE__;
-    stereo3DMode = (Stereo3DMode) m;
+    stereo3DMode = (jfrc::Stereo3DMode) m;
 }
 
 /* slot */
@@ -285,6 +293,14 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                                 GL_UNSIGNED_BYTE, // image type
                                 &colormap[0][0]);
                 CHECK_GLError_print();
+
+                // spot check color map
+                /*
+                qDebug() << QString("0x%1").arg(colormap[0][128].i, 8, 16)
+                         << QString("0x%1").arg(colormap[1][128].i, 8, 16)
+                         << QString("0x%1").arg(colormap[2][128].i, 8, 16)
+                         << QString("0x%1").arg(colormap[3][128].i, 8, 16);
+                         */
 
                 // TODO - does uploadPixels need to happen after shader->begin() like this?
                 /*
@@ -811,9 +827,9 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
                               textureReader.paddedTextureSize().z());
 
     // Copy pointers to openGL texture ID lists
-    Xtex_list = const_cast<GLuint*>(textureReader.Xtex_list());
-    Ytex_list = const_cast<GLuint*>(textureReader.Ytex_list());
-    Ztex_list = const_cast<GLuint*>(textureReader.Ztex_list());
+    Xtex_list = (GLuint*)(textureReader.Xtex_list());
+    Ytex_list = (GLuint*)(textureReader.Ytex_list());
+    Ztex_list = (GLuint*)(textureReader.Ztex_list());
 }
 
 /* virtual */
@@ -845,6 +861,110 @@ void RendererNeuronAnnotator::start3dTextureMode(int textureId)
     tryTex3D = (tex3D > 0);
     texture_unit0_3D = tryTex3D;
 }
+
+/* slot */
+void RendererNeuronAnnotator::initializeDefaultTextures()
+{
+    // (quickly) Set all textures to non-pathological values, including
+    // volume, colormap, neuron visibility, and neuron label
+
+    // Create texture IDs, if necessary
+    for (int t = 0; t < 4; ++t) {
+        if (0 == defaultTextureIds[t])
+            glGenTextures(1, &defaultTextureIds[t]);
+    }
+
+    // 3D volume texture in unit 0 set to all black
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+    {
+        glActiveTextureARB(GL_TEXTURE0_ARB);
+        glEnable(GL_TEXTURE_3D);
+        glBindTexture(GL_TEXTURE_3D, defaultTextureIds[0]);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        std::vector<uint32_t> buf(5*5*5, 0);
+        glTexImage3D(GL_TEXTURE_3D,
+                     0, ///< mipmap level; zero means base level
+                     GL_RGBA8, ///< texture format, in bytes per pixel
+                     5, 5, 5,
+                     0, // border
+                     GL_BGRA, // image format
+                     GL_UNSIGNED_INT_8_8_8_8_REV, // image type
+                     (GLvoid*)&buf[0]);
+    }
+    glPopAttrib();
+
+    // 2D colormap texture maps colors to themselves
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+    {
+        glActiveTextureARB(GL_TEXTURE1_ARB);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, defaultTextureIds[1]);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        std::vector<uint32_t> buf1(256, 0);
+        std::vector< std::vector<uint32_t> > buf2(4, buf1);
+        for (int c = 0; c < 4; ++c) {
+            uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
+            if (3 == c)
+                color_mask = 0x00aaaaaa; // gray for channel 4
+            for (int i = 0; i < 256; ++i) {
+                // 0xAABBGGRR
+                uint32_t alpha_mask = i << 24; // 0xAA000000
+                buf2[c][i] = alpha_mask & color_mask;
+            }
+        }
+        glTexImage2D(GL_TEXTURE_2D, // target
+                        0, // level
+                        GL_RGBA,
+                        256, // width
+                        4,   // height
+                        0, // border
+                        GL_RGBA, // image format
+                        GL_UNSIGNED_BYTE, // image type
+                        &buf2[0][0]);
+    }
+    glPopAttrib();
+
+    // 2D visibility texture maps everything to red
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+    {
+        glActiveTextureARB(GL_TEXTURE2_ARB);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, defaultTextureIds[2]);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        std::vector<uint32_t> buf(5*5, 0x000000ff); // red == visible but not selected
+        glTexImage2D(GL_TEXTURE_2D, // target
+                        0, // level
+                        GL_RGBA, // texture format
+                        5, // width
+                        5, // height
+                        0, // border
+                        GL_RGBA, // image format
+                        GL_UNSIGNED_BYTE, // image type
+                        &buf[0]);
+    }
+    glPopAttrib();
+
+    // 3D neuron label texture all zero == background
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+    {
+        glActiveTextureARB(GL_TEXTURE3_ARB);
+        glEnable(GL_TEXTURE_3D);
+        glBindTexture(GL_TEXTURE_3D, defaultTextureIds[3]);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        std::vector<uint16_t> buf(5*5*5, 0);
+        glTexImage3D(GL_TEXTURE_3D,
+                     0, ///< mipmap level; zero means base level
+                     GL_INTENSITY16, ///< texture format, in bytes per pixel
+                     5, 5, 5,
+                     0, // border
+                     GL_RED, // image format
+                     GL_UNSIGNED_SHORT, // image type
+                     (GLvoid*)&buf[0]);
+    }
+    glPopAttrib();
+
+}
+
 
 // copied from renderer_tex.cpp
 void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
@@ -1291,8 +1411,8 @@ public:
         glDisable(GL_LINE_SMOOTH);
 
         // It might not be possible to guarantee the registration of the stippling.  So use GL_LINES
-        if ( (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_ROW_INTERLEAVED)
-            || (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_CHECKER_INTERLEAVED) )
+        if ( (renderer.getStereoMode() == jfrc::STEREO_ROW_INTERLEAVED)
+            || (renderer.getStereoMode() == jfrc::STEREO_CHECKER_INTERLEAVED) )
         {
             int offset = 0;
             // blank alternate rows
@@ -1306,8 +1426,8 @@ public:
             glEnd();
         }
 
-        if ( (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_COLUMN_INTERLEAVED)
-            || (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_CHECKER_INTERLEAVED) )
+        if ( (renderer.getStereoMode() == jfrc::STEREO_COLUMN_INTERLEAVED)
+            || (renderer.getStereoMode() == jfrc::STEREO_CHECKER_INTERLEAVED) )
         {
             // blank alternate columns
             int offset = 1;
@@ -1345,23 +1465,23 @@ void RendererNeuronAnnotator::paint()
     makeCurrent();
     switch(stereo3DMode)
     {
-    case STEREO_OFF:
+    case jfrc::STEREO_OFF:
         glDrawBuffer(GL_BACK); // Avoid flicker on non-Quadro Mac
         paint_mono();
         break;
-    case STEREO_LEFT_EYE:
+    case jfrc::STEREO_LEFT_EYE:
         {
             StereoEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
             paint_mono();
         }
         break;
-    case STEREO_RIGHT_EYE:
+    case jfrc::STEREO_RIGHT_EYE:
         {
             StereoEyeView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
             paint_mono();
         }
         break;
-    case STEREO_ANAGLYPH_RED_CYAN:
+    case jfrc::STEREO_ANAGLYPH_RED_CYAN:
         {
             AnaglyphRedCyanEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
             paint_mono();
@@ -1371,7 +1491,7 @@ void RendererNeuronAnnotator::paint()
             paint_mono();
         }
         break;
-    case STEREO_ANAGLYPH_GREEN_MAGENTA:
+    case jfrc::STEREO_ANAGLYPH_GREEN_MAGENTA:
         {
             AnaglyphGreenMagentaEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
             paint_mono();
@@ -1381,7 +1501,7 @@ void RendererNeuronAnnotator::paint()
             paint_mono();
         }
         break;
-    case STEREO_QUAD_BUFFERED:
+    case jfrc::STEREO_QUAD_BUFFERED:
         {
             QuadBufferView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
             paint_mono();
@@ -1391,8 +1511,8 @@ void RendererNeuronAnnotator::paint()
             paint_mono();
         }
         break;
-    case STEREO_ROW_INTERLEAVED:
-    case STEREO_COLUMN_INTERLEAVED:
+    case jfrc::STEREO_ROW_INTERLEAVED:
+    case jfrc::STEREO_COLUMN_INTERLEAVED:
         {
             {
                 RowInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
@@ -1406,7 +1526,7 @@ void RendererNeuronAnnotator::paint()
             }
             break;
         }    
-    case STEREO_CHECKER_INTERLEAVED:
+    case jfrc::STEREO_CHECKER_INTERLEAVED:
         {
             GLubyte* stipple = checkStipple0;
             // qDebug() << screenRowParity << screenColumnParity;
@@ -1437,7 +1557,8 @@ void RendererNeuronAnnotator::paint()
 void RendererNeuronAnnotator::renderVol()
 {
     // Don't render unless we have some sort of texture assigned
-    if ( (NULL == tex3D) && (NULL == Ztex_list) )
+    // tex3D is not a pointer, but a texture id
+    if ( (0 == tex3D) && (NULL == Ztex_list) )
         return;
     Renderer_gl1::renderVol();
 }

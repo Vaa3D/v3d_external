@@ -139,15 +139,15 @@ bool VolumeTexture::Reader::uploadColorMapTextureToVideoCardGL() const
     return d.constData()->uploadColorMapTextureToVideoCardGL();
 }
 
-const GLuint* VolumeTexture::Reader::Xtex_list() const {
+const void* VolumeTexture::Reader::Xtex_list() const {
     return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::X);
 }
 
-const GLuint* VolumeTexture::Reader::Ytex_list() const {
+const void* VolumeTexture::Reader::Ytex_list() const {
     return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::Y);
 }
 
-const GLuint* VolumeTexture::Reader::Ztex_list() const {
+const void* VolumeTexture::Reader::Ztex_list() const {
     return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::Z);
 }
 

@@ -7,7 +7,6 @@
 #include "../DataFlowModel.h"
 #include "Dimension.h"
 #include <QObject>
-#include "../../3drenderer/GLee_r.h"
 #include <vector>
 
 namespace jfrc {
@@ -53,9 +52,9 @@ public:
         bool uploadVolumeTexturesToVideoCardGL() const; // This one could take some time
         bool uploadNeuronVisibilityTextureToVideoCardGL() const;
         bool uploadColorMapTextureToVideoCardGL() const;
-        const GLuint* Xtex_list() const;
-        const GLuint* Ytex_list() const;
-        const GLuint* Ztex_list() const;
+        const void* Xtex_list() const;
+        const void* Ytex_list() const;
+        const void* Ztex_list() const;
     };
 
 protected:

@@ -5,6 +5,7 @@
 
 #include "../utility/ImageLoader.h"
 #include "../utility/loadV3dFFMpeg.h"
+#include "../utility/MpegTexture.h"
 
 using namespace std;
 
@@ -108,6 +109,7 @@ NaVolumeData::NaVolumeData()
     , neuronMaskProxy(emptyImage)
     , referenceImageProxy(emptyImage)
     , currentProgress(0)
+    , mpegTexture(NULL)
 {
 }
 
@@ -116,6 +118,38 @@ NaVolumeData::~NaVolumeData()
     bAbortWrite = true;
     Writer volumeWriter(*this); // Wait for readers to finish before deleting
     volumeWriter.clearImageData();
+}
+
+void NaVolumeData::setTextureInput(MpegTexture* texture)
+{
+    mpegTexture = texture;
+}
+
+bool NaVolumeData::loadReferenceFromTexture()
+{
+    // TODO
+    return false;
+}
+
+bool NaVolumeData::loadVolumeFromTexture()
+{
+    if (NULL == mpegTexture) {
+        emit progressAborted("Volume texture not found");
+        return false;
+    }
+    bool bSucceeded = false;
+    emit progressMessageChanged("Copying volume from 3D texture"); // emit outside of lock block
+    {
+        Writer writer(*this);
+        if (writer.loadVolumeFromTexture(mpegTexture))
+            bSucceeded = true;
+    }
+
+    if (bSucceeded)
+        emit channelsLoaded(3);
+    else
+        emit progressAborted("Volume load failed");
+    return bSucceeded;
 }
 
 /* slot */
@@ -581,6 +615,12 @@ bool NaVolumeData::Writer::loadOneChannel(QString fileName, int channel_index) /
 bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
 {
     assert(false); // TODO
+    return false;
+}
+
+bool NaVolumeData::Writer::loadVolumeFromTexture(MpegTexture* texture)
+{
+    // TODO
     return false;
 }
 
