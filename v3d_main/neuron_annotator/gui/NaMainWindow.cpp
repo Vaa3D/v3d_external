@@ -99,6 +99,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui.setupUi(this);
     setAcceptDrops(true);
 
+    // Z value comes from camera model
+    qRegisterMetaType<Vector3D>("Vector3D");
+
     // hide neuron gallery until there are neurons to show
     ui.mipsFrame->setVisible(false);
 
@@ -545,17 +548,14 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
 {
 #ifdef USE_FFMPEG
-    // TODO - move data flow model construction upstream
-    deleteDataFlowModel();
-    DataFlowModel* dfm = new DataFlowModel();
-    setDataFlowModel(*dfm);
+    createNewDataFlowModel();
 
     // Hijack this method to load a sequence of volumes
     QString dirName = getDataDirectoryPathWithDialog();
     if (dirName.isEmpty()) return;
     QDir dir(dirName);
 
-    Fast3DTexture* mpegTexture = &dfm->getFast3DTexture();
+    Fast3DTexture* mpegTexture = &dataFlowModel->getFast3DTexture();
     mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2.mp4"),
                              BlockScaler::CHANNEL_RGB);
     mpegTexture->queueVolume(dir.filePath("Reference2.mp4"),
@@ -569,11 +569,11 @@ void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
 
     mpegTexture->loadNextVolume();
 
-    dfm->getDataColorModel().initializeRgba32();
-    dfm->getSlow3DColorModel().initializeRgba32();
+    dataFlowModel->getDataColorModel().initializeRgba32();
+    dataFlowModel->getSlow3DColorModel().initializeRgba32();
     // Apply gamma bias already applied to input images
-    dfm->getSlow3DColorModel().setSharedGamma(0.46);
-    dfm->getSlow3DColorModel().setReferenceGamma(0.46);
+    dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
+    dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
 #endif
 }
 
@@ -734,8 +734,7 @@ void NaMainWindow::loadSingleStack(QString fileName, bool useVaa3dClassic)
     {
         setViewMode(VIEW_SINGLE_STACK);
         onDataLoadStarted();
-        DataFlowModel* dfm = new DataFlowModel();
-        setDataFlowModel(*dfm);
+        createNewDataFlowModel();
         emit singleStackLoadRequested(fileName);
     }
 }
@@ -1210,7 +1209,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
 
     // std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
 
-    if (!deleteDataFlowModel()) {
+    if (! tearDownOldDataFlowModel()) {
         QMessageBox::warning(this, tr("Could not close previous Annotation Session"),
                      "Error saving previous session and/or clearing memory - please exit application");
                  return;
@@ -1370,18 +1369,68 @@ void NaMainWindow::on_actionScreenShot_triggered() {
 
 }
 
-void NaMainWindow::setDataFlowModel(DataFlowModel& dataFlowModelParam)
+// June 27, 2012 modify to accept "NULL" during data flow replacement
+void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
 {
-    if (dataFlowModel == &dataFlowModelParam)
+    if (dataFlowModel == dataFlowModelParam)
         return; // no change
-    if (NULL != dataFlowModel)
-        deleteDataFlowModel();
-    dataFlowModel = &dataFlowModelParam;
-    ui.v3dr_glwidget->setDataFlowModel(*dataFlowModel);
-    ui.naLargeMIPWidget->setDataFlowModel(*dataFlowModel);
-    ui.naZStackWidget->setDataFlowModel(*dataFlowModel);
-    ui.fragmentGalleryWidget->setDataFlowModel(*dataFlowModel);
-    neuronSelector.setDataFlowModel(*dataFlowModel);
+
+    if ( (dataFlowModelParam != NULL) // we are not currently tearing down
+      && (dataFlowModel != NULL) ) // there is another different model in existence
+    {
+        qDebug() << "WARNING: setDataFlowModel() should not be tearing down old models" << __FILE__ << __LINE__;
+        tearDownOldDataFlowModel();
+    }
+
+    dataFlowModel = dataFlowModelParam;
+    ui.v3dr_glwidget->setDataFlowModel(dataFlowModel);
+    ui.naLargeMIPWidget->setDataFlowModel(dataFlowModel);
+    ui.naZStackWidget->setDataFlowModel(dataFlowModel);
+    ui.fragmentGalleryWidget->setDataFlowModel(dataFlowModel);
+    neuronSelector.setDataFlowModel(dataFlowModel);
+
+    // No connecting if the model is NULL
+    if (NULL == dataFlowModel)
+    {
+        ui.naLargeMIPWidget->setMipMergedData(NULL);
+        return;
+    }
+
+    // was in loadAnnotationSessionFromDirectory June 27, 2012
+    if (dynamicRangeTool)
+        dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
+
+    // Connect mip viewer to data flow model
+    ui.naLargeMIPWidget->setMipMergedData(&dataFlowModel->getMipMergedData());
+
+    connectContextMenus(dataFlowModel->getNeuronSelectionModel());
+
+    connect(dataFlowModel, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
+            ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
+
+    connect(&dataFlowModel->getVolumeData(), SIGNAL(channelsLoaded(int)),
+            this, SLOT(processUpdatedVolumeData()));
+
+    // Both mip images and selection model need to be in place to update gallery
+    connect(&dataFlowModel->getGalleryMipImages(), SIGNAL(dataChanged()),
+            this, SLOT(updateGalleries()));
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
+            this, SLOT(initializeGalleries()));
+
+    // Z value comes from camera model
+    connect(&sharedCameraModel, SIGNAL(focusChanged(Vector3D)),
+            &dataFlowModel->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
+
+    connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
+            &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
+
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
+            ui.annotationFrame, SLOT(deselectNeurons()));
+    connect(ui.annotationFrame, SIGNAL(neuronSelected(int)),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+    connect(ui.annotationFrame, SIGNAL(neuronsDeselected()),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
+
 
     // Progress if NaVolumeData file load
     // TODO - this is a lot of connection boilerplate code.  This should be abstracted into a single call or specialized ProgressManager class.
@@ -1416,45 +1465,39 @@ void NaMainWindow::setDataFlowModel(DataFlowModel& dataFlowModelParam)
 
 }
 
+bool NaMainWindow::tearDownOldDataFlowModel()
+{
+    if (NULL == dataFlowModel)
+        return true;
+
+    // TODO - orderly shut down of old data flow model
+    DataFlowModel* dfm = dataFlowModel; // save pointer
+    // TODO - make sure clients respect setting to null
+    // TODO - make sure this does not yet delete dataFlowModel
+    setDataFlowModel(NULL);
+    // TODO - acquire write locks to make sure all clients are done reading
+    { // especially NaVolumeData
+        NaVolumeData::Writer volumeWriter(dfm->getVolumeData());
+    }
+    delete dfm;
+    return true;
+}
+
+bool NaMainWindow::createNewDataFlowModel()
+{
+    if (NULL != dataFlowModel) {
+        bool result = tearDownOldDataFlowModel();
+        if (!result)
+            return false;
+    }
+    DataFlowModel* dfm = new DataFlowModel();
+    setDataFlowModel(dfm);
+    return true;
+}
+
 bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 {
-    assert(! dataFlowModel);
-    DataFlowModel* dfm = new DataFlowModel();
-
-    // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
-    setDataFlowModel(*dfm);
-
-    connectContextMenus(dataFlowModel->getNeuronSelectionModel());
-    if (dynamicRangeTool)
-        dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
-
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
-            this, SLOT(processUpdatedVolumeData()));
-
-    // Both mip images and selection model need to be in place to update gallery
-    connect(&dataFlowModel->getGalleryMipImages(), SIGNAL(dataChanged()),
-            this, SLOT(updateGalleries()));
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
-            this, SLOT(initializeGalleries()));
-
-    // Z value comes from camera model
-    qRegisterMetaType<Vector3D>("Vector3D");
-    connect(&sharedCameraModel, SIGNAL(focusChanged(Vector3D)),
-            &dataFlowModel->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
-    ui.naZStackWidget->setZSliceColors(&dataFlowModel->getZSliceColors());
-    ui.naZStackWidget->setVolumeData(&dataFlowModel->getVolumeData());
-    connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
-            &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
-
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
-            ui.annotationFrame, SLOT(deselectNeurons()));
-    connect(ui.annotationFrame, SIGNAL(neuronSelected(int)),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
-    connect(ui.annotationFrame, SIGNAL(neuronsDeselected()),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
-
-    // Connect mip viewer to data flow model
-    ui.naLargeMIPWidget->setMipMergedData(dataFlowModel->getMipMergedData());
+    createNewDataFlowModel();
 
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
@@ -1511,32 +1554,13 @@ void NaMainWindow::setTitle(QString title) {
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(title));
 }
 
+/* slot */
 void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataChanged() signal
 {
     onDataLoadFinished();
     // TODO -- install separate listeners for dataChanged() in the various display widgets
 
     dataFlowModel->loadLsmMetadata();
-
-    // good
-    // ui.v3dr_glwidget->onVolumeDataChanged();
-
-/*
-    QDir imageInputDirectory = dataFlowModel->getMultiColorImageStackNode()->getImageDir();
-
-    // At this point it should be reasonable to set the window title
-    QString lsmName("Unknown original image");
-    QFile lsmFilePathsFile(QString("%1/lsmFilePaths.txt").arg(imageInputDirectory.absolutePath()));
-    if (lsmFilePathsFile.exists()) {
-        if (lsmFilePathsFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            lsmName = lsmFilePathsFile.readLine();
-            lsmFilePathsFile.close();
-            lsmName = lsmName.trimmed(); // elide carriage return
-        }
-    }
-    QFileInfo lsmFileInfo(lsmName);
-    setTitle(lsmFileInfo.fileName())
-*/;
 
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
@@ -1575,37 +1599,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.ZcmaxSlider->setRange(0, imgProxy.sz-1);
         ui.ZcmaxSlider->setValue(imgProxy.sz-1);
     } // release lock
-
-    // show selected neuron
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(showFirstSelectedNeuron()));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
-
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(showAllNeurons()));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
-            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
-
-    // connect(dataFlowModel, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
-
-    connect(dataFlowModel, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
-            ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
-
-    return;
-}
-
-bool NaMainWindow::deleteDataFlowModel() {
-    if (dataFlowModel!=0) {
-        // dataFlowModel->save();
-        delete dataFlowModel;
-        dataFlowModel = NULL;
-    }
-    return true;
 }
 
 DataFlowModel* NaMainWindow::getDataFlowModel() const {

@@ -229,9 +229,14 @@ void FragmentGalleryWidget::updateSortTables()
     repaint();
 }
 
-void FragmentGalleryWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
+void FragmentGalleryWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 {
-    neuronFragmentData = &dataFlowModelParam.getNeuronFragmentData();
+    if (NULL == dataFlowModelParam)
+    {
+        neuronFragmentData = NULL;
+        return;
+    }
+    neuronFragmentData = &dataFlowModelParam->getNeuronFragmentData();
     connect(neuronFragmentData, SIGNAL(dataChanged()),
             this, SLOT(updateSortTables()));
 }

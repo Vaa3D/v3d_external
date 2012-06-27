@@ -49,6 +49,7 @@ class NaVolumeData : public NaLockableData
 public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
+    void setTextureInput(Fast3DTexture* texture);
 
 signals:
     void referenceLoaded();
@@ -71,7 +72,6 @@ protected slots:
     bool loadNeuronMask(QString fileName);
 
     // TODO
-    void setTextureInput(Fast3DTexture* texture);
     bool loadReferenceFromTexture();
     bool loadVolumeFromTexture();
 
@@ -157,7 +157,7 @@ public:
         int  loadChannels(QString fileName); // includes loading general volumes
         bool loadNeuronMask(QString fileName);
 
-        bool loadVolumeFromTexture(Fast3DTexture* texture);
+        bool loadVolumeFromTexture(const Fast3DTexture* texture);
 
     private:
         NaVolumeData * m_data;

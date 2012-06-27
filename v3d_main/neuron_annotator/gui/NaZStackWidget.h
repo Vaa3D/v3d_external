@@ -64,6 +64,7 @@ public:
     QPoint viewportXYToImageXY(const QPoint& vp);
     QPointF imageXYToViewportXY(float ix, float iy);
     void recordColorChannelROIPos();
+    void setDataFlowModel(DataFlowModel* dataFlowModel);
 
 public slots:
     void do_HDRfilter();

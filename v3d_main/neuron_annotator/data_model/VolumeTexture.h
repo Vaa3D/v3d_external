@@ -21,7 +21,7 @@ class VolumeTexture : public NaSharedDataModel<PrivateVolumeTexture>
 public:
     VolumeTexture();
     bool initializeGL();
-    void setDataFlowModel(const DataFlowModel& dataFlowModelParam);
+    void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
 
 signals:
     // When textures change, they must be uploaded in the main/OpenGL thread

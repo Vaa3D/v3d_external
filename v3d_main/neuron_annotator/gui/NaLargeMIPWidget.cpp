@@ -42,9 +42,13 @@ NaLargeMIPWidget::~NaLargeMIPWidget()
 {
 }
 
-void NaLargeMIPWidget::setMipMergedData(const MipMergedData& mipMergedDataParam)
+void NaLargeMIPWidget::setMipMergedData(const MipMergedData* mipMergedDataParam)
 {
-    mipMergedData = &mipMergedDataParam;
+    if (mipMergedData == mipMergedDataParam)
+        return; // redundant
+    mipMergedData = mipMergedDataParam;
+    if (NULL == mipMergedData)
+        return;
     connect(mipMergedData, SIGNAL(dataChanged()),
             this, SLOT(initializePixmap()));
 }

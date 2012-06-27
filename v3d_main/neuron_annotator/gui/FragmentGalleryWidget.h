@@ -29,7 +29,7 @@ public:
     void appendFragment(GalleryButton * button);
     virtual void wheelEvent(QWheelEvent *);
     virtual void resizeEvent(QResizeEvent *);
-    void setDataFlowModel(const DataFlowModel&);
+    void setDataFlowModel(const DataFlowModel*);
     void updateButtonsGeometry();
 
 signals:

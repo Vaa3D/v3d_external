@@ -19,7 +19,7 @@ public:
 
 public:
     int getIndexSelectedNeuron(); // returns index of neuron at selected position.  sets "index" member.
-    void setDataFlowModel(const DataFlowModel&);
+    void setDataFlowModel(const DataFlowModel*);
 
     void getCurIndexNeuronBoundary(); // populates curNeuronBDxx members
     bool inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z);

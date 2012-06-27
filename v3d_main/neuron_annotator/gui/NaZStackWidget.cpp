@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include "../data_model/ZSliceColors.h"
+#include "../DataFlowModel.h"
 
 using namespace std;
 
@@ -60,6 +61,24 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
 }
 
 NaZStackWidget::~NaZStackWidget() {}
+
+void NaZStackWidget::setDataFlowModel(DataFlowModel* dataFlowModelParam)
+{
+    if (dataFlowModel == dataFlowModelParam)
+        return;
+
+    NaViewer::setDataFlowModel(dataFlowModelParam);
+
+    if (NULL == dataFlowModel)
+    {
+        setZSliceColors(NULL);
+        setVolumeData(NULL);
+        return;
+    }
+
+    setZSliceColors(&dataFlowModel->getZSliceColors());
+    setVolumeData(&dataFlowModel->getVolumeData());
+}
 
 void NaZStackWidget::setContextMenus(QMenu* viewerMenuParam, NeuronContextMenu* neuronMenuParam)
 {

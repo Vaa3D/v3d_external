@@ -30,7 +30,7 @@ public:
     int neuronAt(const QPoint& p) const;
     bool saveImage(QString filename);
     void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
-    void setMipMergedData(const MipMergedData& mipMergedDataParam);
+    void setMipMergedData(const MipMergedData* mipMergedDataParam);
 
 signals:
     // message intended for main window status area

@@ -40,7 +40,7 @@ public:
     virtual void keyReleaseEvent(QKeyEvent *e);
     virtual void resizeEvent(QResizeEvent * event);
     virtual void moveEvent(QMoveEvent * event);
-    virtual void setDataFlowModel(const DataFlowModel&);
+    virtual void setDataFlowModel(const DataFlowModel*);
     void resetVolumeBoundary();
     virtual RendererNeuronAnnotator* getRendererNa();
     virtual const RendererNeuronAnnotator* getRendererNa() const;

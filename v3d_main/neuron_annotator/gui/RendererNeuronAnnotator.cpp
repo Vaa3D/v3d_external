@@ -112,6 +112,7 @@ bool RendererNeuronAnnotator::upload3DVolumeTexture(int w, int h, int d, void* t
         GLenum err = glGetError();
         if (err != GL_NO_ERROR) {
             qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            glPopAttrib();
             return false;
         }
     }
@@ -932,23 +933,10 @@ void RendererNeuronAnnotator::initializeDefaultTextures()
     }
 
     // 3D volume texture in unit 0 set to all black
-    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
     {
-        glActiveTextureARB(GL_TEXTURE0_ARB);
-        glEnable(GL_TEXTURE_3D);
-        glBindTexture(GL_TEXTURE_3D, defaultTextureIds[0]);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
         std::vector<uint32_t> buf(5*5*5, 0);
-        glTexImage3D(GL_TEXTURE_3D,
-                     0, ///< mipmap level; zero means base level
-                     GL_RGBA8, ///< texture format, in bytes per pixel
-                     5, 5, 5,
-                     0, // border
-                     GL_BGRA, // image format
-                     GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-                     (GLvoid*)&buf[0]);
+        upload3DVolumeTexture(5,5,5,&buf[0]);
     }
-    glPopAttrib();
 
     // 2D colormap texture maps colors to themselves
     glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);

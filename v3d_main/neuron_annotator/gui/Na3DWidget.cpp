@@ -874,6 +874,8 @@ void Na3DWidget::updateDefaultScale()
 {
     float screenWidth = width();
     float screenHeight = height();
+    if (screenWidth < 1) return;
+    if (screenHeight < 1) return;
 
     if (! dataFlowModel) return;
     NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
@@ -882,8 +884,6 @@ void Na3DWidget::updateDefaultScale()
     float objectWidth = volumeProxy.sx;
     float objectHeight = volumeProxy.sy;
 
-    if (screenWidth < 1) return;
-    if (screenHeight < 1) return;
     if (objectWidth < 1) return;
     if (objectHeight < 1) return;
     float scaleX = screenWidth / objectWidth;
@@ -1077,7 +1077,9 @@ void Na3DWidget::choiceRenderer()
         updateScreenPosition();
 
         // Is this too early to upload default textures?
-        getRendererNa()->initializeDefaultTextures();
+        // more like too LATE.  Initialize should occur before new
+        // data flow model load.
+        // getRendererNa()->initializeDefaultTextures();
     }
 }
 
@@ -1210,23 +1212,43 @@ void Na3DWidget::paintGL()
 }
 
 /* virtual */
-void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
+void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 {
     NaViewer::setDataFlowModel(dataFlowModelParam);
 
-    connect(this, SIGNAL(neuronClearAll()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearAllNeurons()));
-    connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearSelection()));
-    connect(this, SIGNAL(neuronIndexChanged(int)), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
-
-    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
-    //         this, SLOT(onNeuronSelectionChanged()));
     volumeTexture.setDataFlowModel(dataFlowModelParam);
-    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(neuronVisibilityChanged(int,bool)),
-    //         this, SLOT(toggleNeuronDisplay(int,bool)));
+
+    // No connecting if it's NULL
+    if (dataFlowModel == NULL) {
+        incrementalDataColorModel = NULL;
+        return;
+    }
+
+    incrementalDataColorModel = &dataFlowModel->getFast3DColorModel();
+
+    connect(this, SIGNAL(neuronClearAll()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
+    connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
+    connect(this, SIGNAL(neuronIndexChanged(int)), &dataFlowModel->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+
     // Fast-but-approximate color update
-    incrementalDataColorModel = &dataFlowModelParam.getFast3DColorModel();
     connect(incrementalDataColorModel, SIGNAL(dataChanged()),
             this, SLOT(updateIncrementalColors()));
+
+    // show selected neuron
+    connect(this, SIGNAL(neuronShown(const QList<int>)),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showFirstSelectedNeuron()));
+    connect(this, SIGNAL(neuronShown(const QList<int>)),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
+    connect(this, SIGNAL(neuronShown(const QList<int>)),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
+
+    connect(this, SIGNAL(neuronShownAll(const QList<int>)),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showAllNeurons()));
+    connect(this, SIGNAL(neuronShownAll(const QList<int>)),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
+    connect(this, SIGNAL(neuronShownAll(const QList<int>)),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
+
 
 #ifdef USE_FFMPEG
     connect(&dataFlowModel->getFast3DTexture(), SIGNAL(volumeUploadRequested(int,int,int,void*)),

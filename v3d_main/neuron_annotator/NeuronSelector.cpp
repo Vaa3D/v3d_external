@@ -227,9 +227,11 @@ bool NeuronSelector::inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z)
 }
 
 //
-void NeuronSelector::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
+void NeuronSelector::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 {
-    dataFlowModel = &dataFlowModelParam;
+    dataFlowModel = dataFlowModelParam;
+    if (NULL == dataFlowModel)
+        return; // no connections possible
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
             this, SLOT(onSelectionModelChanged()));
     connect(this, SIGNAL(neuronSelected(int)),

@@ -33,8 +33,8 @@ void NaViewer::decoupleCameraModel(CameraModel* externalCamera)
 }
 
 /* virtual */
-void NaViewer::setDataFlowModel(const DataFlowModel& dataFlowModelParam) {
-       this->dataFlowModel = &dataFlowModelParam;
+void NaViewer::setDataFlowModel(const DataFlowModel* dataFlowModelParam) {
+       this->dataFlowModel = dataFlowModelParam;
 }
 
 void NaViewer::wheelZoom(double delta)

@@ -120,6 +120,7 @@ signals:
     void loadRequested(QString fileName);
     void volumeUploadRequested(int w, int h, int d, void* texture_data);
     void headerLoaded(int, int, int);
+    void volumeLoadSequenceCompleted();
 
 public slots:
     void onHeaderLoaded(int, int, int);
@@ -137,11 +138,14 @@ protected slots:
 protected:
     void deleteData();
 
+public:
+    GLsizei width, height, depth;
+    uint8_t * texture_data; // z*y*x*BGRA, ready for glTexImage3D()
+
+protected:
     QTime timer; // for performance testing
     QList<QFutureWatcher<void>* > blockScaleWatchers;
     int completedBlocks;
-    GLsizei width, height, depth;
-    uint8_t * texture_data; // z*y*x*BGRA, ready for glTexImage3D()
     MpegLoader mpegLoader;
     QList<BlockScaler*> scalers;
     BlockScaler::Channel currentLoadChannel;

@@ -33,6 +33,10 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
+
+    volumeData.setTextureInput(&fast3DTexture);
+    connect(&fast3DTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &volumeData, SLOT(loadVolumeFromTexture()));
 }
 
 DataFlowModel::~DataFlowModel()

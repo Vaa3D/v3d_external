@@ -352,7 +352,11 @@ void Fast3DTexture::blockScaleFinished()
     if (completedBlocks >= Fast3DTexture::numScalingThreads) {
         completedBlocks = 0;
         qDebug() << "Total load time =" << timer.elapsed()/1000.0 << "seconds";
+        // send intermediate result to graphics card
         emit volumeUploadRequested(width, height, depth, texture_data);
+        // send final result to other viewers
+        if (volumeQueue.size() < 1)
+            emit volumeLoadSequenceCompleted();
     }
 }
 

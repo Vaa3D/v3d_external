@@ -282,6 +282,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
     emit progressCompleted();
     // qDebug() << "emitting NaVolumeData::dataChanged" << __FILE__ << __LINE__;
     emit dataChanged();
+    emit channelsLoaded(originalImageProxy.sc);
 }
 
 /* slot */
@@ -618,10 +619,66 @@ bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
     return false;
 }
 
-bool NaVolumeData::Writer::loadVolumeFromTexture(Fast3DTexture* texture)
+bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
 {
     // TODO
-    return false;
+    qDebug() << "NaVolumeData::Writer::loadVolumeFromTexture()"
+            << __FILE__ << __LINE__;
+    if (NULL == texture)
+        return false;
+    {
+        QTime stopwatch;
+        stopwatch.start();
+        Fast3DTexture::Reader textureReader(*texture); // acquire read lock
+        size_t sx = texture->width;
+        size_t sy = texture->height;
+        size_t sz = texture->depth;
+        My4DImage* volImg = new My4DImage();
+        volImg->createImage(sx, sy, sz,
+                3, // RGB
+                V3D_UINT8); // 1 => 8 bits per value
+        Image4DProxy<My4DImage> volProxy(volImg);
+        My4DImage* refImg = new My4DImage();
+        refImg->createImage(sx, sy, sz,
+                1,
+                V3D_UINT8);
+        Image4DProxy<My4DImage> refProxy(refImg);
+        // TODO - perform multithreaded copy in z slabs
+        // Precomputing these offsets speed debug mode from
+        // 7 seconds for loop to 1.1 seconds for loop
+        uint8_t* red_offset = volImg->getRawData() + 0 * sx * sy * sz;
+        uint8_t* green_offset = volImg->getRawData() + 1 * sx * sy * sz;
+        uint8_t* blue_offset = volImg->getRawData() + 2 * sx * sy * sz;
+        uint8_t* nc82_offset = refImg->getRawData() + 0 * sx * sy * sz;
+        for (int z = 0; z < sz; ++z) {
+            const uint8_t* z_offset1 = texture->texture_data + z * sx * sy * 4;
+            uint8_t* red_z_offset = red_offset + z * sx * sy * 1;
+            uint8_t* green_z_offset = green_offset + z * sx * sy * 1;
+            uint8_t* blue_z_offset = blue_offset + z * sx * sy * 1;
+            uint8_t* nc82_z_offset = nc82_offset + z * sx * sy * 1;
+            for (int y = 0; y < sy; ++y) {
+                const uint8_t* y_offset1 = z_offset1 + y * sx * 4;
+                uint8_t* red = red_z_offset + y * sx * 1;
+                uint8_t* green = green_z_offset + y * sx * 1;
+                uint8_t* blue = blue_z_offset + y * sx * 1;
+                uint8_t* nc82 = nc82_z_offset + y * sx * 1;
+                for (int x = 0; x < sx; ++x) {
+                    const uint8_t* rgba_x = y_offset1 + x * 4;
+                    red[x] = rgba_x[0];
+                    green[x] = rgba_x[1];
+                    blue[x] = rgba_x[2];
+                    nc82[x] = rgba_x[3];
+                }
+            }
+        }
+        qDebug() << "Copying texture took" << stopwatch.elapsed() << "milliseconds";
+        stopwatch.restart();
+        setSingleImageVolume(volImg);
+        qDebug() << "setSingleImageVolume took" << stopwatch.elapsed() << "milliseconds";
+    } // release read lock
+    // TODO - copy RGBA to data and reference in multiple threads
+
+    return true;
 }
 
 

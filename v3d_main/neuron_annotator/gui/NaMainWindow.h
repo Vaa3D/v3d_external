@@ -87,7 +87,8 @@ public:
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     virtual void keyPressEvent(QKeyEvent *e);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
-    bool deleteDataFlowModel();
+    bool tearDownOldDataFlowModel();
+    bool createNewDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
     QString getStackPathWithDialog();
     QString getDataDirectoryPathWithDialog();
@@ -156,7 +157,7 @@ protected slots:
     void toggleCustomCutMode();
 
 protected:
-    void setDataFlowModel(DataFlowModel& dataFlowModelParam);
+    void setDataFlowModel(DataFlowModel* dataFlowModelParam);
     void initializeContextMenus();
     void initializeStereo3DOptions();
     void connectContextMenus(const NeuronSelectionModel& neuronSelectionModel);

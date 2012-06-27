@@ -18,7 +18,7 @@ public:
     // Methods to support optional linking of zoom, focus, and rotation between viewers
     virtual void synchronizeWithCameraModel(CameraModel* externalCamera);
     virtual void decoupleCameraModel(CameraModel* externalCamera);
-    virtual void setDataFlowModel(const DataFlowModel&);
+    virtual void setDataFlowModel(const DataFlowModel*);
     bool mouseIsDragging() const {return bMouseIsDragging;}
     virtual void showCrosshair(bool b) {bPaintCrosshair = b;}
 
