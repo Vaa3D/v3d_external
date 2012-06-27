@@ -22,9 +22,6 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     shaderTex3D = NULL;
     shaderTex2D = NULL;
 
-    for (int t = 0; t < 4; ++t)
-        defaultTextureIds[t] = 0;
-
     // black background for consistency with other viewers
     RGBA32f bg_color;
     bg_color.r = bg_color.g = bg_color.b = 0.0f;
@@ -72,76 +69,13 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     total_rgbaBuf = rgbaBuf = NULL;
     rgbaBuf_Xzy = NULL;
     rgbaBuf_Yzx = NULL;
-    for (int t = 0; t < 4; ++t) {
-        if (0 != defaultTextureIds[t])
-            glDeleteTextures(1, &defaultTextureIds[t]);
-        defaultTextureIds[t] = 0;
-    }
 }
 
-/* slot */
-bool RendererNeuronAnnotator::upload3DVolumeTexture(int w, int h, int d, void* texture_data)
+void RendererNeuronAnnotator::set3dTextureMode(unsigned int textureId)
 {
-    qDebug() << "RendererNeuronAnnotator::upload3DTexture()" << w << h << d;
-    {
-        // check for previous errors
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            return false;
-        }
-    }
-    if (NULL == texture_data)
-        return false;
-    // Upload volume image as an OpenGL 3D texture
-    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
-    if (0 == defaultTextureIds[0])
-        glGenTextures(1, &defaultTextureIds[0]); // allocate a handle for this texture
-    glEnable(GL_TEXTURE_3D); // we are using a 3D texture
-    glActiveTextureARB(GL_TEXTURE0_ARB); // multitexturing index, because there are other textures
-    glBindTexture(GL_TEXTURE_3D, defaultTextureIds[0]); // make this the current texture
-    // Black/zero beyond edge of texture
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    // Interpolate between texture values
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    {
-        // check for new errors
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            glPopAttrib();
-            return false;
-        }
-    }
-    // qDebug() << width << height << depth << (long)texture_data;
-    // Load the data onto video card
-    glTexImage3D(GL_TEXTURE_3D,
-        0, ///< mipmap level; zero means base level
-        GL_RGBA8, ///< texture format, in bytes per pixel
-        w,
-        h,
-        d,
-        0, // border
-        GL_BGRA, // image format
-        GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-        (GLvoid*)texture_data);
-    glPopAttrib(); // restore OpenGL state
-    {
-        // check for new errors
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            return false;
-        }
-    }
-    setSingleVolumeDimensions(w, h, d);
-    tex3D = defaultTextureIds[0];
+    tex3D = textureId;
     tryTex3D = (tex3D > 0);
     texture_unit0_3D = tryTex3D;
-    return true;
 }
 
 void RendererNeuronAnnotator::setUndoStack(QUndoStack& undoStackParam)
@@ -747,7 +681,7 @@ void RendererNeuronAnnotator::loadVol()
     if (tryTex3D && supported_Tex3D())
     {
         // qDebug() << "Renderer_gl1::loadVol() - creating 3D texture ID\n";
-        glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
+        // glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
     }
     if (!tex3D || tryTexStream !=0) //stream = -1/1/2
     {
@@ -920,95 +854,6 @@ void RendererNeuronAnnotator::cleanVol()
     Renderer_gl1::cleanVol();
 }
 
-/* slot */
-void RendererNeuronAnnotator::initializeDefaultTextures()
-{
-    // (quickly) Set all textures to non-pathological values, including
-    // volume, colormap, neuron visibility, and neuron label
-
-    // Create texture IDs, if necessary
-    for (int t = 0; t < 4; ++t) {
-        if (0 == defaultTextureIds[t])
-            glGenTextures(1, &defaultTextureIds[t]);
-    }
-
-    // 3D volume texture in unit 0 set to all black
-    {
-        std::vector<uint32_t> buf(5*5*5, 0);
-        upload3DVolumeTexture(5,5,5,&buf[0]);
-    }
-
-    // 2D colormap texture maps colors to themselves
-    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
-    {
-        glActiveTextureARB(GL_TEXTURE1_ARB);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, defaultTextureIds[1]);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        std::vector<uint32_t> buf1(256, 0);
-        std::vector< std::vector<uint32_t> > buf2(4, buf1);
-        for (int c = 0; c < 4; ++c) {
-            uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
-            if (3 == c)
-                color_mask = 0x00aaaaaa; // gray for channel 4
-            for (int i = 0; i < 256; ++i) {
-                // 0xAABBGGRR
-                uint32_t alpha_mask = i << 24; // 0xAA000000
-                buf2[c][i] = alpha_mask & color_mask;
-            }
-        }
-        glTexImage2D(GL_TEXTURE_2D, // target
-                        0, // level
-                        GL_RGBA,
-                        256, // width
-                        4,   // height
-                        0, // border
-                        GL_RGBA, // image format
-                        GL_UNSIGNED_BYTE, // image type
-                        &buf2[0][0]);
-    }
-    glPopAttrib();
-
-    // 2D visibility texture maps everything to red
-    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
-    {
-        glActiveTextureARB(GL_TEXTURE2_ARB);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, defaultTextureIds[2]);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        std::vector<uint32_t> buf(5*5, 0x000000ff); // red == visible but not selected
-        glTexImage2D(GL_TEXTURE_2D, // target
-                        0, // level
-                        GL_RGBA, // texture format
-                        5, // width
-                        5, // height
-                        0, // border
-                        GL_RGBA, // image format
-                        GL_UNSIGNED_BYTE, // image type
-                        &buf[0]);
-    }
-    glPopAttrib();
-
-    // 3D neuron label texture all zero == background
-    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
-    {
-        glActiveTextureARB(GL_TEXTURE3_ARB);
-        glEnable(GL_TEXTURE_3D);
-        glBindTexture(GL_TEXTURE_3D, defaultTextureIds[3]);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        std::vector<uint16_t> buf(5*5*5, 0);
-        glTexImage3D(GL_TEXTURE_3D,
-                     0, ///< mipmap level; zero means base level
-                     GL_INTENSITY16, ///< texture format, in bytes per pixel
-                     5, 5, 5,
-                     0, // border
-                     GL_RED, // image format
-                     GL_UNSIGNED_SHORT, // image type
-                     (GLvoid*)&buf[0]);
-    }
-    glPopAttrib();
-
-}
 
 
 // copied from renderer_tex.cpp

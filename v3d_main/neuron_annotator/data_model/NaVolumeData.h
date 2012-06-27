@@ -5,7 +5,9 @@
 #include "../../v3d/v3d_core.h"
 #include "IntensityHistogram.h"
 
+#ifdef USE_FFMPEG
 class Fast3DTexture;
+#endif
 
 // NaVolumeDataLoadableStack used to be an inner class of NaVolumeData,
 // but inner classes cannot be QObjects.
@@ -49,7 +51,9 @@ class NaVolumeData : public NaLockableData
 public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
+#ifdef USE_FFMPEG
     void setTextureInput(Fast3DTexture* texture);
+#endif
 
 signals:
     void referenceLoaded();
@@ -71,9 +75,10 @@ protected slots:
     bool loadOneChannel(QString fileName, int channel_index = 0);
     bool loadNeuronMask(QString fileName);
 
-    // TODO
+#ifdef USE_FFMPEG
     bool loadReferenceFromTexture();
     bool loadVolumeFromTexture();
+#endif
 
 private:
     QString originalImageStackFilePath;
@@ -89,7 +94,9 @@ private:
     std::vector<int> stackLoadProgressValues;
     std::vector<IntensityHistogram> histograms;
     int currentProgress;
+#ifdef USE_FFMPEG
     Fast3DTexture* mpegTexture;
+#endif
 
 public:
     typedef NaVolumeDataLoadableStack LoadableStack;
@@ -157,7 +164,9 @@ public:
         int  loadChannels(QString fileName); // includes loading general volumes
         bool loadNeuronMask(QString fileName);
 
+#ifdef USE_FFMPEG
         bool loadVolumeFromTexture(const Fast3DTexture* texture);
+#endif
 
     private:
         NaVolumeData * m_data;

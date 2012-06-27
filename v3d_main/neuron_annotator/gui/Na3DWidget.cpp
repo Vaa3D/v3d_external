@@ -21,6 +21,10 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , cachedRelativeScale(1.0)
         , stereo3DMode(jfrc::STEREO_OFF)
         , bStereoSwapEyes(false)
+        , defaultVolumeTextureId(0)
+        , defaultColormapTextureId(0)
+        , defaultVisibilityTextureId(0)
+        , defaultLabelTextureId(0)
 {
     if (renderer) {
         delete renderer;
@@ -92,6 +96,14 @@ Na3DWidget::~Na3DWidget()
 {
     delete _idep; _idep = NULL;
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
+    glDeleteTextures(1, &defaultVolumeTextureId);
+    glDeleteTextures(1, &defaultColormapTextureId);
+    glDeleteTextures(1, &defaultVisibilityTextureId);
+    glDeleteTextures(1, &defaultLabelTextureId);
+    defaultVolumeTextureId =
+            defaultColormapTextureId =
+            defaultVisibilityTextureId =
+            defaultLabelTextureId = 0;
 }
 
 /* slot */
@@ -112,17 +124,170 @@ bool Na3DWidget::upload3DVolumeTexture(int w, int h, int d, void* texture_data)
     }
     ra->setSingleVolumeDimensions(w, h, d);
 
-    bool bSucceeded = getRendererNa()->upload3DVolumeTexture(w,h,d,texture_data);
-    doneCurrent();
-    if (bSucceeded) {
-        qDebug() << "Uploading 3D volume texture took"
-                << stopwatch.elapsed()
-                << "milliseconds";
-        emit volume3DUploaded();
-        update();
+    {
+        // check for previous errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            return false;
+        }
     }
-    return bSucceeded;
+    if (NULL == texture_data)
+        return false;
+    // Upload volume image as an OpenGL 3D texture
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
+    if (0 == defaultVolumeTextureId)
+        glGenTextures(1, &defaultVolumeTextureId); // allocate a handle for this texture
+    glEnable(GL_TEXTURE_3D); // we are using a 3D texture
+    glActiveTextureARB(GL_TEXTURE0_ARB); // multitexturing index, because there are other textures
+    glBindTexture(GL_TEXTURE_3D, defaultVolumeTextureId); // make this the current texture
+    // Black/zero beyond edge of texture
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    // Interpolate between texture values
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    {
+        // check for new errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            glPopAttrib();
+            return false;
+        }
+    }
+    // qDebug() << width << height << depth << (long)texture_data;
+    // Load the data onto video card
+    glTexImage3D(GL_TEXTURE_3D,
+        0, ///< mipmap level; zero means base level
+        GL_RGBA8, ///< texture format, in bytes per pixel
+        w,
+        h,
+        d,
+        0, // border
+        GL_BGRA, // image format
+        GL_UNSIGNED_INT_8_8_8_8_REV, // image type
+        (GLvoid*)texture_data);
+    glPopAttrib(); // restore OpenGL state
+    {
+        // check for new errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            return false;
+        }
+    }
+
+    ra->set3dTextureMode(defaultVolumeTextureId);
+
+    ///////////////////////
+
+    doneCurrent();
+
+    qDebug() << "Uploading 3D volume texture took"
+            << stopwatch.elapsed()
+            << "milliseconds";
+    emit volume3DUploaded();
+    update();
+
+    return true;
 }
+
+/* slot */
+void Na3DWidget::initializeDefaultTextures()
+{
+    // (quickly) Set all textures to non-pathological values, including
+    // volume, colormap, neuron visibility, and neuron label
+
+    // Create texture IDs, if necessary
+    if (0 == defaultVolumeTextureId)
+        glGenTextures(1, &defaultVolumeTextureId);
+    if (0 == defaultColormapTextureId)
+        glGenTextures(1, &defaultColormapTextureId);
+    if (0 == defaultVisibilityTextureId)
+        glGenTextures(1, &defaultVisibilityTextureId);
+    if (0 == defaultLabelTextureId)
+        glGenTextures(1, &defaultLabelTextureId);
+
+    // 3D volume texture in unit 0 set to all black
+    {
+        std::vector<uint32_t> buf(5*5*5, 0);
+        upload3DVolumeTexture(5,5,5,&buf[0]);
+    }
+
+    // 2D colormap texture maps colors to themselves
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+    {
+        glActiveTextureARB(GL_TEXTURE1_ARB);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, defaultColormapTextureId);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        std::vector<uint32_t> buf1(256, 0);
+        std::vector< std::vector<uint32_t> > buf2(4, buf1);
+        for (int c = 0; c < 4; ++c) {
+            uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
+            if (3 == c)
+                color_mask = 0x00aaaaaa; // gray for channel 4
+            for (int i = 0; i < 256; ++i) {
+                // 0xAABBGGRR
+                uint32_t alpha_mask = i << 24; // 0xAA000000
+                buf2[c][i] = alpha_mask & color_mask;
+            }
+        }
+        glTexImage2D(GL_TEXTURE_2D, // target
+                        0, // level
+                        GL_RGBA,
+                        256, // width
+                        4,   // height
+                        0, // border
+                        GL_RGBA, // image format
+                        GL_UNSIGNED_BYTE, // image type
+                        &buf2[0][0]);
+    }
+    glPopAttrib();
+
+    // 2D visibility texture maps everything to red
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+    {
+        glActiveTextureARB(GL_TEXTURE2_ARB);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, defaultVisibilityTextureId);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        std::vector<uint32_t> buf(5*5, 0x000000ff); // red == visible but not selected
+        glTexImage2D(GL_TEXTURE_2D, // target
+                        0, // level
+                        GL_RGBA, // texture format
+                        5, // width
+                        5, // height
+                        0, // border
+                        GL_RGBA, // image format
+                        GL_UNSIGNED_BYTE, // image type
+                        &buf[0]);
+    }
+    glPopAttrib();
+
+    // 3D neuron label texture all zero == background
+    glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+    {
+        glActiveTextureARB(GL_TEXTURE3_ARB);
+        glEnable(GL_TEXTURE_3D);
+        glBindTexture(GL_TEXTURE_3D, defaultLabelTextureId);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        std::vector<uint16_t> buf(5*5*5, 0);
+        glTexImage3D(GL_TEXTURE_3D,
+                     0, ///< mipmap level; zero means base level
+                     GL_INTENSITY16, ///< texture format, in bytes per pixel
+                     5, 5, 5,
+                     0, // border
+                     GL_RED, // image format
+                     GL_UNSIGNED_SHORT, // image type
+                     (GLvoid*)&buf[0]);
+    }
+    glPopAttrib();
+
+}
+
 
 /* virtual */
 RendererNeuronAnnotator* Na3DWidget::getRendererNa()
@@ -184,6 +349,7 @@ void Na3DWidget::initializeGL()
         qDebug() << "OpenGL context does not support stereo 3D";
     V3dR_GLWidget::initializeGL();
     volumeTexture.initializeGL();
+    initializeDefaultTextures();
 }
 
 /* slot */

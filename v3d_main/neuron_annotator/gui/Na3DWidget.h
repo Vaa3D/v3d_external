@@ -105,6 +105,7 @@ public slots:
     void clipSlab(); // Apply clip plane to current slab
     void updateScreenPosition(); // for stencil based 3D modes
     bool upload3DVolumeTexture(int w, int h, int d, void* texture_data);
+    void initializeDefaultTextures();
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.
@@ -148,6 +149,13 @@ protected:
     qreal cachedRelativeScale;
     jfrc::Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
+
+    // We use 4 textures in the shader
+    // Some times we want to initialize them to non-pathological values
+    unsigned int defaultVolumeTextureId;
+    unsigned int defaultColormapTextureId;
+    unsigned int defaultVisibilityTextureId;
+    unsigned int defaultLabelTextureId;
 };
 
 #endif // NA3DWIDGET_H

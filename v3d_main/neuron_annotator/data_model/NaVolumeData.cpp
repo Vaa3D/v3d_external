@@ -109,7 +109,9 @@ NaVolumeData::NaVolumeData()
     , neuronMaskProxy(emptyImage)
     , referenceImageProxy(emptyImage)
     , currentProgress(0)
+#ifdef USE_FFMPEG
     , mpegTexture(NULL)
+#endif
 {
 }
 
@@ -120,6 +122,7 @@ NaVolumeData::~NaVolumeData()
     volumeWriter.clearImageData();
 }
 
+#ifdef USE_FFMPEG
 void NaVolumeData::setTextureInput(Fast3DTexture* texture)
 {
     mpegTexture = texture;
@@ -151,6 +154,7 @@ bool NaVolumeData::loadVolumeFromTexture()
         emit progressAborted("Volume load failed");
     return bSucceeded;
 }
+#endif
 
 /* slot */
 void NaVolumeData::setStackLoadProgress(int progressValue, int stackIndex)
@@ -619,6 +623,7 @@ bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
     return false;
 }
 
+#ifdef USE_FFMPEG
 bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
 {
     // TODO
@@ -680,6 +685,7 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
 
     return true;
 }
+#endif
 
 
 //////////////////////////////////

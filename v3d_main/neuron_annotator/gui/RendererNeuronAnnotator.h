@@ -83,7 +83,6 @@ signals:
     void slabThicknessChanged(int);
 
 public slots:
-    void initializeDefaultTextures(); // ensure all 4 textures are non-pathological
     void setAlphaBlending(bool);
     void setStereoMode(int);
     // For use in stencilled display modes
@@ -105,7 +104,7 @@ public slots:
     void setShowCornerAxes(bool b);
     bool setSlabThickness(int); // range 2-1000 voxels
     void clipSlab(const CameraModel& cameraModel); // Apply clip plane to current slab
-    bool upload3DVolumeTexture(int w, int h, int d, void* texture_data);
+    void set3dTextureMode(unsigned int textureId);
 
 protected:
     virtual void shaderTexBegin(bool stream);
@@ -137,7 +136,6 @@ protected:
 
     int slabThickness;
     int slabDepth;
-    unsigned int defaultTextureIds[4];
 };
 
 #endif // RENDERERNEURONANNOTATOR_H
