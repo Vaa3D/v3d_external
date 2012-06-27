@@ -79,10 +79,9 @@ void ZSliceColors::update()
                 if (volumeReader.hasNeuronMask())
                 {
                     int neuronIndex = neuronProxy.value_at(x, y, currentZIndex, 0);
-                    bShowNeuron = selectionReader.getMaskStatusList()[neuronIndex - 1];
                     if (neuronIndex == 0) // background channel
                         bShowNeuron = bShowBackground;
-                    else
+                    else if (selectionReader.getMaskStatusList().size() > neuronIndex)
                         bShowNeuron = selectionReader.getMaskStatusList()[neuronIndex - 1];
                 }
                 for (int c = 0; c < volumeProxy.sc; ++c)

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <stdint.h>
 
 using namespace std;
 
@@ -349,6 +350,7 @@ void Na3DWidget::initializeGL()
         qDebug() << "OpenGL context does not support stereo 3D";
     V3dR_GLWidget::initializeGL();
     volumeTexture.initializeGL();
+    // TODO - will I ever find a use for initializeDefaultTextures?
     initializeDefaultTextures();
 }
 
