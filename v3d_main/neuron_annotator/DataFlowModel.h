@@ -36,11 +36,22 @@ public:
     double getZRatio() const { return zRatio; }
     void setZRatio(double ZRatioParam) { zRatio=ZRatioParam; }
 
-    void setMultiColorImageStackNode(MultiColorImageStackNode* node) {
-        this->multiColorImageStackNode=node;
+    void setMultiColorImageStackNode(MultiColorImageStackNode* node)
+    {
+        if (node == multiColorImageStackNode)
+            return;
+        if (NULL != multiColorImageStackNode)
+            delete multiColorImageStackNode;
+        multiColorImageStackNode = node;
     }
-    void setNeuronAnnotatorResultNode(NeuronAnnotatorResultNode* node) {
-        this->neuronAnnotatorResultNode=node;
+
+    void setNeuronAnnotatorResultNode(NeuronAnnotatorResultNode* node)
+    {
+        if (node == neuronAnnotatorResultNode)
+            return;
+        if (NULL != neuronAnnotatorResultNode)
+            delete neuronAnnotatorResultNode;
+        neuronAnnotatorResultNode = node;
     }
 
     MultiColorImageStackNode* getMultiColorImageStackNode() { return multiColorImageStackNode; }

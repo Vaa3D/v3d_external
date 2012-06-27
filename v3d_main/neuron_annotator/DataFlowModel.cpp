@@ -34,9 +34,11 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
 
+#ifdef USE_FFMPEG
     volumeData.setTextureInput(&fast3DTexture);
     connect(&fast3DTexture, SIGNAL(volumeLoadSequenceCompleted()),
             &volumeData, SLOT(loadVolumeFromTexture()));
+#endif
 }
 
 DataFlowModel::~DataFlowModel()
@@ -49,7 +51,10 @@ DataFlowModel::~DataFlowModel()
     }
 }
 
-bool DataFlowModel::loadLsmMetadata() {
+bool DataFlowModel::loadLsmMetadata()
+{
+    if (NULL == multiColorImageStackNode)
+        return false;
     QStringList lsmMetadataFilepathList=multiColorImageStackNode->getPathsToLsmMetadataFiles();
     if (lsmMetadataFilepathList.size()==0) {
         qDebug() << "DataFlowModel::loadLsmMetadata() received empty list of lsm metadata files";

@@ -59,17 +59,32 @@ void ZSliceColors::update()
         channelData[volumeProxy.sc] = 0.0; // clear reference channel
         const Image4DProxy<My4DImage>& referenceProxy = volumeReader.getReferenceImageProxy();
         const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
-        const bool bShowReference = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
+
+        // Is the reference channel visible?  It depends...
+        bool bShowReference = true;
+        if (selectionReader.getOverlayStatusList().size() > DataFlowModel::REFERENCE_MIP_INDEX)
+             bShowReference = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
+        if (! volumeReader.hasReferenceImage())
+            bShowReference = false;
+
+        bool bShowBackground = true;
+        if (selectionReader.getOverlayStatusList().size() > DataFlowModel::BACKGROUND_MIP_INDEX)
+             bShowBackground = selectionReader.getOverlayStatusList()[DataFlowModel::BACKGROUND_MIP_INDEX];
+
         for (int y = 0; y < volumeProxy.sy; ++y)
             for (int x = 0; x < volumeProxy.sx; ++x)
             {
                 // Investigate visibility of the neuron in this voxel
-                const int neuronIndex = neuronProxy.value_at(x, y, currentZIndex, 0);
-                bool bShowNeuron = false;
-                if (neuronIndex == 0) // background channel
-                    bShowNeuron = selectionReader.getOverlayStatusList()[DataFlowModel::BACKGROUND_MIP_INDEX];
-                else
+                bool bShowNeuron = true;
+                if (volumeReader.hasNeuronMask())
+                {
+                    int neuronIndex = neuronProxy.value_at(x, y, currentZIndex, 0);
                     bShowNeuron = selectionReader.getMaskStatusList()[neuronIndex - 1];
+                    if (neuronIndex == 0) // background channel
+                        bShowNeuron = bShowBackground;
+                    else
+                        bShowNeuron = selectionReader.getMaskStatusList()[neuronIndex - 1];
+                }
                 for (int c = 0; c < volumeProxy.sc; ++c)
                 {
                     if (bShowNeuron)

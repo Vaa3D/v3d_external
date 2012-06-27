@@ -9,7 +9,8 @@ MultiColorImageStackNode::MultiColorImageStackNode(QDir imageDirParam)
     imageDir=imageDirParam;
 }
 
-QStringList MultiColorImageStackNode::getPathsToLsmMetadataFiles() {
+QStringList MultiColorImageStackNode::getPathsToLsmMetadataFiles()
+{
     QStringList metadataPathList;
     QFileInfoList fileInfoList=imageDir.entryInfoList();
     for (int i=0;i<fileInfoList.size();i++) {
