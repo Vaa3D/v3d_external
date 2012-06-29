@@ -139,8 +139,8 @@ bool Na3DWidget::upload3DVolumeTexture(int w, int h, int d, void* texture_data)
     glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
     if (0 == defaultVolumeTextureId)
         glGenTextures(1, &defaultVolumeTextureId); // allocate a handle for this texture
-    glEnable(GL_TEXTURE_3D); // we are using a 3D texture
     glActiveTextureARB(GL_TEXTURE0_ARB); // multitexturing index, because there are other textures
+    glEnable(GL_TEXTURE_3D); // we are using a 3D texture
     glBindTexture(GL_TEXTURE_3D, defaultVolumeTextureId); // make this the current texture
     // Black/zero beyond edge of texture
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
@@ -348,8 +348,8 @@ void Na3DWidget::initializeGL()
     }
     else
         qDebug() << "OpenGL context does not support stereo 3D";
-    V3dR_GLWidget::initializeGL();
     volumeTexture.initializeGL();
+    V3dR_GLWidget::initializeGL();
     // TODO - will I ever find a use for initializeDefaultTextures?
     initializeDefaultTextures();
 }

@@ -38,9 +38,10 @@ public:
     NeuronLabelTexture()
         : textureID(0)
         , textureUnit(GL_TEXTURE3_ARB) // each texture used by a shader might need a separate texture unit
-        , width(0)
-        , height(0)
-        , depth(0)
+        , width(8)
+        , height(8)
+        , depth(8)
+        , bInitialized(false)
     {
         // test data for debugging
         width = height = depth = 8; // 8 works better than 5; it's a multiple of 8
@@ -66,18 +67,22 @@ public:
         GLenum glErr;
         while ((glErr = glGetError()) != GL_NO_ERROR)
             qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        glActiveTextureARB(textureUnit);
-        glEnable(GL_TEXTURE_3D);
-        glGenTextures(1, &textureID);
+        glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
+        {
+            glActiveTextureARB(textureUnit);
+            glEnable(GL_TEXTURE_3D);
+            if (0 == textureID)
+                glGenTextures(1, &textureID);
+        }
+        glPopAttrib();
         if ((glErr = glGetError()) != GL_NO_ERROR)
             qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
         else
             bInitialized = true;
-        glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
         return true;
     }
 
-    NeuronLabelTexture& setValueAt(size_t x, size_t y, size_t z, LabelType neuronIndex)
+    virtual void setValueAt(size_t x, size_t y, size_t z, LabelType neuronIndex)
     {
         size_t offset = x + y * width + z * width * height;
         assert(x >= 0); assert(x < width);
@@ -85,10 +90,9 @@ public:
         assert(z >= 0); assert(z < depth);
         assert(offset < width * height * depth);
         data[offset] = neuronIndex;
-        return *this;
     }
 
-    NeuronLabelTexture& allocateSize(Dimension paddedTextureSize)
+    virtual void allocateSize(Dimension paddedTextureSize)
     {
         width = paddedTextureSize.x();
         height = paddedTextureSize.y();
@@ -96,41 +100,53 @@ public:
         size_t numVoxels = width * height * depth;
         if (data.size() != numVoxels)
             data.assign((size_t)numVoxels, (LabelType)0);
-        return *this;
     }
 
     virtual bool uploadPixels() const
     {
-        if (data.size() < 1) return false;
-        glActiveTextureARB(textureUnit);
-        glBindTexture(GL_TEXTURE_3D, textureID);
-        // I want off-texture position to be zero - meaning background non-neuron classification
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        // GL_NEAREST ensures that we get an actual non-interpolated label value.
-        // Interpolation would be crazy wrong.
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // copy texture from host RAM to GPU device
-        glTexImage3D(GL_TEXTURE_3D, // target
-                        0, // level
-                        GL_INTENSITY16, // texture format
-                        (GLsizei)width,
-                        (GLsizei)height,
-                        (GLsizei)depth,
-                        0, // border
-                        GL_RED, // image format
-                        GL_UNSIGNED_SHORT, // image type
-                        &data.front());
-        bool bSucceeded = true;
-        GLenum glErr;
-        if ((glErr = glGetError()) != GL_NO_ERROR)
-        {
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-            bSucceeded = false;
+        if (! bInitialized) {
+            qDebug() << "Error: call initializeGL() on NeuronLabelTexture before uploadPixels()";
+            return false;
         }
-        glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
+        if (data.size() < 1) return false;
+        GLenum glErr;
+        bool bSucceeded = true;
+        while ((glErr = glGetError()) != GL_NO_ERROR)
+            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
+
+        // glPushAttrib(GL_TEXTURE_BIT);...glPopAttrib(); causes texture binding to be forgotten;
+        GLint previousActiveTextureUnit;
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTextureUnit);
+        {
+            glActiveTextureARB(textureUnit);
+            glBindTexture(GL_TEXTURE_3D, textureID);
+            // I want off-texture position to be zero - meaning background non-neuron classification
+            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+            // GL_NEAREST ensures that we get an actual non-interpolated label value.
+            // Interpolation would be crazy wrong.
+            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            // copy texture from host RAM to GPU device
+            glTexImage3D(GL_TEXTURE_3D, // target
+                         0, // level
+                         GL_INTENSITY16, // texture format
+                         (GLsizei)width,
+                         (GLsizei)height,
+                         (GLsizei)depth,
+                         0, // border
+                         GL_RED, // image format
+                         GL_UNSIGNED_SHORT, // image type
+                         &data.front());
+            if ((glErr = glGetError()) != GL_NO_ERROR)
+            {
+                qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
+                bSucceeded = false;
+            }
+        // } glPopAttrib();
+        }
+        glActiveTextureARB(previousActiveTextureUnit); // restore default
         return bSucceeded;
     }
 
