@@ -113,6 +113,15 @@ NaVolumeData::NaVolumeData()
     , mpegTexture(NULL)
 #endif
 {
+    // Connect specific signals to general ones
+    connect(this, SIGNAL(channelLoaded(int)),
+            this, SIGNAL(dataChanged()));
+    connect(this, SIGNAL(channelsLoaded(int)),
+            this, SIGNAL(dataChanged()));
+    connect(this, SIGNAL(referenceLoaded()),
+            this, SIGNAL(dataChanged()));
+    connect(this, SIGNAL(neuronMaskLoaded()),
+            this, SIGNAL(dataChanged()));
 }
 
 NaVolumeData::~NaVolumeData()
@@ -285,7 +294,6 @@ void NaVolumeData::loadVolumeDataFromFiles()
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() / 1000.0 << "seconds" << __FILE__ << __LINE__;
     emit progressCompleted();
     // qDebug() << "emitting NaVolumeData::dataChanged" << __FILE__ << __LINE__;
-    emit dataChanged();
     emit channelsLoaded(originalImageProxy.sc);
 }
 
@@ -303,7 +311,6 @@ bool NaVolumeData::loadChannels(QString fileName) // includes loading general vo
     } // release lock before emitting
     if (bSucceeded) {
         emit channelsLoaded(channel_count);
-        emit dataChanged();
     }
     else
         emit progressAborted("Data stack load failed");
@@ -322,7 +329,7 @@ bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
     } // release lock before emit
     if (bSucceeded) {
         emit progressCompleted();
-        emit dataChanged();
+        emit channelsLoaded(3);
     }
     else {
         emit progressAborted("Volume load failed");

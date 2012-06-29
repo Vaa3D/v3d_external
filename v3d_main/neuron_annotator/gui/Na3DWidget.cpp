@@ -893,6 +893,7 @@ int Na3DWidget::neuronAt(QPoint pos)
     // getIndexSelectedNeuron();
     int numNeuron = 0;
     // sum of pixels of each neuron mask in the cube
+    if (NULL == dataFlowModel) return neuronIx;
     std::vector<int> sum;
     {
         NeuronSelectionModel::Reader selectionReader(
