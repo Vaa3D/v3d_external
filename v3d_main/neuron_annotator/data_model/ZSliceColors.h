@@ -31,7 +31,6 @@ protected:
     // output
     QImage * image;
 
-
 public:
     class Reader : public BaseReadLocker
     {

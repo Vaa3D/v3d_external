@@ -669,9 +669,9 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
                 uint8_t* nc82 = nc82_z_offset + y * sx * 1;
                 for (int x = 0; x < sx; ++x) {
                     const uint8_t* rgba_x = y_offset1 + x * 4;
-                    red[x] = rgba_x[0];
+                    red[x] = rgba_x[2]; // texture order is BGRA, so swap R/B
                     green[x] = rgba_x[1];
-                    blue[x] = rgba_x[2];
+                    blue[x] = rgba_x[0]; // texture order is BGRA, so swap R/B
                     nc82[x] = rgba_x[3];
                 }
             }

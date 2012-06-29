@@ -142,10 +142,10 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
 
 #ifdef USE_FFMPEG
     ui.actionLoad_movie_as_texture->setVisible(true);
-    ui.actionLoad_texture_into_Reference->setVisible(true);
+    ui.actionLoad_fast_separation_result->setVisible(true);
 #else
     ui.actionLoad_movie_as_texture->setVisible(false);
-    ui.actionLoad_texture_into_Reference->setVisible(false);
+    ui.actionLoad_fast_separation_result->setVisible(false);
 #endif
 
     // visualize compartment map
@@ -545,7 +545,7 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 }
 
 /* slot */
-void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
+void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 {
 #ifdef USE_FFMPEG
     createNewDataFlowModel();
@@ -1684,9 +1684,11 @@ void NaMainWindow::initializeOverlayGallery()
 void NaMainWindow::updateOverlayGallery()
 {
     if (overlayGalleryButtonList.size() != 2) return; // not initialized
+    if (NULL == dataFlowModel) return;
 
     {
         NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+        if (selectionReader.getOverlayStatusList().size() < 2) return;
         if (selectionReader.hasReadLock())
         {
             for (int i = 0; i < 2; ++i)

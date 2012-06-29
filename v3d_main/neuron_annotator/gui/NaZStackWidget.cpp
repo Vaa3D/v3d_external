@@ -62,7 +62,8 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
 
 NaZStackWidget::~NaZStackWidget() {}
 
-void NaZStackWidget::setDataFlowModel(DataFlowModel* dataFlowModelParam)
+/* virtual */
+void NaZStackWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 {
     if (dataFlowModel == dataFlowModelParam)
         return;
@@ -136,8 +137,15 @@ void NaZStackWidget::setZSliceColors(const ZSliceColors * zSliceColorsParam) {
             this, SLOT(updatePixmap()));
 }
 
-void NaZStackWidget::setVolumeData(const NaVolumeData * volumeDataParam) {
+void NaZStackWidget::setVolumeData(const NaVolumeData * volumeDataParam)
+{
+    if (volumeData == volumeDataParam)
+        return; // no change
     volumeData = volumeDataParam;
+    if (NULL == volumeData) {
+        sx = sy = sz = sc = 0;
+        return;
+    }
     connect(volumeData, SIGNAL(dataChanged()),
             this, SLOT(updateVolumeParameters()));
 }
@@ -172,7 +180,9 @@ void NaZStackWidget::updateVolumeParameters()
     sx = volProxy.sx;
     sy = volProxy.sy;
     sz = volProxy.sz;
-    sc = volProxy.sc + 1; // +1, reference channel too
+    sc = volProxy.sc;
+    if (volumeReader.hasReferenceImage())
+        sc += 1;// +1, reference channel too
     min_roi.assign(sc, INF);
     max_roi.assign(sc, -INF);
 }
@@ -419,8 +429,11 @@ int NaZStackWidget::getCurrentBoxSize() {
 void NaZStackWidget::setCurrentZSlice(int slice)
 {
     if (slice < 1) return; // value too small
-    if (slice > sz) return; // value too big
     if (cur_z == slice - 1) return; // no change; ignore
+    // Might want to update volume information just-in-time
+    if ( (sz < 1) && (NULL != volumeData) )
+        updateVolumeParameters();
+    if (slice > sz) return; // value too big
     cur_z = slice - 1;
     // qDebug() << "setting z slice to " << slice;
 
@@ -531,7 +544,8 @@ void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
                         value += QString("%1").arg(val, 4);
                     }
                     if (nC > 1) value += "]";
-                    neuronIx = neuronProxy.value_at(x, y, z, 0) - 1;
+                    if (volumeReader.hasNeuronMask())
+                        neuronIx = neuronProxy.value_at(x, y, z, 0) - 1;
                 }
             }
         }
