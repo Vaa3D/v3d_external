@@ -11,6 +11,7 @@
 #include <QObject>
 #include <vector>
 #include <cassert>
+#include <stdint.h>
 
 namespace jfrc {
 
@@ -27,26 +28,23 @@ namespace jfrc {
 ///  4) neuronLabel - 3D label field containing neuron index at each voxel
 
 
-class NeuronLabelTexture
+template<class DataType>
+class Base3DTexture // basis for both NeuronLabelTexture and NeuronSignalTexture
 {
-
 public:
-    typedef unsigned char uint8;
-    typedef unsigned short uint16;
-    typedef uint16 LabelType;
+    typedef DataType VoxelType;
 
-    NeuronLabelTexture()
+    explicit Base3DTexture(GLenum textureUnitParam=GL_TEXTURE0_ARB)
         : textureID(0)
-        , textureUnit(GL_TEXTURE3_ARB) // each texture used by a shader might need a separate texture unit
+        , textureUnit(textureUnitParam) // each texture used by a shader might need a separate texture unit
         , width(8)
         , height(8)
         , depth(8)
         , bInitialized(false)
     {
-        // test data for debugging
-        width = height = depth = 8; // 8 works better than 5; it's a multiple of 8
         size_t numVoxels = width * height * depth;
-        data.assign((size_t)(numVoxels), (LabelType)0);
+        data.assign((size_t)(numVoxels), (VoxelType)0);
+        // Test pattern
         for (int i = 0; i < width; ++i)
              for (int j = 0; j < height; ++j)
                  for (int k = 0; k < depth; ++k)
@@ -56,40 +54,33 @@ public:
                      assert((ix % 48) >= 0); // number of fragments in realLinkTest + 2
                      data[ix] = (ix % 48);
                  }
-        // data[5] = 1;
-        // data[6] = 2;
-        // data[7] = 3;
     }
 
     virtual bool initializeGL()
     {
-        // clear stale errors
-        GLenum glErr;
-        while ((glErr = glGetError()) != GL_NO_ERROR)
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
+        glPushAttrib(GL_TEXTURE_BIT); // remember previous OpenGL state
         {
             glActiveTextureARB(textureUnit);
             glEnable(GL_TEXTURE_3D);
             if (0 == textureID)
                 glGenTextures(1, &textureID);
+            bInitialized = true;
         }
         glPopAttrib();
-        if ((glErr = glGetError()) != GL_NO_ERROR)
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        else
-            bInitialized = true;
         return true;
     }
 
-    virtual void setValueAt(size_t x, size_t y, size_t z, LabelType neuronIndex)
+    virtual void setValueAt(size_t x, size_t y, size_t z, VoxelType value)
     {
         size_t offset = x + y * width + z * width * height;
         assert(x >= 0); assert(x < width);
         assert(y >= 0); assert(y < height);
         assert(z >= 0); assert(z < depth);
         assert(offset < width * height * depth);
-        data[offset] = neuronIndex;
+        if (value != 0) {
+            int foo = 5;
+        }
+        data[offset] = value;
     }
 
     virtual void allocateSize(Dimension paddedTextureSize)
@@ -99,64 +90,104 @@ public:
         depth = paddedTextureSize.z();
         size_t numVoxels = width * height * depth;
         if (data.size() != numVoxels)
-            data.assign((size_t)numVoxels, (LabelType)0);
+            data.assign((size_t)numVoxels, (VoxelType)0);
     }
 
     virtual bool uploadPixels() const
     {
-        if (! bInitialized) {
-            qDebug() << "Error: call initializeGL() on NeuronLabelTexture before uploadPixels()";
-            return false;
-        }
         if (data.size() < 1) return false;
         GLenum glErr;
         bool bSucceeded = true;
         while ((glErr = glGetError()) != GL_NO_ERROR)
             qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-
-        // glPushAttrib(GL_TEXTURE_BIT);...glPopAttrib(); causes texture binding to be forgotten;
+        // Store active texture unit because glPushAttrib(GL_TEXTURE_BIT);...glPopAttrib(); causes texture binding to be forgotten;
         GLint previousActiveTextureUnit;
         glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTextureUnit);
         {
             glActiveTextureARB(textureUnit);
+            glEnable(GL_TEXTURE_3D);
+            assert(0 != textureID); // run initializeGL() first
             glBindTexture(GL_TEXTURE_3D, textureID);
             // I want off-texture position to be zero - meaning background non-neuron classification
             glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
             glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
             glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-            // GL_NEAREST ensures that we get an actual non-interpolated label value.
-            // Interpolation would be crazy wrong.
-            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            // copy texture from host RAM to GPU device
-            glTexImage3D(GL_TEXTURE_3D, // target
-                         0, // level
-                         GL_INTENSITY16, // texture format
-                         (GLsizei)width,
-                         (GLsizei)height,
-                         (GLsizei)depth,
-                         0, // border
-                         GL_RED, // image format
-                         GL_UNSIGNED_SHORT, // image type
-                         &data.front());
-            if ((glErr = glGetError()) != GL_NO_ERROR)
+            uploadTexture(); // use derived-class-specific method
+            GLenum glErr;
+            while ((glErr = glGetError()) != GL_NO_ERROR)
             {
                 qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
                 bSucceeded = false;
             }
-        // } glPopAttrib();
         }
         glActiveTextureARB(previousActiveTextureUnit); // restore default
         return bSucceeded;
     }
 
-private:
+protected:
+    virtual bool uploadTexture() const = 0;
+
     GLuint textureID;
     GLenum textureUnit;
-    std::vector<LabelType> data;
+    std::vector<VoxelType> data;
     size_t width, height, depth;
     bool bInitialized;
 };
+
+
+class NeuronLabelTexture : public Base3DTexture<uint16_t>
+{
+private:
+    typedef Base3DTexture<uint16_t> super;
+
+public:
+    NeuronLabelTexture() : super(GL_TEXTURE3_ARB) {}
+
+protected:
+    virtual bool uploadTexture() const
+    {
+        // GL_NEAREST ensures that we get an actual non-interpolated label value.
+        // Interpolation would be crazy wrong.
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // copy texture from host RAM to GPU device
+        glTexImage3D(GL_TEXTURE_3D, // target
+                     0, // level
+                     GL_INTENSITY16, // texture format
+                     (GLsizei)width,
+                     (GLsizei)height,
+                     (GLsizei)depth,
+                     0, // border
+                     GL_RED, // image format
+                     GL_UNSIGNED_SHORT, // image type
+                     &data.front());
+    }
+};
+
+
+class NeuronSignalTexture : public Base3DTexture<uint32_t>
+{
+protected:
+    virtual bool uploadTexture() const
+    {
+        // GL_NEAREST ensures that we get an actual non-interpolated label value.
+        // Interpolation would be crazy wrong.
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // copy texture from host RAM to GPU device
+        glTexImage3D(GL_TEXTURE_3D, // target
+                     0, // level
+                     GL_RGBA8, // texture format
+                     (GLsizei)width,
+                     (GLsizei)height,
+                     (GLsizei)depth,
+                     0, // border
+                     GL_BGRA, // image format
+                     GL_UNSIGNED_INT_8_8_8_8_REV, // image type
+                     &data.front());
+    }
+};
+
 
 // Largest texture size on my Mac is 16384
 // So we use a 2D 256x256 texture instead of a 1D 1x65536 texture.
