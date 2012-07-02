@@ -9,7 +9,7 @@ namespace jfrc {
 
 struct LabelSampler
 {
-    void loop(size_t dims*);
+    void loop(size_t* dims);
 };
 
 ////////////////////////

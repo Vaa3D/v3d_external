@@ -29,6 +29,7 @@ class SwsContext;
 
 #include <vector>
 #include <deque>
+#include <stdint.h>
 
 // Read an mpeg4 file and populates a YUV texture volume, in its own thread.
 class MpegLoader : public QObject
