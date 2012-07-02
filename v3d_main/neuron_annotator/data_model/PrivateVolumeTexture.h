@@ -28,6 +28,7 @@ namespace jfrc {
 ///  4) neuronLabel - 3D label field containing neuron index at each voxel
 
 
+// templated class should be fully defined in header
 template<class DataType>
 class Base3DTexture // basis for both NeuronLabelTexture and NeuronSignalTexture
 {
@@ -141,51 +142,17 @@ private:
     typedef Base3DTexture<uint16_t> super;
 
 public:
-    NeuronLabelTexture() : super(GL_TEXTURE3_ARB) {}
+    NeuronLabelTexture();
 
 protected:
-    virtual bool uploadTexture() const
-    {
-        // GL_NEAREST ensures that we get an actual non-interpolated label value.
-        // Interpolation would be crazy wrong.
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // copy texture from host RAM to GPU device
-        glTexImage3D(GL_TEXTURE_3D, // target
-                     0, // level
-                     GL_INTENSITY16, // texture format
-                     (GLsizei)width,
-                     (GLsizei)height,
-                     (GLsizei)depth,
-                     0, // border
-                     GL_RED, // image format
-                     GL_UNSIGNED_SHORT, // image type
-                     &data.front());
-    }
+    virtual bool uploadTexture() const;
 };
 
 
 class NeuronSignalTexture : public Base3DTexture<uint32_t>
 {
 protected:
-    virtual bool uploadTexture() const
-    {
-        // GL_NEAREST ensures that we get an actual non-interpolated label value.
-        // Interpolation would be crazy wrong.
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // copy texture from host RAM to GPU device
-        glTexImage3D(GL_TEXTURE_3D, // target
-                     0, // level
-                     GL_RGBA8, // texture format
-                     (GLsizei)width,
-                     (GLsizei)height,
-                     (GLsizei)depth,
-                     0, // border
-                     GL_BGRA, // image format
-                     GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-                     &data.front());
-    }
+    virtual bool uploadTexture() const;
 };
 
 
@@ -198,176 +165,14 @@ protected:
 class NeuronVisibilityTexture
 {
 public:
-    explicit NeuronVisibilityTexture(int maxNeurons = MAX_NEURON_INDEX)
-        : visibilities(maxNeurons, 0x000000ff) // visible, neither selected nor highlighted
-        , textureID(0)
-        , neuronSelectionModel(NULL)
-        , textureUnit(GL_TEXTURE2_ARB)
-        , bInitialized(false)
-        , bNeedsUpload(true)
-    {}
-
+    explicit NeuronVisibilityTexture(int maxNeurons = MAX_NEURON_INDEX);
     /// Connect this texture to the NeuronAnnotator unified data model
-    void setNeuronSelectionModel(const NeuronSelectionModel& m)
-    {
-        if (neuronSelectionModel == &m) return; // no change
-        neuronSelectionModel = &m;
-        update();
-    }
-
+    void setNeuronSelectionModel(const NeuronSelectionModel& m);
     /// Actions to be taken once, when the GL context is created
-    virtual bool initializeGL()
-    {
-        // clear stale errors
-        GLenum glErr;
-        while ((glErr = glGetError()) != GL_NO_ERROR)
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        glActiveTextureARB(textureUnit);
-        glEnable(GL_TEXTURE_2D);
-        glGenTextures(1, &textureID);
-        if ((glErr = glGetError()) != GL_NO_ERROR)
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        else
-            bInitialized = true;
+    virtual bool initializeGL();
+    bool update();
+    virtual bool uploadPixels() const;
 
-        glActiveTextureARB(textureUnit);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
-        // qDebug() << "uploading neuron visibility" << __FILE__ << __LINE__;
-
-        glTexImage2D(GL_TEXTURE_2D, // target
-                        0, // level
-                        GL_RGBA, // texture format
-                        256, // width
-                        256, // height
-                        0, // border
-                        GL_RGBA, // image format
-                        GL_UNSIGNED_BYTE, // image type
-                        NULL);
-
-        glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
-        if ((glErr = glGetError()) != GL_NO_ERROR)
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        return true;
-    }
-
-    bool update()
-    {
-        if(! neuronSelectionModel) return false;
-        bool bChanged = false; // For efficiency, keep track of whether the data actually change.
-        {
-            NeuronSelectionModel::Reader selectionReader(*neuronSelectionModel);
-            if (! selectionReader.hasReadLock())
-                return false;
-            // Check each neuron fragment
-            const QList<bool>& visList = selectionReader.getMaskStatusList();
-            const QList<bool>& selList = selectionReader.getNeuronSelectList();
-            assert(visList.size() == selList.size());
-            for(int i = 0; i < visList.size(); ++i)
-            {
-                int ix = i + 1; // position zero is for background signal
-                if (ix >= visibilities.size()) break;
-                // Visiblity
-                unsigned int val;
-                if (visList[i]) { // visible
-                    val = visibilities[ix] | 0x000000ff; // 0xAABBGGRR, turn on red/visibility
-                }
-                else { // not visible
-                    val = visibilities[ix] & 0xffffff00; // 0xAABBGGRR, turn off red/visibility
-                }
-                if (val != visibilities[ix]) {
-                    visibilities[ix] = val;
-                    bChanged = true;
-                }
-                // Selection
-                if (selList[i]) { // selected
-                    val = visibilities[ix] | 0x0000ff00; // 0xAABBGGRR, turn on green/selection
-                }
-                else { // not selected
-                    val = visibilities[ix] & 0xffff00ff; // 0xAABBGGRR, turn off green/selection
-                }
-                if (val != visibilities[ix]) {
-                    visibilities[ix] = val;
-                    bChanged = true;
-                }
-            }
-            // Background signal is found in overlay list, not neuron fragment list.
-            const QList<bool>& overlayList = selectionReader.getOverlayStatusList();
-            if ( (overlayList.size() > DataFlowModel::BACKGROUND_MIP_INDEX)
-                && (visibilities.size() > 0) )
-            {
-                int val;
-                if (overlayList[DataFlowModel::BACKGROUND_MIP_INDEX])
-                    val = 0x000000ff; // visible, never selected nor highlighted
-                else
-                    val = 0x00000000; // not visible
-                if (val != visibilities[0]) {
-                    visibilities[0] = val;
-                    bChanged = true;
-                }
-            }
-        } // release read lock
-        if (bChanged) {
-            bNeedsUpload = true;
-        }
-        return bChanged;
-    }
-
-    virtual bool uploadPixels() const
-    {
-        if (! bInitialized) {
-            qDebug() << "Neuron visibility texture has not been initialized";
-            return false;
-        }
-        GLenum glErr;
-        glActiveTextureARB(textureUnit);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // GLSL will replace TexEnv
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
-        // qDebug() << "uploading neuron visibility" << __FILE__ << __LINE__;
-
-        glTexImage2D(GL_TEXTURE_2D, // target
-                        0, // level
-                        GL_RGBA, // texture format
-                        256, // width
-                        256, // height
-                        0, // border
-                        GL_RGBA, // image format
-                        GL_UNSIGNED_BYTE, // image type
-                        &visibilities.front());
-
-        /*
-        glTexSubImage2D(GL_TEXTURE_2D, // target
-                        0, // level
-                        0, // offset
-                        visibilities.size(), // width
-                        GL_RED, // image format
-                        GL_UNSIGNED_BYTE, // image type
-                        &visibilities.front());
-                        */
-
-        glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
-        if ((glErr = glGetError()) != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-            return false;
-        }
-        else {
-            const_cast<NeuronVisibilityTexture*>(this)->bNeedsUpload = false;
-            // emit textureChanged();
-            return true;
-        }
-    }
-
-public:
     bool bNeedsUpload;
 
 protected:
@@ -392,80 +197,17 @@ public:
     public:
         enum StackSet {X, Y, Z};
 
-        Stack()
-            : bHasTextureIDs(false)
-        {}
-
+        Stack();
+        explicit Stack(const Stack& rhs);
+        explicit Stack(Dimension sizeParam);
         virtual ~Stack();
-
-        bool initializeGL()
-        {
-            if (size.x() < 1) // Can't initialize that!
-                return false;
-            // Allocate texture names from OpenGL
-            if (textureIDs.size() != size.x())
-            {
-                if (bHasTextureIDs && (textureIDs.size() > 0))
-                    glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs[0]);
-                textureIDs.assign((size_t)size.x(), (GLuint)0);
-                bHasTextureIDs = false;
-            }
-            if (! bHasTextureIDs) {
-                glGenTextures((GLsizei)textureIDs.size(), &textureIDs[0]);
-            }
-            // Check for GL errors
-            {
-                GLenum err = glGetError();
-                if (err != GL_NO_ERROR) {
-                    qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                    return false;
-                }
-            }
-			return true;
-        }
-
-        explicit Stack(const Stack& rhs)
-            : data(rhs.data)
-            , size(rhs.size)
-            , textureIDs(rhs.textureIDs)
-            , bHasTextureIDs(false)
-        {
-            qDebug() << "Stack data being copied.  This is probably not a good idea...";
-        }
-
-        explicit Stack(Dimension sizeParam)
-            : size(sizeParam)
-        {
-            setSize(sizeParam);
-        }
-
-        Stack& setSize(Dimension sizeParam)
-        {
-            if (size == sizeParam)
-                return *this; // no change
-            size = sizeParam;
-            size_t numVoxels = sizeParam.numberOfVoxels();
-            if (data.size() != numVoxels) {
-                // explicit cast to avoid iterator interpretation in MSVC
-                data.assign(numVoxels, (Voxel)0);
-                // initializeGL();
-            }
-            return *this;
-        }
-
-        Stack& setValueAt(size_t x, size_t y, size_t z, Voxel color)
-        {
-            size_t index = y + z * size.y() + x * size.z() * size.y();
-            assert(data.size() > index);
-            data[index] = color;
-            return *this;
-        }
-        const Voxel* getSlice(int sliceIx) const {
-            return &data[sliceIx * size.z() * size.y()];
-        }
+        bool initializeGL();
+        Stack& setSize(Dimension sizeParam);
+        Stack& setValueAt(size_t x, size_t y, size_t z, Voxel color);
+        const Voxel* getSlice(int sliceIx) const;
         bool populateGLTextures() const;
-        const Voxel* getDataPtr() const {return &data.front();}
-        const GLuint* getTexIDPtr() const {return &textureIDs.front();}
+        const Voxel* getDataPtr() const;
+        const GLuint* getTexIDPtr() const;
 
     protected:
         std::vector<Voxel> data;
@@ -484,58 +226,14 @@ public:
     void initializeSizes(const NaVolumeData::Reader& volumeReader);
     bool populateVolume(const NaVolumeData::Reader& volumeReader, int zBegin, int zEnd);
     bool uploadVolumeTexturesToVideoCardGL() const;
-    bool uploadNeuronVisibilityTextureToVideoCardGL() const {
-        return neuronVisibilityTexture.uploadPixels();
-    }
-    bool uploadColorMapTextureToVideoCardGL() const {
-        qDebug() << "ColorMap not yet incorporated into VolumeTexture" << __FILE__ << __LINE__;
-        return true;
-    }
-    bool updateNeuronVisibilityTexture()
-    {
-        return neuronVisibilityTexture.update();
-    }
-
+    bool uploadNeuronVisibilityTextureToVideoCardGL() const;
+    bool uploadColorMapTextureToVideoCardGL() const;
+    bool updateNeuronVisibilityTexture();
     void setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel);
-    const Voxel* getDataPtr(Stack::StackSet s) const {
-        switch(s) {
-        case Stack::X:
-            return slicesXyz.getDataPtr();
-        case Stack::Y:
-            return slicesYzx.getDataPtr();
-        case Stack::Z:
-            return slicesZxy.getDataPtr();
-        }
-    }
+    const Voxel* getDataPtr(Stack::StackSet s) const;
     /// Access list of OpenGL texture IDs for one of the three texture stacks
-    const GLuint* getTexIDPtr(Stack::StackSet s) const
-    {
-        switch(s) {
-        case Stack::X:
-            return slicesXyz.getTexIDPtr();
-        case Stack::Y:
-            return slicesYzx.getTexIDPtr();
-        case Stack::Z:
-            return slicesZxy.getTexIDPtr();
-        }
-		return slicesXyz.getTexIDPtr();
-    }
-
-    bool initializeGL()
-    {
-        bool result = true;
-        if (!neuronVisibilityTexture.initializeGL())
-            result = false;
-        if (!neuronLabelTexture.initializeGL())
-            result = false;
-        if (!slicesXyz.initializeGL())
-            result = false;
-        if (!slicesYzx.initializeGL())
-            result = false;
-        if (!slicesZxy.initializeGL())
-            result = false;
-        return result;
-    }
+    const GLuint* getTexIDPtr(Stack::StackSet s) const;
+    bool initializeGL();
 
     Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
     Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
