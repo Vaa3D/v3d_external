@@ -157,6 +157,14 @@ const void* VolumeTexture::Reader::Ztex_list() const {
     return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::Z);
 }
 
+bool VolumeTexture::Reader::use3DSignalTexture() const {
+    return d.constData()->use3DSignalTexture();
+}
+
+unsigned int VolumeTexture::Reader::signal3DTextureId() const {
+    return d.constData()->signal3DTextureId();
+}
+
 
 ///////////////////////////////////
 // VolumeTexture::Writer methods //

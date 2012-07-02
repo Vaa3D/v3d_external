@@ -247,6 +247,7 @@ PrivateVolumeTexture::PrivateVolumeTexture()
     : memoryLimit(5e8) // 500 MB for volume texture
     , memoryAlignment(8)
     , subsampleScale(1.0)
+    , bUse3DSignalTexture(true)
 {
 }
 
@@ -263,6 +264,8 @@ PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     , slicesXyz(rhs.slicesXyz)
     , slicesYzx(rhs.slicesYzx)
     , slicesZxy(rhs.slicesZxy)
+    , neuronSignalTexture(rhs.neuronSignalTexture)
+    , bUse3DSignalTexture(rhs.bUse3DSignalTexture)
 {
 }
 
@@ -285,10 +288,12 @@ void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeRea
         slicesYzx.setSize(Dimension(paddedTextureSize.y(), paddedTextureSize.x(), paddedTextureSize.z()));
         slicesZxy.setSize(Dimension(paddedTextureSize.z(), paddedTextureSize.x(), paddedTextureSize.y()));
         neuronLabelTexture.allocateSize(paddedTextureSize);
+        neuronSignalTexture.allocateSize(paddedTextureSize);
     }
 }
 
 // Create host texture memory for data volume
+// TODO fill 3D texture
 bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeReader, int zBegin, int zEnd)
 {
     // qDebug() << "Populating volume textures for 3D renderer..." << __FILE__ << __LINE__;
@@ -379,6 +384,7 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
                 slicesXyz.setValueAt(x, y, z, color);
                 slicesYzx.setValueAt(y, x, z, color);
                 slicesZxy.setValueAt(z, x, y, color);
+                neuronSignalTexture.setValueAt(x, y, z, color);
             }
         }
     }
@@ -388,14 +394,21 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
 
 bool PrivateVolumeTexture::uploadVolumeTexturesToVideoCardGL() const
 {
-    if (! slicesZxy.populateGLTextures()) {
-        return false;
+    if (bUse3DSignalTexture) {
+        if (! neuronSignalTexture.uploadPixels())
+            return false;
     }
-    if (! slicesYzx.populateGLTextures()) {
-        return false;
-    }
-    if (! slicesXyz.populateGLTextures()) {
-        return false;
+    else
+    {
+        if (! slicesZxy.populateGLTextures()) {
+            return false;
+        }
+        if (! slicesYzx.populateGLTextures()) {
+            return false;
+        }
+        if (! slicesXyz.populateGLTextures()) {
+            return false;
+        }
     }
     if (! neuronLabelTexture.uploadPixels()) {
         return false;
@@ -442,7 +455,7 @@ const GLuint* PrivateVolumeTexture::getTexIDPtr(Stack::StackSet s) const
     case Stack::Z:
         return slicesZxy.getTexIDPtr();
     }
-            return slicesXyz.getTexIDPtr();
+    return slicesXyz.getTexIDPtr();
 }
 
 bool PrivateVolumeTexture::initializeGL()
@@ -452,12 +465,19 @@ bool PrivateVolumeTexture::initializeGL()
         result = false;
     if (!neuronLabelTexture.initializeGL())
         result = false;
-    if (!slicesXyz.initializeGL())
-        result = false;
-    if (!slicesYzx.initializeGL())
-        result = false;
-    if (!slicesZxy.initializeGL())
-        result = false;
+    if (bUse3DSignalTexture) {
+        if (! neuronSignalTexture.initializeGL())
+            result = false;
+    }
+    else
+    {
+        if (!slicesXyz.initializeGL())
+            result = false;
+        if (!slicesYzx.initializeGL())
+            result = false;
+        if (!slicesZxy.initializeGL())
+            result = false;
+    }
     return result;
 }
 

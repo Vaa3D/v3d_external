@@ -55,6 +55,8 @@ public:
         const void* Xtex_list() const;
         const void* Ytex_list() const;
         const void* Ztex_list() const;
+        bool use3DSignalTexture() const;
+        unsigned int signal3DTextureId() const;
     };
 
 protected:

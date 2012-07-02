@@ -57,6 +57,8 @@ public:
                  }
     }
 
+    virtual unsigned int getTextureId() const {return textureID;}
+
     virtual bool initializeGL()
     {
         glPushAttrib(GL_TEXTURE_BIT); // remember previous OpenGL state
@@ -234,6 +236,8 @@ public:
     /// Access list of OpenGL texture IDs for one of the three texture stacks
     const GLuint* getTexIDPtr(Stack::StackSet s) const;
     bool initializeGL();
+    bool use3DSignalTexture() const {return bUse3DSignalTexture;}
+    unsigned int signal3DTextureId() const {return neuronSignalTexture.getTextureId();}
 
     Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
     Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
@@ -251,6 +255,8 @@ protected:
     Stack slicesYzx;
     NeuronVisibilityTexture neuronVisibilityTexture;
     NeuronLabelTexture neuronLabelTexture;
+    NeuronSignalTexture neuronSignalTexture;
+    bool bUse3DSignalTexture;
 };
 
 } // namespace jfrc
