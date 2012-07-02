@@ -49,11 +49,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.749);
+    VersionInfo thisVersionOfV3D(2.750);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
-        "), Vaa3D-Neuron (2.0), Vaa3D Plugin Interface (2.1) ";
+        "), Vaa3D-Neuron (2.0), Vaa3D Plugin Interface (2.11) ";
 }
 
 
@@ -108,6 +108,7 @@ void v3d_aboutinfo()
         "<tr><td>Ctrl-A (Windows, Linux) or Cmd-A (Mac) </td><td>Launch atlas-viewer/image blender (together with the landmark manager). </td></tr>"
         "<tr><td>Ctrl-F (Windows, Linux) or Cmd-F (Mac) </td><td>Launch the landmark finder (together with atlas-viewer/image blender). </td></tr>"
         "<tr><td>Ctrl-Z (Windows, Linux) or Cmd-Z (Mac) </td><td>Undo last tracing operation.</td></tr>"
+        "<tr><td>Y </td><td>ON/OFF switch of image operation timer.</td></tr>"
         "</table><br>"
         "<H3>Mouse operations</H3>"
         "<br><table border=\"1\">"

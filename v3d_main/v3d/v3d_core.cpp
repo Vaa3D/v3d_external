@@ -1725,7 +1725,6 @@ void XFormView::mouseRightButtonPressEvent(QMouseEvent *e)
 
 void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 {
-
 	//reserved for future editing of the the pop-up menu
 	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
@@ -3282,6 +3281,23 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 
 	switch (e->key())
 	{
+		case Qt::Key_Y: //add a timer for some events. This is an on/off switch. When pressing is OFF, then output the time to the last ON pressing
+            {                
+                if (imgData->b_triviewTimerON)
+                {
+                    QString etime = QString("Elipsed time for triview timer is %1 seconds").arg(double(imgData->triviewTimer.elapsed())/1000);
+                    imgData->b_triviewTimerON = FALSE;                    
+                    v3d_msg(etime);
+                }
+                else 
+                {
+                    imgData->triviewTimer.start(); //should I use restart() sometimes as well
+                    imgData->b_triviewTimerON = TRUE;
+                    v3d_msg("Timer for the current image starts...\n");
+                }
+            }
+			break;
+            
 		case Qt::Key_S:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {

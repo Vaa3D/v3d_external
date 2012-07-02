@@ -400,9 +400,10 @@ My4DImage::My4DImage()
 
 	trace_bounding_box=NULL_BoundingBox; //090727 RZC: for trace from local view
 	trace_z_thickness=1; //090727 RZC: weight for z-distance of graph
+    
+    b_triviewTimerON = FALSE;
 
 	connect(this, SIGNAL(focusFeatureViewTextUpdated()), this, SLOT(setText2FocusPointFeatureWidget()) );
-
 }
 
 My4DImage::~My4DImage()

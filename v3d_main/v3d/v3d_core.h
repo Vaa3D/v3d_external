@@ -339,6 +339,10 @@ public:
 	int atlasColorBlendChannel;
 	bool bUseFirstImgAsMask;
 	QString curSearchText;
+    
+    //timer //20120702
+    QTime triviewTimer;  //added on 20120702. 
+    bool b_triviewTimerON;
 
 	bool compute_rgn_stat(LocationSimple & pt, int channo);
 	void loadLandmarkFromFile();
