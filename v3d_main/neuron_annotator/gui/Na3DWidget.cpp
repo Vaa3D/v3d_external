@@ -2,6 +2,7 @@
 #include "v3d_core.h"
 #include "../3drenderer/renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
+#include "../DataFlowModel.h"
 #include <iostream>
 #include <cmath>
 #include <cassert>
@@ -26,6 +27,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , defaultColormapTextureId(0)
         , defaultVisibilityTextureId(0)
         , defaultLabelTextureId(0)
+        , bGLIsInitialized(false)
 {
     if (renderer) {
         delete renderer;
@@ -75,22 +77,6 @@ Na3DWidget::Na3DWidget(QWidget* parent)
             this, SLOT(onPossibleSingleClickAlert()));
     connect(&mouseClickManager, SIGNAL(notSingleClick()),
             this, SLOT(onNotSingleClick()));
-    connect(&volumeTexture, SIGNAL(volumeTexturesChanged()),
-          this, SLOT(onVolumeTextureDataChanged()));
-    // Promote progress from VolumeTexture to 3D viewer
-    connect(&volumeTexture, SIGNAL(progressValueChanged(int)),
-            this, SIGNAL(progressValueChanged(int)));
-    connect(&volumeTexture, SIGNAL(progressAborted(QString)),
-            this, SIGNAL(progressAborted(QString)));
-    connect(&volumeTexture, SIGNAL(progressMessageChanged(QString)),
-            this, SIGNAL(progressMessageChanged(QString)));
-    // but not progressComplete()?
-    connect(&volumeTexture, SIGNAL(neuronVisibilityTextureChanged()),
-            this, SLOT(uploadNeuronVisibilityTextureGL()));
-    connect(&volumeTexture, SIGNAL(colorMapTextureChanged()),
-            this, SLOT(uploadColorMapTextureGL()));
-    // connect(&volumeTexture, SIGNAL(volumeTexturesChanged()),
-    //         this, SLOT(uploadVolumeTexturesGL()));
 }
 
 Na3DWidget::~Na3DWidget()
@@ -348,10 +334,17 @@ void Na3DWidget::initializeGL()
     }
     else
         qDebug() << "OpenGL context does not support stereo 3D";
-    volumeTexture.initializeGL();
+    if (NULL != dataFlowModel)
+    {
+        // initializeGL() either here, or in setDataFlowModel()
+        dataFlowModel->getVolumeTexture().initializeGL();
+    }
     V3dR_GLWidget::initializeGL();
+
     // TODO - will I ever find a use for initializeDefaultTextures?
     initializeDefaultTextures();
+
+    bGLIsInitialized = true;
 }
 
 /* slot */
@@ -382,7 +375,10 @@ void Na3DWidget::applyCustomCut()
 /* slot */
 void Na3DWidget::uploadNeuronVisibilityTextureGL()
 {
+    if (NULL == dataFlowModel)
+        return;
     {
+        const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
         if (volumeTexture.readerIsStale(textureReader)) return;
         if (! textureReader.uploadNeuronVisibilityTextureToVideoCardGL())
@@ -394,8 +390,11 @@ void Na3DWidget::uploadNeuronVisibilityTextureGL()
 /* slot */
 bool Na3DWidget::uploadVolumeTexturesGL()
 {
+    if (NULL == dataFlowModel)
+        return false;
     bool bSucceeded = true;
     {
+        const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
         if (volumeTexture.readerIsStale(textureReader)) bSucceeded = false;
         makeCurrent();
@@ -410,7 +409,10 @@ bool Na3DWidget::uploadVolumeTexturesGL()
 // TODO - refactor colormap response into this method
 void Na3DWidget::uploadColorMapTextureGL()
 {
+    if (NULL == dataFlowModel)
+        return;
     {
+        const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
         if (volumeTexture.readerIsStale(textureReader)) return;
         if (! textureReader.uploadColorMapTextureToVideoCardGL())
@@ -427,9 +429,11 @@ void Na3DWidget::settingRenderer() // before renderer->setupData & init
     {
         rend->loadShader(); // Actually use those fancy textures
         // This is the moment when textures should be uploaded
-        uploadVolumeTexturesGL();
-        uploadNeuronVisibilityTextureGL();
-        uploadColorMapTextureGL();
+        if (NULL != dataFlowModel) {
+            uploadVolumeTexturesGL();
+            uploadNeuronVisibilityTextureGL();
+            uploadColorMapTextureGL();
+        }
     }
 }
 
@@ -533,7 +537,11 @@ void Na3DWidget::updateImageData()
         return;
     }
     bool bSuccess = true; // convoluted logic to avoid emitting before lock is release
+    if (NULL == dataFlowModel)
+        bSuccess = false;
+    else
     {
+        const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture); // acquire lock
         if (volumeTexture.readerIsStale(textureReader))
             bSuccess = false;
@@ -1385,7 +1393,7 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 {
     NaViewer::setDataFlowModel(dataFlowModelParam);
 
-    volumeTexture.setDataFlowModel(dataFlowModelParam);
+    // volumeTexture.setDataFlowModel(dataFlowModelParam);
 
     // No connecting if it's NULL
     if (dataFlowModel == NULL) {
@@ -1393,7 +1401,26 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
         return;
     }
 
+    if (bGLIsInitialized)
+        dataFlowModel->getVolumeTexture().initializeGL();
+
     incrementalDataColorModel = &dataFlowModel->getFast3DColorModel();
+
+    const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
+    connect(&volumeTexture, SIGNAL(volumeTexturesChanged()),
+          this, SLOT(onVolumeTextureDataChanged()));
+    // Promote progress from VolumeTexture to 3D viewer
+    connect(&volumeTexture, SIGNAL(progressValueChanged(int)),
+            this, SIGNAL(progressValueChanged(int)));
+    connect(&volumeTexture, SIGNAL(progressAborted(QString)),
+            this, SIGNAL(progressAborted(QString)));
+    connect(&volumeTexture, SIGNAL(progressMessageChanged(QString)),
+            this, SIGNAL(progressMessageChanged(QString)));
+    // but not progressComplete()?
+    connect(&volumeTexture, SIGNAL(neuronVisibilityTextureChanged()),
+            this, SLOT(uploadNeuronVisibilityTextureGL()));
+    connect(&volumeTexture, SIGNAL(colorMapTextureChanged()),
+            this, SLOT(uploadColorMapTextureGL()));
 
     connect(this, SIGNAL(neuronClearAll()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
@@ -1461,6 +1488,7 @@ void Na3DWidget::onVolumeTextureDataChanged()
         settingRenderer();
 
         rend = getRendererNa();
+        const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
         if (volumeTexture.readerIsStale(textureReader))
         {

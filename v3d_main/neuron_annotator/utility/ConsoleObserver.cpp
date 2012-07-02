@@ -89,7 +89,7 @@ void ConsoleObserver::ontologyChanged(qint64 rootId)
 
 void ConsoleObserver::entitySelected(const QString & category, const QString & uniqueId, bool clearAll)
 {
-    qDebug() << "Got signal entitySelected:" << uniqueId << "category="<<category<< "clearAll?=" << clearAll;
+    // qDebug() << "Got signal entitySelected:" << uniqueId << "category="<<category<< "clearAll?=" << clearAll;
     if (category == "mainViewer" || category == "secViewer") {
         QStringList list = uniqueId.split(QRegExp("/"));
         QString idStr = list.last().split("_").last();

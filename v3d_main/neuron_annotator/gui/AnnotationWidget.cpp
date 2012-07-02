@@ -659,13 +659,13 @@ void AnnotationWidget::entityWasSelected(const Entity *entity)
     if (entity==0) return;
     int neuronNum = getNeuronNumber(entity);
     if (neuronNum >= 0) {
-        qDebug() << "AnnotationWidget::neuronSelected"<<neuronNum;
+        // qDebug() << "AnnotationWidget::neuronSelected"<<neuronNum;
         if (*entity->entityType == "Tif 2D Image" || *entity->entityType == "Neuron Fragment")
         {
             naMainWindow->getDataFlowModel()->getNeuronSelectionModel().selectExactlyOneNeuron(neuronNum);
 
 //            emit neuronSelected(neuronNum);
-            qDebug() << "AnnotationWidget::emitted neuronSelected"<<neuronNum;
+            // qDebug() << "AnnotationWidget::emitted neuronSelected"<<neuronNum;
             return;
         }
     }
@@ -732,7 +732,7 @@ void AnnotationWidget::selectEntityById(const qint64 & entityId)
 
 void AnnotationWidget::selectEntityById(const qint64 & entityId, const bool external)
 {
-    qDebug() << "AnnotationWidget::selectEntityById"<<entityId<<"external?"<<external;
+    // qDebug() << "AnnotationWidget::selectEntityById"<<entityId<<"external?"<<external;
     {
         QMutexLocker locker(&mutex);
 

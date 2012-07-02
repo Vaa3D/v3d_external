@@ -144,7 +144,8 @@ protected:
     bool bAlphaBlending;
     bool bClickIsWaiting;
     bool bVolumeInitialized; // hack to prevent double update on file load
-    jfrc::VolumeTexture volumeTexture;
+    // jfrc::VolumeTexture volumeTexture;
+    bool bGLIsInitialized;
     QUndoStack* undoStack;
     qreal cachedRelativeScale;
     jfrc::Stereo3DMode stereo3DMode;

@@ -3,6 +3,7 @@
 #include "PrivateDataColorModel.h" // avoid compile error on msvc?
 #include "PrivateNeuronFragmentData.h" // avoid compile error on msvc?
 #include "NaSharedDataModel.cpp"
+#include "../DataFlowModel.h"
 
 template class NaSharedDataModel<jfrc::PrivateVolumeTexture>;
 
@@ -17,12 +18,12 @@ VolumeTexture::VolumeTexture()
     : volumeData(NULL)
 {}
 
-bool VolumeTexture::initializeGL()
+bool VolumeTexture::initializeGL() const
 {
     bool result = false;
     {
-        Writer(*this); // acquire lock, waits for Readers to release their locks
-        result = d->initializeGL();
+        // Writer(*this); // acquire lock, waits for Readers to release their locks
+        result = d.constData()->initializeGL();
     } // release lock
     return result;
 }

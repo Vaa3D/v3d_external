@@ -1,4 +1,6 @@
 #include "FragmentGalleryWidget.h"
+#include "../data_model/NeuronFragmentData.h"
+#include "../DataFlowModel.h"
 #include <cassert>
 #include <cmath> /* for std::abs(double) */
 #include <algorithm> /* for sort() */

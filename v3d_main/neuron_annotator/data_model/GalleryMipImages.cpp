@@ -1,5 +1,6 @@
 #include "GalleryMipImages.h"
 #include "../gui/GalleryButton.h"
+#include "../DataFlowModel.h"
 
 
 //////////////////////////////

@@ -5,6 +5,8 @@
 #include "GalleryButton.h"
 #include "../data_model/NeuronSelectionModel.h"
 
+class NeuronFragmentData;
+
 // FragmentGalleryWidget manages a virtual canvas of neuron fragment thumbnails,
 // to compensate for horrible inadequacies of Mac OS X QScrollArea widget, which
 // should have been the right widget for this purpose.

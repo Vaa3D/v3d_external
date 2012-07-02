@@ -7,6 +7,11 @@
 namespace jfrc {
 
 
+struct LabelSampler
+{
+    void loop(size_t dims*);
+};
+
 ////////////////////////
 // NeuronLabelTexture //
 ////////////////////////
@@ -458,24 +463,26 @@ const GLuint* PrivateVolumeTexture::getTexIDPtr(Stack::StackSet s) const
     return slicesXyz.getTexIDPtr();
 }
 
-bool PrivateVolumeTexture::initializeGL()
+bool PrivateVolumeTexture::initializeGL() const
 {
+    PrivateVolumeTexture& mutableThis =
+            const_cast<PrivateVolumeTexture&>(*this);
     bool result = true;
-    if (!neuronVisibilityTexture.initializeGL())
+    if (!mutableThis.neuronVisibilityTexture.initializeGL())
         result = false;
-    if (!neuronLabelTexture.initializeGL())
+    if (!mutableThis.neuronLabelTexture.initializeGL())
         result = false;
     if (bUse3DSignalTexture) {
-        if (! neuronSignalTexture.initializeGL())
+        if (! mutableThis.neuronSignalTexture.initializeGL())
             result = false;
     }
     else
     {
-        if (!slicesXyz.initializeGL())
+        if (!mutableThis.slicesXyz.initializeGL())
             result = false;
-        if (!slicesYzx.initializeGL())
+        if (!mutableThis.slicesYzx.initializeGL())
             result = false;
-        if (!slicesZxy.initializeGL())
+        if (!mutableThis.slicesZxy.initializeGL())
             result = false;
     }
     return result;

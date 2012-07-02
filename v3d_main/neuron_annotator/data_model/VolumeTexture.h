@@ -4,10 +4,11 @@
 #include "NaSharedDataModel.h"
 #include "DataColorModel.h"
 #include "NaVolumeData.h"
-#include "../DataFlowModel.h"
 #include "Dimension.h"
 #include <QObject>
 #include <vector>
+
+class DataFlowModel;
 
 namespace jfrc {
 
@@ -20,7 +21,7 @@ class VolumeTexture : public NaSharedDataModel<PrivateVolumeTexture>
 
 public:
     VolumeTexture();
-    bool initializeGL();
+    bool initializeGL() const;
     void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
 
 signals:

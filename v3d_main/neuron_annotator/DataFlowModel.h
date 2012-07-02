@@ -12,6 +12,8 @@
 #include "data_model/MipMergedData.h"
 #include "data_model/ZSliceColors.h"
 #include "data_model/Fast3DTexture.h"
+#include "data_model/VolumeTexture.h"
+
 
 class DataFlowModel : public QObject
 {
@@ -79,6 +81,7 @@ public:
     const MipMergedData& getMipMergedData() const {return mipMergedData;}
     const ZSliceColors& getZSliceColors() const {return zSliceColors;}
     const DataColorModel& getFast3DColorModel() const {return fast3DColorModel;}
+    const jfrc::VolumeTexture& getVolumeTexture() const {return volumeTexture;}
     // const VolumeColors& getVolumeColors() const {return volumeColors;}
 
 #ifdef USE_FFMPEG
@@ -109,6 +112,7 @@ private:
     MipMergedData mipMergedData;
     DataColorModel slow3DColorModel;
     DataColorModel fast3DColorModel; // for fast but approximate 3D viewer color updates
+    jfrc::VolumeTexture volumeTexture;
 #ifdef USE_FFMPEG
     Fast3DTexture fast3DTexture;
 #endif

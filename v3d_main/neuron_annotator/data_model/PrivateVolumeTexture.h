@@ -175,7 +175,7 @@ public:
     bool update();
     virtual bool uploadPixels() const;
 
-    bool bNeedsUpload;
+    bool bNeedsUpload;   
 
 protected:
     const NeuronSelectionModel* neuronSelectionModel;
@@ -235,7 +235,7 @@ public:
     const Voxel* getDataPtr(Stack::StackSet s) const;
     /// Access list of OpenGL texture IDs for one of the three texture stacks
     const GLuint* getTexIDPtr(Stack::StackSet s) const;
-    bool initializeGL();
+    bool initializeGL() const; // const coerced for convenience July 2012 CMB
     bool use3DSignalTexture() const {return bUse3DSignalTexture;}
     unsigned int signal3DTextureId() const {return neuronSignalTexture.getTextureId();}
 
