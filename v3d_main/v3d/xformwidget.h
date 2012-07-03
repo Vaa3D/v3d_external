@@ -29,8 +29,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 /*
  * xformwidget.h
  *
- * Aug 10, 2010.  RZC: moved from v3d_core.h
- *
  */
 
 #ifndef XFORMWIDGET_H_

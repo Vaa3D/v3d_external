@@ -3288,12 +3288,17 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
                     QString etime = QString("Elipsed time for triview timer is %1 seconds").arg(double(imgData->triviewTimer.elapsed())/1000);
                     imgData->b_triviewTimerON = FALSE;                    
                     v3d_msg(etime);
+                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow()) 
+                        imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(etime);
                 }
                 else 
                 {
                     imgData->triviewTimer.start(); //should I use restart() sometimes as well
                     imgData->b_triviewTimerON = TRUE;
-                    v3d_msg("Timer for the current image starts...\n");
+                    QString mymsg = "Timer for the current image starts...";
+                    v3d_msg(mymsg + "\n", 0);
+                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
+                        imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(mymsg, 5000);
                 }
             }
 			break;
