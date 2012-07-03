@@ -151,8 +151,8 @@ void MipFragmentData::updateFromVolumeData()
                             mipProxy.put_at(x, y, maskIndex, c, originalProxy.value_at(x, y, z, c));
                     }
                 }
+                if (! volumeReader.refreshLock()) return; // Try to reacquire lock every 25 ms
             }
-            if (! volumeReader.refreshLock()) return; // Try to reacquire lock every 25 ms
         }
     } // release locks before emit
 

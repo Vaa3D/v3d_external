@@ -69,8 +69,25 @@ bool VolumeTexture::updateVolume()
     emit progressValueChanged(int(progress));
     int deltaZ = 10; // Report every 10 slices
     qDebug() << "Populating volume data for 3D viewer";
+    {
+        NaVolumeData::Reader volumeReader(*volumeData);
+        if(volumeReader.hasReadLock()) {
+            Writer textureWriter(*this); // acquire lock
+            d->initializeSizes(volumeReader);
+            if (! d->subsampleColorField(volumeReader))
+                bSucceeded = false;
+            if (! d->subsampleReferenceField(volumeReader))
+                bSucceeded = false;
+            if (! d->subsampleLabelField(volumeReader))
+                bSucceeded = false;
+        }
+        else
+            bSucceeded = false;
+    }
+    /*
     for (int z = 0; z < numSlices; z += deltaZ)
     {
+        if (!bSucceeded) break;
         {
             NaVolumeData::Reader volumeReader(*volumeData);
             if(! volumeReader.hasReadLock()) {
@@ -78,12 +95,14 @@ bool VolumeTexture::updateVolume()
                 break;
             }
             Writer textureWriter(*this); // acquire lock
-            bSucceeded = d->populateVolume(volumeReader, z, z + deltaZ);
+            if (! d->populateVolume(volumeReader, z, z + deltaZ))
+                bSucceeded = false;
         } // release lock
         if (! bSucceeded) break;
         progress = 3.0 + 90.0 * z / numSlices; // 3 - 93 percent in this loop
         emit progressValueChanged((int) progress);
     }
+    */
     if (bSucceeded) {
         emit progressComplete();
         emit volumeTexturesChanged();

@@ -86,14 +86,16 @@ public:
         data[offset] = value;
     }
 
-    virtual void allocateSize(Dimension paddedTextureSize)
+    virtual void allocateSize(Dimension paddedTextureSize, Dimension usedTextureSize)
     {
         width = paddedTextureSize.x();
         height = paddedTextureSize.y();
         depth = paddedTextureSize.z();
+        usedSize = usedTextureSize;
         size_t numVoxels = width * height * depth;
         if (data.size() != numVoxels)
             data.assign((size_t)numVoxels, (VoxelType)0);
+        qDebug() << "Allocating" << width << height << depth;
     }
 
     virtual bool uploadPixels() const
@@ -127,6 +129,15 @@ public:
         return bSucceeded;
     }
 
+    VoxelType* getData() {return &data[0];}
+    const VoxelType* getData() const {return &data[0];}
+
+    size_t getWidth() const {return width;}
+    size_t getHeight() const {return height;}
+    size_t getDepth() const {return depth;}
+
+    Dimension getUsedSize() const {return usedSize;}
+
 protected:
     virtual bool uploadTexture() const = 0;
 
@@ -134,6 +145,7 @@ protected:
     GLenum textureUnit;
     std::vector<VoxelType> data;
     size_t width, height, depth;
+    Dimension usedSize;
     bool bInitialized;
 };
 
@@ -226,6 +238,9 @@ public:
     explicit PrivateVolumeTexture(const PrivateVolumeTexture& rhs);
 
     void initializeSizes(const NaVolumeData::Reader& volumeReader);
+    bool subsampleLabelField(const NaVolumeData::Reader& volumeReader);
+    bool subsampleColorField(const NaVolumeData::Reader& volumeReader);
+    bool subsampleReferenceField(const NaVolumeData::Reader& volumeReader);
     bool populateVolume(const NaVolumeData::Reader& volumeReader, int zBegin, int zEnd);
     bool uploadVolumeTexturesToVideoCardGL() const;
     bool uploadNeuronVisibilityTextureToVideoCardGL() const;

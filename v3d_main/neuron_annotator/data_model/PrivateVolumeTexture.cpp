@@ -6,11 +6,230 @@
 
 namespace jfrc {
 
-
-struct LabelSampler
+// LabelSampler class for efficiently sampling a label field.
+// This is meant to be fast, so all inline.
+// with precomputed data offsets
+template<typename T, class InputValueType, class OutputValueType>
+// template<class InputValueType, class OutputValueType>
+struct BaseSampler
 {
-    void loop(size_t* dims);
+    typedef uint16_t IndexType;
+    static const int nDims = 3;
+
+    BaseSampler(const Image4DProxy<My4DImage>& input, Base3DTexture<OutputValueType>& output)
+    {
+        // cache volume dimensions
+        dims_in.assign(4, 0);
+        dims_in[0] = input.sx;
+        dims_in[1] = input.sy;
+        dims_in[2] = input.sz;
+        dims_in[3] = input.sc;
+
+        dims_out.assign(nDims, 0);
+        dims_out[0] = output.getWidth();
+        dims_out[1] = output.getHeight();
+        dims_out[2] = output.getDepth();
+        Dimension used_size_out = output.getUsedSize();
+
+        // lesser offsets will be set during recursion
+        data_in = (const InputValueType*)input.data_p; // offset[2] = start of data block
+        data_out = (OutputValueType*)output.getData();
+
+        // precompute mapping between coordinates - nearest match
+        coords_in_from_out.assign(nDims, std::vector<IndexType>());
+        coords_out_from_in.assign(nDims, std::vector<IndexType>());
+        for (int d = 0; d < nDims; ++d) {
+            // Use "used" size for mapping, not padded size
+            double ratio = double(used_size_out[d])/double(dims_in[d]);
+            coords_out_from_in[d].assign(dims_in[d], 0);
+            for (int x1 = 0; x1 < dims_in[d]; ++x1) {
+                int x2 = int((x1 + 0.5) * ratio);
+                assert(x2 >= 0);
+                assert(x2 < dims_out[d]);
+                coords_out_from_in[d][x1] = x2;
+            }
+            coords_in_from_out[d].assign(dims_out[d], 0);
+            for (int x2 = 0; x2 < dims_out[d]; ++x2) {
+                int x1 = int((x2 + 0.5) / ratio);
+                assert(x1 >= 0);
+                if (x1 < dims_in[d])
+                    coords_in_from_out[d][x2] = x1;
+                else
+                    coords_in_from_out[d][x2] = dims_in[d] - 1;
+            }
+        }
+    }
+
+    inline void sample_over_input()
+    {
+        const IndexType sx = dims_in[0];
+        const IndexType sy = dims_in[1];
+        const IndexType sz = dims_in[2];
+        const IndexType sc = dims_in[3];
+        const size_t vol_in_stride = sx * sy * sz;
+        const size_t slice_in_stride = sx * sy;
+        const size_t row_in_stride = sx;
+        const size_t slice_out_stride = dims_out[0] * dims_out[1];
+        const size_t row_out_stride = dims_out[0];
+
+        for (IndexType c = 0; c < sc; ++c) {
+            const InputValueType* color_in = data_in + c * vol_in_stride;
+            // precompute funny bgra mapping 0xAARRGGBB
+            IndexType c2 = 2 - c;
+            for (IndexType z = 0; z < sz; ++z) {
+                const IndexType z_out = coords_out_from_in[2][z];
+                const InputValueType* slice_in = color_in + z * slice_in_stride;
+                OutputValueType* slice_out = data_out + z_out * slice_out_stride;
+                for (IndexType y = 0; y < sy; ++y) {
+                    const IndexType y_out = coords_out_from_in[1][y];
+                    const InputValueType* row_in = slice_in + y * row_in_stride;
+                    OutputValueType* row_out = slice_out + y_out * row_out_stride;
+                    for (IndexType x = 0; x < sx; ++x)
+                    {
+                        const InputValueType in_val = row_in[x];
+                        // for speed, short circuit when input is zero
+                        if (0 == in_val)
+                            continue;
+                        const IndexType x_out = coords_out_from_in[0][x];
+                        static_cast<T*>(this)->sample(in_val, row_out[x_out], c2);
+                    }
+                }
+            }
+        }
+    }
+
+    inline void sample_over_output()
+    {
+        const IndexType sx = dims_out[0];
+        const IndexType sy = dims_out[1];
+        const IndexType sz = dims_out[2];
+        const IndexType sc = dims_in[3];
+        const size_t slice_out_stride = sx * sy;
+        const size_t row_out_stride = sx;
+        const size_t vol_in_stride = dims_in[0] * dims_in[1] * dims_in[2];
+        const size_t slice_in_stride = dims_in[0] * dims_in[1];
+        const size_t row_in_stride = dims_in[0];
+        for (IndexType c = 0; c < sc; ++c) {
+            IndexType c2 = 2 - c;
+            // qDebug() << "Color channel" << c << c2;
+            const InputValueType* color_in = data_in + c * vol_in_stride;
+            for (IndexType z = 0; z < sz; ++z) {
+                const IndexType z_in = coords_in_from_out[2][z];
+                OutputValueType* slice_out = data_out + z * slice_out_stride;
+                const InputValueType* slice_in = color_in + z_in * slice_in_stride;
+                for (IndexType y = 0; y < sy; ++y) {
+                    const IndexType y_in = coords_in_from_out[1][y];
+                    OutputValueType* row_out = slice_out + y * row_out_stride;
+                    const InputValueType* row_in = slice_in + y_in * row_in_stride;
+                    for (IndexType x = 0; x < sx; ++x)
+                    {
+                        const IndexType x_in = coords_in_from_out[0][x];
+                        const InputValueType& in_val = row_in[x_in];
+                        // for speed, short circuit when input is zero
+                        if (0 == in_val)
+                            continue;
+                        OutputValueType& out_val = row_out[x];
+                        static_cast<T*>(this)->sample(in_val, out_val, c2, 1 /* TODO */);
+                    }
+                }
+            }
+        }
+    }
+
+    std::vector<IndexType> dims_in; // number of voxels in each direction x,y,z,c
+    const InputValueType* data_in;
+
+    // For each dimension, precomputed mapping between coordinates
+    std::vector<std::vector<IndexType> > coords_in_from_out;
+    std::vector<std::vector<IndexType> > coords_out_from_in;
+
+    std::vector<IndexType> dims_out; // number of voxels in each direction x,y,z,c
+    OutputValueType* data_out;
 };
+
+
+template<class InputValueType, class OutputValueType>
+struct LabelSampler : public BaseSampler<LabelSampler<InputValueType, OutputValueType>, InputValueType, OutputValueType>
+{
+private:
+    typedef BaseSampler<LabelSampler<InputValueType, OutputValueType>, InputValueType, OutputValueType> super;
+
+public:
+    typedef uint16_t IndexType;
+
+    LabelSampler(const Image4DProxy<My4DImage>& input, Base3DTexture<OutputValueType>& output)
+        : super(input, output)
+    {
+        this->sample_over_input();
+    }
+
+    inline void sample(const InputValueType& in_val, OutputValueType& out_val, IndexType c)
+    {
+        // Take smallest non-zero value
+        if ( (0 == out_val) || (out_val > in_val) )
+            out_val = in_val;
+    }
+};
+
+template<class InputValueType, class OutputValueType>
+struct SignalSampler : public BaseSampler<SignalSampler<InputValueType, OutputValueType>, InputValueType, OutputValueType>
+{
+private:
+    typedef BaseSampler<SignalSampler<InputValueType, OutputValueType>, InputValueType, OutputValueType> super;
+
+public:
+    typedef uint16_t IndexType;
+
+    SignalSampler(const Image4DProxy<My4DImage>& input, Base3DTexture<OutputValueType>& output)
+        : super(input, output)
+        , truncate_bits(0)
+    {
+        if (sizeof(InputValueType) > 1)
+            truncate_bits = 4; // convert 12-bit to 8-bit
+        this->sample_over_input(); // combine multiple samples
+    }
+
+    inline void sample(const InputValueType& in_val, OutputValueType& out_val, IndexType c)
+    {
+        uint8_t& out_byte = ((uint8_t*)&out_val)[c];
+        uint8_t in_byte = in_val >> truncate_bits;
+        if (in_byte > out_byte)
+            out_byte = in_byte; // maximum
+    }
+
+    int truncate_bits;
+};
+
+
+template<class InputValueType, class OutputValueType>
+struct ReferenceSampler : public BaseSampler<ReferenceSampler<InputValueType, OutputValueType>, InputValueType, OutputValueType>
+{
+private:
+    typedef BaseSampler<ReferenceSampler<InputValueType, OutputValueType>, InputValueType, OutputValueType> super;
+
+public:
+    typedef uint16_t IndexType;
+
+    ReferenceSampler(const Image4DProxy<My4DImage>& input, Base3DTexture<OutputValueType>& output)
+        : super(input, output)
+        , truncate_bits(0)
+    {
+        if (sizeof(InputValueType) > 1)
+            truncate_bits = 4; // convert 12-bit to 8-bit
+        this->sample_over_input(); // combine multiple samples
+    }
+
+    inline void sample(const InputValueType& in_val, OutputValueType& out_val, IndexType c)
+    {
+        uint8_t& out_byte = ((uint8_t*)&out_val)[3];
+        uint8_t in_byte = in_val >> truncate_bits;
+        if (in_byte > out_byte)
+            out_byte = in_byte; // maximum
+    }
+
+    int truncate_bits;
+};
+
 
 ////////////////////////
 // NeuronLabelTexture //
@@ -292,9 +511,63 @@ void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeRea
         slicesXyz.setSize(Dimension(paddedTextureSize.x(), paddedTextureSize.y(), paddedTextureSize.z()));
         slicesYzx.setSize(Dimension(paddedTextureSize.y(), paddedTextureSize.x(), paddedTextureSize.z()));
         slicesZxy.setSize(Dimension(paddedTextureSize.z(), paddedTextureSize.x(), paddedTextureSize.y()));
-        neuronLabelTexture.allocateSize(paddedTextureSize);
-        neuronSignalTexture.allocateSize(paddedTextureSize);
+        neuronLabelTexture.allocateSize(paddedTextureSize, usedTextureSize);
+        neuronSignalTexture.allocateSize(paddedTextureSize, usedTextureSize);
     }
+}
+
+bool PrivateVolumeTexture::subsampleLabelField(const NaVolumeData::Reader& volumeReader)
+{
+    QTime time2;
+    time2.start();
+    const Image4DProxy<My4DImage>& labelProxy = volumeReader.getNeuronMaskProxy();
+    qDebug() << "starting fast label resample";
+    // Label field file can be either 8 or 16 bits.
+    // Our sammpled version must be 16 bits
+    if (1 == labelProxy.su) { // 8 bit input
+        LabelSampler<uint8_t, uint16_t> sampler(labelProxy, neuronLabelTexture);
+    }
+    else { // 16 bit input
+        LabelSampler<uint16_t, uint16_t> sampler(labelProxy, neuronLabelTexture);
+    }
+    qDebug() << "fast label resample took" << time2.elapsed() << "milliseconds";
+    return true;
+}
+
+bool PrivateVolumeTexture::subsampleColorField(const NaVolumeData::Reader& volumeReader)
+{
+    QTime time2;
+    time2.start();
+    const Image4DProxy<My4DImage>& imageProxy = volumeReader.getOriginalImageProxy();
+    qDebug() << "starting fast color resample";
+    // Label field file can be either 8 or 16 bits.
+    // Our sammpled version must be 16 bits
+    if (1 == imageProxy.su) { // 8 bit input
+        SignalSampler<uint8_t, uint32_t> sampler(imageProxy, neuronSignalTexture);
+    }
+    else { // 16 bit input
+        SignalSampler<uint16_t, uint32_t> sampler(imageProxy, neuronSignalTexture);
+    }
+    qDebug() << "fast color resample took" << time2.elapsed() << "milliseconds";
+    return true;
+}
+
+bool PrivateVolumeTexture::subsampleReferenceField(const NaVolumeData::Reader& volumeReader)
+{
+    QTime time2;
+    time2.start();
+    const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
+    qDebug() << "starting fast color resample";
+    // Label field file can be either 8 or 16 bits.
+    // Our sammpled version must be 16 bits
+    if (1 == refProxy.su) { // 8 bit input
+        ReferenceSampler<uint8_t, uint32_t> sampler(refProxy, neuronSignalTexture);
+    }
+    else { // 16 bit input
+        ReferenceSampler<uint16_t, uint32_t> sampler(refProxy, neuronSignalTexture);
+    }
+    qDebug() << "fast reference resample took" << time2.elapsed() << "milliseconds";
+    return true;
 }
 
 // Create host texture memory for data volume
@@ -385,7 +658,7 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
                 color |= (((int)channelIntensities[1]) << 8);  // #0000GGBB green : channel 2
                 color |= (((int)channelIntensities[0]) << 16); // #00RRGGBB red   : channel 1
                 color |= (((int)channelIntensities[3]) << 24); // #AARRGGBB white : reference
-                neuronLabelTexture.setValueAt(x, y, z, neuronIndex);
+                // neuronLabelTexture.setValueAt(x, y, z, neuronIndex);
                 slicesXyz.setValueAt(x, y, z, color);
                 slicesYzx.setValueAt(y, x, z, color);
                 slicesZxy.setValueAt(z, x, y, color);
