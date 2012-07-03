@@ -1742,6 +1742,47 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 			update();
 		}
 	}
+	else if (b_moveCurrentLandmark==false && QApplication::keyboardModifiers()==Qt::ShiftModifier) //add to define marker list, by PHC, 20120702
+    {
+		QPoint cp = mouseEventToImageCoords(e->pos()).toPoint();
+        
+		int sx,sy,sz; //current selection location's x,y,z
+        
+		switch(Ptype)
+		{
+			case imgPlaneZ:
+				sx = cp.x(); sy = cp.y(); sz = imgData->curFocusZ;
+				break;
+                
+			case imgPlaneX:
+				sz = cp.x(); sy = cp.y(); sx = imgData->curFocusX;
+				break;
+                
+			case imgPlaneY:
+				sx = cp.x(); sz = cp.y(); sy = imgData->curFocusY;
+				break;
+                
+			default:
+				return;
+				break;
+		}
+        
+		//LocationSimple tmpLocation(sx,sy,sz);
+		//tmpLocation.inputProperty = imgData->listLandmarks.at(ind_landmarkToBeChanged).inputProperty;
+		//tmpLocation.radius = imgData->listLandmarks.at(ind_landmarkToBeChanged).radius;
+        
+        //the following 4 lines are suggested by Carlos Becker to replace the above three lines, 111004 to preserve the comments and other info when a marker is moved
+        LocationSimple tmpLocation;
+        tmpLocation.x = sx;
+        tmpLocation.y = sy;
+        tmpLocation.z = sz;
+        
+        imgData->listLandmarks.append(tmpLocation);
+		v3d_msg(QString("Add new marker at location %1 %2 %3\n").arg(sx).arg(sy).arg(sz), 0);
+        
+		//update();
+	    imgData->updateViews();
+    }
 	else if (b_moveCurrentLandmark==true && ind_landmarkToBeChanged>=0 && QApplication::keyboardModifiers()==Qt::ShiftModifier)
 	{
 		QPoint cp = mouseEventToImageCoords(e->pos()).toPoint();
