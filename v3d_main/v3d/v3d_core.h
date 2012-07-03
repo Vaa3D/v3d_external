@@ -401,7 +401,7 @@ public:
 	bool proj_trace_mergeAllClosebyNeuronNodes();
 
 	QList <V_NeuronSWC_list> tracedNeuron_historylist;
-	static const int MAX_history = 20;
+	static const int MAX_history = 30;
 	int cur_history;
 	void proj_trace_history_append(V_NeuronSWC_list & tNeuron);
 	void proj_trace_history_append();
