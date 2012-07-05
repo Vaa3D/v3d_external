@@ -9,6 +9,7 @@
 #include "../neuron_annotator/utility/StitchedFileUtility.h"
 #include "../neuron_annotator/utility/ImageLoader.h"
 #include "../neuron_annotator/analysis/ScreenPatternAnnotator.h"
+#include "../neuron_annotator/analysis/NeuronFragmentEditor.h"
 
 using namespace std;
 
@@ -81,6 +82,14 @@ bool CommandManager::execute() {
             return false;
         }
         return screenPatternAnnotator.execute();
+    } else if (firstArg==NeuronFragmentEditor::getCommandLineDescription()) {
+        NeuronFragmentEditor neuronFragmentEditor;
+        int status=neuronFragmentEditor.processArgs(argList);
+        if (status!=0) {
+            cout << getUsageString();
+            return false;
+        }
+        return neuronFragmentEditor.execute();
     } else {
         cout << getUsageString();
         return false;
@@ -116,6 +125,8 @@ string CommandManager::getUsageString() {
     usage.append(ScreenPatternAnnotator::getCommandLineDescription());
     usage.append("\n");
     usage.append(ScreenPatternAnnotator::getUsage());
+    usage.append("\n");
+    usage.append(NeuronFragmentEditor::getUsage());
     usage.append("\n");
     return usage;
 }
