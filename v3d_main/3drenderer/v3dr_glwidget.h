@@ -47,6 +47,7 @@ class V3dR_MainWindow;
 class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
 //class SurfaceObjGeometryDialog;
+typedef void(*PluginMouseFunc)(QGLWidget*); // May 29, 2012 by Hang
 
 class V3dR_GLWidget : public QGLWidget, public View3DControl
 {
@@ -124,6 +125,9 @@ protected:
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
     int neuronIndex;
 
+	int currentPluginState;                              // May 29, 2012 by Hang
+	map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
+
 protected slots:
    	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
 
@@ -135,6 +139,11 @@ public:
 // begin View3DControl interface
 //----------------------------------------------------------------------------------------
 public:
+
+	virtual void setState(int state, bool is_enable){ if(is_enable) currentPluginState = state; else currentPluginState = -1;}             // May 29, 2012 by Hang
+	virtual void addStateFunc(int state, void(*mouse_func)(void *)){pluginLeftMouseFuncs[state] = mouse_func;} // May 29, 2012 by Hang
+	virtual void deleteStateFunc(int state){pluginLeftMouseFuncs.erase(state);} // May 29, 2012 by Hang
+
 	virtual int renderMode() const { return _renderMode; }
 	virtual int dataDim1() const { return _data_size[0]; }
 	virtual int dataDim2() const { return _data_size[1]; }

@@ -165,6 +165,7 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 	//setFocusProxy(mainWindow);
 
 	//qDebug("V3dR_GLWidget::V3dR_GLWidget ----- end");
+	currentPluginState = -1; // May 29, 2012 by Hang
 }
 
 
@@ -580,6 +581,12 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 	{
 		lastPos = event->pos();
 		t_mouseclick_left = clock();
+		if(pluginLeftMouseFuncs.find(currentPluginState) != pluginLeftMouseFuncs.end())
+		{
+			void(*mouse_func)(void*);
+			mouse_func = pluginLeftMouseFuncs[currentPluginState];
+			(*mouse_func)((void*)this);
+		}
 	}
 
 	if (event->button()==Qt::RightButton && renderer) //right-click

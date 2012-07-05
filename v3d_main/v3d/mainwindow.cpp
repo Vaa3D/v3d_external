@@ -708,7 +708,7 @@ void MainWindow::customToolbar()
 
             foreach(CustomToolbarSetting* cts, settingList)
             {
-                CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, 0/*this*/);
+                CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, this); // 20120705 Hang, set parent = this
                 if(!ct->showToMainWindow(this)) ct->show();
             }
         }

@@ -681,17 +681,17 @@ bool CustomToolButton::run()
 			V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
 			if (iface2_1 )
 			{
-				iface2_1->domenu(menu_name, *callback, parent);
+				iface2_1->domenu(menu_name, *callback, 0/*parent*/); // 20120705 Hang, set parent to 0
 			}
 			V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
 			if (iface2 )
 			{
-				iface2->domenu(menu_name, *callback,parent);
+				iface2->domenu(menu_name, *callback, 0/*parent*/); // 20120705 Hang, set parent to 0
 			}
 			V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
 			if (iface )
 			{
-				iface->domenu(menu_name, *callback, parent);
+				iface->domenu(menu_name, *callback, 0/*parent*/); // 20120705 Hang, set parent to 0
 			}
 			//while(loader->isLoaded()) 
 			loader->unload();

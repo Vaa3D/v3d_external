@@ -41,6 +41,10 @@ class View3DControl
 public:
 	virtual ~View3DControl() {};
 
+	virtual void setState(int state, bool is_enable) = 0; // May 29, 2012 by Hang
+	virtual void addStateFunc(int state, void(*mouse_func)(void *)) = 0; // May 29, 2012 by Hang
+	virtual void deleteStateFunc(int state) = 0; // May 29, 2012 by Hang
+
 	virtual int renderMode() const =0;
 	virtual int dataDim1() const =0;
 	virtual int dataDim2() const =0;
