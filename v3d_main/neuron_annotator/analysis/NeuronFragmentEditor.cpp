@@ -74,8 +74,12 @@ bool NeuronFragmentEditor::createFragmentComposite()
   V3DLONG zdim=sourceImage->getZDim();
   V3DLONG cdim=sourceImage->getCDim();
 
+  qDebug() << "Using source x=" << xdim << " y=" << ydim << " z=" << zdim << " c=" << cdim;
+
   ImageLoader labelLoader;
   My4DImage * labelImage=labelLoader.loadImage(inputLabelIndexFilepath);
+
+  qDebug() << "Checking source and label dimension correspondence";
 
   if (labelImage->getXDim()!=xdim) {
     qDebug() << "source and label xdim do not match";
@@ -94,10 +98,14 @@ bool NeuronFragmentEditor::createFragmentComposite()
     return false;
   }
 
+  qDebug() << "Creating compositeImage";
+
   My4DImage * compositeImage = new My4DImage();
   compositeImage->loadImage(xdim, ydim, zdim, cdim, V3D_UINT8);
 
-  v3d_uint8 * label=labelImage->getRawDataAtChannel(0);
+  qDebug() << "Setting up channel pointeres";
+
+  v3d_uint16 * label=(v3d_uint16*)(labelImage->getRawDataAtChannel(0));
 
   v3d_uint8 * sourceR=sourceImage->getRawDataAtChannel(0);
   v3d_uint8 * sourceG=sourceImage->getRawDataAtChannel(1);
@@ -106,21 +114,26 @@ bool NeuronFragmentEditor::createFragmentComposite()
   v3d_uint8 * compR=compositeImage->getRawDataAtChannel(0);
   v3d_uint8 * compG=compositeImage->getRawDataAtChannel(1);
   v3d_uint8 * compB=compositeImage->getRawDataAtChannel(2);
+
+  qDebug() << "Creating fragment membership array";
   
   int fragmentListSize=fragmentList.size();
   int * fragmentArr = new int[fragmentListSize];
   for (int f=0;f<fragmentListSize;f++) {
     fragmentArr[f]=fragmentList.at(f);
+    qDebug() << "Adding entry for fragment=" << fragmentArr[f];
   }
 
-  for (V3DLONG z=0;z<xdim;z++) {
+  qDebug() << "Populating new image";
+
+  for (V3DLONG z=0;z<zdim;z++) {
     for (V3DLONG y=0;y<ydim;y++) {
-      for (V3DLONG x=0;x<zdim;x++) {
+      for (V3DLONG x=0;x<xdim;x++) {
 	V3DLONG offset=z*ydim*xdim + y*xdim + x;
 	int labelValue=label[offset];
 	bool include=false;
 	for (int f=0;f<fragmentListSize;f++) {
-	  if (labelValue==fragmentArr[f]) {
+	  if (labelValue==fragmentArr[f]+1) {
 	    include=true;
 	  }
 	}
@@ -137,15 +150,23 @@ bool NeuronFragmentEditor::createFragmentComposite()
     }
   }
 
-  delete [] fragmentArr;
+  qDebug() << "Saving composite";
 
   ImageLoader compositeLoader;
   compositeLoader.saveImage(compositeImage, outputStackFilepath);
 
+  qDebug() << "Creating mip";
+
   My4DImage * compositeMIP = createMIPFromImage(compositeImage);
+
+  qDebug() << "Saving mip";
+  
   ImageLoader compositeMIPSaver;
   compositeMIPSaver.saveImage(compositeMIP, outputMipFilepath);
 
+  qDebug() << "Starting cleanup";
+
+  delete [] fragmentArr;
   delete compositeImage;
   delete compositeMIP;
 
