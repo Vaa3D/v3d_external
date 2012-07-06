@@ -21,16 +21,6 @@ VolumeTexture::VolumeTexture()
 #endif USE_FFMPEG
 {}
 
-bool VolumeTexture::initializeGL() const
-{
-    bool result = false;
-    {
-        // Writer(*this); // acquire lock, waits for Readers to release their locks
-        result = d.constData()->initializeGL();
-    } // release lock
-    return result;
-}
-
 void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
 {
     if (NULL == dataFlowModel) {
@@ -100,7 +90,7 @@ bool VolumeTexture::updateVolume()
         if (bSignalChanged)
             emit signalTextureChanged();
         if (bLabelChanged)
-            emit labelFieldChanged();
+            emit labelTextureChanged();
     }
     else {
         emit progressAborted("Volume update failed");
@@ -111,14 +101,14 @@ bool VolumeTexture::updateVolume()
 /* slot */
 void VolumeTexture::updateNeuronVisibilityTexture()
 {
-    // qDebug() << "VolumeTexture::updateNeuronVisibilityTexture()" << __FILE__ << __LINE__;
+    qDebug() << "VolumeTexture::updateNeuronVisibilityTexture()" << __FILE__ << __LINE__;
     bool bSucceeded = true;
     {
         Writer(*this);
         bSucceeded = d->updateNeuronVisibilityTexture();
     }
     if (bSucceeded)
-        emit neuronVisibilityTextureChanged();
+        emit visibilityTextureChanged();
 }
 
 #ifdef USE_FFMPEG
@@ -170,11 +160,6 @@ const jfrc::Dimension& VolumeTexture::Reader::paddedTextureSize() const
     return d.constData()->paddedTextureSize;
 }
 
-bool VolumeTexture::Reader::uploadNeuronVisibilityTextureToVideoCardGL() const
-{
-    return d.constData()->uploadNeuronVisibilityTextureToVideoCardGL();
-}
-
 bool VolumeTexture::Reader::uploadColorMapTextureToVideoCardGL() const
 {
     return d.constData()->uploadColorMapTextureToVideoCardGL();
@@ -190,6 +175,10 @@ const uint32_t* VolumeTexture::Reader::signalData3D() const {
 
 const uint16_t* VolumeTexture::Reader::labelData3D() const {
     return d.constData()->labelData3D();
+}
+
+const uint32_t* VolumeTexture::Reader::visibilityData2D() const {
+    return d.constData()->visibilityData2D();
 }
 
 ///////////////////////////////////

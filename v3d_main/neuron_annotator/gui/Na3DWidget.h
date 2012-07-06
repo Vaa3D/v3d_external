@@ -71,11 +71,12 @@ signals:
     void volume3DUploaded();
     void signalTextureLoaded();
     void labelTextureLoaded();
+    void visibilityTextureLoaded();
 
 public slots:
     void setShowCornerAxes(bool b);
     void setAlphaBlending(bool);
-    void onVolumeTextureDataChanged();
+    void DEPRECATEDonVolumeTextureDataChanged();
     void updateIncrementalColors();
     void showContextMenu(QPoint point);
     void resetView();
@@ -115,12 +116,13 @@ protected slots:
     void updateRotation(const Rotation3D&);
     void updateFocus(const Vector3D& f);
     // VolumeTexture methods that must be run in the main/OpenGL thread are implemented in Na3DWidget slots
-    void uploadNeuronVisibilityTextureGL();
     bool loadSignalTexture(); // with locking
     bool loadSignalTexture3D(int w, int h, int d, const uint32_t* texture_data); // raw
     bool loadLabelTexture(); // with locking
     bool loadLabelTexture3D(int w, int h, int d, const uint16_t* texture_data);
-    void uploadColorMapTextureGL();
+    bool loadVisibilityTexture();
+    bool loadVisibilityTexture2D(const uint32_t* texture_data);
+    void uploadColorMapTextureGL(); // TODO
 
 protected:
     // bool tryUpdateFullVolume();
@@ -148,8 +150,6 @@ protected:
     bool bShowCornerAxes;
     bool bAlphaBlending;
     bool bClickIsWaiting;
-    bool bVolumeInitialized; // hack to prevent double update on file load
-    // jfrc::VolumeTexture volumeTexture;
     bool bGLIsInitialized;
     QUndoStack* undoStack;
     qreal cachedRelativeScale;

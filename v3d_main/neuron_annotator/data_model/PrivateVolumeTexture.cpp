@@ -238,11 +238,7 @@ public:
 /* explicit */
 NeuronVisibilityTexture::NeuronVisibilityTexture(int maxNeurons)
     : visibilities(maxNeurons, 0x000000ff) // visible, neither selected nor highlighted
-    , textureID(0)
     , neuronSelectionModel(NULL)
-    , textureUnit(GL_TEXTURE2_ARB)
-    , bInitialized(false)
-    , bNeedsUpload(true)
 {}
 
 /// Connect this texture to the NeuronAnnotator unified data model
@@ -251,48 +247,6 @@ void NeuronVisibilityTexture::setNeuronSelectionModel(const NeuronSelectionModel
     if (neuronSelectionModel == &m) return; // no change
     neuronSelectionModel = &m;
     update();
-}
-
-/// Actions to be taken once, when the GL context is created
-/* virtual */
-bool NeuronVisibilityTexture::initializeGL()
-{
-    // clear stale errors
-    GLenum glErr;
-    while ((glErr = glGetError()) != GL_NO_ERROR)
-        qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-    glActiveTextureARB(textureUnit);
-    glEnable(GL_TEXTURE_2D);
-    glGenTextures(1, &textureID);
-    if ((glErr = glGetError()) != GL_NO_ERROR)
-        qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-    else
-        bInitialized = true;
-
-    glActiveTextureARB(textureUnit);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
-    // qDebug() << "uploading neuron visibility" << __FILE__ << __LINE__;
-
-    glTexImage2D(GL_TEXTURE_2D, // target
-                    0, // level
-                    GL_RGBA, // texture format
-                    256, // width
-                    256, // height
-                    0, // border
-                    GL_RGBA, // image format
-                    GL_UNSIGNED_BYTE, // image type
-                    NULL);
-
-    glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
-    if ((glErr = glGetError()) != GL_NO_ERROR)
-        qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-    return true;
 }
 
 bool NeuronVisibilityTexture::update()
@@ -351,61 +305,7 @@ bool NeuronVisibilityTexture::update()
             }
         }
     } // release read lock
-    if (bChanged) {
-        bNeedsUpload = true;
-    }
     return bChanged;
-}
-
-
-/* virtual */
-bool NeuronVisibilityTexture::uploadPixels() const
-{
-    if (! bInitialized) {
-        qDebug() << "Neuron visibility texture has not been initialized";
-        return false;
-    }
-    GLenum glErr;
-    glActiveTextureARB(textureUnit);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // GLSL will replace TexEnv
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
-    // qDebug() << "uploading neuron visibility" << __FILE__ << __LINE__;
-
-    glTexImage2D(GL_TEXTURE_2D, // target
-                    0, // level
-                    GL_RGBA, // texture format
-                    256, // width
-                    256, // height
-                    0, // border
-                    GL_RGBA, // image format
-                    GL_UNSIGNED_BYTE, // image type
-                    &visibilities.front());
-
-    /*
-    glTexSubImage2D(GL_TEXTURE_2D, // target
-                    0, // level
-                    0, // offset
-                    visibilities.size(), // width
-                    GL_RED, // image format
-                    GL_UNSIGNED_BYTE, // image type
-                    &visibilities.front());
-                    */
-
-    glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
-    if ((glErr = glGetError()) != GL_NO_ERROR) {
-        qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        return false;
-    }
-    else {
-        const_cast<NeuronVisibilityTexture*>(this)->bNeedsUpload = false;
-        // emit textureChanged();
-        return true;
-    }
 }
 
 
@@ -616,11 +516,6 @@ bool PrivateVolumeTexture::loadFast3DTexture(int sx, int sy, int sz, const uint8
     return true;
 }
 
-bool PrivateVolumeTexture::uploadNeuronVisibilityTextureToVideoCardGL() const
-{
-    return neuronVisibilityTexture.uploadPixels();
-}
-
 bool PrivateVolumeTexture::uploadColorMapTextureToVideoCardGL() const
 {
     qDebug() << "ColorMap not yet incorporated into VolumeTexture" << __FILE__ << __LINE__;
@@ -631,17 +526,6 @@ bool PrivateVolumeTexture::updateNeuronVisibilityTexture()
 {
     return neuronVisibilityTexture.update();
 }
-
-bool PrivateVolumeTexture::initializeGL() const
-{
-    PrivateVolumeTexture& mutableThis =
-            const_cast<PrivateVolumeTexture&>(*this);
-    bool result = true;
-    if (!mutableThis.neuronVisibilityTexture.initializeGL())
-        result = false;
-    return result;
-}
-
 
 } // namespace jfrc
 

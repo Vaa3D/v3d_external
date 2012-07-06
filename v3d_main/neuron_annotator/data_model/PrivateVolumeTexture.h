@@ -2,8 +2,6 @@
 #define PRIVATE_VOLUMETEXTURE_H
 
 #include <QtGui>
-// TODO - comment out opengl includes, move all opengl to Na3DWidget
-#include "../../3drenderer/GLee_r.h"
 #include "DataColorModel.h"
 #include "NeuronSelectionModel.h"
 #include "NaVolumeData.h"
@@ -121,19 +119,12 @@ public:
     explicit NeuronVisibilityTexture(int maxNeurons = MAX_NEURON_INDEX);
     /// Connect this texture to the NeuronAnnotator unified data model
     void setNeuronSelectionModel(const NeuronSelectionModel& m);
-    /// Actions to be taken once, when the GL context is created
-    virtual bool initializeGL();
     bool update();
-    virtual bool uploadPixels() const;
-
-    bool bNeedsUpload;   
+    const uint32_t* getData() const {return &visibilities[0];}
 
 protected:
     const NeuronSelectionModel* neuronSelectionModel;
-    GLuint textureID;
-    GLenum textureUnit;
     std::vector<unsigned int> visibilities;
-    bool bInitialized;
 };
 
 
@@ -153,11 +144,9 @@ public:
     bool subsampleReferenceField(const NaVolumeData::Reader& volumeReader);
     bool populateVolume(const NaVolumeData::Reader& volumeReader, int zBegin, int zEnd);
     bool loadFast3DTexture(int sx, int sy, int sz, const uint8_t* data); // from fast texture
-    bool uploadNeuronVisibilityTextureToVideoCardGL() const;
     bool uploadColorMapTextureToVideoCardGL() const;
     bool updateNeuronVisibilityTexture();
     void setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel);
-    bool initializeGL() const; // const coerced for convenience July 2012 CMB
     bool use3DSignalTexture() const {return bUse3DSignalTexture;}
     Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
     Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
@@ -166,6 +155,7 @@ public:
     // TODO method to load compressed texture directly from file
     const uint32_t* signalData3D() const {return neuronSignalTexture.getData();}
     const uint16_t* labelData3D() const {return neuronLabelTexture.getData();}
+    const uint32_t* visibilityData2D() const {return neuronVisibilityTexture.getData();}
 
 protected:
     size_t memoryLimit; // Try not to use more texture memory than this
