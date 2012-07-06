@@ -74,6 +74,7 @@ public:
         width = paddedTextureSize.x();
         height = paddedTextureSize.y();
         depth = paddedTextureSize.z();
+        paddedSize = paddedTextureSize;
         usedSize = usedTextureSize;
         size_t numVoxels = width * height * depth;
         if (data.size() != numVoxels)
@@ -89,11 +90,13 @@ public:
     size_t getDepth() const {return depth;}
 
     Dimension getUsedSize() const {return usedSize;}
+    Dimension getPaddedSize() const {return paddedSize;}
 
 protected:
     std::vector<VoxelType> data;
     size_t width, height, depth;
     Dimension usedSize;
+    Dimension paddedSize;
     bool bInitialized;
 };
 

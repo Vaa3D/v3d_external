@@ -7,6 +7,7 @@
 #include "Dimension.h"
 #include <QObject>
 #include <vector>
+#include <stdint.h>
 
 class DataFlowModel;
 
@@ -35,7 +36,9 @@ signals:
 public slots:
     bool updateVolume();
     void updateNeuronVisibilityTexture();
+#ifdef USE_FFMPEG
     bool loadFast3DTexture();
+#endif
 
 private:
     // semantic sugar
@@ -43,7 +46,9 @@ private:
 
 protected:
     const NaVolumeData* volumeData;
+#ifdef USE_FFMPEG
     const Fast3DTexture* fast3DTexture;
+#endif
 
 public:
     /// Allows clients (such as Na3DViewer) to upload pixels in main/OpenGL thread.

@@ -16,7 +16,9 @@ namespace jfrc {
 
 VolumeTexture::VolumeTexture()
     : volumeData(NULL)
+#ifdef USE_FFMPEG
     , fast3DTexture(NULL)
+#endif USE_FFMPEG
 {}
 
 bool VolumeTexture::initializeGL() const
@@ -119,27 +121,31 @@ void VolumeTexture::updateNeuronVisibilityTexture()
         emit neuronVisibilityTextureChanged();
 }
 
+#ifdef USE_FFMPEG
 bool VolumeTexture::loadFast3DTexture()
 {
-    bool bSucceeded = false;
     if (NULL == fast3DTexture)
         return false;
     {
         Fast3DTexture::Reader textureReader(*fast3DTexture);
         if (! textureReader.hasReadLock())
             return false;
-        // TODO
         size_t sx = textureReader.width();
         size_t sy = textureReader.height();
         size_t sz = textureReader.depth();
         const uint8_t* data = textureReader.data();
         Writer(*this);
-        bSucceeded = d->loadFast3DTexture(sx, sy, sz, data);
+        if (! d->loadFast3DTexture(sx, sy, sz, data))
+            return false;
+        Dimension size(sx, sy, sz);
+        // TODO - get original and used from file somehow
+        d->originalImageSize = d->paddedTextureSize = d->usedTextureSize = size;
+        d->subsampleScale = 1.0;
     } // release locks before emit
-    if (bSucceeded)
-        emit signalTextureChanged();
-    return bSucceeded;
+    emit signalTextureChanged();
+    return true;
 }
+#endif
 
 ///////////////////////////////////
 // VolumeTexture::Reader methods //

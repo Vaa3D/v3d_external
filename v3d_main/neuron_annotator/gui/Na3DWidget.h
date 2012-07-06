@@ -10,6 +10,7 @@
 #include "NeuronContextMenu.h"
 #include "../data_model/VolumeTexture.h"
 #include "Stereo3dMode.h"
+#include <stdint.h>
 
 class RendererNeuronAnnotator;
 
