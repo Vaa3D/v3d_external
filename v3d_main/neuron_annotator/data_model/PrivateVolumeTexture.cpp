@@ -231,60 +231,6 @@ public:
 };
 
 
-////////////////////////
-// NeuronLabelTexture //
-////////////////////////
-
-NeuronLabelTexture::NeuronLabelTexture()
-    : super(GL_TEXTURE3_ARB)
-{}
-
-/* virtual */
-bool NeuronLabelTexture::uploadTexture() const
-{
-    // GL_NEAREST ensures that we get an actual non-interpolated label value.
-    // Interpolation would be crazy wrong.
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // copy texture from host RAM to GPU device
-    glTexImage3D(GL_TEXTURE_3D, // target
-                 0, // level
-                 GL_INTENSITY16, // texture format
-                 (GLsizei)width,
-                 (GLsizei)height,
-                 (GLsizei)depth,
-                 0, // border
-                 GL_RED, // image format
-                 GL_UNSIGNED_SHORT, // image type
-                 &data.front());
-}
-
-
-/////////////////////////
-// NeuronSignalTexture //
-/////////////////////////
-
-/* virtual */
-bool NeuronSignalTexture::uploadTexture() const
-{
-    // GL_NEAREST ensures that we get an actual non-interpolated label value.
-    // Interpolation would be crazy wrong.
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // copy texture from host RAM to GPU device
-    glTexImage3D(GL_TEXTURE_3D, // target
-                 0, // level
-                 GL_RGBA8, // texture format
-                 (GLsizei)width,
-                 (GLsizei)height,
-                 (GLsizei)depth,
-                 0, // border
-                 GL_BGRA, // image format
-                 GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-                 &data.front());
-}
-
-
 /////////////////////////////
 // NeuronVisibilityTexture //
 /////////////////////////////
@@ -485,9 +431,6 @@ PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     , paddedTextureSize(rhs.paddedTextureSize)
     , neuronLabelTexture(rhs.neuronLabelTexture)
     , neuronVisibilityTexture(rhs.neuronVisibilityTexture)
-    , slicesXyz(rhs.slicesXyz)
-    , slicesYzx(rhs.slicesYzx)
-    , slicesZxy(rhs.slicesZxy)
     , neuronSignalTexture(rhs.neuronSignalTexture)
     , bUse3DSignalTexture(rhs.bUse3DSignalTexture)
 {
@@ -508,9 +451,6 @@ void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeRea
         subsampleScale = inputSize.computeLinearSubsampleScale(memoryLimit/3);
         usedTextureSize = inputSize.sampledSize(memoryLimit/3);
         paddedTextureSize = usedTextureSize.padToMultipleOf(memoryAlignment);
-        slicesXyz.setSize(Dimension(paddedTextureSize.x(), paddedTextureSize.y(), paddedTextureSize.z()));
-        slicesYzx.setSize(Dimension(paddedTextureSize.y(), paddedTextureSize.x(), paddedTextureSize.z()));
-        slicesZxy.setSize(Dimension(paddedTextureSize.z(), paddedTextureSize.x(), paddedTextureSize.y()));
         neuronLabelTexture.allocateSize(paddedTextureSize, usedTextureSize);
         neuronSignalTexture.allocateSize(paddedTextureSize, usedTextureSize);
     }
@@ -530,7 +470,7 @@ bool PrivateVolumeTexture::subsampleLabelField(const NaVolumeData::Reader& volum
     else { // 16 bit input
         LabelSampler<uint16_t, uint16_t> sampler(labelProxy, neuronLabelTexture);
     }
-    qDebug() << "fast label resample took" << time2.elapsed() << "milliseconds";
+    qDebug() << "label resample took" << time2.elapsed() << "milliseconds";
     return true;
 }
 
@@ -548,7 +488,7 @@ bool PrivateVolumeTexture::subsampleColorField(const NaVolumeData::Reader& volum
     else { // 16 bit input
         SignalSampler<uint16_t, uint32_t> sampler(imageProxy, neuronSignalTexture);
     }
-    qDebug() << "fast color resample took" << time2.elapsed() << "milliseconds";
+    qDebug() << "color resample took" << time2.elapsed() << "milliseconds";
     return true;
 }
 
@@ -566,7 +506,7 @@ bool PrivateVolumeTexture::subsampleReferenceField(const NaVolumeData::Reader& v
     else { // 16 bit input
         ReferenceSampler<uint16_t, uint32_t> sampler(refProxy, neuronSignalTexture);
     }
-    qDebug() << "fast reference resample took" << time2.elapsed() << "milliseconds";
+    qDebug() << "reference resample took" << time2.elapsed() << "milliseconds";
     return true;
 }
 
@@ -658,10 +598,6 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
                 color |= (((int)channelIntensities[1]) << 8);  // #0000GGBB green : channel 2
                 color |= (((int)channelIntensities[0]) << 16); // #00RRGGBB red   : channel 1
                 color |= (((int)channelIntensities[3]) << 24); // #AARRGGBB white : reference
-                // neuronLabelTexture.setValueAt(x, y, z, neuronIndex);
-                slicesXyz.setValueAt(x, y, z, color);
-                slicesYzx.setValueAt(y, x, z, color);
-                slicesZxy.setValueAt(z, x, y, color);
                 neuronSignalTexture.setValueAt(x, y, z, color);
             }
         }
@@ -670,27 +606,13 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
     return true;
 }
 
-bool PrivateVolumeTexture::uploadVolumeTexturesToVideoCardGL() const
+bool PrivateVolumeTexture::loadFast3DTexture(int sx, int sy, int sz, const uint8_t* data) // from fast texture
 {
-    if (bUse3DSignalTexture) {
-        if (! neuronSignalTexture.uploadPixels())
-            return false;
-    }
-    else
-    {
-        if (! slicesZxy.populateGLTextures()) {
-            return false;
-        }
-        if (! slicesYzx.populateGLTextures()) {
-            return false;
-        }
-        if (! slicesXyz.populateGLTextures()) {
-            return false;
-        }
-    }
-    if (! neuronLabelTexture.uploadPixels()) {
-        return false;
-    }
+    qDebug() << "PrivateVolumeTexture::loadFast3DTexture" << sx << sy << sz << __FILE__ << __LINE__;
+    Dimension size(sx, sy, sz); // TODO - what about used size?
+    neuronSignalTexture.allocateSize(size, size);
+    size_t texture_bytes = sx * sy * sz * 4;
+    memcpy(neuronSignalTexture.getData(), data, texture_bytes);
     return true;
 }
 
@@ -710,32 +632,6 @@ bool PrivateVolumeTexture::updateNeuronVisibilityTexture()
     return neuronVisibilityTexture.update();
 }
 
-const PrivateVolumeTexture::Voxel* PrivateVolumeTexture::getDataPtr(Stack::StackSet s) const
-{
-    switch(s) {
-    case Stack::X:
-        return slicesXyz.getDataPtr();
-    case Stack::Y:
-        return slicesYzx.getDataPtr();
-    case Stack::Z:
-        return slicesZxy.getDataPtr();
-    }
-}
-
-/// Access list of OpenGL texture IDs for one of the three texture stacks
-const GLuint* PrivateVolumeTexture::getTexIDPtr(Stack::StackSet s) const
-{
-    switch(s) {
-    case Stack::X:
-        return slicesXyz.getTexIDPtr();
-    case Stack::Y:
-        return slicesYzx.getTexIDPtr();
-    case Stack::Z:
-        return slicesZxy.getTexIDPtr();
-    }
-    return slicesXyz.getTexIDPtr();
-}
-
 bool PrivateVolumeTexture::initializeGL() const
 {
     PrivateVolumeTexture& mutableThis =
@@ -743,198 +639,7 @@ bool PrivateVolumeTexture::initializeGL() const
     bool result = true;
     if (!mutableThis.neuronVisibilityTexture.initializeGL())
         result = false;
-    if (!mutableThis.neuronLabelTexture.initializeGL())
-        result = false;
-    if (bUse3DSignalTexture) {
-        if (! mutableThis.neuronSignalTexture.initializeGL())
-            result = false;
-    }
-    else
-    {
-        if (!mutableThis.slicesXyz.initializeGL())
-            result = false;
-        if (!mutableThis.slicesYzx.initializeGL())
-            result = false;
-        if (!mutableThis.slicesZxy.initializeGL())
-            result = false;
-    }
     return result;
-}
-
-
-/////////////////////////////////////////
-// PrivateVolumeTexture::Stack methods //
-/////////////////////////////////////////
-
-PrivateVolumeTexture::Stack::Stack()
-    : bHasTextureIDs(false)
-{}
-
-/* explicit */
-PrivateVolumeTexture::Stack::Stack(const Stack& rhs)
-    : data(rhs.data)
-    , size(rhs.size)
-    , textureIDs(rhs.textureIDs)
-    , bHasTextureIDs(false)
-{
-    qDebug() << "Stack data being copied.  This is probably not a good idea...";
-}
-
-/* explicit */
-PrivateVolumeTexture::Stack::Stack(Dimension sizeParam)
-    : size(sizeParam)
-{
-    setSize(sizeParam);
-}
-
-/* virtual */
-PrivateVolumeTexture::Stack::~Stack()
-{
-    if (textureIDs.size() > 0) {
-        glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs.front());
-        textureIDs.clear();
-    }
-}
-
-bool PrivateVolumeTexture::Stack::initializeGL()
-{
-    if (size.x() < 1) // Can't initialize that!
-        return false;
-    // Allocate texture names from OpenGL
-    if (textureIDs.size() != size.x())
-    {
-        if (bHasTextureIDs && (textureIDs.size() > 0))
-            glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs[0]);
-        textureIDs.assign((size_t)size.x(), (GLuint)0);
-        bHasTextureIDs = false;
-    }
-    if (! bHasTextureIDs) {
-        glGenTextures((GLsizei)textureIDs.size(), &textureIDs[0]);
-    }
-    // Check for GL errors
-    {
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            return false;
-        }
-    }
-                return true;
-}
-
-PrivateVolumeTexture::Stack& PrivateVolumeTexture::Stack::setSize(Dimension sizeParam)
-{
-    if (size == sizeParam)
-        return *this; // no change
-    size = sizeParam;
-    size_t numVoxels = sizeParam.numberOfVoxels();
-    if (data.size() != numVoxels) {
-        // explicit cast to avoid iterator interpretation in MSVC
-        data.assign(numVoxels, (PrivateVolumeTexture::Voxel)0);
-        // initializeGL();
-    }
-    return *this;
-}
-
-PrivateVolumeTexture::Stack&
-PrivateVolumeTexture::Stack::setValueAt(size_t x, size_t y, size_t z, PrivateVolumeTexture::Voxel color)
-{
-    size_t index = y + z * size.y() + x * size.z() * size.y();
-    assert(data.size() > index);
-    data[index] = color;
-    return *this;
-}
-
-const PrivateVolumeTexture::Voxel* PrivateVolumeTexture::Stack::getSlice(int sliceIx) const
-{
-    return &data[sliceIx * size.z() * size.y()];
-}
-
-const PrivateVolumeTexture::Voxel* PrivateVolumeTexture::Stack::getDataPtr() const
-{
-    return &data.front();
-}
-
-const GLuint* PrivateVolumeTexture::Stack::getTexIDPtr() const
-{
-    return &textureIDs.front();
-}
-
-// Run once to create (but not populate/update) opengl textures
-bool PrivateVolumeTexture::Stack::populateGLTextures() const
-{
-    QTime stopwatch;
-    stopwatch.start();
-    // qDebug() << "PrivateVolumeTexture::Stack::populateGLTextures()" << __FILE__ << __LINE__;
-    size_t numberOfSlices = size.x();
-    GLsizei width = (GLsizei)size.y();
-    GLsizei height = (GLsizei)size.z();
-
-    // Double check that we have the right number of texture names
-    if (textureIDs.size() != (numberOfSlices + 1))
-    {
-        if (textureIDs.size() > 0) {
-            glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs.front());
-            // textureIDs.clear(); // non const method
-        }
-        const_cast<std::vector<GLuint>& >(textureIDs).assign(numberOfSlices + 1, 0);
-        glGenTextures((GLsizei)(numberOfSlices + 1), const_cast<GLuint*>(&textureIDs.front()));
-        // Check for GL errors
-        {
-            GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
-                qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                return false;
-            }
-        }
-    }
-
-    for (int i = 0; i < numberOfSlices; ++i)
-    {
-        glBindTexture(GL_TEXTURE_2D, textureIDs[i + 1]);
-        // Check for GL errors
-        {
-            GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
-                qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                return false;
-            }
-        }
-
-        const int border = 0;
-        glTexImage2D(GL_TEXTURE_2D,
-            0, ///< mipmap level; zero means base level
-            GL_RGBA8, ///< texture format, in bytes per pixel
-            width,
-            height,
-            border,
-            GL_BGRA, // image format
-            GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-            getSlice(i)); ///< NULL means initialize but don't populate
-
-        /*
-        glTexSubImage2D(GL_TEXTURE_2D, // target
-                0, // level
-                0,0,  // offset
-                width, // sub width
-                height, // sub height
-                GL_BGRA, // image format
-                GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-                slices[i][0]);
-         */
-
-        // Check for GL errors
-        {
-            GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
-                qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                return false;
-            }
-        }
-    }
-    // qDebug() << width << height;
-    qDebug() << "Populate textures took" << stopwatch.elapsed() / 1000.0 << "seconds";
-    return true;
 }
 
 

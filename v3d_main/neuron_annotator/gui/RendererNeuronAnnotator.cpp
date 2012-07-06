@@ -833,16 +833,13 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
         Xtex_list = NULL;
         Ytex_list = NULL;
         Ztex_list = NULL;
-        tex3D = textureReader.signal3DTextureId();
         tryTex3D = true;
         texture_unit0_3D = true;
     }
     else
     {
         qDebug() << "Using 2D signal textures" << __FILE__ << __LINE__;
-        Xtex_list = (GLuint*)(textureReader.Xtex_list());
-        Ytex_list = (GLuint*)(textureReader.Ytex_list());
-        Ztex_list = (GLuint*)(textureReader.Ztex_list());
+        assert(false); // 2D textures no longer supported
         tex3D = 0;
         tryTex3D = false;
         texture_unit0_3D = false;

@@ -23,21 +23,27 @@ public:
     VolumeTexture();
     bool initializeGL() const;
     void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
+    const uint8_t* signalData3D() const;
 
 signals:
     // When textures change, they must be uploaded in the main/OpenGL thread
     void neuronVisibilityTextureChanged();
     void colorMapTextureChanged();
-    void volumeTexturesChanged();
+    void labelFieldChanged();
+    void signalTextureChanged();
 
 public slots:
     bool updateVolume();
     void updateNeuronVisibilityTexture();
+    bool loadFast3DTexture();
 
 private:
     // semantic sugar
     typedef NaSharedDataModel<PrivateVolumeTexture> super;
+
+protected:
     const NaVolumeData* volumeData;
+    const Fast3DTexture* fast3DTexture;
 
 public:
     /// Allows clients (such as Na3DViewer) to upload pixels in main/OpenGL thread.
@@ -50,14 +56,11 @@ public:
         const jfrc::Dimension& usedTextureSize() const;
         const jfrc::Dimension& paddedTextureSize() const;
         // All of the following OpenGL-using methods must be call from the main/OpenGL thread only.
-        bool uploadVolumeTexturesToVideoCardGL() const; // This one could take some time
         bool uploadNeuronVisibilityTextureToVideoCardGL() const;
         bool uploadColorMapTextureToVideoCardGL() const;
-        const void* Xtex_list() const;
-        const void* Ytex_list() const;
-        const void* Ztex_list() const;
         bool use3DSignalTexture() const;
-        unsigned int signal3DTextureId() const;
+        const uint32_t* signalData3D() const;
+        const uint16_t* labelData3D() const;
     };
 
 protected:

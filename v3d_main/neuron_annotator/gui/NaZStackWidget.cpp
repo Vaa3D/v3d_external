@@ -131,8 +131,11 @@ int NaZStackWidget::neuronAt(const QPoint& point) const
     return neuronIx;
 }
 
-void NaZStackWidget::setZSliceColors(const ZSliceColors * zSliceColorsParam) {
+void NaZStackWidget::setZSliceColors(const ZSliceColors * zSliceColorsParam)
+{
     zSliceColors = zSliceColorsParam;
+    if (NULL == zSliceColors)
+        return;
     connect(zSliceColors, SIGNAL(dataChanged()),
             this, SLOT(updatePixmap()));
 }

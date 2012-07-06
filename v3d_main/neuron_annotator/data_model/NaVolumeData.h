@@ -94,6 +94,7 @@ private:
     std::vector<int> stackLoadProgressValues;
     std::vector<IntensityHistogram> histograms;
     int currentProgress;
+    bool bDoUpdateSignalTexture; // because texture could be populated upstream by Fast3DTexture
 #ifdef USE_FFMPEG
     Fast3DTexture* mpegTexture;
 #endif
@@ -117,6 +118,7 @@ public:
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
         bool hasReferenceImage() const {return m_data->referenceStack != NULL;}
         bool hasNeuronMask() const {return m_data->neuronMaskStack != NULL;}
+        bool doUpdateSignalTexture() const;
         int getNumberOfNeurons() const {
             if (NULL == m_data->neuronMaskStack) return 0;
             int numNeurons = m_data->neuronMaskStack->getChannalMaxIntensity(0);

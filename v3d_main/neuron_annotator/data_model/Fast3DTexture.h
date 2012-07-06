@@ -18,14 +18,7 @@ class SwsContext;
 #include <QReadWriteLock>
 #include <QFutureWatcher>
 #include <QList>
-#include <QGLWidget>
 #include <QDir>
-
-#if defined(__APPLE__)
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
 
 #include <vector>
 #include <deque>
@@ -140,7 +133,7 @@ protected:
     void deleteData();
 
 public:
-    GLsizei width, height, depth;
+    size_t width, height, depth;
     uint8_t * texture_data; // z*y*x*BGRA, ready for glTexImage3D()
 
 protected:
@@ -163,6 +156,10 @@ public:
             : BaseReadLocker(texture)
             , m_data(&texture)
         {}
+        size_t width() const {return m_data->width;}
+        size_t height() const {return m_data->height;}
+        size_t depth() const {return m_data->depth;}
+        const uint8_t* data() const {return m_data->texture_data;}
 
     private:
         const Fast3DTexture * m_data;

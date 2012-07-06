@@ -567,6 +567,7 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2Blue.mp4"),
                              BlockScaler::CHANNEL_BLUE);
 
+    ui.v3dr_glwidget->makeCurrent();
     mpegTexture->loadNextVolume();
 
     dataFlowModel->getDataColorModel().initializeRgba32();

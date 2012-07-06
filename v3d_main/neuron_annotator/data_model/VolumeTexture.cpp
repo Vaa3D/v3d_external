@@ -16,6 +16,7 @@ namespace jfrc {
 
 VolumeTexture::VolumeTexture()
     : volumeData(NULL)
+    , fast3DTexture(NULL)
 {}
 
 bool VolumeTexture::initializeGL() const
@@ -36,16 +37,25 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
     }
 
     volumeData = &dataFlowModel->getVolumeData();
+
     // qDebug() << "Connecting NaVolumeData::dataChanged() to VolumeTexture::updateVolume()";
     // I cannot understand why this signal gets disconnected between loads sometimes, but it does.
     // ...so try reestablishing it every time.  Thank you Qt::UniqueConnection.
     connect(volumeData, SIGNAL(dataChanged()),
             this, SLOT(updateVolume()), Qt::UniqueConnection);
     Writer(*this);
-    // TODO - what if dataFlowModel is NULL?
     d->setNeuronSelectionModel(dataFlowModel->getNeuronSelectionModel());
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(dataChanged()),
             this, SLOT(updateNeuronVisibilityTexture()), Qt::UniqueConnection);
+
+#ifdef USE_FFMPEG
+    fast3DTexture = &dataFlowModel->getFast3DTexture();
+    connect(this, SIGNAL(signalTextureChanged()),
+            fast3DTexture, SLOT(loadNextVolume())); // Now that previous volume was safely copied
+    connect(fast3DTexture, SIGNAL(volumeUploadRequested(int,int,int,void*)),
+            this, SLOT(loadFast3DTexture()));
+#endif
+
 }
 
 /* slot */
@@ -53,59 +63,42 @@ bool VolumeTexture::updateVolume()
 {
     // qDebug() << "VolumeTexture::updateVolume()" << __FILE__ << __LINE__;
     bool bSucceeded = true; // avoid signalling before unlocking
+    bool bSignalChanged = false;
+    bool bLabelChanged = false;
     if (NULL == volumeData) return false;
-    size_t numSlices = 0;
-    {
-        NaVolumeData::Reader volumeReader(*volumeData); // acquire lock
-        if(! volumeReader.hasReadLock())
-            return false;
-        d->initializeSizes(volumeReader);
-        numSlices = d->usedTextureSize.z();
-    } // release lock before emit
-    if (numSlices < 1) return false;
 
     emit progressMessageChanged("Sampling volume for 3D viewer");
     float progress = 1.0; // out of 100
     emit progressValueChanged(int(progress));
-    int deltaZ = 10; // Report every 10 slices
     qDebug() << "Populating volume data for 3D viewer";
     {
         NaVolumeData::Reader volumeReader(*volumeData);
         if(volumeReader.hasReadLock()) {
             Writer textureWriter(*this); // acquire lock
             d->initializeSizes(volumeReader);
-            if (! d->subsampleColorField(volumeReader))
-                bSucceeded = false;
-            if (! d->subsampleReferenceField(volumeReader))
-                bSucceeded = false;
-            if (! d->subsampleLabelField(volumeReader))
+            if (volumeReader.doUpdateSignalTexture()) {
+                if (d->subsampleColorField(volumeReader))
+                    bSignalChanged = true;
+                else
+                    bSucceeded = false;
+                if (! d->subsampleReferenceField(volumeReader))
+                    bSucceeded = false;
+            }
+            if (d->subsampleLabelField(volumeReader))
+                bLabelChanged = true;
+            else
                 bSucceeded = false;
         }
         else
             bSucceeded = false;
     }
-    /*
-    for (int z = 0; z < numSlices; z += deltaZ)
-    {
-        if (!bSucceeded) break;
-        {
-            NaVolumeData::Reader volumeReader(*volumeData);
-            if(! volumeReader.hasReadLock()) {
-                bSucceeded = false;
-                break;
-            }
-            Writer textureWriter(*this); // acquire lock
-            if (! d->populateVolume(volumeReader, z, z + deltaZ))
-                bSucceeded = false;
-        } // release lock
-        if (! bSucceeded) break;
-        progress = 3.0 + 90.0 * z / numSlices; // 3 - 93 percent in this loop
-        emit progressValueChanged((int) progress);
-    }
-    */
+    emit progressValueChanged(80);
     if (bSucceeded) {
         emit progressComplete();
-        emit volumeTexturesChanged();
+        if (bSignalChanged)
+            emit signalTextureChanged();
+        if (bLabelChanged)
+            emit labelFieldChanged();
     }
     else {
         emit progressAborted("Volume update failed");
@@ -126,6 +119,27 @@ void VolumeTexture::updateNeuronVisibilityTexture()
         emit neuronVisibilityTextureChanged();
 }
 
+bool VolumeTexture::loadFast3DTexture()
+{
+    bool bSucceeded = false;
+    if (NULL == fast3DTexture)
+        return false;
+    {
+        Fast3DTexture::Reader textureReader(*fast3DTexture);
+        if (! textureReader.hasReadLock())
+            return false;
+        // TODO
+        size_t sx = textureReader.width();
+        size_t sy = textureReader.height();
+        size_t sz = textureReader.depth();
+        const uint8_t* data = textureReader.data();
+        Writer(*this);
+        bSucceeded = d->loadFast3DTexture(sx, sy, sz, data);
+    } // release locks before emit
+    if (bSucceeded)
+        emit signalTextureChanged();
+    return bSucceeded;
+}
 
 ///////////////////////////////////
 // VolumeTexture::Reader methods //
@@ -150,11 +164,6 @@ const jfrc::Dimension& VolumeTexture::Reader::paddedTextureSize() const
     return d.constData()->paddedTextureSize;
 }
 
-bool VolumeTexture::Reader::uploadVolumeTexturesToVideoCardGL() const
-{
-    return d.constData()->uploadVolumeTexturesToVideoCardGL();
-}
-
 bool VolumeTexture::Reader::uploadNeuronVisibilityTextureToVideoCardGL() const
 {
     return d.constData()->uploadNeuronVisibilityTextureToVideoCardGL();
@@ -165,26 +174,17 @@ bool VolumeTexture::Reader::uploadColorMapTextureToVideoCardGL() const
     return d.constData()->uploadColorMapTextureToVideoCardGL();
 }
 
-const void* VolumeTexture::Reader::Xtex_list() const {
-    return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::X);
-}
-
-const void* VolumeTexture::Reader::Ytex_list() const {
-    return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::Y);
-}
-
-const void* VolumeTexture::Reader::Ztex_list() const {
-    return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::Z);
-}
-
 bool VolumeTexture::Reader::use3DSignalTexture() const {
     return d.constData()->use3DSignalTexture();
 }
 
-unsigned int VolumeTexture::Reader::signal3DTextureId() const {
-    return d.constData()->signal3DTextureId();
+const uint32_t* VolumeTexture::Reader::signalData3D() const {
+    return d.constData()->signalData3D();
 }
 
+const uint16_t* VolumeTexture::Reader::labelData3D() const {
+    return d.constData()->labelData3D();
+}
 
 ///////////////////////////////////
 // VolumeTexture::Writer methods //

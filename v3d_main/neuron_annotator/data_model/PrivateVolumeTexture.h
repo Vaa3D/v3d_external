@@ -2,6 +2,7 @@
 #define PRIVATE_VOLUMETEXTURE_H
 
 #include <QtGui>
+// TODO - comment out opengl includes, move all opengl to Na3DWidget
 #include "../../3drenderer/GLee_r.h"
 #include "DataColorModel.h"
 #include "NeuronSelectionModel.h"
@@ -35,10 +36,8 @@ class Base3DTexture // basis for both NeuronLabelTexture and NeuronSignalTexture
 public:
     typedef DataType VoxelType;
 
-    explicit Base3DTexture(GLenum textureUnitParam=GL_TEXTURE0_ARB)
-        : textureID(0)
-        , textureUnit(textureUnitParam) // each texture used by a shader might need a separate texture unit
-        , width(8)
+    explicit Base3DTexture()
+        : width(8)
         , height(8)
         , depth(8)
         , bInitialized(false)
@@ -55,22 +54,6 @@ public:
                      assert((ix % 48) >= 0); // number of fragments in realLinkTest + 2
                      data[ix] = (ix % 48);
                  }
-    }
-
-    virtual unsigned int getTextureId() const {return textureID;}
-
-    virtual bool initializeGL()
-    {
-        glPushAttrib(GL_TEXTURE_BIT); // remember previous OpenGL state
-        {
-            glActiveTextureARB(textureUnit);
-            glEnable(GL_TEXTURE_3D);
-            if (0 == textureID)
-                glGenTextures(1, &textureID);
-            bInitialized = true;
-        }
-        glPopAttrib();
-        return true;
     }
 
     virtual void setValueAt(size_t x, size_t y, size_t z, VoxelType value)
@@ -98,37 +81,6 @@ public:
         qDebug() << "Allocating" << width << height << depth;
     }
 
-    virtual bool uploadPixels() const
-    {
-        if (data.size() < 1) return false;
-        GLenum glErr;
-        bool bSucceeded = true;
-        while ((glErr = glGetError()) != GL_NO_ERROR)
-            qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-        // Store active texture unit because glPushAttrib(GL_TEXTURE_BIT);...glPopAttrib(); causes texture binding to be forgotten;
-        GLint previousActiveTextureUnit;
-        glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTextureUnit);
-        {
-            glActiveTextureARB(textureUnit);
-            glEnable(GL_TEXTURE_3D);
-            assert(0 != textureID); // run initializeGL() first
-            glBindTexture(GL_TEXTURE_3D, textureID);
-            // I want off-texture position to be zero - meaning background non-neuron classification
-            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-            uploadTexture(); // use derived-class-specific method
-            GLenum glErr;
-            while ((glErr = glGetError()) != GL_NO_ERROR)
-            {
-                qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
-                bSucceeded = false;
-            }
-        }
-        glActiveTextureARB(previousActiveTextureUnit); // restore default
-        return bSucceeded;
-    }
-
     VoxelType* getData() {return &data[0];}
     const VoxelType* getData() const {return &data[0];}
 
@@ -139,10 +91,6 @@ public:
     Dimension getUsedSize() const {return usedSize;}
 
 protected:
-    virtual bool uploadTexture() const = 0;
-
-    GLuint textureID;
-    GLenum textureUnit;
     std::vector<VoxelType> data;
     size_t width, height, depth;
     Dimension usedSize;
@@ -151,23 +99,11 @@ protected:
 
 
 class NeuronLabelTexture : public Base3DTexture<uint16_t>
-{
-private:
-    typedef Base3DTexture<uint16_t> super;
-
-public:
-    NeuronLabelTexture();
-
-protected:
-    virtual bool uploadTexture() const;
-};
+{};
 
 
 class NeuronSignalTexture : public Base3DTexture<uint32_t>
-{
-protected:
-    virtual bool uploadTexture() const;
-};
+{};
 
 
 // Largest texture size on my Mac is 16384
@@ -205,35 +141,6 @@ public:
     typedef unsigned int BGRA; // 32-bit
     typedef BGRA Voxel;
 
-    /// One stack of textures, out of three used for basic volume rendering
-    class Stack
-    {
-    public:
-        enum StackSet {X, Y, Z};
-
-        Stack();
-        explicit Stack(const Stack& rhs);
-        explicit Stack(Dimension sizeParam);
-        virtual ~Stack();
-        bool initializeGL();
-        Stack& setSize(Dimension sizeParam);
-        Stack& setValueAt(size_t x, size_t y, size_t z, Voxel color);
-        const Voxel* getSlice(int sliceIx) const;
-        bool populateGLTextures() const;
-        const Voxel* getDataPtr() const;
-        const GLuint* getTexIDPtr() const;
-
-    protected:
-        std::vector<Voxel> data;
-        Dimension size;
-        std::vector<GLuint> textureIDs; ///< openGL texture names from glGenTextures
-        bool bHasTextureIDs;
-
-    private:
-        Stack& operator=(const Stack& rhs);
-    };
-
-
     PrivateVolumeTexture();
     explicit PrivateVolumeTexture(const PrivateVolumeTexture& rhs);
 
@@ -242,32 +149,25 @@ public:
     bool subsampleColorField(const NaVolumeData::Reader& volumeReader);
     bool subsampleReferenceField(const NaVolumeData::Reader& volumeReader);
     bool populateVolume(const NaVolumeData::Reader& volumeReader, int zBegin, int zEnd);
-    bool uploadVolumeTexturesToVideoCardGL() const;
+    bool loadFast3DTexture(int sx, int sy, int sz, const uint8_t* data); // from fast texture
     bool uploadNeuronVisibilityTextureToVideoCardGL() const;
     bool uploadColorMapTextureToVideoCardGL() const;
     bool updateNeuronVisibilityTexture();
     void setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel);
-    const Voxel* getDataPtr(Stack::StackSet s) const;
-    /// Access list of OpenGL texture IDs for one of the three texture stacks
-    const GLuint* getTexIDPtr(Stack::StackSet s) const;
     bool initializeGL() const; // const coerced for convenience July 2012 CMB
     bool use3DSignalTexture() const {return bUse3DSignalTexture;}
-    unsigned int signal3DTextureId() const {return neuronSignalTexture.getTextureId();}
-
     Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
     Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
     Dimension paddedTextureSize; ///< Total size of this texture set, including empty padded edges to get desired memory alignment
     double subsampleScale; ///< Factor by which a single dimension is subsampled
-
     // TODO method to load compressed texture directly from file
+    const uint32_t* signalData3D() const {return neuronSignalTexture.getData();}
+    const uint16_t* labelData3D() const {return neuronLabelTexture.getData();}
 
 protected:
     size_t memoryLimit; // Try not to use more texture memory than this
     int memoryAlignment; // Keep dimensions a multiple of this factor
 
-    Stack slicesZxy;
-    Stack slicesXyz;
-    Stack slicesYzx;
     NeuronVisibilityTexture neuronVisibilityTexture;
     NeuronLabelTexture neuronLabelTexture;
     NeuronSignalTexture neuronSignalTexture;

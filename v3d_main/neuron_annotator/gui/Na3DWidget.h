@@ -68,6 +68,8 @@ signals:
     void slabThicknessChanged(int);
     void slabPositionChanged(int);
     void volume3DUploaded();
+    void signalTextureLoaded();
+    void labelTextureLoaded();
 
 public slots:
     void setShowCornerAxes(bool b);
@@ -104,7 +106,6 @@ public slots:
     void setSlabPosition(int); // range -500 - +500 voxels
     void clipSlab(); // Apply clip plane to current slab
     void updateScreenPosition(); // for stencil based 3D modes
-    bool upload3DVolumeTexture(int w, int h, int d, void* texture_data);
     void initializeDefaultTextures();
 
 protected slots:
@@ -114,7 +115,10 @@ protected slots:
     void updateFocus(const Vector3D& f);
     // VolumeTexture methods that must be run in the main/OpenGL thread are implemented in Na3DWidget slots
     void uploadNeuronVisibilityTextureGL();
-    bool uploadVolumeTexturesGL();
+    bool loadSignalTexture(); // with locking
+    bool loadSignalTexture3D(int w, int h, int d, const uint32_t* texture_data); // raw
+    bool loadLabelTexture(); // with locking
+    bool loadLabelTexture3D(int w, int h, int d, const uint16_t* texture_data);
     void uploadColorMapTextureGL();
 
 protected:

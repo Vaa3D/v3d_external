@@ -109,6 +109,7 @@ NaVolumeData::NaVolumeData()
     , neuronMaskProxy(emptyImage)
     , referenceImageProxy(emptyImage)
     , currentProgress(0)
+    , bDoUpdateSignalTexture(true)
 #ifdef USE_FFMPEG
     , mpegTexture(NULL)
 #endif
@@ -157,10 +158,13 @@ bool NaVolumeData::loadVolumeFromTexture()
             bSucceeded = true;
     }
 
-    if (bSucceeded)
+    if (bSucceeded) {
+        bDoUpdateSignalTexture = false; // because it was set upstream
         emit channelsLoaded(3);
-    else
+    }
+    else {
         emit progressAborted("Volume load failed");
+    }
     return bSucceeded;
 }
 #endif
@@ -290,6 +294,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
     qDebug() << "Loading 16-bit image data from disk absorbed "
             << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
 
+    bDoUpdateSignalTexture = true; // because it needs update now
 
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() / 1000.0 << "seconds" << __FILE__ << __LINE__;
     emit progressCompleted();
@@ -328,6 +333,7 @@ bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
         bSucceeded = volumeWriter.loadSingleImageMovieVolume(fileName);
     } // release lock before emit
     if (bSucceeded) {
+        bDoUpdateSignalTexture = true;
         emit progressCompleted();
         emit channelsLoaded(3);
     }
@@ -717,6 +723,11 @@ const Image4DProxy<My4DImage>& NaVolumeData::Reader::getOriginalImageProxy() con
 const Image4DProxy<My4DImage>& NaVolumeData::Reader::getReferenceImageProxy() const
 {
     return m_data->referenceImageProxy;
+}
+
+bool NaVolumeData::Reader::doUpdateSignalTexture() const
+{
+    return m_data->bDoUpdateSignalTexture;
 }
 
 
