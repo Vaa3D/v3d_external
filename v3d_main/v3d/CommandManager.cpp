@@ -126,6 +126,8 @@ string CommandManager::getUsageString() {
     usage.append("\n");
     usage.append(ScreenPatternAnnotator::getUsage());
     usage.append("\n");
+    usage.append(NeuronFragmentEditor::getCommandLineDescription());
+    usage.append("\n");
     usage.append(NeuronFragmentEditor::getUsage());
     usage.append("\n");
     return usage;
