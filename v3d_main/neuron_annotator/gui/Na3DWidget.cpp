@@ -475,6 +475,7 @@ void Na3DWidget::initializeGL()
         qDebug() << "OpenGL context does not support stereo 3D";
     V3dR_GLWidget::initializeGL();
 
+    init_members();
     // TODO - will I ever find a use for initializeDefaultTextures?
     initializeDefaultTextures();
 
@@ -513,16 +514,37 @@ bool Na3DWidget::loadSignalTexture()
     if (NULL == dataFlowModel)
         return false;
     bool bSucceeded = true;
+    bool bSizeChanged = false;
     {
         const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
         if (volumeTexture.readerIsStale(textureReader))
             return false;
+        jfrc::Dimension fullSize = textureReader.originalImageSize();
+        jfrc::Dimension oldSize = getRendererNa()->getOriginalVolumeDimensions();
+        bSizeChanged = (oldSize != fullSize);
         jfrc::Dimension size = textureReader.paddedTextureSize();
         const uint32_t* data = textureReader.signalData3D();
         if (! loadSignalTexture3D(size.x(), size.y(), size.z(), data))
             return false;
+        getRendererNa()->updateSettingsFromVolumeTexture(textureReader);
+        updateDefaultScale();
     } // Release locks
+    {
+        // Populate renderer::data4dp for use by picking routine
+        const NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+        if (volumeReader.hasReadLock())
+        {
+            const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+            _idep->image4d = imgProxy.img0;
+            getRendererNa()->setupData(_idep);
+        }
+    }
+    if (bSucceeded) {
+        if (bSizeChanged)
+            resetView();
+        update();
+    }
     return bSucceeded;
 }
 
@@ -543,6 +565,8 @@ bool Na3DWidget::loadLabelTexture()
         if (! loadLabelTexture3D(size.x(), size.y(), size.z(), data))
             return false;
     } // Release locks
+    if (bSucceeded)
+        update();
     return bSucceeded;
 }
 
@@ -738,13 +762,17 @@ Vector3D Na3DWidget::getDefaultFocus() const
 {
     Vector3D result(0, 0, 0);
     if (! dataFlowModel) return result;
-    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
-    if (! volumeReader.hasReadLock()) return result;
-    const Image4DProxy<My4DImage>& volumeProxy = volumeReader.getOriginalImageProxy();
-    // Place origin in the center of a voxel, so subtract 1
-    result = Vector3D(  (volumeProxy.sx - 1.0) / 2.0
-                      , (volumeProxy.sy - 1.0) / 2.0
-                      , (volumeProxy.sz - 1.0) / 2.0 - 1.0); // Why is Z value off by 1?
+
+    const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
+    jfrc::VolumeTexture::Reader textureReader(volumeTexture);
+    if (volumeTexture.readerIsStale(textureReader))
+        return result;
+    jfrc::Dimension size = textureReader.originalImageSize();
+
+    result = Vector3D(  (size.x() - 1.0) / 2.0
+                      , (size.y() - 1.0) / 2.0
+                      , (size.z() - 1.0) / 2.0 - 1.0); // Why is Z value off by 1?
+
     return result;
 }
 

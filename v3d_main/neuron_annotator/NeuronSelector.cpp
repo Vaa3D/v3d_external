@@ -267,13 +267,13 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z)
             emit selectionClearNeeded();
         }
         else {
-            const QList<ImageMarker> landmarks = highlightIndexNeuron();
+            // const QList<ImageMarker> landmarks = highlightIndexNeuron();
             // qDebug() << "updateSelectedPosition" << x << y << z;
             emit neuronSelected(index);
-            if (landmarks.size() > 0) {
-                // qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
-                emit landmarksUpdateNeeded(landmarks);
-            }
+            // if (landmarks.size() > 0) {
+            //     // qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
+            //     emit landmarksUpdateNeeded(landmarks);
+            // }
         }
 }
 

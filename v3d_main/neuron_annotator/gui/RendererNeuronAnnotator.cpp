@@ -737,6 +737,11 @@ void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
 {
 }
 
+jfrc::Dimension RendererNeuronAnnotator::getOriginalVolumeDimensions() const
+{
+    return jfrc::Dimension(dim1, dim2, dim3);
+}
+
 void RendererNeuronAnnotator::setOriginalVolumeDimensions(long x, long y, long z)
 {
     // Set values as if empty volume
