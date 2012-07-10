@@ -691,22 +691,22 @@ void AnnotationWidget::selectEntity(const Entity *entity, const bool external)
     } // release lock before emit
     emit entitySelected(selectedEntity);
 
-    {
-        QMutexLocker locker(&mutex);
-        if (!external)
-        {
-            if (entity!=0)
-            {
-                qDebug() << "AnnotationWidget::selectEntity (notifying console)"<<*entity->id;
-                selectEntityThread = new SelectEntityThread(*entity->id);
-                selectEntityThread->start(QThread::NormalPriority);
-            }
-            else
-            {
-                // TODO: deselectEntity event?
-            }
-        }
-    }
+//    {
+//        QMutexLocker locker(&mutex);
+//        if (!external)
+//        {
+//            if (entity!=0)
+//            {
+//                qDebug() << "AnnotationWidget::selectEntity (notifying console)"<<*entity->id;
+//                selectEntityThread = new SelectEntityThread(*entity->id);
+//                selectEntityThread->start(QThread::NormalPriority);
+//            }
+//            else
+//            {
+//                // TODO: deselectEntity event?
+//            }
+//        }
+//    }
 }
 
 void AnnotationWidget::selectEntityResults(const void *results)
