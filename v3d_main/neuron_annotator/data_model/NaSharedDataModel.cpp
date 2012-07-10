@@ -1,4 +1,5 @@
 #include "NaSharedDataModel.h"
+#include <QDebug>
 
 //////////////////////////
 // NaSharedData methods //
@@ -15,12 +16,16 @@ template<class P>
 /* explicit */
 NaSharedDataModel<P>::NaSharedDataModel(const NaSharedDataModel<P>& other) // copy constructor
     : d(other.d) // no slicing danger, because d (and P) aready have the exact type we want
-{}
+{
+    qDebug() << "Info: copying NaSharedDataModel object" << __FILE__ << __LINE__;
+}
 
 /* virtual */
 template<class P>
 NaSharedDataModel<P>::~NaSharedDataModel()
-{}
+{
+    qDebug() << "Info: deleting NaSharedDataModel object" << __FILE__ << __LINE__;
+}
 
 template<class P>
 bool NaSharedDataModel<P>::readerIsStale(const BaseReader& reader) const

@@ -147,12 +147,15 @@ void DataColorModel::setChannelGamma(int index, qreal gamma)
 }
 
 /* slot */
-void DataColorModel::setChannelVisibility(int channel, bool isVisible) {
+void DataColorModel::setChannelVisibility(int channel, bool isVisible)
+{
+    // qDebug() << "DataColorModel::setChannelVisibility()" << channel << isVisible << __FILE__ << __LINE__;
     if (d.constData()->getChannelVisibility(channel) == isVisible) return;
     {
         Writer colorWriter(*this);
         if (! d->setChannelVisibility(channel, isVisible)) return;
     } // release lock before emit
+    // qDebug() << "visiblity changed";
     emit dataChanged();
 }
 

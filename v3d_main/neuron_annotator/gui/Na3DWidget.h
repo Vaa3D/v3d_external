@@ -72,6 +72,7 @@ signals:
     void signalTextureLoaded();
     void labelTextureLoaded();
     void visibilityTextureLoaded();
+    void colorMapTextureLoaded();
 
 public slots:
     void setShowCornerAxes(bool b);
@@ -122,7 +123,8 @@ protected slots:
     bool loadLabelTexture3D(int w, int h, int d, const uint16_t* texture_data);
     bool loadVisibilityTexture();
     bool loadVisibilityTexture2D(const uint32_t* texture_data);
-    void uploadColorMapTextureGL(); // TODO
+    bool loadColorMapTexture(); // TODO
+    bool loadColorMapTexture2D(const uint32_t* texture_data); // TODO
 
 protected:
     // bool tryUpdateFullVolume();

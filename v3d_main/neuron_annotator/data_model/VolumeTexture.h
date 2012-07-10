@@ -23,7 +23,6 @@ class VolumeTexture : public NaSharedDataModel<PrivateVolumeTexture>
 public:
     VolumeTexture();
     void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
-    const uint8_t* signalData3D() const;
 
 signals:
     // When textures change, they must be uploaded in the main/OpenGL thread
@@ -35,6 +34,7 @@ signals:
 public slots:
     bool updateVolume();
     void updateNeuronVisibilityTexture();
+    bool updateColorMapTexture();
 #ifdef USE_FFMPEG
     bool loadFast3DTexture();
 #endif
@@ -59,13 +59,11 @@ public:
         const jfrc::Dimension& originalImageSize() const;
         const jfrc::Dimension& usedTextureSize() const;
         const jfrc::Dimension& paddedTextureSize() const;
-        // All of the following OpenGL-using methods must be call from the main/OpenGL thread only.
-        bool uploadColorMapTextureToVideoCardGL() const;
-
         bool use3DSignalTexture() const;
         const uint32_t* signalData3D() const;
         const uint16_t* labelData3D() const;
         const uint32_t* visibilityData2D() const;
+        const uint32_t* colorMapData2D() const;
     };
 
 protected:

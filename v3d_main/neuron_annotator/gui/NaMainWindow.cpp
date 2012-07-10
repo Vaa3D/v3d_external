@@ -970,6 +970,7 @@ void NaMainWindow::onSelectionModelVisibilityChanged()
 /* slot */
 void NaMainWindow::setChannelZeroVisibility(bool v)
 {
+    // qDebug() << "NaMainWindow::setChannelZeroVisibility" << v;
     emit channelVisibilityChanged(0, v);
 }
 

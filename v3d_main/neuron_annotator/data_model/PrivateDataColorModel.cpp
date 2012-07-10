@@ -325,6 +325,7 @@ qreal PrivateDataColorModel::getSharedGamma() const {
 
 bool PrivateDataColorModel::setChannelVisibility(int index, bool isVisibleParam)
 {
+    // qDebug() << "PrivateDataColorModel::setChannelVisibility()" << index << isVisibleParam;
     if (index >= channelColors.size()) return false;
     if (index < 0) return false;
     if (channelColors[index].showChannel == isVisibleParam) return false;

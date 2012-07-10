@@ -37,8 +37,11 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
             this, SLOT(updateVolume()), Qt::UniqueConnection);
     Writer(*this);
     d->setNeuronSelectionModel(dataFlowModel->getNeuronSelectionModel());
+    d->setDataColorModel(dataFlowModel->getFast3DColorModel());
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(dataChanged()),
             this, SLOT(updateNeuronVisibilityTexture()), Qt::UniqueConnection);
+    connect(&dataFlowModel->getFast3DColorModel(), SIGNAL(dataChanged()),
+            this, SLOT(updateColorMapTexture()), Qt::UniqueConnection);
 
 #ifdef USE_FFMPEG
     fast3DTexture = &dataFlowModel->getFast3DTexture();
@@ -78,8 +81,7 @@ bool VolumeTexture::updateVolume()
             }
             if (d->subsampleLabelField(volumeReader))
                 bLabelChanged = true;
-            else
-                bSucceeded = false;
+            // It is not a failure to have no label field
         }
         else
             bSucceeded = false;
@@ -109,6 +111,20 @@ void VolumeTexture::updateNeuronVisibilityTexture()
     }
     if (bSucceeded)
         emit visibilityTextureChanged();
+}
+
+bool VolumeTexture::updateColorMapTexture()
+{
+    // qDebug() << "updateColorMapTexture()" << __FILE__ << __LINE__;
+    bool bSucceeded = true;
+    {
+        Writer(*this);
+        bSucceeded = d->updateColorMapTexture();
+    }
+    if (bSucceeded) {
+        // qDebug() << "emitting colorMapTextureChanged()" << __FILE__ << __LINE__;
+        emit colorMapTextureChanged();
+    }
 }
 
 #ifdef USE_FFMPEG
@@ -160,11 +176,6 @@ const jfrc::Dimension& VolumeTexture::Reader::paddedTextureSize() const
     return d.constData()->paddedTextureSize;
 }
 
-bool VolumeTexture::Reader::uploadColorMapTextureToVideoCardGL() const
-{
-    return d.constData()->uploadColorMapTextureToVideoCardGL();
-}
-
 bool VolumeTexture::Reader::use3DSignalTexture() const {
     return d.constData()->use3DSignalTexture();
 }
@@ -180,6 +191,11 @@ const uint16_t* VolumeTexture::Reader::labelData3D() const {
 const uint32_t* VolumeTexture::Reader::visibilityData2D() const {
     return d.constData()->visibilityData2D();
 }
+
+const uint32_t* VolumeTexture::Reader::colorMapData2D() const {
+    return d.constData()->colorMapData2D();
+}
+
 
 ///////////////////////////////////
 // VolumeTexture::Writer methods //

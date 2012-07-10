@@ -298,7 +298,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
 
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() / 1000.0 << "seconds" << __FILE__ << __LINE__;
     emit progressCompleted();
-    // qDebug() << "emitting NaVolumeData::dataChanged" << __FILE__ << __LINE__;
+    // qDebug() << "emitting NaVolumeData::channelsLoaded" << __FILE__ << __LINE__;
     emit channelsLoaded(originalImageProxy.sc);
 }
 

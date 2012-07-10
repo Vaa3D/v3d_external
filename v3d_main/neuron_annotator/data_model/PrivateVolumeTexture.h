@@ -128,6 +128,19 @@ protected:
 };
 
 
+class ColorMapTexture
+{
+public:
+    ColorMapTexture();
+    const uint32_t* getData() const {return &colors[0];}
+    bool update();
+    void setDataColorModel(const DataColorModel& cm);
+
+protected:
+    const DataColorModel* dataColorModel;
+    std::vector< uint32_t > colors;
+};
+
 class PrivateVolumeTexture : public QSharedData
 {
 public:
@@ -144,9 +157,10 @@ public:
     bool subsampleReferenceField(const NaVolumeData::Reader& volumeReader);
     bool populateVolume(const NaVolumeData::Reader& volumeReader, int zBegin, int zEnd);
     bool loadFast3DTexture(int sx, int sy, int sz, const uint8_t* data); // from fast texture
-    bool uploadColorMapTextureToVideoCardGL() const;
     bool updateNeuronVisibilityTexture();
+    bool updateColorMapTexture();
     void setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel);
+    void setDataColorModel(const DataColorModel& dataColorModel);
     bool use3DSignalTexture() const {return bUse3DSignalTexture;}
     Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
     Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
@@ -156,6 +170,7 @@ public:
     const uint32_t* signalData3D() const {return neuronSignalTexture.getData();}
     const uint16_t* labelData3D() const {return neuronLabelTexture.getData();}
     const uint32_t* visibilityData2D() const {return neuronVisibilityTexture.getData();}
+    const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
 
 protected:
     size_t memoryLimit; // Try not to use more texture memory than this
@@ -164,6 +179,7 @@ protected:
     NeuronVisibilityTexture neuronVisibilityTexture;
     NeuronLabelTexture neuronLabelTexture;
     NeuronSignalTexture neuronSignalTexture;
+    ColorMapTexture colorMapTexture;
     bool bUse3DSignalTexture;
 };
 

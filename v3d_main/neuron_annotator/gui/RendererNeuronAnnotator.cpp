@@ -69,6 +69,13 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     total_rgbaBuf = rgbaBuf = NULL;
     rgbaBuf_Xzy = NULL;
     rgbaBuf_Yzx = NULL;
+    tex3D = 0; // don't let base class destructor delete our textures
+    texColormap = 0;
+}
+
+void RendererNeuronAnnotator::setColorMapTextureId(unsigned int textureId)
+{
+    texColormap = textureId;
 }
 
 void RendererNeuronAnnotator::set3dTextureMode(unsigned int textureId)
@@ -181,6 +188,13 @@ static void linkGLShader(cwc::glShaderManager& SMgr,
 }
 
 /* virtual */
+void RendererNeuronAnnotator::cleanShader()
+{
+    texColormap = 0; // Don't let cleanShader() delete our colomap texture
+    Renderer_gl2::cleanShader();
+}
+
+/* virtual */
 void RendererNeuronAnnotator::loadShader()
 {
     // qDebug() << "RendererNeuronAnnotator::loadShader()";
@@ -234,9 +248,6 @@ void RendererNeuronAnnotator::loadShader()
     }
 
     // qDebug("+++++++++ GLSL shader setup finished.");
-
-    glGenTextures(1, &texColormap);
-    initColormap();
 }
 
 void RendererNeuronAnnotator::shaderTexBegin(bool stream)
@@ -267,49 +278,6 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                     shader->setUniform4f(varStr.toStdString().c_str(), v[0], v[1], v[2], v[3]);
                 }
 
-                // switch to colormap texture
-                glActiveTextureARB(GL_TEXTURE1_ARB);
-                glEnable(GL_TEXTURE_2D);
-                glBindTexture(GL_TEXTURE_2D, texColormap);
-                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // GLSL will replace TexEnv
-                CHECK_GLError_print();
-
-//		glTexImage2D(GL_TEXTURE_2D, // target
-//				0, // level
-//				GL_RGBA, // texture format
-//				256, // width
-//				FILL_CHANNEL,   // height
-//				0, // border
-//				GL_RGBA, // image format
-//				GL_UNSIGNED_BYTE, // image type
-//				&colormap[0][0]);
-                // qDebug() << "Uploading color map" << __FILE__ << __LINE__;
-                glTexSubImage2D(GL_TEXTURE_2D, // target
-                                0, // level
-                                0,0, // offset
-                                256, // width
-                                FILL_CHANNEL,   // height
-                                GL_RGBA, // image format
-                                GL_UNSIGNED_BYTE, // image type
-                                &colormap[0][0]);
-                CHECK_GLError_print();
-
-                // spot check color map
-                /*
-                qDebug() << QString("0x%1").arg(colormap[0][128].i, 8, 16)
-                         << QString("0x%1").arg(colormap[1][128].i, 8, 16)
-                         << QString("0x%1").arg(colormap[2][128].i, 8, 16)
-                         << QString("0x%1").arg(colormap[3][128].i, 8, 16);
-                         */
-
-                // TODO - does uploadPixels need to happen after shader->begin() like this?
-                /*
-                if (neuronVisibilityTexture && neuronVisibilityTexture->bNeedsUpload)
-                {
-                    neuronVisibilityTexture->uploadPixels();
-                }
-                 */
-
                 glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
                 glEnable(GL_TEXTURE_2D);
                 glActiveTextureARB(GL_TEXTURE3_ARB); // neuron label
@@ -321,6 +289,14 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                     glEnable(GL_TEXTURE_3D);
                 else
                     glEnable(GL_TEXTURE_2D);
+
+                // switch to colormap texture
+                glActiveTextureARB(GL_TEXTURE1_ARB);
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, texColormap);
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // GLSL will replace TexEnv
+
+                glActiveTextureARB(GL_TEXTURE0_ARB); // volume
         }
 }
 
@@ -356,21 +332,6 @@ void RendererNeuronAnnotator::equAlphaBlendingProjection()
     glBlendEquationEXT(GL_FUNC_ADD_EXT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
-
-/*
-void RendererNeuronAnnotator::setDepthClip(float totalDepthInGlUnits)
-{
-    if (totalDepthInGlUnits <= 0) return;
-    double minFront = viewDistance - 0.3 * totalDepthInGlUnits;
-    if (minFront < 0.5) minFront = 0.5;
-    double maxBack = viewDistance + 0.7 * totalDepthInGlUnits;
-    if (maxBack <= minFront) maxBack = minFront;
-    double range = maxBack - minFront;
-
-    viewNear = minFront + relativeFrontClip * range;
-    viewFar = minFront + relativeBackClip * range;
-}
-*/
 
 void RendererNeuronAnnotator::updateDepthClip()
 {
@@ -670,19 +631,7 @@ void RendererNeuronAnnotator::loadVol()
     //
     ////////////////////////////////////////////////////////////////
     QTime qtime;  qtime.start();
-    // qDebug("   setupStack start --- try %s", try_vol_state());
 
-    // fillX = _getTexFillSize(imageX);
-    // fillY = _getTexFillSize(imageY);
-    // fillZ = _getTexFillSize(imageZ);
-    // qDebug("   sampleScale = %gx%gx%g""   sampledImage = %dx%dx%d""   fillTexture = %dx%dx%d",
-    //                 sampleScaleX, sampleScaleY, sampleScaleZ,  imageX, imageY, imageZ,  fillX, fillY, fillZ);
-
-    if (tryTex3D && supported_Tex3D())
-    {
-        // qDebug() << "Renderer_gl1::loadVol() - creating 3D texture ID\n";
-        // glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
-    }
     if (!tex3D || tryTexStream !=0) //stream = -1/1/2
     {
             //tryTex3D = 0; //091015: no need, because tex3D & tex_stream_buffer is not related now.
@@ -870,6 +819,7 @@ void RendererNeuronAnnotator::cleanVol()
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
     tex3D = 0;
+    texColormap = 0;
     Renderer_gl1::cleanVol();
 }
 

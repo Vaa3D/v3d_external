@@ -28,6 +28,7 @@ public:
     virtual void cleanVol();
     virtual void renderVol();
     virtual void loadShader();
+    virtual void cleanShader();
     virtual void equAlphaBlendingProjection();
     //
     virtual void drawBackFillVolCube() {}
@@ -106,6 +107,7 @@ public slots:
     bool setSlabThickness(int); // range 2-1000 voxels
     void clipSlab(const CameraModel& cameraModel); // Apply clip plane to current slab
     void set3dTextureMode(unsigned int textureId);
+    void setColorMapTextureId(unsigned int textureId);
 
 protected:
     virtual void shaderTexBegin(bool stream);

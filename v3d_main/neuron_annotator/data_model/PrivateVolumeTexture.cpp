@@ -40,7 +40,9 @@ struct BaseSampler
         coords_out_from_in.assign(nDims, std::vector<IndexType>());
         for (int d = 0; d < nDims; ++d) {
             // Use "used" size for mapping, not padded size
-            double ratio = double(used_size_out[d])/double(dims_in[d]);
+            double ratio = 1.0;
+            if (dims_in[d] > 0)
+                ratio = double(used_size_out[d])/double(dims_in[d]);
             coords_out_from_in[d].assign(dims_in[d], 0);
             for (int x1 = 0; x1 < dims_in[d]; ++x1) {
                 int x2 = int((x1 + 0.5) * ratio);
@@ -309,6 +311,65 @@ bool NeuronVisibilityTexture::update()
 }
 
 
+/////////////////////
+// ColorMapTexture //
+/////////////////////
+
+ColorMapTexture::ColorMapTexture()
+    : dataColorModel(NULL)
+{
+    colors.assign(size_t(4 * 256), (uint32_t)0);
+    for (int c = 0; c < 4; ++c) {
+        uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
+        if (3 == c)
+            color_mask = 0x00aaaaaa; // gray for channel 4
+        for (int i = 0; i < 256; ++i) {
+            // 0xAABBGGRR
+            uint32_t alpha_mask = i << 24; // 0xAA000000
+            colors[c*256 + i] = alpha_mask | color_mask;
+        }
+    }
+}
+
+bool ColorMapTexture::update()
+{
+    if (NULL == dataColorModel)
+        return false;
+    const DataColorModel::Reader colorReader(*dataColorModel);
+    if (dataColorModel->readerIsStale(colorReader))
+        return false;
+    for (int rgb = 0; rgb < 4; ++rgb) // loop red, then green, then blue, then reference
+    {
+        // qDebug() << "color" << rgb;
+        QRgb channelColor = colorReader.getChannelColor(rgb);
+        for (int i_in = 0; i_in < 256; ++i_in)
+        {
+            // R/G/B color channel value is sum of data channel values
+            qreal i_out_f = colorReader.getChannelScaledIntensity(rgb, i_in / 255.0) * 255.0;
+            // qDebug() << rgb << i_in << i_out_f << colorReader.getChannelScaledIntensity(rgb, i_in / 255.0)
+            //     << colorReader.getChannelVisibility(rgb);
+            if (i_out_f < 0.0f) i_out_f = 0.0f;
+            if (i_out_f > 255.0) i_out_f = 255.0;
+            uint32_t i_out = (uint32_t) (i_out_f + 0.49999);
+            // Intensities are set in the alpha channel only
+            // (i.e. not R, G, or B)
+            uint32_t color = 0;
+            color |= (  qRed(channelColor) <<  0);
+            color |= (qGreen(channelColor) <<  8);
+            color |= ( qBlue(channelColor) << 16);
+            color |= ( i_out << 24 ); // alpha
+            colors[rgb*256 + i_in] = color;
+        }
+    }
+    return true;
+}
+
+void ColorMapTexture::setDataColorModel(const DataColorModel& cm)
+{
+    dataColorModel = &cm;
+}
+
+
 //////////////////////////
 // PrivateVolumeTexture //
 //////////////////////////
@@ -341,6 +402,11 @@ void PrivateVolumeTexture::setNeuronSelectionModel(const NeuronSelectionModel& n
     neuronVisibilityTexture.setNeuronSelectionModel(neuronSelectionModel);
 }
 
+void PrivateVolumeTexture::setDataColorModel(const DataColorModel& dataColorModel)
+{
+    colorMapTexture.setDataColorModel(dataColorModel);
+}
+
 void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeReader)
 {
     const Image4DProxy<My4DImage>& imageProxy = volumeReader.getOriginalImageProxy();
@@ -361,7 +427,9 @@ bool PrivateVolumeTexture::subsampleLabelField(const NaVolumeData::Reader& volum
     QTime time2;
     time2.start();
     const Image4DProxy<My4DImage>& labelProxy = volumeReader.getNeuronMaskProxy();
-    qDebug() << "starting fast label resample";
+    size_t size = labelProxy.sx * labelProxy.sy * labelProxy.sz;
+    if (size < 1) return false;
+    qDebug() << "starting label resample";
     // Label field file can be either 8 or 16 bits.
     // Our sammpled version must be 16 bits
     if (1 == labelProxy.su) { // 8 bit input
@@ -379,7 +447,7 @@ bool PrivateVolumeTexture::subsampleColorField(const NaVolumeData::Reader& volum
     QTime time2;
     time2.start();
     const Image4DProxy<My4DImage>& imageProxy = volumeReader.getOriginalImageProxy();
-    qDebug() << "starting fast color resample";
+    qDebug() << "starting signal resample";
     // Label field file can be either 8 or 16 bits.
     // Our sammpled version must be 16 bits
     if (1 == imageProxy.su) { // 8 bit input
@@ -397,7 +465,7 @@ bool PrivateVolumeTexture::subsampleReferenceField(const NaVolumeData::Reader& v
     QTime time2;
     time2.start();
     const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
-    qDebug() << "starting fast color resample";
+    qDebug() << "starting reference resample";
     // Label field file can be either 8 or 16 bits.
     // Our sammpled version must be 16 bits
     if (1 == refProxy.su) { // 8 bit input
@@ -516,15 +584,14 @@ bool PrivateVolumeTexture::loadFast3DTexture(int sx, int sy, int sz, const uint8
     return true;
 }
 
-bool PrivateVolumeTexture::uploadColorMapTextureToVideoCardGL() const
-{
-    qDebug() << "ColorMap not yet incorporated into VolumeTexture" << __FILE__ << __LINE__;
-    return true;
-}
-
 bool PrivateVolumeTexture::updateNeuronVisibilityTexture()
 {
     return neuronVisibilityTexture.update();
+}
+
+bool PrivateVolumeTexture::updateColorMapTexture()
+{
+    return colorMapTexture.update();
 }
 
 } // namespace jfrc

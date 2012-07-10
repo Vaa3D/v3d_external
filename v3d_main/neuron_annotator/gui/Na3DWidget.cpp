@@ -133,10 +133,10 @@ bool Na3DWidget::loadSignalTexture3D(int w, int h, int d, const uint32_t* textur
     }
     // Upload volume image as an OpenGL 3D texture
     // glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
+    glActiveTextureARB(GL_TEXTURE0_ARB); // multitexturing index, because there are other textures
     if (0 == defaultVolumeTextureId)
         glGenTextures(1, &defaultVolumeTextureId); // allocate a handle for this texture
     assert(0 != defaultVolumeTextureId);
-    glActiveTextureARB(GL_TEXTURE0_ARB); // multitexturing index, because there are other textures
     glEnable(GL_TEXTURE_3D); // we are using a 3D texture
     glBindTexture(GL_TEXTURE_3D, defaultVolumeTextureId); // make this the current texture
     // Black/zero beyond edge of texture
@@ -177,6 +177,7 @@ bool Na3DWidget::loadSignalTexture3D(int w, int h, int d, const uint32_t* textur
             return false;
         }
     }
+    glDisable(GL_TEXTURE_3D); // we are using a 3D texture
 
     ra->set3dTextureMode(defaultVolumeTextureId);
     cameraModel.setFocus(Vector3D(w/2.0,h/2.0,d/2.0));
@@ -213,13 +214,11 @@ bool Na3DWidget::loadLabelTexture3D(int w, int h, int d, const uint16_t* texture
 
     // Upload Label image as an OpenGL 3D texture
     // glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
+    glActiveTextureARB(GL_TEXTURE3_ARB); // multitexturing index, because there are other textures
     if (0 == defaultLabelTextureId)
         glGenTextures(1, &defaultLabelTextureId); // allocate a handle for this texture
     assert(0 != defaultLabelTextureId);
     // label texture is in unit 3
-    GLint previousActiveTextureUnit;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTextureUnit);
-    glActiveTextureARB(GL_TEXTURE3_ARB); // multitexturing index, because there are other textures
     glEnable(GL_TEXTURE_3D); // we are using a 3D texture
     glBindTexture(GL_TEXTURE_3D, defaultLabelTextureId); // make this the current texture
     // Black/zero beyond edge of texture
@@ -252,7 +251,8 @@ bool Na3DWidget::loadLabelTexture3D(int w, int h, int d, const uint16_t* texture
                  GL_RED, // image format
                  GL_UNSIGNED_SHORT, // image type
         (GLvoid*)texture_data);
-    glActiveTextureARB(previousActiveTextureUnit); // restore default
+    glDisable(GL_TEXTURE_3D);
+    glActiveTextureARB(GL_TEXTURE0_ARB);
     // glPopAttrib(); // restore OpenGL state
     {
         // check for new errors
@@ -291,13 +291,11 @@ bool Na3DWidget::loadVisibilityTexture2D(const uint32_t* texture_data)
 
     // Upload Visibility image as an OpenGL 2D texture
     // glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT); // remember previous OpenGL state
+    glActiveTextureARB(GL_TEXTURE2_ARB); // multitexturing index, because there are other textures
     if (0 == defaultVisibilityTextureId)
         glGenTextures(1, &defaultVisibilityTextureId); // allocate a handle for this texture
     assert(0 != defaultVisibilityTextureId);
     // Visibility texture is in unit 3
-    GLint previousActiveTextureUnit;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActiveTextureUnit);
-    glActiveTextureARB(GL_TEXTURE2_ARB); // multitexturing index, because there are other textures
     glEnable(GL_TEXTURE_2D); // we are using a 2D texture
     glBindTexture(GL_TEXTURE_2D, defaultVisibilityTextureId); // make this the current texture
     // Black/zero beyond edge of texture
@@ -328,7 +326,8 @@ bool Na3DWidget::loadVisibilityTexture2D(const uint32_t* texture_data)
                  GL_RGBA, // image format
                  GL_UNSIGNED_BYTE, // image type
                  (GLvoid*)texture_data);
-    glActiveTextureARB(previousActiveTextureUnit); // restore default
+    glDisable(GL_TEXTURE_2D); // we are using a 2D texture
+    glActiveTextureARB(GL_TEXTURE0_ARB);
     // glPopAttrib(); // restore OpenGL state
     {
         // check for new errors
@@ -354,16 +353,6 @@ void Na3DWidget::initializeDefaultTextures()
     // (quickly) Set all textures to non-pathological values, including
     // volume, colormap, neuron visibility, and neuron label
 
-    // Create texture IDs, if necessary
-    if (0 == defaultVolumeTextureId)
-        glGenTextures(1, &defaultVolumeTextureId);
-    if (0 == defaultColormapTextureId)
-        glGenTextures(1, &defaultColormapTextureId);
-    if (0 == defaultVisibilityTextureId)
-        glGenTextures(1, &defaultVisibilityTextureId);
-    if (0 == defaultLabelTextureId)
-        glGenTextures(1, &defaultLabelTextureId);
-
     // 3D volume texture in unit 0 set to all black
     {
         std::vector<uint32_t> buf(5*5*5, 0);
@@ -372,12 +361,7 @@ void Na3DWidget::initializeDefaultTextures()
 
     // 2D colormap texture maps colors to themselves
     {
-        glActiveTextureARB(GL_TEXTURE1_ARB);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, defaultColormapTextureId);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        std::vector<uint32_t> buf1(256, 0);
-        std::vector< std::vector<uint32_t> > buf2(4, buf1);
+        std::vector<uint32_t> buf2((size_t)4*256, (uint32_t)0);
         for (int c = 0; c < 4; ++c) {
             uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
             if (3 == c)
@@ -385,18 +369,10 @@ void Na3DWidget::initializeDefaultTextures()
             for (int i = 0; i < 256; ++i) {
                 // 0xAABBGGRR
                 uint32_t alpha_mask = i << 24; // 0xAA000000
-                buf2[c][i] = alpha_mask & color_mask;
+                buf2[c*256+i] = alpha_mask & color_mask;
             }
         }
-        glTexImage2D(GL_TEXTURE_2D, // target
-                     0, // level
-                     GL_RGBA,
-                     256, // width
-                     4,   // height
-                     0, // border
-                     GL_RGBA, // image format
-                     GL_UNSIGNED_BYTE, // image type
-                     &buf2[0][0]);
+        loadColorMapTexture2D(&buf2[0]);
     }
 
     // 2D visibility texture maps everything to red
@@ -476,6 +452,7 @@ void Na3DWidget::initializeGL()
     V3dR_GLWidget::initializeGL();
 
     init_members();
+
     // TODO - will I ever find a use for initializeDefaultTextures?
     initializeDefaultTextures();
 
@@ -585,23 +562,86 @@ bool Na3DWidget::loadVisibilityTexture()
         if (! loadVisibilityTexture2D(data))
             return false;
     } // Release locks
+    if (bSucceeded)
+        update();
     return bSucceeded;
 }
 
 /* slot */
 // TODO - refactor colormap response into this method
-void Na3DWidget::uploadColorMapTextureGL()
+bool Na3DWidget::loadColorMapTexture()
 {
+    // qDebug() << "Na3DWidget::loadColorMapTexture()" << __FILE__ << __LINE__;
     if (NULL == dataFlowModel)
-        return;
+        return false;
+    bool bSucceeded = true;
     {
         const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
-        if (volumeTexture.readerIsStale(textureReader)) return;
-        if (! textureReader.uploadColorMapTextureToVideoCardGL())
-            return;
+        if (volumeTexture.readerIsStale(textureReader))
+            return false;
+        const uint32_t* data = textureReader.colorMapData2D();
+        if (! loadColorMapTexture2D(data))
+            return false;
     } // Release locks
+    if (bSucceeded)
+        update();
+    return bSucceeded;
+}
+
+bool Na3DWidget::loadColorMapTexture2D(const uint32_t* data)
+{
+    // qDebug() << "Na3DWidget::loadColorMapTexture2D" << __FILE__ << __LINE__;
+    if (NULL == data)
+        return false;
+    makeCurrent();
+
+    // check for previous errors
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+        return false;
+    }
+
+    // Upload ColorMap image as an OpenGL 3D texture
+    glActiveTextureARB(GL_TEXTURE1_ARB);
+    if (0 == defaultColormapTextureId)
+        glGenTextures(1, &defaultColormapTextureId); // allocate a handle for this texture
+    assert(0 != defaultColormapTextureId);
+    // colormap texture is in unit 1
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, defaultColormapTextureId);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
+
+    glTexImage2D(GL_TEXTURE_2D, // target
+                 0, // level
+                 GL_RGBA,
+                 256, // width
+                 4,   // height
+                 0, // border
+                 GL_RGBA, // image format
+                 GL_UNSIGNED_BYTE, // image type
+                 data);
+    glDisable(GL_TEXTURE_2D);
+    glActiveTextureARB(GL_TEXTURE0_ARB);
+    {
+        // check for new errors
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+            return false;
+        }
+    }
+    if (NULL != getRendererNa())
+        getRendererNa()->setColorMapTextureId(defaultColormapTextureId);
+    emit colorMapTextureLoaded();
     update();
+
+    return true;
 }
 
 /* virtual */
@@ -1404,6 +1444,7 @@ void Na3DWidget::choiceRenderer()
         makeCurrent();
         GLeeInit();
         renderer = new RendererNeuronAnnotator(this);
+        getRendererNa()->setColorMapTextureId(defaultColormapTextureId);
         connect(getRendererNa(), SIGNAL(progressValueChanged(int)),
                 this, SIGNAL(progressValueChanged(int)));
         connect(getRendererNa(), SIGNAL(progressComplete()),
@@ -1539,6 +1580,7 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 void Na3DWidget::paintGL()
 {
     // static QTime stopwatch;
+    // loadColorMapTexture(); // Do we need to load it every frame??! // Does not help.
     V3dR_GLWidget::paintGL();
 
     // Draw focus position to ensure it remains in center of screen,
@@ -1599,6 +1641,8 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
             this, SLOT(loadLabelTexture()));
     connect(&volumeTexture, SIGNAL(visibilityTextureChanged()),
             this, SLOT(loadVisibilityTexture()));
+    connect(&volumeTexture, SIGNAL(colorMapTextureChanged()),
+            this, SLOT(loadColorMapTexture()));
     // connect(&volumeTexture, SIGNAL(signalTextureChanged()),
     //       this, SLOT(DEPRECATEDonVolumeTextureDataChanged()));
 
@@ -1611,8 +1655,6 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
             this, SIGNAL(progressMessageChanged(QString)));
     connect(&volumeTexture, SIGNAL(progressComplete()),
             this, SIGNAL(progressComplete()));
-    connect(&volumeTexture, SIGNAL(colorMapTextureChanged()),
-            this, SLOT(uploadColorMapTextureGL()));
 
     connect(this, SIGNAL(neuronClearAll()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
@@ -1663,7 +1705,7 @@ void Na3DWidget::DEPRECATEDonVolumeTextureDataChanged()
         // TODO - get some const correctness in here...
         // TODO - wean from _idep->image4d
         // _idep->image4d = imgProxy.img0;
-        _idep->image4d = NULL; // seems OK!
+        _idep->image4d = NULL; // seems OK!, but it's not - picker uses image4d
         if (renderer) {
             delete renderer;
             renderer = NULL;
@@ -1677,7 +1719,7 @@ void Na3DWidget::DEPRECATEDonVolumeTextureDataChanged()
                 loadSignalTexture();
             loadLabelTexture();
             // uploadNeuronVisibilityTextureGL();
-            uploadColorMapTextureGL();
+            loadColorMapTexture();
         }
 
         settingRenderer();
