@@ -98,6 +98,6 @@ bool StitchedFileUtility::execute() {
 #endif
 
     signalImage.cleanExistData();
-
+    return true;
 }
 

@@ -94,6 +94,7 @@ bool CommandManager::execute() {
         cout << getUsageString();
         return false;
     }
+    return true;
 }
 
 string CommandManager::getUsageString() {

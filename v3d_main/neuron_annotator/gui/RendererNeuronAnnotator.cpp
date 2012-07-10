@@ -1600,7 +1600,7 @@ void RendererNeuronAnnotator::paintClipGuide()
 
     glDisable(GL_DEPTH_TEST); // draw over the existing scene
     glBegin(GL_LINES);
-        glColor3f(0.9, 0.9, 0.4); // yellow
+        glColor3f(0.9f, 0.9f, 0.4f); // yellow
         glVertex3f(-2, 0, 0);
         glVertex3f(+2, 0, 0);
     glEnd();
@@ -1646,7 +1646,7 @@ void RendererNeuronAnnotator::paintCornerAxes()
         glLineWidth(5.0);
         glBegin(GL_LINES);
             // thicker black lines
-            glColor3f(0.1, 0.1, 0.1); // black
+            glColor3f(0.1f, 0.1f, 0.1f); // black
             glVertex3f(0, 0, 0); // x0
             glVertex3f(1, 0, 0); // x1
             glVertex3f(0, 0, 0); // y0
@@ -1658,13 +1658,13 @@ void RendererNeuronAnnotator::paintCornerAxes()
         glLineWidth(3.0);
         glBegin(GL_LINES);
             // Thinner colored lines
-            glColor3f(0.8, 0.3, 0.3); // red
+            glColor3f(0.8f, 0.3f, 0.3f); // red
             glVertex3f(0, 0, 0); // x0
             glVertex3f(1, 0, 0); // x1
-            glColor3f(0.3, 0.7, 0.3); // green
+            glColor3f(0.3f, 0.7f, 0.3f); // green
             glVertex3f(0, 0, 0); // y0
             glVertex3f(0, 1, 0); // y1
-            glColor3f(0.3, 0.3, 0.9); // blue
+            glColor3f(0.3f, 0.3f, 0.9f); // blue
             glVertex3f(0, 0, 0); // z0
             glVertex3f(0, 0, 1); // z1
         glEnd();

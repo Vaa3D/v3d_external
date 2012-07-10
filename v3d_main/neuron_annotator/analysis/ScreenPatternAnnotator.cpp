@@ -182,6 +182,7 @@ bool ScreenPatternAnnotator::createMaskGuide() {
 
   // Final cleanup
   delete rgbSourceMask;
+  return true;
 }
 
 // This method creates an image stack which is entirely empty, except for two

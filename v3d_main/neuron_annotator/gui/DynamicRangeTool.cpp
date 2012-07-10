@@ -72,7 +72,7 @@ void DynamicRangeTool::setColorModel(DataColorModel& modelParam)
 /* slot */
 void DynamicRangeTool::initializeColors()
 {
-    size_t numChannels = 0;
+    int numChannels = 0;
     {
         DataColorModel::Reader colorReader(*dataColorModel);
         if (dataColorModel->readerIsStale(colorReader))

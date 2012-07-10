@@ -125,6 +125,7 @@ bool VolumeTexture::updateColorMapTexture()
         // qDebug() << "emitting colorMapTextureChanged()" << __FILE__ << __LINE__;
         emit colorMapTextureChanged();
     }
+    return bSucceeded;
 }
 
 #ifdef USE_FFMPEG

@@ -169,7 +169,7 @@ bool NeuronFragmentEditor::createFragmentComposite()
   delete [] fragmentArr;
   delete compositeImage;
   delete compositeMIP;
-
+  return true;
 }
 
 My4DImage * NeuronFragmentEditor::createMIPFromImage(My4DImage * image) {

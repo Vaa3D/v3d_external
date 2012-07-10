@@ -13,7 +13,7 @@ template<typename T, class InputValueType, class OutputValueType>
 // template<class InputValueType, class OutputValueType>
 struct BaseSampler
 {
-    typedef uint16_t IndexType;
+    typedef size_t IndexType;
     static const int nDims = 3;
 
     BaseSampler(const Image4DProxy<My4DImage>& input, Base3DTexture<OutputValueType>& output)

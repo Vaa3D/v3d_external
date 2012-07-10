@@ -92,6 +92,7 @@ bool DataColorModel::initializeRgba32()
         return false;
     emit colorsInitialized();
     emit dataChanged();
+    return true;
 }
 
 void DataColorModel::setChannelColor(int index, /*QRgb*/ int color)

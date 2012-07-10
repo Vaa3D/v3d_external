@@ -70,16 +70,17 @@ bool PrivateDataColorModel::autoCorrect(const NaVolumeData::Reader& volumeReader
         ChannelColorModel& channelModel = channelColors[channel];
         const IntensityHistogram& hist = volumeReader.getHistogram(channel);
         // Use quantile range
-        int rangeMin = hist.quantileIntensity(0.50);
-        int rangeMax = hist.quantileIntensity(1.00);
+        int rangeMin = hist.quantileIntensity(0.50f);
+        int rangeMax = hist.quantileIntensity(1.00f);
         if (channel == volProxy.sc) // reference channel
         {
-            rangeMin = hist.quantileIntensity(0.10);
-            rangeMax = hist.quantileIntensity(1.00);
+            rangeMin = hist.quantileIntensity(0.10f);
+            rangeMax = hist.quantileIntensity(1.00f);
         }
         qDebug() << "Data channel" << channel << "adjusted range is" << rangeMin << "to" << rangeMax;
         channelModel.setHdrRange(rangeMin, rangeMax);
     }
+    return true;
 }
 
 bool PrivateDataColorModel::initializeRgba32()

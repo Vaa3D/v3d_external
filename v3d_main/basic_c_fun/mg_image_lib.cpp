@@ -39,7 +39,15 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <ctype.h>
 
+#ifdef _MSC_VER
+#include <windows.h>
+void sleep(unsigned int seconds)
+{
+    Sleep(1000 * seconds);
+}
+#else
 #include <unistd.h>
+#endif
 
 #include "mg_utilities.h"
 #include "mg_image_lib.h"

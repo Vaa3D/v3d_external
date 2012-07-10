@@ -94,7 +94,7 @@ Na3DWidget::~Na3DWidget()
 }
 
 /* slot */
-bool Na3DWidget::loadSignalTexture3D(int w, int h, int d, const uint32_t* texture_data)
+bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_t* texture_data)
 {
     qDebug() << "Na3DWidget::loadSignalTexture3D()" << w << h << d;
     if (NULL == texture_data)
@@ -196,7 +196,7 @@ bool Na3DWidget::loadSignalTexture3D(int w, int h, int d, const uint32_t* textur
 }
 
 /* slot */
-bool Na3DWidget::loadLabelTexture3D(int w, int h, int d, const uint16_t* texture_data)
+bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t* texture_data)
 {
     qDebug() << "Na3DWidget::loadLabelTexture3D()" << w << h << d;
     if (NULL == texture_data)
@@ -1604,7 +1604,7 @@ void Na3DWidget::paintGL()
         glColor3f(0,0,0); // black marker color
         glLineWidth(3.0);
         paintFiducial(focus0);
-        glColor3f(1.0,1.0,0.7); // pale yellow marker color
+        glColor3f(1.0f,1.0f,0.7f); // pale yellow marker color
         glLineWidth(1.5);
         paintFiducial(focus0);
         glPopAttrib();

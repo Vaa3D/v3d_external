@@ -118,9 +118,9 @@ protected slots:
     void updateFocus(const Vector3D& f);
     // VolumeTexture methods that must be run in the main/OpenGL thread are implemented in Na3DWidget slots
     bool loadSignalTexture(); // with locking
-    bool loadSignalTexture3D(int w, int h, int d, const uint32_t* texture_data); // raw
+    bool loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_t* texture_data); // raw
     bool loadLabelTexture(); // with locking
-    bool loadLabelTexture3D(int w, int h, int d, const uint16_t* texture_data);
+    bool loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t* texture_data);
     bool loadVisibilityTexture();
     bool loadVisibilityTexture2D(const uint32_t* texture_data);
     bool loadColorMapTexture(); // TODO
