@@ -7,6 +7,7 @@ const int ScreenPatternAnnotator::MODE_ANNOTATE=0;
 const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
 const int ScreenPatternAnnotator::MODE_INDEX=2;
 const int ScreenPatternAnnotator::MODE_MASK_GUIDE=3;
+const int ScreenPatternAnnotator::MODE_ARNIM_SCORE=4;
 
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
@@ -72,8 +73,10 @@ bool ScreenPatternAnnotator::execute()
         return updateIndex();
     } else if (mode==MODE_MASK_GUIDE) {
       return createMaskGuide();
+    } else if (mode==MODE_ARNIM_SCORE) {
+      return arnimScore();
     } else if (mode==MODE_UNDEFINED) {
-        return false;
+      return false;
     }
     return false;
 }
@@ -523,6 +526,22 @@ bool ScreenPatternAnnotator::createOutputDirTree() {
     }
 }
 
+bool ScreenPatternAnnotator::loadCompartmentIndex()
+{
+    // Load Compartment Index
+    ImageLoader compartmentIndexLoader;
+    if (compartmentIndexImage!=0) {
+        delete compartmentIndexImage;
+    }
+    compartmentIndexImage=new My4DImage();
+    QString resourceDirectoryPathCopy=resourceDirectoryPath;
+    QString compartmentIndexImageFilepath=resourceDirectoryPathCopy.append(QDir::separator()).append("maskIndex.v3dpbd");
+    if (!compartmentIndexLoader.loadImage(compartmentIndexImage, compartmentIndexImageFilepath)) {
+        qDebug() << "loadCompartmentIndex: Could not load compartmentIndexImage from file=" << compartmentIndexImageFilepath;
+        return false;
+    }
+}
+
 bool ScreenPatternAnnotator::annotate() {
 
     // Load Input Stack
@@ -634,17 +653,11 @@ bool ScreenPatternAnnotator::annotate() {
     imageLoaderForMip.saveImage(mip, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif", MIPS_SUBDIR));
 
     // Load Compartment Index
-    ImageLoader compartmentIndexLoader;
-    if (compartmentIndexImage!=0) {
-        delete compartmentIndexImage;
+    if (!loadCompartmentIndex()) {
+      qDebug() << "Error calling loadCompartmentIndex()";
+      return false;
     }
-    compartmentIndexImage=new My4DImage();
-    QString resourceDirectoryPathCopy=resourceDirectoryPath;
-    QString compartmentIndexImageFilepath=resourceDirectoryPathCopy.append(QDir::separator()).append("maskIndex.v3dpbd");
-    if (!compartmentIndexLoader.loadImage(compartmentIndexImage, compartmentIndexImageFilepath)) {
-        qDebug() << "Could not load compartmentIndexImage from file=" << compartmentIndexImageFilepath;
-        return false;
-    }
+
     qDebug() << "Cubifying compartmentIndexImage";
     compartmentIndexImageCubified=cubifyImage(compartmentIndexImage, CUBE_SIZE, CUBIFY_TYPE_MODE);
     qDebug() << "Done with cubifyImage()";
@@ -669,29 +682,10 @@ bool ScreenPatternAnnotator::annotate() {
     imageLoaderForCompositeMip.saveImage(compositeMip, returnFullPathWithOutputPrefix("compositeMaskMIP.tif", MIPS_SUBDIR));
 
     // Load Abbreviation Index Map
-    compartmentIndexAbbreviationMap.clear();
-    QString resourceDirectoryPathCopy2=resourceDirectoryPath;
-    QString abbreviationMapFilepath=resourceDirectoryPathCopy2.append(QDir::separator()).append("maskNameIndex.txt");
-    QFile abbreviationMapFile(abbreviationMapFilepath);
-    qDebug() << "Opening abbreviationMap file=" << abbreviationMapFilepath;
-    if (!abbreviationMapFile.open(QIODevice::ReadOnly)) {
-        qDebug() << "Could not open file=" << abbreviationMapFilepath << " to read";
-        return false;
+    if (!loadMaskNameIndex()) {
+      qDebug() << "Error calling loadMaskNameIndex()";
+      return false;
     }
-    qDebug() << "Successfully opened file";
-    while(!abbreviationMapFile.atEnd()) {
-        QString abLine=abbreviationMapFile.readLine();
-        abLine=abLine.trimmed();
-	if (abLine.length()>0) {
-	  QList<QString> abList=abLine.split(QRegExp("\\s+"));
-	  QString indexString=abList.at(0);
-	  int indexKey=indexString.toInt();
-	  QString abbreviationValue=abList.at(1);
-	  compartmentIndexAbbreviationMap[indexKey]=abbreviationValue;
-	}
-    }
-    abbreviationMapFile.close();
-    qDebug() << "Done with abbreviationMapFile";
 
     // Perform Compartment Annotations
     QList<int> compartmentIndexList=compartmentIndexAbbreviationMap.keys();
@@ -716,6 +710,34 @@ bool ScreenPatternAnnotator::annotate() {
     quantifierFile.close();
 
     return true;
+}
+
+bool ScreenPatternAnnotator::loadMaskNameIndex()
+{
+    // Load Abbreviation Index Map
+    compartmentIndexAbbreviationMap.clear();
+    QString resourceDirectoryPathCopy2=resourceDirectoryPath;
+    QString abbreviationMapFilepath=resourceDirectoryPathCopy2.append(QDir::separator()).append("maskNameIndex.txt");
+    QFile abbreviationMapFile(abbreviationMapFilepath);
+    qDebug() << "Opening abbreviationMap file=" << abbreviationMapFilepath;
+    if (!abbreviationMapFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Could not open file=" << abbreviationMapFilepath << " to read";
+        return false;
+    }
+    qDebug() << "Successfully opened file";
+    while(!abbreviationMapFile.atEnd()) {
+        QString abLine=abbreviationMapFile.readLine();
+        abLine=abLine.trimmed();
+	if (abLine.length()>0) {
+	  QList<QString> abList=abLine.split(QRegExp("\\s+"));
+	  QString indexString=abList.at(0);
+	  int indexKey=indexString.toInt();
+	  QString abbreviationValue=abList.at(1);
+	  compartmentIndexAbbreviationMap[indexKey]=abbreviationValue;
+	}
+    }
+    abbreviationMapFile.close();
+    qDebug() << "Done with abbreviationMapFile";
 }
 
 // Here, we will treat any non-zero position in the index image as being part-of the composite, and then
@@ -1392,6 +1414,8 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
 	  inputMaskRGBFile=(*argList)[++i];
 	} else if (arg=="-outputMaskDirectory") {
 	  outputMaskDirectoryPath=(*argList)[++i];
+	} else if (arg=="-arnimScoreOutputFile") {
+	  arnimScoreOutputFilepath=(*argList)[++i];
 	}
     }
     if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0 && flipYSet) {
@@ -1400,6 +1424,8 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
         mode=MODE_INDEX;
     } else if (outputMaskDirectoryPath.length()>0) {
         mode=MODE_MASK_GUIDE;
+    } else if (arnimScoreOutputFilepath.length()>0) {
+        mode=MODE_ARNIM_SCORE;
     } else {
         if (inputStackFilepath.length()<1) {
             qDebug() << "inputStackFilepath has invalid length";
@@ -1819,4 +1845,275 @@ bool ScreenPatternAnnotator::updateIndex() {
   nameFile.close();
 
   return true;
+}
+
+bool ScreenPatternAnnotator::arnimScore()
+{
+  // Load Input Stack
+  inputImage=new My4DImage();
+  ImageLoader imageLoader;
+  imageLoader.loadImage(inputImage, inputStackFilepath);
+  if (inputImage->getDatatype()!=V3D_UINT8) {
+    qDebug() << "ScreenPatternGenerator currently only supports 8-bit input data";
+    return false;
+  }
+
+  if (!loadCompartmentIndex()) {
+    qDebug() << "Error calling loadCompartmentIndex()";
+    return false;
+  }
+
+  if (!loadMaskNameIndex()) {
+    qDebug() << "Error calling loadMaskNameIndex()";
+    return false;
+  }
+
+  QFile outputFile(arnimScoreOutputFilepath);
+  if (!outputFile.open(QIODevice::WriteOnly)) {
+    qDebug() << "Could not open file=" << arnimScoreOutputFilepath;
+    return false;
+  }
+  QTextStream scoreOutput(&outputFile);
+
+  // Perform Compartment Annotations
+  QList<int> compartmentIndexList=compartmentIndexAbbreviationMap.keys();
+  for (int k=0;k<compartmentIndexList.size();k++) {
+    int index=compartmentIndexList.at(k);
+    QString abbreviation=compartmentIndexAbbreviationMap[index];
+    SPA_BoundingBox bb=findBoundingBoxFromIndex(index);
+    int * arnimScores = quantifyArnimCompartmentScores(inputImage, compartmentIndexImage, index, bb);
+    int a1=arnimScores[0];
+    int a2=arnimScores[1];
+    int a3=arnimScores[2];
+    int a4=arnimScores[3];
+    int a5=arnimScores[4];
+
+    scoreOutput << index << " " << abbreviation << " " << a1 << " " << a2 << " " << a3 << " " << a4 << " " << a5 << "\n";
+
+  }
+  scoreOutput.flush();
+  outputFile.close();
+}
+
+
+/* Arnim's Compartment Annotation
+
+His system is implemented with the following scripts:
+
+1) wrapperWrap-120621.sh
+
+This goes through the set of lsm images for the 20x gal4 samples and calls wrapper111122.ijm on each one.
+
+2) wrapper120621.ijm
+
+This is applied to a single lsm file and iterates through the mask list, calling the isolateRegion9.ijm script on each one.
+
+3) isolateRegion9.ijm
+
+* This gets the volume (voxel count) of the mask
+* Calls THREE_D_HISTOGRAM(1, 255, 1) presumably to get overall voxel count
+* Has the function THREE_D_HISTOGRAM(hmin, hmax, nbins) which does this:
+   - returns raw peakBin, and the value of the raw peakBin
+   - creates valArray, which is simply a bin index, offset by hmin
+   - For each bin, outputs: min, max, mean, stdev, sum
+   - outputs overall stats for histarray
+   - then, for each bin, outputs normalized statistics, such that the mask volume is used to generate a ratio
+   - then, generates a 'fusionArray' which is the histArray weighted by the index
+   - the last lines of the output file are n bins with <index> <value index> <hist> <norm> 
+
+This script crops and generates histogram statistics on each mask.
+
+4) autoAnnoIntensity.hist16.7.sh
+
+* This computes the intensities and distributions used as the final scores per mask
+* The claim is the the output is (i1 i2 i3 d1 d2), in which i1 and d1 (?) are the official outputs
+* An array with 3 intensity thresholds is used (40 10 0)
+* Histogram bins with 16 values are expected per mask
+* The number of output bins is 5, with the number of fused bins being 2
+* For each of the thresholds in (40 10 0) :
+    - Initialize sum=0
+    - For each of the N=16 bins:
+        + Read the normalized-by-volume floating point value
+        + Multiply by 100,000
+        + Increment the sum
+        + Pool in sets of 3, so that (0,1,2) (3,4,5) (6,7,8) (9,10,11) (12,13,14) (15) are together
+        + If the sum is greater than the theshold (which is 40, 10, or 0) assign rank=5,4,3,2,1,0 until this is true
+        + If after each pool is accumulated, if not over threshold, then decrement rank
+ * The raw rank is the 'intensity' value
+ * Then, based on the rank for threshold 40, we assign 'medslop' and 'noslop' as sums of subsets of histogram bins (of the 16 bins)
+ * Then, based on threshold, these 'medslop' and 'noslop' values are assigned a final value for 'distribution'
+ * The two distribution values generated are for $medSlop and then $noSlop
+
+ This method returns a 1D array with values:
+
+ 0 Intensity-40
+ 1 Intensity-10
+ 2 Intensity-0
+ 3 Distribution medslop
+ 4 Distribution noslop
+
+*/
+
+int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb){
+
+  // Initialize threshold values
+  v3d_uint8 threshold[3];
+  threshold[0]=40;
+  threshold[1]=10;
+  threshold[2]=0;
+
+  int thresholdIntensityResult[3];
+
+  V3DLONG histogram[16];
+  for (int h=0;h<16;h++) histogram[h]=0;
+
+  // Compute normalized mask histogram
+  v3d_uint8 * pData=sourceImage->getRawDataAtChannel(patternChannelIndex);
+  v3d_uint8 * iData=compartmentIndex->getRawData();
+  V3DLONG zmax=sourceImage->getZDim();
+  V3DLONG ymax=sourceImage->getYDim();
+  V3DLONG xmax=sourceImage->getXDim();
+  V3DLONG compartmentVoxelCount=0;
+  for (V3DLONG z=bb.z0;z<=bb.z1;z++) {
+    V3DLONG zoffset=z*ymax*xmax;
+    for (V3DLONG y=bb.y0;y<=bb.y1;y++) {
+      V3DLONG yoffset=y*xmax+zoffset;
+      for (V3DLONG x=bb.x0;x<=bb.x1;x++) {
+	V3DLONG offset=x+yoffset;
+	if (iData[offset]==index) {
+	  compartmentVoxelCount++;
+	  v3d_uint8 v=pData[offset];
+	  int hbin=v/16;
+	  histogram[hbin]++;
+	}
+      }
+    }
+  }
+  double normHistogram[16];
+  double compartmentVoxelCountDouble=compartmentVoxelCount*1.0;
+  for (int h=0;h<16;h++) {
+    normHistogram[h]=histogram[h]/compartmentVoxelCountDouble;
+    qDebug() << "h=" << h << " hist=" << histogram[h] << " norm=" << normHistogram[h];
+  }
+
+  // Do the bin ranking for each threshold case
+  for (int tindex=0;tindex<3;tindex++) {
+    v3d_uint8 t=threshold[tindex];
+    double sum=0.0;
+    int hbin=0;
+    int fusedBins=2;
+    int s=0;
+    int stop=0;
+    int readout=0;
+    int intensityScore=0;
+    int resultRank=5;
+    while (hbin<16 && stop==0) {
+      double normH=normHistogram[hbin]*100000;
+      sum+=normH;
+      if (s<fusedBins) {
+	readout=0;
+      } else {
+	readout=1;
+      }
+      s++;
+      if (readout==1 || hbin>=15) {
+	if (sum>t && stop==0) {
+	  intensityScore=resultRank;
+	  stop=1;
+	}
+	s=0;
+	readout=0;
+	resultRank--;
+      }
+      thresholdIntensityResult[tindex]=intensityScore;
+      hbin++;
+    } // histogram
+  } // threshold
+  
+  V3DLONG medSlopTotal=0;
+  V3DLONG noSlopTotal=0;
+
+  int distributionIntensity=thresholdIntensityResult[0]; // threshold=40
+
+  if (distributionIntensity==0) {
+    medSlopTotal=histogram[15];
+    noSlopTotal=histogram[15];
+  } else if (distributionIntensity==1) {
+    for (int i=12;i<15;i++) {
+      medSlopTotal+=histogram[i];
+      noSlopTotal+=histogram[i];
+    }
+  } else if (distributionIntensity==2) {
+    for (int i=9;i<14;i++) {
+      medSlopTotal+=histogram[i];
+    }
+    for (int i=9;i<12;i++) {
+      noSlopTotal+=histogram[i];
+    }
+  } else if (distributionIntensity==3) {
+    for (int i=6;i<11;i++) {
+      medSlopTotal+=histogram[i];
+    }
+    for (int i=6;i<9;i++) {
+      noSlopTotal+=histogram[i];
+    }
+  } else if (distributionIntensity==4) {
+    for (int i=3;i<8;i++) {
+      medSlopTotal+=histogram[i];
+    }
+    for (int i=3;i<6;i++) {
+      noSlopTotal+=histogram[i];
+    }
+  } else if (distributionIntensity==5) {
+    for (int i=0;i<5;i++) {
+      medSlopTotal+=histogram[i];
+    }
+    for (int i=0;i<3;i++) {
+      noSlopTotal+=histogram[i];
+    }
+  }
+
+  int medSlopDistribution=0;
+  int noSlopDistribution=0;
+
+  double medSlopDouble=medSlopTotal*100000.0;
+  double noSlopDouble=noSlopTotal*100000.0;
+
+  if (medSlopDouble > 70000) {
+    medSlopDistribution=5;
+  } else if (medSlopDouble > 26000) {
+    medSlopDistribution=4;
+  } else if (medSlopDouble > 16000) {
+    medSlopDistribution=3;
+  } else if (medSlopDouble > 7000) {
+    medSlopDistribution=2;
+  } else if (medSlopDouble > 1000) {
+    medSlopDistribution=1;
+  } else {
+    medSlopDistribution=0;
+  }
+
+  if (noSlopDouble > 70000) {
+    noSlopDistribution=5;
+  } else if (noSlopDouble > 26000) {
+    noSlopDistribution=4;
+  } else if (noSlopDouble > 16000) {
+    noSlopDistribution=3;
+  } else if (noSlopDouble > 7000) {
+    noSlopDistribution=2;
+  } else if (noSlopDouble > 1000) {
+    noSlopDistribution=1;
+  } else {
+    noSlopDistribution=0;
+  }
+
+  int * result = new int[5];
+
+  result[0] = thresholdIntensityResult[0];
+  result[1] = thresholdIntensityResult[1];
+  result[2] = thresholdIntensityResult[2];
+  result[3] = medSlopDistribution;
+  result[4] = noSlopDistribution;
+
+  return result;
 }

@@ -30,6 +30,7 @@ public:
     static const int MODE_COMPARTMENT_INDEX;
     static const int MODE_INDEX;
     static const int MODE_MASK_GUIDE;
+    static const int MODE_ARNIM_SCORE;
 
     ScreenPatternAnnotator();
 
@@ -75,6 +76,12 @@ public:
 	usage.append("   -inputRGBFile <mask rgb file>                                                                        \n");
 	usage.append("   -outputMaskDirectory <directory path>                                                                \n");
 	usage.append("                                                                                                        \n");
+	usage.append(" To generate Arnim-style pattern annotation scores:                                                     \n");
+        usage.append("   -input <filepath for stack>                                                                          \n");
+        usage.append("   -pattern_channel  <0-based channel index in stack for pattern channel>                               \n");
+        usage.append("   -resourceDir <resource dir with compartment indices files>                                           \n");
+        usage.append("   -arnimScoreOutputFile <output score file>                                                            \n");
+
         return usage;
     }
 
@@ -89,6 +96,9 @@ public:
 private:
 
     int mode;
+
+    // For Arnim Score
+    QString arnimScoreOutputFilepath;
 
     // For Mask Guide
     QString inputNameIndexFile;
@@ -129,6 +139,7 @@ private:
     QString returnFullPathWithOutputPrefix(QString filename, QString subdirName);
     bool createCompartmentIndex();
     bool annotate();
+    bool loadMaskNameIndex();
     int getIndexFromCompartmentMaskFilename(QString filename);
     QString getAbbreviationFromCompartmentMaskFilename(QString filename);
     void createCompartmentAnnotation(int index, QString abbreviation);
@@ -153,6 +164,10 @@ private:
 
     bool createMaskGuide();
     My4DImage * createMaskIndexGhostImage(My4DImage * rgbSourceMask, int maskIndex, QList<int> redList, QList<int> greenList, QList<int> blueList);
+
+    bool arnimScore();
+    int * quantifyArnimCompartmentScores(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
+    bool loadCompartmentIndex();
 
 };
 
