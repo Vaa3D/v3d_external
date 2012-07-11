@@ -266,18 +266,12 @@ void NaVolumeData::loadVolumeDataFromFiles()
         if (stacksLoaded) {
             qDebug() << "Loading image data into memory from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
             qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
-            flipY(originalImageStack);
-            flipY(neuronMaskStack);
             // Data images are flipped relative to reference image.  I turned off flipping in
             // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
+            flipY(originalImageStack);
+            flipY(neuronMaskStack);
             // flipY(referenceStack);
             // qDebug() << stopwatch.elapsed();
-
-            // populate histograms
-            histograms.assign((size_t)(originalImageProxy.sc + 1), IntensityHistogram());
-            for(int c = 0; c < originalImageProxy.sc; ++c)
-                histograms[c].populate(originalImageProxy, c);
-            histograms[originalImageProxy.sc].populate(referenceImageProxy);
         }
     } // release locks before emit
     if (! stacksLoaded) {
@@ -482,11 +476,6 @@ bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
         img->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
-    // TODO - for speed, deprecate or move histogram computation
-    // Populate histograms
-    m_data->histograms.assign((size_t)(m_data->originalImageProxy.sc), IntensityHistogram());
-    for(int c = 0; c < m_data->originalImageProxy.sc; ++c)
-        m_data->histograms[c].populate(m_data->originalImageProxy, c);
     return true;
 }
 
@@ -704,11 +693,6 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
 //////////////////////////////////
 // NaVolumeData::Reader methods //
 //////////////////////////////////
-
-const IntensityHistogram& NaVolumeData::Reader::getHistogram(int channelIndex) const
-{
-    return m_data->histograms[channelIndex];
-}
 
 const Image4DProxy<My4DImage>& NaVolumeData::Reader::getNeuronMaskProxy() const
 {

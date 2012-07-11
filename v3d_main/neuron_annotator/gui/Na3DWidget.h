@@ -164,6 +164,9 @@ protected:
     unsigned int defaultColormapTextureId;
     unsigned int defaultVisibilityTextureId;
     unsigned int defaultLabelTextureId;
+
+    mutable Vector3D cachedDefaultFocus;
+    mutable bool cachedDefaultFocusIsDirty;
 };
 
 #endif // NA3DWIDGET_H

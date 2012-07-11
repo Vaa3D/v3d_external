@@ -187,10 +187,14 @@ struct IndexSorter
         , bAscending(bAscendingParam)
     {}
     // comparison function sorts indices based on values in values table
-    bool operator() (int i, int j) const {
-        bool result = (values[i] < values[j]);
-        if (bAscending) return result;
-        else return !result;
+    bool operator() (int i, int j) const
+    {
+
+        if (bAscending)
+            return (values[i] < values[j]);
+        // Cannot simply negate bAscending result, because >= is not a strict weak ordering
+        else
+            return (values[i] > values[j]);
     }
     // return ordered list of array indices
     std::vector<int> computeIndexOrder()

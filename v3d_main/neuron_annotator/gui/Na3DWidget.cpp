@@ -96,7 +96,7 @@ Na3DWidget::~Na3DWidget()
 /* slot */
 bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_t* texture_data)
 {
-    qDebug() << "Na3DWidget::loadSignalTexture3D()" << w << h << d;
+    // qDebug() << "Na3DWidget::loadSignalTexture3D()" << w << h << d;
     if (NULL == texture_data)
         return false;
     QTime stopwatch;
@@ -198,7 +198,7 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
 /* slot */
 bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t* texture_data)
 {
-    qDebug() << "Na3DWidget::loadLabelTexture3D()" << w << h << d;
+    // qDebug() << "Na3DWidget::loadLabelTexture3D()" << w << h << d;
     if (NULL == texture_data)
         return false;
     QTime stopwatch;
@@ -263,9 +263,9 @@ bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t
         }
     }
 
-    qDebug() << "Uploading 3D label texture took"
-            << stopwatch.elapsed()
-            << "milliseconds";
+    // qDebug() << "Uploading 3D label texture took"
+    //         << stopwatch.elapsed()
+    //         << "milliseconds";
     emit labelTextureLoaded();
     update();
 
@@ -275,7 +275,7 @@ bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t
 /* slot */
 bool Na3DWidget::loadVisibilityTexture2D(const uint32_t* texture_data)
 {
-    qDebug() << "Na3DWidget::loadVisibilityTexture2D()";
+    // qDebug() << "Na3DWidget::loadVisibilityTexture2D()";
     if (NULL == texture_data)
         return false;
     QTime stopwatch;
@@ -338,9 +338,9 @@ bool Na3DWidget::loadVisibilityTexture2D(const uint32_t* texture_data)
         }
     }
 
-    qDebug() << "Uploading 2D visibility texture took"
-            << stopwatch.elapsed()
-            << "milliseconds";
+    // qDebug() << "Uploading 2D visibility texture took"
+    //         << stopwatch.elapsed()
+    //         << "milliseconds";
     emit visibilityTextureLoaded();
     update();
 
@@ -519,6 +519,7 @@ bool Na3DWidget::loadSignalTexture()
     }
     if (bSucceeded) {
         if (bSizeChanged)
+            cachedDefaultFocusIsDirty = true;
             resetView();
         update();
     }
@@ -800,6 +801,11 @@ void Na3DWidget::resetRotation() {
 
 Vector3D Na3DWidget::getDefaultFocus() const
 {
+    // TODO - reading from the VolumeTexture is slow and brittle
+    // so cache the default focus for frequent ordinary use
+    if (! cachedDefaultFocusIsDirty)
+        return cachedDefaultFocus;
+
     Vector3D result(0, 0, 0);
     if (! dataFlowModel) return result;
 
@@ -812,6 +818,9 @@ Vector3D Na3DWidget::getDefaultFocus() const
     result = Vector3D(  (size.x() - 1.0) / 2.0
                       , (size.y() - 1.0) / 2.0
                       , (size.z() - 1.0) / 2.0 - 1.0); // Why is Z value off by 1?
+
+    cachedDefaultFocus = result;
+    cachedDefaultFocusIsDirty = false;
 
     return result;
 }
@@ -1683,7 +1692,7 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 // Refactor to respond to changes in VolumeTexture, not to NaVolumeData
 void Na3DWidget::DEPRECATEDonVolumeTextureDataChanged()
 {
-    qDebug() << "Na3DWidget::onVolumeDataChanged()" << __FILE__ << __LINE__;
+    qDebug() << "Na3DWidget::onDEPRECATEDVolumeDataChanged()" << __FILE__ << __LINE__;
     // Remember whether alpha blending was on before calling init_members();
     bool alphaBlendingMode = (_renderMode == Renderer::rmAlphaBlendingProjection);
     init_members();

@@ -783,7 +783,7 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
     // Copy pointers to openGL texture ID lists
     if (textureReader.use3DSignalTexture())
     {
-        qDebug() << "Using 3D signal texture" << __FILE__ << __LINE__;
+        // qDebug() << "Using 3D signal texture" << __FILE__ << __LINE__;
         Xtex_list = NULL;
         Ytex_list = NULL;
         Ztex_list = NULL;

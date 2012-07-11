@@ -24,7 +24,7 @@ class DataColorModel : public NaSharedDataModel<PrivateDataColorModel>
 
 public:
     DataColorModel();
-    explicit DataColorModel(const NaVolumeData& volumeDataParam, bool bAutoCorrect = false);
+    explicit DataColorModel(const NaVolumeData& volumeDataParam);
     explicit DataColorModel(const DataColorModel& rhs);
 
     void setIncrementalColorSource(const DataColorModel& desiredColors, const DataColorModel& currentColors);
@@ -52,7 +52,6 @@ protected:
     // merge calls to setGamma(qreal)
     SlotStatus statusOfSetGammaSlot;
     qreal latestGamma;
-    bool bAutoCorrect;
 
 protected:
     const NaVolumeData * volumeData;

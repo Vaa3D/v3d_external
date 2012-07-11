@@ -3,7 +3,6 @@
 
 #include "NaLockableData.h"
 #include "../../v3d/v3d_core.h"
-#include "IntensityHistogram.h"
 
 #ifdef USE_FFMPEG
 class Fast3DTexture;
@@ -92,7 +91,6 @@ private:
     Image4DProxy<My4DImage> neuronMaskProxy;
     Image4DProxy<My4DImage> referenceImageProxy;
     std::vector<int> stackLoadProgressValues;
-    std::vector<IntensityHistogram> histograms;
     int currentProgress;
     bool bDoUpdateSignalTexture; // because texture could be populated upstream by Fast3DTexture
 #ifdef USE_FFMPEG
@@ -114,7 +112,6 @@ public:
         const Image4DProxy<My4DImage>& getNeuronMaskProxy() const;
         const Image4DProxy<My4DImage>& getOriginalImageProxy() const;
         const Image4DProxy<My4DImage>& getReferenceImageProxy() const;
-        const IntensityHistogram& getHistogram(int channelIndex) const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
         bool hasReferenceImage() const {return m_data->referenceStack != NULL;}
         bool hasNeuronMask() const {return m_data->neuronMaskStack != NULL;}

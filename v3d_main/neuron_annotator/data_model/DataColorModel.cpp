@@ -15,11 +15,10 @@ DataColorModel::DataColorModel()
 {
 }
 
-DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam, bool bAutoCorrectParam)
+DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
     : volumeData(&volumeDataParam)
     , desiredColors(NULL)
     , currentColors(NULL)
-    , bAutoCorrect(bAutoCorrectParam)
 {
     connect(volumeData, SIGNAL(dataChanged()),
             this, SLOT(initialize()));
@@ -78,8 +77,6 @@ void DataColorModel::initialize()
         if (! volumeReader.hasReadLock()) return;
         Writer colorWriter(*this);
         if (! d->initialize(volumeReader)) return;
-        if (bAutoCorrect)
-            d->autoCorrect(volumeReader);
     } // release locks
     // qDebug() << "Done resetting DataColorModel";
     emit colorsInitialized();

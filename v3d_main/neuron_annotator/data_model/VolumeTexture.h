@@ -22,6 +22,7 @@ class VolumeTexture : public NaSharedDataModel<PrivateVolumeTexture>
 
 public:
     VolumeTexture();
+    virtual ~VolumeTexture();
     void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
 
 signals:

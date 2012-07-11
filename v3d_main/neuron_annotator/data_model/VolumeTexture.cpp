@@ -21,6 +21,12 @@ VolumeTexture::VolumeTexture()
 #endif USE_FFMPEG
 {}
 
+/* virtual */
+VolumeTexture::~VolumeTexture()
+{
+    Writer(*this); // wait for clients to return before destruction
+}
+
 void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
 {
     if (NULL == dataFlowModel) {
