@@ -153,10 +153,7 @@ public:
         bool loadOneChannel(QString fileName, int channel_index = 0);
         int  loadChannels(QString fileName); // includes loading general volumes
         bool loadNeuronMask(QString fileName);
-
-#ifdef USE_FFMPEG
         bool loadVolumeFromTexture(const jfrc::VolumeTexture* texture);
-#endif
 
     private:
         NaVolumeData * m_data;
