@@ -7,9 +7,11 @@
 #include <cmath>
 #include <cassert>
 #include <stdint.h>
+#include "../data_model/VolumeTexture.h"
+#include "../data_model/DataColorModel.h"
 
 using namespace std;
-
+using namespace jfrc;
 
 Na3DWidget::Na3DWidget(QWidget* parent)
         : V3dR_GLWidget(NULL, parent, "Title")
@@ -28,6 +30,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , defaultVisibilityTextureId(0)
         , defaultLabelTextureId(0)
         , bGLIsInitialized(false)
+        , cachedDefaultFocusIsDirty(true)
 {
     if (renderer) {
         delete renderer;
@@ -355,8 +358,8 @@ void Na3DWidget::initializeDefaultTextures()
 
     // 3D volume texture in unit 0 set to all black
     {
-        std::vector<uint32_t> buf(5*5*5, 0);
-        loadSignalTexture3D(5,5,5,&buf[0]);
+        std::vector<uint32_t> buf(8*8*8, 0);
+        loadSignalTexture3D(8,8,8,&buf[0]);
     }
 
     // 2D colormap texture maps colors to themselves
@@ -383,8 +386,8 @@ void Na3DWidget::initializeDefaultTextures()
 
     // 3D neuron label texture all zero == background
     {
-        std::vector<uint16_t> buf(5*5*5, 0);
-        loadLabelTexture3D(5, 5, 5, &buf[0]);
+        std::vector<uint16_t> buf(8*8*8, 0);
+        loadLabelTexture3D(8, 8, 8, &buf[0]);
     }
 
     glActiveTextureARB(GL_TEXTURE0_ARB);
@@ -505,6 +508,7 @@ bool Na3DWidget::loadSignalTexture()
         if (! loadSignalTexture3D(size.x(), size.y(), size.z(), data))
             return false;
         getRendererNa()->updateSettingsFromVolumeTexture(textureReader);
+        renderer->getLimitedDataSize(_data_size); //for update slider size
         updateDefaultScale();
     } // Release locks
     {
@@ -519,8 +523,11 @@ bool Na3DWidget::loadSignalTexture()
     }
     if (bSucceeded) {
         if (bSizeChanged)
+        {
             cachedDefaultFocusIsDirty = true;
             resetView();
+            resetVolumeCutRange();
+        }
         update();
     }
     return bSucceeded;
@@ -1390,17 +1397,26 @@ void Na3DWidget::updateIncrementalColors()
             // TODO
             return;
         }
+        if (numChannels < 1)
+            return;
 
         // Populate clever opengl color map texture
         for (int rgb = 0; rgb < 4; ++rgb) // loop red, then green, then blue, then reference
         {
-            // qDebug() << "color" << rgb;
-            QRgb channelColor = colorReader.getChannelColor(rgb);
+            QRgb channelColor = 0;
+            bool haveData = false;
+            if (rgb < numChannels) {
+                haveData = true;
+                // qDebug() << "color" << rgb;
+                channelColor = colorReader.getChannelColor(rgb);
+            }
             Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
             for (int i_in = 0; i_in < 256; ++i_in)
             {
                 // R/G/B color channel value is sum of data channel values
-                qreal i_out_f = colorReader.getChannelScaledIntensity(rgb, i_in / 255.0) * 255.0;
+                qreal i_out_f = 0.0;
+                if (haveData)
+                    i_out_f = colorReader.getChannelScaledIntensity(rgb, i_in / 255.0) * 255.0;
                 // qDebug() << rgb << i_in << i_out_f << colorReader.getChannelScaledIntensity(rgb, i_in / 255.0)
                 //     << colorReader.getChannelVisibility(rgb);
                 if (i_out_f < 0.0f) i_out_f = 0.0f;
@@ -1770,26 +1786,30 @@ void Na3DWidget::DEPRECATEDonVolumeTextureDataChanged()
     }
     emit progressComplete();
     
-    resetVolumeBoundary();
+    resetVolumeCutRange();
     setThickness(dataFlowModel->getZRatio());
     updateIncrementalColors(); // Otherwise reference channel might be garbled
 
     update();
 }
 
-void Na3DWidget::resetVolumeBoundary()
+void Na3DWidget::resetVolumeCutRange()
 {
-    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
-    if (! volumeReader.hasReadLock()) return;
-    const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
-    setXCut0(0); setXCut1(imgProxy.sx - 1);
-    setYCut0(0); setYCut1(imgProxy.sy - 1);
-    setZCut0(0); setZCut1(imgProxy.sz - 1);
+    VolumeTexture::Reader textureReader(dataFlowModel->getVolumeTexture());
+    if (dataFlowModel->getVolumeTexture().readerIsStale(textureReader))
+        return;
+    jfrc:Dimension size = textureReader.originalImageSize();
+    int mx = size.x() - 1;
+    int my = size.y() - 1;
+    int mz = size.z() - 1;
+    setXCut0(0); setXCut1(mx);
+    setYCut0(0); setYCut1(my);
+    setZCut0(0); setZCut1(mz);
     // Sometimes renderer is not in sync with 3DWidget; then above calls might short circuit as "no-change"
     if (renderer) {
-        renderer->setXCut0(0); renderer->setXCut1(imgProxy.sx - 1);
-        renderer->setYCut0(0); renderer->setYCut1(imgProxy.sy - 1);
-        renderer->setZCut0(0); renderer->setZCut1(imgProxy.sz - 1);
+        renderer->setXCut0(0); renderer->setXCut1(mx);
+        renderer->setYCut0(0); renderer->setYCut1(my);
+        renderer->setZCut0(0); renderer->setZCut1(mz);
     }
 }
 

@@ -3,13 +3,14 @@
 
 #include "NaSharedDataModel.h"
 #include "DataColorModel.h"
-#include "NaVolumeData.h"
 #include "Dimension.h"
 #include <QObject>
 #include <vector>
 #include <stdint.h>
 
 class DataFlowModel;
+class Fast3DTexture;
+class NaVolumeData;
 
 namespace jfrc {
 

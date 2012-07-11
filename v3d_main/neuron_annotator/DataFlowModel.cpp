@@ -37,7 +37,7 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
 
 #ifdef USE_FFMPEG
-    volumeData.setTextureInput(&fast3DTexture);
+    volumeData.setTextureInput(&volumeTexture);
     connect(&fast3DTexture, SIGNAL(volumeLoadSequenceCompleted()),
             &volumeData, SLOT(loadVolumeFromTexture()));
 #endif

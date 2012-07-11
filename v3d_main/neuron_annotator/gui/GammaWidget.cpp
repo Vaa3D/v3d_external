@@ -2,7 +2,8 @@
 #include <cmath>
 #include <cassert>
 
-GammaWidget::GammaWidget(QWidget * parent) : QWidget(parent)
+GammaWidget::GammaWidget(QWidget * parent)
+    : QWidget(parent)
 {
     // TODO - avoid Qt warning message about multiple layouts
     setupUi(this);

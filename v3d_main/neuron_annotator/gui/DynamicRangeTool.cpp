@@ -1,4 +1,5 @@
 #include "DynamicRangeTool.h"
+#include <QColorDialog>
 
 DynamicRangeTool::DynamicRangeTool(QWidget *parent)
     : QDialog(parent)

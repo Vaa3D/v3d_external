@@ -1,13 +1,16 @@
 #include "NaVolumeData.h"
+#include "VolumeTexture.h"
 #include <iostream>
 #include <QFuture>
 #include <cassert>
-
 #include "../utility/ImageLoader.h"
+
+#ifdef USE_FFMPEG
 #include "../utility/loadV3dFFMpeg.h"
-#include "Fast3DTexture.h"
+#endif
 
 using namespace std;
+using namespace jfrc;
 
 
 /////////////////////////////////////////
@@ -110,9 +113,7 @@ NaVolumeData::NaVolumeData()
     , referenceImageProxy(emptyImage)
     , currentProgress(0)
     , bDoUpdateSignalTexture(true)
-#ifdef USE_FFMPEG
-    , mpegTexture(NULL)
-#endif
+    , volumeTexture(NULL)
 {
     // Connect specific signals to general ones
     connect(this, SIGNAL(channelLoaded(int)),
@@ -132,21 +133,14 @@ NaVolumeData::~NaVolumeData()
     volumeWriter.clearImageData();
 }
 
-#ifdef USE_FFMPEG
-void NaVolumeData::setTextureInput(Fast3DTexture* texture)
+void NaVolumeData::setTextureInput(const VolumeTexture* texture)
 {
-    mpegTexture = texture;
-}
-
-bool NaVolumeData::loadReferenceFromTexture()
-{
-    // TODO
-    return false;
+    volumeTexture = texture;
 }
 
 bool NaVolumeData::loadVolumeFromTexture()
 {
-    if (NULL == mpegTexture) {
+    if (NULL == volumeTexture) {
         emit progressAborted("Volume texture not found");
         return false;
     }
@@ -154,7 +148,7 @@ bool NaVolumeData::loadVolumeFromTexture()
     emit progressMessageChanged("Copying volume from 3D texture"); // emit outside of lock block
     {
         Writer writer(*this);
-        if (writer.loadVolumeFromTexture(mpegTexture))
+        if (writer.loadVolumeFromTexture(volumeTexture))
             bSucceeded = true;
     }
 
@@ -167,7 +161,6 @@ bool NaVolumeData::loadVolumeFromTexture()
     }
     return bSucceeded;
 }
-#endif
 
 /* slot */
 void NaVolumeData::setStackLoadProgress(int progressValue, int stackIndex)
@@ -236,6 +229,8 @@ void flipY(My4DImage* img)
                 // swap scan line y with scan line (sz - y - 1)
                 unsigned char* rowA = slicePtr + y * rowBytes;
                 unsigned char* rowB = slicePtr + (sy - 1 - y) * rowBytes;
+                if (rowA == rowB)
+                    continue;
                 memcpy(rowBuf, rowA, rowBytes);
                 memcpy(rowA, rowB, rowBytes);
                 memcpy(rowB, rowBuf, rowBytes);
@@ -317,6 +312,7 @@ bool NaVolumeData::loadChannels(QString fileName) // includes loading general vo
 }
 
 /* slot */
+/*
 bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
 {
     bool bSucceeded = false;
@@ -336,6 +332,7 @@ bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
     }
     return bSucceeded;
 }
+*/
 
 /* slot */
 bool NaVolumeData::loadReference(QString fileName)
@@ -625,8 +622,7 @@ bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
     return false;
 }
 
-#ifdef USE_FFMPEG
-bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
+bool NaVolumeData::Writer::loadVolumeFromTexture(const VolumeTexture* texture)
 {
     // TODO
     qDebug() << "NaVolumeData::Writer::loadVolumeFromTexture()"
@@ -636,20 +632,19 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
     {
         QTime stopwatch;
         stopwatch.start();
-        Fast3DTexture::Reader textureReader(*texture); // acquire read lock
-        size_t sx = texture->width;
-        size_t sy = texture->height;
-        size_t sz = texture->depth;
+        jfrc::VolumeTexture::Reader textureReader(*texture); // acquire read lock
+        jfrc::Dimension size = textureReader.paddedTextureSize();
+        size_t sx = size.x();
+        size_t sy = size.y();
+        size_t sz = size.z();
         My4DImage* volImg = new My4DImage();
         volImg->createImage(sx, sy, sz,
                 3, // RGB
                 V3D_UINT8); // 1 => 8 bits per value
-        Image4DProxy<My4DImage> volProxy(volImg);
         My4DImage* refImg = new My4DImage();
         refImg->createImage(sx, sy, sz,
                 1,
                 V3D_UINT8);
-        Image4DProxy<My4DImage> refProxy(refImg);
         // TODO - perform multithreaded copy in z slabs
         // Precomputing these offsets speed debug mode from
         // 7 seconds for loop to 1.1 seconds for loop
@@ -657,8 +652,9 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
         uint8_t* green_offset = volImg->getRawData() + 1 * sx * sy * sz;
         uint8_t* blue_offset = volImg->getRawData() + 2 * sx * sy * sz;
         uint8_t* nc82_offset = refImg->getRawData() + 0 * sx * sy * sz;
+        const uint8_t* textureData = (const uint8_t*)textureReader.signalData3D();
         for (int z = 0; z < sz; ++z) {
-            const uint8_t* z_offset1 = texture->texture_data + z * sx * sy * 4;
+            const uint8_t* z_offset1 = textureData + z * sx * sy * 4;
             uint8_t* red_z_offset = red_offset + z * sx * sy * 1;
             uint8_t* green_z_offset = green_offset + z * sx * sy * 1;
             uint8_t* blue_z_offset = blue_offset + z * sx * sy * 1;
@@ -687,7 +683,6 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const Fast3DTexture* texture)
 
     return true;
 }
-#endif
 
 
 //////////////////////////////////

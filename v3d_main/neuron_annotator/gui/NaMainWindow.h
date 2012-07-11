@@ -101,6 +101,7 @@ signals:
     void singleStackLoadRequested(QString fileName);
 
 public slots:
+    void resetVolumeCutRange();
     void exitFullScreen();
     void setFullScreen(bool);
     void setViewMode(ViewMode mode);

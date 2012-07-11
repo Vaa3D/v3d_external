@@ -8,11 +8,14 @@
 #include "MouseClickManager.h"
 #include <cmath>
 #include "NeuronContextMenu.h"
-#include "../data_model/VolumeTexture.h"
 #include "Stereo3dMode.h"
 #include <stdint.h>
 
 class RendererNeuronAnnotator;
+class DataColorModel;
+namespace jfrc {
+    class VolumeTexture;
+}
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -42,7 +45,7 @@ public:
     virtual void resizeEvent(QResizeEvent * event);
     virtual void moveEvent(QMoveEvent * event);
     virtual void setDataFlowModel(const DataFlowModel*);
-    void resetVolumeBoundary();
+    void resetVolumeCutRange();
     virtual RendererNeuronAnnotator* getRendererNa();
     virtual const RendererNeuronAnnotator* getRendererNa() const;
     void setResizeEnabled(bool b) {bResizeEnabled = b;}

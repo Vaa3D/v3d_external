@@ -26,9 +26,9 @@
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
 #include "../utility/loadV3dFFMpeg.h"
-#include "../data_model/Fast3DTexture.h"
 
 using namespace std;
+using namespace jfrc;
 
 //////////////////
 // NutateThread //
@@ -550,7 +550,7 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 #ifdef USE_FFMPEG
     createNewDataFlowModel();
 
-    // Hijack this method to load a sequence of volumes
+    // Ask user for a directory containing results.
     QString dirName = getDataDirectoryPathWithDialog();
     if (dirName.isEmpty()) return;
     QDir dir(dirName);
@@ -1579,28 +1579,57 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.HDRNc82_pushButton->setEnabled(refProxy.sc > 0);
     }
 
+    resetVolumeCutRange();
+}
+
+/* slot */
+void NaMainWindow::resetVolumeCutRange()
+{
+    int mx, my, mz;
+    mx = my = mz = 0;
+    // first try NaVolumeData to get dimensions
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
-        if (! volumeReader.hasReadLock()) return;
-        const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+        if (volumeReader.hasReadLock())
+        {
+            const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+            mx = imgProxy.sx - 1;
+            my = imgProxy.sy - 1;
+            mz = imgProxy.sz - 1;
+        }
+    }
+    // if that fails, try VolumeTexture
+    if (mx <= 0)
+    {
+        VolumeTexture::Reader textureReader(dataFlowModel->getVolumeTexture());
+        if (! dataFlowModel->getVolumeTexture().readerIsStale(textureReader))
+        {
+            Dimension size = textureReader.originalImageSize();
+            mx = size.x() - 1;
+            my = size.y() - 1;
+            mz = size.z() - 1;
+        }
+    }
+    if (mx <= 0)
+        return;
 
-        // volume cut update
-        ui.XcminSlider->setRange(0, imgProxy.sx-1);
-        ui.XcminSlider->setValue(0);
-        ui.XcmaxSlider->setRange(0, imgProxy.sx-1);
-        ui.XcmaxSlider->setValue(imgProxy.sx-1);
+    // volume cut update
+    ui.XcminSlider->setRange(0, mx);
+    ui.XcminSlider->setValue(0);
+    ui.XcmaxSlider->setRange(0, mx);
+    ui.XcmaxSlider->setValue(mx);
 
-        ui.YcminSlider->setRange(0, imgProxy.sy-1);
-        ui.YcminSlider->setValue(0);
-        ui.YcmaxSlider->setRange(0, imgProxy.sy-1);
-        ui.YcmaxSlider->setValue(imgProxy.sy-1);
+    ui.YcminSlider->setRange(0, my);
+    ui.YcminSlider->setValue(0);
+    ui.YcmaxSlider->setRange(0, my);
+    ui.YcmaxSlider->setValue(my);
 
-        ui.ZcminSlider->setRange(0, imgProxy.sz-1);
-        ui.ZcminSlider->setValue(0);
-        ui.ZcmaxSlider->setRange(0, imgProxy.sz-1);
-        ui.ZcmaxSlider->setValue(imgProxy.sz-1);
-    } // release lock
-}
+    ui.ZcminSlider->setRange(0, my);
+    ui.ZcminSlider->setValue(0);
+    ui.ZcmaxSlider->setRange(0, my);
+    ui.ZcmaxSlider->setValue(my);
+
+} // release lock
 
 DataFlowModel* NaMainWindow::getDataFlowModel() const {
     return dataFlowModel;

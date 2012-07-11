@@ -4,6 +4,7 @@
 #include "PrivateNeuronFragmentData.h" // avoid compile error on msvc?
 #include "NaSharedDataModel.cpp"
 #include "../DataFlowModel.h"
+#include "Fast3DTexture.h"
 
 template class NaSharedDataModel<jfrc::PrivateVolumeTexture>;
 

@@ -4,9 +4,9 @@
 #include "NaLockableData.h"
 #include "../../v3d/v3d_core.h"
 
-#ifdef USE_FFMPEG
-class Fast3DTexture;
-#endif
+namespace jfrc{
+class VolumeTexture;
+} // namespace jfrc
 
 // NaVolumeDataLoadableStack used to be an inner class of NaVolumeData,
 // but inner classes cannot be QObjects.
@@ -50,9 +50,7 @@ class NaVolumeData : public NaLockableData
 public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
-#ifdef USE_FFMPEG
-    void setTextureInput(Fast3DTexture* texture);
-#endif
+    void setTextureInput(const jfrc::VolumeTexture* texture);
 
 signals:
     void referenceLoaded();
@@ -62,7 +60,6 @@ signals:
 
 public slots:
     bool loadChannels(QString fileName); // includes loading general volumes
-    bool loadSingleImageMovieVolume(QString fileName);
 
 protected slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
@@ -73,11 +70,7 @@ protected slots:
     bool loadReference(QString fileName);
     bool loadOneChannel(QString fileName, int channel_index = 0);
     bool loadNeuronMask(QString fileName);
-
-#ifdef USE_FFMPEG
-    bool loadReferenceFromTexture();
     bool loadVolumeFromTexture();
-#endif
 
 private:
     QString originalImageStackFilePath;
@@ -91,11 +84,9 @@ private:
     Image4DProxy<My4DImage> neuronMaskProxy;
     Image4DProxy<My4DImage> referenceImageProxy;
     std::vector<int> stackLoadProgressValues;
+    const jfrc::VolumeTexture* volumeTexture;
     int currentProgress;
-    bool bDoUpdateSignalTexture; // because texture could be populated upstream by Fast3DTexture
-#ifdef USE_FFMPEG
-    Fast3DTexture* mpegTexture;
-#endif
+    bool bDoUpdateSignalTexture; // because texture could be populated upstream by VolumeTexture
 
 public:
     typedef NaVolumeDataLoadableStack LoadableStack;
@@ -164,7 +155,7 @@ public:
         bool loadNeuronMask(QString fileName);
 
 #ifdef USE_FFMPEG
-        bool loadVolumeFromTexture(const Fast3DTexture* texture);
+        bool loadVolumeFromTexture(const jfrc::VolumeTexture* texture);
 #endif
 
     private:

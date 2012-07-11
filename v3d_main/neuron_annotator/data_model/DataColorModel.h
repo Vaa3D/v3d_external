@@ -2,10 +2,10 @@
 #define DATACOLORMODEL_H
 
 #include "NaSharedDataModel.h"
-#include "NaVolumeData.h"
 #include <vector>
 #include <qrgb.h>
 
+class NaVolumeData;
 
 // forward declaration for QSharedData paradigm.
 // PrivateDataColorModel.h must only be included in .cpp files

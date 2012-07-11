@@ -335,6 +335,8 @@ PrivateDataColorModel::ChannelColorModel::ChannelColorModel(QRgb channelColorPar
     : blackColor(qRgb(0, 0, 0))
     , showChannel(true)
     , bUseSharedGamma(true)
+    , gamma(1.0)
+    , channelColor(0)
 {
     setColor(channelColorParam);
     setGamma(1.0f);

@@ -1,6 +1,7 @@
 #include "DataColorModel.h"
 #include "PrivateDataColorModel.h"
 #include "NaSharedDataModel.cpp"
+#include "NaVolumeData.h"
 
 template class NaSharedDataModel<PrivateDataColorModel>;
 
