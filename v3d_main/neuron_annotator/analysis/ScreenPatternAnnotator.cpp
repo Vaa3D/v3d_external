@@ -1984,7 +1984,7 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
 	if (iData[offset]==index) {
 	  compartmentVoxelCount++;
 	  v3d_uint8 v=pData[offset];
-	  int hbin=v/16;
+	  int hbin=15-v/16; // invert
 	  histogram[hbin]++;
 	}
       }
@@ -1994,12 +1994,12 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
   double compartmentVoxelCountDouble=compartmentVoxelCount*1.0;
   for (int h=0;h<16;h++) {
     normHistogram[h]=histogram[h]/compartmentVoxelCountDouble;
-    qDebug() << "h=" << h << " hist=" << histogram[h] << " norm=" << normHistogram[h];
+    //qDebug() << "h=" << h << " hist=" << histogram[h] << " norm=" << normHistogram[h];
   }
 
   // Do the bin ranking for each threshold case
   for (int tindex=0;tindex<3;tindex++) {
-    v3d_uint8 t=threshold[tindex];
+    double t=threshold[tindex] * 1.0;
     double sum=0.0;
     int hbin=0;
     int fusedBins=2;
@@ -2011,6 +2011,7 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
     while (hbin<16 && stop==0) {
       double normH=normHistogram[hbin]*100000;
       sum+=normH;
+      //qDebug() << "Incrementing, normH=" << normH << " sum=" << sum;
       if (s<fusedBins) {
 	readout=0;
       } else {
@@ -2018,6 +2019,7 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
       }
       s++;
       if (readout==1 || hbin>=15) {
+	//qDebug() << "tindex=" << tindex << " hbin=" << hbin << " comparing sum=" << sum << " to t=" << t;
 	if (sum>t && stop==0) {
 	  intensityScore=resultRank;
 	  stop=1;
@@ -2031,46 +2033,48 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
     } // histogram
   } // threshold
   
-  V3DLONG medSlopTotal=0;
-  V3DLONG noSlopTotal=0;
+  double medSlopTotal=0.0;
+  double noSlopTotal=0.0;
 
   int distributionIntensity=thresholdIntensityResult[0]; // threshold=40
 
+  //qDebug() << "Using distributionIntensity=" << distributionIntensity;
+
   if (distributionIntensity==0) {
-    medSlopTotal=histogram[15];
-    noSlopTotal=histogram[15];
+    medSlopTotal=normHistogram[15];
+    noSlopTotal=normHistogram[15];
   } else if (distributionIntensity==1) {
     for (int i=12;i<15;i++) {
-      medSlopTotal+=histogram[i];
-      noSlopTotal+=histogram[i];
+      medSlopTotal+=normHistogram[i];
+      noSlopTotal+=normHistogram[i];
     }
   } else if (distributionIntensity==2) {
     for (int i=9;i<14;i++) {
-      medSlopTotal+=histogram[i];
+      medSlopTotal+=normHistogram[i];
     }
     for (int i=9;i<12;i++) {
-      noSlopTotal+=histogram[i];
+      noSlopTotal+=normHistogram[i];
     }
   } else if (distributionIntensity==3) {
     for (int i=6;i<11;i++) {
-      medSlopTotal+=histogram[i];
+      medSlopTotal+=normHistogram[i];
     }
     for (int i=6;i<9;i++) {
-      noSlopTotal+=histogram[i];
+      noSlopTotal+=normHistogram[i];
     }
   } else if (distributionIntensity==4) {
     for (int i=3;i<8;i++) {
-      medSlopTotal+=histogram[i];
+      medSlopTotal+=normHistogram[i];
     }
     for (int i=3;i<6;i++) {
-      noSlopTotal+=histogram[i];
+      noSlopTotal+=normHistogram[i];
     }
   } else if (distributionIntensity==5) {
     for (int i=0;i<5;i++) {
-      medSlopTotal+=histogram[i];
+      medSlopTotal+=normHistogram[i];
     }
     for (int i=0;i<3;i++) {
-      noSlopTotal+=histogram[i];
+      noSlopTotal+=normHistogram[i];
     }
   }
 
@@ -2079,6 +2083,9 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
 
   double medSlopDouble=medSlopTotal*100000.0;
   double noSlopDouble=noSlopTotal*100000.0;
+
+  //qDebug() << "medSlop=" << medSlopDouble;
+  //qDebug() << "noSlop=" << noSlopDouble;
 
   if (medSlopDouble > 70000) {
     medSlopDistribution=5;
