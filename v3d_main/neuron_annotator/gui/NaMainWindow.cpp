@@ -7,6 +7,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QDebug>
 #include <iostream>
 #include <cmath>
 #include <cassert>
@@ -548,6 +549,8 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 {
 #ifdef USE_FFMPEG
+    qDebug() << "NaMainWindow::on_actionLoad_fast_separation_result_triggered()" << __FILE__ << __LINE__;
+    ui.v3dr_glwidget->widgetStopwatch.restart(); // start timing at first click
     createNewDataFlowModel();
 
     // Ask user for a directory containing results.
@@ -1199,6 +1202,7 @@ void NaMainWindow::on_actionOpen_triggered()
 
 void NaMainWindow::openMulticolorImageStack(QString dirName)
 {
+    mainWindowStopWatch.start();
     QDir imageDir(dirName);
 
     if ( ! imageDir.exists() )
@@ -1216,7 +1220,6 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
                  return;
     }
 
-    mainWindowStopWatch.start();
     setViewMode(VIEW_NEURON_SEPARATION);
     onDataLoadStarted();
     if (!loadAnnotationSessionFromDirectory(imageDir)) {

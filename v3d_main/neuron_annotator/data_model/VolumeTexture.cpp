@@ -138,6 +138,9 @@ bool VolumeTexture::updateColorMapTexture()
 #ifdef USE_FFMPEG
 bool VolumeTexture::loadFast3DTexture()
 {
+    QElapsedTimer timer;
+    timer.start();
+    // qDebug() << "VolumeTexture::loadFast3DTexture()" << __FILE__ << __LINE__;
     if (NULL == fast3DTexture)
         return false;
     {
@@ -157,6 +160,7 @@ bool VolumeTexture::loadFast3DTexture()
         d->subsampleScale = 1.0;
     } // release locks before emit
     emit signalTextureChanged();
+    qDebug() << "VolumeTexture::loadFast3DTexture() took" << timer.elapsed() << "milliseconds";
     return true;
 }
 #endif

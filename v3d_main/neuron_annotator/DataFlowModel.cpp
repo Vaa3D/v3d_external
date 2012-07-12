@@ -36,11 +36,10 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
 
-#ifdef USE_FFMPEG
     volumeData.setTextureInput(&volumeTexture);
-    connect(&fast3DTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &volumeData, SLOT(loadVolumeFromTexture()));
-#endif
+    // TODO - wire this up
+    // connect(&volumeTexture, SIGNAL(volumeLoadSequenceCompleted()),
+    //         &volumeData, SLOT(continueStagedLoad()));
 }
 
 DataFlowModel::~DataFlowModel()

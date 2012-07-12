@@ -80,6 +80,8 @@ Na3DWidget::Na3DWidget(QWidget* parent)
             this, SLOT(onPossibleSingleClickAlert()));
     connect(&mouseClickManager, SIGNAL(notSingleClick()),
             this, SLOT(onNotSingleClick()));
+
+    widgetStopwatch.start();
 }
 
 Na3DWidget::~Na3DWidget()
@@ -102,7 +104,7 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
     // qDebug() << "Na3DWidget::loadSignalTexture3D()" << w << h << d;
     if (NULL == texture_data)
         return false;
-    QTime stopwatch;
+    QElapsedTimer stopwatch;
     stopwatch.start();
 
     if (_idep==0) {
@@ -110,10 +112,13 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
     }
 
     makeCurrent();
+
+    /*
     if (NULL != renderer) {
         delete renderer;
         renderer = NULL;
     }
+    */
 
     RendererNeuronAnnotator* ra = getRendererNa();
     if (NULL == ra)
@@ -358,7 +363,7 @@ void Na3DWidget::initializeDefaultTextures()
 
     // 3D volume texture in unit 0 set to all black
     {
-        std::vector<uint32_t> buf(8*8*8, 0);
+        std::vector<uint32_t> buf((size_t)8*8*8, (uint32_t)0);
         loadSignalTexture3D(8,8,8,&buf[0]);
     }
 
@@ -380,13 +385,13 @@ void Na3DWidget::initializeDefaultTextures()
 
     // 2D visibility texture maps everything to red
     {
-        std::vector<uint32_t> buf(256*256, 0x000000ff); // red == visible but not selected
+        std::vector<uint32_t> buf((size_t)256*256, (uint32_t)0x000000ff); // red == visible but not selected
         loadVisibilityTexture2D(&buf[0]);
     }
 
     // 3D neuron label texture all zero == background
     {
-        std::vector<uint16_t> buf(8*8*8, 0);
+        std::vector<uint16_t> buf((size_t)8*8*8, (uint16_t)0);
         loadLabelTexture3D(8, 8, 8, &buf[0]);
     }
 
@@ -508,9 +513,9 @@ bool Na3DWidget::loadSignalTexture()
         if (! loadSignalTexture3D(size.x(), size.y(), size.z(), data))
             return false;
         getRendererNa()->updateSettingsFromVolumeTexture(textureReader);
-        renderer->getLimitedDataSize(_data_size); //for update slider size
-        updateDefaultScale();
     } // Release locks
+    renderer->getLimitedDataSize(_data_size); //for update slider size
+    updateDefaultScale();
     {
         // Populate renderer::data4dp for use by picking routine
         const NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
@@ -1604,8 +1609,7 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 
 void Na3DWidget::paintGL()
 {
-    // static QTime stopwatch;
-    // loadColorMapTexture(); // Do we need to load it every frame??! // Does not help.
+    // QElapsedTimer timer; timer.start();
     V3dR_GLWidget::paintGL();
 
     // Draw focus position to ensure it remains in center of screen,
@@ -1634,8 +1638,8 @@ void Na3DWidget::paintGL()
         paintFiducial(focus0);
         glPopAttrib();
     }
-    // qDebug() << "Frame render took" << stopwatch.elapsed() << "milliseconds";
-    // stopwatch.restart();
+    // qDebug() << "Frame render took" << timer.elapsed() << "milliseconds";
+    emit scenePainted();
 }
 
 /* virtual */

@@ -62,7 +62,7 @@ void MpegLoader::deleteData()
 bool MpegLoader::loadMpegFile(QString fileName)
 {
     // qDebug() << "MpegLoader::loadMpegFile()" << fileName << __FILE__ << __LINE__;
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     bool bSucceeded = true; // start optimistic
     try {
@@ -351,7 +351,7 @@ void Fast3DTexture::blockScaleFinished()
     // qDebug() << completedBlocks << "scaling blocks completed";
     if (completedBlocks >= Fast3DTexture::numScalingThreads) {
         completedBlocks = 0;
-        qDebug() << "Total load time =" << timer.elapsed()/1000.0 << "seconds";
+        qDebug() << "Decoding and scaling took " << timer.elapsed()/1000.0 << "seconds";
         // send intermediate result to graphics card
         emit volumeUploadRequested(width, height, depth, texture_data);
         // send final result to other viewers

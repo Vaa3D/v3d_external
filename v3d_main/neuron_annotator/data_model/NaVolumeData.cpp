@@ -476,6 +476,52 @@ bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
     return true;
 }
 
+// Convert two-channel image to three channels to avoid crash
+My4DImage* ensureThreeChannel(My4DImage* input)
+{
+    if (NULL == input)
+        return input;
+    if (3 == input->getCDim())
+        return input;
+    qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
+    My4DImage* volImg = new My4DImage();
+    volImg->createImage(
+            input->getXDim(),
+            input->getYDim(),
+            input->getZDim(),
+            3, // three color channels
+            input->getDatatype()); // 1 => 8 bits per value
+    size_t channelBytes = volImg->getXDim() * volImg->getYDim() * volImg->getZDim() * volImg->getUnitBytes();
+    bool haveMinMax = (NULL != input->p_vmin);
+    if (haveMinMax) {
+        volImg->p_vmin = new double[3];
+        volImg->p_vmax = new double[3];
+    }
+    for (int c = 0; c < 3; ++c)
+    {
+        if (c < input->getCDim()) { // copy from input
+            memcpy(volImg->getRawData() + c * channelBytes,
+                   input->getRawData() + c * channelBytes,
+                   channelBytes);
+            if (haveMinMax) {
+                volImg->p_vmin[c] = input->p_vmin[c];
+                volImg->p_vmax[c] = input->p_vmax[c];
+            }
+        }
+        else { // not in input, clear to zero
+            memset(volImg->getRawData() + c * channelBytes,
+                   0,
+                   channelBytes);
+            if (haveMinMax) {
+                volImg->p_vmin[c] = 0;
+                volImg->p_vmax[c] = 0;
+            }
+        }
+    }
+    delete input;
+    return volImg;
+}
+
 bool NaVolumeData::Writer::loadStacks()
 {
     if (m_data->bAbortWrite) return false;
@@ -578,6 +624,9 @@ bool NaVolumeData::Writer::loadStacks()
         referenceStack.load();
         if (m_data->bAbortWrite) return false;
     }
+
+    // Convert 2-channel image to 3-channels to avoid crash
+    m_data->originalImageStack = ensureThreeChannel(m_data->originalImageStack);
 
     qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
 

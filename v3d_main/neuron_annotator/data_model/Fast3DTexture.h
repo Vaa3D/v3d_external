@@ -15,6 +15,7 @@ class SwsContext;
 #include <QThread>
 #include <QString>
 #include <QTime>
+#include <QElapsedTimer>
 #include <QReadWriteLock>
 #include <QFutureWatcher>
 #include <QList>
@@ -74,7 +75,7 @@ public:
                Channel channelParam);
     void load();
 
-    QTime timer;
+    QElapsedTimer timer;
     int firstFrame, finalFrame;
     size_t width, height, sliceBytesOut;
     MpegLoader* mpegLoader;
@@ -137,7 +138,7 @@ public:
     uint8_t * texture_data; // z*y*x*BGRA, ready for glTexImage3D()
 
 protected:
-    QTime timer; // for performance testing
+    QElapsedTimer timer; // for performance testing
     QList<QFutureWatcher<void>* > blockScaleWatchers;
     int completedBlocks;
     MpegLoader mpegLoader;

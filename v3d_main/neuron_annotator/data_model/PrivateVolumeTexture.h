@@ -39,11 +39,9 @@ public:
         , height(8)
         , depth(8)
         , bInitialized(false)
-        , data(NULL)
-        , data_size(0)
     {
         size_t numVoxels = width * height * depth;
-        allocateData(numVoxels);
+        data.assign((size_t)numVoxels, (VoxelType)0);
         // Test pattern
         for (int i = 0; i < width; ++i)
              for (int j = 0; j < height; ++j)
@@ -54,29 +52,6 @@ public:
                      assert((ix % 48) >= 0); // number of fragments in realLinkTest + 2
                      data[ix] = (ix % 48);
                  }
-    }
-
-    virtual ~Base3DTexture()
-    {
-        deleteData();
-    }
-
-    void deleteData()
-    {
-        if (NULL != data)
-            delete [] data;
-        data = NULL;
-        data_size = 0;
-    }
-
-    void allocateData(size_t numVoxels)
-    {
-        deleteData();
-        if (numVoxels > 0)
-        {
-            data = new VoxelType[numVoxels];
-            data_size = numVoxels;
-        }
     }
 
     virtual void setValueAt(size_t x, size_t y, size_t z, VoxelType value)
@@ -100,13 +75,12 @@ public:
         paddedSize = paddedTextureSize;
         usedSize = usedTextureSize;
         size_t numVoxels = width * height * depth;
-        if (data_size != numVoxels)
-            allocateData(numVoxels);
+        data.assign((size_t)numVoxels, (VoxelType)0);
         qDebug() << "Allocating" << width << height << depth;
     }
 
-    VoxelType* getData() {return data;}
-    const VoxelType* getData() const {return data;}
+    VoxelType* getData() {return &data[0];}
+    const VoxelType* getData() const {return &data[0];}
 
     size_t getWidth() const {return width;}
     size_t getHeight() const {return height;}
@@ -116,7 +90,7 @@ public:
     Dimension getPaddedSize() const {return paddedSize;}
 
 protected:
-    VoxelType* data;
+    std::vector<VoxelType> data;
     size_t data_size;
     size_t width, height, depth;
     Dimension usedSize;
@@ -176,6 +150,7 @@ public:
 
     PrivateVolumeTexture();
     explicit PrivateVolumeTexture(const PrivateVolumeTexture& rhs);
+    virtual ~PrivateVolumeTexture();
 
     void initializeSizes(const NaVolumeData::Reader& volumeReader);
     bool subsampleLabelField(const NaVolumeData::Reader& volumeReader);

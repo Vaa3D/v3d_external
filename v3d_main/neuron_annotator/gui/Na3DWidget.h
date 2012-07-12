@@ -76,6 +76,7 @@ signals:
     void labelTextureLoaded();
     void visibilityTextureLoaded();
     void colorMapTextureLoaded();
+    void scenePainted(); // useful for timing
 
 public slots:
     void setShowCornerAxes(bool b);
@@ -128,6 +129,9 @@ protected slots:
     bool loadVisibilityTexture2D(const uint32_t* texture_data);
     bool loadColorMapTexture(); // TODO
     bool loadColorMapTexture2D(const uint32_t* texture_data); // TODO
+
+public:
+    QElapsedTimer widgetStopwatch;
 
 protected:
     // bool tryUpdateFullVolume();

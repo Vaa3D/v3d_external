@@ -382,6 +382,12 @@ PrivateVolumeTexture::PrivateVolumeTexture()
 {
 }
 
+/* virtual */
+PrivateVolumeTexture::~PrivateVolumeTexture()
+{
+    qDebug() << "Deleting PrivateVolumeTexture";
+}
+
 /* explicit */
 PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     : memoryLimit(rhs.memoryLimit)
@@ -395,6 +401,7 @@ PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     , neuronSignalTexture(rhs.neuronSignalTexture)
     , bUse3DSignalTexture(rhs.bUse3DSignalTexture)
 {
+    qDebug() << "PrivateVolumeTexture is being copied";
 }
 
 void PrivateVolumeTexture::setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel)
