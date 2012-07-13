@@ -32,6 +32,8 @@ signals:
     void colorMapTextureChanged();
     void labelTextureChanged();
     void signalTextureChanged();
+    void benchmarkTimerResetRequested();
+    void benchmarkTimerPrintRequested(QString);
 
 public slots:
     bool updateVolume();

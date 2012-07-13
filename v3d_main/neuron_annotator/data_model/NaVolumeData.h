@@ -51,6 +51,8 @@ public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
     void setTextureInput(const jfrc::VolumeTexture* texture);
+    bool doFlipY;
+    bool bDoUpdateSignalTexture; // because texture could be populated upstream by VolumeTexture
 
 signals:
     void referenceLoaded();
@@ -86,7 +88,6 @@ private:
     std::vector<int> stackLoadProgressValues;
     const jfrc::VolumeTexture* volumeTexture;
     int currentProgress;
-    bool bDoUpdateSignalTexture; // because texture could be populated upstream by VolumeTexture
 
 public:
     typedef NaVolumeDataLoadableStack LoadableStack;

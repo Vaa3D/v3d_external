@@ -55,7 +55,7 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
     connect(this, SIGNAL(signalTextureChanged()),
             fast3DTexture, SLOT(loadNextVolume())); // Now that previous volume was safely copied
     connect(fast3DTexture, SIGNAL(volumeUploadRequested(int,int,int,void*)),
-            this, SLOT(loadFast3DTexture()));
+            this, SLOT(loadFast3DTexture()));    
 #endif
 
 }
@@ -72,7 +72,7 @@ bool VolumeTexture::updateVolume()
     emit progressMessageChanged("Sampling volume for 3D viewer");
     float progress = 1.0; // out of 100
     emit progressValueChanged(int(progress));
-    qDebug() << "Populating volume data for 3D viewer";
+    qDebug() << "Populating volume data for 3D viewer" << __FILE__ << __LINE__;
     {
         NaVolumeData::Reader volumeReader(*volumeData);
         if(volumeReader.hasReadLock()) {
@@ -140,6 +140,7 @@ bool VolumeTexture::loadFast3DTexture()
 {
     QElapsedTimer timer;
     timer.start();
+    emit benchmarkTimerPrintRequested("Started VolumeTexture::loadFast3DTexture()");
     // qDebug() << "VolumeTexture::loadFast3DTexture()" << __FILE__ << __LINE__;
     if (NULL == fast3DTexture)
         return false;
@@ -160,7 +161,8 @@ bool VolumeTexture::loadFast3DTexture()
         d->subsampleScale = 1.0;
     } // release locks before emit
     emit signalTextureChanged();
-    qDebug() << "VolumeTexture::loadFast3DTexture() took" << timer.elapsed() << "milliseconds";
+    emit benchmarkTimerPrintRequested("Finished VolumeTexture::loadFast3DTexture()");
+    // qDebug() << "VolumeTexture::loadFast3DTexture() took" << timer.elapsed() << "milliseconds";
     return true;
 }
 #endif

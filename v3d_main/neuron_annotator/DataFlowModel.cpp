@@ -40,6 +40,18 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     // TODO - wire this up
     // connect(&volumeTexture, SIGNAL(volumeLoadSequenceCompleted()),
     //         &volumeData, SLOT(continueStagedLoad()));
+
+    connect(&volumeTexture, SIGNAL(benchmarkTimerPrintRequested(QString)),
+            this, SIGNAL(benchmarkTimerPrintRequested(QString)));
+    connect(&volumeTexture, SIGNAL(benchmarkTimerResetRequested()),
+            this, SIGNAL(benchmarkTimerResetRequested()));
+#ifdef USE_FFMPEG
+    connect(&fast3DTexture, SIGNAL(benchmarkTimerPrintRequested(QString)),
+            this, SIGNAL(benchmarkTimerPrintRequested(QString)));
+    connect(&fast3DTexture, SIGNAL(benchmarkTimerResetRequested()),
+            this, SIGNAL(benchmarkTimerResetRequested()));
+#endif
+
 }
 
 DataFlowModel::~DataFlowModel()

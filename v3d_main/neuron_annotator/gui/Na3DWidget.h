@@ -77,6 +77,8 @@ signals:
     void visibilityTextureLoaded();
     void colorMapTextureLoaded();
     void scenePainted(); // useful for timing
+    void benchmarkTimerResetRequested();
+    void benchmarkTimerPrintRequested(QString);
 
 public slots:
     void setShowCornerAxes(bool b);

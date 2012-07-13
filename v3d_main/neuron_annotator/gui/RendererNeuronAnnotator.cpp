@@ -97,6 +97,11 @@ void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
     applyCutPlaneInImageFrame(cameraModel.focus(), down_obj);
 }
 
+void RendererNeuronAnnotator::clearClipPlanes()
+{
+    customClipPlanes.clearAll();
+}
+
 void RendererNeuronAnnotator::applyCutPlaneInImageFrame(Vector3D point, Vector3D direction)
 {
     // cout << point << direction << endl;

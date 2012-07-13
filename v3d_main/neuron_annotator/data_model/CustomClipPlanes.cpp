@@ -60,6 +60,14 @@ CustomClipPlanes::CustomClipPlanes()
     , undoStack(NULL)
 {}
 
+void CustomClipPlanes::clearAll()
+{
+    for (int p = 0; p < size(); ++p)
+        (*this)[p].disable();
+    nextClipPlaneIndex = 0;
+    undoStack->clear();
+}
+
 // Add a clip plane
 void CustomClipPlanes::addPlane(double x, double y, double z, double w)
 {

@@ -64,6 +64,7 @@ public:
     void applyCustomCut(const CameraModel&);
     void applyCutPlaneInImageFrame(Vector3D point, Vector3D direction);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
+    void clearClipPlanes();
     jfrc::Stereo3DMode getStereoMode() const {return stereo3DMode;}
     bool getStereoSwapEyes() const {return bStereoSwapEyes;}
     bool getScreenRowParity() const {return screenRowParity;}

@@ -99,6 +99,8 @@ signals:
     void defaultVaa3dFileLoadRequested(QString fileName);
     void crosshairVisibilityChanged(bool);
     void singleStackLoadRequested(QString fileName);
+    void benchmarkTimerResetRequested();
+    void benchmarkTimerPrintRequested(QString);
 
 public slots:
     void resetVolumeCutRange();
@@ -141,6 +143,8 @@ public slots:
     void setCrosshairVisibility(bool);
 
 protected slots:
+    void resetBenchmarkTimer();
+    void printBenchmarkTimer(QString message);
     void on3DViewerRotationChanged(const Rotation3D& rot);
     void update3DViewerXYZBodyRotation();
     void onViewerChanged(int viewerIndex);

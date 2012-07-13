@@ -93,6 +93,8 @@ signals:
     void scrollBarFocus(NeuronSelectionModel::NeuronIndex index);
     void deselectNeuron();
     void volumeDataNeeded(); // stimulate VolumeData to load images from disk
+    void benchmarkTimerResetRequested();
+    void benchmarkTimerPrintRequested(QString);
 
 private:
     long objectId;

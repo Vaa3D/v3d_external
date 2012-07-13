@@ -375,9 +375,30 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     connect(ui.actionFull_Screen, SIGNAL(toggled(bool)),
             this, SLOT(setFullScreen(bool)));
 
+    connect(this, SIGNAL(benchmarkTimerResetRequested()),
+            this, SLOT(resetBenchmarkTimer()));
+    connect(this, SIGNAL(benchmarkTimerPrintRequested(QString)),
+            this, SLOT(printBenchmarkTimer(QString)));
+    connect(ui.v3dr_glwidget, SIGNAL(benchmarkTimerPrintRequested(QString)),
+            this, SIGNAL(benchmarkTimerPrintRequested(QString)));
+    connect(ui.v3dr_glwidget, SIGNAL(benchmarkTimerResetRequested()),
+            this, SIGNAL(benchmarkTimerResetRequested()));
+
     initializeContextMenus();
     initializeStereo3DOptions();
     connectCustomCut();
+}
+
+/* slot */
+void NaMainWindow::resetBenchmarkTimer()
+{
+    mainWindowStopWatch.restart();
+}
+
+/* slot */
+void NaMainWindow::printBenchmarkTimer(QString message)
+{
+    qDebug() << "BENCHMARK" << message << "at" << mainWindowStopWatch.elapsed()/1000.0 << "seconds";
 }
 
 /* virtual */
@@ -549,34 +570,72 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 {
 #ifdef USE_FFMPEG
-    qDebug() << "NaMainWindow::on_actionLoad_fast_separation_result_triggered()" << __FILE__ << __LINE__;
-    ui.v3dr_glwidget->widgetStopwatch.restart(); // start timing at first click
-    createNewDataFlowModel();
-
+    // qDebug() << "NaMainWindow::on_actionLoad_fast_separation_result_triggered()" << __FILE__ << __LINE__;
     // Ask user for a directory containing results.
     QString dirName = getDataDirectoryPathWithDialog();
     if (dirName.isEmpty()) return;
     QDir dir(dirName);
 
-    Fast3DTexture* mpegTexture = &dataFlowModel->getFast3DTexture();
-    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2.mp4"),
-                             BlockScaler::CHANNEL_RGB);
-    mpegTexture->queueVolume(dir.filePath("Reference2.mp4"),
-                             BlockScaler::CHANNEL_ALPHA);
-    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2Red.mp4"),
-                             BlockScaler::CHANNEL_RED);
-    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2Green.mp4"),
-                             BlockScaler::CHANNEL_GREEN);
-    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2Blue.mp4"),
-                             BlockScaler::CHANNEL_BLUE);
+    emit benchmarkTimerResetRequested();
+    emit benchmarkTimerPrintRequested("Load fast directory triggered");
 
-    mpegTexture->loadNextVolume();
+    createNewDataFlowModel();
+
+    Fast3DTexture& mpegTexture = dataFlowModel->getFast3DTexture();
+    {
+        Fast3DTexture::Writer textureWriter(mpegTexture);
+
+        // First series of lossy downsampled images in mpeg4 format for fast loading
+        // TODO - only load the files that exist
+        // First load lowest resolution mp4 to put something on the screen immediately ~300ms elapsed
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2_25.mp4"),
+                                 BlockScaler::CHANNEL_RGB);
+        // First refinement: load largest subsample that can fit on the video card. ~1500ms elapsed
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2_100.mp4"),
+                                 BlockScaler::CHANNEL_RGB);
+        // Next add the reference channel
+        mpegTexture.queueVolume(dir.filePath("Reference2_100.mp4"),
+                                 BlockScaler::CHANNEL_ALPHA);
+        // Individual color channels to sharpen the colors
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Red_100.mp4"),
+                                 BlockScaler::CHANNEL_RED);
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Green_100.mp4"),
+                                 BlockScaler::CHANNEL_GREEN);
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Blue_100.mp4"), // ~4000ms elapsed
+                                 BlockScaler::CHANNEL_BLUE);
+
+        mpegTexture.loadNextVolume(); // starts loading process in another thread
+    }
 
     dataFlowModel->getDataColorModel().initializeRgba32();
     dataFlowModel->getSlow3DColorModel().initializeRgba32();
     // Apply gamma bias already applied to input images
     dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
     dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
+    emit benchmarkTimerPrintRequested("Initialized color models");
+
+    // keep reference channel off
+    dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
+    setViewMode(VIEW_SINGLE_STACK);
+
+    // TODO - load lossless image into VolumeTexture
+    // connect(mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+    //         &dataFlowModel->getVolumeTexture(), SLOT(loadVolumeDataFromFiles()),
+    //         Qt::UniqueConnection);
+
+    // Prepare to load lossless files after mp4 files have loaded
+    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
+            Qt::UniqueConnection);
+    {
+        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
+        volumeWriter.setOriginalImageStackFilePath(dir.filePath("ConsolidatedSignal3.v3dpbd"));
+        volumeWriter.setReferenceStackFilePath(dir.filePath("Reference3.v3dpbd"));
+        volumeWriter.setMaskLabelFilePath(dir.filePath("ConsolidatedLabel3.v3dpbd"));
+    }
+    dataFlowModel->getVolumeData().doFlipY = false;
+    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
+
 #endif
 }
 
@@ -673,8 +732,12 @@ QString checkDragEvent(QDropEvent* event)
         return fileName;
     if (fileExtension.startsWith("tif")) // tif or tiff
         return fileName;
-    if (fileExtension.startsWith("Vaa3D")) // v3draw or v3dpdb
+    if (fileExtension.startsWith("v3d")) // v3draw or v3dpdb
         return fileName;
+#ifdef USE_FFMPEG
+    if (fileExtension.startsWith("mp4")) // v3draw or v3dpdb
+        return fileName;
+#endif
 
     return "";
 }
@@ -684,7 +747,7 @@ void NaMainWindow::dragEnterEvent(QDragEnterEvent * event)
     QString fileName = checkDragEvent(event);
     if (! fileName.isEmpty())
         event->acceptProposedAction();
-    // qDebug() << "NaMainWindow::dragEnterEvent" << fileName << __FILE__ << __LINE__;
+    qDebug() << "NaMainWindow::dragEnterEvent" << fileName << __FILE__ << __LINE__;
 }
 
 void NaMainWindow::dropEvent(QDropEvent * event)
@@ -1220,7 +1283,6 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
                  return;
     }
 
-    setViewMode(VIEW_NEURON_SEPARATION);
     onDataLoadStarted();
     if (!loadAnnotationSessionFromDirectory(imageDir)) {
         QMessageBox::warning(this, tr("Could not load image directory"),
@@ -1400,6 +1462,11 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
         return;
     }
 
+    connect(dataFlowModel, SIGNAL(benchmarkTimerPrintRequested(QString)),
+            this, SIGNAL(benchmarkTimerPrintRequested(QString)));
+    connect(dataFlowModel, SIGNAL(benchmarkTimerResetRequested()),
+            this, SIGNAL(benchmarkTimerResetRequested()));
+
     // was in loadAnnotationSessionFromDirectory June 27, 2012
     if (dynamicRangeTool)
         dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
@@ -1545,6 +1612,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     dataFlowModel->setNeuronAnnotatorResultNode(resultNode);
 
     // Load session
+    setViewMode(VIEW_NEURON_SEPARATION);
     if (! dataFlowModel->loadVolumeData()) return false;
     // dataChanged() signal will be emitted if load succeeds
 
@@ -1902,30 +1970,46 @@ void NaMainWindow::abortProgress(QString msg)
     statusBar()->showMessage(msg, 1000);
 }
 
-void NaMainWindow::set3DProgress(int prog) {
+static const bool use3DProgress = false;
+
+void NaMainWindow::set3DProgress(int prog)
+{
     if (prog >= 100) {
         complete3DProgress();
         return;
     }
-    ui.progressBar3d->setValue(prog);
-    // ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
-    ui.widget_progress3d->show();
+    if (use3DProgress) {
+        ui.progressBar3d->setValue(prog);
+        // ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
+        ui.widget_progress3d->show();
+    }
+    else
+        setProgressValue(prog);
 }
 
-void NaMainWindow::complete3DProgress() {
-    ui.widget_progress3d->hide();
-    // avoid jerky resize to accomodated progress widget
-    QCoreApplication::processEvents(); // flush pending resize events
-    ui.v3dr_glwidget->resizeEvent(NULL);
-    ui.v3dr_glwidget->setResizeEnabled(true);
-    //
-    ui.v3dr_glwidget->update();
+void NaMainWindow::complete3DProgress()
+{
+    if (use3DProgress) {
+        ui.widget_progress3d->hide();
+        // avoid jerky resize to accomodated progress widget
+        QCoreApplication::processEvents(); // flush pending resize events
+        ui.v3dr_glwidget->resizeEvent(NULL);
+        ui.v3dr_glwidget->setResizeEnabled(true);
+        //
+        ui.v3dr_glwidget->update();
+    }
+    else completeProgress();
 }
 
-void NaMainWindow::set3DProgressMessage(QString msg) {
-    ui.progressLabel3d->setText(msg);
-    // ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
-    ui.widget_progress3d->show();
+void NaMainWindow::set3DProgressMessage(QString msg)
+{
+    if (use3DProgress) {
+        ui.progressLabel3d->setText(msg);
+        ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
+        ui.widget_progress3d->show();
+    }
+    else
+        setProgressMessage(msg);
 }
 
 // NutateThread

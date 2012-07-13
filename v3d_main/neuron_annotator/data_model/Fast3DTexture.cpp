@@ -280,6 +280,7 @@ void Fast3DTexture::loadFile(QString fileName, BlockScaler::Channel channel)
     // qDebug() << "Fast3DTexture::loadFile()" << fileName << __FILE__ << __LINE__;
     currentLoadChannel = channel;
     timer.start();
+    emit benchmarkTimerPrintRequested("Started loading movie file");
     emit loadRequested(fileName);
 }
 
@@ -329,6 +330,9 @@ void Fast3DTexture::gotFrame(int f)
     // "firstInSection" is the index of the first frame in this section
     int firstInSection = int((section - 1.0) * depth / numSections);
     int lastInSection = int(section * depth / numSections - 1.0);
+    if (f == 0) {
+        emit benchmarkTimerPrintRequested("Started converting movie file");
+    }
     if (f == lastInSection) {
         // qDebug() << "scaling frames" << firstInSection << "to" << lastInSection;
         int ix = int(section) - 1;
@@ -340,6 +344,8 @@ void Fast3DTexture::gotFrame(int f)
         blockScaleWatchers[ix]->setFuture(future);
         connect(blockScaleWatchers[ix], SIGNAL(finished()),
                 this, SLOT(blockScaleFinished()));
+        if (section == numSections)
+            emit benchmarkTimerPrintRequested("Finished decoding movie file");
     }
     // qDebug() << "Decoded frame" << f;
 }
@@ -351,6 +357,7 @@ void Fast3DTexture::blockScaleFinished()
     // qDebug() << completedBlocks << "scaling blocks completed";
     if (completedBlocks >= Fast3DTexture::numScalingThreads) {
         completedBlocks = 0;
+        emit benchmarkTimerPrintRequested("Finished scaling movie file");
         qDebug() << "Decoding and scaling took " << timer.elapsed()/1000.0 << "seconds";
         // send intermediate result to graphics card
         emit volumeUploadRequested(width, height, depth, texture_data);
@@ -358,6 +365,15 @@ void Fast3DTexture::blockScaleFinished()
         if (volumeQueue.size() < 1)
             emit volumeLoadSequenceCompleted();
     }
+}
+
+void Fast3DTexture::loadNextVolume()
+{
+    if (volumeQueue.empty()) return;
+    QueuedVolume v = volumeQueue.front();
+    // qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
+    volumeQueue.pop_front();
+    loadFile(v.fileName, v.channel);
 }
 
 void Fast3DTexture::deleteData()

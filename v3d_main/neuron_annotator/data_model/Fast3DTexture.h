@@ -116,16 +116,13 @@ signals:
     void volumeUploadRequested(int w, int h, int d, void* texture_data);
     void headerLoaded(int, int, int);
     void volumeLoadSequenceCompleted();
+    void benchmarkTimerResetRequested();
+    void benchmarkTimerPrintRequested(QString);
 
 public slots:
     void onHeaderLoaded(int, int, int);
     void gotFrame(int);
-    void loadNextVolume() {
-        if (volumeQueue.empty()) return;
-        QueuedVolume v = volumeQueue.front();
-        volumeQueue.pop_front();
-        loadFile(v.fileName, v.channel);
-    }
+    void loadNextVolume();
 
 protected slots:
     void blockScaleFinished();

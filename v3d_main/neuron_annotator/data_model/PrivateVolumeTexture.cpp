@@ -43,21 +43,27 @@ struct BaseSampler
             double ratio = 1.0;
             if (dims_in[d] > 0)
                 ratio = double(used_size_out[d])/double(dims_in[d]);
-            coords_out_from_in[d].assign(dims_in[d], 0);
-            for (int x1 = 0; x1 < dims_in[d]; ++x1) {
-                int x2 = int((x1 + 0.5) * ratio);
-                assert(x2 >= 0);
-                assert(x2 < dims_out[d]);
-                coords_out_from_in[d][x1] = x2;
+            if (dims_in[d] > 0) {
+                coords_out_from_in[d].assign(dims_in[d], 0);
+                for (int x1 = 0; x1 < dims_in[d]; ++x1) {
+                    int x2 = int((x1 + 0.5) * ratio);
+                    assert(x2 >= 0);
+                    assert(x2 < dims_out[d]);
+                    coords_out_from_in[d][x1] = x2;
+                }
             }
-            coords_in_from_out[d].assign(dims_out[d], 0);
-            for (int x2 = 0; x2 < dims_out[d]; ++x2) {
-                int x1 = int((x2 + 0.5) / ratio);
-                assert(x1 >= 0);
-                if (x1 < dims_in[d])
-                    coords_in_from_out[d][x2] = x1;
-                else
-                    coords_in_from_out[d][x2] = dims_in[d] - 1;
+            if (dims_out[d] > 0) {
+                coords_in_from_out[d].assign(dims_out[d], 0);
+                for (int x2 = 0; x2 < dims_out[d]; ++x2) {
+                    int x1 = 0;
+                    if (ratio > 0)
+                        x1 = int((x2 + 0.5) / ratio);
+                    assert(x1 >= 0);
+                    if (x1 < dims_in[d])
+                        coords_in_from_out[d][x2] = x1;
+                    else
+                        coords_in_from_out[d][x2] = dims_in[d] - 1;
+                }
             }
         }
     }
@@ -418,7 +424,7 @@ void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeRea
 {
     const Image4DProxy<My4DImage>& imageProxy = volumeReader.getOriginalImageProxy();
     Dimension inputSize(imageProxy.sx, imageProxy.sy, imageProxy.sz);
-    if (inputSize != originalImageSize) // new/changed volume size
+    // if (inputSize != originalImageSize) // new/changed volume size // label size only might have changed
     {
         originalImageSize = inputSize;
         subsampleScale = inputSize.computeLinearSubsampleScale(memoryLimit/3);
@@ -581,13 +587,56 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
     return true;
 }
 
+struct BlockCopier
+{
+    void setup(uint8_t* destParam, const uint8_t* srcParam, size_t nbytesParam)
+    {
+        src = srcParam;
+        dest = destParam;
+        nbytes = nbytesParam;
+    }
+
+    void copy()
+    {
+        memcpy(dest, src, nbytes);
+    }
+
+    const uint8_t* src;
+    uint8_t* dest;
+    size_t nbytes;
+};
+
 bool PrivateVolumeTexture::loadFast3DTexture(int sx, int sy, int sz, const uint8_t* data) // from fast texture
 {
     qDebug() << "PrivateVolumeTexture::loadFast3DTexture" << sx << sy << sz << __FILE__ << __LINE__;
     Dimension size(sx, sy, sz); // TODO - what about used size?
     neuronSignalTexture.allocateSize(size, size);
     size_t texture_bytes = sx * sy * sz * 4;
-    memcpy(neuronSignalTexture.getData(), data, texture_bytes);
+    // TODO - copy this in parallel
+    bool doParallel = false; // It's not faster in parallel
+    const uint8_t* src = data;
+    uint8_t* dest = (uint8_t*)neuronSignalTexture.getData();
+    if (doParallel) {
+        const int nThreads = 6;
+        QList<QFuture<void> > futures;
+        std::vector<BlockCopier> copiers(nThreads);
+        size_t nBytes = texture_bytes/nThreads;
+        for (int t = 0; t < nThreads; ++t)
+        {
+            // final block might be a different size
+            size_t actualNBytes = nBytes;
+            if (t == nThreads-1)
+                actualNBytes = texture_bytes - nBytes*t;
+            copiers[t].setup(dest+t*nBytes, src+t*nBytes, actualNBytes);
+            futures << QtConcurrent::run(&copiers[t], &BlockCopier::copy);
+        }
+        // wait here until everyone is done
+        for (int t = 0; t < nThreads; ++t)
+            futures[t].waitForFinished();
+    }
+    else {
+        memcpy(dest, src, texture_bytes);
+    }
     return true;
 }
 

@@ -495,7 +495,8 @@ void Na3DWidget::applyCustomCut()
 /* slot */
 bool Na3DWidget::loadSignalTexture()
 {
-    qDebug() << "Na3DWidget::loadSignalTexture()" << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::loadSignalTexture()" << __FILE__ << __LINE__;
+    emit benchmarkTimerPrintRequested("Starting to upload signal texture to video card");
     if (NULL == dataFlowModel)
         return false;
     bool bSucceeded = true;
@@ -515,7 +516,6 @@ bool Na3DWidget::loadSignalTexture()
         getRendererNa()->updateSettingsFromVolumeTexture(textureReader);
     } // Release locks
     renderer->getLimitedDataSize(_data_size); //for update slider size
-    updateDefaultScale();
     {
         // Populate renderer::data4dp for use by picking routine
         const NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
@@ -530,10 +530,13 @@ bool Na3DWidget::loadSignalTexture()
         if (bSizeChanged)
         {
             cachedDefaultFocusIsDirty = true;
+            updateDefaultScale();
             resetView();
             resetVolumeCutRange();
+            getRendererNa()->clearClipPlanes();
         }
         update();
+        emit benchmarkTimerPrintRequested("Finished uploading signal texture to video card");
     }
     return bSucceeded;
 }
@@ -1299,11 +1302,14 @@ void Na3DWidget::updateDefaultScale()
     if (screenHeight < 1) return;
 
     if (! dataFlowModel) return;
-    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
-    if (! volumeReader.hasReadLock()) return;
-    const Image4DProxy<My4DImage>& volumeProxy = volumeReader.getOriginalImageProxy();
-    float objectWidth = volumeProxy.sx;
-    float objectHeight = volumeProxy.sy;
+
+    const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
+    jfrc::VolumeTexture::Reader textureReader(volumeTexture);
+    if (volumeTexture.readerIsStale(textureReader))
+        return;
+    Dimension size = textureReader.originalImageSize();
+    float objectWidth = size.x();
+    float objectHeight = size.y();
 
     if (objectWidth < 1) return;
     if (objectHeight < 1) return;
@@ -1610,6 +1616,7 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 void Na3DWidget::paintGL()
 {
     // QElapsedTimer timer; timer.start();
+    // emit benchmarkTimerPrintRequested("Starting to paint 3D widget");
     V3dR_GLWidget::paintGL();
 
     // Draw focus position to ensure it remains in center of screen,
@@ -1638,6 +1645,7 @@ void Na3DWidget::paintGL()
         paintFiducial(focus0);
         glPopAttrib();
     }
+    // emit benchmarkTimerPrintRequested("Finished painting 3D widget");
     // qDebug() << "Frame render took" << timer.elapsed() << "milliseconds";
     emit scenePainted();
 }

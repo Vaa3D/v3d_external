@@ -39,6 +39,7 @@ public:
     // "simple" method versions do not invoke undo/redo infrastructure; for use by undo/redo infrastructure
     int simpleAddPlane(const ClipPlane& rhs); // returns index of added plane
     void simpleUndoPlane(int planeIndex); // Remove the latest added plane
+    void clearAll();
 
 protected:
     int nextClipPlaneIndex;

@@ -78,6 +78,8 @@ void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
 
 QString NaVolumeDataLoadableStack::determineFullFilepath() const
 {
+    if (QFile(filename).exists())
+        return filename;
     const char * extensions[] = {
 #ifdef USE_FFMPEG
         ".mp4",
@@ -114,6 +116,7 @@ NaVolumeData::NaVolumeData()
     , currentProgress(0)
     , bDoUpdateSignalTexture(true)
     , volumeTexture(NULL)
+    , doFlipY(true)
 {
     // Connect specific signals to general ones
     connect(this, SIGNAL(channelLoaded(int)),
@@ -259,14 +262,16 @@ void NaVolumeData::loadVolumeDataFromFiles()
 
         // Temporary kludge to counteract complicated flipping that occurs during neuron separation.
         if (stacksLoaded) {
-            qDebug() << "Loading image data into memory from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
-            qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
-            // Data images are flipped relative to reference image.  I turned off flipping in
-            // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
-            flipY(originalImageStack);
-            flipY(neuronMaskStack);
-            // flipY(referenceStack);
-            // qDebug() << stopwatch.elapsed();
+            if (doFlipY) {
+                qDebug() << "Loading image data into memory from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
+                qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
+                // Data images are flipped relative to reference image.  I turned off flipping in
+                // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
+                flipY(originalImageStack);
+                flipY(neuronMaskStack);
+                // flipY(referenceStack);
+                // qDebug() << stopwatch.elapsed();
+            }
         }
     } // release locks before emit
     if (! stacksLoaded) {
@@ -283,7 +288,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
     qDebug() << "Loading 16-bit image data from disk absorbed "
             << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
 
-    bDoUpdateSignalTexture = true; // because it needs update now
+    // bDoUpdateSignalTexture = true; // because it needs update now
 
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() / 1000.0 << "seconds" << __FILE__ << __LINE__;
     emit progressCompleted();
@@ -499,23 +504,15 @@ My4DImage* ensureThreeChannel(My4DImage* input)
     }
     for (int c = 0; c < 3; ++c)
     {
-        if (c < input->getCDim()) { // copy from input
-            memcpy(volImg->getRawData() + c * channelBytes,
-                   input->getRawData() + c * channelBytes,
-                   channelBytes);
-            if (haveMinMax) {
-                volImg->p_vmin[c] = input->p_vmin[c];
-                volImg->p_vmax[c] = input->p_vmax[c];
-            }
-        }
-        else { // not in input, clear to zero
-            memset(volImg->getRawData() + c * channelBytes,
-                   0,
-                   channelBytes);
-            if (haveMinMax) {
-                volImg->p_vmin[c] = 0;
-                volImg->p_vmax[c] = 0;
-            }
+        int c_in = c;
+        if (c_in >= input->getCDim())
+            c_in = input->getCDim() - 1; // fill other channels with final channel
+        memcpy(volImg->getRawData() + c * channelBytes,
+               input->getRawData() + c_in * channelBytes,
+               channelBytes);
+        if (haveMinMax) {
+            volImg->p_vmin[c] = input->p_vmin[c_in];
+            volImg->p_vmax[c] = input->p_vmax[c_in];
         }
     }
     delete input;

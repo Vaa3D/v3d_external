@@ -35,9 +35,6 @@ void NeuronSelectionModel::initializeSelectionModel()
 {
     // qDebug() << "Initializing NeuronSelectionModel";
     { // curly brackets to restrict scope for locks
-        NaVolumeData::Reader volumeReader(volumeData);
-        if (! volumeReader.hasReadLock()) return;
-
         Writer selectionWriter(*this);
 
         neuronHighlight = -1; // No highlight
@@ -50,12 +47,20 @@ void NeuronSelectionModel::initializeSelectionModel()
         setOverlayStatus(DataFlowModel::REFERENCE_MIP_INDEX, false);
         setOverlayStatus(DataFlowModel::BACKGROUND_MIP_INDEX, true);
 
-        maskStatusList.clear();
-        neuronSelectList.clear();
-        for (int i = 0; i < volumeReader.getNumberOfNeurons(); ++i)
-        {
-            maskStatusList << true; // all neurons visible
-            neuronSelectList << false; // no neurons selected
+        for (int n = 0; n < maskStatusList.size(); ++n)
+            maskStatusList[n] = true;
+        for (int n = 0; n < neuronSelectList.size(); ++n)
+            neuronSelectList[n] = false;
+
+        NaVolumeData::Reader volumeReader(volumeData);
+        if (volumeReader.hasReadLock()) {
+            maskStatusList.clear();
+            neuronSelectList.clear();
+            for (int i = 0; i < volumeReader.getNumberOfNeurons(); ++i)
+            {
+                maskStatusList << true; // all neurons visible
+                neuronSelectList << false; // no neurons selected
+            }
         }
     }
     // qDebug() << "Done initializing NeuronSelectionModel" << __FILE__ << __LINE__;
