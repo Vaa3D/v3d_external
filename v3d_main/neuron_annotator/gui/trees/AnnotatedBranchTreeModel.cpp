@@ -31,7 +31,9 @@ void AnnotatedBranchTreeModel::setupModelData(Entity *entity, EntityTreeItem *pa
     parent->appendChild(item);
 
     QPersistentModelIndex modelIndex = QPersistentModelIndex(index(item->row(), 0, parentIndex));
-    termIndexMap.insert(*entity->id, modelIndex);
+    if (!termIndexMap.contains(*entity->id)) {
+        termIndexMap.insert(*entity->id, modelIndex);
+    }
 
     AnnotationList *annotations = annotatedBranch->getAnnotations(*entity->id);
     if (annotations != NULL && !annotations->isEmpty())
