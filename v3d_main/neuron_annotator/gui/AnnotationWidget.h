@@ -58,6 +58,7 @@ public slots:
     void annotatedBranchTreeClicked(const QModelIndex & index);
     void annotateSelectedEntityWithOntologyTerm(const Entity *term, const Entity *parentTerm);
     void removeAnnotation(const Entity *annotation);
+    void selectFragment(const Entity *entity);
     void selectEntity(const Entity *entity);
     void selectEntity(const Entity *entity, const bool external);
     void selectEntityById(const qint64 & entityId);

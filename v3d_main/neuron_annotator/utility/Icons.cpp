@@ -92,10 +92,10 @@ QVariant Icons::getIcon(Entity *entity)
     else if (type=="Image 3D" || type=="Tif 3D Image" || type=="LSM Stack" || type=="Tif 3D Label Mask" || type=="Stitched V3D Raw Stack" || type=="Aligned Brain Stack") {
         return getIcon("images.png");
     }
-    else if (type=="Neuron Fragment") {
+    else if (type=="Neuron Fragment"||type=="Curated Neuron") {
         return getIcon("brick.png");
     }
-    else if (type=="Neuron Fragment Collection") {
+    else if (type=="Neuron Fragment Collection"||type=="Curated Neuron Collection") {
         return getIcon("folder_brick.png");
     }
     else if (type=="Ontology Element" || type=="Ontology Root") {

@@ -654,22 +654,45 @@ void AnnotationWidget::annotatedBranchTreeClicked(const QModelIndex & index)
     if (item->entity() != 0) selectEntity(item->entity());
 }
 
-void AnnotationWidget::entityWasSelected(const Entity *entity)
-{
-    if (entity==0) return;
+void AnnotationWidget::selectFragment(const Entity *entity) {
     int neuronNum = getNeuronNumber(entity);
     if (neuronNum >= 0) {
         // qDebug() << "AnnotationWidget::neuronSelected"<<neuronNum;
-        if (*entity->entityType == "Tif 2D Image" || *entity->entityType == "Neuron Fragment")
-        {
-            naMainWindow->getDataFlowModel()->getNeuronSelectionModel().selectExactlyOneNeuron(neuronNum);
-
+        naMainWindow->getDataFlowModel()->getNeuronSelectionModel().selectExactlyOneNeuron(neuronNum);
 //            emit neuronSelected(neuronNum);
-            // qDebug() << "AnnotationWidget::emitted neuronSelected"<<neuronNum;
-            return;
+        // qDebug() << "AnnotationWidget::emitted neuronSelected"<<neuronNum;
+    }
+}
+
+void AnnotationWidget::entityWasSelected(const Entity *entity)
+{
+    if (entity==0)
+    {
+        return;
+    }
+    else if (*entity->entityType == "Curated Neuron")
+    {
+        QListIterator<EntityData *> i(entity->getOrderedEntityData());
+        while (i.hasNext())
+        {
+            EntityData *ed = i.next();
+            Entity *entity = ed->childEntity;
+            if (entity != NULL)
+            {
+                if (*entity->entityType == "Neuron Fragment")
+                {
+                    selectFragment(entity);
+                }
+            }
         }
     }
-    emit neuronsDeselected();
+    else if (*entity->entityType == "Neuron Fragment")
+    {
+        selectFragment(entity);
+    }
+    else {
+        emit neuronsDeselected();
+    }
 }
 
 void AnnotationWidget::selectEntity(const Entity *entity)
