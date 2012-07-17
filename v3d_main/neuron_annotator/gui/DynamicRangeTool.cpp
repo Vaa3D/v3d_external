@@ -53,26 +53,30 @@ void DynamicRangeTool::selectColor()
     emit channelColorChanged(currentChannelIndex, color.rgb());
 }
 
-void DynamicRangeTool::setColorModel(DataColorModel& modelParam)
+void DynamicRangeTool::setColorModel(DataColorModel* modelParam)
 {
-    if (&modelParam == dataColorModel) return;
-    dataColorModel = &modelParam;
+    if (modelParam == dataColorModel) return;
+    dataColorModel = modelParam;
+    if (dataColorModel == NULL)
+        return;
 
     initializeColors();
 
     connect(this, SIGNAL(channelColorChanged(int,int)),
-            &modelParam, SLOT(setChannelColor(int,int)));
+            modelParam, SLOT(setChannelColor(int,int)));
     connect(this, SIGNAL(channelHdrRangeChanged(int,qreal,qreal)),
-            &modelParam, SLOT(setChannelHdrRange(int,qreal,qreal)));
+            modelParam, SLOT(setChannelHdrRange(int,qreal,qreal)));
     connect(this, SIGNAL(channelGammaChanged(int,qreal)),
-            &modelParam, SLOT(setChannelGamma(int,qreal)));
-    connect(&modelParam, SIGNAL(colorsInitialized()),
+            modelParam, SLOT(setChannelGamma(int,qreal)));
+    connect(modelParam, SIGNAL(colorsInitialized()),
             this, SLOT(initializeColors()));
 }
 
 /* slot */
 void DynamicRangeTool::initializeColors()
 {
+    if (dataColorModel == NULL)
+        return;
     int numChannels = 0;
     {
         DataColorModel::Reader colorReader(*dataColorModel);

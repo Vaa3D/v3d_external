@@ -10,7 +10,7 @@ class DynamicRangeTool : public QDialog
     Q_OBJECT
 public:
     explicit DynamicRangeTool(QWidget *parent = 0);
-    void setColorModel(DataColorModel&);
+    void setColorModel(DataColorModel*);
     void updateChannelData();
 
 signals:

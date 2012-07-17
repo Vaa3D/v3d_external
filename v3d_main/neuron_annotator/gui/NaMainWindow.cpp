@@ -104,7 +104,8 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     qRegisterMetaType<Vector3D>("Vector3D");
 
     // hide neuron gallery until there are neurons to show
-    ui.mipsFrame->setVisible(false);
+    setViewMode(VIEW_SINGLE_STACK);
+    // ui.mipsFrame->setVisible(false);
 
     // hide compartment map until it works correctly and is not so slow on Mac
     ui.compartmentSelectGroupBox->hide();
@@ -416,19 +417,22 @@ void NaMainWindow::keyPressEvent(QKeyEvent *event)
 /* slot */
 void NaMainWindow::setViewMode(ViewMode mode)
 {
-    if (mode == viewMode)
-        return; // no change
+    // if (mode == viewMode)
+    //     return; // no change
     viewMode = mode;
     if (mode == VIEW_SINGLE_STACK) {
         ui.mipsFrame->setVisible(false);
         ui.annotationFrame->setVisible(true);
         ui.referenceGammaWidget->setVisible(false);
+        qDebug() << "Changing to single stack mode" << __FILE__ << __LINE__;
     }
     if (mode == VIEW_NEURON_SEPARATION) {
         ui.mipsFrame->setVisible(true);
         ui.annotationFrame->setVisible(true);
         ui.referenceGammaWidget->setVisible(true);
+        qDebug() << "Changing to separation result mode" << __FILE__ << __LINE__;
     }
+    update();
 }
 
 /* slot */
@@ -855,7 +859,9 @@ void NaMainWindow::showDynamicRangeTool()
     if (! dynamicRangeTool) {
         dynamicRangeTool = new DynamicRangeTool(this);
         if (dataFlowModel)
-            dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
+            dynamicRangeTool->setColorModel(&dataFlowModel->getDataColorModel());
+        else
+            dynamicRangeTool->setColorModel(NULL);
     }
     dynamicRangeTool->show();
 }
@@ -1455,6 +1461,13 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     ui.fragmentGalleryWidget->setDataFlowModel(dataFlowModel);
     neuronSelector.setDataFlowModel(dataFlowModel);
 
+    if (dynamicRangeTool) {
+        if (NULL == dataFlowModel)
+            dynamicRangeTool->setColorModel(NULL);
+        else
+            dynamicRangeTool->setColorModel(&dataFlowModel->getDataColorModel());
+    }
+
     // No connecting if the model is NULL
     if (NULL == dataFlowModel)
     {
@@ -1469,7 +1482,7 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
 
     // was in loadAnnotationSessionFromDirectory June 27, 2012
     if (dynamicRangeTool)
-        dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
+        dynamicRangeTool->setColorModel(&dataFlowModel->getDataColorModel());
 
     // Connect mip viewer to data flow model
     ui.naLargeMIPWidget->setMipMergedData(&dataFlowModel->getMipMergedData());
@@ -1617,7 +1630,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     // dataChanged() signal will be emitted if load succeeds
 
     // Show reference brightness slider in single neuron mode
-    ui.referenceGammaWidget->setVisible(true);
+    // ui.referenceGammaWidget->setVisible(true);
 
     return true;
 }
@@ -1658,19 +1671,7 @@ void NaMainWindow::resetVolumeCutRange()
 {
     int mx, my, mz;
     mx = my = mz = 0;
-    // first try NaVolumeData to get dimensions
-    {
-        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
-        if (volumeReader.hasReadLock())
-        {
-            const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
-            mx = imgProxy.sx - 1;
-            my = imgProxy.sy - 1;
-            mz = imgProxy.sz - 1;
-        }
-    }
-    // if that fails, try VolumeTexture
-    if (mx <= 0)
+    // first try VolumeTexture to get dimensions
     {
         VolumeTexture::Reader textureReader(dataFlowModel->getVolumeTexture());
         if (! dataFlowModel->getVolumeTexture().readerIsStale(textureReader))
@@ -1679,6 +1680,18 @@ void NaMainWindow::resetVolumeCutRange()
             mx = size.x() - 1;
             my = size.y() - 1;
             mz = size.z() - 1;
+        }
+    }
+    // if that fails, try VolumeData
+    if (mx <= 0)
+    {
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+        if (volumeReader.hasReadLock())
+        {
+            const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+            mx = imgProxy.sx - 1;
+            my = imgProxy.sy - 1;
+            mz = imgProxy.sz - 1;
         }
     }
     if (mx <= 0)
@@ -1731,7 +1744,9 @@ void NaMainWindow::updateGalleries()
             }
         }
     }
-    ui.mipsFrame->setVisible(bShowGalleries);
+    // ui.mipsFrame->setVisible(bShowGalleries);
+    if (bShowGalleries)
+        setViewMode(VIEW_NEURON_SEPARATION);
 }
 
 void NaMainWindow::initializeOverlayGallery()

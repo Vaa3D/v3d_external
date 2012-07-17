@@ -277,9 +277,18 @@ Fast3DTexture::~Fast3DTexture()
 
 void Fast3DTexture::loadFile(QString fileName, BlockScaler::Channel channel)
 {
-    // qDebug() << "Fast3DTexture::loadFile()" << fileName << __FILE__ << __LINE__;
-    currentLoadChannel = channel;
     timer.start();
+
+    // qDebug() << "Fast3DTexture::loadFile()" << fileName << __FILE__ << __LINE__;
+    // Read metadata, if any, for this file
+    QFileInfo qfi(fileName);
+    QString dataFileName = qfi.absoluteDir().filePath(qfi.baseName() + ".metadata");
+    qDebug() << dataFileName;
+    if (QFile(dataFileName).exists() &&
+        sampledVolumeMetaData.loadFromFile(dataFileName))
+        emit metaDataChanged();
+
+    currentLoadChannel = channel;
     emit benchmarkTimerPrintRequested("Started loading movie file");
     emit loadRequested(fileName);
 }
