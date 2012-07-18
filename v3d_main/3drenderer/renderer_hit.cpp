@@ -74,7 +74,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 double total_etime; //added by PHC, 20120412, as a convenient way to know the total elipsed time for a lengthy operation
 
-//#define _IMAGING_MENU_
+#define _IMAGING_MENU_
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Select Object / Define marker
@@ -249,6 +249,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
+			*actMarkerAblateOne_imaging_nocalib=0, *actMarkerAblateAll_imaging_nocalib=0, //without calib and low speed
 			*actMarkerOne_imaging=0, *actMarkerAll_imaging=0,
 			*act_imaging_pinpoint_n_shoot=0, *act_imaging_cut_3d_curve=0,
     
@@ -538,8 +539,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actMarkerAblateOne_imaging = new QAction("ablate this marker", w));
 				listAct.append(actMarkerAblateAll_imaging = new QAction("ablate All markers", w));
+				listAct.append(actMarkerAblateOne_imaging_nocalib = new QAction("ablate this marker (no calibration & low speed)", w));
+				listAct.append(actMarkerAblateAll_imaging_nocalib = new QAction("ablate All markers (no calibration & low speed)", w));
 				listAct.append(actMarkerOne_imaging = new QAction("Imaging on this marker", w));
-				listAct.append(actMarkerAll_imaging = new QAction("Imaging on All markers", w));
+				//listAct.append(actMarkerAll_imaging = new QAction("Imaging on All markers", w));
 #endif
 				// marker to tracing -----------------------------------------------------------
 
@@ -1160,17 +1163,23 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_ablation = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	else if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging)
+	else if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging || 
+				act == actMarkerAblateOne_imaging_nocalib || act == actMarkerAblateAll_imaging_nocalib)
 	{
 		if (w && curImg && curXWidget)
 		{
 			v3d_imaging_paras myimagingp;
-			myimagingp.OPS = "Marker Ablation from 3D Viewer";
+
+			if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging)
+				myimagingp.OPS = "Marker Ablation from 3D Viewer";
+			else if(act == actMarkerAblateOne_imaging_nocalib || act == actMarkerAblateAll_imaging_nocalib)
+				myimagingp.OPS = "Marker Ablation from 3D Viewer (no Calibration)";
+
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
 			bool doit = (curImg->listLandmarks.size()>0) ? true : false;
 
-			if (doit && act == actMarkerAblateAll_imaging)
+			if (doit && (act == actMarkerAblateAll_imaging || act == actMarkerAblateAll_imaging_nocalib) )
 				myimagingp.list_landmarks = curImg->listLandmarks;
 			else // act == actMarkerAblateOne_imaging
 			{
