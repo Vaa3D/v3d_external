@@ -436,7 +436,29 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in view: 1-right-stroke ROI", w));
 				listAct.append(actMarkerCreate_zoom = new QAction("Zoom-in view: 1-right-click ROI", w));
-//101008
+				
+                { //conditionally add tera manager
+					QDir pluginsDir = QDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+					if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+						pluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+					if (pluginsDir.dirName() == "MacOS") {
+						pluginsDir.cdUp();
+						pluginsDir.cdUp();
+						pluginsDir.cdUp();
+					}
+#endif
+					if (pluginsDir.cd("plugins/teramanager")==true) 
+					{
+						listAct.append(act = new QAction("", w)); act->setSeparator(true);
+						listAct.append(actCurveCreate_zoom_grabhighrezdata = new QAction("Zoom-in HighRezImage: 1-right-stroke ROI", w));
+						listAct.append(actMarkerCreate_zoom_grabhighrezdata = new QAction("Zoom-in HighRezImage: 1-right-click ROI", w));
+					}
+				}
+
+
+				//101008
 //#ifdef _WIN32 && _MSC_VER
 #ifdef _IMAGING_MENU_
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -1093,14 +1115,16 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smMarkerCreate1;
 		b_addthismarker = false;
-		b_imaging = true;
+		b_imaging = false;
+		b_grabhighrez = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actCurveCreate_zoom_grabhighrezdata)
 	{
 		selectMode = smCurveCreate1;
 		b_addthiscurve = false;
-		b_imaging = true;
+		b_imaging = false;
+		b_grabhighrez = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 
@@ -3267,7 +3291,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		if (b_imaging)
 			produceZoomViewOf3DRoi(loc_vec);
         if (b_grabhighrez) //to be added. PHC 20120712
-        {}
+			produceZoomViewOf3DRoi(loc_vec);
 	}
 	else //100821
 	{
@@ -3347,6 +3371,10 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 
 			//do imaging
 			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+		}
+		else if (b_grabhighrez && curXWidget) //120717
+		{
+			
 		}
 		else //b_imaging does not open 3D Viewer here
 		{
@@ -3599,6 +3627,11 @@ double Renderer_gl1::solveMarkerCenter()
 			ablate3DLocationSeries(loc_vec);
 		}
 		if (b_imaging)
+		{
+			loc_vec.push_back(loc);
+			produceZoomViewOf3DRoi(loc_vec);
+		}
+		else if (b_grabhighrez) //to be added. PHC 20120712
 		{
 			loc_vec.push_back(loc);
 			produceZoomViewOf3DRoi(loc_vec);
