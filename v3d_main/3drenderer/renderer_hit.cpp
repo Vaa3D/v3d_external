@@ -251,6 +251,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
 			*actMarkerOne_imaging=0, *actMarkerAll_imaging=0,
 			*act_imaging_pinpoint_n_shoot=0, *act_imaging_cut_3d_curve=0,
+    
+            *actCurveCreate_zoom_grabhighrezdata=0, *actMarkerCreate_zoom_grabhighrezdata=0, //for TeraManager or similar high-rez data acqusition. by PHC, 20120717
 
 			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
 
@@ -1085,6 +1087,22 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 
 #ifndef test_main_cpp
+
+    
+    else if (act == actMarkerCreate_zoom_grabhighrezdata) //for grabbing large data from existing files . by PHC 20120712
+	{
+		selectMode = smMarkerCreate1;
+		b_addthismarker = false;
+		b_imaging = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+	else if (act == actCurveCreate_zoom_grabhighrezdata)
+	{
+		selectMode = smCurveCreate1;
+		b_addthiscurve = false;
+		b_imaging = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
 
 #define __v3d_imaging_func__ // dummy, just for easy locating
 	else if (act == actMarkerCreate_zoom_imaging)
@@ -3248,6 +3266,8 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 			ablate3DLocationSeries(loc_vec);
 		if (b_imaging)
 			produceZoomViewOf3DRoi(loc_vec);
+        if (b_grabhighrez) //to be added. PHC 20120712
+        {}
 	}
 	else //100821
 	{

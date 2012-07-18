@@ -44,6 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *  last edit by Hanchuan Peng, 090306, separate some basic obj types and also neuron manipulation functions
  *  last edit: Hancuan peng and Ruan Zongcai, 090705, add a flag to enable/disable the clipBox which is used in the function drawObj()
  *  last change: 110813 Ruan Zongcai, change Renderer_tex2 to Renderer_gl1, also changed related file names
+ * last change: 20120717: add b_grabhighrez for large data file viz. by PHC
  */
 
 #ifndef V3D_RENDERER_TEX2_H
@@ -289,6 +290,7 @@ protected:
 	int cntCur3DCurveMarkers; //091226. marker cnt when define a curve using marker clicking
 	bool b_addthiscurve; //for 1-stroke curve based zoom-in, PHC 100821
 	bool b_addthismarker; //for 1-click based zoom-in, PHC 100821
+	bool b_grabhighrez; //for v3d_largedataviz, PHC 120717
 	bool b_imaging; //for v3d_imaging, PHC 101008
 	bool b_ablation; //for 3D imaging, PHC, 120506
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
@@ -438,6 +440,7 @@ private:
 		VOLUME_FILTER = 1;
 		SLICE_COLOR = XYZW(1,1,1,1);
 
+		b_grabhighrez = false; //120717, PHC
 		b_imaging = false; //101008
 		b_ablation = false; //120506
           b_renderTextureLast = false;
