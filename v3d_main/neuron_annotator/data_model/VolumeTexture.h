@@ -48,10 +48,7 @@ private:
     typedef NaSharedDataModel<PrivateVolumeTexture> super;
 
 protected:
-    const NaVolumeData* volumeData;
-#ifdef USE_FFMPEG
-    const Fast3DTexture* fast3DTexture;
-#endif
+    const DataFlowModel* dataFlowModel;
 
 public:
     /// Allows clients (such as Na3DViewer) to upload pixels in main/OpenGL thread.

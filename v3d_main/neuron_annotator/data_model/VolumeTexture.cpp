@@ -16,10 +16,7 @@ namespace jfrc {
 ///////////////////////////
 
 VolumeTexture::VolumeTexture()
-    : volumeData(NULL)
-#ifdef USE_FFMPEG
-    , fast3DTexture(NULL)
-#endif USE_FFMPEG
+    : dataFlowModel(NULL)
 {}
 
 /* virtual */
@@ -28,14 +25,14 @@ VolumeTexture::~VolumeTexture()
     Writer(*this); // wait for clients to return before destruction
 }
 
-void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
+void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 {
-    if (NULL == dataFlowModel) {
-        volumeData = NULL;
-        return;
-    }
+    dataFlowModel = dataFlowModelParam;
 
-    volumeData = &dataFlowModel->getVolumeData();
+    if (NULL == dataFlowModel)
+        return;
+
+    const NaVolumeData* volumeData = &dataFlowModel->getVolumeData();
 
     // qDebug() << "Connecting NaVolumeData::dataChanged() to VolumeTexture::updateVolume()";
     // I cannot understand why this signal gets disconnected between loads sometimes, but it does.
@@ -51,6 +48,7 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
             this, SLOT(updateColorMapTexture()), Qt::UniqueConnection);
 
 #ifdef USE_FFMPEG
+    const Fast3DTexture* fast3DTexture = &dataFlowModel->getFast3DTexture();
     fast3DTexture = &dataFlowModel->getFast3DTexture();
     connect(this, SIGNAL(signalTextureChanged()),
             fast3DTexture, SLOT(loadNextVolume())); // Now that previous volume was safely copied
@@ -64,10 +62,13 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModel)
 bool VolumeTexture::updateVolume()
 {
     // qDebug() << "VolumeTexture::updateVolume()" << __FILE__ << __LINE__;
+    if (NULL == dataFlowModel) return false;
+
     bool bSucceeded = true; // avoid signalling before unlocking
     bool bSignalChanged = false;
     bool bLabelChanged = false;
-    if (NULL == volumeData) return false;
+
+    const NaVolumeData* volumeData = &dataFlowModel->getVolumeData();
 
     emit progressMessageChanged("Sampling volume for 3D viewer");
     float progress = 1.0; // out of 100
@@ -138,6 +139,9 @@ bool VolumeTexture::updateColorMapTexture()
 #ifdef USE_FFMPEG
 bool VolumeTexture::loadFast3DTexture()
 {
+    if (NULL == dataFlowModel)
+        return false;
+    const Fast3DTexture* fast3DTexture = &dataFlowModel->getFast3DTexture();
     QElapsedTimer timer;
     timer.start();
     emit benchmarkTimerPrintRequested("Started VolumeTexture::loadFast3DTexture()");
