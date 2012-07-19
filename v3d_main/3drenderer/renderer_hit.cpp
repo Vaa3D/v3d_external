@@ -74,7 +74,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 double total_etime; //added by PHC, 20120412, as a convenient way to know the total elipsed time for a lengthy operation
 
-#define _IMAGING_MENU_
+//#define _IMAGING_MENU_
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Select Object / Define marker
@@ -1041,8 +1041,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smCurveCreate1;
 		b_addthiscurve = false;
-        b_imaging = false;
-		b_grabhighrez = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actCurveRefine) // 110831 ZJL
@@ -1109,8 +1107,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smMarkerCreate1;
 		b_addthismarker = false;
-        b_imaging = false;
-		b_grabhighrez = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 
@@ -3301,9 +3297,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		//added by PHC, 120506
 		if (b_ablation)
 			ablate3DLocationSeries(loc_vec);
-		if (b_imaging)
-			produceZoomViewOf3DRoi(loc_vec);
-        if (b_grabhighrez) //to be added. PHC 20120712
+		if (b_imaging || b_grabhighrez)
 			produceZoomViewOf3DRoi(loc_vec);
 	}
 	else //100821
@@ -3387,7 +3381,32 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		}
 		else if (b_grabhighrez && curXWidget) //120717
 		{
-			
+			b_grabhighrez = false;
+            v3d_msg("reset the b_grabhighrez");
+            
+			//set the hiddenSelectWidget for the V3D mainwindow
+			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+			{
+				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+				return;
+			}
+            
+			//set up parameters
+			v3d_imaging_paras myimagingp;
+			myimagingp.OPS = "Acquisition: ROI from High Resolution Image";
+			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+			myimagingp.xs = mx;
+			myimagingp.ys = my;
+			myimagingp.zs = mz; //starting coordinates (in pixel space)
+			myimagingp.xe = Mx;
+			myimagingp.ye = My;
+			myimagingp.ze = Mz; //ending coordinates (in pixel space)
+			myimagingp.xrez = curImg->getRezX() / 2.0;
+			myimagingp.yrez = curImg->getRezY() / 2.0;
+			myimagingp.zrez = curImg->getRezZ() / 2.0;
+            
+			//do imaging
+			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
 		else //b_imaging does not open 3D Viewer here
 		{
@@ -3639,12 +3658,7 @@ double Renderer_gl1::solveMarkerCenter()
 			loc_vec.push_back(loc);
 			ablate3DLocationSeries(loc_vec);
 		}
-		if (b_imaging)
-		{
-			loc_vec.push_back(loc);
-			produceZoomViewOf3DRoi(loc_vec);
-		}
-		else if (b_grabhighrez) //to be added. PHC 20120712
+		if (b_imaging || b_grabhighrez)
 		{
 			loc_vec.push_back(loc);
 			produceZoomViewOf3DRoi(loc_vec);
