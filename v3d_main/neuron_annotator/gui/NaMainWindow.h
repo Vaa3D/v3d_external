@@ -101,6 +101,9 @@ signals:
     void singleStackLoadRequested(QString fileName);
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
+    void initializeColorModelRequested();
+    void offset3dGammaChanged(qreal);
+    void initializeSelectionModelRequested();
 
 public slots:
     void resetVolumeCutRange();

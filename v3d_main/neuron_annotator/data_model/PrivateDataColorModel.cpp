@@ -11,11 +11,14 @@ PrivateDataColorModel::PrivateDataColorModel(const PrivateDataColorModel& rhs)
 {
     channelColors = rhs.channelColors;
     sharedGamma = rhs.sharedGamma;
-    // qDebug() << "PrivateDataColorModel copy ctor";
+    qDebug() << "PrivateDataColorModel copy ctor"  << __FILE__ << __LINE__;
 }
 
 /* virtual */
-PrivateDataColorModel::~PrivateDataColorModel() {}
+PrivateDataColorModel::~PrivateDataColorModel()
+{
+    qDebug() << "PrivateDataColorModel dtor" << __FILE__ << __LINE__;
+}
 
 // Crudely populate 3-channel rgb color model based on n-channel data color model,
 // for use in fast mode of 3D viewer update.

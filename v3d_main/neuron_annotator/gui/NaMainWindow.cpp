@@ -424,13 +424,13 @@ void NaMainWindow::setViewMode(ViewMode mode)
         ui.mipsFrame->setVisible(false);
         ui.annotationFrame->setVisible(true);
         ui.referenceGammaWidget->setVisible(false);
-        qDebug() << "Changing to single stack mode" << __FILE__ << __LINE__;
+        // qDebug() << "Changing to single stack mode" << __FILE__ << __LINE__;
     }
     if (mode == VIEW_NEURON_SEPARATION) {
         ui.mipsFrame->setVisible(true);
         ui.annotationFrame->setVisible(true);
         ui.referenceGammaWidget->setVisible(true);
-        qDebug() << "Changing to separation result mode" << __FILE__ << __LINE__;
+        // qDebug() << "Changing to separation result mode" << __FILE__ << __LINE__;
     }
     update();
 }
@@ -611,15 +611,19 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         mpegTexture.loadNextVolume(); // starts loading process in another thread
     }
 
-    dataFlowModel->getDataColorModel().initializeRgba32();
-    dataFlowModel->getSlow3DColorModel().initializeRgba32();
+    // dataFlowModel->getDataColorModel().initializeRgba32();
+    // dataFlowModel->getSlow3DColorModel().initializeRgba32();
+    emit initializeColorModelRequested();
+
     // Apply gamma bias already applied to input images
-    dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
-    dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
+    // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
+    // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
+    emit offset3dGammaChanged(0.46);
     emit benchmarkTimerPrintRequested("Initialized color models");
 
     // keep reference channel off
-    dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
+    // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
+    emit initializeSelectionModelRequested();
     setViewMode(VIEW_SINGLE_STACK);
 
     // TODO - load lossless image into VolumeTexture
@@ -637,6 +641,7 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         volumeWriter.setReferenceStackFilePath(dir.filePath("Reference3.v3dpbd"));
         volumeWriter.setMaskLabelFilePath(dir.filePath("ConsolidatedLabel3.v3dpbd"));
     }
+    // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
     dataFlowModel->getVolumeData().doFlipY = false;
     dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
 
@@ -1036,7 +1041,9 @@ void NaMainWindow::onSelectionModelVisibilityChanged()
         bReferenceOverlayIsVisible = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
     }
     if (bReferenceColorIsVisible != bReferenceOverlayIsVisible)
-        dataFlowModel->getDataColorModel().setChannelVisibility(3, bReferenceOverlayIsVisible);
+        // TODO - this causes a fork of data color model
+        // dataFlowModel->getDataColorModel().setChannelVisibility(3, bReferenceOverlayIsVisible);
+        emit channelVisibilityChanged(3, bReferenceOverlayIsVisible);
 }
 
 /* slot */
@@ -1514,7 +1521,8 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             &dataFlowModel->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
     connect(ui.annotationFrame, SIGNAL(neuronsDeselected()),
             &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
-
+    connect(this, SIGNAL(initializeSelectionModelRequested()),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(initializeSelectionModel()));
 
     // Progress if NaVolumeData file load
     // TODO - this is a lot of connection boilerplate code.  This should be abstracted into a single call or specialized ProgressManager class.
@@ -1546,7 +1554,14 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             this, SLOT(onColorModelChanged()));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
             this, SLOT(onSelectionModelVisibilityChanged()));
-
+    connect(this, SIGNAL(initializeColorModelRequested()),
+            &dataFlowModel->getDataColorModel(), SLOT(initializeRgba32()));
+    connect(this, SIGNAL(initializeColorModelRequested()),
+            &dataFlowModel->getSlow3DColorModel(), SLOT(initializeRgba32()));
+    connect(this, SIGNAL(offset3dGammaChanged(qreal)),
+            &dataFlowModel->getSlow3DColorModel(), SLOT(setSharedGamma(qreal)));
+    connect(this, SIGNAL(offset3dGammaChanged(qreal)),
+            &dataFlowModel->getSlow3DColorModel(), SLOT(setReferenceGamma(qreal)));
 }
 
 bool NaMainWindow::tearDownOldDataFlowModel()

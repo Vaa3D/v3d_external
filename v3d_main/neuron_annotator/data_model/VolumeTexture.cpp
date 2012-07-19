@@ -111,7 +111,7 @@ bool VolumeTexture::updateVolume()
 /* slot */
 void VolumeTexture::updateNeuronVisibilityTexture()
 {
-    qDebug() << "VolumeTexture::updateNeuronVisibilityTexture()" << __FILE__ << __LINE__;
+    // qDebug() << "VolumeTexture::updateNeuronVisibilityTexture()" << __FILE__ << __LINE__;
     bool bSucceeded = true;
     {
         Writer(*this);

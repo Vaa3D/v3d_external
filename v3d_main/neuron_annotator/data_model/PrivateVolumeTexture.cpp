@@ -324,7 +324,7 @@ bool NeuronVisibilityTexture::update()
 ColorMapTexture::ColorMapTexture()
     : dataColorModel(NULL)
 {
-    colors.assign(size_t(4 * 256), (uint32_t)0);
+    colors.fill(0, 4 * 256);
     for (int c = 0; c < 4; ++c) {
         uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
         if (3 == c)
