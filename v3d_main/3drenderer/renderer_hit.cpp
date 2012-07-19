@@ -1041,6 +1041,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smCurveCreate1;
 		b_addthiscurve = false;
+        b_imaging = false;
+		b_grabhighrez = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actCurveRefine) // 110831 ZJL
@@ -1107,6 +1109,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smMarkerCreate1;
 		b_addthismarker = false;
+        b_imaging = false;
+		b_grabhighrez = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 

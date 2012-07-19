@@ -95,7 +95,7 @@ INCLUDEPATH += .
 # macx: CONFIG-=app_bundle #by PHC, 101119
 
 # cross-OS-platform, cross-Qt-version
-QT_DIR = $$dirname(QMAKE_QMAKE)/..  # cross-Qt-version
+/  # cross-Qt-version
 LOCAL_DIR = ../common_lib/ 				# unix-liked platform: macx, unix, win32-msys-mingw
 
 MINGW_DIR = /mingw # platform: win32-msys-mingw
