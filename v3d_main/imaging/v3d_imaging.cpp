@@ -80,11 +80,22 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 			pluginsDir.cdUp();
 		}
 #endif
-		if (pluginsDir.cd("plugins/smartscope_controller")==false) 
-		{
-			v3d_msg("Cannot find ./plugins/smartscope_controller directory!");
-			return false;
-		}
+        if (p.OPS == "Acquisition: ROI from High Resolution Image")
+        {
+            if (pluginsDir.cd("plugins/teramanager")==false) 
+            {
+                v3d_msg("Cannot find ./plugins/teramanager directory!");
+                return false;
+            }
+        }
+        else
+        {
+            if (pluginsDir.cd("plugins/smartscope_controller")==false) 
+            {
+                v3d_msg("Cannot find ./plugins/smartscope_controller directory!");
+                return false;
+            }
+        }
 		
 		QStringList fileList = pluginsDir.entryList(QDir::Files);
 		if (fileList.size()<1)
