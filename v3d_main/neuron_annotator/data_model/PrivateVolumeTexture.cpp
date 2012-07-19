@@ -381,9 +381,8 @@ void ColorMapTexture::setDataColorModel(const DataColorModel& cm)
 //////////////////////////
 
 PrivateVolumeTexture::PrivateVolumeTexture()
-    : memoryLimit(5e8) // 500 MB for volume texture
+    : subsampleScale(1.0)
     , memoryAlignment(8)
-    , subsampleScale(1.0)
     , bUse3DSignalTexture(true)
 {
 }
@@ -396,8 +395,7 @@ PrivateVolumeTexture::~PrivateVolumeTexture()
 
 /* explicit */
 PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
-    : memoryLimit(rhs.memoryLimit)
-    , memoryAlignment(rhs.memoryAlignment)
+    : memoryAlignment(rhs.memoryAlignment)
     , subsampleScale(rhs.subsampleScale)
     , originalImageSize(rhs.originalImageSize)
     , usedTextureSize(rhs.usedTextureSize)
@@ -427,8 +425,13 @@ void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeRea
     // if (inputSize != originalImageSize) // new/changed volume size // label size only might have changed
     {
         originalImageSize = inputSize;
-        subsampleScale = inputSize.computeLinearSubsampleScale(memoryLimit/3);
-        usedTextureSize = inputSize.sampledSize(memoryLimit/3);
+        size_t memoryLimit = 5e8;
+        QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+        QVariant val = settings.value("NaMaxVideoMegabytes");
+        if (val.isValid())
+            memoryLimit = 1e6 * val.toInt();
+        subsampleScale = inputSize.computeLinearSubsampleScale(memoryLimit);
+        usedTextureSize = inputSize.sampledSize(memoryLimit);
         paddedTextureSize = usedTextureSize.padToMultipleOf(memoryAlignment);
         neuronLabelTexture.allocateSize(paddedTextureSize, usedTextureSize);
         neuronSignalTexture.allocateSize(paddedTextureSize, usedTextureSize);

@@ -134,6 +134,7 @@ HEADERS += \
     ../neuron_annotator/gui/Na3DWidget.h \
     ../neuron_annotator/gui/NaZStackWidget.h \
     ../neuron_annotator/gui/NaLargeMIPWidget.h \
+    ../neuron_annotator/gui/PreferencesDialog.h \
     ../neuron_annotator/gui/DynamicRangeTool.h \
     ../neuron_annotator/gui/ColorRangeSliderWidget.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
@@ -199,6 +200,7 @@ SOURCES += \
     ../neuron_annotator/gui/Na3DWidget.cpp \
     ../neuron_annotator/gui/NaZStackWidget.cpp \
     ../neuron_annotator/gui/NaLargeMIPWidget.cpp \
+    ../neuron_annotator/gui/PreferencesDialog.cpp \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
     ../neuron_annotator/utility/FileTreeSearcher.cpp \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.cpp \
@@ -286,6 +288,7 @@ FORMS += \
     ../neuron_annotator/gui/AngleWidget.ui \
     ../neuron_annotator/gui/AnnotationWidget.ui \
     ../neuron_annotator/gui/DynamicRangeTool.ui \
+    ../neuron_annotator/gui/PreferencesNa.ui \
     ../neuron_annotator/gui/ZoomWidget.ui
 
 INCLUDEPATH = $$unique(INCLUDEPATH)

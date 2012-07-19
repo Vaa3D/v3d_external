@@ -27,6 +27,7 @@
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
 #include "../utility/loadV3dFFMpeg.h"
+#include "PreferencesDialog.h"
 
 using namespace std;
 using namespace jfrc;
@@ -1446,6 +1447,16 @@ void NaMainWindow::on_actionScreenShot_triggered() {
         bool saved = ui.v3dr_glwidget->screenShot(filename);
     }
 
+}
+
+void NaMainWindow::on_actionPreferences_triggered()
+{
+    PreferencesDialog dlg(this);
+    dlg.loadPreferences();
+    int result = dlg.exec();
+    if (result == QDialog::Accepted) {
+        dlg.savePreferences();
+    }
 }
 
 // June 27, 2012 modify to accept "NULL" during data flow replacement

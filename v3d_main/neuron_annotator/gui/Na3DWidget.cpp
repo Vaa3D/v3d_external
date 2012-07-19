@@ -449,6 +449,9 @@ void Na3DWidget::setUndoStack(QUndoStack& undoStackParam) // for undo/redo custo
 /* virtual */
 void Na3DWidget::initializeGL()
 {
+    int gm3ts;
+    glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &gm3ts);
+    qDebug() << "GL_MAX_3D_TEXTURE_SIZE" << gm3ts;
     GLboolean hasStereo;
     glGetBooleanv(GL_STEREO, &hasStereo);
     if(hasStereo) {

@@ -57,7 +57,7 @@ bool Dimension::operator==(const Dimension& rhs) const {
 double Dimension::computeLinearSubsampleScale(size_t memoryLimit) const
 {
     if (memoryLimit <= 0) return 1.0; // zero means no limit
-    size_t memoryUse = x() * y() * z() * 2; // bytes
+    size_t memoryUse = x() * y() * z() * 6; // 6 bytes per voxel
     if (memoryUse <= memoryLimit) return 1.0; // already fits into memory as-is
     double sampleFactor = std::pow((double)memoryLimit / (double)memoryUse, 1.0/3.0);
     return sampleFactor;

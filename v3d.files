@@ -2495,3 +2495,7 @@ v3d_main/neuron_annotator/utility/loadV3dFFMpeg.cpp
 v3d_main/neuron_annotator/tests/test_write_mp4.cpp
 v3d_main/neuron_annotator/tests/test_mpeg_texture.cpp
 v3d_main/neuron_annotator/gui/Stereo3dMode.h
+v3d_main/neuron_annotator/gui/PreferencesDialog.h
+v3d_main/neuron_annotator/gui/PreferencesDialog.cpp
+v3d_main/neuron_annotator/gui/preferences_na_dialog.ui
+v3d_main/neuron_annotator/gui/PreferencesNa.ui

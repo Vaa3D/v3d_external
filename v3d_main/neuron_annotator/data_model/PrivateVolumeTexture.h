@@ -175,7 +175,6 @@ public:
     const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
 
 protected:
-    size_t memoryLimit; // Try not to use more texture memory than this
     int memoryAlignment; // Keep dimensions a multiple of this factor
 
     NeuronVisibilityTexture neuronVisibilityTexture;
