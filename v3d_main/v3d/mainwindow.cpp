@@ -2593,6 +2593,10 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
         XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
         QString mdiChildPath = // CMB Oct-14-2010
                 QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
+        if (mdiChildPath.isEmpty()) //in this case, try to handle a plugin-opened/returned image window with a title but without a real meaningful path yet. by PHC, 20120720
+        {
+            mdiChildPath = mdiChild->getOpenFileNameLabel();
+        }
 
         if (mdiChildPath == canonicalFilePath || QFileInfo(mdiChildPath).fileName() == canonicalFilePath) //20110427 YuY
         {
