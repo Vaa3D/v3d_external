@@ -595,18 +595,41 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         // First load lowest resolution mp4 to put something on the screen immediately ~300ms elapsed
         mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2_25.mp4"),
                                  BlockScaler::CHANNEL_RGB);
+
+        size_t max_mb = 500; // default to max memory of 500 MB
+        // Fetch preset maximum texture memory user preference, if any.
+        QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+        QVariant val = settings.value("NaMaxVideoMegabytes");
+        // qDebug() << "Loading preferences";
+        if (val.isValid()) {
+            size_t mb = val.toInt();
+            if (mb > 0)
+                max_mb = mb;
+        }
+        int mvoxels = 25;  // Max megavoxels
+        // six bytes per megavoxel with current texture implementation
+        while ((2 * mvoxels * 6) <= max_mb) {
+            if (mvoxels >= 200) // 200 is the largest subsample we have
+                break;
+            mvoxels *= 2; // progress 25, 50, 100, 200
+        }
+        assert(mvoxels >= 25); // lowest sampling rate is 25
+        assert(mvoxels <= 200); // highest sampling rate is 200
+        QString mv = QString("%1").arg(mvoxels);
+        qDebug() << "Using sampling limit of" << mv << "megavoxels";
+
         // First refinement: load largest subsample that can fit on the video card. ~1500ms elapsed
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2_100.mp4"),
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_RGB);
         // Next add the reference channel
-        mpegTexture.queueVolume(dir.filePath("Reference2_100.mp4"),
+        mpegTexture.queueVolume(dir.filePath("Reference2_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_ALPHA);
         // Individual color channels to sharpen the colors
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Red_100.mp4"),
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Red_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_RED);
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Green_100.mp4"),
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Green_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_GREEN);
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Blue_100.mp4"), // ~4000ms elapsed
+        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Blue_" + mv + ".mp4"), // ~4000ms elapsed
                                  BlockScaler::CHANNEL_BLUE);
 
         mpegTexture.loadNextVolume(); // starts loading process in another thread
