@@ -41,6 +41,10 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     // connect(&volumeTexture, SIGNAL(volumeLoadSequenceCompleted()),
     //         &volumeData, SLOT(continueStagedLoad()));
 
+    connect(&volumeData, SIGNAL(benchmarkTimerPrintRequested(QString)),
+            this, SIGNAL(benchmarkTimerPrintRequested(QString)));
+    connect(&volumeData, SIGNAL(benchmarkTimerResetRequested()),
+            this, SIGNAL(benchmarkTimerResetRequested()));
     connect(&volumeTexture, SIGNAL(benchmarkTimerPrintRequested(QString)),
             this, SIGNAL(benchmarkTimerPrintRequested(QString)));
     connect(&volumeTexture, SIGNAL(benchmarkTimerResetRequested()),

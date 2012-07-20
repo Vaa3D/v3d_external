@@ -267,8 +267,10 @@ void NaVolumeData::loadVolumeDataFromFiles()
                 qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
                 // Data images are flipped relative to reference image.  I turned off flipping in
                 // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
+                emit benchmarkTimerPrintRequested("Starting to flip Y-axis");
                 flipY(originalImageStack);
                 flipY(neuronMaskStack);
+                emit benchmarkTimerPrintRequested("Finished flipping Y-axis");
                 // flipY(referenceStack);
                 // qDebug() << stopwatch.elapsed();
             }

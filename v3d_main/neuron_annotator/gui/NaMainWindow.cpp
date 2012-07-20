@@ -1313,6 +1313,8 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
     }
 
     // std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
+    emit benchmarkTimerResetRequested();
+    emit benchmarkTimerPrintRequested("openMulticolorImageStack called");
 
     if (! tearDownOldDataFlowModel()) {
         QMessageBox::warning(this, tr("Could not close previous Annotation Session"),

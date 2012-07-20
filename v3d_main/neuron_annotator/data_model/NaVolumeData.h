@@ -59,6 +59,8 @@ signals:
     void channelLoaded(int channel_index);
     void channelsLoaded(int channel_count);
     void neuronMaskLoaded();
+    void benchmarkTimerResetRequested();
+    void benchmarkTimerPrintRequested(QString);
 
 public slots:
     bool loadChannels(QString fileName); // includes loading general volumes

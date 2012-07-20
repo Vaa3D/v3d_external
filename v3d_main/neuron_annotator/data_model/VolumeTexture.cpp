@@ -71,6 +71,7 @@ bool VolumeTexture::updateVolume()
     const NaVolumeData* volumeData = &dataFlowModel->getVolumeData();
 
     emit progressMessageChanged("Sampling volume for 3D viewer");
+    emit benchmarkTimerPrintRequested("Starting to sample 3D volume");
     float progress = 1.0; // out of 100
     emit progressValueChanged(int(progress));
     qDebug() << "Populating volume data for 3D viewer" << __FILE__ << __LINE__;
@@ -96,6 +97,7 @@ bool VolumeTexture::updateVolume()
     }
     emit progressValueChanged(80);
     if (bSucceeded) {
+        emit benchmarkTimerPrintRequested("Finished sampling 3D volume");
         emit progressComplete();
         if (bSignalChanged)
             emit signalTextureChanged();
