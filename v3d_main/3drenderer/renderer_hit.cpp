@@ -3382,7 +3382,6 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		else if (b_grabhighrez && curXWidget) //120717
 		{
 			b_grabhighrez = false;
-            v3d_msg("reset the b_grabhighrez");
             
 			//set the hiddenSelectWidget for the V3D mainwindow
 			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
