@@ -696,6 +696,11 @@ jfrc::Dimension RendererNeuronAnnotator::getOriginalVolumeDimensions() const
     return jfrc::Dimension(dim1, dim2, dim3);
 }
 
+jfrc::Dimension RendererNeuronAnnotator::getPaddedTextureDimensions() const
+{
+    return jfrc::Dimension(bufSize[0], bufSize[1], bufSize[2]);
+}
+
 void RendererNeuronAnnotator::setOriginalVolumeDimensions(long x, long y, long z)
 {
     // Set values as if empty volume

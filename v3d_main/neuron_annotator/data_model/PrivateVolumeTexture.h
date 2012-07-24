@@ -70,6 +70,8 @@ public:
 
     virtual void allocateSize(Dimension paddedTextureSize, Dimension usedTextureSize)
     {
+        if (paddedSize == paddedTextureSize)
+            return; // already allocated
         width = paddedTextureSize.x();
         height = paddedTextureSize.y();
         depth = paddedTextureSize.z();

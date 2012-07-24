@@ -613,33 +613,13 @@ bool PrivateVolumeTexture::loadFast3DTexture(int sx, int sy, int sz, const uint8
 {
     qDebug() << "PrivateVolumeTexture::loadFast3DTexture" << sx << sy << sz << __FILE__ << __LINE__;
     Dimension size(sx, sy, sz); // TODO - what about used size?
-    neuronSignalTexture.allocateSize(size, size);
+    assert(size == paddedTextureSize);
+    neuronSignalTexture.allocateSize(paddedTextureSize, usedTextureSize);
     size_t texture_bytes = sx * sy * sz * 4;
-    // TODO - copy this in parallel
-    bool doParallel = false; // It's not faster in parallel
+    // bool doParallel = false; // It's not faster in parallel
     const uint8_t* src = data;
     uint8_t* dest = (uint8_t*)neuronSignalTexture.getData();
-    if (doParallel) {
-        const int nThreads = 6;
-        QList<QFuture<void> > futures;
-        std::vector<BlockCopier> copiers(nThreads);
-        size_t nBytes = texture_bytes/nThreads;
-        for (int t = 0; t < nThreads; ++t)
-        {
-            // final block might be a different size
-            size_t actualNBytes = nBytes;
-            if (t == nThreads-1)
-                actualNBytes = texture_bytes - nBytes*t;
-            copiers[t].setup(dest+t*nBytes, src+t*nBytes, actualNBytes);
-            futures << QtConcurrent::run(&copiers[t], &BlockCopier::copy);
-        }
-        // wait here until everyone is done
-        for (int t = 0; t < nThreads; ++t)
-            futures[t].waitForFinished();
-    }
-    else {
-        memcpy(dest, src, texture_bytes);
-    }
+    memcpy(dest, src, texture_bytes);
     return true;
 }
 

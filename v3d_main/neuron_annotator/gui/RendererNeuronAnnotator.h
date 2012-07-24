@@ -55,6 +55,7 @@ public:
             const jfrc::VolumeTexture::Reader& textureReader);
     void setOriginalVolumeDimensions(long x, long y, long z);
     jfrc::Dimension getOriginalVolumeDimensions() const;
+    jfrc::Dimension getPaddedTextureDimensions() const;
     void setResampledVolumeDimensions(long x, long y, long z);
     void setPaddedVolumeDimensions(long x, long y, long z);
     void setSingleVolumeDimensions(long x, long y, long z);

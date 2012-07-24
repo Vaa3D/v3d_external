@@ -68,6 +68,7 @@ public:
     {
     public:
         Reader(const DataColorModel& colorModelParam);
+        virtual ~Reader();
         int getNumberOfDataChannels() const;
         QRgb blend(const double channelIntensities[]) const;
         QRgb blendInvisible(const double channelIntensities[]) const; // Ignores channel visibility
@@ -90,6 +91,7 @@ public:
     {
     public:
         Writer(DataColorModel& colorModelParam);
+        virtual ~Writer();
     };
 };
 

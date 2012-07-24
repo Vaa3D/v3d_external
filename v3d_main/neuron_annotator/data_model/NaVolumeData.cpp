@@ -41,6 +41,8 @@ bool NaVolumeDataLoadableStack::load()
     setRelativeProgress(0.02f); // getting here *is* finite progress
     // qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
     QString fullFilepath=determineFullFilepath();
+    if (! QFile(fullFilepath).exists())
+        return false;
     ImageLoader imageLoader;
     imageLoader.setProgressIndex(stackIndex);
     connect(&imageLoader, SIGNAL(progressValueChanged(int,int)),
@@ -614,13 +616,22 @@ bool NaVolumeData::Writer::loadStacks()
     else {
         // Non-threaded sequential loading
         m_data->setProgressMessage("Loading multicolor brain images...");
-        originalStack.load();
+        if (! originalStack.load()) {
+            qDebug() << "ERROR loading signal volume" << m_data->originalImageStackFilePath;
+            return false;
+        }
         if (m_data->bAbortWrite) return false;
         m_data->setProgressMessage("Loading neuron fragment locations...");
-        maskStack.load();
+        if (! maskStack.load()) {
+            qDebug() << "ERROR loading label volume" << m_data->maskLabelFilePath;
+            return false;
+        }
         if (m_data->bAbortWrite) return false;
         m_data->setProgressMessage("Loading nc82 synaptic reference image...");
-        referenceStack.load();
+        if (! referenceStack.load()) {
+            qDebug() << "ERROR loading reference volume" << m_data->referenceStackFilePath;
+            return false;
+        }
         if (m_data->bAbortWrite) return false;
     }
 

@@ -2,6 +2,7 @@
 #define PRIVATEDATACOLORMODEL_H
 
 #include <QSharedData>
+#include <QVector>
 #include <vector>
 #include <qrgb.h>
 #include "NaVolumeData.h"
@@ -63,7 +64,8 @@ public:
     }
 
 private:
-    std::vector<ChannelColorModel> channelColors;
+    // std::vector<ChannelColorModel> channelColors;
+    QVector<ChannelColorModel> channelColors;
     qreal sharedGamma;
 
 public:
@@ -73,7 +75,7 @@ public:
     public:
         friend class PrivateDataColorModel;
 
-        ChannelColorModel(QRgb channelColorParam);
+        ChannelColorModel(QRgb channelColorParam = Qt::magenta);
         void setColor(QRgb channelColorParam);
         QRgb getColor() const;
         void setDataRange(qreal dataMinParam, qreal dataMaxParam);

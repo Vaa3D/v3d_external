@@ -151,6 +151,8 @@ protected:
     virtual void settingRenderer(); // Apply settings to internal renderer object
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
+    // v3dr_glwidget::event() can cause crash
+    virtual bool event(QEvent* e) {QGLWidget::event(e);}
 
     // BrightnessCalibrator<unsigned char> brightnessCalibrator;
     const DataColorModel * incrementalDataColorModel;

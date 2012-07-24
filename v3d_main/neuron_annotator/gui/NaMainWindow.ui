@@ -319,10 +319,10 @@ double-click to recenter</string>
                  <item>
                   <widget class="QScrollBar" name="ZSlice_horizontalScrollBar">
                    <property name="minimum">
-                    <number>0</number>
+                    <number>1</number>
                    </property>
                    <property name="maximum">
-                    <number>0</number>
+                    <number>1</number>
                    </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>

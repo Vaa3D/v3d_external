@@ -62,8 +62,11 @@ void MpegLoader::deleteData()
 bool MpegLoader::loadMpegFile(QString fileName)
 {
     // qDebug() << "MpegLoader::loadMpegFile()" << fileName << __FILE__ << __LINE__;
-    QElapsedTimer timer;
-    timer.start();
+    if (! QFile(fileName).exists()) {
+        qDebug() << "No such file" << fileName << __FILE__ << __LINE__;
+        emit mpegFileLoadFinished(false);
+        return false;
+    }
     bool bSucceeded = true; // start optimistic
     try {
         FFMpegVideo video(fileName.toStdString().c_str(), (PixelFormat)pixelFormat);
@@ -99,10 +102,6 @@ bool MpegLoader::loadMpegFile(QString fileName)
                 emit frameDecoded(z);
             }
         }
-        if (bSucceeded) {
-            // qDebug() << "Number of frames found =" << depth;
-        }
-        qDebug() << "File decode took" << timer.elapsed()/1000.0 << "seconds";
         emit mpegFileLoadFinished(bSucceeded);
         return bSucceeded;
     } catch(...) {}
@@ -378,11 +377,17 @@ void Fast3DTexture::blockScaleFinished()
 
 void Fast3DTexture::loadNextVolume()
 {
-    if (volumeQueue.empty()) return;
-    QueuedVolume v = volumeQueue.front();
-    // qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
-    volumeQueue.pop_front();
-    loadFile(v.fileName, v.channel);
+    while(true) {
+        if (volumeQueue.empty())
+            return;
+        QueuedVolume v = volumeQueue.front();
+        volumeQueue.pop_front();
+        if (QFile(v.fileName).exists()) {
+            qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
+            loadFile(v.fileName, v.channel);
+            break;
+        }
+    }
 }
 
 void Fast3DTexture::deleteData()

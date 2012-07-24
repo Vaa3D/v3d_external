@@ -23,7 +23,7 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     pixmap.fill(Qt::black);
     highlightedNeuronMaskPixmap.fill(Qt::transparent);
     updateDefaultScale();
-    resetView();
+    // resetView();
 
     setCursor(Qt::OpenHandCursor);
 

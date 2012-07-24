@@ -35,6 +35,8 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
+    dataColorModel.initializeRgba32();
+    slow3DColorModel.initializeRgba32();
 
     volumeData.setTextureInput(&volumeTexture);
     // TODO - wire this up
@@ -60,6 +62,7 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
 DataFlowModel::~DataFlowModel()
 {
+    NaVolumeData::Writer(getVolumeData());
     if (multiColorImageStackNode!=0) {
         delete multiColorImageStackNode;
     }

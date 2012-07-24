@@ -593,9 +593,10 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         // First series of lossy downsampled images in mpeg4 format for fast loading
         // TODO - only load the files that exist
         // First load lowest resolution mp4 to put something on the screen immediately ~300ms elapsed
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2_25.mp4"),
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_25.mp4"),
                                  BlockScaler::CHANNEL_RGB);
 
+        // Figure out the finest/largest subsampled image that will fit on the video card.
         size_t max_mb = 500; // default to max memory of 500 MB
         // Fetch preset maximum texture memory user preference, if any.
         QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
@@ -606,9 +607,10 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
             if (mb > 0)
                 max_mb = mb;
         }
+        // Subsample options are 25, 50, 100, and 200 megavoxels
         int mvoxels = 25;  // Max megavoxels
         // six bytes per megavoxel with current texture implementation
-        while ((2 * mvoxels * 6) <= max_mb) {
+        while ((2 * mvoxels * 6) <= max_mb) { // "2" to scale up to the next candidate size
             if (mvoxels >= 200) // 200 is the largest subsample we have
                 break;
             mvoxels *= 2; // progress 25, 50, 100, 200
@@ -619,30 +621,27 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         qDebug() << "Using sampling limit of" << mv << "megavoxels";
 
         // First refinement: load largest subsample that can fit on the video card. ~1500ms elapsed
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2_" + mv + ".mp4"),
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_RGB);
         // Next add the reference channel
-        mpegTexture.queueVolume(dir.filePath("Reference2_" + mv + ".mp4"),
+        mpegTexture.queueVolume(dir.filePath("fastLoad/Reference2_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_ALPHA);
         // Individual color channels to sharpen the colors
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Red_" + mv + ".mp4"),
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Red_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_RED);
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Green_" + mv + ".mp4"),
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Green_" + mv + ".mp4"),
                                  BlockScaler::CHANNEL_GREEN);
-        mpegTexture.queueVolume(dir.filePath("ConsolidatedSignal2Blue_" + mv + ".mp4"), // ~4000ms elapsed
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Blue_" + mv + ".mp4"), // ~4000ms elapsed
                                  BlockScaler::CHANNEL_BLUE);
 
         mpegTexture.loadNextVolume(); // starts loading process in another thread
     }
 
-    // dataFlowModel->getDataColorModel().initializeRgba32();
-    // dataFlowModel->getSlow3DColorModel().initializeRgba32();
-    emit initializeColorModelRequested();
+    emit offset3dGammaChanged(0.46);
 
     // Apply gamma bias already applied to input images
     // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
     // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
-    emit offset3dGammaChanged(0.46);
     emit benchmarkTimerPrintRequested("Initialized color models");
 
     // keep reference channel off
@@ -661,9 +660,9 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
             Qt::UniqueConnection);
     {
         NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
-        volumeWriter.setOriginalImageStackFilePath(dir.filePath("ConsolidatedSignal3.v3dpbd"));
-        volumeWriter.setReferenceStackFilePath(dir.filePath("Reference3.v3dpbd"));
-        volumeWriter.setMaskLabelFilePath(dir.filePath("ConsolidatedLabel3.v3dpbd"));
+        volumeWriter.setOriginalImageStackFilePath(dir.filePath("fastLoad/ConsolidatedSignal3.v3dpbd"));
+        volumeWriter.setReferenceStackFilePath(dir.filePath("fastLoad/Reference3.v3dpbd"));
+        volumeWriter.setMaskLabelFilePath(dir.filePath("fastLoad/ConsolidatedLabel3.v3dpbd"));
     }
     // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
     dataFlowModel->getVolumeData().doFlipY = false;
@@ -1590,10 +1589,6 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             this, SLOT(onColorModelChanged()));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
             this, SLOT(onSelectionModelVisibilityChanged()));
-    connect(this, SIGNAL(initializeColorModelRequested()),
-            &dataFlowModel->getDataColorModel(), SLOT(initializeRgba32()));
-    connect(this, SIGNAL(initializeColorModelRequested()),
-            &dataFlowModel->getSlow3DColorModel(), SLOT(initializeRgba32()));
     connect(this, SIGNAL(offset3dGammaChanged(qreal)),
             &dataFlowModel->getSlow3DColorModel(), SLOT(setSharedGamma(qreal)));
     connect(this, SIGNAL(offset3dGammaChanged(qreal)),
@@ -1610,10 +1605,6 @@ bool NaMainWindow::tearDownOldDataFlowModel()
     // TODO - make sure clients respect setting to null
     // TODO - make sure this does not yet delete dataFlowModel
     setDataFlowModel(NULL);
-    // TODO - acquire write locks to make sure all clients are done reading
-    { // especially NaVolumeData
-        NaVolumeData::Writer volumeWriter(dfm->getVolumeData());
-    }
     delete dfm;
     return true;
 }
@@ -1705,8 +1696,11 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
 
         setZRange(1, imgProxy.sz);
+
         // Start in middle of volume
-        ui.naZStackWidget->setCurrentZSlice(imgProxy.sz / 2 + 1);
+        // No, initial position should be set in 3D viewer
+        // ui.naZStackWidget->setCurrentZSlice(imgProxy.sz / 2 + 1);
+
         // Need at least two colors for use of the color buttons to make sense
         ui.HDRRed_pushButton->setEnabled(imgProxy.sc > 1);
         ui.HDRGreen_pushButton->setEnabled(imgProxy.sc > 1);

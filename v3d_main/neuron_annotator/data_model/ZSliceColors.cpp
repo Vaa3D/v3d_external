@@ -72,6 +72,7 @@ void ZSliceColors::update()
              bShowBackground = selectionReader.getOverlayStatusList()[DataFlowModel::BACKGROUND_MIP_INDEX];
 
         for (int y = 0; y < volumeProxy.sy; ++y)
+        {
             for (int x = 0; x < volumeProxy.sx; ++x)
             {
                 // Investigate visibility of the neuron in this voxel
@@ -96,6 +97,8 @@ void ZSliceColors::update()
                     channelData[volumeProxy.sc] = referenceProxy.value_at(x, y, currentZIndex, 0);
                 image->setPixel(x, y, colorReader.blend(&channelData[0]));
             }
+            if (dataColorModel.readerIsStale(colorReader)) return;
+        }
     } // release locks before emit
 
     // qDebug() << "ZSliceColors update took" << stopwatch.elapsed() / 1000.0 << "seconds"; // takes 31 ms for 512x512 x 3

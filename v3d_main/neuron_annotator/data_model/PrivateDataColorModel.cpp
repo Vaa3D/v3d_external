@@ -17,7 +17,7 @@ PrivateDataColorModel::PrivateDataColorModel(const PrivateDataColorModel& rhs)
 /* virtual */
 PrivateDataColorModel::~PrivateDataColorModel()
 {
-    qDebug() << "PrivateDataColorModel dtor" << __FILE__ << __LINE__;
+    // qDebug() << "PrivateDataColorModel dtor" << __FILE__ << __LINE__;
 }
 
 // Crudely populate 3-channel rgb color model based on n-channel data color model,
@@ -30,7 +30,7 @@ void PrivateDataColorModel::colorizeIncremental(
     assert(desiredColorReader.getNumberOfDataChannels() == currentColorReader.getNumberOfDataChannels());
     const int numChannels = desiredColorReader.getNumberOfDataChannels();
     if (numChannels != channelColors.size()) {
-        channelColors.assign(numChannels, ChannelColorModel(0));
+        channelColors.fill(0, numChannels);
     }
     qreal incGamma = currentColorReader.getSharedGamma() / desiredColorReader.getSharedGamma();
     setSharedGamma(incGamma);
@@ -39,7 +39,8 @@ void PrivateDataColorModel::colorizeIncremental(
         channelColors[chan].bUseSharedGamma = desiredColorReader.getChannelUseSharedGamma(chan);
         // Use latest color information.  TODO - there might no good way to incrementally update channel colors.
         channelColors[chan].setColor(desiredColorReader.getChannelColor(chan));
-        channelColors[chan].showChannel = desiredColorReader.getChannelVisibility(chan);
+        bool showChannel = desiredColorReader.getChannelVisibility(chan);
+        channelColors[chan].showChannel = showChannel;
         // Set incremental gamma; qInc = qDes / qCur
         incGamma = desiredColorReader.getChannelGamma(chan) / currentColorReader.getChannelGamma(chan); // the usual case
         setChannelGamma(chan, incGamma); // setChannelGamma() folds in sharedGamma

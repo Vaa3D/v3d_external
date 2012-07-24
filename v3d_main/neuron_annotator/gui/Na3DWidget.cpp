@@ -188,7 +188,6 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
     glDisable(GL_TEXTURE_3D); // we are using a 3D texture
 
     ra->set3dTextureMode(defaultVolumeTextureId);
-    cameraModel.setFocus(Vector3D(w/2.0,h/2.0,d/2.0));
 
     ra->setupData(_idep);
 
@@ -503,18 +502,20 @@ bool Na3DWidget::loadSignalTexture()
     if (NULL == dataFlowModel)
         return false;
     bool bSucceeded = true;
-    bool bSizeChanged = false;
+    bool bFullSizeChanged = false;
+    bool bTextureSizeChanged = false;
+    jfrc::Dimension fullSize, textureSize;
     {
         const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
         if (volumeTexture.readerIsStale(textureReader))
             return false;
-        jfrc::Dimension fullSize = textureReader.originalImageSize();
-        jfrc::Dimension oldSize = getRendererNa()->getOriginalVolumeDimensions();
-        bSizeChanged = (oldSize != fullSize);
-        jfrc::Dimension size = textureReader.paddedTextureSize();
+        fullSize = textureReader.originalImageSize();
+        bFullSizeChanged = (fullSize != getRendererNa()->getOriginalVolumeDimensions());
+        textureSize = textureReader.paddedTextureSize();
+        bTextureSizeChanged = (textureSize != getRendererNa()->getPaddedTextureDimensions());
         const uint32_t* data = textureReader.signalData3D();
-        if (! loadSignalTexture3D(size.x(), size.y(), size.z(), data))
+        if (! loadSignalTexture3D(textureSize.x(), textureSize.y(), textureSize.z(), data))
             return false;
         getRendererNa()->updateSettingsFromVolumeTexture(textureReader);
     } // Release locks
@@ -530,13 +531,20 @@ bool Na3DWidget::loadSignalTexture()
         }
     }
     if (bSucceeded) {
-        if (bSizeChanged)
+        if (bFullSizeChanged)
         {
             cachedDefaultFocusIsDirty = true;
             updateDefaultScale();
             resetView();
             resetVolumeCutRange();
             getRendererNa()->clearClipPlanes();
+            cameraModel.setFocus(Vector3D(fullSize.x()/2.0,
+                                          fullSize.y()/2.0,
+                                          fullSize.z()/2.0));
+        }
+        if (bTextureSizeChanged)
+        {
+            resetVolumeCutRange();
         }
         update();
         emit benchmarkTimerPrintRequested("Finished uploading signal texture to video card");

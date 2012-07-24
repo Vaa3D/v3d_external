@@ -159,12 +159,13 @@ bool VolumeTexture::loadFast3DTexture()
         size_t sz = textureReader.depth();
         const uint8_t* data = textureReader.data();
         Writer(*this);
+        const SampledVolumeMetaData& md = textureReader.metadata();
+        d->originalImageSize = md.originalImageSize;
+        d->paddedTextureSize = md.paddedImageSize;
+        d->usedTextureSize = md.usedImageSize;
+        d->subsampleScale = md.usedImageSize.x()/md.originalImageSize.x();
         if (! d->loadFast3DTexture(sx, sy, sz, data))
             return false;
-        Dimension size(sx, sy, sz);
-        // TODO - get original and used from file somehow
-        d->originalImageSize = d->paddedTextureSize = d->usedTextureSize = size;
-        d->subsampleScale = 1.0;
     } // release locks before emit
     emit signalTextureChanged();
     emit benchmarkTimerPrintRequested("Finished VolumeTexture::loadFast3DTexture()");

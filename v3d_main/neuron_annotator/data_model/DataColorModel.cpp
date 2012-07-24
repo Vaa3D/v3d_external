@@ -86,8 +86,11 @@ void DataColorModel::initialize()
 
 bool DataColorModel::initializeRgba32()
 {
-    if (! d->initializeRgba32())
-        return false;
+    {
+        Writer colorWriter(*this);
+        if (! d->initializeRgba32())
+            return false;
+    }
     emit colorsInitialized();
     emit dataChanged();
     return true;
@@ -152,7 +155,9 @@ void DataColorModel::setChannelVisibility(int channel, bool isVisible)
     if (d.constData()->getChannelVisibility(channel) == isVisible) return;
     {
         Writer colorWriter(*this);
-        if (! d->setChannelVisibility(channel, isVisible)) return;
+        // qDebug() << "DataColorModel::setChannelVisibility()" << channel << isVisible << __FILE__ << __LINE__;
+        if (! d->setChannelVisibility(channel, isVisible))
+            return;
     } // release lock before emit
     // qDebug() << "visiblity changed";
     emit dataChanged();
@@ -174,7 +179,17 @@ void DataColorModel::resetColors() {
 
 DataColorModel::Reader::Reader(const DataColorModel& colorModelParam)
     : BaseReader(colorModelParam)
-{}
+{
+    // qDebug() << "DataColorModel::Reader constructor";
+    if (! colorModelParam.readerIsStale(*this)) {
+        // qDebug() << "  got read lock";
+    }
+}
+
+DataColorModel::Reader::~Reader()
+{
+    // qDebug() << "DataColorModel::Reader destructor";
+}
 
 int DataColorModel::Reader::getNumberOfDataChannels() const {
     return d.constData()->getNumberOfDataChannels(); // note special "->" operator
@@ -252,4 +267,8 @@ DataColorModel::Writer::Writer(DataColorModel& colorModelParam)
     // qDebug() << "DataColorModel::Writer constructor";
 }
 
+DataColorModel::Writer::~Writer()
+{
+    // qDebug() << "DataColorModel::Writer destructor";
+}
 
