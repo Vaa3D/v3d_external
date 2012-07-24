@@ -584,6 +584,8 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     emit benchmarkTimerResetRequested();
     emit benchmarkTimerPrintRequested("Load fast directory triggered");
 
+    if (! tearDownOldDataFlowModel())
+        return;
     createNewDataFlowModel();
 
     Fast3DTexture& mpegTexture = dataFlowModel->getFast3DTexture();
@@ -911,7 +913,7 @@ void NaMainWindow::onDataLoadFinished()
         undoStack->clear();
     ui.viewerStackedWidget->setCurrentIndex(recentViewer);
     ui.viewerControlTabWidget->setEnabled(true);
-    qDebug() << "Data load took" << mainWindowStopWatch.elapsed()/1000.0 << "seconds";
+    // qDebug() << "Data load took" << mainWindowStopWatch.elapsed()/1000.0 << "seconds";
     update();
 }
 

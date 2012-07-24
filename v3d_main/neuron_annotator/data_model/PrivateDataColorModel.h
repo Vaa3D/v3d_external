@@ -76,6 +76,7 @@ public:
         friend class PrivateDataColorModel;
 
         ChannelColorModel(QRgb channelColorParam = Qt::magenta);
+        ChannelColorModel(const ChannelColorModel& rhs);
         void setColor(QRgb channelColorParam);
         QRgb getColor() const;
         void setDataRange(qreal dataMinParam, qreal dataMaxParam);

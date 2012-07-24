@@ -33,7 +33,7 @@ const std::vector<float>& PrivateNeuronFragmentData::getFragmentHues() const // 
 
 void PrivateNeuronFragmentData::setNumberOfFragments(int n)
 {
-    qDebug() << "PrivateNeuronFragmentData::setNumberOfFragments" << n;
+    // qDebug() << "PrivateNeuronFragmentData::setNumberOfFragments" << n;
     if (n != fragmentVoxelCount.size()) {
         fragmentVoxelCount.assign(n, 0);
         fragmentHues.assign(n, 0);

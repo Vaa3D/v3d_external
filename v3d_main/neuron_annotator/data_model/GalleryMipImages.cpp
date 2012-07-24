@@ -68,7 +68,7 @@ void GalleryMipImages::Writer::deleteImages()
 
 void GalleryMipImages::Writer::allocateImages(int nFrags)
 {
-    qDebug() << "Allocating scaled mip images";
+    // qDebug() << "Allocating scaled mip images";
     deleteImages();
     // Fragments/neurons
     for (int f = 0; f < nFrags; ++f)

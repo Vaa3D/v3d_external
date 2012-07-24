@@ -5,13 +5,15 @@
 
 PrivateDataColorModel::PrivateDataColorModel()
     : sharedGamma(1.0)
-{}
+{
+    initializeRgba32();
+}
 
 PrivateDataColorModel::PrivateDataColorModel(const PrivateDataColorModel& rhs)
 {
     channelColors = rhs.channelColors;
     sharedGamma = rhs.sharedGamma;
-    qDebug() << "PrivateDataColorModel copy ctor"  << __FILE__ << __LINE__;
+    // qDebug() << "PrivateDataColorModel copy ctor" << this << &rhs << __FILE__ << __LINE__;
 }
 
 /* virtual */
@@ -27,6 +29,7 @@ void PrivateDataColorModel::colorizeIncremental(
         const DataColorModel::Reader& desiredColorReader,
         const DataColorModel::Reader& currentColorReader)
 {
+    // qDebug() << "PrivateDataColorModel::colorizeIncremental" << __FILE__ << __LINE__;
     assert(desiredColorReader.getNumberOfDataChannels() == currentColorReader.getNumberOfDataChannels());
     const int numChannels = desiredColorReader.getNumberOfDataChannels();
     if (numChannels != channelColors.size()) {
@@ -346,6 +349,28 @@ PrivateDataColorModel::ChannelColorModel::ChannelColorModel(QRgb channelColorPar
     setGamma(1.0f);
     setDataRange(0, 4095);
     resetHdrRange();
+}
+
+PrivateDataColorModel::ChannelColorModel::ChannelColorModel(const ChannelColorModel& rhs)
+{
+    showChannel = rhs.showChannel;
+    blackColor = rhs.blackColor;
+    channelColor = rhs.channelColor;
+    colorRed = rhs.colorRed;
+    colorGreen = rhs.colorGreen;
+    colorBlue = rhs.colorBlue;
+    hdrMin = rhs.hdrMin;
+    hdrMax = rhs.hdrMax;
+    hdrRange = rhs.hdrRange;
+    dataMin = rhs.dataMin;
+    dataMax = rhs.dataMax;
+    gamma = rhs.gamma;
+    gammaIsNotUnity = rhs.gammaIsNotUnity;
+    bUseSharedGamma = rhs.bUseSharedGamma;
+    for (int g = 0; g < 256; ++g) {
+        gammaTable[g] = rhs.gammaTable[g];
+        dGammaTable[g] = rhs.dGammaTable[g];
+    }
 }
 
 void PrivateDataColorModel::ChannelColorModel::setColor(QRgb channelColorParam)

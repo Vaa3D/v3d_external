@@ -269,10 +269,10 @@ void NaVolumeData::loadVolumeDataFromFiles()
                 qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
                 // Data images are flipped relative to reference image.  I turned off flipping in
                 // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
-                emit benchmarkTimerPrintRequested("Starting to flip Y-axis");
+                // emit benchmarkTimerPrintRequested("Starting to flip Y-axis");
                 flipY(originalImageStack);
                 flipY(neuronMaskStack);
-                emit benchmarkTimerPrintRequested("Finished flipping Y-axis");
+                // emit benchmarkTimerPrintRequested("Finished flipping Y-axis");
                 // flipY(referenceStack);
                 // qDebug() << stopwatch.elapsed();
             }
@@ -288,9 +288,9 @@ void NaVolumeData::loadVolumeDataFromFiles()
     data_size += originalImageStack->getTotalBytes();
     data_size += referenceStack->getTotalBytes();
     data_size += neuronMaskStack->getTotalBytes();
-    qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
-    qDebug() << "Loading 16-bit image data from disk absorbed "
-            << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
+    // qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    // qDebug() << "Loading 16-bit image data from disk absorbed "
+    //         << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
 
     // bDoUpdateSignalTexture = true; // because it needs update now
 
@@ -607,7 +607,7 @@ bool NaVolumeData::Writer::loadStacks()
             if (stillActive==0) {
                 break;
             } else {
-                qDebug() << "Waiting on " << stillActive << " loaders";
+                // qDebug() << "Waiting on " << stillActive << " loaders";
             }
             QCoreApplication::processEvents(); // let progress signals through
         }
@@ -638,7 +638,7 @@ bool NaVolumeData::Writer::loadStacks()
     // Convert 2-channel image to 3-channels to avoid crash
     m_data->originalImageStack = ensureThreeChannel(m_data->originalImageStack);
 
-    qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
+    // qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
 
     if (! m_data->originalImageStack->p_vmin)
         m_data->originalImageStack->updateminmaxvalues();

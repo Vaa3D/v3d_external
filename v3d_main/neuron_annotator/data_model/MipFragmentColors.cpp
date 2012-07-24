@@ -120,7 +120,7 @@ void MipFragmentColors::update()
         data_size = 4 * sx * sy * sf;
     } // release locks
 
-    qDebug() << "Colorizing fragment MIPs took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    // qDebug() << "Colorizing fragment MIPs took " << stopwatch.elapsed() / 1000.0 << " seconds";
     // qDebug() << "Colorized fragment MIPs use " << data_size / 1e6 << " MB of RAM";
 
     emit dataChanged();

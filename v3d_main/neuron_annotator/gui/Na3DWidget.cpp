@@ -193,9 +193,9 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
 
     // doneCurrent();
 
-    qDebug() << "Uploading 3D volume texture took"
-            << stopwatch.elapsed()
-            << "milliseconds";
+    // qDebug() << "Uploading 3D volume texture took"
+    //        << stopwatch.elapsed()
+    //        << "milliseconds";
     emit signalTextureLoaded();
     update();
 

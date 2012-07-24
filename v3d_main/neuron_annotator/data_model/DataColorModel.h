@@ -29,6 +29,7 @@ public:
 
     void setIncrementalColorSource(const DataColorModel& desiredColors, const DataColorModel& currentColors);
     bool setChannelUseSharedGamma(int index, bool useIt);
+    const PrivateDataColorModel* dataPtr() const {return d.constData();}
 
 signals:
     void colorsInitialized();

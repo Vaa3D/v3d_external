@@ -1422,12 +1422,12 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             }
         }
         // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
-        qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
+        // qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
 
         if (useThreading) {
-            qDebug() << "Final thread wait";
+            // qDebug() << "Final thread wait";
             threadPool.waitForDone();
-            qDebug() << "Done final wait";
+            // qDebug() << "Done final wait";
         }
         emit progressComplete(progressIndex);
 

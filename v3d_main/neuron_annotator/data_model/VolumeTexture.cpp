@@ -71,10 +71,10 @@ bool VolumeTexture::updateVolume()
     const NaVolumeData* volumeData = &dataFlowModel->getVolumeData();
 
     emit progressMessageChanged("Sampling volume for 3D viewer");
-    emit benchmarkTimerPrintRequested("Starting to sample 3D volume");
+    // emit benchmarkTimerPrintRequested("Starting to sample 3D volume");
     float progress = 1.0; // out of 100
     emit progressValueChanged(int(progress));
-    qDebug() << "Populating volume data for 3D viewer" << __FILE__ << __LINE__;
+    // qDebug() << "Populating volume data for 3D viewer" << __FILE__ << __LINE__;
     {
         NaVolumeData::Reader volumeReader(*volumeData);
         if(volumeReader.hasReadLock()) {
@@ -97,7 +97,7 @@ bool VolumeTexture::updateVolume()
     }
     emit progressValueChanged(80);
     if (bSucceeded) {
-        emit benchmarkTimerPrintRequested("Finished sampling 3D volume");
+        // emit benchmarkTimerPrintRequested("Finished sampling 3D volume");
         emit progressComplete();
         if (bSignalChanged)
             emit signalTextureChanged();
@@ -146,7 +146,7 @@ bool VolumeTexture::loadFast3DTexture()
     const Fast3DTexture* fast3DTexture = &dataFlowModel->getFast3DTexture();
     QElapsedTimer timer;
     timer.start();
-    emit benchmarkTimerPrintRequested("Started VolumeTexture::loadFast3DTexture()");
+    // emit benchmarkTimerPrintRequested("Started VolumeTexture::loadFast3DTexture()");
     // qDebug() << "VolumeTexture::loadFast3DTexture()" << __FILE__ << __LINE__;
     if (NULL == fast3DTexture)
         return false;
@@ -168,7 +168,7 @@ bool VolumeTexture::loadFast3DTexture()
             return false;
     } // release locks before emit
     emit signalTextureChanged();
-    emit benchmarkTimerPrintRequested("Finished VolumeTexture::loadFast3DTexture()");
+    // emit benchmarkTimerPrintRequested("Finished VolumeTexture::loadFast3DTexture()");
     // qDebug() << "VolumeTexture::loadFast3DTexture() took" << timer.elapsed() << "milliseconds";
     return true;
 }

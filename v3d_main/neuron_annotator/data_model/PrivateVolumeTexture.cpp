@@ -324,6 +324,7 @@ bool NeuronVisibilityTexture::update()
 ColorMapTexture::ColorMapTexture()
     : dataColorModel(NULL)
 {
+    // qDebug() << "initializing dataColorModel to" << dataColorModel;
     colors.fill(0, 4 * 256);
     for (int c = 0; c < 4; ++c) {
         uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
@@ -339,8 +340,10 @@ ColorMapTexture::ColorMapTexture()
 
 bool ColorMapTexture::update()
 {
-    if (NULL == dataColorModel)
+    if (NULL == dataColorModel) {
+        qDebug() << "data color model is NULL" << __FILE__ << __LINE__;
         return false;
+    }
     const DataColorModel::Reader colorReader(*dataColorModel);
     if (dataColorModel->readerIsStale(colorReader))
         return false;
@@ -373,6 +376,7 @@ bool ColorMapTexture::update()
 void ColorMapTexture::setDataColorModel(const DataColorModel& cm)
 {
     dataColorModel = &cm;
+    // qDebug() << "setting dataColorModel to" << dataColorModel;
 }
 
 
@@ -403,6 +407,7 @@ PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     , neuronLabelTexture(rhs.neuronLabelTexture)
     , neuronVisibilityTexture(rhs.neuronVisibilityTexture)
     , neuronSignalTexture(rhs.neuronSignalTexture)
+    , colorMapTexture(rhs.colorMapTexture)
     , bUse3DSignalTexture(rhs.bUse3DSignalTexture)
 {
     qDebug() << "PrivateVolumeTexture is being copied";
@@ -445,7 +450,7 @@ bool PrivateVolumeTexture::subsampleLabelField(const NaVolumeData::Reader& volum
     const Image4DProxy<My4DImage>& labelProxy = volumeReader.getNeuronMaskProxy();
     size_t size = labelProxy.sx * labelProxy.sy * labelProxy.sz;
     if (size < 1) return false;
-    qDebug() << "starting label resample";
+    // qDebug() << "starting label resample";
     // Label field file can be either 8 or 16 bits.
     // Our sammpled version must be 16 bits
     if (1 == labelProxy.su) { // 8 bit input
@@ -454,7 +459,7 @@ bool PrivateVolumeTexture::subsampleLabelField(const NaVolumeData::Reader& volum
     else { // 16 bit input
         LabelSampler<uint16_t, uint16_t> sampler(labelProxy, neuronLabelTexture);
     }
-    qDebug() << "label resample took" << time2.elapsed() << "milliseconds";
+    // qDebug() << "label resample took" << time2.elapsed() << "milliseconds";
     return true;
 }
 

@@ -161,9 +161,9 @@ void MipFragmentData::updateFromVolumeData()
     data_size += fragmentData->getTotalBytes();
     data_size += fragmentZValues->getTotalBytes();
     data_size += fragmentIntensities->getTotalBytes();
-    qDebug() << "Projecting 16-bit fragment MIP images took " << stopwatch.elapsed() / 1000.0 << " seconds";
-    qDebug() << "Projecting 16-bit fragment MIP images absorbed "
-            << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
+    // qDebug() << "Projecting 16-bit fragment MIP images took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    // qDebug() << "Projecting 16-bit fragment MIP images absorbed "
+    //         << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
 
     emit dataChanged(); // declare victory!
 }

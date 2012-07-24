@@ -33,6 +33,10 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
     volumeTexture.setDataFlowModel(this);
 
+    // qDebug() << "Address of regular data color model =" << dataColorModel.dataPtr();
+    // qDebug() << "Address of fast 3D data color model =" << fast3DColorModel.dataPtr();
+    // qDebug() << "Address of slow 3D data color model =" << slow3DColorModel.dataPtr();
+
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
     dataColorModel.initializeRgba32();

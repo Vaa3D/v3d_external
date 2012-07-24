@@ -79,7 +79,7 @@ public:
         usedSize = usedTextureSize;
         size_t numVoxels = width * height * depth;
         data.fill(0, numVoxels);
-        qDebug() << "Allocating" << width << height << depth;
+        // qDebug() << "Allocating" << width << height << depth;
     }
 
     VoxelType* getData() {return data.data();}
