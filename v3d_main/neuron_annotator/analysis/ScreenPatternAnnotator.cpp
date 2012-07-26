@@ -2273,8 +2273,7 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
     subjectChannelSet[c]=subjectStack->getRawDataAtChannel(c);
   }
 
-  V3DLONG differenceCount=0;
-  V3DLONG differenceTotal=0;
+  V3DLONG productTotal=0;
   V3DLONG offset=0;
   V3DLONG imageSize=zsize*ysize*xsize;
 
@@ -2291,29 +2290,20 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
     v3d_uint8 targetValue=getReverse16ColorLUT(tr, tg, tb);
     v3d_uint8 subjectValue=getReverse16ColorLUT(sr, sg, sb);
 
-    if (targetValue<16 && subjectValue<16) {
-      // skip
-      differenceCount++;
-    } else {
-      if (targetValue>100) {
-	targetValue=100;
-      }
-      if (subjectValue>100) {
-	subjectValue=100;
-      }
-      int diff=(subjectValue-targetValue)*(subjectValue-targetValue);
-      differenceTotal+=diff;
-      differenceCount+=3;
+    if (targetValue>100) {
+      targetValue=100;
+    } else if (targetValue<5) {
+      targetValue=5;
     }
+    if (subjectValue>100) {
+      subjectValue=100;
+    } else if (subjectValue<5) {
+      subjectValue=5;
+    }
+    V3DLONG product=((subjectValue-targetValue)*(subjectValue-targetValue))/(subjectValue+targetValue);
+    productTotal+=product;
   }
-
-  double score=0.0;
-  if (differenceCount>0) {
-    double d=sqrt(differenceTotal*1.0);
-    double s=differenceCount*1.0;
-    score=d/s;
-  }
-  return score;
+  return (sqrt(productTotal*1.0))/(imageSize*1.0);
 }
 
 v3d_uint8 ScreenPatternAnnotator::getReverse16ColorLUT(v3d_uint8 r, v3d_uint8 g, v3d_uint8 b)
