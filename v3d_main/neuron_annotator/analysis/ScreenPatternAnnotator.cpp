@@ -2293,6 +2293,7 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
 
     if (targetValue<16 && subjectValue<16) {
       // skip
+      differenceCount++;
     } else {
       if (targetValue>100) {
 	targetValue=100;
@@ -2302,7 +2303,7 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
       }
       int diff=(subjectValue-targetValue)*(subjectValue-targetValue);
       differenceTotal+=diff;
-      differenceCount++;
+      differenceCount+=3;
     }
   }
 
