@@ -101,7 +101,7 @@ bool VolumeTexture::updateVolume()
                     const Image4DProxy<My4DImage>& refProxy = volumeReader.getOriginalImageProxy();
                     int c = 3;
                     md.channelGamma[c] = 1.0;
-                    md.channelHdrMinima[c] = refProxy.vmin[c];
+                    md.channelHdrMinima[c] = refProxy.vmin[0];
                     md.channelHdrMaxima[c] = refProxy.vmax[0];
                 }
                 // TODO
