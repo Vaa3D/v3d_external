@@ -2271,27 +2271,30 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
   V3DLONG offset=0;
   V3DLONG imageSize=zsize*ysize*xsize;
 
-  int T1N = T1*csize;
-  int T2N = T2*csize;
-
   for (V3DLONG i=0;i<imageSize;i++) {
-    int targetTotal=0;
-    int subjectTotal=0;
+    int targetMax=0;
+    int subjectMax=0;
     for (V3DLONG c=0;c<csize;c++) {
-      targetTotal+=targetChannelSet[c][i];
-      subjectTotal+=subjectChannelSet[c][i];
+      v3d_uint8 targetValue=targetChannelSet[c][i];
+      v3d_uint8 subjectValue=subjectChannelSet[c][i];
+      if (targetValue>targetMax) {
+	targetMax=targetValue;
+      }
+      if (subjectValue>subjectMax) {
+	subjectMax=subjectValue;
+      }
     }
     int tScore=0;
-    if (targetTotal>T1N) {
+    if (targetMax>T1) {
       tScore++;
-      if (targetTotal>T2N) {
+      if (targetMax>T2) {
 	tScore++;
       }
     }
     int sScore=0;
-    if (subjectTotal>T1N) {
+    if (subjectMax>T1) {
       sScore++;
-      if (subjectTotal>T2N) {
+      if (subjectMax>T2) {
 	sScore++;
       }
     }
