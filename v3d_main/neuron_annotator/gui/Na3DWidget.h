@@ -152,7 +152,7 @@ protected:
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
     // v3dr_glwidget::event() can cause crash
-    virtual bool event(QEvent* e) {QGLWidget::event(e);}
+    virtual bool event(QEvent* e) {QGLWidget::event(e); return true;}
 
     // BrightnessCalibrator<unsigned char> brightnessCalibrator;
     const DataColorModel * incrementalDataColorModel;

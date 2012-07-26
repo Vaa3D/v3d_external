@@ -1903,6 +1903,8 @@ void Renderer_gl1::endSelectMode()
 	list_listCurvePos.clear();
 	listMarkerPos.clear();
 
+	b_ablation = false; //by Jianlong Zhou, 20120726
+
 	if (selectMode != smObject)
 	{
 		selectMode = smObject;
@@ -3441,10 +3443,10 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 		mz = Mz = loc_vec.at(0).z;
 
 		v3d_imaging_paras myimagingp;
-		myimagingp.OPS = "Marker Ablation from 3D Viewer";
+		myimagingp.OPS = "Marker Ablation from 3D Viewer (with feedback)";
 		myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-		for (V3DLONG i=1; i<loc_vec.size(); i++)
+		for (V3DLONG i=0; i<loc_vec.size(); i++) //i=1
 		{
 			XYZ & curpos = loc_vec.at(i);
 			LocationSimple loc;
@@ -3460,7 +3462,7 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 
 		if (b_ablation && w && curImg && curXWidget && myimagingp.list_landmarks.size()>0) 
 		{
-			b_ablation = false; //reset the status. by Hanchuan peng, 120506
+			//b_ablation = false; //reset the status. by Hanchuan peng, 120506 // reset b_ablation in endSelectMode() by Jianlong Zhou 20120726
 
 			//set the hiddenSelectWidget for the V3D mainwindow
 			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
