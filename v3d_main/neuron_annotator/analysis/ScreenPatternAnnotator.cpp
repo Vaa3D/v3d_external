@@ -25,6 +25,14 @@ const QString MIPS_SUBDIR("mips");
 const QString SUPPORTING_SUBDIR("supportingFiles");
 const QString NORMALIZED_SUBDIR("normalized");
 
+class SleepThread : QThread {
+public:
+    SleepThread() {}
+    void msleep(int miliseconds) {
+        QThread::msleep(miliseconds);
+    }
+};
+
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
     mode=MODE_UNDEFINED;
@@ -2155,9 +2163,8 @@ bool ScreenPatternAnnotator::createSimilarityList()
   }
 
   ImageLoader targetStackLoader;
-  My4DImage* targetStack = targetStackLoader.loadImage(targetStackFilepath);
+  targetStack = targetStackLoader.loadImage(targetStackFilepath);
 
-  QStringList subjectFilepathList;
   QFile subjectStackListQFile(subjectStackListFilepath);
   if (!subjectStackListQFile.open(QIODevice::ReadOnly)) {
     qDebug() << "Could not open file=" << subjectStackListFilepath << " to read";
@@ -2171,20 +2178,42 @@ bool ScreenPatternAnnotator::createSimilarityList()
   subjectStackListQFile.close();
 
   QList<SortableStringDouble> scoredStackList;
+  QList< QFuture<SortableStringDouble> > futureList;
+  QList<bool> doneList;
   for (int stackIndex=0;stackIndex<subjectFilepathList.size();stackIndex++) {
-    ImageLoader subjectLoader;
-    QString stackPath=subjectFilepathList[stackIndex];
-    My4DImage * subjectStack = subjectLoader.loadImage(stackPath);
-    double score=computeStackSimilarity(targetStack, subjectStack);
-    qDebug() << "similarityScore=" << score;
-    SortableStringDouble scoreObject;
-    scoreObject.theString=stackPath;
-    scoreObject.theDouble=score;
-    scoredStackList.append(scoreObject);
-    delete subjectStack;
+    doneList.append(false);
+    QFuture<SortableStringDouble> f = QtConcurrent::run(this, &ScreenPatternAnnotator::computeStackSimilarityManager, stackIndex);
+    futureList.append(f);
   }
+
+  while(1) {
+    SleepThread st;
+    st.msleep(1000);
+    int doneCount=0;
+    for (int i=0;i<futureList.size();i++) {
+      QFuture<SortableStringDouble> f=futureList.at(i);
+      if (f.isFinished()) {
+	if (doneList[i]==false) {
+	  qDebug() << "job " << i << " is done - processing result";
+	  doneList[i]=true;
+	  SortableStringDouble result=f.result();
+	  scoredStackList.append(result);
+	}
+	doneCount++;
+      }
+    }
+    int stillActive=futureList.size()-doneCount;
+    if (stillActive==0) {
+      break;
+    } else {
+      qDebug() << "Waiting on " << stillActive << " similarity tasks";
+    }
+  }
+
+  qDebug() << "Done all tasks - sorting results";
   qSort(scoredStackList.begin(), scoredStackList.end());
 
+  qDebug() << "Writing result file";
   QFile outputFile(outputSimilarityFilepath);
   if (!outputFile.open(QIODevice::WriteOnly)) {
     qDebug() << "Could not open file=" << outputSimilarityFilepath << " to write";
@@ -2197,6 +2226,19 @@ bool ScreenPatternAnnotator::createSimilarityList()
   }
   outputStream.flush();
   outputFile.close();
+}
+
+SortableStringDouble ScreenPatternAnnotator::computeStackSimilarityManager(int subjectStackIndex)
+{
+  ImageLoader loader;
+  QString subjectStackFilepath=subjectFilepathList[subjectStackIndex];
+  My4DImage* subjectStack = loader.loadImage(subjectStackFilepath);
+  double result=computeStackSimilarity(targetStack, subjectStack);
+  delete subjectStack;
+  SortableStringDouble sortObject;
+  sortObject.theString=subjectStackFilepath;
+  sortObject.theDouble=result;
+  return sortObject;
 }
 
 double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack)

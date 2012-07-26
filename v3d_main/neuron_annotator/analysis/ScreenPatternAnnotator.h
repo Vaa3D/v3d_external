@@ -119,6 +119,8 @@ private:
     QString targetStackFilepath;
     QString subjectStackListFilepath;
     QString outputSimilarityFilepath;
+    QStringList subjectFilepathList;
+    My4DImage* targetStack;
 
     // For Arnim Score
     QString arnimScoreOutputFilepath;
@@ -193,6 +195,7 @@ private:
     bool loadCompartmentIndex();
 
     bool createSimilarityList();
+    SortableStringDouble computeStackSimilarityManager(int stackIndex);
     double computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack);
 
 };
