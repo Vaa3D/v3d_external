@@ -20,6 +20,16 @@ public:
     int z1;
 };
 
+class SortableStringDouble
+{
+ public:
+  QString theString;
+  double theDouble;
+  bool operator<(const SortableStringDouble other) const {
+    return theDouble < other.theDouble;
+  }
+};
+
 
 class ScreenPatternAnnotator
 {
@@ -31,6 +41,7 @@ public:
     static const int MODE_INDEX;
     static const int MODE_MASK_GUIDE;
     static const int MODE_ARNIM_SCORE;
+    static const int MODE_SIMILARITY_SCORE;
 
     ScreenPatternAnnotator();
 
@@ -77,11 +88,18 @@ public:
 	usage.append("   -outputMaskDirectory <directory path>                                                                \n");
 	usage.append("                                                                                                        \n");
 	usage.append(" To generate Arnim-style pattern annotation scores:                                                     \n");
+	usage.append("                                                                                                        \n");
         usage.append("   -input <filepath for stack>                                                                          \n");
         usage.append("   -pattern_channel  <0-based channel index in stack for pattern channel>                               \n");
         usage.append("   -resourceDir <resource dir with compartment indices files>                                           \n");
         usage.append("   -arnimScoreOutputFile <output score file>                                                            \n");
-
+	usage.append("                                                                                                        \n");
+	usage.append(" To compute a similarity score on a set of 3D images:                                                   \n");
+        usage.append("                                                                                                        \n");
+	usage.append("   -targetStack <filepath for target stack>                                                             \n");
+	usage.append("   -subjectStackList <filepath for subject stack list>                                                  \n");
+	usage.append("   -outputSimilarityList <sorted list of subject stacks with scores>                                    \n");
+	usage.append("                                                                                                        \n");
         return usage;
     }
 
@@ -96,6 +114,11 @@ public:
 private:
 
     int mode;
+    
+    // For similarity scores
+    QString targetStackFilepath;
+    QString subjectStackListFilepath;
+    QString outputSimilarityFilepath;
 
     // For Arnim Score
     QString arnimScoreOutputFilepath;
@@ -168,6 +191,9 @@ private:
     bool arnimScore();
     int * quantifyArnimCompartmentScores(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
     bool loadCompartmentIndex();
+
+    bool createSimilarityList();
+    double computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack);
 
 };
 

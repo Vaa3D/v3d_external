@@ -8,6 +8,7 @@ const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
 const int ScreenPatternAnnotator::MODE_INDEX=2;
 const int ScreenPatternAnnotator::MODE_MASK_GUIDE=3;
 const int ScreenPatternAnnotator::MODE_ARNIM_SCORE=4;
+const int ScreenPatternAnnotator::MODE_SIMILARITY_SCORE=5;
 
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
@@ -77,9 +78,113 @@ bool ScreenPatternAnnotator::execute()
       return arnimScore();
     } else if (mode==MODE_UNDEFINED) {
       return false;
-    }
+    } else if (mode==MODE_SIMILARITY_SCORE) {
+      return createSimilarityList();
+    } 
     return false;
 }
+
+int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
+{
+    bool flipYSet=false;
+    for (int i=0;i<argList->size();i++) {
+        QString arg=(*argList)[i];
+        bool done=false;
+        if (arg=="-input") {
+            do {
+                QString possibleFile=(*argList)[++i];
+                if (!possibleFile.startsWith("-")) {
+                    inputStackFilepath=possibleFile;
+                } else {
+                    done=true;
+                    i--; // rewind
+                }
+            } while(!done && i<(argList->size()-1));
+        } else if (arg=="-pattern_channel") {
+            QString patternChannelIndexString=(*argList)[++i];
+            patternChannelIndex=patternChannelIndexString.toInt();
+        } else if (arg=="-prefix") {
+            outputPrefix=(*argList)[++i];
+        } else if (arg=="-outputDir") {
+            outputDirectoryPath=(*argList)[++i];
+        } else if (arg=="-topLevelCompartmentMaskDir") {
+            topLevelCompartmentMaskDirPath=(*argList)[++i];
+        } else if (arg=="-outputResourceDir") {
+            outputResourceDirPath=(*argList)[++i];
+        } else if (arg=="-resourceDir") {
+            resourceDirectoryPath=(*argList)[++i];
+        } else if (arg=="-flipYWhenLoadingMasks") {
+            QString tf = (*argList)[++i];
+            if (tf=="true") {
+                flipYWhenLoadingMasks=true;
+                flipYSet=true;
+            } else if (tf=="false") {
+                flipYWhenLoadingMasks=false;
+                flipYSet=true;
+            } else {
+                qDebug() << "-flipYWhenLoadingMasks must be followed by true or false";
+                return 0;
+            }
+        } else if (arg=="-compartmentIndexFile") {
+	  compartmentIndexFile=(*argList)[++i];
+	} else if (arg=="-compartmentNameIndexFile") {
+	  compartmentNameIndexFile=(*argList)[++i];
+	} else if (arg=="-maskBinaryFile") {
+	  maskBinaryFile=(*argList)[++i];
+	} else if (arg=="-outputIndexFile") {
+	  outputIndexFile=(*argList)[++i];
+	} else if (arg=="-outputNameIndexFile") {
+	  outputNameIndexFile=(*argList)[++i];
+	} else if (arg=="-outputRGBFile") {
+	  outputRGBFile=(*argList)[++i];
+	} else if (arg=="-inputNameIndexFile") {
+	  inputNameIndexFile=(*argList)[++i];
+	} else if (arg=="-inputRGBFile") {
+	  inputMaskRGBFile=(*argList)[++i];
+	} else if (arg=="-outputMaskDirectory") {
+	  outputMaskDirectoryPath=(*argList)[++i];
+	} else if (arg=="-arnimScoreOutputFile") {
+	  arnimScoreOutputFilepath=(*argList)[++i];
+	} else if (arg=="-targetStack") {
+	  targetStackFilepath=(*argList)[++i];
+	} else if (arg=="-subjectStackList") {
+	  subjectStackListFilepath=(*argList)[++i];
+	} else if (arg=="-outputSimilarityList") {
+	  outputSimilarityFilepath=(*argList)[++i];
+	}
+    }
+    if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0 && flipYSet) {
+        mode=MODE_COMPARTMENT_INDEX;
+    } else if (compartmentIndexFile.length()>0) {
+        mode=MODE_INDEX;
+    } else if (outputMaskDirectoryPath.length()>0) {
+        mode=MODE_MASK_GUIDE;
+    } else if (arnimScoreOutputFilepath.length()>0) {
+        mode=MODE_ARNIM_SCORE;
+    } else if (outputSimilarityFilepath.length()>0) {
+        mode=MODE_SIMILARITY_SCORE;
+    } else {
+        if (inputStackFilepath.length()<1) {
+            qDebug() << "inputStackFilepath has invalid length";
+            return 1;
+        } else if (patternChannelIndex<0) {
+            qDebug() << "patternChannelIndex must be greater than zero";
+            return 1;
+        } else if (outputPrefix.length()<1) {
+            qDebug() << "outputPrefix has invalid length";
+            return 1;
+        } else if (outputDirectoryPath.length()<1) {
+            qDebug() << "outputDirectoryPath has invalid length";
+            return 1;
+        } else if (resourceDirectoryPath.length()<1) {
+            qDebug() << "resourceDirectoryPath has invalid length";
+            return 1;
+        }
+        mode=MODE_ANNOTATE;
+    }
+    return 0;
+}
+
 
 bool ScreenPatternAnnotator::createMaskGuide() {
 
@@ -1356,98 +1461,6 @@ QString ScreenPatternAnnotator::returnFullPathWithOutputPrefix(QString filename)
     return outputDirectoryPathCopy.append(QDir::separator()).append(outputPrefixCopy).append("_").append(filename);
 }
 
-int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
-{
-    bool flipYSet=false;
-    for (int i=0;i<argList->size();i++) {
-        QString arg=(*argList)[i];
-        bool done=false;
-        if (arg=="-input") {
-            do {
-                QString possibleFile=(*argList)[++i];
-                if (!possibleFile.startsWith("-")) {
-                    inputStackFilepath=possibleFile;
-                } else {
-                    done=true;
-                    i--; // rewind
-                }
-            } while(!done && i<(argList->size()-1));
-        } else if (arg=="-pattern_channel") {
-            QString patternChannelIndexString=(*argList)[++i];
-            patternChannelIndex=patternChannelIndexString.toInt();
-        } else if (arg=="-prefix") {
-            outputPrefix=(*argList)[++i];
-        } else if (arg=="-outputDir") {
-            outputDirectoryPath=(*argList)[++i];
-        } else if (arg=="-topLevelCompartmentMaskDir") {
-            topLevelCompartmentMaskDirPath=(*argList)[++i];
-        } else if (arg=="-outputResourceDir") {
-            outputResourceDirPath=(*argList)[++i];
-        } else if (arg=="-resourceDir") {
-            resourceDirectoryPath=(*argList)[++i];
-        } else if (arg=="-flipYWhenLoadingMasks") {
-            QString tf = (*argList)[++i];
-            if (tf=="true") {
-                flipYWhenLoadingMasks=true;
-                flipYSet=true;
-            } else if (tf=="false") {
-                flipYWhenLoadingMasks=false;
-                flipYSet=true;
-            } else {
-                qDebug() << "-flipYWhenLoadingMasks must be followed by true or false";
-                return 0;
-            }
-        } else if (arg=="-compartmentIndexFile") {
-	  compartmentIndexFile=(*argList)[++i];
-	} else if (arg=="-compartmentNameIndexFile") {
-	  compartmentNameIndexFile=(*argList)[++i];
-	} else if (arg=="-maskBinaryFile") {
-	  maskBinaryFile=(*argList)[++i];
-	} else if (arg=="-outputIndexFile") {
-	  outputIndexFile=(*argList)[++i];
-	} else if (arg=="-outputNameIndexFile") {
-	  outputNameIndexFile=(*argList)[++i];
-	} else if (arg=="-outputRGBFile") {
-	  outputRGBFile=(*argList)[++i];
-	} else if (arg=="-inputNameIndexFile") {
-	  inputNameIndexFile=(*argList)[++i];
-	} else if (arg=="-inputRGBFile") {
-	  inputMaskRGBFile=(*argList)[++i];
-	} else if (arg=="-outputMaskDirectory") {
-	  outputMaskDirectoryPath=(*argList)[++i];
-	} else if (arg=="-arnimScoreOutputFile") {
-	  arnimScoreOutputFilepath=(*argList)[++i];
-	}
-    }
-    if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0 && flipYSet) {
-        mode=MODE_COMPARTMENT_INDEX;
-    } else if (compartmentIndexFile.length()>0) {
-        mode=MODE_INDEX;
-    } else if (outputMaskDirectoryPath.length()>0) {
-        mode=MODE_MASK_GUIDE;
-    } else if (arnimScoreOutputFilepath.length()>0) {
-        mode=MODE_ARNIM_SCORE;
-    } else {
-        if (inputStackFilepath.length()<1) {
-            qDebug() << "inputStackFilepath has invalid length";
-            return 1;
-        } else if (patternChannelIndex<0) {
-            qDebug() << "patternChannelIndex must be greater than zero";
-            return 1;
-        } else if (outputPrefix.length()<1) {
-            qDebug() << "outputPrefix has invalid length";
-            return 1;
-        } else if (outputDirectoryPath.length()<1) {
-            qDebug() << "outputDirectoryPath has invalid length";
-            return 1;
-        } else if (resourceDirectoryPath.length()<1) {
-            qDebug() << "resourceDirectoryPath has invalid length";
-            return 1;
-        }
-        mode=MODE_ANNOTATE;
-    }
-    return 0;
-}
 
 v3d_uint8 * ScreenPatternAnnotator::create16Color8BitLUT()
 {
@@ -2124,4 +2137,129 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
   result[4] = noSlopDistribution;
 
   return result;
+}
+
+bool ScreenPatternAnnotator::createSimilarityList()
+{
+  if (targetStackFilepath.length()<1) {
+    qDebug() << "targetStackFilepath must be defined";
+    return false;
+  }
+  if (subjectStackListFilepath.length()<1) {
+    qDebug() << "subjectStackListFilepath must be defined";
+    return false;
+  }
+  if (outputSimilarityFilepath.length()<1) {
+    qDebug() << "outputSimilarityFilepath must be defined";
+    return false;
+  }
+
+  ImageLoader targetStackLoader;
+  My4DImage* targetStack = targetStackLoader.loadImage(targetStackFilepath);
+
+  QStringList subjectFilepathList;
+  QFile subjectStackListQFile(subjectStackListFilepath);
+  if (!subjectStackListQFile.open(QIODevice::ReadOnly)) {
+    qDebug() << "Could not open file=" << subjectStackListFilepath << " to read";
+    return false;
+  }
+  while(!subjectStackListQFile.atEnd()) {
+    QString stackLine=subjectStackListQFile.readLine();
+    stackLine=stackLine.trimmed();
+    subjectFilepathList.append(stackLine);
+  }
+  subjectStackListQFile.close();
+
+  QList<SortableStringDouble> scoredStackList;
+  for (int stackIndex=0;stackIndex<subjectFilepathList.size();stackIndex++) {
+    ImageLoader subjectLoader;
+    QString stackPath=subjectFilepathList[stackIndex];
+    My4DImage * subjectStack = subjectLoader.loadImage(stackPath);
+    double score=computeStackSimilarity(targetStack, subjectStack);
+    qDebug() << "similarityScore=" << score;
+    SortableStringDouble scoreObject;
+    scoreObject.theString=stackPath;
+    scoreObject.theDouble=score;
+    scoredStackList.append(scoreObject);
+    delete subjectStack;
+  }
+  qSort(scoredStackList.begin(), scoredStackList.end());
+
+  QFile outputFile(outputSimilarityFilepath);
+  if (!outputFile.open(QIODevice::WriteOnly)) {
+    qDebug() << "Could not open file=" << outputSimilarityFilepath << " to write";
+    return false;
+  }
+  QTextStream outputStream(&outputFile);
+  for (int i=0;i<scoredStackList.size();i++) {
+    SortableStringDouble scoreObject=scoredStackList[i];
+    outputStream << scoreObject.theDouble << " " << scoreObject.theString << "\n";
+  }
+  outputStream.flush();
+  outputFile.close();
+}
+
+double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack)
+{
+  const v3d_uint8 T1 = 14;
+  const v3d_uint8 T2 = 39;
+
+  V3DLONG xsize=targetStack->getXDim();
+  V3DLONG ysize=targetStack->getYDim();
+  V3DLONG zsize=targetStack->getZDim();
+  V3DLONG csize=targetStack->getCDim();
+
+  if (subjectStack->getXDim()!=xsize ||
+      subjectStack->getYDim()!=ysize ||
+      subjectStack->getZDim()!=zsize ||
+      subjectStack->getCDim()!=csize) {
+    qDebug() << "computeStackSimilarity: dimensions do not match\n";
+    return -1.0;
+  }
+
+  v3d_uint8** targetChannelSet = new v3d_uint8*[csize];
+  v3d_uint8** subjectChannelSet = new v3d_uint8*[csize];
+
+  for (V3DLONG c=0;c<csize;c++) {
+    targetChannelSet[c]=targetStack->getRawDataAtChannel(c);
+    subjectChannelSet[c]=subjectStack->getRawDataAtChannel(c);
+  }
+
+  V3DLONG differenceTotal=0;
+  V3DLONG offset=0;
+  V3DLONG imageSize=zsize*ysize*xsize;
+
+  int T1N = T1*csize;
+  int T2N = T2*csize;
+
+  for (V3DLONG i=0;i<imageSize;i++) {
+    int targetTotal=0;
+    int subjectTotal=0;
+    for (V3DLONG c=0;c<csize;c++) {
+      targetTotal+=targetChannelSet[c][i];
+      subjectTotal+=subjectChannelSet[c][i];
+    }
+    int tScore=0;
+    if (targetTotal>T1N) {
+      tScore++;
+      if (targetTotal>T2N) {
+	tScore++;
+      }
+    }
+    int sScore=0;
+    if (subjectTotal>T1N) {
+      sScore++;
+      if (subjectTotal>T2N) {
+	sScore++;
+      }
+    }
+    int diff=(sScore-tScore)*(sScore-tScore);
+    differenceTotal+=diff;
+  }
+
+  double d=sqrt(differenceTotal*1.0);
+  double s=imageSize*1.0;
+  double score=d/s;
+
+  return score;
 }
