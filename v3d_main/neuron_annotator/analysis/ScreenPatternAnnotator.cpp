@@ -2162,8 +2162,14 @@ bool ScreenPatternAnnotator::createSimilarityList()
     return false;
   }
 
+  lut16Color=create16Color8BitLUT();
+
   ImageLoader targetStackLoader;
   targetStack = targetStackLoader.loadImage(targetStackFilepath);
+  if (targetStack->getCDim()!=3) {
+    qDebug() << "createSimilarityList only supports 3-channel 8-bit data";
+    return false;
+  }
 
   QFile subjectStackListQFile(subjectStackListFilepath);
   if (!subjectStackListQFile.open(QIODevice::ReadOnly)) {
@@ -2243,8 +2249,8 @@ SortableStringDouble ScreenPatternAnnotator::computeStackSimilarityManager(int s
 
 double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack)
 {
-  const v3d_uint8 T1 = 14;
-  const v3d_uint8 T2 = 39;
+  const v3d_uint8 T1 = 10;
+  const v3d_uint8 T2 = 20;
 
   V3DLONG xsize=targetStack->getXDim();
   V3DLONG ysize=targetStack->getYDim();
@@ -2272,33 +2278,20 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
   V3DLONG imageSize=zsize*ysize*xsize;
 
   for (V3DLONG i=0;i<imageSize;i++) {
-    int targetMax=0;
-    int subjectMax=0;
-    for (V3DLONG c=0;c<csize;c++) {
-      v3d_uint8 targetValue=targetChannelSet[c][i];
-      v3d_uint8 subjectValue=subjectChannelSet[c][i];
-      if (targetValue>targetMax) {
-	targetMax=targetValue;
-      }
-      if (subjectValue>subjectMax) {
-	subjectMax=subjectValue;
-      }
-    }
-    int tScore=0;
-    if (targetMax>T1) {
-      tScore++;
-      if (targetMax>T2) {
-	tScore++;
-      }
-    }
-    int sScore=0;
-    if (subjectMax>T1) {
-      sScore++;
-      if (subjectMax>T2) {
-	sScore++;
-      }
-    }
-    int diff=(sScore-tScore)*(sScore-tScore);
+
+    v3d_uint8 tr=targetChannelSet[0][i];
+    v3d_uint8 tg=targetChannelSet[1][i];
+    v3d_uint8 tb=targetChannelSet[2][i];
+
+    v3d_uint8 sr=subjectChannelSet[0][i];
+    v3d_uint8 sg=subjectChannelSet[1][i];
+    v3d_uint8 sb=subjectChannelSet[2][i];
+
+    v3d_uint8 targetValue=getReverse16ColorLUT(tr, tg, tb);
+    v3d_uint8 subjectValue=getReverse16ColorLUT(sr, sg, sb);
+
+    int diff=(subjectValue-targetValue)*(subjectValue-targetValue);
+
     differenceTotal+=diff;
   }
 
@@ -2307,4 +2300,18 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
   double score=d/s;
 
   return score;
+}
+
+v3d_uint8 ScreenPatternAnnotator::getReverse16ColorLUT(v3d_uint8 r, v3d_uint8 g, v3d_uint8 b)
+{
+  for (v3d_uint8 i=0;i<256;i++) {
+    int i2=i+256;
+    int i3=i+512;
+    if (lut16Color[i]==r &&
+	lut16Color[i2]==g &&
+	lut16Color[i3]==b) {
+      return i;
+    }
+  }
+  return 0;
 }

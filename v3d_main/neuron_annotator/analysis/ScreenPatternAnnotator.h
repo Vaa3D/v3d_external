@@ -197,7 +197,7 @@ private:
     bool createSimilarityList();
     SortableStringDouble computeStackSimilarityManager(int stackIndex);
     double computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack);
-
+    v3d_uint8 getReverse16ColorLUT(v3d_uint8 r, v3d_uint8 g, v3d_uint8 b);
 };
 
 #endif // SCREENPATTERNANNOTATOR_H
