@@ -67,6 +67,7 @@ bool VolumeTexture::updateVolume()
     bool bSucceeded = true; // avoid signalling before unlocking
     bool bSignalChanged = false;
     bool bLabelChanged = false;
+    bool bMetadataChanged = false;
 
     const NaVolumeData* volumeData = &dataFlowModel->getVolumeData();
 
@@ -87,6 +88,26 @@ bool VolumeTexture::updateVolume()
                     bSucceeded = false;
                 if (! d->subsampleReferenceField(volumeReader))
                     bSucceeded = false;
+
+                // Reset Slow 3D color
+                SampledVolumeMetadata md = d.constData()->getMetadata();
+                const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
+                for (int c = 0; c < volProxy.sc; ++c) {
+                    md.channelGamma[c] = 1.0;
+                    md.channelHdrMinima[c] = volProxy.vmin[c];
+                    md.channelHdrMaxima[c] = volProxy.vmax[c];
+                }
+                if (volumeReader.hasReferenceImage()) {
+                    const Image4DProxy<My4DImage>& refProxy = volumeReader.getOriginalImageProxy();
+                    int c = 3;
+                    md.channelGamma[c] = 1.0;
+                    md.channelHdrMinima[c] = refProxy.vmin[c];
+                    md.channelHdrMaxima[c] = refProxy.vmax[0];
+                }
+                // TODO
+                d->setMetadata(md);
+                bMetadataChanged = true;
+
             }
             if (d->subsampleLabelField(volumeReader))
                 bLabelChanged = true;
@@ -103,6 +124,8 @@ bool VolumeTexture::updateVolume()
             emit signalTextureChanged();
         if (bLabelChanged)
             emit labelTextureChanged();
+        if (bMetadataChanged)
+            emit signalMetadataChanged();
     }
     else {
         emit progressAborted("Volume update failed");
@@ -150,6 +173,7 @@ bool VolumeTexture::loadFast3DTexture()
     // qDebug() << "VolumeTexture::loadFast3DTexture()" << __FILE__ << __LINE__;
     if (NULL == fast3DTexture)
         return false;
+    bool bMetadataChanged = false;
     {
         Fast3DTexture::Reader textureReader(*fast3DTexture);
         if (! textureReader.hasReadLock())
@@ -159,7 +183,11 @@ bool VolumeTexture::loadFast3DTexture()
         size_t sz = textureReader.depth();
         const uint8_t* data = textureReader.data();
         Writer(*this);
-        const SampledVolumeMetaData& md = textureReader.metadata();
+        const SampledVolumeMetadata& md = textureReader.metadata();
+        if (md != d.constData()->getMetadata()) {
+            bMetadataChanged = true;
+            d->setMetadata(md);
+        }
         d->originalImageSize = md.originalImageSize;
         d->paddedTextureSize = md.paddedImageSize;
         d->usedTextureSize = md.usedImageSize;
@@ -168,6 +196,8 @@ bool VolumeTexture::loadFast3DTexture()
             return false;
     } // release locks before emit
     emit signalTextureChanged();
+    if (bMetadataChanged)
+        emit signalMetadataChanged();
     // emit benchmarkTimerPrintRequested("Finished VolumeTexture::loadFast3DTexture()");
     // qDebug() << "VolumeTexture::loadFast3DTexture() took" << timer.elapsed() << "milliseconds";
     return true;
@@ -181,6 +211,11 @@ bool VolumeTexture::loadFast3DTexture()
 VolumeTexture::Reader::Reader(const VolumeTexture& volumeTexture)
     : BaseReader(volumeTexture)
 {}
+
+/* virtual */
+VolumeTexture::Reader::~Reader()
+{
+}
 
 const jfrc::Dimension& VolumeTexture::Reader::originalImageSize() const
 {
@@ -217,6 +252,9 @@ const uint32_t* VolumeTexture::Reader::colorMapData2D() const {
     return d.constData()->colorMapData2D();
 }
 
+const SampledVolumeMetadata& VolumeTexture::Reader::metadata() const {
+    return d.constData()->getMetadata();
+}
 
 ///////////////////////////////////
 // VolumeTexture::Writer methods //

@@ -23,9 +23,8 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
     , galleryMipImages(mipFragmentColors) // shrink 'em
     , mipMergedData(volumeData, mipFragmentData, dataColorModel, neuronSelectionModel)
-    // TODO slow3DColorModel should depend in VolumeColors, which has not been implemented yet
-    , slow3DColorModel(volumeData) // for initial testing, slow model has default values
-    // , volumeColors(volumeData, dataColorModel, neuronSelectionModel)
+    // TODO slow3DColorModel should depend in VolumeTexture
+    // , slow3DColorModel(volumeData) // for initial testing, slow model has default values
 {
     // Prepare to load 16-bit volume data from disk in a separate QThread
     connect(this, SIGNAL(volumeDataNeeded()),
@@ -39,8 +38,12 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
-    dataColorModel.initializeRgba32();
-    slow3DColorModel.initializeRgba32();
+    dataColorModel.initializeRgba48();
+    slow3DColorModel.initializeRgba48();
+
+    slow3DColorModel.setDataFlowModel(this);
+    connect(&getVolumeTexture(), SIGNAL(signalMetadataChanged()),
+            &getSlow3DColorModel(), SLOT(updateVolumeTextureMetadata()));
 
     volumeData.setTextureInput(&volumeTexture);
     // TODO - wire this up

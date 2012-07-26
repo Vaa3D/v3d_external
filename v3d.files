@@ -2499,3 +2499,5 @@ v3d_main/neuron_annotator/gui/PreferencesDialog.h
 v3d_main/neuron_annotator/gui/PreferencesDialog.cpp
 v3d_main/neuron_annotator/gui/preferences_na_dialog.ui
 v3d_main/neuron_annotator/gui/PreferencesNa.ui
+v3d_main/neuron_annotator/data_model/SampledVolumeMetadata.h
+v3d_main/neuron_annotator/data_model/SampledVolumeMetadata.cpp

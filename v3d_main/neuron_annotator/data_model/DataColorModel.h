@@ -6,6 +6,7 @@
 #include <qrgb.h>
 
 class NaVolumeData;
+class DataFlowModel;
 
 // forward declaration for QSharedData paradigm.
 // PrivateDataColorModel.h must only be included in .cpp files
@@ -26,10 +27,12 @@ public:
     DataColorModel();
     explicit DataColorModel(const NaVolumeData& volumeDataParam);
     explicit DataColorModel(const DataColorModel& rhs);
+    virtual ~DataColorModel();
 
     void setIncrementalColorSource(const DataColorModel& desiredColors, const DataColorModel& currentColors);
     bool setChannelUseSharedGamma(int index, bool useIt);
     const PrivateDataColorModel* dataPtr() const {return d.constData();}
+    void setDataFlowModel(const DataFlowModel*);
 
 signals:
     void colorsInitialized();
@@ -37,6 +40,7 @@ signals:
 public slots:
     void initialize();
     bool initializeRgba32(); // For fast loading directly to OpenGL texture
+    bool initializeRgba48(); // For fast loading directly to OpenGL texture
     void colorizeIncremental();
     void setChannelColor(int index, /*QRgb*/ int color);
     void setChannelHdrRange(int index, qreal min, qreal max);
@@ -46,6 +50,7 @@ public slots:
     // void setGamma(qreal gamma); // all channels
     void setChannelVisibility(int channel, bool isVisible);
     void resetColors();
+    void updateVolumeTextureMetadata(); // for Slow3DColorModel
 
 protected:
     int getNumberOfDataChannels() const;
@@ -58,6 +63,7 @@ protected:
     const NaVolumeData * volumeData;
     const DataColorModel * desiredColors; // upstream n-channel color model this 3-channel model colorizes
     const DataColorModel * currentColors;
+    const DataFlowModel * dataFlowModel;
 
 private:
     typedef NaSharedDataModel<PrivateDataColorModel> super;

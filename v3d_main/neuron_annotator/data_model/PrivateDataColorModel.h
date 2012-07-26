@@ -22,6 +22,7 @@ public:
     }
     bool initialize(const NaVolumeData::Reader& volumeReader);
     bool initializeRgba32();
+    bool initializeRgba48();
     const ChannelColorModel& getReferenceChannel() const;
     QRgb blend(const double channelIntensities[]) const;
     QRgb blendInvisible(const double channelIntensities[]) const; // Ignores channel visibility
@@ -29,6 +30,7 @@ public:
     bool setChannelColor(int index, QRgb color);
     bool setChannelHdrRange(int index, qreal minParam, qreal maxParam);
     bool hasChannelHdrRange(int index, qreal minParam, qreal maxParam) const;
+    bool setChannelDataRange(int index, qreal minParam, qreal maxParam);
     bool setChannelVisibility(int index, bool);
     bool getChannelVisibility(int index) const;
     bool setSharedGamma(qreal gammaParam);
@@ -62,6 +64,11 @@ public:
         if (channelColors.size() > refChannel)
             channelColors[refChannel].showChannel = referenceVisibility;
     }
+    void resetChannelColors();
+    void resetGamma(qreal = 1.0);
+    void resetChannelCount(int count=4);
+    void resetHdr(qreal max=4095.0);
+    void resetChannelVisibility();
 
 private:
     // std::vector<ChannelColorModel> channelColors;

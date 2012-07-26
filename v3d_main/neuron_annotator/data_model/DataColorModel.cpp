@@ -1,7 +1,10 @@
 #include "DataColorModel.h"
-#include "PrivateDataColorModel.h"
-#include "NaSharedDataModel.cpp"
 #include "NaVolumeData.h"
+// #include "VolumeTexture.h"
+#include "../DataFlowModel.h"
+
+#include "NaSharedDataModel.cpp"
+#include "PrivateDataColorModel.h"
 
 template class NaSharedDataModel<PrivateDataColorModel>;
 
@@ -13,6 +16,7 @@ DataColorModel::DataColorModel()
     : volumeData(NULL)
     , desiredColors(NULL)
     , currentColors(NULL)
+    , dataFlowModel(NULL)
 {
 }
 
@@ -23,6 +27,19 @@ DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
 {
     connect(volumeData, SIGNAL(dataChanged()),
             this, SLOT(initialize()));
+}
+
+/* virtual */
+DataColorModel::~DataColorModel()
+{}
+
+void DataColorModel::setDataFlowModel(const DataFlowModel * dfm)
+{
+    if (dfm == dataFlowModel)
+        return;
+    dataFlowModel = dfm;
+    if (NULL == dataFlowModel)
+        return;
 }
 
 bool DataColorModel::setChannelUseSharedGamma(int index, bool useIt)
@@ -84,11 +101,53 @@ void DataColorModel::initialize()
     emit dataChanged();
 }
 
+/* slot */
+void DataColorModel::updateVolumeTextureMetadata()
+{
+    qDebug() << "updateVolumeTextureMetaData()" << __FILE__ << __LINE__;
+    if (NULL == dataFlowModel)
+        return;
+    {
+        jfrc::VolumeTexture::Reader textureReader(dataFlowModel->getVolumeTexture());
+        if (dataFlowModel->getVolumeTexture().readerIsStale(textureReader))
+            return;
+        const SampledVolumeMetadata& metadata = textureReader.metadata();
+        Writer colorWriter(*this);
+        for (int c = 0; c < metadata.channelGamma.size(); ++c) {
+            qDebug() << "setting channel gamma" << c << metadata.channelGamma[c];
+            d->setChannelGamma(c, metadata.channelGamma[c]);
+            // TODO - or should this be setting the data range?
+            d->setChannelDataRange(c,
+                                  metadata.channelHdrMinima[c],
+                                  metadata.channelHdrMaxima[c]);
+            if (metadata.channelHdrMaxima[c] > 16000.0)
+                d->setChannelHdrRange(c, 0, 65535); // 16 bit
+            else if (metadata.channelHdrMaxima[c] > 1000.0)
+                d->setChannelHdrRange(c, 0, 4095); // 12 bit
+            else
+                d->setChannelHdrRange(c, 0, 255); // 8 bit
+        }
+    }
+    emit dataChanged();
+}
+
 bool DataColorModel::initializeRgba32()
 {
     {
         Writer colorWriter(*this);
         if (! d->initializeRgba32())
+            return false;
+    }
+    emit colorsInitialized();
+    emit dataChanged();
+    return true;
+}
+
+bool DataColorModel::initializeRgba48()
+{
+    {
+        Writer colorWriter(*this);
+        if (! d->initializeRgba48())
             return false;
     }
     emit colorsInitialized();

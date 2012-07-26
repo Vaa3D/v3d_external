@@ -102,7 +102,6 @@ signals:
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
     void initializeColorModelRequested();
-    void offset3dGammaChanged(qreal);
     void initializeSelectionModelRequested();
 
 public slots:

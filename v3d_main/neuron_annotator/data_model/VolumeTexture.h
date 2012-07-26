@@ -2,8 +2,8 @@
 #define VOLUMETEXTURE_H
 
 #include "NaSharedDataModel.h"
-#include "DataColorModel.h"
 #include "Dimension.h"
+#include "SampledVolumeMetadata.h"
 #include <QObject>
 #include <vector>
 #include <stdint.h>
@@ -23,6 +23,7 @@ class VolumeTexture : public NaSharedDataModel<PrivateVolumeTexture>
 
 public:
     VolumeTexture();
+    explicit VolumeTexture(const VolumeTexture& rhs);
     virtual ~VolumeTexture();
     void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
 
@@ -32,6 +33,7 @@ signals:
     void colorMapTextureChanged();
     void labelTextureChanged();
     void signalTextureChanged();
+    void signalMetadataChanged();
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
 
@@ -57,9 +59,11 @@ public:
     {
     public:
         Reader(const VolumeTexture&);
+        virtual ~Reader();
         const jfrc::Dimension& originalImageSize() const;
         const jfrc::Dimension& usedTextureSize() const;
         const jfrc::Dimension& paddedTextureSize() const;
+        const SampledVolumeMetadata& metadata() const;
         bool use3DSignalTexture() const;
         const uint32_t* signalData3D() const;
         const uint16_t* labelData3D() const;

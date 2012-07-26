@@ -8,6 +8,7 @@
 
 #include "NaLockableData.h"
 #include "Dimension.h"
+#include "SampledVolumeMetadata.h"
 
 class AVFrame;
 class SwsContext;
@@ -25,8 +26,6 @@ class SwsContext;
 #include <vector>
 #include <deque>
 #include <string>
-#include <sstream>
-#include <fstream>
 #include <stdint.h>
 
 // Read an mpeg4 file and populates a YUV texture volume, in its own thread.
@@ -100,109 +99,6 @@ struct QueuedVolume
 };
 
 
-// Data structure to store relationship between sampled volume and original image
-class SampledVolumeMetaData
-{
-public:
-    SampledVolumeMetaData()
-        : channelGamma((size_t)4, 1.0)
-        , channelHdrMinima((size_t)4, (uint32_t)0)
-        , channelHdrMaxima((size_t)4, (uint32_t)4095)
-    {}
-
-    bool loadFromFile(QString fileName)
-    {
-        std::ifstream in(fileName.toStdString().c_str());
-        if (! in.good())
-            return false;
-        char lineBuffer[1024];
-        bool bChanged = false;
-        while (in.getline(lineBuffer, 1024))
-        {
-            std::string line(lineBuffer);
-            std::istringstream lineStream(line);
-            std::string recordType;
-            lineStream >> recordType;
-            if (recordType.length() < 1)
-                continue;
-            if (recordType == "CHANNEL_RESCALE") {
-                // CHANNEL_RESCALE         0       9       4276
-                int channel;
-                uint32_t min, max;
-                lineStream >> channel;
-                lineStream >> min;
-                lineStream >> max;
-                if (min != channelHdrMinima[channel]) {
-                    channelHdrMinima[channel] = min;
-                    bChanged = true;
-                }
-                if (max != channelHdrMaxima[channel]) {
-                    channelHdrMaxima[channel] = max;
-                    bChanged = true;
-                }
-            }
-            else if (recordType == "CHANNEL_GAMMA") {
-                // CHANNEL_GAMMA   0       0.46
-                int channel;
-                float gamma;
-                lineStream >> channel;
-                lineStream >> gamma;
-                if (gamma != channelGamma[channel]) {
-                    channelGamma[channel] = gamma;
-                    bChanged = true;
-                }
-            }
-            else if (recordType == "PARENT_DIMS") {
-                // PARENT_DIMS     512     512     445
-                size_t x, y, z;
-                lineStream >> x >> y >> z;
-                if (x*y*z < 1)
-                    continue;
-                jfrc::Dimension d(x, y, z);
-                if (d != originalImageSize) {
-                    originalImageSize = d;
-                    bChanged = true;
-                }
-            }
-            else if (recordType == "RESAMPLED_DIMS") {
-                // RESAMPLED_DIMS  392     392     336
-                size_t x, y, z;
-                lineStream >> x >> y >> z;
-                if (x*y*z < 1)
-                    continue;
-                jfrc::Dimension d(x, y, z);
-                if (d != paddedImageSize) {
-                    paddedImageSize = d;
-                    bChanged = true;
-                }
-            }
-            else if (recordType == "USED_DIMS") {
-                // USED_DIMS  386     386     336
-                size_t x, y, z;
-                lineStream >> x >> y >> z;
-                if (x*y*z < 1)
-                    continue;
-                jfrc::Dimension d(x, y, z);
-                if (d != usedImageSize) {
-                    usedImageSize = d;
-                    bChanged = true;
-                }
-            }
-        }
-        return bChanged;
-    }
-
-    // Image metadata from .sizes/.colors file
-    jfrc::Dimension originalImageSize;
-    jfrc::Dimension paddedImageSize;
-    jfrc::Dimension usedImageSize;
-    std::vector<float> channelGamma;
-    std::vector<uint32_t> channelHdrMinima;
-    std::vector<uint32_t> channelHdrMaxima;
-
-};
-
-
 class Fast3DTexture : public NaLockableData
 {
     Q_OBJECT
@@ -225,7 +121,7 @@ signals:
     void volumeLoadSequenceCompleted();
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
-    void metaDataChanged();
+    void metadataChanged();
 
 public slots:
     void onHeaderLoaded(int, int, int);
@@ -250,7 +146,7 @@ protected:
     QList<BlockScaler*> scalers;
     BlockScaler::Channel currentLoadChannel;
     std::deque<QueuedVolume> volumeQueue;
-    SampledVolumeMetaData sampledVolumeMetaData;
+    SampledVolumeMetadata sampledVolumeMetadata;
 
 public:
 
@@ -266,7 +162,7 @@ public:
         size_t height() const {return m_data->height;}
         size_t depth() const {return m_data->depth;}
         const uint8_t* data() const {return m_data->texture_data;}
-        const SampledVolumeMetaData& metadata() const {return m_data->sampledVolumeMetaData;}
+        const SampledVolumeMetadata& metadata() const {return m_data->sampledVolumeMetadata;}
 
     private:
         const Fast3DTexture * m_data;

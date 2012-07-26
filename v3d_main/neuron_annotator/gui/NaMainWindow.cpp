@@ -639,8 +639,6 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         mpegTexture.loadNextVolume(); // starts loading process in another thread
     }
 
-    emit offset3dGammaChanged(0.46);
-
     // Apply gamma bias already applied to input images
     // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
     // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
@@ -1591,10 +1589,6 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             this, SLOT(onColorModelChanged()));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
             this, SLOT(onSelectionModelVisibilityChanged()));
-    connect(this, SIGNAL(offset3dGammaChanged(qreal)),
-            &dataFlowModel->getSlow3DColorModel(), SLOT(setSharedGamma(qreal)));
-    connect(this, SIGNAL(offset3dGammaChanged(qreal)),
-            &dataFlowModel->getSlow3DColorModel(), SLOT(setReferenceGamma(qreal)));
 }
 
 bool NaMainWindow::tearDownOldDataFlowModel()

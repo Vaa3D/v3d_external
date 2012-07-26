@@ -6,6 +6,7 @@
 #include "NaVolumeData.h"
 #include "Dimension.h"
 #include "../DataFlowModel.h"
+#include "Fast3DTexture.h"
 #include <vector>
 #include <cassert>
 #include <stdint.h>
@@ -175,8 +176,11 @@ public:
     const uint16_t* labelData3D() const {return neuronLabelTexture.getData();}
     const uint32_t* visibilityData2D() const {return neuronVisibilityTexture.getData();}
     const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
+    const SampledVolumeMetadata& getMetadata() const {return metadata;}
+    void setMetadata(const SampledVolumeMetadata& md) {metadata = md;}
 
 protected:
+    SampledVolumeMetadata metadata;
     int memoryAlignment; // Keep dimensions a multiple of this factor
 
     NeuronVisibilityTexture neuronVisibilityTexture;
