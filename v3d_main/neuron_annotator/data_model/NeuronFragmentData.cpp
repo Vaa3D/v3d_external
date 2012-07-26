@@ -27,6 +27,9 @@ NeuronFragmentData::NeuronFragmentData(const NaVolumeData& naVolumeDataParam)
             this, SLOT(update()));
 }
 
+/* virtual */
+NeuronFragmentData::~NeuronFragmentData() {}
+
 /* slot */
 void NeuronFragmentData::update()
 {
@@ -119,4 +122,12 @@ const std::vector<float>& NeuronFragmentData::Reader::getFragmentHues() const //
     return d.constData()->getFragmentHues();
 }
 
+/* virtual */
+NeuronFragmentData::Reader::~Reader() {}
+
+///////////////////////////////////////
+// NeuronFragmntData::Writer methods //
+///////////////////////////////////////
+
+NeuronFragmentData::Writer::~Writer() {}
 

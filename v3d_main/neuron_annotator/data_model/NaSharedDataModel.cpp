@@ -76,4 +76,7 @@ NaSharedDataModel<P>::BaseReader::~BaseReader()
 // NaSharedData::BaseWriter methods //
 //////////////////////////////////////
 
+/* virtual */
+template<class P>
+NaSharedDataModel<P>::BaseWriter::~BaseWriter() {}
 

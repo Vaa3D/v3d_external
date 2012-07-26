@@ -1,12 +1,15 @@
-#include "DataColorModel.h"
-#include "NaVolumeData.h"
-// #include "VolumeTexture.h"
-#include "../DataFlowModel.h"
+#include "PrivateNeuronFragmentData.h" // avoid compile error on msvc?
+#include "PrivateVolumeTexture.h" // avoid compile error on msvc?
 
 #include "NaSharedDataModel.cpp"
 #include "PrivateDataColorModel.h"
-
 template class NaSharedDataModel<PrivateDataColorModel>;
+
+#include "DataColorModel.h"
+#include "NaVolumeData.h"
+#include "../DataFlowModel.h"
+#include "NeuronFragmentData.h"
+
 
 ////////////////////////////
 // DataColorModel methods //

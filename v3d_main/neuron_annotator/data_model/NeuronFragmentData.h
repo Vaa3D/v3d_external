@@ -15,6 +15,8 @@ public:
     NeuronFragmentData();
     explicit NeuronFragmentData(const NeuronFragmentData&);
     explicit NeuronFragmentData(const NaVolumeData&);
+    NeuronFragmentData& operator=(const NeuronFragmentData&);
+    virtual ~NeuronFragmentData();
 
 public slots:
     virtual void update();
@@ -29,6 +31,9 @@ public:
     {
     public:
         Reader(const NeuronFragmentData&);
+        Reader(const Reader& rhs);
+        Reader& operator=(const Reader& rhs);
+        virtual ~Reader();
         int getNumberOfFragments() const;
         const std::vector<int>& getFragmentSizes() const; // in voxels
         const std::vector<float>& getFragmentHues() const; // in range 0.0-1.0
@@ -40,6 +45,9 @@ public:
     {
     public:
         Writer(NeuronFragmentData& fragmentData) : BaseWriter(fragmentData) {}
+        Writer(const Writer& rhs);
+        Writer& operator=(const Writer&);
+        virtual ~Writer();
     };
 
 };

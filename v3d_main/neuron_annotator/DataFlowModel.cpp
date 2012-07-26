@@ -69,7 +69,7 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
 DataFlowModel::~DataFlowModel()
 {
-    NaVolumeData::Writer(getVolumeData());
+    NaVolumeData::Writer writer(getVolumeData());
     if (multiColorImageStackNode!=0) {
         delete multiColorImageStackNode;
     }
