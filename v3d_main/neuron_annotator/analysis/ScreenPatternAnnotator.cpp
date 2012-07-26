@@ -2291,20 +2291,19 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
     v3d_uint8 targetValue=getReverse16ColorLUT(tr, tg, tb);
     v3d_uint8 subjectValue=getReverse16ColorLUT(sr, sg, sb);
 
-    if (targetValue<2 && subjectValue<2) {
+    if (targetValue<16 && subjectValue<16) {
       // skip
     } else {
-      if (targetValue>7) {
-	targetValue=7;
+      if (targetValue>100) {
+	targetValue=100;
       }
-      if (subjectValue>7) {
-	subjectValue=7;
+      if (subjectValue>100) {
+	subjectValue=100;
       }
-      differenceCount++;
       int diff=(subjectValue-targetValue)*(subjectValue-targetValue);
       differenceTotal+=diff;
+      differenceCount++;
     }
-
   }
 
   double score=0.0;
