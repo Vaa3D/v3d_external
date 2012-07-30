@@ -1,4 +1,4 @@
-if(TIFF_INCLUDE_DIR AND FFTW_LIBRARY)
+if(TIFF_INCLUDE_DIR AND FFTW_INCLUDE_DIR)
     set(PLUGIN_HEADERS istitch.h istitch_gui.h) # Q_OBJECT macro containing files only
     set(PLUGIN_DIRECTORY_NAME image_stitching/istitch)
     set(PLUGIN_SOURCES istitch.cpp istitch.h istitch_gui.h y_imglib.h)

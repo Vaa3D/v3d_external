@@ -15,6 +15,7 @@ include(CTest)
 
 # message("Looking for fftw library")
 # message("$ENV{PROGRAMW6432}/fftw64_3.3.1")
+if(FALSE)
 find_library(FFTW_LIBRARY
     NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f libfftw3f-3
     PATHS 
@@ -23,9 +24,6 @@ find_library(FFTW_LIBRARY
 )
 find_library(FFTW_THREADS_LIBRARY
     NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
-if(NOT FFTW_LIBRARY)
-    message("istitch plugin will not be built unless fftw library is found")
-endif()
 
 if(FFTW_LIBRARY)
     get_filename_component(FFTW_LIB_DIR "${FFTW_LIBRARY}" PATH)
@@ -37,8 +35,37 @@ if(FFTW_LIBRARY)
             ${FFTW_LIB_DIR}
     )
     include_directories("${FFTW_INCLUDE_DIR}")
-    
 endif()
+endif()
+
+# Build FFTW as an external project
+set(fftw_dir "${CMAKE_CURRENT_BINARY_DIR}/fftw")
+include(ExternalProject)
+# AMD 64 requires -fPIC to link static libraries on linux
+set(fftw_cflags "")
+if(UNIX AND NOT APPLE)
+  if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    set(fftw_cflags "-fPIC ${fftw_cflags}")
+  endif()
+endif()
+ExternalProject_Add(
+    LibFFTW
+    URL "${CMAKE_SOURCE_DIR}/v3d_main/common_lib/src_packages/fftw-3.1.2.tar.gz"
+    SOURCE_DIR ${fftw_dir}/src
+    BINARY_DIR ${fftw_dir}/build
+    INSTALL_DIR ${fftw_dir}/install
+    UPDATE_COMMAND ""
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure
+        --prefix=<INSTALL_DIR>
+        --enable-float
+        --enable-threads
+        --enable-static
+        CFLAGS=${fftw_cflags}
+)
+set(FFTW_INCLUDE_DIR "${fftw_dir}/install/include" CACHE PATH "" FORCE)
+include_directories("${FFTW_INCLUDE_DIR}")
+set(FFTW_LIBRARY "${fftw_dir}/install/lib/libfftw3f.a" CACHE PATH "" FORCE)
+add_dependencies(v3d LibFFTW)
 
 find_path(V3D_BINARY_DIR v3d)
 set(INSTALLATION_DIRECTORY ${V3D_BINARY_DIR}/plugins)

@@ -130,6 +130,7 @@ if(USE_FFMPEG)
     set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil.a CACHE INTERNAL "path to a library")
 
     find_package(ZLIB)
+    find_package(BZip2)
 
     include_directories(${AVCODEC_INCLUDE_DIR})
     add_definitions(-D__STDC_CONSTANT_MACROS)
