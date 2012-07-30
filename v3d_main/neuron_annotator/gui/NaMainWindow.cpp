@@ -599,7 +599,7 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
                                  BlockScaler::CHANNEL_RGB);
 
         // Figure out the finest/largest subsampled image that will fit on the video card.
-        size_t max_mb = 500; // default to max memory of 500 MB
+        size_t max_mb = 350; // default to max memory of 350 MB
         // Fetch preset maximum texture memory user preference, if any.
         QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
         QVariant val = settings.value("NaMaxVideoMegabytes");

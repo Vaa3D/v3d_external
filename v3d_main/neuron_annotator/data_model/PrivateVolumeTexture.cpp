@@ -430,7 +430,7 @@ void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeRea
     // if (inputSize != originalImageSize) // new/changed volume size // label size only might have changed
     {
         originalImageSize = inputSize;
-        size_t memoryLimit = 5e8;
+        size_t memoryLimit = 3.5e8; // 350 MB
         QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
         QVariant val = settings.value("NaMaxVideoMegabytes");
         if (val.isValid())

@@ -96,13 +96,15 @@ bool VolumeTexture::updateVolume()
                     md.channelGamma[c] = 1.0;
                     md.channelHdrMinima[c] = volProxy.vmin[c];
                     md.channelHdrMaxima[c] = volProxy.vmax[c];
+                    // qDebug() << "volume hdr max =" << volProxy.vmax[c] << c << __FILE__ << __LINE__;
                 }
                 if (volumeReader.hasReferenceImage()) {
-                    const Image4DProxy<My4DImage>& refProxy = volumeReader.getOriginalImageProxy();
+                    const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
                     int c = 3;
                     md.channelGamma[c] = 1.0;
                     md.channelHdrMinima[c] = refProxy.vmin[0];
                     md.channelHdrMaxima[c] = refProxy.vmax[0];
+                    // qDebug() << "volume hdr max =" << refProxy.vmax[0] << c << __FILE__ << __LINE__;
                 }
                 // TODO
                 d->setMetadata(md);
