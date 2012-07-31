@@ -2375,11 +2375,23 @@ bool ScreenPatternAnnotator::createV2Heatmap()
       }
     }
   }
+  
+  // Create mip
+  int splitPosition=heatmapV2Filepath.lastIndexOf(".");
+  QString mipFilename=heatmapV2Filepath.left(splitPosition);
+  mipFilename.append("MIP.tif");
+  qDebug() << "Mip name=" << mipFilename;
 
   ImageLoader saver;
   saver.saveImage(stackV2, heatmapV2Filepath);
+
+  My4DImage * mip = createMIPFromImage(stackV2);
+  ImageLoader mipSaver;
+  mipSaver.saveImage(mip, mipFilename);
+
   delete stackV1;
   delete stackV2;
+  delete mip;
   return true;
 }
 
