@@ -42,6 +42,7 @@ public:
     static const int MODE_MASK_GUIDE;
     static const int MODE_ARNIM_SCORE;
     static const int MODE_SIMILARITY_SCORE;
+    static const int MODE_HEATMAP;
 
     ScreenPatternAnnotator();
 
@@ -100,6 +101,10 @@ public:
 	usage.append("   -subjectStackList <filepath for subject stack list>                                                  \n");
 	usage.append("   -outputSimilarityList <sorted list of subject stacks with scores>                                    \n");
 	usage.append("                                                                                                        \n");
+	usage.append(" To convert a V1 colormap stack to V2:                                                                  \n");
+	usage.append("                                                                                                        \n");
+	usage.append("   -convertStackHeatmapV1ToV2 <input stack> <output stack>                                              \n");
+	usage.append("                                                                                                        \n");
         return usage;
     }
 
@@ -110,10 +115,15 @@ public:
     My4DImage * create3DHeatmapFromChannel(My4DImage * sourceImage, V3DLONG sourceChannel, v3d_uint8 * lookupTable);
 
     v3d_uint8 * create16Color8BitLUT();
+    v3d_uint8 * create16Color8BitLUT_V2();
 
 private:
 
     int mode;
+
+    // Heatmap
+    QString heatmapV1Filepath;
+    QString heatmapV2Filepath;
     
     // For similarity scores
     QString targetStackFilepath;
@@ -197,7 +207,9 @@ private:
     bool createSimilarityList();
     SortableStringDouble computeStackSimilarityManager(int stackIndex);
     double computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack);
-    v3d_uint8 getReverse16ColorLUT(v3d_uint8 r, v3d_uint8 g, v3d_uint8 b);
+    v3d_uint8 getReverse16ColorLUT(v3d_uint8 * lut, v3d_uint8 r, v3d_uint8 g, v3d_uint8 b);
+    
+    bool createV2Heatmap();
 };
 
 #endif // SCREENPATTERNANNOTATOR_H

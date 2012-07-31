@@ -9,6 +9,7 @@ const int ScreenPatternAnnotator::MODE_INDEX=2;
 const int ScreenPatternAnnotator::MODE_MASK_GUIDE=3;
 const int ScreenPatternAnnotator::MODE_ARNIM_SCORE=4;
 const int ScreenPatternAnnotator::MODE_SIMILARITY_SCORE=5;
+const int ScreenPatternAnnotator::MODE_HEATMAP=6;
 
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
@@ -88,7 +89,9 @@ bool ScreenPatternAnnotator::execute()
       return false;
     } else if (mode==MODE_SIMILARITY_SCORE) {
       return createSimilarityList();
-    } 
+    } else if (mode==MODE_HEATMAP) {
+      return createV2Heatmap();
+    }
     return false;
 }
 
@@ -159,18 +162,23 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
 	  subjectStackListFilepath=(*argList)[++i];
 	} else if (arg=="-outputSimilarityList") {
 	  outputSimilarityFilepath=(*argList)[++i];
+	} else if (arg=="-convertStackHeatmapV1ToV2") {
+	  heatmapV1Filepath=(*argList)[++i];
+	  heatmapV2Filepath=(*argList)[++i];
 	}
     }
     if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0 && flipYSet) {
-        mode=MODE_COMPARTMENT_INDEX;
+      mode=MODE_COMPARTMENT_INDEX;
     } else if (compartmentIndexFile.length()>0) {
-        mode=MODE_INDEX;
+      mode=MODE_INDEX;
     } else if (outputMaskDirectoryPath.length()>0) {
-        mode=MODE_MASK_GUIDE;
+      mode=MODE_MASK_GUIDE;
     } else if (arnimScoreOutputFilepath.length()>0) {
-        mode=MODE_ARNIM_SCORE;
+      mode=MODE_ARNIM_SCORE;
     } else if (outputSimilarityFilepath.length()>0) {
-        mode=MODE_SIMILARITY_SCORE;
+      mode=MODE_SIMILARITY_SCORE;
+    } else if (heatmapV1Filepath.length()>0) {
+      mode=MODE_HEATMAP;
     } else {
         if (inputStackFilepath.length()<1) {
             qDebug() << "inputStackFilepath has invalid length";
@@ -2287,8 +2295,8 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
     v3d_uint8 sg=subjectChannelSet[1][i];
     v3d_uint8 sb=subjectChannelSet[2][i];
 
-    v3d_uint8 targetValue=getReverse16ColorLUT(tr, tg, tb);
-    v3d_uint8 subjectValue=getReverse16ColorLUT(sr, sg, sb);
+    v3d_uint8 targetValue=getReverse16ColorLUT(lut16Color, tr, tg, tb);
+    v3d_uint8 subjectValue=getReverse16ColorLUT(lut16Color, sr, sg, sb);
 
     if (targetValue>100) {
       targetValue=100;
@@ -2306,16 +2314,181 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
   return (sqrt(productTotal*1.0))/(imageSize*1.0);
 }
 
-v3d_uint8 ScreenPatternAnnotator::getReverse16ColorLUT(v3d_uint8 r, v3d_uint8 g, v3d_uint8 b)
+v3d_uint8 ScreenPatternAnnotator::getReverse16ColorLUT(v3d_uint8 * lut, v3d_uint8 r, v3d_uint8 g, v3d_uint8 b)
 {
   for (v3d_uint8 i=0;i<256;i++) {
     int i2=i+256;
     int i3=i+512;
-    if (lut16Color[i]==r &&
-	lut16Color[i2]==g &&
-	lut16Color[i3]==b) {
+    if (lut[i]==r &&
+	lut[i2]==g &&
+	lut[i3]==b) {
       return i;
     }
   }
   return 0;
 }
+
+bool ScreenPatternAnnotator::createV2Heatmap()
+{
+  v3d_uint8 * lutV1=create16Color8BitLUT();
+  v3d_uint8 * lutV2=create16Color8BitLUT_V2();
+
+  ImageLoader v1Loader;
+  My4DImage * stackV1 = v1Loader.loadImage(heatmapV1Filepath);
+  V3DLONG zsize=stackV1->getZDim();
+  V3DLONG ysize=stackV1->getYDim();
+  V3DLONG xsize=stackV1->getXDim();
+  if (stackV1->getCDim()!=3) {
+    qDebug() << "createV2Heatmap() : expected 3 dimensions for input stack";
+    return false;
+  }
+
+  My4DImage * stackV2 = new My4DImage();
+  stackV2->loadImage(xsize, ysize, zsize, 3, V3D_UINT8);
+
+  v3d_uint8 * rH1 = stackV1->getRawDataAtChannel(0);
+  v3d_uint8 * gH1 = stackV1->getRawDataAtChannel(1);
+  v3d_uint8 * bH1 = stackV1->getRawDataAtChannel(2);
+
+  v3d_uint8 * rH2 = stackV2->getRawDataAtChannel(0);
+  v3d_uint8 * gH2 = stackV2->getRawDataAtChannel(1);
+  v3d_uint8 * bH2 = stackV2->getRawDataAtChannel(2);
+
+  for (V3DLONG z=0;z<zsize;z++) {
+    for (V3DLONG y=0;y<ysize;y++) {
+      for (V3DLONG x=0;x<xsize;x++) {
+	V3DLONG offset=ysize*xsize*z+y*xsize+x;
+
+	v3d_uint8 v1_r=rH1[offset];
+	v3d_uint8 v1_g=gH1[offset];
+	v3d_uint8 v1_b=bH1[offset];
+
+	v3d_uint8 v1Index = getReverse16ColorLUT(lutV1, v1_r, v1_g, v1_b);
+	
+	v3d_uint8 v2_r=lutV2[v1Index];
+	v3d_uint8 v2_g=lutV2[v1Index+256];
+	v3d_uint8 v2_b=lutV2[v1Index+512];
+
+	rH2[offset]=v2_r;
+	gH2[offset]=v2_g;
+	bH2[offset]=v2_b;
+      }
+    }
+  }
+
+  ImageLoader saver;
+  saver.saveImage(stackV2, heatmapV2Filepath);
+  delete stackV1;
+  delete stackV2;
+  return true;
+}
+
+v3d_uint8 * ScreenPatternAnnotator::create16Color8BitLUT_V2()
+{
+    v3d_uint8 * lut16 = new v3d_uint8[256*3];
+
+    for (int i=0;i<16;i++) {
+        for (int j=0;j<16;j++) {
+            int index=i*16+j;
+            if (i==0) {
+                lut16[index]    = 0;
+                lut16[index+256]= 0;
+                lut16[index+512]= 0 + ((171*j)/16);
+            } else if (i==1) {
+                lut16[index]    = 1;
+                lut16[index+256]= 1;
+                lut16[index+512]= 171 + (((224-171)*j)/16);
+            } else if (i==2) {
+                lut16[index]    = 1;
+                lut16[index+256]= 1 + (((110-1)*j)/16);
+                lut16[index+512]= 224;
+            } else if (i==3) {
+                lut16[index]    = 0;
+                lut16[index+256]= 110 + (((171-110)*j)/16);
+                lut16[index+512]= 255;
+            } else if (i==4) {
+                lut16[index]    = 1;
+                lut16[index+256]= 171 + (((224-171)*j)/16);
+                lut16[index+512]= 254;
+            } else if (i==5) {
+                lut16[index]    = 1;
+                lut16[index+256]= 224;
+                lut16[index+512]= 254 - (((254-1)*j)/16);
+            } else if (i==6) {
+                lut16[index]    = 1 + (((190-1)*j)/16);
+                lut16[index+256]= 254;
+                lut16[index+512]= 1;
+            } else if (i==7) {
+                lut16[index]    = 190 + (((255-190)*j)/16);
+                lut16[index+256]= 255;
+                lut16[index+512]= 0;
+            } else if (i==8) {
+                lut16[index]    = 255;
+                lut16[index+256]= 255 - (((255-224)*j)/16);
+                lut16[index+512]= 0;
+            } else if (i==9) {
+                lut16[index]    = 255;
+                lut16[index+256]= 224 - (((224-141)*j)/16);
+                lut16[index+512]= 0;
+            } else if (i==10) {
+                lut16[index]    = 255 - (((255-250)*j)/16);
+                lut16[index+256]= 141 - (((141-94)*j)/16);
+                lut16[index+512]= 0;
+            } else if (i==11) {
+                lut16[index]    = 250 - (((250-245)*j)/16);
+                lut16[index+256]= 94 - (((94-0)*j)/16);
+                lut16[index+512]= 0;
+            } else if (i==12) {
+                lut16[index]    = 245;
+                lut16[index+256]= 0;
+                lut16[index+512]= 0 + (((185-0)*j)/16);
+            } else if (i==13) {
+                lut16[index]    = 245 - (((245-222)*j)/16);
+                lut16[index+256]= 0 + (((180-0)*j)/16);
+                lut16[index+512]= 185 + (((222-185)*j)/16);
+            } else if (i==14) {
+                lut16[index]    = 222 + (((237-222)*j)/16);
+                lut16[index+256]= 180 + (((215-180)*j)/16);
+                lut16[index+512]= 222 + (((237-222)*j)/16);
+            } else if (i==15) {
+                lut16[index]    = 237 + (((255-237)*j)/16);
+                lut16[index+256]= 215 + (((255-215)*j)/16);
+                lut16[index+512]= 237 + (((255-237)*j)/16);
+            }
+            if (index==255) {
+                lut16[index]    = 255;
+                lut16[index+256]= 255;
+                lut16[index+512]= 255;
+            }
+        }
+    }
+    // Norm intensity
+    for (int i=0;i<256;i++) {
+      double id=i*3.0;
+      double preTotal=0.0;
+      preTotal+=(lut16[i]*1.0);
+      preTotal+=(lut16[i+256]*1.0);
+      preTotal+=(lut16[i+512]*1.0);
+      double ratio=id/preTotal;
+      int i1=lut16[i]*ratio;
+      int i2=lut16[i+256]*ratio;
+      int i3=lut16[i+512]*ratio;
+      if (i1<256) {
+	lut16[i]=i1;
+      } else {
+	lut16[i]=255;
+      }
+      if (i2<256) {
+	lut16[i+256]=i2;
+      } else {
+	lut16[i+256]=255;
+      }
+      if (i3<256) {
+	lut16[i+512]=i3;
+      } else {
+	lut16[i+512]=255;
+      }
+    }
+    return lut16;
+}
+
