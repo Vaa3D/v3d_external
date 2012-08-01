@@ -120,16 +120,16 @@ void DataColorModel::updateVolumeTextureMetadata()
             qDebug() << "setting channel gamma" << c << metadata.channelGamma[c];
             d->setChannelGamma(c, metadata.channelGamma[c]);
             // TODO - or should this be setting the data range?
-            d->setChannelDataRange(c,
+            d->setChannelHdrRange(c,
                                   metadata.channelHdrMinima[c],
                                   metadata.channelHdrMaxima[c]);
             // qDebug() << "slow 3d hdr max =" << metadata.channelHdrMaxima[c] << c << __FILE__ << __LINE__;
             if (metadata.channelHdrMaxima[c] > 16000.0)
-                d->setChannelHdrRange(c, 0, 65535); // 16 bit
+                d->setChannelDataRange(c, 0, 65535); // 16 bit
             else if (metadata.channelHdrMaxima[c] > 1000.0)
-                d->setChannelHdrRange(c, 0, 4095); // 12 bit
+                d->setChannelDataRange(c, 0, 4095); // 12 bit
             else
-                d->setChannelHdrRange(c, 0, 255); // 8 bit
+                d->setChannelDataRange(c, 0, 255); // 8 bit
         }
     }
     emit dataChanged();

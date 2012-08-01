@@ -1,5 +1,6 @@
 #include "PrivateVolumeTexture.h"
 #include "DataColorModel.h"
+#include "../utility/ImageLoader.h"
 #include <QColor>
 #include <cassert>
 
@@ -30,6 +31,7 @@ struct BaseSampler
         dims_out[1] = output.getHeight();
         dims_out[2] = output.getDepth();
         Dimension used_size_out = output.getUsedSize();
+        Dimension padded_size_out = output.getPaddedSize();
 
         // lesser offsets will be set during recursion
         data_in = (const InputValueType*)input.data_p; // offset[2] = start of data block
@@ -39,10 +41,12 @@ struct BaseSampler
         coords_in_from_out.assign(nDims, std::vector<IndexType>());
         coords_out_from_in.assign(nDims, std::vector<IndexType>());
         for (int d = 0; d < nDims; ++d) {
-            // Use "used" size for mapping, not padded size
             double ratio = 1.0;
-            if (dims_in[d] > 0)
+            if (dims_in[d] > 0) {
+                // Use "used" size for mapping, not padded size
                 ratio = double(used_size_out[d])/double(dims_in[d]);
+                // ratio = double(padded_size_out[d])/double(dims_in[d]);
+            }
             if (dims_in[d] > 0) {
                 coords_out_from_in[d].assign(dims_in[d], 0);
                 for (int x1 = 0; x1 < dims_in[d]; ++x1) {
@@ -80,19 +84,19 @@ struct BaseSampler
         const size_t slice_out_stride = dims_out[0] * dims_out[1];
         const size_t row_out_stride = dims_out[0];
 
-        for (IndexType c = 0; c < sc; ++c) {
+        for (IndexType c = 0; c < sc; ++c) { // color channel
             const InputValueType* color_in = data_in + c * vol_in_stride;
             // precompute funny bgra mapping 0xAARRGGBB
             IndexType c2 = 2 - c;
-            for (IndexType z = 0; z < sz; ++z) {
+            for (IndexType z = 0; z < sz; ++z) { // input z depth dimension
                 const IndexType z_out = coords_out_from_in[2][z];
                 const InputValueType* slice_in = color_in + z * slice_in_stride;
                 OutputValueType* slice_out = data_out + z_out * slice_out_stride;
-                for (IndexType y = 0; y < sy; ++y) {
+                for (IndexType y = 0; y < sy; ++y) { // input y height dimension
                     const IndexType y_out = coords_out_from_in[1][y];
                     const InputValueType* row_in = slice_in + y * row_in_stride;
                     OutputValueType* row_out = slice_out + y_out * row_out_stride;
-                    for (IndexType x = 0; x < sx; ++x)
+                    for (IndexType x = 0; x < sx; ++x) // input x width dimension
                     {
                         const InputValueType in_val = row_in[x];
                         // for speed, short circuit when input is zero
@@ -237,6 +241,48 @@ public:
 
     int truncate_bits;
 };
+
+
+////////////////////////////////
+// NeuronLabelTexture methods //
+////////////////////////////////
+
+bool NeuronLabelTexture::loadFromPbdFile(QString fileName)
+{
+    ImageLoader loader;
+    My4DImage stack;
+    if (! loader.loadImage(&stack, fileName))
+        return false;
+    assert(stack.getCDim() == 1);
+    // assert(stack.getUnitBytes() == 2);
+    Dimension size(stack.getXDim(), stack.getYDim(), stack.getZDim());
+    allocateSize(size, size);
+    if (stack.getUnitBytes() == 2) { // direct copy possible
+        size_t numBytes = stack.getTotalBytes();
+        uint16_t* dest = &data[0];
+        const uint16_t* src = (const uint16_t*)stack.getRawData();
+        memcpy(dest, src, numBytes);
+    }
+    else {
+        assert(stack.getUnitBytes() == 1);
+        uint16_t* dest_channel = &data[0];
+        const uint8_t* src_channel = (const uint8_t*)stack.getRawData();
+        size_t row_voxels = size.x();
+        size_t slice_voxels = row_voxels * size.y();
+        for (int z = 0; z < size.z(); ++z) {
+            uint16_t* dest_slice = dest_channel + z * slice_voxels;
+            const uint8_t* src_slice = src_channel + z * slice_voxels;
+            for (int y = 0; y < size.y(); ++y) {
+                uint16_t* dest_row = dest_slice + y * row_voxels;
+                const uint8_t* src_row = src_slice + y * row_voxels;
+                for (int x = 0; x < size.x(); ++x) {
+                    dest_row[x] = src_row[x];
+                }
+            }
+        }
+    }
+    return true;
+}
 
 
 /////////////////////////////

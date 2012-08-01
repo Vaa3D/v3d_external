@@ -10,7 +10,6 @@ template class NaSharedDataModel<jfrc::PrivateVolumeTexture>;
 
 namespace jfrc {
 
-
 ///////////////////////////
 // VolumeTexture methods //
 ///////////////////////////
@@ -53,10 +52,26 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
     connect(this, SIGNAL(signalTextureChanged()),
             fast3DTexture, SLOT(loadNextVolume())); // Now that previous volume was safely copied
     connect(fast3DTexture, SIGNAL(volumeUploadRequested(int,int,int,void*)),
-            this, SLOT(loadFast3DTexture()));    
+            this, SLOT(loadFast3DTexture()));
 #endif
 
 }
+
+
+bool VolumeTexture::loadLabelPbdFile()
+{
+    if (labelPbdFileName.isEmpty())
+        return false;
+    if (! QFileInfo(labelPbdFileName).exists())
+        return false;
+    {
+        Writer textureWriter(*this);
+        d->loadLabelPbdFile(labelPbdFileName);
+    }
+    emit labelTextureChanged();
+    return true;
+}
+
 
 /* slot */
 bool VolumeTexture::updateVolume()
@@ -110,10 +125,10 @@ bool VolumeTexture::updateVolume()
                 d->setMetadata(md);
                 bMetadataChanged = true;
 
+                if (d->subsampleLabelField(volumeReader))
+                    bLabelChanged = true;
+                // It is not a failure to have no label field
             }
-            if (d->subsampleLabelField(volumeReader))
-                bLabelChanged = true;
-            // It is not a failure to have no label field
         }
         else
             bSucceeded = false;

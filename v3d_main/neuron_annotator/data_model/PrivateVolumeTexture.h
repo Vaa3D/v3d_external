@@ -40,7 +40,7 @@ public:
         : width(8)
         , height(8)
         , depth(8)
-        , bInitialized(false)
+        // , bInitialized(false)
     {
         size_t numVoxels = width * height * depth;
         data.fill(0,  numVoxels);
@@ -95,16 +95,19 @@ public:
 
 protected:
     QVector<VoxelType> data;
-    size_t data_size;
+    // size_t data_size;
     size_t width, height, depth;
     Dimension usedSize;
     Dimension paddedSize;
-    bool bInitialized;
+    // bool bInitialized;
 };
 
 
 class NeuronLabelTexture : public Base3DTexture<uint16_t>
-{};
+{
+public:
+    bool loadFromPbdFile(QString fileName);
+};
 
 
 class NeuronSignalTexture : public Base3DTexture<uint32_t>
@@ -178,6 +181,7 @@ public:
     const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
     const SampledVolumeMetadata& getMetadata() const {return metadata;}
     void setMetadata(const SampledVolumeMetadata& md) {metadata = md;}
+    bool loadLabelPbdFile(QString fileName) {neuronLabelTexture.loadFromPbdFile(fileName);}
 
 protected:
     SampledVolumeMetadata metadata;

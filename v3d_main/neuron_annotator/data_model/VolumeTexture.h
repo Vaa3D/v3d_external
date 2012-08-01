@@ -41,6 +41,8 @@ public slots:
     bool updateVolume();
     void updateNeuronVisibilityTexture();
     bool updateColorMapTexture();
+    bool loadLabelPbdFile();
+    void setLabelPbdFileName(QString fileName) {labelPbdFileName = fileName;}
 #ifdef USE_FFMPEG
     bool loadFast3DTexture();
 #endif
@@ -51,6 +53,7 @@ private:
 
 protected:
     const DataFlowModel* dataFlowModel;
+    QString labelPbdFileName;
 
 public:
     /// Allows clients (such as Na3DViewer) to upload pixels in main/OpenGL thread.

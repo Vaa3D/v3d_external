@@ -588,6 +588,30 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         return;
     createNewDataFlowModel();
 
+    // Figure out the finest/largest subsampled image that will fit on the video card.
+    size_t max_mb = 350; // default to max memory of 350 MB
+    // Fetch preset maximum texture memory user preference, if any.
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+    QVariant val = settings.value("NaMaxVideoMegabytes");
+    // qDebug() << "Loading preferences";
+    if (val.isValid()) {
+        size_t mb = val.toInt();
+        if (mb > 0)
+            max_mb = mb;
+    }
+    // Subsample options are 25, 50, 100, and 200 megavoxels
+    int mvoxels = 25;  // Max megavoxels
+    // six bytes per megavoxel with current texture implementation
+    while ((2 * mvoxels * 6) <= max_mb) { // "2" to scale up to the next candidate size
+        if (mvoxels >= 200) // 200 is the largest subsample we have
+            break;
+        mvoxels *= 2; // progress 25, 50, 100, 200
+    }
+    assert(mvoxels >= 25); // lowest sampling rate is 25
+    assert(mvoxels <= 200); // highest sampling rate is 200
+    QString mv = QString("%1").arg(mvoxels);
+    qDebug() << "Using sampling limit of" << mv << "megavoxels";
+
     Fast3DTexture& mpegTexture = dataFlowModel->getFast3DTexture();
     {
         Fast3DTexture::Writer textureWriter(mpegTexture);
@@ -597,30 +621,6 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
         // First load lowest resolution mp4 to put something on the screen immediately ~300ms elapsed
         mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_25.mp4"),
                                  BlockScaler::CHANNEL_RGB);
-
-        // Figure out the finest/largest subsampled image that will fit on the video card.
-        size_t max_mb = 350; // default to max memory of 350 MB
-        // Fetch preset maximum texture memory user preference, if any.
-        QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
-        QVariant val = settings.value("NaMaxVideoMegabytes");
-        // qDebug() << "Loading preferences";
-        if (val.isValid()) {
-            size_t mb = val.toInt();
-            if (mb > 0)
-                max_mb = mb;
-        }
-        // Subsample options are 25, 50, 100, and 200 megavoxels
-        int mvoxels = 25;  // Max megavoxels
-        // six bytes per megavoxel with current texture implementation
-        while ((2 * mvoxels * 6) <= max_mb) { // "2" to scale up to the next candidate size
-            if (mvoxels >= 200) // 200 is the largest subsample we have
-                break;
-            mvoxels *= 2; // progress 25, 50, 100, 200
-        }
-        assert(mvoxels >= 25); // lowest sampling rate is 25
-        assert(mvoxels <= 200); // highest sampling rate is 200
-        QString mv = QString("%1").arg(mvoxels);
-        qDebug() << "Using sampling limit of" << mv << "megavoxels";
 
         // First refinement: load largest subsample that can fit on the video card. ~1500ms elapsed
         mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_" + mv + ".mp4"),
@@ -655,15 +655,20 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     //         Qt::UniqueConnection);
 
     // Prepare to load lossless files after mp4 files have loaded
-    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
-            Qt::UniqueConnection);
+    emit subsampleLabelPbdFileNamed(dir.filePath("fastLoad/ConsolidatedLabel2_" + mv + ".v3dpbd"));
     {
         NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
         volumeWriter.setOriginalImageStackFilePath(dir.filePath("fastLoad/ConsolidatedSignal3.v3dpbd"));
         volumeWriter.setReferenceStackFilePath(dir.filePath("fastLoad/Reference3.v3dpbd"));
         volumeWriter.setMaskLabelFilePath(dir.filePath("fastLoad/ConsolidatedLabel3.v3dpbd"));
     }
+    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
+            Qt::UniqueConnection);
+    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &dataFlowModel->getVolumeTexture(), SLOT(loadLabelPbdFile()),
+            Qt::UniqueConnection);
+
     // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
     dataFlowModel->getVolumeData().doFlipY = false;
     dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
@@ -1516,6 +1521,9 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
         ui.naLargeMIPWidget->setMipMergedData(NULL);
         return;
     }
+
+    connect(this, SIGNAL(subsampleLabelPbdFileNamed(QString)),
+            &dataFlowModel->getVolumeTexture(), SLOT(setLabelPbdFileName(QString)));
 
     connect(dataFlowModel, SIGNAL(benchmarkTimerPrintRequested(QString)),
             this, SIGNAL(benchmarkTimerPrintRequested(QString)));

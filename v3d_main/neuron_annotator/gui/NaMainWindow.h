@@ -103,6 +103,7 @@ signals:
     void benchmarkTimerPrintRequested(QString);
     void initializeColorModelRequested();
     void initializeSelectionModelRequested();
+    void subsampleLabelPbdFileNamed(QString);
 
 public slots:
     void resetVolumeCutRange();
