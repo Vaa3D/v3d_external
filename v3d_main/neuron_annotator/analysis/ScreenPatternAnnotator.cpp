@@ -2354,9 +2354,11 @@ bool ScreenPatternAnnotator::createV2Heatmap()
   v3d_uint8 * gH2 = stackV2->getRawDataAtChannel(1);
   v3d_uint8 * bH2 = stackV2->getRawDataAtChannel(2);
 
-  for (V3DLONG z=0;z<zsize;z++) {
-    for (V3DLONG y=0;y<ysize;y++) {
-      for (V3DLONG x=0;x<xsize;x++) {
+  // Check if stack1 is already V2
+  bool v2Flag=false;
+  for (V3DLONG z=0;z<zsize && !v2Flag;z++) {
+    for (V3DLONG y=0;y<ysize && !v2Flag;y++) {
+      for (V3DLONG x=0;x<xsize && !v2Flag;x++) {
 	V3DLONG offset=ysize*xsize*z+y*xsize+x;
 
 	v3d_uint8 v1_r=rH1[offset];
@@ -2364,10 +2366,39 @@ bool ScreenPatternAnnotator::createV2Heatmap()
 	v3d_uint8 v1_b=bH1[offset];
 
 	v3d_uint8 v1Index = getReverse16ColorLUT(lutV1, v1_r, v1_g, v1_b);
-	
-	v3d_uint8 v2_r=lutV2[v1Index];
-	v3d_uint8 v2_g=lutV2[v1Index+256];
-	v3d_uint8 v2_b=lutV2[v1Index+512];
+	v3d_uint8 v2Index = getReverse16ColorLUT(lutV2, v1_r, v1_g, v1_b);
+
+	if (v1Index==0 && v2Index > 0) {
+	  // This implies V2
+	  v2Flag=true;
+	}	
+
+      }
+    }
+  }
+
+  v3d_uint8 v1_r, v1_g, v1_b;
+  v3d_uint8 v2_r, v2_g, v2_b;
+  
+  for (V3DLONG z=0;z<zsize;z++) {
+    for (V3DLONG y=0;y<ysize;y++) {
+      for (V3DLONG x=0;x<xsize;x++) {
+	V3DLONG offset=ysize*xsize*z+y*xsize+x;
+
+	v1_r=rH1[offset];
+	v1_g=gH1[offset];
+	v1_b=bH1[offset];
+
+	if (!v2Flag) {
+	  v3d_uint8 v1Index = getReverse16ColorLUT(lutV1, v1_r, v1_g, v1_b);
+	  v2_r=lutV2[v1Index];
+	  v2_g=lutV2[v1Index+256];
+	  v2_b=lutV2[v1Index+512];
+	} else {
+	  v2_r=v1_r;
+	  v2_g=v1_g;
+	  v2_b=v1_b;
+	}
 
 	rH2[offset]=v2_r;
 	gH2[offset]=v2_g;
