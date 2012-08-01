@@ -2316,13 +2316,14 @@ double ScreenPatternAnnotator::computeStackSimilarity(My4DImage* targetStack, My
 
 v3d_uint8 ScreenPatternAnnotator::getReverse16ColorLUT(v3d_uint8 * lut, v3d_uint8 r, v3d_uint8 g, v3d_uint8 b)
 {
-  for (v3d_uint8 i=0;i<256;i++) {
+  for (int i=0;i<256;i++) {
     int i2=i+256;
     int i3=i+512;
     if (lut[i]==r &&
 	lut[i2]==g &&
 	lut[i3]==b) {
-      return i;
+      v3d_uint8 v=i;
+      return v;
     }
   }
   return 0;
@@ -2371,8 +2372,7 @@ bool ScreenPatternAnnotator::createV2Heatmap()
 	if (v1Index==0 && v2Index > 0) {
 	  // This implies V2
 	  v2Flag=true;
-	}	
-
+	} 
       }
     }
   }
