@@ -293,6 +293,7 @@ protected:
 	bool b_grabhighrez; //for v3d_largedataviz, PHC 120717
 	bool b_imaging; //for v3d_imaging, PHC 101008
 	bool b_ablation; //for 3D imaging, PHC, 120506
+	bool b_lineAblation; // for line cutting ablation, ZJL, 20120801
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();
 	void solveCurveFromMarkers();
@@ -443,6 +444,7 @@ private:
 		b_grabhighrez = false; //120717, PHC
 		b_imaging = false; //101008
 		b_ablation = false; //120506
+		b_lineAblation = false;
           b_renderTextureLast = false;
           edit_seg_id = -1; // ZJL 110913
           draggedCenterIndex = -1; // ZJL 110921

@@ -1164,6 +1164,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_addthiscurve = true;
 		b_imaging = false;
 		b_ablation = true;
+		b_lineAblation = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging || 
@@ -1904,6 +1905,7 @@ void Renderer_gl1::endSelectMode()
 	listMarkerPos.clear();
 
 	b_ablation = false; //by Jianlong Zhou, 20120726
+	b_lineAblation = false; //by Jianlong Zhou, 20120801
 
 	if (selectMode != smObject)
 	{
@@ -3446,18 +3448,85 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 		myimagingp.OPS = "Marker Ablation from 3D Viewer (with feedback)";
 		myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-		for (V3DLONG i=0; i<loc_vec.size(); i++) //i=1
+		// resample landmarkers when using cutting curve line ablation
+		if(b_lineAblation)
 		{
-			XYZ & curpos = loc_vec.at(i);
-			LocationSimple loc;
-			loc.x = curpos.x;
-			loc.y = curpos.y;
-			loc.z = curpos.z;
+			double rezx, rezy, rezz;
+			rezx = curImg->getRezX();
+			rezy = curImg->getRezY();
+			rezz = curImg->getRezZ();
 
-			if (loc.x>=0 && loc.x<curImg->getXDim() && 
-				loc.y>=0 && loc.y<curImg->getYDim() && 
-				loc.z>=0 && loc.z<curImg->getZDim())
-				myimagingp.list_landmarks.push_back(loc);
+			cout <<"Image resolution: "<< rezx <<", "<<rezy <<", "<<rezz<<endl;
+
+			// always use the first marker
+			XYZ & pos0 = loc_vec.at(0);
+			LocationSimple loc0;
+			loc0.x = pos0.x;
+			loc0.y = pos0.y;
+			loc0.z = pos0.z;
+			if (loc0.x>=0 && loc0.x<curImg->getXDim() && 
+					loc0.y>=0 && loc0.y<curImg->getYDim() && 
+					loc0.z>=0 && loc0.z<curImg->getZDim())
+			{
+				myimagingp.list_landmarks.push_back(loc0);
+			}
+
+			for (V3DLONG i=1; i<loc_vec.size()-1; i++) 
+			{
+				XYZ & curpos = loc_vec.at(i);
+				LocationSimple loc;
+				loc.x = curpos.x;
+				loc.y = curpos.y;
+				loc.z = curpos.z;
+
+				// previous pos
+				XYZ & prepos = loc_vec.at(i-1);
+				LocationSimple locpre;
+				locpre.x = prepos.x;
+				locpre.y = prepos.y;
+				locpre.z = prepos.z;
+
+				if (loc.x>=0 && loc.x<curImg->getXDim() && 
+					loc.y>=0 && loc.y<curImg->getYDim() && 
+					loc.z>=0 && loc.z<curImg->getZDim())
+				{					
+					// compute distance between two locs
+					double dist;
+					dist = sqrt((loc.x*rezx - locpre.x*rezx)*(loc.x*rezx - locpre.x*rezx) + 
+						(loc.y*rezy - locpre.y*rezy)*(loc.y*rezy - locpre.y*rezy) + (loc.z*rezz - locpre.z*rezz)*(loc.z*rezz - locpre.z*rezz) );
+					if(dist > 2.0)
+						myimagingp.list_landmarks.push_back(loc);
+				}
+			}
+
+			// always use the last marker
+			XYZ & pos_last = loc_vec.at(loc_vec.size()-1);
+			LocationSimple loc_last;
+			loc_last.x = pos_last.x;
+			loc_last.y = pos_last.y;
+			loc_last.z = pos_last.z;
+			if (loc_last.x>=0 && loc_last.x<curImg->getXDim() && 
+					loc_last.y>=0 && loc_last.y<curImg->getYDim() && 
+					loc_last.z>=0 && loc_last.z<curImg->getZDim())
+			{
+				myimagingp.list_landmarks.push_back(loc_last);
+			}
+		}
+		else // not curve cutting ablation
+		{
+			for (V3DLONG i=0; i<loc_vec.size(); i++) //i=1
+			{
+				XYZ & curpos = loc_vec.at(i);
+				LocationSimple loc;
+				loc.x = curpos.x;
+				loc.y = curpos.y;
+				loc.z = curpos.z;
+
+				if (loc.x>=0 && loc.x<curImg->getXDim() && 
+					loc.y>=0 && loc.y<curImg->getYDim() && 
+					loc.z>=0 && loc.z<curImg->getZDim())
+					myimagingp.list_landmarks.push_back(loc);
+			}
 		}
 
 		if (b_ablation && w && curImg && curXWidget && myimagingp.list_landmarks.size()>0) 
