@@ -755,7 +755,7 @@ bool ScreenPatternAnnotator::annotate() {
     }
 
     // Create Global 16-Color Image
-    lut16Color=create16Color8BitLUT();
+    lut16Color=create16Color8BitLUT_V2();
     imageGlobal16ColorImage=create3DHeatmapFromChannel(inputImage, patternChannelIndex, lut16Color);
     ImageLoader imageLoaderForSave;
     QString filepathToSave(returnFullPathWithOutputPrefix("heatmap16Color.v3dpbd"));
@@ -2170,7 +2170,7 @@ bool ScreenPatternAnnotator::createSimilarityList()
     return false;
   }
 
-  lut16Color=create16Color8BitLUT();
+  lut16Color=create16Color8BitLUT_V2();
 
   ImageLoader targetStackLoader;
   targetStack = targetStackLoader.loadImage(targetStackFilepath);
