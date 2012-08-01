@@ -3471,8 +3471,10 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 				myimagingp.list_landmarks.push_back(loc0);
 			}
 
-			for (V3DLONG i=1; i<loc_vec.size()-1; i++) 
+			V3DLONG pre_pos_id = 0;
+			for (V3DLONG i=1; i<loc_vec.size(); i++) 
 			{
+				// curent pos
 				XYZ & curpos = loc_vec.at(i);
 				LocationSimple loc;
 				loc.x = curpos.x;
@@ -3480,7 +3482,7 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 				loc.z = curpos.z;
 
 				// previous pos
-				XYZ & prepos = loc_vec.at(i-1);
+				XYZ & prepos = loc_vec.at(pre_pos_id);
 				LocationSimple locpre;
 				locpre.x = prepos.x;
 				locpre.y = prepos.y;
@@ -3495,22 +3497,25 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 					dist = sqrt((loc.x*rezx - locpre.x*rezx)*(loc.x*rezx - locpre.x*rezx) + 
 						(loc.y*rezy - locpre.y*rezy)*(loc.y*rezy - locpre.y*rezy) + (loc.z*rezz - locpre.z*rezz)*(loc.z*rezz - locpre.z*rezz) );
 					if(dist > 2.0)
+					{
 						myimagingp.list_landmarks.push_back(loc);
+						pre_pos_id = i;
+					}
 				}
 			}
 
-			// always use the last marker
-			XYZ & pos_last = loc_vec.at(loc_vec.size()-1);
-			LocationSimple loc_last;
-			loc_last.x = pos_last.x;
-			loc_last.y = pos_last.y;
-			loc_last.z = pos_last.z;
-			if (loc_last.x>=0 && loc_last.x<curImg->getXDim() && 
-					loc_last.y>=0 && loc_last.y<curImg->getYDim() && 
-					loc_last.z>=0 && loc_last.z<curImg->getZDim())
-			{
-				myimagingp.list_landmarks.push_back(loc_last);
-			}
+			//// always use the last marker
+			//XYZ & pos_last = loc_vec.at(loc_vec.size()-1);
+			//LocationSimple loc_last;
+			//loc_last.x = pos_last.x;
+			//loc_last.y = pos_last.y;
+			//loc_last.z = pos_last.z;
+			//if (loc_last.x>=0 && loc_last.x<curImg->getXDim() && 
+			//		loc_last.y>=0 && loc_last.y<curImg->getYDim() && 
+			//		loc_last.z>=0 && loc_last.z<curImg->getZDim())
+			//{
+			//	myimagingp.list_landmarks.push_back(loc_last);
+			//}
 		}
 		else // not curve cutting ablation
 		{
