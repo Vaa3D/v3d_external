@@ -181,7 +181,7 @@ public:
     const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
     const SampledVolumeMetadata& getMetadata() const {return metadata;}
     void setMetadata(const SampledVolumeMetadata& md) {metadata = md;}
-    bool loadLabelPbdFile(QString fileName) {neuronLabelTexture.loadFromPbdFile(fileName);}
+    bool loadLabelPbdFile(QString fileName) {return neuronLabelTexture.loadFromPbdFile(fileName);}
 
 protected:
     SampledVolumeMetadata metadata;
