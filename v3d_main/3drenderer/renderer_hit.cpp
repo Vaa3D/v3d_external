@@ -3503,19 +3503,6 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 					}
 				}
 			}
-
-			//// always use the last marker
-			//XYZ & pos_last = loc_vec.at(loc_vec.size()-1);
-			//LocationSimple loc_last;
-			//loc_last.x = pos_last.x;
-			//loc_last.y = pos_last.y;
-			//loc_last.z = pos_last.z;
-			//if (loc_last.x>=0 && loc_last.x<curImg->getXDim() && 
-			//		loc_last.y>=0 && loc_last.y<curImg->getYDim() && 
-			//		loc_last.z>=0 && loc_last.z<curImg->getZDim())
-			//{
-			//	myimagingp.list_landmarks.push_back(loc_last);
-			//}
 		}
 		else // not curve cutting ablation
 		{
