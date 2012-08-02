@@ -424,7 +424,7 @@ void NaZStackWidget::mouseRightButtonPressEvent(QMouseEvent *e) // mouse right b
 }
 
 int NaZStackWidget::getCurrentZSlice() {
-    return cur_z + 1; // 1-based index for API; 0-based internal
+    return cur_z; // 0-based index for API; 0-based internal
 }
 
 int NaZStackWidget::getCurrentBoxSize() {
@@ -433,13 +433,13 @@ int NaZStackWidget::getCurrentBoxSize() {
 
 void NaZStackWidget::setCurrentZSlice(int slice)
 {
-    if (slice < 1) return; // value too small
-    if (cur_z == slice - 1) return; // no change; ignore
+    if (slice < 0) return; // value too small
+    if (cur_z == slice) return; // no change; ignore
     // Might want to update volume information just-in-time
     if ( (sz < 1) && (NULL != volumeData) )
         updateVolumeParameters();
-    if (slice > sz) return; // value too big
-    cur_z = slice - 1;
+    if (slice >= sz) return; // value too big
+    cur_z = slice;
     // qDebug() << "setting z slice to " << slice;
 
     updateHDRView();
@@ -525,8 +525,8 @@ void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
         // hover, not drag
         // Hover to show ([neuron], x, y, z, value) in status bar
         QPointF v_img = X_img_view * QPointF(e->pos());
-        int x = v_img.x();
-        int y = v_img.y();
+        int x = int( floor(v_img.x()) );
+        int y = int( floor(v_img.y()) );
         int z = cur_z;
         int neuronIx = -1;
         QString value("<None>"); // default value
@@ -912,7 +912,7 @@ void NaZStackWidget::updatePixmap()
         pixmap = QPixmap::fromImage(*zReader.getImage());
         sx = pixmap.width();
         sy = pixmap.height();
-        newZ = zReader.getZIndex() + 1;
+        newZ = zReader.getZIndex();
     }
     setCurrentZSlice(newZ);
     // qDebug() << "NaStackWidget pixmap updated";

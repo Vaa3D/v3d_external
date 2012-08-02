@@ -333,11 +333,13 @@ void Fast3DTexture::gotFrame(int f)
     // First we ask: Is this the final frame of a threadable block?
     // "numSections" is the number of threads we will use to unpack frames
     double numSections = Fast3DTexture::numScalingThreads; // divide stack scaling into this many threads
+    double boundaryInterval = (double(depth) - 0.9) / numSections; // 0.9 so final frame will be in section 6, not 7
     // "section" is an index between 1.0 and numSections
-    double section = 1.0 + int( f * numSections / depth );
+    double section = 1.0 + int( f / boundaryInterval );
     // "firstInSection" is the index of the first frame in this section
-    int firstInSection = int((section - 1.0) * depth / numSections);
-    int lastInSection = int(section * depth / numSections - 1.0);
+    int firstInSection = int((section - 1.0) * boundaryInterval + 0.9);
+    int lastInSection = int(section * boundaryInterval);
+    // qDebug() << f << "section" << section << firstInSection << lastInSection << boundaryInterval << __FILE__ << __LINE__;
     if (f == 0) {
         emit benchmarkTimerPrintRequested("Started converting movie file");
     }
@@ -362,7 +364,7 @@ void Fast3DTexture::gotFrame(int f)
 void Fast3DTexture::blockScaleFinished()
 {
     ++completedBlocks;
-    // qDebug() << completedBlocks << "scaling blocks completed";
+    qDebug() << completedBlocks << "scaling blocks completed of" << Fast3DTexture::numScalingThreads;
     if (completedBlocks >= Fast3DTexture::numScalingThreads) {
         completedBlocks = 0;
         emit benchmarkTimerPrintRequested("Finished scaling movie file");

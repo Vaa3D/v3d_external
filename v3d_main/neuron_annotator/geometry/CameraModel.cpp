@@ -14,6 +14,7 @@ void CameraModel::setFocus(const Vector3D& v)
     if (v == m_focusPosition) return; // no change
     if (! (v == v)) return; // NaN
     m_focusPosition = v;
+    // qDebug() << "focus =" << v.x() << v.y() << v.z();
     emit focusChanged(m_focusPosition);
 }
 

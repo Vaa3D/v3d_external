@@ -841,9 +841,9 @@ Vector3D Na3DWidget::getDefaultFocus() const
         return result;
     jfrc::Dimension size = textureReader.originalImageSize();
 
-    result = Vector3D(  (size.x() - 1.0) / 2.0
-                      , (size.y() - 1.0) / 2.0
-                      , (size.z() - 1.0) / 2.0 - 1.0); // Why is Z value off by 1?
+    result = Vector3D(  size.x() / 2.0 - 0.5
+                      , size.y() / 2.0 - 0.5
+                      , size.z() / 2.0 - 0.5); // Why is Z value off by 1?
 
     cachedDefaultFocus = result;
     cachedDefaultFocusIsDirty = false;

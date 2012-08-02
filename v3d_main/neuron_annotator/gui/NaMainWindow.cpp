@@ -612,7 +612,43 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     QString mv = QString("%1").arg(mvoxels);
     qDebug() << "Using sampling limit of" << mv << "megavoxels";
 
+    // Apply gamma bias already applied to input images
+    // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
+    // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
+    emit benchmarkTimerPrintRequested("Initialized color models");
+
+    // keep reference channel off
+    // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
+    emit initializeSelectionModelRequested();
+    setViewMode(VIEW_SINGLE_STACK);
+
+    // TODO - load lossless image into VolumeTexture
+    // connect(mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+    //         &dataFlowModel->getVolumeTexture(), SLOT(loadVolumeDataFromFiles()),
+    //         Qt::UniqueConnection);
+
+    // Prepare to load lossless files after mp4 files have loaded
+    emit subsampleLabelPbdFileNamed(dir.filePath("fastLoad/ConsolidatedLabel2_" + mv + ".v3dpbd"));
+    {
+        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
+        volumeWriter.setOriginalImageStackFilePath(dir.filePath("fastLoad/ConsolidatedSignal3.v3dpbd"));
+        volumeWriter.setReferenceStackFilePath(dir.filePath("fastLoad/Reference3.v3dpbd"));
+        volumeWriter.setMaskLabelFilePath(dir.filePath("fastLoad/ConsolidatedLabel3.v3dpbd"));
+    }
+
     Fast3DTexture& mpegTexture = dataFlowModel->getFast3DTexture();
+
+    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
+            Qt::UniqueConnection);
+    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &dataFlowModel->getVolumeTexture(), SLOT(loadLabelPbdFile()),
+            Qt::UniqueConnection);
+
+    // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
+    dataFlowModel->getVolumeData().doFlipY = false;
+    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
+
     {
         Fast3DTexture::Writer textureWriter(mpegTexture);
 
@@ -638,40 +674,6 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 
         mpegTexture.loadNextVolume(); // starts loading process in another thread
     }
-
-    // Apply gamma bias already applied to input images
-    // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
-    // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
-    emit benchmarkTimerPrintRequested("Initialized color models");
-
-    // keep reference channel off
-    // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
-    emit initializeSelectionModelRequested();
-    setViewMode(VIEW_SINGLE_STACK);
-
-    // TODO - load lossless image into VolumeTexture
-    // connect(mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-    //         &dataFlowModel->getVolumeTexture(), SLOT(loadVolumeDataFromFiles()),
-    //         Qt::UniqueConnection);
-
-    // Prepare to load lossless files after mp4 files have loaded
-    emit subsampleLabelPbdFileNamed(dir.filePath("fastLoad/ConsolidatedLabel2_" + mv + ".v3dpbd"));
-    {
-        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
-        volumeWriter.setOriginalImageStackFilePath(dir.filePath("fastLoad/ConsolidatedSignal3.v3dpbd"));
-        volumeWriter.setReferenceStackFilePath(dir.filePath("fastLoad/Reference3.v3dpbd"));
-        volumeWriter.setMaskLabelFilePath(dir.filePath("fastLoad/ConsolidatedLabel3.v3dpbd"));
-    }
-    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
-            Qt::UniqueConnection);
-    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &dataFlowModel->getVolumeTexture(), SLOT(loadLabelPbdFile()),
-            Qt::UniqueConnection);
-
-    // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
-    dataFlowModel->getVolumeData().doFlipY = false;
-    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
 
 #endif
 }
@@ -1699,7 +1701,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
         const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
 
-        setZRange(1, imgProxy.sz);
+        setZRange(0, imgProxy.sz - 1);
 
         // Start in middle of volume
         // No, initial position should be set in 3D viewer

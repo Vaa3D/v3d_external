@@ -334,8 +334,8 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
         const int mergeIndex = mipReader.getMergedImageLayerIndex();
 
         QPointF v_img = X_img_view * QPointF(event->pos());
-        int x = v_img.x();
-        int y = v_img.y();
+        int x = int( floor(v_img.x()) );
+        int y = int( floor(v_img.y()) );
         int z = 0;
         int neuronIx = -1;
         QString value("<None>"); // default value
