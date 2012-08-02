@@ -116,6 +116,7 @@ public:
 
     v3d_uint8 * create16Color8BitLUT();
     v3d_uint8 * create16Color8BitLUT_V2();
+    v3d_uint8 * create16Color8BitLUT_V3();
 
 private:
 

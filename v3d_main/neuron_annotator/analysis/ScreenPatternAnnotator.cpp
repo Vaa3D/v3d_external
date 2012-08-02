@@ -755,7 +755,7 @@ bool ScreenPatternAnnotator::annotate() {
     }
 
     // Create Global 16-Color Image
-    lut16Color=create16Color8BitLUT_V2();
+    lut16Color=create16Color8BitLUT_V3();
     imageGlobal16ColorImage=create3DHeatmapFromChannel(inputImage, patternChannelIndex, lut16Color);
     ImageLoader imageLoaderForSave;
     QString filepathToSave(returnFullPathWithOutputPrefix("heatmap16Color.v3dpbd"));
@@ -2170,7 +2170,7 @@ bool ScreenPatternAnnotator::createSimilarityList()
     return false;
   }
 
-  lut16Color=create16Color8BitLUT_V2();
+  lut16Color=create16Color8BitLUT_V3();
 
   ImageLoader targetStackLoader;
   targetStack = targetStackLoader.loadImage(targetStackFilepath);
@@ -2331,8 +2331,8 @@ v3d_uint8 ScreenPatternAnnotator::getReverse16ColorLUT(v3d_uint8 * lut, v3d_uint
 
 bool ScreenPatternAnnotator::createV2Heatmap()
 {
-  v3d_uint8 * lutV1=create16Color8BitLUT();
-  v3d_uint8 * lutV2=create16Color8BitLUT_V2();
+  v3d_uint8 * lutV1=create16Color8BitLUT_V2();
+  v3d_uint8 * lutV2=create16Color8BitLUT_V3();
 
   ImageLoader v1Loader;
   My4DImage * stackV1 = v1Loader.loadImage(heatmapV1Filepath);
@@ -2530,6 +2530,88 @@ v3d_uint8 * ScreenPatternAnnotator::create16Color8BitLUT_V2()
 	lut16[i+512]=i3;
       } else {
 	lut16[i+512]=255;
+      }
+    }
+    return lut16;
+}
+
+v3d_uint8 * ScreenPatternAnnotator::create16Color8BitLUT_V3()
+{
+    v3d_uint8 * lut16 = new v3d_uint8[256*3];
+
+    for (int i=0;i<16;i++) {
+      for (int j=0;j<16;j++) {
+	int index=i*16+j;
+	if (i==0) {
+	  lut16[index]    = 0;
+	  lut16[index+256]= 0;
+	  lut16[index+512]= 0; // Total=0
+	} else if (i==1) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 1;
+	  lut16[index+512]= 60; // Total=62
+	} else if (i==2) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 1;
+	  lut16[index+512]= 100; // Total=102
+	} else if (i==3) {
+	  lut16[index]    = 0;
+	  lut16[index+256]= 32;
+	  lut16[index+512]= 101; // Total=133
+	} else if (i==4) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 60;
+	  lut16[index+512]= 102; // Total=163
+	} else if (i==5) {
+	  lut16[index]    = 0;
+	  lut16[index+256]= 103;
+	  lut16[index+512]= 103; // Total=206
+	} else if (i==6) {
+	  lut16[index]    = 0;
+	  lut16[index+256]= 207;
+	  lut16[index+512]= 0; // Total=207
+	} else if (i==7) {
+	  lut16[index]    = 20;
+	  lut16[index+256]= 208;
+	  lut16[index+512]= 0; // Total=228
+	} else if (i==8) {
+	  lut16[index]    = 120;
+	  lut16[index+256]= 209;
+	  lut16[index+512]= 0; // Total=329
+	} else if (i==9) {
+	  lut16[index]    = 210;
+	  lut16[index+256]= 120;
+	  lut16[index+512]= 0; // Total=330
+	} else if (i==10) {
+	  lut16[index]    = 211;
+	  lut16[index+256]= 200;
+	  lut16[index+512]= 0; // Total=411
+	} else if (i==11) {
+	  lut16[index]    = 230;
+	  lut16[index+256]= 150;
+	  lut16[index+512]= 35; // Total=415
+	} else if (i==12) {
+	  lut16[index]    = 235;
+	  lut16[index+256]= 100; // Total=435
+	  lut16[index+512]= 100;
+	} else if (i==13) {
+	  lut16[index]    = 240;
+	  lut16[index+256]= 0;
+	  lut16[index+512]= 200; // Total=440
+	} else if (i==14) {
+	  lut16[index]    = 241;
+	  lut16[index+256]= 50;
+	  lut16[index+512]= 241; // Total=xxx
+	} else if (i==15) {
+	  lut16[index]    = 242;
+	  lut16[index+256]= 205;
+	  lut16[index+512]= 242; // Total=xxx
+	}
+	if (index==255) {
+	  lut16[index]    = 255;
+	  lut16[index+256]= 255;
+	  lut16[index+512]= 255; // Total=xxx
+	}
       }
     }
     return lut16;
