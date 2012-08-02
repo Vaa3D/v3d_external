@@ -620,6 +620,7 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     // keep reference channel off
     // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
     emit initializeSelectionModelRequested();
+    emit initializeColorModelRequested();
     setViewMode(VIEW_SINGLE_STACK);
 
     // TODO - load lossless image into VolumeTexture
@@ -1510,6 +1511,7 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     ui.fragmentGalleryWidget->setDataFlowModel(dataFlowModel);
     neuronSelector.setDataFlowModel(dataFlowModel);
 
+    // was in loadAnnotationSessionFromDirectory June 27, 2012
     if (dynamicRangeTool) {
         if (NULL == dataFlowModel)
             dynamicRangeTool->setColorModel(NULL);
@@ -1532,10 +1534,6 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     connect(dataFlowModel, SIGNAL(benchmarkTimerResetRequested()),
             this, SIGNAL(benchmarkTimerResetRequested()));
 
-    // was in loadAnnotationSessionFromDirectory June 27, 2012
-    if (dynamicRangeTool)
-        dynamicRangeTool->setColorModel(&dataFlowModel->getDataColorModel());
-
     // Connect mip viewer to data flow model
     ui.naLargeMIPWidget->setMipMergedData(&dataFlowModel->getMipMergedData());
 
@@ -1557,9 +1555,6 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     connect(&sharedCameraModel, SIGNAL(focusChanged(Vector3D)),
             &dataFlowModel->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
 
-    connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
-            &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
-
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
             ui.annotationFrame, SLOT(deselectNeurons()));
     connect(ui.annotationFrame, SIGNAL(neuronSelected(int)),
@@ -1568,6 +1563,8 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(this, SIGNAL(initializeSelectionModelRequested()),
             &dataFlowModel->getNeuronSelectionModel(), SLOT(initializeSelectionModel()));
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
+            this, SLOT(onSelectionModelVisibilityChanged()));
 
     // Progress if NaVolumeData file load
     // TODO - this is a lot of connection boilerplate code.  This should be abstracted into a single call or specialized ProgressManager class.
@@ -1597,8 +1594,10 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             &dataFlowModel->getDataColorModel(), SLOT(setReferenceGamma(qreal)));
     connect(&dataFlowModel->getDataColorModel(), SIGNAL(dataChanged()),
             this, SLOT(onColorModelChanged()));
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
-            this, SLOT(onSelectionModelVisibilityChanged()));
+    connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
+            &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
+    connect(this, SIGNAL(initializeColorModelRequested()),
+            &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
 }
 
 bool NaMainWindow::tearDownOldDataFlowModel()

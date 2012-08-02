@@ -51,15 +51,15 @@ public:
     QRgb getChannelColor(int channelIndex) const;
     void resetColors()
     {
-        sharedGamma = 1.0;
+        resetGamma();
         // Don't change visibility of reference channel
         bool referenceVisibility = false;
         const int refChannel = 3;
         if (channelColors.size() > refChannel)
             referenceVisibility = channelColors[refChannel].showChannel;
-        for (int c = 0; c < channelColors.size(); ++c) {
-            channelColors[c].resetColors();
-        }
+        resetChannelVisibility();
+        resetChannelColors();
+        resetHdrRange();
         // restore reference visibility
         if (channelColors.size() > refChannel)
             channelColors[refChannel].showChannel = referenceVisibility;
@@ -68,6 +68,10 @@ public:
     void resetGamma(qreal = 1.0);
     void resetChannelCount(int count=4);
     void resetHdr(qreal max=4095.0);
+    void resetHdrRange() {
+        for (int c = 0; c < channelColors.size(); ++c)
+            channelColors[c].resetHdrRange();
+    }
     void resetChannelVisibility();
 
 private:
