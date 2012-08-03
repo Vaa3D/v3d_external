@@ -282,7 +282,7 @@ bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t
 /* slot */
 bool Na3DWidget::loadVisibilityTexture2D(const uint32_t* texture_data)
 {
-    // qDebug() << "Na3DWidget::loadVisibilityTexture2D()";
+    qDebug() << "Na3DWidget::loadVisibilityTexture2D()" << __FILE__ << __LINE__;
     if (NULL == texture_data)
         return false;
     QTime stopwatch;
@@ -577,6 +577,7 @@ bool Na3DWidget::loadLabelTexture()
 /* slot */
 bool Na3DWidget::loadVisibilityTexture()
 {
+    qDebug() << "Na3DWidget::loadVisibilityTexture()" << __FILE__ << __LINE__;
     if (NULL == dataFlowModel)
         return false;
     bool bSucceeded = true;

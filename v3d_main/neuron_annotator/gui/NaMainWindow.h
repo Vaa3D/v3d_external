@@ -216,7 +216,7 @@ private:
     QList<GalleryButton*> overlayGalleryButtonList;
     QList<GalleryButton*> neuronGalleryButtonList;
 
-    std::vector<OpenFileAction*> recentFileActions;
+    QVector<OpenFileAction*> recentFileActions;
     QTime mainWindowStopWatch;
 };
 

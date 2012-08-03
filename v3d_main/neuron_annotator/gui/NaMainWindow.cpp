@@ -84,7 +84,6 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     , isInCustomCutMode(false)
     , bShowCrosshair(true) // default to on
     , viewMode(VIEW_SINGLE_STACK)
-    , recentFileActions(NaMainWindow::maxRecentFiles, NULL)
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
 #ifdef ENABLE_STEREO
@@ -97,6 +96,8 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
         qDebug() << "Failed to make stereo 3D default QGLFormat";
     QGLFormat::setDefaultFormat(glFormat);
 #endif
+
+    recentFileActions.fill(NULL, NaMainWindow::maxRecentFiles);
 
     ui.setupUi(this);
     setAcceptDrops(true);
@@ -619,6 +620,7 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 
     // keep reference channel off
     // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
+    qDebug() << "initializeSelectionModelRequested()" << __FILE__ << __LINE__;
     emit initializeSelectionModelRequested();
     emit initializeColorModelRequested();
     setViewMode(VIEW_SINGLE_STACK);

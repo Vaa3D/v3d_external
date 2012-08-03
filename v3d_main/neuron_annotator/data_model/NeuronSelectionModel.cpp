@@ -33,7 +33,7 @@ NeuronSelectionModel::NeuronSelectionModel(const NaVolumeData& volumeDataParam)
 /* slot: */
 void NeuronSelectionModel::initializeSelectionModel()
 {
-    // qDebug() << "Initializing NeuronSelectionModel";
+    qDebug() << "Initializing NeuronSelectionModel";
     { // curly brackets to restrict scope for locks
         Writer selectionWriter(*this);
 

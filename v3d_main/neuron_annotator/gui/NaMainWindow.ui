@@ -409,11 +409,7 @@ background-color: rgb(0, 0, 0);</string>
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>drag to rotate
-scroll to zoom
-shift-drag to pan
-double-click to recenter
-single-click to select a neuron fragment</string>
+                    <string/>
                    </property>
                   </widget>
                  </item>
@@ -2217,6 +2213,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
   </action>
   <action name="actionLoad_movie_as_texture">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Load movie as texture...</string>
    </property>
