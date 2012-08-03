@@ -755,7 +755,7 @@ bool ScreenPatternAnnotator::annotate() {
     }
 
     // Create Global 16-Color Image
-    lut16Color=create16Color8BitLUT_V3();
+    lut16Color=create16Color8BitLUT_fiji();
     imageGlobal16ColorImage=create3DHeatmapFromChannel(inputImage, patternChannelIndex, lut16Color);
     ImageLoader imageLoaderForSave;
     QString filepathToSave(returnFullPathWithOutputPrefix("heatmap16Color.v3dpbd"));
@@ -2170,7 +2170,7 @@ bool ScreenPatternAnnotator::createSimilarityList()
     return false;
   }
 
-  lut16Color=create16Color8BitLUT_V3();
+  lut16Color=create16Color8BitLUT_fiji();
 
   ImageLoader targetStackLoader;
   targetStack = targetStackLoader.loadImage(targetStackFilepath);
@@ -2331,8 +2331,8 @@ v3d_uint8 ScreenPatternAnnotator::getReverse16ColorLUT(v3d_uint8 * lut, v3d_uint
 
 bool ScreenPatternAnnotator::createV2Heatmap()
 {
-  v3d_uint8 * lutV1=create16Color8BitLUT_V2();
-  v3d_uint8 * lutV2=create16Color8BitLUT_V3();
+  v3d_uint8 * lutV1=create16Color8BitLUT_V3();
+  v3d_uint8 * lutV2=create16Color8BitLUT_fiji();
 
   ImageLoader v1Loader;
   My4DImage * stackV1 = v1Loader.loadImage(heatmapV1Filepath);
@@ -2416,7 +2416,7 @@ bool ScreenPatternAnnotator::createV2Heatmap()
   ImageLoader saver;
   saver.saveImage(stackV2, heatmapV2Filepath);
 
-  My4DImage * mip = createMIPFromImage(stackV2);
+  My4DImage * mip = createMIPFromImageByLUT(stackV2, lutV2);
   ImageLoader mipSaver;
   mipSaver.saveImage(mip, mipFilename);
 
@@ -2617,3 +2617,127 @@ v3d_uint8 * ScreenPatternAnnotator::create16Color8BitLUT_V3()
     return lut16;
 }
 
+v3d_uint8 * ScreenPatternAnnotator::create16Color8BitLUT_fiji()
+{
+    v3d_uint8 * lut16 = new v3d_uint8[256*3];
+
+    for (int i=0;i<16;i++) {
+      for (int j=0;j<16;j++) {
+	int index=i*16+j;
+	if (i==0) {
+	  lut16[index]    = 0;
+	  lut16[index+256]= 0;
+	  lut16[index+512]= 0;
+	} else if (i==1) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 1;
+	  lut16[index+512]= 171; 
+	} else if (i==2) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 1;
+	  lut16[index+512]= 224; 
+	} else if (i==3) {
+	  lut16[index]    = 0;
+	  lut16[index+256]= 110;
+	  lut16[index+512]= 255;
+	} else if (i==4) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 171;
+	  lut16[index+512]= 254; 
+	} else if (i==5) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 224;
+	  lut16[index+512]= 254; 
+	} else if (i==6) {
+	  lut16[index]    = 1;
+	  lut16[index+256]= 254;
+	  lut16[index+512]= 1;
+	} else if (i==7) {
+	  lut16[index]    = 190;
+	  lut16[index+256]= 255;
+	  lut16[index+512]= 0; 
+	} else if (i==8) {
+	  lut16[index]    = 255;
+	  lut16[index+256]= 255;
+	  lut16[index+512]= 0; 
+	} else if (i==9) {
+	  lut16[index]    = 255;
+	  lut16[index+256]= 224;
+	  lut16[index+512]= 0; 
+	} else if (i==10) {
+	  lut16[index]    = 255;
+	  lut16[index+256]= 141;
+	  lut16[index+512]= 0; 
+	} else if (i==11) {
+	  lut16[index]    = 250;
+	  lut16[index+256]= 94;
+	  lut16[index+512]= 0;
+	} else if (i==12) {
+	  lut16[index]    = 245;
+	  lut16[index+256]= 0; 
+	  lut16[index+512]= 0;
+	} else if (i==13) {
+	  lut16[index]    = 245;
+	  lut16[index+256]= 0;
+	  lut16[index+512]= 185; 
+	} else if (i==14) {
+	  lut16[index]    = 222;
+	  lut16[index+256]= 180;
+	  lut16[index+512]= 222; 
+	} else if (i==15) {
+	  lut16[index]    = 255;
+	  lut16[index+256]= 255;
+	  lut16[index+512]= 255; 
+	}
+      }
+    }
+    return lut16;
+}
+
+My4DImage * ScreenPatternAnnotator::createMIPFromImageByLUT(My4DImage * image, v3d_uint8 * lut) {
+    if (image->getDatatype()!=V3D_UINT8) {
+        qDebug() << "createMIPFromImage only supports datatype 1";
+        return 0;
+    }
+
+    V3DLONG xsize=image->getXDim();
+    V3DLONG ysize=image->getYDim();
+    V3DLONG zsize=image->getZDim();
+
+    My4DImage * mip = new My4DImage();
+    mip->loadImage( xsize, ysize, 1 /* z */, image->getCDim(), V3D_UINT8 );
+    memset(mip->getRawData(), 0, mip->getTotalBytes());
+
+    v3d_uint8 * s_r = image->getRawDataAtChannel(0);
+    v3d_uint8 * s_g = image->getRawDataAtChannel(1);
+    v3d_uint8 * s_b = image->getRawDataAtChannel(2);
+
+    v3d_uint8 * t_r = mip->getRawDataAtChannel(0);
+    v3d_uint8 * t_g = mip->getRawDataAtChannel(1);
+    v3d_uint8 * t_b = mip->getRawDataAtChannel(2);
+
+    V3DLONG zslice=xsize*ysize;
+    for (int y=0;y<ysize;y++) {
+      for (int x=0;x<xsize;x++) {
+	v3d_uint8 maxIndex=0;
+	V3DLONG xy_offset = y*xsize+x;
+	for (int z=0;z<zsize;z++) {
+	  V3DLONG total_offset = z*zslice+xy_offset;
+	  v3d_uint8 r=s_r[total_offset];
+	  v3d_uint8 g=s_g[total_offset];
+	  v3d_uint8 b=s_b[total_offset];
+	  v3d_uint8 lutIndex = getReverse16ColorLUT(lut, r, g, b);
+	  if (lutIndex>maxIndex) {
+	    maxIndex=lutIndex;
+	  }
+	}
+	v3d_uint8 max_r=lut[maxIndex];
+	v3d_uint8 max_g=lut[maxIndex+256];
+	v3d_uint8 max_b=lut[maxIndex+512];
+	t_r[xy_offset]=max_r;
+	t_g[xy_offset]=max_g;
+	t_b[xy_offset]=max_b;
+      }
+    }
+    return mip;
+}

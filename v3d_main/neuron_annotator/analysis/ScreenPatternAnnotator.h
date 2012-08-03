@@ -117,6 +117,8 @@ public:
     v3d_uint8 * create16Color8BitLUT();
     v3d_uint8 * create16Color8BitLUT_V2();
     v3d_uint8 * create16Color8BitLUT_V3();
+    v3d_uint8 * create16Color8BitLUT_fiji();
+    My4DImage * createMIPFromImageByLUT(My4DImage * image, v3d_uint8 * lut);
 
 private:
 
