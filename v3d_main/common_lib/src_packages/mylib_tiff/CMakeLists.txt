@@ -17,8 +17,9 @@ add_library( mylib_tiff ${MyLibTiff_SRCS} )
 target_link_libraries( mylib_tiff my_tiff ${TIFF_LIBRARIES} )
 
 if(UNIX AND NOT APPLE)
-  if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  message("CMAKE_SYSTEM_PROCESSOR = " ${CMAKE_SYSTEM_PROCESSOR})
+  # if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
     set_target_properties(mylib_tiff PROPERTIES COMPILE_FLAGS -fPIC)
-  endif()
+  # endif()
 endif()
 
