@@ -172,31 +172,6 @@
      } \
 }
 
-/*
-#define PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i) \
-{ \
-if(!outswc.empty()) \
-{ \
-V3DLONG nn = outswc.size(); \
-if(i == 1) \
-{ \
-XYZ loci; \
-loci.x=outswc.at(0)->x + sub_orig.x; \
-loci.y=outswc.at(0)->y + sub_orig.y; \
-loci.z=outswc.at(0)->z + sub_orig.z; \
-loc_vec.push_back(loci); \
-} \
-for(V3DLONG j=1; j<nn; j++ ) \
-{ \
-XYZ locj; \
-locj.x=outswc.at(j)->x + sub_orig.x; \
-locj.y=outswc.at(j)->y + sub_orig.y; \
-locj.z=outswc.at(j)->z + sub_orig.z; \
-loc_vec.push_back(locj); \
-} \
-} \
-}
-*/
 
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
@@ -1329,7 +1304,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 {
     QTime t;
     t.start();
-    
+
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
     if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return -1;
     if (index < 0 || index>=list_listCurvePos.size())
@@ -1375,18 +1350,19 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 
      // get img data pointer for fastmarching
      unsigned char* pImg = 0;
+     int datatype = curImg->getDatatype();
      if (curImg && data4dp && chno>=0 &&  chno <dim4)
      {
-          switch (curImg->getDatatype())
+          switch (datatype)
           {
                case V3D_UINT8:
-                    pImg = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+                    pImg = (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1));
                     break;
                case V3D_UINT16:
-                    pImg = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+                    pImg = (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int));
                     break;
                case V3D_FLOAT32:
-                    pImg = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+                    pImg = (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float));
                     break;
                default:
                     v3d_msg("Unsupported data type found. You should never see this.", 0);
@@ -1405,7 +1381,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
      bool b_useStrokeBB  = true;           // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
      bool b_useTiltedBB  = false;             // use tilted BB
-    bool b_useSerialBBox=false; //added by PHC 20120405
+     bool b_useSerialBBox=false; //added by PHC 20120405
 
      if(selectMode == smCurveUseStrokeBB_fm)
      {
@@ -1419,7 +1395,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
           b_useTiltedBB = true;
           b_useStrokeBB = false;
           b_use2PointsBB = false;
-         
+
          b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox)? true : false;
      }
 
@@ -1666,10 +1642,34 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
           if(b_useTiltedBB)
           {
                vector<MyMarker *> outswc;
-               bool b_res = (b_useSerialBBox) ?
-                  fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
-                  //fastmarching_drawing5(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
-              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5); // 20120405, PHC
+               bool b_res;
+
+               switch (datatype)
+               {
+                    case V3D_UINT8:
+                         b_res = (b_useSerialBBox) ?
+                              fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
+                              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
+                         break;
+                    case V3D_UINT16:
+                         b_res = (b_useSerialBBox) ?
+                              fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5)
+                              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5);
+                         break;
+                    case V3D_FLOAT32:
+                         b_res = (b_useSerialBBox) ?
+                              fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5)
+                              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5);
+                         break;
+                    default:
+                         v3d_msg("Unsupported data type found. You should never see this.", 0);
+                         return t.elapsed();
+               }
+
+              //  b_res = (b_useSerialBBox) ?
+              //       fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
+              //     //fastmarching_drawing5(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
+              // : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5); // 20120405, PHC
 
               if (!b_res)
               {
@@ -1791,7 +1791,7 @@ if (0)
                endSelectMode();
           }
      }
-    
+
     return t.elapsed();
 }
 
@@ -1923,7 +1923,7 @@ void  Renderer_gl1::resampleCurveStrokes(int index, int chno, vector<int> &ids)
      for(it=max_score.rbegin(); it!=max_score.rend(); it++)
      {
           count++;
-         if(count >= max_score.size()/1) //tentatively make it no downsampling. by PHC 20120405. 
+         if(count >= max_score.size()/1) //tentatively make it no downsampling. by PHC 20120405.
 //          if(count >= max_score.size()/10.0)
                break;
           ids.push_back(it->second);
