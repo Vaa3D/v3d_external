@@ -1,0 +1,6 @@
+set(PLUGIN_HEADERS imageblend.h) # Q_OBJECT macro containing files only
+set(PLUGIN_DIRECTORY_NAME image_blending/blend_multiscanstacks)
+set(PLUGIN_SOURCES imageblend.cpp basic_4dimage_ori.cpp imageblend.h)
+include_directories("${TIFF_INCLUDE_DIR}")
+configure_v3d_plugin(blend_multiscanstacks)
+target_link_libraries(blend_multiscanstacks ${FFTW_LIBRARY} mylib_tiff)
