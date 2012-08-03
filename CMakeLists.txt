@@ -104,6 +104,34 @@ endif()
 set(V3D_BASIC_C_FUN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/basic_c_fun)
 add_subdirectory(released_plugins)
 
+# Build jba application itself, if the directory has been checked out here
+# (at the same level as v3d_main)
+if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/jba)
+    include_directories(
+        v3d_main/basic_c_fun
+        ${TIFF_INCLUDE_DIR}
+        v3d_main/jba/newmat11/
+    )
+    add_executable(brainaligner
+       jba/c++/main_jba.cpp
+       jba/c++/jba_mainfunc.cpp
+       jba/c++/jba_match_landmarks.cpp
+       jba/c++/wkernel.cpp
+       jba/c++/convert_type2uint8.cpp
+       jba/c++/remove_nonaffine_points.cpp
+       jba/c++/jba_affine_xform.cpp
+       jba/c++/histeq.cpp
+       v3d_main/basic_c_fun/mg_utilities.cpp
+       v3d_main/basic_c_fun/mg_image_lib.cpp
+       v3d_main/basic_c_fun/stackutil.cpp
+    )
+    target_link_libraries(brainaligner
+         newmat11 ${TIFF_LIBRARY})
+    set_target_properties(brainaligner PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    install(TARGETS brainaligner DESTINATION bin)
+endif()
+
 #############################################################
 # Packaging custom installers for each platform using cpack #
 #############################################################

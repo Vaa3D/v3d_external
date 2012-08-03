@@ -25,6 +25,8 @@ add_executable(lobe_seger
     ../../../../v3d_main/worm_straighten_c/bfs_1root.cpp
 )
 target_link_libraries(lobe_seger ${TIFF_LIBRARY})
+set_target_properties(lobe_seger PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 install(TARGETS lobe_seger
     DESTINATION bin
 )
