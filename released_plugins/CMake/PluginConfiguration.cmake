@@ -42,6 +42,9 @@ add_library(${PLUGIN_NAME} SHARED ${QtITK_SRCS} ${QT_MOC_SRCS})
 if(TARGET FinishedPlugins)
     add_dependencies(FinishedPlugins ${PLUGIN_NAME})
 endif()
+if(TARGET PluginPrerequisites)
+    add_dependencies(${PLUGIN_NAME} PluginPrerequisites)
+endif()
 target_link_libraries(${PLUGIN_NAME} ${QT_LIBRARIES} )
 # CMB Nov-03-2010
 # I apologize if I am doing this wrong...

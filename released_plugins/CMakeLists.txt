@@ -65,7 +65,8 @@ ExternalProject_Add(
 set(FFTW_INCLUDE_DIR "${fftw_dir}/install/include" CACHE PATH "" FORCE)
 include_directories("${FFTW_INCLUDE_DIR}")
 set(FFTW_LIBRARY "${fftw_dir}/install/lib/libfftw3f.a" CACHE PATH "" FORCE)
-add_dependencies(v3d LibFFTW)
+add_custom_target(PluginPrerequisites)
+add_dependencies(PluginPrerequisites LibFFTW)
 
 find_path(V3D_BINARY_DIR v3d)
 set(INSTALLATION_DIRECTORY ${V3D_BINARY_DIR}/plugins)
