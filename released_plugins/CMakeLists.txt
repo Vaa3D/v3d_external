@@ -15,28 +15,28 @@ include(CTest)
 
 # message("Looking for fftw library")
 # message("$ENV{PROGRAMW6432}/fftw64_3.3.1")
-if(FALSE)
-find_library(FFTW_LIBRARY
-    NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f libfftw3f-3
-    PATHS 
-        "$ENV{PROGRAMFILES}/fftw"
-        "$ENV{PROGRAMW6432}/fftw64_3.3.1"
-)
-find_library(FFTW_THREADS_LIBRARY
-    NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
-
-if(FFTW_LIBRARY)
-    get_filename_component(FFTW_LIB_DIR "${FFTW_LIBRARY}" PATH)
-    find_path(FFTW_INCLUDE_DIR
-        NAME "fftw3.h"
-        PATHS
-            "${V3DMAINDIR}/common_lib/include"
-            /usr/local/include
-            ${FFTW_LIB_DIR}
-    )
-    include_directories("${FFTW_INCLUDE_DIR}")
-endif()
-endif()
+# if(FALSE)
+# find_library(FFTW_LIBRARY
+#     NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f libfftw3f-3
+#     PATHS
+#         "$ENV{PROGRAMFILES}/fftw"
+#         "$ENV{PROGRAMW6432}/fftw64_3.3.1"
+# )
+# find_library(FFTW_THREADS_LIBRARY
+#     NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
+#
+# if(FFTW_LIBRARY)
+#     get_filename_component(FFTW_LIB_DIR "${FFTW_LIBRARY}" PATH)
+#     find_path(FFTW_INCLUDE_DIR
+#         NAME "fftw3.h"
+#         PATHS
+#             "${V3DMAINDIR}/common_lib/include"
+#             /usr/local/include
+#             ${FFTW_LIB_DIR}
+#     )
+#     include_directories("${FFTW_INCLUDE_DIR}")
+# endif()
+# endif()
 
 # Build FFTW as an external project
 set(fftw_dir "${CMAKE_CURRENT_BINARY_DIR}/fftw")
@@ -65,8 +65,9 @@ ExternalProject_Add(
 set(FFTW_INCLUDE_DIR "${fftw_dir}/install/include" CACHE PATH "" FORCE)
 include_directories("${FFTW_INCLUDE_DIR}")
 set(FFTW_LIBRARY "${fftw_dir}/install/lib/libfftw3f.a" CACHE PATH "" FORCE)
-add_custom_target(PluginPrerequisites)
+
 add_dependencies(PluginPrerequisites LibFFTW)
+add_dependencies(PluginPrerequisites LibTIFF)
 
 find_path(V3D_BINARY_DIR v3d)
 set(INSTALLATION_DIRECTORY ${V3D_BINARY_DIR}/plugins)
