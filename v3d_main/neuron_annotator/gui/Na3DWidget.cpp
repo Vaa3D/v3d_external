@@ -202,6 +202,51 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
     return true;
 }
 
+/* virtual */
+void Na3DWidget::preparingRenderer() // renderer->setupData & init, 100719 extracted to a function
+{
+        qDebug() << "Na3DWidget::V3dR_GLWidget::preparingRenderer" << __FILE__ << __LINE__;
+
+        if (_isSoftwareGL) setRenderMode_Cs3d(true); //090724 set renderer mode before paint
+
+        //=============================================================================
+        {
+                if (renderer)
+                {
+                        renderer->setupData(this->_idep);
+                        if (renderer->hasError())	POST_CLOSE(this);
+                        renderer->getLimitedDataSize(_data_size); //for update slider size
+                }
+
+                if (renderer)
+                {
+                        renderer->initialize(renderer->class_version()); //090705 RZC
+                        if (renderer->hasError())	POST_CLOSE(this);
+                }
+        }
+        //=============================================================================
+
+        // when initialize done, update status of control widgets
+        QCoreApplication::sendEvent(this, new QEvent(QEvent::Type(QEvent_InitControlValue)));
+        if (_isSoftwareGL)
+        {
+                emit changeDispType_cs3d(true);  // 081215, set check-box must after changeVolumeCutRange()
+        }
+        if (supported_TexCompression())
+        {
+                qDebug("	GL texture compression supported, enable texture compression function");
+                emit changeEnableVolCompress(true);
+        }
+        if (supported_GLSL())
+        {
+                qDebug("	GL shading language supported, enable volume colormap function");
+                emit changeEnableVolColormap(true);
+        }
+
+        QCoreApplication::postEvent(this, new QEvent(QEvent::Type(QEvent_OpenFiles))); // POST_EVENT(this, QEvent::Type(QEvent_OpenFiles));
+        QCoreApplication::postEvent(this, new QEvent(QEvent::Type(QEvent_Ready))); // POST_EVENT(this, QEvent::Type(QEvent_Ready)); //081124
+}
+
 /* slot */
 bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t* texture_data)
 {
@@ -534,6 +579,12 @@ bool Na3DWidget::loadSignalTexture()
         if (bFullSizeChanged)
         {
             cachedDefaultFocusIsDirty = true;
+            double zThickness = dataFlowModel->getZRatio();
+            qDebug() << "Maybe setting z thickness to" << dataFlowModel->getZRatio();
+            if ((zThickness > 1e-6) && (zThickness < 1e6)) {
+                qDebug() << "Setting z thickness to" << dataFlowModel->getZRatio();
+                setThickness(dataFlowModel->getZRatio());
+            }
             updateDefaultScale();
             resetView();
             resetVolumeCutRange();
@@ -1492,6 +1543,8 @@ void Na3DWidget::choiceRenderer()
         makeCurrent();
         GLeeInit();
         renderer = new RendererNeuronAnnotator(this);
+        renderer->setThickness(_thickness);
+
         getRendererNa()->setColorMapTextureId(defaultColormapTextureId);
         connect(getRendererNa(), SIGNAL(progressValueChanged(int)),
                 this, SIGNAL(progressValueChanged(int)));

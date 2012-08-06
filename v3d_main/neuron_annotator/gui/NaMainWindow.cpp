@@ -652,6 +652,11 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     dataFlowModel->getVolumeData().doFlipY = false;
     dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
 
+    // Create input node - so data flow model knows where to find lsm metadata
+    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(dirName);
+    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
+    dataFlowModel->loadLsmMetadata();
+
     {
         Fast3DTexture::Writer textureWriter(mpegTexture);
 

@@ -149,6 +149,7 @@ protected:
     void paintGrid();
     virtual void choiceRenderer(); // Create a new internal renderer object
     virtual void settingRenderer(); // Apply settings to internal renderer object
+    virtual void preparingRenderer();
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
     // v3dr_glwidget::event() can cause crash

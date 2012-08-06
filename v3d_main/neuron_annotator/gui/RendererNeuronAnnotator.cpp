@@ -728,9 +728,9 @@ void RendererNeuronAnnotator::setOriginalVolumeDimensions(long x, long y, long z
     bufSize[3] = size4;
     bufSize[4] = size5;
     boundingBox.x0 = boundingBox.y0 = boundingBox.z0 = 0.0;
-    boundingBox.x1 = x;
-    boundingBox.y1 = y;
-    boundingBox.z1 = z;
+    boundingBox.x1 = x * thicknessX;
+    boundingBox.y1 = y * thicknessY;
+    boundingBox.z1 = z * thicknessZ;
     VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
     VOL_X1 = VOL_Y1 = VOL_Z1 = 1;
     dataViewProcBox = dataBox = BoundingBox(start1, start2, start3, start1+(size1-1), start2+(size2-1), start3+(size3-1));
