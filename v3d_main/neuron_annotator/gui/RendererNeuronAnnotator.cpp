@@ -370,8 +370,11 @@ bool RendererNeuronAnnotator::setSlabThickness(int val) // range 2-1000
 // mouse left click to select neuron
 // copied from Renderer_gl1::selectPosition(x, y)
 /* virtual */
-XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screenPos)
+XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(
+        const QPoint& screenPos,
+        const NaVolumeData::Reader& volumeReader)
 {
+    qDebug() << "RendererNeuronAnnotator::screenPositionToVolumePosition" << screenPos << __FILE__ << __LINE__;
     int x = screenPos.x();
     int y = screenPos.y();
 
@@ -419,13 +422,9 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
         //
         int chno;
 
-        V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-        My4DImage* curImg = 0;
-
-        if (w)
-        {
-                curImg = v3dr_getImage4d(_idep);
-        }
+        const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+        ImagePixelType datatype = imgProxy.img0->getDatatype();
+        uint8_t* data_ptr = imgProxy.data_p;
 
         double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
         // [0, 1] ==> [+1, -1]*(s)
@@ -446,23 +445,23 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
            P2 = P2ori;
            P1 = P1ori;
 
-            if (curImg && data4dp)
+            if (data_ptr)
             {
                 double f = 0.8; // must be LESS 1 to converge, close to 1 is better
 
                 XYZ D = P2-P1; normalize(D);
 
                 unsigned char* vp = 0;
-                switch (curImg->getDatatype())
+                switch (datatype)
                 {
                         case V3D_UINT8:
-                                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+                                vp = data_ptr + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
                                 break;
                         case V3D_UINT16:
-                                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+                                vp = data_ptr + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
                                 break;
                         case V3D_FLOAT32:
-                                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+                                vp = data_ptr + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
                                 break;
                         default:
                                 v3d_msg("Unsupported data type found. You should never see this.", 0);
@@ -487,7 +486,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
                         {
                                 XYZ P = P1 + D*step*(i);
                                 float value;
-                                switch (curImg->getDatatype())
+                                switch (datatype)
                                 {
                                         case V3D_UINT8:
                                                 value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
@@ -539,7 +538,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
                     return loc;
                 }
 
-                switch (curImg->getDatatype())
+                switch (datatype)
                 {
                         case V3D_UINT8:
                                 curval = *(vp + offsets);

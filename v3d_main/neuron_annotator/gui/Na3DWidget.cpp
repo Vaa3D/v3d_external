@@ -1114,7 +1114,7 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
 
 void Na3DWidget::onMouseSingleClick(QPoint pos)
 {
-    // qDebug() << "single left click!";
+    // qDebug() << "Na3DWidget::onMouseSingleClick" << pos << __FILE__ << __LINE__;
     highlightNeuronAtPosition(pos);
     bClickIsWaiting = false; // turn off busy cursor
     updateCursor();
@@ -1217,11 +1217,6 @@ int Na3DWidget::neuronAt(QPoint pos)
 {
     int neuronIx = -1;
     if (!renderer) return neuronIx;
-    XYZ loc = getRendererNa()->screenPositionToVolumePosition(pos);
-
-    qreal xlc = loc.x + 0.5;
-    qreal ylc = loc.y + 0.5;
-    qreal zlc = loc.z + 0.5;
 
     // getIndexSelectedNeuron();
     int numNeuron = 0;
@@ -1236,6 +1231,12 @@ int Na3DWidget::neuronAt(QPoint pos)
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return -1;
         const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+
+        XYZ loc = getRendererNa()->screenPositionToVolumePosition(pos, volumeReader);
+
+        qreal xlc = loc.x + 0.5;
+        qreal ylc = loc.y + 0.5;
+        qreal zlc = loc.z + 0.5;
 
         const int sx = neuronProxy.sx;
         const int sy = neuronProxy.sy;
@@ -1305,10 +1306,16 @@ void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
     }
     // qDebug()<<"left click ... ...";
 
-    XYZ loc = getRendererNa()->screenPositionToVolumePosition(pos);
+    XYZ loc;
+    {
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+        if (! volumeReader.hasReadLock()) return;
+        loc = getRendererNa()->screenPositionToVolumePosition(pos, volumeReader);
+    }
 
     // select neuron: set x, y, z and emit signal
     // qDebug()<<"emit a signal ...";
+    qDebug() << "emitting neuronSelected()" << loc.x << loc.y << loc.z << __FILE__ << __LINE__;
     emit neuronSelected(loc.x, loc.y, loc.z);
     // update(); // TODO - this update() should be postponed until the response to whatever happens after neuronSelected(...) completes.
 }

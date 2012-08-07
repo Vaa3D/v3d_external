@@ -42,7 +42,9 @@ public:
     void updateDepthClip();
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)
-    virtual XYZ screenPositionToVolumePosition(const QPoint& screenPos);
+    virtual XYZ screenPositionToVolumePosition(
+            const QPoint& screenPos,
+            const NaVolumeData::Reader& volumeReader);
     // useful value for computing zoom level
     float getZoomedPerspectiveViewAngle() const {return viewAngle * zoomRatio;}
     void setInternalZoomRatio(float z) {zoomRatio = z;}

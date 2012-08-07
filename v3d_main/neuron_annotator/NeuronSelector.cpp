@@ -42,6 +42,7 @@ void NeuronSelector::onVolumeDataChanged()
 // get the index of selected neuron
 int NeuronSelector::getIndexSelectedNeuron()
 {
+    // qDebug() << "NeuronSelector::getIndexSelectedNeuron()" << __FILE__ << __LINE__;
     int numNeuron = 0;
     if (NULL == dataFlowModel) return -1;
     // sum of pixels of each neuron mask in the cube
@@ -108,7 +109,7 @@ int NeuronSelector::getIndexSelectedNeuron()
 	}
 	
 	//
-        // qDebug() << "NeuronSelector::getIndexSelectedNeuron index=" << index;
+        // qDebug() << "NeuronSelector::getIndexSelectedNeuron index=" << index << __FILE__ << __LINE__;
 
         if(index < 0) index = -1; // Index zero is a real fragment
 	
@@ -246,6 +247,7 @@ void NeuronSelector::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 // 
 void NeuronSelector::updateSelectedPosition(double x, double y, double z)
 {
+    // qDebug() << "NeuronSelector::updateSelectedPosition()" << x << y << z << __FILE__ << __LINE__;
         xlc = x + 0.5;
         ylc = y + 0.5;
         zlc = z + 0.5;
