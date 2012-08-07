@@ -19,12 +19,14 @@ ZSliceColors::ZSliceColors(const NaVolumeData& volumeDataParam,
             this, SLOT(update()));
     connect(&neuronSelectionModel, SIGNAL(visibilityChanged()),
             this, SLOT(update()));
+    invalidate();
 }
 
 /* virtual */
 ZSliceColors::~ZSliceColors()
 {
     // qDebug() << "ZSliceColors destructor";
+    invalidate();
     Writer writer(*this);
     writer.clearData();
 }
@@ -104,6 +106,7 @@ void ZSliceColors::update()
     // qDebug() << "ZSliceColors update took" << stopwatch.elapsed() / 1000.0 << "seconds"; // takes 31 ms for 512x512 x 3
     // qDebug() << "ZSliceColors occupies" << 4 * image->width() * image->height() / 1000.0 << "MB of RAM";
 
+    setRepresentsActualData();
     emit dataChanged();
 }
 

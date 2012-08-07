@@ -30,6 +30,7 @@ signals:
 
 public slots:
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
+    virtual void invalidate() {NaViewer::invalidate();}
 
 protected slots:
     void translateImage(int dx, int dy);

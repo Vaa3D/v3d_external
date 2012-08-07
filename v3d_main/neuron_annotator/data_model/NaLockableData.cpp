@@ -15,7 +15,7 @@ NaLockableData::NaLockableData()
 /* virtual */
 NaLockableData::~NaLockableData()
 {
-    bAbortWrite = true;
+    invalidate();
     // Acquire a write lock before we delete this object,
     // so pending Readers have a chance to finish.
     // As usual, acquire the lock in a local block.

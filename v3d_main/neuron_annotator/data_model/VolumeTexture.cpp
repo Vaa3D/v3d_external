@@ -16,11 +16,14 @@ namespace jfrc {
 
 VolumeTexture::VolumeTexture()
     : dataFlowModel(NULL)
-{}
+{
+    invalidate();
+}
 
 /* virtual */
 VolumeTexture::~VolumeTexture()
 {
+    invalidate();
     Writer(*this); // wait for clients to return before destruction
 }
 
@@ -143,6 +146,7 @@ bool VolumeTexture::updateVolume()
             emit labelTextureChanged();
         if (bMetadataChanged)
             emit signalMetadataChanged();
+        setRepresentsActualData();
     }
     else {
         emit progressAborted("Volume update failed");
@@ -212,6 +216,7 @@ bool VolumeTexture::loadFast3DTexture()
         if (! d->loadFast3DTexture(sx, sy, sz, data))
             return false;
     } // release locks before emit
+    setRepresentsActualData();
     emit signalTextureChanged();
     if (bMetadataChanged)
         emit signalMetadataChanged();

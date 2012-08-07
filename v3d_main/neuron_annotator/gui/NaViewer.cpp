@@ -5,6 +5,7 @@ NaViewer::NaViewer()
     , bMouseIsDragging(false)
     , bPaintCrosshair(true)
     , dataFlowModel(NULL)
+    , bRepresentsActualData(true)
 {
 }
 

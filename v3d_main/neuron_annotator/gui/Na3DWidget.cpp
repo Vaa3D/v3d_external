@@ -82,6 +82,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
             this, SLOT(onNotSingleClick()));
 
     widgetStopwatch.start();
+    invalidate();
 }
 
 Na3DWidget::~Na3DWidget()
@@ -543,9 +544,15 @@ void Na3DWidget::applyCustomCut()
 bool Na3DWidget::loadSignalTexture()
 {
     // qDebug() << "Na3DWidget::loadSignalTexture()" << __FILE__ << __LINE__;
-    emit benchmarkTimerPrintRequested("Starting to upload signal texture to video card");
-    if (NULL == dataFlowModel)
+    // emit benchmarkTimerPrintRequested("Starting to upload signal texture to video card");
+    if (NULL == dataFlowModel) {
+        invalidate();
         return false;
+    }
+    if (! dataFlowModel->getVolumeTexture().representsActualData()) {
+        invalidate();
+        return false;
+    }
     bool bSucceeded = true;
     bool bFullSizeChanged = false;
     bool bTextureSizeChanged = false;
@@ -597,6 +604,7 @@ bool Na3DWidget::loadSignalTexture()
         {
             resetVolumeCutRange();
         }
+        setRepresentsActualData();
         update();
         // emit benchmarkTimerPrintRequested("Finished uploading signal texture to video card");
     }
@@ -865,11 +873,15 @@ void Na3DWidget::updateImageData()
 void Na3DWidget::resetView()
 {
     // qDebug() << "reset";
+    updateDefaultScale();
     cameraModel.setScale(1.0); // fit to window
     Vector3D newFocus = getDefaultFocus();
     // cerr << newFocus << __LINE__ << __FILE__ << endl;
     cameraModel.setFocus(newFocus); // center view
     cameraModel.setRotation(Rotation3D()); // identity rotation
+    resetVolumeCutRange();
+    if (NULL != getRendererNa())
+        getRendererNa()->clearClipPlanes();
 }
 
 void Na3DWidget::resetRotation() {
@@ -1683,6 +1695,12 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 
 void Na3DWidget::paintGL()
 {
+    if (! representsActualData()) {
+        glClearColor(0.63, 0.63, 0.64, 1.0); // try to match Qt::gray
+        glClear(GL_COLOR_BUFFER_BIT);
+        return;
+    }
+
     // QElapsedTimer timer; timer.start();
     // emit benchmarkTimerPrintRequested("Starting to paint 3D widget");
     V3dR_GLWidget::paintGL();
@@ -1760,6 +1778,11 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
             this, SIGNAL(progressMessageChanged(QString)));
     connect(&volumeTexture, SIGNAL(progressComplete()),
             this, SIGNAL(progressComplete()));
+    connect(&volumeTexture, SIGNAL(invalidated()),
+            this, SLOT(invalidate()));
+    // Reset clip planes when a new data set is loaded
+    connect(&volumeTexture, SIGNAL(actualDataRepresented()),
+            this, SLOT(resetView()));
 
     connect(this, SIGNAL(neuronClearAll()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
@@ -1875,6 +1898,8 @@ void Na3DWidget::DEPRECATEDonVolumeTextureDataChanged()
 
 void Na3DWidget::resetVolumeCutRange()
 {
+    if (NULL == dataFlowModel)
+        return;
     VolumeTexture::Reader textureReader(dataFlowModel->getVolumeTexture());
     if (dataFlowModel->getVolumeTexture().readerIsStale(textureReader))
         return;

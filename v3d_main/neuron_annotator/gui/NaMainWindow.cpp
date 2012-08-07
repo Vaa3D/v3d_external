@@ -1630,6 +1630,9 @@ bool NaMainWindow::createNewDataFlowModel()
     }
     DataFlowModel* dfm = new DataFlowModel();
     setDataFlowModel(dfm);
+    ui.v3dr_glwidget->invalidate();
+    ui.naZStackWidget->invalidate();
+    ui.naLargeMIPWidget->invalidate();
     return true;
 }
 

@@ -60,6 +60,7 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
             this, SLOT(onMouseLeftDragEvent(int, int, QPoint)));
     connect(&cameraModel, SIGNAL(focusChanged(Vector3D)),
             this, SLOT(update()));
+    invalidate();
 }
 
 NaZStackWidget::~NaZStackWidget() {}
@@ -140,6 +141,8 @@ void NaZStackWidget::setZSliceColors(const ZSliceColors * zSliceColorsParam)
         return;
     connect(zSliceColors, SIGNAL(dataChanged()),
             this, SLOT(updatePixmap()));
+    connect(zSliceColors, SIGNAL(invalidated()),
+            this, SLOT(invalidate()));
 }
 
 void NaZStackWidget::setVolumeData(const NaVolumeData * volumeDataParam)
@@ -194,6 +197,13 @@ void NaZStackWidget::updateVolumeParameters()
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
 {
+    if (! representsActualData()) {
+        painter.begin(this);
+        painter.fillRect(0, 0, width(), height(), Qt::gray);
+        painter.end();
+        return;
+    }
+
     updateDefaultScale();
     painter.begin(this);
 
@@ -893,7 +903,15 @@ void NaZStackWidget::do_HDRfilter()
 
 void NaZStackWidget::updatePixmap()
 {
-    if (! zSliceColors) return;
+    if (! zSliceColors) {
+        invalidate();
+        return;
+    }
+    if (! zSliceColors->representsActualData()) {
+        invalidate();
+        return;
+    }
+    setRepresentsActualData();
     QTime stopwatch;
     int newZ = -1;
     stopwatch.start();

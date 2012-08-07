@@ -1200,7 +1200,7 @@ V3DLONG ImageLoader::compressPBD16(unsigned char * compressionBuffer, unsigned c
 int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool useThreading) {
     {
 
-        qDebug() << "ImageLoader::loadRaw2StackPBD starting filename=" << filename;
+        // qDebug() << "ImageLoader::loadRaw2StackPBD starting filename=" << filename;
 
         int progressValue = 0;
         emit progressValueChanged(++progressValue, progressIndex);

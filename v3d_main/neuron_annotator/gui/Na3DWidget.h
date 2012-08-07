@@ -116,6 +116,7 @@ public slots:
     void clipSlab(); // Apply clip plane to current slab
     void updateScreenPosition(); // for stencil based 3D modes
     void initializeDefaultTextures();
+    virtual void invalidate() {NaViewer::invalidate();}
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

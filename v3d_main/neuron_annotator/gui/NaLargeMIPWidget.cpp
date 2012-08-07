@@ -36,10 +36,12 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
 
     connect(&cameraModel, SIGNAL(focusChanged(Vector3D)), this, SLOT(update()));
     connect(&cameraModel, SIGNAL(scaleChanged(qreal)), this, SLOT(update()));
+    invalidate();
 }
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
 {
+    invalidate();
 }
 
 void NaLargeMIPWidget::setMipMergedData(const MipMergedData* mipMergedDataParam)
@@ -51,6 +53,8 @@ void NaLargeMIPWidget::setMipMergedData(const MipMergedData* mipMergedDataParam)
         return;
     connect(mipMergedData, SIGNAL(dataChanged()),
             this, SLOT(initializePixmap()));
+    connect(mipMergedData, SIGNAL(invalidated()),
+            this, SLOT(invalidate()));
 }
 
 void NaLargeMIPWidget::setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu)
@@ -86,7 +90,14 @@ void NaLargeMIPWidget::showContextMenu(QPoint point)
 
 void NaLargeMIPWidget::updatePixmap()
 {
-    if (! mipMergedData) return;
+    if (! mipMergedData) {
+        invalidate();
+        return;
+    }
+    if (! mipMergedData->representsActualData()) {
+        invalidate();
+        return;
+    }
     {
         MipMergedData::Reader mipReader(*mipMergedData);
         if (! mipReader.hasReadLock()) return;
@@ -97,6 +108,7 @@ void NaLargeMIPWidget::updatePixmap()
         if (img->isNull()) return;
         pixmap = QPixmap::fromImage(*img);
     }
+    setRepresentsActualData();
     updateDefaultScale();
 }
 
@@ -206,6 +218,13 @@ void NaLargeMIPWidget::paintIntensityNumerals(QPainter& painter)
 
 void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
 {
+    if (! representsActualData()) {
+        painter.begin(this);
+        painter.fillRect(0, 0, width(), height(), Qt::gray);
+        painter.end();
+        return;
+    }
+
     // qDebug() << "paint MIP " << width() << ", " << height();
     painter.begin(this);
     painter.setRenderHint(QPainter::Antialiasing);
@@ -316,6 +335,9 @@ void NaLargeMIPWidget::onHighlightedNeuronChanged(int neuronIx)
 // Drag in widget to translate the MIP image in x,y
 void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
 {
+    if (! representsActualData())
+        return;
+
     super::mouseMoveEvent(event);
 
     // Hover action: status message

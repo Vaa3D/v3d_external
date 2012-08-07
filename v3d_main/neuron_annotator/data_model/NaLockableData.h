@@ -29,6 +29,7 @@ public:
     // NaLockableData automatically creates a separate QThread for itself.
     explicit NaLockableData();
     virtual ~NaLockableData();
+    bool representsActualData() const {return ! bAbortWrite;}
 
 signals:
     void dataChanged(); // ready for downstream clients to read all data
@@ -36,18 +37,26 @@ signals:
     void progressValueChanged(int); // on a scale of 0-100
     void progressAborted(QString msg); // data update was stopped for some reason
     void progressCompleted(); // successful completion
+    void invalidated();
 
 public slots:
     virtual void update() {} // recreate everything from upstream data
+    virtual void invalidate() {
+        if (bAbortWrite) return;
+        bAbortWrite = true;
+        emit invalidated();
+    }
 
 protected:
+    void setRepresentsActualData() {bAbortWrite = false;}
+
     // Special const access to QReadWriteLock.  Ouch.  Use carefully!
     QReadWriteLock * getLock() const;
 
     QReadWriteLock lock; // used for multiple-read/single-write thread-safe locking
     QThread * thread; // call constructor with NULL parent to automatically create a thread for NaLocaableData object.
 
-public:
+private:
     volatile bool bAbortWrite; // hint to abandon writing because destructor is waiting
 
 

@@ -21,6 +21,8 @@ public:
     virtual void setDataFlowModel(const DataFlowModel*);
     bool mouseIsDragging() const {return bMouseIsDragging;}
     virtual void showCrosshair(bool b) {bPaintCrosshair = b;}
+    virtual void invalidate() {bRepresentsActualData = false;}
+    bool representsActualData() const {return bRepresentsActualData;}
 
 public:
     // Each viewer has an internal CameraModel that can optionally be synchronized with an external CameraModel
@@ -30,6 +32,7 @@ protected:
     // Helper method for consistent zooming with mouse wheel
     // Zoom using mouse wheel
     virtual void wheelZoom(double delta);
+    void setRepresentsActualData() {bRepresentsActualData = true;}
 
     float defaultScale; // view-pixels per image-voxel to exactly fill window
     bool bMouseIsDragging;
@@ -39,6 +42,9 @@ protected:
     bool bPaintCrosshair;
     // Help distinguish between single clicks and double clicks
     MouseClickManager mouseClickManager;
+
+private:
+    bool bRepresentsActualData; // false both before data have loaded, and after data destruction has been invoked
 };
 
 #endif // NAVIEWER_H

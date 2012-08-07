@@ -1,6 +1,7 @@
 #include "Na2DViewer.h"
 
-Na2DViewer::Na2DViewer(QWidget * parent /* = NULL */) : QWidget(parent)
+Na2DViewer::Na2DViewer(QWidget * parent /* = NULL */)
+    : QWidget(parent)
 {
     setMouseTracking(true); // respond to mouse hover events
 }
@@ -68,7 +69,10 @@ void Na2DViewer::mouseMoveEvent(QMouseEvent * event)
         return;
     }
 
-    if (! (event->buttons() & Qt::LeftButton) ) {
+    bool isTranslateDrag = ( (event->buttons() & Qt::LeftButton)
+                          || (event->buttons() & Qt::MidButton) );
+
+    if (! isTranslateDrag ) {
         // qDebug() << "Not left button...";
         bMouseIsDragging = false;
         return;

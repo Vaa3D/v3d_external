@@ -133,7 +133,7 @@ NaVolumeData::NaVolumeData()
 
 NaVolumeData::~NaVolumeData()
 {
-    bAbortWrite = true;
+    invalidate();
     Writer volumeWriter(*this); // Wait for readers to finish before deleting
     volumeWriter.clearImageData();
 }
@@ -259,6 +259,8 @@ void NaVolumeData::loadVolumeDataFromFiles()
         // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
         volumeWriter.clearImageData();
         // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
+        // needs to be valid for volumeWriter.loadStacks() to work
+        setRepresentsActualData();
         stacksLoaded = volumeWriter.loadStacks();
         // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
 
@@ -279,6 +281,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
         }
     } // release locks before emit
     if (! stacksLoaded) {
+        invalidate();
         emit progressAborted(QString("Problem loading stacks"));
         return;
     }
@@ -525,7 +528,7 @@ My4DImage* ensureThreeChannel(My4DImage* input)
 
 bool NaVolumeData::Writer::loadStacks()
 {
-    if (m_data->bAbortWrite) return false;
+    if (! m_data->representsActualData()) return false;
     QTime stopwatch;
     stopwatch.start();
 
@@ -541,7 +544,7 @@ bool NaVolumeData::Writer::loadStacks()
             m_data, SLOT(setStackLoadProgress(int, int)));
     connect(&originalStack, SIGNAL(progressMessageChanged(QString)),
             m_data, SIGNAL(progressMessageChanged(QString)));
-    qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
+    // qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
     // Pass stack pointer instead of stack reference to avoid problem with lack of QObject copy constructor.
 
     m_data->neuronMaskStack = new My4DImage();
@@ -550,7 +553,7 @@ bool NaVolumeData::Writer::loadStacks()
             m_data, SLOT(setStackLoadProgress(int, int)));
     connect(&maskStack, SIGNAL(progressMessageChanged(QString)),
             m_data, SIGNAL(progressMessageChanged(QString)));
-    qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
+    // qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
 
     m_data->referenceStack = new My4DImage();
     My4DImage* initialReferenceStack = m_data->referenceStack;
@@ -559,9 +562,9 @@ bool NaVolumeData::Writer::loadStacks()
             m_data, SLOT(setStackLoadProgress(int, int)));
     connect(&referenceStack, SIGNAL(progressMessageChanged(QString)),
             m_data, SIGNAL(progressMessageChanged(QString)));
-    qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
+    // qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
 
-    if (m_data->bAbortWrite) return false;
+    if (! m_data->representsActualData()) return false;
 
     // There are some bugs with multithreaded image loading, so make it an option.
     bool bUseMultithreadedLoader = true;
@@ -611,7 +614,7 @@ bool NaVolumeData::Writer::loadStacks()
             }
             QCoreApplication::processEvents(); // let progress signals through
         }
-        if (m_data->bAbortWrite) return false;
+        if (! m_data->representsActualData()) return false;
     }
     else {
         // Non-threaded sequential loading
@@ -620,19 +623,19 @@ bool NaVolumeData::Writer::loadStacks()
             qDebug() << "ERROR loading signal volume" << m_data->originalImageStackFilePath;
             return false;
         }
-        if (m_data->bAbortWrite) return false;
+        if (! m_data->representsActualData()) return false;
         m_data->setProgressMessage("Loading neuron fragment locations...");
         if (! maskStack.load()) {
             qDebug() << "ERROR loading label volume" << m_data->maskLabelFilePath;
             return false;
         }
-        if (m_data->bAbortWrite) return false;
+        if (! m_data->representsActualData()) return false;
         m_data->setProgressMessage("Loading nc82 synaptic reference image...");
         if (! referenceStack.load()) {
             qDebug() << "ERROR loading reference volume" << m_data->referenceStackFilePath;
             return false;
         }
-        if (m_data->bAbortWrite) return false;
+        if (! m_data->representsActualData()) return false;
     }
 
     // Convert 2-channel image to 3-channels to avoid crash
@@ -650,7 +653,7 @@ bool NaVolumeData::Writer::loadStacks()
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
 
-    if (m_data->bAbortWrite) return false;
+    if (! m_data->representsActualData()) return false;
 
     // qDebug() << "Calling normalizeReferenceStack...";
     // normalizeReferenceStack(initialReferenceStack);
