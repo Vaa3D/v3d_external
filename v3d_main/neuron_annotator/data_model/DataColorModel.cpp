@@ -107,7 +107,7 @@ void DataColorModel::initialize()
 /* slot */
 void DataColorModel::updateVolumeTextureMetadata()
 {
-    qDebug() << "updateVolumeTextureMetaData()" << __FILE__ << __LINE__;
+    // qDebug() << "updateVolumeTextureMetaData()" << __FILE__ << __LINE__;
     if (NULL == dataFlowModel)
         return;
     {
@@ -117,7 +117,7 @@ void DataColorModel::updateVolumeTextureMetadata()
         const SampledVolumeMetadata& metadata = textureReader.metadata();
         Writer colorWriter(*this);
         for (int c = 0; c < metadata.channelGamma.size(); ++c) {
-            qDebug() << "setting channel gamma" << c << metadata.channelGamma[c];
+            // qDebug() << "setting channel gamma" << c << metadata.channelGamma[c];
             d->setChannelGamma(c, metadata.channelGamma[c]);
             // TODO - or should this be setting the data range?
             d->setChannelHdrRange(c,

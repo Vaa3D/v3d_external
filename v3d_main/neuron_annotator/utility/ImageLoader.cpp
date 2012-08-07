@@ -1298,7 +1298,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             return exitWithError(errorMessage);
         }
 
-        qDebug() << "Setting datatype=" << datatype;
+        // qDebug() << "Setting datatype=" << datatype;
 
         if (datatype==1) {
             image->setDatatype(V3D_UINT8);
@@ -1309,7 +1309,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         }
         loadDatatype=image->getDatatype(); // used for threaded loading
 
-        qDebug() << "Finished setting datatype=" << image->getDatatype();
+        // qDebug() << "Finished setting datatype=" << image->getDatatype();
 
         V3DLONG unitSize = datatype; // temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future.
 

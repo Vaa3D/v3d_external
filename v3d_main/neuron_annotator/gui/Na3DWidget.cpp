@@ -327,7 +327,7 @@ bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t
 /* slot */
 bool Na3DWidget::loadVisibilityTexture2D(const uint32_t* texture_data)
 {
-    qDebug() << "Na3DWidget::loadVisibilityTexture2D()" << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::loadVisibilityTexture2D()" << __FILE__ << __LINE__;
     if (NULL == texture_data)
         return false;
     QTime stopwatch;
@@ -580,9 +580,9 @@ bool Na3DWidget::loadSignalTexture()
         {
             cachedDefaultFocusIsDirty = true;
             double zThickness = dataFlowModel->getZRatio();
-            qDebug() << "Maybe setting z thickness to" << dataFlowModel->getZRatio();
+            // qDebug() << "Maybe setting z thickness to" << dataFlowModel->getZRatio();
             if ((zThickness > 1e-6) && (zThickness < 1e6)) {
-                qDebug() << "Setting z thickness to" << dataFlowModel->getZRatio();
+                // qDebug() << "Setting z thickness to" << dataFlowModel->getZRatio();
                 setThickness(dataFlowModel->getZRatio());
             }
             updateDefaultScale();
@@ -598,7 +598,7 @@ bool Na3DWidget::loadSignalTexture()
             resetVolumeCutRange();
         }
         update();
-        emit benchmarkTimerPrintRequested("Finished uploading signal texture to video card");
+        // emit benchmarkTimerPrintRequested("Finished uploading signal texture to video card");
     }
     return bSucceeded;
 }
@@ -628,7 +628,7 @@ bool Na3DWidget::loadLabelTexture()
 /* slot */
 bool Na3DWidget::loadVisibilityTexture()
 {
-    qDebug() << "Na3DWidget::loadVisibilityTexture()" << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::loadVisibilityTexture()" << __FILE__ << __LINE__;
     if (NULL == dataFlowModel)
         return false;
     bool bSucceeded = true;
@@ -984,12 +984,14 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
 
     // I'm not sure what to do if user is dragging with non-left mouse button,
     // so revert to default V3D behavior.
+    /*
     if (! (event->buttons() & Qt::LeftButton) )
     {
         bMouseIsDragging = false;
         V3dR_GLWidget::mouseMoveEvent(event); // use classic V3D behavior
         return;
     }
+     */
 
     // Now we know we're dragging
     int dx = event->pos().x() - oldDragX;
@@ -1009,8 +1011,9 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
 
     // qDebug() << "dx, dy = " << dx << dy;
 
-    // shift-drag to translate
-    if (  (event->modifiers() & (Qt::ShiftModifier)))
+    // shift-drag or middle drag to translate
+    if (   (event->modifiers() & Qt::ShiftModifier)
+        || (event->buttons() & Qt::MidButton) )
     {
         // qDebug() << "translate";
         translateImage(dx, dy);

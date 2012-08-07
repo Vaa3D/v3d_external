@@ -8,6 +8,7 @@ extern "C"
 }
 
 #include <QMutexLocker>
+#include <QDebug>
 #include <stdexcept>
 #include <iostream>
 
@@ -247,25 +248,16 @@ bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet
     do {
         finished = 0;
         av_free_packet(&packet);
-        int result = av_read_frame( container, &packet ); // !!NOTE: see docs on packet.convergence_duration for proper seeking
-        if (result != 0) {
-            av_free_packet(&packet);
-            return false;
-        }
+        int result;
+        avtry(av_read_frame( container, &packet ), "Failed to read frame"); // !!NOTE: see docs on packet.convergence_duration for proper seeking
         if( packet.stream_index != videoStream ) /* Is it what we're trying to parse? */
-        {
-            av_free_packet(&packet);
             continue;
-        }
-        result = avcodec_decode_video2( pCtx, pYuv, &finished, &packet );
-        if (result <= 0) {
-            av_free_packet(&packet);
-            return false;
-        }
-        if(pCtx->codec_id==CODEC_ID_RAWVIDEO && !finished)
+        avtry(avcodec_decode_video2( pCtx, pYuv, &finished, &packet ), "Failed to decode video");
+        // handle odd cases and debug
+        if((pCtx->codec_id==CODEC_ID_RAWVIDEO) && !finished)
         {
             avpicture_fill( (AVPicture * ) pYuv, blank, pCtx->pix_fmt,width, height ); // set to blank frame
-            finished=1;
+            finished = 1;
         }
 #if 0 // very useful for debugging
         cout << "Packet - pts:" << (int)packet.pts;
@@ -280,10 +272,15 @@ bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet
                packet.flags,finished,
                (int)pYuv->pts,(int)pYuv->best_effort_timestamp); */
 #endif
-        if(!finished)
+        if(!finished) {
             if (packet.pts == AV_NOPTS_VALUE)
                 throw std::runtime_error("");
+            if (packet.size == 0) // packet.size==0 usually means EOF
+                break;
+        }
     } while ( (!finished) || (pYuv->best_effort_timestamp < targetFrameIndex));
+
+    av_free_packet(&packet);
 
     if (format != PIX_FMT_NONE) {
         sws_scale(Sctx,              // sws context
