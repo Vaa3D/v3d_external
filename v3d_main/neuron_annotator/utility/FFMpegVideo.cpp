@@ -127,19 +127,23 @@ FFMpegVideo::~FFMpegVideo()
     // Don't need to free pCodec?
 }
 
-void FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam)
+bool FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam)
 {
     format = formatParam;
     sc = getNumberOfChannels();
 
     // Open file, check usability
-    avtry( avformat_open_input(&container, fileName.c_str(), NULL, NULL), fileName );
-    avtry( avformat_find_stream_info(container, NULL), "Cannot find stream information." );
-    avtry( videoStream=av_find_best_stream(container, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0), "Cannot find a video stream." );
+    if (!avtry( avformat_open_input(&container, fileName.c_str(), NULL, NULL), fileName ))
+        return false;
+    if (!avtry( avformat_find_stream_info(container, NULL), "Cannot find stream information." ))
+        return false;
+    if (!avtry( videoStream=av_find_best_stream(container, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0), "Cannot find a video stream." ))
+        return false;
     pCtx=container->streams[videoStream]->codec;
     width  = pCtx->width;
     height = pCtx->height;
-    avtry( avcodec_open2(pCtx, pCodec, NULL), "Cannot open video decoder." );
+    if (!avtry( avcodec_open2(pCtx, pCodec, NULL), "Cannot open video decoder." ))
+        return false;
 
     /* Frame rate fix for some codecs */
     if( pCtx->time_base.num > 1000 && pCtx->time_base.den == 1 )
@@ -242,6 +246,7 @@ bool FFMpegVideo::readNextFrame(int targetFrameIndex)
     return result;
 }
 
+// WARNING this method can raise an exception
 bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet, AVFrame* pYuv)
 {
     int finished = 0;
@@ -249,10 +254,12 @@ bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet
         finished = 0;
         av_free_packet(&packet);
         int result;
-        avtry(av_read_frame( container, &packet ), "Failed to read frame"); // !!NOTE: see docs on packet.convergence_duration for proper seeking
+        if (!avtry(av_read_frame( container, &packet ), "Failed to read frame"))
+            return false; // !!NOTE: see docs on packet.convergence_duration for proper seeking
         if( packet.stream_index != videoStream ) /* Is it what we're trying to parse? */
             continue;
-        avtry(avcodec_decode_video2( pCtx, pYuv, &finished, &packet ), "Failed to decode video");
+        if (!avtry(avcodec_decode_video2( pCtx, pYuv, &finished, &packet ), "Failed to decode video"))
+            return false;
         // handle odd cases and debug
         if((pCtx->codec_id==CODEC_ID_RAWVIDEO) && !finished)
         {
@@ -351,13 +358,15 @@ void FFMpegVideo::maybeInitFFMpegLib()
     FFMpegVideo::b_is_one_time_inited = true;
 }
 
-void FFMpegVideo::avtry(int result, const std::string& msg) {
+bool FFMpegVideo::avtry(int result, const std::string& msg) {
     if ((result < 0) && (result != AVERROR_EOF)) {
         char buf[1024];
         av_strerror(result, buf, sizeof(buf));
         std::string message = std::string("FFMpeg Error: ") + msg + buf;
-        throw std::runtime_error(message.c_str());
+        qDebug() << QString(message.c_str());
+        return false;
     }
+    return true;
 }
 
 bool FFMpegVideo::b_is_one_time_inited = false;

@@ -93,8 +93,11 @@ bool MpegLoader::loadMpegFile(QString fileName)
                 // Load frame from disk
                 AVPacket packet = {0};
                 av_init_packet(&packet);
-                video.readNextFrameWithPacket(z, packet, video.pRaw);
-
+                if (!video.readNextFrameWithPacket(z, packet, video.pRaw))
+                {
+                    bSucceeded = false;
+                    break;
+                }
                 // Copy "pFrameRGB" (actually YUV) to frame buffer
                 memcpy(frame_data + z * frameBytes, video.pFrameRGB->data[0], frameBytes);
                 av_free_packet(&packet);
@@ -102,6 +105,7 @@ bool MpegLoader::loadMpegFile(QString fileName)
                 emit frameDecoded(z);
             }
         }
+
         emit mpegFileLoadFinished(bSucceeded);
         return bSucceeded;
     } catch(...) {}

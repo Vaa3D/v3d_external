@@ -49,7 +49,7 @@ public:
     FFMpegVideo(PixelFormat pixelFormat=PIX_FMT_RGB24);
     FFMpegVideo(const std::string& fileName, PixelFormat pixelFormat=PIX_FMT_RGB24);
     virtual ~FFMpegVideo();
-    void open(const std::string& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);
+    bool open(const std::string& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);
     uint8_t getPixelIntensity(int x, int y, Channel c = GRAY) const;
     bool fetchFrame(int targetFrameIndex = 0);
     int getNumberOfFrames() const;
@@ -72,7 +72,7 @@ protected:
     static bool b_is_one_time_inited;
 
     void initialize();
-    static void avtry(int result, const std::string& msg);
+    static bool avtry(int result, const std::string& msg);
 
     AVCodec *pCodec;
     uint8_t *buffer,
