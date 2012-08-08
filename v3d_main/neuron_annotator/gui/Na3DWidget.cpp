@@ -1910,7 +1910,7 @@ void Na3DWidget::resetVolumeCutRange()
     VolumeTexture::Reader textureReader(dataFlowModel->getVolumeTexture());
     if (dataFlowModel->getVolumeTexture().readerIsStale(textureReader))
         return;
-    jfrc:Dimension size = textureReader.originalImageSize();
+    jfrc::Dimension size = textureReader.originalImageSize();
     int mx = size.x() - 1;
     int my = size.y() - 1;
     int mz = size.z() - 1;

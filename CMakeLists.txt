@@ -70,50 +70,53 @@ set(V3D_BUILD_BINARY_DIR ${V3D_STAGING_BASE_DIR} CACHE INTERNAL "Location of v3d
 # Plugins use "V3D_BINARY_DIR"
 set(V3D_BINARY_DIR "${V3D_BUILD_BINARY_DIR}" CACHE PATH "Where to put plugins directory")
 
-# Both plugins and v3d depend on tiff library, so build it here
-# Build TIFF as an external project
-set(tiff_dir "${CMAKE_CURRENT_BINARY_DIR}/tiff")
-include(ExternalProject)
-# AMD 64 requires -fPIC to link static libraries on linux
-set(tiff_cflags "")
-if(UNIX)
-  set(tiff_cflags ${tiff_cflags} -O3)
-endif()
-if(APPLE)
-  foreach(OSX_ARCH ${CMAKE_OSX_ARCHITECTURES})
-    set(tiff_cflags "${tiff_cflags} -arch ${OSX_ARCH}")
-  endforeach()
-endif()
-if(UNIX AND NOT APPLE)
-  if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-    set(tiff_cflags "-fPIC ${tiff_cflags}")
-  endif()
-endif()
-# TODO - windows build rules from src_packages/CMakeLists.txt
-ExternalProject_Add(
-    LibTIFF
-    URL "${CMAKE_SOURCE_DIR}/v3d_main/common_lib/src_packages/tiff-3.8.2.1.tar.gz"
-    SOURCE_DIR ${tiff_dir}/src
-    BINARY_DIR ${tiff_dir}/build
-    INSTALL_DIR ${tiff_dir}/install
-    UPDATE_COMMAND ""
-    CONFIGURE_COMMAND <SOURCE_DIR>/configure
-        --prefix=<INSTALL_DIR>
-        --disable-jpeg
-        --disable-zlib
-        --disable-pixarlog
-        --enable-static
-        --disable-cxx
-        --disable-shared
-        CFLAGS=${tiff_cflags}
-        CXXFLAGS=${tiff_cflags}
-)
-set(TIFF_INCLUDE_DIR "${tiff_dir}/install/include" CACHE PATH "" FORCE)
-include_directories("${TIFF_INCLUDE_DIR}")
-set(TIFF_LIBRARY "${tiff_dir}/install/lib/libtiff.a" CACHE PATH "" FORCE)
-
 add_custom_target(PluginPrerequisites)
-add_dependencies(PluginPrerequisites LibTIFF)
+
+# Both plugins and v3d depend on tiff library, so build it here
+if (NOT WIN32) # see src_packages/CMakeLists.txt for windows tiff build
+    # Build TIFF as an external project
+    set(tiff_dir "${CMAKE_CURRENT_BINARY_DIR}/tiff")
+    include(ExternalProject)
+    # AMD 64 requires -fPIC to link static libraries on linux
+    set(tiff_cflags "")
+    if(UNIX)
+      set(tiff_cflags ${tiff_cflags} -O3)
+    endif()
+    if(APPLE)
+      foreach(OSX_ARCH ${CMAKE_OSX_ARCHITECTURES})
+        set(tiff_cflags "${tiff_cflags} -arch ${OSX_ARCH}")
+      endforeach()
+    endif()
+    if(UNIX AND NOT APPLE)
+      if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+        set(tiff_cflags "-fPIC ${tiff_cflags}")
+      endif()
+    endif()
+    # TODO - windows build rules from src_packages/CMakeLists.txt
+    ExternalProject_Add(
+        LibTIFF
+        URL "${CMAKE_SOURCE_DIR}/v3d_main/common_lib/src_packages/tiff-3.8.2.1.tar.gz"
+        SOURCE_DIR ${tiff_dir}/src
+        BINARY_DIR ${tiff_dir}/build
+        INSTALL_DIR ${tiff_dir}/install
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure
+            --prefix=<INSTALL_DIR>
+            --disable-jpeg
+            --disable-zlib
+            --disable-pixarlog
+            --enable-static
+            --disable-cxx
+            --disable-shared
+            CFLAGS=${tiff_cflags}
+            CXXFLAGS=${tiff_cflags}
+    )
+    set(TIFF_INCLUDE_DIR "${tiff_dir}/install/include" CACHE PATH "" FORCE)
+    include_directories("${TIFF_INCLUDE_DIR}")
+    set(TIFF_LIBRARY "${tiff_dir}/install/lib/libtiff.a" CACHE PATH "" FORCE)
+
+    add_dependencies(PluginPrerequisites LibTIFF)
+endif()
 
 # Build V3D
 add_subdirectory(v3d_main)

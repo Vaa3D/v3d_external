@@ -1,10 +1,10 @@
-# TODO - the two code blocks for Windows/non-Windows building of tiff library should be merged.
-# In particular, the full cmakeization used for Windows should be used for all platforms.
-#
 
 if (NOT MSVC)
   add_subdirectory(mylib_tiff)
 endif()
+
+# Build libtiff for windows, using cmake
+# (Mac and linux use ExternalProject to build libtiff, in top level CMakeLists.txt file)
 
 # install_custom_tiff_library sets variables
 # CUSTOM_TIFF_LIBRARY and CUSTOM_TIFF_INCLUDE_DIR
@@ -145,4 +145,5 @@ if(MSVC AND V3D_USE_OWN_TIFF)
         add_library(libtiff STATIC ${TIFF_SOURCES} ${TIFF_HEADERS})
         set(TIFF_LIBRARY libtiff CACHE STRING "" FORCE)
     endif()
+    add_dependencies(PluginPrerequisites libtiff)
 endif()
