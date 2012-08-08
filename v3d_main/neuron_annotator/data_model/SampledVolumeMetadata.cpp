@@ -9,7 +9,7 @@ SampledVolumeMetadata::SampledVolumeMetadata()
     , channelHdrMaxima((size_t)4, (uint32_t)4095)
 {}
 
-bool SampledVolumeMetadata::loadFromFile(QString fileName)
+bool SampledVolumeMetadata::loadFromFile(QString fileName, int channel_offset)
 {
     std::ifstream in(fileName.toStdString().c_str());
     if (! in.good())
@@ -29,6 +29,7 @@ bool SampledVolumeMetadata::loadFromFile(QString fileName)
             int channel;
             uint32_t min, max;
             lineStream >> channel;
+            channel += channel_offset;
             lineStream >> min;
             lineStream >> max;
             if (min != channelHdrMinima[channel]) {
@@ -45,6 +46,7 @@ bool SampledVolumeMetadata::loadFromFile(QString fileName)
             int channel;
             float gamma;
             lineStream >> channel;
+            channel += channel_offset;
             lineStream >> gamma;
             if (gamma != channelGamma[channel]) {
                 channelGamma[channel] = gamma;

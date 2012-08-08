@@ -662,7 +662,7 @@ struct BlockCopier
 
 bool PrivateVolumeTexture::loadFast3DTexture(int sx, int sy, int sz, const uint8_t* data) // from fast texture
 {
-    qDebug() << "PrivateVolumeTexture::loadFast3DTexture" << sx << sy << sz << __FILE__ << __LINE__;
+    // qDebug() << "PrivateVolumeTexture::loadFast3DTexture" << sx << sy << sz << __FILE__ << __LINE__;
     Dimension size(sx, sy, sz); // TODO - what about used size?
     assert(size == paddedTextureSize);
     neuronSignalTexture.allocateSize(paddedTextureSize, usedTextureSize);

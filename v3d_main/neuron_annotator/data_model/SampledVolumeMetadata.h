@@ -13,7 +13,7 @@ class SampledVolumeMetadata
 {
 public:
     SampledVolumeMetadata();
-    bool loadFromFile(QString fileName);
+    bool loadFromFile(QString fileName, int channel_offset);
     bool operator==(const SampledVolumeMetadata& rhs) const;
     bool operator!=(const SampledVolumeMetadata& rhs) const;
 

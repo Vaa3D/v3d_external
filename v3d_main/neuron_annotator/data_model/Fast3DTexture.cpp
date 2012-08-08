@@ -240,8 +240,8 @@ void BlockScaler::load()
             }
         }
     }
-    qDebug() << "Converting frames" << firstFrame << "to" << finalFrame
-            << "took" << timer.elapsed()/1000.0 << "seconds";
+    // qDebug() << "Converting frames" << firstFrame << "to" << finalFrame
+    //         << "took" << timer.elapsed()/1000.0 << "seconds";
 }
 
 
@@ -286,13 +286,27 @@ void Fast3DTexture::loadFile(QString fileName, BlockScaler::Channel channel)
     // Read metadata, if any, for this file
     QFileInfo qfi(fileName);
     QString dataFileName = qfi.absoluteDir().filePath(qfi.baseName() + ".metadata");
-    qDebug() << dataFileName;
-    if (QFile(dataFileName).exists() &&
-        sampledVolumeMetadata.loadFromFile(dataFileName))
-        emit metadataChanged();
+    // qDebug() << dataFileName;
+    if (QFile(dataFileName).exists()) {
+        // Channel zero of the volume file might not be channel zero of our rgba texture
+        int channel_offset = 0;
+        switch(channel) {
+            case BlockScaler::CHANNEL_RGB:   channel_offset = 0; break;
+            case BlockScaler::CHANNEL_RED:   channel_offset = 0; break;
+            case BlockScaler::CHANNEL_GREEN: channel_offset = 1; break;
+            case BlockScaler::CHANNEL_BLUE:  channel_offset = 2; break;
+            case BlockScaler::CHANNEL_ALPHA: channel_offset = 3; break;
+            default: channel_offset = 0;
+        }
+        if (sampledVolumeMetadata.loadFromFile(dataFileName, channel_offset)) {
+            // qDebug() << 3 << sampledVolumeMetadata.channelGamma[3]
+            //         << __FILE__ << __LINE__;
+            emit metadataChanged();
+        }
+    }
 
     currentLoadChannel = channel;
-    emit benchmarkTimerPrintRequested("Started loading movie file");
+    // emit benchmarkTimerPrintRequested("Started loading movie file");
     emit loadRequested(fileName);
 }
 
@@ -345,7 +359,7 @@ void Fast3DTexture::gotFrame(int f)
     int lastInSection = int(section * boundaryInterval);
     // qDebug() << f << "section" << section << firstInSection << lastInSection << boundaryInterval << __FILE__ << __LINE__;
     if (f == 0) {
-        emit benchmarkTimerPrintRequested("Started converting movie file");
+        // emit benchmarkTimerPrintRequested("Started converting movie file");
     }
     if (f == lastInSection) {
         // qDebug() << "scaling frames" << firstInSection << "to" << lastInSection;
@@ -358,8 +372,9 @@ void Fast3DTexture::gotFrame(int f)
         blockScaleWatchers[ix]->setFuture(future);
         connect(blockScaleWatchers[ix], SIGNAL(finished()),
                 this, SLOT(blockScaleFinished()));
-        if (section == numSections)
-            emit benchmarkTimerPrintRequested("Finished decoding movie file");
+        if (section == numSections) {
+            // emit benchmarkTimerPrintRequested("Finished decoding movie file");
+        }
     }
     // qDebug() << "Decoded frame" << f;
 }
@@ -368,11 +383,11 @@ void Fast3DTexture::gotFrame(int f)
 void Fast3DTexture::blockScaleFinished()
 {
     ++completedBlocks;
-    qDebug() << completedBlocks << "scaling blocks completed of" << Fast3DTexture::numScalingThreads;
+    // qDebug() << completedBlocks << "scaling blocks completed of" << Fast3DTexture::numScalingThreads;
     if (completedBlocks >= Fast3DTexture::numScalingThreads) {
         completedBlocks = 0;
-        emit benchmarkTimerPrintRequested("Finished scaling movie file");
-        qDebug() << "Decoding and scaling took " << timer.elapsed()/1000.0 << "seconds";
+        // emit benchmarkTimerPrintRequested("Finished scaling movie file");
+        // qDebug() << "Decoding and scaling took " << timer.elapsed()/1000.0 << "seconds";
         // send intermediate result to graphics card
         emit volumeUploadRequested(width, height, depth, texture_data);
         // send final result to other viewers
@@ -389,7 +404,7 @@ void Fast3DTexture::loadNextVolume()
         QueuedVolume v = volumeQueue.front();
         volumeQueue.pop_front();
         if (QFile(v.fileName).exists()) {
-            qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
+            // qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
             loadFile(v.fileName, v.channel);
             break;
         }

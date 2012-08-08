@@ -61,6 +61,12 @@ void PrivateDataColorModel::colorizeIncremental(
         qreal incMin = (desiredColorReader.getChannelHdrMin(chan) - currentColorReader.getChannelHdrMin(chan)) / totalInputRange;
         qreal incMax = incMin + incRange;
         channelColors[chan].setHdrRange(incMin, incMax);
+        /*
+        qDebug() << "PrivateDataColorModel::colorizeIncremental" << chan
+                << incGamma << desiredColorReader.getChannelGamma(chan) << currentColorReader.getChannelGamma(chan)
+                // << incMin << incMax
+                << __FILE__ << __LINE__;
+                */
     }
 }
 
