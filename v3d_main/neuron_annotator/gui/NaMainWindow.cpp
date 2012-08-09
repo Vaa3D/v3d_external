@@ -1683,6 +1683,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     }
     dataFlowModel->setNeuronAnnotatorResultNode(resultNode);
 
+    // Opposite of fast loading behavior
+    dataFlowModel->getVolumeData().doFlipY = true;
+    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = true;
+
     // Load session
     setViewMode(VIEW_NEURON_SEPARATION);
     if (! dataFlowModel->loadVolumeData()) return false;
