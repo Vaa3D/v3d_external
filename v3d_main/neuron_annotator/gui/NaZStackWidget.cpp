@@ -197,7 +197,14 @@ void NaZStackWidget::updateVolumeParameters()
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
 {
-    if (! representsActualData()) {
+    // If the zslice viewer is not tied to current data, paint it all plain gray.
+    bool paintGray = false;
+    if (NULL == zSliceColors)
+        paintGray = true;
+    else if (! zSliceColors->representsActualData())
+        paintGray = true;
+
+    if (paintGray) {
         painter.begin(this);
         painter.fillRect(0, 0, width(), height(), Qt::gray);
         painter.end();

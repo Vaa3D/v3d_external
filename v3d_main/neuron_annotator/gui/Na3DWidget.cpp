@@ -130,7 +130,7 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
             return false;
         ra->loadShader();
     }
-    ra->setSingleVolumeDimensions(w, h, d);
+    // ra->setSingleVolumeDimensions(w, h, d);
 
     {
         // check for previous errors
@@ -549,7 +549,8 @@ bool Na3DWidget::loadSignalTexture()
         invalidate();
         return false;
     }
-    if (! dataFlowModel->getVolumeTexture().representsActualData()) {
+    const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
+    if (! volumeTexture.representsActualData()) {
         invalidate();
         return false;
     }
@@ -558,7 +559,6 @@ bool Na3DWidget::loadSignalTexture()
     bool bTextureSizeChanged = false;
     jfrc::Dimension fullSize, textureSize;
     {
-        const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
         if (volumeTexture.readerIsStale(textureReader))
             return false;
@@ -907,7 +907,7 @@ Vector3D Na3DWidget::getDefaultFocus() const
 
     result = Vector3D(  size.x() / 2.0 - 0.5
                       , size.y() / 2.0 - 0.5
-                      , size.z() / 2.0 - 0.5); // Why is Z value off by 1?
+                      , size.z() / 2.0 - 0.5);
 
     cachedDefaultFocus = result;
     cachedDefaultFocusIsDirty = false;

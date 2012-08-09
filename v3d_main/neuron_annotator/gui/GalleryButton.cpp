@@ -141,7 +141,11 @@ bool GalleryButton::updateVisibility()
     if (index < 0) return false;
     bool newVisibility = true;
     {
+        if (! neuronSelectionModel->representsActualData())
+            return false;
         NeuronSelectionModel::Reader selectionReader(*neuronSelectionModel);
+        if (! selectionReader.hasReadLock())
+            return false;;
         switch(buttonType) {
             case NEURON_BUTTON:
                 if (selectionReader.getMaskStatusList().size() <= index) return false;

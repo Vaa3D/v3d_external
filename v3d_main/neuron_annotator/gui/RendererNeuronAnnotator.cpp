@@ -702,6 +702,7 @@ jfrc::Dimension RendererNeuronAnnotator::getPaddedTextureDimensions() const
 
 void RendererNeuronAnnotator::setOriginalVolumeDimensions(long x, long y, long z)
 {
+    // qDebug() << "RendererNeuronAnnotator::setOriginalVolumeDimensions" << x << y << z << __FILE__ << __LINE__;
     // Set values as if empty volume
     start1 = 0;
     start2 = 0;
@@ -737,6 +738,7 @@ void RendererNeuronAnnotator::setOriginalVolumeDimensions(long x, long y, long z
 
 void RendererNeuronAnnotator::setResampledVolumeDimensions(long x, long y, long z)
 {
+    // qDebug() << "RendererNeuronAnnotator::setResampledVolumeDimensions" << x << y << z << __FILE__ << __LINE__;
     // Set (subset of) values using resampled size
     realX = x;
     realY = y;
@@ -755,18 +757,27 @@ void RendererNeuronAnnotator::setResampledVolumeDimensions(long x, long y, long 
     sampleScaleX = sampleScale[0] = (float)x / (float)size1;
     sampleScaleY = sampleScale[1] = (float)y / (float)size2;
     sampleScaleZ = sampleScale[2] = (float)z / (float)size3;
+    // qDebug() << "sampleScaleXYZ =" << sampleScaleX << sampleScaleY << sampleScaleZ << __FILE__ << __LINE__;
 }
 
 void RendererNeuronAnnotator::setPaddedVolumeDimensions(long x, long y, long z)
 {
+    // qDebug() << "RendererNeuronAnnotator::setPaddedVolumeDimensions" << x << y << z << __FILE__ << __LINE__;
     bufSize[0] = x;
     bufSize[1] = y;
     bufSize[2] = z;
+    fillX = x;
+    fillY = y;
+    fillZ = z;
+    // imageX = x;
+    // imageY = y;
+    // imageZ = z;
 }
 
 // for use by initial testing of mpegTexture
 void RendererNeuronAnnotator::setSingleVolumeDimensions(long x, long y, long z)
 {
+    // qDebug() << "RendererNeuronAnnotator::setSingleVolumeDimensions" << x << y << z << __FILE__ << __LINE__;
     setOriginalVolumeDimensions(x, y, z);
     setResampledVolumeDimensions(x, y, z);
     setPaddedVolumeDimensions(x, y, z);
