@@ -6,6 +6,11 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     QDialog(parent)
 {
     ui.setupUi(this);
+    bool showFastLoad = false;
+#ifdef USE_FFMPEG
+    showFastLoad = true;
+#endif
+    ui.fastLoadWidget->setVisible(showFastLoad);
 }
 
 void PreferencesDialog::savePreferences()
@@ -13,6 +18,7 @@ void PreferencesDialog::savePreferences()
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     // qDebug() << "Saving preferences";
     settings.setValue("NaMaxVideoMegabytes", getVideoMegabytes());
+    settings.setValue("NaBUseFastLoad3D", ui.fastLoadCheckBox->isChecked());
 }
 
 void PreferencesDialog::loadPreferences()
@@ -22,6 +28,9 @@ void PreferencesDialog::loadPreferences()
     // qDebug() << "Loading preferences";
     if (val.isValid())
         setVideoMegabytes(val.toInt());
+    val = settings.value("NaBUseFastLoad3D");
+    if (val.isValid())
+        ui.fastLoadCheckBox->setChecked(val.toBool());
 }
 
 int PreferencesDialog::getVideoMegabytes() const
