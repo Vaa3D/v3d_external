@@ -96,6 +96,9 @@ signals:
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
 
+public slots:
+    void cancel();
+
 private:
     long objectId;
     MultiColorImageStackNode* multiColorImageStackNode;

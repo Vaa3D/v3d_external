@@ -27,14 +27,13 @@ const unsigned char ImageLoader::ooooolll = 7;
 
 ImageLoader::ImageLoader()
     : progressIndex(0)
+    , bIsCanceled(false)
 {
     // qDebug() << "ImageLoader() constructor called";
     mode=MODE_UNDEFINED;
     inputFilepath="";
     targetFilepath="";
-    compressionBuffer=0;
     fid=0;
-    keyread=0;
     image=0;
     loadDatatype=0;
     compressionPosition=0;
@@ -45,14 +44,6 @@ ImageLoader::ImageLoader()
 
 ImageLoader::~ImageLoader()
 {
-    if (compressionBuffer != NULL) {
-        delete [] compressionBuffer;
-        compressionBuffer = NULL;
-    }
-    if (keyread != NULL) {
-        delete [] keyread;
-        keyread = NULL;
-    }
     // Note we do not delete image because we do this explicitly only if error
 }
 
@@ -668,18 +659,19 @@ int ImageLoader::saveStack2RawPBD(const char * filename, ImagePixelType datatype
 
         qDebug() << "Using totalUnit=" << totalUnit << " unitSize=" << unitSize;
 
-        V3DLONG maxSize = totalUnit*unitSize*2;                          // NOTE:
-        unsigned char * compressionBuffer = new unsigned char [maxSize]; // we give the compression buffer 2x room without throwing an error,
-                                                                         // even though we hope it peforms well below 1, obviously
+        V3DLONG maxSize = totalUnit*unitSize*2;                             // NOTE:
+        // unsigned char * compressionBuffer = new unsigned char [maxSize]; // we give the compression buffer 2x room without throwing an error,
+                                                                            // even though we hope it peforms well below 1, obviously
+        QVector<unsigned char> compressionBuffer(maxSize);
 
         printf("Allocated compression target with maxSize=%ld\n", maxSize);
 
         V3DLONG compressionSize = 0;
 
         if (datatype==1) {
-            compressionSize=compressPBD8(compressionBuffer, data, totalUnit*unitSize, maxSize);
+            compressionSize=compressPBD8(&compressionBuffer[0], data, totalUnit*unitSize, maxSize);
         } else if (datatype==2) {
-            compressionSize=compressPBD16(compressionBuffer, data, totalUnit*unitSize, maxSize);
+            compressionSize=compressPBD16(&compressionBuffer[0], data, totalUnit*unitSize, maxSize);
         }
 
         if (compressionSize==0) {
@@ -694,7 +686,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, ImagePixelType datatype
 
         printf("Writing file...");
 
-        nwrite = fwrite(compressionBuffer, 1, compressionSize, fid);
+        nwrite = fwrite(&compressionBuffer[0], 1, compressionSize, fid);
         if (nwrite!=compressionSize)
         {
                 QString errorMsg = QString("Something wrong in file writing. The program wrote %1 data points but the file says there should be %2 data points.")
@@ -704,7 +696,6 @@ int ImageLoader::saveStack2RawPBD(const char * filename, ImagePixelType datatype
 
         /* clean and return */
         fclose(fid);
-        delete [] compressionBuffer;
         printf("done.\n");
         return berror;
 }
@@ -1239,13 +1230,8 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         }
 #endif
 
-        if (keyread != NULL) {delete [] keyread;}
-        keyread = new char [lenkey+1];
-        if (!keyread)
-        {
-            return exitWithError("Fail to allocate memory.");
-        }
-        V3DLONG nread = fread(keyread, 1, lenkey, fid);
+        keyread.resize(lenkey+1);
+        V3DLONG nread = fread(&keyread[0], 1, lenkey, fid);
         if (nread!=lenkey)
         {
             return exitWithError("File unrecognized or corrupted file.");
@@ -1253,7 +1239,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         keyread[lenkey] = '\0';
 
         V3DLONG i;
-        if (strcmp(formatkey, keyread)) /* is non-zero then the two strings are different */
+        if (strcmp(formatkey, &keyread[0])) /* is non-zero then the two strings are different */
         {
             return exitWithError("Unrecognized file format.");
         }
@@ -1355,8 +1341,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         V3DLONG compressedBytes=fileSize-headerSize;
         maxDecompressionSize=totalUnit*unitSize;
 
-        if (compressionBuffer != NULL) {delete [] compressionBuffer;}
-        compressionBuffer = new unsigned char [compressedBytes];
+        compressionBuffer.resize(compressedBytes);
 
         V3DLONG remainingBytes = compressedBytes;
         //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
@@ -1382,9 +1367,14 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         while (remainingBytes>0)
         {
             // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
+            if (isCanceled()) {
+                // clean and return
+                fclose(fid);
+                return exitWithError(QString("image load canceled"));
+            }
 
             V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
-            nread = fread(compressionBuffer+totalReadBytes, 1, curReadBytes, fid);
+            nread = fread(&compressionBuffer[0]+totalReadBytes, 1, curReadBytes, fid);
             totalReadBytes+=nread;
             if (nread!=curReadBytes)
             {
@@ -1406,11 +1396,15 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
                 threadPool.start(this);
             } else {
                 if (datatype==1) {
-                    updateCompressionBuffer8(compressionBuffer+totalReadBytes);
+                    updateCompressionBuffer8(&compressionBuffer[0]+totalReadBytes);
                 } else {
                     // assume datatype==2
-                    updateCompressionBuffer16(compressionBuffer+totalReadBytes);
+                    updateCompressionBuffer16(&compressionBuffer[0]+totalReadBytes);
                 }
+            }
+
+            if (isCanceled()) {
+                return exitWithError(QString("load canceled"));
             }
 
             int newProgressValue = (int)(75.0 * (compressedBytes - remainingBytes) / (float)compressedBytes + 0.49);
@@ -1431,11 +1425,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         }
         emit progressComplete(progressIndex);
 
-        // Success - can delete compressedData
-        delete [] compressionBuffer; compressionBuffer=0;
-
         // clean and return
-        if (keyread) {delete [] keyread; keyread = 0;}
         fclose(fid); //bug fix on 060412
         return berror;
     }
@@ -1443,14 +1433,6 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
 
 int ImageLoader::exitWithError(QString errorMessage) {
     qDebug() << errorMessage;
-//    if (decompressionThread!=0)
-//        decompressionThread->~QFuture();
-    if (compressionBuffer!=0)
-        delete [] compressionBuffer;
-    if (keyread!=0) {
-        delete [] keyread;
-        keyread = NULL;
-    }
     if (fid!=0)
         fclose(fid);
     int berror=1;
@@ -1473,6 +1455,9 @@ V3DLONG ImageLoader::decompressPBD8(unsigned char * sourceData, unsigned char * 
     unsigned char * toFill=0;
     unsigned char sourceChar=0;
     while(cp<sourceLength) {
+
+        if (isCanceled())
+            return dp;
 
         value=sourceData[cp];
 
@@ -1553,6 +1538,9 @@ V3DLONG ImageLoader::decompressPBD16(unsigned char * sourceData, unsigned char *
     unsigned char d0,d1,d2,d3,d4;
 
     while(cp<sourceLength) {
+
+        if (isCanceled())
+            return dp*2;
 
         code=sourceData[cp];
 
@@ -1708,7 +1696,7 @@ void ImageLoader::updateCompressionBuffer8(unsigned char * updatedCompressionBuf
     //printf("d1\n");
     if (compressionPosition==0) {
         // Just starting
-        compressionPosition=compressionBuffer;
+        compressionPosition=&compressionBuffer[0];
     }
     unsigned char * lookAhead=compressionPosition;
     while(lookAhead<updatedCompressionBuffer) {
@@ -1774,7 +1762,7 @@ void ImageLoader::updateCompressionBuffer16(unsigned char * updatedCompressionBu
     //printf("d1\n");
     if (compressionPosition==0) {
         // Just starting
-        compressionPosition=compressionBuffer;
+        compressionPosition=&compressionBuffer[0];
     }
     unsigned char * lookAhead=compressionPosition;
     while(lookAhead<updatedCompressionBuffer) {
@@ -1864,9 +1852,9 @@ void ImageLoader::updateCompressionBuffer16(unsigned char * updatedCompressionBu
 
 void ImageLoader::run() {
     if (loadDatatype==1) {
-        updateCompressionBuffer8(compressionBuffer+totalReadBytes);
+        updateCompressionBuffer8(&compressionBuffer[0]+totalReadBytes);
     } else {
-        updateCompressionBuffer16(compressionBuffer+totalReadBytes);
+        updateCompressionBuffer16(&compressionBuffer[0]+totalReadBytes);
     }
 }
 

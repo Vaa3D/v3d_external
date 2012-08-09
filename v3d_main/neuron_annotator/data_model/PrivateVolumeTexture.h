@@ -44,16 +44,6 @@ public:
     {
         size_t numVoxels = width * height * depth;
         data.fill(0,  numVoxels);
-        // Test pattern
-        for (int i = 0; i < width; ++i)
-             for (int j = 0; j < height; ++j)
-                 for (int k = 0; k < depth; ++k)
-                 {
-                     int ix = (int)(k * width * height + j * width + i);
-                     assert(ix < numVoxels);
-                     assert((ix % 48) >= 0); // number of fragments in realLinkTest + 2
-                     data[ix] = (ix % 48);
-                 }
     }
 
     virtual void setValueAt(size_t x, size_t y, size_t z, VoxelType value)

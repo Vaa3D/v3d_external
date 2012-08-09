@@ -206,7 +206,7 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
 /* virtual */
 void Na3DWidget::preparingRenderer() // renderer->setupData & init, 100719 extracted to a function
 {
-        qDebug() << "Na3DWidget::V3dR_GLWidget::preparingRenderer" << __FILE__ << __LINE__;
+        // qDebug() << "Na3DWidget::V3dR_GLWidget::preparingRenderer" << __FILE__ << __LINE__;
 
         if (_isSoftwareGL) setRenderMode_Cs3d(true); //090724 set renderer mode before paint
 
@@ -406,6 +406,9 @@ void Na3DWidget::initializeDefaultTextures()
     // (quickly) Set all textures to non-pathological values, including
     // volume, colormap, neuron visibility, and neuron label
 
+    if (! bGLIsInitialized)
+        return;
+
     // 3D volume texture in unit 0 set to all black
     {
         std::vector<uint32_t> buf((size_t)8*8*8, (uint32_t)0);
@@ -509,10 +512,10 @@ void Na3DWidget::initializeGL()
 
     init_members();
 
+    bGLIsInitialized = true; // before initializeDefaultTextures()!
+
     // TODO - will I ever find a use for initializeDefaultTextures?
     initializeDefaultTextures();
-
-    bGLIsInitialized = true;
 }
 
 /* slot */

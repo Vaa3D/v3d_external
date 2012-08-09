@@ -69,7 +69,7 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
 DataFlowModel::~DataFlowModel()
 {
-    mipMergedData.invalidate();
+    cancel();
     NaVolumeData::Writer writer(getVolumeData());
     if (multiColorImageStackNode!=0) {
         delete multiColorImageStackNode;
@@ -77,6 +77,13 @@ DataFlowModel::~DataFlowModel()
     if (neuronAnnotatorResultNode!=0) {
         delete neuronAnnotatorResultNode;
     }
+}
+
+/* slot */
+void DataFlowModel::cancel()
+{
+    mipMergedData.invalidate();
+    volumeData.invalidate();
 }
 
 bool DataFlowModel::loadLsmMetadata()

@@ -3,6 +3,7 @@
 
 #include "NaLockableData.h"
 #include "../../v3d/v3d_core.h"
+#include "../utility/ImageLoader.h"
 
 namespace jfrc{
 class VolumeTexture;
@@ -19,14 +20,24 @@ public:
     virtual bool load();
     QString determineFullFilepath() const;
     const QString& getFileName() const {return filename;}
+    bool isCanceled() const {return bIsCanceled;}
 
 signals:
     void progressValueChanged(int progressValue, int stackIndex);
     void progressMessageChanged(QString);
     void failed();
     void finished();
+    void canceled();
 
-private:
+public slots:
+    void cancel() {
+        if (bIsCanceled) return;
+        bIsCanceled = true;
+        imageLoader.cancel();
+        emit canceled();
+    }
+
+protected:
     void setRelativeProgress(float relativeProgress);
 
     My4DImage* stackp;
@@ -36,6 +47,9 @@ private:
     int progressValue;
     int progressMin;
     int progressMax;
+    ImageLoader imageLoader;
+
+    volatile bool bIsCanceled;
 };
 
 

@@ -620,8 +620,9 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 
     // keep reference channel off
     // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
-    qDebug() << "initializeSelectionModelRequested()" << __FILE__ << __LINE__;
-    emit initializeSelectionModelRequested();
+    // ui.v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
+    // qDebug() << "initializeSelectionModelRequested()" << __FILE__ << __LINE__;
+    // emit initializeSelectionModelRequested();
     emit initializeColorModelRequested();
     setViewMode(VIEW_SINGLE_STACK);
 
@@ -1633,6 +1634,7 @@ bool NaMainWindow::createNewDataFlowModel()
     ui.v3dr_glwidget->invalidate();
     ui.naZStackWidget->invalidate();
     ui.naLargeMIPWidget->invalidate();
+    ui.v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
     return true;
 }
 

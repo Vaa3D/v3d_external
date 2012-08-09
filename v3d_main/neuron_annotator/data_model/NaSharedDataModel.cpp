@@ -24,7 +24,7 @@ NaSharedDataModel<P>::NaSharedDataModel(const NaSharedDataModel<P>& other) // co
 template<class P>
 NaSharedDataModel<P>::~NaSharedDataModel()
 {
-    qDebug() << "Info: deleting NaSharedDataModel object" << __FILE__ << __LINE__;
+    // qDebug() << "Info: deleting NaSharedDataModel object" << __FILE__ << __LINE__;
 }
 
 template<class P>
@@ -32,6 +32,8 @@ bool NaSharedDataModel<P>::readerIsStale(const BaseReader& reader) const
 {
     if (reader.d == NULL)
         return true; // null readers are always stale
+    else if (! representsActualData())
+        return true; // we are trying to quickly tear down
     else if (reader.d == d)
         return false; // reader has a current copy
     else

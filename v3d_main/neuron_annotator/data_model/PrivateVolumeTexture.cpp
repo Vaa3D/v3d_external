@@ -440,7 +440,7 @@ PrivateVolumeTexture::PrivateVolumeTexture()
 /* virtual */
 PrivateVolumeTexture::~PrivateVolumeTexture()
 {
-    qDebug() << "Deleting PrivateVolumeTexture";
+    // qDebug() << "Deleting PrivateVolumeTexture";
 }
 
 /* explicit */

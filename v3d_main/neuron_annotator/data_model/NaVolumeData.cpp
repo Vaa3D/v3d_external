@@ -3,7 +3,6 @@
 #include <iostream>
 #include <QFuture>
 #include <cassert>
-#include "../utility/ImageLoader.h"
 
 #ifdef USE_FFMPEG
 #include "../utility/loadV3dFFMpeg.h"
@@ -33,7 +32,14 @@ NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QSt
    , progressValue(0)
    , progressMin(0)
    , progressMax(100)
+   , bIsCanceled(false)
 {
+    connect(&imageLoader, SIGNAL(progressValueChanged(int,int)),
+            this, SIGNAL(progressValueChanged(int,int)));
+    connect(&imageLoader, SIGNAL(progressAborted(int)),
+            this, SIGNAL(failed()));
+    connect(&imageLoader, SIGNAL(progressMessageChanged(QString)),
+            this, SIGNAL(progressMessageChanged(QString)));
 }
 
 bool NaVolumeDataLoadableStack::load()
@@ -43,14 +49,7 @@ bool NaVolumeDataLoadableStack::load()
     QString fullFilepath=determineFullFilepath();
     if (! QFile(fullFilepath).exists())
         return false;
-    ImageLoader imageLoader;
     imageLoader.setProgressIndex(stackIndex);
-    connect(&imageLoader, SIGNAL(progressValueChanged(int,int)),
-            this, SIGNAL(progressValueChanged(int,int)));
-    connect(&imageLoader, SIGNAL(progressAborted(int)),
-            this, SIGNAL(failed()));
-    connect(&imageLoader, SIGNAL(progressMessageChanged(QString)),
-            this, SIGNAL(progressMessageChanged(QString)));
     imageLoader.loadImage(stackp, fullFilepath);
     /*
     // stackp->isEmpty() is returning 'true' for correctly loaded images.
@@ -599,6 +598,12 @@ bool NaVolumeData::Writer::loadStacks()
         while(1) {
             SleepThread st;
             st.msleep(1000);
+            if (! m_data->representsActualData()) {
+                // quick abort during teardown
+                originalStack.cancel();
+                maskStack.cancel();
+                referenceStack.cancel();
+            }
             int doneCount=0;
             for (int i=0;i<loaderList.size();i++) {
                 QFuture<void> loader=loaderList.at(i);

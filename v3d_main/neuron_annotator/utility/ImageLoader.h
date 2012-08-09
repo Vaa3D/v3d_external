@@ -83,11 +83,21 @@ public:
     unsigned char * convertType2Type1(My4DImage *image);
     void convertType2Type1InPlace(My4DImage *image);
 
+    bool isCanceled() const {return bIsCanceled;}
+
+public slots:
+    void cancel() {
+        if (bIsCanceled) return;
+        bIsCanceled = true;
+        emit canceled();
+    }
+
 signals:
     void progressValueChanged(int progress, int progressIndex); // 0-100
     void progressComplete(int progressIndex);
     void progressAborted(int progressIndex);
     void progressMessageChanged(QString message);
+    void canceled();
 
 private:
     int mode;
@@ -96,7 +106,7 @@ private:
     QString mapChannelString;
     My4DImage * image;
     FILE * fid;
-    char * keyread;
+    QVector<char> keyread;
     bool flipy;
     int loadDatatype;
 
@@ -108,13 +118,15 @@ private:
 
     V3DLONG totalReadBytes;
     V3DLONG maxDecompressionSize;
-    unsigned char * compressionBuffer;
+    std::vector<unsigned char> compressionBuffer;
     unsigned char * decompressionBuffer;
     unsigned char * compressionPosition;
     unsigned char * decompressionPosition;
     int decompressionPrior;
 
     int progressIndex;
+
+    volatile bool bIsCanceled;
 };
 
 #endif // IMAGELOADER_H
