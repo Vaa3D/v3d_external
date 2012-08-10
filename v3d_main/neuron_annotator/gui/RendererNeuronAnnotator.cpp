@@ -352,12 +352,23 @@ void RendererNeuronAnnotator::updateDepthClip()
 }
 
 /* slot */
+bool RendererNeuronAnnotator::resetSlabThickness()
+{
+    // such that a centered volume will just barely not clip when rotated
+    // 3.33: viewNear-focus is only 0.3 of total slab thickness
+    int thickness = int(0.5/0.3 * std::sqrt(double(dim1*dim1+dim1*dim2+dim3*dim3)) + 0.5);
+    if (thickness < 1000)
+        thickness = 1000;
+    return setSlabThickness(thickness);
+}
+
+/* slot */
 bool RendererNeuronAnnotator::setSlabThickness(int val) // range 2-1000
 {
     // qDebug() << "RendererNeuronAnnotator::setSlabThickness" << val;
     // check range
     if (val < 2) val = 2;
-    if (val > 1000) val = 1000;
+    if (val > 10000) val = 10000;
     // check whether value changed
     if (val == slabThickness)
         return false; // unchanged

@@ -61,24 +61,24 @@ public:
     int getSlabPosition() const;
 
 signals:
+    void alphaBlendingChanged(bool);
+    void benchmarkTimerResetRequested();
+    void benchmarkTimerPrintRequested(QString);
     void neuronSelected(double x, double y, double z);
     void progressValueChanged(int);
     void progressComplete();
     void progressMessageChanged(QString);
     void progressAborted(QString);
-    void alphaBlendingChanged(bool);
     void quadStereoSupported(bool);
-    void showCornerAxesChanged(bool);
-    void slabThicknessChanged(int);
-    void slabPositionChanged(int);
-    void volume3DUploaded();
     void signalTextureLoaded();
     void labelTextureLoaded();
     void visibilityTextureLoaded();
     void colorMapTextureLoaded();
     void scenePainted(); // useful for timing
-    void benchmarkTimerResetRequested();
-    void benchmarkTimerPrintRequested(QString);
+    void showCornerAxesChanged(bool);
+    void slabThicknessChanged(int);
+    void slabPositionChanged(int);
+    void volume3DUploaded();
 
 public slots:
     void setShowCornerAxes(bool b);
@@ -117,6 +117,7 @@ public slots:
     void updateScreenPosition(); // for stencil based 3D modes
     void initializeDefaultTextures();
     virtual void invalidate() {NaViewer::invalidate();}
+    bool resetSlabThickness();
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

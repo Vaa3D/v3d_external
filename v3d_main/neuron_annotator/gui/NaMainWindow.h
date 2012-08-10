@@ -151,6 +151,7 @@ protected slots:
     void printBenchmarkTimer(QString message);
     void on3DViewerRotationChanged(const Rotation3D& rot);
     void update3DViewerXYZBodyRotation();
+    void onSlabThicknessChanged(int t);
     void onViewerChanged(int viewerIndex);
     void set3DProgress(int);
     void complete3DProgress();

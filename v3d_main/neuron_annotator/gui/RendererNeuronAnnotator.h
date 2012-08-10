@@ -110,6 +110,7 @@ public slots:
     void setShowCornerAxes(bool b);
     bool setSlabThickness(int); // range 2-1000 voxels
     void clipSlab(const CameraModel& cameraModel); // Apply clip plane to current slab
+    bool resetSlabThickness();
     void set3dTextureMode(unsigned int textureId);
     void setColorMapTextureId(unsigned int textureId);
 

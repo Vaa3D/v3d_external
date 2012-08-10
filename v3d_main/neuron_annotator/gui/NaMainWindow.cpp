@@ -281,7 +281,8 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     connect(ui.slabPositionSlider, SIGNAL(valueChanged(int)),
             ui.v3dr_glwidget, SLOT(setSlabPosition(int)));
     connect(ui.v3dr_glwidget, SIGNAL(slabThicknessChanged(int)),
-            ui.slabThicknessSlider, SLOT(setValue(int)));
+            this, SLOT(onSlabThicknessChanged(int)));
+            // ui.slabThicknessSlider, SLOT(setValue(int)));
     connect(ui.v3dr_glwidget, SIGNAL(slabPositionChanged(int)),
             ui.slabPositionSlider, SLOT(setValue(int)));
     connect(ui.freezeFrontBackButton, SIGNAL(clicked()),
@@ -390,6 +391,15 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     initializeContextMenus();
     initializeStereo3DOptions();
     connectCustomCut();
+}
+
+/* slot */
+void NaMainWindow::onSlabThicknessChanged(int t)
+{
+    // qDebug() << "NaMainWindow::onSlabThicknessChanged()" << t << __FILE__ << __LINE__;
+    if (t > ui.slabThicknessSlider->maximum())
+        ui.slabThicknessSlider->setMaximum(t);
+    ui.slabThicknessSlider->setValue(t);
 }
 
 /* slot */
@@ -588,6 +598,12 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     if (! tearDownOldDataFlowModel())
         return;
     createNewDataFlowModel();
+
+    // select 3D viewer, if it is not already selected
+    ui.viewerControlTabWidget->setCurrentIndex(2);
+
+    // reset front/back clip slab
+    ui.v3dr_glwidget->resetSlabThickness();
 
     // Figure out the finest/largest subsampled image that will fit on the video card.
     size_t max_mb = 350; // default to max memory of 350 MB

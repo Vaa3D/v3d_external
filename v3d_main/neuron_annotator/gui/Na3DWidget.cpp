@@ -598,6 +598,7 @@ bool Na3DWidget::loadSignalTexture()
             updateDefaultScale();
             resetView();
             resetVolumeCutRange();
+            resetSlabThickness();
             getRendererNa()->clearClipPlanes();
             cameraModel.setFocus(Vector3D(fullSize.x()/2.0,
                                           fullSize.y()/2.0,
@@ -883,6 +884,7 @@ void Na3DWidget::resetView()
     cameraModel.setFocus(newFocus); // center view
     cameraModel.setRotation(Rotation3D()); // identity rotation
     resetVolumeCutRange();
+    resetSlabThickness();
     if (NULL != getRendererNa())
         getRendererNa()->clearClipPlanes();
 }
@@ -1656,7 +1658,15 @@ void Na3DWidget::clipSlab()
     if (!ra) return;
     ra->clipSlab(cameraModel);
     // Reset slab now that clip plane recapitulates cut
-    setSlabThickness(1000);
+    ra->resetSlabThickness();
+}
+
+/* slot */
+bool Na3DWidget::resetSlabThickness()
+{
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (!ra) return false;
+    return ra->resetSlabThickness();
 }
 
 /* slot */

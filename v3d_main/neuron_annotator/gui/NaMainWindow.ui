@@ -2295,12 +2295,12 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <slot>reset()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>756</x>
-     <y>561</y>
+     <x>935</x>
+     <y>665</y>
     </hint>
     <hint type="destinationlabel">
-     <x>820</x>
-     <y>529</y>
+     <x>999</x>
+     <y>633</y>
     </hint>
    </hints>
   </connection>
@@ -2311,8 +2311,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <slot>setCurrentIndex(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>793</x>
-     <y>56</y>
+     <x>1014</x>
+     <y>80</y>
     </hint>
     <hint type="destinationlabel">
      <x>594</x>
@@ -2331,7 +2331,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <y>52</y>
     </hint>
     <hint type="destinationlabel">
-     <x>658</x>
+     <x>879</x>
      <y>203</y>
     </hint>
    </hints>
@@ -2343,7 +2343,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>658</x>
+     <x>879</x>
      <y>203</y>
     </hint>
     <hint type="destinationlabel">
