@@ -115,7 +115,7 @@ public slots:
     void loadSingleStack(QString fileName, bool useVaa3dClassic);
     void onDataLoadStarted();
     void onDataLoadFinished();
-    void openMulticolorImageStack(QString dirName);
+    bool openMulticolorImageStack(QString dirName);
     void on_actionV3DDefault_triggered();
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
@@ -125,7 +125,7 @@ public slots:
     void on_action2D_MIP_triggered();
     void on_actionScreenShot_triggered();
     void on_actionLoad_movie_as_texture_triggered();
-    void on_actionLoad_fast_separation_result_triggered();
+    bool on_actionLoad_fast_separation_result_triggered();
     void on_actionPreferences_triggered();
     void setZRange(int minZ, int maxZ); // update number of z slices
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same

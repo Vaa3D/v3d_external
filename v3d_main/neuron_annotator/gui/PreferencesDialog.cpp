@@ -18,6 +18,7 @@ void PreferencesDialog::savePreferences()
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     // qDebug() << "Saving preferences";
     settings.setValue("NaMaxVideoMegabytes", getVideoMegabytes());
+    // qDebug() << "setting NaBUseFastLoad3D to" << ui.fastLoadCheckBox->isChecked();
     settings.setValue("NaBUseFastLoad3D", ui.fastLoadCheckBox->isChecked());
 }
 

@@ -1748,8 +1748,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionOpen_Single_Movie_Stack"/>
     <addaction name="actionOpen_Reference_Channel"/>
     <addaction name="actionOpen_Neuron_Mask"/>
-    <addaction name="actionLoad_movie_as_texture"/>
-    <addaction name="actionLoad_fast_separation_result"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>

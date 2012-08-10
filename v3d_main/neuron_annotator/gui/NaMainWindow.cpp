@@ -1163,57 +1163,11 @@ void NaMainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 
 void NaMainWindow::on_actionOpen_triggered()
 {
-    QString initialDialogPath = QDir::currentPath();
-    // Use previous annotation path as initial file browser location
-    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
-    QString previousAnnotationDirString = settings.value("NeuronAnnotatorPreviousAnnotationPath").toString();
-    if (! previousAnnotationDirString.isEmpty()) {
-        QDir previousAnnotationDir(previousAnnotationDirString);
-        if (previousAnnotationDir.exists() && previousAnnotationDir.isReadable())
-        {
-            initialDialogPath = previousAnnotationDir.path();
-            // qDebug() << "Annotation directory path = " << initialDialogPath;
-        }
-    }
-
-    QString dirName = QFileDialog::getExistingDirectory(this,
-                                                        "Select Color Separation Image Directory",
-                                                        initialDialogPath,
-                                                        QFileDialog::ShowDirsOnly
-                                                        | QFileDialog::DontResolveSymlinks);
-
-    // qDebug() << dirName;
-
-    // If user presses cancel, QFileDialog::getExistingDirectory returns a null string
-    if (dirName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
-        return;
-
-    QDir imageDir(dirName);
-
-    if ( imageDir.exists() )
-    {
-        // Remember parent directory to ease browsing next time
-        QDir parentDir(dirName);
-        bool bParentOk = parentDir.cdUp();
-        if (bParentOk) {
-            // qDebug() << "Saving annotation dir parent path " << parentDir.path();
-            settings.setValue("NeuronAnnotatorPreviousAnnotationPath", parentDir.path());
-        }
-        else {
-            // qDebug() << "Problem saving parent directory of " << dirName;
-        }
-
-        openMulticolorImageStack(dirName);
-    }
-    else
-    {
-        QMessageBox::warning(this, tr("No such directory"),
-                             QString("'%1'\n No such directory.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
-    }
+    QString dirName = getDataDirectoryPathWithDialog();
+    openMulticolorImageStack(dirName);
 }
 
-
-void NaMainWindow::openMulticolorImageStack(QString dirName)
+bool NaMainWindow::openMulticolorImageStack(QString dirName)
 {
     mainWindowStopWatch.start();
     QDir imageDir(dirName);
@@ -1222,7 +1176,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
     {
         QMessageBox::warning(this, tr("No such directory"),
                              QString("'%1'\n No such directory.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
-        return;
+        return false;
     }
 
     // std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
@@ -1232,26 +1186,43 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
     if (! tearDownOldDataFlowModel()) {
         QMessageBox::warning(this, tr("Could not close previous Annotation Session"),
                      "Error saving previous session and/or clearing memory - please exit application");
-                 return;
+                 return false;
     }
 
-    onDataLoadStarted();
-    if (!loadSeparationDirectoryV1Pbd(imageDir)) {
+    createNewDataFlowModel();
+    // reset front/back clip slab
+    ui.v3dr_glwidget->resetSlabThickness();
+    emit initializeColorModelRequested();
+
+    // Possibly invoke fast data loading
+    bool bFastLoad = true;
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+    QVariant val = settings.value("NaBUseFastLoad3D");
+    if (val.isValid()) {
+        qDebug() << "stored value of NaBUseFastLoad3D is" << val.toBool();
+        bFastLoad = val.toBool();
+    }
+    if (bFastLoad && loadSeparationDirectoryV2Mpeg(imageDir)) {
+        qDebug() << "Using fast load directory";
+    }
+    else if (loadSeparationDirectoryV1Pbd(imageDir)) {
+        qDebug() << "Using non-fastload files";
+    }
+    else {
         QMessageBox::warning(this, tr("Could not load image directory"),
                                       "Error loading image directory - please check directory contents");
-
         onDataLoadFinished();
-        return;
+        return false;
     }
 
     // qDebug() << "NaMainWindow::openMulticolorImageStack() calling addDirToRecentFilesList with dir=" << imageDir.absolutePath();
     addDirToRecentFilesList(imageDir);
+    return true;
 }
 
 bool NaMainWindow::loadSeparationDirectoryV1Pbd(QDir imageInputDirectory)
 {
-    createNewDataFlowModel();
-
+    onDataLoadStarted();
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
     QString originalImageStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME;
@@ -1284,34 +1255,43 @@ bool NaMainWindow::loadSeparationDirectoryV1Pbd(QDir imageInputDirectory)
     if (! dataFlowModel->loadVolumeData()) return false;
     // dataChanged() signal will be emitted if load succeeds
 
-    // Show reference brightness slider in single neuron mode
-    // ui.referenceGammaWidget->setVisible(true);
-
     return true;
 }
 
 /* slot */
-void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
+bool NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 {
-#ifdef USE_FFMPEG
     // qDebug() << "NaMainWindow::on_actionLoad_fast_separation_result_triggered()" << __FILE__ << __LINE__;
     // Ask user for a directory containing results.
     QString dirName = getDataDirectoryPathWithDialog();
-    if (dirName.isEmpty()) return;
+    if (dirName.isEmpty())
+        return false;
     QDir dir(dirName);
+    if (! tearDownOldDataFlowModel())
+        return false;
 
+    createNewDataFlowModel();
+    ui.v3dr_glwidget->resetSlabThickness();
+    emit initializeColorModelRequested();
     emit benchmarkTimerResetRequested();
     emit benchmarkTimerPrintRequested("Load fast directory triggered");
+    if (! loadSeparationDirectoryV2Mpeg(dir)) {
+        return false;
+    }
+    addDirToRecentFilesList(dir);
+    return true;
+}
 
-    if (! tearDownOldDataFlowModel())
-        return;
-    createNewDataFlowModel();
+bool NaMainWindow::loadSeparationDirectoryV2Mpeg(QDir dir)
+{
+#ifdef USE_FFMPEG
+    if (! dir.exists("fastLoad"))
+        return false;
+    if (! dir.exists("fastLoad/ConsolidatedSignal2_25.mp4"))
+        return false;
 
     // select 3D viewer, if it is not already selected
     ui.viewerControlTabWidget->setCurrentIndex(2);
-
-    // reset front/back clip slab
-    ui.v3dr_glwidget->resetSlabThickness();
 
     // Figure out the finest/largest subsampled image that will fit on the video card.
     size_t max_mb = 350; // default to max memory of 350 MB
@@ -1340,14 +1320,13 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     // Apply gamma bias already applied to input images
     // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
     // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
-    emit benchmarkTimerPrintRequested("Initialized color models");
+    // emit benchmarkTimerPrintRequested("Initialized color models");
 
     // keep reference channel off
     // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
     // ui.v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
     // qDebug() << "initializeSelectionModelRequested()" << __FILE__ << __LINE__;
     // emit initializeSelectionModelRequested();
-    emit initializeColorModelRequested();
     setViewMode(VIEW_SINGLE_STACK);
 
     // TODO - load lossless image into VolumeTexture
@@ -1378,7 +1357,7 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
 
     // Create input node - so data flow model knows where to find lsm metadata
-    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(dirName);
+    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(dir.absolutePath());
     dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
     dataFlowModel->loadLsmMetadata();
 
@@ -1407,13 +1386,10 @@ void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 
         mpegTexture.loadNextVolume(); // starts loading process in another thread
     }
-
-#endif
-}
-
-bool loadSeparationDirectoryV2Mpeg(QDir imageInputDirectory)
-{
+    return true;
+#else
     return false;
+#endif
 }
 
 // Recent files list
