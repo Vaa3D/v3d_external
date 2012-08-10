@@ -397,8 +397,11 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
 void NaMainWindow::onSlabThicknessChanged(int t)
 {
     // qDebug() << "NaMainWindow::onSlabThicknessChanged()" << t << __FILE__ << __LINE__;
-    if (t > ui.slabThicknessSlider->maximum())
+    if (t > ui.slabThicknessSlider->maximum()) {
         ui.slabThicknessSlider->setMaximum(t);
+        ui.slabPositionSlider->setMaximum(t/2);
+        ui.slabPositionSlider->setMinimum(-t/2);
+    }
     ui.slabThicknessSlider->setValue(t);
 }
 
@@ -579,127 +582,6 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
     if (fileName.isEmpty()) return;
     if (! dataFlowModel) return;
     dataFlowModel->getFast3DTexture().loadFile(fileName);
-#endif
-}
-
-/* slot */
-void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
-{
-#ifdef USE_FFMPEG
-    // qDebug() << "NaMainWindow::on_actionLoad_fast_separation_result_triggered()" << __FILE__ << __LINE__;
-    // Ask user for a directory containing results.
-    QString dirName = getDataDirectoryPathWithDialog();
-    if (dirName.isEmpty()) return;
-    QDir dir(dirName);
-
-    emit benchmarkTimerResetRequested();
-    emit benchmarkTimerPrintRequested("Load fast directory triggered");
-
-    if (! tearDownOldDataFlowModel())
-        return;
-    createNewDataFlowModel();
-
-    // select 3D viewer, if it is not already selected
-    ui.viewerControlTabWidget->setCurrentIndex(2);
-
-    // reset front/back clip slab
-    ui.v3dr_glwidget->resetSlabThickness();
-
-    // Figure out the finest/largest subsampled image that will fit on the video card.
-    size_t max_mb = 350; // default to max memory of 350 MB
-    // Fetch preset maximum texture memory user preference, if any.
-    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
-    QVariant val = settings.value("NaMaxVideoMegabytes");
-    // qDebug() << "Loading preferences";
-    if (val.isValid()) {
-        size_t mb = val.toInt();
-        if (mb > 0)
-            max_mb = mb;
-    }
-    // Subsample options are 25, 50, 100, and 200 megavoxels
-    int mvoxels = 25;  // Max megavoxels
-    // six bytes per megavoxel with current texture implementation
-    while ((2 * mvoxels * 6) <= max_mb) { // "2" to scale up to the next candidate size
-        if (mvoxels >= 200) // 200 is the largest subsample we have
-            break;
-        mvoxels *= 2; // progress 25, 50, 100, 200
-    }
-    assert(mvoxels >= 25); // lowest sampling rate is 25
-    assert(mvoxels <= 200); // highest sampling rate is 200
-    QString mv = QString("%1").arg(mvoxels);
-    qDebug() << "Using sampling limit of" << mv << "megavoxels";
-
-    // Apply gamma bias already applied to input images
-    // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
-    // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
-    emit benchmarkTimerPrintRequested("Initialized color models");
-
-    // keep reference channel off
-    // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
-    // ui.v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
-    // qDebug() << "initializeSelectionModelRequested()" << __FILE__ << __LINE__;
-    // emit initializeSelectionModelRequested();
-    emit initializeColorModelRequested();
-    setViewMode(VIEW_SINGLE_STACK);
-
-    // TODO - load lossless image into VolumeTexture
-    // connect(mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-    //         &dataFlowModel->getVolumeTexture(), SLOT(loadVolumeDataFromFiles()),
-    //         Qt::UniqueConnection);
-
-    // Prepare to load lossless files after mp4 files have loaded
-    emit subsampleLabelPbdFileNamed(dir.filePath("fastLoad/ConsolidatedLabel2_" + mv + ".v3dpbd"));
-    {
-        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
-        volumeWriter.setOriginalImageStackFilePath(dir.filePath("fastLoad/ConsolidatedSignal3.v3dpbd"));
-        volumeWriter.setReferenceStackFilePath(dir.filePath("fastLoad/Reference3.v3dpbd"));
-        volumeWriter.setMaskLabelFilePath(dir.filePath("fastLoad/ConsolidatedLabel3.v3dpbd"));
-    }
-
-    Fast3DTexture& mpegTexture = dataFlowModel->getFast3DTexture();
-
-    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
-            Qt::UniqueConnection);
-    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &dataFlowModel->getVolumeTexture(), SLOT(loadLabelPbdFile()),
-            Qt::UniqueConnection);
-
-    // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
-    dataFlowModel->getVolumeData().doFlipY = false;
-    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
-
-    // Create input node - so data flow model knows where to find lsm metadata
-    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(dirName);
-    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
-    dataFlowModel->loadLsmMetadata();
-
-    {
-        Fast3DTexture::Writer textureWriter(mpegTexture);
-
-        // First series of lossy downsampled images in mpeg4 format for fast loading
-        // TODO - only load the files that exist
-        // First load lowest resolution mp4 to put something on the screen immediately ~300ms elapsed
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_25.mp4"),
-                                 BlockScaler::CHANNEL_RGB);
-
-        // First refinement: load largest subsample that can fit on the video card. ~1500ms elapsed
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_RGB);
-        // Next add the reference channel
-        mpegTexture.queueVolume(dir.filePath("fastLoad/Reference2_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_ALPHA);
-        // Individual color channels to sharpen the colors
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Red_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_RED);
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Green_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_GREEN);
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Blue_" + mv + ".mp4"), // ~4000ms elapsed
-                                 BlockScaler::CHANNEL_BLUE);
-
-        mpegTexture.loadNextVolume(); // starts loading process in another thread
-    }
-
 #endif
 }
 
@@ -1354,7 +1236,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
     }
 
     onDataLoadStarted();
-    if (!loadAnnotationSessionFromDirectory(imageDir)) {
+    if (!loadSeparationDirectoryV1Pbd(imageDir)) {
         QMessageBox::warning(this, tr("Could not load image directory"),
                                       "Error loading image directory - please check directory contents");
 
@@ -1366,6 +1248,173 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
     addDirToRecentFilesList(imageDir);
 }
 
+bool NaMainWindow::loadSeparationDirectoryV1Pbd(QDir imageInputDirectory)
+{
+    createNewDataFlowModel();
+
+    // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
+    // This code will be redone when the node/filestore is implemented.
+    QString originalImageStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME;
+    QString maskLabelFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_MASK_BASE_FILENAME;
+    QString referenceStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_REFERENCE_BASE_FILENAME;
+
+    // Create input nodes
+    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(imageInputDirectory);
+    multiColorImageStackNode->setPathToMulticolorLabelMaskFile(maskLabelFilePath);
+    multiColorImageStackNode->setPathToOriginalImageStackFile(originalImageStackFilePath);
+    multiColorImageStackNode->setPathToReferenceStackFile(referenceStackFilePath);
+    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
+
+    // Create result node
+    long resultNodeId=TimebasedIdentifierGenerator::getSingleId();
+    NeuronAnnotatorResultNode* resultNode = new NeuronAnnotatorResultNode(resultNodeId);
+    if (!resultNode->ensureDirectoryExists()) {
+        QMessageBox::warning(this, tr("Could not create NeuronAnnotationResultNode"),
+                             "Error creating directory="+resultNode->getDirectoryPath());
+        return false;
+    }
+    dataFlowModel->setNeuronAnnotatorResultNode(resultNode);
+
+    // Opposite of fast loading behavior
+    dataFlowModel->getVolumeData().doFlipY = true;
+    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = true;
+
+    // Load session
+    setViewMode(VIEW_NEURON_SEPARATION);
+    if (! dataFlowModel->loadVolumeData()) return false;
+    // dataChanged() signal will be emitted if load succeeds
+
+    // Show reference brightness slider in single neuron mode
+    // ui.referenceGammaWidget->setVisible(true);
+
+    return true;
+}
+
+/* slot */
+void NaMainWindow::on_actionLoad_fast_separation_result_triggered()
+{
+#ifdef USE_FFMPEG
+    // qDebug() << "NaMainWindow::on_actionLoad_fast_separation_result_triggered()" << __FILE__ << __LINE__;
+    // Ask user for a directory containing results.
+    QString dirName = getDataDirectoryPathWithDialog();
+    if (dirName.isEmpty()) return;
+    QDir dir(dirName);
+
+    emit benchmarkTimerResetRequested();
+    emit benchmarkTimerPrintRequested("Load fast directory triggered");
+
+    if (! tearDownOldDataFlowModel())
+        return;
+    createNewDataFlowModel();
+
+    // select 3D viewer, if it is not already selected
+    ui.viewerControlTabWidget->setCurrentIndex(2);
+
+    // reset front/back clip slab
+    ui.v3dr_glwidget->resetSlabThickness();
+
+    // Figure out the finest/largest subsampled image that will fit on the video card.
+    size_t max_mb = 350; // default to max memory of 350 MB
+    // Fetch preset maximum texture memory user preference, if any.
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+    QVariant val = settings.value("NaMaxVideoMegabytes");
+    // qDebug() << "Loading preferences";
+    if (val.isValid()) {
+        size_t mb = val.toInt();
+        if (mb > 0)
+            max_mb = mb;
+    }
+    // Subsample options are 25, 50, 100, and 200 megavoxels
+    int mvoxels = 25;  // Max megavoxels
+    // six bytes per megavoxel with current texture implementation
+    while ((2 * mvoxels * 6) <= max_mb) { // "2" to scale up to the next candidate size
+        if (mvoxels >= 200) // 200 is the largest subsample we have
+            break;
+        mvoxels *= 2; // progress 25, 50, 100, 200
+    }
+    assert(mvoxels >= 25); // lowest sampling rate is 25
+    assert(mvoxels <= 200); // highest sampling rate is 200
+    QString mv = QString("%1").arg(mvoxels);
+    qDebug() << "Using sampling limit of" << mv << "megavoxels";
+
+    // Apply gamma bias already applied to input images
+    // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
+    // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
+    emit benchmarkTimerPrintRequested("Initialized color models");
+
+    // keep reference channel off
+    // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
+    // ui.v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
+    // qDebug() << "initializeSelectionModelRequested()" << __FILE__ << __LINE__;
+    // emit initializeSelectionModelRequested();
+    emit initializeColorModelRequested();
+    setViewMode(VIEW_SINGLE_STACK);
+
+    // TODO - load lossless image into VolumeTexture
+    // connect(mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+    //         &dataFlowModel->getVolumeTexture(), SLOT(loadVolumeDataFromFiles()),
+    //         Qt::UniqueConnection);
+
+    // Prepare to load lossless files after mp4 files have loaded
+    emit subsampleLabelPbdFileNamed(dir.filePath("fastLoad/ConsolidatedLabel2_" + mv + ".v3dpbd"));
+    {
+        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
+        volumeWriter.setOriginalImageStackFilePath(dir.filePath("fastLoad/ConsolidatedSignal3.v3dpbd"));
+        volumeWriter.setReferenceStackFilePath(dir.filePath("fastLoad/Reference3.v3dpbd"));
+        volumeWriter.setMaskLabelFilePath(dir.filePath("fastLoad/ConsolidatedLabel3.v3dpbd"));
+    }
+
+    Fast3DTexture& mpegTexture = dataFlowModel->getFast3DTexture();
+
+    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
+            Qt::UniqueConnection);
+    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
+            &dataFlowModel->getVolumeTexture(), SLOT(loadLabelPbdFile()),
+            Qt::UniqueConnection);
+
+    // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
+    dataFlowModel->getVolumeData().doFlipY = false;
+    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
+
+    // Create input node - so data flow model knows where to find lsm metadata
+    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(dirName);
+    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
+    dataFlowModel->loadLsmMetadata();
+
+    {
+        Fast3DTexture::Writer textureWriter(mpegTexture);
+
+        // First series of lossy downsampled images in mpeg4 format for fast loading
+        // TODO - only load the files that exist
+        // First load lowest resolution mp4 to put something on the screen immediately ~300ms elapsed
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_25.mp4"),
+                                 BlockScaler::CHANNEL_RGB);
+
+        // First refinement: load largest subsample that can fit on the video card. ~1500ms elapsed
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_" + mv + ".mp4"),
+                                 BlockScaler::CHANNEL_RGB);
+        // Next add the reference channel
+        mpegTexture.queueVolume(dir.filePath("fastLoad/Reference2_" + mv + ".mp4"),
+                                 BlockScaler::CHANNEL_ALPHA);
+        // Individual color channels to sharpen the colors
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Red_" + mv + ".mp4"),
+                                 BlockScaler::CHANNEL_RED);
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Green_" + mv + ".mp4"),
+                                 BlockScaler::CHANNEL_GREEN);
+        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Blue_" + mv + ".mp4"), // ~4000ms elapsed
+                                 BlockScaler::CHANNEL_BLUE);
+
+        mpegTexture.loadNextVolume(); // starts loading process in another thread
+    }
+
+#endif
+}
+
+bool loadSeparationDirectoryV2Mpeg(QDir imageInputDirectory)
+{
+    return false;
+}
 
 // Recent files list
 void NaMainWindow::addDirToRecentFilesList(QDir imageDir)
@@ -1654,65 +1703,6 @@ bool NaMainWindow::createNewDataFlowModel()
     return true;
 }
 
-bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
-{
-    createNewDataFlowModel();
-
-    // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
-    // This code will be redone when the node/filestore is implemented.
-    QString originalImageStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME;
-//    QFile originalImageStackFile(originalImageStackFilePath);
-//    if (!originalImageStackFile.exists()) {
-//        QMessageBox::warning(this, tr("Could not find expected image stack tif file"),
-//                             "Error finding file="+originalImageStackFilePath);
-//        return false;
-//    }
-    QString maskLabelFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_MASK_BASE_FILENAME;
-//    QFile maskLabelFile(maskLabelFilePath);
-//    if (!maskLabelFile.exists()) {
-//        QMessageBox::warning(this, tr("Could not find expected image stack mask file"),
-//                             "Error finding file="+maskLabelFilePath);
-//        return false;
-//    }
-    QString referenceStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_REFERENCE_BASE_FILENAME;
-//    QFile referenceStackFile(referenceStackFilePath);
-//    if (!referenceStackFile.exists()) {
-//        QMessageBox::warning(this, tr("Could not find expected reference stack file"),
-//                             "Error finding file="+referenceStackFilePath);
-//        return false;
-//    }
-
-    // Create input nodes
-    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(imageInputDirectory);
-    multiColorImageStackNode->setPathToMulticolorLabelMaskFile(maskLabelFilePath);
-    multiColorImageStackNode->setPathToOriginalImageStackFile(originalImageStackFilePath);
-    multiColorImageStackNode->setPathToReferenceStackFile(referenceStackFilePath);
-    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
-
-    // Create result node
-    long resultNodeId=TimebasedIdentifierGenerator::getSingleId();
-    NeuronAnnotatorResultNode* resultNode = new NeuronAnnotatorResultNode(resultNodeId);
-    if (!resultNode->ensureDirectoryExists()) {
-        QMessageBox::warning(this, tr("Could not create NeuronAnnotationResultNode"),
-                             "Error creating directory="+resultNode->getDirectoryPath());
-        return false;
-    }
-    dataFlowModel->setNeuronAnnotatorResultNode(resultNode);
-
-    // Opposite of fast loading behavior
-    dataFlowModel->getVolumeData().doFlipY = true;
-    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = true;
-
-    // Load session
-    setViewMode(VIEW_NEURON_SEPARATION);
-    if (! dataFlowModel->loadVolumeData()) return false;
-    // dataChanged() signal will be emitted if load succeeds
-
-    // Show reference brightness slider in single neuron mode
-    // ui.referenceGammaWidget->setVisible(true);
-
-    return true;
-}
 
 void NaMainWindow::setTitle(QString title) {
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(title));

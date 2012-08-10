@@ -86,7 +86,8 @@ public:
     void setNeuronAnnotatorModeCheck(bool checkState);
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     virtual void keyPressEvent(QKeyEvent *e);
-    bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
+    bool loadSeparationDirectoryV1Pbd(QDir imageInputDirectory);
+    bool loadSeparationDirectoryV2Mpeg(QDir imageInputDirectory);
     bool tearDownOldDataFlowModel();
     bool createNewDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
