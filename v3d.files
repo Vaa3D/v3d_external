@@ -2037,3 +2037,5 @@ released_plugins/v3d_plugins/lobeseg/CMakeLists.txt
 released_plugins/v3d_plugins/ssd_registration/CMakeLists.txt
 released_plugins/v3d_plugins/imath/CMakeLists.txt
 released_plugins/v3d_plugins/ireg/CMakeLists.txt
+v3d_main/neuron_annotator/analysis/AlignerUtils.cpp
+v3d_main/neuron_annotator/analysis/AlignerUtils.h

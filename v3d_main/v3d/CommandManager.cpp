@@ -10,6 +10,7 @@
 #include "../neuron_annotator/utility/ImageLoader.h"
 #include "../neuron_annotator/analysis/ScreenPatternAnnotator.h"
 #include "../neuron_annotator/analysis/NeuronFragmentEditor.h"
+#include "../neuron_annotator/analysis/AlignerUtils.h"
 
 using namespace std;
 
@@ -90,6 +91,14 @@ bool CommandManager::execute() {
             return false;
         }
         return neuronFragmentEditor.execute();
+    } else if (firstArg==AlignerUtils::getCommandLineDescription()) {
+        AlignerUtils alignerUtils;
+        int status=alignerUtils.processArgs(argList);
+        if (status!=0) {
+            cout << getUsageString();
+            return false;
+        }
+        return alignerUtils.execute();
     } else {
         cout << getUsageString();
         return false;
@@ -130,6 +139,10 @@ string CommandManager::getUsageString() {
     usage.append(NeuronFragmentEditor::getCommandLineDescription());
     usage.append("\n");
     usage.append(NeuronFragmentEditor::getUsage());
+    usage.append("\n");
+    usage.append(AlignerUtils::getCommandLineDescription());
+    usage.append("\n");
+    usage.append(AlignerUtils::getUsage());
     usage.append("\n");
     return usage;
 }
