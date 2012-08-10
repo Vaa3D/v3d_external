@@ -497,6 +497,9 @@ void Na3DWidget::setUndoStack(QUndoStack& undoStackParam) // for undo/redo custo
 /* virtual */
 void Na3DWidget::initializeGL()
 {
+    // Is the world ready for sRGB?  It's the right thing to do...
+    // glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+
     int gm3ts;
     glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &gm3ts);
     qDebug() << "GL_MAX_3D_TEXTURE_SIZE" << gm3ts;
