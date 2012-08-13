@@ -172,7 +172,8 @@
      } \
 }
 
-
+static void converting32bit_to_8bit(float *pre1d, unsigned char *pPost, V3DLONG imsz);
+static void converting16bit_to_8bit(short int *pre1d, unsigned char *pPost, V3DLONG imsz);
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
@@ -1336,7 +1337,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 
 	int chno = checkCurChannel();
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
-	qDebug()<<"\n solveCurveMarkerLists: 3d curve in channel # "<<((chno<0)? chno :chno+1);
+	qDebug()<<"\n solveCurveMarkerLists_fm: 3d curve in channel # "<<((chno<0)? chno :chno+1);
 
 	loc_vec.clear();
 
@@ -1351,18 +1352,25 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
      // get img data pointer for fastmarching
      unsigned char* pImg = 0;
      int datatype = curImg->getDatatype();
+
      if (curImg && data4dp && chno>=0 &&  chno <dim4)
      {
+          short int *pIntImg = 0;
+          float *pFloatImg = 0;
           switch (datatype)
           {
                case V3D_UINT8:
-                    pImg = (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1));
+                    pImg = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
                     break;
                case V3D_UINT16:
-                    pImg = (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int));
+                    pIntImg = (short int*) (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int));
+                    pImg = new unsigned char [dim3*dim2*dim1];
+                    converting16bit_to_8bit(pIntImg, pImg, dim3*dim2*dim1);
                     break;
                case V3D_FLOAT32:
-                    pImg = (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float));
+                    pFloatImg = (float*) (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float));
+                    pImg = new unsigned char [dim3*dim2*dim1];
+                    converting32bit_to_8bit(pFloatImg, pImg, dim3*dim2*dim1);
                     break;
                default:
                     v3d_msg("Unsupported data type found. You should never see this.", 0);
@@ -1521,7 +1529,6 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
                               last_i = i;
                          }
 
-
                          XYZ lastpos;
                          vector<MyMarker> sub_markers; sub_markers.clear();
                          vector<MyMarker> tar_markers; tar_markers.clear();
@@ -1644,27 +1651,38 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
                vector<MyMarker *> outswc;
                bool b_res;
 
-               switch (datatype)
+               // all pImg are unsigned char now
+               b_res = (b_useSerialBBox) ?
+                    fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
+                    : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
+
+               // delete pImg created for two datatypes
+               if(datatype == V3D_UINT16 || datatype == V3D_FLOAT32)
                {
-                    case V3D_UINT8:
-                         b_res = (b_useSerialBBox) ?
-                              fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
-                              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
-                         break;
-                    case V3D_UINT16:
-                         b_res = (b_useSerialBBox) ?
-                              fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5)
-                              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5);
-                         break;
-                    case V3D_FLOAT32:
-                         b_res = (b_useSerialBBox) ?
-                              fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5)
-                              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5);
-                         break;
-                    default:
-                         v3d_msg("Unsupported data type found. You should never see this.", 0);
-                         return t.elapsed();
+                    if(pImg) {delete [] pImg; pImg=0;}
                }
+
+               // switch (datatype)
+               // {
+               //      case V3D_UINT8:
+               //           b_res = (b_useSerialBBox) ?
+               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
+               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
+               //           break;
+               //      case V3D_UINT16:
+               //           b_res = (b_useSerialBBox) ?
+               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5)
+               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5);
+               //           break;
+               //      case V3D_FLOAT32:
+               //           b_res = (b_useSerialBBox) ?
+               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5)
+               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5);
+               //           break;
+               //      default:
+               //           v3d_msg("Unsupported data type found. You should never see this.", 0);
+               //           return t.elapsed();
+               // }
 
               //  b_res = (b_useSerialBBox) ?
               //       fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
@@ -1689,6 +1707,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
      // Save near/far locs for testing:
 if (0)
 {
+     v3d_msg("Write near/far marker to files.");
     FILE *nfile=fopen("near.marker", "wt");
      for(int ii=0; ii<nearpos_vec.size(); ii++)
           fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
@@ -2879,3 +2898,125 @@ void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, in
      test_id = myList.size() + 1;
 }
 
+
+void Renderer_gl1::deleteMultiNeuronsByStroke()
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+     MainWindow* V3Dmainwindow = 0;
+	V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+	if (V3Dmainwindow )
+	{
+          V3DLONG num_tree = listNeuronTree.size();
+          if (num_tree > 0)// && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
+          {
+               for(V3DLONG j=0; j< num_tree; j++)
+               {
+                    V3DLONG num_pos = list_listCurvePos.at(0).size();
+
+                    for (V3DLONG i=0; i<num_pos; i++)
+                    {
+                         const MarkerPos & pos = list_listCurvePos.at(0).at(i);
+
+                         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+                         if (p_tree)
+                         {
+                              double best_dist;
+                              double th_delete = 120;
+                              V3DLONG n_id = findNearestNeuronNode_WinXY(pos.x, pos.y, p_tree, best_dist);
+
+                              qDebug()<<"Current best_dist:" << best_dist;
+                              qDebug()<<"Current n_id:" << n_id;
+
+                              if (n_id>=0 && best_dist<= th_delete)
+                              {
+                                   qDebug()<<"Run here before delete!";
+                                   // delete this neuron
+                                   curImg->proj_trace_deleteNeuronSeg(n_id, p_tree);
+                                   curImg->update_3drenderer_neuron_view(w, this);
+                                   qDebug()<<"Run here!";
+                              }
+                         }
+
+                    } // end for i<num_pos
+               }
+          }
+	}
+
+}
+
+
+// func type converting kernel
+void converting32bit_to_8bit(float *pre1d, unsigned char *pPost, V3DLONG imsz)
+{
+     if (!pre1d ||!pPost || imsz<=0 )
+     {
+          v3d_msg("Invalid parameters to converting().", 0);
+          return;
+     }
+
+	float *pPre = pre1d;
+     float max_v=0, min_v = 255;
+
+     for(V3DLONG i=0; i<imsz; i++)
+     {
+          if(max_v<pPre[i]) max_v = pPre[i];
+          if(min_v>pPre[i]) min_v = pPre[i];
+     }
+     max_v -= min_v;
+
+     if(max_v>0)
+     {
+          for(V3DLONG i=0; i<imsz; i++)
+          {
+               pPost[i] = (unsigned char) 255*(double)(pPre[i] - min_v)/max_v;
+          }
+     }
+     else
+     {
+          for(V3DLONG i=0; i<imsz; i++)
+          {
+               pPost[i] = (unsigned char) pPre[i];
+          }
+     }
+
+}
+
+void converting16bit_to_8bit(short int *pre1d, unsigned char *pPost, V3DLONG imsz)
+{
+     if (!pre1d ||!pPost || imsz<=0 )
+     {
+          v3d_msg("Invalid parameters to converting().", 0);
+          return;
+     }
+
+	short int *pPre = pre1d;
+     short int max_v=0, min_v = 255;
+
+     for(V3DLONG i=0; i<imsz; i++)
+     {
+          if(max_v<pPre[i]) max_v = pPre[i];
+          if(min_v>pPre[i]) min_v = pPre[i];
+     }
+     max_v -= min_v;
+
+     if(max_v>0)
+     {
+          for(V3DLONG i=0; i<imsz; i++)
+          {
+               pPost[i] = (unsigned char) 255*(double)(pPre[i] - min_v)/max_v;
+          }
+     }
+     else
+     {
+          for(V3DLONG i=0; i<imsz; i++)
+          {
+               pPost[i] = (unsigned char) pPre[i];
+          }
+     }
+
+}

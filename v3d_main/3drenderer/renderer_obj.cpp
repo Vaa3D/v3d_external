@@ -142,11 +142,11 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
 	try {
 
 		// if create labelfield
-		if (filename.endsWith(".tif", Qt::CaseInsensitive) || 
+		if (filename.endsWith(".tif", Qt::CaseInsensitive) ||
             filename.endsWith(".tiff", Qt::CaseInsensitive) ||
 			filename.endsWith(".raw", Qt::CaseInsensitive) ||
 			filename.endsWith(".v3draw", Qt::CaseInsensitive) ||
-			filename.endsWith(".vaa3draw", Qt::CaseInsensitive) 
+			filename.endsWith(".vaa3draw", Qt::CaseInsensitive)
             )
 		{
 			loadLabelfieldSurf(filename);
@@ -1719,7 +1719,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				int type = S1.type; 			 // 090925
 				if (editable)
 				{
-                    int ncolorused = neuron_type_color_num; if (neuron_type_color_num>19) ncolorused = 19; //added by PHC, 20120330                        
+                    int ncolorused = neuron_type_color_num; if (neuron_type_color_num>19) ncolorused = 19; //added by PHC, 20120330
 					type = S1.seg_id %(ncolorused -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
 				}
                     neuronColor[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];

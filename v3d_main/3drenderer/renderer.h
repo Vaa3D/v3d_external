@@ -65,12 +65,13 @@ public:
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
                          smMarkerRefineT, smMarkerRefineC,
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
-					smCurveCreateM,
+                      smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveEditRefine_fm, smCurveRubberDrag,
                       smCurveDirectionInter, smCurveCreate_pointclick_fm, smCurveRefine_fm, smCurveRefine_ms,
                       smCurveMarkerLists_fm, smCurveMarkerPool_fm, smCurveCreateMarkerGD,smCurveFrom1Marker_fm,
                       smCurveTiltedBB_fm, smCurveTiltedBB_fm_sbbox, smCurveUseStrokeBB_fm, smCurveCreateTest,
+                      smDeleteMultiNeurons, // for delete multi neurons, ZJL 20120806
 					};
 protected:
 	RenderMode renderMode;

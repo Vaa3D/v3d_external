@@ -244,7 +244,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
           *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0, *actCurveRefine_fm=0,*actCurveEditRefine_fm=0,
           *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveFrom1Marker_fm=0, *actCurveTiltedBB_fm=0, *actCurveTiltedBB_fm_sbbox=0,
           *actCurveCreateTest=0,// ZJL 110905
-    
+
             *actClearedAllGeneratedObjects=0, //PHC 120522
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
@@ -253,7 +253,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actMarkerAblateOne_imaging_feedback=0, *actMarkerAblateAll_imaging_feedback=0, //with feedback
 			*actMarkerOne_imaging=0, *actMarkerAll_imaging=0,
 			*act_imaging_pinpoint_n_shoot=0, *act_imaging_cut_3d_curve=0,
-    
+
             *actCurveCreate_zoom_grabhighrezdata=0, *actMarkerCreate_zoom_grabhighrezdata=0, //for TeraManager or similar high-rez data acqusition. by PHC, 20120717
 
 			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
@@ -264,6 +264,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actJoinNeuronSegs_nearby_markclick=0, *actJoinNeuronSegs_nearby_pathclick=0, *actJoinNeuronSegs_all=0,
 			*actNeuronSegDeform=0, *actNeuronSegProfile=0,
 			*actNeuronOneSegMergeToCloseby=0, *actNeuronAllSegMergeToCloseby=0,
+
+               *actDeleteMultiNeuronSeg=0, // ZJL, 20120806
 
 			*actDispNeuronNodeInfo=0,	*actAveDistTwoNeurons=0, *actDispNeuronMorphoInfo=0,
             *actDoNeuronToolBoxPlugin=0,
@@ -340,7 +342,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             actCurveTiltedBB_fm_sbbox->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveTiltedBB_fm_sbbox->setVisible(true);
 			actCurveTiltedBB_fm_sbbox->setIconVisibleInMenu(true);
-            
+
                if (0) //disable two not-often used functions
                {
                     listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
@@ -438,7 +440,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in view: 1-right-stroke ROI", w));
 				listAct.append(actMarkerCreate_zoom = new QAction("Zoom-in view: 1-right-click ROI", w));
-				
+
                 { //conditionally add tera manager
 					QDir pluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
@@ -451,7 +453,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 						pluginsDir.cdUp();
 					}
 #endif
-					if (pluginsDir.cd("plugins/teramanager")==true) 
+					if (pluginsDir.cd("plugins/teramanager")==true)
 					{
 						listAct.append(act = new QAction("", w)); act->setSeparator(true);
 						listAct.append(actCurveCreate_zoom_grabhighrezdata = new QAction("Zoom-in HighRezImage: 1-right-stroke ROI", w));
@@ -654,7 +656,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				pluginsDir.cdUp();
 			}
 #endif
-			if (pluginsDir.cd("plugins/neuron_toolbox")==true) 
+			if (pluginsDir.cd("plugins/neuron_toolbox")==true)
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actDoNeuronToolBoxPlugin = new QAction("NeuronToolbox", w));
@@ -708,6 +710,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
 				listAct.append(actReverseNeuronSeg = new QAction("reverse nearest neuron-segment link order", w));
 				listAct.append(actDeleteNeuronSeg = new QAction("delete the nearest neuron-segment", w));
+
+                    if(0)
+                    {
+                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w)); // ZJL, 20120806
+                    }
+
 				//listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
 
 				listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w));
@@ -856,7 +864,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			case stImageMarker:
 			{
 				QString curFile = "";
-				if (curImg) 
+				if (curImg)
 				{
 					QFileDialog::getSaveFileName(0,
 															   "Select a text (CSV format with .marker extension) file to save the coordinates of landmark points... ",
@@ -864,7 +872,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
 					return update;
 				}
-				
+
 				saveLandmarks_to_file(curFile); //use "" an empty string to force open a file dialog
 				break;
 			}
@@ -1116,7 +1124,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 #ifndef test_main_cpp
 
-    
+
     else if (act == actMarkerCreate_zoom_grabhighrezdata) //for grabbing large data from existing files . by PHC 20120712
 	{
 		selectMode = smMarkerCreate1;
@@ -1167,7 +1175,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_lineAblation = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	else if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging || 
+	else if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging ||
 				act == actMarkerAblateOne_imaging_nocalib || act == actMarkerAblateAll_imaging_nocalib ||
 				act == actMarkerAblateOne_imaging_feedback || act == actMarkerAblateAll_imaging_feedback)
 	{
@@ -1573,7 +1581,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
-
+     else if (act==actDeleteMultiNeuronSeg) // ZJL, 20120806
+	{
+		if (NEURON_CONDITION)
+		{
+               selectMode = smDeleteMultiNeurons;
+               b_addthiscurve = false;
+               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
 	else if (act==actDeleteNeuronSeg)
 	{
 		if (NEURON_CONDITION)
@@ -1826,7 +1842,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		double best_dist;
 		np->n_id = findNearestNeuronNode_WinXY(cx, cy, &np->nt, best_dist);
 		np->win = (V3dR_MainWindow *)w->getMainWindow();
-        
+
         printf("the main window pointer = [%p]\n", ((iDrawExternalParameter*)_idep)->V3Dmainwindow);
 		doNeuronToolBoxPlugin(((iDrawExternalParameter*)_idep)->V3Dmainwindow, *np);
 	}
@@ -1838,7 +1854,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             curImg->update_3drenderer_neuron_view();
         }
     }
-    
+
 
 
 #endif //tes_main_cpp
@@ -1868,7 +1884,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (a>0)
 			QMessageBox::information(0, "Surface Volume", QString("The surface volume is: %1").arg(a));
 	}
-    
+
 	return update;
 }
 
@@ -1878,7 +1894,7 @@ void Renderer_gl1::endSelectMode()
 {
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
-    
+
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
 	if (selectMode == smCurveCreate_pointclick)
@@ -1939,7 +1955,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 
 	// define a curve //091023
-	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
+	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons)
 	{
 		_appendMarkerPos(x,y);
 
@@ -1957,7 +1973,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
 
-		int N = (selectMode == smCurveCreate1)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+		int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 
 		if (list_listCurvePos.size() >= N)
 		{
@@ -1969,10 +1985,16 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				solveCurveCenter(loc_vec_input);
 			}
 			else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
+               {
 				solveCurveViews();
+               }
+               else if (selectMode == smDeleteMultiNeurons)
+               {
+                    deleteMultiNeuronsByStroke();
+               }
 
 			list_listCurvePos.clear();
-			if (selectMode != smCurveCreate1) // make 1-track continue selected mode
+			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode
 				endSelectMode();
 		}
 	}
@@ -2610,7 +2632,7 @@ int Renderer_gl1::hitPen(int x, int y)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 
 	// define a curve //091023
-	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
+	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons ||
 			// for curve refinement, 110831 ZJL
 			selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
@@ -3392,14 +3414,14 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		else if (b_grabhighrez && curXWidget) //120717
 		{
 			b_grabhighrez = false;
-            
+
 			//set the hiddenSelectWidget for the V3D mainwindow
 			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
 			{
 				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
 				return;
 			}
-            
+
 			//set up parameters
 			v3d_imaging_paras myimagingp;
 			myimagingp.OPS = "Acquisition: ROI from High Resolution Image";
@@ -3413,7 +3435,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			myimagingp.xrez = curImg->getRezX() / 2.0;
 			myimagingp.yrez = curImg->getRezY() / 2.0;
 			myimagingp.zrez = curImg->getRezZ() / 2.0;
-            
+
 			//do imaging
 			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
@@ -3464,15 +3486,15 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 			loc0.x = pos0.x;
 			loc0.y = pos0.y;
 			loc0.z = pos0.z;
-			if (loc0.x>=0 && loc0.x<curImg->getXDim() && 
-					loc0.y>=0 && loc0.y<curImg->getYDim() && 
+			if (loc0.x>=0 && loc0.x<curImg->getXDim() &&
+					loc0.y>=0 && loc0.y<curImg->getYDim() &&
 					loc0.z>=0 && loc0.z<curImg->getZDim())
 			{
 				myimagingp.list_landmarks.push_back(loc0);
 			}
 
 			V3DLONG pre_pos_id = 0;
-			for (V3DLONG i=1; i<loc_vec.size(); i++) 
+			for (V3DLONG i=1; i<loc_vec.size(); i++)
 			{
 				// curent pos
 				XYZ & curpos = loc_vec.at(i);
@@ -3488,13 +3510,13 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 				locpre.y = prepos.y;
 				locpre.z = prepos.z;
 
-				if (loc.x>=0 && loc.x<curImg->getXDim() && 
-					loc.y>=0 && loc.y<curImg->getYDim() && 
+				if (loc.x>=0 && loc.x<curImg->getXDim() &&
+					loc.y>=0 && loc.y<curImg->getYDim() &&
 					loc.z>=0 && loc.z<curImg->getZDim())
-				{					
+				{
 					// compute distance between two locs
 					double dist;
-					dist = sqrt((loc.x*rezx - locpre.x*rezx)*(loc.x*rezx - locpre.x*rezx) + 
+					dist = sqrt((loc.x*rezx - locpre.x*rezx)*(loc.x*rezx - locpre.x*rezx) +
 						(loc.y*rezy - locpre.y*rezy)*(loc.y*rezy - locpre.y*rezy) + (loc.z*rezz - locpre.z*rezz)*(loc.z*rezz - locpre.z*rezz) );
 					if(dist > 2.0)
 					{
@@ -3514,14 +3536,14 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 				loc.y = curpos.y;
 				loc.z = curpos.z;
 
-				if (loc.x>=0 && loc.x<curImg->getXDim() && 
-					loc.y>=0 && loc.y<curImg->getYDim() && 
+				if (loc.x>=0 && loc.x<curImg->getXDim() &&
+					loc.y>=0 && loc.y<curImg->getYDim() &&
 					loc.z>=0 && loc.z<curImg->getZDim())
 					myimagingp.list_landmarks.push_back(loc);
 			}
 		}
 
-		if (b_ablation && w && curImg && curXWidget && myimagingp.list_landmarks.size()>0) 
+		if (b_ablation && w && curImg && curXWidget && myimagingp.list_landmarks.size()>0)
 		{
 			//b_ablation = false; //reset the status. by Hanchuan peng, 120506 // reset b_ablation in endSelectMode() by Jianlong Zhou 20120726
 
@@ -3707,7 +3729,7 @@ double Renderer_gl1::solveMarkerCenter()
 {
     QTime t;
     t.start();
-    
+
 	if (listMarkerPos.size()<1)  return t.elapsed();
 
 	const MarkerPos & pos = listMarkerPos.at(0);
@@ -3743,7 +3765,7 @@ double Renderer_gl1::solveMarkerCenter()
 
 		produceZoomViewOf3DRoi(loc_vec);
 	}
-    
+
     return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
 }
 

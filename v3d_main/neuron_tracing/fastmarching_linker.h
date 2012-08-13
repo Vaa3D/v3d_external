@@ -1423,8 +1423,8 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 			double ty1 = fm1.y - nm1.y;
 			double tz1 = fm1.z - nm1.z;
 			double dst1 = sqrt(tx1 * tx1 + ty1 * ty1 + tz1 * tz1);
-			rt[0] = tx1 / dst1; 
-			rt[1] = ty1 / dst1; 
+			rt[0] = tx1 / dst1;
+			rt[1] = ty1 / dst1;
 			rt[2] = tz1 / dst1;
 		}
 		else if(nm2 != fm2)
@@ -1433,8 +1433,8 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 			double ty2 = fm2.y - nm2.y;
 			double tz2 = fm2.z - nm2.z;
 			double dst2 = sqrt(tx2 * tx2 + ty2 * ty2 + tz2 * tz2);
-			rt[0] = tx2 / dst2; 
-			rt[1] = ty2 / dst2; 
+			rt[0] = tx2 / dst2;
+			rt[1] = ty2 / dst2;
 			rt[2] = tz2 / dst2;
 		}
 		else
@@ -1447,7 +1447,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 		MAKE_UNIT(n1n2);
 		double n2n1[3] = {-n1n2[0], -n1n2[1], -n1n2[2]};
 
-		double f1f2[3] = {fm2.x - fm1.x, fm2.y - fm1.y, fm2.z - fm1.z}; 
+		double f1f2[3] = {fm2.x - fm1.x, fm2.y - fm1.y, fm2.z - fm1.z};
 		MAKE_UNIT(f1f2);
 		double f2f1[3] = {-f1f2[0], -f1f2[1], -f1f2[2]};
 
@@ -1523,7 +1523,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 					long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
 					long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
 					long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
-					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2) 
+					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
 					{
 						all_mask.push_back(MyMarker(ii,jj,kk));
 					}
@@ -1531,7 +1531,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 			}
 		}
 	}
-	
+
 	// calculate pca for projection points
 	vector<MyMarker> prjct3d_markers;
 	MyMarker orig_marker;
@@ -1566,7 +1566,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 	double dy = mid_marker.y - orig_marker.y;
 	double dz = mid_marker.z - orig_marker.z;
 	double dd = sqrt(dx*dx + dy*dy + dz*dz);
-	assert(dd != 0.0); 
+	assert(dd != 0.0);
 	dx /= dd; dy /= dd; dz /= dd;
 
 	double a[3] = {dx, dy, dz};
@@ -1575,7 +1575,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 	c[1] = far_markers[0].y - near_markers[0].y;
 	c[2] = far_markers[0].z - near_markers[0].z;
 	double lc = sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]);
-	assert(lc != 0); 
+	assert(lc != 0);
 	c[0] /= lc; c[1] /= lc; c[2] /= lc;
 	// b = c x a
 	b[0] = c[1] * a[2] - c[2] * a[1];
@@ -1583,7 +1583,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 	b[2] = c[0] * a[1] - c[1] * a[0];
 
 	// get center of mass in new coordinate system
-	
+
 	double avg_x = 0, avg_y = 0, avg_z = 0;
 
 	for(int m = 1; m < prjct3d_markers.size(); m++)
@@ -1619,7 +1619,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 	double theta = 0.5 * atan(beta/(alpha-gama));
 	double cos_theta = cos(theta);
 	double sin_theta = sin(theta);
-	
+
 	// create new coordinate system
 	double aa[3], bb[3];
 	double cc[3] = {c[0], c[1], c[2]};
@@ -1701,7 +1701,7 @@ template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, ve
 		outswc[i]->y = orig_marker.y + x * aa[1] + y * bb[1] + z * cc[1];
 		outswc[i]->z = orig_marker.z + x * aa[2] + y * bb[2] + z * cc[2];
 	}
-	
+
 	if(outimg1d){delete [] outimg1d; outimg1d = 0;}
 
 	return true;
