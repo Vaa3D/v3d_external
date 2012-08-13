@@ -92,7 +92,7 @@ include(v3d_essential.pro)
 #CONFIG += console
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
-CONFIG  += debug
+#CONFIG  += debug
 
 # Flags for gsoap (web services)
 QMAKE_CXXFLAGS += -DWITH_NONAMESPACES

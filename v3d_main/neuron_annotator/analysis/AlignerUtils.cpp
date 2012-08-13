@@ -51,4 +51,5 @@ int AlignerUtils::processArgs(vector<char*> *argList)
 
 bool AlignerUtils::createSubVolume() {
     qDebug() << "createSubVolume: subVolume=" << subVolumeString;
+	return true;
 }
