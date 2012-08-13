@@ -173,7 +173,7 @@
 }
 
 static void converting32bit_to_8bit(float *pre1d, unsigned char *pPost, V3DLONG imsz);
-static void converting16bit_to_8bit(short int *pre1d, unsigned char *pPost, V3DLONG imsz);
+static void converting16bit_to_8bit(unsigned short *pre1d, unsigned char *pPost, V3DLONG imsz);
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
@@ -1355,7 +1355,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 
      if (curImg && data4dp && chno>=0 &&  chno <dim4)
      {
-          short int *pIntImg = 0;
+          unsigned short *pIntImg = 0;
           float *pFloatImg = 0;
           switch (datatype)
           {
@@ -1363,7 +1363,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
                     pImg = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
                     break;
                case V3D_UINT16:
-                    pIntImg = (short int*) (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int));
+                    pIntImg = (unsigned short *) (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(unsigned short));
                     pImg = new unsigned char [dim3*dim2*dim1];
                     converting16bit_to_8bit(pIntImg, pImg, dim3*dim2*dim1);
                     break;
@@ -2912,7 +2912,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	if (V3Dmainwindow )
 	{
           V3DLONG num_tree = listNeuronTree.size();
-          if (num_tree > 0)// && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
+          if (num_tree > 0)
           {
                for(V3DLONG j=0; j< num_tree; j++)
                {
@@ -2941,13 +2941,14 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                                    qDebug()<<"Run here!";
                               }
                          }
-
                     } // end for i<num_pos
                }
           }
 	}
 
 }
+
+
 
 
 // func type converting kernel
@@ -2986,7 +2987,7 @@ void converting32bit_to_8bit(float *pre1d, unsigned char *pPost, V3DLONG imsz)
 
 }
 
-void converting16bit_to_8bit(short int *pre1d, unsigned char *pPost, V3DLONG imsz)
+void converting16bit_to_8bit(unsigned short *pre1d, unsigned char *pPost, V3DLONG imsz)
 {
      if (!pre1d ||!pPost || imsz<=0 )
      {
@@ -2994,8 +2995,8 @@ void converting16bit_to_8bit(short int *pre1d, unsigned char *pPost, V3DLONG ims
           return;
      }
 
-	short int *pPre = pre1d;
-     short int max_v=0, min_v = 255;
+	unsigned short *pPre = pre1d;
+     unsigned short max_v=0, min_v = 255;
 
      for(V3DLONG i=0; i<imsz; i++)
      {

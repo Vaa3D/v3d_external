@@ -407,34 +407,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveRefine_fm->setVisible(true);
 			actCurveRefine_fm->setIconVisibleInMenu(true);
 
-               // add these menus if click is close to a seg
-               // V3DLONG segid, ind;
-               // bool me = findNearestNeuronSeg_WinXY(cx, cy, segid, ind);
-               // V3DLONG NS = curImg->tracedNeuron.seg.size();
-               // if(/*segid>=0*/me && NS>0)
-               // {
-               //      // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
-               //      listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment", w));
-               //      actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
-               //      actCurveEditRefine->setVisible(true);
-               //      actCurveEditRefine->setIconVisibleInMenu(true);
-               //      //listAct.append(act = new QAction("", w));
-
-               //      // Drag a curve to refine it by using rubber-band line like method
-               //      listAct.append(actCurveRubberDrag = new QAction("drag/refine nearest neuron-segment", w));
-               //      actCurveRubberDrag->setIcon(QIcon(":/icons/click3.svg"));
-               //      actCurveRubberDrag->setVisible(true);
-               //      actCurveRubberDrag->setIconVisibleInMenu(true);
-               //      listAct.append(act = new QAction("", w));
-
-               //      act->setSeparator(true);
-
-               //      edit_seg_id = segid;
-               //      bHasSegID = true;
-               // // End of ZJL
-               // }
-
-
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -715,7 +687,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     {
                          listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w)); // ZJL, 20120806
                     }
-
 				//listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
 
 				listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w));
