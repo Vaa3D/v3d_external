@@ -172,8 +172,8 @@
      } \
 }
 
-static void converting32bit_to_8bit(float *pre1d, unsigned char *pPost, V3DLONG imsz);
-static void converting16bit_to_8bit(unsigned short *pre1d, unsigned char *pPost, V3DLONG imsz);
+template <class Tpre, class Tpost>
+     void converting_to_8bit(void *pre1d, Tpost *pPost, V3DLONG imsz);
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
@@ -1365,12 +1365,12 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
                case V3D_UINT16:
                     pIntImg = (unsigned short *) (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(unsigned short));
                     pImg = new unsigned char [dim3*dim2*dim1];
-                    converting16bit_to_8bit(pIntImg, pImg, dim3*dim2*dim1);
+                    converting_to_8bit<unsigned short, unsigned char>((unsigned short*)pIntImg, pImg, dim3*dim2*dim1);
                     break;
                case V3D_FLOAT32:
                     pFloatImg = (float*) (data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float));
                     pImg = new unsigned char [dim3*dim2*dim1];
-                    converting32bit_to_8bit(pFloatImg, pImg, dim3*dim2*dim1);
+                    converting_to_8bit<float, unsigned char>((float*)pFloatImg, pImg, dim3*dim2*dim1);
                     break;
                default:
                     v3d_msg("Unsupported data type found. You should never see this.", 0);
@@ -2945,23 +2945,22 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                }
           }
 	}
-
 }
 
 
-
-
-// func type converting kernel
-void converting32bit_to_8bit(float *pre1d, unsigned char *pPost, V3DLONG imsz)
+// func of converting kernel
+template <class Tpre, class Tpost>
+void converting_to_8bit(void *pre1d, Tpost *pPost, V3DLONG imsz)
 {
      if (!pre1d ||!pPost || imsz<=0 )
      {
-          v3d_msg("Invalid parameters to converting().", 0);
+          v3d_msg("Invalid parameters to converting_to_8bit().", 0);
           return;
      }
 
-	float *pPre = pre1d;
-     float max_v=0, min_v = 255;
+	Tpre *pPre = (Tpre *)pre1d;
+
+     Tpre max_v=0, min_v = 255;
 
      for(V3DLONG i=0; i<imsz; i++)
      {
@@ -2974,50 +2973,16 @@ void converting32bit_to_8bit(float *pre1d, unsigned char *pPost, V3DLONG imsz)
      {
           for(V3DLONG i=0; i<imsz; i++)
           {
-               pPost[i] = (unsigned char) 255*(double)(pPre[i] - min_v)/max_v;
+               pPost[i] = (Tpost) 255*(double)(pPre[i] - min_v)/max_v;
           }
      }
      else
      {
           for(V3DLONG i=0; i<imsz; i++)
           {
-               pPost[i] = (unsigned char) pPre[i];
+               pPost[i] = (Tpost) pPre[i];
           }
      }
 
 }
 
-void converting16bit_to_8bit(unsigned short *pre1d, unsigned char *pPost, V3DLONG imsz)
-{
-     if (!pre1d ||!pPost || imsz<=0 )
-     {
-          v3d_msg("Invalid parameters to converting().", 0);
-          return;
-     }
-
-	unsigned short *pPre = pre1d;
-     unsigned short max_v=0, min_v = 255;
-
-     for(V3DLONG i=0; i<imsz; i++)
-     {
-          if(max_v<pPre[i]) max_v = pPre[i];
-          if(min_v>pPre[i]) min_v = pPre[i];
-     }
-     max_v -= min_v;
-
-     if(max_v>0)
-     {
-          for(V3DLONG i=0; i<imsz; i++)
-          {
-               pPost[i] = (unsigned char) 255*(double)(pPre[i] - min_v)/max_v;
-          }
-     }
-     else
-     {
-          for(V3DLONG i=0; i<imsz; i++)
-          {
-               pPost[i] = (unsigned char) pPre[i];
-          }
-     }
-
-}
