@@ -159,12 +159,13 @@ void VolumeTexture::loadNextVolume()
         emit volumeLoadSequenceCompleted();
         return;
     }
+#ifdef USE_FFMPEG
     // Create a secondary queue for mpeg4 files
     int mpeg_count = 0;
     while(fileQueue.front().format == QueuedFile::MPEG_FORMAT) {
         QueuedFile f = fileQueue.front();
         fileQueue.pop_front();
-        ::BlockScaler::Channel channel = BlockScaler::CHANNEL_RGB;
+        BlockScaler::Channel channel = BlockScaler::CHANNEL_RGB;
         if (f.volumeType == QueuedFile::REFERENCE_VOLUME)
             channel = BlockScaler::CHANNEL_ALPHA;
         if (f.volumeType == QueuedFile::SIGNAL_RED_VOLUME)
@@ -182,6 +183,7 @@ void VolumeTexture::loadNextVolume()
         emit mpegLoadSequenceRequested();
         return;
     }
+#endif
     // Load raw files one at a time.
     QueuedFile f = fileQueue.front();
     fileQueue.pop_front();
