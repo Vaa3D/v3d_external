@@ -317,12 +317,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 #ifdef _ALLOW_3D_CURVE_
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
-			listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve", w));
+			listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve (Ver 1.0)", w));
 
 			actCurveCreate1->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveCreate1->setVisible(true);
 			actCurveCreate1->setIconVisibleInMenu(true);
 
+            if (0) //disable two menu items, PHC 20120813
+            {
                listAct.append(actCurveDirectionInter = new QAction("1-right-stroke to define a 3D curve by direction intersection", w));
                actCurveDirectionInter->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveDirectionInter->setVisible(true);
@@ -332,13 +334,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                actCurveMarkerLists_fm->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveMarkerLists_fm->setVisible(true);
 			actCurveMarkerLists_fm->setIconVisibleInMenu(true);
-
-               listAct.append(actCurveTiltedBB_fm = new QAction("1-right-stroke to define a 3D curve (adjacent-pair fast-marching - global optimal)", w));
+            }
+            
+               listAct.append(actCurveTiltedBB_fm = new QAction("1-right-stroke to define a 3D curve (Ver 2a. adjacent-pair fast-marching - global optimal)", w));
                actCurveTiltedBB_fm->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveTiltedBB_fm->setVisible(true);
 			actCurveTiltedBB_fm->setIconVisibleInMenu(true);
 
-            listAct.append(actCurveTiltedBB_fm_sbbox = new QAction("1-right-stroke to define a 3D curve (adjacent-pair fast-marching - serial BBoxes)", w));
+            listAct.append(actCurveTiltedBB_fm_sbbox = new QAction("1-right-stroke to define a 3D curve (Ver 2b. adjacent-pair fast-marching - serial BBoxes)", w));
             actCurveTiltedBB_fm_sbbox->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveTiltedBB_fm_sbbox->setVisible(true);
 			actCurveTiltedBB_fm_sbbox->setIconVisibleInMenu(true);
@@ -389,13 +392,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                }
 
 
-               listAct.append(actCurveCreateTest = new QAction("Test multiple curve creation methods", w));
+            if (0) //disabled by PHC, 2012-08-13.
+            {
+                listAct.append(actCurveCreateTest = new QAction("Test multiple curve creation methods", w));
 			actCurveCreateTest->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveCreateTest->setVisible(true);
 			actCurveCreateTest->setIconVisibleInMenu(true);
 
                // For curve refinement, ZJL 110831
-               listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                  listAct.append(act = new QAction("", w)); act->setSeparator(true);
 
                listAct.append(actCurveRefine = new QAction("n-right-strokes to define a 3D curve by mean shift (refine)", w));
                actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
@@ -406,7 +411,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                actCurveRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveRefine_fm->setVisible(true);
 			actCurveRefine_fm->setIconVisibleInMenu(true);
-
+        }
+            
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
