@@ -702,7 +702,7 @@ void AnnotationWidget::selectEntity(const Entity *entity)
 
 void AnnotationWidget::selectEntity(const Entity *entity, const bool external)
 {
-    qDebug() << "AnnotationWidget::selectEntity"<<(entity==0?"None":*entity->name)<<"external?"<<external;
+    // qDebug() << "AnnotationWidget::selectEntity"<<(entity==0?"None":*entity->name)<<"external?"<<external;
 
     {
         QMutexLocker locker(&mutex);
@@ -767,7 +767,7 @@ void AnnotationWidget::selectEntityById(const qint64 & entityId, const bool exte
 
 void AnnotationWidget::selectNeuron(int index)
 {
-    qDebug() << "AnnotationWidget::selectNeuron"<<index;
+    // qDebug() << "AnnotationWidget::selectNeuron"<<index;
     QMutexLocker locker(&mutex);
 
     if (!annotatedBranch) return;
@@ -804,7 +804,7 @@ void AnnotationWidget::selectNeuron(int index)
 void AnnotationWidget::deselectNeurons()
 {
     QMutexLocker locker(&mutex);
-    qDebug() << "AnnotationWidget::deselectNeurons";
+    // qDebug() << "AnnotationWidget::deselectNeurons";
 
     if (selectedEntity==0||getNeuronNumber(selectedEntity)<0) return; // No neurons are selected
     selectEntity(0);

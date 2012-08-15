@@ -164,7 +164,7 @@ void VolumeTexture::loadNextVolume()
     while(fileQueue.front().format == QueuedFile::MPEG_FORMAT) {
         QueuedFile f = fileQueue.front();
         fileQueue.pop_front();
-        BlockScaler::Channel channel = BlockScaler::CHANNEL_RGB;
+        ::BlockScaler::Channel channel = BlockScaler::CHANNEL_RGB;
         if (f.volumeType == QueuedFile::REFERENCE_VOLUME)
             channel = BlockScaler::CHANNEL_ALPHA;
         if (f.volumeType == QueuedFile::SIGNAL_RED_VOLUME)

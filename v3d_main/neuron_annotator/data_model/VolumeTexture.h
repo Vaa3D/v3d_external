@@ -6,6 +6,7 @@
 #include "SampledVolumeMetadata.h"
 #include <QObject>
 #include <QFileInfo>
+#include <QDir>
 #include <vector>
 #include <deque>
 #include <stdint.h>
