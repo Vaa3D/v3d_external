@@ -126,7 +126,7 @@ void DataColorModel::updateVolumeTextureMetadata()
         for (int c = 0; c < metadata.channelGamma.size(); ++c) {
             // qDebug() << "setting channel gamma" << c << metadata.channelGamma[c];
             d->setChannelGamma(c, metadata.channelGamma[c]);
-            // TODO - or should this be setting the data range?
+            // TODO - or should this be setting the data range, or the hdr range?
             d->setChannelHdrRange(c,
                                   metadata.channelHdrMinima[c],
                                   metadata.channelHdrMaxima[c]);

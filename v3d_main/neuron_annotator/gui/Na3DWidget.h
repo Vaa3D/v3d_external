@@ -171,6 +171,11 @@ protected:
     qreal cachedRelativeScale;
     jfrc::Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
+    // Sometimes we cannot get a read lock on updated textures
+    bool bLabelTextureIsDirty;
+    bool bVisibilityTextureIsDirty;
+    bool bColorMapTextureIsDirty;
+    bool bSignalTextureIsDirty;
 
     // We use 4 textures in the shader
     // Some times we want to initialize them to non-pathological values

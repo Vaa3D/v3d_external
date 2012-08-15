@@ -101,7 +101,11 @@ public:
 
 
 class NeuronSignalTexture : public Base3DTexture<uint32_t>
-{};
+{
+public:
+    bool loadReferenceFromRawFile(QString fileName);
+    bool loadSignalFromRawFile(QString fileName);
+};
 
 
 // Largest texture size on my Mac is 16384
@@ -171,7 +175,12 @@ public:
     const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
     const SampledVolumeMetadata& getMetadata() const {return metadata;}
     void setMetadata(const SampledVolumeMetadata& md) {metadata = md;}
-    bool loadLabelPbdFile(QString fileName) {return neuronLabelTexture.loadFromPbdFile(fileName);}
+    bool loadLabelPbdFile(QString fileName) {
+        return neuronLabelTexture.loadFromPbdFile(fileName);}
+    bool loadSignalRawFile(QString fileName) {
+        return neuronSignalTexture.loadSignalFromRawFile(fileName);}
+    bool loadReferenceRawFile(QString fileName) {
+        return neuronSignalTexture.loadReferenceFromRawFile(fileName);}
 
 protected:
     SampledVolumeMetadata metadata;

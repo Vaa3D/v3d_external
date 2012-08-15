@@ -285,6 +285,110 @@ bool NeuronLabelTexture::loadFromPbdFile(QString fileName)
 }
 
 
+/////////////////////////
+// NeuronSignalTexture //
+/////////////////////////
+
+bool NeuronSignalTexture::loadReferenceFromRawFile(QString fileName)
+{
+    ImageLoader loader;
+    My4DImage stack;
+    if (! loader.loadImage(&stack, fileName))
+        return false;
+    Dimension paddedSize(stack.getXDim(), stack.getYDim(), stack.getZDim());
+    // Load metadata, if metadata file is present
+    QFileInfo fi(fileName);
+    QDir dir(fi.filePath());
+    // e.g. Reference2_100.metadata
+    QString metadataFileName = dir.filePath(fi.completeBaseName() + ".metadata");
+    if (QFile(metadataFileName).exists()) {
+        SampledVolumeMetadata svm;
+        if (svm.loadFromFile(metadataFileName, 0)) {
+            assert(svm.paddedImageSize == paddedSize);
+            usedSize = svm.usedImageSize;
+        }
+    }
+    allocateSize(paddedSize, usedSize);
+    // We should only be loading from an 8-bit file.
+    assert(stack.getUnitBytes() == 1);
+    size_t sc = stack.getCDim();
+    assert(sc == 1);
+    size_t sz = stack.getZDim();
+    size_t sy = stack.getYDim();
+    size_t sx = stack.getXDim();
+    size_t src_row_bytes = sx * stack.getUnitBytes();
+    size_t src_slice_bytes = sy * src_row_bytes;
+    size_t dest_row_bytes = 4 * sx;
+    size_t dest_slice_bytes = sy * dest_row_bytes;
+    const uint8_t* src_channel = stack.getRawData();
+    uint8_t* dest_channel = (uint8_t*)&data[0] + 3; // 3 = offset to alpha channel byte
+    for (int z = 0; z < sz; ++z) {
+        const uint8_t* src_slice = src_channel + z * src_slice_bytes;
+        uint8_t* dest_slice = dest_channel + z * dest_slice_bytes ;
+        for (int y = 0; y < sy; ++y) {
+            const uint8_t* src_row = src_slice + y * src_row_bytes;
+            uint8_t* dest_row = dest_slice + y * dest_row_bytes;
+            for (int x = 0; x < sx; ++x) {
+                dest_row[x*4] = src_row[x];
+            }
+        }
+    }
+    return true;
+}
+
+bool NeuronSignalTexture::loadSignalFromRawFile(QString fileName)
+{
+    ImageLoader loader;
+    My4DImage stack;
+    if (! loader.loadImage(&stack, fileName))
+        return false;
+    Dimension paddedSize(stack.getXDim(), stack.getYDim(), stack.getZDim());
+    // Load metadata, if metadata file is present
+    QFileInfo fi(fileName);
+    QDir dir(fi.filePath());
+    // e.g. Reference2_100.metadata
+    QString metadataFileName = dir.filePath(fi.completeBaseName() + ".metadata");
+    if (QFile(metadataFileName).exists()) {
+        SampledVolumeMetadata svm;
+        if (svm.loadFromFile(metadataFileName, 0)) {
+            assert(svm.paddedImageSize == paddedSize);
+            usedSize = svm.usedImageSize;
+        }
+    }
+    allocateSize(paddedSize, usedSize);
+    // We should only be loading from an 8-bit file.
+    assert(stack.getUnitBytes() == 1);
+    size_t sc = stack.getCDim();
+    size_t sz = stack.getZDim();
+    size_t sy = stack.getYDim();
+    size_t sx = stack.getXDim();
+    size_t src_row_bytes = sx * stack.getUnitBytes();
+    size_t src_slice_bytes = sy * src_row_bytes;
+    size_t src_channel_bytes = sz * src_slice_bytes;
+    size_t dest_row_bytes = 4 * sx;
+    size_t dest_slice_bytes = sy * dest_row_bytes;
+    for (int c = 0; c < sc; ++c) {
+        const uint8_t* src_channel = stack.getRawData() + c * src_channel_bytes;
+        int c2 = c;
+        if (c < 3) c2 = 2 - c;
+        uint8_t* dest_channel = (uint8_t*)&data[0] + c2;
+        for (int z = 0; z < sz; ++z) {
+            const uint8_t* src_slice = src_channel + z * src_slice_bytes;
+            uint8_t* dest_slice = dest_channel + z * dest_slice_bytes ;
+            for (int y = 0; y < sy; ++y) {
+                const uint8_t* src_row = src_slice + y * src_row_bytes;
+                uint8_t* dest_row = dest_slice + y * dest_row_bytes;
+                for (int x = 0; x < sx; ++x) {
+                    dest_row[x*4] = src_row[x];
+                }
+            }
+        }
+    }
+    return true;
+}
+
+
+
 /////////////////////////////
 // NeuronVisibilityTexture //
 /////////////////////////////
@@ -456,7 +560,7 @@ PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     , colorMapTexture(rhs.colorMapTexture)
     , bUse3DSignalTexture(rhs.bUse3DSignalTexture)
 {
-    qDebug() << "PrivateVolumeTexture is being copied";
+    // qDebug() << "PrivateVolumeTexture is being copied";
 }
 
 void PrivateVolumeTexture::setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel)

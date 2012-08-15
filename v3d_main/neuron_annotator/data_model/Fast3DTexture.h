@@ -110,9 +110,6 @@ public:
     virtual ~Fast3DTexture();
     void loadFile(QString fileName, BlockScaler::Channel channel=BlockScaler::CHANNEL_RGB);
 
-    void queueVolume(QString fileName, BlockScaler::Channel channel) {
-        volumeQueue.push_back(QueuedVolume(fileName, channel));
-    }
 
 signals:
     void loadRequested(QString fileName);
@@ -127,6 +124,9 @@ public slots:
     void onHeaderLoaded(int, int, int);
     void gotFrame(int);
     void loadNextVolume();
+    void queueVolume(QString fileName, int channel) {
+        volumeQueue.push_back(QueuedVolume(fileName, (BlockScaler::Channel)channel));
+    }
 
 protected slots:
     void blockScaleFinished();

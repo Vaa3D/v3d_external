@@ -5,7 +5,9 @@
 #include "Dimension.h"
 #include "SampledVolumeMetadata.h"
 #include <QObject>
+#include <QFileInfo>
 #include <vector>
+#include <deque>
 #include <stdint.h>
 
 class DataFlowModel;
@@ -36,6 +38,10 @@ signals:
     void signalMetadataChanged();
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
+    void volumeLoadSequenceCompleted();
+    void mpegQueueRequested(QString fileName, int channel);
+    void mpegLoadSequenceRequested();
+    void loadNextVolumeRequested();
 
 public slots:
     bool updateVolume();
@@ -43,6 +49,11 @@ public slots:
     bool updateColorMapTexture();
     bool loadLabelPbdFile();
     void setLabelPbdFileName(QString fileName) {labelPbdFileName = fileName;}
+    bool loadSignalRawFile(QString fileName);
+    bool loadReferenceRawFile(QString fileName);
+    bool queueFastLoadVolumes(QDir separationDirectory);
+    void loadVolumeQueue();
+    void loadNextVolume();
 #ifdef USE_FFMPEG
     bool loadFast3DTexture();
 #endif
@@ -52,10 +63,14 @@ private:
     typedef NaSharedDataModel<PrivateVolumeTexture> super;
 
 protected:
+    bool queueFile(QString fileName);
+
     const DataFlowModel* dataFlowModel;
     QString labelPbdFileName;
 
 public:
+
+
     /// Allows clients (such as Na3DViewer) to upload pixels in main/OpenGL thread.
     /// (because this operation MUST be done in the OpenGL thread)
     class Reader : public BaseReader
@@ -74,12 +89,58 @@ public:
         const uint32_t* colorMapData2D() const;
     };
 
+
 protected:
     class Writer : public BaseWriter
     {
     public:
         Writer(VolumeTexture&);
     };
+
+
+    /// One file of a series of volume images to be loaded into a VolumeTexture
+    struct QueuedFile
+    {
+        enum FileFormat {RAW_FORMAT, MPEG_FORMAT};
+        enum VolumeType {LABEL_VOLUME, REFERENCE_VOLUME,
+                         SIGNAL_RGB_VOLUME,
+                         SIGNAL_RED_VOLUME,
+                         SIGNAL_GREEN_VOLUME,
+                         SIGNAL_BLUE_VOLUME};
+
+        QueuedFile(QString fileName)
+            : fileName(fileName)
+        {
+            QFileInfo fi(fileName);
+            QString extension = fi.suffix().toLower();
+            QString baseName = fi.baseName();
+            if (extension == "mp4")
+                format = MPEG_FORMAT;
+            else
+                format = RAW_FORMAT;
+            if (baseName.startsWith("Reference"))
+                volumeType = REFERENCE_VOLUME;
+            else if (baseName.startsWith("ConsolidatedLabel"))
+                volumeType = LABEL_VOLUME;
+            else if (baseName.startsWith("ConsolidatedSignal")) {
+                if (baseName.contains("Red"))
+                    volumeType = SIGNAL_RED_VOLUME;
+                else if (baseName.contains("Green"))
+                    volumeType = SIGNAL_GREEN_VOLUME;
+                else if (baseName.contains("Blue"))
+                    volumeType = SIGNAL_BLUE_VOLUME;
+                else
+                    volumeType = SIGNAL_RGB_VOLUME;
+            }
+            else volumeType = SIGNAL_RGB_VOLUME;
+        }
+
+        QString fileName;
+        FileFormat format;
+        VolumeType volumeType;
+    };
+
+    std::deque<QueuedFile> fileQueue; // for staged loading
 };
 
 } // namespace jfrc

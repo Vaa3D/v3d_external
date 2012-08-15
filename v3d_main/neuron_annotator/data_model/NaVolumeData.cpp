@@ -244,6 +244,14 @@ void flipY(My4DImage* img)
 }
 
 /* slot */
+void NaVolumeData::loadSecondaryVolumeDataFromFiles()
+{
+    // qDebug() << "NaVolumeData::loadSecondaryVolumeDataFromFiles()" << __FILE__ << __LINE__;
+    bDoUpdateSignalTexture = false;
+    loadVolumeDataFromFiles();
+}
+
+/* slot */
 void NaVolumeData::loadVolumeDataFromFiles()
 {
     QTime stopwatch;
@@ -266,8 +274,8 @@ void NaVolumeData::loadVolumeDataFromFiles()
         // Temporary kludge to counteract complicated flipping that occurs during neuron separation.
         if (stacksLoaded) {
             if (doFlipY) {
-                qDebug() << "Loading image data into memory from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
-                qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
+                // qDebug() << "Loading image data into memory from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
+                // qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
                 // Data images are flipped relative to reference image.  I turned off flipping in
                 // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
                 // emit benchmarkTimerPrintRequested("Starting to flip Y-axis");
@@ -525,6 +533,90 @@ My4DImage* ensureThreeChannel(My4DImage* input)
     return volImg;
 }
 
+// Convert 8-bit truncated, gamma corrected stack to linear 16-bit,
+// using metadata file; to approximate original 16-bit values
+My4DImage* transformStackToLinear(My4DImage* img1, QString fileName)
+{
+    if (img1->getUnitBytes() != 1)
+        return img1; // I only know how to transform 8-bit data
+    // Load .metadata file to specify the transformation
+    QString metadataFileName = fileName + ".metadata";
+    if (! QFileInfo(metadataFileName).exists()) {
+        // Try removing suffix of stack file name
+        QFileInfo fi(fileName);
+        QDir dir(fi.absolutePath());
+        metadataFileName = dir.absoluteFilePath(fi.completeBaseName()) + ".metadata";
+        // qDebug() << metadataFileName;
+        if (! QFileInfo(metadataFileName).exists())
+            return img1;  // I give up.  There is no metadata file.
+    }
+    QTime time;
+    time.start();
+    assert(QFileInfo(metadataFileName).exists());
+    SampledVolumeMetadata metadata;
+    metadata.loadFromFile(metadataFileName, 0);
+    // Precompute a table of converted values for all values 0-255
+    std::vector< std::vector<uint16_t> > convert;
+    convert.assign(img1->getCDim(), std::vector<uint16_t>((size_t)256, (uint16_t)0));
+    // initialize to linear conversion from 8-bits to 12-bits
+    for (int c = 0; c < convert.size(); ++c) {
+        std::vector<uint16_t>& cc = convert[c];
+        double hdr_max = 4095.0;
+        double hdr_min = 1.0;
+        double gamma = 1.0;
+        if (metadata.channelHdrMaxima.size() > c)
+        {
+            hdr_max = metadata.channelHdrMaxima[c];
+            hdr_min = metadata.channelHdrMinima[c];
+            gamma = metadata.channelGamma[c];
+        }
+        // 255 maps to hdr_max, 1 maps to hdr_min
+        double range = (hdr_max - hdr_min);
+        cc[0] = 0; // zero always maps to zero
+        for (int i = 1; i < cc.size(); ++i)
+        {
+            double i0 = (i - 1.0) / (cc.size() - 2.0); // range 0-1
+            i0 = std::pow(i0, 1.0/gamma); // apply inverse gamma
+            cc[i] = uint16_t(hdr_min + i0 * range + 0.5);
+        }
+    }
+    // Apply the conversion to the whole image
+    const int sc = img1->getCDim();
+    const int sx = img1->getXDim();
+    const int sy = img1->getYDim();
+    const int sz = img1->getZDim();
+    My4DImage* img2 = new My4DImage();
+    img2->loadImage(sx, sy, sz, sc, V3D_UINT16);
+    size_t srcRowBytes = sx * img1->getUnitBytes();
+    size_t destRowBytes = sx * img2->getUnitBytes();
+    size_t srcSliceBytes = sy * srcRowBytes;
+    size_t destSliceBytes = sy * destRowBytes;
+    size_t srcChannelBytes = sz * srcSliceBytes;
+    size_t destChannelBytes = sz * destSliceBytes;
+    const uint8_t* srcVol = img1->getRawData();
+    uint8_t* destVol = img2->getRawData();
+    for (int c = 0; c < sc; ++c) {
+        const uint8_t* srcChannel = srcVol + c * srcChannelBytes;
+        uint8_t* destChannel = destVol + c * destChannelBytes;
+        const std::vector<uint16_t>& conv = convert[c];
+        for (int z = 0; z < sz; ++z) {
+            const uint8_t* srcSlice = srcChannel + z * srcSliceBytes;
+            uint8_t* destSlice = destChannel + z * destSliceBytes;
+            for (int y = 0; y < sy; ++y) {
+                const uint8_t* srcRow = srcSlice + y * srcRowBytes;
+                uint16_t* destRow = (uint16_t*)(destSlice + y * destRowBytes);
+                for (int x = 0; x < sx; ++x) {
+                    destRow[x] = conv[srcRow[x]];
+                }
+            }
+        }
+    }
+    qDebug() << "linearization took" << time.elapsed() << "milliseconds";
+
+    return img2;
+}
+
+
 bool NaVolumeData::Writer::loadStacks()
 {
     if (! m_data->representsActualData()) return false;
@@ -650,21 +742,26 @@ bool NaVolumeData::Writer::loadStacks()
 
     if (! m_data->originalImageStack->p_vmin)
         m_data->originalImageStack->updateminmaxvalues();
-    m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
-    m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
-
     if (! m_data->neuronMaskStack->p_vmin)
         m_data->neuronMaskStack->updateminmaxvalues();
-    m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
-    m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
 
     if (! m_data->representsActualData()) return false;
 
-    // qDebug() << "Calling normalizeReferenceStack...";
-    // normalizeReferenceStack(initialReferenceStack);
-    // qDebug() << "Done calling normalizeReferenceStack";
     if (! m_data->referenceStack->p_vmin)
         m_data->referenceStack->updateminmaxvalues();
+
+    // Approximate 16-bit data for 8-it data volumes
+    m_data->originalImageStack =
+            transformStackToLinear(m_data->originalImageStack,
+                                   m_data->originalImageStackFilePath);
+    m_data->referenceStack =
+            transformStackToLinear(m_data->referenceStack,
+                                   m_data->referenceStackFilePath);
+
+    m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
+    m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
+    m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
+    m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
     m_data->referenceImageProxy = Image4DProxy<My4DImage>(m_data->referenceStack);
     m_data->referenceImageProxy.set_minmax(m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax);
 

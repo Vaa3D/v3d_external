@@ -82,6 +82,7 @@ public slots:
 
 protected slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
+    void loadSecondaryVolumeDataFromFiles(); // When VolumeTexture has already been populated
     void setProgressValue(int progressValue);
     void setProgressMessage(QString message) {emit progressMessageChanged(message);}
     void setStackLoadProgress(int progressValue, int stackIndex);

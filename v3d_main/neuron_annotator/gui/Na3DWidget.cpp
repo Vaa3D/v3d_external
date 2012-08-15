@@ -31,6 +31,10 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , defaultLabelTextureId(0)
         , bGLIsInitialized(false)
         , cachedDefaultFocusIsDirty(true)
+        , bLabelTextureIsDirty(false)
+        , bVisibilityTextureIsDirty(false)
+        , bColorMapTextureIsDirty(false)
+        , bSignalTextureIsDirty(false)
 {
     if (renderer) {
         delete renderer;
@@ -552,17 +556,20 @@ bool Na3DWidget::loadSignalTexture()
     // qDebug() << "Na3DWidget::loadSignalTexture()" << __FILE__ << __LINE__;
     // emit benchmarkTimerPrintRequested("Starting to upload signal texture to video card");
     if (NULL == dataFlowModel) {
+        bSignalTextureIsDirty = false;
         invalidate();
         return false;
     }
     const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
     if (! volumeTexture.representsActualData()) {
+        bSignalTextureIsDirty = false;
         invalidate();
         return false;
     }
     bool bSucceeded = true;
     bool bFullSizeChanged = false;
     bool bTextureSizeChanged = false;
+    bSignalTextureIsDirty = true;
     jfrc::Dimension fullSize, textureSize;
     {
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
@@ -612,6 +619,7 @@ bool Na3DWidget::loadSignalTexture()
             resetVolumeCutRange();
         }
         setRepresentsActualData();
+        bSignalTextureIsDirty = false;
         update();
         // emit benchmarkTimerPrintRequested("Finished uploading signal texture to video card");
     }
@@ -621,9 +629,13 @@ bool Na3DWidget::loadSignalTexture()
 /* slot */
 bool Na3DWidget::loadLabelTexture()
 {
-    if (NULL == dataFlowModel)
+    qDebug() << "Na3DWidget::loadLabelTexture" << __FILE__ << __LINE__;
+    if (NULL == dataFlowModel) {
+        bLabelTextureIsDirty = false;
         return false;
+    }
     bool bSucceeded = true;
+    bLabelTextureIsDirty = true;
     {
         const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
@@ -634,9 +646,12 @@ bool Na3DWidget::loadLabelTexture()
         const uint16_t* data = textureReader.labelData3D();
         if (! loadLabelTexture3D(size.x(), size.y(), size.z(), data))
             return false;
+        qDebug() << "Na3DWidget::loadLabelTexture" << __FILE__ << __LINE__;
     } // Release locks
-    if (bSucceeded)
+    if (bSucceeded) {
+        bLabelTextureIsDirty = false;
         update();
+    }
     return bSucceeded;
 }
 
@@ -644,9 +659,12 @@ bool Na3DWidget::loadLabelTexture()
 bool Na3DWidget::loadVisibilityTexture()
 {
     // qDebug() << "Na3DWidget::loadVisibilityTexture()" << __FILE__ << __LINE__;
-    if (NULL == dataFlowModel)
+    if (NULL == dataFlowModel) {
+        bVisibilityTextureIsDirty = false;
         return false;
+    }
     bool bSucceeded = true;
+    bVisibilityTextureIsDirty = true;
     {
         const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
@@ -656,8 +674,10 @@ bool Na3DWidget::loadVisibilityTexture()
         if (! loadVisibilityTexture2D(data))
             return false;
     } // Release locks
-    if (bSucceeded)
+    if (bSucceeded) {
+        bVisibilityTextureIsDirty = false;
         update();
+    }
     return bSucceeded;
 }
 
@@ -666,9 +686,12 @@ bool Na3DWidget::loadVisibilityTexture()
 bool Na3DWidget::loadColorMapTexture()
 {
     // qDebug() << "Na3DWidget::loadColorMapTexture()" << __FILE__ << __LINE__;
-    if (NULL == dataFlowModel)
+    if (NULL == dataFlowModel) {
+        bColorMapTextureIsDirty = false;
         return false;
+    }
     bool bSucceeded = true;
+    bColorMapTextureIsDirty = true;
     {
         const jfrc::VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         jfrc::VolumeTexture::Reader textureReader(volumeTexture);
@@ -678,8 +701,10 @@ bool Na3DWidget::loadColorMapTexture()
         if (! loadColorMapTexture2D(data))
             return false;
     } // Release locks
-    if (bSucceeded)
+    if (bSucceeded) {
+        bColorMapTextureIsDirty = false;
         update();
+    }
     return bSucceeded;
 }
 
@@ -1724,6 +1749,11 @@ void Na3DWidget::paintGL()
         return;
     }
 
+    if (bSignalTextureIsDirty) loadSignalTexture();
+    if (bLabelTextureIsDirty) loadLabelTexture();
+    if (bColorMapTextureIsDirty) loadColorMapTexture();
+    if (bVisibilityTextureIsDirty) loadVisibilityTexture();
+
     // QElapsedTimer timer; timer.start();
     // emit benchmarkTimerPrintRequested("Starting to paint 3D widget");
     V3dR_GLWidget::paintGL();
@@ -1765,6 +1795,10 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
     NaViewer::setDataFlowModel(dataFlowModelParam);
 
     // volumeTexture.setDataFlowModel(dataFlowModelParam);
+    bVisibilityTextureIsDirty =
+            bLabelTextureIsDirty =
+            bColorMapTextureIsDirty =
+            bSignalTextureIsDirty = false;
 
     // No connecting if it's NULL
     if (dataFlowModel == NULL) {

@@ -23,8 +23,6 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
     , galleryMipImages(mipFragmentColors) // shrink 'em
     , mipMergedData(volumeData, mipFragmentData, dataColorModel, neuronSelectionModel)
-    // TODO slow3DColorModel should depend in VolumeTexture
-    // , slow3DColorModel(volumeData) // for initial testing, slow model has default values
 {
     // Prepare to load 16-bit volume data from disk in a separate QThread
     connect(this, SIGNAL(volumeDataNeeded()),

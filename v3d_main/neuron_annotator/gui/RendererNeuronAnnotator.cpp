@@ -385,7 +385,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(
         const QPoint& screenPos,
         const NaVolumeData::Reader& volumeReader)
 {
-    qDebug() << "RendererNeuronAnnotator::screenPositionToVolumePosition" << screenPos << __FILE__ << __LINE__;
+    // qDebug() << "RendererNeuronAnnotator::screenPositionToVolumePosition" << screenPos << __FILE__ << __LINE__;
     int x = screenPos.x();
     int y = screenPos.y();
 
@@ -542,10 +542,12 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(
                 if (  (offsets < minOffsets)
                    || (offsets > maxOffsets) )
                 {
+                    /*
                     qDebug() << "Avoided segmentation fault in RendererNeuronAnnotator::screenPositionToVolumePosition()"
                              << loc.x << loc.y << loc.z << ";" << dim1 << dim2 << dim3
                              << ";" << offsets
                              << __FILE__ << __LINE__;
+                             */
                     return loc;
                 }
 

@@ -414,7 +414,7 @@ void NaMainWindow::resetBenchmarkTimer()
 /* slot */
 void NaMainWindow::printBenchmarkTimer(QString message)
 {
-    qDebug() << "BENCHMARK" << message << "at" << mainWindowStopWatch.elapsed()/1000.0 << "seconds";
+    // qDebug() << "BENCHMARK" << message << "at" << mainWindowStopWatch.elapsed()/1000.0 << "seconds";
 }
 
 /* virtual */
@@ -1282,110 +1282,63 @@ bool NaMainWindow::on_actionLoad_fast_separation_result_triggered()
     return true;
 }
 
+// Fast preferential population of the 3D viewer.
 bool NaMainWindow::loadSeparationDirectoryV2Mpeg(QDir dir)
 {
 #ifdef USE_FFMPEG
-    if (! dir.exists("fastLoad"))
-        return false;
-    if (! dir.exists("fastLoad/ConsolidatedSignal2_25.mp4"))
-        return false;
+    // Choose the sequence of volume files to load for the 3D viewer.
+    if (! dataFlowModel->getVolumeTexture().queueFastLoadVolumes(dir))
+        return false; // no faster load volumes found
 
-    // select 3D viewer, if it is not already selected
+    // select 3D viewer in GUI, if it is not already selected;
+    // otherwise the faster loading is pretty boring...
     ui.viewerControlTabWidget->setCurrentIndex(2);
+    setViewMode(VIEW_SINGLE_STACK); // no gallery yet.
 
-    // Figure out the finest/largest subsampled image that will fit on the video card.
-    size_t max_mb = 350; // default to max memory of 350 MB
-    // Fetch preset maximum texture memory user preference, if any.
-    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
-    QVariant val = settings.value("NaMaxVideoMegabytes");
-    // qDebug() << "Loading preferences";
-    if (val.isValid()) {
-        size_t mb = val.toInt();
-        if (mb > 0)
-            max_mb = mb;
-    }
-    // Subsample options are 25, 50, 100, and 200 megavoxels
-    int mvoxels = 25;  // Max megavoxels
-    // six bytes per megavoxel with current texture implementation
-    while ((2 * mvoxels * 6) <= max_mb) { // "2" to scale up to the next candidate size
-        if (mvoxels >= 200) // 200 is the largest subsample we have
-            break;
-        mvoxels *= 2; // progress 25, 50, 100, 200
-    }
-    assert(mvoxels >= 25); // lowest sampling rate is 25
-    assert(mvoxels <= 200); // highest sampling rate is 200
-    QString mv = QString("%1").arg(mvoxels);
-    qDebug() << "Using sampling limit of" << mv << "megavoxels";
-
-    // Apply gamma bias already applied to input images
-    // dataFlowModel->getSlow3DColorModel().setSharedGamma(0.46);
-    // dataFlowModel->getSlow3DColorModel().setReferenceGamma(0.46);
-    // emit benchmarkTimerPrintRequested("Initialized color models");
-
-    // keep reference channel off
-    // dataFlowModel->getNeuronSelectionModel().initializeSelectionModel();
-    // ui.v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
-    // qDebug() << "initializeSelectionModelRequested()" << __FILE__ << __LINE__;
-    // emit initializeSelectionModelRequested();
-    setViewMode(VIEW_SINGLE_STACK);
-
-    // TODO - load lossless image into VolumeTexture
-    // connect(mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-    //         &dataFlowModel->getVolumeTexture(), SLOT(loadVolumeDataFromFiles()),
-    //         Qt::UniqueConnection);
-
-    // Prepare to load lossless files after mp4 files have loaded
-    emit subsampleLabelPbdFileNamed(dir.filePath("fastLoad/ConsolidatedLabel2_" + mv + ".v3dpbd"));
-    {
-        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
-        volumeWriter.setOriginalImageStackFilePath(dir.filePath("fastLoad/ConsolidatedSignal3.v3dpbd"));
-        volumeWriter.setReferenceStackFilePath(dir.filePath("fastLoad/Reference3.v3dpbd"));
-        volumeWriter.setMaskLabelFilePath(dir.filePath("fastLoad/ConsolidatedLabel3.v3dpbd"));
-    }
-
-    Fast3DTexture& mpegTexture = dataFlowModel->getFast3DTexture();
-
-    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &dataFlowModel->getVolumeData(), SLOT(loadVolumeDataFromFiles()),
-            Qt::UniqueConnection);
-    connect(&mpegTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            &dataFlowModel->getVolumeTexture(), SLOT(loadLabelPbdFile()),
-            Qt::UniqueConnection);
-
-    // TODO - emit, don't risk copying by direct dataFlowModel->getFoo()
-    dataFlowModel->getVolumeData().doFlipY = false;
-    dataFlowModel->getVolumeData().bDoUpdateSignalTexture = false;
-
-    // Create input node - so data flow model knows where to find lsm metadata
+    // Choose Files to load into other viewers after 3D viewer has updated.
+    dataFlowModel->getVolumeData().doFlipY = false; // default for newer volume types
     MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(dir.absolutePath());
+    QDir fl = QDir(dir.filePath("fastLoad"));
+    if (fl.exists("ConsolidatedSignal3.v3dpbd")) { // full 16-bit data
+        multiColorImageStackNode->setPathToOriginalImageStackFile(
+                fl.absoluteFilePath("ConsolidatedSignal3"));
+        multiColorImageStackNode->setPathToReferenceStackFile(
+                fl.absoluteFilePath("Reference3"));
+        multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
+                fl.absoluteFilePath("ConsolidatedLabel3"));
+    }
+    else if (fl.exists("ConsolidatedSignal2.v3dpbd")) { // 8-bit unflipped gamma corrected data
+        multiColorImageStackNode->setPathToOriginalImageStackFile(
+                fl.absoluteFilePath("ConsolidatedSignal2.v3dpbd")); // not mp4!
+        multiColorImageStackNode->setPathToReferenceStackFile(
+                fl.absoluteFilePath("Reference2.v3dpbd"));
+        multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
+                fl.absoluteFilePath("ConsolidatedLabel2"));
+    }
+    else { // old fashioned partially flipped 8-bit data
+        multiColorImageStackNode->setPathToOriginalImageStackFile(
+                dir.absoluteFilePath("ConsolidatedSignal"));
+        multiColorImageStackNode->setPathToReferenceStackFile(
+                dir.absoluteFilePath("Reference"));
+        multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
+                dir.absoluteFilePath("ConsolidatedLabel"));
+        dataFlowModel->getVolumeData().doFlipY = true;
+    }
+    // Correct Z-thickness
     dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
     dataFlowModel->loadLsmMetadata();
-
     {
-        Fast3DTexture::Writer textureWriter(mpegTexture);
-
-        // First series of lossy downsampled images in mpeg4 format for fast loading
-        // TODO - only load the files that exist
-        // First load lowest resolution mp4 to put something on the screen immediately ~300ms elapsed
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_25.mp4"),
-                                 BlockScaler::CHANNEL_RGB);
-
-        // First refinement: load largest subsample that can fit on the video card. ~1500ms elapsed
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_RGB);
-        // Next add the reference channel
-        mpegTexture.queueVolume(dir.filePath("fastLoad/Reference2_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_ALPHA);
-        // Individual color channels to sharpen the colors
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Red_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_RED);
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Green_" + mv + ".mp4"),
-                                 BlockScaler::CHANNEL_GREEN);
-        mpegTexture.queueVolume(dir.filePath("fastLoad/ConsolidatedSignal2Blue_" + mv + ".mp4"), // ~4000ms elapsed
-                                 BlockScaler::CHANNEL_BLUE);
-
-        mpegTexture.loadNextVolume(); // starts loading process in another thread
+        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
+        volumeWriter.setOriginalImageStackFilePath(
+                multiColorImageStackNode->getPathToOriginalImageStackFile());
+        volumeWriter.setMaskLabelFilePath(
+                multiColorImageStackNode->getPathToMulticolorLabelMaskFile());
+        volumeWriter.setReferenceStackFilePath(
+                multiColorImageStackNode->getPathToReferenceStackFile());
     }
+
+    // Start loading the data.
+    dataFlowModel->getVolumeTexture().loadNextVolume();
     return true;
 #else
     return false;
