@@ -116,13 +116,8 @@ private:
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;
     MipMergedData mipMergedData;
-
     DataColorModel slow3DColorModel;
     DataColorModel fast3DColorModel; // for fast but approximate 3D viewer color updates
-
-    DataColorModel offset2DColorModel; // TODO
-    DataColorModel incremental2DColorModel; // TODO
-
     jfrc::VolumeTexture volumeTexture;
 #ifdef USE_FFMPEG
     Fast3DTexture fast3DTexture;

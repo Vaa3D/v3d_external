@@ -662,7 +662,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, ImagePixelType datatype
         V3DLONG maxSize = totalUnit*unitSize*2;                             // NOTE:
         // unsigned char * compressionBuffer = new unsigned char [maxSize]; // we give the compression buffer 2x room without throwing an error,
                                                                             // even though we hope it peforms well below 1, obviously
-        QVector<unsigned char> compressionBuffer(maxSize);
+        std::vector<unsigned char> compressionBuffer(maxSize);
 
         printf("Allocated compression target with maxSize=%ld\n", maxSize);
 
