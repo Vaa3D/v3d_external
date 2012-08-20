@@ -192,7 +192,7 @@ void VolumeTexture::loadNextVolume()
         // TODO - load one raw file
         assert(f.format == QueuedFile::RAW_FORMAT);
         if (f.volumeType == QueuedFile::LABEL_VOLUME) {
-            qDebug() << "Loading volume" << f.fileName << __FILE__ << __LINE__;
+            // qDebug() << "Loading volume" << f.fileName << __FILE__ << __LINE__;
             setLabelPbdFileName(f.fileName);
             loadLabelPbdFile();
         }

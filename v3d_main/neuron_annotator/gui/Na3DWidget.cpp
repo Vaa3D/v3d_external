@@ -1338,6 +1338,8 @@ void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
         return;
     }
     // qDebug()<<"left click ... ...";
+    if (! dataFlowModel)
+        return;
 
     XYZ loc;
     {

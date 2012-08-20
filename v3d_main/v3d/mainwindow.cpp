@@ -562,7 +562,7 @@ void MainWindow::triggerRunPlugin()
 }
 
 void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
-    qDebug("***vaa3d: MainWindow::closeEvent");
+    // qDebug("***vaa3d: MainWindow::closeEvent");
 
     writeSettings(); //added on 090501 to save setting (default preferences)
 
