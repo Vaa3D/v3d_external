@@ -35,7 +35,9 @@ if(USE_FFMPEG)
 
     # These tests use My4DImage, and therefore must link to all of Vaa3D
     if (APPLE)
-        set(test_progs test_load_mp4 test_write_mp4)
+        set(test_progs
+            # test_load_mp4
+            test_write_mp4)
     else()
         set(test_progs "")
     endif()
