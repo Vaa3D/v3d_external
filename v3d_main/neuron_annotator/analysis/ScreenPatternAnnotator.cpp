@@ -505,7 +505,11 @@ QString ScreenPatternAnnotator::getAbbreviationFromCompartmentMaskFilename(QStri
         return abbreviation;
     }
     QStringList dashList=filename.split("-");
+    for (int i=0;i<dashList.size();i++) {
+      qDebug() << "Dash " << i << "=" << dashList.at(i);
+    }
     QString abbrString=dashList.at(2);
+    qDebug() << "abbrString=" << abbrString;
     abbrString=abbrString.left(abbrString.size()-4); // removes trailing ".tif"
     return abbrString;
 }
