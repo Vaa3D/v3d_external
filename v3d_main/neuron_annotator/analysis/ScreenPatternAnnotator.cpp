@@ -769,9 +769,10 @@ bool ScreenPatternAnnotator::annotate() {
     // Create MIP
     // First - we need to add an outline for the pattern to make sense - we will add a faint border from a
     // compartment channel plane.
-    ImageLoader imageLoaderForMip;
-    My4DImage * mip=imageLoaderForMip.create2DMIPFromStack(imageGlobal16ColorImage);
+    My4DImage * mip=createMIPFromImageByLUT(imageGlobal16ColorImage, lut16Color);
     addXYGhostPlaneFrom3DTo2D(inputImage, BA_20X_XYPLANE_Z_INDEX /* Z index */, 2 /* channel */, mip);
+    ImageLoader imageLoaderForMip;
+    qDebug() << "Saving heatmap16ColorMIP.tif using createMIPFromImageByLUT";
     imageLoaderForMip.saveImage(mip, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif", MIPS_SUBDIR));
 
     // Load Compartment Index
@@ -799,8 +800,9 @@ bool ScreenPatternAnnotator::annotate() {
     }
 
     // Create composite MIP
+    My4DImage * compositeMip=createMIPFromImageByLUT(compositeMaskImage, lut16Color);
     ImageLoader imageLoaderForCompositeMip;
-    My4DImage * compositeMip=imageLoaderForCompositeMip.create2DMIPFromStack(compositeMaskImage);
+    qDebug() << "Saving compositeMaskMIP.tif using createMIPFromImageByLUT";
     imageLoaderForCompositeMip.saveImage(compositeMip, returnFullPathWithOutputPrefix("compositeMaskMIP.tif", MIPS_SUBDIR));
 
     // Load Abbreviation Index Map
@@ -960,13 +962,6 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     }
     qDebug() << "Created compartment heatmap with dimensions " << compartmentHeatmap->getXDim() << " " << compartmentHeatmap->getYDim() << " " << compartmentHeatmap->getZDim();
 
-    My4DImage * compartmentHeatmapMIP=createMIPFromImage(compartmentHeatmap);
-    if (compartmentHeatmapMIP==0) {
-        qDebug() << "compartmentHeatmapMIP returned as 0";
-        return;
-    }
-    qDebug() << "Created MIP from compartment heatmap";
-
     My4DImage * compartmentImage=getChannelSubImageFromMask(inputImage, patternChannelIndex, index, bb, false /* normalize */, 0.0);
     qDebug() << "Created compartmentImage using getChannelSubImageFromMask";
 
@@ -977,7 +972,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     qDebug() << "Created normalizedCompartmentHeatmap with dimensions " << normalizedCompartmentHeatmap->getXDim() << " " <<
                 normalizedCompartmentHeatmap->getYDim() << " " << normalizedCompartmentHeatmap->getZDim();
 
-    My4DImage * normalizedCompartmentHeatmapMIP=createMIPFromImage(normalizedCompartmentHeatmap);
+    My4DImage * normalizedCompartmentHeatmapMIP=createMIPFromImageByLUT(normalizedCompartmentHeatmap, lut16Color);
     qDebug() << "Created normalizedCompartmentHeatmapMIP";
 
     ImageLoader imageLoaderForSave;
@@ -992,7 +987,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     if (!saveStatus) {
         qDebug() << "ScreenPatternAnnotator::createCompartmentAnnotation() Error during save of " << savepathCompartmentHeatmapFullSize;
     }
-    My4DImage * viewableCompartmentMIP=createMIPFromImage(compartmentHeatmapFullSize);
+    My4DImage * viewableCompartmentMIP=createMIPFromImageByLUT(compartmentHeatmapFullSize, lut16Color);
     QString filenameCompartmentHeatmapFullSizeMIP=abbreviation;
     filenameCompartmentHeatmapFullSizeMIP.append("_heatmap16ColorMIP.tif");
     QString savepathCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameCompartmentHeatmapFullSizeMIP, MIPS_SUBDIR));
@@ -1013,7 +1008,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     if (!saveStatus) {
         qDebug() << "ScreenPatternAnnotator::createCompartmentAnnotation() Error during save of " << savepathNormalizedCompartmentHeatmapFullSize;
     }
-    My4DImage * viewableNormalizedCompartmentMIP=createMIPFromImage(normalizedCompartmentHeatmapFullSize);
+    My4DImage * viewableNormalizedCompartmentMIP=createMIPFromImageByLUT(normalizedCompartmentHeatmapFullSize, lut16Color);
     QString filenameNormalizedCompartmentHeatmapFullSizeMIP=abbreviation;
     filenameNormalizedCompartmentHeatmapFullSizeMIP.append("_normalized_heatmap16ColorMIP.tif");
     QString savepathNormalizedCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameNormalizedCompartmentHeatmapFullSizeMIP, MIPS_SUBDIR));
@@ -1046,7 +1041,6 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
 
     // Cleanup
     delete compartmentHeatmap;
-    delete compartmentHeatmapMIP;
     delete compartmentImage;
     delete compartmentNormalizedImage;
     delete normalizedCompartmentHeatmap;
