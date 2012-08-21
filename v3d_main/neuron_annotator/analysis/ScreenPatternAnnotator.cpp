@@ -472,7 +472,7 @@ bool ScreenPatternAnnotator::createCompartmentIndex() {
                 }
             }
 
-            qDebug() << "Found mask of size=" << maskSizeCount;
+            qDebug() << "For abbreviation " << abbreviation << " found mask of size=" << maskSizeCount << " at index " << index;
             delete maskImage;
         }
     }
