@@ -543,7 +543,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(
                    || (offsets > maxOffsets) )
                 {
                     /*
-                    qDebug() << "Avoided segmentation fault in RendererNeuronAnnotator::screenPositionToVolumePosition()"
+                    // qDebug() << "Avoided segmentation fault in RendererNeuronAnnotator::screenPositionToVolumePosition()"
                              << loc.x << loc.y << loc.z << ";" << dim1 << dim2 << dim3
                              << ";" << offsets
                              << __FILE__ << __LINE__;
@@ -618,7 +618,7 @@ void RendererNeuronAnnotator::loadVol()
 
     if ( !(ok = supported_Tex3D()) )
             tryTex3D = 0;
-    qDebug()<< QString("	EXT_texture3D (or OpenGL 2.0)         %1 supported ").arg(ok?"":"NOT");
+    // qDebug()<< QString("	EXT_texture3D (or OpenGL 2.0)         %1 supported ").arg(ok?"":"NOT");
 
     if ( !(ok = supported_TexStream()) )
             if (tryTexStream != -1)
@@ -626,7 +626,7 @@ void RendererNeuronAnnotator::loadVol()
     // qDebug()<< QString("	texture stream (need PBO and GLSL)    %1 supported ").arg(ok?"":"NOT");
 
     ok = supported_GL2();
-    qDebug()<< QString("	GLSL (and OpenGL 2.0)                 %1 supported ").arg(ok?"":"NOT");
+    // qDebug()<< QString("	GLSL (and OpenGL 2.0)                 %1 supported ").arg(ok?"":"NOT");
 
 
     if (imageT>1) //090802: TexSubImage conflicts against compressed texture2D, but is good for compressed texture3D
@@ -825,7 +825,7 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
     }
     else
     {
-        qDebug() << "Using 2D signal textures" << __FILE__ << __LINE__;
+        // qDebug() << "Using 2D signal textures" << __FILE__ << __LINE__;
         assert(false); // 2D textures no longer supported
         tex3D = 0;
         tryTex3D = false;

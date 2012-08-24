@@ -171,11 +171,11 @@ void NaVolumeData::setStackLoadProgress(int progressValue, int stackIndex)
 {
     // qDebug() << "setStackLoadProgress()" << progressValue << stackIndex;
     if (stackIndex < 0) {
-        qDebug() << "stack index less than zero";
+       // qDebug() << "stack index less than zero";
         return;
     }
     if (stackIndex >= stackLoadProgressValues.size()) {
-        qDebug() << "stack index out of range";
+       // qDebug() << "stack index out of range";
         return;
     }
     if (progressValue == stackLoadProgressValues[stackIndex])
@@ -444,7 +444,7 @@ void NaVolumeData::Writer::clearImageData()
 
 bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
 {
-    qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileName;
+   // qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileName;
 #ifdef USE_FFMPEG
     My4DImage* img = new My4DImage();
     if (! loadStackFFMpeg(fileName.toStdString().c_str(), *img) ) {
@@ -461,7 +461,7 @@ bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
 
 int NaVolumeData::Writer::loadChannels(QString fileName) // includes loading general volumes
 {
-    qDebug() << "NaVolumeData::Writer::loadChannels()" << fileName;
+   // qDebug() << "NaVolumeData::Writer::loadChannels()" << fileName;
     My4DImage* img = new My4DImage();
     ImageLoader loader;
     if (! loader.loadImage(img, fileName) ) {
@@ -477,7 +477,7 @@ int NaVolumeData::Writer::loadChannels(QString fileName) // includes loading gen
 
 bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
 {
-    qDebug() << "NaVolumeData::Writer::setSingleImageVolume";
+   // qDebug() << "NaVolumeData::Writer::setSingleImageVolume";
     if (m_data->originalImageStack == img)
         return false; // no change
     if (NULL == img)
@@ -502,7 +502,7 @@ My4DImage* ensureThreeChannel(My4DImage* input)
         return input;
     if (3 == input->getCDim())
         return input;
-    qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
+   // qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
     My4DImage* volImg = new My4DImage();
     volImg->createImage(
             input->getXDim(),
@@ -611,7 +611,7 @@ My4DImage* transformStackToLinear(My4DImage* img1, QString fileName)
             }
         }
     }
-    qDebug() << "linearization took" << time.elapsed() << "milliseconds";
+   // qDebug() << "linearization took" << time.elapsed() << "milliseconds";
 
     return img2;
 }
@@ -670,7 +670,7 @@ bool NaVolumeData::Writer::loadStacks()
     if (tiff_count > 1)
     {
         bUseMultithreadedLoader = false;
-        qDebug() << "Using single thread loader because there are nonreentrant tiff files to load.";
+       // qDebug() << "Using single thread loader because there are nonreentrant tiff files to load.";
     }
     if (bUseMultithreadedLoader)
     {
@@ -789,8 +789,7 @@ bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
 bool NaVolumeData::Writer::loadVolumeFromTexture(const VolumeTexture* texture)
 {
     // TODO
-    qDebug() << "NaVolumeData::Writer::loadVolumeFromTexture()"
-            << __FILE__ << __LINE__;
+    // qDebug() << "NaVolumeData::Writer::loadVolumeFromTexture()" << __FILE__ << __LINE__;
     if (NULL == texture)
         return false;
     {
@@ -838,10 +837,10 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const VolumeTexture* texture)
                 }
             }
         }
-        qDebug() << "Copying texture took" << stopwatch.elapsed() << "milliseconds";
+       // qDebug() << "Copying texture took" << stopwatch.elapsed() << "milliseconds";
         stopwatch.restart();
         setSingleImageVolume(volImg);
-        qDebug() << "setSingleImageVolume took" << stopwatch.elapsed() << "milliseconds";
+        // qDebug() << "setSingleImageVolume took" << stopwatch.elapsed() << "milliseconds";
     } // release read lock
     // TODO - copy RGBA to data and reference in multiple threads
 

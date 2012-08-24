@@ -90,10 +90,12 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     QGLFormat glFormat = QGLFormat::defaultFormat();
     glFormat.setStereo(true);
     glFormat.setDoubleBuffer(true);
-    if (glFormat.stereo())
-        qDebug() << "Attempting to set 3D stereo format";
-    else
-        qDebug() << "Failed to make stereo 3D default QGLFormat";
+    if (glFormat.stereo()) {
+       // qDebug() << "Attempting to set 3D stereo format";
+    }
+    else {
+       // qDebug() << "Failed to make stereo 3D default QGLFormat";
+    }
     QGLFormat::setDefaultFormat(glFormat);
 #endif
 
@@ -522,7 +524,7 @@ QString NaMainWindow::getDataDirectoryPathWithDialog()
             settings.setValue("NeuronAnnotatorPreviousAnnotationPath", dir.path());
         }
         else {
-            qDebug() << "Problem saving parent directory of " << dirName;
+           // qDebug() << "Problem saving parent directory of " << dirName;
         }
     }
 
@@ -568,7 +570,7 @@ QString NaMainWindow::getStackPathWithDialog()
         settings.setValue("NeuronAnnotatorPreviousAnnotationPath", parentDir.path());
     }
     else {
-        qDebug() << "Problem saving parent directory of " << fileName;
+       // qDebug() << "Problem saving parent directory of " << fileName;
     }
 
     return fileName;
@@ -588,7 +590,7 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 /* slot */
 void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
 {
-    qDebug() << "NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered";
+   // qDebug() << "NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered";
     QString initialDialogPath = QDir::currentPath();
     // Use previous annotation path as initial file browser location
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
@@ -628,7 +630,7 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
         settings.setValue("NeuronAnnotatorPreviousAnnotationPath", parentDir.path());
     }
     else {
-        qDebug() << "Problem saving parent directory of " << fileName;
+       // qDebug() << "Problem saving parent directory of " << fileName;
     }
 
     loadSingleStack(fileName, false);
@@ -693,7 +695,7 @@ void NaMainWindow::dragEnterEvent(QDragEnterEvent * event)
     QString fileName = checkDragEvent(event);
     if (! fileName.isEmpty())
         event->acceptProposedAction();
-    qDebug() << "NaMainWindow::dragEnterEvent" << fileName << __FILE__ << __LINE__;
+   // qDebug() << "NaMainWindow::dragEnterEvent" << fileName << __FILE__ << __LINE__;
 }
 
 void NaMainWindow::dropEvent(QDropEvent * event)
@@ -706,12 +708,12 @@ void NaMainWindow::dropEvent(QDropEvent * event)
     if (   QFile(directory.filePath("ConsolidatedLabel.v3dpbd")).exists()
         || QFile(directory.filePath("ConsolidatedLabel.tif")).exists() )
     {
-        qDebug() << "Found separated neurons directory";
+        // qDebug() << "Found separated neurons directory";
         openMulticolorImageStack(directory.absolutePath());
     }
     else
     {
-        qDebug() << "Switching to Vaa3D default mode to view single image stack";
+        // qDebug() << "Switching to Vaa3D default mode to view single image stack";
         loadSingleStack(fileName, false);
         // ui.actionV3DDefault->trigger(); // switch mode
         // emit defaultVaa3dFileLoadRequested(fileName);
@@ -1124,7 +1126,7 @@ void NaMainWindow::handleCoordinatedCloseEvent(QCloseEvent *e)
         // Remember window size for next time.
         // These settings affect both NaMainWindow and classic V3D MainWindows.  So only use
         // NaMainWindow settings if the NaMainWindow is visible.
-        qDebug() << "Saving NaMainWindow size and position";
+       // qDebug() << "Saving NaMainWindow size and position";
         QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
         settings.setValue("pos", pos());
         settings.setValue("size", size());
@@ -1199,14 +1201,14 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     QVariant val = settings.value("NaBUseFastLoad3D");
     if (val.isValid()) {
-        qDebug() << "stored value of NaBUseFastLoad3D is" << val.toBool();
+       // qDebug() << "stored value of NaBUseFastLoad3D is" << val.toBool();
         bFastLoad = val.toBool();
     }
     if (bFastLoad && loadSeparationDirectoryV2Mpeg(imageDir)) {
-        qDebug() << "Using fast load directory";
+        // qDebug() << "Using fast load directory";
     }
     else if (loadSeparationDirectoryV1Pbd(imageDir)) {
-        qDebug() << "Using non-fastload files";
+        // qDebug() << "Using non-fastload files";
     }
     else {
         QMessageBox::warning(this, tr("Could not load image directory"),
