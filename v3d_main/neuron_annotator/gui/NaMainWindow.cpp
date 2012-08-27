@@ -346,7 +346,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     // TODO - figure out which of these variables to expose once we have a QUndoCommand to work with.
     QUndoGroup * undoGroup = new QUndoGroup(this);
     QAction * undoAction = undoGroup->createUndoAction(this);
+    undoAction->setShortcuts(QKeySequence::Undo);
     QAction * redoAction = undoGroup->createRedoAction(this);
+    redoAction->setShortcuts(QKeySequence::Redo);
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
     // expose undoStack

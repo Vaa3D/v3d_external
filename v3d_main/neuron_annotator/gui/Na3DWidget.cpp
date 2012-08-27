@@ -60,10 +60,12 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         bHasQuadStereo = false;
     if (! context()->format().doubleBuffer())
         bHasQuadStereo = false;
-    if(bHasQuadStereo)
-        qDebug() << "Quad buffer stereo 3D is supported";
-    else
-        qDebug() << "Quad buffer stereo 3D is NOT supported";
+    if(bHasQuadStereo) {
+        // qDebug() << "Quad buffer stereo 3D is supported";
+    }
+    else {
+        // qDebug() << "Quad buffer stereo 3D is NOT supported";
+    }
     emit quadStereoSupported(bHasQuadStereo);
 
     rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"), 5, 5);
@@ -239,12 +241,12 @@ void Na3DWidget::preparingRenderer() // renderer->setupData & init, 100719 extra
         }
         if (supported_TexCompression())
         {
-                qDebug("	GL texture compression supported, enable texture compression function");
+                // qDebug("	GL texture compression supported, enable texture compression function");
                 emit changeEnableVolCompress(true);
         }
         if (supported_GLSL())
         {
-                qDebug("	GL shading language supported, enable volume colormap function");
+                // qDebug("	GL shading language supported, enable volume colormap function");
                 emit changeEnableVolColormap(true);
         }
 
@@ -492,7 +494,12 @@ void Na3DWidget::moveEvent(QMoveEvent * event)
 
 void Na3DWidget::setUndoStack(QUndoStack& undoStackParam) // for undo/redo custom clip planes
 {
-    undoStack = &undoStackParam;
+    if (undoStack != &undoStackParam) {
+        undoStack = &undoStackParam;
+        // Ensure 3d viewer updates when user does "undo" on clip plane.
+        connect(undoStack, SIGNAL(indexChanged(int)),
+                this, SLOT(update()));
+    }
     RendererNeuronAnnotator * ra = getRendererNa();
     if (NULL != ra)
         ra->setUndoStack(undoStackParam);
@@ -510,11 +517,11 @@ void Na3DWidget::initializeGL()
     GLboolean hasStereo;
     glGetBooleanv(GL_STEREO, &hasStereo);
     if(hasStereo) {
-        qDebug() << "OpenGL context supports stereo 3D";
+        // qDebug() << "OpenGL context supports stereo 3D";
         glDrawBuffer(GL_BACK);
     }
     else
-        qDebug() << "OpenGL context does not support stereo 3D";
+        // qDebug() << "OpenGL context does not support stereo 3D";
     V3dR_GLWidget::initializeGL();
 
     init_members();
@@ -629,7 +636,7 @@ bool Na3DWidget::loadSignalTexture()
 /* slot */
 bool Na3DWidget::loadLabelTexture()
 {
-    qDebug() << "Na3DWidget::loadLabelTexture" << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::loadLabelTexture" << __FILE__ << __LINE__;
     if (NULL == dataFlowModel) {
         bLabelTextureIsDirty = false;
         return false;
@@ -646,7 +653,7 @@ bool Na3DWidget::loadLabelTexture()
         const uint16_t* data = textureReader.labelData3D();
         if (! loadLabelTexture3D(size.x(), size.y(), size.z(), data))
             return false;
-        qDebug() << "Na3DWidget::loadLabelTexture" << __FILE__ << __LINE__;
+        // qDebug() << "Na3DWidget::loadLabelTexture" << __FILE__ << __LINE__;
     } // Release locks
     if (bSucceeded) {
         bLabelTextureIsDirty = false;
@@ -994,11 +1001,15 @@ void Na3DWidget::updateCursor()
 void Na3DWidget::keyPressEvent(QKeyEvent *e)
 {
     updateCursor();
-    V3dR_GLWidget::keyPressEvent(e);
-    // Don't let base class implementation swallow escape key event.  Main Window wants to see escape key too.
-    if (e->key() == Qt::Key_Escape)
-    {
-        // qDebug() << "escape pressed in 3D viewer";
+
+    // Only forward certain keys to Vaa3D classic effect
+    switch(e->key()) {
+    // case Qt::Key_Minus: // zoom out
+    // case Qt::Key_Equal: // zoom in
+    case Qt::Key_F: // pixel interpolation
+        V3dR_GLWidget::keyPressEvent(e);
+        break;
+    default:
         QGLWidget::keyPressEvent(e);
     }
 }
@@ -1350,7 +1361,7 @@ void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 
     // select neuron: set x, y, z and emit signal
     // qDebug()<<"emit a signal ...";
-    qDebug() << "emitting neuronSelected()" << loc.x << loc.y << loc.z << __FILE__ << __LINE__;
+    // qDebug() << "emitting neuronSelected()" << loc.x << loc.y << loc.z << __FILE__ << __LINE__;
     emit neuronSelected(loc.x, loc.y, loc.z);
     // update(); // TODO - this update() should be postponed until the response to whatever happens after neuronSelected(...) completes.
 }
