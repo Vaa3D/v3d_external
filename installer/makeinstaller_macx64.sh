@@ -9,6 +9,7 @@ QLIBPATH="/usr/local/Trolltech/Qt-4.7.1/lib"
 
 macdeployqt ../bin/vaa3d64.app  # this sentence will do the following tricks basically, but is better to ensure all Qt files are copied
 
+
 # the following can be revised to add other dependency library files if needed
 
 #if [ -d $VEXEPATH/Frameworks ];
@@ -35,3 +36,11 @@ macdeployqt ../bin/vaa3d64.app  # this sentence will do the following tricks bas
 
 echo "Done! You can run vaa3d binary now with all dependency libraries in its own local folder."
 
+# the following seems not working, by PHC 20120826
+#cd ../bin/plugins
+#for i in $(find ./ name *dylib);
+#  do echo $i;
+#  macdeployqt $i;
+#done;
+#  
+#cd ../../installer
