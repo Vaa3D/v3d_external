@@ -68,7 +68,7 @@ void ConsoleObserver::ontologySelected(qint64 rootId)
 {
     QMutexLocker locker(&loadOntologyMutex);
 
-    qDebug() << "Got signal ontologySelected:" << rootId;
+    // qDebug() << "Got signal ontologySelected:" << rootId;
     loadOntology(rootId);
 }
 
@@ -79,7 +79,7 @@ void ConsoleObserver::ontologySelected(qint64 rootId)
 
 void ConsoleObserver::ontologyChanged(qint64 rootId)
 {
-    qDebug() << "Got signal ontologyChanged:" << rootId;
+    // qDebug() << "Got signal ontologyChanged:" << rootId;
     loadOntology(rootId);
 }
 
@@ -107,7 +107,7 @@ void ConsoleObserver::entitySelected(const QString & category, const QString & u
 
 void ConsoleObserver::entityDeselected(const QString & category, const QString & uniqueId)
 {
-    qDebug() << "Got signal entityDeselected:" << uniqueId<< "category="<<category;
+    // qDebug() << "Got signal entityDeselected:" << uniqueId<< "category="<<category;
 }
 
 //*******************************************************************************************
@@ -118,7 +118,7 @@ void ConsoleObserver::entityViewRequested(qint64 entityId)
 {
     QMutexLocker locker(&entityViewRequestedMutex);
 
-    qDebug() << "Got signal entityViewRequested:" << entityId;
+    // qDebug() << "Got signal entityViewRequested:" << entityId;
 
     if (entityViewRequestedThread != NULL)
     {
@@ -165,7 +165,7 @@ void ConsoleObserver::entityViewRequestedResults(const void *results)
         QString filepath = entity->getValueByAttributeName("File Path");
         if (filepath != NULL)
         {
-            qDebug() << "openStackWithVaa3d " << filepath;
+            // qDebug() << "openStackWithVaa3d " << filepath;
             emit openStackWithVaa3d(filepath);
         }
     }
@@ -189,7 +189,7 @@ void ConsoleObserver::annotatedBranchViewRequested(qint64 entityId)
 {
     QMutexLocker locker(&annotatedBranchViewRequestedMutex);
 
-    qDebug() << "Got signal annotatedBranchViewRequested:" << entityId;
+    // qDebug() << "Got signal annotatedBranchViewRequested:" << entityId;
 
     if (annotatedBranchViewRequestedThread != NULL)
     {
@@ -212,7 +212,7 @@ void ConsoleObserver::annotatedBranchViewRequestedResults(const void *results)
     if (annotatedBranch == NULL) return;
 
     QString filepath = annotatedBranch->getFilePath();
-    qDebug() << "Opening annotated branch, Name:"<<annotatedBranch->name()<<"FilePath:"<<filepath;
+    // qDebug() << "Opening annotated branch, Name:"<<annotatedBranch->name()<<"FilePath:"<<filepath;
 
     if (!filepath.isEmpty()) {
         emit openAnnotatedBranch(annotatedBranch);
@@ -272,7 +272,7 @@ void ConsoleObserver::annotationsChanged(qint64 entityId)
 {
     QMutexLocker locker(&annotationsChangedMutex);
 
-    qDebug() << "Got signal annotationsChanged:" << entityId;
+    // qDebug() << "Got signal annotationsChanged:" << entityId;
 
     if (annotationsChangedThread != NULL)
     {
@@ -310,7 +310,7 @@ void ConsoleObserver::sessionSelected(qint64 sessionId)
 {
     QMutexLocker locker(&loadAnnotationSessionMutex);
 
-    qDebug() << "Got signal sessionSelected:" << sessionId;
+    // qDebug() << "Got signal sessionSelected:" << sessionId;
 
     if (loadAnnotationSessionThread != NULL)
     {
@@ -348,7 +348,7 @@ void ConsoleObserver::loadAnnotationSessionError(const QString & error)
 
 void ConsoleObserver::sessionDeselected()
 {
-    qDebug() << "Got signal sessionDeselected";
+    // qDebug() << "Got signal sessionDeselected";
 
     emit closeAnnotationSession();
 }

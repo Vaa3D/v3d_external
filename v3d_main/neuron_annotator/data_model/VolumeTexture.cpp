@@ -5,6 +5,7 @@
 #include "NaSharedDataModel.cpp"
 #include "../DataFlowModel.h"
 #include "Fast3DTexture.h"
+#include "../utility/FooDebug.h"
 
 template class NaSharedDataModel<jfrc::PrivateVolumeTexture>;
 

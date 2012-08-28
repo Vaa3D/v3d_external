@@ -17,7 +17,7 @@ QT4_WRAP_UI(NA_UI_SRCS
 # Look for "Q_OBJECT" in headers to determine which ones to MOC
 # Begin with a list of all header file candidates
 message(STATUS "Finding header files containing 'Q_OBJECT' macro...")
-file(GLOB NA_MOC_CANDIDATES gui/*.h data_model/*.h gui/trees/*.h)
+file(GLOB NA_MOC_CANDIDATES gui/*.h data_model/*.h gui/trees/*.h utility/*.h)
 foreach(NA_MOC_CAND ${NA_MOC_CANDIDATES})
     # Examine beginning of each header file
     file(READ "${NA_MOC_CAND}" HEADER_TEXT LIMIT 10000)

@@ -150,7 +150,7 @@ void AnnotationWidget::openAnnotationSession(AnnotationSession *annotationSessio
 
     if (annotationSession != NULL && annotationSession->sessionId != NULL)
     {
-        qDebug() << "Loaded session"<<*annotationSession->sessionId;
+        // qDebug() << "Loaded session"<<*annotationSession->sessionId;
     }
     else
     {
@@ -389,7 +389,7 @@ void AnnotationWidget::consoleConnect() {
         return;
     }
 
-    qDebug() << "Registered with console and listening for events";
+    // qDebug() << "Registered with console and listening for events";
 
     ui->consoleLinkButton->disconnect();
     connect(ui->consoleLinkButton, SIGNAL(clicked()), this, SLOT(consoleDisconnect()));
@@ -418,7 +418,7 @@ void AnnotationWidget::consoleDisconnect()
     ui->consoleLinkButton->setEnabled(false);
     consoleObserverService->stopServer(); // will delete itself later
 
-    qDebug() << "The consoleObserverService is now is defunct. It will free its own memory within the next"<<CONSOLE_OBSERVER_ACCEPT_TIMEOUT<<"seconds.";
+    // qDebug() << "The consoleObserverService is now is defunct. It will free its own memory within the next"<<CONSOLE_OBSERVER_ACCEPT_TIMEOUT<<"seconds.";
     showDisconnected();
 }
 
@@ -466,7 +466,7 @@ bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
         if (modifiers & Qt::AltModifier) keyInt += Qt::ALT;
         if (modifiers & Qt::MetaModifier) keyInt += Qt::META;
         QKeySequence keySeq(keyInt);
-        qDebug() << "Key sequence:"<<keySeq.toString(QKeySequence::NativeText) << "Portable:"<< keySeq.toString(QKeySequence::PortableText);
+        // qDebug() << "Key sequence:"<<keySeq.toString(QKeySequence::NativeText) << "Portable:"<< keySeq.toString(QKeySequence::PortableText);
 
         if (ontology != NULL) {
             QMap<QKeySequence, qint64>::const_iterator i = ontology->keyBindMap()->constBegin();
@@ -517,7 +517,7 @@ void AnnotationWidget::annotateSelectedEntityWithOntologyTerm(const Entity *term
 
     if (*selectedEntity->entityType == "Annotation") return; // Cannot annotate annotations
 
-    qDebug() << "Annotate"<<(selectedEntity==0?"":*selectedEntity->name)<<"with"<<(term == NULL ? "NULL" : *term->name) << "id="<< *term->id<< "type="<<termType;
+    // qDebug() << "Annotate"<<(selectedEntity==0?"":*selectedEntity->name)<<"with"<<(term == NULL ? "NULL" : *term->name) << "id="<< *term->id<< "type="<<termType;
 
     // Get input value, if required
     QString *value = 0;
@@ -613,7 +613,7 @@ void AnnotationWidget::removeAnnotation(const Entity *annotation)
     if (annotation == NULL) return; // Nothing to annotate
     if (*annotation->entityType != "Annotation") return; // Cannot remove non-annotations
 
-    qDebug() << "Removing Annotation"<<*annotation->name;
+    // qDebug() << "Removing Annotation"<<*annotation->name;
 
     if (removeAnnotationThread != NULL) removeAnnotationThread->disregard();
     removeAnnotationThread = new RemoveAnnotationThread(*annotation->id);

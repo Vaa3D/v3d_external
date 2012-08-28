@@ -141,6 +141,7 @@ HEADERS += \
     ../neuron_annotator/gui/ColorRangeSliderWidget.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
     ../neuron_annotator/utility/FileTreeSearcher.h \
+    ../neuron_annotator/utility/FooDebug.h \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.h \
     ../neuron_annotator/utility/StitchedFileUtility.h \
     ../neuron_annotator/utility/ImageLoader.h \
@@ -206,6 +207,7 @@ SOURCES += \
     ../neuron_annotator/gui/PreferencesDialog.cpp \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
     ../neuron_annotator/utility/FileTreeSearcher.cpp \
+    ../neuron_annotator/utility/FooDebug.cpp \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.cpp \
     ../neuron_annotator/utility/StitchedFileUtility.cpp \
     ../neuron_annotator/DataFlowModel.cpp \

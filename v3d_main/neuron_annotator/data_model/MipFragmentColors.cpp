@@ -48,7 +48,7 @@ void MipFragmentColors::update()
 
         if (! (colorReader.getNumberOfDataChannels() == mipReader.getNumberOfDataChannels()) )
         {
-            qDebug() << "Error: color model does not match data model";
+            // qDebug() << "Error: color model does not match data model";
             return;
         }
 

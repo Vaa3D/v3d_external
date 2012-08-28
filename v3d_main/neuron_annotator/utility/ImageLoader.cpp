@@ -430,7 +430,7 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QString filepath)
 }
 
 My4DImage* ImageLoader::loadImage(QString filepath) {
-    qDebug() << "Starting to load file " << filepath;
+    // qDebug() << "Starting to load file " << filepath;
     My4DImage* image=new My4DImage();
     loadImage(image, filepath);
     return image;
