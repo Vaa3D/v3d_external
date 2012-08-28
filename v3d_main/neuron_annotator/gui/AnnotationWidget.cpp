@@ -418,7 +418,6 @@ void AnnotationWidget::consoleDisconnect()
     ui->consoleLinkButton->setEnabled(false);
     consoleObserverService->stopServer(); // will delete itself later
 
-    // qDebug() << "The consoleObserverService is now is defunct. It will free its own memory within the next"<<CONSOLE_OBSERVER_ACCEPT_TIMEOUT<<"seconds.";
     showDisconnected();
 }
 

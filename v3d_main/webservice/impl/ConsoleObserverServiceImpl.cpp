@@ -45,12 +45,12 @@ void ConsoleObserverServiceImpl::run()
             }
         }
         else {
+            if (!_running) {
+                return;
+            }
             (void)serve();
             soap_destroy(this);
             soap_end(this);
-        }
-        if (!_running) {
-            return;
         }
     }
 }
