@@ -5,6 +5,8 @@
 #include <QMenu>
 #include <QAction>
 #include <QMainWindow>
+#include <QFileSystemWatcher>
+
 #include "ui_NaMainWindow.h"
 #include "../DataFlowModel.h"
 #include "GalleryButton.h"
@@ -115,7 +117,7 @@ public slots:
     void loadSingleStack(QString fileName, bool useVaa3dClassic);
     void onDataLoadStarted();
     void onDataLoadFinished();
-    bool openMulticolorImageStack(QString dirName);
+    bool openMulticolorImageStack(QString dirName, QString dirName2="");
     void on_actionV3DDefault_triggered();
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
@@ -146,6 +148,7 @@ public slots:
     void showDynamicRangeTool();
     void setTitle(QString title);
     void setCrosshairVisibility(bool);
+    void reexamineResultDirectory(QString);
 
 protected slots:
     void resetBenchmarkTimer();
@@ -190,6 +193,8 @@ private:
     void updateNeuronGallery();
     void updateOverlayGallery();
     static const int maxRecentFiles = 10;
+    QFileSystemWatcher volumeDirectoryWatcher;
+    QString secondaryVolumeDirectoryName;
 
     DataFlowModel* dataFlowModel;
     Ui::NaMainWindow ui;

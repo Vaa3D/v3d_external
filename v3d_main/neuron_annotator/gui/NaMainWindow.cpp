@@ -28,6 +28,7 @@
 #include "AnnotationWidget.h"
 #include "../utility/loadV3dFFMpeg.h"
 #include "PreferencesDialog.h"
+#include "../utility/FooDebug.h"
 
 using namespace std;
 using namespace jfrc;
@@ -391,6 +392,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
             this, SIGNAL(benchmarkTimerPrintRequested(QString)));
     connect(ui.v3dr_glwidget, SIGNAL(benchmarkTimerResetRequested()),
             this, SIGNAL(benchmarkTimerResetRequested()));
+
+    connect(&volumeDirectoryWatcher, SIGNAL(directoryChanged(QString)),
+            this, SLOT(reexamineResultDirectory(QString)));
 
     initializeContextMenus();
     initializeStereo3DOptions();
@@ -1171,7 +1175,7 @@ void NaMainWindow::on_actionOpen_triggered()
     openMulticolorImageStack(dirName);
 }
 
-bool NaMainWindow::openMulticolorImageStack(QString dirName)
+bool NaMainWindow::openMulticolorImageStack(QString dirName, QString dirName2)
 {
     mainWindowStopWatch.start();
     QDir imageDir(dirName);
@@ -1191,6 +1195,28 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
         QMessageBox::warning(this, tr("Could not close previous Annotation Session"),
                      "Error saving previous session and/or clearing memory - please exit application");
                  return false;
+    }
+
+    QList<QDir> dirsToSearch;
+    dirsToSearch << imageDir;
+
+    if (! dirName2.isEmpty())
+    {
+        QDir dir2(dirName2);
+        // If secondary directory exists, use it.
+        if (dir2.exists())
+            dirsToSearch << dir2;
+        // If secondary directory does not exist, watch for its creation.
+        else {
+            QDir parent(QFileInfo(dirName2).dir());
+            if (parent.exists()) {
+                volumeDirectoryWatcher.addPath(parent.canonicalPath());
+                secondaryVolumeDirectoryName = dirName2;
+            }
+            else
+                fooDebug() << "Warning: parent directory of secondary volume directory does not exist"
+                        << dir2.canonicalPath() << __FILE__ << __LINE__;
+        }
     }
 
     createNewDataFlowModel();
@@ -1606,8 +1632,24 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
 }
 
+/* slot */
+void NaMainWindow::reexamineResultDirectory(QString dirName)
+{
+    fooDebug() << "reexamineResultDirectory" << dirName << __FILE__ << __LINE__;
+    if (QDir(secondaryVolumeDirectoryName).exists()) {
+        // TODO - look for newer volume files for both VolumeTexture and NaVolumeData
+    }
+}
+
 bool NaMainWindow::tearDownOldDataFlowModel()
 {
+    QStringList dirs = volumeDirectoryWatcher.directories();
+    for (int d = 0; d < dirs.size(); ++d)
+        volumeDirectoryWatcher.removePath(dirs[d]);
+    QStringList files = volumeDirectoryWatcher.files();
+    for (int f = 0; f < files.size(); ++f)
+        volumeDirectoryWatcher.removePath(files[f]);
+
     if (NULL == dataFlowModel)
         return true;
 

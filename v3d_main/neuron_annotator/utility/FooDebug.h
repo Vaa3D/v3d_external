@@ -70,6 +70,11 @@ protected:
 };
 
 
+// possibly less thread-unsafe replacement for qDebug()
 FooDebug fooDebug();
+
+
+
+
 
 #endif // FOODEBUG_H

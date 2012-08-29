@@ -65,6 +65,8 @@ private:
 
 protected:
     bool queueFile(QString fileName);
+    int chooseFinalVolumes(QDir separationDirectory, int maxMegaVoxels);
+    bool chooseFinalVolume(QDir separationDirectory, int maxMegaVoxels, QString fileRoot);
 
     const DataFlowModel* dataFlowModel;
     QString labelPbdFileName;

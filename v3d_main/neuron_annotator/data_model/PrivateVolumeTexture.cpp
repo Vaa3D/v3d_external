@@ -491,7 +491,7 @@ ColorMapTexture::ColorMapTexture()
 bool ColorMapTexture::update()
 {
     if (NULL == dataColorModel) {
-        qDebug() << "data color model is NULL" << __FILE__ << __LINE__;
+        // qDebug() << "data color model is NULL" << __FILE__ << __LINE__;
         return false;
     }
     const DataColorModel::Reader colorReader(*dataColorModel);
@@ -618,7 +618,7 @@ bool PrivateVolumeTexture::subsampleColorField(const NaVolumeData::Reader& volum
     QTime time2;
     time2.start();
     const Image4DProxy<My4DImage>& imageProxy = volumeReader.getOriginalImageProxy();
-    qDebug() << "starting signal resample";
+    // qDebug() << "starting signal resample";
     // Label field file can be either 8 or 16 bits.
     // Our sammpled version must be 16 bits
     if (1 == imageProxy.su) { // 8 bit input
@@ -627,7 +627,7 @@ bool PrivateVolumeTexture::subsampleColorField(const NaVolumeData::Reader& volum
     else { // 16 bit input
         SignalSampler<uint16_t, uint32_t> sampler(imageProxy, neuronSignalTexture);
     }
-    qDebug() << "color resample took" << time2.elapsed() << "milliseconds";
+    // qDebug() << "color resample took" << time2.elapsed() << "milliseconds";
     return true;
 }
 
@@ -636,7 +636,7 @@ bool PrivateVolumeTexture::subsampleReferenceField(const NaVolumeData::Reader& v
     QTime time2;
     time2.start();
     const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
-    qDebug() << "starting reference resample";
+    // qDebug() << "starting reference resample";
     // Label field file can be either 8 or 16 bits.
     // Our sammpled version must be 16 bits
     if (1 == refProxy.su) { // 8 bit input
@@ -645,7 +645,7 @@ bool PrivateVolumeTexture::subsampleReferenceField(const NaVolumeData::Reader& v
     else { // 16 bit input
         ReferenceSampler<uint16_t, uint32_t> sampler(refProxy, neuronSignalTexture);
     }
-    qDebug() << "reference resample took" << time2.elapsed() << "milliseconds";
+    // qDebug() << "reference resample took" << time2.elapsed() << "milliseconds";
     return true;
 }
 

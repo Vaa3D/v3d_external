@@ -2041,3 +2041,5 @@ v3d_main/neuron_annotator/analysis/AlignerUtils.cpp
 v3d_main/neuron_annotator/analysis/AlignerUtils.h
 v3d_main/neuron_annotator/utility/FooDebug.h
 v3d_main/neuron_annotator/utility/FooDebug.cpp
+v3d_main/neuron_annotator/data_model/StagedFileLoader.h
+v3d_main/neuron_annotator/data_model/StagedFileLoader.cpp

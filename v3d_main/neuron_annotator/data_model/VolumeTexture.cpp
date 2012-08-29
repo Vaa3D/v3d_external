@@ -388,22 +388,50 @@ bool VolumeTexture::queueFastLoadVolumes(QDir separationDirectory)
             ++mpeg_count;
 #endif
 
-    // Finally load a lossless (but 8-bit truncated) version of the signal/reference volumes
-    if (queueFile(fl.filePath("ConsolidatedSignal2_"+mv+".v3dpbd")))
-        ++pbd_count;
-    if (queueFile(fl.filePath("ConsolidatedLabel2_"+mv+".v3dpbd")))
-        ++pbd_count;
-    if (queueFile(fl.filePath("Reference2_"+mv+".v3dpbd")))
-        ++pbd_count;
-    // Success means that at least one volume file was found.
+    pbd_count += chooseFinalVolumes(separationDirectory, mvoxels);
 
     return (mpeg_count + pbd_count) > 0;
+}
+
+// Select the highest quality volume files that will fit on the graphics card
+int VolumeTexture::chooseFinalVolumes(QDir separationDirectory, int maxMegaVoxels)
+{
+    int numFilesAdded = 0;
+
+    if (chooseFinalVolume(separationDirectory, maxMegaVoxels, "ConsolidatedLabel2"))
+        ++numFilesAdded;
+    if (chooseFinalVolume(separationDirectory, maxMegaVoxels, "ConsolidatedSignal2"))
+        ++numFilesAdded;
+    if (chooseFinalVolume(separationDirectory, maxMegaVoxels, "Reference2"))
+        ++numFilesAdded;
+
+    return numFilesAdded;
+}
+
+bool VolumeTexture::chooseFinalVolume(QDir separationDirectory, int maxMegaVoxels, QString fileRoot)
+{
+    QString mv = QString("%1").arg(maxMegaVoxels);
+    if (! separationDirectory.exists("fastLoad"))
+        return false;
+    QDir fl = QDir(separationDirectory.filePath("fastLoad"));
+    while (maxMegaVoxels >= 1) {
+        QString fileName = fl.filePath(fileRoot+"_"+mv+".v3dpbd");
+        if (QFileInfo(fileName).exists())
+            return queueFile(fileName);
+        maxMegaVoxels = maxMegaVoxels / 2;
+    }
+    return false;
 }
 
 bool VolumeTexture::queueFile(QString fileName)
 {
     if (! QFile(fileName).exists())
         return false;
+    std::deque<QueuedFile>::const_iterator f;
+    // Is this file already in the list?
+    for (f = fileQueue.begin(); f != fileQueue.end(); ++f)
+        if (f->fileName == fileName)
+            return false;
     fileQueue.push_back(QueuedFile(fileName));
 }
 

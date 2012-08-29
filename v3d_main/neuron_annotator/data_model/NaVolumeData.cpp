@@ -142,6 +142,31 @@ void NaVolumeData::setTextureInput(const VolumeTexture* texture)
     volumeTexture = texture;
 }
 
+// Load new volume files from a suddenly appearing directory
+bool NaVolumeData::loadBestVolumeFromDirectory(QString dirName)
+{
+    QDir dir(dirName);
+    if (! dir.exists()) return false;
+    QDir fastloadDir = QDir(dir.filePath("fastLoad"));
+
+    // iterate through possible signal file names, in order of desirability
+
+    QList<QString> extensions; // e.g. ConsolidatedSignal3.*v3dpbd*
+    extensions << "v3dpbd" << "mp4" << "v3draw" << "tiff";
+
+    QList<QString> suffixes; // e.g. ConsolidatedSignal*3*.v3dpbd
+
+    QList<QString> bestSignalFiles;
+    bestSignalFiles << "ConsolidatedSignal3.v3dpbd"; // first choice, 16-bit, linear
+    bestSignalFiles << "ConsolidatedSignal2.v3dpbd"; // second choice, 8-bit, sRGB
+    bestSignalFiles << "ConsolidatedSignal.v3dpbd"; // third choice, y-flipped, 8-bit, linear
+
+    for (int f = 0; f < bestSignalFiles.size(); ++f)
+    {
+
+    }
+}
+
 bool NaVolumeData::loadVolumeFromTexture()
 {
     if (NULL == volumeTexture) {

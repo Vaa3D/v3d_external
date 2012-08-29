@@ -165,5 +165,11 @@ bool GalleryButton::updateVisibility()
 void GalleryButton::showContextMenu(QPoint point)
 {
     if (! neuronContextMenu) return;
-    neuronContextMenu->exec(mapToGlobal(point), index);
+    bool neuronIsVisible = true;
+    {
+        NeuronSelectionModel::Reader selectionReader(*neuronSelectionModel);
+        if (selectionReader.hasReadLock())
+            neuronIsVisible = selectionReader.getMaskStatusList()[index];
+    }
+    neuronContextMenu->exec(mapToGlobal(point), index, neuronIsVisible);
 }

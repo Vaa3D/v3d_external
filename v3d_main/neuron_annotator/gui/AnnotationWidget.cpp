@@ -66,7 +66,10 @@ AnnotationWidget::~AnnotationWidget()
     closeOntology();
     closeAnnotatedBranch();
     if (ui != 0) delete ui;
-    if (consoleObserver != 0) delete consoleObserver;
+    if (consoleObserver != NULL) {
+        delete consoleObserver;
+        consoleObserver = NULL;
+    }
     if (consoleObserverService != 0) consoleObserverService->stopServer(); // will delete itself later
     if (createAnnotationThread != 0) createAnnotationThread->disregard(); // will delete itself later
     if (removeAnnotationThread != 0) removeAnnotationThread->disregard(); // will delete itself later
@@ -328,6 +331,8 @@ void AnnotationWidget::consoleConnect() {
     ui->consoleLinkButton->setText(BUTTON_CONNECTING);
     ui->consoleLinkButton->setEnabled(false);
 
+    if (consoleObserver != NULL)
+        delete consoleObserver;
     consoleObserver = new ConsoleObserver(naMainWindow);
     connect(consoleObserver, SIGNAL(openOntology(Ontology*)), this, SLOT(openOntology(Ontology*)));
     connect(consoleObserver, SIGNAL(openAnnotatedBranch(AnnotatedBranch*)), this, SLOT(openAnnotatedBranch(AnnotatedBranch*)));

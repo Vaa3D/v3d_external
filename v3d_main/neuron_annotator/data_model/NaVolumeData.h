@@ -91,6 +91,8 @@ protected slots:
     bool loadOneChannel(QString fileName, int channel_index = 0);
     bool loadNeuronMask(QString fileName);
     bool loadVolumeFromTexture();
+    // support loading of magically appearing directory of files
+    bool loadBestVolumeFromDirectory(QString);
 
 private:
     QString originalImageStackFilePath;

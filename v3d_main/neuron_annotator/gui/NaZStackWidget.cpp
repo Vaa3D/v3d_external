@@ -107,7 +107,15 @@ void NaZStackWidget::showContextMenu(QPoint point)
     // 0 means background
     // >=1 means neuron fragment with  index neuronIx-1
     if (neuronMyersIx >= 0) { // neuron clicked
-        neuronContextMenu->exec(mapToGlobal(point), neuronMyersIx);
+        bool neuronIsVisible = true;
+        if (dataFlowModel != NULL)
+        {
+            NeuronSelectionModel::Reader selectionReader(
+                    dataFlowModel->getNeuronSelectionModel());
+            if (selectionReader.hasReadLock())
+                neuronIsVisible = selectionReader.getMaskStatusList()[neuronMyersIx];
+        }
+        neuronContextMenu->exec(mapToGlobal(point), neuronMyersIx, neuronIsVisible);
     }
     else {
         // non neuron case

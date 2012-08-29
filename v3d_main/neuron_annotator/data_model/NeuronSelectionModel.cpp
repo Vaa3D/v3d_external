@@ -84,6 +84,18 @@ bool NeuronSelectionModel::updateOverlay(int index, bool status)
     return bChanged;
 }
 
+/* slot */
+bool NeuronSelectionModel::hideOneNeuron(int index)
+{
+    updateNeuronMask(index, false);
+}
+
+/* slot */
+bool NeuronSelectionModel::showOneNeuron(int index)
+{
+    updateNeuronMask(index, true);
+}
+
 bool NeuronSelectionModel::updateNeuronMask(int index, bool status)
 {
     // qDebug() << "NeuronSelectionModel::updateNeuronMask" << index << status << maskStatusList[index];

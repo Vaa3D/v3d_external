@@ -61,6 +61,8 @@ public slots:
     bool updateOverlay(int index, bool status);
     bool showAllNeurons();
     bool clearAllNeurons();
+    bool hideOneNeuron(int index);
+    bool showOneNeuron(int index);
     bool showOverlays(const QList<int>);
     bool showExactlyOneNeuron(int index);
     bool showFirstSelectedNeuron();

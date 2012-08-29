@@ -3,9 +3,8 @@
 /* slot */
 void FooDebugWriter::printMessage(QString message)
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     std::cout << message.toStdString() << std::endl;
-    mutex.unlock();
 }
 
 
