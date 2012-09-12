@@ -1,4 +1,6 @@
 #include "ExportFile.h"
+#include "DataFlowModel.h"
+#include <QMutexLocker>
 
 template <class Tinput, class Tmask, class Tref, class Toutput>
 Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *szStack, QList<bool> maskStatusList, QList<bool> overlayStatusList, int datatype){
@@ -117,167 +119,228 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
 }
 
 // export file class
-ExportFile::ExportFile()
-{
-    pOriginal = NULL;
-    pMask = NULL;
-    pRef = NULL;
-    
-    stopped = true;
-}
+ExportFile::ExportFile(
+		QString fileName,
+		const NaVolumeData& volumeData,
+		const NeuronSelectionModel& selectionModel,
+		const DataColorModel& colorModel)
+	: filename(fileName)
+	, volumeData(volumeData)
+	, selectionModel(selectionModel)
+    , colorModel(colorModel)
+    , stopped(true)
+{}
 
 ExportFile::~ExportFile()
 {
 }
 
-bool ExportFile::init(My4DImage *pOriginalInput, My4DImage *pMaskInput, My4DImage *pRefInput, QList<bool> maskStatusListInput, QList<bool> overlayStatusListInput, QString filenameInput)
+template<class TSRC, class TDEST, class TLABEL>
+void copyChannelType(My4DImage& dest, int destChannel,
+		const Image4DProxy<My4DImage>& src, int srcChannel,
+		const Image4DProxy<My4DImage>& label,
+		const QList<bool>& maskStatusList,
+		bool bShowBackground,
+		bool bDoMask)
 {
-    stopped = false;
-    
-    pOriginal = pOriginalInput;
-    pMask = pMaskInput;
-    pRef = pRefInput;
+	const V3DLONG sx = src.sx;
+	const V3DLONG sy = src.sy;
+	const V3DLONG sz = src.sz;
+	const V3DLONG su = dest.getUnitBytes();
 
-    maskStatusList = maskStatusListInput;
-    overlayStatusList = overlayStatusListInput;
+	// copy channel data
+	// pixel by pixel
+	size_t line_size = sx;
+	size_t slice_size = sx*sy;
+	size_t channel_size = sx*sy*sz;
+	TSRC* source_channel = ((TSRC*)src.data_p) + srcChannel*channel_size;
+	TDEST* dest_channel = ((TDEST*)dest.getRawData()) + destChannel*channel_size;
+	for (int z = 0; z < sz; ++z)
+	{
+		TSRC* source_slice = source_channel + z*slice_size;
+		TDEST* dest_slice = dest_channel + z*slice_size;
+		TLABEL* label_slice = ((TLABEL*)label.data_p) + z*slice_size;
+		for (int y = 0; y < sy; ++y)
+		{
+			TSRC* source_line = source_slice + y*line_size;
+			TDEST* dest_line = dest_slice + y*line_size;
+			TLABEL* label_line = label_slice + y*line_size;
+			for (int x = 0; x < sx; ++x)
+			{
+				if (bDoMask) {
+				    TLABEL neuronIndex = label_line[x];
+				    if (0 == neuronIndex) {
+				        if (bShowBackground)
+				            dest_line[x] = source_line[x];
+				        else
+				        	    dest_line[x] = 0;
+				    }
+				    else {
+				    	    if (maskStatusList[neuronIndex-1])
+				    	        dest_line[x] = source_line[x];
+				    	    else
+				    	    	    dest_line[x] = 0;
+				    }
+				}
+				else
+				    dest_line[x] = source_line[x];
+			}
+		}
+	}
+}
 
-    filename = filenameInput;
-    
-    //check
-    if(!pOriginal)
-    {
-        stopped = true;
-        v3d_msg("No image stack is specified.");
-        return false;
-    }
-    
-    if(!pMask)
-    {
-        stopped = true;
-        v3d_msg("No mask stack is specified.");
-        return false;
-    }
-
-    if(!pRef)
-    {
-        stopped = true;
-        v3d_msg("No reference stack is specified.");
-        return false;
-    }
-    
-    if(filename.isEmpty())
-    {
-        stopped = true;
-        v3d_msg("No file name is specified.");
-        return false;
-    }
-    
-    if(QFileInfo(filename).suffix().toUpper() != "TIF")
-    {
-        filename.append(".tif"); // force to save as .tif file
-    }
-
-    return true;
+void copyChannel(My4DImage& dest, int destChannel,
+		const Image4DProxy<My4DImage>& src, int srcChannel,
+		const Image4DProxy<My4DImage>& label,
+		const QList<bool>& maskStatusList,
+		bool bShowBackground,
+		bool bDoMask)
+{
+	typedef unsigned char T1;
+	typedef unsigned short T2;
+	int s = src.su;
+	int d = dest.getUnitBytes();
+	int l = label.su;
+	if (s==1 && d == 1 && l == 1)
+		copyChannelType<T1,T1,T1>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
+	if (s==1 && d == 1 && l == 2)
+		copyChannelType<T1,T1,T2>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
+	if (s==1 && d == 2 && l == 1)
+		copyChannelType<T1,T2,T1>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
+	if (s==1 && d == 2 && l == 2)
+		copyChannelType<T1,T2,T2>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
+	if (s==2 && d == 1 && l == 1)
+		copyChannelType<T2,T1,T1>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
+	if (s==2 && d == 1 && l == 2)
+		copyChannelType<T2,T1,T2>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
+	if (s==2 && d == 2 && l == 1)
+		copyChannelType<T2,T2,T1>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
+	if (s==2 && d == 2 && l == 2)
+		copyChannelType<T2,T2,T2>(dest, destChannel, src, srcChannel,
+				label, maskStatusList, bShowBackground, bDoMask);
 }
 
 void ExportFile::run()
 {
-    mutex.lock();
-
     if(stopped)
     {
         stopped = false;
-        mutex.unlock();
+        // return;
     }
-    else
-    {
-        while(!stopped)
-        {
-            // save tif file
-            V3DLONG sx = pOriginal->getXDim();
-            V3DLONG sy = pOriginal->getYDim();
-            V3DLONG sz = pOriginal->getZDim();
-            V3DLONG sc = pOriginal->getCDim();
 
-            int datatype;
+    QString message;
+    bool bSucceeded = true;
 
-            if( pOriginal->getDatatype() > pRef->getDatatype()){
-                datatype = pOriginal->getDatatype();
-            }
-            else{
-                datatype = pRef->getDatatype();
-            }
+    while (!stopped) // so I can use "break"
+    { // acquire read locks in this block
+        QMutexLocker locker(&mutex);
 
-            V3DLONG szStack[4];
+		// fetch volume dimensions
+		NaVolumeData::Reader volumeReader(volumeData);
+		if (! volumeReader.hasReadLock()) {
+			message = "Could not access Volume data";
+			stopped = true;
+			bSucceeded = false;
+			break;
+		}
+		const Image4DProxy<My4DImage>& originalStack =
+				volumeReader.getOriginalImageProxy();
+		const Image4DProxy<My4DImage>& referenceStack =
+				volumeReader.getReferenceImageProxy();
+		const Image4DProxy<My4DImage>& labelStack =
+				volumeReader.getNeuronMaskProxy();
+		V3DLONG sx = originalStack.sx;
+		V3DLONG sy = originalStack.sy;
+		V3DLONG sz = originalStack.sz;
+		// done fetching volume dimensions
 
-            szStack[0] = sx; szStack[1] = sy; szStack[2] = sz; szStack[3] = sc;
+		// count color channels
+		DataColorModel::Reader colorReader(colorModel);
+		if (colorModel.readerIsStale(colorReader))
+		{
+			message = "Could not access color reader";
+			stopped = true;
+			bSucceeded = false;
+			break;
+		}
+		// Number of color channels depends on input size and toggle state
+		V3DLONG sc = 0;
+		for (int c = 0; c < originalStack.sc; ++c) {
+			// Only export visible color channels
+			if (colorReader.getChannelVisibility(c))
+				++sc;
+		}
+		bool bIncludeSignal = (sc > 0);
+		NeuronSelectionModel::Reader selectionReader(selectionModel);
+		if (! selectionReader.hasReadLock()) {
+			message = "Could not access Neuron masks";
+			stopped = true;
+			bSucceeded = false;
+			break;
+		}
+		const QList<bool>& maskStatusList = selectionReader.getMaskStatusList();
+		const QList<bool>& overlayStatusList = selectionReader.getOverlayStatusList();
+		// Plus perhaps reference channel
+		bool bIncludeReference = selectionReader.overlayIsChecked(DataFlowModel::REFERENCE_MIP_INDEX);
+		if (bIncludeReference)
+			++sc;
+		// done counting color channels
 
-            //if(overlayStatusList.at(0)) szStack[3] ++;
+		// choose pixel format, e.g. 8bit vs. 16bit
+		ImagePixelType pixelType = V3D_UINT8;
+		if (bIncludeSignal && (originalStack.su > pixelType))
+			pixelType = (ImagePixelType)originalStack.su;
+		if (bIncludeReference && (referenceStack.su > pixelType))
+			pixelType = (ImagePixelType)referenceStack.su;
 
-            //
-            void * data1d = NULL;
-            try {
+		// Create output image
+		My4DImage outputImage;
+		outputImage.createImage(sx, sy, sz, sc, pixelType);
+	    // Write each channel
+	    int cOut = 0;
+	    bool bShowBackground = selectionReader.overlayIsChecked(DataFlowModel::BACKGROUND_MIP_INDEX);
+	    if (bIncludeSignal) {
+			for (int c = 0; c < originalStack.sc; ++c) {
+				// Only export visible color channels
+				if (colorReader.getChannelVisibility(c))
+				{
+					copyChannel(outputImage, cOut, originalStack, c,
+							labelStack, maskStatusList, bShowBackground, true);
+					++cOut; // prepare next channel
+				}
+			}
+	    }
+	    if (bIncludeReference) {
+			copyChannel(outputImage, cOut, referenceStack, 0,
+					labelStack, maskStatusList, bShowBackground, false);
+			++cOut; // prepare next channel
+	    }
 
-                if(pOriginal->getDatatype()==V3D_UINT8 && pMask->getDatatype()==V3D_UINT8 && pRef->getDatatype()==V3D_UINT8)
-                {
-                    data1d = (void *) getCurrentStack<unsigned char, unsigned char, unsigned char, unsigned char>((unsigned char *)(pOriginal->getRawData()),
-                                                                                                          (unsigned char *)(pMask->getRawData()),
-                                                                                                          (unsigned char *)(pRef->getRawData()),
-                                                                                                          szStack, maskStatusList, overlayStatusList, datatype);
-                }
-                else if(pOriginal->getDatatype()==V3D_UINT8 && pMask->getDatatype()==V3D_UINT8 && pRef->getDatatype()==V3D_UINT16)
-                {
-                    data1d = (void *) getCurrentStack<unsigned char, unsigned char, unsigned short, unsigned short>((unsigned char *)(pOriginal->getRawData()),
-                                                                                                          (unsigned char *)(pMask->getRawData()),
-                                                                                                          (unsigned short *)(pRef->getRawData()),
-                                                                                                          szStack, maskStatusList, overlayStatusList, datatype);
-                }
-                else if(pOriginal->getDatatype()==V3D_UINT16 && pMask->getDatatype()==V3D_UINT8 && pRef->getDatatype()==V3D_UINT16)
-                {
-                    data1d = (void *) getCurrentStack<unsigned short, unsigned char, unsigned short, unsigned short>((unsigned short *)(pOriginal->getRawData()),
-                                                                                                          (unsigned char *)(pMask->getRawData()),
-                                                                                                          (unsigned short *)(pRef->getRawData()),
-                                                                                                          szStack, maskStatusList, overlayStatusList, datatype);
-                }
-                else
-                {
-                    cout<<"Your datatype is currently not supported!"<<endl;
-                    stopped = true;
-                    mutex.unlock();
-                    return;
-                }
+	    if (imageLoader.saveImage(&outputImage, filename)) {
+	    	    stopped = true;
+	    }
+	    else {
+	    	    bSucceeded = false;
+	    	    message = "Failed to write to file";
+	    	    stopped = true;
+	    }
+    } // release read locks
 
-                if(!data1d) {
-                    cout<<"Fail to generate current image stack!"<<endl;
-                    stopped = true;
-                    mutex.unlock();
-                    return;
-                }
-
-            } catch (...) {
-                cout<<"Fail to export image stack .tif file!"<<endl;
-                stopped = true;
-                mutex.unlock();
-                return;
-            }
-
-            // save .tif image stack
-            if (saveImage(filename.toStdString().c_str(), (const unsigned char *)data1d, szStack, datatype)!=true){
-                cout<<"Fail to save file!"<<data1d<<datatype<<endl;
-                stopped = true;
-                mutex.unlock();
-                return;
-            }
-
-            // de-alloc
-            if(data1d) {delete []data1d; data1d=NULL;}
-
-            // done
-            stopped = true;
-        }
-
-        mutex.unlock();
-    }
+	if (bSucceeded)
+	{
+		emit exportFinished(filename);
+	}
+	else
+	{
+		emit exportFailed(filename, message);
+	}
 
     //
     return;

@@ -169,6 +169,9 @@ protected slots:
     void abortProgress(QString);
     void applyCustomCut();
     void toggleCustomCutMode();
+    void onExportFinished(QString fileName);
+    void onExportFailed(QString fileName, QString message);
+
 
 protected:
     void setDataFlowModel(DataFlowModel* dataFlowModelParam);

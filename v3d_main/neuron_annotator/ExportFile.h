@@ -1,6 +1,10 @@
 #ifndef EXPORTFILE_H
 #define EXPORTFILE_H
 
+#include "utility/ImageLoader.h"
+#include "data_model/NaVolumeData.h"
+#include "data_model/NeuronSelectionModel.h"
+#include "data_model/DataColorModel.h"
 #include <QString>
 #include <QThread>
 #include <QMutex>
@@ -21,30 +25,33 @@ class ExportFile : public QThread
     Q_OBJECT
     
 public:
-    ExportFile();
+    ExportFile(
+    		QString fileName,
+    		const NaVolumeData& volumeData,
+    		const NeuronSelectionModel& selectionModel,
+    		const DataColorModel& colorModel);
     ~ExportFile();
 	
-public:
-    bool init(My4DImage *pOriginalInput, My4DImage *pMaskInput, My4DImage *pRefInput, QList<bool> maskStatusListInput, QList<bool> overlayStatusListInput, QString filenameInput);
+signals:
+    void exportFailed(QString fileName, QString message);
+    void exportFinished(QString fileName);
+
+public slots:
 
 protected:
-    void run();
+    virtual void run();
 	
 public:
     volatile bool stopped; //
-
-    My4DImage *pOriginal;
-    My4DImage *pMask;
-    My4DImage *pRef;
-    QList<bool> maskStatusList;
-    QList<bool> overlayStatusList;
+    const NaVolumeData& volumeData;
+    const NeuronSelectionModel& selectionModel;
+    const DataColorModel& colorModel;
     QString filename;
 	
 private:
     QMutex mutex;
-    
+    ImageLoader imageLoader;
 };
-
 
 
 #endif // EXPORTFILE_H

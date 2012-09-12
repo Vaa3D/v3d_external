@@ -1459,44 +1459,66 @@ QString NaMainWindow::suggestedExportFilenameFromCurrentState(const NeuronSelect
     }
 }
 
-void expressRegretsAboutVolumeWriting() {
-    // TODO
+void expressRegretsAboutVolumeWriting(QString message) {
+	QMessageBox::warning(NULL, "Volume export failed",
+			message);
 }
 
 void NaMainWindow::on_action3D_Volume_triggered()
 {
     if (! dataFlowModel) {
-        expressRegretsAboutVolumeWriting();
+        expressRegretsAboutVolumeWriting("No data available to save");
         return;
     }
-    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
-    if (! volumeReader.hasReadLock()) {
-        expressRegretsAboutVolumeWriting();
-        return;
+    QString suggestedFile;
+    {
+    	    NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+    	    if (! selectionReader.hasReadLock()) {
+    	    	    expressRegretsAboutVolumeWriting("Could not access selection data");
+    	    	    return;
+    	    }
+        suggestedFile=suggestedExportFilenameFromCurrentState(selectionReader);
     }
-    NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
-    if (! selectionReader.hasReadLock()) {
-        expressRegretsAboutVolumeWriting();
-        return;
-    }
+    QString fileTypes = "*.v3dpbd *.v3draw *.tif";
+#ifdef USE_FFMPEG
+    fileTypes += " *.mp4";
+#endif
+    fileTypes = "3D Volumes ("+fileTypes+")";
+    QString filename = QFileDialog::getSaveFileName(
+    		0,
+    		QObject::tr("Save 3D Volume to a file"),
+    		suggestedFile,
+    		QObject::tr(fileTypes.toStdString().c_str()));
+    if (filename.isEmpty())
+    	    return; // user pressed "Cancel"
+    QFileInfo fi(filename);
+    if (fi.suffix().isEmpty())
+    	    filename = filename + ".v3dpbd";
+    fooDebug() << filename;
+	ExportFile *pExport = new ExportFile(
+			filename,
+			dataFlowModel->getVolumeData(),
+			dataFlowModel->getNeuronSelectionModel(),
+			dataFlowModel->getDataColorModel());
+	connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
+	connect(pExport, SIGNAL(exportFinished(QString)),
+			this, SLOT(onExportFinished(QString)));
+	connect(pExport, SIGNAL(exportFailed(QString, QString)),
+			this, SLOT(onExportFinished(QString, QString)));
+	pExport->start();
+}
 
-    QString suggestedFile=suggestedExportFilenameFromCurrentState(selectionReader);
-    QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), suggestedFile, QObject::tr("3D Volume (*.tif)"));
-    if (!(filename.isEmpty())){
-        ExportFile *pExport = new ExportFile;
-        // TODO - read lock is not held for long enough here
-        if(pExport->init(volumeReader.getOriginalImageProxy().img0,
-                         volumeReader.getNeuronMaskProxy().img0,
-                         volumeReader.getReferenceImageProxy().img0,
-                         selectionReader.getMaskStatusList(),
-                         selectionReader.getOverlayStatusList(),
-                         filename))
-        {
-            connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
-            pExport->start();
-        }
-    }
-} // release locks
+/* slot */
+void NaMainWindow::onExportFinished(QString fileName) {
+	QMessageBox::information(this, "Volume export succeeded",
+			"Saved file " + fileName);
+}
+
+/* slot */
+void NaMainWindow::onExportFailed(QString fileName, QString message) {
+	QMessageBox::warning(this, "Volume export failed",
+			message + ": " + fileName);
+}
 
 void NaMainWindow::on_action2D_MIP_triggered() {
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 2D MIP to an .tif file"), ".", QObject::tr("2D MIP (*.tif)"));
