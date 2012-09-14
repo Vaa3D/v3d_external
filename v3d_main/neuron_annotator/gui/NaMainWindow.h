@@ -107,6 +107,7 @@ signals:
     void initializeColorModelRequested();
     void initializeSelectionModelRequested();
     void subsampleLabelPbdFileNamed(QString);
+    void stagedLoadRequested();
 
 public slots:
     void resetVolumeCutRange();
@@ -117,7 +118,7 @@ public slots:
     void loadSingleStack(QString fileName, bool useVaa3dClassic);
     void onDataLoadStarted();
     void onDataLoadFinished();
-    bool openMulticolorImageStack(QString dirName, QString dirName2="");
+    bool openMulticolorImageStack(QString dirName);
     void on_actionV3DDefault_triggered();
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
@@ -148,7 +149,6 @@ public slots:
     void showDynamicRangeTool();
     void setTitle(QString title);
     void setCrosshairVisibility(bool);
-    void reexamineResultDirectory(QString);
 
 protected slots:
     void resetBenchmarkTimer();
@@ -196,8 +196,6 @@ private:
     void updateNeuronGallery();
     void updateOverlayGallery();
     static const int maxRecentFiles = 10;
-    QFileSystemWatcher volumeDirectoryWatcher;
-    QString secondaryVolumeDirectoryName;
 
     DataFlowModel* dataFlowModel;
     Ui::NaMainWindow ui;

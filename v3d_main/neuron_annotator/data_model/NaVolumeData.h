@@ -1,6 +1,7 @@
 #ifndef NAVOLUMEDATA_H
 #define NAVOLUMEDATA_H
 
+#include "StagedFileLoader.h"
 #include "NaLockableData.h"
 #include "../../v3d/v3d_core.h"
 #include "../utility/ImageLoader.h"
@@ -79,6 +80,9 @@ signals:
 
 public slots:
     bool loadChannels(QString fileName); // includes loading general volumes
+    // staged loading
+    bool queueSeparationFolder(QDir folder); // using new staged loader
+    void loadStagedVolumes();
 
 protected slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
@@ -108,6 +112,8 @@ private:
     std::vector<int> stackLoadProgressValues;
     const jfrc::VolumeTexture* volumeTexture;
     int currentProgress;
+    // Staged image loader
+    ProgressiveLoader progressiveLoader;
 
 public:
     typedef NaVolumeDataLoadableStack LoadableStack;

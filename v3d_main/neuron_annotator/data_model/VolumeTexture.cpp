@@ -53,8 +53,10 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
     connect(&dataFlowModel->getFast3DColorModel(), SIGNAL(dataChanged()),
             this, SLOT(updateColorMapTexture()), Qt::UniqueConnection);
     // Try to load another volume, either mp4 or raw
+    // connect(this, SIGNAL(loadNextVolumeRequested()),
+    //         this, SLOT(loadNextVolume()));
     connect(this, SIGNAL(loadNextVolumeRequested()),
-            this, SLOT(loadNextVolume()));
+            this, SLOT(loadStagedVolumes()));
 
 #ifdef USE_FFMPEG
     const Fast3DTexture* fast3DTexture = &dataFlowModel->getFast3DTexture();
@@ -71,7 +73,9 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
             fast3DTexture, SLOT(loadNextVolume()));
     // Report back when mp4 loading is done.
     connect(fast3DTexture, SIGNAL(volumeLoadSequenceCompleted()),
-            this, SLOT(loadNextVolume()));
+            this, SLOT(loadStagedVolumes()));
+    // connect(fast3DTexture, SIGNAL(volumeLoadSequenceCompleted()),
+    //         this, SLOT(loadNextVolume()));
 #endif
 
 }
@@ -153,6 +157,7 @@ bool VolumeTexture::loadReferenceRawFile(QString fileName)
                                       (loads v3draw files for all viewers)
 
 */
+// TODO obsolete this method in favor of StagedLoader
 void VolumeTexture::loadNextVolume()
 {
     // qDebug() << "VolumeTexture::loadNextVolume()" << __FILE__ << __LINE__;
@@ -209,6 +214,84 @@ void VolumeTexture::loadNextVolume()
     }
     else {
         emit loadNextVolumeRequested();
+    }
+}
+
+// Loads a non-mpeg4 volume
+void VolumeTexture::loadOneVolume(ProgressiveCompanion* item, QList<QDir> foldersToSearch)
+{
+    if (item->isFileItem()) {
+        ProgressiveFileCompanion* fileItem = dynamic_cast<
+                ProgressiveFileCompanion*>(item);
+        QString fileName = fileItem->getFileName(foldersToSearch);
+        fooDebug() << "Loading" << fileName << __FILE__ << __LINE__;
+        SignalChannel channel = fileItem->second;
+        if (channel == CHANNEL_LABEL) {
+            setLabelPbdFileName(fileName);
+            loadLabelPbdFile();
+        }
+        else if (channel == CHANNEL_ALPHA) {
+            loadReferenceRawFile(fileName);
+        }
+        else {
+            loadSignalRawFile(fileName);
+        }
+    }
+    else {
+        assert(false);
+        // TODO - non-file volumes
+    }
+}
+
+// New version of loadNextVolume, for use with StagedLoader object
+// Sept 14, 2012 CMB
+void VolumeTexture::loadStagedVolumes()
+{
+    // So we can return to an unloaded item
+    static ProgressiveCompanion* pendingCompanion = NULL;
+    static bool mpegVolumesAreQueued = false;
+
+    // Might have left one file unloaded last time
+    if (pendingCompanion != NULL)
+    {
+        loadOneVolume(pendingCompanion, progressiveLoader.getFoldersToSearch());
+        pendingCompanion = NULL;
+    }
+    // Loop over all volumes to load
+    for (ProgressiveCompanion* item = progressiveLoader.next();
+            item != NULL; item = progressiveLoader.next())
+    {
+        // Mpeg-4 files get loaded to a special queue
+        if (item->isMpeg4Volume()) {
+            mpegVolumesAreQueued = true;
+            ProgressiveFileCompanion* fileItem =
+                    dynamic_cast<ProgressiveFileCompanion*>(item);
+            QString fileName = fileItem->getFileName(progressiveLoader.getFoldersToSearch());
+            SignalChannel channel = fileItem->second;
+            emit mpegQueueRequested(fileName, channel);
+        }
+        // Flush mpeg-4 queue upon observing any non mpeg-4 file
+        else if (mpegVolumesAreQueued)
+        {
+            pendingCompanion = item;
+            mpegVolumesAreQueued = false;
+            emit mpegLoadSequenceRequested();
+            return; // don't worry, we'll be back for the rest
+        }
+        // Load a non-mpeg 4 volume
+        else {
+            loadOneVolume(item, progressiveLoader.getFoldersToSearch());
+        }
+    }
+    //
+    if (mpegVolumesAreQueued)
+    {
+        mpegVolumesAreQueued = false;
+        emit mpegLoadSequenceRequested();
+        return; // don't worry, we'll be back for the rest
+    }
+    else {
+        emit volumeLoadSequenceCompleted();
     }
 }
 
@@ -335,7 +418,7 @@ bool VolumeTexture::updateColorMapTexture()
 // a subsampled, lossless, 8-bit truncated version of the data.
 // The other viewers load an additional series of files to show
 // a not-subsampled version of the data.
-
+// TODO - obsolete these methods
 bool VolumeTexture::queueFastLoadVolumes(QDir separationDirectory)
 {
     int mpeg_count = 0;
@@ -435,9 +518,19 @@ bool VolumeTexture::queueFile(QString fileName)
     fileQueue.push_back(QueuedFile(fileName));
 }
 
-void VolumeTexture::loadVolumeQueue()
+bool VolumeTexture::hasFastVolumesQueued() const
 {
-
+    if (progressiveLoader.size() == 0)
+        return false;
+    // Check for peristent setting
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+    QVariant val = settings.value("NaBUseFastLoad3D");
+    if (val.isValid() && (!val.toBool()))
+        return false; // There are files, but we won't use them
+    // The way we do it now, ANY file item in the queue means fast load is available.
+    if (progressiveLoader.hasFileItem())
+        return true;
+    return false;
 }
 
 #ifdef USE_FFMPEG
@@ -483,6 +576,98 @@ bool VolumeTexture::loadFast3DTexture()
     return true;
 }
 #endif
+
+bool VolumeTexture::queueSeparationFolder(QDir folder) // using new staged loader
+{
+    progressiveLoader.queueSeparationFolder(folder);
+
+    /// Loading sequence: ///
+
+    // 1) The smallest, fastest mpeg4 signal file we can find
+    progressiveLoader.addLoneFile("ConsolidatedSignal2_25.mp4");
+
+    // 2) The largest mpeg4 signal file we can fit in texture memory
+    size_t max_mb = 350; // default to max memory of 350 MB
+    // Fetch preset maximum texture memory user preference, if any.
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+    QVariant val = settings.value("NaMaxVideoMegabytes");
+    // qDebug() << "Loading preferences";
+    if (val.isValid()) {
+        size_t mb = val.toInt();
+        if (mb > 0)
+            max_mb = mb;
+    }
+    // Available sizes are 25*2^n megavoxels
+    // six bytes per megavoxel with current texture implementation
+    // Look for the largest existing file we can load
+    // Subsample options are 25, 50, 100, and 200 megavoxels
+    int mvoxels = 25;  // Max megavoxels
+    while ((2 * mvoxels * 6) <= max_mb) { // "2" to scale up to the next candidate size
+        mvoxels *= 2; // progress 25, 50, 100, 200
+    }
+    assert(mvoxels >= 25); // lowest sampling rate is 25
+    // We are not yet checking whether files exist; That happens at load time.
+    // Start with largest, most desirable file name
+    int mvoxels0 = mvoxels;
+    ProgressiveLoadItem* fullSizeItem = new ProgressiveLoadItem();
+    // File candidates are ordered by decreasing size, starting with the
+    // largest that could fit in video memory.
+    while (mvoxels0 > 25)
+    {
+        // Load both signal and reference for these volumes
+        ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
+        QString mv = QString("%1").arg(mvoxels0);
+        // First the full color signal with poor color separation
+        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".mp4");
+        // Second the fourth reference channel to round out the channels
+        *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".mp4", CHANNEL_ALPHA); // companion file
+        // Next the individual color channels, to sharpen the colors
+        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Red_"+mv+".mp4", CHANNEL_RED); // companion file
+        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Green_"+mv+".mp4", CHANNEL_GREEN); // companion file
+        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Blue_"+mv+".mp4", CHANNEL_BLUE); // companion file
+        mvoxels0 /= 2;
+        *fullSizeItem << candidate;
+    }
+    progressiveLoader << fullSizeItem;
+
+    // TODO - where does copying from NaVolumeData to VolumeTexture fit
+    // into all this?
+    //  - don't load from NaVolumeData if we got lossless data.
+    //  - but do load from NaVolumeData if we lack lossless data.
+    //  so it's not a part of a sequence, but rather an inferior
+    //  candidate at the lossless step.
+
+    // 4) The largest lossless signal file that will fit in texture memory
+    ProgressiveLoadItem* losslessItem = new ProgressiveLoadItem();
+    mvoxels0 = mvoxels;
+    while (mvoxels0 > 25)
+    {
+        // Load both signal and reference for these volumes
+        ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
+        QString mv = QString("%1").arg(mvoxels0);
+        // First the full color signal with poor color separation
+        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".v3dpbd");
+        // Second the fourth reference channel to round out the channels
+        *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".v3dpbd", CHANNEL_ALPHA); // companion file
+        // (lossless version needs no individual color channels)
+        *candidate << new ProgressiveFileCompanion("ConsolidatedLabel2_"+mv+".v3dpbd", CHANNEL_LABEL); // companion file
+        mvoxels0 /= 2;
+        *losslessItem << candidate;
+    }
+    // Add candidate for loading from NaVolumeData, in case subsampled files
+    // are unavailable
+    ProgressiveLoadCandidate* volumeDataCandidate = new ProgressiveLoadCandidate();
+    const NaVolumeData& volumeData = dataFlowModel->getVolumeData();
+    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_RGB);
+    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_ALPHA);
+    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_LABEL);
+    *losslessItem << volumeDataCandidate;
+    //
+    progressiveLoader << losslessItem;
+
+    return true;
+}
+
 
 ///////////////////////////////////
 // VolumeTexture::Reader methods //

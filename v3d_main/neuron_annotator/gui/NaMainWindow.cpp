@@ -227,6 +227,8 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
             this, SLOT(setNutate(bool)));
     connect(this, SIGNAL(nutatingChanged(bool)),
             ui.actionAnimate_3D_nutation, SLOT(setChecked(bool)));
+    connect(ui.v3dr_glwidget, SIGNAL(signalTextureLoaded()),
+            this, SLOT(onDataLoadFinished()));
     /* obsolete.  now we toggle channels.
     connect(ui.redToggleButton, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setChannelR(bool)));
@@ -392,9 +394,6 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
             this, SIGNAL(benchmarkTimerPrintRequested(QString)));
     connect(ui.v3dr_glwidget, SIGNAL(benchmarkTimerResetRequested()),
             this, SIGNAL(benchmarkTimerResetRequested()));
-
-    connect(&volumeDirectoryWatcher, SIGNAL(directoryChanged(QString)),
-            this, SLOT(reexamineResultDirectory(QString)));
 
     initializeContextMenus();
     initializeStereo3DOptions();
@@ -1175,7 +1174,7 @@ void NaMainWindow::on_actionOpen_triggered()
     openMulticolorImageStack(dirName);
 }
 
-bool NaMainWindow::openMulticolorImageStack(QString dirName, QString dirName2)
+bool NaMainWindow::openMulticolorImageStack(QString dirName)
 {
     mainWindowStopWatch.start();
     QDir imageDir(dirName);
@@ -1197,53 +1196,61 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName, QString dirName2)
                  return false;
     }
 
-    QList<QDir> dirsToSearch;
-    dirsToSearch << imageDir;
-
-    if (! dirName2.isEmpty())
-    {
-        QDir dir2(dirName2);
-        // If secondary directory exists, use it.
-        if (dir2.exists())
-            dirsToSearch << dir2;
-        // If secondary directory does not exist, watch for its creation.
-        else {
-            QDir parent(QFileInfo(dirName2).dir());
-            if (parent.exists()) {
-                volumeDirectoryWatcher.addPath(parent.canonicalPath());
-                secondaryVolumeDirectoryName = dirName2;
-            }
-            else
-                fooDebug() << "Warning: parent directory of secondary volume directory does not exist"
-                        << dir2.canonicalPath() << __FILE__ << __LINE__;
-        }
-    }
-
     createNewDataFlowModel();
     // reset front/back clip slab
     ui.v3dr_glwidget->resetSlabThickness();
     emit initializeColorModelRequested();
 
-    // Possibly invoke fast data loading
-    bool bFastLoad = true;
-    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
-    QVariant val = settings.value("NaBUseFastLoad3D");
-    if (val.isValid()) {
-       // qDebug() << "stored value of NaBUseFastLoad3D is" << val.toBool();
-        bFastLoad = val.toBool();
+    VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
+
+    // Queue up the various volumes to load, using StageFileLoaders
+    // delegated to VolumeTexture (3D viewer) and NaVolumeTexture (all viewers)
+    onDataLoadStarted();
+    if (! volumeTexture.queueSeparationFolder(imageDir))
+    {
+        onDataLoadFinished();
+        return false;
     }
-    if (bFastLoad && loadSeparationDirectoryV2Mpeg(imageDir)) {
+    if (! dataFlowModel->getVolumeData().queueSeparationFolder(imageDir)) {
+        onDataLoadFinished();
+        return false;
+    }
+
+    // Make sure 3D viewer is showing if fast loading is enabled
+    if(volumeTexture.hasFastVolumesQueued()) {
+        // Fast loading is only interesting if 3D viewer is selected.
+        // So show the 3D viewer
+        ui.viewerControlTabWidget->setCurrentIndex(2);
+        setViewMode(VIEW_SINGLE_STACK); // no gallery yet.
+    }
+
+    // Kick off loading sequence
+    emit stagedLoadRequested();
+    // volumeTexture.loadNextVolume();
+
+    /*
+    // TODO - some object needs to keep track of those directories.
+    // presumably a ProgressiveLoader class.  That does all this other
+    // stuff too.
+
+    // TODO - refactor so ProgressiveLoadItem decides what file type to load
+    // if (bFastLoad && loadSeparationDirectoryV2Mpeg(imageDir)) {
+    // if (loadSeparationDirectoryV2Mpeg(imageDir)) {
         // qDebug() << "Using fast load directory";
-    }
-    else if (loadSeparationDirectoryV1Pbd(imageDir)) {
+    // }
+    // else if (loadSeparationDirectoryV1Pbd(imageDir)) {
         // qDebug() << "Using non-fastload files";
-    }
+    // }
+
+
+
     else {
         QMessageBox::warning(this, tr("Could not load image directory"),
                                       "Error loading image directory - please check directory contents");
         onDataLoadFinished();
         return false;
     }
+    */
 
     // qDebug() << "NaMainWindow::openMulticolorImageStack() calling addDirToRecentFilesList with dir=" << imageDir.absolutePath();
     addDirToRecentFilesList(imageDir);
@@ -1313,6 +1320,7 @@ bool NaMainWindow::on_actionLoad_fast_separation_result_triggered()
 }
 
 // Fast preferential population of the 3D viewer.
+// TODO obsolete this method in favor of progressive loader
 bool NaMainWindow::loadSeparationDirectoryV2Mpeg(QDir dir)
 {
 #ifdef USE_FFMPEG
@@ -1384,9 +1392,11 @@ void NaMainWindow::addDirToRecentFilesList(QDir imageDir)
 
 void NaMainWindow::addFileNameToRecentFilesList(QString fileName)
 {
+    // fooDebug() << fileName << __FILE__ << __LINE__;
     if (fileName.isEmpty()) return;
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
-    QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
+    QVariant filesVariant = settings.value("NeuronAnnotatorRecentFileList");
+    QStringList files = filesVariant.toStringList();
     if ( (files.size() > 0) && (files[0] == fileName) )
         return; // this dir is already the top entry as is
     files.removeAll(fileName);
@@ -1637,6 +1647,10 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     connect(&dataFlowModel->getVolumeData(), SIGNAL(channelsLoaded(int)),
             this, SLOT(onDataLoadFinished()));
 
+    // Loading a series of separation result stacks
+    connect(this, SIGNAL(stagedLoadRequested()),
+            &dataFlowModel->getVolumeTexture(), SLOT(loadStagedVolumes()));
+
     // Color toggling
     connect(this, SIGNAL(channelVisibilityChanged(int,bool)),
             &dataFlowModel->getDataColorModel(), SLOT(setChannelVisibility(int,bool)));
@@ -1654,24 +1668,8 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
 }
 
-/* slot */
-void NaMainWindow::reexamineResultDirectory(QString dirName)
-{
-    fooDebug() << "reexamineResultDirectory" << dirName << __FILE__ << __LINE__;
-    if (QDir(secondaryVolumeDirectoryName).exists()) {
-        // TODO - look for newer volume files for both VolumeTexture and NaVolumeData
-    }
-}
-
 bool NaMainWindow::tearDownOldDataFlowModel()
 {
-    QStringList dirs = volumeDirectoryWatcher.directories();
-    for (int d = 0; d < dirs.size(); ++d)
-        volumeDirectoryWatcher.removePath(dirs[d]);
-    QStringList files = volumeDirectoryWatcher.files();
-    for (int f = 0; f < files.size(); ++f)
-        volumeDirectoryWatcher.removePath(files[f]);
-
     if (NULL == dataFlowModel)
         return true;
 

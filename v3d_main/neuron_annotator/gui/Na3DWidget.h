@@ -131,8 +131,8 @@ protected slots:
     bool loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t* texture_data);
     bool loadVisibilityTexture();
     bool loadVisibilityTexture2D(const uint32_t* texture_data);
-    bool loadColorMapTexture(); // TODO
-    bool loadColorMapTexture2D(const uint32_t* texture_data); // TODO
+    bool loadColorMapTexture();
+    bool loadColorMapTexture2D(const uint32_t* texture_data);
 
 public:
     QElapsedTimer widgetStopwatch;

@@ -58,6 +58,7 @@ public:
 
     bool execute();
     bool validateFile();
+
     My4DImage* loadImage(QString filepath);
     bool loadImage(Image4DSimple * stackp, QString filepath);
     bool saveImage(My4DImage * stackp, QString filepath);

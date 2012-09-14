@@ -83,6 +83,13 @@ add_library(NeuronAnnotatorLib STATIC
 add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
 add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
 
+if(NA_ENABLE_3D_STEREO)
+    if(APPLE)
+        add_subdirectory(utility/mac_stereo)
+        target_link_libraries(NeuronAnnotatorLib nanvstlib)
+    endif(APPLE)
+endif()
+
 # Permit loading 3D volumes from movie files
 
 if(USE_FFMPEG)

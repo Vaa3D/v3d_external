@@ -273,7 +273,52 @@ void NaVolumeData::loadSecondaryVolumeDataFromFiles()
 {
     // qDebug() << "NaVolumeData::loadSecondaryVolumeDataFromFiles()" << __FILE__ << __LINE__;
     bDoUpdateSignalTexture = false;
-    loadVolumeDataFromFiles();
+    loadStagedVolumes();
+}
+
+/* slot */
+void NaVolumeData::loadStagedVolumes()
+{
+    bool bChanged = false;
+    QString signalPath, labelPath, referencePath;
+    // Loop over all volumes to load
+    for (ProgressiveCompanion* item = progressiveLoader.next();
+            item != NULL; item = progressiveLoader.next())
+    {
+        assert(item->isFileItem());
+        ProgressiveFileCompanion* fileItem =
+                dynamic_cast<ProgressiveFileCompanion*>(item);
+        QString fileName = fileItem->getFileName(progressiveLoader.getFoldersToSearch());
+        SignalChannel channel = fileItem->second;
+        if (channel == CHANNEL_LABEL) {
+            labelPath = fileName;
+        }
+        else if (channel == CHANNEL_ALPHA) {
+            referencePath = fileName;
+        }
+        else {
+            signalPath = fileName;
+            doFlipY = fileItem->isFlippedY();
+        }
+    }
+    {
+        Writer writer(*this);
+        if (! labelPath.isEmpty()) {
+            writer.setMaskLabelFilePath(labelPath);
+            bChanged = true;
+        }
+        if (! referencePath.isEmpty()) {
+            writer.setReferenceStackFilePath(referencePath);
+            bChanged = true;
+        }
+        if (! signalPath.isEmpty()) {
+            writer.setOriginalImageStackFilePath(signalPath);
+            bChanged = true;
+        }
+    }
+    if (bChanged) {
+        loadVolumeDataFromFiles();
+    }
 }
 
 /* slot */
@@ -641,6 +686,47 @@ My4DImage* transformStackToLinear(My4DImage* img1, QString fileName)
     return img2;
 }
 
+bool NaVolumeData::queueSeparationFolder(QDir folder) // using new staged loader
+{
+    progressiveLoader.queueSeparationFolder(folder);
+    /// Loading sequence: ///
+    // We only load one group of companion files, from several possible candidates:
+    ProgressiveLoadItem* volumeItem = new ProgressiveLoadItem();
+    // First try 16-bit full size files
+    ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
+    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal3.v3dpbd");
+    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel3.v3dpbd", CHANNEL_LABEL);
+    *candidate << new ProgressiveFileCompanion("Reference3.v3dpbd", CHANNEL_ALPHA);
+    *volumeItem << candidate;
+    // Next try 8-bit gamma corrected files
+    candidate = new ProgressiveLoadCandidate();
+    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2.v3dpbd");
+    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel2.v3dpbd", CHANNEL_LABEL);
+    *candidate << new ProgressiveFileCompanion("Reference2.v3dpbd", CHANNEL_ALPHA);
+    *volumeItem << candidate;
+    // Finally try original y-flipped mixed bit-depth files
+    candidate = new ProgressiveLoadCandidate();
+    *candidate << &((new ProgressiveFileCompanion("ConsolidatedSignal.v3dpbd"))->setFlippedY(true));
+    *candidate << &((new ProgressiveFileCompanion("ConsolidatedLabel.v3dpbd", CHANNEL_LABEL))->setFlippedY(true));
+    *candidate << new ProgressiveFileCompanion("Reference.v3dpbd", CHANNEL_ALPHA);
+    *volumeItem << candidate;
+    //
+    candidate = new ProgressiveLoadCandidate();
+    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal.v3draw");
+    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel.v3draw", CHANNEL_LABEL);
+    *candidate << new ProgressiveFileCompanion("Reference.v3draw", CHANNEL_ALPHA);
+    *volumeItem << candidate;
+    //
+    candidate = new ProgressiveLoadCandidate();
+    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal.tif");
+    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel.tif", CHANNEL_LABEL);
+    *candidate << new ProgressiveFileCompanion("Reference.tif", CHANNEL_ALPHA);
+    *volumeItem << candidate;
+    //
+    progressiveLoader << volumeItem;
+
+    return true;
+}
 
 bool NaVolumeData::Writer::loadStacks()
 {

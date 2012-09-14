@@ -4,6 +4,7 @@
 #include "NaSharedDataModel.h"
 #include "Dimension.h"
 #include "SampledVolumeMetadata.h"
+#include "StagedFileLoader.h"
 #include <QObject>
 #include <QFileInfo>
 #include <QDir>
@@ -29,6 +30,8 @@ public:
     explicit VolumeTexture(const VolumeTexture& rhs);
     virtual ~VolumeTexture();
     void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
+    bool hasFastVolumesQueued() const;
+    void loadOneVolume(ProgressiveCompanion* item, QList<QDir> foldersToSearch);
 
 signals:
     // When textures change, they must be uploaded in the main/OpenGL thread
@@ -53,8 +56,9 @@ public slots:
     bool loadSignalRawFile(QString fileName);
     bool loadReferenceRawFile(QString fileName);
     bool queueFastLoadVolumes(QDir separationDirectory);
-    void loadVolumeQueue();
     void loadNextVolume();
+    void loadStagedVolumes();
+    bool queueSeparationFolder(QDir folder); // using new staged loader
 #ifdef USE_FFMPEG
     bool loadFast3DTexture();
 #endif
@@ -70,6 +74,8 @@ protected:
 
     const DataFlowModel* dataFlowModel;
     QString labelPbdFileName;
+    // Staged image loader
+    ProgressiveLoader progressiveLoader;
 
 public:
 
