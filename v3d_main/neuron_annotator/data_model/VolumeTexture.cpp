@@ -17,6 +17,7 @@ namespace jfrc {
 
 VolumeTexture::VolumeTexture()
     : dataFlowModel(NULL)
+    , bLoadedFromNaVolumeData(false)
 {
     invalidate();
 }
@@ -40,8 +41,10 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
     // qDebug() << "Connecting NaVolumeData::dataChanged() to VolumeTexture::updateVolume()";
     // I cannot understand why this signal gets disconnected between loads sometimes, but it does.
     // ...so try reestablishing it every time.  Thank you Qt::UniqueConnection.
-    connect(volumeData, SIGNAL(dataChanged()),
-            this, SLOT(updateVolume()), Qt::UniqueConnection);
+    // connect(volumeData, SIGNAL(dataChanged()),
+    //         this, SLOT(updateVolume()), Qt::UniqueConnection);
+    connect(volumeData, SIGNAL(channelsLoaded(int)),
+            this, SLOT(loadStagedVolumes()), Qt::UniqueConnection);
     // During fast load, update NaVolumeData without later updating VolumeTexture
     connect(this, SIGNAL(volumeLoadSequenceCompleted()),
             volumeData, SLOT(loadSecondaryVolumeDataFromFiles()));
@@ -224,7 +227,7 @@ void VolumeTexture::loadOneVolume(ProgressiveCompanion* item, QList<QDir> folder
         ProgressiveFileCompanion* fileItem = dynamic_cast<
                 ProgressiveFileCompanion*>(item);
         QString fileName = fileItem->getFileName(foldersToSearch);
-        fooDebug() << "Loading" << fileName << __FILE__ << __LINE__;
+        // fooDebug() << "Loading" << fileName << __FILE__ << __LINE__;
         SignalChannel channel = fileItem->second;
         if (channel == CHANNEL_LABEL) {
             setLabelPbdFileName(fileName);
@@ -238,8 +241,9 @@ void VolumeTexture::loadOneVolume(ProgressiveCompanion* item, QList<QDir> folder
         }
     }
     else {
-        assert(false);
         // TODO - non-file volumes
+        // assert(false);
+        updateVolume();
     }
 }
 
@@ -274,9 +278,7 @@ void VolumeTexture::loadStagedVolumes()
         else if (mpegVolumesAreQueued)
         {
             pendingCompanion = item;
-            mpegVolumesAreQueued = false;
-            emit mpegLoadSequenceRequested();
-            return; // don't worry, we'll be back for the rest
+            break;
         }
         // Load a non-mpeg 4 volume
         else {
@@ -290,7 +292,7 @@ void VolumeTexture::loadStagedVolumes()
         emit mpegLoadSequenceRequested();
         return; // don't worry, we'll be back for the rest
     }
-    else {
+    else if (! bLoadedFromNaVolumeData) {
         emit volumeLoadSequenceCompleted();
     }
 }
@@ -298,7 +300,9 @@ void VolumeTexture::loadStagedVolumes()
 /* slot */
 bool VolumeTexture::updateVolume()
 {
-    // qDebug() << "VolumeTexture::updateVolume()" << __FILE__ << __LINE__;
+    if (bLoadedFromNaVolumeData)
+        return false; // already loaded
+    // fooDebug() << "VolumeTexture::updateVolume()" << __FILE__ << __LINE__;
     if (NULL == dataFlowModel) return false;
 
     bool bSucceeded = true; // avoid signalling before unlocking
@@ -318,7 +322,8 @@ bool VolumeTexture::updateVolume()
         if(volumeReader.hasReadLock()) {
             Writer textureWriter(*this); // acquire lock
             d->initializeSizes(volumeReader);
-            if (volumeReader.doUpdateSignalTexture()) {
+            // if (volumeReader.doUpdateSignalTexture()) {
+            if (true) {
                 if (d->subsampleColorField(volumeReader))
                     bSignalChanged = true;
                 else
@@ -357,6 +362,7 @@ bool VolumeTexture::updateVolume()
     }
     emit progressValueChanged(80);
     if (bSucceeded) {
+        bLoadedFromNaVolumeData = true;
         // emit benchmarkTimerPrintRequested("Finished sampling 3D volume");
         emit progressComplete();
         if (bSignalChanged)

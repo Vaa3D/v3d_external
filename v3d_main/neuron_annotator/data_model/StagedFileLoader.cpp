@@ -1,5 +1,6 @@
 #include "StagedFileLoader.h"
 #include "NaVolumeData.h"
+#include <cassert>
 
 
 ////////////////////////////

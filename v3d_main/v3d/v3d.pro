@@ -122,6 +122,7 @@ HEADERS += \
     ../neuron_annotator/data_model/PrivateDataColorModel.h \
     ../neuron_annotator/data_model/PrivateNeuronFragmentData.h \
     ../neuron_annotator/data_model/SampledVolumeMetadata.h \
+    ../neuron_annotator/data_model/StagedFileLoader.h \
     ../neuron_annotator/data_model/PrivateVolumeTexture.h \
     ../neuron_annotator/data_model/VolumeTexture.h \
     ../neuron_annotator/entity_model/EntityData.h \
@@ -231,6 +232,7 @@ SOURCES += \
     ../neuron_annotator/data_model/NeuronFragmentData.cpp \
     ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
     ../neuron_annotator/data_model/PrivateNeuronFragmentData.cpp \
+    ../neuron_annotator/data_model/StagedFileLoader.cpp \
     ../neuron_annotator/data_model/SampledVolumeMetadata.cpp \
     ../neuron_annotator/data_model/VolumeTexture.cpp \
     ../neuron_annotator/data_model/PrivateVolumeTexture.cpp \

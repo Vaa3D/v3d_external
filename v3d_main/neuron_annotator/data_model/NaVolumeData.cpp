@@ -1,5 +1,6 @@
 #include "NaVolumeData.h"
 #include "VolumeTexture.h"
+#include "../utility/FooDebug.h"
 #include <iostream>
 #include <QFuture>
 #include <cassert>
@@ -376,7 +377,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
 
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() / 1000.0 << "seconds" << __FILE__ << __LINE__;
     emit progressCompleted();
-    // qDebug() << "emitting NaVolumeData::channelsLoaded" << __FILE__ << __LINE__;
+    // fooDebug() << "emitting NaVolumeData::channelsLoaded" << __FILE__ << __LINE__;
     emit channelsLoaded(originalImageProxy.sc);
 }
 

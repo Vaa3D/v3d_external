@@ -71,6 +71,7 @@ protected:
     bool queueFile(QString fileName);
     int chooseFinalVolumes(QDir separationDirectory, int maxMegaVoxels);
     bool chooseFinalVolume(QDir separationDirectory, int maxMegaVoxels, QString fileRoot);
+    bool bLoadedFromNaVolumeData;
 
     const DataFlowModel* dataFlowModel;
     QString labelPbdFileName;
