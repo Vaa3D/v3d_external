@@ -1211,11 +1211,6 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
         onDataLoadFinished();
         return false;
     }
-    if (! dataFlowModel->getVolumeData().queueSeparationFolder(imageDir)) {
-        onDataLoadFinished();
-        return false;
-    }
-
     // Make sure 3D viewer is showing if fast loading is enabled
     if(volumeTexture.hasFastVolumesQueued()) {
         // Fast loading is only interesting if 3D viewer is selected.
@@ -1223,6 +1218,26 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
         ui.viewerControlTabWidget->setCurrentIndex(2);
         setViewMode(VIEW_SINGLE_STACK); // no gallery yet.
     }
+
+    // MulticolorImageStackNode setup is required for loadLsmMetadata call to succeed.
+    MultiColorImageStackNode* multiColorImageStackNode =
+            new MultiColorImageStackNode(imageDir.absolutePath());
+    // These file name will be overridden by Staged loader
+    multiColorImageStackNode->setPathToOriginalImageStackFile(
+            imageDir.absoluteFilePath("ConsolidatedSignal"));
+    multiColorImageStackNode->setPathToReferenceStackFile(
+            imageDir.absoluteFilePath("Reference"));
+    multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
+            imageDir.absoluteFilePath("ConsolidatedLabel"));
+    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
+
+    if (! dataFlowModel->getVolumeData().queueSeparationFolder(imageDir)) {
+        onDataLoadFinished();
+        return false;
+    }
+
+    // Correct Z-thickness
+    dataFlowModel->loadLsmMetadata();
 
     // Kick off loading sequence
     emit stagedLoadRequested();
