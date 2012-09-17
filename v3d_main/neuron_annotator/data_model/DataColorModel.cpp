@@ -96,8 +96,8 @@ void DataColorModel::initialize()
     // Don't initialize colors if NaVolumeData is not the first receiver of volume data.
     // i.e. during fast load.  So use bDoUpdateSignalTexture as a proxy for
     // primacy of NaVolumeData in this run.
-    if (! volumeData->bDoUpdateSignalTexture)
-        return;
+    // if (! volumeData->bDoUpdateSignalTexture)
+    //    return;
 
     // qDebug() << "Resetting DataColorModel";
     {

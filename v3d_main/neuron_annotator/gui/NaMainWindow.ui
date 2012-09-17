@@ -1737,6 +1737,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <addaction name="action3D_Volume"/>
      <addaction name="action2D_MIP"/>
      <addaction name="actionScreenShot"/>
+     <addaction name="actionY_Rotation_Movie"/>
     </widget>
     <widget class="QMenu" name="menuOpen_Recent">
      <property name="title">
@@ -2221,6 +2222,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="actionLoad_fast_separation_result">
    <property name="text">
     <string>Open fast loading folder...</string>
+   </property>
+  </action>
+  <action name="actionY_Rotation_Movie">
+   <property name="text">
+    <string>Y Rotation Movie...</string>
    </property>
   </action>
  </widget>
