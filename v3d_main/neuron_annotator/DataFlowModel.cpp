@@ -1,4 +1,5 @@
 #include "DataFlowModel.h"
+#include "utility/FooDebug.h"
 #include <QtAlgorithms>
 #include <iostream>
 #include <cassert>
@@ -63,6 +64,10 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
             this, SIGNAL(benchmarkTimerResetRequested()));
 #endif
 
+    // For debugging
+    connect(&dataColorModel, SIGNAL(dataChanged()),
+            this, SLOT(debugColorModel()));
+
 }
 
 DataFlowModel::~DataFlowModel()
@@ -82,6 +87,37 @@ void DataFlowModel::cancel()
 {
     mipMergedData.invalidate();
     volumeData.invalidate();
+}
+
+/* slot */
+void DataFlowModel::debugColorModel()
+{
+    {
+        DataColorModel::Reader reader1(dataColorModel);
+        DataColorModel::Reader reader2(fast3DColorModel);
+        DataColorModel::Reader reader3(slow3DColorModel);
+        fooDebug()
+                << "Color model red data range ="
+                << reader1.getChannelDataMin(0)
+                << reader1.getChannelDataMax(0)
+                << "hdr range ="
+                << reader1.getChannelHdrMin(0)
+                << reader1.getChannelHdrMax(0);
+        fooDebug()
+                << "Fast model red data range ="
+                << reader2.getChannelDataMin(0)
+                << reader2.getChannelDataMax(0)
+                << "hdr range ="
+                << reader2.getChannelHdrMin(0)
+                << reader2.getChannelHdrMax(0);
+        fooDebug()
+                << "Slow model red data range ="
+                << reader3.getChannelDataMin(0)
+                << reader3.getChannelDataMax(0)
+                << "hdr range ="
+                << reader3.getChannelHdrMin(0)
+                << reader3.getChannelHdrMax(0);
+    }
 }
 
 bool DataFlowModel::loadLsmMetadata()

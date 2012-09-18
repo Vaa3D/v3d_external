@@ -666,6 +666,11 @@ My4DImage* transformStackToLinear(My4DImage* img1, QString fileName)
     size_t destChannelBytes = sz * destSliceBytes;
     const uint8_t* srcVol = img1->getRawData();
     uint8_t* destVol = img2->getRawData();
+    bool haveMinMax = (NULL != img1->p_vmin);
+    if (haveMinMax) {
+        img2->p_vmin = new double[sc];
+        img2->p_vmax = new double[sc];
+    }
     for (int c = 0; c < sc; ++c) {
         const uint8_t* srcChannel = srcVol + c * srcChannelBytes;
         uint8_t* destChannel = destVol + c * destChannelBytes;
@@ -680,6 +685,11 @@ My4DImage* transformStackToLinear(My4DImage* img1, QString fileName)
                     destRow[x] = conv[srcRow[x]];
                 }
             }
+        }
+        // convert vmin, vmax
+        if (haveMinMax) {
+            img2->p_vmin[c] = conv[img1->p_vmin[c]];
+            img2->p_vmax[c] = conv[img1->p_vmax[c]];
         }
     }
    // qDebug() << "linearization took" << time.elapsed() << "milliseconds";

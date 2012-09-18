@@ -99,6 +99,7 @@ signals:
 
 public slots:
     void cancel();
+    void debugColorModel();
 
 private:
     long objectId;
