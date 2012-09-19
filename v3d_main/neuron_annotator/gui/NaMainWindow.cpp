@@ -147,6 +147,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui.menuFile->removeAction(ui.actionLoad_Tiff);
     ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
 
+    // hide dev-version rotate-X movie maker, until it become more user-friendly
+    ui.menuExport->removeAction(ui.actionX_Rotation_Movie);
+
 #ifdef USE_FFMPEG
     ui.actionLoad_movie_as_texture->setVisible(true);
     ui.actionLoad_fast_separation_result->setVisible(true);
@@ -1567,6 +1570,39 @@ void NaMainWindow::on_actionPreferences_triggered()
     int result = dlg.exec();
     if (result == QDialog::Accepted) {
         dlg.savePreferences();
+    }
+}
+
+void NaMainWindow::on_actionX_Rotation_Movie_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(
+            this, tr("Save movie frame images"),
+            "",
+            tr("Images (*.png *.jpg *.ppm)"));
+    if (fileName.isEmpty())
+        return;
+    QFileInfo fi(fileName);
+    QDir dir = fi.absoluteDir();
+    QString base = fi.completeBaseName();
+    QString suffix = fi.suffix();
+    int frameCount = 540;
+    Rotation3D dRot;
+    dRot.setRotationFromAngleAboutUnitVector(
+            2.0 * 3.14159 / frameCount,
+            UnitVector3D(1, 0, 0));
+    Rotation3D currentRotation = sharedCameraModel.rotation();
+    ui.v3dr_glwidget->resize(1280, 720);
+    for (int f = 0; f < frameCount; ++f)
+    {
+        QString fnum = QString("_%1.").arg(f, 5, 10, QChar('0'));
+        QString fName = dir.absoluteFilePath(base + fnum + suffix);
+        fooDebug() << fName;
+        currentRotation = dRot * currentRotation;
+        sharedCameraModel.setRotation(currentRotation);
+        ui.v3dr_glwidget->repaint();
+        QCoreApplication::processEvents();
+        QImage frameImage = ui.v3dr_glwidget->grabFrameBuffer();
+        frameImage.save(fName, NULL, 95);
     }
 }
 

@@ -130,6 +130,7 @@ public slots:
     void on_actionLoad_movie_as_texture_triggered();
     bool on_actionLoad_fast_separation_result_triggered();
     void on_actionPreferences_triggered();
+    void on_actionX_Rotation_Movie_triggered();
     void setZRange(int minZ, int maxZ); // update number of z slices
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same
     void setNutate(bool bDoNutate);

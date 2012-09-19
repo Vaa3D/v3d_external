@@ -65,8 +65,8 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 #endif
 
     // For debugging
-    connect(&dataColorModel, SIGNAL(dataChanged()),
-            this, SLOT(debugColorModel()));
+    // connect(&dataColorModel, SIGNAL(dataChanged()),
+    //         this, SLOT(debugColorModel()));
 
 }
 
