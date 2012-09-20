@@ -1,5 +1,6 @@
 #include "StagedFileLoader.h"
 #include "NaVolumeData.h"
+#include "../utility/FooDebug.h"
 #include <cassert>
 
 
@@ -264,11 +265,14 @@ void ProgressiveLoader::queueSeparationFolder(QDir folder)
 /* slot */
 void ProgressiveLoader::reexamineResultDirectory(QString dirName)
 {
+    // fooDebug() << "Searching for folder" << prodigalFolderPath;
     QDir newDir(prodigalFolderPath);
     if (! newDir.exists())
         return;
-    // TODO
-    assert(false);
+    addSearchFolder(newDir);
+    if (newDir.exists("fastLoad"))
+        addSearchFolder(newDir.absoluteFilePath("fastLoad"));
+    emit newFoldersFound();
 }
 
 /* virtual */

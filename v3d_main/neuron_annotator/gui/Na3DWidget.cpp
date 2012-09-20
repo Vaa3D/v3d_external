@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "../data_model/VolumeTexture.h"
 #include "../data_model/DataColorModel.h"
+#include "../utility/FooDebug.h"
 
 using namespace std;
 using namespace jfrc;
@@ -108,7 +109,7 @@ Na3DWidget::~Na3DWidget()
 /* slot */
 bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_t* texture_data)
 {
-    // qDebug() << "Na3DWidget::loadSignalTexture3D()" << w << h << d;
+    // fooDebug() << "Na3DWidget::loadSignalTexture3D()" << w << h << d << __FILE__ << __LINE__;
     if (NULL == texture_data)
         return false;
     QElapsedTimer stopwatch;
@@ -585,6 +586,7 @@ bool Na3DWidget::loadSignalTexture()
         fullSize = textureReader.originalImageSize();
         bFullSizeChanged = (fullSize != getRendererNa()->getOriginalVolumeDimensions());
         textureSize = textureReader.paddedTextureSize();
+        // fooDebug() << textureSize.x() << __FILE__ << __LINE__;
         bTextureSizeChanged = (textureSize != getRendererNa()->getPaddedTextureDimensions());
         const uint32_t* data = textureReader.signalData3D();
         if (! loadSignalTexture3D(textureSize.x(), textureSize.y(), textureSize.z(), data))

@@ -60,6 +60,8 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
     //         this, SLOT(loadNextVolume()));
     connect(this, SIGNAL(loadNextVolumeRequested()),
             this, SLOT(loadStagedVolumes()));
+    connect(&progressiveLoader, SIGNAL(newFoldersFound()),
+            this, SLOT(loadStagedVolumes()));
 
 #ifdef USE_FFMPEG
     const Fast3DTexture* fast3DTexture = &dataFlowModel->getFast3DTexture();
@@ -111,6 +113,7 @@ bool VolumeTexture::loadSignalRawFile(QString fileName)
         Writer textureWriter(*this);
         if (! d->loadSignalRawFile(fileName))
             return false;
+        // fooDebug() << d.constData() << d.constData()->getPaddedTextureSize().x() << __FILE__ << __LINE__;
     }
     emit signalTextureChanged();
     return true;
@@ -566,10 +569,11 @@ bool VolumeTexture::loadFast3DTexture()
             bMetadataChanged = true;
             d->setMetadata(md);
         }
-        d->originalImageSize = md.originalImageSize;
-        d->paddedTextureSize = md.paddedImageSize;
-        d->usedTextureSize = md.usedImageSize;
-        d->subsampleScale = md.usedImageSize.x()/md.originalImageSize.x();
+        d->setMetadata(md);
+        // d->originalImageSize = md.originalImageSize;
+        // d->paddedTextureSize = md.paddedImageSize;
+        // d->usedTextureSize = md.usedImageSize;
+        // d->subsampleScale = md.usedImageSize.x()/md.originalImageSize.x();
         if (! d->loadFast3DTexture(sx, sy, sz, data))
             return false;
     } // release locks before emit
@@ -690,17 +694,18 @@ VolumeTexture::Reader::~Reader()
 
 const jfrc::Dimension& VolumeTexture::Reader::originalImageSize() const
 {
-    return d.constData()->originalImageSize;
+    return d.constData()->getOriginalImageSize();
 }
 
 const jfrc::Dimension& VolumeTexture::Reader::usedTextureSize() const
 {
-    return d.constData()->usedTextureSize;
+    return d.constData()->getUsedTextureSize();
 }
 
 const jfrc::Dimension& VolumeTexture::Reader::paddedTextureSize() const
 {
-    return d.constData()->paddedTextureSize;
+    // fooDebug() << d.constData() << d.constData()->getPaddedTextureSize().x() << __FILE__ << __LINE__;
+    return d.constData()->getPaddedTextureSize();
 }
 
 bool VolumeTexture::Reader::use3DSignalTexture() const {

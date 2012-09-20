@@ -164,9 +164,12 @@ public:
     void setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel);
     void setDataColorModel(const DataColorModel& dataColorModel);
     bool use3DSignalTexture() const {return bUse3DSignalTexture;}
-    Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
-    Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
-    Dimension paddedTextureSize; ///< Total size of this texture set, including empty padded edges to get desired memory alignment
+    // Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
+    // Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
+    // Dimension paddedTextureSize; ///< Total size of this texture set, including empty padded edges to get desired memory alignment
+    const Dimension& getOriginalImageSize() const {return metadata.originalImageSize;}
+    const Dimension& getUsedTextureSize() const {return metadata.usedImageSize;}
+    const Dimension& getPaddedTextureSize() const {return metadata.paddedImageSize;}
     double subsampleScale; ///< Factor by which a single dimension is subsampled
     // TODO method to load compressed texture directly from file
     const uint32_t* signalData3D() const {return neuronSignalTexture.getData();}
@@ -174,13 +177,19 @@ public:
     const uint32_t* visibilityData2D() const {return neuronVisibilityTexture.getData();}
     const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
     const SampledVolumeMetadata& getMetadata() const {return metadata;}
-    void setMetadata(const SampledVolumeMetadata& md) {metadata = md;}
-    bool loadLabelPbdFile(QString fileName) {
-        return neuronLabelTexture.loadFromPbdFile(fileName);}
-    bool loadSignalRawFile(QString fileName) {
-        return neuronSignalTexture.loadSignalFromRawFile(fileName);}
+    // void setMetadata(const SampledVolumeMetadata& md) {metadata = md;}
+    bool loadLabelPbdFile(QString fileName)
+    {
+        return neuronLabelTexture.loadFromPbdFile(fileName);
+    }
+    bool loadSignalRawFile(QString fileName);
     bool loadReferenceRawFile(QString fileName) {
-        return neuronSignalTexture.loadReferenceFromRawFile(fileName);}
+        return neuronSignalTexture.loadReferenceFromRawFile(fileName);
+    }
+    void setMetadata(const SampledVolumeMetadata& m) {
+        metadata = m;
+        subsampleScale = m.usedImageSize.x()/m.originalImageSize.x();
+    }
 
 protected:
     SampledVolumeMetadata metadata;

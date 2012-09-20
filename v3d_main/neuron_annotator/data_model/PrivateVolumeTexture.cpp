@@ -1,6 +1,7 @@
 #include "PrivateVolumeTexture.h"
 #include "DataColorModel.h"
 #include "../utility/ImageLoader.h"
+#include "../utility/FooDebug.h"
 #include <QColor>
 #include <cassert>
 
@@ -384,6 +385,7 @@ bool NeuronSignalTexture::loadSignalFromRawFile(QString fileName)
             }
         }
     }
+    // fooDebug() << this << paddedSize.x() << __FILE__ << __LINE__;
     return true;
 }
 
@@ -551,17 +553,30 @@ PrivateVolumeTexture::~PrivateVolumeTexture()
 PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     : memoryAlignment(rhs.memoryAlignment)
     , subsampleScale(rhs.subsampleScale)
-    , originalImageSize(rhs.originalImageSize)
-    , usedTextureSize(rhs.usedTextureSize)
-    , paddedTextureSize(rhs.paddedTextureSize)
+    // , originalImageSize(rhs.originalImageSize)
+    // , usedTextureSize(rhs.usedTextureSize)
+    // , paddedTextureSize(rhs.paddedTextureSize)
     , neuronLabelTexture(rhs.neuronLabelTexture)
     , neuronVisibilityTexture(rhs.neuronVisibilityTexture)
     , neuronSignalTexture(rhs.neuronSignalTexture)
     , colorMapTexture(rhs.colorMapTexture)
     , bUse3DSignalTexture(rhs.bUse3DSignalTexture)
+    , metadata(rhs.metadata)
 {
     // qDebug() << "PrivateVolumeTexture is being copied";
 }
+
+bool PrivateVolumeTexture::loadSignalRawFile(QString fileName)
+{
+    bool bSucceeded = neuronSignalTexture.loadSignalFromRawFile(fileName);
+    if (bSucceeded) {
+        metadata.paddedImageSize = neuronSignalTexture.getPaddedSize();
+        metadata.usedImageSize = neuronSignalTexture.getUsedSize();
+    }
+    // fooDebug() << this << metadata.paddedImageSize.x() << __FILE__ << __LINE__;
+    return bSucceeded;
+}
+
 
 void PrivateVolumeTexture::setNeuronSelectionModel(const NeuronSelectionModel& neuronSelectionModel)
 {
@@ -579,17 +594,17 @@ void PrivateVolumeTexture::initializeSizes(const NaVolumeData::Reader& volumeRea
     Dimension inputSize(imageProxy.sx, imageProxy.sy, imageProxy.sz);
     // if (inputSize != originalImageSize) // new/changed volume size // label size only might have changed
     {
-        originalImageSize = inputSize;
+        metadata.originalImageSize = inputSize;
         size_t memoryLimit = 3.5e8; // 350 MB
         QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
         QVariant val = settings.value("NaMaxVideoMegabytes");
         if (val.isValid())
             memoryLimit = 1e6 * val.toInt();
         subsampleScale = inputSize.computeLinearSubsampleScale(memoryLimit);
-        usedTextureSize = inputSize.sampledSize(memoryLimit);
-        paddedTextureSize = usedTextureSize.padToMultipleOf(memoryAlignment);
-        neuronLabelTexture.allocateSize(paddedTextureSize, usedTextureSize);
-        neuronSignalTexture.allocateSize(paddedTextureSize, usedTextureSize);
+        metadata.usedImageSize = inputSize.sampledSize(memoryLimit);
+        metadata.paddedImageSize = metadata.usedImageSize.padToMultipleOf(memoryAlignment);
+        neuronLabelTexture.allocateSize(getPaddedTextureSize(), getUsedTextureSize());
+        neuronSignalTexture.allocateSize(getPaddedTextureSize(), getUsedTextureSize());
     }
 }
 
@@ -682,15 +697,15 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
 
     // Use stupid box filter for now.  Once that's working, use Lanczos for better sampling.
     // TODO
-    double xScale = (double)originalImageSize.x() / (double)usedTextureSize.x();
-    double yScale = (double)originalImageSize.y() / (double)usedTextureSize.y();
-    double zScale = (double)originalImageSize.z() / (double)usedTextureSize.z();
+    double xScale = (double)getOriginalImageSize().x() / (double)getUsedTextureSize().x();
+    double yScale = (double)getOriginalImageSize().y() / (double)getUsedTextureSize().y();
+    double zScale = (double)getOriginalImageSize().z() / (double)getUsedTextureSize().z();
     // qDebug() << "x, y, z Scale =" << xScale << yScale << zScale << __FILE__ << __LINE__;
     std::vector<double> channelIntensities(imageProxy.sc + 1, 0.0); // For colorReader::blend() interface; +1 for reference channel
     if (zEnd < 0) // -1 means actual final z
-        zEnd = (int)usedTextureSize.z();
-    if (zEnd > usedTextureSize.z())
-        zEnd = (int)usedTextureSize.z();
+        zEnd = (int)getUsedTextureSize().z();
+    if (zEnd > getUsedTextureSize().z())
+        zEnd = (int)getUsedTextureSize().z();
     int channelCount = imageProxy.sc;
     if (volumeReader.hasReferenceImage())
         channelCount += 1;
@@ -699,11 +714,11 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
         // qDebug() << z << __FILE__ << __LINE__;
         int z0 = (int)(z * zScale + 0.49);
         int z1 = (int)((z + 1) * zScale + 0.49);
-        for(int y = 0; y < usedTextureSize.y(); ++y)
+        for(int y = 0; y < getUsedTextureSize().y(); ++y)
         {
             int y0 = (int)(y * yScale + 0.49);
             int y1 = (int)((y + 1) * yScale + 0.49);
-            for(int x = 0; x < usedTextureSize.x(); ++x)
+            for(int x = 0; x < getUsedTextureSize().x(); ++x)
             {
                 int x0 = (int)(x * xScale + 0.49);
                 int x1 = (int)((x + 1) * xScale + 0.49);
@@ -768,8 +783,8 @@ bool PrivateVolumeTexture::loadFast3DTexture(int sx, int sy, int sz, const uint8
 {
     // qDebug() << "PrivateVolumeTexture::loadFast3DTexture" << sx << sy << sz << __FILE__ << __LINE__;
     Dimension size(sx, sy, sz); // TODO - what about used size?
-    assert(size == paddedTextureSize);
-    neuronSignalTexture.allocateSize(paddedTextureSize, usedTextureSize);
+    assert(size == getPaddedTextureSize());
+    neuronSignalTexture.allocateSize(getPaddedTextureSize(), getUsedTextureSize());
     size_t texture_bytes = sx * sy * sz * 4;
     // bool doParallel = false; // It's not faster in parallel
     const uint8_t* src = data;
