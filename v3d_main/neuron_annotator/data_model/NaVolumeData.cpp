@@ -129,6 +129,10 @@ NaVolumeData::NaVolumeData()
             this, SIGNAL(dataChanged()));
     connect(this, SIGNAL(neuronMaskLoaded()),
             this, SIGNAL(dataChanged()));
+
+    // React to the appearance of new neuron separation volume files
+    connect(&progressiveLoader, SIGNAL(newFoldersFound()),
+            this, SLOT(loadStagedVolumes()));
 }
 
 NaVolumeData::~NaVolumeData()
