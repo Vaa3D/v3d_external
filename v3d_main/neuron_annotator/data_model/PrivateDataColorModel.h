@@ -30,6 +30,7 @@ public:
     bool setChannelColor(int index, QRgb color);
     bool setChannelHdrRange(int index, qreal minParam, qreal maxParam);
     bool hasChannelHdrRange(int index, qreal minParam, qreal maxParam) const;
+    bool hasChannelDataRange(int index, qreal minParam, qreal maxParam) const;
     bool setChannelDataRange(int index, qreal minParam, qreal maxParam);
     bool setChannelVisibility(int index, bool);
     bool getChannelVisibility(int index) const;

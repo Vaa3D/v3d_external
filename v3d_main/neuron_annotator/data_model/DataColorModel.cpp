@@ -187,6 +187,16 @@ void DataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxPara
     emit dataChanged();
 }
 
+void DataColorModel::setChannelDataRange(int index, qreal minParam, qreal maxParam)
+{
+    if (d.constData()->hasChannelDataRange(index, minParam, maxParam)) return;
+    {
+        Writer colorWriter(*this);
+        d->setChannelDataRange(index, minParam, maxParam);
+    } // release lock
+    emit dataChanged();
+}
+
 void DataColorModel::setSharedGamma(qreal gammaParam) // for all channels
 {
     if (d.constData()->getSharedGamma() == gammaParam) return;

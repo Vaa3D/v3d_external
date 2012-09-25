@@ -43,6 +43,7 @@ public slots:
     bool initializeRgba48(); // For fast loading directly to OpenGL texture
     void colorizeIncremental();
     void setChannelColor(int index, /*QRgb*/ int color);
+    void setChannelDataRange(int index, qreal minParam, qreal maxParam);
     void setChannelHdrRange(int index, qreal min, qreal max);
     void setChannelGamma(int index, qreal gamma);
     void setSharedGamma(qreal gamma);

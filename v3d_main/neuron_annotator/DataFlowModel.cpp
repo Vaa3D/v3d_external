@@ -67,7 +67,9 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     // For debugging
     // connect(&dataColorModel, SIGNAL(dataChanged()),
     //         this, SLOT(debugColorModel()));
-
+    // Kludge to keep color models synchronized
+    connect(&dataColorModel, SIGNAL(dataChanged()),
+            this, SLOT(synchronizeColorModels()));
 }
 
 DataFlowModel::~DataFlowModel()
@@ -87,6 +89,49 @@ void DataFlowModel::cancel()
 {
     mipMergedData.invalidate();
     volumeData.invalidate();
+}
+
+/* slot */
+// kludge to accomodate disparate color models caused by
+// different orders and types of staged loaded files.
+// Keeps the data range roughly the same between
+// 1) dataColorModel and 2) slow3DColorModel
+void DataFlowModel::synchronizeColorModels()
+{
+    // We might want to change slow data/hdr ranges to
+    // match regular DataColorModel.
+    // -1 means "don't change"
+    float dataMaxima[4] = {-1,-1,-1,-1};
+    float dataMinima[4] = {-1,-1,-1,-1};
+    float hdrMaxima[4]  = {-1,-1,-1,-1};
+    float hdrMinima[4]  = {-1,-1,-1,-1};
+    {
+        DataColorModel::Reader reader1(dataColorModel);
+        DataColorModel::Reader reader3(slow3DColorModel);
+        for (int c = 0; c < reader1.getNumberOfDataChannels(); ++c)
+        {
+            if (c > 3) break; // more than 4 channels?!
+            float ratio = reader1.getChannelDataMax(c) /
+                    float(reader3.getChannelDataMax(c));
+            if ((ratio > 4.0) || (ratio < 0.25)) {
+                // color models are out of sync
+                // but don't actually change the data until the read locks are released
+                dataMaxima[c] = int(ratio * reader3.getChannelDataMax(c));
+                dataMinima[c] = int(ratio * reader3.getChannelDataMin(c));
+                hdrMaxima[c] = int(ratio * reader3.getChannelHdrMax(c));
+                hdrMinima[c] = int(ratio * reader3.getChannelHdrMin(c));
+            }
+        }
+    } // release read locks
+    for (int c = 0; c < 4; ++c)
+    {
+        if (dataMaxima[c] == -1) continue;
+        {
+            DataColorModel::Writer writer(slow3DColorModel);
+            slow3DColorModel.setChannelDataRange(c, dataMinima[c], dataMaxima[c]);
+            slow3DColorModel.setChannelHdrRange(c, hdrMinima[c], hdrMaxima[c]);
+        }
+    }
 }
 
 /* slot */

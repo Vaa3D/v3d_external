@@ -100,6 +100,7 @@ signals:
 public slots:
     void cancel();
     void debugColorModel();
+    void synchronizeColorModels();
 
 private:
     long objectId;

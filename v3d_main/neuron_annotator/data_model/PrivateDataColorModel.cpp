@@ -228,6 +228,13 @@ bool PrivateDataColorModel::hasChannelHdrRange(int index, qreal minParam, qreal 
           && (channelColors[index].hdrMax == maxParam) );
 }
 
+bool PrivateDataColorModel::hasChannelDataRange(int index, qreal minParam, qreal maxParam) const
+{
+    if (index >= channelColors.size()) return false;
+    return ( (channelColors[index].dataMin == minParam)
+          && (channelColors[index].dataMax == maxParam) );
+}
+
 bool PrivateDataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxParam)
 {
     // qDebug() << "setChannelHdrRange" << index << minParam << maxParam;
