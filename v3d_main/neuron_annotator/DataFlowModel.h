@@ -66,6 +66,7 @@ public:
     MipFragmentColors& getMipFragmentColors() {return mipFragmentColors;}
     GalleryMipImages& getGalleryMipImages() {return galleryMipImages;}
     MipMergedData& getMipMergedData() {return mipMergedData;}
+    ZSliceColors& getZSliceColors() {return zSliceColors;}
     DataColorModel& getFast3DColorModel() {return fast3DColorModel;}
     DataColorModel& getSlow3DColorModel() {return slow3DColorModel;}
     jfrc::VolumeTexture& getVolumeTexture() {return volumeTexture;}

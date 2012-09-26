@@ -122,6 +122,7 @@ void ZSliceColors::setZIndex(int z)
     update();
 }
 
+
 void ZSliceColors::onCameraFocusChanged(const Vector3D& focus)
 {
     // qDebug() << "ZSliceColors::onCameraFocusChanged()" << focus.x() << focus.y() << focus.z();

@@ -1762,24 +1762,31 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 
     dataFlowModel->loadLsmMetadata();
 
+    int img_sc, img_sz, ref_sc;
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
         const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
+        img_sc = imgProxy.sc;
+        img_sz = imgProxy.sz;
+        ref_sc = refProxy.sc;
+    } // release read locks
 
-        setZRange(0, imgProxy.sz - 1);
+    setZRange(0, img_sz - 1);
 
-        // Start in middle of volume
-        // No, initial position should be set in 3D viewer
-        // ui.naZStackWidget->setCurrentZSlice(imgProxy.sz / 2 + 1);
+    // Ensure z-stack viewer gets enabled
+    dataFlowModel->getZSliceColors().onCameraFocusChanged(sharedCameraModel.focus());
 
-        // Need at least two colors for use of the color buttons to make sense
-        ui.HDRRed_pushButton->setEnabled(imgProxy.sc > 1);
-        ui.HDRGreen_pushButton->setEnabled(imgProxy.sc > 1);
-        ui.HDRBlue_pushButton->setEnabled(imgProxy.sc > 2);
-        ui.HDRNc82_pushButton->setEnabled(refProxy.sc > 0);
-    }
+    // Start in middle of volume
+    // No, initial position should be set in 3D viewer
+    // ui.naZStackWidget->setCurrentZSlice(img_sz / 2 + 1);
+
+    // Need at least two colors for use of the color buttons to make sense
+    ui.HDRRed_pushButton->setEnabled(img_sc > 1);
+    ui.HDRGreen_pushButton->setEnabled(img_sc > 1);
+    ui.HDRBlue_pushButton->setEnabled(img_sc > 2);
+    ui.HDRNc82_pushButton->setEnabled(ref_sc > 0);
 
     resetVolumeCutRange();
 }
