@@ -72,6 +72,7 @@ public:
                       smCurveMarkerLists_fm, smCurveMarkerPool_fm, smCurveCreateMarkerGD,smCurveFrom1Marker_fm,
                       smCurveTiltedBB_fm, smCurveTiltedBB_fm_sbbox, smCurveUseStrokeBB_fm, smCurveCreateTest,
                       smDeleteMultiNeurons, // for delete multi neurons, ZJL 20120806
+        smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 protected:
 	RenderMode renderMode;

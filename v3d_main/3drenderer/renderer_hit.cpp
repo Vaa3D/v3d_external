@@ -231,7 +231,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actSaveSurfaceObj=0,
 			*actLockSceneEditObjGeometry=0, *actAddtoMarkerPool=0, *actClearMarkerPool=0,//ZJL
 
-			*actMarkerCreate1=0, *actMarkerCreate2=0, *actMarkerCreate3=0, *actMarkerRefineT=0, *actMarkerRefineC=0, *actMarkerRefineLocal=0, *actMarkerAutoSeed=0,
+			*actMarkerCreate1=0, *actMarkerCreate1Stroke=0, *actMarkerCreate2=0, *actMarkerCreate3=0, *actMarkerRefineT=0, *actMarkerRefineC=0, *actMarkerRefineLocal=0, *actMarkerAutoSeed=0,
 			*actMarkerZoomin3D=0, *actMarkerMoveToMiddleZ=0,
 			*actMarkerDelete=0, *actMarkerClearAll=0, *actMarkerCreateNearestNeuronNode=0,
 			*actMarkerTraceFromStartPos=0, *actMarkerTraceFromStartPos_selPara=0, *actMarkerLineProfileFromStartPos=0, *actMarkerLineProfileFromStartPos_drawline=0, *actMarkerLabelAsStartPos=0,
@@ -298,7 +298,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actMarkerCreate1->setVisible(true);
 			actMarkerCreate1->setIconVisibleInMenu(true);
 
-			listAct.append(actMarkerCreate2 = new QAction("2-right-clicks to define a marker", w));
+			listAct.append(actMarkerCreate1Stroke = new QAction("1-right-stroke to define a marker (starting locus will be the output marker)", w));
+            
+			actMarkerCreate1Stroke->setIcon(QIcon(":/icons/click1.svg"));
+			actMarkerCreate1Stroke->setVisible(true);
+			actMarkerCreate1Stroke->setIconVisibleInMenu(true);
+
+			listAct.append(act = new QAction("", w)); act->setSeparator(true);
+
+            listAct.append(actMarkerCreate2 = new QAction("2-right-clicks to define a marker", w));
 
 			actMarkerCreate2->setIcon(QIcon(":/icons/click2.svg"));
 			actMarkerCreate2->setVisible(true);
@@ -994,6 +1002,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smCurveTiltedBB_fm_sbbox;
 		b_addthiscurve = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        total_etime = 0; //reset the timer
+	}
+	else if (act == actMarkerCreate1Stroke) // 20121011 PHC
+	{
+		selectMode = smMarkerCreate1Curve;
+		b_addthiscurve = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         total_etime = 0; //reset the timer
 	}
@@ -1976,11 +1991,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		}
 	}
 
-	// For curve refine, ZJL 110905
+    //curve generation
 	else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
 			selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
-			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest)
+			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest ||
+             selectMode == smMarkerCreate1Curve) //by PHC 20121011
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2037,7 +2053,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				loc_vec0.clear();
 				solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
 			}
-			else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox)
+			else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox ||
+                    selectMode == smMarkerCreate1Curve) //by PHC 20121011
 			{
 				// using two marker lists for fast marching to get a curve
 				vector <XYZ> loc_vec_input;
@@ -2045,7 +2062,19 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				loc_vec0.clear();
 				total_etime += solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
 
-				if(selectMode == smCurveFrom1Marker_fm)
+                if (selectMode == smMarkerCreate1Curve) //PHC 20121011
+                {
+                    XYZ & loc = loc_vec0.at(0);
+                                        if (dataViewProcBox.isInner(loc, 0.5)) //keep this for now? PHC 121011. 100725 RZC
+                                            dataViewProcBox.clamp(loc); //keep this for now? PHC 121011. 100722 RZC
+                    if (1) 
+                    {
+                        addMarker(loc);
+                    }
+                }
+
+				if(selectMode == smCurveFrom1Marker_fm ||
+                   selectMode == smMarkerCreate1Curve) //by PHC 20121011
 				{
 					endSelectMode();
 				}

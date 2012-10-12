@@ -1398,13 +1398,15 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
           b_useTiltedBB =  !b_useStrokeBB;
      }
 
-     if(selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox)
+     if(selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox 
+        || selectMode==smMarkerCreate1Curve) //by PHC 20121012
      {
           b_useTiltedBB = true;
           b_useStrokeBB = false;
           b_use2PointsBB = false;
 
-         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox)? true : false;
+         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox || selectMode==smMarkerCreate1Curve)? //PHC 20121012
+            true : false;
      }
 
      vector<MyMarker> nearpos_vec, farpos_vec; // for near/far locs testing
