@@ -20,7 +20,6 @@ class QRectF;
 // NaZStackWidget is based on HDRViewer class created by Yang Yu,
 // refactored to be a standalone class for use in Neuron Annotator.
 
-#define MINSZBOX 2
 #define NCLRCHNNL 5
 
 class NaZStackWidget : public Na2DViewer
@@ -34,6 +33,8 @@ public:
         COLOR_BLUE = 3,
         COLOR_NC82 = 4
     };
+
+    static const int minHdrBoxSize = 3;
 
     NaZStackWidget(QWidget* parent);
     virtual ~NaZStackWidget();
@@ -74,7 +75,7 @@ public slots:
     void setBlueChannel();
     void setNc82Channel();
     void setCurrentZSlice(int sliceNum);
-    void updateROIsize(int boxSize);
+    bool setHdrBoxSize(int boxSize);
     void setHDRCheckState(bool state);
     void updateVolumeParameters();
     void updateHDRView();
@@ -83,19 +84,19 @@ public slots:
 signals:
     void curZsliceChanged(int);
     void curColorChannelChanged(NaZStackWidget::Color);
-    void boxSizeChanged(int boxSize);
+    void hdrBoxSizeChanged(int boxSize);
     void changedHDRCheckState(bool state);
     void hdrRangeChanged(int channel, qreal min, qreal max);
     void statusMessage(const QString&);
 
 protected slots:
     void onMouseLeftDragEvent(int dx, int dy, QPoint pos);
+    void resetHdrBox();
 
 protected:
     void updateCursor();
     void setColorChannel(NaZStackWidget::Color col);
     void paintIntensityNumerals(QPainter& painter);
-    void setSearchBoxSize();
 
     const ZSliceColors * zSliceColors;
     const NaVolumeData * volumeData;
@@ -116,7 +117,8 @@ protected:
     float translateMouse_scale;
 
     QPoint recStartMousePos[NCLRCHNNL], recEndMousePos[NCLRCHNNL]; //
-    bool recMousePos[NCLRCHNNL], recCr[NCLRCHNNL];
+    bool recMousePos[NCLRCHNNL]; // whether box parameters are saved for each channel
+    int recCr[NCLRCHNNL]; // box size for each channel
     int recNum, recCopy;
     V3DLONG recZ[NCLRCHNNL];
 
@@ -128,8 +130,10 @@ protected:
     // float dispscale;
 
     V3DLONG sx, sy, sz, sc; // dimensions of image
-    V3DLONG cx, cy, cz, cc, cr;
+    V3DLONG cx, cy, cz, cc;
+    // , cr;
     V3DLONG cur_x, cur_y, cur_z, cur_c, pre_c;
+    V3DLONG hdrBoxSize;
 
     // roi
     std::vector<qreal> min_roi, max_roi;

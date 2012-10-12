@@ -191,7 +191,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui.referenceGammaWidget->gamma_label->setText("R "); // "reference"
     ui.referenceGammaWidget->setToolTip(tr("Brightness/gamma of reference channel"));
 
-    ui.BoxSize_spinBox->setMinimum(MINSZBOX);
+    ui.BoxSize_spinBox->setMinimum(NaZStackWidget::minHdrBoxSize);
     
     // Wire up Z-stack / HDR viewer
     connect(ui.HDR_checkBox, SIGNAL(toggled(bool)),
@@ -215,8 +215,8 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     connect(ui.naZStackWidget, SIGNAL(curZsliceChanged(int)),
             ui.ZSlice_horizontalScrollBar, SLOT(setValue(int)));
     connect(ui.BoxSize_spinBox, SIGNAL(valueChanged(int)),
-            ui.naZStackWidget, SLOT(updateROIsize(int)));
-    connect(ui.naZStackWidget, SIGNAL(boxSizeChanged(int)),
+            ui.naZStackWidget, SLOT(setHdrBoxSize(int)));
+    connect(ui.naZStackWidget, SIGNAL(hdrBoxSizeChanged(int)),
             ui.BoxSize_spinBox, SLOT(setValue(int)));
 
     // 3D viewer

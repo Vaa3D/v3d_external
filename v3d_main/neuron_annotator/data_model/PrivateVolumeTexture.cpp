@@ -477,7 +477,7 @@ ColorMapTexture::ColorMapTexture()
     : dataColorModel(NULL)
 {
     // qDebug() << "initializing dataColorModel to" << dataColorModel;
-    colors.fill(0, 4 * 256);
+    colors.assign(4 * 256, 0);
     for (int c = 0; c < 4; ++c) {
         uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
         if (3 == c)

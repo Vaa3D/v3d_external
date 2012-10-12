@@ -6,6 +6,7 @@
 #include <iostream>
 #include "../data_model/ZSliceColors.h"
 #include "../DataFlowModel.h"
+#include "../utility/FooDebug.h"
 
 using namespace std;
 
@@ -29,22 +30,7 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     b_mouseright = false;
     b_mousemove = false;
 
-    bMouseCurorIn = false;
-    bMouseDone = false;
-
-    for(int i=0; i<NCLRCHNNL; i++)
-    {
-        recMousePos[i] = false;
-        recZ[i] = 0;
-        hdrfiltered[i] = false;
-    }
-
-    setRedChannel(); // by default
-    setHDRCheckState(false);
-
-    m_square_pos.setX(sx/2);
-    m_square_pos.setY(sy/2);
-    cr = 12;
+    resetHdrBox();
 
     recNum = 0;
     roiDrawed = false;
@@ -65,6 +51,27 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
 
 NaZStackWidget::~NaZStackWidget() {}
 
+void NaZStackWidget::resetHdrBox()
+{
+    bMouseCurorIn = false;
+    bMouseDone = false;
+
+    for(int i=0; i<NCLRCHNNL; i++)
+    {
+        recMousePos[i] = false;
+        recZ[i] = 0;
+        hdrfiltered[i] = false;
+    }
+
+    setRedChannel(); // by default
+    setHDRCheckState(false);
+
+    m_square_pos.setX(sx/2);
+    m_square_pos.setY(sy/2);
+
+    setHdrBoxSize(25);
+}
+
 /* virtual */
 void NaZStackWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 {
@@ -82,6 +89,8 @@ void NaZStackWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
 
     setZSliceColors(&dataFlowModel->getZSliceColors());
     setVolumeData(&dataFlowModel->getVolumeData());
+
+    resetHdrBox();
 }
 
 void NaZStackWidget::setContextMenus(QMenu* viewerMenuParam, NeuronContextMenu* neuronMenuParam)
@@ -193,14 +202,22 @@ void NaZStackWidget::updateVolumeParameters()
     NaVolumeData::Reader volumeReader(*volumeData);
     if (! volumeReader.hasReadLock()) return;
     const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
+
+    bool bChanged = false;
+    if (sx != volProxy.sx) bChanged = true;
+    if (sy != volProxy.sy) bChanged = true;
+
     sx = volProxy.sx;
     sy = volProxy.sy;
     sz = volProxy.sz;
     sc = volProxy.sc;
     if (volumeReader.hasReferenceImage())
         sc += 1;// +1, reference channel too
+
     min_roi.assign(sc, INF);
     max_roi.assign(sc, -INF);
+    if (bChanged)
+        setSquarePos(QPointF(sx/2, sy/2));
 }
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
@@ -344,7 +361,7 @@ void NaZStackWidget::drawROI(QPainter *painter)
             {
                 if(bMouseDone)
                 {
-                    QSizeF sz(2*cr+1, 2*cr+1);
+                    QSizeF sz(hdrBoxSize, hdrBoxSize);
                     QRectF square = rectangle_around(m_square_pos, sz);
                     painter->drawRect(square);
                 }
@@ -352,7 +369,7 @@ void NaZStackWidget::drawROI(QPainter *painter)
         }
         else if(bMouseDone)
         {
-            QSizeF sz(2*cr+1, 2*cr+1);
+            QSizeF sz(hdrBoxSize, hdrBoxSize);
             QRectF square = rectangle_around(m_square_pos,sz);
             painter->drawRect(square);
         }
@@ -369,16 +386,18 @@ void NaZStackWidget::drawROI(QPainter *painter)
         // init a square
         cx = sx/2;
         cy = sy/2;
-        cr = 12;
 
-        start_x = cx - cr;
-        end_x = cx + cr;
+        setHdrBoxSize(25);
+
+        int temp_cr = (hdrBoxSize - 1) / 2;
+        start_x = cx - temp_cr;
+        end_x = cx + temp_cr;
 
         if(start_x<0) start_x = 0;
         if(end_x>=sx) end_x = sx-1;
 
-        start_y = cy -cr;
-        end_y = cy + cr;
+        start_y = cy - temp_cr;
+        end_y = cy + temp_cr;
 
         if(start_y<0) start_y = 0;
         if(end_y>=sy) end_y = sy-1;
@@ -392,7 +411,7 @@ void NaZStackWidget::drawROI(QPainter *painter)
         m_square_pos.setX( startMousePos.x() + (endMousePos.x() - startMousePos.x())/2 );
         m_square_pos.setY( startMousePos.y() + (endMousePos.y() - startMousePos.y())/2 );
 
-        QSizeF sz(2*cr+1, 2*cr+1);
+        QSizeF sz(hdrBoxSize, hdrBoxSize);
         QRectF square = rectangle_around(m_square_pos,sz);
         painter->drawRect(square);
     }
@@ -453,7 +472,7 @@ int NaZStackWidget::getCurrentZSlice() {
 }
 
 int NaZStackWidget::getCurrentBoxSize() {
-    return cr; // radius
+    return hdrBoxSize; // radius
 }
 
 void NaZStackWidget::setCurrentZSlice(int slice)
@@ -744,19 +763,13 @@ void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
             m_square_pos.setX( startMousePos.x() + (endMousePos.x() - startMousePos.x())/2 );
             m_square_pos.setY( startMousePos.y() + (endMousePos.y() - startMousePos.y())/2 );
 
-            int old_cr = cr;
-            cr = qMax((endMousePos.x() - startMousePos.x())/2, (endMousePos.y() - startMousePos.y())/2);
-
-            setSearchBoxSize();
+            int temp_cr = qMax((endMousePos.x() - startMousePos.x())/2, (endMousePos.y() - startMousePos.y())/2);
+            setHdrBoxSize(2 * temp_cr + 1);
 
             bMouseDone = true;
 
             //
             b_mouseright = false;
-            if (old_cr != cr) {
-                old_cr = cr;
-                emit boxSizeChanged(2*cr+1);
-            }
         }
 
         if(b_mouseleft)
@@ -781,11 +794,12 @@ void NaZStackWidget::setSquarePos(const QPointF &pos)
     //
     float top_x, top_y, bottom_x, bottom_y;
 
-    top_x = m_square_pos.x() - cr;
-    top_y = m_square_pos.y() - cr;
+    int temp_cr = (hdrBoxSize - 1) / 2;
+    top_x = m_square_pos.x() - temp_cr;
+    top_y = m_square_pos.y() - temp_cr;
 
-    bottom_x = m_square_pos.x() + cr;
-    bottom_y = m_square_pos.y() + cr;
+    bottom_x = m_square_pos.x() + temp_cr;
+    bottom_y = m_square_pos.y() + temp_cr;
 
     if(top_x<1) top_x = 1;
     if(top_y<1) top_y = 1;
@@ -813,7 +827,7 @@ bool NaZStackWidget::checkROIchanged()
 {
     bool flag = false;
 
-    recordColorChannelROIPos();
+    // recordColorChannelROIPos();
 
     if(start_x != startMousePos.x()-1)
     {
@@ -959,11 +973,44 @@ void NaZStackWidget::setColorChannel(NaZStackWidget::Color col)
     if ( (int)col > sc )
         return; // outside of range of available color channels
     setHDRCheckState(true); // Turn on HDR mode when a color channel is selected
-    if (col == cur_c) return; // No change
+    if (col == cur_c)
+        return; // No change
+
+    // Store hdr box parameters for previous channel
+    int c_ix = cur_c - 1;
+    if (hdrBoxSize >= NaZStackWidget::minHdrBoxSize)
+    {
+        recStartMousePos[c_ix] = startMousePos;
+        recEndMousePos[c_ix] = endMousePos;
+        recCr[c_ix] = hdrBoxSize;
+        // fooDebugggggggggggggggggggggggggggggggggggggggggg() << recCr[c_ix] << c_ix << __FILE__ << __LINE__;
+        recZ[c_ix] = cur_z;
+        recMousePos[c_ix] = true;
+    }
+    // Recall hdr box parameters for current channel
+    cur_c = col;
+    c_ix = cur_c - 1;
+    if (recMousePos[c_ix])
+    {
+        startMousePos = recStartMousePos[c_ix];
+        endMousePos = recEndMousePos[c_ix];
+        cur_z = recZ[c_ix]; // TODO REALLY!?!?!
+        // fooDebug() << recCr[c_ix] << c_ix << __FILE__ << __LINE__;
+        setHdrBoxSize(recCr[c_ix]);
+        // TODO - start_x and startMousePos.x() are redundant
+        start_x = startMousePos.x()-1;
+        end_x = endMousePos.x()-1;
+        start_y = startMousePos.y()-1;
+        end_y = endMousePos.y()-1;
+        m_square_pos.setX( startMousePos.x() + (endMousePos.x() - startMousePos.x())/2 );
+        m_square_pos.setY( startMousePos.y() + (endMousePos.y() - startMousePos.y())/2 );
+    }
+
     recNum = 0;
     hdrfiltered[(int)col - 1] = true;
     pre_c = cur_c;
-    cur_c = col;
+    // cur_c = col;
+
     emit curColorChannelChanged(col);
 }
 
@@ -983,14 +1030,19 @@ void NaZStackWidget::setNc82Channel() {
     setColorChannel(COLOR_NC82);
 }
 
-void NaZStackWidget::updateROIsize(int boxSize)
+bool NaZStackWidget::setHdrBoxSize(int boxSize)
 {
-    if (cr == boxSize) return; // no change => ignore
-    cr = (boxSize-1)/2;
-
-    updateHDRView();
-
-    emit boxSizeChanged(boxSize);
+    if (boxSize < NaZStackWidget::minHdrBoxSize)
+        boxSize = NaZStackWidget::minHdrBoxSize;
+    if (hdrBoxSize == boxSize)
+        return false; // no change => ignore
+    hdrBoxSize = boxSize;
+    endMousePos.setX(startMousePos.x() + boxSize);
+    endMousePos.setY(startMousePos.y() + boxSize);
+    // updateHDRView(); // only on mouse drag
+    emit hdrBoxSizeChanged(boxSize);
+    update();
+    return true;
 }
 
 void NaZStackWidget::setHDRCheckState(bool state)
@@ -1026,13 +1078,14 @@ void NaZStackWidget::recordColorChannelROIPos(){
             recEndMousePos[pre_c-1].setX( endMousePos.x() );
             recEndMousePos[pre_c-1].setY( endMousePos.y() );
 
-            recCr[pre_c-1] = cr;
+            // fooDebug() << recCr[pre_c-1] << pre_c-1 << __FILE__ << __LINE__;
+            recCr[pre_c-1] = hdrBoxSize;
+            // fooDebug() << recCr[pre_c-1] << pre_c-1 << __FILE__ << __LINE__;
             recZ[pre_c-1] = cur_z;
         }
 
         if(recMousePos[cur_c-1])
         {
-            cr = recCr[cur_c-1];
             cur_z = recZ[cur_c-1];
 
             startMousePos.setX(recStartMousePos[cur_c-1].x());
@@ -1040,7 +1093,8 @@ void NaZStackWidget::recordColorChannelROIPos(){
 
             endMousePos.setX(recEndMousePos[cur_c-1].x());
             endMousePos.setY(recEndMousePos[cur_c-1].y());
-
+            // fooDebug() << recCr[cur_c-1] << cur_c-1 << __FILE__ << __LINE__;
+            setHdrBoxSize(recCr[cur_c-1]);
         }
 
         start_x = startMousePos.x()-1;
@@ -1052,10 +1106,8 @@ void NaZStackWidget::recordColorChannelROIPos(){
         m_square_pos.setX( startMousePos.x() + (endMousePos.x() - startMousePos.x())/2 );
         m_square_pos.setY( startMousePos.y() + (endMousePos.y() - startMousePos.y())/2 );
 
-        int old_cr = cr;
-        cr = qMax((endMousePos.x() - startMousePos.x())/2, (endMousePos.y() - startMousePos.y())/2);
-
-        setSearchBoxSize();
+        int temp_cr = qMax((endMousePos.x() - startMousePos.x())/2, (endMousePos.y() - startMousePos.y())/2);
+        setHdrBoxSize(2*temp_cr + 1);
     }
 
 }
@@ -1073,18 +1125,3 @@ void NaZStackWidget::updateHDRView(){
     }
 }
 
-void NaZStackWidget::setSearchBoxSize(){
-
-    if(cr<MINSZBOX)
-    {
-        cr = MINSZBOX;
-
-        int boxsz = 2*cr+1;
-
-        endMousePos.setX(startMousePos.x() + boxsz);
-        endMousePos.setY(startMousePos.y() + boxsz);
-
-        updateHDRView();
-    }
-
-}

@@ -10,7 +10,7 @@
 #include <vector>
 #include <cassert>
 #include <stdint.h>
-#include <QVector>
+// #include <QVector>
 #include <QtGui>
 #include <QObject>
 
@@ -43,7 +43,7 @@ public:
         // , bInitialized(false)
     {
         size_t numVoxels = width * height * depth;
-        data.fill(0,  numVoxels);
+        data.assign(numVoxels, 0);
     }
 
     virtual void setValueAt(size_t x, size_t y, size_t z, VoxelType value)
@@ -69,12 +69,12 @@ public:
         paddedSize = paddedTextureSize;
         usedSize = usedTextureSize;
         size_t numVoxels = width * height * depth;
-        data.fill(0, numVoxels);
+        data.assign(numVoxels, 0);
         // qDebug() << "Allocating" << width << height << depth;
     }
 
-    VoxelType* getData() {return data.data();}
-    const VoxelType* getData() const {return data.data();}
+    VoxelType* getData() {return &data[0];}
+    const VoxelType* getData() const {return &data[0];}
 
     size_t getWidth() const {return width;}
     size_t getHeight() const {return height;}
@@ -84,7 +84,7 @@ public:
     Dimension getPaddedSize() const {return paddedSize;}
 
 protected:
-    QVector<VoxelType> data;
+    std::vector<VoxelType> data;
     // size_t data_size;
     size_t width, height, depth;
     Dimension usedSize;
@@ -121,11 +121,11 @@ public:
     /// Connect this texture to the NeuronAnnotator unified data model
     void setNeuronSelectionModel(const NeuronSelectionModel& m);
     bool update();
-    const uint32_t* getData() const {return visibilities.data();}
+    const uint32_t* getData() const {return &visibilities[0];}
 
 protected:
     const NeuronSelectionModel* neuronSelectionModel;
-    QVector<unsigned int> visibilities;
+    std::vector<unsigned int> visibilities;
 };
 
 
@@ -133,13 +133,13 @@ class ColorMapTexture
 {
 public:
     ColorMapTexture();
-    const uint32_t* getData() const {return colors.data();}
+    const uint32_t* getData() const {return &colors[0];}
     bool update();
     void setDataColorModel(const DataColorModel& cm);
 
 protected:
     const DataColorModel* dataColorModel;
-    QVector<uint32_t> colors;
+    std::vector<uint32_t> colors;
 };
 
 class PrivateVolumeTexture : public QSharedData

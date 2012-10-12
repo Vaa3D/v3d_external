@@ -107,7 +107,11 @@ void DataFlowModel::synchronizeColorModels()
     float hdrMinima[4]  = {-1,-1,-1,-1};
     {
         DataColorModel::Reader reader1(dataColorModel);
+        if (dataColorModel.readerIsStale(reader1))
+            return;
         DataColorModel::Reader reader3(slow3DColorModel);
+        if (slow3DColorModel.readerIsStale(reader3))
+            return;
         for (int c = 0; c < reader1.getNumberOfDataChannels(); ++c)
         {
             if (c > 3) break; // more than 4 channels?!
