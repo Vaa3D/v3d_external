@@ -43,8 +43,16 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
     // ...so try reestablishing it every time.  Thank you Qt::UniqueConnection.
     // connect(volumeData, SIGNAL(dataChanged()),
     //         this, SLOT(updateVolume()), Qt::UniqueConnection);
+
+    // Q: What is this for?? Oct 16 2012 CMB
+    // A: loadStagedVolumes will call updateVolume() IFF NaVolumeData has the best version of the volume.
     connect(volumeData, SIGNAL(channelsLoaded(int)),
             this, SLOT(loadStagedVolumes()), Qt::UniqueConnection);
+
+    // Needed for loading single volume files
+    // connect(volumeData, SIGNAL(channelsLoaded(int)),
+    //        this, SLOT(updateVolume()), Qt::UniqueConnection);
+
     // During fast load, update NaVolumeData without later updating VolumeTexture
     connect(this, SIGNAL(volumeLoadSequenceCompleted()),
             volumeData, SLOT(loadSecondaryVolumeDataFromFiles()));
@@ -664,6 +672,27 @@ bool VolumeTexture::queueSeparationFolder(QDir folder) // using new staged loade
         mvoxels0 /= 2;
         *losslessItem << candidate;
     }
+
+    // Add candidate for loading from NaVolumeData, in case subsampled files
+    // are unavailable
+    /*
+    ProgressiveLoadCandidate* volumeDataCandidate = new ProgressiveLoadCandidate();
+    const NaVolumeData& volumeData = dataFlowModel->getVolumeData();
+    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_RGB);
+    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_ALPHA);
+    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_LABEL);
+    *losslessItem << volumeDataCandidate;
+    */
+    queueVolumeData(*losslessItem);
+
+    //
+    progressiveLoader << losslessItem;
+
+    return true;
+}
+
+void VolumeTexture::queueVolumeData(ProgressiveLoadItem& losslessItem)
+{
     // Add candidate for loading from NaVolumeData, in case subsampled files
     // are unavailable
     ProgressiveLoadCandidate* volumeDataCandidate = new ProgressiveLoadCandidate();
@@ -671,13 +700,15 @@ bool VolumeTexture::queueSeparationFolder(QDir folder) // using new staged loade
     *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_RGB);
     *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_ALPHA);
     *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_LABEL);
-    *losslessItem << volumeDataCandidate;
-    //
-    progressiveLoader << losslessItem;
-
-    return true;
+    losslessItem << volumeDataCandidate;
 }
 
+void VolumeTexture::queueVolumeData()
+{
+    ProgressiveLoadItem* losslessItem = new ProgressiveLoadItem();
+    queueVolumeData(*losslessItem);
+    progressiveLoader << losslessItem;
+}
 
 ///////////////////////////////////
 // VolumeTexture::Reader methods //

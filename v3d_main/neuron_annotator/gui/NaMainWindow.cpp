@@ -713,8 +713,9 @@ void NaMainWindow::dropEvent(QDropEvent * event)
 
     // If this looks like a neuron separation directory, load it in NeuronAnnotator
     QDir directory = QFileInfo(fileName).dir();
-    if (   QFile(directory.filePath("ConsolidatedLabel.v3dpbd")).exists()
-        || QFile(directory.filePath("ConsolidatedLabel.tif")).exists() )
+    if (   (QFile(directory.filePath("ConsolidatedLabel.v3dpbd")).exists()
+        || QFile(directory.filePath("ConsolidatedLabel.tif")).exists())
+        && (fileName.contains("Reference") || fileName.contains("Consolidated"))  )
     {
         // qDebug() << "Found separated neurons directory";
         openMulticolorImageStack(directory.absolutePath());
@@ -757,6 +758,10 @@ void NaMainWindow::loadSingleStack(QString fileName, bool useVaa3dClassic)
         setViewMode(VIEW_SINGLE_STACK);
         onDataLoadStarted();
         createNewDataFlowModel();
+
+        VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
+        volumeTexture.queueVolumeData();
+
         emit singleStackLoadRequested(fileName);
     }
 }
@@ -1304,6 +1309,7 @@ bool NaMainWindow::loadSeparationDirectoryV1Pbd(QDir imageInputDirectory)
     // Opposite of fast loading behavior
     dataFlowModel->getVolumeData().doFlipY = true;
     dataFlowModel->getVolumeData().bDoUpdateSignalTexture = true;
+    // fooDebug() << __FILE__ << __LINE__;
 
     // Load session
     setViewMode(VIEW_NEURON_SEPARATION);

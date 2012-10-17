@@ -131,7 +131,9 @@ public:
         const Image4DProxy<My4DImage>& getOriginalImageProxy() const;
         const Image4DProxy<My4DImage>& getReferenceImageProxy() const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
-        bool hasReferenceImage() const {return m_data->referenceStack != NULL;}
+        bool hasReferenceImage() const {return
+                (m_data->referenceStack != NULL)
+                && (m_data->referenceStack->getTotalBytes() > 0);}
         bool hasNeuronMask() const {return m_data->neuronMaskStack != NULL;}
         bool doUpdateSignalTexture() const;
         int getNumberOfNeurons() const {

@@ -30,9 +30,13 @@ void PrivateDataColorModel::colorizeIncremental(
         const DataColorModel::Reader& currentColorReader)
 {
     // qDebug() << "PrivateDataColorModel::colorizeIncremental" << __FILE__ << __LINE__;
-    assert(desiredColorReader.getNumberOfDataChannels() == currentColorReader.getNumberOfDataChannels());
-    const int numChannels = desiredColorReader.getNumberOfDataChannels();
-    if (numChannels != channelColors.size()) {
+    // Only consider the channels in common between the two color models
+    int c1 = desiredColorReader.getNumberOfDataChannels();
+    int c2 = currentColorReader.getNumberOfDataChannels();
+    const int numChannels = std::min(c1, c2);
+    // assert(desiredColorReader.getNumberOfDataChannels() == currentColorReader.getNumberOfDataChannels());
+    // const int numChannels = desiredColorReader.getNumberOfDataChannels();
+    if (numChannels > channelColors.size()) {
         channelColors.fill(0, numChannels);
     }
     qreal incGamma = currentColorReader.getSharedGamma() / desiredColorReader.getSharedGamma();

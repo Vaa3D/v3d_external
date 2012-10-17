@@ -187,6 +187,7 @@ bool NaVolumeData::loadVolumeFromTexture()
     }
 
     if (bSucceeded) {
+        // fooDebug() << __FILE__ << __LINE__;
         bDoUpdateSignalTexture = false; // because it was set upstream
         emit channelsLoaded(3);
     }
@@ -276,7 +277,7 @@ void flipY(My4DImage* img)
 /* slot */
 void NaVolumeData::loadSecondaryVolumeDataFromFiles()
 {
-    // qDebug() << "NaVolumeData::loadSecondaryVolumeDataFromFiles()" << __FILE__ << __LINE__;
+    // fooDebug() << "NaVolumeData::loadSecondaryVolumeDataFromFiles()" << __FILE__ << __LINE__;
     bDoUpdateSignalTexture = false;
     loadStagedVolumes();
 }
@@ -995,6 +996,7 @@ const Image4DProxy<My4DImage>& NaVolumeData::Reader::getReferenceImageProxy() co
 
 bool NaVolumeData::Reader::doUpdateSignalTexture() const
 {
+    // fooDebug() << m_data->bDoUpdateSignalTexture << __FILE__ << __LINE__;
     return m_data->bDoUpdateSignalTexture;
 }
 

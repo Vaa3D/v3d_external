@@ -59,6 +59,7 @@ public slots:
     void loadNextVolume();
     void loadStagedVolumes();
     bool queueSeparationFolder(QDir folder); // using new staged loader
+    void queueVolumeData();
 #ifdef USE_FFMPEG
     bool loadFast3DTexture();
 #endif
@@ -69,6 +70,7 @@ private:
 
 protected:
     bool queueFile(QString fileName);
+    void queueVolumeData(ProgressiveLoadItem& losslessItem);
     int chooseFinalVolumes(QDir separationDirectory, int maxMegaVoxels);
     bool chooseFinalVolume(QDir separationDirectory, int maxMegaVoxels, QString fileRoot);
     bool bLoadedFromNaVolumeData;

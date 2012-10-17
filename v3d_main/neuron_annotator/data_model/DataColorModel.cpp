@@ -80,8 +80,13 @@ void DataColorModel::colorizeIncremental()
         if (desiredColors->readerIsStale(desiredReader)) return;
         DataColorModel::Reader currentReader(*currentColors);
         if (currentColors->readerIsStale(currentReader)) return;
-        if (desiredReader.getNumberOfDataChannels() != currentReader.getNumberOfDataChannels())
-            return; // color models are out of sync
+        int c1 = desiredReader.getNumberOfDataChannels();
+        int c2 = currentReader.getNumberOfDataChannels();
+        int numChannels = std::min(c1, c2);
+        if (numChannels < 1)
+            return;
+        // if (desiredReader.getNumberOfDataChannels() != currentReader.getNumberOfDataChannels())
+        //     return; // color models are out of sync
         Writer(*this);
         d->colorizeIncremental(desiredReader, currentReader);
     } // release locks
