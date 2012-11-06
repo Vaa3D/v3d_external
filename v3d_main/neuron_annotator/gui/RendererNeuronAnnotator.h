@@ -62,16 +62,17 @@ public:
     void setPaddedVolumeDimensions(long x, long y, long z);
     void setSingleVolumeDimensions(long x, long y, long z);
 
+    jfrc::Stereo3DMode getStereoMode() const {return stereo3DMode;}
+    bool getStereoSwapEyes() const {return bStereoSwapEyes;}
+    bool getScreenRowParity() const {return screenRowParity;}
+    bool getScreenColumnParity() const {return screenColumnParity;}
+
     // expose sampleScale[XYZ], thickness[XYZ]
     void setShowClipGuide(bool b) {bShowClipGuide = b;}
     void applyCustomCut(const CameraModel&);
     void applyCutPlaneInImageFrame(Vector3D point, Vector3D direction);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
     void clearClipPlanes();
-    jfrc::Stereo3DMode getStereoMode() const {return stereo3DMode;}
-    bool getStereoSwapEyes() const {return bStereoSwapEyes;}
-    bool getScreenRowParity() const {return screenRowParity;}
-    bool getScreenColumnParity() const {return screenColumnParity;}
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;
     using Renderer_gl2::sampleScaleZ;

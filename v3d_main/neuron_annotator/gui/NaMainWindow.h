@@ -120,9 +120,11 @@ public slots:
     void onDataLoadFinished();
     bool openMulticolorImageStack(QString dirName);
     void on_actionV3DDefault_triggered();
+    void on_actionMeasure_Frame_Rate_triggered();
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
     void on_actionOpen_triggered();
+    void on_actionOpen_Octree_Volume_triggered();
     void on_actionOpen_Single_Movie_Stack_triggered();
     void on_action3D_Volume_triggered();
     void on_action2D_MIP_triggered();

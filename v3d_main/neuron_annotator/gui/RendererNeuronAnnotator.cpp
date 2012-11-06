@@ -1583,6 +1583,7 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
         paintClipGuide();
     }
 
+
     // must be at last
     if (! b_selecting && sShowTrack)
     {

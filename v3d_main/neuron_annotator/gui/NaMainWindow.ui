@@ -1749,6 +1749,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionOpen_Single_Movie_Stack"/>
     <addaction name="actionOpen_Reference_Channel"/>
     <addaction name="actionOpen_Neuron_Mask"/>
+    <addaction name="actionOpen_Octree_Volume"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
@@ -1805,6 +1806,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionShow_Brain_Compartments"/>
     <addaction name="separator"/>
     <addaction name="menuStereo_3D"/>
+    <addaction name="separator"/>
+    <addaction name="actionMeasure_Frame_Rate"/>
    </widget>
    <widget class="QMenu" name="menuWork_Mode">
     <property name="title">
@@ -2227,6 +2230,16 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="actionX_Rotation_Movie">
    <property name="text">
     <string>X Rotation Movie...</string>
+   </property>
+  </action>
+  <action name="actionMeasure_Frame_Rate">
+   <property name="text">
+    <string>Measure Frame Rate</string>
+   </property>
+  </action>
+  <action name="actionOpen_Octree_Volume">
+   <property name="text">
+    <string>Open Octree Volume...</string>
    </property>
   </action>
  </widget>

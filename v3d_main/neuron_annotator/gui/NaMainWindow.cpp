@@ -150,6 +150,12 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     // hide dev-version rotate-X movie maker, until it become more user-friendly
     ui.menuExport->removeAction(ui.actionX_Rotation_Movie);
 
+    // hide fps option: it's for debugging
+    ui.menuView->removeAction(ui.actionMeasure_Frame_Rate);
+
+    // hide octree test item
+    ui.menuFile->removeAction(ui.actionOpen_Octree_Volume);
+
 #ifdef USE_FFMPEG
     ui.actionLoad_movie_as_texture->setVisible(true);
     ui.actionLoad_fast_separation_result->setVisible(true);
@@ -593,6 +599,44 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
     if (! dataFlowModel) return;
     dataFlowModel->getFast3DTexture().loadFile(fileName);
 #endif
+}
+
+/* slot */
+void NaMainWindow::on_actionMeasure_Frame_Rate_triggered()
+{
+    cout << "Measuring frame rate..." << endl;
+    Rotation3D currentRotation = sharedCameraModel.rotation();
+    Rotation3D dRot;
+    const int numSteps = 30;
+    dRot.setRotationFromAngleAboutUnitVector(
+            2.0 * 3.14159 / numSteps,
+            UnitVector3D(0, 1, 0));
+    QElapsedTimer timer;
+    timer.start();
+    for (int deg = 0; deg < numSteps; ++deg)
+    {
+        // cout << "step " << deg << endl;
+        currentRotation = dRot * currentRotation;
+        sharedCameraModel.setRotation(currentRotation);
+        QCoreApplication::processEvents();
+        ui.v3dr_glwidget->updateGL();
+        QCoreApplication::processEvents();
+    }
+    qint64 msTime = timer.elapsed();
+    double meanFrameTime = msTime / (double)(numSteps);
+    double frameRate = 1000.0 / meanFrameTime;
+    cout << meanFrameTime << " ms per frame; " << frameRate << " frames per second" << endl;
+    // cout << timer.elapsed() << endl;
+}
+
+/* slot */
+void NaMainWindow::on_actionOpen_Octree_Volume_triggered()
+{
+    QString fileName = getStackPathWithDialog();
+    if (fileName.isEmpty())
+        return;
+    loadSingleStack(fileName, false);
+    // TODO - actually do something clever
 }
 
 /* slot */

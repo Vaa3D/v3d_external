@@ -147,6 +147,13 @@ protected:
     static int round(double d);
     static bool anglesAreEqual(int a1, int a2); // in degrees
     virtual void paintGL();
+
+    // Nov 2012
+    // Move paint functions from RendererNeuronAnnotator into Na3DWidget, because Na3DWidget stores needed camera state.
+    void paint_mono(bool clear=true);
+    void paint_stereo();
+    //
+
     void paintFiducial(const Vector3D& v);
     void paintGrid();
     virtual void choiceRenderer(); // Create a new internal renderer object
@@ -162,15 +169,17 @@ protected:
     QCursor * rotateCursor;
     QMenu* viewerContextMenu;
     NeuronContextMenu* neuronContextMenu;
+
+    jfrc::Stereo3DMode stereo3DMode;
+    bool bStereoSwapEyes;
     bool bHasQuadStereo;
+
     bool bShowCornerAxes;
     bool bAlphaBlending;
     bool bClickIsWaiting;
     bool bGLIsInitialized;
     QUndoStack* undoStack;
     qreal cachedRelativeScale;
-    jfrc::Stereo3DMode stereo3DMode;
-    bool bStereoSwapEyes;
     // Sometimes we cannot get a read lock on updated textures
     bool bLabelTextureIsDirty;
     bool bVisibilityTextureIsDirty;

@@ -1769,6 +1769,7 @@ void Na3DWidget::paintGL()
     if (bColorMapTextureIsDirty) loadColorMapTexture();
     if (bVisibilityTextureIsDirty) loadVisibilityTexture();
 
+    // cout << "paintGL" << endl;
     // QElapsedTimer timer; timer.start();
     // emit benchmarkTimerPrintRequested("Starting to paint 3D widget");
     V3dR_GLWidget::paintGL();
