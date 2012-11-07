@@ -10,6 +10,7 @@
 #include "../data_model/VolumeTexture.h"
 #include "../data_model/DataColorModel.h"
 #include "../utility/FooDebug.h"
+#include "../render/CameraTransformGL.h"
 
 using namespace std;
 using namespace jfrc;
@@ -957,6 +958,15 @@ Vector3D Na3DWidget::getDefaultFocus() const
     return result;
 }
 
+// Version with x/y/z ratio proportional to Euclidean space,
+// instead of to volume voxel extents
+Vector3D Na3DWidget::getDefaultFocusInMicrometers() const
+{
+    Vector3D f = getDefaultFocus();
+    f.z() *= _thickness;
+    return f;
+}
+
 // Translate view by dx,dy screen pixels
 void Na3DWidget::translateImage(int dx, int dy)
 {
@@ -967,7 +977,7 @@ void Na3DWidget::translateImage(int dx, int dy)
     Vector3D dFocus_eye(-dx  * flip_X,
                         -dy  * flip_Y,
                         -0.0 * flip_Z);
-    Vector3D dFocus_obj = ~Rotation3D(mRot) * dFocus_eye;
+    Vector3D dFocus_obj = ~cameraModel.rotation() * dFocus_eye;
     dFocus_obj /= getZoomScale();
     dFocus_obj.z() /= _thickness; // Euclidean scale to image scale
     Vector3D newFocus = focus() + dFocus_obj;
@@ -1086,7 +1096,7 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
         if (bUseClassicV3dRotation)
             V3dR_GLWidget::mouseMoveEvent(event); // regular V3D rotate behavior
         else {
-            Rotation3D oldRotation(mRot);
+            Rotation3D oldRotation = cameraModel.rotation();
             // std::cout << "old rotation = " << oldRotation << std::endl;
             // dragging across the entire viewport should be roughly 360 degrees rotation
             qreal rotAnglePerPixel = 2.0 * 3.14159 / ((width() + height()) / 2);
@@ -1480,7 +1490,7 @@ void Na3DWidget::updateRendererZoomRatio(qreal relativeScale)
 
 void Na3DWidget::updateFocus(const Vector3D& f)
 {
-    Rotation3D R_eye_obj(mRot);
+    Rotation3D R_eye_obj = cameraModel.rotation();
     // _[xyz]Shift variables are relative to the center of the volume
     Vector3D shift_img = f - getDefaultFocus();
     shift_img.z() *= _thickness;
@@ -1493,6 +1503,30 @@ void Na3DWidget::updateFocus(const Vector3D& f)
     _zShift = shift_eye.z();
     dxShift=dyShift=dzShift=0;
     emit slabPositionChanged(getSlabPosition());
+}
+
+Vector3D Na3DWidget::getCameraFocusInMicrometers() const
+{
+    Vector3D f = cameraModel.focus();
+    f.z() *= _thickness;
+    return f;
+}
+
+void Na3DWidget::setCameraFocusInMicrometers(const Vector3D& f)
+{
+    Vector3D focusInGround = f;
+    focusInGround.z() /= _thickness; // convert from micrometers to volume voxel frame
+    cameraModel.setFocus(focusInGround);
+}
+
+Rotation3D Na3DWidget::getCameraRotationInGround() const
+{
+    return cameraModel.rotation();
+}
+
+void Na3DWidget::setCameraRotationInGround(const Rotation3D& rotation)
+{
+    cameraModel.setRotation(rotation);
 }
 
 void Na3DWidget::updateRotation(const Rotation3D & newRotation)
@@ -1669,7 +1703,7 @@ void Na3DWidget::setSlabThickness(int val) // range 0-1000; 0 means maximally cl
 
 int Na3DWidget::getSlabPosition() const
 {
-    Vector3D viewDirection = ~Rotation3D(mRot) * Vector3D(0, 0, 1);
+    Vector3D viewDirection = ~cameraModel.rotation() * Vector3D(0, 0, 1);
     // cout << "view direction = " << viewDirection << endl;
     Vector3D df = cameraModel.focus() - getDefaultFocus();
     int slabPosition = int(df.dot(viewDirection) + 0.5);
@@ -1684,7 +1718,7 @@ void Na3DWidget::setSlabPosition(int val) // range 0-1000, 1000 means maximally 
     int oldSlabPosition = getSlabPosition();
     if (val == oldSlabPosition) return; // no change
     float dSlabPos = val - oldSlabPosition;
-    Vector3D viewDirection = ~Rotation3D(mRot) * Vector3D(0, 0, 1);
+    Vector3D viewDirection = ~cameraModel.rotation() * Vector3D(0, 0, 1);
     Vector3D dFocus = viewDirection * dSlabPos;
     dFocus.z() /= _thickness; // Euclidean scale to image scale
     Vector3D newFocus = dFocus + cameraModel.focus();
@@ -1769,10 +1803,26 @@ void Na3DWidget::paintGL()
     if (bColorMapTextureIsDirty) loadColorMapTexture();
     if (bVisibilityTextureIsDirty) loadVisibilityTexture();
 
-    // cout << "paintGL" << endl;
-    // QElapsedTimer timer; timer.start();
-    // emit benchmarkTimerPrintRequested("Starting to paint 3D widget");
-    V3dR_GLWidget::paintGL();
+    // Nov 2012 TODO replace V3dR_GLWidget::paintGL() with CameraTransformGL/renderer->paint()
+    if (true)
+    {
+        CameraTransformGL cameraTransformGL(*this);
+
+        // TODO - refactor into LegacyRendererActor
+        //=========================================================================
+        // normalized space of [-1,+1]^3;
+        {
+            if (renderer)  renderer->paint();
+        }
+        //=========================================================================
+    }
+    else
+    {
+        // cout << "paintGL" << endl;
+        // QElapsedTimer timer; timer.start();
+        // emit benchmarkTimerPrintRequested("Starting to paint 3D widget");
+        V3dR_GLWidget::paintGL();
+    }
 
     // Draw focus position to ensure it remains in center of screen,
     // for debugging

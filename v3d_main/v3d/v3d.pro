@@ -140,6 +140,9 @@ HEADERS += \
     ../neuron_annotator/gui/PreferencesDialog.h \
     ../neuron_annotator/gui/DynamicRangeTool.h \
     ../neuron_annotator/gui/ColorRangeSliderWidget.h \
+    ../neuron_annotator/render/ActorGL.h \
+    ../neuron_annotator/render/CameraTransformGL.h \
+    ../neuron_annotator/render/WireCube.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
     ../neuron_annotator/utility/FileTreeSearcher.h \
     ../neuron_annotator/utility/FooDebug.h \
@@ -206,6 +209,9 @@ SOURCES += \
     ../neuron_annotator/gui/NaZStackWidget.cpp \
     ../neuron_annotator/gui/NaLargeMIPWidget.cpp \
     ../neuron_annotator/gui/PreferencesDialog.cpp \
+    ../neuron_annotator/render/ActorGL.cpp \
+    ../neuron_annotator/render/CameraTransformGL.cpp \
+    ../neuron_annotator/render/WireCube.cpp \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
     ../neuron_annotator/utility/FileTreeSearcher.cpp \
     ../neuron_annotator/utility/FooDebug.cpp \

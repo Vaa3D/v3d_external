@@ -52,6 +52,7 @@ public:
     int neuronAt(QPoint pos);
     void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
     Vector3D getDefaultFocus() const;
+    Vector3D getDefaultFocusInMicrometers() const;
     // Don't update if the current rotation is within 0.5 of the specified integer angle
     void setXYZBodyRotationInt(int rotX, int rotY, int rotZ);
     static int radToDeg(double angleInRadians);
@@ -59,6 +60,13 @@ public:
     bool screenShot(QString filename);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
     int getSlabPosition() const;
+
+    // Nov 2012 camera parameters
+    Vector3D getCameraFocusInMicrometers() const;
+    void setCameraFocusInMicrometers(const Vector3D& f);
+    Rotation3D getCameraRotationInGround() const;
+    void setCameraRotationInGround(const Rotation3D& rotation);
+    float glUnitsPerImageVoxel() const;
 
 signals:
     void alphaBlendingChanged(bool);
@@ -159,7 +167,6 @@ protected:
     virtual void choiceRenderer(); // Create a new internal renderer object
     virtual void settingRenderer(); // Apply settings to internal renderer object
     virtual void preparingRenderer();
-    float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
     // v3dr_glwidget::event() can cause crash
     virtual bool event(QEvent* e) {return QGLWidget::event(e);}

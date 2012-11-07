@@ -62,7 +62,8 @@ file(GLOB NA_SRCS
     "gui/*.cpp" 
     "utility/*.cpp" 
     "gui/trees/*.cpp" 
-    "../webservice/*/*.cpp")
+    "../webservice/*/*.cpp"
+    "render/*.cpp")
 
 add_definitions(-DWITH_PURE_VIRTUAL -DWITH_NONAMESPACES) # needed for webservice soap stuff
 
