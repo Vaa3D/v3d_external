@@ -160,6 +160,8 @@ protected:
     // Move paint functions from RendererNeuronAnnotator into Na3DWidget, because Na3DWidget stores needed camera state.
     void paint_mono(bool clear=true);
     void paint_stereo();
+    int globalScreenPosX;
+    int globalScreenPosY;
     //
 
     void paintFiducial(const Vector3D& v);

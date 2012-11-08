@@ -9,7 +9,6 @@
 #include "../data_model/Dimension.h"
 #include "../data_model/CustomClipPlanes.h"
 #include "../geometry/CameraModel.h"
-#include "Stereo3dMode.h"
 
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
@@ -19,8 +18,8 @@ Q_OBJECT
 public:
     RendererNeuronAnnotator(void* widget);
     virtual ~RendererNeuronAnnotator();
-    virtual void paint(); // for stereo viewing
-    void paint_mono(bool clear=true);
+    virtual void paint();
+    void paint_mono(bool clear=true); // one-eye worth of stereo viewing
     virtual void setupData(void* data);
     virtual int  _getBufFillSize(int w);
     virtual int  _getTexFillSize(int w);
@@ -62,11 +61,6 @@ public:
     void setPaddedVolumeDimensions(long x, long y, long z);
     void setSingleVolumeDimensions(long x, long y, long z);
 
-    jfrc::Stereo3DMode getStereoMode() const {return stereo3DMode;}
-    bool getStereoSwapEyes() const {return bStereoSwapEyes;}
-    bool getScreenRowParity() const {return screenRowParity;}
-    bool getScreenColumnParity() const {return screenColumnParity;}
-
     // expose sampleScale[XYZ], thickness[XYZ]
     void setShowClipGuide(bool b) {bShowClipGuide = b;}
     void applyCustomCut(const CameraModel&);
@@ -91,23 +85,6 @@ signals:
 
 public slots:
     void setAlphaBlending(bool);
-    void setStereoMode(int);
-    // For use in stencilled display modes
-    bool setScreenRowParity(bool b) {
-        // qDebug() << "setScreenRowParity()" << b << __FILE__ << __LINE__;
-        if (screenRowParity != b) {
-            screenRowParity = b;
-            return true; // value changed
-        }
-        return false;
-    }
-    bool setScreenColumnParity(bool b) {
-        if (screenColumnParity != b) {
-            screenColumnParity = b;
-            return true;
-        }
-        return false;
-    }
     void setShowCornerAxes(bool b);
     bool setSlabThickness(int); // range 2-1000 voxels
     void clipSlab(const CameraModel& cameraModel); // Apply clip plane to current slab
@@ -134,10 +111,6 @@ protected:
     virtual void _streamTex(int stack_i, int slice_i, int step, int slice0, int slice1) {}
     virtual void _streamTex_end() {}
 
-    jfrc::Stereo3DMode stereo3DMode;
-    bool bStereoSwapEyes;
-    bool screenRowParity; // is the topmost pixel on an odd scan line?
-    bool screenColumnParity; // is the leftmost pixel on an odd screen column?
     bool bShowCornerAxes;
     bool bShowClipGuide;
 

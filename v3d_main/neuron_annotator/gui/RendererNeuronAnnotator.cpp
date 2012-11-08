@@ -4,20 +4,15 @@
 #include "../3drenderer/v3dr_common.h"
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../geometry/Rotation3D.h"
-#include "Stereo3dMode.h"
 #include <stdint.h>
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL)
     , Renderer_gl2(w)
-    , stereo3DMode(jfrc::STEREO_OFF)
-    , bStereoSwapEyes(false)
     , bShowCornerAxes(true)
     , bShowClipGuide(false)
     , slabThickness(1000)
     , slabDepth(0)
-    , screenRowParity(false)
-    , screenColumnParity(false)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
     shaderTex3D = NULL;
@@ -137,13 +132,6 @@ void RendererNeuronAnnotator::clipSlab(const CameraModel& cameraModel) // Apply 
 
     applyCutPlaneInImageFrame(point1, direction1);
     applyCutPlaneInImageFrame(point2, direction2);
-}
-
-/* slot */
-void RendererNeuronAnnotator::setStereoMode(int m)
-{
-    // qDebug() << "Stereo mode = " << (Stereo3DMode) m << __FILE__ << __LINE__;
-    stereo3DMode = (jfrc::Stereo3DMode) m;
 }
 
 /* slot */
@@ -1047,99 +1035,7 @@ void RendererNeuronAnnotator::setLandmarks(const QList<ImageMarker>& landmarks)
 /* virtual */
 void RendererNeuronAnnotator::paint()
 {
-    // absolute screen coordinates for stencilling
-    int stencilLeft = screenColumnParity ? 0 : 1;
-    int stencilTop = screenRowParity ? 0 : 1;
-
-    makeCurrent();
-    switch(stereo3DMode)
-    {
-    case jfrc::STEREO_OFF:
-        glDrawBuffer(GL_BACK); // Avoid flicker on non-Quadro Mac
-        paint_mono();
-        break;
-    case jfrc::STEREO_LEFT_EYE:
-        {
-            jfrc::StereoEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
-            paint_mono();
-        }
-        break;
-    case jfrc::STEREO_RIGHT_EYE:
-        {
-            jfrc::StereoEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
-            paint_mono();
-        }
-        break;
-    case jfrc::STEREO_ANAGLYPH_RED_CYAN:
-        {
-            jfrc::AnaglyphRedCyanEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
-            paint_mono();
-        }
-        {
-            jfrc::AnaglyphRedCyanEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
-            paint_mono();
-        }
-        break;
-    case jfrc::STEREO_ANAGLYPH_GREEN_MAGENTA:
-        {
-            jfrc::AnaglyphGreenMagentaEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
-            paint_mono();
-        }
-        {
-            jfrc::AnaglyphGreenMagentaEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
-            paint_mono();
-        }
-        break;
-    case jfrc::STEREO_QUAD_BUFFERED:
-        {
-            jfrc::QuadBufferView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
-            paint_mono();
-        }
-        {
-            jfrc::QuadBufferView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
-            paint_mono();
-        }
-        break;
-    case jfrc::STEREO_ROW_INTERLEAVED:
-    case jfrc::STEREO_COLUMN_INTERLEAVED:
-        {
-            {
-                jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
-                v.fillStencil(stencilLeft, stencilTop, screenW, screenH);
-                paint_mono();
-            }
-            {
-                jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
-                // DO NOT CLEAR
-                paint_mono(false);
-            }
-            break;
-        }    
-    case jfrc::STEREO_CHECKER_INTERLEAVED:
-        {
-            const GLubyte* stipple = jfrc::RowInterleavedStereoView::checkStipple0;
-            // qDebug() << screenRowParity << screenColumnParity;
-            if ( (screenRowParity != screenColumnParity) )
-                stipple = jfrc::RowInterleavedStereoView::checkStipple1;
-            {
-                jfrc::CheckerInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT, stipple);
-                v.fillStencil(stencilLeft, stencilTop, screenW, screenH);
-                paint_mono();
-            }
-            {
-                jfrc::CheckerInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT, stipple);
-                // DO NOT CLEAR
-                paint_mono(false);
-            }
-            break;
-        }
-
-
-    default:
-        qDebug() << "Error: Unsupported Stereo mode" << stereo3DMode;
-        paint_mono();
-        break;
-    }
+    paint_mono(true);
 }
 
 /* virtual */

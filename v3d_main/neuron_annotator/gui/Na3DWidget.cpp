@@ -470,21 +470,18 @@ const RendererNeuronAnnotator* Na3DWidget::getRendererNa() const
 /* slot */
 void Na3DWidget::updateScreenPosition()  // for stencil based 3D modes
 {
-    // qDebug() << "Na3DWidget::updateScreenPosition()" << __FILE__ << __LINE__;
-    if (getRendererNa())
-    {
-        QPoint p = mapToGlobal(QPoint(0, 0));
-        bool rp = (p.y() % 2) != 0;
-        bool cp = (p.x() % 2) != 0;
-        // qDebug() << p.x() << p.y() << rp << cp;
-        bool bChanged = false;
-        if (getRendererNa()->setScreenRowParity( rp ))
-            bChanged = true;
-        if (getRendererNa()->setScreenColumnParity( cp ))
-            bChanged = true;
-        if (bChanged)
-            update();
+    QPoint p = mapToGlobal(QPoint(0, 0));
+    bool bChanged = false;
+    if (globalScreenPosX != p.x()) {
+        globalScreenPosX = p.x();
+        bChanged = true;
     }
+    if (globalScreenPosY != p.y()) {
+        globalScreenPosY = p.y();
+        bChanged = true;
+    }
+    if (bChanged)
+        update();
 }
 
 /* virtual */
@@ -848,10 +845,10 @@ void Na3DWidget::setStereoCheckerInterleaved(bool b)
 void Na3DWidget::setStereoMode(int m)
 {
     // qDebug() << "Na3DWidget::setStereoMode()" << m << __FILE__ << __LINE__;
-    stereo3DMode = (jfrc::Stereo3DMode)m;
-    if (! getRendererNa()) return;
-    getRendererNa()->setStereoMode(m);
-    update();
+    if (m != stereo3DMode) {
+        stereo3DMode = (jfrc::Stereo3DMode)m;
+        update();
+    }
 }
 
 // Override updateImageData() to avoid that modal progress dialog
@@ -1678,8 +1675,6 @@ void Na3DWidget::choiceRenderer()
         setAlphaBlending(_renderMode == Renderer::rmAlphaBlendingProjection);
         if (undoStack)
             getRendererNa()->setUndoStack(*undoStack);
-        // Retain setting for stereo3D
-        getRendererNa()->setStereoMode(stereo3DMode);
         updateScreenPosition();
 
         // Is this too early to upload default textures?
@@ -1803,32 +1798,22 @@ void Na3DWidget::paintGL()
     if (bColorMapTextureIsDirty) loadColorMapTexture();
     if (bVisibilityTextureIsDirty) loadVisibilityTexture();
 
-    // Nov 2012 TODO replace V3dR_GLWidget::paintGL() with CameraTransformGL/renderer->paint()
-    if (true)
-    {
-        CameraTransformGL cameraTransformGL(*this);
+    CameraTransformGL cameraTransformGL(*this);
+    paint_stereo();
 
-        // TODO - refactor into LegacyRendererActor
-        //=========================================================================
-        // normalized space of [-1,+1]^3;
-        {
-            // TODO - arrange so that glUnits are micrometers,
-            // not some value base on the longest dimension of ONE volume brick
-            //
-            // double scale = 1.0 / glUnitsPerImageVoxel();
-            // glScaled(scale, scale, scale);
-            if (renderer)  renderer->paint();
-        }
-        //=========================================================================
-    }
-    else
-    {
-        // cout << "paintGL" << endl;
-        // QElapsedTimer timer; timer.start();
-        // emit benchmarkTimerPrintRequested("Starting to paint 3D widget");
-        V3dR_GLWidget::paintGL();
-    }
+    // emit benchmarkTimerPrintRequested("Finished painting 3D widget");
+    // qDebug() << "Frame render took" << timer.elapsed() << "milliseconds";
+    emit scenePainted();
+}
 
+void Na3DWidget::paint_mono(bool clearColorFirst)
+{
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (NULL == ra)
+        return;
+    ra->paint_mono(clearColorFirst);
+
+    // TODO - move paint crosshair into paint_mono
     // Draw focus position to ensure it remains in center of screen,
     // for debugging
     if (bPaintCrosshair)
@@ -1855,10 +1840,106 @@ void Na3DWidget::paintGL()
         paintFiducial(focus0);
         glPopAttrib();
     }
-    // emit benchmarkTimerPrintRequested("Finished painting 3D widget");
-    // qDebug() << "Frame render took" << timer.elapsed() << "milliseconds";
-    emit scenePainted();
 }
+
+void Na3DWidget::paint_stereo()
+{
+    // absolute screen coordinates for stencilling
+    int stencilLeft = globalScreenPosX;
+    int stencilTop = globalScreenPosY;
+
+    makeCurrent();
+    // cerr << "stereo3DMode = " << stereo3DMode << endl;
+    switch(stereo3DMode)
+    {
+    case jfrc::STEREO_OFF:
+        glDrawBuffer(GL_BACK); // Avoid flicker on non-Quadro Mac
+        paint_mono();
+        break;
+    case jfrc::STEREO_LEFT_EYE:
+        {
+            jfrc::StereoEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
+            paint_mono();
+        }
+        break;
+    case jfrc::STEREO_RIGHT_EYE:
+        {
+            jfrc::StereoEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    case jfrc::STEREO_ANAGLYPH_RED_CYAN:
+        {
+            jfrc::AnaglyphRedCyanEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
+            paint_mono();
+        }
+        {
+            jfrc::AnaglyphRedCyanEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    case jfrc::STEREO_ANAGLYPH_GREEN_MAGENTA:
+        {
+            jfrc::AnaglyphGreenMagentaEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
+            paint_mono();
+        }
+        {
+            jfrc::AnaglyphGreenMagentaEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    case jfrc::STEREO_QUAD_BUFFERED:
+        {
+            jfrc::QuadBufferView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
+            paint_mono();
+        }
+        {
+            jfrc::QuadBufferView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    case jfrc::STEREO_ROW_INTERLEAVED:
+    case jfrc::STEREO_COLUMN_INTERLEAVED:
+        {
+            {
+                jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
+                v.fillStencil(stencilLeft, stencilTop, width(), height());
+                paint_mono();
+            }
+            {
+                jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
+                // DO NOT CLEAR
+                paint_mono(false);
+            }
+            break;
+        }
+    case jfrc::STEREO_CHECKER_INTERLEAVED:
+        {
+            const GLubyte* stipple = jfrc::RowInterleavedStereoView::checkStipple0;
+            // qDebug() << screenRowParity << screenColumnParity;
+            if ( ((globalScreenPosX + globalScreenPosY) % 2) == 1 )
+                stipple = jfrc::RowInterleavedStereoView::checkStipple1;
+            {
+                jfrc::CheckerInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT, stipple);
+                v.fillStencil(stencilLeft, stencilTop, width(), height());
+                paint_mono();
+            }
+            {
+                jfrc::CheckerInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT, stipple);
+                // DO NOT CLEAR
+                paint_mono(false);
+            }
+            break;
+        }
+
+
+    default:
+        qDebug() << "Error: Unsupported Stereo mode" << stereo3DMode;
+        paint_mono();
+        break;
+    }
+}
+
 
 /* virtual */
 void Na3DWidget::setDataFlowModel(const DataFlowModel* dataFlowModelParam)
