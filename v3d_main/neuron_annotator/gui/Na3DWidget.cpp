@@ -1812,6 +1812,11 @@ void Na3DWidget::paintGL()
         //=========================================================================
         // normalized space of [-1,+1]^3;
         {
+            // TODO - arrange so that glUnits are micrometers,
+            // not some value base on the longest dimension of ONE volume brick
+            //
+            // double scale = 1.0 / glUnitsPerImageVoxel();
+            // glScaled(scale, scale, scale);
             if (renderer)  renderer->paint();
         }
         //=========================================================================

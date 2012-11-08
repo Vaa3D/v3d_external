@@ -4,6 +4,7 @@
 #include "../3drenderer/v3dr_common.h"
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../geometry/Rotation3D.h"
+#include "Stereo3dMode.h"
 #include <stdint.h>
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
@@ -1042,318 +1043,14 @@ void RendererNeuronAnnotator::setLandmarks(const QList<ImageMarker>& landmarks)
     listMarker = landmarks;
 }
 
-// StereoEyeView sets either left or right eye view, depending on constructor argument.
-class StereoEyeView
-{
-public:
-    enum Eye {LEFT, RIGHT};
-
-    StereoEyeView(Eye eyeActual, Eye eyeGeom)
-    {
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        // Set camera for left eye
-        // Rotate by about 4 degrees about Y axis
-        // TODO - a shear operation on the projection matrix might clip better.
-        // We'll solve that problem when it appears...
-        // Need to PRE-multiply rotation matrix, so some tedious manipulation
-        GLdouble viewMat[16];
-        glGetDoublev(GL_MODELVIEW_MATRIX, viewMat); // remember current modelview
-        glLoadIdentity();
-        double angle = 1.7; // left eye
-        if (eyeGeom == RIGHT) angle = -angle; // right eye is opposite direction
-        glRotated(angle, 0, 1, 0); // put rotation in modelview
-        glMultMatrixd(viewMat); // end result is premultiply by Rotation
-        glDrawBuffer(GL_BACK); // for non-quad modes
-    }
-
-    virtual ~StereoEyeView()
-    {
-        glMatrixMode(GL_MODELVIEW);
-        glPopMatrix();
-    }
-};
-
-class AnaglyphRedCyanEyeView : public StereoEyeView
-{
-public:
-    AnaglyphRedCyanEyeView(Eye eye, Eye eyeGeom) : StereoEyeView(eye, eyeGeom)
-    {
-        if (eye == LEFT)
-            glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_TRUE); // red only
-        else
-            glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE); // cyan only
-    }
-
-    ~AnaglyphRedCyanEyeView()
-    {
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Show all colors
-    }
-};
-
-class AnaglyphGreenMagentaEyeView : public StereoEyeView
-{
-public:
-    AnaglyphGreenMagentaEyeView(Eye eye, Eye eyeGeom) : StereoEyeView(eye, eyeGeom)
-    {
-        if (eye == LEFT)
-            glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_TRUE); // green only
-        else
-            glColorMask(GL_TRUE, GL_FALSE, GL_TRUE, GL_TRUE); // magenta only
-    }
-
-    ~AnaglyphGreenMagentaEyeView()
-    {
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Show all colors
-    }
-};
-
-class QuadBufferView : public StereoEyeView
-{
-public:
-    QuadBufferView(Eye eye, Eye eyeGeom) : StereoEyeView(eye, eyeGeom)
-    {
-        if (eye == LEFT)
-            glDrawBuffer(GL_BACK_LEFT);
-        else
-            glDrawBuffer(GL_BACK_RIGHT);
-    }
-
-    ~QuadBufferView()
-    {
-    }
-};
-
-// Even numbered rows ON
-static GLubyte rowStipple0[] = {
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00};
-
-// Odd numbered rows ON
-static GLubyte rowStipple1[] = {
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff};
-
-// Even numbered columns ON
-static GLubyte colStipple0[] = {
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA};
-
-// Odd numbered columns ON
-static GLubyte colStipple1[] = {
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55};
-
-// Even/Even and Odd/Odd pixels ON
-static GLubyte checkStipple0[] = {
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
-    0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55};
-
-// Even/Odd and Odd/Even pixels ON
-static GLubyte checkStipple1[] = {
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA,
-    0x55, 0x55, 0x55, 0x55, 0xAA, 0xAA, 0xAA, 0xAA};
-
-class RowInterleavedStereoView : public StereoEyeView
-{
-public:
-    // Remember to call fillStencil() once before rendering
-    RowInterleavedStereoView(Eye eye, Eye eyeGeom, GLubyte* stipple=rowStipple0) : StereoEyeView(eye, eyeGeom)
-        , stipple(stipple)
-    {
-        glPushAttrib(GL_ENABLE_BIT | GL_STENCIL_BUFFER_BIT);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // don't modify the stencil buffer
-        glEnable(GL_STENCIL_TEST);
-
-        // Left image in the zero regions
-        if (eye == LEFT)
-            glStencilFunc( GL_EQUAL, 0, ~0 );
-        else
-            glStencilFunc( GL_NOTEQUAL, 0, ~0 );
-        CHECK_GLErrorString_throw();
-    }
-
-    ~RowInterleavedStereoView()
-    {
-        glPopAttrib();
-    }
-
-    void fillStencil(RendererNeuronAnnotator& renderer)
-    {
-        int width = renderer.getScreenWidth();
-        int height = renderer.getScreenHeight();
-
-        // Remember current OpenGL state
-        glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_STENCIL_BUFFER_BIT);
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-
-        // Modify only the stencil buffer
-        glDisable(GL_LIGHTING); // no shading
-        glDisable(GL_DEPTH_TEST); // don't modify depth buffer
-        glDisable(GL_BLEND);
-        glDrawBuffer(GL_BACK);
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // don't modify color buffer
-        glDepthMask(GL_FALSE);
-        glEnable(GL_STENCIL_TEST);
-
-        // Draw a rectangle over the full screen, into the stencil buffer
-        // using the simplest possible OpenGL geometry
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glViewport(0, 0, width, height);
-        glOrtho(0.0, width, 0.0, height, -1.0, 1.0); // 2D orthographic projection
-
-        glClearStencil(0);
-        glClear(GL_STENCIL_BUFFER_BIT);
-        // glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE); // Modify the stencil buffer everywhere
-        glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT); // Modify the stencil buffer everywhere
-        glStencilFunc(GL_ALWAYS, ~0, ~0);
-
-        glColor4f(1,1,1,0); // All ones
-        glLineWidth(1.0);
-        glDisable(GL_LINE_SMOOTH);
-
-        // It might not be possible to guarantee the registration of the stippling.  So use GL_LINES
-        if ( (renderer.getStereoMode() == jfrc::STEREO_ROW_INTERLEAVED)
-            || (renderer.getStereoMode() == jfrc::STEREO_CHECKER_INTERLEAVED) )
-        {
-            int offset = 0;
-            // blank alternate rows
-            if (renderer.getScreenRowParity())
-                offset = 1;
-            glBegin(GL_LINES);
-            for(float y = 0.5 - offset + height; y >= 0; y -= 2) {
-                glVertex3f(0, y, 0);
-                glVertex3f(width, y, 0);
-            }
-            glEnd();
-        }
-
-        if ( (renderer.getStereoMode() == jfrc::STEREO_COLUMN_INTERLEAVED)
-            || (renderer.getStereoMode() == jfrc::STEREO_CHECKER_INTERLEAVED) )
-        {
-            // blank alternate columns
-            int offset = 1;
-            if (renderer.getScreenColumnParity())
-                offset = 0;
-            glBegin(GL_LINES);
-            for(float x = 0.5 - offset; x <= width; x += 2) {
-                glVertex3f(x, 0, 0);
-                glVertex3f(x, height, 0);
-            }
-            glEnd();
-        }
-
-        // Restore OpenGL state
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-        glMatrixMode(GL_MODELVIEW);
-        glPopMatrix();
-        glPopAttrib();
-    }
-
-    const GLubyte* stipple;
-};
-
-class CheckerInterleavedStereoView : public RowInterleavedStereoView
-{
-public:
-    CheckerInterleavedStereoView(Eye eye, Eye eyeGeom, GLubyte* stipple=checkStipple0)
-        : RowInterleavedStereoView(eye, eyeGeom, stipple) {}
-};
 
 /* virtual */
 void RendererNeuronAnnotator::paint()
 {
+    // absolute screen coordinates for stencilling
+    int stencilLeft = screenColumnParity ? 0 : 1;
+    int stencilTop = screenRowParity ? 0 : 1;
+
     makeCurrent();
     switch(stereo3DMode)
     {
@@ -1363,43 +1060,43 @@ void RendererNeuronAnnotator::paint()
         break;
     case jfrc::STEREO_LEFT_EYE:
         {
-            StereoEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            jfrc::StereoEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
             paint_mono();
         }
         break;
     case jfrc::STEREO_RIGHT_EYE:
         {
-            StereoEyeView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            jfrc::StereoEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
             paint_mono();
         }
         break;
     case jfrc::STEREO_ANAGLYPH_RED_CYAN:
         {
-            AnaglyphRedCyanEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            jfrc::AnaglyphRedCyanEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
             paint_mono();
         }
         {
-            AnaglyphRedCyanEyeView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            jfrc::AnaglyphRedCyanEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
             paint_mono();
         }
         break;
     case jfrc::STEREO_ANAGLYPH_GREEN_MAGENTA:
         {
-            AnaglyphGreenMagentaEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            jfrc::AnaglyphGreenMagentaEyeView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
             paint_mono();
         }
         {
-            AnaglyphGreenMagentaEyeView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            jfrc::AnaglyphGreenMagentaEyeView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
             paint_mono();
         }
         break;
     case jfrc::STEREO_QUAD_BUFFERED:
         {
-            QuadBufferView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            jfrc::QuadBufferView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
             paint_mono();
         }
         {
-            QuadBufferView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            jfrc::QuadBufferView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
             paint_mono();
         }
         break;
@@ -1407,12 +1104,12 @@ void RendererNeuronAnnotator::paint()
     case jfrc::STEREO_COLUMN_INTERLEAVED:
         {
             {
-                RowInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
-                v.fillStencil(*this);
+                jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
+                v.fillStencil(stencilLeft, stencilTop, screenW, screenH);
                 paint_mono();
             }
             {
-                RowInterleavedStereoView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+                jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
                 // DO NOT CLEAR
                 paint_mono(false);
             }
@@ -1420,17 +1117,17 @@ void RendererNeuronAnnotator::paint()
         }    
     case jfrc::STEREO_CHECKER_INTERLEAVED:
         {
-            GLubyte* stipple = checkStipple0;
+            const GLubyte* stipple = jfrc::RowInterleavedStereoView::checkStipple0;
             // qDebug() << screenRowParity << screenColumnParity;
             if ( (screenRowParity != screenColumnParity) )
-                stipple = checkStipple1;
+                stipple = jfrc::RowInterleavedStereoView::checkStipple1;
             {
-                CheckerInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT, stipple);
-                v.fillStencil(*this);
+                jfrc::CheckerInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT, stipple);
+                v.fillStencil(stencilLeft, stencilTop, screenW, screenH);
                 paint_mono();
             }
             {
-                CheckerInterleavedStereoView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT, stipple);
+                jfrc::CheckerInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT, stipple);
                 // DO NOT CLEAR
                 paint_mono(false);
             }

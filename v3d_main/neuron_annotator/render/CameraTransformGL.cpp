@@ -46,6 +46,8 @@ CameraTransformGL::CameraTransformGL(const Na3DWidget& widget3d)
     const int flip_X= +1, flip_Y= -1, flip_Z= -1;
     glScaled(flip_X,flip_Y,flip_Z); // make y-axis downward conformed with image coordinate
 
+    // double scale = widget3d.glUnitsPerImageVoxel();
+    // glScaled(scale, scale, scale); // make y-axis downward conformed with image coordinate
 }
 
 CameraTransformGL::~CameraTransformGL()

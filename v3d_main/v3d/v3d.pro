@@ -140,6 +140,7 @@ HEADERS += \
     ../neuron_annotator/gui/PreferencesDialog.h \
     ../neuron_annotator/gui/DynamicRangeTool.h \
     ../neuron_annotator/gui/ColorRangeSliderWidget.h \
+    ../neuron_annotator/gui/Stereo3DMode.h \
     ../neuron_annotator/render/ActorGL.h \
     ../neuron_annotator/render/CameraTransformGL.h \
     ../neuron_annotator/render/WireCube.h \
@@ -275,6 +276,7 @@ SOURCES += \
     ../neuron_annotator/gui/NeuronContextMenu.cpp \
     ../neuron_annotator/gui/DynamicRangeTool.cpp \
     ../neuron_annotator/gui/ColorRangeSliderWidget.cpp \
+    ../neuron_annotator/gui/Stereo3DMode.cpp \
     ../neuron_annotator/NeuronSelector.cpp \
     ../neuron_annotator/ExportFile.cpp \
     ../neuron_annotator/utility/JacsUtil.cpp \
