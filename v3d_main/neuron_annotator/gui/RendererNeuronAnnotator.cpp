@@ -1056,17 +1056,6 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
 
         if (b_error) return; //080924 try to catch the memory error
 
-        if (clearColorFirst) {
-            glClearColor(color_background.r, color_background.g, color_background.b, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
-        }
-
-        glClearDepth(1);
-        glDepthRange(0, 1);
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
                                 //GL_LEQUAL);
 
         glMatrixMode(GL_MODELVIEW);

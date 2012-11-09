@@ -1,4 +1,5 @@
 #include "Na3DWidget.h"
+#include "../render/CubeTestActorGL.h"
 #include "v3d_core.h"
 #include "../3drenderer/renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
@@ -91,6 +92,9 @@ Na3DWidget::Na3DWidget(QWidget* parent)
 
     widgetStopwatch.start();
     invalidate();
+
+    // Insert test actor to develop new ActorGL system:
+    // opaqueActors.push_back( ActorPtr(new CubeTestActorGL()) );
 }
 
 Na3DWidget::~Na3DWidget()
@@ -1793,12 +1797,13 @@ void Na3DWidget::paintGL()
         return;
     }
 
+    // TODO - move textures to Volume/RendererNeuronAnnotator
     if (bSignalTextureIsDirty) loadSignalTexture();
     if (bLabelTextureIsDirty) loadLabelTexture();
     if (bColorMapTextureIsDirty) loadColorMapTexture();
     if (bVisibilityTextureIsDirty) loadVisibilityTexture();
 
-    CameraTransformGL cameraTransformGL(*this);
+    CameraTransformGL cameraTransformGL(*this); // magic stack-scoped effect
     paint_stereo();
 
     // emit benchmarkTimerPrintRequested("Finished painting 3D widget");
@@ -1808,16 +1813,58 @@ void Na3DWidget::paintGL()
 
 void Na3DWidget::paint_mono(bool clearColorFirst)
 {
-    RendererNeuronAnnotator* ra = getRendererNa();
-    if (NULL == ra)
-        return;
-    ra->paint_mono(clearColorFirst);
+    // Reset background color and depth
+    if (clearColorFirst) {
+        glClearColor(0, 0, 0, 0); // always black for now TODO
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+    glClearDepth(1);
+    glDepthRange(0, 1);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
-    // TODO - move paint crosshair into paint_mono
+    // Step 1: paint opaque geometry (such as meshes), which affects depth buffer
+    ActorList::iterator ai;
+    {
+        ActorList& al = opaqueActors;
+        for (ai = al.begin(); ai != al.end(); ++ai)
+            (*ai)->paintGL();
+    }
+
+    // Step 2: paint transparent geometry, such as volume rendering
+    {
+        ActorList& al = transparentActors;
+        for (ai = al.begin(); ai != al.end(); ++ai)
+            (*ai)->paintGL();
+    }
+    // TODO - wrap RendererNeuronAnnotator in LegacyRendererActorGL
+    RendererNeuronAnnotator* ra = getRendererNa();
+    double s0 = glUnitsPerImageVoxel();
+    double s1 = 1.0 / s0;
+    if (NULL != ra)
+    {
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glScaled(s1, s1, s1);
+        ra->paint();
+        glPopMatrix();
+    }
+
+    // Step 3: paint overlay geometry, such as axes, crosshair, scale bar etc.
+    {
+        ActorList& al = hudActors;
+        for (ai = al.begin(); ai != al.end(); ++ai)
+            (*ai)->paintGL();
+    }
+    // TODO - wrap crosshair in CrosshairActorGL
     // Draw focus position to ensure it remains in center of screen,
     // for debugging
     if (bPaintCrosshair)
     {
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glScaled(s1, s1, s1);
         Vector3D focus0 = cameraModel.focus();
         // Convert from object coordinates to gl coordinates
         focus0 -= getDefaultFocus(); // reverse glTranslate(.5,.5,.5)
@@ -1839,7 +1886,13 @@ void Na3DWidget::paint_mono(bool clearColorFirst)
         glLineWidth(1.5);
         paintFiducial(focus0);
         glPopAttrib();
+        glPopMatrix();
     }
+
+    /*
+    CubeTestActorGL cubeTest;
+    cubeTest.paintGL();
+    */
 }
 
 void Na3DWidget::paint_stereo()

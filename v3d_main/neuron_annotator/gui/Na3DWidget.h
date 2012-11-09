@@ -9,6 +9,8 @@
 #include <cmath>
 #include "NeuronContextMenu.h"
 #include "Stereo3dMode.h"
+#include "../render/ActorGL.h"
+#include "boost/shared_ptr.hpp"
 #include <stdint.h>
 
 class RendererNeuronAnnotator;
@@ -25,6 +27,27 @@ namespace jfrc {
 // Derived class of V3dR_GLWidget so we can use a simpler constructor
 // for the convenience of Qt Designer,
 // and to customize features for NeuronAnnotator.
+/**
+ * Prior to Nov 2012, I was schizophrenic about the separation of
+ * responsibilities between Na3DWidget, and its member
+ * RendererNeuronAnnotator class. Now I have settled on the following
+ * policy, based on refactoring the ActorGL concept:
+ * Na3DWidget
+ *   * camera configuration, including stereo 3d
+ * RendererNeuronAnnotator
+ *   * volume geometry, including volume centering
+ * It might take a while before I have compartmentalized all the details
+ * of these responsibilities into their separate classes.
+ *
+ * TODO - remove from Na3DWidget:
+ *   glUnitsPerImageVoxel() - that's a volume actor concept
+ *   getDefaultFocus() - that's a volume/general Actor concept
+ *   all the signal/color/neuron textures
+ *   data flow model?
+ * ADD to Na3DWidget:
+ *   background color
+ *   zoom level
+ */
 class Na3DWidget : public V3dR_GLWidget, public NaViewer
 {
     Q_OBJECT
@@ -157,7 +180,8 @@ protected:
     virtual void paintGL();
 
     // Nov 2012
-    // Move paint functions from RendererNeuronAnnotator into Na3DWidget, because Na3DWidget stores needed camera state.
+    // Move paint functions from RendererNeuronAnnotator into Na3DWidget,
+    // because Na3DWidget stores needed camera state.
     void paint_mono(bool clear=true);
     void paint_stereo();
     int globalScreenPosX;
@@ -204,6 +228,15 @@ protected:
 
     mutable Vector3D cachedDefaultFocus;
     mutable bool cachedDefaultFocusIsDirty;
+
+    // Nov 2012 ActorGL architecture
+public:
+    typedef boost::shared_ptr<ActorGL> ActorPtr;
+    typedef std::vector<ActorPtr> ActorList;
+protected:
+    ActorList opaqueActors;
+    ActorList transparentActors;
+    ActorList hudActors;
 };
 
 #endif // NA3DWIDGET_H

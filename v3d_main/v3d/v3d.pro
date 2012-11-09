@@ -142,6 +142,7 @@ HEADERS += \
     ../neuron_annotator/gui/ColorRangeSliderWidget.h \
     ../neuron_annotator/gui/Stereo3DMode.h \
     ../neuron_annotator/render/ActorGL.h \
+    ../neuron_annotator/render/CubeTestActorGL.h \
     ../neuron_annotator/render/CameraTransformGL.h \
     ../neuron_annotator/render/WireCube.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
@@ -211,6 +212,7 @@ SOURCES += \
     ../neuron_annotator/gui/NaLargeMIPWidget.cpp \
     ../neuron_annotator/gui/PreferencesDialog.cpp \
     ../neuron_annotator/render/ActorGL.cpp \
+    ../neuron_annotator/render/CubeTestActorGL.cpp \
     ../neuron_annotator/render/CameraTransformGL.cpp \
     ../neuron_annotator/render/WireCube.cpp \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \

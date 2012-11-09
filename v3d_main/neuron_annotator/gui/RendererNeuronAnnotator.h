@@ -10,6 +10,24 @@
 #include "../data_model/CustomClipPlanes.h"
 #include "../geometry/CameraModel.h"
 
+/**
+ * Prior to Nov 2012, I was schizophrenic about the separation of
+ * responsibilities between Na3DWidget, and its member
+ * RendererNeuronAnnotator class. Now I have settled on the following
+ * policy, based on refactoring the ActorGL concept:
+ * Na3DWidget
+ *   * camera configuration, including stereo 3d
+ * RendererNeuronAnnotator
+ *   * volume geometry, including volume centering
+ * It might take a while before I have compartmentalized all the details
+ * of these responsibilities into their separate classes.
+ *
+ * TODO - remove from RendererNeuronAnnotator:
+ *   color_background
+ *   zoom level
+ * ADD to RendererNeuronAnnotator:
+ *   data flow model
+ */
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
 

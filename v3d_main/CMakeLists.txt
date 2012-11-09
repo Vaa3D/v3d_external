@@ -187,6 +187,7 @@ add_subdirectory( plugin_loader )
 add_subdirectory( imaging ) # CMB Oct-11-2010
 add_subdirectory( multithreadimageIO ) # CMB Dec-16-2010
 
+include_directories(${Boost_INCLUDE_DIR})
 add_subdirectory( 3drenderer )
 
 add_subdirectory( worm_straighten_c )
