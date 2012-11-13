@@ -87,13 +87,13 @@ bool NeuronSelectionModel::updateOverlay(int index, bool status)
 /* slot */
 bool NeuronSelectionModel::hideOneNeuron(int index)
 {
-    updateNeuronMask(index, false);
+    return updateNeuronMask(index, false);
 }
 
 /* slot */
 bool NeuronSelectionModel::showOneNeuron(int index)
 {
-    updateNeuronMask(index, true);
+    return updateNeuronMask(index, true);
 }
 
 bool NeuronSelectionModel::updateNeuronMask(int index, bool status)
