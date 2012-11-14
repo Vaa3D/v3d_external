@@ -1,4 +1,7 @@
 #include "CameraModel.h"
+#include <iostream>
+
+using namespace std;
 
 CameraModel::CameraModel()
     : m_scale(1.0)
@@ -23,6 +26,7 @@ void CameraModel::setScale(qreal s)
     if (s == m_scale) return; // no change
     if (! (s == s)) return; // NaN
     m_scale = s;
+    // cerr << "camera scale = " << s << endl;
     emit scaleChanged(m_scale);
 }
 

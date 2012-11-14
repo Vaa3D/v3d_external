@@ -144,6 +144,9 @@ HEADERS += \
     ../neuron_annotator/render/ActorGL.h \
     ../neuron_annotator/render/CubeTestActorGL.h \
     ../neuron_annotator/render/CameraTransformGL.h \
+    ../neuron_annotator/render/LegacyVolumeActor.h \
+    ../neuron_annotator/render/ShaderProgramGL.h \
+    ../neuron_annotator/render/VoxelRayCastShader.h \
     ../neuron_annotator/render/WireCube.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
     ../neuron_annotator/utility/FileTreeSearcher.h \
@@ -214,6 +217,9 @@ SOURCES += \
     ../neuron_annotator/render/ActorGL.cpp \
     ../neuron_annotator/render/CubeTestActorGL.cpp \
     ../neuron_annotator/render/CameraTransformGL.cpp \
+    ../neuron_annotator/render/LegacyVolumeActor.cpp \
+    ../neuron_annotator/render/ShaderProgramGL.cpp \
+    ../neuron_annotator/render/VoxelRayCastShader.cpp \
     ../neuron_annotator/render/WireCube.cpp \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
     ../neuron_annotator/utility/FileTreeSearcher.cpp \
