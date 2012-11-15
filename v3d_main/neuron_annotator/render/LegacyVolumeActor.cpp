@@ -9,8 +9,7 @@
 
 LegacyVolumeActor::LegacyVolumeActor(RendererPtr renderer)
     : renderer(renderer)
-{
-}
+{}
 
 LegacyVolumeActor::~LegacyVolumeActor()
 {}

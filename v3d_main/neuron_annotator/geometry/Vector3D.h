@@ -56,6 +56,10 @@ protected:
         return *this;
     }
 
+    BaseVector3D& negate() {
+        (*this) *= -1;
+    }
+
     // Writeable access is OK for Vector3D, but not for UnitVector3D
     // so these methods are protected in the base class BaseVector3D
     qreal& operator[](int i) {return data[i];}
@@ -105,6 +109,12 @@ public:
         y() /= s;
         z() /= s;
         return *this;
+    }
+
+    Vector3D operator-() const {
+        Vector3D result = *this;
+        result.negate();
+        return result;
     }
 };
 
