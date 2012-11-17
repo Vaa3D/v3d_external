@@ -702,7 +702,8 @@ void MainWindow::customToolbar()
         setToolbarSettingFilePathAutomaticly();
 
         // loadToolBarSettings will return to  settingList
-        if((!settingList.empty()) && loadToolBarSettings())
+        //if((!settingList.empty()) && loadToolBarSettings())
+        if(loadToolBarSettings && (!settingList.empty()))
         {
             bar_num = settingList.size() + 1;
 
