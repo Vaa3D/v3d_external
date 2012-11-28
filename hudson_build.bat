@@ -7,7 +7,13 @@
   
 cd v3d_main
 
-hudson_build.bat
-:: build of plugin-demo has been omitted in this version.
+call hudson_build.bat
 
+:: build of plugin-demo.
+echo Building release plugins
+echo %CD%
+cd .\released_plugins
+echo %CD%
 
+call hudson_build_plugindemo_msvc.bat
+cd ..\

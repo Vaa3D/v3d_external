@@ -19,18 +19,19 @@ set LOCAL_DIR=%CD%/common_lib
 
 :: This prepares for commands like DEVENV /Build, which should take a .sln script as input.
 ::   Must eliminate double-quotes around space-bearing path-legs.
+set OLDPATH=%PATH%
 set PATH=%PATH:"=%
 call "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" amd64
 
 set PATH=%PATH%;%MINGW_DIR%/bin;%CYGWIN_DIR%;%LOCAL_DIR%/bin
 set VPATH=%LOCAL_DIR%/include;%LOCAL_DIR%/lib_win32;
 
-cd jba/c++ 
-call make -f jba.makefile %*
+::cd jba/c++ 
+::call make -f jba.makefile %*
 
-cd ../../
+::cd ../../
 cd v3d
-call qmake v3d.pro
+::call qmake v3d.pro
 
 :: touch command for windows
 copy/b v3d_version_info.cpp+,,
@@ -50,7 +51,6 @@ cd ..\..
 if NOT EXIST %MAKEDIR% mkdir %MAKEDIR%
 cmake -G"Visual Studio 10 Win64" -H. -B%MAKEDIR%
 
-::call make clean
 cd %OLD_CD%
 cd ../../%MAKEDIR%
 call DEVENV Vaa3D.sln /Build
@@ -67,3 +67,4 @@ copy v3d\release\vaa3d.exe .\v3d\ /y
 copy v3d\release\vaa3d.exe ..\v3d\ /y
 
 cd ../
+set PATH=%OLDPATH%
