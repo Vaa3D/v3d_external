@@ -12,7 +12,7 @@ echo Usage: hudson_build.bat
 echo -----------------------------------------------------------------
 echo on
 
-set MAKEDIR=hudson_build_cmake
+set MAKEDIR=%CD%/hudson_build_cmake
 set MINGW_DIR=c:/mingw
 set CYGWIN_DIR=c:/cygwin/bin
 set LOCAL_DIR=%CD%/common_lib
@@ -52,16 +52,16 @@ if NOT EXIST %MAKEDIR% mkdir %MAKEDIR%
 cmake -G"Visual Studio 10 Win64" -H. -B%MAKEDIR%
 
 cd %OLD_CD%
-cd ../../%MAKEDIR%
+cd %MAKEDIR%
 call DEVENV Vaa3D.sln /Build
 
 :: Notify caller of failure, if the executable was not created.
 cd %OLD_CD%
 cd ../
-if NOT EXIST ..\%MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe  exit 1
+if NOT EXIST %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe  exit 1
 
 :: Copy executable to all expected places.
-copy ..\%MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe v3d\release\ /y
+copy %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe v3d\release\ /y
 copy v3d\release\vaa3d.exe %QTDIR%\bin\ /y
 copy v3d\release\vaa3d.exe .\v3d\ /y
 copy v3d\release\vaa3d.exe ..\v3d\ /y
