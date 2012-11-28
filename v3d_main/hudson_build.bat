@@ -12,7 +12,7 @@ echo Usage: hudson_build.bat
 echo -----------------------------------------------------------------
 echo on
 
-set MAKEDIR=%CD%/hudson_build_cmake
+set MAKEDIR=%CD%\..\hudson_build_cmake
 set MINGW_DIR=c:/mingw
 set CYGWIN_DIR=c:/cygwin/bin
 set LOCAL_DIR=%CD%/common_lib
@@ -26,12 +26,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" amd6
 set PATH=%PATH%;%MINGW_DIR%/bin;%CYGWIN_DIR%;%LOCAL_DIR%/bin
 set VPATH=%LOCAL_DIR%/include;%LOCAL_DIR%/lib_win32;
 
-::cd jba/c++ 
-::call make -f jba.makefile %*
-
-::cd ../../
 cd v3d
-::call qmake v3d.pro
 
 :: touch command for windows
 copy/b v3d_version_info.cpp+,,
@@ -53,7 +48,14 @@ cmake -G"Visual Studio 10 Win64" -H. -B%MAKEDIR%
 
 cd %OLD_CD%
 cd %MAKEDIR%
+echo call DEVENV Vaa3D.sln /Build
 call DEVENV Vaa3D.sln /Build
+
+echo.
+echo.
+echo Attempting ALL_BUILD
+echo call DEVENV Vaa3D.sln /Build Release /Project ALL_BUILD.vcxproj
+call DEVENV Vaa3D.sln /Build Release /Project ALL_BUILD.vcxproj
 
 :: Notify caller of failure, if the executable was not created.
 cd %OLD_CD%
@@ -61,6 +63,8 @@ cd ../
 if NOT EXIST %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe  exit 1
 
 :: Copy executable to all expected places.
+cd %OLD_CD%
+mkdir v3d\release\
 copy %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe v3d\release\ /y
 copy v3d\release\vaa3d.exe %QTDIR%\bin\ /y
 copy v3d\release\vaa3d.exe .\v3d\ /y

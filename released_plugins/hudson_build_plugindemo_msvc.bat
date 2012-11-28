@@ -1,3 +1,5 @@
+:: DEPRECATED  DEPRECATED  probably not needed at all.
+
 :: batch build all released plugin projects using a VC Studio complier's nmake function
 :: (window version) by Hanchuan Peng
 :: 2010-05-20

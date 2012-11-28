@@ -10,10 +10,10 @@ cd v3d_main
 call hudson_build.bat
 
 :: build of plugin-demo.
-echo Building release plugins
-echo %CD%
-cd .\released_plugins
-echo %CD%
+::echo Building release plugins
+::echo %CD%
+::cd .\released_plugins
+::echo %CD%
 
 :: TEMP: comment out.  See if there are still things being built for the plugins.
 ::call hudson_build_plugindemo_msvc.bat
