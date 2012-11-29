@@ -29,6 +29,12 @@
 <message name="getAnnotationSessionResponse">
 <part name="return" type="tns:annotationSession" />
 </message>
+<message name="getEntityAndChildren">
+<part name="entityId" type="xsd:long" />
+</message>
+<message name="getEntityAndChildrenResponse">
+<part name="return" type="tns:entity" />
+</message>
 <message name="getEntityTree">
 <part name="entityId" type="xsd:long" />
 </message>
@@ -46,6 +52,13 @@
 </message>
 <message name="getAnnotationsForEntitiesResponse">
 <part name="return" type="tns:entityArray" />
+</message>
+<message name="getAncestorWithType">
+<part name="entityId" type="xsd:long" />
+<part name="type" type="xsd:string" />
+</message>
+<message name="getAncestorWithTypeResponse">
+<part name="return" type="tns:entity" />
 </message>
 <message name="getUserAnnotationColor">
 <part name="username" type="xsd:string" />
@@ -73,15 +86,6 @@
 <part name="endpointUrl" type="xsd:string" />
 </message>
 <message name="registerClientResponse" />
-<message name="selectOutlineEntity">
-<part name="uniqueId" type="xsd:string" />
-<part name="clearAll" type="xsd:boolean" />
-</message>
-<message name="selectOutlineEntityResponse" />
-<message name="deselectOutlineEntity">
-<part name="uniqueId" type="xsd:string" />
-</message>
-<message name="deselectOutlineEntityResponse" />
 <message name="createAnnotation">
 <part name="annotation" type="tns:ontologyAnnotation" />
 </message>
@@ -121,6 +125,10 @@
 <input message="tns:getAnnotationSession" />
 <output message="tns:getAnnotationSessionResponse" />
 </operation>
+<operation name="getEntityAndChildren">
+<input message="tns:getEntityAndChildren" />
+<output message="tns:getEntityAndChildrenResponse" />
+</operation>
 <operation name="getEntityTree">
 <input message="tns:getEntityTree" />
 <output message="tns:getEntityTreeResponse" />
@@ -132,6 +140,10 @@
 <operation name="getAnnotationsForEntities">
 <input message="tns:getAnnotationsForEntities" />
 <output message="tns:getAnnotationsForEntitiesResponse" />
+</operation>
+<operation name="getAncestorWithType" parameterOrder="entityId type">
+<input message="tns:getAncestorWithType" />
+<output message="tns:getAncestorWithTypeResponse" />
 </operation>
 <operation name="getUserAnnotationColor">
 <input message="tns:getUserAnnotationColor" />
@@ -152,14 +164,6 @@
 <operation name="registerClient" parameterOrder="port endpointUrl">
 <input message="tns:registerClient" />
 <output message="tns:registerClientResponse" />
-</operation>
-<operation name="selectOutlineEntity" parameterOrder="uniqueId clearAll">
-<input message="tns:selectOutlineEntity" />
-<output message="tns:selectOutlineEntityResponse" />
-</operation>
-<operation name="deselectOutlineEntity">
-<input message="tns:deselectOutlineEntity" />
-<output message="tns:deselectOutlineEntityResponse" />
 </operation>
 <operation name="createAnnotation">
 <input message="tns:createAnnotation" />
@@ -216,6 +220,15 @@
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
 </output>
 </operation>
+<operation name="getEntityAndChildren">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
 <operation name="getEntityTree">
 <soap:operation soapAction="" />
 <input>
@@ -235,6 +248,15 @@
 </output>
 </operation>
 <operation name="getAnnotationsForEntities">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="getAncestorWithType">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
@@ -280,24 +302,6 @@
 </output>
 </operation>
 <operation name="registerClient">
-<soap:operation soapAction="" />
-<input>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</input>
-<output>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</output>
-</operation>
-<operation name="selectOutlineEntity">
-<soap:operation soapAction="" />
-<input>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</input>
-<output>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</output>
-</operation>
-<operation name="deselectOutlineEntity">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

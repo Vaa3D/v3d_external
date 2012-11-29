@@ -134,7 +134,11 @@ GetAnnotatedBranchThread::GetAnnotatedBranchThread(qint64 entityId, QObject *par
 void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity, QHash<QString, QColor> *userColorMap)
 {
     if (entity == NULL) return;
-    if (entity->id == NULL) return; // CMB Nov 29 2012
+    if (entity->id == NULL) {
+        qDebug("ENTITY ID IS NULL");
+        entity->dumpEntity();
+        return; // CMB Nov 29 2012
+    }
 
     cds::fw__getAnnotationsForEntityResponse response;
     if (proxy.getAnnotationsForEntity(*entity->id, response) == SOAP_OK)
@@ -224,6 +228,32 @@ void GetParentsThread::fetchData()
         errorMessage = new QString(proxy.soap_fault_string());
     }
 }
+
+// ===========================================================
+// Get Ancestor With Type
+// ===========================================================
+
+GetAncestorThread::GetAncestorThread(qint64 entityId, const QString & type, QObject *parent) :
+    DataThread(parent),
+    entityId(entityId),
+    type(type)
+{
+}
+
+void GetAncestorThread::fetchData()
+{
+    cds::fw__getAncestorWithTypeResponse response;
+    if (proxy.getAncestorWithType(entityId, type.toStdString(), response) == SOAP_OK)
+    {
+        results = EntityAdapter::convert(response._return_);
+    }
+    else
+    {
+        errorMessage = new QString(proxy.soap_fault_string());
+    }
+}
+
+
 // ===========================================================
 // Get Entity Annotations
 // ===========================================================

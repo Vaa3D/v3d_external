@@ -17,7 +17,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 namespace obs {
 
-SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2012-05-09 13:27:12 GMT")
+SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2012-11-29 21:16:07 GMT")
 
 
 #ifndef WITH_NOGLOBAL

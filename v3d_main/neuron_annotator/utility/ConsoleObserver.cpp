@@ -217,7 +217,7 @@ void ConsoleObserver::annotatedBranchViewRequestedResults(const void *results)
     if (!filepath.isEmpty()) {
         emit openAnnotatedBranch(annotatedBranch);
 
-        annotatedBranchViewRequested2Thread = new GetParentsThread(*annotatedBranch->entity()->id);
+        annotatedBranchViewRequested2Thread = new GetAncestorThread(*annotatedBranch->entity()->id, "Sample");
         connect(annotatedBranchViewRequested2Thread, SIGNAL(gotResults(const void *)),
                 this, SLOT(annotatedBranchViewRequested2Results(const void *)));
         connect(annotatedBranchViewRequested2Thread, SIGNAL(gotError(const QString &)),
@@ -240,18 +240,10 @@ void ConsoleObserver::annotatedBranchViewRequested2Results(const void *results)
 {
     QMutexLocker locker(&annotatedBranchViewRequested2Mutex);
 
-    QList<Entity *>* parents = (QList<Entity *>*)results;
-    if (parents == NULL) return;
+    Entity * ancestor = (Entity *)results;
+    if (ancestor == NULL) return;
 
-    QListIterator<Entity *> i(*parents);
-    while (i.hasNext())
-    {
-        Entity *entity = i.next();
-        QString type = *entity->entityType;
-        if (type == "Sample") {
-            emit updateCurrentSample(entity);
-        }
-    }
+    emit updateCurrentSample(ancestor);
 
     annotatedBranchViewRequested2Thread = NULL;
 }

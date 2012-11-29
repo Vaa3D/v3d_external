@@ -100,6 +100,22 @@ private:
 };
 
 // ===========================================================
+// Get Ancestor
+// ===========================================================
+
+class GetAncestorThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit GetAncestorThread(qint64 entityId, const QString & type, QObject *parent = 0);
+    void fetchData();
+private:
+    qint64 entityId;
+    QString type;
+};
+
+// ===========================================================
 // Get Entity Annotations
 // ===========================================================
 

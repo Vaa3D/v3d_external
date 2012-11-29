@@ -73,45 +73,45 @@ class SOAP_CMAC ConsoleDataServiceProxy : public soap
 	virtual	int getAnnotationSession(LONG64 sessionId, struct fw__getAnnotationSessionResponse &_param_4) { return getAnnotationSession(NULL, NULL, sessionId, _param_4); }
 	virtual	int getAnnotationSession(const char *endpoint, const char *soap_action, LONG64 sessionId, struct fw__getAnnotationSessionResponse &_param_4);
 
+	/// Web service operation 'getEntityAndChildren' (returns error code or SOAP_OK)
+	virtual	int getEntityAndChildren(LONG64 entityId, struct fw__getEntityAndChildrenResponse &_param_5) { return getEntityAndChildren(NULL, NULL, entityId, _param_5); }
+	virtual	int getEntityAndChildren(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityAndChildrenResponse &_param_5);
+
 	/// Web service operation 'getEntityTree' (returns error code or SOAP_OK)
-	virtual	int getEntityTree(LONG64 entityId, struct fw__getEntityTreeResponse &_param_5) { return getEntityTree(NULL, NULL, entityId, _param_5); }
-	virtual	int getEntityTree(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityTreeResponse &_param_5);
+	virtual	int getEntityTree(LONG64 entityId, struct fw__getEntityTreeResponse &_param_6) { return getEntityTree(NULL, NULL, entityId, _param_6); }
+	virtual	int getEntityTree(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityTreeResponse &_param_6);
 
 	/// Web service operation 'getAnnotationsForEntity' (returns error code or SOAP_OK)
-	virtual	int getAnnotationsForEntity(LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_6) { return getAnnotationsForEntity(NULL, NULL, entityId, _param_6); }
-	virtual	int getAnnotationsForEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_6);
+	virtual	int getAnnotationsForEntity(LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_7) { return getAnnotationsForEntity(NULL, NULL, entityId, _param_7); }
+	virtual	int getAnnotationsForEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_7);
 
 	/// Web service operation 'getAnnotationsForEntities' (returns error code or SOAP_OK)
-	virtual	int getAnnotationsForEntities(ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_7) { return getAnnotationsForEntities(NULL, NULL, entityIds, _param_7); }
-	virtual	int getAnnotationsForEntities(const char *endpoint, const char *soap_action, ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_7);
+	virtual	int getAnnotationsForEntities(ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_8) { return getAnnotationsForEntities(NULL, NULL, entityIds, _param_8); }
+	virtual	int getAnnotationsForEntities(const char *endpoint, const char *soap_action, ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_8);
+
+	/// Web service operation 'getAncestorWithType' (returns error code or SOAP_OK)
+	virtual	int getAncestorWithType(LONG64 _entityId, std::string _type, struct fw__getAncestorWithTypeResponse &_param_9) { return getAncestorWithType(NULL, NULL, _entityId, _type, _param_9); }
+	virtual	int getAncestorWithType(const char *endpoint, const char *soap_action, LONG64 _entityId, std::string _type, struct fw__getAncestorWithTypeResponse &_param_9);
 
 	/// Web service operation 'getUserAnnotationColor' (returns error code or SOAP_OK)
-	virtual	int getUserAnnotationColor(std::string username, struct fw__getUserAnnotationColorResponse &_param_8) { return getUserAnnotationColor(NULL, NULL, username, _param_8); }
-	virtual	int getUserAnnotationColor(const char *endpoint, const char *soap_action, std::string username, struct fw__getUserAnnotationColorResponse &_param_8);
+	virtual	int getUserAnnotationColor(std::string username, struct fw__getUserAnnotationColorResponse &_param_10) { return getUserAnnotationColor(NULL, NULL, username, _param_10); }
+	virtual	int getUserAnnotationColor(const char *endpoint, const char *soap_action, std::string username, struct fw__getUserAnnotationColorResponse &_param_10);
 
 	/// Web service operation 'selectEntity' (returns error code or SOAP_OK)
-	virtual	int selectEntity(LONG64 _entityId, bool _clearAll, struct fw__selectEntityResponse &_param_9) { return selectEntity(NULL, NULL, _entityId, _clearAll, _param_9); }
-	virtual	int selectEntity(const char *endpoint, const char *soap_action, LONG64 _entityId, bool _clearAll, struct fw__selectEntityResponse &_param_9);
+	virtual	int selectEntity(LONG64 _entityId, bool _clearAll, struct fw__selectEntityResponse &_param_11) { return selectEntity(NULL, NULL, _entityId, _clearAll, _param_11); }
+	virtual	int selectEntity(const char *endpoint, const char *soap_action, LONG64 _entityId, bool _clearAll, struct fw__selectEntityResponse &_param_11);
 
 	/// Web service operation 'deselectEntity' (returns error code or SOAP_OK)
-	virtual	int deselectEntity(LONG64 entityId, struct fw__deselectEntityResponse &_param_10) { return deselectEntity(NULL, NULL, entityId, _param_10); }
-	virtual	int deselectEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__deselectEntityResponse &_param_10);
+	virtual	int deselectEntity(LONG64 entityId, struct fw__deselectEntityResponse &_param_12) { return deselectEntity(NULL, NULL, entityId, _param_12); }
+	virtual	int deselectEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__deselectEntityResponse &_param_12);
 
 	/// Web service operation 'reservePort' (returns error code or SOAP_OK)
-	virtual	int reservePort(std::string clientName, struct fw__reservePortResponse &_param_11) { return reservePort(NULL, NULL, clientName, _param_11); }
-	virtual	int reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_11);
+	virtual	int reservePort(std::string clientName, struct fw__reservePortResponse &_param_13) { return reservePort(NULL, NULL, clientName, _param_13); }
+	virtual	int reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_13);
 
 	/// Web service operation 'registerClient' (returns error code or SOAP_OK)
-	virtual	int registerClient(int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_12) { return registerClient(NULL, NULL, _port, _endpointUrl, _param_12); }
-	virtual	int registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_12);
-
-	/// Web service operation 'selectOutlineEntity' (returns error code or SOAP_OK)
-	virtual	int selectOutlineEntity(std::string _uniqueId, bool _clearAll, struct fw__selectOutlineEntityResponse &_param_13) { return selectOutlineEntity(NULL, NULL, _uniqueId, _clearAll, _param_13); }
-	virtual	int selectOutlineEntity(const char *endpoint, const char *soap_action, std::string _uniqueId, bool _clearAll, struct fw__selectOutlineEntityResponse &_param_13);
-
-	/// Web service operation 'deselectOutlineEntity' (returns error code or SOAP_OK)
-	virtual	int deselectOutlineEntity(std::string uniqueId, struct fw__deselectOutlineEntityResponse &_param_14) { return deselectOutlineEntity(NULL, NULL, uniqueId, _param_14); }
-	virtual	int deselectOutlineEntity(const char *endpoint, const char *soap_action, std::string uniqueId, struct fw__deselectOutlineEntityResponse &_param_14);
+	virtual	int registerClient(int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_14) { return registerClient(NULL, NULL, _port, _endpointUrl, _param_14); }
+	virtual	int registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_14);
 
 	/// Web service operation 'createAnnotation' (returns error code or SOAP_OK)
 	virtual	int createAnnotation(fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_15) { return createAnnotation(NULL, NULL, annotation, _param_15); }
