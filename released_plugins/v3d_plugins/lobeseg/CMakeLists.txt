@@ -14,6 +14,7 @@ include_directories("${TIFF_INCLUDE_DIR}")
 configure_v3d_plugin(lobeseg)
 
 # Create standalone executable
+if(NOT WIN32)
 add_executable(lobe_seger
     ../../../../v3d_main/worm_straighten_c/bdb_minus.cpp
     lobeseg_main/lobeseg.cpp
@@ -30,3 +31,4 @@ set_target_properties(lobe_seger PROPERTIES
 install(TARGETS lobe_seger
     DESTINATION bin
 )
+endif(NOT WIN32)

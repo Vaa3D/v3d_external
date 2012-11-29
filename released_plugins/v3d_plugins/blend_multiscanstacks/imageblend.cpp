@@ -38,7 +38,7 @@ using namespace std;
 #define CUBEFACTOR 2
 
 #ifdef WIN32
-#define SEPCHAR '\'
+#define SEPCHAR '\\'
 #else
 #define SEPCHAR '/'
 #endif

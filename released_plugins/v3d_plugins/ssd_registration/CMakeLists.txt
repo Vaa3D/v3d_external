@@ -1,3 +1,6 @@
+# Needs debugging on Windows
+if(NOT WIN32)
+
 QT4_WRAP_UI(PLUGIN_UI_SRCS
     paradialog_rigidaffine.ui
 )
@@ -26,3 +29,5 @@ target_link_libraries(plugin_PQ_imagereg
     ${TIFF_LIBRARY}
     newmat11
 )
+
+endif(NOT WIN32)
