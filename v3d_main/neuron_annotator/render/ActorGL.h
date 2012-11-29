@@ -16,6 +16,7 @@ public:
 
     virtual void initGL() = 0;
     virtual void paintGL() = 0;
+    virtual void destroyGL() = 0;
 };
 
 #endif /* ACTORGL_H_ */

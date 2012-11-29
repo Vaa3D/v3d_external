@@ -6,6 +6,7 @@
  */
 
 #include "TeapotActor.h"
+#include "../../3drenderer/GLee_r.h"
 #include "GLUT/glut.h"
 #include <iostream>
 

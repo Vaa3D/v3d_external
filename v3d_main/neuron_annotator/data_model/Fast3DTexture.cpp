@@ -13,6 +13,8 @@ extern "C"
 #include <QFuture>
 #include <QtConcurrentRun>
 #include <QDebug>
+#include <string>
+#include <stdexcept>
 
 // Multithreaded loading of an MPEG4 video into a texture that
 // could be loaded into an opengl 3D texture
@@ -83,6 +85,10 @@ bool MpegLoader::loadMpegFile(QString fileName)
             size_t size = (size_t)depth * (size_t)frameBytes;
             // qDebug() << "size =" << size << __FILE__ << __LINE__;
             frame_data = (uint8_t*)av_malloc(size);
+            // check for allocation failure
+            if (NULL == frame_data) {
+                throw std::runtime_error("Failed to allocate frame memory");
+            }
             frames.assign(depth, NULL);
             for (int z = 0; z < depth; ++z)
             {
@@ -266,6 +272,8 @@ Fast3DTexture::Fast3DTexture()
             this, SIGNAL(headerLoaded(int,int,int)));
     connect(&mpegLoader, SIGNAL(frameDecoded(int)),
             this, SLOT(gotFrame(int)));
+    connect(&mpegLoader, SIGNAL(mpegFileLoadFinished(bool)),
+            this, SLOT(onMpegFileLoadFinished(bool)));
     // Immediately and automatically upload texture to video card
     // This requires that the "home" thread of the Fast3DTexture object
     // be the same as the OpenGL thread
@@ -396,6 +404,17 @@ void Fast3DTexture::blockScaleFinished()
     }
 }
 
+/* slot */
+void Fast3DTexture::onMpegFileLoadFinished(bool succeeded)
+{
+    if (! succeeded)
+    {
+        // Normal completion signal won't come, so move to next volume
+        std::cerr << "Volume load failed!" << std::endl;
+        loadNextVolume();
+    }
+}
+
 void Fast3DTexture::loadNextVolume()
 {
     while(true) {
@@ -404,7 +423,7 @@ void Fast3DTexture::loadNextVolume()
         QueuedVolume v = volumeQueue.front();
         volumeQueue.pop_front();
         if (QFile(v.fileName).exists()) {
-            // qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
+            qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
             loadFile(v.fileName, v.channel);
             break;
         }

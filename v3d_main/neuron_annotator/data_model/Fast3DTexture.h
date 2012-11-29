@@ -127,6 +127,7 @@ public slots:
     void queueVolume(QString fileName, int channel) {
         volumeQueue.push_back(QueuedVolume(fileName, (BlockScaler::Channel)channel));
     }
+    void onMpegFileLoadFinished(bool succeeded);
 
 protected slots:
     void blockScaleFinished();

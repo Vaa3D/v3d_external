@@ -41,6 +41,8 @@ protected:
     typedef boost::shared_ptr<ActorGL> ActorPtr;
     typedef std::vector<ActorPtr> ActorList;
     ActorList opaqueActors;
+    ActorList transparentActors;
+    bool bIsInitialized;
 };
 
 #endif /* VOLUMETREEVIEWER_H_ */

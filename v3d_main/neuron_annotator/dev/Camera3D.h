@@ -57,6 +57,10 @@ public:
         return focusInGroundMicrometers;
     }
 
+    bool getKeepYUp() const {
+        return keepYUp;
+    }
+
     const Rotation3D& getRotation() const {
         return rotation;
     }
@@ -137,6 +141,7 @@ protected:
     int viewportHeightPixels;
     double frontClipRelative;
     double rearClipRelative;
+    bool keepYUp;
 };
 
 #endif /* CAMERA3D_H_ */

@@ -7,10 +7,16 @@
 
 #include "VolumeTreeViewer.h"
 #include "TeapotActor.h"
+#include "VolumeSlicesActor.h"
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 VolumeTreeViewer::VolumeTreeViewer(QWidget* parent)
     : QGLWidget(parent)
     , trackball(camera)
+    , bIsInitialized(false)
 {
     qRegisterMetaType<Vector3D>("Vector3D");
     qRegisterMetaType<Rotation3D>("Rotation3D");
@@ -23,11 +29,29 @@ VolumeTreeViewer::VolumeTreeViewer(QWidget* parent)
             this, SLOT(update()));
 
     // For testing only
-    opaqueActors.push_back(ActorPtr(new TeapotActor()));
+    // opaqueActors.push_back(ActorPtr(new TeapotActor()));
+    boost::shared_ptr<VolumeSlicesActor> volumeActor(new VolumeSlicesActor());
+    if (! volumeActor->loadVolume("/Users/brunsc/svn/v3d/v3d_main/neuron_annotator/dev/crop2.v3draw"))
+    {
+        cerr << "Failed to load volume" << endl;
+    }
+    volumeActor->setVoxelMicrometers(0.100, 0.100, 0.070); // from Jennifer Colonell
+    transparentActors.push_back(volumeActor);
 }
 
 VolumeTreeViewer::~VolumeTreeViewer()
 {
+    if (bIsInitialized) {
+        makeCurrent();
+        // Draw objects
+        ActorList::iterator a;
+        // Opaque geometry first, to populate depth buffer
+        for (a = opaqueActors.begin(); a != opaqueActors.end(); ++a)
+            (*a)->destroyGL();
+        for (a = transparentActors.begin(); a != transparentActors.end(); ++a)
+            (*a)->destroyGL();
+        doneCurrent();
+    }
 }
 
 /* virtual */
@@ -47,6 +71,8 @@ void VolumeTreeViewer::initializeGL()
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, position);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+
+    bIsInitialized = true;
 }
 
 /* virtual */
@@ -81,7 +107,7 @@ void VolumeTreeViewer::paintGL()
     glShadeModel(GL_SMOOTH);
 
     // Clear background
-    glClearColor(1, 0.8, 0.8, 1.0);
+    glClearColor(0.1, 0.1, 0.1, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Set up camera
@@ -89,7 +115,10 @@ void VolumeTreeViewer::paintGL()
 
     // Draw objects
     ActorList::iterator a;
+    // Opaque geometry first, to populate depth buffer
     for (a = opaqueActors.begin(); a != opaqueActors.end(); ++a)
+        (*a)->paintGL();
+    for (a = transparentActors.begin(); a != transparentActors.end(); ++a)
         (*a)->paintGL();
 }
 

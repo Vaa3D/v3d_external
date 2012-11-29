@@ -43,7 +43,11 @@ CameraSetterGL::CameraSetterGL(const Camera3D& camera)
     // glTranslated(f.x(), f.y(), f.z());
     Vector3D focus = camera.getFocusInGroundMicrometers();
     Vector3D camPos = camera.getRotation() * Vector3D(0, 0, -camera.getFocusDistanceMicrometers());
-    Vector3D up = camera.getRotation() * Vector3D(0, 1, 0);
+    Vector3D up;
+    if (camera.getKeepYUp())
+        up = Vector3D(0, 1, 0); // TODO - does not work
+    else
+        up = camera.getRotation() * Vector3D(0, 1, 0);
     gluLookAt(camPos.x(), camPos.y(), camPos.z(),
             focus.x(), focus.y(), focus.z(), // focus
             up.x(), up.y(), up.z()); // up vector
@@ -69,6 +73,7 @@ Camera3D::Camera3D()
     , frontClipRelative(0.2)
     , rearClipRelative(10.0)
     , focusDistancePixels(4000)
+    , keepYUp(false)
 {}
 
 Camera3D::~Camera3D()

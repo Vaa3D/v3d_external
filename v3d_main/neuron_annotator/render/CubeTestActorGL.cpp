@@ -35,6 +35,14 @@ void CubeTestActorGL::paintGL()
     glVertex3f( s, -s, -s);
     glVertex3f( s,  s, -s);
     glEnd();
+    glBegin(GL_LINES);
+    glVertex3f(-s,  s,  s);
+    glVertex3f(-s,  s, -s);
+    glVertex3f(-s, -s,  s);
+    glVertex3f(-s, -s, -s);
+    glVertex3f( s, -s,  s);
+    glVertex3f( s, -s, -s);
+    glEnd();
     // cerr << "Paint cube" << endl;
 }
 
