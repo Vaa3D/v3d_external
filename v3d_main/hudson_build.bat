@@ -46,16 +46,17 @@ cd ..\..
 if NOT EXIST %MAKEDIR% mkdir %MAKEDIR%
 cmake -G"Visual Studio 10 Win64" -H. -B%MAKEDIR%
 
-cd %OLD_CD%
-cd %MAKEDIR%
-echo call DEVENV Vaa3D.sln /Build
-call DEVENV Vaa3D.sln /Build
-
 echo.
 echo.
 echo Attempting ALL_BUILD
 echo call DEVENV Vaa3D.sln /Build Release /Project ALL_BUILD.vcxproj
 call DEVENV Vaa3D.sln /Build Release /Project ALL_BUILD.vcxproj
+
+echo.
+echo.
+echo Attempting PACKAGE project, to produce an NSIS Installer
+echo call DEVENV Vaa3D.sln /Build Release /Project PACKAGE.vcxproj
+call DEVENV Vaa3D.sln /Build Release /Project PACKAGE.vcxproj
 
 :: Notify caller of failure, if the executable was not created.
 cd %OLD_CD%
