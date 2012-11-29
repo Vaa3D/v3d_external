@@ -806,6 +806,9 @@ void NaMainWindow::loadSingleStack(QString fileName, bool useVaa3dClassic)
         VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         volumeTexture.queueVolumeData();
 
+        QString baseName = QFileInfo(fileName).fileName();
+        setTitle(baseName);
+
         emit singleStackLoadRequested(fileName);
     }
 }

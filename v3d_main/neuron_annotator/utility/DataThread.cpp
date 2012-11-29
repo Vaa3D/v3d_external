@@ -134,6 +134,7 @@ GetAnnotatedBranchThread::GetAnnotatedBranchThread(qint64 entityId, QObject *par
 void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity, QHash<QString, QColor> *userColorMap)
 {
     if (entity == NULL) return;
+    if (entity->id == NULL) return; // CMB Nov 29 2012
 
     cds::fw__getAnnotationsForEntityResponse response;
     if (proxy.getAnnotationsForEntity(*entity->id, response) == SOAP_OK)
