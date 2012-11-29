@@ -63,13 +63,11 @@ cd %OLD_CD%
 cd ../
 if NOT EXIST %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe  exit 1
 
-:: Copy executable to all expected places.
-cd %OLD_CD%
-mkdir v3d\release\
-copy %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe v3d\release\ /y
-copy v3d\release\vaa3d.exe %QTDIR%\bin\ /y
-copy v3d\release\vaa3d.exe .\v3d\ /y
-copy v3d\release\vaa3d.exe ..\v3d\ /y
+:: Copy executable and plugins to a QT test area.
+::cd %OLD_CD%
+::mkdir v3d\release\
+::copy %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe %QTDIR%\bin\ /y
+::xcopy /S %MAKEDIR%\v3d\Windows_MSVC10_64\plugins %QTDIR%\plugins\ /y
 
-cd ../
+::cd ../
 set PATH=%OLDPATH%
