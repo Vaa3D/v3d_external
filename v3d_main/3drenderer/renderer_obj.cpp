@@ -1909,9 +1909,10 @@ void Renderer_gl1::drawNeuronTreeList()
 	glPopAttrib();
 }
 
-////////////////////////////////////////////////////////
-
+/*
 //#include "labelfield.cpp"
+*/
+
 
 
 

@@ -1785,7 +1785,8 @@ void GLinfoDetect(std::string* pinfo)
 	if (pinfo)
 		*pinfo = info;
 	else
-		cerr<< (info); //cerr is unbuffered
+//		cerr << (info); //cerr is unbuffered
+    fprintf(stderr, info.c_str());
 }
 
 
