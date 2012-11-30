@@ -58,16 +58,37 @@ echo Attempting PACKAGE project, to produce an NSIS Installer
 echo call DEVENV Vaa3D.sln /Build Release /Project PACKAGE.vcxproj
 call DEVENV Vaa3D.sln /Build Release /Project PACKAGE.vcxproj
 
-:: Notify caller of failure, if the executable was not created.
 cd %OLD_CD%
 cd ../
-if NOT EXIST %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe  exit 1
+ 
+set OUTPUT_BASE=%MAKEDIR%\v3d\Windows_MSVC10_64
+set EXETGT=%OUTPUT_BASE%\vaa3d.exe
 
-:: Copy executable and plugins to a QT test area.
-::cd %OLD_CD%
-::mkdir v3d\release\
-::copy %MAKEDIR%\v3d\Windows_MSVC10_64\vaa3d.exe %QTDIR%\bin\ /y
-::xcopy /S %MAKEDIR%\v3d\Windows_MSVC10_64\plugins %QTDIR%\plugins\ /y
+:: Copy files into a special zip-up area for Windows update.
+set ZIPLOC=%MAKEDIR%\FlySuite_ZIP
+mkdir %ZIPLOC%
+mkdir %ZIPLOC%\bin
+copy %EXETGT %ZIPLOC%\bin /y
+xcopy /S %OUTPUT_BASE%\plugins %ZIPLOC%\bin\plugins\ /y
+copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %ZIPLOC%
 
-::cd ../
+:: Notify caller of failure, if the required outputs were not created.
+if NOT EXIST %ZIPLOC%\bin\Vaa3d.exe (
+ echo ERROR: No Vaa3D Executable found
+ exit 1
+) 
+
+if NOT EXIST %ZIPLOC%\bin\plugins\ (
+ echo ERROR: No Vaa3D plugins found
+ exit 2
+)
+
+if NOT EXIST %ZIPLOC%\InstallVaa3d*.exe (
+ echo ERROR: No Installer found
+ exit 3
+)
+
+:: Build the big zip file.  Check if that worked, also.
+zip %MAKEDIR%\..\FlySuite_Windows_.zip %ZIPLOC%\*.*
+
 set PATH=%OLDPATH%
