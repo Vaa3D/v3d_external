@@ -1063,11 +1063,13 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
 
         glGetDoublev(GL_MODELVIEW_MATRIX, volumeViewMatrix); //no scale here, used for drawUnitVolume()
 
+        glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
                 setMarkerSpace(); // space to define marker & curve
                 glGetIntegerv(GL_VIEWPORT,         viewport);            // used for selectObj(smMarkerCreate)
                 glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);    // used for selectObj(smMarkerCreate)
                 glGetDoublev(GL_MODELVIEW_MATRIX,  markerViewMatrix);    // used for selectObj(smMarkerCreate)
+        glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
 
         bShowCSline = bShowAxes;
@@ -1091,6 +1093,7 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
 
                 if (sShowSurfObjects>0)
                 {
+                        glMatrixMode(GL_MODELVIEW);
                         glPushMatrix(); //================================================= SurfObject {
 
                         // original surface object space ==>fit in [-1,+1]^3
@@ -1099,11 +1102,13 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
                                 drawObj();  // neuron-swc, cell-apo, label-surf, etc
                         glPopName();
 
+                        glMatrixMode(GL_MODELVIEW);
                         glPopMatrix(); //============================================================= }
                 }
 
                 if (sShowMarkers>0)
                 {
+                        glMatrixMode(GL_MODELVIEW);
                         glPushMatrix(); //===================================================== Marker {
 
                         // marker defined in original image space ==>fit in [-1,+1]^3
@@ -1112,6 +1117,7 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
                                 drawMarker();  // just markers
                         glPopName();
 
+                        glMatrixMode(GL_MODELVIEW);
                         glPopMatrix(); //============================================================= }
                 }
 
@@ -1122,31 +1128,37 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
         {
                 if (bShowBoundingBox || bShowAxes)
                 {
+                        glMatrixMode(GL_MODELVIEW);
                         glPushMatrix(); //========================== default bounding frame & axes {
 
                         // bounding box space ==>fit in [-1,+1]^3
                         setObjectSpace();
                         drawBoundingBoxAndAxes(boundingBox, 1, 3);
 
+                        glMatrixMode(GL_MODELVIEW);
                         glPopMatrix(); //========================================================= }
                 }
 
                 if (bShowBoundingBox2 && has_image() && !surfBoundingBox.isNegtive() )
                 {
+                        glMatrixMode(GL_MODELVIEW);
                         glPushMatrix(); //============================ surface object bounding box {
 
                         setSurfaceStretchSpace();
                         drawBoundingBoxAndAxes(surfBoundingBox, 1, 0);
 
+                        glMatrixMode(GL_MODELVIEW);
                         glPopMatrix(); //========================================================= }
                 }
 
             if (bOrthoView)
             {
+                        glMatrixMode(GL_MODELVIEW);
                         glPushMatrix(); //============================================== scale bar {
 
                         drawScaleBar();
 
+                        glMatrixMode(GL_MODELVIEW);
                         glPopMatrix(); //========================================================= }
             }
         }
@@ -1221,9 +1233,11 @@ void RendererNeuronAnnotator::paintClipGuide()
         glVertex3f(+2, 0, 0);
     glEnd();
 
+    glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
     glPopAttrib();
 }
 

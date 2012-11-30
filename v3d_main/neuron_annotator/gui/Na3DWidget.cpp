@@ -1848,6 +1848,7 @@ void Na3DWidget::paint_mono(bool clearColorFirst)
         glPushMatrix();
         glScaled(s1, s1, s1);
         ra->paint();
+        glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
     }
 
@@ -1885,6 +1886,7 @@ void Na3DWidget::paint_mono(bool clearColorFirst)
         glColor3f(1.0f,1.0f,0.7f); // pale yellow marker color
         glLineWidth(1.5);
         paintFiducial(focus0);
+        glMatrixMode(GL_MODELVIEW);
         glPopAttrib();
         glPopMatrix();
     }

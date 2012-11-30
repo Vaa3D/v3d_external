@@ -28,5 +28,6 @@ void LegacyVolumeActor::paintGL()
     glPushMatrix();
     glScaled(s1, s1, s1);
     renderer->paint();
+    glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
