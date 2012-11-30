@@ -45,6 +45,7 @@ cd %OLD_CD%
 cd ..\..
 if NOT EXIST %MAKEDIR% mkdir %MAKEDIR%
 cmake -G"Visual Studio 10 Win64" -H. -B%MAKEDIR%
+cd %MAKEDIR%
 
 echo.
 echo.
