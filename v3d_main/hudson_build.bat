@@ -91,7 +91,6 @@ if NOT EXIST %ZIPLOC%\InstallVaa3d*.exe (
 )
 
 :: Build the big zip file.  Check if that worked, also.
-echo zip %MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip %ZIPLOC%\*
-zip %MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip %ZIPLOC%\*
+7z a %MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip %ZIPLOC%\*
 
 set PATH=%OLDPATH%
