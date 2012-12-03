@@ -69,7 +69,7 @@ set EXETGT=%OUTPUT_BASE%\vaa3d.exe
 set ZIPLOC=%MAKEDIR%\FlySuite_ZIP
 mkdir %ZIPLOC%
 mkdir %ZIPLOC%\bin
-copy %EXETGT %ZIPLOC%\bin /y
+copy %EXETGT% %ZIPLOC%\bin /y
 xcopy /S %OUTPUT_BASE%\plugins %ZIPLOC%\bin\plugins\ /y
 copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %ZIPLOC%
 
