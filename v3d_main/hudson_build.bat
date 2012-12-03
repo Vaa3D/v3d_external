@@ -17,7 +17,8 @@ set MINGW_DIR=c:/mingw
 set CYGWIN_DIR=c:/cygwin/bin
 set ZIP_7_DIR="c:/Program Files/7-zip/"
 set LOCAL_DIR=%CD%/common_lib
-set BUILD_VERSION="%1"
+::set BUILD_VERSION="%1"
+echo Build version %BUILD_VERSION%
 
 :: This prepares for commands like DEVENV /Build, which should take a .sln script as input.
 ::   Must eliminate double-quotes around space-bearing path-legs.
