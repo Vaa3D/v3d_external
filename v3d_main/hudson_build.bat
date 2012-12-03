@@ -16,6 +16,7 @@ set MAKEDIR=%CD%\..\hudson_build_cmake
 set MINGW_DIR=c:/mingw
 set CYGWIN_DIR=c:/cygwin/bin
 set LOCAL_DIR=%CD%/common_lib
+set BUILD_VERSION="%1"
 
 :: This prepares for commands like DEVENV /Build, which should take a .sln script as input.
 ::   Must eliminate double-quotes around space-bearing path-legs.
@@ -90,6 +91,7 @@ if NOT EXIST %ZIPLOC%\InstallVaa3d*.exe (
 )
 
 :: Build the big zip file.  Check if that worked, also.
-zip %MAKEDIR%\..\FlySuite_Windows_.zip %ZIPLOC%\*.*
+echo zip %MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip %ZIPLOC%\*
+zip %MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip %ZIPLOC%\*
 
 set PATH=%OLDPATH%

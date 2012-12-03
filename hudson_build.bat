@@ -7,7 +7,7 @@
   
 cd v3d_main
 
-call hudson_build.bat
+call hudson_build.bat %1
 
 :: build of plugin-demo.
 ::echo Building release plugins
