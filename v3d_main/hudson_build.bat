@@ -98,13 +98,13 @@ if NOT EXIST %GATHER_LOC%\InstallVaa3d*.exe (
   exit 3
 )
 
-:: Build the big zip file.  Check if that worked, also.
-set ZIPFILE=%MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip
-set OLD_CD=%CD%
-cd %GATHER_LOC%
-
 :: NOTE: most likely, the step of transferring from staging will produce this zip file.
 :: Create initial zip file, with just binaries built here.
+:: Build the big zip file.  Check if that worked, also.
+::set ZIPFILE=%MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip
+::set OLD_CD=%CD%
+::cd %GATHER_LOC%
+
 ::echo 7z a -tzip %ZIPFILE% ALL-WILDCARD
 ::7z a -tzip %ZIPFILE% *
 ::cd %OLD_CD%
@@ -138,6 +138,12 @@ xcopy /S %GATHER_LOC%\bin\plugins %WIN_STAGING_LOC%\plugins\ /y
 if NOT ERRORLEVEL 0 (
   echo Failed to xcopy %GATHER_LOC%\bin\plugins to %WIN_STAGING_LOC%
   exit 9
+)
+
+copy %GATHER_LOC%\Install*.exe %WIN_STAGING_LOC%
+if NOT ERRORLEVEL 0 (
+  echo Failed to copy %GATHER_LOC%\ executable installer to %WIN_STAGING_LOC%
+  exit 10
 )
 
 :: Staging from upstream process should have placed generic Java output already.
