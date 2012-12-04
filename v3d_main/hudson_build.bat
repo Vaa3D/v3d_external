@@ -19,6 +19,12 @@ set LOCAL_DIR=%CD%/common_lib
 ::set BUILD_VERSION="%1"
 echo Build version %BUILD_VERSION%
 
+set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_linux_%BUILD_VERSION%\
+if NOT EXIST %LINUX_BUILD_LOC% (
+ echo %LINUX_BUILD_LOC% does not exist.  Therefore, the windows build cannot be completed.
+ exit 10
+)
+
 :: This prepares for commands like DEVENV /Build, which should take a .sln script as input.
 ::   Must eliminate double-quotes around space-bearing path-legs.
 set OLDPATH=%PATH%
@@ -76,7 +82,6 @@ xcopy /S %OUTPUT_BASE%\plugins %GATHER_LOC%\bin\plugins\ /y
 copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %GATHER_LOC%
 
 :: ...include build artifacts from linux, which are interchangeable with Windows.
-set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_linux_%BUILD_VERSION%\
 echo Copying linux versions of the build from %LINUX_BUILD_LOC%
 copy %LINUX_BUILD_LOC%\workstation.jar %GATHER_LOC%
 xcopy /S %LINUX_BUILD_LOC%\workstation_lib\ %GATHER_LOC%
