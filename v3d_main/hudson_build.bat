@@ -19,7 +19,7 @@ set LOCAL_DIR=%CD%/common_lib
 ::set BUILD_VERSION="%1"
 echo Build version %BUILD_VERSION%
 
-set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_linux_%BUILD_VERSION%\
+set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuiteStaging\FlySuite_linux_%BUILD_VERSION%\
 if NOT EXIST %LINUX_BUILD_LOC% (
   echo %LINUX_BUILD_LOC% does not exist.  Therefore, the windows build cannot be completed.
   exit 10
@@ -98,74 +98,74 @@ if NOT EXIST %GATHER_LOC%\InstallVaa3d*.exe (
   exit 3
 )
 
-if NOT EXIST %GATHER_LOC%\workstation.jar (
-  echo ERROR: No workstation jar found
-  exit 4
-)
-
-if NOT EXIST %GATHER_LOC%\workstation_lib\ (
-  echo ERROR: No workstation libraries found
-  exit 5
-)
-
 :: Build the big zip file.  Check if that worked, also.
 set ZIPFILE=%MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip
 set OLD_CD=%CD%
 cd %GATHER_LOC%
 
-echo 7z a -tzip %ZIPFILE% ALL-WILDCARD
-7z a -tzip %ZIPFILE% *
-cd %OLD_CD%
+:: NOTE: most likely, the step of transferring from staging will produce this zip file.
+:: Create initial zip file, with just binaries built here.
+::echo 7z a -tzip %ZIPFILE% ALL-WILDCARD
+::7z a -tzip %ZIPFILE% *
+::cd %OLD_CD%
 
-if NOT EXIST %ZIPFILE% (
-  echo ERROR: No final zip file produced
-  exit 6
-)
+::if NOT EXIST %ZIPFILE% (
+::  echo ERROR: No final zip file produced
+::  exit 6
+::)
 
 :: Finally, copy the build over to the standard place.
-set WIN_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_windows_%BUILD_VERSION%\
-if NOT EXIST %WIN_BUILD_LOC% (
-  mkdir %WIN_BUILD_LOC%
+set WIN_STAGING_LOC=\\dm11.janelia.priv\jacsData\FlySuiteStaging\FlySuite_windows_%BUILD_VERSION%\
+if NOT EXIST %WIN_STAGING_LOC% (
+  mkdir %WIN_STAGING_LOC%
 )
 
 :: The zip file sits parallel to the whole-group delivery.
-copy %ZIPFILE% %WIN_BUILD_LOC%\..
-if NOT ERRORLEVEL 0 (
-  echo Failed to copy %ZIPFILE% to %WIN_BUILD_LOC%\..
-  exit 7
-)
+::copy %ZIPFILE% %WIN_STAGING_LOC%\..
+::if NOT ERRORLEVEL 0 (
+::  echo Failed to copy %ZIPFILE% to %WIN_STAGING_LOC%\..
+::  exit 7
+::)
 
 :: Push the plugins, etc., to the delivery share's windows subdirectory.
-copy %GATHER_LOC%\bin\vaa3d.exe %WIN_BUILD_LOC%
+copy %GATHER_LOC%\bin\vaa3d.exe %WIN_STAGING_LOC%
 if NOT ERRORLEVEL 0 (
-  echo Failed to copy %GATHER_LOC%\bin\vaa3d.exe to %WIN_BUILD_LOC%
+  echo Failed to copy %GATHER_LOC%\bin\vaa3d.exe to %WIN_STAGING_LOC%
   exit 8
 )
 
-xcopy /S %GATHER_LOC%\bin\plugins %WIN_BUILD_LOC%\plugins\ /y
+xcopy /S %GATHER_LOC%\bin\plugins %WIN_STAGING_LOC%\plugins\ /y
 if NOT ERRORLEVEL 0 (
-  echo Failed to xcopy %GATHER_LOC%\bin\plugins to %WIN_BUILD_LOC%
+  echo Failed to xcopy %GATHER_LOC%\bin\plugins to %WIN_STAGING_LOC%
   exit 9
 )
 
 :: Staging from upstream process should have placed generic Java output already.
-if NOT EXIST %WIN_BUILD_LOC%\workstation_lib (
-  echo Failed to find %GATHER_LOC%\workstation_lib in %WIN_BUILD_LOC%
+if NOT EXIST %WIN_STAGING_LOC%\workstation_lib (
+  echo Failed to find workstation_lib in %WIN_STAGING_LOC%
   echo Copying %LINUX_BUILD_LOC%\workstation_lib\ to %GATHER_LOC%\workstation_lib\
-  xcopy /S %LINUX_BUILD_LOC%\workstation_lib %GATHER_LOC%\workstation_lib\ /y
+  xcopy /S %LINUX_BUILD_LOC%\workstation_lib %WIN_STAGING_LOC%\workstation_lib\ /y
   if NOT ERRORLEVEL 0 (
     echo Failed to copy workstation_lib from linux build.
 	exit 12
   )
 )
 
-if NOT EXIST %WIN_BUILD_LOC%\workstation.jar (
-  echo Failed to find %GATHER_LOC%\workstation.jar in %WIN_BUILD_LOC%
-  copy %LINUX_BUILD_LOC%\workstation.jar %GATHER_LOC%
+if NOT EXIST %WIN_STAGING_LOC%\workstation.jar (
+  echo Failed to find workstation.jar in %WIN_STAGING_LOC%
+  copy %LINUX_BUILD_LOC%\workstation.jar %WIN_STAGING_LOC%
   if NOT ERRORLEVEL 0 (
     echo Failed to copy workstation.jar from linux build.
 	exit 11
   )
 )
+
+:: NOTE: most likely, the step of transferring from staging will produce this zip file.
+::set OLD_CD=%CD%
+::cd %WIN_STAGING_LOC%
+:: Add extras borrowed from other places, to the zip file.
+::echo 7z a -tzip %ZIPFILE% All batch files
+::7z a -tzip %ZIPFILE% *.bat,workstation*
+::cd %OLD_CD%
 
 set PATH=%OLDPATH%
