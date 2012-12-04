@@ -133,13 +133,14 @@ set WIN_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_windows_%BUILD_
 if EXIST %WIN_BUILD_LOC% (
  :: Must be dead-end leftover.
  echo Removing old %WIN_BUILD_LOC%
- :: TODO:  verify this deletes the correct directory, and then uncomment.  LLF
- ::rmdir /s %WIN_BUILD_LOC%
+ rmdir /s %WIN_BUILD_LOC%
 )
 mkdir %WIN_BUILD_LOC%
-copy %ZIPFILE% %WIN_BUILD_LOC%
+
+:: The zip file sits parallel to the whole-group delivery.
+copy %ZIPFILE% %WIN_BUILD_LOC%\..
 if NOT ERRORLEVEL 0 (
-  echo Failed to copy %ZIPFILE% to %WIN_BUILD_LOC%
+  echo Failed to copy %ZIPFILE% to %WIN_BUILD_LOC%\..
   exit 7
 )
 
@@ -154,6 +155,18 @@ xcopy /S %GATHER_LOC%\bin\plugins %WIN_BUILD_LOC%\plugins\ /y
 if NOT ERRORLEVEL 0 (
   echo Failed to xcopy %GATHER_LOC%\bin\plugins to %WIN_BUILD_LOC%
   exit 9
+)
+
+xcopy /S %GATHER_LOC%\workstation_lib %WIN_BUILD_LOC%\workstation_lib\ /y
+if NOT ERRORLEVEL 0 (
+  echo Failed to xcopy %GATHER_LOC%\workstation_lib to %WIN_BUILD_LOC%
+  exit 11
+)
+
+copy %GATHER_LOC%\workstation.jar %WIN_BUILD_LOC%
+if NOT ERRORLEVEL 0 (
+  echo Failed to copy %GATHER_LOC%\workstation.jar to %WIN_BUILD_LOC%
+  exit 12
 )
 
 set PATH=%OLDPATH%
