@@ -1,11 +1,10 @@
 @echo off
 echo -----------------------------------------------------------------
 echo This is a shell program to build the v3d program for win32(mingw)
-echo Based on Mac version by Hanchuan Peng, this should be run
-echo remotely from the Hudson build system.
+echo Originally borrowed from Mac version by Hanchuan Peng, this
+echo should be run remotely from the Hudson build system.
 echo.
 echo 2012-11-27, Copied from build.bat by Les Foster 
-echo 2008-09-17, by Zongcai Ruan, created
 
 echo.
 echo Usage: hudson_build.bat 
@@ -68,31 +67,81 @@ cd ../
 set OUTPUT_BASE=%MAKEDIR%\v3d\Windows_MSVC10_64
 set EXETGT=%OUTPUT_BASE%\vaa3d.exe
 
-:: Copy files into a special zip-up area for Windows update.
-set ZIPLOC=%MAKEDIR%\FlySuite_ZIP
-mkdir %ZIPLOC%
-mkdir %ZIPLOC%\bin
-copy %EXETGT% %ZIPLOC%\bin /y
-xcopy /S %OUTPUT_BASE%\plugins %ZIPLOC%\bin\plugins\ /y
-copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %ZIPLOC%
+:: Will collect all output files into a special area for Windows update.
+set GATHER_LOC=%MAKEDIR%\FlySuite_GATHER
+mkdir %GATHER_LOC%
+mkdir %GATHER_LOC%\bin
+copy %EXETGT% %GATHER_LOC%\bin /y
+xcopy /S %OUTPUT_BASE%\plugins %GATHER_LOC%\bin\plugins\ /y
+copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %GATHER_LOC%
+
+:: ...include build artifacts from linux, which are interchangeable with Windows.
+set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_linux_%BUILD_VERSION%\
+echo Copying linux versions of the build from %LINUX_BUILD_LOC%
+copy %LINUX_BUILD_LOC%\workstation.jar %GATHER_LOC%
+xcopy /S %LINUX_BUILD_LOC%\workstation_lib\ %GATHER_LOC%
 
 :: Notify caller of failure, if the required outputs were not created.
-if NOT EXIST %ZIPLOC%\bin\Vaa3d.exe (
+if NOT EXIST %GATHER_LOC%\bin\vaa3d.exe (
  echo ERROR: No Vaa3D Executable found
  exit 1
 ) 
 
-if NOT EXIST %ZIPLOC%\bin\plugins\ (
- echo ERROR: No Vaa3D plugins found
+if NOT EXIST %GATHER_LOC%\bin\plugins\ (
+ echo ERROR: No Vaa3D plugins produced
  exit 2
 )
 
-if NOT EXIST %ZIPLOC%\InstallVaa3d*.exe (
- echo ERROR: No Installer found
+if NOT EXIST %GATHER_LOC%\InstallVaa3d*.exe (
+ echo ERROR: No Installer produced
  exit 3
 )
 
+if NOT EXIST %GATHER_LOC%\workstation.jar (
+ echo ERROR: No workstation jar found
+ exit 4
+)
+
+if NOT EXIST %GATHER_LOC%\workstation_lib\ (
+ echo ERROR: No workstation libraries found
+ exit 5
+)
+
 :: Build the big zip file.  Check if that worked, also.
-7z a %MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip %ZIPLOC%\*
+set %ZIPFILE%=%MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip
+7z a %ZIPFILE% %GATHER_LOC%\*
+
+if NOT EXIST %ZIPFILE% (
+ echo ERROR: No final zip file produced
+ exit 6
+)
+
+:: Finally, copy the build over to the standard place.
+set WIN_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_windows_%BUILD_VERSION%\
+if EXIST %WIN_BUILD_LOC% (
+ :: Must be dead-end leftover.
+ echo Removing old %WIN_BUILD_LOC%
+ :: TODO:  verify this deletes the correct directory, and then uncomment.  LLF
+ ::rmdir /s %WIN_BUILD_LOC%
+)
+mkdir %WIN_BUILD_LOC%
+copy %ZIPFILE% %WIN_BUILD_LOC%
+if NOT ERRORLEVEL 0 (
+  echo Failed to copy %ZIPFILE% to %WIN_BUILD_LOC%
+  exit 7
+)
+
+:: Push the plugins, etc., to the delivery share's windows subdirectory.
+copy %GATHER_LOC%\bin\vaa3d.exe %WIN_BUILD_LOC%
+if NOT ERRORLEVEL 0 (
+  echo Failed to copy %GATHER_LOC%\bin\vaa3d.exe to %WIN_BUILD_LOC%
+  exit 8
+)
+
+xcopy /S %GATHER_LOC%\bin\plugins %WIN_BUILD_LOC%
+if NOT ERRORLEVEL 0 (
+  echo Failed to xcopy %GATHER_LOC%\bin\plugins to %WIN_BUILD_LOC%
+  exit 9
+)
 
 set PATH=%OLDPATH%
