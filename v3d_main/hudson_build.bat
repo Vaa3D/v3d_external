@@ -77,6 +77,7 @@ set EXETGT=%OUTPUT_BASE%\vaa3d.exe
 set GATHER_LOC=%MAKEDIR%\FlySuite_GATHER
 mkdir %GATHER_LOC%
 mkdir %GATHER_LOC%\bin
+
 copy %EXETGT% %GATHER_LOC%\bin /y
 xcopy /S %OUTPUT_BASE%\plugins %GATHER_LOC%\bin\plugins\ /y
 copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %GATHER_LOC%
@@ -84,7 +85,8 @@ copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %GATHER_LOC%
 :: ...include build artifacts from linux, which are interchangeable with Windows.
 echo Copying linux versions of the build from %LINUX_BUILD_LOC%
 copy %LINUX_BUILD_LOC%\workstation.jar %GATHER_LOC%
-xcopy /S %LINUX_BUILD_LOC%\workstation_lib\ %GATHER_LOC%
+echo Copying %LINUX_BUILD_LOC%\workstation_lib\ to %GATHER_LOC%\workstation_lib\
+xcopy /S %LINUX_BUILD_LOC%\workstation_lib %GATHER_LOC%\workstation_lib\ /y
 
 :: Notify caller of failure, if the required outputs were not created.
 if NOT EXIST %GATHER_LOC%\bin\vaa3d.exe (
@@ -113,8 +115,13 @@ if NOT EXIST %GATHER_LOC%\workstation_lib\ (
 )
 
 :: Build the big zip file.  Check if that worked, also.
-set %ZIPFILE%=%MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip
-7z a %ZIPFILE% %GATHER_LOC%\*
+set ZIPFILE=%MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip
+set OLD_CD=%CD%
+cd %GATHER_LOC%
+
+echo 7z a -tzip %ZIPFILE% ALL-WILDCARD
+7z a -tzip %ZIPFILE% *
+cd %OLD_CD%
 
 if NOT EXIST %ZIPFILE% (
  echo ERROR: No final zip file produced
@@ -143,7 +150,7 @@ if NOT ERRORLEVEL 0 (
   exit 8
 )
 
-xcopy /S %GATHER_LOC%\bin\plugins %WIN_BUILD_LOC%
+xcopy /S %GATHER_LOC%\bin\plugins %WIN_BUILD_LOC%\plugins\ /y
 if NOT ERRORLEVEL 0 (
   echo Failed to xcopy %GATHER_LOC%\bin\plugins to %WIN_BUILD_LOC%
   exit 9
