@@ -21,8 +21,8 @@ echo Build version %BUILD_VERSION%
 
 set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_linux_%BUILD_VERSION%\
 if NOT EXIST %LINUX_BUILD_LOC% (
- echo %LINUX_BUILD_LOC% does not exist.  Therefore, the windows build cannot be completed.
- exit 10
+  echo %LINUX_BUILD_LOC% does not exist.  Therefore, the windows build cannot be completed.
+  exit 10
 )
 
 :: This prepares for commands like DEVENV /Build, which should take a .sln script as input.
@@ -82,36 +82,30 @@ copy %EXETGT% %GATHER_LOC%\bin /y
 xcopy /S %OUTPUT_BASE%\plugins %GATHER_LOC%\bin\plugins\ /y
 copy %MAKEDIR%\InstallVaa3D-*-Windows_MSVC10*.exe %GATHER_LOC%
 
-:: ...include build artifacts from linux, which are interchangeable with Windows.
-echo Copying linux versions of the build from %LINUX_BUILD_LOC%
-copy %LINUX_BUILD_LOC%\workstation.jar %GATHER_LOC%
-echo Copying %LINUX_BUILD_LOC%\workstation_lib\ to %GATHER_LOC%\workstation_lib\
-xcopy /S %LINUX_BUILD_LOC%\workstation_lib %GATHER_LOC%\workstation_lib\ /y
-
 :: Notify caller of failure, if the required outputs were not created.
 if NOT EXIST %GATHER_LOC%\bin\vaa3d.exe (
- echo ERROR: No Vaa3D Executable found
- exit 1
+  echo ERROR: No Vaa3D Executable found
+  exit 1
 ) 
 
 if NOT EXIST %GATHER_LOC%\bin\plugins\ (
- echo ERROR: No Vaa3D plugins produced
- exit 2
+  echo ERROR: No Vaa3D plugins produced
+  exit 2
 )
 
 if NOT EXIST %GATHER_LOC%\InstallVaa3d*.exe (
- echo ERROR: No Installer produced
- exit 3
+  echo ERROR: No Installer produced
+  exit 3
 )
 
 if NOT EXIST %GATHER_LOC%\workstation.jar (
- echo ERROR: No workstation jar found
- exit 4
+  echo ERROR: No workstation jar found
+  exit 4
 )
 
 if NOT EXIST %GATHER_LOC%\workstation_lib\ (
- echo ERROR: No workstation libraries found
- exit 5
+  echo ERROR: No workstation libraries found
+  exit 5
 )
 
 :: Build the big zip file.  Check if that worked, also.
@@ -124,18 +118,15 @@ echo 7z a -tzip %ZIPFILE% ALL-WILDCARD
 cd %OLD_CD%
 
 if NOT EXIST %ZIPFILE% (
- echo ERROR: No final zip file produced
- exit 6
+  echo ERROR: No final zip file produced
+  exit 6
 )
 
 :: Finally, copy the build over to the standard place.
 set WIN_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuite\FlySuite_windows_%BUILD_VERSION%\
-if EXIST %WIN_BUILD_LOC% (
- :: Must be dead-end leftover.
- echo Removing old %WIN_BUILD_LOC%
- rmdir /s %WIN_BUILD_LOC%
+if NOT EXIST %WIN_BUILD_LOC% (
+  mkdir %WIN_BUILD_LOC%
 )
-mkdir %WIN_BUILD_LOC%
 
 :: The zip file sits parallel to the whole-group delivery.
 copy %ZIPFILE% %WIN_BUILD_LOC%\..
@@ -157,16 +148,24 @@ if NOT ERRORLEVEL 0 (
   exit 9
 )
 
-xcopy /S %GATHER_LOC%\workstation_lib %WIN_BUILD_LOC%\workstation_lib\ /y
-if NOT ERRORLEVEL 0 (
-  echo Failed to xcopy %GATHER_LOC%\workstation_lib to %WIN_BUILD_LOC%
-  exit 11
+:: Staging from upstream process should have placed generic Java output already.
+if NOT EXIST %WIN_BUILD_LOC%\workstation_lib (
+  echo Failed to find %GATHER_LOC%\workstation_lib in %WIN_BUILD_LOC%
+  echo Copying %LINUX_BUILD_LOC%\workstation_lib\ to %GATHER_LOC%\workstation_lib\
+  xcopy /S %LINUX_BUILD_LOC%\workstation_lib %GATHER_LOC%\workstation_lib\ /y
+  if NOT ERRORLEVEL 0 (
+    echo Failed to copy workstation_lib from linux build.
+	exit 12
+  )
 )
 
-copy %GATHER_LOC%\workstation.jar %WIN_BUILD_LOC%
-if NOT ERRORLEVEL 0 (
-  echo Failed to copy %GATHER_LOC%\workstation.jar to %WIN_BUILD_LOC%
-  exit 12
+if NOT EXIST %WIN_BUILD_LOC%\workstation.jar (
+  echo Failed to find %GATHER_LOC%\workstation.jar in %WIN_BUILD_LOC%
+  copy %LINUX_BUILD_LOC%\workstation.jar %GATHER_LOC%
+  if NOT ERRORLEVEL 0 (
+    echo Failed to copy workstation.jar from linux build.
+	exit 11
+  )
 )
 
 set PATH=%OLDPATH%
