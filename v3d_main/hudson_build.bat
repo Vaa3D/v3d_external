@@ -1,8 +1,7 @@
 @echo off
 echo -----------------------------------------------------------------
-echo This is a shell program to build the v3d program for win32(mingw)
-echo Originally borrowed from Mac version by Hanchuan Peng, this
-echo should be run remotely from the Hudson build system.
+echo This is a shell program to build the v3d program for win32(mingw).
+echo It should be run remotely from the Hudson build system.
 echo.
 echo 2012-11-27, Copied from build.bat by Les Foster 
 
@@ -16,8 +15,13 @@ set MINGW_DIR=c:/mingw
 set CYGWIN_DIR=c:/cygwin/bin
 set ZIP_7_DIR="c:/Program Files/7-zip/"
 set LOCAL_DIR=%CD%/common_lib
-::set BUILD_VERSION="%1"
 echo Build version %BUILD_VERSION%
+
+:: This will signal whether to avoid carrying out this entire script.
+if NOT "%BUILD_VAA3D_WINDOWS%"=="1" (
+  echo Script bypassed by first parameter omitted or not set to 1.  If Hudson had been set to auto-clean, then only a raw-checkout will now exist in the workspace.
+  exit 0
+)
 
 set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\FlySuiteStaging\FlySuite_linux_%BUILD_VERSION%\
 if NOT EXIST %LINUX_BUILD_LOC% (
@@ -129,19 +133,19 @@ if NOT EXIST %WIN_STAGING_LOC% (
 
 :: Push the plugins, etc., to the delivery share's windows subdirectory.
 copy %GATHER_LOC%\bin\vaa3d.exe %WIN_STAGING_LOC%
-if NOT ERRORLEVEL 0 (
+if NOT EXIST %WIN_STAGING_LOC%\vaa3d.exe (
   echo Failed to copy %GATHER_LOC%\bin\vaa3d.exe to %WIN_STAGING_LOC%
   exit 8
 )
 
 xcopy /S %GATHER_LOC%\bin\plugins %WIN_STAGING_LOC%\plugins\ /y
-if NOT ERRORLEVEL 0 (
+if NOT EXIST %WIN_STAGING_LOC%\plugins\ (
   echo Failed to xcopy %GATHER_LOC%\bin\plugins to %WIN_STAGING_LOC%
   exit 9
 )
 
 copy %GATHER_LOC%\Install*.exe %WIN_STAGING_LOC%
-if NOT ERRORLEVEL 0 (
+if NOT EXIST %WIN_STAGING_LOC%\Install*.exe (
   echo Failed to copy %GATHER_LOC%\ executable installer to %WIN_STAGING_LOC%
   exit 10
 )
