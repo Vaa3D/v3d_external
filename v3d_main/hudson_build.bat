@@ -102,34 +102,11 @@ if NOT EXIST %GATHER_LOC%\InstallVaa3d*.exe (
   exit 3
 )
 
-:: NOTE: most likely, the step of transferring from staging will produce this zip file.
-:: Create initial zip file, with just binaries built here.
-:: Build the big zip file.  Check if that worked, also.
-::set ZIPFILE=%MAKEDIR%\..\FlySuite_Windows_%BUILD_VERSION%.zip
-::set OLD_CD=%CD%
-::cd %GATHER_LOC%
-
-::echo 7z a -tzip %ZIPFILE% ALL-WILDCARD
-::7z a -tzip %ZIPFILE% *
-::cd %OLD_CD%
-
-::if NOT EXIST %ZIPFILE% (
-::  echo ERROR: No final zip file produced
-::  exit 6
-::)
-
-:: Finally, copy the build over to the standard place.
+:: Copy the build over to the standard place.
 set WIN_STAGING_LOC=\\dm11.janelia.priv\jacsData\FlySuiteStaging\FlySuite_windows_%BUILD_VERSION%\
 if NOT EXIST %WIN_STAGING_LOC% (
   mkdir %WIN_STAGING_LOC%
 )
-
-:: The zip file sits parallel to the whole-group delivery.
-::copy %ZIPFILE% %WIN_STAGING_LOC%\..
-::if NOT ERRORLEVEL 0 (
-::  echo Failed to copy %ZIPFILE% to %WIN_STAGING_LOC%\..
-::  exit 7
-::)
 
 :: Push the plugins, etc., to the delivery share's windows subdirectory.
 copy %GATHER_LOC%\bin\vaa3d.exe %WIN_STAGING_LOC%
@@ -150,32 +127,34 @@ if NOT EXIST %WIN_STAGING_LOC%\Install*.exe (
   exit 10
 )
 
-:: Staging from upstream process should have placed generic Java output already.
+set TEMP_WIN_STAGING_LOC=%WIN_STAGING_LOC%_temp
+
+:: Staging from upstream process may have placed generic Java output already.  If not, should be
+:: found at a temporary build location.
 if NOT EXIST %WIN_STAGING_LOC%\workstation_lib (
-  echo Failed to find workstation_lib in %WIN_STAGING_LOC%
-  echo Copying %LINUX_BUILD_LOC%\workstation_lib\ to %GATHER_LOC%\workstation_lib\
-  xcopy /S %LINUX_BUILD_LOC%\workstation_lib %WIN_STAGING_LOC%\workstation_lib\ /y
-  if NOT ERRORLEVEL 0 (
-    echo Failed to copy workstation_lib from linux build.
+  echo Need to copy workstation_lib to %WIN_STAGING_LOC%
+  echo Copying %TEMP_WIN_STAGING_LOC%\workstation_lib\ to %WIN_STAGING_LOC%\workstation_lib\
+  xcopy /S %TEMP_WIN_STAGING_LOC%\workstation_lib %WIN_STAGING_LOC%\workstation_lib\ /y
+  if NOTE EXIST %WIN_STAGING_LOC%\workstation_lib\ (
+    echo Failed to copy workstation_lib from %TEMP_WIN_STAGING_LOC%.
 	exit 12
   )
 )
 
 if NOT EXIST %WIN_STAGING_LOC%\workstation.jar (
-  echo Failed to find workstation.jar in %WIN_STAGING_LOC%
-  copy %LINUX_BUILD_LOC%\workstation.jar %WIN_STAGING_LOC%
-  if NOT ERRORLEVEL 0 (
-    echo Failed to copy workstation.jar from linux build.
+  echo Need to copy workstation.jar to %WIN_STAGING_LOC%
+  copy %TEMP_WIN_STAGING_LOC%\workstation.jar %WIN_STAGING_LOC%
+  if NOT EXIST %WIN_STAGING_LOC%\workstation.jar (
+    echo Failed to copy workstation.jar from %TEMP_WIN_STAGING_LOC%.
 	exit 11
   )
 )
 
-:: NOTE: most likely, the step of transferring from staging will produce this zip file.
-::set OLD_CD=%CD%
-::cd %WIN_STAGING_LOC%
-:: Add extras borrowed from other places, to the zip file.
-::echo 7z a -tzip %ZIPFILE% All batch files
-::7z a -tzip %ZIPFILE% *.bat,workstation*
-::cd %OLD_CD%
+echo Need to copy Win batch files to %WIN_STAGING_LOC%
+copy %TEMP_WIN_STAGING_LOC%\*.bat %WIN_STAGING_LOC% /y
+if NOT EXIST %WIN_STAGING_LOC%\*.bat (
+  echo Failed to copy batch files from %TEMP_WIN_STAGING_LOC%.
+  exit 13
+)
 
 set PATH=%OLDPATH%
