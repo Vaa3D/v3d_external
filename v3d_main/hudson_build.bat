@@ -135,7 +135,7 @@ if NOT EXIST %WIN_STAGING_LOC%\workstation_lib (
   echo Need to copy workstation_lib to %WIN_STAGING_LOC%
   echo Copying %TEMP_WIN_STAGING_LOC%\workstation_lib\ to %WIN_STAGING_LOC%\workstation_lib\
   xcopy /S %TEMP_WIN_STAGING_LOC%\workstation_lib %WIN_STAGING_LOC%\workstation_lib\ /y
-  if NOTE EXIST %WIN_STAGING_LOC%\workstation_lib\ (
+  if NOT EXIST %WIN_STAGING_LOC%\workstation_lib\ (
     echo Failed to copy workstation_lib from %TEMP_WIN_STAGING_LOC%.
 	exit 12
   )
