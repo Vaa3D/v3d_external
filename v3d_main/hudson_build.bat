@@ -127,27 +127,15 @@ if NOT EXIST %WIN_STAGING_LOC%\Install*.exe (
   exit 10
 )
 
-set TEMP_WIN_STAGING_LOC=%WIN_STAGING_LOC%_temp
-
-:: Staging from upstream process may have placed generic Java output already.  If not, should be
-:: found at a temporary build location.
+:: Staging from upstream process may have placed generic Java output already.  If not, report this.
 if NOT EXIST %WIN_STAGING_LOC%\workstation_lib (
-  echo Need to copy workstation_lib to %WIN_STAGING_LOC%
-  echo Copying %TEMP_WIN_STAGING_LOC%\workstation_lib\ to %WIN_STAGING_LOC%\workstation_lib\
-  xcopy /S %TEMP_WIN_STAGING_LOC%\workstation_lib %WIN_STAGING_LOC%\workstation_lib\ /y
-  if NOT EXIST %WIN_STAGING_LOC%\workstation_lib\ (
-    echo Failed to copy workstation_lib from %TEMP_WIN_STAGING_LOC%.
-	exit 12
-  )
+  echo No workstation_lib dir found in %WIN_STAGING_LOC%
+  exit 11
 )
 
 if NOT EXIST %WIN_STAGING_LOC%\workstation.jar (
-  echo Need to copy workstation.jar to %WIN_STAGING_LOC%
-  copy %TEMP_WIN_STAGING_LOC%\workstation.jar %WIN_STAGING_LOC%
-  if NOT EXIST %WIN_STAGING_LOC%\workstation.jar (
-    echo Failed to copy workstation.jar from %TEMP_WIN_STAGING_LOC%.
-	exit 11
-  )
+  echo No copy workstation.jar found in %WIN_STAGING_LOC%
+  exit 12
 )
 
 if NOT EXIST %WIN_STAGING_LOC%\*.bat (
