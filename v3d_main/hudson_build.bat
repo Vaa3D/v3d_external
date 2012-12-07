@@ -150,10 +150,8 @@ if NOT EXIST %WIN_STAGING_LOC%\workstation.jar (
   )
 )
 
-echo Need to copy Win batch files to %WIN_STAGING_LOC%
-copy %TEMP_WIN_STAGING_LOC%\*.bat %WIN_STAGING_LOC% /y
 if NOT EXIST %WIN_STAGING_LOC%\*.bat (
-  echo Failed to copy batch files from %TEMP_WIN_STAGING_LOC%.
+  echo No Win batch files found at %WIN_STAGING_LOC%
   exit 13
 )
 
