@@ -58,9 +58,11 @@ QList <CellAPO> readAPO_file(const QString& filename)
     mylist.clear();
 
     qDebug("-------------------------------------------------------");
+    char _buf[10000]; //expand the size from 2000 to 10000. by PHC, 20121212.
     while (! qf.atEnd())
     {
-        char _buf[2000], *buf;
+        //char _buf[20000]; //move out of the loop, 20121212, PHC
+        char *buf;
         qf.readLine(_buf, sizeof(_buf));
         for (buf=_buf; (*buf && *buf==' '); buf++);
         if (buf[0]=='#' ||buf[0]=='\0')	continue;
@@ -74,7 +76,7 @@ QList <CellAPO> readAPO_file(const QString& filename)
 
         for (int i=0; i<qsl.size(); i++)
         {
-        	qsl[i].truncate(99);
+        	qsl[i].truncate(200); //change from 99 to 200, 20121212, by PHC
         	if (i==0) S.n = qsl[i].toInt();
 			else if (i==1) S.orderinfo = qsl[i];
         	else if (i==2) S.name = qsl[i]; //strcpy(S.name, qsl[i].toStdString().c_str()); //by PHC, 090219
@@ -117,7 +119,7 @@ bool writeAPO_file(const QString& filename, const QList <CellAPO> & listCell)
 		curFile = QFileDialog::getSaveFileName(0,
 											   "Select a APO (text, csv format) file to save the point cloud... ",
 											   ".apo",
-											   QObject::tr("V3D/VANO point cloud (*.apo);;(*.*)"
+											   QObject::tr("Vaa3D/VANO point cloud (*.apo);;(*.*)"
 											   ));
 #ifndef DISABLE_V3D_MSG
 		v3d_msg(QString("save file: %1").arg(curFile), false);
@@ -142,14 +144,21 @@ bool writeAPO_file(const QString& filename, const QList <CellAPO> & listCell)
 	{
 		//then save
 		p_pt = (CellAPO *)(&(listCell.at(i)));
-		fprintf(fp, "%ld, %s, %s,%s, %ld,%ld,%ld, %5.3f,%5.3f,%5.3f,%5.3f,%5.3f,,,,%d,%d,%d\n",
+//		fprintf(fp, "%ld, %s, %s,%s, %ld,%ld,%ld, %5.3f,%5.3f,%5.3f,%5.3f,%5.3f,,,,%d,%d,%d\n",  
+        fprintf(fp, "%ld, %s, %s,%s, %5.3f,%5.3f,%5.3f, %5.3f,%5.3f,%5.3f,%5.3f,%5.3f,,,,%d,%d,%d\n", //change from V3DLONG type to float, 20121212, by PHC
 				p_pt->n, //i+1,
 				qPrintable(p_pt->orderinfo),
 				qPrintable(p_pt->name),
 				qPrintable(p_pt->comment),
-				V3DLONG(p_pt->z+0.5),
-				V3DLONG(p_pt->x+0.5),
-				V3DLONG(p_pt->y+0.5),
+
+                //change from V3DLONG type to float, 20121212, by PHC
+//				V3DLONG(p_pt->z+0.5),
+//				V3DLONG(p_pt->x+0.5),
+//				V3DLONG(p_pt->y+0.5),
+				p_pt->z,
+				p_pt->x,
+				p_pt->y,
+                
 				p_pt->pixmax,
 				p_pt->intensity,
 				p_pt->sdev,
