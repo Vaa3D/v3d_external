@@ -155,17 +155,19 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
         tmp_sz[1]=this->getYDim();
         tmp_sz[2]=this->getZDim();
         tmp_sz[3]=this->getCDim();
+        
+        this->setFileName(filename); // PHC added 20121213 to fix a bug in the PDB reading.
     }
 #endif    
-	else //then assume it is Hanchuan's RAW format
+	else //then assume it is Hanchuan's Vaa3D RAW format
 	{
-		v3d_msg("The data is not with a TIF surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n", false);
+		v3d_msg("The data is not with a TIF surfix, -- now this program assumes it is Vaa3D's RAW format defined by Hanchuan Peng. \n", false);
 		if (loadRaw2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 		{
-			printf("The data doesn't look like a correct 4-byte-size RAW file. Try 2-byte-raw. \n");
+			printf("The data doesn't look like a correct 4-byte-size Vaa3D's RAW file. Try 2-byte-raw. \n");
 			if (loadRaw2Stack_2byte(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 			{
-				v3d_msg("Error happens in reading 4-byte-size and 2-byte-size RAW file. Stop. \n", false);
+				v3d_msg("Error happens in reading 4-byte-size and 2-byte-size Vaa3D's RAW file. Stop. \n", false);
 				b_error=1;
 				return;
 			}

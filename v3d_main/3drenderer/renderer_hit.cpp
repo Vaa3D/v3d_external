@@ -1103,6 +1103,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (w && curImg)
 		{
+            v3d_msg("Enter the neuron tracing module APP2.", 0);
             v3d_imaging_paras myimagingp;
 			myimagingp.OPS = "Vaa3D-Neuron2-APP2";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call

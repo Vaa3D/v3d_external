@@ -96,7 +96,7 @@ void Image4DSimple::createBlankImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG img
 	
 	cleanExistData(); /* note that this variable must be initialized as NULL. */
 	
-	strcpy(imgSrcFile, "Untitled_blank.raw");
+	strcpy(imgSrcFile, "Untitled_blank.v3draw");
 	
 	//==============
 	

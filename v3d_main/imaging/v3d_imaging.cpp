@@ -25,7 +25,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 {
-	v3d_msg(QString("Now try to do imaging [%1]").arg(p.OPS), 0);
+	v3d_msg(QString("Now try to do imaging or other plugin functions [%1]").arg(p.OPS), 0);
 	
 	try 
 	{
@@ -46,7 +46,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		//}
 		if (!curw)
 		{
-			v3d_msg("No window open yet.");
+			v3d_msg(QString("No window open yet (error detected in v3d_imaging() main entry point [filename={%1}]).").arg(filename));
 			return false;
 		}
 		QDir pluginsDir = QDir(qApp->applicationDirPath());

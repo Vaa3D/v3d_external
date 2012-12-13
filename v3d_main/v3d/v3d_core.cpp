@@ -4616,6 +4616,8 @@ bool XFormWidget::loadData()
 
 	// update the interface
 	updateDataRelatedGUI();
+    
+    //v3d_msg(QString("The current file has the name [%1]").arg(imgData->getFileName()));
 
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
 	return true;
