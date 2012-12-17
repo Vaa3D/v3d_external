@@ -1498,7 +1498,7 @@ void MainWindow::updateMenus()
 			pluginsDir.cdUp();
 		}
 #endif
-        procTracing_APP2auto->setEnabled(pluginsDir.cd("plugins/neuron_tracing/All-path-pruning-2"));
+        procTracing_APP2auto->setEnabled(pluginsDir.cd("plugins/neuron_tracing/Vaa3D_Neuron2"));
         
         procTracing_one2others->setEnabled(activeMdiChild()->getImageData()->listLandmarks.size()>1);
         procTracing_trace_a_curve->setEnabled(activeMdiChild()->getImageData()->listLandmarks.size()>1);

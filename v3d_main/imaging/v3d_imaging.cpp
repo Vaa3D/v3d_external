@@ -62,9 +62,9 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 #endif
         if (p.OPS == "Vaa3D-Neuron2-APP2")
         {
-            if (pluginsDir.cd("plugins/neuron_tracing/All-path-pruning-2")==false)
+            if (pluginsDir.cd("plugins/neuron_tracing/Vaa3D_Neuron2")==false)
             {
-                v3d_msg("Cannot find ./plugins/neuron_tracing/All-path-pruning-2 directory!");
+                v3d_msg("Cannot find ./plugins/neuron_tracing/Vaa3D_Neuron2 directory!");
                 return false;
             }            
         }

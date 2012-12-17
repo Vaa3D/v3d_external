@@ -350,7 +350,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 					}
                     
                     pluginsDir1 = pluginsDir;
-					if (pluginsDir1.cd("plugins/neuron_tracing/All-path-pruning-2")==true)
+					if (pluginsDir1.cd("plugins/neuron_tracing/Vaa3D_Neuron2")==true)
 					{
 						listAct.append(act = new QAction("", w)); act->setSeparator(true);
 						listAct.append(actVaa3DNeuron2App2 = new QAction("Vaa3D-Neuron2 auto-tracing", w));
