@@ -13,6 +13,7 @@ echo on
 set MAKEDIR=%CD%\..\hudson_build_cmake
 set MINGW_DIR=c:/mingw
 set CYGWIN_DIR=c:/cygwin/bin
+set CMAKE_DIR="c:/Program Files (x86)/CMake 2.8"
 set ZIP_7_DIR="c:/Program Files/7-zip/"
 set LOCAL_DIR=%CD%/common_lib
 echo Build version %BUILD_VERSION%
@@ -35,7 +36,7 @@ set OLDPATH=%PATH%
 set PATH=%PATH:"=%
 call "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" amd64
 
-set PATH=%PATH%;%MINGW_DIR%/bin;%CYGWIN_DIR%;%ZIP_7_DIR%;%LOCAL_DIR%/bin
+set PATH=%CMAKE_DIR%/bin;%PATH%;%MINGW_DIR%/bin;%CYGWIN_DIR%;%ZIP_7_DIR%;%LOCAL_DIR%/bin
 set VPATH=%LOCAL_DIR%/include;%LOCAL_DIR%/lib_win32;
 
 cd v3d
