@@ -120,8 +120,16 @@ struct NeuronSWC : public BasicSurfObj
 {
 	int type;			// 0-Undefined, 1-Soma, 2-Axon, 3-Dendrite, 4-Apical_dendrite, 5-Fork_point, 6-End_point, 7-Custom
 	float x, y, z;		// point coordinates
+    
+    union{
 	float r;			// radius
+    float radius;
+    };
+    
+    union{
 	V3DLONG pn;				// previous point index (-1 for the first point)
+    V3DLONG parent;				// previous point index (-1 for the first point)
+    };
     
     V3DLONG level; //20120217, by PHC. for ESWC format
     float fea_val; //20120217, by PHC. for ESWC format
