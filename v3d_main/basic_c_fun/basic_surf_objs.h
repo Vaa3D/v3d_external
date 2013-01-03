@@ -34,6 +34,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //
 //090605: merge with p_objectfile.h
 //090706: add neuronswc and marker write functions here
+//130103: add a few constructor functions for ImageMarker
 
 #ifndef __BASIC_SURF_OBJS_H__
 #define __BASIC_SURF_OBJS_H__
@@ -88,6 +89,8 @@ struct ImageMarker : public BasicSurfObj
 
 	operator XYZ() const { return XYZ(x, y, z); }
 	ImageMarker() {type=shape=0; radius=x=y=z=0;}
+    ImageMarker(float x0, float y0, float z0) {type=shape=0; x=x0; y=y0; z=z0; radius=0;}
+    ImageMarker(int t0, int s0, float x0, float y0, float z0, float r0) {type=t0; shape=s0; x=x0; y=y0; z=z0; radius=r0;}
 };
 
 QList <ImageMarker> readMarker_file(const QString & filename);
