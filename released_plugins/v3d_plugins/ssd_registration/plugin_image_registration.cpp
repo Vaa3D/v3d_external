@@ -30,7 +30,7 @@ QStringList ImageRegistrationPlugin::menulist() const
 {
     return QStringList()
             << tr("rigid registration...")
-    << tr("About");
+            << tr("About");
 }
 
 void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
@@ -594,9 +594,9 @@ bool iInterpolater(Tdata *p, Tidx *sz_img_input,
     }
 
     if(V3DLONG(vec4D_grid_int.size()) != V3DLONG(sz_img_input[1]) || 
-       V3DLONG(vec4D_grid_int[0].size()) != V3DLONG(sz_img_input[0]) ||
-       V3DLONG(vec4D_grid_int[0][0].size()) != V3DLONG(sz_img_input[2]) || 
-       V3DLONG(vec4D_grid_int[0][0][0].size()) != 3)
+            V3DLONG(vec4D_grid_int[0].size()) != V3DLONG(sz_img_input[0]) ||
+            V3DLONG(vec4D_grid_int[0][0].size()) != V3DLONG(sz_img_input[2]) ||
+            V3DLONG(vec4D_grid_int[0][0][0].size()) != 3)
     {
         printf("\nERROR: Invalid input grid size, it should be same as input image size!\n");
         return false;
@@ -706,6 +706,114 @@ bool iWarper(Tdata *p,Tidx *sz_img,
     }
 
     //
+    return true;
+}
+
+template <class Tdata, class Tidx>
+bool saturateImage(Tdata *&p, Tidx sx, Tidx sy, Tidx sz, float percentage)
+{
+    // error check
+    if(!p || percentage<0 || percentage>1)
+    {
+        qDebug()<<"Invalid input!"<<endl;
+        return false;
+    }
+
+    //
+    Tidx pagesz = sx*sy*sz;
+
+    Tdata maxori = 0, minori = 0;
+    for(Tidx i=0; i<pagesz; i++)
+    {
+        if(p[i]>maxori)
+            maxori = p[i];
+        if(p[i]<minori)
+            minori = p[i];
+    }
+
+    Tdata MAXV=maxori;
+    if(sizeof(Tdata)==1)
+    {
+        if(MAXV<255) MAXV=255; // 8 bit
+    }
+    else if(sizeof(Tdata)==2)
+    {
+        if(MAXV<4096) MAXV=4096; // 12 bit
+    }
+
+    Tidx NBIN = maxori+1;
+
+    //Look Up Table
+    Tdata *LUT = NULL;
+    Tidx *hist = NULL;
+    Tidx *accuhist = NULL;
+
+    try
+    {
+        LUT = new Tdata [NBIN];
+        hist = new Tidx [NBIN];
+        accuhist = new Tidx [NBIN];
+    }
+    catch(...)
+    {
+        qDebug()<<"Fail to allocate memory for LUT";
+        return false;
+    }
+
+    for(Tidx i=0; i<NBIN; i++)
+    {
+        LUT[i]=0;
+        hist[i]=0;
+        accuhist[i]=0;
+    }
+
+    Tidx curv;
+    //compute histogram
+    for(Tidx i=0; i<pagesz; i++)
+    {
+        curv = p[i];
+        hist[curv]++;
+    }
+    //statistic accumulated histogram
+    for(Tidx i=0; i<NBIN; i++)
+    {
+        for(Tidx j=0; j<=i; j++)
+        {
+            accuhist[i] += hist[j];
+        }
+    }
+
+    //compute histogram satuate percentage (e.g. 98%)
+    Tdata ileft = minori, iright = ileft;
+    double sflag = 0;
+    while(sflag<percentage)
+    {
+        sflag = double(accuhist[iright++])/double(pagesz);
+    }
+    iright--;
+
+    //compute LUT
+    for (Tidx i=ileft; i<=iright; i++)
+    {
+        LUT[i] = (Tdata)(MAXV*double(i-ileft)/double(iright-ileft));
+    }
+
+    //output
+    for (Tidx i=0;i<pagesz;i++)
+    {
+        if(p[i]<ileft) p[i] = 0;
+        else if(p[i]>iright) p[i] = MAXV;
+        else
+        {
+            Tidx curv = p[i];
+            p[i] = LUT[curv];
+        }
+    }
+
+    if (LUT) {delete []LUT; LUT=0;}
+    if (hist) {delete []hist; hist=0;}
+    if (accuhist) {delete []accuhist; accuhist=0;}
+
     return true;
 }
 
@@ -1013,48 +1121,48 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         if(sz_img_tar_input[0]!=sz_img[0] || sz_img_tar_input[1]!=sz_img[1] || sz_img_tar_input[2]!=sz_img[2])
         {
             switch (datatype_tar_input) {
-                case 1:
-                    {
-                        if(!iSampler<unsigned char, V3DLONG>(p_img_tar_input+offsets_tar, sz_img_tar_input, p_tar, sz_img, sz_img[3]))
-                        {
-                            printf("\nError: fail to call iSampler function!\n");
-                            return false;
-                        }
-                    }
-                    break;
-                    
-                case 2:
-                    {
-                        unsigned short int *pTmp = NULL;
-                        
-                        if(!iSampler<unsigned short int, V3DLONG>((unsigned short int *)p_img_tar_input+offsets_tar, sz_img_tar_input, pTmp, sz_img, sz_img[3]))
-                        {
-                            printf("\nError: fail to call iSampler function!\n");
-                            return false;
-                        }
-                        p_tar = (unsigned char *)pTmp; pTmp = NULL;
-                    }
-                    break;
+            case 1:
+            {
+                if(!iSampler<unsigned char, V3DLONG>(p_img_tar_input+offsets_tar, sz_img_tar_input, p_tar, sz_img, sz_img[3]))
+                {
+                    printf("\nError: fail to call iSampler function!\n");
+                    return false;
+                }
+            }
+            break;
 
-                case 4:
-                    {
-                        float *pTmp = NULL;
-                        
-                        if(!iSampler<float, V3DLONG>((float *)p_img_tar_input+offsets_tar, sz_img_tar_input, pTmp, sz_img, sz_img[3]))
-                        {
-                            printf("\nError: fail to call iSampler function!\n");
-                            return false;
-                        }
-                        p_tar = (unsigned char *)pTmp; pTmp = NULL;
-                    }
-                    break;
-                    
-                default:
-                    {
-                        printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
-                        //need to free memory here?? potential bug
-                        return false;
-                    }
+            case 2:
+            {
+                unsigned short int *pTmp = NULL;
+
+                if(!iSampler<unsigned short int, V3DLONG>((unsigned short int *)p_img_tar_input+offsets_tar, sz_img_tar_input, pTmp, sz_img, sz_img[3]))
+                {
+                    printf("\nError: fail to call iSampler function!\n");
+                    return false;
+                }
+                p_tar = (unsigned char *)pTmp; pTmp = NULL;
+            }
+            break;
+
+            case 4:
+            {
+                float *pTmp = NULL;
+
+                if(!iSampler<float, V3DLONG>((float *)p_img_tar_input+offsets_tar, sz_img_tar_input, pTmp, sz_img, sz_img[3]))
+                {
+                    printf("\nError: fail to call iSampler function!\n");
+                    return false;
+                }
+                p_tar = (unsigned char *)pTmp; pTmp = NULL;
+            }
+            break;
+
+            default:
+            {
+                printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+                //need to free memory here?? potential bug
+                return false;
+            }
             }
         }
         else
@@ -1065,47 +1173,47 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         if(sz_img_sub_input[0]!=sz_img[0] || sz_img_sub_input[1]!=sz_img[1] || sz_img_sub_input[2]!=sz_img[2])
         {
             switch (datatype_sub_input) {
-                case 1:
-                    {
-                        if(!iSampler<unsigned char, V3DLONG>(p_img_sub_input+offsets_sub, sz_img_sub_input, p_sub, sz_img, sz_img[3]))
-                        {
-                            printf("\nError: fail to call iSampler function!\n");
-                            return false;
-                        }
-                    }
-                    break;
+            case 1:
+            {
+                if(!iSampler<unsigned char, V3DLONG>(p_img_sub_input+offsets_sub, sz_img_sub_input, p_sub, sz_img, sz_img[3]))
+                {
+                    printf("\nError: fail to call iSampler function!\n");
+                    return false;
+                }
+            }
+            break;
 
-                case 2:
-                    {
-                        unsigned short int *pTmp = NULL;
-                        
-                        if(!iSampler<unsigned short int, V3DLONG>((unsigned short int *)p_img_sub_input+offsets_sub, sz_img_sub_input, pTmp, sz_img, sz_img[3]))
-                        {
-                            printf("\nError: fail to call iSampler function!\n");
-                            return false;
-                        }
-                        p_sub = (unsigned char *)pTmp; pTmp = NULL;
-                    }
-                    break;
-                    
-                case 4:
-                    {
-                        float *pTmp = NULL;
-                        
-                        if(!iSampler<float, V3DLONG>((float *)p_img_sub_input+offsets_sub, sz_img_sub_input, pTmp, sz_img, sz_img[3]))
-                        {
-                            printf("\nError: fail to call iSampler function!\n");
-                            return false;
-                        }
-                        p_tar = (unsigned char *)pTmp; pTmp = NULL;
-                    }
-                    break;
-                    
-                default:
-                    {
-                        printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
-                        return false;
-                    }
+            case 2:
+            {
+                unsigned short int *pTmp = NULL;
+
+                if(!iSampler<unsigned short int, V3DLONG>((unsigned short int *)p_img_sub_input+offsets_sub, sz_img_sub_input, pTmp, sz_img, sz_img[3]))
+                {
+                    printf("\nError: fail to call iSampler function!\n");
+                    return false;
+                }
+                p_sub = (unsigned char *)pTmp; pTmp = NULL;
+            }
+            break;
+
+            case 4:
+            {
+                float *pTmp = NULL;
+
+                if(!iSampler<float, V3DLONG>((float *)p_img_sub_input+offsets_sub, sz_img_sub_input, pTmp, sz_img, sz_img[3]))
+                {
+                    printf("\nError: fail to call iSampler function!\n");
+                    return false;
+                }
+                p_sub = (unsigned char *)pTmp; pTmp = NULL;
+            }
+            break;
+
+            default:
+            {
+                printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+                return false;
+            }
             }
         }
         else
@@ -1114,86 +1222,126 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         }
 
         //--------------------------------------------------------------------------------------------------
-        printf("\n%d. Convert data to double type and scale to [0~1]. \n", ++process_step);
+        printf("\n%d. Saturate the reference of the subject image. \n", ++process_step);
         //--------------------------------------------------------------------------------------------------
         V3DLONG pagesz_img = sz_img[0]*sz_img[1]*sz_img[2];
-        switch (datatype_tar_input) {
-            case 1:
-                {
-                    if(!iNormalizer<unsigned char, V3DLONG>(p_tar, pagesz_img, p_img64f_tar))
-                    {
-                        printf("\nError: fail to call iNormalizer function!\n");
-                        return false;
-                    }
-                }
-                break;
+        switch (datatype_sub_input)
+        {
+        case 1:
+        {
+            if(!saturateImage<unsigned char, V3DLONG>(p_sub, sz_img[0], sz_img[1], sz_img[2], 0.98))
+            {
+                printf("\nError: fail to call saturateImage function!\n");
+                return false;
+            }
+        }
+        break;
 
-            case 2:
-                {
-                    if(!iNormalizer<unsigned short int, V3DLONG>((unsigned short int*)p_tar, pagesz_img, p_img64f_tar))
-                    {
-                        printf("\nError: fail to call iNormalizer function!\n");
-                        return false;
-                    }
-                }
-                break;
-                
-            case 4:
-                {
-                    if(!iNormalizer<float, V3DLONG>((float *)p_tar, pagesz_img, p_img64f_tar))
-                    {
-                        printf("\nError: fail to call iNormalizer function!\n");
-                        return false;
-                    }
-                }
-                break;
-                
-            default:
-                {
-                    printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
-                    return false;
-                }
-                break;
+        case 2:
+        {
+            unsigned short *pTmp = (unsigned short *)p_sub;
+
+            if(!saturateImage<unsigned short, V3DLONG>(pTmp, sz_img[0], sz_img[1], sz_img[2], 0.98))
+            {
+                printf("\nError: fail to call saturateImage function!\n");
+                return false;
+            }
+        }
+        break;
+
+        case 4:
+        {
+            qDebug()<<"32bit not supported!";
+        }
+        break;
+
+        default:
+        {
+            printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+            return false;
+        }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        printf("\n%d. Convert data to double type and scale to [0~1]. \n", ++process_step);
+        //--------------------------------------------------------------------------------------------------
+        switch (datatype_tar_input) {
+        case 1:
+        {
+            if(!iNormalizer<unsigned char, V3DLONG>(p_tar, pagesz_img, p_img64f_tar))
+            {
+                printf("\nError: fail to call iNormalizer function!\n");
+                return false;
+            }
+        }
+        break;
+
+        case 2:
+        {
+            if(!iNormalizer<unsigned short int, V3DLONG>((unsigned short int*)p_tar, pagesz_img, p_img64f_tar))
+            {
+                printf("\nError: fail to call iNormalizer function!\n");
+                return false;
+            }
+        }
+        break;
+
+        case 4:
+        {
+            if(!iNormalizer<float, V3DLONG>((float *)p_tar, pagesz_img, p_img64f_tar))
+            {
+                printf("\nError: fail to call iNormalizer function!\n");
+                return false;
+            }
+        }
+        break;
+
+        default:
+        {
+            printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+            return false;
+        }
+        break;
         }
         freeMemory<unsigned char>(p_tar);
 
         //
         switch (datatype_sub_input) {
-            case 1:
+        case 1:
+        {
+            if(!iNormalizer<unsigned char, V3DLONG>(p_sub, pagesz_img, p_img64f_sub))
             {
-                if(!iNormalizer<unsigned char, V3DLONG>(p_sub, pagesz_img, p_img64f_sub))
-                {
-                    printf("\nError: fail to call iNormalizer function!\n");
-                    return false;
-                }
-            }
-                break;
-                
-            case 2:
-            {
-                if(!iNormalizer<unsigned short int, V3DLONG>((unsigned short int*)p_sub, pagesz_img, p_img64f_sub))
-                {
-                    printf("\nError: fail to call iNormalizer function!\n");
-                    return false;
-                }
-            }
-                break;
-                
-            case 4:
-            {
-                if(!iNormalizer<float, V3DLONG>((float *)p_sub, pagesz_img, p_img64f_sub))
-                {
-                    printf("\nError: fail to call iNormalizer function!\n");
-                    return false;
-                }
-            }
-                break;
-                
-            default:
-            {
-                printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+                printf("\nError: fail to call iNormalizer function!\n");
                 return false;
             }
+        }
+        break;
+
+        case 2:
+        {
+            if(!iNormalizer<unsigned short int, V3DLONG>((unsigned short int*)p_sub, pagesz_img, p_img64f_sub))
+            {
+                printf("\nError: fail to call iNormalizer function!\n");
+                return false;
+            }
+        }
+        break;
+
+        case 4:
+        {
+            if(!iNormalizer<float, V3DLONG>((float *)p_sub, pagesz_img, p_img64f_sub))
+            {
+                printf("\nError: fail to call iNormalizer function!\n");
+                return false;
+            }
+        }
+        break;
+
+        default:
+        {
+            printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+            return false;
+        }
         }
         freeMemory<unsigned char>(p_sub);
 
