@@ -4,6 +4,7 @@
 #include <QString>
 #include <QtCore>
 #include <QDir>
+#include <QIODevice>
 #include "../../v3d/v3d_core.h"
 
 using namespace std;
@@ -59,13 +60,19 @@ public:
     bool execute();
     bool validateFile();
 
+    // URL versions, as oppose to file name versions
+    My4DImage* loadImage(QUrl url);
+    bool loadImage(Image4DSimple * stackp, QUrl url);
+    int loadRaw2StackPBD(QUrl url, Image4DSimple * & image, bool useThreading);
+    int loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * & image, bool useThreading);
+
     My4DImage* loadImage(QString filepath);
     bool loadImage(Image4DSimple * stackp, QString filepath);
     bool saveImage(My4DImage * stackp, QString filepath);
     bool saveImage(My4DImage *stackp, QString filepath, bool saveTo8bit);
 
     int saveStack2RawPBD(const char * filename, ImagePixelType dataType, unsigned char* data, const V3DLONG * sz);
-    int loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool useThreading);
+    int loadRaw2StackPBD(const char * filename, Image4DSimple * & image, bool useThreading);
 
     int processArgs(vector<char*> *argList);
     QString getFilePrefix(QString filepath);

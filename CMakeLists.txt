@@ -10,7 +10,11 @@ include_directories( ${CMAKE_BINARY_DIR}/v3d_main/v3d )
 
 set(V3D_PACKAGE_AS_NEURON_ANNOTATOR OFF CACHE BOOL "Whether to package custom NeuronAnnotator mode")
 # V3D_PACKAGE_AS_NEURON_ANNOTATOR is not working well, at least on Windows
-mark_as_advanced(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+if(WIN32)
+    mark_as_advanced(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+else()
+    mark_as_advanced(CLEAR V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+endif()
 
 # It is important on Windows for both v3d and plugins to use same build type.
 if(NOT CMAKE_BUILD_TYPE)

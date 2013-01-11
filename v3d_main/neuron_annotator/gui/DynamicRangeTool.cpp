@@ -138,7 +138,7 @@ void DynamicRangeTool::setHdrMax(int max)
 void DynamicRangeTool::updateDataRange(qreal min, qreal max)
 {
     channelDataMin = min;
-    channelDataMax = channelDataMax;
+    channelDataMax = 2.0 * max; // allow dimming by going above actual max
     ui.channelMin_spinBox->setMinimum(channelDataMin);
     ui.channelMin_spinBox->setMaximum(channelDataMax);
     ui.channelMax_spinBox->setMinimum(channelDataMin);

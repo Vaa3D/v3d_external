@@ -123,6 +123,8 @@ public:
                 // Allow NeuronAnnotator to activate file load in default window
                 connect(naMainWindow, SIGNAL(defaultVaa3dFileLoadRequested(QString)),
                         mainWindow, SLOT(loadV3DFile(QString)));
+                connect(naMainWindow, SIGNAL(defaultVaa3dUrlLoadRequested(QUrl)),
+                        mainWindow, SLOT(loadV3DUrl(QUrl)));
             }
             activateMainWindowHelper(naMainWindow);
             naMainWindowIsActive=true;

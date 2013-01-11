@@ -387,14 +387,14 @@ void NaVolumeData::loadVolumeDataFromFiles()
 }
 
 /* slot */
-bool NaVolumeData::loadChannels(QString fileName) // includes loading general volumes
+bool NaVolumeData::loadChannels(QUrl url) // includes loading general volumes
 {
     bool bSucceeded = false;
     int channel_count = 0;
     emit progressMessageChanged("Loading single volume file"); // emit outside of lock block
     {
         Writer writer(*this);
-        channel_count = writer.loadChannels(fileName);
+        channel_count = writer.loadChannels(url);
         if (channel_count > 0)
             bSucceeded = true;
     } // release lock before emitting
@@ -535,12 +535,12 @@ bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
 #endif
 }
 
-int NaVolumeData::Writer::loadChannels(QString fileName) // includes loading general volumes
+int NaVolumeData::Writer::loadChannels(QUrl url) // includes loading general volumes
 {
-   // qDebug() << "NaVolumeData::Writer::loadChannels()" << fileName;
+    // qDebug() << "NaVolumeData::Writer::loadChannels()" << fileName;
     My4DImage* img = new My4DImage();
     ImageLoader loader;
-    if (! loader.loadImage(img, fileName) ) {
+    if (! loader.loadImage(img, url) ) {
         delete img;
         return 0;
     }

@@ -5,6 +5,7 @@
 #include <windows.h>
 #endif
 
+#include <QUrlInfo>
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
@@ -713,66 +714,62 @@ void NaMainWindow::retrieveCrosshairVisibilitySetting()
 /////////////////////////////////////////////////////
 
 // Return file name if the dragged item can be usefully dropped into the NeuronAnnotator main window
-QString checkDragEvent(QDropEvent* event)
+QUrl checkDragEvent(QDropEvent* event)
 {
     if (! event->mimeData()->hasFormat("text/uri-list"))
-        return ""; // only files are accepted
+        return QUrl(); // only URLs are accepted
 
     QList<QUrl> urls = event->mimeData()->urls();
     if (urls.isEmpty())
-        return "";
+        return QUrl();
 
+    /* Switch to use URLs, not files Jan 2013
     QString fileName = urls.first().toLocalFile();
     if (fileName.isEmpty())
         return "";
+        */
+    QUrl url = urls.first();
+    if (url.isEmpty())
+        return QUrl();
+    QString urlPath = url.path();
 
     // check for recognized file extensions
-    QString fileExtension = QFileInfo(fileName).suffix().toLower();
+    QString fileExtension = QFileInfo(urlPath).suffix().toLower();
     if (fileExtension == "lsm")
-        return fileName;
+        return url;
     if (fileExtension.startsWith("tif")) // tif or tiff
-        return fileName;
+        return url;
     if (fileExtension.startsWith("v3d")) // v3draw or v3dpdb
-        return fileName;
+        return url;
 #ifdef USE_FFMPEG
     if (fileExtension.startsWith("mp4")) // v3draw or v3dpdb
-        return fileName;
+        return url;
 #endif
+    bool isDir = url.path().endsWith("/");
+    if (isDir)
+        return url; // neuron separation folder
 
-    return "";
+    return QUrl();
 }
 
 void NaMainWindow::dragEnterEvent(QDragEnterEvent * event)
 {
-    QString fileName = checkDragEvent(event);
-    if (! fileName.isEmpty())
+    QUrl url = checkDragEvent(event);
+    if (! url.isEmpty())
         event->acceptProposedAction();
    // qDebug() << "NaMainWindow::dragEnterEvent" << fileName << __FILE__ << __LINE__;
 }
 
 void NaMainWindow::dropEvent(QDropEvent * event)
 {
-    QString fileName = checkDragEvent(event);
-    if (fileName.isEmpty()) return;
+    QUrl url = checkDragEvent(event);
+    if (url.isEmpty()) return;
 
-    // If this looks like a neuron separation directory, load it in NeuronAnnotator
-    QDir directory = QFileInfo(fileName).dir();
-    if (   (QFile(directory.filePath("ConsolidatedLabel.v3dpbd")).exists()
-        || QFile(directory.filePath("ConsolidatedLabel.tif")).exists())
-        && (fileName.contains("Reference") || fileName.contains("Consolidated"))  )
-    {
-        // qDebug() << "Found separated neurons directory";
-        openMulticolorImageStack(directory.absolutePath());
-    }
-    else
-    {
-        // qDebug() << "Switching to Vaa3D default mode to view single image stack";
-        loadSingleStack(fileName, false);
-        // ui.actionV3DDefault->trigger(); // switch mode
-        // emit defaultVaa3dFileLoadRequested(fileName);
-    }
+    bool isDir = url.path().endsWith("/");
+    if (isDir)
+        openMulticolorImageStack(url);
 
-    // qDebug() << "NaMainWindow::dropEvent" << fileName << __FILE__ << __LINE__;
+    loadSingleStack(url);
 }
 
 void NaMainWindow::moveEvent ( QMoveEvent * event )
@@ -782,20 +779,31 @@ void NaMainWindow::moveEvent ( QMoveEvent * event )
     QMainWindow::moveEvent(event);
 }
 
-/* slot */
-void NaMainWindow::loadSingleStack(QString fileName)
+void NaMainWindow::loadSingleStack(QUrl url)
 {
-    loadSingleStack(fileName, true); // default to classic mode
+    // Default to NeuronAnnotator, not Vaa3D classic, when URL is given
+    loadSingleStack(url, false);
 }
 
 /* slot */
-void NaMainWindow::loadSingleStack(QString fileName, bool useVaa3dClassic)
+void NaMainWindow::loadSingleStack(QString fileName)
+{
+    QUrl url = QUrl::fromLocalFile(fileName);
+    loadSingleStack(url, true); // default to classic mode
+}
+
+/* slot */
+void NaMainWindow::loadSingleStack(QUrl url, bool useVaa3dClassic)
 {
     mainWindowStopWatch.start();
     if (useVaa3dClassic) {
         // Open in Vaa3D classic mode
         ui.actionV3DDefault->trigger(); // switch mode
-        emit defaultVaa3dFileLoadRequested(fileName);
+        QString fileName = url.toLocalFile();
+        if (! fileName.isEmpty())
+            emit defaultVaa3dFileLoadRequested(fileName);
+        else
+            emit defaultVaa3dUrlLoadRequested(url);
     }
     else
     {
@@ -806,10 +814,10 @@ void NaMainWindow::loadSingleStack(QString fileName, bool useVaa3dClassic)
         VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         volumeTexture.queueVolumeData();
 
-        QString baseName = QFileInfo(fileName).fileName();
+        QString baseName = QFileInfo(url.path()).fileName();
         setTitle(baseName);
 
-        emit singleStackLoadRequested(fileName);
+        emit singleStackLoadRequested(url);
     }
 }
 
@@ -1226,6 +1234,17 @@ void NaMainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 void NaMainWindow::on_actionOpen_triggered()
 {
     QString dirName = getDataDirectoryPathWithDialog();
+    openMulticolorImageStack(dirName);
+}
+
+bool NaMainWindow::openMulticolorImageStack(QUrl url)
+{
+    // TODO - invert preeminence of URL
+    QString dirName = url.toLocalFile();
+    if (dirName.isEmpty())
+        return false;
+    if (! QFileInfo(dirName).exists())
+        return false;
     openMulticolorImageStack(dirName);
 }
 
@@ -1746,8 +1765,8 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             this, SLOT(abortProgress(QString)));
 
     // Loading single stack
-    connect(this, SIGNAL(singleStackLoadRequested(QString)),
-            &dataFlowModel->getVolumeData(), SLOT(loadChannels(QString)));
+    connect(this, SIGNAL(singleStackLoadRequested(QUrl)),
+            &dataFlowModel->getVolumeData(), SLOT(loadChannels(QUrl)));
     connect(&dataFlowModel->getVolumeData(), SIGNAL(channelsLoaded(int)),
             this, SLOT(onDataLoadFinished()));
 

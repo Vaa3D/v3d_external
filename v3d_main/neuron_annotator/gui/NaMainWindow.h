@@ -100,8 +100,9 @@ signals:
     void channelVisibilityChanged(int, bool);
     void nutatingChanged(bool);
     void defaultVaa3dFileLoadRequested(QString fileName);
+    void defaultVaa3dUrlLoadRequested(QUrl url);
     void crosshairVisibilityChanged(bool);
-    void singleStackLoadRequested(QString fileName);
+    void singleStackLoadRequested(QUrl url);
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
     void initializeColorModelRequested();
@@ -114,10 +115,12 @@ public slots:
     void exitFullScreen();
     void setFullScreen(bool);
     void setViewMode(ViewMode mode);
+    void loadSingleStack(QUrl url);
     void loadSingleStack(QString fileName);
-    void loadSingleStack(QString fileName, bool useVaa3dClassic);
+    void loadSingleStack(QUrl url, bool useVaa3dClassic);
     void onDataLoadStarted();
     void onDataLoadFinished();
+    bool openMulticolorImageStack(QUrl url);
     bool openMulticolorImageStack(QString dirName);
     void on_actionV3DDefault_triggered();
     void on_actionMeasure_Frame_Rate_triggered();

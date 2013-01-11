@@ -79,7 +79,7 @@ signals:
     void benchmarkTimerPrintRequested(QString);
 
 public slots:
-    bool loadChannels(QString fileName); // includes loading general volumes
+    bool loadChannels(QUrl url); // includes loading general volumes
     // staged loading
     bool queueSeparationFolder(QDir folder); // using new staged loader
     void loadStagedVolumes();
@@ -180,7 +180,7 @@ public:
 
         bool loadReference(QString fileName);
         bool loadOneChannel(QString fileName, int channel_index = 0);
-        int  loadChannels(QString fileName); // includes loading general volumes
+        int  loadChannels(QUrl url); // includes loading general volumes
         bool loadNeuronMask(QString fileName);
         bool loadVolumeFromTexture(const jfrc::VolumeTexture* texture);
 
