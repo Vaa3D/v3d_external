@@ -732,6 +732,8 @@ QUrl checkDragEvent(QDropEvent* event)
     if (url.isEmpty())
         return QUrl();
     QString urlPath = url.path();
+    if (url.host() == "")
+        url.setHost("localhost");
 
     // check for recognized file extensions
     QString fileExtension = QFileInfo(urlPath).suffix().toLower();

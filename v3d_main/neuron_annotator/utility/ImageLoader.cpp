@@ -3,6 +3,7 @@
 #include <QtCore>
 #include <QDir>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include "../../v3d/v3d_core.h"
 #include "../../basic_c_fun/v3d_basicdatatype.h"
 #include "loadV3dFFMpeg.h"
@@ -30,6 +31,7 @@ const unsigned char ImageLoader::ooooolll = 7;
 ImageLoader::ImageLoader()
     : progressIndex(0)
     , bIsCanceled(false)
+    , networkManager(this)
 {
     // qDebug() << "ImageLoader() constructor called";
     mode=MODE_UNDEFINED;
@@ -1221,20 +1223,22 @@ int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * & image, bool useThr
         return loadRaw2StackPBD(str.c_str(), image, useThreading);
     }
 
-    return exitWithError("URL loading not implemented yet");
-    /* TODO - finish getting URL to work
-    QNetworkAccessManager networkAccessManager;
-    QNetworkRequest request = QNetworkRequest(url);
+    // Load from URL
     QEventLoop loop; // for synchronous url fetch http://stackoverflow.com/questions/5486090/qnetworkreply-wait-for-finished
-    QNetworkReply * reply = networkAccessManager.get(request);
-    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    QObject::connect(&networkManager, SIGNAL(finished(QNetworkReply*)),
+            &loop, SLOT(quit()));
+    QNetworkRequest request = QNetworkRequest(url);
+    QNetworkReply * reply = networkManager.get(request);
     loop.exec();
     if (reply->error() != QNetworkReply::NoError) {
-        delete reply;
+        // qDebug() << reply->error();
+        reply->deleteLater();
         return exitWithError("Failed to read from URL");
     }
-    long fileSize = reply->
-     */
+    V3DLONG fileSize = reply->header(QNetworkRequest::ContentLengthHeader).toLongLong();
+    int result = loadRaw2StackPBD(*reply, fileSize, image, useThreading);
+    reply->deleteLater();
+    return result;
 }
 
 int ImageLoader::loadRaw2StackPBD(const char * filename, Image4DSimple * & image, bool useThreading)

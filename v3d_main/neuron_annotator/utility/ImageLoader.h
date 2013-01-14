@@ -1,10 +1,11 @@
 #ifndef IMAGELOADER_H
 #define IMAGELOADER_H
 
+#include <QNetworkAccessManager>
+#include <QIODevice>
 #include <QString>
 #include <QtCore>
 #include <QDir>
-#include <QIODevice>
 #include "../../v3d/v3d_core.h"
 
 using namespace std;
@@ -135,6 +136,7 @@ private:
     int progressIndex;
 
     volatile bool bIsCanceled;
+    QNetworkAccessManager networkManager;
 };
 
 #endif // IMAGELOADER_H
