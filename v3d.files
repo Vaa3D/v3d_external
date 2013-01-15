@@ -2043,3 +2043,5 @@ v3d_main/neuron_annotator/utility/FooDebug.h
 v3d_main/neuron_annotator/utility/FooDebug.cpp
 v3d_main/neuron_annotator/data_model/StagedFileLoader.h
 v3d_main/neuron_annotator/data_model/StagedFileLoader.cpp
+v3d_main/neuron_annotator/analysis/VolumePatternIndex.h
+v3d_main/neuron_annotator/analysis/VolumePatternIndex.cpp
