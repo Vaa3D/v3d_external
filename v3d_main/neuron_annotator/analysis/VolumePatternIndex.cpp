@@ -54,20 +54,18 @@
 
   The default matrix will be:
 
-
-
                               Subject
 
-                empty      low      medium      high
+                  empty      low      medium      high
 
 
-     empty        0        -1        -2        -4
+       empty        0        -1        -2        -4
 
-Qry  low         -1         1         1         0
+Qry    low         -1         1         1         0
 
-     medium      -2         1         2         2
+       medium      -2         1         2         2
 
-     high        -4         0         2         4
+       high        -4         0         2         4
 
 
  */
@@ -122,7 +120,8 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         } else if (arg=="-outputIndex") {
             outputIndexFile=(*argList)[++i];
         } else if (arg=="-subVolume") {
-            subVolumeString=(*argList)[++i];
+            QString subVolumeString=(*argList)[++i];
+            // todo: need to parse
         } else if (arg=="-query") {
             queryImageFile=(*argList)[++i];
         } else if (arg=="-maxHits") {
