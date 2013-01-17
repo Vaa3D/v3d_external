@@ -121,7 +121,19 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             outputIndexFile=(*argList)[++i];
         } else if (arg=="-subVolume") {
             QString subVolumeString=(*argList)[++i];
-            // todo: need to parse
+            if (!parseSubVolumeString(subVolumeString)) {
+                qDebug() << "Could not parse subVolumeString=" << subVolumeString;
+                return 0;
+            }
+        } else if (arg=="-unitSize") {
+            QString unitSizeString=(*argList)[++i];
+            unitSize=unitSizeString.toInt();
+        } else if (arg=="-threshold") {
+            QString thresholdString=(*argList)[++i];
+            if (!parseThresholdString(thresholdString)) {
+                qDebug() << "Could not parse threshold string=" << thresholdString;
+                return 0;
+            }
         } else if (arg=="-query") {
             queryImageFile=(*argList)[++i];
         } else if (arg=="-maxHits") {
@@ -141,8 +153,50 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
     return 0;
 }
 
+bool VolumePatternIndex::parseSubVolumeString(QString subVolumeString) {
+    QRegExp splitRegex("\\s+");
+    QStringList volList=subVolumeString.split(splitRegex);
+    if (volList.size()!=6) {
+        if (volList.size()>0) {
+            for (int i=0;i<volList.size();i++) {
+                qDebug() << "i=" << i << " string=" << volList[i];
+            }
+        }
+        return false;
+    }
+    QString x0String=volList[0];
+    x0=x0String.toInt();
+    QString x1String=volList[1];
+    x1=x1String.toInt();
+    QString y0String=volList[2];
+    y0=y0String.toInt();
+    QString y1String=volList[3];
+    y1=y1String.toInt();
+    QString z0String=volList[4];
+    z0=z0String.toInt();
+    QString z1String=volList[5];
+    z1=z1String.toInt();
+}
+
+bool VolumePatternIndex::parseThresholdString(QString thresholdString) {
+    QRegExp splitRegex("\\s+");
+    QStringList tList=thresholdString.split(splitRegex);
+    if (tList.size()!=4) {
+        if (tList.size()>0) {
+            for (int i=0;i<tList.size();i++) {
+                qDebug() << "i=" << i << " string=" << tList[i];
+            }
+        }
+        return false;
+    }
+    // For now we expect 4 positions
+    threshold=new int[4];
+    for (int i=0;i<tList.size();i++) {
+        threshold[i]=tList[i].toInt();
+    }
+}
+
 bool VolumePatternIndex::createSubVolume() {
-    qDebug() << "createSubVolume: subVolume=" << subVolumeString;
     return true;
 }
 

@@ -73,6 +73,9 @@ private:
     bool createSubVolume();
     bool createIndex();
     bool doSearch();
+    bool parseSubVolumeString(QString subVolumeString);
+    bool parseThresholdString(QString thresholdString);
+
 
 };
 
