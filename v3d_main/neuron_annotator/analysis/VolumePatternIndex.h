@@ -36,7 +36,8 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("    For mode index:                                                                                     \n");
         usage.append("                                                                                                        \n");
-        usage.append("     -inputList <list of stacks to index>                                                               \n");
+        usage.append("     -inputList <file with list of stacks to index, format=<file> [ <channel#> ] >                      \n");
+        usage.append("     -defaultChannelToIndex <channel number>                                                            \n");
         usage.append("     -outputIndex <index file>                                                                          \n");
         usage.append("     [ -unitSize <voxels per cube side> : default=10 ]                                                  \n");
         usage.append("     [ -threshold \"a b c\" : default a=6, b=20, c=50 , creates 4 scoring bins ]                        \n");
@@ -44,6 +45,7 @@ public:
         usage.append("    For mode search:                                                                                    \n");
         usage.append("                                                                                                        \n");
         usage.append("     -query <image volume to use as query>                                                              \n");
+        usage.append("     -queryChannel <channel number>                                                                     \n");
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
         usage.append("     [ -fast : search only using index, faster but less accurate ]                                      \n");
         usage.append("     [ -matrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 values for score matrix ]       \n");
@@ -62,16 +64,19 @@ private:
     QString modeString;
 
     QString inputFileListPath;
+    int defaultChannelToIndex;
     QString outputIndexFilePath;
     int unitSize;
     int* threshold;
 
     QString queryImageFilePath;
+    int queryChannel;
     int maxHits;
     bool fastSearch;
     float* matrix;
 
     QStringList indexFileList;
+    QList<int> indexChannelList;
 
     bool createSubVolume();
     bool createIndex();

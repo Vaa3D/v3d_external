@@ -64,39 +64,39 @@ public:
         usage.append("   -topLevelCompartmentMaskDir <dir path>                                                               \n");
         usage.append("   -outputResourceDir <resource dir path>                                                               \n");
         usage.append("   -flipYWhenLoadingMasks <true/false>                                                                  \n");
-	usage.append("                                                                                                        \n");
-	usage.append(" To generate an updated index file containing separate entries for a single unlabeled index:            \n");
-	usage.append("                                                                                                        \n");
-	usage.append("   -compartmentIndexFile <compartmentIndexFile>                                                         \n");
-	usage.append("   -compartmentNameIndexFile <compartmentNameIndexFile>                                                 \n");
-	usage.append("   -maskBinaryFile <mask binary file>                                                                   \n");
-	usage.append("   -outputIndexFile <output index file>                                                                 \n");
-	usage.append("   -outputNameIndexFile <output name index file>                                                        \n");
-	usage.append("   -outputRGBFile <output RGB file>                                                                     \n");
-	usage.append("                                                                                                        \n");
-	usage.append(" To generate a Mask Guide directory:                                                                    \n");
-	usage.append("                                                                                                        \n");
-	usage.append("   -inputNameIndexFile <name index file>                                                                \n");
-	usage.append("   -inputRGBFile <mask rgb file>                                                                        \n");
-	usage.append("   -outputMaskDirectory <directory path>                                                                \n");
-	usage.append("                                                                                                        \n");
-	usage.append(" To generate Arnim-style pattern annotation scores:                                                     \n");
-	usage.append("                                                                                                        \n");
+        usage.append("                                                                                                        \n");
+        usage.append(" To generate an updated index file containing separate entries for a single unlabeled index:            \n");
+        usage.append("                                                                                                        \n");
+        usage.append("   -compartmentIndexFile <compartmentIndexFile>                                                         \n");
+        usage.append("   -compartmentNameIndexFile <compartmentNameIndexFile>                                                 \n");
+        usage.append("   -maskBinaryFile <mask binary file>                                                                   \n");
+        usage.append("   -outputIndexFile <output index file>                                                                 \n");
+        usage.append("   -outputNameIndexFile <output name index file>                                                        \n");
+        usage.append("   -outputRGBFile <output RGB file>                                                                     \n");
+        usage.append("                                                                                                        \n");
+        usage.append(" To generate a Mask Guide directory:                                                                    \n");
+        usage.append("                                                                                                        \n");
+        usage.append("   -inputNameIndexFile <name index file>                                                                \n");
+        usage.append("   -inputRGBFile <mask rgb file>                                                                        \n");
+        usage.append("   -outputMaskDirectory <directory path>                                                                \n");
+        usage.append("                                                                                                        \n");
+        usage.append(" To generate Arnim-style pattern annotation scores:                                                     \n");
+        usage.append("                                                                                                        \n");
         usage.append("   -input <filepath for stack>                                                                          \n");
         usage.append("   -pattern_channel  <0-based channel index in stack for pattern channel>                               \n");
         usage.append("   -resourceDir <resource dir with compartment indices files>                                           \n");
         usage.append("   -arnimScoreOutputFile <output score file>                                                            \n");
-	usage.append("                                                                                                        \n");
-	usage.append(" To compute a similarity score on a set of 3D images:                                                   \n");
         usage.append("                                                                                                        \n");
-	usage.append("   -targetStack <filepath for target stack>                                                             \n");
-	usage.append("   -subjectStackList <filepath for subject stack list>                                                  \n");
-	usage.append("   -outputSimilarityList <sorted list of subject stacks with scores>                                    \n");
-	usage.append("                                                                                                        \n");
-	usage.append(" To convert a V1 colormap stack to V2:                                                                  \n");
-	usage.append("                                                                                                        \n");
-	usage.append("   -convertStackHeatmapV1ToV2 <input stack> <output stack>                                              \n");
-	usage.append("                                                                                                        \n");
+        usage.append(" To compute a similarity score on a set of 3D images:                                                   \n");
+        usage.append("                                                                                                        \n");
+        usage.append("   -targetStack <filepath for target stack>                                                             \n");
+        usage.append("   -subjectStackList <filepath for subject stack list>                                                  \n");
+        usage.append("   -outputSimilarityList <sorted list of subject stacks with scores>                                    \n");
+        usage.append("                                                                                                        \n");
+        usage.append(" To convert a V1 colormap stack to V2:                                                                  \n");
+        usage.append("                                                                                                        \n");
+        usage.append("   -convertStackHeatmapV1ToV2 <input stack> <output stack>                                              \n");
+        usage.append("                                                                                                        \n");
         return usage;
     }
 
@@ -105,12 +105,8 @@ public:
     int processArgs(vector<char*> *argList);
 
     My4DImage * create3DHeatmapFromChannel(My4DImage * sourceImage, V3DLONG sourceChannel, v3d_uint8 * lookupTable);
-
-    v3d_uint8 * create16Color8BitLUT();
     v3d_uint8 * create16Color8BitLUT_V2();
     v3d_uint8 * create16Color8BitLUT_V3();
-    v3d_uint8 * create16Color8BitLUT_fiji();
-    My4DImage * createMIPFromImageByLUT(My4DImage * image, v3d_uint8 * lut);
 
 private:
 
@@ -176,11 +172,8 @@ private:
     BoundingBox3D findBoundingBox3DFromIndex(int index);
     My4DImage * createSub3DImageFromMask(My4DImage * image, int index, BoundingBox3D bb);
     My4DImage * createNormalizedImage(My4DImage * image, int maskIndex);
-    My4DImage * createMIPFromImage(My4DImage * image);
 
-    My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, BoundingBox3D bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
     My4DImage * createViewableImage(My4DImage * sourceImage, int borderSize);
-    My4DImage * cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
     My4DImage * createCompositeMaskImage(My4DImage * sourceImage, My4DImage * indexImage);
     double * quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, BoundingBox3D bb);
     void addXYGhostPlaneFrom3DTo2D(My4DImage* stackImage, int zOffset, int stackChannel, My4DImage* image);
@@ -202,7 +195,6 @@ private:
     bool createSimilarityList();
     SortableStringDouble computeStackSimilarityManager(int stackIndex);
     double computeStackSimilarity(My4DImage* targetStack, My4DImage* subjectStack);
-    v3d_uint8 getReverse16ColorLUT(v3d_uint8 * lut, v3d_uint8 r, v3d_uint8 g, v3d_uint8 b);
     
     bool createV2Heatmap();
 };

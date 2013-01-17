@@ -83,6 +83,8 @@ VolumePatternIndex::VolumePatternIndex()
 {
     mode=MODE_UNDEFINED;
     fastSearch=false;
+    defaultChannelToIndex=-1;
+    queryChannel=-1;
 }
 
 VolumePatternIndex::~VolumePatternIndex()
@@ -109,6 +111,9 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             modeString=(*argList)[++i];
         } else if (arg=="-inputList") {
             inputFileListPath=(*argList)[++i];
+        } else if (arg=="-defaultChannelToIndex") {
+            QString defaultChannelToIndexString=(*argList)[++i];
+            defaultChannelToIndex=defaultChannelToIndexString.toInt();
         } else if (arg=="-outputIndex") {
             outputIndexFilePath=(*argList)[++i];
         } else if (arg=="-subVolume") {
@@ -128,6 +133,9 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             }
         } else if (arg=="-query") {
             queryImageFilePath=(*argList)[++i];
+        } else if (arg=="-queryChannel") {
+            QString queryChannelString=(*argList)[++i];
+            queryChannel=queryChannelString.toInt();
         } else if (arg=="-maxHits") {
             QString maxHitsString=(*argList)[++i];
             maxHits=maxHitsString.toInt();
@@ -145,6 +153,10 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             mode=MODE_INDEX;
         } else if (modeString=="search") {
             mode=MODE_SEARCH;
+            if (queryChannel==-1) {
+                qDebug() << "queryChannel must be defined";
+                return 0;
+            }
         }
     }
     return 0;
@@ -221,6 +233,20 @@ bool VolumePatternIndex::populateIndexFileList() {
     while(!indexFileListFile.atEnd()) {
         QString line=indexFileListFile.readLine();
         line=line.trimmed();
+        int channel=-1;
+        QRegExp splitRegex("\\s+");
+        QStringList fList=line.split(splitRegex);
+        if (fList.size()>1) {
+            channel=fList[1].toInt();
+        } else {
+            channel=defaultChannelToIndex;
+        }
+        if (channel<0) {
+            qDebug() << "Index channel not defined - must specify defaultChannelToIndex if channel not given";
+            return false;
+        } else {
+            indexChannelList.append(channel);
+        }
         QFileInfo fileInfo(line);
         if (!fileInfo.exists()) {
             qDebug() << "Could not verify that file=" << line << " exists";
