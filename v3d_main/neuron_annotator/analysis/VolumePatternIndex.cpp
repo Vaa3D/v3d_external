@@ -75,6 +75,13 @@ Qry    low         -1         1         1         0
 #include "VolumePatternIndex.h"
 #include "../utility/ImageLoader.h"
 
+const int DEFAULT_UNIT_SIZE = 10;
+const int DEFAULT_THRESHOLD_A = 6;
+const int DEFAULT_THRESHOLD_B = 20;
+const int DEFAULT_THRESHOLD_C = 50;
+const int DEFAULT_MAX_HITS = 100;
+const QString DEFAULT_MATRIX_STRING("0.0 -1.0 -2.0 -4.0 -1.0 1.0 1.0 0.0 -2.0 1.0 2.0 2.0 -4.0 0.0 2.0 4.0");
+
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
 const int VolumePatternIndex::MODE_SEARCH=1;

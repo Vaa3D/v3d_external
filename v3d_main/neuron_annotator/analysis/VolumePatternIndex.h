@@ -12,6 +12,12 @@ using namespace std;
 class VolumePatternIndex
 {
 public:
+    static const int DEFAULT_UNIT_SIZE;
+    static const int DEFAULT_THRESHOLD_A;
+    static const int DEFAULT_THRESHOLD_B;
+    static const int DEFAULT_THRESHOLD_C;
+    static const int DEFAULT_MAX_HITS;
+    static const QString DEFAULT_MATRIX_STRING;
 
     static const int MODE_UNDEFINED;
     static const int MODE_INDEX;
@@ -60,6 +66,7 @@ private:
 
     int mode;
     int x0,x1,y0,y1,z0,z1;
+    int iXmax, iYmax, iZmax;
 
     QString modeString;
 
