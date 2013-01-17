@@ -22,6 +22,7 @@ public:
     static const int CUBIFY_TYPE_MODE;
 
     AnalysisTools();
+    static My4DImage* cubifyImageByChannel(My4DImage * sourceImage, int sourceChannel, int cubeSize, int type, V3DLONG* subregion);
     static My4DImage* cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
     static My4DImage* getChannelSubImageFromMask(My4DImage * sourceImage, My4DImage* indexImage, int sourceChannel, int index, BoundingBox3D bb,
                                                                    bool normalize, double normalizationCutoff /* 0.0 - 1.0 */);

@@ -92,6 +92,10 @@ VolumePatternIndex::VolumePatternIndex()
     fastSearch=false;
     defaultChannelToIndex=-1;
     queryChannel=-1;
+    iXmax=-1;
+    iYmax=-1;
+    iZmax=-1;
+    x0=x1=y0=y1=z0=z1=-1;
 }
 
 VolumePatternIndex::~VolumePatternIndex()
@@ -268,15 +272,57 @@ bool VolumePatternIndex::populateIndexFileList() {
 bool VolumePatternIndex::createIndex()
 {
     qDebug() << "createIndex() start";
+    V3DLONG* subregion=new V3DLONG[6];
+
     if (!populateIndexFileList()) {
         qDebug() << "populateIndexFileList failed";
         return false;
     }
+    if (indexFileList.size()<1) {
+        qDebug() << "No files to index";
+        return false;
+    }
+    int fileIndex=0;
+    for (fileIndex=0;fileIndex<indexFileList.size();fileIndex++) {
+        My4DImage sourceImage;
+        ImageLoader loader;
+        if (!loader.loadImage(&sourceImage, indexFileList[fileIndex])) {
+            qDebug() << "Could not load file=" << indexFileList[fileIndex];
+            return false;
+        }
+        if (fileIndex==0 && x0==-1) {
+            // Then assume we are to use the first image to set the selection region
+            x0=0; x1=sourceImage.getXDim();
+            y0=0; y1=sourceImage.getYDim();
+            z0=0; z1=sourceImage.getZDim();
+            subregion[0]=x0;
+            subregion[1]=x1;
+            subregion[2]=y0;
+            subregion[3]=y1;
+            subregion[4]=z0;
+            subregion[5]=z1;
+        }
+        My4DImage* cubifiedImage=AnalysisTools::cubifyImageByChannel(&sourceImage, indexChannelList[fileIndex], unitSize, AnalysisTools::CUBIFY_TYPE_AVERAGE, subregion);
+        if (fileIndex==0) {
+            iXmax=cubifiedImage->getXDim();
+            iYmax=cubifiedImage->getYDim();
+            iZmax=cubifiedImage->getZDim();
+        } else {
+            if (cubifiedImage->getXDim()!=iXmax ||
+                cubifiedImage->getYDim()!=iYmax ||
+                cubifiedImage->getZDim()!=iZmax) {
+                qDebug() << "Cubified image " << indexFileList[fileIndex] << " dimensions do not match";
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 bool VolumePatternIndex::doSearch()
 {
     qDebug() << "doSearch() start";
+    return true;
 }
 
 
