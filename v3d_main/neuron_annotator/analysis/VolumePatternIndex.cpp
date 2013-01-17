@@ -79,14 +79,6 @@ const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
 const int VolumePatternIndex::MODE_SEARCH=1;
 
-class SleepThread : QThread {
-public:
-    SleepThread() {}
-    void msleep(int miliseconds) {
-        QThread::msleep(miliseconds);
-    }
-};
-
 VolumePatternIndex::VolumePatternIndex()
 {
     mode=MODE_UNDEFINED;
@@ -116,9 +108,9 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         if (arg=="-mode") {
             modeString=(*argList)[++i];
         } else if (arg=="-inputList") {
-            inputFileList=(*argList)[++i];
+            inputFileListPath=(*argList)[++i];
         } else if (arg=="-outputIndex") {
-            outputIndexFile=(*argList)[++i];
+            outputIndexFilePath=(*argList)[++i];
         } else if (arg=="-subVolume") {
             QString subVolumeString=(*argList)[++i];
             if (!parseSubVolumeString(subVolumeString)) {
@@ -135,12 +127,17 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
                 return 0;
             }
         } else if (arg=="-query") {
-            queryImageFile=(*argList)[++i];
+            queryImageFilePath=(*argList)[++i];
         } else if (arg=="-maxHits") {
             QString maxHitsString=(*argList)[++i];
             maxHits=maxHitsString.toInt();
         } else if (arg=="-fast") {
             fastSearch=true;
+        } else if (arg=="-matrix") {
+            QString matrixString=(*argList)[++i];
+            if (!parseMatrixString(matrixString)) {
+                qDebug() << "Could not parse matrix string=" << matrixString;
+            }
         }
     }
     if (modeString.size()>0) {
@@ -196,16 +193,57 @@ bool VolumePatternIndex::parseThresholdString(QString thresholdString) {
     }
 }
 
+bool VolumePatternIndex::parseMatrixString(QString matrixString) {
+    QRegExp splitRegex("\\s+");
+    QStringList mList=matrixString.split(splitRegex);
+    if (mList.size()!=16) {
+        for (int i=0;i<mList.size();i++) {
+            qDebug() << "i=" << i << " string=" << mList[i];
+        }
+        return false;
+    }
+    matrix=new float[16];
+    for (int i=0;i<16;i++) {
+        matrix[i]=mList[i].toFloat();
+    }
+}
+
 bool VolumePatternIndex::createSubVolume() {
     return true;
+}
+
+bool VolumePatternIndex::populateIndexFileList() {
+    QFile indexFileListFile(inputFileListPath);
+    if (!indexFileListFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Could not open file=" << inputFileListPath << " to read";
+        return false;
+    }
+    while(!indexFileListFile.atEnd()) {
+        QString line=indexFileListFile.readLine();
+        line=line.trimmed();
+        QFileInfo fileInfo(line);
+        if (!fileInfo.exists()) {
+            qDebug() << "Could not verify that file=" << line << " exists";
+            return false;
+        }
+        qDebug() << "Verified " << line << " exists";
+        indexFileList.append(line);
+    }
+    indexFileListFile.close();
 }
 
 bool VolumePatternIndex::createIndex()
 {
     qDebug() << "createIndex() start";
+    if (!populateIndexFileList()) {
+        qDebug() << "populateIndexFileList failed";
+        return false;
+    }
 }
 
 bool VolumePatternIndex::doSearch()
 {
     qDebug() << "doSearch() start";
 }
+
+

@@ -6,19 +6,11 @@
 #include <QDir>
 #include "../../v3d/v3d_core.h"
 #include "../../v3d/histogramsimple.h"
+#include "SleepThread.h"
+#include "AnalysisTools.h"
 
 using namespace std;
 
-class SPA_BoundingBox
-{
-public:
-    int x0;
-    int x1;
-    int y0;
-    int y1;
-    int z0;
-    int z1;
-};
 
 class SortableStringDouble
 {
@@ -181,16 +173,16 @@ private:
     int getIndexFromCompartmentMaskFilename(QString filename);
     QString getAbbreviationFromCompartmentMaskFilename(QString filename);
     void createCompartmentAnnotation(int index, QString abbreviation);
-    SPA_BoundingBox findBoundingBoxFromIndex(int index);
-    My4DImage * createSub3DImageFromMask(My4DImage * image, int index, SPA_BoundingBox bb);
+    BoundingBox3D findBoundingBox3DFromIndex(int index);
+    My4DImage * createSub3DImageFromMask(My4DImage * image, int index, BoundingBox3D bb);
     My4DImage * createNormalizedImage(My4DImage * image, int maskIndex);
     My4DImage * createMIPFromImage(My4DImage * image);
 
-    My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
+    My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, BoundingBox3D bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
     My4DImage * createViewableImage(My4DImage * sourceImage, int borderSize);
     My4DImage * cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
     My4DImage * createCompositeMaskImage(My4DImage * sourceImage, My4DImage * indexImage);
-    double * quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
+    double * quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, BoundingBox3D bb);
     void addXYGhostPlaneFrom3DTo2D(My4DImage* stackImage, int zOffset, int stackChannel, My4DImage* image);
     bool createOutputDirTree();
     QString getOutputSubdirectory(QString dirName);
@@ -204,7 +196,7 @@ private:
     My4DImage * createMaskIndexGhostImage(My4DImage * rgbSourceMask, int maskIndex, QList<int> redList, QList<int> greenList, QList<int> blueList);
 
     bool arnimScore();
-    int * quantifyArnimCompartmentScores(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
+    int * quantifyArnimCompartmentScores(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, BoundingBox3D bb);
     bool loadCompartmentIndex();
 
     bool createSimilarityList();

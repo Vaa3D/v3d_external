@@ -5,6 +5,7 @@
 #include <QtCore>
 #include <QDir>
 #include "../../v3d/v3d_core.h"
+#include "AnalysisTools.h"
 
 using namespace std;
 
@@ -60,22 +61,25 @@ private:
 
     QString modeString;
 
-    QString inputFileList;
-    QString outputIndexFile;
+    QString inputFileListPath;
+    QString outputIndexFilePath;
     int unitSize;
     int* threshold;
 
-    QString queryImageFile;
+    QString queryImageFilePath;
     int maxHits;
     bool fastSearch;
     float* matrix;
+
+    QStringList indexFileList;
 
     bool createSubVolume();
     bool createIndex();
     bool doSearch();
     bool parseSubVolumeString(QString subVolumeString);
     bool parseThresholdString(QString thresholdString);
-
+    bool populateIndexFileList();
+    bool parseMatrixString(QString matrixString);
 
 };
 

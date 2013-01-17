@@ -26,13 +26,7 @@ const QString MIPS_SUBDIR("mips");
 const QString SUPPORTING_SUBDIR("supportingFiles");
 const QString NORMALIZED_SUBDIR("normalized");
 
-class SleepThread : QThread {
-public:
-    SleepThread() {}
-    void msleep(int miliseconds) {
-        QThread::msleep(miliseconds);
-    }
-};
+
 
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
@@ -956,7 +950,7 @@ My4DImage * ScreenPatternAnnotator::createCompositeMaskImage(My4DImage * sourceI
 
 void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbreviation) {
 
-    SPA_BoundingBox bb=findBoundingBoxFromIndex(index);
+    BoundingBox3D bb=findBoundingBox3DFromIndex(index);
     qDebug() << "Bounding box for " << abbreviation << " = " << bb.x0 << " " << bb.x1 << " " << bb.y0 << " " << bb.y1 << " " << bb.z0 << " " << bb.z1;
 
     My4DImage * compartmentHeatmap=createSub3DImageFromMask(imageGlobal16ColorImage, index, bb);
@@ -1030,7 +1024,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
         quantifierList.append(gLine);
     }
 
-    SPA_BoundingBox cubeBB;
+    BoundingBox3D cubeBB;
     cubeBB.x0 = bb.x0/CUBE_SIZE;
     cubeBB.x1 = bb.x1/CUBE_SIZE;
     cubeBB.y0 = bb.y0/CUBE_SIZE;
@@ -1053,7 +1047,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     delete [] compartmentCubeZoneFractions;
 }
 
-double * ScreenPatternAnnotator::quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb) {
+double * ScreenPatternAnnotator::quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, BoundingBox3D bb) {
 
     V3DLONG cz[5];
     for (int z=0;z<5;z++) {
@@ -1174,7 +1168,7 @@ My4DImage * ScreenPatternAnnotator::createViewableImage(My4DImage * sourceImage,
     return targetImage;
 }
 
-My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb,
+My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, BoundingBox3D bb,
                                                                bool normalize, double normalizationCutoff /* 0.0 - 1.0 */) {
 
     V3DLONG xmax=compartmentIndexImage->getXDim();
@@ -1360,7 +1354,7 @@ My4DImage * ScreenPatternAnnotator::createNormalizedImage(My4DImage * sourceImag
 }
 
 // Here we will iterate through the mask and add the corresponding
-My4DImage * ScreenPatternAnnotator::createSub3DImageFromMask(My4DImage * sourceImage, int index, SPA_BoundingBox bb) {
+My4DImage * ScreenPatternAnnotator::createSub3DImageFromMask(My4DImage * sourceImage, int index, BoundingBox3D bb) {
 
     V3DLONG xmax=compartmentIndexImage->getXDim();
     V3DLONG ymax=compartmentIndexImage->getYDim();
@@ -1406,7 +1400,7 @@ My4DImage * ScreenPatternAnnotator::createSub3DImageFromMask(My4DImage * sourceI
 }
 
 // This method determines the bounding box for the given compartment index
-SPA_BoundingBox ScreenPatternAnnotator::findBoundingBoxFromIndex(int index) {
+BoundingBox3D ScreenPatternAnnotator::findBoundingBox3DFromIndex(int index) {
     V3DLONG xmax=compartmentIndexImage->getXDim();
     V3DLONG ymax=compartmentIndexImage->getYDim();
     V3DLONG zmax=compartmentIndexImage->getZDim();
@@ -1453,7 +1447,7 @@ SPA_BoundingBox ScreenPatternAnnotator::findBoundingBoxFromIndex(int index) {
             }
         }
     }
-    SPA_BoundingBox bb;
+    BoundingBox3D bb;
     bb.x0=x0;
     bb.x1=x1;
     bb.y0=y0;
@@ -1908,7 +1902,7 @@ bool ScreenPatternAnnotator::arnimScore()
   for (int k=0;k<compartmentIndexList.size();k++) {
     int index=compartmentIndexList.at(k);
     QString abbreviation=compartmentIndexAbbreviationMap[index];
-    SPA_BoundingBox bb=findBoundingBoxFromIndex(index);
+    BoundingBox3D bb=findBoundingBox3DFromIndex(index);
     int * arnimScores = quantifyArnimCompartmentScores(inputImage, compartmentIndexImage, index, bb);
     int a1=arnimScores[0];
     int a2=arnimScores[1];
@@ -1982,7 +1976,7 @@ This script crops and generates histogram statistics on each mask.
 
 */
 
-int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb){
+int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, BoundingBox3D bb){
 
   // Initialize threshold values
   v3d_uint8 threshold[3];

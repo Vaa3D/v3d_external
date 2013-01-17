@@ -2045,3 +2045,7 @@ v3d_main/neuron_annotator/data_model/StagedFileLoader.h
 v3d_main/neuron_annotator/data_model/StagedFileLoader.cpp
 v3d_main/neuron_annotator/analysis/VolumePatternIndex.h
 v3d_main/neuron_annotator/analysis/VolumePatternIndex.cpp
+v3d_main/neuron_annotator/analysis/AnalysisTools.h
+v3d_main/neuron_annotator/analysis/AnalysisTools.cpp
+v3d_main/neuron_annotator/analysis/SleepThread.h
+v3d_main/neuron_annotator/analysis/SleepThread.cpp
