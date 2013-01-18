@@ -35,9 +35,11 @@ public slots:
 private slots:
     void updateDir(const QString &dir);
     void getMaskDir();
+    void setThreshold(int threshold);
 
 public:
-    QString maskfolder;
+    QString m_maskfolder;
+    double m_threshold;
 
     QLabel* label_mask;
     QLineEdit *edit_mask;
@@ -51,6 +53,9 @@ public:
 
     QScrollArea * scrollAreaEdit;
     QScrollArea * scrollAreaMask;
+
+    QLabel *label_threshold;
+    QSlider *slider_threshold;
 
     QLabel *label_select;
     QPushButton *button_select;

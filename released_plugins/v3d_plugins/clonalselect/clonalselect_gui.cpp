@@ -67,13 +67,13 @@ ColonalSelectWidget::ColonalSelectWidget(V3DPluginCallback &callback, QWidget *p
     // clonal masks
     label_mask = new QLabel(QObject::tr("Clonal mask directory: "));
 
-    maskfolder = QString();
+    m_maskfolder = QString();
     QSettings settings("ClonalSelect", "dir");
-    maskfolder = settings.value("path").toString();
+    m_maskfolder = settings.value("path").toString();
 
-    if(!maskfolder.isEmpty() && QDir(maskfolder).exists())
+    if(!m_maskfolder.isEmpty() && QDir(m_maskfolder).exists())
     {
-        edit_mask = new QLineEdit(maskfolder);
+        edit_mask = new QLineEdit(m_maskfolder);
     }
     else
     {
@@ -88,8 +88,15 @@ ColonalSelectWidget::ColonalSelectWidget(V3DPluginCallback &callback, QWidget *p
 
     listWidget = new QListWidget();
 
-    updateDir(maskfolder);
+    updateDir(m_maskfolder);
 
+    // threshold
+    slider_threshold = new QSlider(Qt::Horizontal);
+    slider_threshold->setTickPosition(QSlider::TicksBothSides);
+    slider_threshold->setMinimum(0); slider_threshold->setMaximum(100);
+    slider_threshold->setValue(10);
+    m_threshold = 0.1;
+    label_threshold = new QLabel(QObject::tr("Threshold:\t%1").arg(m_threshold));
 
     // select button
     label_select = new QLabel(QObject::tr("Annotation: "));
@@ -109,15 +116,19 @@ ColonalSelectWidget::ColonalSelectWidget(V3DPluginCallback &callback, QWidget *p
     settingGroupLayout->addWidget(label_cmlist, 2,0);
     settingGroupLayout->addWidget(listWidget, 2,1);
 
-    settingGroupLayout->addWidget(label_select, 3,0);
-    settingGroupLayout->addWidget(button_select, 3,1,1,1);
+    settingGroupLayout->addWidget(label_threshold, 3,0);
+    settingGroupLayout->addWidget(slider_threshold, 3,1);
+
+    settingGroupLayout->addWidget(label_select, 4,0);
+    settingGroupLayout->addWidget(button_select, 4,1);
 
     setLayout(settingGroupLayout);
     setWindowTitle(QString("Clonal Selecting"));
 
     // signal and slot
     connect(pb_browse_mask, SIGNAL(clicked()), this, SLOT(getMaskDir()));
-    connect(edit_mask, SIGNAL(textChanged(QString)), this, SLOT(updateDir(QString)) );
+    connect(edit_mask, SIGNAL(textChanged(QString)), this, SLOT(updateDir(QString)));
+    connect(slider_threshold, SIGNAL(valueChanged(int)), this, SLOT(setThreshold(int)));
     connect(button_select, SIGNAL(clicked()), this, SLOT(update())); //
 
 }
@@ -136,27 +147,27 @@ void ColonalSelectWidget::update()
 
 void ColonalSelectWidget::getMaskDir()
 {
-    if(!maskfolder.isEmpty() && QDir(maskfolder).exists())
+    if(!m_maskfolder.isEmpty() && QDir(m_maskfolder).exists())
     {
-        maskfolder = QFileDialog::getExistingDirectory(0, QObject::tr("Choose the directory containing all clonal masks "),
-                                                       maskfolder,
-                                                       QFileDialog::ShowDirsOnly);
+        m_maskfolder = QFileDialog::getExistingDirectory(0, QObject::tr("Choose the directory containing all clonal masks "),
+                                                         m_maskfolder,
+                                                         QFileDialog::ShowDirsOnly);
     }
     else
     {
-        maskfolder = QFileDialog::getExistingDirectory(0, QObject::tr("Choose the directory containing all clonal masks "),
-                                                       QDir::currentPath(),
-                                                       QFileDialog::ShowDirsOnly);
+        m_maskfolder = QFileDialog::getExistingDirectory(0, QObject::tr("Choose the directory containing all clonal masks "),
+                                                         QDir::currentPath(),
+                                                         QFileDialog::ShowDirsOnly);
     }
-    edit_mask->setText(maskfolder);
+    edit_mask->setText(m_maskfolder);
 }
 
 void ColonalSelectWidget::updateDir(const QString &dir)
 {
     if(QDir(dir).exists())
     {
-        maskfolder = dir;
-        cmFileList = importSeriesFileList(maskfolder, "*.pcd");
+        m_maskfolder = dir;
+        cmFileList = importSeriesFileList(m_maskfolder, "*.pcd");
 
         foreach (QString cmFile, cmFileList)
         {
@@ -182,9 +193,17 @@ void ColonalSelectWidget::updateDir(const QString &dir)
             }
 
             QSettings settings("ClonalSelect", "dir");
-            settings.setValue("path", maskfolder);
+            settings.setValue("path", m_maskfolder);
         }
     }
+}
+
+void ColonalSelectWidget::setThreshold(int threshold)
+{
+    threshold = slider_threshold->value();
+    m_threshold = (double)threshold/100.0;
+
+    label_threshold->setText(QString("Threshold:\t%1").arg(m_threshold));
 }
 
 #endif // __CLONALSELECT_GUI_CPP__
