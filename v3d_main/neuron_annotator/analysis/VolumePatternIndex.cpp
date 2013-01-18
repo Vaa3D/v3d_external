@@ -19,7 +19,8 @@
 
   3. Bitwidth of Index
 
-  There are four thresholds used to partition the data: (with sample values)
+  There are three thresholds used to partition the data into 4 regions:
+     (with sample values) 6, 20, 50:
 
   0 - empty [0-5]
   1 - low [6-19]
@@ -88,6 +89,7 @@ const int VolumePatternIndex::MODE_SEARCH=1;
 
 VolumePatternIndex::VolumePatternIndex()
 {
+    fid=0;
     mode=MODE_UNDEFINED;
     fastSearch=false;
     defaultChannelToIndex=-1;
@@ -201,7 +203,7 @@ bool VolumePatternIndex::parseSubVolumeString(QString subVolumeString) {
 bool VolumePatternIndex::parseThresholdString(QString thresholdString) {
     QRegExp splitRegex("\\s+");
     QStringList tList=thresholdString.split(splitRegex);
-    if (tList.size()!=4) {
+    if (tList.size()!=3) {
         if (tList.size()>0) {
             for (int i=0;i<tList.size();i++) {
                 qDebug() << "i=" << i << " string=" << tList[i];
@@ -209,8 +211,8 @@ bool VolumePatternIndex::parseThresholdString(QString thresholdString) {
         }
         return false;
     }
-    // For now we expect 4 positions
-    threshold=new int[4];
+    // For now we expect 3 positions
+    threshold=new int[3];
     for (int i=0;i<tList.size();i++) {
         threshold[i]=tList[i].toInt();
     }
@@ -315,8 +317,104 @@ bool VolumePatternIndex::createIndex()
                 return false;
             }
         }
+        // Next, we will walk through the image and gradually populate a binary structure with the scores.
+        V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
+        // We can store 4 2-bit values per 8-bit byte, so these are the number of bytes we need:
+        V3DLONG indexTotalBytes=ceil((cubifiedTotal*1.0)/4.0);
+        unsigned char* indexData=new unsigned char[indexTotalBytes];
+        V3DLONG indexPosition=0;
+        int bytePosition=0;
+        v3d_uint8* cubifiedData=cubifiedImage->getRawDataAtChannel(0);
+        for (V3DLONG z=0;z<iZmax;z++) {
+            V3DLONG zoffset=z*iYmax*iXmax;
+            for (V3DLONG y=0;y<iYmax;y++) {
+                V3DLONG yoffset=zoffset+y*iXmax;
+                for (V3DLONG x=0;x<iXmax;x++) {
+                    V3DLONG offset=yoffset+x;
+                    v3d_uint8 value=cubifiedData[offset];
+                    if (bytePosition>3) {
+                        bytePosition=0;
+                        indexPosition++;
+                        if (indexPosition>=indexTotalBytes) {
+                            qDebug() << "Exceeded indexTotalBytes at z=" << z << " y=" << y << " x=" << x;
+                            return false;
+                        }
+                    }
+                    unsigned char* currentByte = indexData + indexPosition;
+                    if (bytePosition==0) {
+                        // As we begin populating a byte, clear it first
+                        *currentByte=0;
+                    }
+                    // 0=00000000
+                    // 1=00000001
+                    // 2=00000010
+                    // 3=00000011
+                    if (*currentByte<threshold[0]) {
+                        // leave as zero
+                    } else if (*currentByte<threshold[1]) {
+                        *currentByte |= 1;
+                    } else if (*currentByte<threshold[2]) {
+                        *currentByte |= 2;
+                    } else {
+                        *currentByte |= 3;
+                    }
+                    if (bytePosition<3) {
+                        *currentByte <<= 2;
+                    }
+                    bytePosition++;
+                }
+            }
+        }
+        if (fileIndex==0) {
+            if (!openIndexAndWriteHeader()) {
+                qDebug() << "Could not open index file and write header";
+                return false;
+            }
+        }
+
+//            V3DLONG i;
+
+//            fid = fopen(filename, "wb");
+//            if (!fid)
+//            {
+//                return exitWithError("Fail to open file for writing");
+//            }
+
+//            /* Write header */
+//                             // raw_image_stack_by_hpeng
+//            char formatkey[] = "v3d_volume_pkbitdf_encod";
+//            int lenkey = strlen(formatkey);
+
+//            V3DLONG nwrite = fwrite(formatkey, 1, lenkey, fid);
+//            if (nwrite!=lenkey)
+//            {
+//                return exitWithError("File write error");
+//            }
+
+
     }
     return true;
+}
+
+bool VolumePatternIndex::openIndexAndWriteHeader() {
+    fid=fopen(outputIndexFilePath.toAscii().data(), "wb");
+    if (!fid) {
+        qDebug() << "Could not open file=" << outputIndexFilePath << " to write";
+        return false;
+    }
+
+    // First, we have to characterize the parameters of the index, so that compatibility
+    // with the query can be checked.
+
+
+
+
+
+    // Next, write the number of index files
+    int numIndexFiles=indexFileList.size();
+    fwrite(&numIndexFiles, sizeof(int), 1, fid);
+
+
 }
 
 bool VolumePatternIndex::doSearch()

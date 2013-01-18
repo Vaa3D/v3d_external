@@ -63,6 +63,7 @@ public:
     int processArgs(vector<char*> *argList);
 
 private:
+    FILE* fid;
 
     int mode;
     int x0,x1,y0,y1,z0,z1;
@@ -92,6 +93,7 @@ private:
     bool parseThresholdString(QString thresholdString);
     bool populateIndexFileList();
     bool parseMatrixString(QString matrixString);
+    bool openIndexAndWriteHeader();
 
 };
 
