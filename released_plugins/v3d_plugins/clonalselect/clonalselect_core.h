@@ -22,6 +22,8 @@ using std::ifstream;
 //
 /// basic funcs copied from y_img.h
 //
+
+// delete 1d pointer
 template <class T>
 void y_del(T *&p)
 {
@@ -35,6 +37,28 @@ void y_del2(T1 *&p1, T2 *&p2)
 {
     y_del<T1>(p1);
     y_del<T2>(p2);
+    return;
+}
+
+// new 1d pointer
+template<class T, class Tidx>
+void y_new(T *&p, Tidx N)
+{
+    //
+    y_del<T>(p);
+
+    //
+    try
+    {
+        p = new T [N];
+        for(Tidx i=0; i<N; i++) p[i] = 0;
+    }
+    catch(...)
+    {
+        cout<<"Attempt to allocate memory failed!"<<endl;
+        y_del<T>(p);
+        return;
+    }
     return;
 }
 
@@ -102,6 +126,7 @@ public:
 public:
     PCDHeader<unsigned short, long> pcdheadinfo;
     vector< Point<unsigned short, unsigned short> > points;
+    double thresh;
 };
 
 

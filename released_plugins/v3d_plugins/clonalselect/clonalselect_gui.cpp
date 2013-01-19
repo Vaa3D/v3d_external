@@ -38,20 +38,23 @@ QStringList importSeriesFileList(const QString & curFilePath, char* suffix)
 ColonalSelectWidget::ColonalSelectWidget(V3DPluginCallback &callback, QWidget *parentWidget)
 {
     //
+    m_callback = &callback;
+
+    //
     /// create a dialog
     //
 
     // image
-    v3dhandleList winlist = callback.getImageWindowList();
+    m_winlist = callback.getImageWindowList();
 
     v3dhandle wincurr = callback.currentImageWindow(); // focused image
     QString itemcurr = callback.getImageName(wincurr);
     int idxcurr = 0;
 
     QStringList items;
-    for (int i=0; i<winlist.size(); i++)
+    for (int i=0; i<m_winlist.size(); i++)
     {
-        QString item = callback.getImageName(winlist[i]);
+        QString item = callback.getImageName(m_winlist[i]);
 
         items << item;
 
@@ -129,20 +132,186 @@ ColonalSelectWidget::ColonalSelectWidget(V3DPluginCallback &callback, QWidget *p
     connect(pb_browse_mask, SIGNAL(clicked()), this, SLOT(getMaskDir()));
     connect(edit_mask, SIGNAL(textChanged(QString)), this, SLOT(updateDir(QString)));
     connect(slider_threshold, SIGNAL(valueChanged(int)), this, SLOT(setThreshold(int)));
-    connect(button_select, SIGNAL(clicked()), this, SLOT(update())); //
+    connect(button_select, SIGNAL(clicked()), this, SLOT(selectClonal())); //
 
 }
 
 void ColonalSelectWidget::update()
 {
+    m_winlist = m_callback->getImageWindowList();
+}
 
-    for(int i = 0; i<listWidget->count(); i++)
+void ColonalSelectWidget::selectClonal()
+{
+    //
+    if(!cmFileList.empty())
     {
-        if(listWidget->item(i)->checkState())
+        if(m_cmList.empty())
         {
-            qDebug()<<"checked "<<i<<cmNameList.at(i)<<cmFileList.at(i);
+            // load clonal masks
+            for(int i = 0; i<cmFileList.count(); i++)
+            {
+                PointClouds pc;
+
+                if(pc.read(cmFileList.at(i).toStdString()))
+                {
+                    cout << "Error in reading "<< cmFileList.at(i).toStdString().c_str() <<endl;
+                    return;
+                }
+
+                m_cmList.push_back(pc);
+            }
+        }
+        else
+        {
+            // check the m_cmList is the same with cmFileList
+            // if not, reload clonal masks
+
+        }
+
+        //
+        /// selecting
+        //
+
+        // subject image
+        int curImg = combo_subject->currentIndex();
+        Image4DSimple* subject = m_callback->getImage(m_winlist[curImg]);
+
+        QString curImgName = m_callback->getImageName(m_winlist[curImg]);
+
+        QString curImgNamePath=QFileInfo(curImgName).path();
+        QString curImgNameBase = QFileInfo(curImgName).baseName();
+        QString outImgNameSelected = curImgNamePath + "/" + curImgNameBase + "_selected.v3draw";
+        QString outImgNameResidue = curImgNamePath + "/" + curImgNameBase + "_residue.v3draw";
+
+        if (!subject)
+        {
+            QMessageBox::information(0, "Clonal Selecting", QObject::tr("Invalid image specified."));
+            return;
+        }
+
+        ImagePixelType datatype_subject = subject->getDatatype();
+
+        if(datatype_subject!=1)
+        {
+            cout<<"Your datatype is not supported"<<endl;
+            return;
+        }
+
+        unsigned char* subject1d = subject->getRawData();
+
+        V3DLONG sx = subject->getXDim();
+        V3DLONG sy = subject->getYDim();
+        V3DLONG sz = subject->getZDim();
+        V3DLONG sc = subject->getCDim();
+
+        bool b_select = false;
+        unsigned char* pSel = NULL;
+        unsigned char* pRes = NULL;
+
+        V3DLONG sc_out = 2; // assuming only computing in the first 2 signals
+
+        V3DLONG pagesz = sx*sy*sz;
+        V3DLONG tolpxl = pagesz*sc;
+
+        for(int i = 0; i<listWidget->count(); i++)
+        {
+            if(listWidget->item(i)->checkState())
+            {
+                b_select = true;
+
+                if(!pSel)
+                {
+                    y_new<unsigned char, V3DLONG>(pSel,tolpxl);
+                }
+
+                if(!pRes)
+                {
+                    y_new<unsigned char, V3DLONG>(pRes,tolpxl);
+                }
+
+                PointClouds pc;
+
+                pc = m_cmList.at(i);
+
+                double threshold = m_threshold * (double)(pc.pcdheadinfo.maxv);
+
+                for(long k=0; k<pc.points.size(); k++)
+                {
+                    Point<unsigned short, unsigned short> p = pc.points.at(k);
+
+                    if(p.x<sx && p.y<sy && p.z<sz && p.v>threshold)
+                    {
+                        V3DLONG idx = p.z*sx*sy + p.y*sx + p.x;
+
+                        for(long c=0; c<sc_out; c++)
+                        {
+                            pSel[ idx ] = subject1d[ idx ];
+                            pSel[ idx + pagesz] = subject1d[ idx + pagesz];
+                        }
+                    }
+                }
+            }
+        }
+
+        if(!b_select)
+        {
+            // do nothing
+            cout << "None select"<<endl;
+        }
+        else
+        {
+            // computing residue
+            for(V3DLONG c=0; c<sc_out; c++)
+            {
+                V3DLONG offsets = c*pagesz;
+                for(V3DLONG i=0; i<pagesz; i++)
+                {
+                    V3DLONG idx = offsets + i;
+
+                    if(!pSel[idx])
+                    {
+                        pRes[idx] = subject1d[idx];
+                    }
+                }
+            }
+
+            for(V3DLONG c=sc_out; c<sc; c++)
+            {
+                V3DLONG offsets = c*pagesz;
+                for(V3DLONG i=0; i<pagesz; i++)
+                {
+                    V3DLONG idx = offsets + i;
+
+                    pSel[idx] = pRes[idx] = subject1d[idx];
+                }
+            }
+
+
+            // display
+            Image4DSimple p4DImgSel;
+            p4DImgSel.setData((unsigned char*)pSel, sx, sy, sz, sc, subject->getDatatype()); //
+
+            v3dhandle newwin = m_callback->newImageWindow();
+            m_callback->setImage(newwin, &p4DImgSel);
+            m_callback->setImageName(newwin, outImgNameSelected);
+            m_callback->updateImageWindow(newwin);
+
+            Image4DSimple p4DImgRes;
+            p4DImgRes.setData((unsigned char*)pRes, sx, sy, sz, sc, subject->getDatatype()); //
+
+            v3dhandle newwinRes = m_callback->newImageWindow();
+            m_callback->setImage(newwinRes, &p4DImgRes);
+            m_callback->setImageName(newwinRes, outImgNameResidue);
+            m_callback->updateImageWindow(newwinRes);
+
         }
     }
+    else
+    {
+        cout<<"Do nothing!";
+    }
+
 }
 
 void ColonalSelectWidget::getMaskDir()

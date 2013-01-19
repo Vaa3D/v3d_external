@@ -15,6 +15,8 @@
 #include <time.h>
 #include <v3d_interface.h>
 
+#include "clonalselect_core.h"
+
 //
 QStringList importSeriesFileList(const QString & curFilePath, char* suffix);
 
@@ -36,10 +38,14 @@ private slots:
     void updateDir(const QString &dir);
     void getMaskDir();
     void setThreshold(int threshold);
+    void selectClonal();
 
 public:
     QString m_maskfolder;
     double m_threshold;
+    V3DPluginCallback *m_callback;
+    vector<PointClouds> m_cmList;
+    v3dhandleList m_winlist;
 
     QLabel* label_mask;
     QLineEdit *edit_mask;

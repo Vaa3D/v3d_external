@@ -200,41 +200,6 @@ int clonalselecting(V3DPluginCallback2 &callback, QWidget *parent)
         csw->show();
     }
 
-
-//    ColonalSelectWidget cs(callback, parent);
-//    if (dialog.exec()!=QDialog::Accepted)
-//        return -1;
-
-//    dialog.update();
-
-//    int i1 = dialog.combo_subject->currentIndex();
-//    int i2 = dialog.combo_target->currentIndex();
-
-//    V3DLONG sub_c = dialog.sub_c-1;
-//    V3DLONG tar_c = dialog.tar_c-1;
-
-//    REAL overlap_percent = dialog.overlap;
-
-//    bool axes_show = dialog.axes_show; // 20100615
-
-//    REAL *scale = new REAL [6];
-
-//    scale[0] = dialog.scale_x;
-//    scale[1] = dialog.scale_y;
-//    scale[2] = dialog.scale_z;
-//    scale[3] = 1;
-//    scale[4] = 1;
-//    scale[5] = 1;
-
-//    Image4DSimple* subject = callback.getImage(win_list[i1]);
-//    Image4DSimple* target = callback.getImage(win_list[i2]);
-
-//    QString m_InputFileName[2];
-//    m_InputFileName[0] = callback.getImageName(win_list[i1]);
-//    m_InputFileName[1] = callback.getImageName(win_list[i2]);
-
-
-
     //
     return 0;
 }

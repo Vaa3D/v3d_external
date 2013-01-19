@@ -13,7 +13,7 @@
 /// point clouds class
 //
 
-PointClouds::PointClouds(){}
+PointClouds::PointClouds(){thresh=0.1;}
 PointClouds::~PointClouds(){}
 
 //
