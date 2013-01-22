@@ -76,6 +76,8 @@ Qry    low         -1         1         1         0
 #include "VolumePatternIndex.h"
 #include "../utility/ImageLoader.h"
 
+const int FILENAME_BUFFER_SIZE = 2000;
+
 const int DEFAULT_UNIT_SIZE = 10;
 const int DEFAULT_THRESHOLD_A = 6;
 const int DEFAULT_THRESHOLD_B = 20;
@@ -127,8 +129,8 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         } else if (arg=="-defaultChannelToIndex") {
             QString defaultChannelToIndexString=(*argList)[++i];
             defaultChannelToIndex=defaultChannelToIndexString.toInt();
-        } else if (arg=="-outputIndex") {
-            outputIndexFilePath=(*argList)[++i];
+        } else if (arg=="-indexFile") {
+            indexFilePath=(*argList)[++i];
         } else if (arg=="-subVolume") {
             QString subVolumeString=(*argList)[++i];
             if (!parseSubVolumeString(subVolumeString)) {
@@ -285,12 +287,15 @@ bool VolumePatternIndex::createIndex()
         return false;
     }
     int fileIndex=0;
+    unsigned char* indexData=0L;
     for (fileIndex=0;fileIndex<indexFileList.size();fileIndex++) {
         My4DImage sourceImage;
         ImageLoader loader;
         if (!loader.loadImage(&sourceImage, indexFileList[fileIndex])) {
             qDebug() << "Could not load file=" << indexFileList[fileIndex];
             return false;
+        } else {
+            qDebug() << "Processing " << indexFileList[fileIndex];
         }
         if (fileIndex==0 && x0==-1) {
             // Then assume we are to use the first image to set the selection region
@@ -321,7 +326,12 @@ bool VolumePatternIndex::createIndex()
         V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
         // We can store 4 2-bit values per 8-bit byte, so these are the number of bytes we need:
         V3DLONG indexTotalBytes=ceil((cubifiedTotal*1.0)/4.0);
-        unsigned char* indexData=new unsigned char[indexTotalBytes];
+        if (indexData==0L) {
+            indexData=new unsigned char[indexTotalBytes];
+        }
+        for (int j=0;j<indexTotalBytes;j++) {
+            indexData[j]=0;
+        }
         V3DLONG indexPosition=0;
         int bytePosition=0;
         v3d_uint8* cubifiedData=cubifiedImage->getRawDataAtChannel(0);
@@ -371,55 +381,143 @@ bool VolumePatternIndex::createIndex()
                 return false;
             }
         }
-
-//            V3DLONG i;
-
-//            fid = fopen(filename, "wb");
-//            if (!fid)
-//            {
-//                return exitWithError("Fail to open file for writing");
-//            }
-
-//            /* Write header */
-//                             // raw_image_stack_by_hpeng
-//            char formatkey[] = "v3d_volume_pkbitdf_encod";
-//            int lenkey = strlen(formatkey);
-
-//            V3DLONG nwrite = fwrite(formatkey, 1, lenkey, fid);
-//            if (nwrite!=lenkey)
-//            {
-//                return exitWithError("File write error");
-//            }
-
-
+        fwrite(indexData, sizeof(unsigned char), indexTotalBytes, fid);
     }
+    fclose(fid);
+    fid=0;
     return true;
 }
 
 bool VolumePatternIndex::openIndexAndWriteHeader() {
-    fid=fopen(outputIndexFilePath.toAscii().data(), "wb");
+    fid=fopen(indexFilePath.toAscii().data(), "wb");
     if (!fid) {
-        qDebug() << "Could not open file=" << outputIndexFilePath << " to write";
+        qDebug() << "Could not open file=" << indexFilePath << " to write";
         return false;
     }
 
     // First, we have to characterize the parameters of the index, so that compatibility
     // with the query can be checked.
 
+    // The parameters of the index are:
+    //    a) the original size (before creating cubic index)
+    //    b) the unit size (for creating the index)
+    //    c) the thresholds (number and values)
 
+    // 1. Image Size
 
+    int xSize=x1-x0;
+    int ySize=y1-y0;
+    int zSize=z1-z0;
 
+    fwrite(&xSize, sizeof(int), 1, fid);
+    fwrite(&ySize, sizeof(int), 1, fid);
+    fwrite(&zSize, sizeof(int), 1, fid);
+
+    // 2. Unit Size
+
+    fwrite(&unitSize, sizeof(int), 1, fid);
+
+    // 3. Threshold
+
+    int thresholdNumber=3;
+    fwrite(&thresholdNumber, sizeof(int), 1, fid);
+    for (int i=0;i<3;i++) {
+        fwrite(threshold+i, sizeof(int), 1, fid);
+    }
+
+    // 4. Cube Size
+
+    fwrite(&iXmax, sizeof(int), 1, fid);
+    fwrite(&iYmax, sizeof(int), 1, fid);
+    fwrite(&iZmax, sizeof(int), 1, fid);
+
+    // 5. Number of Index Files
 
     // Next, write the number of index files
     int numIndexFiles=indexFileList.size();
     fwrite(&numIndexFiles, sizeof(int), 1, fid);
 
+    // 6. Index File Paths w/ Channel Index
 
+    // Next, write the paths for the index files, along with channel indices
+    char* filePathBuffer=new char[FILENAME_BUFFER_SIZE];
+    for (int i=0;i<indexFileList.size();i++) {
+        QString filePath=indexFileList[i];
+        int length=filePath.length();
+        if (length>FILENAME_BUFFER_SIZE) {
+            qDebug() << "File path length name buffer not large enough for=" << filePath;
+            return false;
+        }
+        fwrite(&length, sizeof(int), 1, fid);
+        strcpy(filePathBuffer, filePath.constData());
+        fwrite(filePathBuffer, sizeof(char), length, fid);
+        int channelIndex=indexChannelList[i];
+        fwrite(&channelIndex, sizeof(int), 1, fid);
+    }
 }
 
 bool VolumePatternIndex::doSearch()
 {
     qDebug() << "doSearch() start";
+    openIndexandReadHeader();
+    return true;
+}
+
+bool VolumePatternIndex::openIndexAndReadHeader()
+{
+    fid=fopen(indexFilePath.toAscii().data(), "rb");
+    if (!fid) {
+        qDebug() << "Could not open file=" << indexFilePath << " to read";
+        return false;
+    }
+
+    // 1. Image Size
+    fread(&x1, sizeof(int), 1, fid); x0=0;
+    fread(&y1, sizeof(int), 1, fid); y0=0;
+    fread(&z1, sizeof(int), 1, fid); z0=0;
+
+    // 2. Unit Size
+    fread(&unitSize, sizeof(int), 1, fid);
+
+    // 3. Threshold
+    int thresholdNumber=0;
+    fread(&thresholdNumber, sizeof(int), 1, fid);
+    if (thresoldNumber!=3) {
+        qDebug() << "Only 3 threshold levels currently supported";
+        fclose(fid);
+        return false;
+    }
+    threshold=new int[3];
+    for (int i=0;i<3;i++) {
+        fread(threshold+i, sizeof(int), 1, fid);
+    }
+
+    // 4. Cube Size
+    fread(&iXmax, sizeof(int), 1, fid);
+    fread(&iYmax, sizeof(int), 1, fid);
+    fread(&iZmax, sizeof(int), 1, fid);
+
+    // 5. Num Index Files
+    int numIndexFiles;
+    fread(&numIndexFiles, sizeof(int), 1, fid);
+
+    // 6. Index File Paths
+    char* filenameBuffer = new char[FILENAME_BUFFER_SIZE];
+    for (int i=0;i<numIndexFiles;i++) {
+        int filenameSize;
+        fread(&filenameSize, sizeof(int), 1, fid);
+        if (filenameSize>FILENAME_BUFFER_SIZE) {
+            qDebug() << "Exceeded max filename buffer size";
+            fclose(fid);
+            return false;
+        }
+        fread(filenameBuffer, sizeof(char), filenameSize, fid);
+        QString filename(filenameBuffer);
+        indexFileList.append(filename);
+        int channelIndex;
+        fread(&channelIndex, sizeof(int), 1, fid);
+        indexChannelList.append(channelIndex);
+    }
     return true;
 }
 

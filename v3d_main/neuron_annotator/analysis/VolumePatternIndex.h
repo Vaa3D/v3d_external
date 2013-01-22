@@ -38,13 +38,13 @@ public:
         usage.append("    Tool for indexing and searching volumes for similar patterns                                        \n");
         usage.append("                                                                                                        \n");
         usage.append("     -mode [index|search]                                                                               \n");
+        usage.append("     -indexFile <index file>                                                                            \n");
         usage.append("     [ -subVolume \"x0 x1 y0 y1 z0 z1\" : default is full size ]                                        \n");
         usage.append("                                                                                                        \n");
         usage.append("    For mode index:                                                                                     \n");
         usage.append("                                                                                                        \n");
         usage.append("     -inputList <file with list of stacks to index, format=<file> [ <channel#> ] >                      \n");
         usage.append("     -defaultChannelToIndex <channel number>                                                            \n");
-        usage.append("     -outputIndex <index file>                                                                          \n");
         usage.append("     [ -unitSize <voxels per cube side> : default=10 ]                                                  \n");
         usage.append("     [ -threshold \"a b c\" : default a=6, b=20, c=50 , creates 4 scoring bins ]                        \n");
         usage.append("                                                                                                        \n");
@@ -73,7 +73,7 @@ private:
 
     QString inputFileListPath;
     int defaultChannelToIndex;
-    QString outputIndexFilePath;
+    QString indexFilePath;
     int unitSize;
     int* threshold;
 
@@ -94,6 +94,7 @@ private:
     bool populateIndexFileList();
     bool parseMatrixString(QString matrixString);
     bool openIndexAndWriteHeader();
+    bool openIndexAndReadHeader();
 
 };
 
