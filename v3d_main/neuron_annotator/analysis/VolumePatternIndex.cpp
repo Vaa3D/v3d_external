@@ -449,7 +449,7 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
             return false;
         }
         fwrite(&length, sizeof(int), 1, fid);
-        strcpy(filePathBuffer, filePath.constData());
+        strcpy(filePathBuffer, filePath.toAscii().data());
         fwrite(filePathBuffer, sizeof(char), length, fid);
         int channelIndex=indexChannelList[i];
         fwrite(&channelIndex, sizeof(int), 1, fid);
@@ -459,7 +459,8 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
 bool VolumePatternIndex::doSearch()
 {
     qDebug() << "doSearch() start";
-    openIndexandReadHeader();
+    openIndexAndReadHeader();
+
     return true;
 }
 
@@ -482,7 +483,7 @@ bool VolumePatternIndex::openIndexAndReadHeader()
     // 3. Threshold
     int thresholdNumber=0;
     fread(&thresholdNumber, sizeof(int), 1, fid);
-    if (thresoldNumber!=3) {
+    if (thresholdNumber!=3) {
         qDebug() << "Only 3 threshold levels currently supported";
         fclose(fid);
         return false;
