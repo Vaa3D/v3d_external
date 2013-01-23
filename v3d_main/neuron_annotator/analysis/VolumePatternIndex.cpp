@@ -83,7 +83,7 @@ const int DEFAULT_THRESHOLD_A = 6;
 const int DEFAULT_THRESHOLD_B = 20;
 const int DEFAULT_THRESHOLD_C = 50;
 const int DEFAULT_MAX_HITS = 100;
-const QString DEFAULT_MATRIX_STRING("0.0 -1.0 -2.0 -4.0 -1.0 1.0 1.0 0.0 -2.0 1.0 2.0 2.0 -4.0 0.0 2.0 4.0");
+const QString DEFAULT_MATRIX_STRING("0 -1 -2 -4 -1 1 1 0 -2 1 2 2 -4 0 2 4");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
@@ -100,6 +100,8 @@ VolumePatternIndex::VolumePatternIndex()
     iYmax=-1;
     iZmax=-1;
     x0=x1=y0=y1=z0=z1=-1;
+    indexData=0L;
+    matrix=0;
 }
 
 VolumePatternIndex::~VolumePatternIndex()
@@ -174,6 +176,12 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             }
         }
     }
+    if (matrix==0) {
+        if (!parseMatrixString(DEFAULT_MATRIX_STRING)) {
+            qDebug() << "Could not parse default matrix string=" << DEFAULT_MATRIX_STRING;
+            return 0;
+        }
+    }
     return 0;
 }
 
@@ -189,17 +197,17 @@ bool VolumePatternIndex::parseSubVolumeString(QString subVolumeString) {
         return false;
     }
     QString x0String=volList[0];
-    x0=x0String.toInt();
+    x0=x0String.toLong();
     QString x1String=volList[1];
-    x1=x1String.toInt();
+    x1=x1String.toLong();
     QString y0String=volList[2];
-    y0=y0String.toInt();
+    y0=y0String.toLong();
     QString y1String=volList[3];
-    y1=y1String.toInt();
+    y1=y1String.toLong();
     QString z0String=volList[4];
-    z0=z0String.toInt();
+    z0=z0String.toLong();
     QString z1String=volList[5];
-    z1=z1String.toInt();
+    z1=z1String.toLong();
 }
 
 bool VolumePatternIndex::parseThresholdString(QString thresholdString) {
@@ -229,9 +237,9 @@ bool VolumePatternIndex::parseMatrixString(QString matrixString) {
         }
         return false;
     }
-    matrix=new float[16];
+    matrix=new int[16];
     for (int i=0;i<16;i++) {
-        matrix[i]=mList[i].toFloat();
+        matrix[i]=mList[i].toInt();
     }
 }
 
@@ -273,6 +281,16 @@ bool VolumePatternIndex::populateIndexFileList() {
     indexFileListFile.close();
 }
 
+void VolumePatternIndex::formatSubregion(V3DLONG* subregion)
+{
+    subregion[0]=x0;
+    subregion[1]=x1;
+    subregion[2]=y0;
+    subregion[3]=y1;
+    subregion[4]=z0;
+    subregion[5]=z1;
+}
+
 bool VolumePatternIndex::createIndex()
 {
     qDebug() << "createIndex() start";
@@ -302,79 +320,9 @@ bool VolumePatternIndex::createIndex()
             x0=0; x1=sourceImage.getXDim();
             y0=0; y1=sourceImage.getYDim();
             z0=0; z1=sourceImage.getZDim();
-            subregion[0]=x0;
-            subregion[1]=x1;
-            subregion[2]=y0;
-            subregion[3]=y1;
-            subregion[4]=z0;
-            subregion[5]=z1;
-        }
-        My4DImage* cubifiedImage=AnalysisTools::cubifyImageByChannel(&sourceImage, indexChannelList[fileIndex], unitSize, AnalysisTools::CUBIFY_TYPE_AVERAGE, subregion);
-        if (fileIndex==0) {
-            iXmax=cubifiedImage->getXDim();
-            iYmax=cubifiedImage->getYDim();
-            iZmax=cubifiedImage->getZDim();
-        } else {
-            if (cubifiedImage->getXDim()!=iXmax ||
-                cubifiedImage->getYDim()!=iYmax ||
-                cubifiedImage->getZDim()!=iZmax) {
-                qDebug() << "Cubified image " << indexFileList[fileIndex] << " dimensions do not match";
-                return false;
-            }
-        }
-        // Next, we will walk through the image and gradually populate a binary structure with the scores.
-        V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
-        // We can store 4 2-bit values per 8-bit byte, so these are the number of bytes we need:
-        V3DLONG indexTotalBytes=ceil((cubifiedTotal*1.0)/4.0);
-        if (indexData==0L) {
-            indexData=new unsigned char[indexTotalBytes];
-        }
-        for (int j=0;j<indexTotalBytes;j++) {
-            indexData[j]=0;
-        }
-        V3DLONG indexPosition=0;
-        int bytePosition=0;
-        v3d_uint8* cubifiedData=cubifiedImage->getRawDataAtChannel(0);
-        for (V3DLONG z=0;z<iZmax;z++) {
-            V3DLONG zoffset=z*iYmax*iXmax;
-            for (V3DLONG y=0;y<iYmax;y++) {
-                V3DLONG yoffset=zoffset+y*iXmax;
-                for (V3DLONG x=0;x<iXmax;x++) {
-                    V3DLONG offset=yoffset+x;
-                    v3d_uint8 value=cubifiedData[offset];
-                    if (bytePosition>3) {
-                        bytePosition=0;
-                        indexPosition++;
-                        if (indexPosition>=indexTotalBytes) {
-                            qDebug() << "Exceeded indexTotalBytes at z=" << z << " y=" << y << " x=" << x;
-                            return false;
-                        }
-                    }
-                    unsigned char* currentByte = indexData + indexPosition;
-                    if (bytePosition==0) {
-                        // As we begin populating a byte, clear it first
-                        *currentByte=0;
-                    }
-                    // 0=00000000
-                    // 1=00000001
-                    // 2=00000010
-                    // 3=00000011
-                    if (*currentByte<threshold[0]) {
-                        // leave as zero
-                    } else if (*currentByte<threshold[1]) {
-                        *currentByte |= 1;
-                    } else if (*currentByte<threshold[2]) {
-                        *currentByte |= 2;
-                    } else {
-                        *currentByte |= 3;
-                    }
-                    if (bytePosition<3) {
-                        *currentByte <<= 2;
-                    }
-                    bytePosition++;
-                }
-            }
-        }
+            formatSubregion(subregion);
+        }        
+        indexData=indexImage(&sourceImage, indexChannelList[fileIndex], subregion, indexData);
         if (fileIndex==0) {
             if (!openIndexAndWriteHeader()) {
                 qDebug() << "Could not open index file and write header";
@@ -458,10 +406,181 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
 
 bool VolumePatternIndex::doSearch()
 {
-    qDebug() << "doSearch() start";
-    openIndexAndReadHeader();
+    qDebug() << "doSearch() start - reading index header...";
+    if (!openIndexAndReadHeader()) {
+        qDebug() << "Could not open and read header of file=" << indexFilePath;
+        return false;
+    }
+
+    qDebug() << "Read query...";
+    ImageLoader queryLoader;
+    if (!queryLoader.loadImage(queryImage, queryImageFilePath)) {
+        qDebug() << "Could not load query image file=" << queryImageFilePath;
+        return false;
+    }
+
+    qDebug() << "Convert query to index format...";
+    V3DLONG* subregion=new V3DLONG[6];
+    formatSubregion(subregion);
+    if ((indexData=indexImage(queryImage, queryChannel, subregion, indexData))==0) {
+        qDebug() << "Error indexing query";
+        return false;
+    }
+    queryIndex=new unsigned char [indexTotalBytes];
+    memcpy(queryIndex, indexData, indexTotalBytes);
+
+    qDebug() << "Begin scoring (index phase)";
+    V3DLONG indexTotal=iXmax*iYmax*iZmax;
+    for (int i=0;i<indexFileList.size();i++) {
+        size_t readSize=0;
+        if ( (readSize=fread(indexData, 1, indexTotalBytes, fid))!=indexTotalBytes ) {
+            qDebug() << "Could not read full block of " << indexTotalBytes << " , read " << readSize << " instead";
+            return false;
+        }
+        float score=calculateIndexScore(queryIndex, indexData, indexTotal);
+        indexScoreList.append(score);
+    }
+
+    qDebug() << "Done with index scoring phase";
+
 
     return true;
+}
+
+V3DLONG VolumePatternIndex::computeTotalBytesFromIndexTotal(V3DLONG indexTotal) {
+    V3DLONG result=ceil((indexTotal*1.0)/4.0);
+    return result;
+}
+
+V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal)
+{
+    V3DLONG score=0L;
+    V3DLONG initialTotal=indexTotal/4;
+
+    unsigned char oooooo11 = 3;
+    unsigned char s1=0;
+    unsigned char q1=0;
+    int scorePosition=0;
+
+    for (V3DLONG i=0;i<initialTotal;i=i+4) {
+        unsigned char s=*subjectIndex;
+        unsigned char q=*queryIndex;
+
+        for (int p=0;p<4;p++) {
+            s1= s&oooooo11;
+            q1= q&oooooo11;
+
+            scorePosition = q1*4+s1;
+            score+=matrix[scorePosition];
+
+            s >>= 2;
+            q >>= 2;
+        }
+        subjectIndex++;
+        queryIndex++;
+    }
+
+    for (V3DLONG i=initialTotal;i<indexTotal;) {
+        unsigned char s=*subjectIndex;
+        unsigned char q=*queryIndex;
+
+        for (int p=0;p<4;p++) {
+            if (i<indexTotal) {
+                s1= s&oooooo11;
+                q1= q&oooooo11;
+
+                scorePosition = q1*4+s1;
+                score+=matrix[scorePosition];
+
+                s >>= 2;
+                q >>= 2;
+            }
+            i++;
+        }
+        subjectIndex++;
+        queryIndex++;
+    }
+
+    return score;
+}
+
+unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3DLONG* subregion, unsigned char* indexData)
+{
+    My4DImage* cubifiedImage=AnalysisTools::cubifyImageByChannel(image, channel, unitSize, AnalysisTools::CUBIFY_TYPE_AVERAGE, subregion);
+    if (iXmax==-1) {
+        iXmax=cubifiedImage->getXDim();
+        iYmax=cubifiedImage->getYDim();
+        iZmax=cubifiedImage->getZDim();
+    } else {
+        if (cubifiedImage->getXDim()!=iXmax ||
+                cubifiedImage->getYDim()!=iYmax ||
+                cubifiedImage->getZDim()!=iZmax) {
+            qDebug() << "Cubified image dimensions do not match";
+            return false;
+        }
+    }
+    // Next, we will walk through the image and gradually populate a binary structure with the scores.
+    V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
+    // We can store 4 2-bit values per 8-bit byte, so these are the number of bytes we need:
+    V3DLONG tempIndexTotalBytes=computeTotalBytesFromIndexTotal(cubifiedTotal);
+    if (indexTotalBytes==-1L) {
+        indexTotalBytes=tempIndexTotalBytes;
+    } else {
+        if (indexTotalBytes!=tempIndexTotalBytes) {
+            qDebug() << "New value for indexTotalBytes does not match: " << tempIndexTotalBytes << " vs original=" << indexTotalBytes;
+            return 0;
+        }
+    }
+    if (indexData==0L) {
+        indexData=new unsigned char[indexTotalBytes];
+    }
+    for (int j=0;j<indexTotalBytes;j++) {
+        indexData[j]=0;
+    }
+    V3DLONG indexPosition=0;
+    int bytePosition=0;
+    v3d_uint8* cubifiedData=cubifiedImage->getRawDataAtChannel(0);
+    for (V3DLONG z=0;z<iZmax;z++) {
+        V3DLONG zoffset=z*iYmax*iXmax;
+        for (V3DLONG y=0;y<iYmax;y++) {
+            V3DLONG yoffset=zoffset+y*iXmax;
+            for (V3DLONG x=0;x<iXmax;x++) {
+                V3DLONG offset=yoffset+x;
+                v3d_uint8 value=cubifiedData[offset];
+                if (bytePosition>3) {
+                    bytePosition=0;
+                    indexPosition++;
+                    if (indexPosition>=indexTotalBytes) {
+                        qDebug() << "Exceeded indexTotalBytes at z=" << z << " y=" << y << " x=" << x;
+                        return false;
+                    }
+                }
+                unsigned char* currentByte = indexData + indexPosition;
+                if (bytePosition==0) {
+                    // As we begin populating a byte, clear it first
+                    *currentByte=0;
+                }
+                // 0=00000000
+                // 1=00000001
+                // 2=00000010
+                // 3=00000011
+                if (*currentByte<threshold[0]) {
+                    // leave as zero
+                } else if (*currentByte<threshold[1]) {
+                    *currentByte |= 1;
+                } else if (*currentByte<threshold[2]) {
+                    *currentByte |= 2;
+                } else {
+                    *currentByte |= 3;
+                }
+                if (bytePosition<3) {
+                    *currentByte <<= 2;
+                }
+                bytePosition++;
+            }
+        }
+    }
+    return indexData;
 }
 
 bool VolumePatternIndex::openIndexAndReadHeader()
@@ -497,6 +616,9 @@ bool VolumePatternIndex::openIndexAndReadHeader()
     fread(&iXmax, sizeof(int), 1, fid);
     fread(&iYmax, sizeof(int), 1, fid);
     fread(&iZmax, sizeof(int), 1, fid);
+
+    V3DLONG indexTotal=iXmax*iYmax*iZmax;
+    indexTotalBytes=computeTotalBytesFromIndexTotal(indexTotal);
 
     // 5. Num Index Files
     int numIndexFiles;

@@ -54,7 +54,7 @@ public:
         usage.append("     -queryChannel <channel number>                                                                     \n");
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
         usage.append("     [ -fast : search only using index, faster but less accurate ]                                      \n");
-        usage.append("     [ -matrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 values for score matrix ]       \n");
+        usage.append("     [ -matrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 int values for score matrix ]   \n");
         usage.append("                                                                                                        \n");
         return usage;
     }
@@ -66,7 +66,7 @@ private:
     FILE* fid;
 
     int mode;
-    int x0,x1,y0,y1,z0,z1;
+    V3DLONG x0,x1,y0,y1,z0,z1;
     int iXmax, iYmax, iZmax;
 
     QString modeString;
@@ -81,10 +81,17 @@ private:
     int queryChannel;
     int maxHits;
     bool fastSearch;
-    float* matrix;
+    int* matrix;
 
     QStringList indexFileList;
     QList<int> indexChannelList;
+    unsigned char* indexData;
+    V3DLONG indexTotalBytes;
+
+    unsigned char* queryIndex;
+    My4DImage* queryImage;
+
+    QList<float> indexScoreList;
 
     bool createSubVolume();
     bool createIndex();
@@ -95,6 +102,13 @@ private:
     bool parseMatrixString(QString matrixString);
     bool openIndexAndWriteHeader();
     bool openIndexAndReadHeader();
+
+    unsigned char* indexImage(My4DImage* image, int channel, V3DLONG* subregion, unsigned char* indexData);
+
+    void formatSubregion(V3DLONG* subregion);
+
+    V3DLONG calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal);
+    V3DLONG computeTotalBytesFromIndexTotal(V3DLONG indexTotal);
 
 };
 
