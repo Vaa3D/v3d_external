@@ -30,6 +30,7 @@ public:
 
 signals:
     void textChanged(const QString&);
+    void sendProgressBarChanged(int val, const char* message);
 
 public slots:
     void update();
@@ -39,6 +40,8 @@ private slots:
     void getMaskDir();
     void setThreshold(int threshold);
     void selectClonal();
+    void evaluateClonal();
+    void progressBarChanged(int val, const char* message);
 
 public:
     QString m_maskfolder;
@@ -63,8 +66,13 @@ public:
     QLabel *label_threshold;
     QSlider *slider_threshold;
 
+    QPushButton *button_evaluate;
+
     QLabel *label_select;
     QPushButton *button_select;
+
+    QStatusBar *statusBar;
+    QProgressBar *progressBar;
 
     QGridLayout *settingGroupLayout;
 
