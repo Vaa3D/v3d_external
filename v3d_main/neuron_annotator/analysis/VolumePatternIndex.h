@@ -53,7 +53,7 @@ public:
         usage.append("     -query <image volume to use as query>                                                              \n");
         usage.append("     -queryChannel <channel number>                                                                     \n");
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
-        usage.append("     [ -fast : search only using index, faster but less accurate ]                                      \n");
+        usage.append("     [ -full : use index first, then use full images, slower but more accurate, default=false]          \n");
         usage.append("     [ -matrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 int values for score matrix ]   \n");
         usage.append("                                                                                                        \n");
         return usage;
@@ -67,6 +67,7 @@ private:
 
     int mode;
     V3DLONG x0,x1,y0,y1,z0,z1;
+    V3DLONG qx0, qx1, qy0, qy1, qz0, qz1;
     int iXmax, iYmax, iZmax;
 
     QString modeString;
@@ -80,7 +81,7 @@ private:
     QString queryImageFilePath;
     int queryChannel;
     int maxHits;
-    bool fastSearch;
+    bool fullSearch;
     int* matrix;
 
     QStringList indexFileList;
@@ -91,7 +92,7 @@ private:
     unsigned char* queryIndex;
     My4DImage* queryImage;
 
-    QList<long> indexScoreList;
+    QList<V3DLONG> indexScoreList;
 
     bool createSubVolume();
     bool createIndex();
@@ -108,7 +109,16 @@ private:
     void formatSubregion(V3DLONG* subregion);
 
     V3DLONG calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal);
+    bool calculateImageScore(My4DImage* queryImage, My4DImage* subjectImage, int subjectChannel, V3DLONG* score);
     V3DLONG computeTotalBytesFromIndexTotal(V3DLONG indexTotal);
+
+    static bool compareScores(QPair<V3DLONG, int> p1, QPair<V3DLONG, int> p2) {
+        if (p1.first < p2.first) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 };
 
