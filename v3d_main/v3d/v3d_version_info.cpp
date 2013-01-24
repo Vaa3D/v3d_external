@@ -65,7 +65,7 @@ void v3d_aboutinfo()
         "If you have used Vaa3D in your research and would like to cite it, please cite as the following: <br><br>"
         "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353, DOI: 10.1038/nbt.1612. (http://vaa3d.org) </span><br> "
         "<br>"
-        "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://penglab.janelia.org/proj/vaa3d\">http://penglab.janelia.org/proj/vaa3d</a><br>"
+        "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://vaa3d.org\">http://vaa3d.org</a><br>"
         "<br>============================================="
         "<H1>Help Information</H1>"
         "=============================================<br>"
