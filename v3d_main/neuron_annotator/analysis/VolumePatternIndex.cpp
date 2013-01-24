@@ -83,7 +83,7 @@ const int DEFAULT_THRESHOLD_A = 6;
 const int DEFAULT_THRESHOLD_B = 20;
 const int DEFAULT_THRESHOLD_C = 50;
 const int DEFAULT_MAX_HITS = 100;
-const QString DEFAULT_MATRIX_STRING("0 -1 -2 -4 -1 1 1 0 -2 1 2 2 -4 0 2 4");
+const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -2 -4 -1 1 1 0 -2 1 2 2 -4 0 2 4");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
@@ -441,7 +441,9 @@ bool VolumePatternIndex::doSearch()
         indexScoreList.append(score);
     }
 
-    qDebug() << "Done with index scoring phase";
+    qDebug() << "Done with index scoring phase - sorting...";
+
+
 
 
     return true;

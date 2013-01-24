@@ -91,7 +91,7 @@ private:
     unsigned char* queryIndex;
     My4DImage* queryImage;
 
-    QList<float> indexScoreList;
+    QList<long> indexScoreList;
 
     bool createSubVolume();
     bool createIndex();
