@@ -26,5 +26,5 @@ SOURCES      +=	$$V3DMAINDIR/basic_c_fun/mg_image_lib.cpp
 LIBS         += -lm -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
 
 TARGET        = $$qtLibraryTarget(clonalSelect)
-DESTDIR       = ../../v3d/plugins/FlyWorkstation/clonalSelect
+DESTDIR       = ../../v3d/plugins/FlyWorkstation_utilities/clonalSelect
 
