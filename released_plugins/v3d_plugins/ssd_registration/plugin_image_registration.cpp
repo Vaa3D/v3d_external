@@ -831,12 +831,7 @@ QStringList ImageRegistrationPlugin::funclist() const
 
 bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback,  QWidget * parent)
 {
-    if (func_name == tr("help"))
-    {
-        errorPrint();
-        return true;
-    }
-    else if (func_name == tr("rigidreg"))
+    if (func_name == tr("rigidreg"))
     {
         if(input.size()<1 || (input.size()==1 && output.size()<1) ) // no inputs
         {
@@ -1517,10 +1512,11 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         //
         return true;
     }
-    else
+    else //    if (func_name == tr("help"))
     {
-        printf("\nWrong function specified.\n");
-        return false;
+        errorPrint();
+        return true;
     }
-
+    
+    return false;
 }
