@@ -33,6 +33,8 @@ QStringList ImageRegistrationPlugin::menulist() const
             << tr("About");
 }
 
+QString version_str = "0.91";
+
 void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
     if(menu_name==tr("rigid registration..."))
@@ -41,7 +43,7 @@ void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback
     }
     else if (menu_name==tr("About"))
     {
-        v3d_msg("This is a 3D SSD registration program developed in Hanchuan Peng lab.");
+        v3d_msg(QString("This is a 3D SSD registration program developed in Hanchuan Peng lab. Version %1.").arg(version_str));
     }
 }
 
@@ -819,8 +821,9 @@ bool saturateImage(Tdata *&p, Tidx sx, Tidx sy, Tidx sz, float percentage)
 
 void errorPrint()
 {
-    printf("\nUsage: vaa3d -x imagereg.dylib -f rigidreg -o <output_warped_image> -p \"#t <template.img> #ct <refchannel_template> #s <source.img> #cs <refchannel_source> [#ds <downsample_ratio> #n <max_iters> #m <step_inimultiplyfactor> #a <step_annealing_rate> #ms <min_step>]\"\n");
+    printf("\nUsage: vaa3d -x imagereg.dylib -f rigidreg -o <output_warped_image> -p \"^t <template.img> ^ct <refchannel_template> ^s <source.img> ^cs <refchannel_source> [^ds <downsample_ratio> ^n <max_iters> ^m <step_inimultiplyfactor> ^a <step_annealing_rate> ^ms <min_step>]\"\n");
     printf("Reference channel numbers must start from 1.\n");
+    v3d_msg(QString("This is a 3D SSD registration program developed in Hanchuan Peng lab. Version %1.").arg(version_str));
 }
 
 // function call
@@ -920,7 +923,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
 
                     qDebug()<<">>key ..."<<key;
 
-                    if (*key == '#')
+                    if (*key == '^')
                     {
                         while(*++key)
                         {
@@ -1006,15 +1009,27 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
             }
 
             // error check
-            if(qs_filename_img_tar==NULL || qs_filename_img_sub==NULL)
+            if(qs_filename_img_tar==NULL)
             {
-                printf("\nERROR: invalid input file name (target or subject)!\n");
+                printf("\nERROR: invalid input target file name!\n");
                 errorPrint();
                 return false;
             }
-            if(channel_ref_sub<0 || channel_ref_tar<0)
+            if(qs_filename_img_sub==NULL)
             {
-                printf("\nERROR: invalid reference channel! Assume R(1)G(2)B(3) ...!\n");
+                printf("\nERROR: invalid input subject file name!\n");
+                errorPrint();
+                return false;
+            }
+            if(channel_ref_sub<0)
+            {
+                printf("\nERROR: invalid reference channel for the subject image! Assume R(1)G(2)B(3) ...!\n");
+                errorPrint();
+                return false;
+            }
+            if(channel_ref_tar<0)
+            {
+                printf("\nERROR: invalid reference channel for the target image! Assume R(1)G(2)B(3) ...!\n");
                 errorPrint();
                 return false;
             }
