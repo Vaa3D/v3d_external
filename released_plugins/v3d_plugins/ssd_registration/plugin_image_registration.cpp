@@ -821,7 +821,12 @@ bool saturateImage(Tdata *&p, Tidx sx, Tidx sy, Tidx sz, float percentage)
 
 void errorPrint()
 {
-    printf("\nUsage: vaa3d -x imagereg.dylib -f rigidreg -o <output_warped_image> -p \"^t <template.img> ^ct <refchannel_template> ^s <source.img> ^cs <refchannel_source> [^ds <downsample_ratio> ^n <max_iters> ^m <step_inimultiplyfactor> ^a <step_annealing_rate> ^ms <min_step>]\"\n");
+    printf("\nUsage: vaa3d -x imagereg.dylib (or equivalent dll name) "
+    		"-f rigidreg -o <output_warped_image> "
+    		"-p \"^t <template.img> ^ct <refchannel_template> "
+    		"     ^s <source.img> ^cs <refchannel_source> "
+    		"     ^ds <downsample_ratio> ^n <max_iters> "
+    		"     [^m <step_inimultiplyfactor> ^a <step_annealing_rate> ^ms <min_step>]\"\n");
     printf("Reference channel numbers must start from 1.\n");
     v3d_msg(QString("This is a 3D SSD registration program developed in Hanchuan Peng lab. Version %1.").arg(version_str), 0);
 }
