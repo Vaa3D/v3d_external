@@ -33,7 +33,7 @@ QStringList ImageRegistrationPlugin::menulist() const
             << tr("About");
 }
 
-QString version_str = "0.91";
+QString version_str = "0.911";
 
 void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
@@ -493,15 +493,15 @@ bool iSampler(Tdata *p, Tidx *subDims, Tdata *&pOutput, Tidx *tarDims, Tidx dimc
                 cur_pos[2]=(z+1)/arr_resize_ratio[2]-1;
 
                 Tidx x_s,x_b,y_s,y_b,z_s,z_b;
-                x_s=floor(cur_pos[0]);		x_b=ceil(cur_pos[0]);
-                y_s=floor(cur_pos[1]);		y_b=ceil(cur_pos[1]);
-                z_s=floor(cur_pos[2]);		z_b=ceil(cur_pos[2]);
-                x_s=x_s<0?0:x_s;
-                y_s=y_s<0?0:y_s;
-                z_s=z_s<0?0:z_s;
-                x_b=x_b>=subDims[0]?subDims[0]-1:x_b;
-                y_b=y_b>=subDims[1]?subDims[1]-1:y_b;
-                z_b=z_b>=subDims[2]?subDims[2]-1:z_b;
+                x_s=(Tidx)floor(cur_pos[0]);		x_b=(Tidx)ceil(cur_pos[0]);
+                y_s=(Tidx)floor(cur_pos[1]);		y_b=(Tidx)ceil(cur_pos[1]);
+                z_s=(Tidx)floor(cur_pos[2]);		z_b=(Tidx)ceil(cur_pos[2]);
+                x_s=(x_s<0)?0:x_s;
+                y_s=(y_s<0)?0:y_s;
+                z_s=(z_s<0)?0:z_s;
+                x_b=(x_b>subDims[0]-1)?(subDims[0]-1):x_b;
+                y_b=(y_b>subDims[1]-1)?(subDims[1]-1):y_b;
+                z_b=(z_b>subDims[2]-1)?(subDims[2]-1):z_b;
 
                 double l_w,r_w,t_w,b_w;
                 l_w=1.0-(cur_pos[0]-x_s);	r_w=1.0-l_w;
@@ -606,7 +606,7 @@ bool iInterpolater(Tdata *p, Tidx *sz_img_input,
 
     //
     bool b_isint=1;
-    Tdata tmp=1.1;
+    Tdata tmp=(Tdata)1.1;
     if((tmp-1)>0.01) b_isint=0;
 
     //
@@ -645,9 +645,9 @@ bool iInterpolater(Tdata *p, Tidx *sz_img_input,
                 }
 
                 Tidx x_s,x_b,y_s,y_b,z_s,z_b;
-                x_s=floor(cur_pos[0]);		x_b=ceil(cur_pos[0]);
-                y_s=floor(cur_pos[1]);		y_b=ceil(cur_pos[1]);
-                z_s=floor(cur_pos[2]);		z_b=ceil(cur_pos[2]);
+                x_s=(Tidx)floor(cur_pos[0]);		x_b=(Tidx)ceil(cur_pos[0]);
+                y_s=(Tidx)floor(cur_pos[1]);		y_b=(Tidx)ceil(cur_pos[1]);
+                z_s=(Tidx)floor(cur_pos[2]);		z_b=(Tidx)ceil(cur_pos[2]);
 
                 double l_w,r_w,t_w,b_w;
                 l_w=1.0-(cur_pos[0]-x_s);	r_w=1.0-l_w;
@@ -668,9 +668,9 @@ bool iInterpolater(Tdata *p, Tidx *sz_img_input,
                             b_w*(l_w*p[offset_c_input + z_b*offset_z_input + y_b*sz_img_input[0] + x_s]+r_w*p[offset_c_input + z_b*offset_z_input + y_b*sz_img_input[0] + x_b]);
 
                     if(b_isint)
-                        pOutput[idx]=u_w*higher_slice+d_w*lower_slice+0.5;
+                        pOutput[idx] = Tdata(u_w*higher_slice+d_w*lower_slice+0.5);
                     else
-                        pOutput[idx]=u_w*higher_slice+d_w*lower_slice;
+                        pOutput[idx] = Tdata(u_w*higher_slice+d_w*lower_slice);
                 }
 
             }
@@ -740,7 +740,7 @@ bool saturateImage(Tdata *&p, Tidx sx, Tidx sy, Tidx sz, float percentage)
     }
     else if(sizeof(Tdata)==2)
     {
-        if(MAXV<4096) MAXV=4096; // 12 bit
+        if(MAXV<4096) MAXV=4096; // 12 bit 
     }
 
     Tidx NBIN = maxori+1;
@@ -880,6 +880,10 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         rrparas.d_step_min=0.01;
 
         // parsing parameters
+        qDebug() << "infile=["<<infile<<"]";
+        qDebug() << "outfile=["<<outfile<<"]";
+        qDebug() << "para=["<<paras<<"]";
+        
         if(paras)
         {
             int argc = 0;
@@ -922,6 +926,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
             char* key;
             for(int i=0; i<argc; i++)
             {
+                qDebug()<<"argv"<<i<<"["<<argv[i]<<"]";
                 if(i+1 != argc) // check that we haven't finished parsing yet
                 {
                     key = argv[i];
@@ -935,6 +940,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
                             if (!strcmp(key, "t"))
                             {
                                 qs_filename_img_tar = QString( argv[i+1] );
+                                qDebug()<<"qs_filename_img_tar=["<<qs_filename_img_tar<<"]";
                                 i++;
                             }
                             else if (!strcmp(key, "ct"))
@@ -946,6 +952,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
                             else if (!strcmp(key, "s"))
                             {
                                 qs_filename_img_sub = QString( argv[i+1] );
+                                qDebug()<<"qs_filename_img_sub=["<<qs_filename_img_sub<<"]";
                                 i++;
                             }
                             else if (!strcmp(key, "cs"))
@@ -997,6 +1004,8 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
 
                 }
             }
+            
+            if (argv) {delete []argv; argv=0;}
 
             QString qs_basename_input=QFileInfo(qs_filename_img_sub).baseName();
             QString qs_filename_output=QString(outfile);
