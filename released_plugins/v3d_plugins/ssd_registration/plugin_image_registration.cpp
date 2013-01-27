@@ -33,7 +33,7 @@ QStringList ImageRegistrationPlugin::menulist() const
             << tr("About");
 }
 
-QString version_str = "0.911";
+QString version_str = "0.92";
 
 void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
@@ -1078,7 +1078,11 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         //--------------------------------------------------------------------------------------------------
 
         int datatype_tar_input=0;
-        if(!loadImage((char *)qPrintable(qs_filename_img_tar),p_img_tar_input,sz_img_tar_input,datatype_tar_input))
+        
+        if(!loadImage((char *)qPrintable(qs_filename_img_tar),
+        		p_img_tar_input,
+        		sz_img_tar_input,
+        		datatype_tar_input))
         {
             printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_tar));
             freeMemory2<unsigned char, V3DLONG>(p_img_tar_input, sz_img_tar_input);
@@ -1089,7 +1093,10 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         printf("\t\tdatatype: %d\n",datatype_tar_input);
 
         int datatype_sub_input=0;
-        if(!loadImage((char *)qPrintable(qs_filename_img_sub),p_img_sub_input,sz_img_sub_input,datatype_sub_input))
+        if(!loadImage((char *)qPrintable(qs_filename_img_sub),
+        		p_img_sub_input,
+        		sz_img_sub_input,
+        		datatype_sub_input))
         {
             printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_sub));
             freeMemory2<unsigned char, V3DLONG>(p_img_sub_input, sz_img_sub_input);

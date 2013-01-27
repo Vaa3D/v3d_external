@@ -103,6 +103,7 @@ bool CLP::check_filename(QString fn)
              (curfile_info.suffix().toUpper()=="RAW5") ||
              (curfile_info.suffix().toUpper()=="V3DRAW") ||
              (curfile_info.suffix().toUpper()=="V3DPBD") ||
+             (curfile_info.suffix().toUpper()=="VAA3DPBD") ||
              (curfile_info.suffix().toUpper()=="IMG") ||
              (curfile_info.suffix().toUpper()=="HDR") ||
              (curfile_info.suffix().toUpper()=="NII") ||

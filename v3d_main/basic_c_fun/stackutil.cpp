@@ -120,6 +120,11 @@ extern "C" {
 };
 */
 
+#ifdef _ALLOW_WORKMODE_MENU_
+#include "../neuron_annotator/utility/ImageLoader.h"
+#endif
+
+
 #define b_VERBOSE_PRINT 1
 #define ZZBIG 10000 //previous I define it as 1500, so that to limit the size of an image is at most 1.5G //change 2010-05-21 // hang 2011-08-25 6000->10000
 
@@ -3678,6 +3683,28 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 			return false;
 		}
 	}
+#ifdef _ALLOW_WORKMODE_MENU_    
+	else if (curFileSuffix && ImageLoader::hasPbdExtension(QString(imgSrcFile)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    {
+		Image4DSimple *tmpimg=new Image4DSimple;
+		
+	    ImageLoader imageLoader;
+	    QString imageSrcFile(imgSrcFile);
+	    if (!imageLoader.loadImage(tmpimg, imgSrcFile)) {
+	        printf("Error happens in v3dpbd file reading. Stop. \n");
+	        return false;
+	    }
+	    // The following few lines are to avoid disturbing the existing code below
+	    
+	    tmp_data1d = tmpimg->getRawData();
+	    tmp_datatype=tmpimg->getDatatype();
+	    tmp_sz=new V3DLONG[4];
+	    tmp_sz[0]=tmpimg->getXDim();
+	    tmp_sz[1]=tmpimg->getYDim();
+	    tmp_sz[2]=tmpimg->getZDim();
+	    tmp_sz[3]=tmpimg->getCDim();
+	}
+#endif
 	else if ( curFileSuffix && strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 	{
 		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //lsm file at most should be 900M bytes
