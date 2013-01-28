@@ -14,12 +14,6 @@ INCLUDEPATH  += $$V3DPATH/basic_c_fun
 INCLUDEPATH  += $$V3DPATH/jba/newmat11
 INCLUDEPATH  += $$V3DPATH/common_lib/include
 
-QT_DIR = $$dirname(QMAKE_QMAKE)/..
-SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
-INCLUDEPATH += $$SHARED_FOLDER
-
-QT += network
-
 LIBS 	     += -L$$V3DPATH/common_lib/lib -lv3dtiff
 LIBS         += -L$$V3DPATH/jba/c++ -lv3dnewmat
 
@@ -45,11 +39,6 @@ SOURCES      += $$V3DPATH/basic_c_fun/stackutil.cpp
 SOURCES      += $$V3DPATH/basic_c_fun/mg_image_lib.cpp
 SOURCES      += $$V3DPATH/basic_c_fun/mg_utilities.cpp
 
-HEADERS      += $$V3DPATH/neuron_annotator/utility/ImageLoader.h
-SOURCES      += $$V3DPATH/neuron_annotator/utility/ImageLoader.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage_create.cpp
-
 SOURCES      += common/q_imresize.cpp
 SOURCES      += common/q_convolve.cpp
 SOURCES      += histogram_matching/q_histogram_matching.cpp
@@ -61,4 +50,38 @@ SOURCES      += plugin_image_registration.cpp
 TARGET        = $$qtLibraryTarget(plugin_PQ_imagereg)
 
 DESTDIR       = ../../v3d/plugins/image_registration/SSD_registration 
+
+
+# the following were added for pdb file support, the modularity must be improved in this future!
+
+QT += network
+QT += opengl
+QT += xml
+
+FORMS        += $$V3DPATH/neuron_annotator/gui/NaMainWindow.ui
+FORMS        += $$V3DPATH/neuron_annotator/gui/AngleWidget.ui
+FORMS        += $$V3DPATH/neuron_annotator/gui/GammaWidget.ui
+FORMS        += $$V3DPATH/neuron_annotator/gui/ZoomWidget.ui
+
+LIBS         += -L$$V3DPATH/common_lib/src_packages/mylib_tiff -lmylib
+
+QT_DIR = $$dirname(QMAKE_QMAKE)/..
+SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+INCLUDEPATH += $$SHARED_FOLDER
+INCLUDEPATH  += $$V3DPATH/v3d
+
+HEADERS      += $$V3DPATH/neuron_annotator/utility/ImageLoader.h
+SOURCES      += $$V3DPATH/neuron_annotator/utility/ImageLoader.cpp
+SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage.cpp
+SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage_create.cpp
+SOURCES      += $$V3DPATH/basic_c_fun/imageio_mylib.cpp
+SOURCES      += $$V3DPATH/v3d/my4dimage.cpp
+SOURCES      += $$V3DPATH/v3d/v3d_core.cpp
+SOURCES      += $$V3DPATH/v3d/v3d_version_info.cpp
+SOURCES      += $$V3DPATH/basic_c_fun/basic_surf_objs.cpp
+SOURCES      += $$V3DPATH/v3d/mainwindow_interface.cpp
+SOURCES      += $$V3DPATH/v3d/mainwindow.cpp
+SOURCES      += $$V3DPATH/custom_toolbar/v3d_custom_toolbar.cpp
+SOURCES      += $$V3DPATH/multithreadimageIO/v3d_multithreadimageIO.cpp
+
 
