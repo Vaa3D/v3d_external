@@ -76,13 +76,13 @@ Qry    low         -1         1         1         0
 #include "VolumePatternIndex.h"
 #include "../utility/ImageLoader.h"
 
-const int FILENAME_BUFFER_SIZE = 2000;
+const int VolumePatternIndex::FILENAME_BUFFER_SIZE = 2000;
 
-const int DEFAULT_UNIT_SIZE = 10;
-const int DEFAULT_THRESHOLD_A = 6;
-const int DEFAULT_THRESHOLD_B = 20;
-const int DEFAULT_THRESHOLD_C = 50;
-const int DEFAULT_MAX_HITS = 100;
+const int VolumePatternIndex::DEFAULT_UNIT_SIZE = 10;
+const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 6;
+const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
+const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
+const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
 const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -2 -4 -1 1 1 0 -2 1 2 2 -4 0 2 4");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
@@ -102,7 +102,9 @@ VolumePatternIndex::VolumePatternIndex()
     x0=x1=y0=y1=z0=z1=-1;
     qx0=qx1=qy0=qy1=qz0=qz1=-1;
     indexData=0L;
+    indexTotalBytes=-1L;
     matrix=0;
+    unitSize=DEFAULT_UNIT_SIZE;
 }
 
 VolumePatternIndex::~VolumePatternIndex()
@@ -301,7 +303,7 @@ void VolumePatternIndex::formatSubregion(V3DLONG* subregion)
 bool VolumePatternIndex::createIndex()
 {
     qDebug() << "createIndex() start";
-    V3DLONG* subregion=new V3DLONG[6];
+    V3DLONG* subregion=0L;
 
     if (!populateIndexFileList()) {
         qDebug() << "populateIndexFileList failed";
@@ -320,15 +322,24 @@ bool VolumePatternIndex::createIndex()
             qDebug() << "Could not load file=" << indexFileList[fileIndex];
             return false;
         } else {
-            qDebug() << "Processing " << indexFileList[fileIndex];
+            qDebug() << "Indexing " << fileIndex << " of " << indexFileList.size() << " : " << indexFileList[fileIndex] << "...";
         }
         if (fileIndex==0 && x0==-1) {
             // Then assume we are to use the first image to set the selection region
+            qDebug() << "createIndex::Formatting subregion. x0=" << x0;
             x0=0; x1=sourceImage.getXDim();
             y0=0; y1=sourceImage.getYDim();
             z0=0; z1=sourceImage.getZDim();
+            if (subregion==0L) {
+                subregion=new V3DLONG[6];
+            }
             formatSubregion(subregion);
-        }        
+            qDebug() << "Done formatting subregion";
+            for (int i=0;i<6;i++) {
+                qDebug() << "subregion " << i << " =" << subregion[i];
+            }
+        }
+        qDebug() << "Calling indexImage with subregion=" << subregion;
         indexData=indexImage(&sourceImage, indexChannelList[fileIndex], subregion, indexData);
         if (fileIndex==0) {
             if (!openIndexAndWriteHeader()) {
@@ -337,6 +348,12 @@ bool VolumePatternIndex::createIndex()
             }
         }
         fwrite(indexData, sizeof(unsigned char), indexTotalBytes, fid);
+    }
+    if (indexData!=0) {
+        delete [] indexData;
+    }
+    if (subregion!=0) {
+        delete [] subregion;
     }
     fclose(fid);
     fid=0;
@@ -509,7 +526,7 @@ bool VolumePatternIndex::doSearch()
         V3DLONG score=p.first;
         int index=p.second;
         QString filename=indexFileList[index];
-        qDebug() << position << ". " << filename << "   score=" << score;
+        qDebug() << position << ". " << score << " : " << filename;
     }
 
     return true;

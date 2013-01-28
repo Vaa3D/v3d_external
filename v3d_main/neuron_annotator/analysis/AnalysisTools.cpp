@@ -8,6 +8,9 @@ AnalysisTools::AnalysisTools()
 }
 
 My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sourceChannel, int cubeSize, int type, V3DLONG* subregion=0L /* x0 x1 y0 y1 z0 z1 */ ) {
+
+    qDebug() << "AnalysisTools::cubifyImageByChannel : cubeSize=" << cubeSize;
+
     V3DLONG s_xmin=0L;
     V3DLONG s_ymin=0L;
     V3DLONG s_zmin=0L;

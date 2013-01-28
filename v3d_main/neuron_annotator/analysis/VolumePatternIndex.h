@@ -12,6 +12,7 @@ using namespace std;
 class VolumePatternIndex
 {
 public:
+
     static const int DEFAULT_UNIT_SIZE;
     static const int DEFAULT_THRESHOLD_A;
     static const int DEFAULT_THRESHOLD_B;
@@ -22,6 +23,8 @@ public:
     static const int MODE_UNDEFINED;
     static const int MODE_INDEX;
     static const int MODE_SEARCH;
+
+    static const int FILENAME_BUFFER_SIZE;
 
     VolumePatternIndex();
 
