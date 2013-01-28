@@ -1,16 +1,24 @@
 #plugin_image_registration.h
 # by Lei Qu and Hanchuan Peng
-# 2011
+# 2011-2013
 
 TEMPLATE      = lib
 CONFIG       += plugin 
 #CONFIG       += x86_64
+
+DEFINES += _ALLOW_WORKMODE_MENU_       #added by PHC, 2013-01-27
 
 V3DPATH = ../../../v3d_main
 
 INCLUDEPATH  += $$V3DPATH/basic_c_fun
 INCLUDEPATH  += $$V3DPATH/jba/newmat11
 INCLUDEPATH  += $$V3DPATH/common_lib/include
+
+QT_DIR = $$dirname(QMAKE_QMAKE)/..
+SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+INCLUDEPATH += $$SHARED_FOLDER
+
+QT += network
 
 LIBS 	     += -L$$V3DPATH/common_lib/lib -lv3dtiff
 LIBS         += -L$$V3DPATH/jba/c++ -lv3dnewmat
@@ -36,6 +44,12 @@ SOURCES      += $$V3DPATH/basic_c_fun/v3d_message.cpp
 SOURCES      += $$V3DPATH/basic_c_fun/stackutil.cpp
 SOURCES      += $$V3DPATH/basic_c_fun/mg_image_lib.cpp
 SOURCES      += $$V3DPATH/basic_c_fun/mg_utilities.cpp
+
+HEADERS      += $$V3DPATH/neuron_annotator/utility/ImageLoader.h
+SOURCES      += $$V3DPATH/neuron_annotator/utility/ImageLoader.cpp
+SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage.cpp
+SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage_create.cpp
+
 SOURCES      += common/q_imresize.cpp
 SOURCES      += common/q_convolve.cpp
 SOURCES      += histogram_matching/q_histogram_matching.cpp

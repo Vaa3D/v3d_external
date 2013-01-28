@@ -123,7 +123,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 					b_error=1;
 				}
 			}
-		}
+		} 
                 printf("Image4DSimple::loadImage finished\n");
 
 #endif
@@ -139,8 +139,10 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_    
-    else if ( curFileSurfix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    //else if ( curFileSurfix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    else if ( curFileSurfix && strcasecmp(curFileSurfix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
+    	v3d_msg("start to try v3dpbd", 0);
         ImageLoader imageLoader;
         QString imageSrcFile(imgSrcFile);
         if (!imageLoader.loadImage(this, imageSrcFile)) {
@@ -161,7 +163,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 #endif    
 	else //then assume it is Hanchuan's Vaa3D RAW format
 	{
-		v3d_msg("The data is not with a TIF surfix, -- now this program assumes it is Vaa3D's RAW format defined by Hanchuan Peng. \n", false);
+		v3d_msg("The data does not have supported image file suffix, -- now this program assumes it is Vaa3D's RAW format and tries to load it... \n", false);
 		if (loadRaw2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 		{
 			printf("The data doesn't look like a correct 4-byte-size Vaa3D's RAW file. Try 2-byte-raw. \n");

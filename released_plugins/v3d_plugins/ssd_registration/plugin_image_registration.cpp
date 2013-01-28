@@ -33,7 +33,7 @@ QStringList ImageRegistrationPlugin::menulist() const
             << tr("About");
 }
 
-QString version_str = "0.92";
+QString version_str = "0.9211";
 
 void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
@@ -832,6 +832,38 @@ void errorPrint()
 }
 
 // function call
+
+bool wrapperLoadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
+{
+	v3d_msg("wrapperLoadImage", 0);
+	
+	if (!imgSrcFile || data1d || sz)
+	{
+		v3d_msg("wrong input to wrapperLoadImage().",0);
+		return false;
+	}
+	
+	Image4DSimple *tmpimg=new Image4DSimple;
+	tmpimg->loadImage(imgSrcFile);
+	if (!(tmpimg->valid()))
+	{
+		v3d_msg(QString("Fail to load image [%1]").arg(imgSrcFile),0);
+		return false;
+	}
+	
+    // The following few lines are to avoid disturbing the existing code below
+    
+    data1d = tmpimg->getRawData();
+    datatype=tmpimg->getDatatype();
+    sz=new V3DLONG[4];
+    sz[0]=tmpimg->getXDim();
+    sz[1]=tmpimg->getYDim();
+    sz[2]=tmpimg->getZDim();
+    sz[3]=tmpimg->getCDim();
+    
+    return true; 
+}
+
 QStringList ImageRegistrationPlugin::funclist() const
 {
     return QStringList() << tr("rigidreg") << tr("help");
@@ -926,7 +958,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
             char* key;
             for(int i=0; i<argc; i++)
             {
-                qDebug()<<"argv"<<i<<"["<<argv[i]<<"]";
+                //qDebug()<<"argv"<<i<<"["<<argv[i]<<"]";
                 if(i+1 != argc) // check that we haven't finished parsing yet
                 {
                     key = argv[i];
@@ -1078,14 +1110,14 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         //--------------------------------------------------------------------------------------------------
 
         int datatype_tar_input=0;
-        
-        if(!loadImage((char *)qPrintable(qs_filename_img_tar),
+
+        if(!wrapperLoadImage((char *)qPrintable(qs_filename_img_tar),
         		p_img_tar_input,
         		sz_img_tar_input,
         		datatype_tar_input))
         {
-            printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_tar));
             freeMemory2<unsigned char, V3DLONG>(p_img_tar_input, sz_img_tar_input);
+            freeMemory2<unsigned char, V3DLONG>(p_img_sub_input, sz_img_sub_input);
             return false;
         }
         printf("\t>>read target image file [%s] complete.\n",qPrintable(qs_filename_img_tar));
@@ -1093,12 +1125,12 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         printf("\t\tdatatype: %d\n",datatype_tar_input);
 
         int datatype_sub_input=0;
-        if(!loadImage((char *)qPrintable(qs_filename_img_sub),
+        if(!wrapperLoadImage((char *)qPrintable(qs_filename_img_sub),
         		p_img_sub_input,
         		sz_img_sub_input,
         		datatype_sub_input))
         {
-            printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_sub));
+            freeMemory2<unsigned char, V3DLONG>(p_img_tar_input, sz_img_tar_input);
             freeMemory2<unsigned char, V3DLONG>(p_img_sub_input, sz_img_sub_input);
             return false;
         }
