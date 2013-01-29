@@ -71,7 +71,7 @@ private:
     int mode;
     V3DLONG x0,x1,y0,y1,z0,z1;
     V3DLONG qx0, qx1, qy0, qy1, qz0, qz1;
-    int iXmax, iYmax, iZmax;
+    V3DLONG iXmax, iYmax, iZmax;
 
     QString modeString;
 

@@ -103,8 +103,10 @@ VolumePatternIndex::VolumePatternIndex()
     qx0=qx1=qy0=qy1=qz0=qz1=-1;
     indexData=0L;
     indexTotalBytes=-1L;
-    matrix=0;
+    matrix=0L;
     unitSize=DEFAULT_UNIT_SIZE;
+    threshold=0L;
+    maxHits=DEFAULT_MAX_HITS;
 }
 
 VolumePatternIndex::~VolumePatternIndex()
@@ -185,11 +187,17 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             }
         }
     }
-    if (matrix==0) {
+    if (matrix==0L) {
         if (!parseMatrixString(DEFAULT_MATRIX_STRING)) {
             qDebug() << "Could not parse default matrix string=" << DEFAULT_MATRIX_STRING;
             return 0;
         }
+    }
+    if (threshold==0L) {
+        threshold=new int[3];
+        threshold[0]=DEFAULT_THRESHOLD_A;
+        threshold[1]=DEFAULT_THRESHOLD_B;
+        threshold[2]=DEFAULT_THRESHOLD_C;
     }
     return 0;
 }
@@ -361,6 +369,9 @@ bool VolumePatternIndex::createIndex()
 }
 
 bool VolumePatternIndex::openIndexAndWriteHeader() {
+
+    qDebug() << "Writing header file...";
+
     fid=fopen(indexFilePath.toAscii().data(), "wb");
     if (!fid) {
         qDebug() << "Could not open file=" << indexFilePath << " to write";
@@ -376,14 +387,17 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
     //    c) the thresholds (number and values)
 
     // 1. Image Size
-    fwrite(&x0, sizeof(int), 1, fid);
-    fwrite(&x1, sizeof(int), 1, fid);
 
-    fwrite(&y0, sizeof(int), 1, fid);
-    fwrite(&y1, sizeof(int), 1, fid);
+    qDebug() << "x0=" << x0 << " x1=" << x1 << " y0=" << y0 << " y1=" << y1 << " z0=" << z0 << " z1=" << z1;
 
-    fwrite(&z0, sizeof(int), 1, fid);
-    fwrite(&z1, sizeof(int), 1, fid);
+    fwrite(&x0, sizeof(V3DLONG), 1, fid);
+    fwrite(&x1, sizeof(V3DLONG), 1, fid);
+
+    fwrite(&y0, sizeof(V3DLONG), 1, fid);
+    fwrite(&y1, sizeof(V3DLONG), 1, fid);
+
+    fwrite(&z0, sizeof(V3DLONG), 1, fid);
+    fwrite(&z1, sizeof(V3DLONG), 1, fid);
 
     // 2. Unit Size
 
@@ -399,9 +413,9 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
 
     // 4. Cube Size
 
-    fwrite(&iXmax, sizeof(int), 1, fid);
-    fwrite(&iYmax, sizeof(int), 1, fid);
-    fwrite(&iZmax, sizeof(int), 1, fid);
+    fwrite(&iXmax, sizeof(V3DLONG), 1, fid);
+    fwrite(&iYmax, sizeof(V3DLONG), 1, fid);
+    fwrite(&iZmax, sizeof(V3DLONG), 1, fid);
 
     // 5. Number of Index Files
 
@@ -438,6 +452,7 @@ bool VolumePatternIndex::doSearch()
 
     qDebug() << "Read query...";
     ImageLoader queryLoader;
+    queryImage=new My4DImage();
     if (!queryLoader.loadImage(queryImage, queryImageFilePath)) {
         qDebug() << "Could not load query image file=" << queryImageFilePath;
         return false;
@@ -469,11 +484,15 @@ bool VolumePatternIndex::doSearch()
 
     QList< QPair<V3DLONG, int> > pairList;
 
+    qDebug() << "indexScoreList size=" << indexScoreList.size();
+
     for (int i=0;i<indexScoreList.size();i++) {
         pairList.append(qMakePair(indexScoreList[i], i));
     }
 
     qSort(pairList.begin(), pairList.end(), VolumePatternIndex::compareScores);
+
+    qDebug() << "pairList size=" << pairList.size();
 
     int finalResultSize=maxHits;
     if (finalResultSize>pairList.size()) {
@@ -483,6 +502,8 @@ bool VolumePatternIndex::doSearch()
     QList< QPair<V3DLONG, int> > finalResultList;
 
     if (fullSearch) {
+
+        qDebug() << "Doing full search";
 
         QList< QPair<V3DLONG, int> > fullScoreList;
 
@@ -512,7 +533,9 @@ bool VolumePatternIndex::doSearch()
         }
 
     } else {
-        // Just use initial results
+
+        qDebug() << "Using initial results, finalResultSize=" << finalResultSize;
+
         for (int i=0;i<finalResultSize;i++) {
             finalResultList.append(pairList[i]);
         }
@@ -619,6 +642,7 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
         }
     }
     if (indexData==0L) {
+        qDebug() << "Allocating indexData of size indexTotalBytes=" << indexTotalBytes;
         indexData=new unsigned char[indexTotalBytes];
     }
     for (int j=0;j<indexTotalBytes;j++) {
@@ -672,6 +696,7 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
 
 bool VolumePatternIndex::openIndexAndReadHeader()
 {
+    qDebug() << "Reading header file...";
     fid=fopen(indexFilePath.toAscii().data(), "rb");
     if (!fid) {
         qDebug() << "Could not open file=" << indexFilePath << " to read";
@@ -679,14 +704,16 @@ bool VolumePatternIndex::openIndexAndReadHeader()
     }
 
     // 1. Image Size
-    fread(&x0, sizeof(int), 1, fid);
-    fread(&x1, sizeof(int), 1, fid);
+    fread(&x0, sizeof(V3DLONG), 1, fid);
+    fread(&x1, sizeof(V3DLONG), 1, fid);
 
-    fread(&y0, sizeof(int), 1, fid);
-    fread(&y1, sizeof(int), 1, fid);
+    fread(&y0, sizeof(V3DLONG), 1, fid);
+    fread(&y1, sizeof(V3DLONG), 1, fid);
 
-    fread(&z0, sizeof(int), 1, fid);
-    fread(&z1, sizeof(int), 1, fid);
+    fread(&z0, sizeof(V3DLONG), 1, fid);
+    fread(&z1, sizeof(V3DLONG), 1, fid);
+
+    qDebug() << "x0=" << x0 << " x1=" << x1 << " y0=" << y0 << " y1=" << y1 << " z0=" << z0 << " z1=" << z1;
 
     // 2. Unit Size
     fread(&unitSize, sizeof(int), 1, fid);
@@ -705,9 +732,9 @@ bool VolumePatternIndex::openIndexAndReadHeader()
     }
 
     // 4. Cube Size
-    fread(&iXmax, sizeof(int), 1, fid);
-    fread(&iYmax, sizeof(int), 1, fid);
-    fread(&iZmax, sizeof(int), 1, fid);
+    fread(&iXmax, sizeof(V3DLONG), 1, fid);
+    fread(&iYmax, sizeof(V3DLONG), 1, fid);
+    fread(&iZmax, sizeof(V3DLONG), 1, fid);
 
     V3DLONG indexTotal=iXmax*iYmax*iZmax;
     indexTotalBytes=computeTotalBytesFromIndexTotal(indexTotal);

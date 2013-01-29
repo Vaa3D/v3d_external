@@ -18,7 +18,7 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
     V3DLONG s_ymax=sourceImage->getYDim();
     V3DLONG s_zmax=sourceImage->getZDim();
 
-    if (subregion!=0) {
+    if (subregion!=0L) {
         s_xmin=subregion[0];
         s_xmax=subregion[1];
         s_ymin=subregion[2];
@@ -33,6 +33,9 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
     V3DLONG c_ymax=(s_ymax-s_ymin)/cubeSize;
     V3DLONG c_zmax=(s_zmax-s_zmin)/cubeSize;
 
+    qDebug() << "cubifyImageByChannel: s_xmin=" << s_xmin << " s_ymin=" << s_ymin << " s_zmin=" << s_zmin << " s_xmax=" << s_xmax << " s_ymax=" << s_ymax << " s_zmax=" << s_zmax <<
+                " c_xmax=" << c_xmax << " c_ymax=" << c_ymax << " c_zmax=" << c_zmax;
+
     My4DImage * cubeImage=new My4DImage();
     qDebug() << "cubifyImage() calling loadImage()";
     cubeImage->loadImage(c_xmax, c_ymax, c_zmax, s_cmax, V3D_UINT8);
@@ -42,14 +45,18 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
     V3DLONG c=sourceChannel;
     v3d_uint8 * cData=cubeImage->getRawDataAtChannel(c);
     v3d_uint8 * sData=sourceImage->getRawDataAtChannel(c);
+    V3DLONG totalCubeSize=cubeSize*cubeSize*cubeSize;
+    V3DLONG *cubeData = new V3DLONG [totalCubeSize]; // by ZJL for windows compile
     for (V3DLONG z=0;z<c_zmax;z++) {
         V3DLONG zOffset=z*c_xmax*c_ymax;
         for (V3DLONG y=0;y<c_ymax;y++) {
             V3DLONG yOffset=y*c_xmax + zOffset;
             for (V3DLONG x=0;x<c_xmax;x++) {
+                // clear cube data
+                for (V3DLONG cl=0;cl<totalCubeSize;cl++) {
+                    cubeData[cl]=0;
+                }
                 V3DLONG offset=x+yOffset;
-                //V3DLONG cubeData[cubeSize*cubeSize*cubeSize];
-                V3DLONG *cubeData = new V3DLONG [cubeSize*cubeSize*cubeSize]; // by ZJL for windows compile
                 V3DLONG zStart=z*cubeSize + s_zmin;
                 V3DLONG zEnd=(zStart+cubeSize<s_zmax?(zStart+cubeSize):s_zmax);
                 V3DLONG yStart=y*cubeSize + s_ymin;
@@ -57,13 +64,15 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
                 V3DLONG xStart=x*cubeSize + s_xmin;
                 V3DLONG xEnd=(xStart+cubeSize<s_xmax?(xStart+cubeSize):s_xmax);
                 V3DLONG cubeDataPosition=0;
-                for (V3DLONG z=zStart;z<zEnd;z++) {
+                for (V3DLONG sz=zStart;sz<zEnd;sz++) {
                     V3DLONG s_zOffset=z*s_xmax*s_ymax;
-                    for (V3DLONG y=yStart;y<yEnd;y++) {
-                        V3DLONG s_yOffset=y*s_xmax + s_zOffset;
-                        for (V3DLONG x=xStart;x<xEnd;x++) {
-                            V3DLONG sPosition=x+s_yOffset;
-                            cubeData[cubeDataPosition++]=sData[sPosition];
+                    for (V3DLONG sy=yStart;sy<yEnd;sy++) {
+                        V3DLONG s_yOffset=sy*s_xmax + s_zOffset;
+                        for (V3DLONG sx=xStart;sx<xEnd;sx++) {
+                            V3DLONG sPosition=sx+s_yOffset;
+                            //qDebug() << "cubeDataPosition=" << cubeDataPosition << " sPosition=" << sPosition;
+                            cubeData[cubeDataPosition]=sData[sPosition];
+                            cubeDataPosition++;
                         }
                     }
                 }
@@ -92,10 +101,10 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
                     }
                     cData[offset]=hval;
                 }
-                if(cubeData){ delete []cubeData; cubeData=0;}
             }
         }
     }
+    if(cubeData){ delete []cubeData; cubeData=0;}
     qDebug() << "Returning cubeImage";
     return cubeImage;
 }
@@ -111,70 +120,20 @@ My4DImage * AnalysisTools::cubifyImage(My4DImage * sourceImage, int cubeSize, in
     V3DLONG c_zmax=s_zmax/cubeSize;
 
     My4DImage * cubeImage=new My4DImage();
-    qDebug() << "cubifyImage() calling loadImage()";
     cubeImage->loadImage(c_xmax, c_ymax, c_zmax, s_cmax, V3D_UINT8);
-    qDebug() << "cubifyImage() after loadImage()";
 
     V3DLONG sSize=sourceImage->getTotalUnitNumberPerChannel();
+    V3DLONG cSize=cubeImage->getTotalUnitNumberPerChannel();
+
     for (V3DLONG c=0;c<s_cmax;c++) {
-        v3d_uint8 * cData=cubeImage->getRawDataAtChannel(c);
-        v3d_uint8 * sData=sourceImage->getRawDataAtChannel(c);
-        for (V3DLONG z=0;z<c_zmax;z++) {
-            V3DLONG zOffset=z*c_xmax*c_ymax;
-            for (V3DLONG y=0;y<c_ymax;y++) {
-                V3DLONG yOffset=y*c_xmax + zOffset;
-                for (V3DLONG x=0;x<c_xmax;x++) {
-                    V3DLONG offset=x+yOffset;
-                    //V3DLONG cubeData[cubeSize*cubeSize*cubeSize];
-                    V3DLONG *cubeData = new V3DLONG [cubeSize*cubeSize*cubeSize]; // by ZJL for windows compile
-                    V3DLONG zStart=z*cubeSize;
-                    V3DLONG zEnd=(zStart+cubeSize<s_zmax?(zStart+cubeSize):s_zmax);
-                    V3DLONG yStart=y*cubeSize;
-                    V3DLONG yEnd=(yStart+cubeSize<s_ymax?(yStart+cubeSize):s_ymax);
-                    V3DLONG xStart=x*cubeSize;
-                    V3DLONG xEnd=(xStart+cubeSize<s_xmax?(xStart+cubeSize):s_xmax);
-                    V3DLONG cubeDataPosition=0;
-                    for (V3DLONG z=zStart;z<zEnd;z++) {
-                        V3DLONG s_zOffset=z*s_xmax*s_ymax;
-                        for (V3DLONG y=yStart;y<yEnd;y++) {
-                            V3DLONG s_yOffset=y*s_xmax + s_zOffset;
-                            for (V3DLONG x=xStart;x<xEnd;x++) {
-                                V3DLONG sPosition=x+s_yOffset;
-                                cubeData[cubeDataPosition++]=sData[sPosition];
-                            }
-                        }
-                    }
-                    if (type==CUBIFY_TYPE_AVERAGE) {
-                        V3DLONG avg=0;
-                        for (V3DLONG a=0;a<cubeDataPosition;a++) {
-                            avg+=cubeData[a];
-                        }
-                        avg/=cubeDataPosition;
-                        cData[offset]=avg;
-                    } else if (type==CUBIFY_TYPE_MODE) {
-                        V3DLONG histogram[256];
-                        for (int h=0;h<256;h++) {
-                            histogram[h]=0;
-                        }
-                        for (V3DLONG a=0;a<cubeDataPosition;a++) {
-                            histogram[cubeData[a]]++;
-                        }
-                        V3DLONG hmax=0;
-                        v3d_uint8 hval=0;
-                        for (int h=0;h<256;h++) {
-                            if (histogram[h]>hmax) {
-                                hmax=histogram[h];
-                                hval=h;
-                            }
-                        }
-                        cData[offset]=hval;
-                    }
-                    if(cubeData){ delete []cubeData; cubeData=0;}
-                }
-            }
+        My4DImage * cImage=AnalysisTools::cubifyImageByChannel(sourceImage, c, cubeSize, type, 0L);
+        v3d_uint8 * cData=cImage->getRawDataAtChannel(0);
+        v3d_uint8 * tData=cubeImage->getRawDataAtChannel(c);
+        for (V3DLONG i=0;i<cSize;i++) {
+            tData[i]=cData[i];
         }
+        delete cImage;
     }
-    qDebug() << "Returning cubeImage";
     return cubeImage;
 }
 
