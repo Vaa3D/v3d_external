@@ -116,7 +116,7 @@ private:
     V3DLONG computeTotalBytesFromIndexTotal(V3DLONG indexTotal);
 
     static bool compareScores(QPair<V3DLONG, int> p1, QPair<V3DLONG, int> p2) {
-        if (p1.first < p2.first) {
+        if (p1.first > p2.first) {
             return true;
         } else {
             return false;
