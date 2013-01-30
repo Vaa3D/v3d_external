@@ -83,7 +83,7 @@ const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 10;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 13;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
-const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -2 -4 -1 1 2 0 -2 2 4 8 -4 0 8 16");
+const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -4 -8 -1 2 2 0 -4 2 8 8 -8 0 8 32");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
