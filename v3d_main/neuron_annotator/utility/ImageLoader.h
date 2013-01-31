@@ -56,7 +56,7 @@ public:
 
     bool saveImage(My4DImage *stackp, const char* filepath, bool saveTo8bit=false);
     bool saveImage(My4DImage * stackp, const QString& filepath, bool saveTo8bit=false) {
-        saveImage(stackp, filepath.toStdString().c_str(), saveTo8bit);
+        return saveImage(stackp, filepath.toStdString().c_str(), saveTo8bit);
     }
 
     int processArgs(vector<char*> *argList);
