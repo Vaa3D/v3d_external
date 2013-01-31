@@ -60,13 +60,13 @@
                   empty      low      medium      high
 
 
-       empty        0        -1        -4        -16
+       empty        0        -1        -2       -4
 
-Qry    low         -1         2         2         0
+Qry    low         -1         2        -1       -2
 
-       medium      -4         2         8         8
+       medium      -2        -1        16        2
 
-       high        -16         0        8         32
+       high        -4        -2         2       32
 
 
  */
@@ -83,7 +83,7 @@ const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
-const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -4 -16 -1 2 2 0 -4 2 8 8 -16 0 8 32");
+const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -2 -4   -1 2 -1 -2    -2 -1 16 2    -4 -2 2 32");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
@@ -311,6 +311,16 @@ void VolumePatternIndex::formatSubregion(V3DLONG* subregion)
     subregion[5]=z1;
 }
 
+void VolumePatternIndex::formatQuerySubregion(V3DLONG* subregion)
+{
+    subregion[0]=qx0;
+    subregion[1]=qx1;
+    subregion[2]=qy0;
+    subregion[3]=qy1;
+    subregion[4]=qz0;
+    subregion[5]=qz1;
+}
+
 bool VolumePatternIndex::createIndex()
 {
     qDebug() << "createIndex() start";
@@ -462,8 +472,18 @@ bool VolumePatternIndex::doSearch()
     }
 
     qDebug() << "Convert query to index format...";
-    V3DLONG* subregion=new V3DLONG[6];
-    formatSubregion(subregion);
+    V3DLONG* subregion=0L;
+    if (qx0==-1L) {
+        qx0=0;
+        qx1=queryImage->getXDim();
+        qy0=0;
+        qy1=queryImage->getYDim();
+        qz0=0;
+        qz1=queryImage->getZDim();
+    } else {
+        subregion=new V3DLONG[6];
+        formatQuerySubregion(subregion);
+    }
     if ((indexData=indexImage(queryImage, queryChannel, subregion, indexData))==0) {
         qDebug() << "Error indexing query";
         return false;
@@ -530,10 +550,10 @@ bool VolumePatternIndex::doSearch()
             int index=p.second;
             QString filename=indexFileList[index];
             ImageLoader loader;
-            My4DImage* currentImage;
+            My4DImage* currentImage=new My4DImage();
             qDebug() << "Full search - loading " << filename << "...";
             loader.loadImage(currentImage, filename);
-            qDebug() << "              scoring...";
+            qDebug() << "Scoring...";
             V3DLONG score;
             int subjectChannel=indexChannelList[index];
             if (!calculateImageScore(queryImage, currentImage, subjectChannel, &score)) {
@@ -541,6 +561,7 @@ bool VolumePatternIndex::doSearch()
                 return false;
             }
             fullScoreList.append(qMakePair(score, index));
+            delete currentImage;
         }
 
         qSort(fullScoreList.begin(), fullScoreList.end(), VolumePatternIndex::compareScores);
@@ -848,6 +869,13 @@ bool VolumePatternIndex::calculateImageScore(My4DImage* queryImage, My4DImage* s
 
     V3DLONG localScore=0L;
 
+    V3DLONG* matrixBins=new V3DLONG[16];
+    V3DLONG* matrixScores=new V3DLONG[16];
+    for (int m=0;m<16;m++) {
+        matrixBins[m]=0L;
+        matrixScores[m]=0L;
+    }
+
     v3d_uint8* subjectData=subjectImage->getRawDataAtChannel(subjectChannel);
     v3d_uint8* queryData=queryImage->getRawDataAtChannel(queryChannel);
 
@@ -883,11 +911,20 @@ bool VolumePatternIndex::calculateImageScore(My4DImage* queryImage, My4DImage* s
                 } // then implicitly=3
 
                 int matrixPosition=qPosition*4+sPosition;
-                localScore+=matrix[matrixPosition];
+                matrixBins[matrixPosition] += 1;
+                int mScore=matrix[matrixPosition];
+                matrixScores[matrixPosition] += mScore;
+                localScore += mScore;
             }
         }
     }
     *score=localScore;
+    qDebug() << "Local score=" << localScore;
+    for (int m=0;m<16;m++) {
+        qDebug() << m << "=" << matrixBins[m] << "  " << matrixScores[m];
+    }
+    delete [] matrixBins;
+    delete [] matrixScores;
     return true;
 }
 

@@ -110,6 +110,7 @@ private:
     unsigned char* indexImage(My4DImage* image, int channel, V3DLONG* subregion, unsigned char* indexData);
 
     void formatSubregion(V3DLONG* subregion);
+    void formatQuerySubregion(V3DLONG* subregion);
 
     V3DLONG calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal);
     bool calculateImageScore(My4DImage* queryImage, My4DImage* subjectImage, int subjectChannel, V3DLONG* score);
