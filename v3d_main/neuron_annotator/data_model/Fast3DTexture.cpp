@@ -423,7 +423,7 @@ void Fast3DTexture::loadNextVolume()
         QueuedVolume v = volumeQueue.front();
         volumeQueue.pop_front();
         if (QFile(v.fileName).exists()) {
-            qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
+            // qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
             loadFile(v.fileName, v.channel);
             break;
         }

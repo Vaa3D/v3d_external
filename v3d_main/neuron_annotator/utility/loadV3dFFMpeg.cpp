@@ -52,6 +52,8 @@ bool loadStackFFMpeg(const char* fileName, Image4DSimple& img)
 {
     try {
         FFMpegVideo video(fileName);
+        if (! video.isOpen)
+            return false;
         int sx = video.getWidth();
         int sy = video.getHeight();
         int sz = video.getNumberOfFrames();

@@ -85,11 +85,12 @@ FFMpegVideo::FFMpegVideo(PixelFormat pixelFormat)
 }
 
 FFMpegVideo::FFMpegVideo(const std::string& fileName, PixelFormat pixelFormat)
+    : isOpen(false)
 {
     QMutexLocker lock(&FFMpegVideo::mutex);
     initialize();
     format = pixelFormat;
-    open(fileName, pixelFormat);
+    isOpen = open(fileName, pixelFormat);
 }
 
 /* virtual */

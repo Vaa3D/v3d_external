@@ -123,7 +123,7 @@ extern "C" {
 //#define _ALLOW_WORKMODE_MENU_    //indeed this seems not really working well, as many plugins need to add additional src files, noted PHC, 20130127
 
 #ifdef _ALLOW_WORKMODE_MENU_
-#include "../neuron_annotator/utility/ImageLoader.h"
+#include "../neuron_annotator/utility/ImageLoaderBasic.h"
 #endif
 
 
@@ -3686,13 +3686,12 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_    
-	else if (curFileSuffix && ImageLoader::hasPbdExtension(QString(imgSrcFile)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+	else if (curFileSuffix && ImageLoaderBasic::hasPbdExtension(imgSrcFile) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
 		v3d_msg("prepare for pbd file loading", 0);
 		Image4DSimple *tmpimg=new Image4DSimple;
 		
-	    ImageLoader imageLoader;
-	    QString imageSrcFile(imgSrcFile);
+	    ImageLoaderBasic imageLoader;
 	    if (!imageLoader.loadImage(tmpimg, imgSrcFile)) {
 	        printf("Error happens in v3dpbd file reading. Stop. \n");
 	        return false;

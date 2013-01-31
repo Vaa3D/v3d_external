@@ -67,6 +67,7 @@ public:
     AVCodecContext *pCtx;
     int videoStream;
     int previousFrameIndex;
+    bool isOpen;
 
 protected:
     static bool b_is_one_time_inited;

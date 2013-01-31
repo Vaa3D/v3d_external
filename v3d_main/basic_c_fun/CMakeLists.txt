@@ -15,6 +15,8 @@ set(V3DInterface_SRCS
   stackutil.cpp
   v3d_message.cpp
   # vcdiff.cpp
+  ../neuron_annotator/utility/ImageLoaderBasic.cpp
+  basic_4dimage_create.cpp
   )
   
 if (WIN32)
@@ -27,6 +29,9 @@ add_library(V3DInterface ${V3DInterface_SRCS})
 
 target_link_libraries(V3DInterface ${TIFF_LIBRARY})
 target_link_libraries(V3DInterface ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+if (NOT WIN32)
+    target_link_libraries(V3DInterface mylib_tiff)
+endif()
 
 if(V3D_USE_OWN_TIFF)
     add_dependencies(V3DInterface CustomTiffLibrary)

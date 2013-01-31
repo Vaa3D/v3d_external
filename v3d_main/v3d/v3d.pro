@@ -153,6 +153,7 @@ HEADERS += \
     ../neuron_annotator/utility/FooDebug.h \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.h \
     ../neuron_annotator/utility/StitchedFileUtility.h \
+    ../neuron_annotator/utility/ImageLoaderBasic.h \
     ../neuron_annotator/utility/ImageLoader.h \
     ../neuron_annotator/DataFlowModel.h \
     ../neuron_annotator/utility/NeuronMaskEntry.h \
@@ -294,6 +295,7 @@ SOURCES += \
     ../neuron_annotator/utility/Icons.cpp \
     ../neuron_annotator/utility/DataThread.cpp \
     ../neuron_annotator/utility/ConsoleObserver.cpp \
+    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
     ../neuron_annotator/utility/ImageLoader.cpp \
     ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
     ../neuron_annotator/analysis/AlignerUtils.cpp \

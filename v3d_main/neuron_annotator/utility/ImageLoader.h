@@ -1,17 +1,16 @@
 #ifndef IMAGELOADER_H
 #define IMAGELOADER_H
 
+#include "ImageLoaderBasic.h"
 #include <QNetworkAccessManager>
 #include <QIODevice>
 #include <QString>
 #include <QtCore>
 #include <QDir>
-#include "../../v3d/v3d_core.h"
 
 using namespace std;
 
-
-class ImageLoader : public QObject, public QRunnable
+class ImageLoader : public QObject, public QRunnable, ImageLoaderBasic
 {
 
 Q_OBJECT
@@ -27,23 +26,8 @@ public:
     static const int MODE_MIP;
     static const int MODE_MAP_CHANNELS;
 
-    static const unsigned char oooooool;
-    static const unsigned char oooooolo;
-    static const unsigned char ooooooll;
-    static const unsigned char oooooloo;
-    static const unsigned char ooooolol;
-    static const unsigned char ooooollo;
-    static const unsigned char ooooolll;
-
     static string getCommandLineDescription() {
         return "image-loader";
-    }
-
-    static bool hasPbdExtension(QString filename) {
-        if (filename.endsWith(".pbd") || filename.endsWith(".v3dpbd") || filename.endsWith(".vaa3dpbd")) {
-            return true;
-        }
-        return false;
     }
 
     static string getUsage() {
@@ -62,24 +46,22 @@ public:
     bool validateFile();
 
     // URL versions, as oppose to file name versions
+    My4DImage* loadImage(const char* filepath);
     My4DImage* loadImage(QUrl url);
+    virtual bool loadImage(Image4DSimple * stackp, const char* filepath);
     bool loadImage(Image4DSimple * stackp, QUrl url);
-    int loadRaw2StackPBD(QUrl url, Image4DSimple * & image, bool useThreading);
-    int loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * & image, bool useThreading);
+    virtual int loadRaw2StackPBD(const char * filename, Image4DSimple * image, bool useThreading);
+    int loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThreading);
+    int loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * image, bool useThreading);
 
-    My4DImage* loadImage(QString filepath);
-    bool loadImage(Image4DSimple * stackp, QString filepath);
-    bool saveImage(My4DImage * stackp, QString filepath);
-    bool saveImage(My4DImage *stackp, QString filepath, bool saveTo8bit);
-
-    int saveStack2RawPBD(const char * filename, ImagePixelType dataType, unsigned char* data, const V3DLONG * sz);
-    int loadRaw2StackPBD(const char * filename, Image4DSimple * & image, bool useThreading);
+    bool saveImage(My4DImage *stackp, const char* filepath, bool saveTo8bit=false);
+    bool saveImage(My4DImage * stackp, const QString& filepath, bool saveTo8bit=false) {
+        saveImage(stackp, filepath.toStdString().c_str(), saveTo8bit);
+    }
 
     int processArgs(vector<char*> *argList);
-    QString getFilePrefix(QString filepath);
+    QString getFilePrefix(const char* filepath);
 
-    V3DLONG decompressPBD8(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
-    V3DLONG decompressPBD16(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
     void create2DMIPFromStack(My4DImage * image, QString mipFilepath);
     My4DImage* create2DMIPFromStack(My4DImage * image);
 
@@ -91,8 +73,6 @@ public:
 
     unsigned char * convertType2Type1(My4DImage *image);
     void convertType2Type1InPlace(My4DImage *image);
-
-    bool isCanceled() const {return bIsCanceled;}
 
 public slots:
     void cancel() {
@@ -108,34 +88,28 @@ signals:
     void progressMessageChanged(QString message);
     void canceled();
 
+protected:
+    virtual int exitWithError(QString errorMessage) {
+        return exitWithError(errorMessage.toStdString());
+    }
+    virtual int exitWithError(std::string errorMessage) {
+        return exitWithError(errorMessage.c_str());
+    }
+    virtual int exitWithError(const char* errorMessage) {
+        int berror = ImageLoaderBasic::exitWithError(errorMessage);
+        emit progressAborted(progressIndex);
+        return berror;
+    }
+
 private:
     int mode;
     QString inputFilepath;
     QString targetFilepath;
     QString mapChannelString;
     My4DImage * image;
-    FILE * fid;
-    QVector<char> keyread;
     bool flipy;
-    int loadDatatype;
-
-    V3DLONG compressPBD8(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
-    V3DLONG compressPBD16(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
-    int exitWithError(QString errorMessage);
-    void updateCompressionBuffer8(unsigned char * updatedCompressionBuffer);
-    void updateCompressionBuffer16(unsigned char * updatedCompressionBuffer);
-
-    V3DLONG totalReadBytes;
-    V3DLONG maxDecompressionSize;
-    std::vector<unsigned char> compressionBuffer;
-    unsigned char * decompressionBuffer;
-    unsigned char * compressionPosition;
-    unsigned char * decompressionPosition;
-    int decompressionPrior;
-
     int progressIndex;
 
-    volatile bool bIsCanceled;
     QNetworkAccessManager networkManager;
 };
 

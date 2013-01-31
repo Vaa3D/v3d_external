@@ -40,7 +40,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "basic_4dimage.h"
 
 #ifdef _ALLOW_WORKMODE_MENU_
-#include "../neuron_annotator/utility/ImageLoader.h"
+#include "../neuron_annotator/utility/ImageLoaderBasic.h"
 #endif
 
 typedef unsigned short int USHORTINT16;
@@ -142,10 +142,9 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
     //else if ( curFileSurfix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     else if ( curFileSurfix && strcasecmp(curFileSurfix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
-    	v3d_msg("start to try v3dpbd", 0);
-        ImageLoader imageLoader;
-        QString imageSrcFile(imgSrcFile);
-        if (!imageLoader.loadImage(this, imageSrcFile)) {
+    	  v3d_msg("start to try v3dpbd", 0);
+        ImageLoaderBasic imageLoader;
+        if (! imageLoader.loadRaw2StackPBD(imgSrcFile, this, false) == 0) {
             v3d_msg("Error happens in v3dpbd file reading. Stop. \n", false);
             b_error=1;
             return;
