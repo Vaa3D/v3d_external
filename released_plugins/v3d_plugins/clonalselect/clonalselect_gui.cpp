@@ -629,6 +629,8 @@ void ColonalSelectWidget::updateDir(const QString &dir)
         m_maskfolder = dir;
         cmFileList = importSeriesFileList(m_maskfolder, "*.pcd");
 
+        cmNameList.clear();
+        m_cmList.clear();
         foreach (QString cmFile, cmFileList)
         {
             QString cmName = QFileInfo(cmFile).baseName(); // .pcd
