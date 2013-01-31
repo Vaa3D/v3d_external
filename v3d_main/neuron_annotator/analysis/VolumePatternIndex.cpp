@@ -60,13 +60,13 @@
                   empty      low      medium      high
 
 
-       empty        0        -1        -4        -8
+       empty        0        -1        -4        -16
 
 Qry    low         -1         2         2         0
 
        medium      -4         2         8         8
 
-       high        -8         0         8        32
+       high        -16         0        8         32
 
 
  */
@@ -80,10 +80,10 @@ const int VolumePatternIndex::FILENAME_BUFFER_SIZE = 2000;
 
 const int VolumePatternIndex::DEFAULT_UNIT_SIZE = 10;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
-const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 10;
-const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 13;
+const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
+const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
-const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -4 -8 -1 2 2 0 -4 2 8 8 -8 0 8 32");
+const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -4 -16 -1 2 2 0 -4 2 8 8 -16 0 8 32");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
@@ -582,7 +582,8 @@ V3DLONG VolumePatternIndex::computeTotalBytesFromIndexTotal(V3DLONG indexTotal) 
 V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal)
 {
     V3DLONG score=0L;
-    V3DLONG initialTotal=indexTotal/4;
+    V3DLONG initialTotalDiv=indexTotal/4;
+    V3DLONG firstTotal = initialTotalDiv * 4;
 
     unsigned char oooooo11 = 3;
     unsigned char s1=0;
@@ -591,7 +592,7 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
 //    qDebug() << "calculateIndexScore start";
 
-    for (V3DLONG i=0;i<initialTotal;i=i+4) {
+    for (V3DLONG i=0;i<firstTotal;i++) {
         unsigned char s=*subjectIndex;
         unsigned char q=*queryIndex;
 
@@ -610,11 +611,11 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 //               qDebug() << "i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
 //            }
 
-            int scoreIncrement=matrix[scorePosition];
+//            int scoreIncrement=matrix[scorePosition];
 
-            if (scoreIncrement>2) {
-                qDebug() << "score=" << scoreIncrement << " position=" << scorePosition;
-            }
+//            if (scoreIncrement>2) {
+//                qDebug() << "score=" << scoreIncrement << " position=" << scorePosition;
+//            }
 
             score+=matrix[scorePosition];
 
@@ -625,7 +626,7 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
         queryIndex++;
     }
 
-    for (V3DLONG i=initialTotal;i<indexTotal;) {
+    for (V3DLONG i=firstTotal;i<indexTotal;) {
         unsigned char s=*subjectIndex;
         unsigned char q=*queryIndex;
 
@@ -674,6 +675,10 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
             return false;
         }
     }
+
+//    ImageLoader debugLoader;
+//    debugLoader.saveImage(cubifiedImage, "cubifiedDebugImage.v3dpbd");
+
     // Next, we will walk through the image and gradually populate a binary structure with the scores.
     V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
     // We can store 4 2-bit values per 8-bit byte, so these are the number of bytes we need:

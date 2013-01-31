@@ -65,7 +65,7 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
                 V3DLONG xEnd=(xStart+cubeSize<s_xmax?(xStart+cubeSize):s_xmax);
                 V3DLONG cubeDataPosition=0;
                 for (V3DLONG sz=zStart;sz<zEnd;sz++) {
-                    V3DLONG s_zOffset=z*s_xmax*s_ymax;
+                    V3DLONG s_zOffset=sz*s_xmax*s_ymax;
                     for (V3DLONG sy=yStart;sy<yEnd;sy++) {
                         V3DLONG s_yOffset=sy*s_xmax + s_zOffset;
                         for (V3DLONG sx=xStart;sx<xEnd;sx++) {
