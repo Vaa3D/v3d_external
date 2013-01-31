@@ -60,13 +60,13 @@
                   empty      low      medium      high
 
 
-       empty        0        -1        -2       -4
+       empty        0        -1        -4      -16
 
-Qry    low         -1         2        -1       -2
+Qry    low         -1         1        -1       -8
 
-       medium      -2        -1        16        2
+       medium      -4        -1         8        4
 
-       high        -4        -2         2       32
+       high       -16        -8         4       32
 
 
  */
@@ -83,7 +83,7 @@ const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
-const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -2 -4   -1 2 -1 -2    -2 -1 16 2    -4 -2 2 32");
+const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -4 -16   -1 1 -1 -8    -4 -1 8 4    -16 -8 4 32");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
@@ -611,6 +611,14 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
     unsigned char q1=0;
     int scorePosition=0;
 
+    V3DLONG* matrixBins = new V3DLONG[16];
+    V3DLONG* matrixScores = new V3DLONG[16];
+
+    for (int i=0;i<16;i++) {
+        matrixBins[i]=0L;
+        matrixScores[i]=0L;
+    }
+
 //    qDebug() << "calculateIndexScore start";
 
     for (V3DLONG i=0;i<firstTotal;i++) {
@@ -640,6 +648,9 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
             score+=matrix[scorePosition];
 
+            matrixBins[scorePosition] += 1;
+            matrixScores[scorePosition] += matrix[scorePosition];
+
             s >>= 2;
             q >>= 2;
         }
@@ -659,6 +670,9 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
                 scorePosition = q1*4+s1;
                 score+=matrix[scorePosition];
 
+                matrixBins[scorePosition] += 1;
+                matrixScores[scorePosition] += matrix[scorePosition];
+
                 s >>= 2;
                 q >>= 2;
             }
@@ -669,6 +683,23 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
     }
 
 //    qDebug() << "Returning score=" << score;
+
+    qDebug() << "Bins:";
+
+    qDebug() << matrixBins[0] << " " << matrixBins[1] << " " << matrixBins[2] << " " << matrixBins[3];
+    qDebug() << matrixBins[4] << " " << matrixBins[5] << " " << matrixBins[6] << " " << matrixBins[7];
+    qDebug() << matrixBins[8] << " " << matrixBins[9] << " " << matrixBins[10] << " " << matrixBins[11];
+    qDebug() << matrixBins[12] << " " << matrixBins[13] << " " << matrixBins[14] << " " << matrixBins[15];
+
+    qDebug() << "Scores:";
+
+    qDebug() << matrixScores[0] << " " << matrixScores[1] << " " << matrixScores[2] << " " << matrixScores[3];
+    qDebug() << matrixScores[4] << " " << matrixScores[5] << " " << matrixScores[6] << " " << matrixScores[7];
+    qDebug() << matrixScores[8] << " " << matrixScores[9] << " " << matrixScores[10] << " " << matrixScores[11];
+    qDebug() << matrixScores[12] << " " << matrixScores[13] << " " << matrixScores[14] << " " << matrixScores[15];
+
+    delete [] matrixBins;
+    delete [] matrixScores;
 
     return score;
 }
