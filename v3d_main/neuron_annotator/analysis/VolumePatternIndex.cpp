@@ -553,12 +553,12 @@ bool VolumePatternIndex::doSearch()
             return false;
         }
         qDebug() << "Calculating index score for " << indexFileList[i];
-        QString filename=indexFileList[i];
-        if (filename.contains("20111102102342562")) {
-            DEBUG_FLAG=true;
-        } else {
-            DEBUG_FLAG=false;
-        }
+//        QString filename=indexFileList[i];
+//        if (filename.contains("20111102102342562")) {
+//            DEBUG_FLAG=true;
+//        } else {
+//            DEBUG_FLAG=false;
+//        }
         V3DLONG score=calculateIndexScore(queryIndex, indexData, indexTotal);
         //qDebug() << i << ". score=" << score;
         indexScoreList.append(score);
@@ -693,9 +693,9 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
             scorePosition = q1*4+s1;
 
-            if (DEBUG_FLAG) {
-               qDebug() << " i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
-            }
+//            if (DEBUG_FLAG) {
+//               qDebug() << " i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
+//            }
 
 //            int scoreIncrement=matrix[scorePosition];
 
@@ -726,9 +726,9 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
                 scorePosition = q1*4+s1;
 
-                if (DEBUG_FLAG) {
-                   qDebug() << " i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
-                }
+//                if (DEBUG_FLAG) {
+//                   qDebug() << " i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
+//                }
 
                 score+=matrix[scorePosition];
 
@@ -745,19 +745,19 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
 //    qDebug() << "Returning score=" << score;
 
-    qDebug() << "Bins:";
+//    qDebug() << "Bins:";
 
-    qDebug() << matrixBins[0] << " " << matrixBins[1] << " " << matrixBins[2] << " " << matrixBins[3];
-    qDebug() << matrixBins[4] << " " << matrixBins[5] << " " << matrixBins[6] << " " << matrixBins[7];
-    qDebug() << matrixBins[8] << " " << matrixBins[9] << " " << matrixBins[10] << " " << matrixBins[11];
-    qDebug() << matrixBins[12] << " " << matrixBins[13] << " " << matrixBins[14] << " " << matrixBins[15];
+//    qDebug() << matrixBins[0] << " " << matrixBins[1] << " " << matrixBins[2] << " " << matrixBins[3];
+//    qDebug() << matrixBins[4] << " " << matrixBins[5] << " " << matrixBins[6] << " " << matrixBins[7];
+//    qDebug() << matrixBins[8] << " " << matrixBins[9] << " " << matrixBins[10] << " " << matrixBins[11];
+//    qDebug() << matrixBins[12] << " " << matrixBins[13] << " " << matrixBins[14] << " " << matrixBins[15];
 
-    qDebug() << "Scores:";
+//    qDebug() << "Scores:";
 
-    qDebug() << matrixScores[0] << " " << matrixScores[1] << " " << matrixScores[2] << " " << matrixScores[3];
-    qDebug() << matrixScores[4] << " " << matrixScores[5] << " " << matrixScores[6] << " " << matrixScores[7];
-    qDebug() << matrixScores[8] << " " << matrixScores[9] << " " << matrixScores[10] << " " << matrixScores[11];
-    qDebug() << matrixScores[12] << " " << matrixScores[13] << " " << matrixScores[14] << " " << matrixScores[15];
+//    qDebug() << matrixScores[0] << " " << matrixScores[1] << " " << matrixScores[2] << " " << matrixScores[3];
+//    qDebug() << matrixScores[4] << " " << matrixScores[5] << " " << matrixScores[6] << " " << matrixScores[7];
+//    qDebug() << matrixScores[8] << " " << matrixScores[9] << " " << matrixScores[10] << " " << matrixScores[11];
+//    qDebug() << matrixScores[12] << " " << matrixScores[13] << " " << matrixScores[14] << " " << matrixScores[15];
 
     delete [] matrixBins;
     delete [] matrixScores;
