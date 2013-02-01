@@ -83,7 +83,8 @@ const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
-const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("0 -1 -4 -16   -1 1 -1 -8    -4 -1 8 4    -16 -8 4 32");
+const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("      0 -1 -4 -16       -1 1 -1 -8       -4 -1 8 4     -16 -8 4 32 ");
+const QString VolumePatternIndex::DEFAULT_FULL_MATRIX_STRING(" 0  0 -4 -16        0 0 -1 -8       -8 -1 8 4     -32 -8 4 32 ");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
@@ -102,11 +103,14 @@ VolumePatternIndex::VolumePatternIndex()
     x0=x1=y0=y1=z0=z1=-1;
     qx0=qx1=qy0=qy1=qz0=qz1=-1;
     indexData=0L;
+    queryIndex=0L;
     indexTotalBytes=-1L;
     matrix=0L;
+    fullmatrix=0L;
     unitSize=DEFAULT_UNIT_SIZE;
     threshold=0L;
     maxHits=DEFAULT_MAX_HITS;
+    DEBUG_FLAG=false;
 }
 
 VolumePatternIndex::~VolumePatternIndex()
@@ -168,6 +172,11 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             if (!parseMatrixString(matrixString)) {
                 qDebug() << "Could not parse matrix string=" << matrixString;
             }
+        } else if (arg=="-fullmatrix") {
+            QString fullmatrixString=(*argList)[++i];
+            if (!parseFullMatrixString(fullmatrixString)) {
+                qDebug() << "Could not parse full matrix string=" << fullmatrixString;
+            }
         }
     }
     if (modeString.size()>0) {
@@ -190,6 +199,12 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
     if (matrix==0L) {
         if (!parseMatrixString(DEFAULT_MATRIX_STRING)) {
             qDebug() << "Could not parse default matrix string=" << DEFAULT_MATRIX_STRING;
+            return 1;
+        }
+    }
+    if (fullmatrix==0L) {
+        if (!parseFullMatrixString(DEFAULT_FULL_MATRIX_STRING)) {
+            qDebug() << "Could not parse default full matrix string=" << DEFAULT_FULL_MATRIX_STRING;
             return 1;
         }
     }
@@ -248,7 +263,7 @@ bool VolumePatternIndex::parseThresholdString(QString thresholdString) {
 
 bool VolumePatternIndex::parseMatrixString(QString matrixString) {
     QRegExp splitRegex("\\s+");
-    QStringList mList=matrixString.split(splitRegex);
+    QStringList mList=matrixString.trimmed().split(splitRegex);
     if (mList.size()!=16) {
         for (int i=0;i<mList.size();i++) {
             qDebug() << "i=" << i << " string=" << mList[i];
@@ -259,6 +274,23 @@ bool VolumePatternIndex::parseMatrixString(QString matrixString) {
     for (int i=0;i<16;i++) {
         matrix[i]=mList[i].toInt();
         qDebug() << "Using matrix " << i << " = " << matrix[i];
+    }
+    return true;
+}
+
+bool VolumePatternIndex::parseFullMatrixString(QString matrixString) {
+    QRegExp splitRegex("\\s+");
+    QStringList mList=matrixString.trimmed().split(splitRegex);
+    if (mList.size()!=16) {
+        for (int i=0;i<mList.size();i++) {
+            qDebug() << "i=" << i << " string=" << mList[i];
+        }
+        return false;
+    }
+    fullmatrix=new int[16];
+    for (int i=0;i<16;i++) {
+        fullmatrix[i]=mList[i].toInt();
+        qDebug() << "Using full matrix " << i << " = " << fullmatrix[i];
     }
     return true;
 }
@@ -335,7 +367,7 @@ bool VolumePatternIndex::createIndex()
         return false;
     }
     int fileIndex=0;
-    unsigned char* indexData=0L;
+    indexData=0L;
     for (fileIndex=0;fileIndex<indexFileList.size();fileIndex++) {
         My4DImage sourceImage;
         ImageLoader loader;
@@ -360,8 +392,11 @@ bool VolumePatternIndex::createIndex()
                 qDebug() << "subregion " << i << " =" << subregion[i];
             }
         }
-        qDebug() << "Calling indexImage with subregion=" << subregion;
-        indexData=indexImage(&sourceImage, indexChannelList[fileIndex], subregion, indexData);
+        indexImage(&sourceImage, indexChannelList[fileIndex], subregion);
+        if (indexData==0L) {
+            qDebug() << "Error with indexImage";
+            return false;
+        }
         if (fileIndex==0) {
             if (!openIndexAndWriteHeader()) {
                 qDebug() << "Could not open index file and write header";
@@ -480,12 +515,13 @@ bool VolumePatternIndex::doSearch()
         qy1=queryImage->getYDim();
         qz0=0;
         qz1=queryImage->getZDim();
-    } else {
-        subregion=new V3DLONG[6];
-        formatQuerySubregion(subregion);
     }
-    if ((indexData=indexImage(queryImage, queryChannel, subregion, indexData))==0) {
-        qDebug() << "Error indexing query";
+    subregion=new V3DLONG[6];
+    formatQuerySubregion(subregion);
+    indexData=0L;
+    indexImage(queryImage, queryChannel, subregion);
+    if (indexData==0) {
+        qDebug() << "Error with indexImage";
         return false;
     }
 
@@ -498,7 +534,11 @@ bool VolumePatternIndex::doSearch()
     qDebug() << "Non-zero query indexData count=" << nonZeroCount << " of total=" << indexTotalBytes;
 
     queryIndex=new unsigned char [indexTotalBytes];
-    memcpy(queryIndex, indexData, indexTotalBytes);
+
+    for (int m=0;m<indexTotalBytes;m++) {
+        queryIndex[m]=indexData[m];
+        indexData[m]=0;
+    }
 
 //    for (int i=0;i<indexTotalBytes;i++) {
 //        qDebug() << "queryCheck " << i << " : " << queryIndex[i];
@@ -511,6 +551,13 @@ bool VolumePatternIndex::doSearch()
         if ( (readSize=fread(indexData, 1, indexTotalBytes, fid))!=indexTotalBytes ) {
             qDebug() << "Could not read full block of " << indexTotalBytes << " , read " << readSize << " instead";
             return false;
+        }
+        qDebug() << "Calculating index score for " << indexFileList[i];
+        QString filename=indexFileList[i];
+        if (filename.contains("20111102102342562")) {
+            DEBUG_FLAG=true;
+        } else {
+            DEBUG_FLAG=false;
         }
         V3DLONG score=calculateIndexScore(queryIndex, indexData, indexTotal);
         //qDebug() << i << ". score=" << score;
@@ -541,6 +588,12 @@ bool VolumePatternIndex::doSearch()
     if (fullSearch) {
 
         qDebug() << "Doing full search";
+
+        for (int i=0;i<finalResultSize;i++) {
+            int p = pairList[i].second;
+            qDebug() << "Using " << i << ". " << indexFileList[p];
+        }
+
 
         QList< QPair<V3DLONG, int> > fullScoreList;
 
@@ -590,6 +643,9 @@ bool VolumePatternIndex::doSearch()
         qDebug() << position << ". " << score << " : " << filename;
     }
 
+    if (indexData!=0L) { delete [] indexData; indexData=0L; }
+    if (queryIndex!=0L) { delete [] queryIndex; queryIndex=0L; }
+
     return true;
 }
 
@@ -603,8 +659,8 @@ V3DLONG VolumePatternIndex::computeTotalBytesFromIndexTotal(V3DLONG indexTotal) 
 V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal)
 {
     V3DLONG score=0L;
-    V3DLONG initialTotalDiv=indexTotal/4;
-    V3DLONG firstTotal = initialTotalDiv * 4;
+    V3DLONG byteTotalFloor=indexTotal/4;
+    V3DLONG byteTotal=computeTotalBytesFromIndexTotal(indexTotal);
 
     unsigned char oooooo11 = 3;
     unsigned char s1=0;
@@ -621,9 +677,10 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
 //    qDebug() << "calculateIndexScore start";
 
-    for (V3DLONG i=0;i<firstTotal;i++) {
-        unsigned char s=*subjectIndex;
-        unsigned char q=*queryIndex;
+    V3DLONG position=0L;
+    for (V3DLONG i=0;i<byteTotalFloor;i++) {
+        unsigned char s=subjectIndex[i];
+        unsigned char q=queryIndex[i];
 
  //       qDebug() << "i=" << i;
 
@@ -636,9 +693,9 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
             scorePosition = q1*4+s1;
 
-//            if (q1>0) {
-//               qDebug() << "i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
-//            }
+            if (DEBUG_FLAG) {
+               qDebug() << " i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
+            }
 
 //            int scoreIncrement=matrix[scorePosition];
 
@@ -653,21 +710,26 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
             s >>= 2;
             q >>= 2;
+
+            position+=4;
         }
-        subjectIndex++;
-        queryIndex++;
     }
 
-    for (V3DLONG i=firstTotal;i<indexTotal;) {
-        unsigned char s=*subjectIndex;
-        unsigned char q=*queryIndex;
+    for (V3DLONG i=byteTotalFloor;i<byteTotal;i++) {
+        unsigned char s=subjectIndex[i];
+        unsigned char q=queryIndex[i];
 
         for (int p=0;p<4;p++) {
-            if (i<indexTotal) {
+            if (position<indexTotal) {
                 s1= s&oooooo11;
                 q1= q&oooooo11;
 
                 scorePosition = q1*4+s1;
+
+                if (DEBUG_FLAG) {
+                   qDebug() << " i=" << i << " p=" << p << " s=" << s << " q=" << q << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
+                }
+
                 score+=matrix[scorePosition];
 
                 matrixBins[scorePosition] += 1;
@@ -675,11 +737,10 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
                 s >>= 2;
                 q >>= 2;
+
             }
-            i++;
+            position++;
         }
-        subjectIndex++;
-        queryIndex++;
     }
 
 //    qDebug() << "Returning score=" << score;
@@ -704,7 +765,7 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
     return score;
 }
 
-unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3DLONG* subregion, unsigned char* indexData)
+void VolumePatternIndex::indexImage(My4DImage* image, int channel, V3DLONG* subregion)
 {
 
     qDebug() << "indexImage : using threshold values " << threshold[0] << " " << threshold[1] << " " << threshold[2];
@@ -724,7 +785,8 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
                 cubifiedImage->getYDim()!=iYmax ||
                 cubifiedImage->getZDim()!=iZmax) {
             qDebug() << "Cubified image dimensions do not match";
-            return false;
+            indexData=0L;
+            return;
         }
     }
 
@@ -740,7 +802,7 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
     } else {
         if (indexTotalBytes!=tempIndexTotalBytes) {
             qDebug() << "New value for indexTotalBytes does not match: " << tempIndexTotalBytes << " vs original=" << indexTotalBytes;
-            return 0;
+            indexData=0L;
         }
     }
     if (indexData==0L) {
@@ -752,6 +814,7 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
     }
     V3DLONG indexPosition=0;
     int bytePosition=0;
+    unsigned char cvalue=0;
 
     v3d_uint8* cubifiedData=cubifiedImage->getRawDataAtChannel(0);
     for (V3DLONG z=0;z<iZmax;z++) {
@@ -763,17 +826,16 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
                 v3d_uint8 value=cubifiedData[offset];
                 if (bytePosition>3) {
                     bytePosition=0;
+                    indexData[indexPosition]=cvalue;
+                    cvalue=0;
                     indexPosition++;
                     if (indexPosition>=indexTotalBytes) {
                         qDebug() << "Exceeded indexTotalBytes at z=" << z << " y=" << y << " x=" << x;
-                        return false;
+                        indexData=0L;
+                        return;
                     }
                 }
-                unsigned char* currentByte = indexData + indexPosition;
-                if (bytePosition==0) {
-                    // As we begin populating a byte, clear it first
-                    *currentByte=0;
-                }
+
                 // 0=00000000
                 // 1=00000001
                 // 2=00000010
@@ -782,26 +844,36 @@ unsigned char* VolumePatternIndex::indexImage(My4DImage* image, int channel, V3D
                     // leave as zero
                     count0++;
                 } else if (value<threshold[1]) {
-                    *currentByte |= 1;
+                    cvalue |= 1;
                     count1++;
                 } else if (value<threshold[2]) {
-                    *currentByte |= 2;
+                    cvalue |= 2;
                     count2++;
                 } else {
-                    *currentByte |= 3;
+                    cvalue |= 3;
                     count3++;
                 }
                 if (bytePosition<3) {
-                    *currentByte <<= 2;
+                    cvalue <<= 2;
                 }
                 bytePosition++;
             }
         }
     }
 
-    qDebug() << "Voxel counts: 0=" << count0 << " 1=" << count1 << " 2=" << count2 << " 3=" << count3;
+    // Finish last case
+    if (bytePosition!=4) {
+        if (bytePosition==1) {
+            cvalue <<=6;
+        } else if (bytePosition==2) {
+            cvalue <<=4;
+        } else if (bytePosition==3) {
+            cvalue <<=2;
+        }
+        indexData[indexPosition]=cvalue;
+    }
 
-    return indexData;
+    qDebug() << "Voxel counts: 0=" << count0 << " 1=" << count1 << " 2=" << count2 << " 3=" << count3;
 }
 
 bool VolumePatternIndex::openIndexAndReadHeader()
@@ -943,7 +1015,7 @@ bool VolumePatternIndex::calculateImageScore(My4DImage* queryImage, My4DImage* s
 
                 int matrixPosition=qPosition*4+sPosition;
                 matrixBins[matrixPosition] += 1;
-                int mScore=matrix[matrixPosition];
+                int mScore=fullmatrix[matrixPosition];
                 matrixScores[matrixPosition] += mScore;
                 localScore += mScore;
             }

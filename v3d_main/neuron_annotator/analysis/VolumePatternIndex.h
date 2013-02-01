@@ -19,6 +19,7 @@ public:
     static const int DEFAULT_THRESHOLD_C;
     static const int DEFAULT_MAX_HITS;
     static const QString DEFAULT_MATRIX_STRING;
+    static const QString DEFAULT_FULL_MATRIX_STRING;
 
     static const int MODE_UNDEFINED;
     static const int MODE_INDEX;
@@ -58,6 +59,7 @@ public:
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
         usage.append("     [ -full : use index first, then use full images, slower but more accurate, default=false]          \n");
         usage.append("     [ -matrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 int values for score matrix ]   \n");
+        usage.append("     [ -fullmatrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 int values for full matrix ]\n");
         usage.append("                                                                                                        \n");
         return usage;
     }
@@ -67,6 +69,8 @@ public:
 
 private:
     FILE* fid;
+
+    bool DEBUG_FLAG;
 
     int mode;
     V3DLONG x0,x1,y0,y1,z0,z1;
@@ -86,6 +90,7 @@ private:
     int maxHits;
     bool fullSearch;
     int* matrix;
+    int* fullmatrix;
 
     QStringList indexFileList;
     QList<int> indexChannelList;
@@ -104,10 +109,11 @@ private:
     bool parseThresholdString(QString thresholdString);
     bool populateIndexFileList();
     bool parseMatrixString(QString matrixString);
+    bool parseFullMatrixString(QString matrixString);
     bool openIndexAndWriteHeader();
     bool openIndexAndReadHeader();
 
-    unsigned char* indexImage(My4DImage* image, int channel, V3DLONG* subregion, unsigned char* indexData);
+    void indexImage(My4DImage* image, int channel, V3DLONG* subregion);
 
     void formatSubregion(V3DLONG* subregion);
     void formatQuerySubregion(V3DLONG* subregion);
