@@ -33,7 +33,7 @@ QStringList ImageRegistrationPlugin::menulist() const
             << tr("About");
 }
 
-QString version_str = "0.9211";
+QString version_str = "0.93";
 
 void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
