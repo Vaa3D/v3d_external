@@ -8,7 +8,7 @@
 #ifndef IMAGELOADERBASIC_H_
 #define IMAGELOADERBASIC_H_
 
-#include "../../v3d/v3d_core.h"
+#include "../../basic_c_fun/basic_4dimage.h"
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -71,6 +71,7 @@ protected:
     virtual int exitWithError(std::string errorMessage);
     virtual int exitWithError(const char* errorMessage){return exitWithError(std::string(errorMessage));}
 
+    volatile bool bIsCanceled;
     FILE * fid;
     V3DLONG totalReadBytes;
     V3DLONG maxDecompressionSize;
@@ -81,8 +82,6 @@ protected:
     int decompressionPrior;
     std::vector<char> keyread;
     int loadDatatype;
-
-    volatile bool bIsCanceled;
 };
 
 

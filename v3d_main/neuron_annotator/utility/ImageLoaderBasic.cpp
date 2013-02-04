@@ -6,8 +6,13 @@
  */
 
 #include "ImageLoaderBasic.h"
+#include "../../basic_c_fun/stackutil.h"
 #include <iostream>
 #include <sstream>
+
+using std::cerr;
+using std::endl;
+using std::stringstream;
 
 static const unsigned char oooooool = 1;
 static const unsigned char oooooolo = 2;
@@ -219,7 +224,7 @@ int ImageLoaderBasic::saveStack2RawPBD(const char * filename, ImagePixelType dat
                                            //for (i=0;i<4;i++) mysz[i] = (short int) sz[i];
                 for (i=0;i<4;i++) {
                     mysz[i] = (BIT32_UNIT) sz[i];
-                    qDebug() << " size " << i << " = " << mysz[i];
+                    cerr << " size " << i << " = " << mysz[i] << endl;
                 }
                 //swap2bytes((void *)(mysz+i));
                 //}
@@ -235,7 +240,7 @@ int ImageLoaderBasic::saveStack2RawPBD(const char * filename, ImagePixelType dat
                 totalUnit *= sz[i];
         }
 
-        qDebug() << "Using totalUnit=" << totalUnit << " unitSize=" << unitSize;
+        cerr << "Using totalUnit=" << totalUnit << " unitSize=" << unitSize << endl;
 
         V3DLONG maxSize = totalUnit*unitSize*2;                             // NOTE:
         // unsigned char * compressionBuffer = new unsigned char [maxSize]; // we give the compression buffer 2x room without throwing an error,
@@ -284,7 +289,7 @@ int ImageLoaderBasic::saveStack2RawPBD(const char * filename, ImagePixelType dat
 }
 
 V3DLONG ImageLoaderBasic::compressPBD8(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft) {
-    bool debug=false;
+    // bool debug=false;
     V3DLONG p=0;
 
     if (sourceBufferLength==0) {
@@ -456,7 +461,7 @@ V3DLONG ImageLoaderBasic::compressPBD16(unsigned char * compressionBuffer, unsig
     for (V3DLONG i=0;i<source16BufferLength;i++) {
 
         if (p>=spaceLeft) {
-            qDebug() << "ImageLoaderBasic::compressPBD16 ran out of space p=" << p;
+            cerr << "ImageLoaderBasic::compressPBD16 ran out of space p=" << p << endl;
             return 0;
         }
 
@@ -754,14 +759,15 @@ V3DLONG ImageLoaderBasic::compressPBD16(unsigned char * compressionBuffer, unsig
                     v3d_uint16 * cbp = (v3d_uint16*)(compressionBuffer + p); // Add the current value onto current sequence of literals
                     *cbp=currentValue;
                     //v3d_uint16 testValue=*((v3d_uint16*)(compressionBuffer + p));
-                    if (debug) qDebug() << "Assigned literal value for i=" << i << " index=0  p=" << p << " currentValue=" << currentValue;
+                    if (debug)
+                        cerr << "Assigned literal value for i=" << i << " index=0  p=" << p << " currentValue=" << currentValue << endl;
                     p+=2;
                 } else {
                     compressionBuffer[activeLiteralIndex] += 1; // Increment existing literal count
                     v3d_uint16 * cbp = (v3d_uint16*)(compressionBuffer + p); // Add the current value onto current sequence of literals
                     *cbp=currentValue;
                     //v3d_uint16 testValue=*((v3d_uint16*)(compressionBuffer + p));
-                    if (debug) qDebug() << "Assigned literal value for i=" << i << " index=" << compressionBuffer[activeLiteralIndex] << "  p=" << p << " currentValue=" << currentValue;
+                    if (debug) cerr << "Assigned literal value for i=" << i << " index=" << compressionBuffer[activeLiteralIndex] << "  p=" << p << " currentValue=" << currentValue << endl;
                     p+=2;
                 }
             }
@@ -852,9 +858,9 @@ V3DLONG ImageLoaderBasic::decompressPBD8(unsigned char * sourceData, unsigned ch
     return dp;
 }
 
-V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength) {
-
-    bool debug=false;
+V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength)
+{
+    // bool debug=false;
 
     // Decompress data
     V3DLONG cp=0;
@@ -994,7 +1000,7 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
             //if (debug) qDebug() << "debug: diff set decompressionPrior=" << decompressionPrior;
             cp++;
         } else if (code<223) {
-            qDebug() << "DEBUG: Mistakenly received unimplemented code of " << code << " at dp=" << dp << " cp=" << cp << " decompressionPrior=" << decompressionPrior;
+            cerr << "DEBUG: Mistakenly received unimplemented code of " << code << " at dp=" << dp << " cp=" << cp << " decompressionPrior=" << decompressionPrior << endl;
         }
         // Repeat 223-255
         else {

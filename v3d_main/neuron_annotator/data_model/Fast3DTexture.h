@@ -44,7 +44,7 @@ signals:
     void mpegFileLoadFinished(bool bSucceeded);
 
 public slots:
-    bool loadMpegFile(QString fileName);
+    bool loadMpegFile(QUrl url);
 
 public:
     QReadWriteLock lock;
@@ -92,9 +92,9 @@ public:
 
 struct QueuedVolume
 {
-    QueuedVolume(QString fn, BlockScaler::Channel c)
-        : fileName(fn), channel(c) {}
-    QString fileName;
+    QueuedVolume(QUrl url, BlockScaler::Channel c)
+        : fileUrl(url), channel(c) {}
+    QUrl fileUrl;
     BlockScaler::Channel channel;
 };
 
@@ -108,11 +108,11 @@ public:
 
     Fast3DTexture();
     virtual ~Fast3DTexture();
-    void loadFile(QString fileName, BlockScaler::Channel channel=BlockScaler::CHANNEL_RGB);
+    void loadFile(QUrl url, BlockScaler::Channel channel=BlockScaler::CHANNEL_RGB);
 
 
 signals:
-    void loadRequested(QString fileName);
+    void loadRequested(QUrl url);
     void volumeUploadRequested(int w, int h, int d, void* texture_data);
     void headerLoaded(int, int, int);
     void volumeLoadSequenceCompleted();
@@ -124,8 +124,8 @@ public slots:
     void onHeaderLoaded(int, int, int);
     void gotFrame(int);
     void loadNextVolume();
-    void queueVolume(QString fileName, int channel) {
-        volumeQueue.push_back(QueuedVolume(fileName, (BlockScaler::Channel)channel));
+    void queueVolume(QUrl url, int channel) {
+        volumeQueue.push_back(QueuedVolume(url, (BlockScaler::Channel)channel));
     }
     void onMpegFileLoadFinished(bool succeeded);
 

@@ -96,15 +96,15 @@ protected:
 class NeuronLabelTexture : public Base3DTexture<uint16_t>
 {
 public:
-    bool loadFromPbdFile(QString fileName);
+    bool loadFromPbdFile(QUrl fileUrl);
 };
 
 
 class NeuronSignalTexture : public Base3DTexture<uint32_t>
 {
 public:
-    bool loadReferenceFromRawFile(QString fileName);
-    bool loadSignalFromRawFile(QString fileName);
+    bool loadReferenceFromRawFile(QUrl fileUrl);
+    bool loadSignalFromRawFile(QUrl fileUrl);
 };
 
 
@@ -179,17 +179,19 @@ public:
     const uint32_t* colorMapData2D() const {return colorMapTexture.getData();}
     const SampledVolumeMetadata& getMetadata() const {return metadata;}
     // void setMetadata(const SampledVolumeMetadata& md) {metadata = md;}
-    bool loadLabelPbdFile(QString fileName)
+    bool loadLabelPbdFile(QUrl fileUrl)
     {
-        return neuronLabelTexture.loadFromPbdFile(fileName);
+        return neuronLabelTexture.loadFromPbdFile(fileUrl);
     }
-    bool loadSignalRawFile(QString fileName);
-    bool loadReferenceRawFile(QString fileName) {
-        return neuronSignalTexture.loadReferenceFromRawFile(fileName);
+    bool loadSignalRawFile(QUrl fileUrl);
+    bool loadReferenceRawFile(QUrl fileUrl) {
+        return neuronSignalTexture.loadReferenceFromRawFile(fileUrl);
     }
     void setMetadata(const SampledVolumeMetadata& m) {
         metadata = m;
-        subsampleScale = m.usedImageSize.x()/m.originalImageSize.x();
+        subsampleScale = 1.0;
+        if (m.originalImageSize.x() != 0.0)
+            subsampleScale = m.usedImageSize.x()/m.originalImageSize.x();
     }
 
 protected:

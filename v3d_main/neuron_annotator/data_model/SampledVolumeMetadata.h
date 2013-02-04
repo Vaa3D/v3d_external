@@ -3,7 +3,7 @@
 
 
 #include "Dimension.h"
-#include <QString>
+#include <QUrl>
 #include <vector>
 #include <stdint.h>
 
@@ -13,7 +13,7 @@ class SampledVolumeMetadata
 {
 public:
     SampledVolumeMetadata();
-    bool loadFromFile(QString fileName, int channel_offset);
+    bool loadFromUrl(QUrl fileUrl, int channel_offset);
     bool operator==(const SampledVolumeMetadata& rhs) const;
     bool operator!=(const SampledVolumeMetadata& rhs) const;
 

@@ -30,6 +30,7 @@
 #include "../utility/loadV3dFFMpeg.h"
 #include "PreferencesDialog.h"
 #include "../utility/FooDebug.h"
+#include "../utility/url_tools.h"
 
 using namespace std;
 using namespace jfrc;
@@ -126,7 +127,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
         ui.menuOpen_Recent->addAction(recentFileActions[i]);
         recentFileActions[i]->setVisible(false);
         connect(recentFileActions[i], SIGNAL(openFileRequested(QString)),
-                this, SLOT(openMulticolorImageStack(QString)));
+                this, SLOT(openFileOrUrl(QString)));
     }
     updateRecentFileActions();
 
@@ -689,6 +690,25 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
     loadSingleStack(fileName, false);
 }
 
+void NaMainWindow::openFileOrUrl(QString name)
+{
+    if (name.isEmpty())
+        return;
+
+    QUrl url(name);
+    if (! url.isValid())
+        url = QUrl::fromLocalFile(name);
+    bool isDir = true;
+    if (url.isValid() && (!url.isRelative()) && url.toLocalFile().isEmpty())
+        isDir = url.path().endsWith("/"); // non-file URL
+    else
+        isDir = QFileInfo(url.toLocalFile()).isDir(); // local file
+    if (isDir)
+        openMulticolorImageStack(url);
+    else
+        loadSingleStack(url);
+}
+
 /* slot */
 void NaMainWindow::setCrosshairVisibility(bool b)
 {
@@ -716,10 +736,21 @@ void NaMainWindow::retrieveCrosshairVisibilitySetting()
 // Return file name if the dragged item can be usefully dropped into the NeuronAnnotator main window
 QUrl checkDragEvent(QDropEvent* event)
 {
-    if (! event->mimeData()->hasFormat("text/uri-list"))
-        return QUrl(); // only URLs are accepted
+    QList<QUrl> urls;
+    if (event->mimeData()->hasUrls())
+        urls = event->mimeData()->urls();
+    // Maybe the user dragged a string with a filename or url
+    else if (event->mimeData()->hasText()) {
+        QString text = event->mimeData()->text();
+        QUrl url(text);
+        if (url.isValid() && ! url.isEmpty())
+                urls.append(url);
+        else {
+            if (QFileInfo(text).exists())
+                urls.append(QUrl::fromLocalFile(text));
+        }
+    }
 
-    QList<QUrl> urls = event->mimeData()->urls();
     if (urls.isEmpty())
         return QUrl();
 
@@ -767,11 +798,7 @@ void NaMainWindow::dropEvent(QDropEvent * event)
     QUrl url = checkDragEvent(event);
     if (url.isEmpty()) return;
 
-    bool isDir = url.path().endsWith("/");
-    if (isDir)
-        openMulticolorImageStack(url);
-
-    loadSingleStack(url);
+    openFileOrUrl(url.toString());
 }
 
 void NaMainWindow::moveEvent ( QMoveEvent * event )
@@ -797,6 +824,11 @@ void NaMainWindow::loadSingleStack(QString fileName)
 /* slot */
 void NaMainWindow::loadSingleStack(QUrl url, bool useVaa3dClassic)
 {
+    if (url.isEmpty())
+        return;
+    if (! url.isValid())
+        return;
+
     mainWindowStopWatch.start();
     if (useVaa3dClassic) {
         // Open in Vaa3D classic mode
@@ -820,6 +852,7 @@ void NaMainWindow::loadSingleStack(QUrl url, bool useVaa3dClassic)
         setTitle(baseName);
 
         emit singleStackLoadRequested(url);
+        addUrlToRecentFilesList(url);
     }
 }
 
@@ -1239,20 +1272,8 @@ void NaMainWindow::on_actionOpen_triggered()
     openMulticolorImageStack(dirName);
 }
 
-bool NaMainWindow::openMulticolorImageStack(QUrl url)
-{
-    // TODO - invert preeminence of URL
-    QString dirName = url.toLocalFile();
-    if (dirName.isEmpty())
-        return false;
-    if (! QFileInfo(dirName).exists())
-        return false;
-    openMulticolorImageStack(dirName);
-}
-
 bool NaMainWindow::openMulticolorImageStack(QString dirName)
 {
-    mainWindowStopWatch.start();
     QDir imageDir(dirName);
 
     if ( ! imageDir.exists() )
@@ -1261,7 +1282,13 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
                              QString("'%1'\n No such directory.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
         return false;
     }
+    QUrl url = QUrl::fromLocalFile(imageDir.absolutePath());
+    return openMulticolorImageStack(url);
+}
 
+bool NaMainWindow::openMulticolorImageStack(QUrl url)
+{
+    mainWindowStopWatch.start();
     // std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
     emit benchmarkTimerResetRequested();
     emit benchmarkTimerPrintRequested("openMulticolorImageStack called");
@@ -1282,7 +1309,7 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
     // Queue up the various volumes to load, using StageFileLoaders
     // delegated to VolumeTexture (3D viewer) and NaVolumeTexture (all viewers)
     onDataLoadStarted();
-    if (! volumeTexture.queueSeparationFolder(imageDir))
+    if (! volumeTexture.queueSeparationFolder(url))
     {
         onDataLoadFinished();
         return false;
@@ -1297,17 +1324,21 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
 
     // MulticolorImageStackNode setup is required for loadLsmMetadata call to succeed.
     MultiColorImageStackNode* multiColorImageStackNode =
-            new MultiColorImageStackNode(imageDir.absolutePath());
-    // These file name will be overridden by Staged loader
-    multiColorImageStackNode->setPathToOriginalImageStackFile(
-            imageDir.absoluteFilePath("ConsolidatedSignal"));
-    multiColorImageStackNode->setPathToReferenceStackFile(
-            imageDir.absoluteFilePath("Reference"));
-    multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
-            imageDir.absoluteFilePath("ConsolidatedLabel"));
+            new MultiColorImageStackNode(url.toString());
+    QUrl fileUrl = url;
+    QString path = fileUrl.path();
+    if (! path.endsWith("/"))
+        path = path + "/";
+    // These file names will be overridden by Staged loader
+    fileUrl.setPath(path + "ConsolidatedSignal");
+    multiColorImageStackNode->setPathToOriginalImageStackFile(fileUrl.toString());
+    fileUrl.setPath(path + "Reference");
+    multiColorImageStackNode->setPathToReferenceStackFile(fileUrl.toString());
+    fileUrl.setPath(path + "ConsolidatedLabel");
+    multiColorImageStackNode->setPathToMulticolorLabelMaskFile(fileUrl.toString());
     dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
 
-    if (! dataFlowModel->getVolumeData().queueSeparationFolder(imageDir)) {
+    if (! dataFlowModel->getVolumeData().queueSeparationFolder(url)) {
         onDataLoadFinished();
         return false;
     }
@@ -1319,43 +1350,21 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
     emit stagedLoadRequested();
     // volumeTexture.loadNextVolume();
 
-    /*
-    // TODO - some object needs to keep track of those directories.
-    // presumably a ProgressiveLoader class.  That does all this other
-    // stuff too.
-
-    // TODO - refactor so ProgressiveLoadItem decides what file type to load
-    // if (bFastLoad && loadSeparationDirectoryV2Mpeg(imageDir)) {
-    // if (loadSeparationDirectoryV2Mpeg(imageDir)) {
-        // qDebug() << "Using fast load directory";
-    // }
-    // else if (loadSeparationDirectoryV1Pbd(imageDir)) {
-        // qDebug() << "Using non-fastload files";
-    // }
-
-
-
-    else {
-        QMessageBox::warning(this, tr("Could not load image directory"),
-                                      "Error loading image directory - please check directory contents");
-        onDataLoadFinished();
-        return false;
-    }
-    */
-
-    // qDebug() << "NaMainWindow::openMulticolorImageStack() calling addDirToRecentFilesList with dir=" << imageDir.absolutePath();
-    addDirToRecentFilesList(imageDir);
+    addUrlToRecentFilesList(url);
     return true;
 }
 
-bool NaMainWindow::loadSeparationDirectoryV1Pbd(QDir imageInputDirectory)
+bool NaMainWindow::loadSeparationDirectoryV1Pbd(QUrl imageInputDirectory)
 {
     onDataLoadStarted();
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
-    QString originalImageStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME;
-    QString maskLabelFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_MASK_BASE_FILENAME;
-    QString referenceStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_REFERENCE_BASE_FILENAME;
+    QUrl originalImageStackFilePath =
+            appendPath(imageInputDirectory, MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME);
+    QUrl maskLabelFilePath =
+            appendPath(imageInputDirectory, MultiColorImageStackNode::IMAGE_MASK_BASE_FILENAME);
+    QUrl referenceStackFilePath =
+            appendPath(imageInputDirectory, MultiColorImageStackNode::IMAGE_REFERENCE_BASE_FILENAME);
 
     // Create input nodes
     MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(imageInputDirectory);
@@ -1387,99 +1396,16 @@ bool NaMainWindow::loadSeparationDirectoryV1Pbd(QDir imageInputDirectory)
     return true;
 }
 
-/* slot */
-bool NaMainWindow::on_actionLoad_fast_separation_result_triggered()
-{
-    // qDebug() << "NaMainWindow::on_actionLoad_fast_separation_result_triggered()" << __FILE__ << __LINE__;
-    // Ask user for a directory containing results.
-    QString dirName = getDataDirectoryPathWithDialog();
-    if (dirName.isEmpty())
-        return false;
-    QDir dir(dirName);
-    if (! tearDownOldDataFlowModel())
-        return false;
-
-    createNewDataFlowModel();
-    ui.v3dr_glwidget->resetSlabThickness();
-    emit initializeColorModelRequested();
-    emit benchmarkTimerResetRequested();
-    emit benchmarkTimerPrintRequested("Load fast directory triggered");
-    if (! loadSeparationDirectoryV2Mpeg(dir)) {
-        return false;
-    }
-    addDirToRecentFilesList(dir);
-    return true;
-}
-
-// Fast preferential population of the 3D viewer.
-// TODO obsolete this method in favor of progressive loader
-bool NaMainWindow::loadSeparationDirectoryV2Mpeg(QDir dir)
-{
-#ifdef USE_FFMPEG
-    // Choose the sequence of volume files to load for the 3D viewer.
-    if (! dataFlowModel->getVolumeTexture().queueFastLoadVolumes(dir))
-        return false; // no faster load volumes found
-
-    // select 3D viewer in GUI, if it is not already selected;
-    // otherwise the faster loading is pretty boring...
-    ui.viewerControlTabWidget->setCurrentIndex(2);
-    setViewMode(VIEW_SINGLE_STACK); // no gallery yet.
-
-    // Choose Files to load into other viewers after 3D viewer has updated.
-    dataFlowModel->getVolumeData().doFlipY = false; // default for newer volume types
-    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(dir.absolutePath());
-    QDir fl = QDir(dir.filePath("fastLoad"));
-    if (fl.exists("ConsolidatedSignal3.v3dpbd")) { // full 16-bit data
-        multiColorImageStackNode->setPathToOriginalImageStackFile(
-                fl.absoluteFilePath("ConsolidatedSignal3"));
-        multiColorImageStackNode->setPathToReferenceStackFile(
-                fl.absoluteFilePath("Reference3"));
-        multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
-                fl.absoluteFilePath("ConsolidatedLabel3"));
-    }
-    else if (fl.exists("ConsolidatedSignal2.v3dpbd")) { // 8-bit unflipped gamma corrected data
-        multiColorImageStackNode->setPathToOriginalImageStackFile(
-                fl.absoluteFilePath("ConsolidatedSignal2.v3dpbd")); // not mp4!
-        multiColorImageStackNode->setPathToReferenceStackFile(
-                fl.absoluteFilePath("Reference2.v3dpbd"));
-        multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
-                fl.absoluteFilePath("ConsolidatedLabel2"));
-    }
-    else { // old fashioned partially flipped 8-bit data
-        multiColorImageStackNode->setPathToOriginalImageStackFile(
-                dir.absoluteFilePath("ConsolidatedSignal"));
-        multiColorImageStackNode->setPathToReferenceStackFile(
-                dir.absoluteFilePath("Reference"));
-        multiColorImageStackNode->setPathToMulticolorLabelMaskFile(
-                dir.absoluteFilePath("ConsolidatedLabel"));
-        dataFlowModel->getVolumeData().doFlipY = true;
-    }
-    // Correct Z-thickness
-    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
-    dataFlowModel->loadLsmMetadata();
-    {
-        NaVolumeData::Writer volumeWriter(dataFlowModel->getVolumeData());
-        volumeWriter.setOriginalImageStackFilePath(
-                multiColorImageStackNode->getPathToOriginalImageStackFile());
-        volumeWriter.setMaskLabelFilePath(
-                multiColorImageStackNode->getPathToMulticolorLabelMaskFile());
-        volumeWriter.setReferenceStackFilePath(
-                multiColorImageStackNode->getPathToReferenceStackFile());
-    }
-
-    // Start loading the data.
-    dataFlowModel->getVolumeTexture().loadNextVolume();
-    return true;
-#else
-    return false;
-#endif
-}
-
 // Recent files list
 void NaMainWindow::addDirToRecentFilesList(QDir imageDir)
 {
     QString fileName = imageDir.absolutePath();
-    addFileNameToRecentFilesList(fileName);
+    addFileNameToRecentFilesList(QUrl::fromLocalFile(fileName).toString());
+}
+
+void NaMainWindow::addUrlToRecentFilesList(QUrl url)
+{
+    addFileNameToRecentFilesList(url.toString());
 }
 
 void NaMainWindow::addFileNameToRecentFilesList(QString fileName)
@@ -1715,8 +1641,8 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
         return;
     }
 
-    connect(this, SIGNAL(subsampleLabelPbdFileNamed(QString)),
-            &dataFlowModel->getVolumeTexture(), SLOT(setLabelPbdFileName(QString)));
+    connect(this, SIGNAL(subsampleLabelPbdFileNamed(QUrl)),
+            &dataFlowModel->getVolumeTexture(), SLOT(setLabelPbdFileUrl(QUrl)));
 
     connect(dataFlowModel, SIGNAL(benchmarkTimerPrintRequested(QString)),
             this, SIGNAL(benchmarkTimerPrintRequested(QString)));

@@ -1,4 +1,5 @@
 
+#include <QNetworkAccessManager>
 #include <QString>
 #include <QtCore>
 #include <QDir>
@@ -23,7 +24,6 @@ const int ImageLoader::MODE_MAP_CHANNELS=5;
 
 ImageLoader::ImageLoader()
     : progressIndex(0)
-    , networkManager(this)
 {
     // qDebug() << "ImageLoader() constructor called";
     mode=MODE_UNDEFINED;
@@ -400,13 +400,20 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
         else
             return false;
     }
+
+    QString extension = QFileInfo(url.path()).suffix().toLower();
+#ifdef USE_FFMPEG
+    if (extension == "mp4")
+        return loadStackFFMpeg(url, *stackp);
+#endif
+
     // TODO - keep pushing URLs instead of file names deeper into the system
     if (url.host() == "localhost")
         url.setHost("");
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty())
         return false;
-    loadImage(stackp, fileName.toStdString().c_str());
+    return loadImage(stackp, fileName.toStdString().c_str());
 }
 
 bool ImageLoader::loadImage(Image4DSimple * stackp, const char* filepath)
@@ -504,8 +511,10 @@ int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThrea
 
     // Load from URL
     QEventLoop loop; // for synchronous url fetch http://stackoverflow.com/questions/5486090/qnetworkreply-wait-for-finished
+    QNetworkAccessManager networkManager;
     QObject::connect(&networkManager, SIGNAL(finished(QNetworkReply*)),
             &loop, SLOT(quit()));
+    // qDebug() << "networkManager" << __FILE__ << __LINE__;
     QNetworkRequest request = QNetworkRequest(url);
     QNetworkReply * reply = networkManager.get(request);
     loop.exec();

@@ -24,7 +24,11 @@ extern "C" {
 #include <libavutil/imgutils.h>
 }
 
+#include <QFile>
+#include <QNetworkAccessManager>
 #include <QMutex>
+#include <QUrl>
+#include <QBuffer>
 #include <string>
 #include <stdexcept>
 #include <iostream>
@@ -47,9 +51,10 @@ public:
     static void maybeInitFFMpegLib();
 
     FFMpegVideo(PixelFormat pixelFormat=PIX_FMT_RGB24);
-    FFMpegVideo(const std::string& fileName, PixelFormat pixelFormat=PIX_FMT_RGB24);
+    FFMpegVideo(QUrl url, PixelFormat pixelFormat=PIX_FMT_RGB24);
     virtual ~FFMpegVideo();
-    bool open(const std::string& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);
+    bool open(QUrl url, enum PixelFormat formatParam = PIX_FMT_RGB24);
+    bool open(QIODevice& fileStream, QString& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);
     uint8_t getPixelIntensity(int x, int y, Channel c = GRAY) const;
     bool fetchFrame(int targetFrameIndex = 0);
     int getNumberOfFrames() const;
@@ -73,6 +78,8 @@ protected:
     static bool b_is_one_time_inited;
 
     void initialize();
+    bool open(QString& fileName, enum PixelFormat formatParam);
+    bool openUsingInitializedContainer(enum PixelFormat formatParam);
     static bool avtry(int result, const std::string& msg);
 
     AVCodec *pCodec;
@@ -84,6 +91,16 @@ protected:
     size_t numBytes;
     int numFrames;
     int sc; // number of color channels
+
+    // For loading from URL
+    static const int ioBufferSize = 32768;
+    unsigned char * ioBuffer;
+    QNetworkAccessManager networkManager;
+    AVIOContext* avioContext;
+    QFile fileStream;
+    QNetworkReply* reply;
+    QBuffer fileBuffer;
+    QByteArray byteArray;
 };
 
 

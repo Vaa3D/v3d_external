@@ -16,34 +16,34 @@ public:
     const static char * IMAGE_MASK_BASE_FILENAME;
     const static char * IMAGE_REFERENCE_BASE_FILENAME;
 
-    MultiColorImageStackNode(QDir imageDirParam);
+    MultiColorImageStackNode(QUrl imageDirParam);
 
-    QString getPathToOriginalImageStackFile() { return pathToOriginalImageStackFile; }
+    QUrl getPathToOriginalImageStackFile() { return pathToOriginalImageStackFile; }
 
-    QString getPathToMulticolorLabelMaskFile() { return pathToMulticolorLabelMaskFile; }
+    QUrl getPathToMulticolorLabelMaskFile() { return pathToMulticolorLabelMaskFile; }
 
-    QString getPathToMulticolorLabelMaskIndexFile() { return pathToMulticolorLabelMaskIndexFile; }
+    QUrl getPathToMulticolorLabelMaskIndexFile() { return pathToMulticolorLabelMaskIndexFile; }
 
-    QString getPathToReferenceStackFile() { return pathToReferenceStackFile; }
+    QUrl getPathToReferenceStackFile() { return pathToReferenceStackFile; }
 
-    QString getPathToLsmFilePathsFile();
+    QUrl getPathToLsmFilePathsFile();
 
-    QStringList getPathsToLsmMetadataFiles();
+    QList<QUrl> getPathsToLsmMetadataFiles();
 
-    QDir getImageDir() {return imageDir;}
+    QUrl getImageDir() {return imageDir;}
 
-    void setPathToOriginalImageStackFile(QString pathToOriginalImageStackFileParam) {
+    void setPathToOriginalImageStackFile(QUrl pathToOriginalImageStackFileParam) {
         pathToOriginalImageStackFile=pathToOriginalImageStackFileParam;
     }
-    void setPathToMulticolorLabelMaskFile(QString pathToMulticolorLabelMaskFileParam) {
+    void setPathToMulticolorLabelMaskFile(QUrl pathToMulticolorLabelMaskFileParam) {
         pathToMulticolorLabelMaskFile=pathToMulticolorLabelMaskFileParam;
     }
 
-    void setPathToMulticolorLabelMasIndexFile(QString pathToMulticolorLabelMaskIndexFileParam) {
+    void setPathToMulticolorLabelMasIndexFile(QUrl pathToMulticolorLabelMaskIndexFileParam) {
         pathToMulticolorLabelMaskIndexFile=pathToMulticolorLabelMaskIndexFileParam;
     }
 
-    void setPathToReferenceStackFile(QString pathToReferenceStackFileParam) {
+    void setPathToReferenceStackFile(QUrl pathToReferenceStackFileParam) {
         pathToReferenceStackFile=pathToReferenceStackFileParam;
     }
 
@@ -94,56 +94,15 @@ public:
         return true;
     }
 
-    // This method assumes that the given my4DImageAsMask already has the correct dimensions
-    static bool readMaskFileToMy4DImage(My4DImage* my4DImageAsMask, QString maskFilePath) {
-        QString msgPrefix = "MultiColorImageStackNode::readMaskFileToMy4DImage()";
-        ifstream maskFile(maskFilePath.toAscii().data(), ios::in|ios::binary);
-        const int BUFFER_SIZE=100000;
-        char * buffer = new char [BUFFER_SIZE];
-        unsigned char * ubuffer;
-        int bufferPosition=BUFFER_SIZE; // to trigger initial read
-        int maskSizeX=my4DImageAsMask->getXDim();
-        int maskSizeY=my4DImageAsMask->getYDim();
-        int maskSizeZ=my4DImageAsMask->getZDim();
-        unsigned char **** maskData=(unsigned char ****)my4DImageAsMask->getData();
-        long bytesExpected = maskSizeX*maskSizeY*maskSizeZ;
-        long bytesRead=0;
-        int x,y,z;
-        for (z=0;z<maskSizeZ;z++) {
-            for (y=0;y<maskSizeY;y++) {
-                for (x=0;x<maskSizeX;x++) {
-                    if (bufferPosition==BUFFER_SIZE) {
-                        maskFile.read(buffer, BUFFER_SIZE);
-                        ubuffer = (unsigned char *)buffer;
-                        bytesRead+=maskFile.gcount();
-                        if (maskFile.eof()) {
-                            if (bytesRead < bytesExpected) {
-                                maskFile.close();
-                                cerr << msgPrefix.toStdString() << " : error , expected " << bytesExpected << " bytes but only read " <<
-                                        bytesRead << " from file=" << maskFilePath.toStdString();
-                                return false;
-                            }
-                        }
-                        bufferPosition=0;
-                    }
-                    maskData[0][z][y][x]=ubuffer[bufferPosition++];
-                }
-            }
-        }
-        cout << msgPrefix.toStdString() << " : read " << bytesRead << " bytes from mask file=" << maskFilePath.toStdString() << endl;
-        delete [] buffer;
-        return true;
-    }
-
     QStringList getLsmFilePathList();
 
 private:
     long objectId;
-    QString pathToOriginalImageStackFile;
-    QString pathToMulticolorLabelMaskFile;
-    QString pathToMulticolorLabelMaskIndexFile;
-    QString pathToReferenceStackFile;
-    QDir imageDir;
+    QUrl pathToOriginalImageStackFile;
+    QUrl pathToMulticolorLabelMaskFile;
+    QUrl pathToMulticolorLabelMaskIndexFile;
+    QUrl pathToReferenceStackFile;
+    QUrl imageDir;
 };
 
 #endif // MULTICOLORIMAGESTACKNODE_H

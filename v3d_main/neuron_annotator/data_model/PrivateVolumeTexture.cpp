@@ -2,6 +2,7 @@
 #include "DataColorModel.h"
 #include "../utility/ImageLoader.h"
 #include "../utility/FooDebug.h"
+#include "../utility/url_tools.h"
 #include <QColor>
 #include <cassert>
 
@@ -248,11 +249,11 @@ public:
 // NeuronLabelTexture methods //
 ////////////////////////////////
 
-bool NeuronLabelTexture::loadFromPbdFile(QString fileName)
+bool NeuronLabelTexture::loadFromPbdFile(QUrl fileUrl)
 {
     ImageLoader loader;
     My4DImage stack;
-    if (! loader.loadImage(&stack, fileName))
+    if (! loader.loadImage(&stack, fileUrl))
         return false;
     assert(stack.getCDim() == 1);
     // assert(stack.getUnitBytes() == 2);
@@ -290,21 +291,21 @@ bool NeuronLabelTexture::loadFromPbdFile(QString fileName)
 // NeuronSignalTexture //
 /////////////////////////
 
-bool NeuronSignalTexture::loadReferenceFromRawFile(QString fileName)
+bool NeuronSignalTexture::loadReferenceFromRawFile(QUrl fileUrl)
 {
     ImageLoader loader;
     My4DImage stack;
-    if (! loader.loadImage(&stack, fileName))
+    if (! loader.loadImage(&stack, fileUrl))
         return false;
     Dimension paddedSize(stack.getXDim(), stack.getYDim(), stack.getZDim());
     // Load metadata, if metadata file is present
-    QFileInfo fi(fileName);
-    QDir dir(fi.filePath());
+    QFileInfo fi(fileUrl.path());
+    QUrl dir = parent(fileUrl);
     // e.g. Reference2_100.metadata
-    QString metadataFileName = dir.filePath(fi.completeBaseName() + ".metadata");
-    if (QFile(metadataFileName).exists()) {
+    QUrl metadataFileUrl = appendPath(dir, fi.completeBaseName() + ".metadata");
+    if (exists(metadataFileUrl)) {
         SampledVolumeMetadata svm;
-        if (svm.loadFromFile(metadataFileName, 0)) {
+        if (svm.loadFromUrl(metadataFileUrl, 0)) {
             assert(svm.paddedImageSize == paddedSize);
             usedSize = svm.usedImageSize;
         }
@@ -337,21 +338,21 @@ bool NeuronSignalTexture::loadReferenceFromRawFile(QString fileName)
     return true;
 }
 
-bool NeuronSignalTexture::loadSignalFromRawFile(QString fileName)
+bool NeuronSignalTexture::loadSignalFromRawFile(QUrl fileUrl)
 {
     ImageLoader loader;
     My4DImage stack;
-    if (! loader.loadImage(&stack, fileName))
+    if (! loader.loadImage(&stack, fileUrl))
         return false;
     Dimension paddedSize(stack.getXDim(), stack.getYDim(), stack.getZDim());
     // Load metadata, if metadata file is present
-    QFileInfo fi(fileName);
-    QDir dir(fi.filePath());
+    QFileInfo fi(fileUrl.path());
+    QUrl dir = parent(fileUrl);
     // e.g. Reference2_100.metadata
-    QString metadataFileName = dir.filePath(fi.completeBaseName() + ".metadata");
-    if (QFile(metadataFileName).exists()) {
+    QUrl metadataFileUrl = appendPath(dir, fi.completeBaseName() + ".metadata");
+    if (exists(metadataFileUrl)) {
         SampledVolumeMetadata svm;
-        if (svm.loadFromFile(metadataFileName, 0)) {
+        if (svm.loadFromUrl(metadataFileUrl, 0)) {
             assert(svm.paddedImageSize == paddedSize);
             usedSize = svm.usedImageSize;
         }
@@ -566,9 +567,9 @@ PrivateVolumeTexture::PrivateVolumeTexture(const PrivateVolumeTexture& rhs)
     // qDebug() << "PrivateVolumeTexture is being copied";
 }
 
-bool PrivateVolumeTexture::loadSignalRawFile(QString fileName)
+bool PrivateVolumeTexture::loadSignalRawFile(QUrl fileUrl)
 {
-    bool bSucceeded = neuronSignalTexture.loadSignalFromRawFile(fileName);
+    bool bSucceeded = neuronSignalTexture.loadSignalFromRawFile(fileUrl);
     if (bSucceeded) {
         metadata.paddedImageSize = neuronSignalTexture.getPaddedSize();
         metadata.usedImageSize = neuronSignalTexture.getUsedSize();

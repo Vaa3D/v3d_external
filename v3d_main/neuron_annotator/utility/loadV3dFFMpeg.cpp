@@ -50,8 +50,13 @@ bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum CodecID 
 
 bool loadStackFFMpeg(const char* fileName, Image4DSimple& img)
 {
+    return loadStackFFMpeg(QUrl::fromLocalFile(fileName), img);
+}
+
+bool loadStackFFMpeg(QUrl url, Image4DSimple& img)
+{
     try {
-        FFMpegVideo video(fileName);
+        FFMpegVideo video(url);
         if (! video.isOpen)
             return false;
         int sx = video.getWidth();
@@ -90,8 +95,13 @@ bool loadStackFFMpeg(const char* fileName, Image4DSimple& img)
 
 bool loadStackFFMpegAsGray(const char* fileName, Image4DSimple& img)
 {
+    loadStackFFMpegAsGray(QUrl::fromLocalFile(fileName), img);
+}
+
+bool loadStackFFMpegAsGray(QUrl url, Image4DSimple& img)
+{
     try {
-        FFMpegVideo video(fileName);
+        FFMpegVideo video(url);
         int sx = video.getWidth();
         int sy = video.getHeight();
         int sz = video.getNumberOfFrames();

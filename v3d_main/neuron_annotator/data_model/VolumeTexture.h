@@ -7,7 +7,6 @@
 #include "StagedFileLoader.h"
 #include <QObject>
 #include <QFileInfo>
-#include <QDir>
 #include <vector>
 #include <deque>
 #include <stdint.h>
@@ -31,7 +30,7 @@ public:
     virtual ~VolumeTexture();
     void setDataFlowModel(const DataFlowModel* dataFlowModelParam);
     bool hasFastVolumesQueued() const;
-    void loadOneVolume(ProgressiveCompanion* item, QList<QDir> foldersToSearch);
+    void loadOneVolume(ProgressiveCompanion* item, QList<QUrl> foldersToSearch);
 
 signals:
     // When textures change, they must be uploaded in the main/OpenGL thread
@@ -43,7 +42,7 @@ signals:
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
     void volumeLoadSequenceCompleted();
-    void mpegQueueRequested(QString fileName, int channel);
+    void mpegQueueRequested(QUrl fileUrl, int channel);
     void mpegLoadSequenceRequested();
     void loadNextVolumeRequested();
 
@@ -52,13 +51,11 @@ public slots:
     void updateNeuronVisibilityTexture();
     bool updateColorMapTexture();
     bool loadLabelPbdFile();
-    void setLabelPbdFileName(QString fileName) {labelPbdFileName = fileName;}
-    bool loadSignalRawFile(QString fileName);
-    bool loadReferenceRawFile(QString fileName);
-    bool queueFastLoadVolumes(QDir separationDirectory);
-    void loadNextVolume();
+    void setLabelPbdFileUrl(QUrl fileUrl) {labelPbdFileUrl = fileUrl;}
+    bool loadSignalRawFile(QUrl fileUrl);
+    bool loadReferenceRawFile(QUrl fileUrl);
     void loadStagedVolumes();
-    bool queueSeparationFolder(QDir folder); // using new staged loader
+    bool queueSeparationFolder(QUrl url); // using new staged loader
     void queueVolumeData();
 #ifdef USE_FFMPEG
     bool loadFast3DTexture();
@@ -69,14 +66,11 @@ private:
     typedef NaSharedDataModel<PrivateVolumeTexture> super;
 
 protected:
-    bool queueFile(QString fileName);
     void queueVolumeData(ProgressiveLoadItem& losslessItem);
-    int chooseFinalVolumes(QDir separationDirectory, int maxMegaVoxels);
-    bool chooseFinalVolume(QDir separationDirectory, int maxMegaVoxels, QString fileRoot);
     bool bLoadedFromNaVolumeData;
 
     const DataFlowModel* dataFlowModel;
-    QString labelPbdFileName;
+    QUrl labelPbdFileUrl;
     // Staged image loader
     ProgressiveLoader progressiveLoader;
 
@@ -120,10 +114,10 @@ protected:
                          SIGNAL_GREEN_VOLUME,
                          SIGNAL_BLUE_VOLUME};
 
-        QueuedFile(QString fileName)
-            : fileName(fileName)
+        QueuedFile(QUrl fileUrl)
+            : fileUrl(fileUrl)
         {
-            QFileInfo fi(fileName);
+            QFileInfo fi(fileUrl.path());
             QString extension = fi.suffix().toLower();
             QString baseName = fi.baseName();
             if (extension == "mp4")
@@ -147,7 +141,7 @@ protected:
             else volumeType = SIGNAL_RGB_VOLUME;
         }
 
-        QString fileName;
+        QUrl fileUrl;
         FileFormat format;
         VolumeType volumeType;
     };

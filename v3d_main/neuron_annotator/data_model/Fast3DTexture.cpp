@@ -3,6 +3,8 @@
 #ifdef USE_FFMPEG
 
 #include "../utility/FFMpegVideo.h"
+#include "../utility/url_tools.h"
+
 extern "C"
 {
 #include <libswscale/swscale.h>
@@ -61,17 +63,17 @@ void MpegLoader::deleteData()
 }
 
 /* slot */
-bool MpegLoader::loadMpegFile(QString fileName)
+bool MpegLoader::loadMpegFile(QUrl fileUrl)
 {
-    // qDebug() << "MpegLoader::loadMpegFile()" << fileName << __FILE__ << __LINE__;
-    if (! QFile(fileName).exists()) {
-        qDebug() << "No such file" << fileName << __FILE__ << __LINE__;
+    // qDebug() << "MpegLoader::loadMpegFile()" << fileUrl << __FILE__ << __LINE__;
+    if (! exists(fileUrl)) {
+        qDebug() << "No such file" << fileUrl << __FILE__ << __LINE__;
         emit mpegFileLoadFinished(false);
         return false;
     }
     bool bSucceeded = true; // start optimistic
     try {
-        FFMpegVideo video(fileName.toStdString().c_str(), (PixelFormat)pixelFormat);
+        FFMpegVideo video(fileUrl, (PixelFormat)pixelFormat);
         {
             QWriteLocker locker(&lock);
             deleteData();
@@ -263,8 +265,8 @@ Fast3DTexture::Fast3DTexture()
     , mpegLoader(PIX_FMT_YUV420P) // Use internal format for fast first pass of rescaling
 {
     FFMpegVideo::maybeInitFFMpegLib();
-    connect(this, SIGNAL(loadRequested(QString)),
-            &mpegLoader, SLOT(loadMpegFile(QString)));
+    connect(this, SIGNAL(loadRequested(QUrl)),
+            &mpegLoader, SLOT(loadMpegFile(QUrl)));
     connect(&mpegLoader, SIGNAL(headerLoaded(int, int, int)),
             this, SLOT(onHeaderLoaded(int, int, int)));
     // Repeat header loaded signal
@@ -286,16 +288,18 @@ Fast3DTexture::~Fast3DTexture()
     deleteData();
 }
 
-void Fast3DTexture::loadFile(QString fileName, BlockScaler::Channel channel)
+void Fast3DTexture::loadFile(QUrl fileUrl, BlockScaler::Channel channel)
 {
     timer.start();
 
-    // qDebug() << "Fast3DTexture::loadFile()" << fileName << __FILE__ << __LINE__;
+    // qDebug() << "Fast3DTexture::loadFile()" << fileUrl << __FILE__ << __LINE__;
     // Read metadata, if any, for this file
-    QFileInfo qfi(fileName);
-    QString dataFileName = qfi.absoluteDir().filePath(qfi.baseName() + ".metadata");
-    // qDebug() << dataFileName;
-    if (QFile(dataFileName).exists()) {
+    QFileInfo fi(fileUrl.path());
+    QUrl dir = ::parent(fileUrl);
+    // e.g. Reference2_100.metadata
+    QUrl metadataFileUrl = appendPath(dir, fi.completeBaseName() + ".metadata");
+    // qDebug() << metadataFileUrl;
+    if (exists(metadataFileUrl)) {
         // Channel zero of the volume file might not be channel zero of our rgba texture
         int channel_offset = 0;
         switch(channel) {
@@ -306,7 +310,7 @@ void Fast3DTexture::loadFile(QString fileName, BlockScaler::Channel channel)
             case BlockScaler::CHANNEL_ALPHA: channel_offset = 3; break;
             default: channel_offset = 0;
         }
-        if (sampledVolumeMetadata.loadFromFile(dataFileName, channel_offset)) {
+        if (sampledVolumeMetadata.loadFromUrl(metadataFileUrl, channel_offset)) {
             // qDebug() << 3 << sampledVolumeMetadata.channelGamma[3]
             //         << __FILE__ << __LINE__;
             emit metadataChanged();
@@ -315,7 +319,7 @@ void Fast3DTexture::loadFile(QString fileName, BlockScaler::Channel channel)
 
     currentLoadChannel = channel;
     // emit benchmarkTimerPrintRequested("Started loading movie file");
-    emit loadRequested(fileName);
+    emit loadRequested(fileUrl);
 }
 
 /* slot */
@@ -422,9 +426,9 @@ void Fast3DTexture::loadNextVolume()
             return;
         QueuedVolume v = volumeQueue.front();
         volumeQueue.pop_front();
-        if (QFile(v.fileName).exists()) {
-            // qDebug() << "Loading volume" << v.fileName << __FILE__ << __LINE__;
-            loadFile(v.fileName, v.channel);
+        if (exists(v.fileUrl)) {
+            // qDebug() << "Loading volume" << v.fileUrl << __FILE__ << __LINE__;
+            loadFile(v.fileUrl, v.channel);
             break;
         }
     }

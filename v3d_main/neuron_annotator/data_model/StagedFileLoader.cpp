@@ -1,6 +1,7 @@
 #include "StagedFileLoader.h"
 #include "NaVolumeData.h"
 #include "../utility/FooDebug.h"
+#include "../utility/url_tools.h"
 #include <cassert>
 
 
@@ -23,7 +24,7 @@ bool ProgressiveCompanion::isFileItem() const
 }
 
 /* virtual */
-bool ProgressiveCompanion::isAvailable(QList<QDir> foldersToSearch) const
+bool ProgressiveCompanion::isAvailable(QList<QUrl> foldersToSearch) const
 {
     return false;
 }
@@ -61,7 +62,7 @@ bool ProgressiveLoadCandidate::hasFileItem() const // Are any queued items file 
 }
 
 /* virtual */
-bool ProgressiveLoadCandidate::isAvailable(QList<QDir> foldersToSearch) const
+bool ProgressiveLoadCandidate::isAvailable(QList<QUrl> foldersToSearch) const
 {
     if (size() == 0)
         return false;
@@ -73,7 +74,7 @@ bool ProgressiveLoadCandidate::isAvailable(QList<QDir> foldersToSearch) const
 }
 
 /* virtual */
-ProgressiveCompanion* ProgressiveLoadCandidate::next(QList<QDir> foldersToSearch)
+ProgressiveCompanion* ProgressiveLoadCandidate::next(QList<QUrl> foldersToSearch)
 {
     if (! isAvailable(foldersToSearch))
         return NULL;
@@ -118,7 +119,7 @@ bool ProgressiveLoadItem::hasFileItem() const // Are any queued items file items
 // Only returns non-NULL if a better candidate has appeared
 // EARLIER in the list.
 /* virtual */
-ProgressiveCompanion* ProgressiveLoadItem::next(QList<QDir> foldersToSearch)
+ProgressiveCompanion* ProgressiveLoadItem::next(QList<QUrl> foldersToSearch)
 {
     // First see if a better candidate has arrived earlier in the list.
     int maxIndex = currentCandidateIndex - 1;
@@ -180,7 +181,7 @@ void ProgressiveLoader::addLoneFile(QString fileName, SignalChannel channel)
 }
 
 
-void ProgressiveLoader::addSearchFolder(QDir folder)
+void ProgressiveLoader::addSearchFolder(QUrl folder)
 {
     if (! foldersToSearch.contains(folder))
         foldersToSearch << folder;
@@ -230,7 +231,7 @@ ProgressiveCompanion* ProgressiveLoader::next()
 }
 
 /* virtual */
-void ProgressiveLoader::queueSeparationFolder(QDir folder)
+void ProgressiveLoader::queueSeparationFolder(QUrl url)
 {
     // search in
     //   1) <dirname>
@@ -239,39 +240,51 @@ void ProgressiveLoader::queueSeparationFolder(QDir folder)
     //   4) <dirname>/archive/fastLoad
     clearAll();
     // Always look in the primary folder for items
-    addSearchFolder(folder);
+    addSearchFolder(url);
     // If "fastLoad" directory exists, look there too.
-    if (folder.exists("fastLoad")) {
-        addSearchFolder(QDir(folder.filePath("fastLoad")));
+    QUrl f = appendPath(url, "fastLoad/");
+    if (exists(f)) {
+        addSearchFolder(f);
     }
     // The "archive" subfolder might spring into existence later
-    if (folder.exists("archive")) {
-        QDir folder2(QDir(folder.filePath("archive")));
-        addSearchFolder(folder2);
-        if (folder2.exists("fastLoad")) {
-            addSearchFolder(QDir(folder2.filePath("fastLoad")));
+    QUrl a = appendPath(url, "archive/");
+    if (exists(a)) {
+        addSearchFolder(a);
+        QUrl af = appendPath(a, "fastLoad/");
+        if (exists(af)) {
+            addSearchFolder(af);
         }
         else {
-            prodigalFolderPath = folder2.absoluteFilePath("fastLoad");
-            directoryWatcher.addPath(folder2.canonicalPath());
+            prodigalFolderPath = af;
+            if (! prodigalFolderPath.toLocalFile().isEmpty()) {
+                // "localhost" mangles local file path
+                if (a.host() == "localhost")
+                    a.setHost("");
+                directoryWatcher.addPath(a.toLocalFile()); // watch the parent, if local file
+            }
         }
     }
     else {
-        prodigalFolderPath = folder.absoluteFilePath("archive");
-        directoryWatcher.addPath(folder.canonicalPath());
+        prodigalFolderPath = a;
+        if (! prodigalFolderPath.toLocalFile().isEmpty()) {
+            // "localhost" mangles local file path
+            if (url.host() == "localhost")
+                url.setHost("");
+            directoryWatcher.addPath(url.toLocalFile()); // watch the parent, if local file
+        }
     }
 }
 
 /* slot */
-void ProgressiveLoader::reexamineResultDirectory(QString dirName)
+void ProgressiveLoader::reexamineResultDirectory(QString dirName) // argument is not used?!
 {
     // fooDebug() << "Searching for folder" << prodigalFolderPath;
-    QDir newDir(prodigalFolderPath);
-    if (! newDir.exists())
+    if (! exists(prodigalFolderPath))
         return;
-    addSearchFolder(newDir);
-    if (newDir.exists("fastLoad"))
-        addSearchFolder(newDir.absoluteFilePath("fastLoad"));
+    addSearchFolder(prodigalFolderPath);
+    QUrl f = appendPath(prodigalFolderPath, "fastLoad/");
+    if (exists(f))
+        addSearchFolder(f);
     emit newFoldersFound();
 }
 
@@ -287,20 +300,28 @@ void ProgressiveLoader::reset()
 // ProgressiveFileCompanion methods
 
 /* virtual */
-bool ProgressiveFileCompanion::isAvailable(QList<QDir> foldersToSearch) const
+bool ProgressiveFileCompanion::isAvailable(QList<QUrl> foldersToSearch) const
 {
-    QString fileName = getFileName(foldersToSearch);
-    return (! fileName.isEmpty());
+    QUrl fileUrl = getFileUrl(foldersToSearch);
+    if (fileUrl.isEmpty())
+        return false;
+    if (! fileUrl.isValid())
+        return false;
+    if (! exists(fileUrl))
+        return false;
+    return true;
 }
 
 /* virtual */
-QString ProgressiveFileCompanion::getFileName(QList<QDir> foldersToSearch) const
+QUrl ProgressiveFileCompanion::getFileUrl(QList<QUrl> foldersToSearch) const
 {
     QString fileName = first;
-    for (int f = 0; f < foldersToSearch.size(); ++f)
-        if (foldersToSearch[f].exists(fileName))
-            return foldersToSearch[f].absoluteFilePath(fileName);
-    return "";
+    for (int f = 0; f < foldersToSearch.size(); ++f) {
+        QUrl fileUrl = appendPath(foldersToSearch[f], fileName);
+        if (exists(fileUrl))
+            return fileUrl;
+    }
+    return QUrl();
 }
 
 /* virtual */
@@ -319,7 +340,7 @@ bool ProgressiveFileCompanion::isMpeg4Volume() const
 
 // TODO - ProgressiveVolumeCompanion methods
 /* virtual */
-bool ProgressiveVolumeCompanion::isAvailable(QList<QDir> foldersToSearch) const
+bool ProgressiveVolumeCompanion::isAvailable(QList<QUrl> foldersToSearch) const
 {
     NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock())

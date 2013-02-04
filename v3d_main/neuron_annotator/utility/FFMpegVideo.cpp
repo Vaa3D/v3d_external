@@ -7,6 +7,10 @@ extern "C"
 #include <libswscale/swscale.h>
 }
 
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QEventLoop>
+#include <QFileInfo>
 #include <QMutexLocker>
 #include <QDebug>
 #include <stdexcept>
@@ -41,6 +45,49 @@ int __weak posix_memalign(void **ptr, size_t align, size_t size)
 */
 }
 #endif
+
+// Custom read function so FFMPEG does not need to read from a local file by name.
+// But rather from a stream derived from a URL or whatever.
+extern "C" {
+
+int readFunction(void* opaque, uint8_t* buf, int buf_size)
+{
+    QIODevice* stream = (QIODevice*)opaque;
+    int numBytes = stream->read((char*)buf, buf_size);
+    return numBytes;
+}
+
+// http://cdry.wordpress.com/2009/09/09/using-custom-io-callbacks-with-ffmpeg/
+int64_t seekFunction(void* opaque, int64_t offset, int whence)
+{
+    QIODevice* stream = (QIODevice*)opaque;
+    if (stream == NULL)
+        return -1;
+    else if (whence == AVSEEK_SIZE)
+        return -1; // "size of my handle in bytes"
+    else if (stream->isSequential())
+        return -1; // cannot seek a sequential stream
+    else if (whence == SEEK_CUR) { // relative to start of file
+        if (! stream->seek(stream->pos() + offset) )
+            return -1;
+    }
+    else if (whence == SEEK_END) { // relative to end of file
+        assert(offset < 0);
+        if (! stream->seek(stream->size() + offset) )
+            return -1;
+    }
+    else if (whence == SEEK_SET) { // relative to start of file
+        if (! stream->seek(offset) )
+            return -1;
+    }
+    else {
+        assert(false);
+    }
+    return stream->pos();
+}
+
+}
+
 
 /////////////////////////////
 // AVPacketWrapper methods //
@@ -79,18 +126,19 @@ void AVPacketWrapper::free()
 /////////////////////////
 
 FFMpegVideo::FFMpegVideo(PixelFormat pixelFormat)
+    : isOpen(false)
 {
     initialize();
     format = pixelFormat;
 }
 
-FFMpegVideo::FFMpegVideo(const std::string& fileName, PixelFormat pixelFormat)
+FFMpegVideo::FFMpegVideo(QUrl url, PixelFormat pixelFormat)
     : isOpen(false)
 {
     QMutexLocker lock(&FFMpegVideo::mutex);
     initialize();
     format = pixelFormat;
-    isOpen = open(fileName, pixelFormat);
+    isOpen = open(url, pixelFormat);
 }
 
 /* virtual */
@@ -125,17 +173,108 @@ FFMpegVideo::~FFMpegVideo()
         av_free(blank);
         blank = NULL;
     }
+    /*
+    if (NULL != avioContext) {
+        av_free(avioContext);
+        avioContext = NULL;
+    }
+    */
+    if (reply != NULL) {
+        reply->deleteLater();
+        reply = NULL;
+    }
     // Don't need to free pCodec?
 }
 
-bool FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam)
+bool FFMpegVideo::open(QUrl url, enum PixelFormat formatParam)
+{
+    if (url.isEmpty())
+        return false;
+
+    // Is the movie source a local file?
+    if (url.host() == "localhost")
+        url.setHost("");
+    QString fileName = url.toLocalFile();
+    if ( (! fileName.isEmpty())
+        && (QFileInfo(fileName).exists()) )
+    {
+        // return open(fileName, formatParam); // for testing only
+
+        // Yes, the source is a local file
+        fileStream.setFileName(fileName);
+        // qDebug() << fileName;
+        if (! fileStream.open(QIODevice::ReadOnly))
+            return false;
+        return open(fileStream, fileName, formatParam);
+    }
+
+    // ...No, the source is not a local file
+    if (url.host() == "")
+        url.setHost("localhost");
+    fileName = url.path();
+
+    // http://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
+    // Load from URL
+    QEventLoop loop; // for synchronous url fetch http://stackoverflow.com/questions/5486090/qnetworkreply-wait-for-finished
+    QObject::connect(&networkManager, SIGNAL(finished(QNetworkReply*)),
+            &loop, SLOT(quit()));
+    QNetworkRequest request = QNetworkRequest(url);
+    // qDebug() << "networkManager" << __FILE__ << __LINE__;
+    reply = networkManager.get(request);
+    loop.exec();
+    if (reply->error() != QNetworkReply::NoError) {
+        // qDebug() << reply->error();
+        reply->deleteLater();
+        reply = NULL;
+        return false;
+    }
+    QIODevice * stream = reply;
+    // Mpeg needs seekable device, so create in-memory buffer if necessary
+    if (stream->isSequential()) {
+        byteArray = stream->readAll();
+        fileBuffer.setBuffer(&byteArray);
+        fileBuffer.open(QIODevice::ReadOnly);
+        if (! fileBuffer.seek(0))
+            return false;
+        stream = &fileBuffer;
+        assert(! stream->isSequential());
+    }
+    bool result = open(*stream, fileName, formatParam);
+    return result;
+}
+
+bool FFMpegVideo::open(QIODevice& fileStream, QString& fileName, enum PixelFormat formatParam)
+{
+    // http://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
+    // I think AVIOContext is the trick used to redivert the input stream
+    ioBuffer = (unsigned char *)av_malloc(ioBufferSize + FF_INPUT_BUFFER_PADDING_SIZE); // can get av_free()ed by libav
+    avioContext = avio_alloc_context(ioBuffer, ioBufferSize, 0, (void*)(&fileStream), &readFunction, NULL, &seekFunction);
+    container = avformat_alloc_context();
+    container->pb = avioContext;
+
+    // Open file, check usability
+    std::string fileNameStd = fileName.toStdString();
+    if (!avtry( avformat_open_input(&container, fileNameStd.c_str(), NULL, NULL), fileNameStd ))
+        return false;
+    return openUsingInitializedContainer(formatParam);
+}
+
+// file name based method for historical continuity
+bool FFMpegVideo::open(QString& fileName, enum PixelFormat formatParam)
+{
+    // Open file, check usability
+    std::string fileNameStd = fileName.toStdString();
+    if (!avtry( avformat_open_input(&container, fileNameStd.c_str(), NULL, NULL), fileNameStd ))
+        return false;
+    return openUsingInitializedContainer(formatParam);
+}
+
+
+bool FFMpegVideo::openUsingInitializedContainer(enum PixelFormat formatParam)
 {
     format = formatParam;
     sc = getNumberOfChannels();
 
-    // Open file, check usability
-    if (!avtry( avformat_open_input(&container, fileName.c_str(), NULL, NULL), fileName ))
-        return false;
     if (!avtry( avformat_find_stream_info(container, NULL), "Cannot find stream information." ))
         return false;
     if (!avtry( videoStream=av_find_best_stream(container, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0), "Cannot find a video stream." ))
@@ -196,6 +335,7 @@ bool FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam
     //dump_format(container, 0, fname, 0);
 
     previousFrameIndex = -1;
+    return true;
 }
 
 bool FFMpegVideo::fetchFrame(int targetFrameIndex)
@@ -346,6 +486,9 @@ void FFMpegVideo::initialize()
     blank = NULL;
     pCodec = NULL;
     format = PIX_FMT_NONE;
+    reply = NULL;
+    ioBuffer = NULL;
+    avioContext = NULL;
     FFMpegVideo::maybeInitFFMpegLib();
 }
 

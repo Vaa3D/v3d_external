@@ -1,4 +1,5 @@
 #include "SampledVolumeMetadata.h"
+#include "../utility/url_tools.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -9,14 +10,14 @@ SampledVolumeMetadata::SampledVolumeMetadata()
     , channelHdrMaxima((size_t)4, (uint32_t)4095)
 {}
 
-bool SampledVolumeMetadata::loadFromFile(QString fileName, int channel_offset)
+bool SampledVolumeMetadata::loadFromUrl(QUrl fileUrl, int channel_offset)
 {
-    std::ifstream in(fileName.toStdString().c_str());
-    if (! in.good())
+    UrlStream stream(fileUrl);
+    if (stream.io() == NULL)
         return false;
     char lineBuffer[1024];
     bool bChanged = false;
-    while (in.getline(lineBuffer, 1024))
+    while (stream.io()->readLine(lineBuffer, 1024))
     {
         std::string line(lineBuffer);
         std::istringstream lineStream(line);
@@ -89,6 +90,8 @@ bool SampledVolumeMetadata::loadFromFile(QString fileName, int channel_offset)
                 bChanged = true;
             }
         }
+        if (stream.io()->atEnd())
+            break;
     }
     return bChanged;
 }

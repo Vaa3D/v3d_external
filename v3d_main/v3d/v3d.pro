@@ -155,6 +155,7 @@ HEADERS += \
     ../neuron_annotator/utility/StitchedFileUtility.h \
     ../neuron_annotator/utility/ImageLoaderBasic.h \
     ../neuron_annotator/utility/ImageLoader.h \
+    ../neuron_annotator/utility/url_tools.h \
     ../neuron_annotator/DataFlowModel.h \
     ../neuron_annotator/utility/NeuronMaskEntry.h \
     ../neuron_annotator/MultiColorImageStackNode.h \
@@ -297,6 +298,7 @@ SOURCES += \
     ../neuron_annotator/utility/ConsoleObserver.cpp \
     ../neuron_annotator/utility/ImageLoaderBasic.cpp \
     ../neuron_annotator/utility/ImageLoader.cpp \
+    ../neuron_annotator/utility/url_tools.cpp \
     ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
     ../neuron_annotator/analysis/AlignerUtils.cpp \
     ../neuron_annotator/analysis/NeuronFragmentEditor.cpp \

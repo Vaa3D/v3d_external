@@ -2,7 +2,7 @@
 #define IMAGELOADER_H
 
 #include "ImageLoaderBasic.h"
-#include <QNetworkAccessManager>
+#include "../../v3d/v3d_core.h"
 #include <QIODevice>
 #include <QString>
 #include <QtCore>
@@ -110,7 +110,6 @@ private:
     bool flipy;
     int progressIndex;
 
-    QNetworkAccessManager networkManager;
 };
 
 #endif // IMAGELOADER_H

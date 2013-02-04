@@ -1,18 +1,25 @@
 #include "MultiColorImageStackNode.h"
+#include "utility/url_tools.h"
 
 const char * MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME = "ConsolidatedSignal";
 const char * MultiColorImageStackNode::IMAGE_MASK_BASE_FILENAME = "ConsolidatedLabel";
 const char * MultiColorImageStackNode::IMAGE_REFERENCE_BASE_FILENAME = "Reference";
 
-MultiColorImageStackNode::MultiColorImageStackNode(QDir imageDirParam)
+MultiColorImageStackNode::MultiColorImageStackNode(QUrl imageDirParam)
 {
     imageDir=imageDirParam;
 }
 
-QStringList MultiColorImageStackNode::getPathsToLsmMetadataFiles()
+QList<QUrl> MultiColorImageStackNode::getPathsToLsmMetadataFiles()
 {
-    QStringList metadataPathList;
-    QFileInfoList fileInfoList=imageDir.entryInfoList();
+    QList<QUrl> metadataPathList;
+    QString dirString = imageDir.toLocalFile();
+    if (dirString.isEmpty()) {
+        return metadataPathList; // TODO - handle non-local directories
+    }
+    // Load file list from local file system
+    QDir dir(dirString);
+    QFileInfoList fileInfoList=dir.entryInfoList();
     for (int i=0;i<fileInfoList.size();i++) {
         QFileInfo fileInfo=fileInfoList.at(i);
         if (fileInfo.fileName().endsWith(".metadata")) {
@@ -22,24 +29,21 @@ QStringList MultiColorImageStackNode::getPathsToLsmMetadataFiles()
     return metadataPathList;
 }
 
-QString MultiColorImageStackNode::getPathToLsmFilePathsFile() {
-    QString dirPath=imageDir.absolutePath();
-    dirPath.append("/lsmFilePaths.txt");
-    return dirPath;
+QUrl MultiColorImageStackNode::getPathToLsmFilePathsFile() {
+    return appendPath(imageDir, "lsmFilePaths.txt");
 }
 
 QStringList MultiColorImageStackNode::getLsmFilePathList() {
     QStringList lsmFilePathList;
-    QString filePath=getPathToLsmFilePathsFile();
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        cerr << "Could not open file=" << filePath.toStdString() << " to read\n";
+    QUrl fileUrl=getPathToLsmFilePathsFile();
+    UrlStream stream(fileUrl);
+    if (stream.io() == NULL) {
+        qDebug() << "Could not open file=" << fileUrl << " to read";
         return lsmFilePathList;
     }
-    while(!file.atEnd()) {
-        lsmFilePathList.append(file.readLine());
+    while(!stream.io()->atEnd()) {
+        lsmFilePathList.append(stream.io()->readLine());
     }
-    file.close();
     return lsmFilePathList;
 }
 

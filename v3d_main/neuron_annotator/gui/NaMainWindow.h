@@ -88,8 +88,8 @@ public:
     void setNeuronAnnotatorModeCheck(bool checkState);
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     virtual void keyPressEvent(QKeyEvent *e);
-    bool loadSeparationDirectoryV1Pbd(QDir imageInputDirectory);
-    bool loadSeparationDirectoryV2Mpeg(QDir imageInputDirectory);
+    bool loadSeparationDirectoryV1Pbd(QUrl folder);
+    bool loadSeparationDirectoryV2Mpeg(QUrl folder);
     bool tearDownOldDataFlowModel();
     bool createNewDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
@@ -107,7 +107,7 @@ signals:
     void benchmarkTimerPrintRequested(QString);
     void initializeColorModelRequested();
     void initializeSelectionModelRequested();
-    void subsampleLabelPbdFileNamed(QString);
+    void subsampleLabelPbdFileNamed(QUrl);
     void stagedLoadRequested();
 
 public slots:
@@ -122,6 +122,7 @@ public slots:
     void onDataLoadFinished();
     bool openMulticolorImageStack(QUrl url);
     bool openMulticolorImageStack(QString dirName);
+    void openFileOrUrl(QString name);
     void on_actionV3DDefault_triggered();
     void on_actionMeasure_Frame_Rate_triggered();
     void on_actionNeuronAnnotator_triggered();
@@ -133,7 +134,6 @@ public slots:
     void on_action2D_MIP_triggered();
     void on_actionScreenShot_triggered();
     void on_actionLoad_movie_as_texture_triggered();
-    bool on_actionLoad_fast_separation_result_triggered();
     void on_actionPreferences_triggered();
     void on_actionX_Rotation_Movie_triggered();
     void setZRange(int minZ, int maxZ); // update number of z slices
@@ -188,6 +188,7 @@ protected:
     // Recent files list
     void addDirToRecentFilesList(QDir);
     void addFileNameToRecentFilesList(QString fileName);
+    void addUrlToRecentFilesList(QUrl url);
     void updateRecentFileActions();
     void connectCustomCut();
     void dragEnterEvent(QDragEnterEvent *);

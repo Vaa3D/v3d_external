@@ -1,5 +1,6 @@
 #include "DataFlowModel.h"
 #include "utility/FooDebug.h"
+#include "utility/url_tools.h"
 #include <QtAlgorithms>
 #include <iostream>
 #include <cassert>
@@ -173,22 +174,18 @@ bool DataFlowModel::loadLsmMetadata()
 {
     if (NULL == multiColorImageStackNode)
         return false;
-    QStringList lsmMetadataFilepathList=multiColorImageStackNode->getPathsToLsmMetadataFiles();
+    QList<QUrl> lsmMetadataFilepathList=multiColorImageStackNode->getPathsToLsmMetadataFiles();
     if (lsmMetadataFilepathList.size()==0) {
         qDebug() << "DataFlowModel::loadLsmMetadata() received empty list of lsm metadata files";
         return false;
     } else {
-        QString filePath=lsmMetadataFilepathList.at(0);
-        QFile file(filePath);
-        if (!file.open(QIODevice::ReadOnly)) {
-            cerr << "Could not open file=" << filePath.toStdString() << " to read\n";
+        UrlStream stream(lsmMetadataFilepathList.at(0));
+        if (stream.io() == NULL)
             return false;
-        }
         QStringList fileContents;
-        while(!file.atEnd()) {
-            fileContents.append(file.readLine());
+        while(! stream.io()->atEnd()) {
+            fileContents.append(stream.io()->readLine());
         }
-        file.close();
         bool parseSuccess=false;
         for (int i=fileContents.size()-1;i>=0;i--) {
             QString line=fileContents.at(i);
@@ -229,11 +226,11 @@ bool DataFlowModel::loadVolumeData()
         NaVolumeData::Writer volumeWriter(volumeData);
 
         // Set file names of image files so VolumeData will know what to load.
-        volumeWriter.setOriginalImageStackFilePath(
+        volumeWriter.setOriginalImageStackFileUrl(
                 multiColorImageStackNode->getPathToOriginalImageStackFile());
-        volumeWriter.setMaskLabelFilePath(
+        volumeWriter.setMaskLabelFileUrl(
                 multiColorImageStackNode->getPathToMulticolorLabelMaskFile());
-        volumeWriter.setReferenceStackFilePath(
+        volumeWriter.setReferenceStackFileUrl(
                 multiColorImageStackNode->getPathToReferenceStackFile());
     } // release locks before emit
     emit volumeDataNeeded(); // load data in a separate QThread

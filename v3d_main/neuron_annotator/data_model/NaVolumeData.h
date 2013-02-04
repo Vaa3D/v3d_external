@@ -17,10 +17,10 @@ class NaVolumeDataLoadableStack : public QObject
     Q_OBJECT
 
 public:
-    NaVolumeDataLoadableStack(My4DImage* stackp, QString filename, int stackIndex = -1);
+    NaVolumeDataLoadableStack(My4DImage* stackp, QUrl fileUrl, int stackIndex = -1);
     virtual bool load();
-    QString determineFullFilepath() const;
-    const QString& getFileName() const {return filename;}
+    QUrl determineFullFileUrl() const;
+    const QUrl& getFileUrl() const {return fileUrl;}
     bool isCanceled() const {return bIsCanceled;}
 
 signals:
@@ -42,7 +42,7 @@ protected:
     void setRelativeProgress(float relativeProgress);
 
     My4DImage* stackp;
-    QString filename;
+    QUrl fileUrl;
     int stackIndex; // to help keep track of combined progress
 
     int progressValue;
@@ -81,7 +81,7 @@ signals:
 public slots:
     bool loadChannels(QUrl url); // includes loading general volumes
     // staged loading
-    bool queueSeparationFolder(QDir folder); // using new staged loader
+    bool queueSeparationFolder(QUrl folder); // using new staged loader
     void loadStagedVolumes();
 
 protected slots:
@@ -91,17 +91,17 @@ protected slots:
     void setProgressMessage(QString message) {emit progressMessageChanged(message);}
     void setStackLoadProgress(int progressValue, int stackIndex);
 
-    bool loadReference(QString fileName);
-    bool loadOneChannel(QString fileName, int channel_index = 0);
-    bool loadNeuronMask(QString fileName);
+    bool loadReference(QUrl fileUrl);
+    bool loadOneChannel(QUrl fileUrl, int channel_index = 0);
+    bool loadNeuronMask(QUrl fileUrl);
     bool loadVolumeFromTexture();
     // support loading of magically appearing directory of files
-    bool loadBestVolumeFromDirectory(QString);
+    bool loadBestVolumeFromDirectory(QUrl);
 
 private:
-    QString originalImageStackFilePath;
-    QString maskLabelFilePath;
-    QString referenceStackFilePath;
+    QUrl originalImageStackFileUrl;
+    QUrl maskLabelFileUrl;
+    QUrl referenceStackFileUrl;
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
@@ -164,9 +164,9 @@ public:
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
         int getNumberOfNeurons() const {return m_data->neuronMaskStack->getChannalMaxIntensity(0);}
 
-        void setOriginalImageStackFilePath(QString path) {m_data->originalImageStackFilePath = path;}
-        void setMaskLabelFilePath(QString path) {m_data->maskLabelFilePath = path;}
-        void setReferenceStackFilePath(QString path) {m_data->referenceStackFilePath = path;}
+        void setOriginalImageStackFileUrl(QUrl path) {m_data->originalImageStackFileUrl = path;}
+        void setMaskLabelFileUrl(QUrl path) {m_data->maskLabelFileUrl = path;}
+        void setReferenceStackFileUrl(QUrl path) {m_data->referenceStackFileUrl = path;}
 
         bool loadStacks();
         bool normalizeReferenceStack(My4DImage* initialReferenceStack);
@@ -175,13 +175,13 @@ public:
         void clearLandmarks();
         void setLandmarks(const QList<LocationSimple>);
 
-        bool loadSingleImageMovieVolume(QString fileName);
+        bool loadSingleImageMovieVolume(QUrl fileUrl);
         bool setSingleImageVolume(My4DImage* img);
 
-        bool loadReference(QString fileName);
-        bool loadOneChannel(QString fileName, int channel_index = 0);
+        bool loadReference(QUrl fileUrl);
+        bool loadOneChannel(QUrl fileUrl, int channel_index = 0);
         int  loadChannels(QUrl url); // includes loading general volumes
-        bool loadNeuronMask(QString fileName);
+        bool loadNeuronMask(QUrl fileUrl);
         bool loadVolumeFromTexture(const jfrc::VolumeTexture* texture);
 
     private:

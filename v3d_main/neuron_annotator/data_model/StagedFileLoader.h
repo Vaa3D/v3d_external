@@ -4,7 +4,7 @@
 #include <QFileSystemWatcher>
 #include <QPair>
 #include <QString>
-#include <QDir>
+#include <QUrl>
 #include <QObject>
 
 class NaVolumeData;
@@ -41,7 +41,7 @@ class ProgressiveCompanion
 public:
     ProgressiveCompanion();
     virtual ~ProgressiveCompanion();
-    virtual bool isAvailable(QList<QDir> foldersToSearch) const;
+    virtual bool isAvailable(QList<QUrl> foldersToSearch) const;
     virtual bool isFileItem() const;
     virtual bool isMpeg4Volume() const;
 
@@ -63,8 +63,8 @@ public:
     ProgressiveLoadCandidate();
     virtual ~ProgressiveLoadCandidate();
     virtual bool hasFileItem() const;
-    virtual bool isAvailable(QList<QDir> foldersToSearch) const;
-    virtual ProgressiveCompanion* next(QList<QDir> foldersToSearch);
+    virtual bool isAvailable(QList<QUrl> foldersToSearch) const;
+    virtual ProgressiveCompanion* next(QList<QUrl> foldersToSearch);
 
 protected:
     ProgressiveCompanion* currentCompanion;
@@ -84,7 +84,7 @@ public:
     ProgressiveLoadItem();
     virtual ~ProgressiveLoadItem();
     virtual bool hasFileItem() const;
-    virtual ProgressiveCompanion* next(QList<QDir> foldersToSearch); // only if a better it is available EARLIER in the list
+    virtual ProgressiveCompanion* next(QList<QUrl> foldersToSearch); // only if a better it is available EARLIER in the list
 
 protected:
     ProgressiveLoadCandidate* currentCandidate;
@@ -117,14 +117,14 @@ public:
 
     // Loads the next available item in the sequence
     virtual void addLoneFile(QString fileName, SignalChannel channel=CHANNEL_RGB);
-    virtual void addSearchFolder(QDir folder);
+    virtual void addSearchFolder(QUrl folder);
     virtual void clearAll(); // Remove all items
-    virtual const QList<QDir>& getFoldersToSearch() const {
+    virtual const QList<QUrl>& getFoldersToSearch() const {
         return foldersToSearch;
     }
     virtual bool hasFileItem() const; // Are any queued items file items?
     virtual ProgressiveCompanion* next();
-    virtual void queueSeparationFolder(QDir folder);
+    virtual void queueSeparationFolder(QUrl url);
     virtual void reset(); // restart from the beginning
 
 signals:
@@ -137,9 +137,9 @@ protected:
     // loadIncrementalItem() will only attempt to load items appearing AFTER the currentLoadItem
     ProgressiveLoadItem* currentLoadItem; // NULL means nothing is loaded
     int currentLoadItemIndex;
-    QList<QDir> foldersToSearch;
+    QList<QUrl> foldersToSearch;
     QFileSystemWatcher directoryWatcher;
-    QString prodigalFolderPath;
+    QUrl prodigalFolderPath;
 
     // loadIncrementalItem() will only attempt to load items appearing AFTER the latestFailedItem?
     // TODO - but maybe the item is available now?
@@ -157,8 +157,8 @@ public:
         : QPair<QString, SignalChannel>(fileName, channel)
         , m_isFlippedY(false)
     {}
-    virtual QString getFileName(QList<QDir> foldersToSearch) const;
-    virtual bool isAvailable(QList<QDir> foldersToSearch) const;
+    virtual QUrl getFileUrl(QList<QUrl> foldersToSearch) const;
+    virtual bool isAvailable(QList<QUrl> foldersToSearch) const;
     virtual bool isFileItem() const {return true;}
     virtual bool isFlippedY() const {return m_isFlippedY;}
     virtual bool isMpeg4Volume() const;
@@ -179,7 +179,7 @@ public:
          : volumeData(volumeData)
          , channel(channel)
      {}
-     virtual bool isAvailable(QList<QDir> foldersToSearch) const;
+     virtual bool isAvailable(QList<QUrl> foldersToSearch) const;
 
 protected:
      const NaVolumeData& volumeData;

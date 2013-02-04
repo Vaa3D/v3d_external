@@ -1,8 +1,10 @@
 #include "NaVolumeData.h"
 #include "VolumeTexture.h"
+#include "../utility/url_tools.h"
 #include "../utility/FooDebug.h"
 #include <iostream>
 #include <QFuture>
+#include <QUrl>
 #include <cassert>
 
 #ifdef USE_FFMPEG
@@ -25,10 +27,10 @@ public:
     }
 };
 
-NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QString filenameParam, int stackIndexParam)
+NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QUrl fileUrlParam, int stackIndexParam)
    : QObject(NULL)
    , stackp(stackpParam)
-   , filename(filenameParam)
+   , fileUrl(fileUrlParam)
    , stackIndex(stackIndexParam)
    , progressValue(0)
    , progressMin(0)
@@ -46,12 +48,12 @@ NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QSt
 bool NaVolumeDataLoadableStack::load()
 {
     setRelativeProgress(0.02f); // getting here *is* finite progress
-    // qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
-    QString fullFilepath=determineFullFilepath();
-    if (! QFile(fullFilepath).exists())
+    // qDebug() << "NaVolumeData::LoadableStack::load() fileUrl=" << fileUrl;
+    QUrl fullFileUrl=determineFullFileUrl();
+    if (! exists(fullFileUrl))
         return false;
     imageLoader.setProgressIndex(stackIndex);
-    imageLoader.loadImage(stackp, fullFilepath);
+    imageLoader.loadImage(stackp, fullFileUrl);
     /*
     // stackp->isEmpty() is returning 'true' for correctly loaded images.
     // so I'm commenting out this block.
@@ -78,10 +80,10 @@ void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
     emit progressValueChanged(progressValue, stackIndex);
 }
 
-QString NaVolumeDataLoadableStack::determineFullFilepath() const
+QUrl NaVolumeDataLoadableStack::determineFullFileUrl() const
 {
-    if (QFile(filename).exists())
-        return filename;
+    if (exists(fileUrl))
+        return fileUrl;
     const char * extensions[] = {
 #ifdef USE_FFMPEG
         ".mp4",
@@ -91,13 +93,16 @@ QString NaVolumeDataLoadableStack::determineFullFilepath() const
         ".tif",
         ".tif" // extra entry for when USE_FFMPEG is undefined
     };
+    QUrl testUrl = fileUrl;
+    QString path = testUrl.path();
     for (int e = 0; e < 4; ++e)
     {
-        QString fn = filename + extensions[e];
-        if (QFile(fn).exists())
-            return fn;
+        QString fn = path + extensions[e];
+        testUrl.setPath(fn);
+        if (exists(testUrl))
+            return testUrl;
     }
-    return filename + ".tif"; // even though the file doesn't exist...
+    return testUrl; // even though the file doesn't exist...
 }
 
 
@@ -148,11 +153,13 @@ void NaVolumeData::setTextureInput(const VolumeTexture* texture)
 }
 
 // Load new volume files from a suddenly appearing directory
-bool NaVolumeData::loadBestVolumeFromDirectory(QString dirName)
+bool NaVolumeData::loadBestVolumeFromDirectory(QUrl dirName)
 {
-    QDir dir(dirName);
-    if (! dir.exists()) return false;
-    QDir fastloadDir = QDir(dir.filePath("fastLoad"));
+    if (dirName.isEmpty())
+        return false;
+    if (! exists(dirName))
+        return false;
+    QUrl fastloadDir = appendPath(dirName, "fastLoad/");
 
     // iterate through possible signal file names, in order of desirability
 
@@ -286,7 +293,7 @@ void NaVolumeData::loadSecondaryVolumeDataFromFiles()
 void NaVolumeData::loadStagedVolumes()
 {
     bool bChanged = false;
-    QString signalPath, labelPath, referencePath;
+    QUrl signalPath, labelPath, referencePath;
     // Loop over all volumes to load
     for (ProgressiveCompanion* item = progressiveLoader.next();
             item != NULL; item = progressiveLoader.next())
@@ -294,31 +301,31 @@ void NaVolumeData::loadStagedVolumes()
         assert(item->isFileItem());
         ProgressiveFileCompanion* fileItem =
                 dynamic_cast<ProgressiveFileCompanion*>(item);
-        QString fileName = fileItem->getFileName(progressiveLoader.getFoldersToSearch());
+        QUrl fileUrl = fileItem->getFileUrl(progressiveLoader.getFoldersToSearch());
         SignalChannel channel = fileItem->second;
         if (channel == CHANNEL_LABEL) {
-            labelPath = fileName;
+            labelPath = fileUrl;
         }
         else if (channel == CHANNEL_ALPHA) {
-            referencePath = fileName;
+            referencePath = fileUrl;
         }
         else {
-            signalPath = fileName;
+            signalPath = fileUrl;
             doFlipY = fileItem->isFlippedY();
         }
     }
     {
         Writer writer(*this);
         if (! labelPath.isEmpty()) {
-            writer.setMaskLabelFilePath(labelPath);
+            writer.setMaskLabelFileUrl(labelPath);
             bChanged = true;
         }
         if (! referencePath.isEmpty()) {
-            writer.setReferenceStackFilePath(referencePath);
+            writer.setReferenceStackFileUrl(referencePath);
             bChanged = true;
         }
         if (! signalPath.isEmpty()) {
-            writer.setOriginalImageStackFilePath(signalPath);
+            writer.setOriginalImageStackFileUrl(signalPath);
             bChanged = true;
         }
     }
@@ -408,14 +415,14 @@ bool NaVolumeData::loadChannels(QUrl url) // includes loading general volumes
 
 /* slot */
 /*
-bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
+bool NaVolumeData::loadSingleImageMovieVolume(QUrl fileUrl)
 {
     bool bSucceeded = false;
     emit progressMessageChanged("Loading single volume file"); // emit outside of lock block
     emit progressValueChanged(1); // show a bit of blue
     {
         NaVolumeData::Writer volumeWriter(*this);
-        bSucceeded = volumeWriter.loadSingleImageMovieVolume(fileName);
+        bSucceeded = volumeWriter.loadSingleImageMovieVolume(fileUrl);
     } // release lock before emit
     if (bSucceeded) {
         bDoUpdateSignalTexture = true;
@@ -430,13 +437,13 @@ bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
 */
 
 /* slot */
-bool NaVolumeData::loadReference(QString fileName)
+bool NaVolumeData::loadReference(QUrl fileUrl)
 {
     bool bSucceeded = false;
     emit progressMessageChanged("Loading reference channel"); // emit outside of lock block
     {
         Writer writer(*this);
-        if (writer.loadReference(fileName))
+        if (writer.loadReference(fileUrl))
             bSucceeded = true;
     }
 
@@ -448,13 +455,13 @@ bool NaVolumeData::loadReference(QString fileName)
 }
 
 /* slot */
-bool NaVolumeData::loadOneChannel(QString fileName, int channel_index) // includes loading general volumes
+bool NaVolumeData::loadOneChannel(QUrl fileUrl, int channel_index) // includes loading general volumes
 {
     bool bSucceeded = false;
     emit progressMessageChanged(QString("Loading data channel %1").arg(channel_index)); // emit outside of lock block
     {
         Writer writer(*this);
-        if (writer.loadOneChannel(fileName, channel_index))
+        if (writer.loadOneChannel(fileUrl, channel_index))
             bSucceeded = true;
     }
     if (bSucceeded)
@@ -465,13 +472,13 @@ bool NaVolumeData::loadOneChannel(QString fileName, int channel_index) // includ
 }
 
 /* slot */
-bool NaVolumeData::loadNeuronMask(QString fileName)
+bool NaVolumeData::loadNeuronMask(QUrl fileUrl)
 {
     bool bSucceeded = false;
     emit progressMessageChanged("Loading neuron mask"); // emit outside of lock block
     {
         Writer writer(*this);
-        if (writer.loadNeuronMask(fileName))
+        if (writer.loadNeuronMask(fileUrl))
             bSucceeded = true;
     }
     if (bSucceeded)
@@ -518,12 +525,12 @@ void NaVolumeData::Writer::clearImageData()
     }
 }
 
-bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
+bool NaVolumeData::Writer::loadSingleImageMovieVolume(QUrl fileUrl)
 {
-   // qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileName;
+   // qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileUrl;
 #ifdef USE_FFMPEG
     My4DImage* img = new My4DImage();
-    if (! loadStackFFMpeg(fileName.toStdString().c_str(), *img) ) {
+    if (! loadStackFFMpeg(fileUrl, *img) ) {
         delete img;
         return false;
     }
@@ -537,7 +544,7 @@ bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
 
 int NaVolumeData::Writer::loadChannels(QUrl url) // includes loading general volumes
 {
-    // qDebug() << "NaVolumeData::Writer::loadChannels()" << fileName;
+    // qDebug() << "NaVolumeData::Writer::loadChannels()" << fileUrl;
     My4DImage* img = new My4DImage();
     ImageLoader loader;
     if (! loader.loadImage(img, url) ) {
@@ -611,26 +618,28 @@ My4DImage* ensureThreeChannel(My4DImage* input)
 
 // Convert 8-bit truncated, gamma corrected stack to linear 16-bit,
 // using metadata file; to approximate original 16-bit values
-My4DImage* transformStackToLinear(My4DImage* img1, QString fileName)
+My4DImage* transformStackToLinear(My4DImage* img1, QUrl fileUrl)
 {
     if (img1->getUnitBytes() != 1)
         return img1; // I only know how to transform 8-bit data
     // Load .metadata file to specify the transformation
-    QString metadataFileName = fileName + ".metadata";
-    if (! QFileInfo(metadataFileName).exists()) {
+    QUrl metadataFileUrl = fileUrl;
+    metadataFileUrl.setPath(fileUrl.path() + ".metadata");
+    if (! exists(metadataFileUrl)) {
         // Try removing suffix of stack file name
-        QFileInfo fi(fileName);
-        QDir dir(fi.absolutePath());
-        metadataFileName = dir.absoluteFilePath(fi.completeBaseName()) + ".metadata";
-        // qDebug() << metadataFileName;
-        if (! QFileInfo(metadataFileName).exists())
+        QUrl parentUrl = parent(fileUrl);
+        if (parentUrl.isEmpty())
+            return img1;
+        QFileInfo fi(fileUrl.path());
+        metadataFileUrl = appendPath(parentUrl, fi.completeBaseName() + ".metadata");
+        if (! exists(metadataFileUrl))
             return img1;  // I give up.  There is no metadata file.
     }
     QTime time;
     time.start();
-    assert(QFileInfo(metadataFileName).exists());
+    // assert(QFileInfo(metadataFileUrl).exists());
     SampledVolumeMetadata metadata;
-    metadata.loadFromFile(metadataFileName, 0);
+    metadata.loadFromUrl(metadataFileUrl, 0);
     // Precompute a table of converted values for all values 0-255
     std::vector< std::vector<uint16_t> > convert;
     convert.assign(img1->getCDim(), std::vector<uint16_t>((size_t)256, (uint16_t)0));
@@ -702,7 +711,7 @@ My4DImage* transformStackToLinear(My4DImage* img1, QString fileName)
     return img2;
 }
 
-bool NaVolumeData::queueSeparationFolder(QDir folder) // using new staged loader
+bool NaVolumeData::queueSeparationFolder(QUrl folder) // using new staged loader
 {
     progressiveLoader.queueSeparationFolder(folder);
     /// Loading sequence: ///
@@ -757,7 +766,7 @@ bool NaVolumeData::Writer::loadStacks()
     QCoreApplication::processEvents(); // ensure that progress bar gets displayed
 
     m_data->originalImageStack = new My4DImage();
-    LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFilePath, 0);
+    LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFileUrl, 0);
     connect(&originalStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
     connect(&originalStack, SIGNAL(progressMessageChanged(QString)),
@@ -766,7 +775,7 @@ bool NaVolumeData::Writer::loadStacks()
     // Pass stack pointer instead of stack reference to avoid problem with lack of QObject copy constructor.
 
     m_data->neuronMaskStack = new My4DImage();
-    LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFilePath, 1);
+    LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFileUrl, 1);
     connect(&maskStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
     connect(&maskStack, SIGNAL(progressMessageChanged(QString)),
@@ -775,7 +784,7 @@ bool NaVolumeData::Writer::loadStacks()
 
     m_data->referenceStack = new My4DImage();
     My4DImage* initialReferenceStack = m_data->referenceStack;
-    LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath, 2);
+    LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFileUrl, 2);
     connect(&referenceStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
     connect(&referenceStack, SIGNAL(progressMessageChanged(QString)),
@@ -788,11 +797,11 @@ bool NaVolumeData::Writer::loadStacks()
     bool bUseMultithreadedLoader = true;
     // Tiff loading is not reentrant, so don't multithread tiff loading.
     int tiff_count = 0;
-    if (originalStack.determineFullFilepath().endsWith(".tif"))
+    if (originalStack.determineFullFileUrl().path().endsWith(".tif"))
         ++tiff_count;
-    if (maskStack.determineFullFilepath().endsWith(".tif"))
+    if (maskStack.determineFullFileUrl().path().endsWith(".tif"))
         ++tiff_count;
-    if (referenceStack.determineFullFilepath().endsWith(".tif"))
+    if (referenceStack.determineFullFileUrl().path().endsWith(".tif"))
         ++tiff_count;
     if (tiff_count > 1)
     {
@@ -844,19 +853,19 @@ bool NaVolumeData::Writer::loadStacks()
         // Non-threaded sequential loading
         m_data->setProgressMessage("Loading multicolor brain images...");
         if (! originalStack.load()) {
-            qDebug() << "ERROR loading signal volume" << m_data->originalImageStackFilePath;
+            qDebug() << "ERROR loading signal volume" << m_data->originalImageStackFileUrl;
             return false;
         }
         if (! m_data->representsActualData()) return false;
         m_data->setProgressMessage("Loading neuron fragment locations...");
         if (! maskStack.load()) {
-            qDebug() << "ERROR loading label volume" << m_data->maskLabelFilePath;
+            qDebug() << "ERROR loading label volume" << m_data->maskLabelFileUrl;
             return false;
         }
         if (! m_data->representsActualData()) return false;
         m_data->setProgressMessage("Loading nc82 synaptic reference image...");
         if (! referenceStack.load()) {
-            qDebug() << "ERROR loading reference volume" << m_data->referenceStackFilePath;
+            qDebug() << "ERROR loading reference volume" << m_data->referenceStackFileUrl;
             return false;
         }
         if (! m_data->representsActualData()) return false;
@@ -880,10 +889,10 @@ bool NaVolumeData::Writer::loadStacks()
     // Approximate 16-bit data for 8-it data volumes
     m_data->originalImageStack =
             transformStackToLinear(m_data->originalImageStack,
-                                   m_data->originalImageStackFilePath);
+                                   m_data->originalImageStackFileUrl);
     m_data->referenceStack =
             transformStackToLinear(m_data->referenceStack,
-                                   m_data->referenceStackFilePath);
+                                   m_data->referenceStackFileUrl);
 
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
@@ -895,19 +904,19 @@ bool NaVolumeData::Writer::loadStacks()
     return true;
 }
 
-bool NaVolumeData::Writer::loadReference(QString fileName)
+bool NaVolumeData::Writer::loadReference(QUrl fileUrl)
 {
     assert(false); // TODO
     return false;
 }
 
-bool NaVolumeData::Writer::loadOneChannel(QString fileName, int channel_index) // includes loading general volumes
+bool NaVolumeData::Writer::loadOneChannel(QUrl fileUrl, int channel_index) // includes loading general volumes
 {
     assert(false); // TODO
     return false;
 }
 
-bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
+bool NaVolumeData::Writer::loadNeuronMask(QUrl fileUrl)
 {
     assert(false); // TODO
     return false;
