@@ -57,6 +57,7 @@ public:
         usage.append("     -query <image volume to use as query>                                                              \n");
         usage.append("     -queryChannel <channel number>                                                                     \n");
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
+        usage.append("     [ -skipzeros : ignores all zero-valued voxels in query during search ]                             \n");
         usage.append("     [ -full : use index first, then use full images, slower but more accurate, default=false]          \n");
         usage.append("     [ -matrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 int values for score matrix ]   \n");
         usage.append("     [ -fullmatrix \"t0s0 t0s1 t0s2 t0s3 ... t3s0 t3s1 t3s2 t3s3\" : the 16 int values for full matrix ]\n");
@@ -89,6 +90,7 @@ private:
     int queryChannel;
     int maxHits;
     bool fullSearch;
+    bool skipzeros;
     int* matrix;
     int* fullmatrix;
 
@@ -98,6 +100,7 @@ private:
     V3DLONG indexTotalBytes;
 
     unsigned char* queryIndex;
+    unsigned char* queryIndexSkipPositions;
     My4DImage* queryImage;
 
     QList<V3DLONG> indexScoreList;
@@ -113,12 +116,12 @@ private:
     bool openIndexAndWriteHeader();
     bool openIndexAndReadHeader();
 
-    void indexImage(My4DImage* image, int channel, V3DLONG* subregion);
+    void indexImage(My4DImage* image, int channel, V3DLONG* subregion, bool skipzeros);
 
     void formatSubregion(V3DLONG* subregion);
     void formatQuerySubregion(V3DLONG* subregion);
 
-    V3DLONG calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal);
+    V3DLONG calculateIndexScore(unsigned char* queryIndex, unsigned char* subjectIndex, V3DLONG indexTotal, unsigned char* skipPositions);
     bool calculateImageScore(My4DImage* queryImage, My4DImage* subjectImage, int subjectChannel, V3DLONG* score);
     V3DLONG computeTotalBytesFromIndexTotal(V3DLONG indexTotal);
 

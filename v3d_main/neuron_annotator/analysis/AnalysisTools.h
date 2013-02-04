@@ -22,7 +22,8 @@ public:
     static const int CUBIFY_TYPE_MODE;
 
     AnalysisTools();
-    static My4DImage* cubifyImageByChannel(My4DImage * sourceImage, int sourceChannel, int cubeSize, int type, V3DLONG* subregion);
+    static My4DImage* cubifyImageByChannel(My4DImage * sourceImage, int sourceChannel, int cubeSize, int type, V3DLONG* subregion,
+                                           bool skipzeros, unsigned char** skipPositions);
     static My4DImage* cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
     static My4DImage* getChannelSubImageFromMask(My4DImage * sourceImage, My4DImage* indexImage, int sourceChannel, int index, BoundingBox3D bb,
                                                                    bool normalize, double normalizationCutoff /* 0.0 - 1.0 */);
@@ -31,10 +32,6 @@ public:
     static v3d_uint8  getReverse16ColorLUT(v3d_uint8 * lut, v3d_uint8 r, v3d_uint8 g, v3d_uint8 b);
     static v3d_uint8* create16Color8BitLUT_fiji();
     static v3d_uint8* create16Color8BitLUT();
-
-
-
-
 
 };
 

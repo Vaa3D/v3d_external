@@ -7,7 +7,8 @@ AnalysisTools::AnalysisTools()
 {
 }
 
-My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sourceChannel, int cubeSize, int type, V3DLONG* subregion=0L /* x0 x1 y0 y1 z0 z1 */ ) {
+My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sourceChannel, int cubeSize, int type, V3DLONG* subregion=0L /* x0 x1 y0 y1 z0 z1 */,
+                                                bool skipzeros=false, unsigned char** skipPositions=0L) {
 
     qDebug() << "AnalysisTools::cubifyImageByChannel : cubeSize=" << cubeSize;
 
@@ -41,11 +42,16 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
     cubeImage->loadImage(c_xmax, c_ymax, c_zmax, s_cmax, V3D_UINT8);
     qDebug() << "cubifyImage() after loadImage()";
 
+    if (skipzeros) {
+        *skipPositions=new unsigned char[c_xmax*c_ymax*c_zmax];
+    }
+
     V3DLONG sSize=sourceImage->getTotalUnitNumberPerChannel();
     V3DLONG c=sourceChannel;
     v3d_uint8 * cData=cubeImage->getRawDataAtChannel(c);
     v3d_uint8 * sData=sourceImage->getRawDataAtChannel(c);
     V3DLONG totalCubeSize=cubeSize*cubeSize*cubeSize;
+    V3DLONG cubeZeroCount=0L;
     V3DLONG *cubeData = new V3DLONG [totalCubeSize]; // by ZJL for windows compile
     for (V3DLONG z=0;z<c_zmax;z++) {
         V3DLONG zOffset=z*c_xmax*c_ymax;
@@ -56,6 +62,8 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
                 for (V3DLONG cl=0;cl<totalCubeSize;cl++) {
                     cubeData[cl]=0;
                 }
+                cubeZeroCount=0L;
+                // walk through cube and score
                 V3DLONG offset=x+yOffset;
                 V3DLONG zStart=z*cubeSize + s_zmin;
                 V3DLONG zEnd=(zStart+cubeSize<s_zmax?(zStart+cubeSize):s_zmax);
@@ -73,6 +81,9 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
                             //qDebug() << "cubeDataPosition=" << cubeDataPosition << " sPosition=" << sPosition;
                             cubeData[cubeDataPosition]=sData[sPosition];
                             cubeDataPosition++;
+                            if (skipzeros && sData[sPosition]==0) {
+                                cubeZeroCount++;
+                            }
                         }
                     }
                 }
@@ -100,6 +111,13 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
                         }
                     }
                     cData[offset]=hval;
+                }
+                if (skipzeros) {
+                    if (cubeZeroCount>totalCubeSize/2) {
+                        (*skipPositions)[offset]=1;
+                    } else {
+                        (*skipPositions)[offset]=0;
+                    }
                 }
             }
         }
