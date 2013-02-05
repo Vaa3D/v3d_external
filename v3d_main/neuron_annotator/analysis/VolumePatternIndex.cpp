@@ -1016,29 +1016,34 @@ bool VolumePatternIndex::calculateImageScore(My4DImage* queryImage, My4DImage* s
                 v3d_uint8 queryValue=queryData[q_offset];
                 v3d_uint8 subjectValue=subjectData[s_offset];
 
-                int sPosition=3;
-                if (subjectValue<threshold[0]) {
-                    sPosition=0;
-                } else if (subjectValue<threshold[1]) {
-                    sPosition=1;
-                } else if (subjectValue<threshold[2]) {
-                    sPosition=2;
-                } // then implicitly=3
+                if (skipzeros && queryValue==0) {
+                    // do nothing
+                } else {
 
-                int qPosition=3;
-                if (queryValue<threshold[0]) {
-                    qPosition=0;
-                } else if (queryValue<threshold[1]) {
-                    qPosition=1;
-                } else if (queryValue<threshold[2]) {
-                    qPosition=2;
-                } // then implicitly=3
+                    int sPosition=3;
+                    if (subjectValue<threshold[0]) {
+                        sPosition=0;
+                    } else if (subjectValue<threshold[1]) {
+                        sPosition=1;
+                    } else if (subjectValue<threshold[2]) {
+                        sPosition=2;
+                    } // then implicitly=3
 
-                int matrixPosition=qPosition*4+sPosition;
-                matrixBins[matrixPosition] += 1;
-                int mScore=fullmatrix[matrixPosition];
-                matrixScores[matrixPosition] += mScore;
-                localScore += mScore;
+                    int qPosition=3;
+                    if (queryValue<threshold[0]) {
+                        qPosition=0;
+                    } else if (queryValue<threshold[1]) {
+                        qPosition=1;
+                    } else if (queryValue<threshold[2]) {
+                        qPosition=2;
+                    } // then implicitly=3
+
+                    int matrixPosition=qPosition*4+sPosition;
+                    matrixBins[matrixPosition] += 1;
+                    int mScore=fullmatrix[matrixPosition];
+                    matrixScores[matrixPosition] += mScore;
+                    localScore += mScore;
+                }
             }
         }
     }
