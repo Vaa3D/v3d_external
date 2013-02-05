@@ -556,7 +556,7 @@ bool VolumePatternIndex::doSearch()
             qDebug() << "Could not read full block of " << indexTotalBytes << " , read " << readSize << " instead";
             return false;
         }
-        qDebug() << "Calculating index score for " << indexFileList[i];
+//        qDebug() << "Calculating index score for " << indexFileList[i];
 //        QString filename=indexFileList[i];
 //        if (filename.contains("20111102102342562")) {
 //            DEBUG_FLAG=true;
