@@ -43,7 +43,7 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("     -mode [index|search]                                                                               \n");
         usage.append("     -indexFile <index file>                                                                            \n");
-        usage.append("     [ -subVolume \"x0 x1 y0 y1 z0 z1\" : default is full size ]                                        \n");
+// NOT IMPLEMENTED        usage.append("     [ -subVolume \"x0 x1 y0 y1 z0 z1\" : default is full size ]                                        \n");
         usage.append("                                                                                                        \n");
         usage.append("    For mode index:                                                                                     \n");
         usage.append("                                                                                                        \n");

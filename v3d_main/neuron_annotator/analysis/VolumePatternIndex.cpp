@@ -144,12 +144,13 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             defaultChannelToIndex=defaultChannelToIndexString.toInt();
         } else if (arg=="-indexFile") {
             indexFilePath=(*argList)[++i];
-        } else if (arg=="-subVolume") {
-            QString subVolumeString=(*argList)[++i];
-            if (!parseSubVolumeString(subVolumeString)) {
-                qDebug() << "Could not parse subVolumeString=" << subVolumeString;
-                return 1;
-            }
+// NOT IMPLEMENTED
+//        } else if (arg=="-subVolume") {
+//            QString subVolumeString=(*argList)[++i];
+//            if (!parseSubVolumeString(subVolumeString)) {
+//                qDebug() << "Could not parse subVolumeString=" << subVolumeString;
+//                return 1;
+//            }
         } else if (arg=="-unitSize") {
             QString unitSizeString=(*argList)[++i];
             unitSize=unitSizeString.toInt();
