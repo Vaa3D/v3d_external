@@ -63,6 +63,7 @@ struct CurveTracePara
 	int sp_smoothing_win_sz;
 	
 	double imgTH; //anything <=imgTH should NOT be traced! added by PHC, 2010-Dec-21 for the cmd line v3dneuron tracing program
+    double visible_thresh; //2013-02-10
 
 	V3DLONG landmark_id_start, landmark_id_end;
 
@@ -93,6 +94,7 @@ struct CurveTracePara
 		sp_smoothing_win_sz=7;
 		
 		imgTH = 0;
+        visible_thresh = 30;
 		
 		b_3dcurve_width_from_xyonly = false;
 	}
