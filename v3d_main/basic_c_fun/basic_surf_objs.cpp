@@ -423,53 +423,6 @@ bool writeSWC_file(const QString& filename, const NeuronTree& nt, const QStringL
 	return true;
 }
 
-
-//bool writeSWC_file(const QString& filename, const NeuronTree& nt)
-//{
-//	QString curFile = filename;
-//	if (curFile.trimmed().isEmpty()) //then open a file dialog to choose file
-//	{
-//		curFile = QFileDialog::getSaveFileName(0,
-//											   "Select a SWC file to save the neuronal or relational data... ",
-//											   ".swc",
-//											   QObject::tr("Neuron structure file (*.swc);;(*.*)"
-//														   ));
-//#ifndef DISABLE_V3D_MSG
-//		v3d_msg(QString("save file: %1").arg(curFile), false);
-//#endif
-//
-//		if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
-//			return false;
-//	}
-//
-//	FILE * fp = fopen(curFile.toAscii(), "wt");
-//	if (!fp)
-//	{
-//#ifndef DISABLE_V3D_MSG
-//		v3d_msg("Could not open the file to save the neuron.");
-//#endif
-//		return false;
-//	}
-//
-//	fprintf(fp, "#name %s\n", qPrintable(nt.name.trimmed()));
-//	fprintf(fp, "#comment %s\n", qPrintable(nt.comment.trimmed()));
-//
-//	fprintf(fp, "##n,type,x,y,z,radius,parent\n");
-//	NeuronSWC * p_pt=0;
-//	for (int i=0;i<nt.listNeuron.size(); i++)
-//	{
-//		p_pt = (NeuronSWC *)(&(nt.listNeuron.at(i)));
-//		fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld\n",
-//				p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn);
-//	}
-//
-//	fclose(fp);
-//#ifndef DISABLE_V3D_MSG
-//	v3d_msg(QString("done with saving file: ")+filename, false);
-//#endif
-//	return true;
-//}
-
 bool writeESWC_file(const QString& filename, const NeuronTree& nt)
 {
 	QString curFile = filename;
