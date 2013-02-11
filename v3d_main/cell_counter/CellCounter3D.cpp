@@ -76,6 +76,10 @@ void CellCounter3D::loadInputFile() {
     My4DImage tmpImage;
     image = new My4DImage();
     tmpImage.loadImage(inputFilePath.toLocal8Bit().data());
+    if (tmpImage.getDatatype()!=V3D_UINT8) {
+        qDebug() << "CellCounter3D::loadInputFile - only 8-bit input type supported";
+        exit(1);
+    }
     CellCounter3D::convertMy4DImage2channelToRGB(tmpImage, *image);
     this->loadMy4DImage(image);
 }
