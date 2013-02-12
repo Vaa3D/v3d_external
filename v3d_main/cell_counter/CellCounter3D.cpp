@@ -27,7 +27,11 @@ CellCounter3D::CellCounter3D()
     image=0;
     errorStatus=0;
     loadedFromInputFile=false;
+    planStepPosition=0;
+    resetParameters();
+}
 
+void CellCounter3D::resetParameters() {
     // Command-line parameters
     INITIAL_SIGNAL_THRESHOLD=10;
     INITIAL_BACKGROUND_THRESHOLD=10;
@@ -84,11 +88,33 @@ void CellCounter3D::loadInputFile() {
     this->loadMy4DImage(image);
 }
 
+bool CellCounter3D::loadPlanFile() {
+    QFile planFile(planFilepath);
+    if (!planFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Could not open file=" << planFilepath << " to read";
+        return false;
+    }
+    while(!planFile.atEnd()) {
+        QString line=planFile.readLine();
+        line=line.trimmed();
+        if (line.length()>0 && !line.startsWith("#")) {
+            planParameterLines.append(line);
+        }
+    }
+    planFile.close();
+}
+
 
 bool CellCounter3D::findCells() {
     if (image==0) {
         qDebug() << "CellCounter3D::findCells() - no image loaded";
         return false;
+    }
+    if (planFilepath.length()>0) {
+        if (!loadPlanFile()) {
+            qDebug() << "CellCounter3D::findCells() - could not load planFile=" << planFilepath;
+            return false;
+        }
     }
 
     unsigned char**** data = (unsigned char****)image->getData();
@@ -104,6 +130,7 @@ bool CellCounter3D::findCells() {
     // We will preserve the original data until the last step in which we
     // mark the location of the cells. We will need two working copies of
     // each channel, one to serve as the source and other the target.
+
     qDebug() << "Allocating working space";
     workingData = new unsigned char****[2];
     for (int w=0;w<2;w++) {
@@ -951,139 +978,160 @@ void CellCounter3D::writeOutputReportFile() {
  }
 
 int CellCounter3D::processArgs(vector<char*> *argList) {
+    // First check for help and other non-parameter items
     for (int i=0;i<argList->size();i++) {
         QString arg=(*argList)[i];
         if (arg=="-h") {
             return ARG_STATUS_HELP;
-        }
-        if (arg=="-i") {
+        } else if (arg=="-i") {
             i++;
             inputFilePath=(*argList)[i];
+        } else if (arg=="-plan") {
+            planFilepath=(*argList)[i];
         }
-        else if (arg=="-ist") {
+    }
+    // Then, transfer to parameter list format
+    QStringList parameterList;
+    for (int i=0;i<argList->size();i++) {
+        parameterList.append( (*argList)[i] );
+    }
+    processParameters(parameterList);
+
+    // Validation of mandatory information
+    if (inputFilePath.length()>0) {
+        return ARG_STATUS_OK;
+    } else {
+        return ARG_STATUS_USAGE;
+    }
+}
+
+void CellCounter3D::processParameters(QString parameterLine) {
+    QRegExp splitRegex("\\s+");
+    QStringList plist=parameterLine.split(splitRegex);
+    processParameters(plist);
+}
+
+void CellCounter3D::processParameters(QStringList parameterList) {
+    for (int i=0;i<parameterList.size();i++) {
+        QString arg=parameterList[i];
+        if (arg=="-ist") {
             i++;
-            QString initialSignalThreshold=(*argList)[i];
+            QString initialSignalThreshold=parameterList[i];
             INITIAL_SIGNAL_THRESHOLD=initialSignalThreshold.toInt();
         }
         else if (arg=="-ibt") {
             i++;
-            QString initialBackgroundThreshold=(*argList)[i];
+            QString initialBackgroundThreshold=parameterList[i];
             INITIAL_BACKGROUND_THRESHOLD=initialBackgroundThreshold.toInt();
         }
         else if (arg=="-sn") {
             i++;
-            QString sigmaNormalization=(*argList)[i];
+            QString sigmaNormalization=parameterList[i];
             SIGMA_NORMALIZATION=sigmaNormalization.toDouble();
         }
         else if (arg=="-nt") {
             i++;
-            QString normalizationThreshold=(*argList)[i];
+            QString normalizationThreshold=parameterList[i];
             NORMALIZATION_THRESHOLD=normalizationThreshold.toInt();
         }
         else if (arg=="-dc") {
             i++;
-            QString dialationCycles=(*argList)[i];
+            QString dialationCycles=parameterList[i];
             DIALATION_CYCLES=dialationCycles.toInt();
         }
         else if (arg=="-des") {
             i++;
-            QString dialationElementSize=(*argList)[i];
+            QString dialationElementSize=parameterList[i];
             DIALATION_ELEMENT_SIZE=dialationElementSize.toInt();
         }
         else if (arg=="-dt") {
             i++;
-            QString dialationThreshold=(*argList)[i];
+            QString dialationThreshold=parameterList[i];
             DIALATION_THRESHOLD=dialationThreshold.toInt();
         }
         else if (arg=="-ec") {
             i++;
-            QString erosionCycles=(*argList)[i];
+            QString erosionCycles=parameterList[i];
             EROSION_CYCLES=erosionCycles.toInt();
         }
         else if (arg=="-ees") {
             i++;
-            QString erosionElementSize=(*argList)[i];
+            QString erosionElementSize=parameterList[i];
             EROSION_ELEMENT_SIZE=erosionElementSize.toInt();
         }
         else if (arg=="-et") {
             i++;
-            QString erosionThreshold=(*argList)[i];
+            QString erosionThreshold=parameterList[i];
             EROSION_THRESHOLD=erosionThreshold.toInt();
         }
         else if (arg=="-cr") {
             i++;
-            QString csCenterRadius=(*argList)[i];
+            QString csCenterRadius=parameterList[i];
             CS_CENTER_RADIUS=csCenterRadius.toDouble();
         }
         else if (arg=="-cv") {
             i++;
-            QString csCenterValue=(*argList)[i];
+            QString csCenterValue=parameterList[i];
             CS_CENTER_VALUE=csCenterValue.toDouble();
         }
         else if (arg=="-sr") {
             i++;
-            QString csSurroundRadius=(*argList)[i];
+            QString csSurroundRadius=parameterList[i];
             CS_SURROUND_RADIUS=csSurroundRadius.toDouble();
         }
         else if (arg=="-sv") {
             i++;
-            QString csSurroundValue=(*argList)[i];
+            QString csSurroundValue=parameterList[i];
             CS_SURROUND_VALUE=csSurroundValue.toDouble();
         }
         else if (arg=="-cst") {
             i++;
-            QString csThresholdStart=(*argList)[i];
+            QString csThresholdStart=parameterList[i];
             CS_THRESHOLD_START=csThresholdStart.toInt();
         }
         else if (arg=="-csi") {
             i++;
-            QString csThresholdIncrement=(*argList)[i];
+            QString csThresholdIncrement=parameterList[i];
             CS_THRESHOLD_INCREMENT=csThresholdIncrement.toInt();
         }
         else if (arg=="-csm") {
             i++;
-            QString csThresholdMax=(*argList)[i];
+            QString csThresholdMax=parameterList[i];
             CS_THRESHOLD_MAX=csThresholdMax.toInt();
         }
         else if (arg=="-ms") {
             i++;
-            QString markSize=(*argList)[i];
+            QString markSize=parameterList[i];
             MARK_SIZE=markSize.toInt();
         }
         else if (arg=="-mc") {
             i++;
-            QString markColor0=(*argList)[i++];
-            QString markColor1=(*argList)[i++];
-            QString markColor2=(*argList)[i];
+            QString markColor0=parameterList[i++];
+            QString markColor1=parameterList[i++];
+            QString markColor2=parameterList[i];
             MARK_COLOR[0]=markColor0.toInt();
             MARK_COLOR[1]=markColor1.toInt();
             MARK_COLOR[2]=markColor2.toInt();
         }
         else if (arg=="-sc") {
             i++;
-            QString signalColor0=(*argList)[i++];
-            QString signalColor1=(*argList)[i++];
-            QString signalColor2=(*argList)[i];
+            QString signalColor0=parameterList[i++];
+            QString signalColor1=parameterList[i++];
+            QString signalColor2=parameterList[i];
             SIGNAL_COLOR[0]=signalColor0.toInt();
             SIGNAL_COLOR[1]=signalColor1.toInt();
             SIGNAL_COLOR[2]=signalColor2.toInt();
         }
         else if (arg=="-mnr") {
             i++;
-            QString minimumRegionVoxels=(*argList)[i];
+            QString minimumRegionVoxels=parameterList[i];
             MIN_REGION_VOXELS=minimumRegionVoxels.toInt();
         }
         else if (arg=="-mxr") {
             i++;
-            QString maximumRegionVoxels=(*argList)[i];
+            QString maximumRegionVoxels=parameterList[i];
             MAX_REGION_VOXELS=maximumRegionVoxels.toInt();
         }
-    }
-    // Validation of mandatory information
-    if (inputFilePath.length()>0) {
-        return ARG_STATUS_OK;
-    } else {
-        return ARG_STATUS_USAGE;
     }
 }
 

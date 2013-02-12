@@ -119,6 +119,15 @@ public:
         help.append("           -ms <size of the inner cube designating the x,y,z coordinate of the cell - always white>\n");
         help.append("           -mc <color of the surrounding sphere - in terms of a product with the original intensity magnitude>\n");
         help.append("           -sc <color of the extra-marker cell signal volume - in terms of a product with the original intensity magnitude>\n");
+        help.append("\n");
+        help.append("Plan File:\n");
+        help.append("\n");
+        help.append("    If a plan file is provided with the\n");
+        help.append("           -plan <plan filepath>\n");
+        help.append("    option, then each row of the plan file should specify a set of parameters to use for a series of passes through the data,\n");
+        help.append("    one pass per line. After each pass, the voxels covered by the marked groups are removed from the original image (marked as 0)\n");
+        help.append("    with the whole process iterating. This permits cells of varying intensity values and characteristics to be acculuated in separate steps.\n");
+        help.append("    Note that if a plan file is provided, no other parameters should be specified on the command-line.\n");
         return help;
     }
 
@@ -150,6 +159,7 @@ public:
         usage.append(" [ -sc  <signal color                int int int >0     default= 255 255 255> ]\n");
         usage.append(" [ -mnr <minimum region voxels           int     >=0    default=100>     ]\n");
         usage.append(" [ -mxr <maximum region voxels           int     >=0    default=40000>   ]\n");
+        usage.append(" [ -plan <plan file path>               string                           ]\n");
         return usage;
     }
 
@@ -190,6 +200,10 @@ protected:
     void applyBinaryThreshold(unsigned char*** source, unsigned char*** target, unsigned char threshold);
     bool findConnectedRegions(unsigned char*** d);
     void findNeighbors(int x, int y, int z, unsigned char*** d, unsigned char*** mask, QList<int> & neighborList);
+    void resetParameters();
+    void processParameters(QStringList plist);
+    void processParameters(QString pString);
+    bool loadPlanFile();
 
 
     My4DImage* image;
@@ -248,6 +262,10 @@ protected:
 
     int errorStatus;
     bool loadedFromInputFile;
+
+    QString planFilepath;
+    QStringList planParameterLines;
+    int planStepPosition;
 
 
 };
