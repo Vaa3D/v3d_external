@@ -59,6 +59,7 @@ void CellCounter3D::resetParameters() {
     SIGNAL_COLOR[1]=255;
     SIGNAL_COLOR[2]=255;
     MIN_REGION_VOXELS=100;
+    MAX_ACCEPT_REGION_VOXELS=1300;
     MAX_REGION_VOXELS=40000;
 }
 
@@ -106,6 +107,9 @@ bool CellCounter3D::loadPlanFile() {
 
 
 bool CellCounter3D::findCells() {
+
+    int findPasses=1;
+
     if (image==0) {
         qDebug() << "CellCounter3D::findCells() - no image loaded";
         return false;
@@ -115,21 +119,10 @@ bool CellCounter3D::findCells() {
             qDebug() << "CellCounter3D::findCells() - could not load planFile=" << planFilepath;
             return false;
         }
+        findPasses=planParameterLines.size();
     }
 
     unsigned char**** data = (unsigned char****)image->getData();
-
-    long dataChannel0Count=countNonZero(data[CELL]);
-    long dataChannel1Count=countNonZero(data[BACKGROUND]);
-
-    qDebug() << "data channel 0 voxel count = " << dataChannel0Count;
-    qDebug() << "data channel 1 voxel count = " << dataChannel1Count;
-
-    // Step 1: create buffers
-    //
-    // We will preserve the original data until the last step in which we
-    // mark the location of the cells. We will need two working copies of
-    // each channel, one to serve as the source and other the target.
 
     qDebug() << "Allocating working space";
     workingData = new unsigned char****[2];
@@ -149,125 +142,164 @@ bool CellCounter3D::findCells() {
         }
     }
 
-    int w=0;
+    for (planStepPosition=0;planStepPosition<findPasses;planStepPosition++) {
 
-    // Step 2: initial threshold
-    qDebug() << "Performing initial threshold";
-    for (int z=0;z<zDim;z++) {
-        for (int y=0;y<yDim;y++) {
-            for (int x=0;x<xDim;x++) {
-                unsigned char red=data[CELL][z][y][x];
-                if (red < INITIAL_SIGNAL_THRESHOLD) {
-                    red = 0;
-                }
-                unsigned char green=data[BACKGROUND][z][y][x];
-                if (green < INITIAL_BACKGROUND_THRESHOLD) {
-                    green = 0;
-                }
-                if (red > green) {
-                    workingData[w][CELL][z][y][x]=red;
-                } else {
-                    workingData[w][CELL][z][y][x]=0;
+        long dataChannel0Count=countNonZero(data[CELL]);
+        long dataChannel1Count=countNonZero(data[BACKGROUND]);
+
+        qDebug() << "data channel 0 voxel count = " << dataChannel0Count;
+        qDebug() << "data channel 1 voxel count = " << dataChannel1Count;
+
+        // Step 1: create buffers
+        //
+        // We will preserve the original data until the last step in which we
+        // mark the location of the cells. We will need two working copies of
+        // each channel, one to serve as the source and other the target.
+
+        int w=0;
+
+        // Step 2: create a copy of the data which is masked for any prior findPasses
+
+        qDebug() << "Masking regions from prior passes";
+
+        for (int z=0;z<zDim;z++) {
+            for (int y=0;y<yDim;y++) {
+                for (int x=0;x<xDim;x++) {
+                    workingData[1][CELL][z][y][x]=data[CELL][z][y][x];
                 }
             }
         }
-    }
-
-    normalizeNonZero(workingData[w][CELL], SIGMA_NORMALIZATION);
-
-    clearChannel(BACKGROUND, data);
-
-    long initialCellVoxelCount=countNonZero(workingData[w][CELL]);
-
-    qDebug() << "Initial cell voxel count = " << initialCellVoxelCount;
-
-    int w1 = w;
-    int w2 = (w1==0 ? 1 : 0);
-
-    applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], NORMALIZATION_THRESHOLD);
-    w1 = (w1==0 ? 1 : 0);
-    w2 = (w2==0 ? 1 : 0);
-
-    // Debug - let's have a look
-    //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
-    //return true;
-
-    //gammaFilter(workingData[w1][CELL], GAMMA_CORRECTION);
-
-    // Step 3: Dialtion/Erosion
-
-   qDebug() << "Starting dialation-erosion";
-
-   long voxelCount=initialCellVoxelCount;
-
-    // Debug - let's have a look
-    //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
-    //return;
-
-    // Erode CELL to better define borders
-    int lastVoxelCount=voxelCount;
-    int i=0;
-    for (i=0;i<EROSION_CYCLES;i++) {
-        qDebug() << "Beginning erosion iteration = " << i;
-        dialateOrErode(ERODE, workingData[w1][CELL], workingData[w2][CELL], EROSION_ELEMENT_SIZE, EROSION_THRESHOLD);
-        voxelCount=countNonZero(workingData[w2][CELL]);
-        if (voxelCount==lastVoxelCount) {
-            qDebug() << "Converged after " << i << " erosion cycles";
-            break;
-        } else {
-            lastVoxelCount=voxelCount;
+        for (int i=0;i<regionGroups.size();i++) {
+            QList<int> group=regionGroups[i];
+            for (int j=0;j<group.size();j+=3) {
+                int z=group[j];
+                int y=group[j+1];
+                int x=group[j+2];
+                workingData[1][CELL][z][y][x]=0;
+            }
         }
-        qDebug() << "           voxel count = " << lastVoxelCount;
+
+
+        // Step 3: initial threshold
+
+        qDebug() << "Performing initial threshold";
+        for (int z=0;z<zDim;z++) {
+            for (int y=0;y<yDim;y++) {
+                for (int x=0;x<xDim;x++) {
+                    unsigned char red=workingData[1][CELL][z][y][x];
+                    if (red < INITIAL_SIGNAL_THRESHOLD) {
+                        red = 0;
+                    }
+                    unsigned char green=data[BACKGROUND][z][y][x];
+                    if (green < INITIAL_BACKGROUND_THRESHOLD) {
+                        green = 0;
+                    }
+                    if (red > green) {
+                        workingData[0][CELL][z][y][x]=red;
+                    } else {
+                        workingData[0][CELL][z][y][x]=0;
+                    }
+                }
+            }
+        }
+
+        normalizeNonZero(workingData[w][CELL], SIGMA_NORMALIZATION);
+
+        clearChannel(BACKGROUND, data);
+
+        long initialCellVoxelCount=countNonZero(workingData[w][CELL]);
+
+        qDebug() << "Initial cell voxel count = " << initialCellVoxelCount;
+
+        int w1 = w;
+        int w2 = (w1==0 ? 1 : 0);
+
+        applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], NORMALIZATION_THRESHOLD);
         w1 = (w1==0 ? 1 : 0);
         w2 = (w2==0 ? 1 : 0);
-    }
 
-    // Dialate CELL signal to fill nucleus and gaps.
-    for (int i=0;i<DIALATION_CYCLES;i++) {
-         qDebug() << "Beginning dialation iteration = " << i;
-         dialateOrErode(DIALATE, workingData[w1][CELL], workingData[w2][CELL], DIALATION_ELEMENT_SIZE, DIALATION_THRESHOLD);
-         voxelCount=countNonZero(workingData[w2][CELL]);
-         qDebug() << "Updated voxel count = " << voxelCount;
-         w1 = (w1==0 ? 1 : 0);
-         w2 = (w2==0 ? 1 : 0);
-     }
+        // Debug - let's have a look
+        //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+        //return true;
 
-    // Debug - let's have a look
-    //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
-    //return true;
+        //gammaFilter(workingData[w1][CELL], GAMMA_CORRECTION);
 
-    centerSurroundFilter(workingData[w1][CELL], workingData[w2][CELL], CS_CENTER_RADIUS, CS_CENTER_VALUE, CS_SURROUND_RADIUS, CS_SURROUND_VALUE);
-    w1 = (w1==0 ? 1 : 0);
-    w2 = (w2==0 ? 1 : 0);
+        // Step 3: Dialtion/Erosion
 
-    // Center-Surround Search Loop
-    bool csSuccess=false;
-    int csThreshold=CS_THRESHOLD_START;
-    while(!csSuccess && (csThreshold <= CS_THRESHOLD_MAX)) {
-        qDebug() << "Center-Surround search, threshold=" << csThreshold << " of max=" << CS_THRESHOLD_MAX;
-        applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], csThreshold);
-        if (findConnectedRegions(workingData[w2][CELL]) && errorStatus==0) {
-            qDebug() << "Center-Surround search successful";
-            csSuccess=true;
+        qDebug() << "Starting dialation-erosion";
+
+        long voxelCount=initialCellVoxelCount;
+
+        // Debug - let's have a look
+        //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+        //return;
+
+        // Erode CELL to better define borders
+        int lastVoxelCount=voxelCount;
+        int i=0;
+        for (i=0;i<EROSION_CYCLES;i++) {
+            qDebug() << "Beginning erosion iteration = " << i;
+            dialateOrErode(ERODE, workingData[w1][CELL], workingData[w2][CELL], EROSION_ELEMENT_SIZE, EROSION_THRESHOLD);
+            voxelCount=countNonZero(workingData[w2][CELL]);
+            if (voxelCount==lastVoxelCount) {
+                qDebug() << "Converged after " << i << " erosion cycles";
+                break;
+            } else {
+                lastVoxelCount=voxelCount;
+            }
+            qDebug() << "           voxel count = " << lastVoxelCount;
             w1 = (w1==0 ? 1 : 0);
             w2 = (w2==0 ? 1 : 0);
-            lastTargetIndex=w1;
-        } else {
-            errorStatus=0;
-            csThreshold+=CS_THRESHOLD_INCREMENT;
         }
-    }
-    if (!csSuccess) {
-        qDebug() << "Center-Surround search failed";
-        qDebug() << "CellCounter3D::findCells() : Error - findConnectedRegions() failed";
-        if (!errorStatus) {
-            errorStatus=1;
-        }
-        return false;
-    }
 
-    // Debug
-    //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+        // Dialate CELL signal to fill nucleus and gaps.
+        for (int i=0;i<DIALATION_CYCLES;i++) {
+            qDebug() << "Beginning dialation iteration = " << i;
+            dialateOrErode(DIALATE, workingData[w1][CELL], workingData[w2][CELL], DIALATION_ELEMENT_SIZE, DIALATION_THRESHOLD);
+            voxelCount=countNonZero(workingData[w2][CELL]);
+            qDebug() << "Updated voxel count = " << voxelCount;
+            w1 = (w1==0 ? 1 : 0);
+            w2 = (w2==0 ? 1 : 0);
+        }
+
+        // Debug - let's have a look
+        //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+        //return true;
+
+        centerSurroundFilter(workingData[w1][CELL], workingData[w2][CELL], CS_CENTER_RADIUS, CS_CENTER_VALUE, CS_SURROUND_RADIUS, CS_SURROUND_VALUE);
+        w1 = (w1==0 ? 1 : 0);
+        w2 = (w2==0 ? 1 : 0);
+
+        // Center-Surround Search Loop
+        bool csSuccess=false;
+        int csThreshold=CS_THRESHOLD_START;
+        while(!csSuccess && (csThreshold <= CS_THRESHOLD_MAX)) {
+            qDebug() << "Center-Surround search, threshold=" << csThreshold << " of max=" << CS_THRESHOLD_MAX;
+            applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], csThreshold);
+            if (findConnectedRegions(workingData[w2][CELL]) && errorStatus==0) {
+                qDebug() << "Center-Surround search successful";
+                csSuccess=true;
+                w1 = (w1==0 ? 1 : 0);
+                w2 = (w2==0 ? 1 : 0);
+                lastTargetIndex=w1;
+            } else {
+                errorStatus=0;
+                csThreshold+=CS_THRESHOLD_INCREMENT;
+            }
+        }
+        if (!csSuccess) {
+            qDebug() << "Center-Surround search failed";
+            qDebug() << "CellCounter3D::findCells() : Error - findConnectedRegions() failed";
+            if (!errorStatus) {
+                errorStatus=1;
+            }
+            return false;
+        }
+
+        // Debug
+        //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+
+    }
 
     return true;
 }
@@ -869,13 +901,14 @@ bool CellCounter3D::findConnectedRegions(unsigned char*** d) {
                         xTotal+=x;
                         c++;
                     }
-                    if (c>=MIN_REGION_VOXELS) {
+                    if (c>=MIN_REGION_VOXELS && c<=MAX_ACCEPT_REGION_VOXELS) {
                         int zAvg=zTotal/c;
                         int yAvg=yTotal/c;
                         int xAvg=xTotal/c;
                         regionCoordinates.append(zAvg);
                         regionCoordinates.append(yAvg);
                         regionCoordinates.append(xAvg);
+                        regionGroups.append(groupList);
                         qDebug() << "Added region " << r << "  z=" << zAvg << " y=" << yAvg << " x=" << xAvg << " c=" << c;
                         r++;
                     }
@@ -1126,6 +1159,11 @@ void CellCounter3D::processParameters(QStringList parameterList) {
             i++;
             QString minimumRegionVoxels=parameterList[i];
             MIN_REGION_VOXELS=minimumRegionVoxels.toInt();
+        }
+        else if (arg=="-mar") {
+            i++;
+            QString maxAcceptRegionVoxels=parameterList[i];
+            MAX_ACCEPT_REGION_VOXELS=maxAcceptRegionVoxels.toInt();
         }
         else if (arg=="-mxr") {
             i++;

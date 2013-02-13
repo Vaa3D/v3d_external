@@ -108,6 +108,7 @@ public:
         help.append("(8) We now expect that each cell is represented by an isolated compact region, enabling a simple connected-neighbors\n");
         help.append("    approach for identifying the individual cells. We conduct a connected-neighbors search governed by these parameters:\n");
         help.append("           -mnr <minimum number of voxels in region required for consideration as cell>\n");
+        help.append("           -mar <maximum number of voxels permitted in a region considered a cell>\n");
         help.append("           -mxr <maximum number of voxels permitted in region before we declare an error - implies connected regions>\n");
         help.append("\n");
         help.append("    NOTE: it is typical to encounter the too-many-voxels error when tuning parameters - the \'-cst\' parameter can help\n");
@@ -158,6 +159,7 @@ public:
         usage.append(" [ -mc  <mark color                  int int int >0     default= 1000 0 1000> ]\n");
         usage.append(" [ -sc  <signal color                int int int >0     default= 255 255 255> ]\n");
         usage.append(" [ -mnr <minimum region voxels           int     >=0    default=100>     ]\n");
+        usage.append(" [ -mar <max accepted vox in region      int     >0     default=1300>    ]\n");
         usage.append(" [ -mxr <maximum region voxels           int     >=0    default=40000>   ]\n");
         usage.append(" [ -plan <plan file path>               string                           ]\n");
         return usage;
@@ -233,6 +235,7 @@ protected:
     int MARK_COLOR[3];
     int SIGNAL_COLOR[3];
     int MIN_REGION_VOXELS;
+    int MAX_ACCEPT_REGION_VOXELS;
     int MAX_REGION_VOXELS;
     ////////////////////////////////////////////////////
 
@@ -259,6 +262,7 @@ protected:
 
     QMutex csLock;
     QList<int> regionCoordinates;
+    QList< QList<int> > regionGroups;
 
     int errorStatus;
     bool loadedFromInputFile;
