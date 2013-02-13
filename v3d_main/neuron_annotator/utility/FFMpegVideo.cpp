@@ -15,6 +15,7 @@ extern "C"
 #include <QDebug>
 #include <stdexcept>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 
