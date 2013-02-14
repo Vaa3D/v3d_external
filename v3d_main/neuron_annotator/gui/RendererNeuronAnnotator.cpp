@@ -86,11 +86,41 @@ void RendererNeuronAnnotator::setUndoStack(QUndoStack& undoStackParam)
     customClipPlanes.setUndoStack(undoStackParam);
 }
 
+// Testing code for proof-of-concept demo Feb 14, 2013
+// #define MICROCT_HACK_1 1
+
+#ifdef MICROCT_HACK_1
+static Vector3D previousClipPoint = Vector3D(0,0,0);
+static Vector3D previousClipDirection = Vector3D(0,0,0);
+#endif
+
 void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
 {
     Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
     Vector3D down_obj = R_obj_eye * Vector3D(0, 1, 0);
     applyCutPlaneInImageFrame(cameraModel.focus(), down_obj);
+
+#ifdef MICROCT_HACK_1
+    // Help measure microCT cut distances
+    if (previousClipDirection != Vector3D(0,0,0)) {
+        // TODO - put microCT computations here
+        // Are the planes parallel?
+        double dot = previousClipDirection.dot(down_obj);
+        if (dot > 1.1)
+            qDebug() << "Plane equation error!" << __FILE__ << __LINE__;
+        else if (dot < 0.5)
+            qDebug() << "Previous plane does not match current plane. Skipping." << __FILE__ << __LINE__;
+        else { // Compute distance between planes (at start point)
+            double dist1 = down_obj.dot(previousClipPoint);
+            double dist2 = down_obj.dot(cameraModel.focus());
+            double dd = dist1 - dist2; // Distance in XY voxel units
+            dd *= 0.64; // hard code microCT voxel size for now.
+            qDebug() << "Distance to previous plane =" << dd << "micrometers";
+        }
+    }
+    previousClipPoint = cameraModel.focus();
+    previousClipDirection = down_obj;
+#endif
 }
 
 void RendererNeuronAnnotator::clearClipPlanes()
