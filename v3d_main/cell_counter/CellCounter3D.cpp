@@ -51,7 +51,7 @@ void CellCounter3D::resetParameters() {
     CS_THRESHOLD_INCREMENT=5;
     CS_THRESHOLD_MAX=180;
     MARK_SIZE=2;
-    MARK_RADIUS=30;
+    MARK_RADIUS=10;
     MARK_COLOR[0]=1000;
     MARK_COLOR[1]=0;
     MARK_COLOR[2]=1000;
@@ -194,11 +194,12 @@ bool CellCounter3D::findCells() {
                 int x=group[j+2]; xTotal+=x;
                 workingData[1][CELL][z][y][x]=0;
             }
-            V3DLONG zAvg=zTotal/groupSize;
-            V3DLONG yAvg=yTotal/groupSize;
-            V3DLONG xAvg=xTotal/groupSize;
+            V3DLONG zAvg=(zTotal*3)/groupSize;
+            V3DLONG yAvg=(yTotal*3)/groupSize;
+            V3DLONG xAvg=(xTotal*3)/groupSize;
             qDebug() << "Region " << i << " zAvg=" << zAvg << " yAvg=" << yAvg << " xAvg=" << xAvg;
             V3DLONG zeroCount=0L;
+            V3DLONG flipCount=0L;
             for (int ez=zAvg-MARK_RADIUS;ez<zAvg+MARK_RADIUS;ez++) {
                 int sz=ez;
                 if (sz<0) {
@@ -220,12 +221,20 @@ bool CellCounter3D::findCells() {
                         } else if (ex>=xDim) {
                             sx=xDim-1;
                         }
-                        workingData[1][CELL][sz][sy][sx]=0;
-                        zeroCount++;
+                        double distance = std::sqrt((double)((sz-zAvg)*(sz-zAvg)+(sy-yAvg)*(sy-yAvg)+(sx-xAvg)*(sx-xAvg)));
+                        if (distance<MARK_RADIUS) {
+                            if (workingData[1][CELL][sz][sy][sx]>0) {
+                                flipCount++;
+                            }
+                            workingData[1][CELL][sz][sy][sx]=0;
+                            if (planStepPosition==2) {
+                            }
+                            zeroCount++;
+                        }
                     }
                 }
             }
-            qDebug() << "Removed " << zeroCount << " voxels for group " << i;
+            qDebug() << "Removed " << zeroCount << ", flipCount=" << flipCount << " group=" << i;
         }
 
         long passCellVoxelCount=countNonZero(workingData[1][CELL]);
@@ -267,7 +276,16 @@ bool CellCounter3D::findCells() {
         int w1 = w;
         int w2 = (w1==0 ? 1 : 0);
 
+        qDebug() << "Doing sanity-check on pre-binary threshold w1=" << w1;
+        V3DLONG preBinaryViolationCount=regionViolationCount(workingData[w1][CELL]);
+        qDebug() << "violation count=" << preBinaryViolationCount;
+
         applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], NORMALIZATION_THRESHOLD);
+
+        qDebug() << "Doing sanity-check on post-binary threshold w2=" << w2;
+        V3DLONG postBinaryViolationCount=regionViolationCount(workingData[w2][CELL]);
+        qDebug() << "violation count=" << postBinaryViolationCount;
+
         w1 = (w1==0 ? 1 : 0);
         w2 = (w2==0 ? 1 : 0);
 
@@ -296,6 +314,8 @@ bool CellCounter3D::findCells() {
             qDebug() << "Beginning erosion iteration = " << i;
             dialateOrErode(ERODE, workingData[w1][CELL], workingData[w2][CELL], EROSION_ELEMENT_SIZE, EROSION_THRESHOLD);
             voxelCount=countNonZero(workingData[w2][CELL]);
+            w1 = (w1==0 ? 1 : 0);
+            w2 = (w2==0 ? 1 : 0);
             if (voxelCount==lastVoxelCount) {
                 qDebug() << "Converged after " << i << " erosion cycles";
                 break;
@@ -303,9 +323,12 @@ bool CellCounter3D::findCells() {
                 lastVoxelCount=voxelCount;
             }
             qDebug() << "           voxel count = " << lastVoxelCount;
-            w1 = (w1==0 ? 1 : 0);
-            w2 = (w2==0 ? 1 : 0);
         }
+
+        qDebug() << "Doing sanity-check after erosion, w1=" << w1;
+        V3DLONG postErosionViolationCount=regionViolationCount(workingData[w1][CELL]);
+        qDebug() << "violation count=" << postErosionViolationCount;
+
 
         // Dialate CELL signal to fill nucleus and gaps.
         for (int i=0;i<DIALATION_CYCLES;i++) {
@@ -317,13 +340,25 @@ bool CellCounter3D::findCells() {
             w2 = (w2==0 ? 1 : 0);
         }
 
-        // Debug - let's have a look
-        //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
-        //return true;
+        qDebug() << "Doing sanity-check after dialation, w1=" << w1;
+        V3DLONG postDialationViolationCount=regionViolationCount(workingData[w1][CELL]);
+        qDebug() << "violation count=" << postDialationViolationCount;
 
         centerSurroundFilter(workingData[w1][CELL], workingData[w2][CELL], CS_CENTER_RADIUS, CS_CENTER_VALUE, CS_SURROUND_RADIUS, CS_SURROUND_VALUE);
+
         w1 = (w1==0 ? 1 : 0);
         w2 = (w2==0 ? 1 : 0);
+
+        // Debug - let's have a look
+//        if (planStepPosition==2) {
+//            copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+//            return true;
+//        }
+
+        qDebug() << "Doing sanity-check after center-surround, w1=" << w1;
+        V3DLONG postCenterSurroundViolationCount=regionViolationCount(workingData[w1][CELL]);
+        qDebug() << "violation count=" << postCenterSurroundViolationCount;
+
 
         // Center-Surround Search Loop
         bool csSuccess=false;
@@ -618,6 +653,17 @@ void CellCounter3D::dialateOrErodeZslice(int type, int z, int elementSize, int n
         qDebug() << "Dialated " << dialateCount << " voxels";
     } else if (type==ERODE) {
         qDebug() << "Eroded " << erosionCount << " voxels";
+    }
+}
+
+void CellCounter3D::copyToImage(unsigned char*** d, unsigned char**** data) {
+    for (int z=0;z<zDim;z++) {
+        for (int y=0;y<yDim;y++) {
+            for (int x=0;x<xDim;x++) {
+                unsigned char value=d[z][y][x];
+                data[0][z][y][x]=value;
+            }
+        }
     }
 }
 
@@ -1250,5 +1296,56 @@ void CellCounter3D::processParameters(QStringList parameterList) {
             qDebug() << "Set MAX_REGION_VOXELS=" << MAX_REGION_VOXELS;
         }
     }
+}
+
+V3DLONG CellCounter3D::regionViolationCount(unsigned char*** w) {
+    V3DLONG vCount=0L;
+    for (int i=0;i<regionGroups.size();i++) {
+        QList<int> group=regionGroups[i];
+        V3DLONG groupSize=group.size();
+        V3DLONG zTotal=0L;
+        V3DLONG yTotal=0L;
+        V3DLONG xTotal=0L;
+        for (int j=0;j<group.size();j+=3) {
+            int z=group[j];   zTotal+=z;
+            int y=group[j+1]; yTotal+=y;
+            int x=group[j+2]; xTotal+=x;
+        }
+        V3DLONG zAvg=zTotal/groupSize;
+        V3DLONG yAvg=yTotal/groupSize;
+        V3DLONG xAvg=xTotal/groupSize;
+        //qDebug() << "Region " << i << " zAvg=" << zAvg << " yAvg=" << yAvg << " xAvg=" << xAvg;
+        V3DLONG zeroCount=0L;
+        V3DLONG flipCount=0L;
+        for (int ez=zAvg-MARK_RADIUS;ez<zAvg+MARK_RADIUS;ez++) {
+            int sz=ez;
+            if (sz<0) {
+                sz=0;
+            } else if (ez>=zDim) {
+                sz=zDim-1;
+            }
+            for (int ey=yAvg-MARK_RADIUS;ey<yAvg+MARK_RADIUS;ey++) {
+                int sy=ey;
+                if (ey<0) {
+                    sy=0;
+                } else if (ey>=yDim) {
+                    sy=yDim-1;
+                }
+                for (int ex=xAvg-MARK_RADIUS;ex<xAvg+MARK_RADIUS;ex++) {
+                    int sx=ex;
+                    if (ex<0) {
+                        sx=0;
+                    } else if (ex>=xDim) {
+                        sx=xDim-1;
+                    }
+                    if (w[sz][sy][sx]!=0) {
+                        //qDebug() << "Sanity Check violation in mask z=" << sz << " y=" << sy << " x=" << sx;
+                        vCount++;
+                    }
+                }
+            }
+        }
+    }
+    return vCount;
 }
 

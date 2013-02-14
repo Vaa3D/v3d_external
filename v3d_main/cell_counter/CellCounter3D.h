@@ -189,6 +189,7 @@ protected:
     void dialateOrErode(int type, unsigned char*** s, unsigned char*** t, int elementSize, int neighborsForThreshold);
     void dialateOrErodeZslice(int type, int z, int elementSize, int neighborsForThreshold);
     void copyToImage(int sourceChannel, unsigned char**** d, unsigned char**** data, bool nonZeroOnly, bool markAllChannels);
+    void copyToImage(unsigned char*** d, unsigned char**** data);
     void addCrossMark(unsigned char**** d, int z, int y, int x, int size);
 
     long countNonZero(unsigned char*** d);
@@ -206,6 +207,8 @@ protected:
     void processParameters(QStringList plist);
     void processParameters(QString pString);
     bool loadPlanFile();
+    V3DLONG regionViolationCount(unsigned char*** w);
+
 
 
     My4DImage* image;
