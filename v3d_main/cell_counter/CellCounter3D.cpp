@@ -51,7 +51,7 @@ void CellCounter3D::resetParameters() {
     CS_THRESHOLD_INCREMENT=5;
     CS_THRESHOLD_MAX=180;
     MARK_SIZE=2;
-    MARK_RADIUS=10;
+    MARK_RADIUS=30;
     MARK_COLOR[0]=1000;
     MARK_COLOR[1]=0;
     MARK_COLOR[2]=1000;
@@ -142,7 +142,15 @@ bool CellCounter3D::findCells() {
         }
     }
 
+    int w=0;
+
     for (planStepPosition=0;planStepPosition<findPasses;planStepPosition++) {
+
+        qDebug() << "=========== Starting Pass " << (planStepPosition+1) << " of " << findPasses << " ===========\n";
+
+        if (planFilepath.length()>0 && planParameterLines.size()>0) {
+            processParameters(planParameterLines[planStepPosition]);
+        }
 
         long dataChannel0Count=countNonZero(data[CELL]);
         long dataChannel1Count=countNonZero(data[BACKGROUND]);
@@ -156,7 +164,7 @@ bool CellCounter3D::findCells() {
         // mark the location of the cells. We will need two working copies of
         // each channel, one to serve as the source and other the target.
 
-        int w=0;
+        w=0;
 
         // Step 2: create a copy of the data which is masked for any prior findPasses
 
@@ -165,20 +173,63 @@ bool CellCounter3D::findCells() {
         for (int z=0;z<zDim;z++) {
             for (int y=0;y<yDim;y++) {
                 for (int x=0;x<xDim;x++) {
+                    workingData[0][CELL][z][y][x]=0;
                     workingData[1][CELL][z][y][x]=data[CELL][z][y][x];
                 }
             }
         }
+
+        long dataCellVoxelCount=countNonZero(workingData[1][CELL]);
+        qDebug() << "Data cell voxel count = " << dataCellVoxelCount;
+
         for (int i=0;i<regionGroups.size();i++) {
             QList<int> group=regionGroups[i];
+            V3DLONG groupSize=group.size();
+            V3DLONG zTotal=0L;
+            V3DLONG yTotal=0L;
+            V3DLONG xTotal=0L;
             for (int j=0;j<group.size();j+=3) {
-                int z=group[j];
-                int y=group[j+1];
-                int x=group[j+2];
+                int z=group[j];   zTotal+=z;
+                int y=group[j+1]; yTotal+=y;
+                int x=group[j+2]; xTotal+=x;
                 workingData[1][CELL][z][y][x]=0;
             }
+            V3DLONG zAvg=zTotal/groupSize;
+            V3DLONG yAvg=yTotal/groupSize;
+            V3DLONG xAvg=xTotal/groupSize;
+            qDebug() << "Region " << i << " zAvg=" << zAvg << " yAvg=" << yAvg << " xAvg=" << xAvg;
+            V3DLONG zeroCount=0L;
+            for (int ez=zAvg-MARK_RADIUS;ez<zAvg+MARK_RADIUS;ez++) {
+                int sz=ez;
+                if (sz<0) {
+                    sz=0;
+                } else if (ez>=zDim) {
+                    sz=zDim-1;
+                }
+                for (int ey=yAvg-MARK_RADIUS;ey<yAvg+MARK_RADIUS;ey++) {
+                    int sy=ey;
+                    if (ey<0) {
+                        sy=0;
+                    } else if (ey>=yDim) {
+                        sy=yDim-1;
+                    }
+                    for (int ex=xAvg-MARK_RADIUS;ex<xAvg+MARK_RADIUS;ex++) {
+                        int sx=ex;
+                        if (ex<0) {
+                            sx=0;
+                        } else if (ex>=xDim) {
+                            sx=xDim-1;
+                        }
+                        workingData[1][CELL][sz][sy][sx]=0;
+                        zeroCount++;
+                    }
+                }
+            }
+            qDebug() << "Removed " << zeroCount << " voxels for group " << i;
         }
 
+        long passCellVoxelCount=countNonZero(workingData[1][CELL]);
+        qDebug() << "Pass cell voxel count = " << passCellVoxelCount;
 
         // Step 3: initial threshold
 
@@ -203,12 +254,14 @@ bool CellCounter3D::findCells() {
             }
         }
 
+        long prenormCellVoxelCount=countNonZero(workingData[w][CELL]);
+        qDebug() << "Prenorm cell voxel count = " << prenormCellVoxelCount;
+
         normalizeNonZero(workingData[w][CELL], SIGMA_NORMALIZATION);
 
         clearChannel(BACKGROUND, data);
 
         long initialCellVoxelCount=countNonZero(workingData[w][CELL]);
-
         qDebug() << "Initial cell voxel count = " << initialCellVoxelCount;
 
         int w1 = w;
@@ -219,8 +272,10 @@ bool CellCounter3D::findCells() {
         w2 = (w2==0 ? 1 : 0);
 
         // Debug - let's have a look
-        //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
-        //return true;
+//        if (planStepPosition==2) {
+//            copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+//            return true;
+//        }
 
         //gammaFilter(workingData[w1][CELL], GAMMA_CORRECTION);
 
@@ -871,7 +926,7 @@ bool CellCounter3D::findConnectedRegions(unsigned char*** d) {
         }
     }
     // Now we walk through the space and find neighboring groups
-    int r=0;
+    int r=regionGroups.size();
     for (int z=0;z<zDim;z++) {
         for (int y=0;y<yDim;y++) {
             for (int x=0;x<xDim;x++) {
@@ -1020,6 +1075,7 @@ int CellCounter3D::processArgs(vector<char*> *argList) {
             i++;
             inputFilePath=(*argList)[i];
         } else if (arg=="-plan") {
+            i++;
             planFilepath=(*argList)[i];
         }
     }
@@ -1051,91 +1107,109 @@ void CellCounter3D::processParameters(QStringList parameterList) {
             i++;
             QString initialSignalThreshold=parameterList[i];
             INITIAL_SIGNAL_THRESHOLD=initialSignalThreshold.toInt();
+            qDebug() << "Set INITIAL_SIGNAL_THRESHOLD=" << INITIAL_SIGNAL_THRESHOLD;
         }
         else if (arg=="-ibt") {
             i++;
             QString initialBackgroundThreshold=parameterList[i];
             INITIAL_BACKGROUND_THRESHOLD=initialBackgroundThreshold.toInt();
+            qDebug() << "Set INITIAL_BACKGROUND_THRESHOLD=" << INITIAL_BACKGROUND_THRESHOLD;
         }
         else if (arg=="-sn") {
             i++;
             QString sigmaNormalization=parameterList[i];
             SIGMA_NORMALIZATION=sigmaNormalization.toDouble();
+            qDebug() << "Set SIGMA_NORMALIZATION=" << SIGMA_NORMALIZATION;
         }
         else if (arg=="-nt") {
             i++;
             QString normalizationThreshold=parameterList[i];
             NORMALIZATION_THRESHOLD=normalizationThreshold.toInt();
+            qDebug() << "Set NORMALIZATION_THRESHOLD=" << NORMALIZATION_THRESHOLD;
         }
         else if (arg=="-dc") {
             i++;
             QString dialationCycles=parameterList[i];
             DIALATION_CYCLES=dialationCycles.toInt();
+            qDebug() << "Set DIALATION_CYCLES=" << DIALATION_CYCLES;
         }
         else if (arg=="-des") {
             i++;
             QString dialationElementSize=parameterList[i];
             DIALATION_ELEMENT_SIZE=dialationElementSize.toInt();
+            qDebug() << "Set DIALATION_ELEMENT_SIZE=" << DIALATION_ELEMENT_SIZE;
         }
         else if (arg=="-dt") {
             i++;
             QString dialationThreshold=parameterList[i];
             DIALATION_THRESHOLD=dialationThreshold.toInt();
+            qDebug() << "Set DIALATION_THRESHOLD=" << DIALATION_THRESHOLD;
         }
         else if (arg=="-ec") {
             i++;
             QString erosionCycles=parameterList[i];
             EROSION_CYCLES=erosionCycles.toInt();
+            qDebug() << "Set EROSION_CYCLES=" << EROSION_CYCLES;
         }
         else if (arg=="-ees") {
             i++;
             QString erosionElementSize=parameterList[i];
             EROSION_ELEMENT_SIZE=erosionElementSize.toInt();
+            qDebug() << "Set EROSION_ELEMENT_SIZE=" << EROSION_ELEMENT_SIZE;
         }
         else if (arg=="-et") {
             i++;
             QString erosionThreshold=parameterList[i];
             EROSION_THRESHOLD=erosionThreshold.toInt();
+            qDebug() << "Set EROSION_THRESHOLD=" << EROSION_THRESHOLD;
         }
         else if (arg=="-cr") {
             i++;
             QString csCenterRadius=parameterList[i];
             CS_CENTER_RADIUS=csCenterRadius.toDouble();
+            qDebug() << "Set CS_CENTER_RADIUS=" << CS_CENTER_RADIUS;
         }
         else if (arg=="-cv") {
             i++;
             QString csCenterValue=parameterList[i];
             CS_CENTER_VALUE=csCenterValue.toDouble();
+            qDebug() << "Set CS_CENTER_VALUE=" << CS_CENTER_VALUE;
         }
         else if (arg=="-sr") {
             i++;
             QString csSurroundRadius=parameterList[i];
             CS_SURROUND_RADIUS=csSurroundRadius.toDouble();
+            qDebug() << "Set CS_SURROUND_RADIUS=" << CS_SURROUND_RADIUS;
         }
         else if (arg=="-sv") {
             i++;
             QString csSurroundValue=parameterList[i];
             CS_SURROUND_VALUE=csSurroundValue.toDouble();
+            qDebug() << "Set CS_SURROUND_VALUE=" << CS_SURROUND_VALUE;
         }
         else if (arg=="-cst") {
             i++;
             QString csThresholdStart=parameterList[i];
             CS_THRESHOLD_START=csThresholdStart.toInt();
+            qDebug() << "Set CS_THRESHOLD_START=" << CS_THRESHOLD_START;
         }
         else if (arg=="-csi") {
             i++;
             QString csThresholdIncrement=parameterList[i];
             CS_THRESHOLD_INCREMENT=csThresholdIncrement.toInt();
+            qDebug() << "Set CS_THRESHOLD_INCREMENT=" << CS_THRESHOLD_INCREMENT;
         }
         else if (arg=="-csm") {
             i++;
             QString csThresholdMax=parameterList[i];
             CS_THRESHOLD_MAX=csThresholdMax.toInt();
+            qDebug() << "Set CS_THRESHOLD_MAX=" << CS_THRESHOLD_MAX;
         }
         else if (arg=="-ms") {
             i++;
             QString markSize=parameterList[i];
             MARK_SIZE=markSize.toInt();
+            qDebug() << "Set MARK_SIZE=" << MARK_SIZE;
         }
         else if (arg=="-mc") {
             i++;
@@ -1145,6 +1219,7 @@ void CellCounter3D::processParameters(QStringList parameterList) {
             MARK_COLOR[0]=markColor0.toInt();
             MARK_COLOR[1]=markColor1.toInt();
             MARK_COLOR[2]=markColor2.toInt();
+            qDebug() << "Set MARK_COLOR=" << MARK_COLOR[0] << " " << MARK_COLOR[1] << " " << MARK_COLOR[2];
         }
         else if (arg=="-sc") {
             i++;
@@ -1154,21 +1229,25 @@ void CellCounter3D::processParameters(QStringList parameterList) {
             SIGNAL_COLOR[0]=signalColor0.toInt();
             SIGNAL_COLOR[1]=signalColor1.toInt();
             SIGNAL_COLOR[2]=signalColor2.toInt();
+            qDebug() << "Set SIGNAL_COLOR=" << SIGNAL_COLOR[0] << " " << SIGNAL_COLOR[1] << " " << SIGNAL_COLOR[2];
         }
         else if (arg=="-mnr") {
             i++;
             QString minimumRegionVoxels=parameterList[i];
             MIN_REGION_VOXELS=minimumRegionVoxels.toInt();
+            qDebug() << "Set MIN_REGION_VOXELS=" << MIN_REGION_VOXELS;
         }
         else if (arg=="-mar") {
             i++;
             QString maxAcceptRegionVoxels=parameterList[i];
             MAX_ACCEPT_REGION_VOXELS=maxAcceptRegionVoxels.toInt();
+            qDebug() << "Set MAX_ACCEPT_REGION_VOXELS=" << MAX_ACCEPT_REGION_VOXELS;
         }
         else if (arg=="-mxr") {
             i++;
             QString maximumRegionVoxels=parameterList[i];
             MAX_REGION_VOXELS=maximumRegionVoxels.toInt();
+            qDebug() << "Set MAX_REGION_VOXELS=" << MAX_REGION_VOXELS;
         }
     }
 }
