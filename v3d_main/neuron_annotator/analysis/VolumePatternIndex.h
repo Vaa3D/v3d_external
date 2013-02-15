@@ -20,6 +20,7 @@ public:
     static const int DEFAULT_MAX_HITS;
     static const QString DEFAULT_MATRIX_STRING;
     static const QString DEFAULT_FULL_MATRIX_STRING;
+    static const int DEFAULT_BINARY_PROXY_VALUE;
 
     static const int MODE_UNDEFINED;
     static const int MODE_INDEX;

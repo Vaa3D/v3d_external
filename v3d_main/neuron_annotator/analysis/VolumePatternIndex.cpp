@@ -83,6 +83,7 @@ const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
+const int VolumePatternIndex::DEFAULT_BINARY_PROXY_VALUE = 60;
 const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("      0 -1 -4 -16       -1 1 -1 -8       -4 -1 8 4     -16 -8 4 32 ");
 const QString VolumePatternIndex::DEFAULT_FULL_MATRIX_STRING(" 0  0 -4 -16        0 0 -1 -8       -8 -1 8 4     -32 -8 4 32 ");
 
@@ -510,6 +511,34 @@ bool VolumePatternIndex::doSearch()
         qDebug() << "Could not load query image file=" << queryImageFilePath;
         return false;
     }
+
+    // Binary check
+    V3DLONG zeroCount=0L;
+    V3DLONG oneCount=0L;
+    V3DLONG otherCount=0L;
+    unsigned char* qData = queryImage->getRawDataAtChannel(queryChannel);
+    V3DLONG units=queryImage->getTotalUnitNumber();
+    for (int i=0;i<units;i++) {
+        if (qData[i]==0) {
+            zeroCount++;
+        } else if (qData[i]==1) {
+            oneCount++;
+        } else {
+            otherCount++;
+        }
+    }
+    if (otherCount==0 && oneCount>0) {
+        V3DLONG changeCount=0L;
+        qDebug() << "Re-normalizing binary image for search";
+        for (int i=0;i<units;i++) {
+            if (qData[i]==1) {
+                qData[i]=DEFAULT_BINARY_PROXY_VALUE;
+                changeCount++;
+            }
+        }
+        qDebug() << "Changed " << changeCount << " values from binary image";
+    }
+
 
     qDebug() << "Convert query to index format...";
     V3DLONG* subregion=0L;
