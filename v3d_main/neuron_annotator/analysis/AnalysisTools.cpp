@@ -113,7 +113,8 @@ My4DImage * AnalysisTools::cubifyImageByChannel(My4DImage * sourceImage, int sou
                     cData[offset]=hval;
                 }
                 if (skipzeros) {
-                    if (cubeZeroCount>totalCubeSize/2) {
+                    //if (cubeZeroCount>totalCubeSize/2) {
+                    if (cubeZeroCount==cubeDataPosition) {
                         (*skipPositions)[offset]=1;
                     } else {
                         (*skipPositions)[offset]=0;

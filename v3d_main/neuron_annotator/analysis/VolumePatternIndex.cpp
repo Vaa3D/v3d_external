@@ -83,7 +83,7 @@ const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
-const int VolumePatternIndex::DEFAULT_BINARY_PROXY_VALUE = 60;
+const int VolumePatternIndex::DEFAULT_BINARY_PROXY_VALUE = 255;
 const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("      0 -1 -4 -16       -1 1 -1 -8       -4 -1 8 4     -16 -8 4 32 ");
 const QString VolumePatternIndex::DEFAULT_FULL_MATRIX_STRING(" 0  0 -4 -16        0 0 -1 -8       -8 -1 8 4     -32 -8 4 32 ");
 
@@ -553,7 +553,23 @@ bool VolumePatternIndex::doSearch()
     subregion=new V3DLONG[6];
     formatQuerySubregion(subregion);
     indexData=0L;
-    indexImage(queryImage, queryChannel, subregion, true);
+    if (skipzeros) {
+        indexImage(queryImage, queryChannel, subregion, true);
+        V3DLONG nonskipCount=0L;
+        V3DLONG skipCount=0L;
+        V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
+        for (int q=0;q<cubifiedTotal;q++) {
+            if (queryIndexSkipPositions[q]==0) {
+                nonskipCount++;
+            } else {
+                skipCount++;
+            }
+        }
+        qDebug() << "Total non-skip count after indexImage=" << nonskipCount << " whereas skipCount=" << skipCount;
+    } else {
+        indexImage(queryImage, queryChannel, subregion, false);
+
+    }
     if (indexData==0) {
         qDebug() << "Error with indexImage";
         return false;
@@ -578,7 +594,7 @@ bool VolumePatternIndex::doSearch()
 //        qDebug() << "queryCheck " << i << " : " << queryIndex[i];
 //    }
 
-    qDebug() << "Begin scoring (index phase)...";
+//    qDebug() << "Begin scoring (index phase)...";
     V3DLONG indexTotal=iXmax*iYmax*iZmax;
     for (int i=0;i<indexFileList.size();i++) {
         size_t readSize=0;
@@ -588,7 +604,7 @@ bool VolumePatternIndex::doSearch()
         }
 //        qDebug() << "Calculating index score for " << indexFileList[i];
 //        QString filename=indexFileList[i];
-//        if (filename.contains("20111102102342562")) {
+//        if (filename.contains("20110728100929640")) {
 //            DEBUG_FLAG=true;
 //        } else {
 //            DEBUG_FLAG=false;
@@ -699,29 +715,48 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
     unsigned char q1=0;
     int scorePosition=0;
 
-//    V3DLONG* matrixBins = new V3DLONG[16];
-//    V3DLONG* matrixScores = new V3DLONG[16];
+    V3DLONG* matrixBins = 0L;
+    V3DLONG* matrixScores = 0L;
 
-//    for (int i=0;i<16;i++) {
-//        matrixBins[i]=0L;
-//        matrixScores[i]=0L;
-//    }
+    if (DEBUG_FLAG) {
+
+        matrixBins = new V3DLONG[16];
+        matrixScores = new V3DLONG[16];
+
+        for (int i=0;i<16;i++) {
+            matrixBins[i]=0L;
+            matrixScores[i]=0L;
+        }
+
+    }
 
 
     V3DLONG position=0L;
 
     if (skipPositions==0) {
 
+        if (DEBUG_FLAG) {
+            qDebug() << "Starting scoring loop";
+        }
+
         for (V3DLONG i=0;i<byteTotalFloor;i++) {
             unsigned char s=subjectIndex[i];
             unsigned char q=queryIndex[i];
+            if (DEBUG_FLAG) {
+                qDebug() << "i=" << i << " s=" << s << " q=" << q;
+            }
             for (int p=0;p<4;p++) {
                 s1= s&oooooo11;
                 q1= q&oooooo11;
                 scorePosition = q1*4+s1;
+                if (DEBUG_FLAG) {
+                    qDebug() << "   p=" << p << " s1=" << s1 << " q1=" << q1 << " scorePosition=" << scorePosition;
+                }
                 score+=matrix[scorePosition];
-//                matrixBins[scorePosition] += 1;
-//                matrixScores[scorePosition] += matrix[scorePosition];
+                if (DEBUG_FLAG) {
+                    matrixBins[scorePosition] += 1;
+                    matrixScores[scorePosition] += matrix[scorePosition];
+                }
                 s >>= 2;
                 q >>= 2;
                 position++;
@@ -737,8 +772,10 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
                     q1= q&oooooo11;
                     scorePosition = q1*4+s1;
                     score+=matrix[scorePosition];
-//                    matrixBins[scorePosition] += 1;
-//                    matrixScores[scorePosition] += matrix[scorePosition];
+                    if (DEBUG_FLAG) {
+                        matrixBins[scorePosition] += 1;
+                        matrixScores[scorePosition] += matrix[scorePosition];
+                    }
                     s >>= 2;
                     q >>= 2;
                 }
@@ -747,6 +784,10 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
         }
 
     } else {
+
+        if (DEBUG_FLAG) {
+            qDebug() << " Running under skipPositions mode";
+        }
 
         for (V3DLONG i=0;i<byteTotalFloor;i++) {
             unsigned char s=subjectIndex[i];
@@ -757,8 +798,10 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
                     q1= q&oooooo11;
                     scorePosition = q1*4+s1;
                     score+=matrix[scorePosition];
-//                    matrixBins[scorePosition] += 1;
-//                    matrixScores[scorePosition] += matrix[scorePosition];
+                    if (DEBUG_FLAG) {
+                        matrixBins[scorePosition] += 1;
+                        matrixScores[scorePosition] += matrix[scorePosition];
+                    }
                 }
                 s >>= 2;
                 q >>= 2;
@@ -776,8 +819,10 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
                         q1= q&oooooo11;
                         scorePosition = q1*4+s1;
                         score+=matrix[scorePosition];
-//                        matrixBins[scorePosition] += 1;
-//                        matrixScores[scorePosition] += matrix[scorePosition];
+                        if (DEBUG_FLAG) {
+                            matrixBins[scorePosition] += 1;
+                            matrixScores[scorePosition] += matrix[scorePosition];
+                        }
                     }
                     s >>= 2;
                     q >>= 2;
@@ -788,24 +833,28 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
 
     }
 
-//    qDebug() << "Returning score=" << score;
+    if (DEBUG_FLAG) {
 
-//    qDebug() << "Bins:";
+        qDebug() << "Returning score=" << score;
 
-//    qDebug() << matrixBins[0] << " " << matrixBins[1] << " " << matrixBins[2] << " " << matrixBins[3];
-//    qDebug() << matrixBins[4] << " " << matrixBins[5] << " " << matrixBins[6] << " " << matrixBins[7];
-//    qDebug() << matrixBins[8] << " " << matrixBins[9] << " " << matrixBins[10] << " " << matrixBins[11];
-//    qDebug() << matrixBins[12] << " " << matrixBins[13] << " " << matrixBins[14] << " " << matrixBins[15];
+        qDebug() << "Bins:";
 
-//    qDebug() << "Scores:";
+        qDebug() << matrixBins[0] << " " << matrixBins[1] << " " << matrixBins[2] << " " << matrixBins[3];
+        qDebug() << matrixBins[4] << " " << matrixBins[5] << " " << matrixBins[6] << " " << matrixBins[7];
+        qDebug() << matrixBins[8] << " " << matrixBins[9] << " " << matrixBins[10] << " " << matrixBins[11];
+        qDebug() << matrixBins[12] << " " << matrixBins[13] << " " << matrixBins[14] << " " << matrixBins[15];
 
-//    qDebug() << matrixScores[0] << " " << matrixScores[1] << " " << matrixScores[2] << " " << matrixScores[3];
-//    qDebug() << matrixScores[4] << " " << matrixScores[5] << " " << matrixScores[6] << " " << matrixScores[7];
-//    qDebug() << matrixScores[8] << " " << matrixScores[9] << " " << matrixScores[10] << " " << matrixScores[11];
-//    qDebug() << matrixScores[12] << " " << matrixScores[13] << " " << matrixScores[14] << " " << matrixScores[15];
+        qDebug() << "Scores:";
 
-//    delete [] matrixBins;
-//    delete [] matrixScores;
+        qDebug() << matrixScores[0] << " " << matrixScores[1] << " " << matrixScores[2] << " " << matrixScores[3];
+        qDebug() << matrixScores[4] << " " << matrixScores[5] << " " << matrixScores[6] << " " << matrixScores[7];
+        qDebug() << matrixScores[8] << " " << matrixScores[9] << " " << matrixScores[10] << " " << matrixScores[11];
+        qDebug() << matrixScores[12] << " " << matrixScores[13] << " " << matrixScores[14] << " " << matrixScores[15];
+
+        delete [] matrixBins;
+        delete [] matrixScores;
+
+    }
 
     return score;
 }
@@ -822,9 +871,11 @@ void VolumePatternIndex::indexImage(My4DImage* image, int channel, V3DLONG* subr
 
     My4DImage* cubifiedImage=0L;
     if (skipzeros) {
+        qDebug() << "indexImage - skipzeros is true - populating queryIndexSkipPositions";
         cubifiedImage=AnalysisTools::cubifyImageByChannel(image, channel, unitSize, AnalysisTools::CUBIFY_TYPE_AVERAGE, subregion, true, &queryIndexSkipPositions);
     } else {
         unsigned char** zeroPointer=0L;
+        qDebug() << "indexImage - skipzeros is false - calling cubifyImageByChannel with zeroPointer";
         cubifiedImage=AnalysisTools::cubifyImageByChannel(image, channel, unitSize, AnalysisTools::CUBIFY_TYPE_AVERAGE, subregion, false, zeroPointer);
     }
     if (iXmax==-1) {
@@ -841,8 +892,8 @@ void VolumePatternIndex::indexImage(My4DImage* image, int channel, V3DLONG* subr
         }
     }
 
-//    ImageLoader debugLoader;
-//    debugLoader.saveImage(cubifiedImage, "cubifiedDebugImage.v3dpbd");
+    ImageLoader debugLoader;
+    debugLoader.saveImage(cubifiedImage, "cubifiedDebugImage.v3dpbd");
 
     // Next, we will walk through the image and gradually populate a binary structure with the scores.
     V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
