@@ -723,7 +723,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
         //---------------------------------------------------------------------------------------------------------------
         if(plane_yz == true)
         {
-            // finding rich information plane from sub aV3DLONG x
+            // finding rich information plane from sub along x
             V3DLONG info_count=0, xpln=0, max_info=0;
 
             // approach 1
@@ -945,7 +945,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
         }
         else if(plane_xz == true)
         {
-            // finding rich information plane from sub aV3DLONG y
+            // finding rich information plane from sub along y
             V3DLONG info_count=0, ypln, max_info=0;
 
             V3DLONG weights = bbsy*0.15;
@@ -1161,7 +1161,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
         }
         else if(plane_xy == true)
         {
-            // finding rich information plane from sub aV3DLONG z
+            // finding rich information plane from sub along z
             V3DLONG info_count=0, zpln, max_info=0;
 
             V3DLONG weights = bbsz*0.15;
@@ -2563,7 +2563,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
         //---------------------------------------------------------------------------------------------------------------
         if(plane_yz == true)
         {
-            // finding rich information plane from sub aV3DLONG x
+            // finding rich information plane from sub along x
             V3DLONG info_count=0, xpln=0, max_info=0;
 
             // approach 1
@@ -2868,8 +2868,8 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
         }
         else if(plane_xz == true)
         {
-            // finding rich information plane from sub aV3DLONG y
-            V3DLONG info_count=0, ypln, max_info=0;
+            // finding rich information plane from sub along y
+            V3DLONG info_count=0, ypln=0, max_info=0;
 
             V3DLONG weights = bbsy*0.15;
             weights /= 2;
@@ -2899,7 +2899,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
 
             }
 
-            qDebug() << "plane ..." << ypln;
+            qDebug() << "ypln ..." << ypln;
 
             // extraction
             V3DLONG b_bsy = ypln - weights;
@@ -3087,8 +3087,8 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
         }
         else if(plane_xy == true)
         {
-            // finding rich information plane from sub aV3DLONG z
-            V3DLONG info_count=0, zpln, max_info=0;
+            // finding rich information plane from sub along z
+            V3DLONG info_count=0, zpln=0, max_info=0;
 
             V3DLONG weights = bbsz*0.15;
             weights /= 2;
@@ -3117,6 +3117,8 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
                 }
 
             }
+
+            qDebug() << "zpln ..." << zpln;
 
             // extraction
             V3DLONG b_bsz = zpln - weights/2;
@@ -8290,7 +8292,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
 
     // load tiles and stitch
     //----------------------------------------------------------------------------------------------------------------------------------------------------
-    QStringList imgList = importSeriesFileList_addnumbersort(m_InputFileName);
+    QStringList imgList = importSeriesFileList_addnumbersort(QFileInfo(m_InputFileName).path());
 
     Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
 
@@ -8474,6 +8476,8 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
     //de-alloc
     if(scale) {delete []scale; scale=0;}
 
+    qDebug()<<"debug..."<<"basically done";
+
     // adjusting offset reference to 0
     for(int i=1; i<vim.tilesList.size(); i++)
     {
@@ -8514,7 +8518,9 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
     // save lut
     QString tmp_filename = QFileInfo(m_InputFileName).path() + "/" + "stitched_image.tc"; //.tc tile configuration
 
-    vim.y_save(tmp_filename.toStdString());
+    qDebug()<<"debug..."<<tmp_filename;
+
+    //vim.y_save(tmp_filename.toStdString()); // change it later
 
     //
     int end_t = clock();
