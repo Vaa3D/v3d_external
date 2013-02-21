@@ -1,8 +1,8 @@
-function [ img3d ] = wrap_large2dimg_to_3dtiles( img2d, tile_szx, tile_szy )
+function [ img3d ] = wrap_large2dimg_to_3dtiles( img2d, tile_szx, tile_szy, fillvalue )
 %a utility function to wrap a large 2D image to 3D stack, using the size
 %specified in tile_szx and tile_szy
 %
-% The additional margin is filled using 0
+% The additional margin is filled using 'fillvalue', which is 0 by default
 %
 % by Hanchuan Peng
 % 2013-02-21
@@ -11,6 +11,10 @@ sz = size(img2d);
 if (length(sz)~=2 & length(sz)~=3),
     error('The input is not a 2D or 3D image');
     return;
+end;
+
+if nargin<4,
+    fillvalue = 0;
 end;
 
 if nargin<3,
@@ -34,18 +38,18 @@ nty = ceil(sz(2)/tile_szy);
 if (ntx*tile_szx ~= sz(1))
     fprintf('Add margin for X\n');
     if (length(sz)==2)
-        img2d(sz(1)+1:ntx*tile_szx, :) = 0;
+        img2d(sz(1)+1:ntx*tile_szx, :) = fillvalue;
     else,
-        img2d(sz(1)+1:ntx*tile_szx, :, :) = 0;
+        img2d(sz(1)+1:ntx*tile_szx, :, :) = fillvalue;
     end;
 end;
 
 if (nty*tile_szy ~= sz(2))
     fprintf('Add margin for Y\n');
     if (length(sz)==2)
-        img2d(:, sz(2)+1:nty*tile_szy) = 0;
+        img2d(:, sz(2)+1:nty*tile_szy) = fillvalue;
     else,
-        img2d(:, sz(2)+1:nty*tile_szy, :) = 0;
+        img2d(:, sz(2)+1:nty*tile_szy, :) = fillvalue;
     end;
 end;
 
