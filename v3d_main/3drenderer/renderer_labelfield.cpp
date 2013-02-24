@@ -1003,6 +1003,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
 		return;
 	}
 
+    if (0) //130224. by PHC, test for loading multiple surface files
 	////////////////////////////////////////////
 	cleanLabelfieldSurf();
 	////////////////////////////////////////////
