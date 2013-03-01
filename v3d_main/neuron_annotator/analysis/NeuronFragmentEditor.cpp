@@ -124,7 +124,7 @@ bool NeuronFragmentEditor::createFragmentComposite()
         qDebug() << "Adding entry for fragment=" << fragmentArr[f];
     }
 
-    qDebug() << "Populating new image";
+    qDebug() << "Populating new image, getting max intensity";
 
     v3d_uint8 maxIntensity=0;
 
@@ -157,6 +157,12 @@ bool NeuronFragmentEditor::createFragmentComposite()
             }
         }
     }
+
+    if (maxIntensity==0) {
+        maxIntensity=5; // any non-zero should work
+    }
+
+    qDebug() << "Max intensity=" << maxIntensity << ", populating new image";
 
     for (V3DLONG z=0;z<zdim;z++) {
         for (V3DLONG y=0;y<ydim;y++) {
