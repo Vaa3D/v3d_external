@@ -26,12 +26,12 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("    This tool creates composites of neuron fragments.                                                   \n");
         usage.append("                                                                                                        \n");
-	usage.append("   -sourceImage <original image file>                                                                   \n");
+        usage.append("   -sourceImage <original image file>                                                                   \n");
         usage.append("   -labelIndex <consolidated signal label index file>                                                   \n");
         usage.append("   -fragments <comma-separated list of fragments, e.g., '13,18,24'>                                     \n");
         usage.append("   -outputMip <path for output max intensity projection>                                                \n");
-	usage.append("   -outputStack <path for output stack>                                                                 \n");
-	usage.append("                                                                                                        \n");
+        usage.append("   -outputStack <path for output stack>                                                                 \n");
+        usage.append("                                                                                                        \n");
         return usage;
     }
 
