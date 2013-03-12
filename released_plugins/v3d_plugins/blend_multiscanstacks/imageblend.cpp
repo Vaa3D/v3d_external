@@ -128,12 +128,12 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     // cutting
     // along z +
     b_blankplanefound=true;
-    while (b_blankplanefound) 
+    while (b_blankplanefound)
     {
         double sum;
         
         for(V3DLONG k=0; k<szInput[2]; k++)
-        {    
+        {
             V3DLONG offset_k = k*szInput[1]*szInput[0];
             
             b_blankplanefound=false;
@@ -173,12 +173,12 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     
     // along z -
     b_blankplanefound=true;
-    while (b_blankplanefound) 
+    while (b_blankplanefound)
     {
         double sum;
         
         for(V3DLONG k=szInput[2]-1; k>0; k--)
-        {    
+        {
             V3DLONG offset_k = k*szInput[1]*szInput[0];
             
             b_blankplanefound=false;
@@ -218,7 +218,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     
     // along y +
     b_blankplanefound=true;
-    while (b_blankplanefound) 
+    while (b_blankplanefound)
     {
         double sum;
         
@@ -235,7 +235,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 
                 V3DLONG offset_c = c*pagesz + offset_j;
                 for(V3DLONG k=0; k<szInput[2]; k++)
-                {    
+                {
                     V3DLONG offset_k = offset_c + k*szInput[1]*szInput[0];
 
                     for(V3DLONG i=0; i<szInput[0]; i++)
@@ -264,7 +264,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     
     // along y -
     b_blankplanefound=true;
-    while (b_blankplanefound) 
+    while (b_blankplanefound)
     {
         double sum;
         
@@ -281,7 +281,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 
                 V3DLONG offset_c = c*pagesz + offset_j;
                 for(V3DLONG k=0; k<szInput[2]; k++)
-                {    
+                {
                     V3DLONG offset_k = offset_c + k*szInput[1]*szInput[0];
                     
                     for(V3DLONG i=0; i<szInput[0]; i++)
@@ -310,7 +310,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     
     // along x +
     b_blankplanefound=true;
-    while (b_blankplanefound) 
+    while (b_blankplanefound)
     {
         double sum;
         
@@ -325,7 +325,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG k=0; k<szInput[2]; k++)
-                {    
+                {
                     V3DLONG offset_k = offset_c + k*szInput[1]*szInput[0];
                     for(V3DLONG j=0; j<szInput[1]; j++)
                     {
@@ -355,7 +355,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     
     // along x -
     b_blankplanefound=true;
-    while (b_blankplanefound) 
+    while (b_blankplanefound)
     {
         double sum;
         
@@ -370,7 +370,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG k=0; k<szInput[2]; k++)
-                {    
+                {
                     V3DLONG offset_k = offset_c + k*szInput[1]*szInput[0];
                     for(V3DLONG j=0; j<szInput[1]; j++)
                     {
@@ -437,7 +437,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         szOutput[2] = sz;
         szOutput[3] = colordim;
         
-    } 
+    }
     catch (...) {
         cout<<"Fail to allocate new image memory."<<endl;
         return;
@@ -1839,7 +1839,7 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
     //
     for(V3DLONG i=0; i<szImg; i++)
     {
-        jointHistogram[ (V3DLONG)pImg1[i] ][ (V3DLONG)pImg2[i] ] ++;  
+        jointHistogram[ (V3DLONG)pImg1[i] ][ (V3DLONG)pImg2[i] ] ++;
     }
     
     double jointEntropy=0, img1Entropy=0, img2Entropy=0;
@@ -1864,7 +1864,7 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
         {
             img1Hist[i] += jointHistogram[i][j];
             img2Hist[i] += jointHistogram[j][i];
-        } 
+        }
     }
     
     for(V3DLONG i=0; i<szHist; i++)
@@ -1881,7 +1881,7 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
         for(int i=0; i<szHist; i++)
         {
             delete[] jointHistogram[i];
-        }     
+        }
         delete []jointHistogram; jointHistogram=NULL;
     }
     if(img1Hist) {delete []img1Hist; img1Hist=NULL;}
@@ -1890,7 +1890,7 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
     qDebug() << "time elapse for computing mutual information ... " <<clock()-start_t;
     
     // MI
-    return (jointEntropy - img1Entropy - img2Entropy);    
+    return (jointEntropy - img1Entropy - img2Entropy);
     
 }
 
@@ -1900,9 +1900,10 @@ const QString title = "Multiscan Image Blending";
 // funcs
 QStringList ImageBlendPlugin::funclist() const
 {
-    return QStringList() << "multiscanblend"
-                         << "transformdet"
-                         << "extractchannels";
+    return QStringList() << tr("multiscanblend")
+                         << tr("multiscanblend2")
+                         << tr("transformdet")
+                         << tr("extractchannels");
 }
 
 bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
@@ -1915,7 +1916,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         vector<char*> * infilelist = (vector<char*> *)(input.at(0).p);
         vector<char*> * paralist;
         vector<char*> * outfilelist;
-        if(infilelist->empty()) 
+        if(infilelist->empty())
         {
             //print Help info
             printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #k <b_morecolorstack_first nonzero(true)/zero(false)> #d <deformed nonzero(true)/zero(false) >\" \n");
@@ -1974,7 +1975,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
             for(int i = 0; i < len; i++)
             {
-                if(myparas[i]==' ' || myparas[i]=='\t') 
+                if(myparas[i]==' ' || myparas[i]=='\t')
                     myparas[i]='\0';
             }
 
@@ -1990,16 +1991,16 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     if (*key == '#')
                     {
                         while(*++key)
-                        {                            
+                        {
                             if (!strcmp(key, "s"))
-                            {                                
-                                b_saveimage = (atoi( argv[i+1] ))?true:false;                                
+                            {
+                                b_saveimage = (atoi( argv[i+1] ))?true:false;
                                 i++;
                             }
                             else if (!strcmp(key, "k"))
-                            {                                
-                                b_morecolorstack_first = (atoi( argv[i+1] )) ? true:false;                                
-                                printf("Now set the b_morecolorstack_first = %s\n", (b_morecolorstack_first)? "TRUE" : "FALSE"); 
+                            {
+                                b_morecolorstack_first = (atoi( argv[i+1] )) ? true:false;
+                                printf("Now set the b_morecolorstack_first = %s\n", (b_morecolorstack_first)? "TRUE" : "FALSE");
                                 i++;
                             }
                             else if (!strcmp(key, "d"))
@@ -2029,7 +2030,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         QString blendImageName;
         QString m_InputFileName(infile);
         m_InputFileName.chop(4);
-        if(!outfile) 
+        if(!outfile)
             blendImageName = m_InputFileName + "_blended.v3draw";
         else
             blendImageName = QString(outfile);
@@ -2075,7 +2076,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         // load images
         Image4DSimple p4DImage1, p4DImage2;
         
-        V3DLONG *sz_img1 = 0; 
+        V3DLONG *sz_img1 = 0;
         int datatype_img1 = 0;
         unsigned char* p1dImg1 = 0;
         
@@ -2101,7 +2102,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         
         datatype_img1 = p4DImage1.getUnitBytes();
         
-        V3DLONG *sz_img2 = 0; 
+        V3DLONG *sz_img2 = 0;
         int datatype_img2 = 0;
         unsigned char* p1dImg2 = 0;
         
@@ -2138,7 +2139,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         {
             cout<<"Images are different dimensions! Do nothing!"<<endl;
             return false;
-        }        
+        }
 
         // swap inputs' order by choosing the input with more color channels as the first input
         if(b_morecolorstack_first && sz_img1[3]<sz_img2[3])
@@ -2156,7 +2157,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             unsigned char *p1 = NULL;
             unsigned char *p2 = NULL;
             
-            try 
+            try
             {
                 V3DLONG totalplxs1 = p4DImage1.getTotalBytes();
                 p1 = new unsigned char [totalplxs1];
@@ -2165,8 +2166,8 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 V3DLONG totalplxs2 = p4DImage2.getTotalBytes();
                 p2 = new unsigned char [totalplxs2];
                 memcpy(p2, p4DImage2.getRawData(), totalplxs2);
-            } 
-            catch (...) 
+            }
+            catch (...)
             {
                 cout<<"Fail to allocate memory for swaping temporary pointers."<<endl;
                 if (p1) {delete []p1; p1=0;}
@@ -2858,7 +2859,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             return false;
         }
 
-        // step 4: image blending	
+        // step 4: image blending
         // suppose image1 and image2 have a common reference
         // the blended image color dim = image1 color dim + image2 color dim - 1
         V3DLONG colordim = sz_img1[3]+sz_img2[3]-1;
@@ -3590,13 +3591,1283 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
             }
         }
-        else 
+        else
         {
             printf("Currently this program only support UINT8, UINT16, FLOAT32 datatype.\n");
             return false;
         }
         
-        // de-alloc        
+        // de-alloc
+        if(sz_img1) {delete []sz_img1; sz_img1=NULL;}
+        if(sz_img2) {delete []sz_img2; sz_img2=NULL;}
+
+    }
+    else if (func_name == tr("multiscanblend2"))
+    {
+        if(input.size()<1) return false; // no inputs
+
+        vector<char*> * infilelist = (vector<char*> *)(input.at(0).p);
+        vector<char*> * paralist;
+        vector<char*> * outfilelist;
+        if(infilelist->empty())
+        {
+            //print Help info
+            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend2 -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #d <deformed nonzero(true)/zero(false) >\" \n");
+
+            return true;
+        }
+
+        if(infilelist->size()<2)
+        {
+            printf("\nThe multiscan blending program needs two images as input!\n");
+
+            return false;
+        }
+
+        qDebug()<<"input files ..."<<infilelist->at(0)<<infilelist->at(1);
+
+        char * infile = infilelist->at(0); // input images
+        char * paras = NULL; // parameters
+        char * outfile = NULL; // outputs
+
+        if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p); outfile = outfilelist->at(0);}  // specify output
+        if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
+
+        bool b_saveimage = true; // save the blended image by default
+        bool b_deformed = false; // rigid transformation by default
+
+        if(paras)
+        {
+            int argc = 0;
+            int len = strlen(paras);
+            int posb[200];
+            char * myparas = new char[len];
+            strcpy(myparas, paras);
+            for(int i = 0; i < len; i++)
+            {
+                if(i==0 && myparas[i] != ' ' && myparas[i] != '\t')
+                {
+                    posb[argc++] = i;
+                }
+                else if((myparas[i-1] == ' ' || myparas[i-1] == '\t') && (myparas[i] != ' ' && myparas[i] != '\t'))
+                {
+                    posb[argc++] = i;
+                }
+            }
+            char ** argv = new char* [argc];
+            for(int i = 0; i < argc; i++)
+            {
+                argv[i] = myparas + posb[i];
+            }
+            for(int i = 0; i < len; i++)
+            {
+                if(myparas[i]==' ' || myparas[i]=='\t')
+                    myparas[i]='\0';
+            }
+
+            char* key;
+            for(int i=0; i<argc; i++)
+            {
+                if(i+1 != argc) // check that we haven't finished parsing yet
+                {
+                    key = argv[i];
+
+                    qDebug()<<">>key ..."<<key;
+
+                    if (*key == '#')
+                    {
+                        while(*++key)
+                        {
+                            if (!strcmp(key, "s"))
+                            {
+                                b_saveimage = (atoi( argv[i+1] ))?true:false;
+                                i++;
+                            }
+                            else if (!strcmp(key, "d"))
+                            {
+                                b_deformed = (atoi( argv[i+1] )) ? true:false;
+                                printf("Now set the b_deformed = %s\n", (b_deformed)? "TRUE" : "FALSE");
+                                i++;
+                            }
+                            else
+                            {
+                                cout<<"parsing ..."<<key<<" "<<i<<" "<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
+                                return false;
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        cout<<"parsing ..."<<key<<" "<<i<<" "<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
+                        return false;
+                    }
+
+                }
+            }
+        }
+
+        QString blendImageName;
+        QString m_InputFileName(infile);
+        m_InputFileName.chop(4);
+        if(!outfile)
+            blendImageName = m_InputFileName + "_blended.v3draw";
+        else
+            blendImageName = QString(outfile);
+
+        if(QFileInfo(blendImageName).suffix().toUpper() != "V3DRAW")
+        {
+            blendImageName.append(".v3draw"); // force to save as .v3draw file
+        }
+
+        // image blending
+        QString m_InputFileName1(infilelist->at(0));
+        QString m_InputFileName2(infilelist->at(1));
+        QString m_InputDeformed;
+
+        if ( !QFile::exists(m_InputFileName1) || !QFile::exists(m_InputFileName2))
+        {
+            cout<<"Image does not exist!"<<endl;
+            return false;
+        }
+
+        // if given deformed image
+        if(b_deformed)
+        {
+            if(infilelist->size()<3)
+            {
+                cout<<"Invalid inputs given deformed transformation"<<endl;
+                return false;
+            }
+
+            m_InputDeformed = QString(infilelist->at(2));
+            if ( !QFile::exists(m_InputDeformed))
+            {
+                cout<<"Deformed Image does not exist!"<<endl;
+                return false;
+            }
+
+        }
+
+        // info reader and color configuration
+        bool b_infoloaded = false;
+        int *c1=NULL, *c2=NULL;
+
+        // load images
+        Image4DSimple p4DImage1, p4DImage2;
+
+        V3DLONG *sz_img1 = 0;
+        int datatype_img1 = 0;
+        unsigned char* p1dImg1 = 0;
+
+        if(QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0)
+        {
+            p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), true); // Mylib
+        }
+        else
+        {
+            p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), false); // libtiff
+        }
+
+        p1dImg1 = p4DImage1.getRawData();
+
+        sz_img1 = new V3DLONG [4];
+
+        sz_img1[0] = p4DImage1.getXDim();
+        sz_img1[1] = p4DImage1.getYDim();
+        sz_img1[2] = p4DImage1.getZDim();
+        sz_img1[3] = p4DImage1.getCDim();
+
+        datatype_img1 = p4DImage1.getUnitBytes();
+
+        V3DLONG *sz_img2 = 0;
+        int datatype_img2 = 0;
+        unsigned char* p1dImg2 = 0;
+
+        if(QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0)
+        {
+            p4DImage2.loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), true); // Mylib
+        }
+        else
+        {
+            p4DImage2.loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), false); // libtiff
+        }
+
+        p1dImg2 = p4DImage2.getRawData();
+
+        sz_img2 = new V3DLONG [4];
+
+        sz_img2[0] = p4DImage2.getXDim();
+        sz_img2[1] = p4DImage2.getYDim();
+        sz_img2[2] = p4DImage2.getZDim();
+        sz_img2[3] = p4DImage2.getCDim();
+
+        datatype_img2 = p4DImage2.getUnitBytes();
+
+        // check dims datatype
+        if(datatype_img1 != datatype_img2)
+        {
+            cout<<"Images are different data types! Do nothing!"<<endl;
+            return false;
+        }
+
+        if(sz_img1[0] != sz_img2[0] || sz_img1[1] != sz_img2[1] || sz_img1[2] != sz_img2[2] ) // x, y, z
+        {
+            cout<<"Images are different dimensions! Do nothing!"<<endl;
+            return false;
+        }
+
+        //
+        V3DLONG pagesz = sz_img1[0]*sz_img1[1]*sz_img1[2];
+
+        //
+        /// find reference : suppose reference color channels similar enough
+        //
+        V3DLONG ref1=0, ref2=0, nullcolor1 = -1, nullcolor2 = -1;
+        bool b_img1existNULL=false, b_img2existNULL=false;
+
+        // step 1: find null color channel
+        for(V3DLONG c=0; c<sz_img1[3]; c++) // image 1
+        {
+            V3DLONG offset_c = c*pagesz;
+            V3DLONG sumint1 = 0;
+            for (V3DLONG k=0; k<sz_img1[2]; k++)
+            {
+                V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+                for(V3DLONG j=0; j<sz_img1[1]; j++)
+                {
+                    V3DLONG offset_j = offset_k + j*sz_img1[0];
+                    for(V3DLONG i=0; i<sz_img1[0]; i++)
+                    {
+                        V3DLONG idx = offset_j + i;
+
+                        if(datatype_img1 == V3D_UINT8)
+                        {
+                            sumint1 += p1dImg1[idx];
+                        }
+                        else if(datatype_img1 == V3D_UINT16)
+                        {
+                            sumint1 += ((unsigned short *)p1dImg1)[idx];
+                        }
+                        else if(datatype_img1 == V3D_FLOAT32)
+                        {
+                            sumint1 += ((float *)p1dImg1)[idx];
+                        }
+                        else
+                        {
+                            cout<<"Your image datatype is not supported!"<<endl;
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            qDebug()<<"sum ..."<<sumint1<<c;
+
+            if(sumint1<EMPTY)
+            {
+                b_img1existNULL = true;
+                nullcolor1 = c;
+            }
+        }
+
+        for(V3DLONG c=0; c<sz_img2[3]; c++) // image 2
+        {
+            V3DLONG offset_c = c*pagesz;
+            V3DLONG sumint2 = 0;
+            for (V3DLONG k=0; k<sz_img1[2]; k++)
+            {
+                V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+                for(V3DLONG j=0; j<sz_img1[1]; j++)
+                {
+                    V3DLONG offset_j = offset_k + j*sz_img1[0];
+                    for(V3DLONG i=0; i<sz_img1[0]; i++)
+                    {
+                        V3DLONG idx = offset_j + i;
+
+                        if(datatype_img1 == V3D_UINT8)
+                        {
+                            sumint2 += p1dImg2[idx];
+                        }
+                        else if(datatype_img1 == V3D_UINT16)
+                        {
+                            sumint2 += ((unsigned short *)p1dImg2)[idx];
+                        }
+                        else if(datatype_img1 == V3D_FLOAT32)
+                        {
+                            sumint2 += ((float *)p1dImg2)[idx];
+                        }
+                        else
+                        {
+                            cout<<"Your image datatype is not supported!"<<endl;
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            qDebug()<<"sum ..."<<sumint2<<c;
+
+            if(sumint2<EMPTY)
+            {
+                b_img2existNULL = true;
+                nullcolor2 = c;
+            }
+        }
+
+        // step 2: find ref color channel by compute MI
+        double scoreMI = -1e10; // -INF
+        for(V3DLONG c1=0; c1<sz_img1[3]; c1++)
+        {
+            if(b_img1existNULL)
+            {
+                if(c1==nullcolor1) continue;
+            }
+
+            for(V3DLONG c2=0; c2<sz_img2[3]; c2++)
+            {
+                if(b_img2existNULL)
+                {
+                    if(c2==nullcolor2) continue;
+                }
+
+                if(datatype_img1 == V3D_UINT8)
+                {
+                    unsigned char* pImg1Proxy = p1dImg1 + c1*pagesz;
+                    unsigned char* pImg2Proxy = p1dImg2 + c2*pagesz;
+
+                    double valMI = mi_computing<unsigned char>(pImg1Proxy, pImg2Proxy, pagesz, 1);
+
+                    if(valMI>scoreMI)
+                    {
+                        scoreMI = valMI;
+
+                        ref1 = c1;
+                        ref2 = c2;
+                    }
+                }
+                else if(datatype_img1 == V3D_UINT16)
+                {
+                    unsigned short* pImg1Proxy = ((unsigned short *)p1dImg1) + c1*pagesz;
+                    unsigned short* pImg2Proxy = ((unsigned short *)p1dImg2) + c2*pagesz;
+
+                    double valMI = mi_computing<unsigned short>(pImg1Proxy, pImg2Proxy, pagesz, 2);
+
+                    qDebug()<<"mi ..."<<valMI<<c1<<c2;
+
+                    if(valMI>scoreMI)
+                    {
+                        scoreMI = valMI;
+
+                        ref1 = c1;
+                        ref2 = c2;
+                    }
+                }
+                else if(datatype_img1 == V3D_FLOAT32)
+                {
+                    printf("Currently this program dose not support FLOAT32.\n"); // temporary
+                    return false;
+                }
+                else
+                {
+                    printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+                    return false;
+                }
+
+            }
+        }
+
+        qDebug()<<"ref ..."<<ref1<<ref2<<"null color ..."<<b_img1existNULL<<nullcolor1<<b_img2existNULL<<nullcolor2;
+
+        // if given deformed image
+        if(b_deformed)
+        {
+            Image4DSimple p4DImgDeformed;
+
+            V3DLONG *sz_deformed = 0;
+            int datatype_deformed = 0;
+            unsigned char* p1dDeformed = 0;
+
+            if(QFileInfo(m_InputDeformed).suffix().toUpper().compare("LSM") == 0)
+            {
+                p4DImgDeformed.loadImage(const_cast<char *>(m_InputDeformed.toStdString().c_str()), true); // Mylib
+            }
+            else
+            {
+                p4DImgDeformed.loadImage(const_cast<char *>(m_InputDeformed.toStdString().c_str()), false); // libtiff
+            }
+
+            p1dDeformed = p4DImgDeformed.getRawData();
+
+            sz_deformed = new V3DLONG [4];
+
+            sz_deformed[0] = p4DImgDeformed.getXDim();
+            sz_deformed[1] = p4DImgDeformed.getYDim();
+            sz_deformed[2] = p4DImgDeformed.getZDim();
+            sz_deformed[3] = p4DImgDeformed.getCDim();
+
+            datatype_deformed = p4DImgDeformed.getUnitBytes();
+
+            // convert data type from float to UINT8 or UINT16
+            void *p=NULL;
+            if(datatype_deformed!=datatype_img1)
+            {
+                // enhance contrast
+
+                // convert datatype
+                REAL max = -INF;
+                REAL min = INF;
+
+                for(V3DLONG i=0; i<pagesz; i++)
+                {
+                    REAL val = ((REAL *)p1dDeformed)[i];
+                    if(val>max) max = val;
+                    if(val<min) min = val;
+                }
+                max -= min;
+
+                if(datatype_img1==V3D_UINT8)
+                {
+                    try
+                    {
+                        p = new char [pagesz];
+
+                        unsigned char *pU8 = (unsigned char *)p;
+                        for(V3DLONG i=0; i<pagesz; i++)
+                        {
+                            pU8[i] = 255*(((REAL *)p1dDeformed)[i] - min ) / max;
+                        }
+                    }
+                    catch(...)
+                    {
+                        cout<<"Fail to allocate memory"<<endl;
+                        return false;
+                    }
+                }
+                else if(datatype_img1==V3D_UINT16)
+                {
+                    try
+                    {
+                        p = new unsigned short [pagesz];
+
+                        unsigned short* pU16 = (unsigned short *)p;
+                        for(V3DLONG i=0; i<pagesz; i++)
+                        {
+                            pU16[i] = 4096*(((REAL *)p1dDeformed)[i] - min ) / max;
+                        }
+                    }
+                    catch(...)
+                    {
+                        cout<<"Fail to allocate memory"<<endl;
+                        return false;
+                    }
+                }
+                else
+                {
+                    cout<<"Invalid datatype"<<endl;
+                    return false;
+                }
+            }
+
+            // blend
+            V3DLONG colordim = sz_img1[3]+sz_img2[3]-1;
+
+            if(b_img1existNULL) colordim--;
+            if(b_img2existNULL) colordim--;
+
+            V3DLONG sz_blend[4];
+            sz_blend[0] = sz_img1[0]; sz_blend[1] = sz_img1[1]; sz_blend[2] = sz_img1[2]; sz_blend[3] = colordim;
+
+            V3DLONG totalplxs = colordim * pagesz;
+            if(datatype_img1 == V3D_UINT8)
+            {
+                //
+                unsigned char* data1d = NULL;
+                try
+                {
+                    data1d = new unsigned char [totalplxs];
+
+                    memset(data1d, 0, sizeof(unsigned char)*totalplxs);
+                }
+                catch(...)
+                {
+                    printf("Fail to allocate memory.\n");
+                    return false;
+                }
+
+                // construct image with sequence order of image1 and image2
+                V3DLONG c1=0, c2=0;
+
+                for(V3DLONG c=0; c<colordim-1; c++)
+                {
+                    V3DLONG offset_c = c*pagesz;
+
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1;
+
+                    if(c1<sz_img1[3])
+                    {
+                        b_img1 = true;
+
+                        if(b_img1existNULL)
+                        {
+                            if(c1!=nullcolor1)
+                            {
+                                offset_c1 = c1*pagesz;
+                            }
+                            else
+                            {
+                                c1++;
+
+                                if(c1<sz_img1[3])
+                                    offset_c1 = c1*pagesz;
+                                else
+                                    b_img1 = false;
+                            }
+                        }
+
+                        if(c1!=ref1)
+                        {
+                            offset_c1 = c1*pagesz;
+                        }
+                        else
+                        {
+                            c1++;
+
+                            if(c1<sz_img1[3])
+                                offset_c1 = c1*pagesz;
+                            else
+                                b_img1 = false;
+                        }
+
+                        qDebug()<<"color 1 ..."<<c1<<c;
+
+                        c1++;
+                    }
+                    else
+                    {
+                        b_img1 = false;
+                    }
+
+                    if(!b_img1)
+                    {
+                        if(b_img2existNULL)
+                        {
+                            if(c2!=nullcolor2)
+                            {
+                                offset_c2 = c2*pagesz;
+                            }
+                            else
+                            {
+                                c2++;
+
+                                if(c2<sz_img2[3])
+                                    offset_c2 = c2*pagesz;
+                                else
+                                    continue;
+                            }
+                        }
+
+                        if(c2!=ref2)
+                        {
+                            offset_c2 = c2*pagesz;
+                        }
+                        else
+                        {
+                            c2++;
+
+                            if(c2<sz_img2[3])
+                                offset_c2 = c2*pagesz;
+                            else
+                                continue;
+                        }
+
+                        qDebug()<<"color 2 ..."<<c2<<c;
+
+                        c2++;
+                    }
+
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
+                    {
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
+                        {
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
+
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
+                            {
+                                V3DLONG idx = offset_j + i;
+
+                                if (b_img1)
+                                {
+                                    data1d[idx] = p1dImg1[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = ((unsigned char*)p)[offset_j2 + i];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                V3DLONG offset = (colordim-1)*pagesz;
+                V3DLONG offset1 = ref1*pagesz;
+
+                for(V3DLONG i=0; i<pagesz; i++)
+                {
+                    data1d[offset + i] = p1dImg1[offset1+i];
+                }
+
+                // step 5. cutting the blank plane introduced by blending
+                unsigned char *pOutput = NULL;
+                V3DLONG szOutput[4];
+
+                img_cutting<unsigned char>( (unsigned char*)data1d, sz_blend, pOutput, szOutput);
+
+                // de-alloc
+                if(data1d) {delete []data1d; data1d=NULL;}
+
+                // output
+                if(b_saveimage)
+                {
+                    //save
+                    if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pOutput, szOutput, 1)!=true)
+                    {
+                        fprintf(stderr, "Error happens in file writing. Exit. \n");
+                        return false;
+                    }
+
+                    //de-alloc
+                    if(pOutput) {delete []pOutput; pOutput=NULL;}
+                }
+                else
+                {
+                    V3DPluginArgItem arg;
+
+                    arg.type = "data"; arg.p = (void *)(pOutput); output << arg;
+
+                    V3DLONG metaImg[5]; // xyzc datatype
+                    metaImg[0] = szOutput[0];
+                    metaImg[1] = szOutput[1];
+                    metaImg[2] = szOutput[2];
+                    metaImg[3] = szOutput[3];
+                    metaImg[4] = datatype_img1;
+
+                    arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
+                }
+
+            }
+            else if(datatype_img1 == V3D_UINT16)
+            {
+                //
+                unsigned short* data1d = NULL;
+                try
+                {
+                    data1d = new unsigned short [totalplxs];
+
+                    memset(data1d, 0, sizeof(unsigned short)*totalplxs);
+                }
+                catch(...)
+                {
+                    printf("Fail to allocate memory.\n");
+                    return -1;
+                }
+
+                V3DLONG c1=0, c2=0;
+
+                for(V3DLONG c=0; c<colordim-1; c++)
+                {
+                    V3DLONG offset_c = c*pagesz;
+
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1;
+
+                    if(c1<sz_img1[3])
+                    {
+                        b_img1 = true;
+
+                        if(b_img1existNULL)
+                        {
+                            if(c1!=nullcolor1)
+                            {
+                                offset_c1 = c1*pagesz;
+                            }
+                            else
+                            {
+                                c1++;
+
+                                if(c1<sz_img1[3])
+                                    offset_c1 = c1*pagesz;
+                                else
+                                    b_img1 = false;
+                            }
+                        }
+
+                        if(c1!=ref1)
+                        {
+                            offset_c1 = c1*pagesz;
+                        }
+                        else
+                        {
+                            c1++;
+
+                            if(c1<sz_img1[3])
+                                offset_c1 = c1*pagesz;
+                            else
+                                b_img1 = false;
+                        }
+
+                        qDebug()<<"color 1 ..."<<c1<<c;
+
+                        c1++;
+                    }
+                    else
+                    {
+                        b_img1 = false;
+                    }
+
+                    if(!b_img1)
+                    {
+                        if(b_img2existNULL)
+                        {
+                            if(c2!=nullcolor2)
+                            {
+                                offset_c2 = c2*pagesz;
+                            }
+                            else
+                            {
+                                c2++;
+
+                                if(c2<sz_img2[3])
+                                    offset_c2 = c2*pagesz;
+                                else
+                                    continue;
+                            }
+                        }
+
+                        if(c2!=ref2)
+                        {
+                            offset_c2 = c2*pagesz;
+                        }
+                        else
+                        {
+                            c2++;
+
+                            if(c2<sz_img2[3])
+                                offset_c2 = c2*pagesz;
+                            else
+                                continue;
+                        }
+
+                        qDebug()<<"color 2 ..."<<c2<<c;
+
+                        c2++;
+                    }
+
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
+                    {
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
+                        {
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
+
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
+                            {
+                                V3DLONG idx = offset_j + i;
+
+                                if (b_img1)
+                                {
+                                    data1d[idx] = p1dImg1[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = ((unsigned short*)p)[offset_j2 + i];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                V3DLONG offset = (colordim-1)*pagesz;
+                V3DLONG offset1 = ref1*pagesz;
+
+                for(V3DLONG i=0; i<pagesz; i++)
+                {
+                    data1d[offset + i] = ((unsigned short *)p1dImg1)[offset1+i];
+                }
+
+                // step 5. cutting the blank plane introduced by blending
+                unsigned short *pOutput = NULL;
+                V3DLONG szOutput[4];
+
+                img_cutting<unsigned short>( (unsigned short*)data1d, sz_blend, pOutput, szOutput);
+
+                // de-alloc
+                if(data1d) {delete []data1d; data1d=NULL;}
+
+                // output
+                if(b_saveimage)
+                {
+                    //save
+                    if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pOutput, szOutput, 2)!=true)
+                    {
+                        fprintf(stderr, "Error happens in file writing. Exit. \n");
+                        return false;
+                    }
+
+                    //de-alloc
+                    if(pOutput) {delete []pOutput; pOutput=NULL;}
+                }
+                else
+                {
+                    V3DPluginArgItem arg;
+
+                    arg.type = "data"; arg.p = (void *)(pOutput); output << arg;
+
+                    V3DLONG metaImg[5]; // xyzc datatype
+                    metaImg[0] = szOutput[0];
+                    metaImg[1] = szOutput[1];
+                    metaImg[2] = szOutput[2];
+                    metaImg[3] = szOutput[3];
+                    metaImg[4] = datatype_img1;
+
+                    arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
+                }
+            }
+            else
+            {
+                printf("Currently this program only support UINT8, UINT16 datatype.\n");
+                return false;
+            }
+
+            // de-alloc
+            y_del<V3DLONG>(sz_img1);
+            y_del<V3DLONG>(sz_img2);
+            y_del<V3DLONG>(sz_deformed);
+            y_del<void>(p);
+
+            //
+            return true;
+        }
+
+        //step 3: need to run a simple stitching to figure out the displacement
+        int transtype;
+        if(!stitch_paired_images_with_refchan(p4DImage1, ref1, p4DImage2, ref2, false, transtype))
+        {
+            fprintf(stderr, "The stitching step fails and thus return.\n");
+            return false;
+        }
+
+        // step 4: image blending
+        // suppose image1 and image2 have a common reference
+        // the blended image color dim = image1 color dim + image2 color dim - 1
+        V3DLONG colordim = sz_img1[3]+sz_img2[3]-1;
+
+        if(b_img1existNULL) colordim--;
+        if(b_img2existNULL) colordim--;
+
+        V3DLONG sz_blend[4];
+        sz_blend[0] = sz_img1[0]; sz_blend[1] = sz_img1[1]; sz_blend[2] = sz_img1[2]; sz_blend[3] = colordim;
+
+        V3DLONG totalplxs = colordim * pagesz;
+
+        if(datatype_img1 == V3D_UINT8)
+        {
+            //
+            unsigned char* data1d = NULL;
+            try
+            {
+                data1d = new unsigned char [totalplxs];
+
+                memset(data1d, 0, sizeof(unsigned char)*totalplxs);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return -1;
+            }
+
+            //
+            V3DLONG c1=0, c2=0;
+
+            for(V3DLONG c=0; c<colordim-1; c++)
+            {
+                V3DLONG offset_c = c*pagesz;
+
+                V3DLONG offset_c1, offset_c2;
+                bool b_img1;
+
+                if(c1<sz_img1[3])
+                {
+                    b_img1 = true;
+
+                    if(b_img1existNULL)
+                    {
+                        if(c1!=nullcolor1)
+                        {
+                            offset_c1 = c1*pagesz;
+                        }
+                        else
+                        {
+                            c1++;
+
+                            if(c1<sz_img1[3])
+                                offset_c1 = c1*pagesz;
+                            else
+                                b_img1 = false;
+                        }
+                    }
+
+                    if(c1!=ref1)
+                    {
+                        offset_c1 = c1*pagesz;
+                    }
+                    else
+                    {
+                        c1++;
+
+                        if(c1<sz_img1[3])
+                            offset_c1 = c1*pagesz;
+                        else
+                            b_img1 = false;
+                    }
+
+                    qDebug()<<"color 1 ..."<<c1<<c;
+
+                    c1++;
+                }
+                else
+                {
+                    b_img1 = false;
+                }
+
+                if(!b_img1)
+                {
+                    if(b_img2existNULL)
+                    {
+                        if(c2!=nullcolor2)
+                        {
+                            offset_c2 = c2*pagesz;
+                        }
+                        else
+                        {
+                            c2++;
+
+                            if(c2<sz_img2[3])
+                                offset_c2 = c2*pagesz;
+                            else
+                                continue;
+                        }
+                    }
+
+                    if(c2!=ref2)
+                    {
+                        offset_c2 = c2*pagesz;
+                    }
+                    else
+                    {
+                        c2++;
+
+                        if(c2<sz_img2[3])
+                            offset_c2 = c2*pagesz;
+                        else
+                            continue;
+                    }
+
+                    qDebug()<<"color 2 ..."<<c2<<c;
+
+                    c2++;
+                }
+
+                for (V3DLONG k=0; k<sz_img1[2]; k++)
+                {
+                    V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+
+                    V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                    V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+
+                    for(V3DLONG j=0; j<sz_img1[1]; j++)
+                    {
+                        V3DLONG offset_j = offset_k + j*sz_img1[0];
+
+                        V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                        V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+
+                        for(V3DLONG i=0; i<sz_img1[0]; i++)
+                        {
+                            V3DLONG idx = offset_j + i;
+
+                            if (b_img1)
+                            {
+                                data1d[idx] = p1dImg1[offset_j1 + i];
+                            }
+                            else
+                            {
+                                data1d[idx] = p1dImg2[offset_j2 + i];
+                            }
+                        }
+                    }
+                }
+            }
+
+            V3DLONG offset = (colordim-1)*pagesz;
+            V3DLONG offset1 = ref1*pagesz;
+            //V3DLONG offset2 = ref2*pagesz;
+
+            for(V3DLONG i=0; i<pagesz; i++)
+            {
+                //data1d[offset + i] = 0.5*p1dImg1[offset1+i] + 0.5*p1dImg2[offset2+i];
+                data1d[offset + i] = p1dImg1[offset1 + i];
+            }
+
+            // step 5. cutting the blank plane introduced by blending
+            unsigned char *pOutput = NULL;
+            V3DLONG szOutput[4];
+
+            img_cutting<unsigned char>( (unsigned char*)data1d, sz_blend, pOutput, szOutput);
+
+            // de-alloc
+            if(data1d) {delete []data1d; data1d=NULL;}
+
+            // output
+            if(b_saveimage)
+            {
+                //save
+                if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pOutput, szOutput, 1)!=true)
+                {
+                    fprintf(stderr, "Error happens in file writing. Exit. \n");
+                    return false;
+                }
+
+                //de-alloc
+                if(pOutput) {delete []pOutput; pOutput=NULL;}
+            }
+            else
+            {
+                V3DPluginArgItem arg;
+
+                arg.type = "data"; arg.p = (void *)(pOutput); output << arg;
+
+                V3DLONG metaImg[5]; // xyzc datatype
+                metaImg[0] = szOutput[0];
+                metaImg[1] = szOutput[1];
+                metaImg[2] = szOutput[2];
+                metaImg[3] = szOutput[3];
+                metaImg[4] = datatype_img1;
+
+                arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
+            }
+
+        }
+        else if(datatype_img1 == V3D_UINT16)
+        {
+            //
+            unsigned short* data1d = NULL;
+            try
+            {
+                data1d = new unsigned short [totalplxs];
+
+                memset(data1d, 0, sizeof(unsigned short)*totalplxs);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return -1;
+            }
+
+            //
+            V3DLONG c1=0, c2=0;
+
+            for(V3DLONG c=0; c<colordim-1; c++)
+            {
+                V3DLONG offset_c = c*pagesz;
+
+                V3DLONG offset_c1, offset_c2;
+                bool b_img1;
+
+                if(c1<sz_img1[3])
+                {
+                    b_img1 = true;
+
+                    if(b_img1existNULL)
+                    {
+                        if(c1!=nullcolor1)
+                        {
+                            offset_c1 = c1*pagesz;
+                        }
+                        else
+                        {
+                            c1++;
+
+                            if(c1<sz_img1[3])
+                                offset_c1 = c1*pagesz;
+                            else
+                                b_img1 = false;
+                        }
+                    }
+
+                    if(c1!=ref1)
+                    {
+                        offset_c1 = c1*pagesz;
+                    }
+                    else
+                    {
+                        c1++;
+
+                        if(c1<sz_img1[3])
+                            offset_c1 = c1*pagesz;
+                        else
+                            b_img1 = false;
+                    }
+
+                    qDebug()<<"color 1 ..."<<c1<<c;
+
+                    c1++;
+                }
+                else
+                {
+                    b_img1 = false;
+                }
+
+                if(!b_img1)
+                {
+                    if(b_img2existNULL)
+                    {
+                        if(c2!=nullcolor2)
+                        {
+                            offset_c2 = c2*pagesz;
+                        }
+                        else
+                        {
+                            c2++;
+
+                            if(c2<sz_img2[3])
+                                offset_c2 = c2*pagesz;
+                            else
+                                continue;
+                        }
+                    }
+
+                    if(c2!=ref2)
+                    {
+                        offset_c2 = c2*pagesz;
+                    }
+                    else
+                    {
+                        c2++;
+
+                        if(c2<sz_img2[3])
+                            offset_c2 = c2*pagesz;
+                        else
+                            continue;
+                    }
+
+                    qDebug()<<"color 2 ..."<<c2<<c;
+
+                    c2++;
+                }
+
+                for (V3DLONG k=0; k<sz_img1[2]; k++)
+                {
+                    V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+
+                    V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                    V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+
+                    for(V3DLONG j=0; j<sz_img1[1]; j++)
+                    {
+                        V3DLONG offset_j = offset_k + j*sz_img1[0];
+
+                        V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                        V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+
+                        for(V3DLONG i=0; i<sz_img1[0]; i++)
+                        {
+                            V3DLONG idx = offset_j + i;
+
+                            if (b_img1)
+                            {
+                                data1d[idx] = ((unsigned short *)p1dImg1)[offset_j1 + i];
+                            }
+                            else
+                            {
+                                data1d[idx] = ((unsigned short *)p1dImg2)[offset_j2 + i];
+                            }
+                        }
+                    }
+                }
+            }
+
+            V3DLONG offset = (colordim-1)*pagesz;
+            V3DLONG offset1 = ref1*pagesz;
+            //V3DLONG offset2 = ref2*pagesz;
+
+            for(V3DLONG i=0; i<pagesz; i++)
+            {
+                //data1d[offset + i] = 0.5*((unsigned short *)p1dImg1)[offset1+i] + 0.5*((unsigned short *)p1dImg2)[offset2+i];
+                data1d[offset + i] = p1dImg1[offset1 + i];
+            }
+
+            // step 5. cutting the blank plane introduced by blending
+            unsigned short *pOutput = NULL;
+            V3DLONG szOutput[4];
+
+            img_cutting<unsigned short>( (unsigned short*)data1d, sz_blend, pOutput, szOutput);
+
+            // de-alloc
+            if(data1d) {delete []data1d; data1d=NULL;}
+
+            // output
+            if(b_saveimage)
+            {
+                //save
+                if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pOutput, szOutput, 2)!=true)
+                {
+                    fprintf(stderr, "Error happens in file writing. Exit. \n");
+                    return false;
+                }
+
+                //de-alloc
+                if(pOutput) {delete []pOutput; pOutput=NULL;}
+            }
+            else
+            {
+                V3DPluginArgItem arg;
+
+                arg.type = "data"; arg.p = (void *)(pOutput); output << arg;
+
+                V3DLONG metaImg[5]; // xyzc datatype
+                metaImg[0] = szOutput[0];
+                metaImg[1] = szOutput[1];
+                metaImg[2] = szOutput[2];
+                metaImg[3] = szOutput[3];
+                metaImg[4] = datatype_img1;
+
+                arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
+            }
+        }
+        else
+        {
+            printf("Currently this program only support UINT8, UINT16 datatype.\n");
+            return false;
+        }
+
+        // de-alloc
         if(sz_img1) {delete []sz_img1; sz_img1=NULL;}
         if(sz_img2) {delete []sz_img2; sz_img2=NULL;}
 
@@ -4907,7 +6178,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
         QByteArray bytes1 = m_InputFileName1.toAscii();
         QByteArray bytes2 = m_InputFileName2.toAscii();
         
-        fileList.push_back(bytes1.data());        
+        fileList.push_back(bytes1.data());
         fileList.push_back(bytes2.data());
         
         paraList.push_back("#s 0");
@@ -4976,7 +6247,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
             callback.setImageName(newwin, "Blended Image");
             callback.updateImageWindow(newwin);
         }
-        else 
+        else
         {
             printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
             return;
