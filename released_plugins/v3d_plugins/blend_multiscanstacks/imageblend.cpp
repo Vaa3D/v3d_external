@@ -3612,7 +3612,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(infilelist->empty())
         {
             //print Help info
-            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend2 -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #d <deformed nonzero(true)/zero(false) >\" \n");
+            printf("\nUsage: v3d -x blend_multiscanstacks -f multiscanblend2 -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #d <deformed nonzero(true)/zero(false) >\" \n");
 
             return true;
         }
@@ -3748,10 +3748,6 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
         }
-
-        // info reader and color configuration
-        bool b_infoloaded = false;
-        int *c1=NULL, *c2=NULL;
 
         // load images
         Image4DSimple p4DImage1, p4DImage2;
@@ -3952,8 +3948,6 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     unsigned short* pImg2Proxy = ((unsigned short *)p1dImg2) + c2*pagesz;
 
                     double valMI = mi_computing<unsigned short>(pImg1Proxy, pImg2Proxy, pagesz, 2);
-
-                    qDebug()<<"mi ..."<<valMI<<c1<<c2;
 
                     if(valMI>scoreMI)
                     {
