@@ -57,30 +57,40 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
         }
     }
     bool argError=false;
-
     if (mode!=MODE_COMBINE && mode!=MODE_REVERSE_LABEL) {
         qDebug() << "Do not recognize valid mode";
+        argError=true;
+    }
+    if (sourceImageFilepath.length() < 1) {
+        qDebug() << "-sourceImageFilepath is required";
         argError=true;
     }
     if (inputLabelIndexFilepath.length() < 1) {
         qDebug() << "-labelIndex is required";
         argError=true;
     }
-    if (fragmentListString.length() < 1) {
-        qDebug() << "-fragments list is required";
-        argError=true;
-    }
-    if (outputMipFilepath.length() < 1) {
-        qDebug() << "-outputMip is required";
-        argError=true;
-    }
-    if (outputStackFilepath.length() < 1) {
-        qDebug() << "-outputStack is required";
-        argError=true;
-    }
-    if (fragmentList.size() < 1) {
-        qDebug() << "fragment list must contain at least one fragment index number";
-        argError=true;
+    if (mode==MODE_COMBINE) {
+        if (fragmentListString.length() < 1) {
+            qDebug() << "-fragments list is required";
+            argError=true;
+        }
+        if (outputMipFilepath.length() < 1) {
+            qDebug() << "-outputMip is required";
+            argError=true;
+        }
+        if (outputStackFilepath.length() < 1) {
+            qDebug() << "-outputStack is required";
+            argError=true;
+        }
+        if (fragmentList.size() < 1) {
+            qDebug() << "fragment list must contain at least one fragment index number";
+            argError=true;
+        }
+    } else if (mode==MODE_REVERSE_LABEL) {
+        if (outputDirPath.size() < 1) {
+            qDebug() << "-outputDir is required";
+            argError=true;
+        }
     }
     if (argError) {
         return 1;
