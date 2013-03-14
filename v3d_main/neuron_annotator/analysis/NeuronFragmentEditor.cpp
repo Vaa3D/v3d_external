@@ -349,6 +349,7 @@ bool NeuronFragmentEditor::reverseLabel()
     for (int i=1;i<MAX_LABEL;i++) { // ignore 0
         if (labelIndex[i]>0) {
             labelList.append(i);
+            qDebug() << "Found label=" << i;
         }
     }
 
@@ -356,6 +357,7 @@ bool NeuronFragmentEditor::reverseLabel()
     // each axis for efficiency.
     for (int l=0;l<labelList.size();l++) {
         int label=labelList[l];
+        qDebug() << "Processing label=" << label << " voxels=" << labelIndex[label];
 
         QList<long> pairCountList; // x=0, y=1, z=2
         QList<MaskRay*> xRayList;
@@ -384,14 +386,10 @@ bool NeuronFragmentEditor::reverseLabel()
             if (countCheck!=labelIndex[label]) {
                 qDebug() << "Count check failed : direction=" << direction << " countCheck=" << countCheck << " labelIndex=" << labelIndex[label];
                 return false;
+            } else {
+                qDebug() << "Direction " << direction << " passed voxel count check";
             }
 
-            // clear
-            for (int i=0;i<rayList->size();i++) {
-                MaskRay* ray = (*rayList)[i];
-                delete ray;
-            }
-            rayList->clear();
         }
 
         // We have computed the ray set for each axis, we will save the one with the
@@ -417,7 +415,7 @@ bool NeuronFragmentEditor::reverseLabel()
             maskFilename.append(outputPrefix);
             maskFilename.append("_");
         }
-        maskFilename.append(label);
+        maskFilename.append(QString::number(label));
         maskFilename.append(".mask");
 
         QString maskFullPath=outputDirPath;
@@ -451,12 +449,30 @@ bool NeuronFragmentEditor::reverseLabel()
         fid=0L;
 
         // Write out the channel file
+
+        // First, clear the previous masks
+        for (int d=0;d<3;d++) {
+            QList<MaskRay*> * rayList;
+            if (d==0) {
+                rayList=&xRayList;
+            } else if (d==1) {
+                rayList=&yRayList;
+            } else {
+                rayList=&zRayList;
+            }
+            for (int i=0;i<rayList->size();i++) {
+                MaskRay* ray = (*rayList)[i];
+                delete ray;
+            }
+            rayList->clear();
+        }
+
         QString channelFilename="";
         if (outputPrefix.length()>0) {
             channelFilename.append(outputPrefix);
             channelFilename.append("_");
         }
-        channelFilename.append(label);
+        channelFilename.append(QString::number(label));
         channelFilename.append(".chan");
 
         QString channelFullPath=outputDirPath;
@@ -502,6 +518,8 @@ bool NeuronFragmentEditor::reverseLabel()
             rayList=&zRayList;
         }
 
+        qDebug() << "calling axisTracer 2nd pass data=" << data;
+
         axisTracer(smallestSize, label, rayList, pairCount, countCheck, data, totalVoxels);
 
         if (countCheck!=totalVoxels) {
@@ -509,7 +527,7 @@ bool NeuronFragmentEditor::reverseLabel()
             exit(1);
         }
 
-        fwrite(data, totalVoxels, (datatype+1), fid);
+        fwrite(data, totalVoxels*cdim, (datatype+1), fid);
         fflush(fid);
         fclose(fid);
 
@@ -540,6 +558,10 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
                                       void* data, long assumedVoxelCount)
 {
 
+    bool debug=false;
+//    if (label==23) {
+//        debug=true;
+//    }
     int skipCount=0L;
     int start=-1;
     int end=-1;
@@ -567,21 +589,28 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
     v3d_uint8* data8=0L;
     v3d_uint16* data16=0L;
     if (sourceImage->getDatatype()==V3D_UINT8) {
-        source8=(v3d_uint8*)sourceImage->getData();
+        source8=(v3d_uint8*)sourceImage->getRawData();
         data8=(v3d_uint8*)data;
     } else {
-        source16=(v3d_uint16*)sourceImage->getData();
+        source16=(v3d_uint16*)sourceImage->getRawData();
         data16=(v3d_uint16*)data;
     }
+
+    //qDebug() << "Inside axisTracer data8=" << data8 << " source8=" << source8 <<" data16=" << data16 << " source16=" << source16;
 
 
     voxelCount=0L;
     pairCount=0L;
     long dataPosition=0L;
 
+    const int START_STATE_BEGIN=0;
+    const int START_STATE_JUST_STARTED=1;
+    const int START_STATE_STARTED_IN_LAST_POSITION=2;
+
     for (int d0=0;d0<D0;d0++) {
         for (int d1=0;d1<D1;d1++) {
             for (int d2=0;d2<D2;d2++) {
+                int startState=START_STATE_BEGIN;
                 long offset=0L;
                 if (direction==0) {
                     offset=d1*ydim*xdim + d0*xdim + d2;
@@ -597,6 +626,7 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
                     labelValue=label16[offset];
                 }
                 if (start==-1 && labelValue==label) {
+                    startState=START_STATE_JUST_STARTED;
                     if (ray==0L) {
                         ray=new MaskRay();
                         ray->skipCount=skipCount;
@@ -605,13 +635,21 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
                     start=d2;
                     end=-1;
                     ray->startList.append(start);
-                } else if (start>=0 && ( labelValue!=label || ( labelValue==label && d2==(D2-1) ) ) ) {
+                    if (d2==(D2-1)) {
+                        startState=START_STATE_STARTED_IN_LAST_POSITION;
+                    }
+                }
+                if (startState==START_STATE_STARTED_IN_LAST_POSITION ||
+                        (startState==START_STATE_BEGIN && (start>=0 && ( labelValue!=label || ( labelValue==label && d2==(D2-1) ) ) ) ) ) {
                     end=d2;
                     if (labelValue==label && d2==(D2-1)) { // handle last-case
                         end=D2;
                     }
                     ray->endList.append(end);
                     voxelCount+=(end-start);
+                    if (debug) {
+                        qDebug() << "start=" << start << " end=" << end << " voxelCount=" << voxelCount;
+                    }
                     if (data>0L) {
                         if (voxelCount > assumedVoxelCount) {
                             qDebug() << "Error: assumedVoxelCount greater than voxelCount";
@@ -629,6 +667,7 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
                             for (long c=0;c<cdim;c++) {
                                 long cof=c*cOffset;
                                 long dof=c*assumedVoxelCount;
+                                //qDebug() << "dataPosition=" << dataPosition << " c=" << c << " dof=" << dof << " cof=" << cof << " voxelCount=" << voxelCount;
                                 if (data8>0L) {
                                     data8[dataPosition+dof]=source8[sourcePosition+cof];
                                 } else {
