@@ -1,8 +1,20 @@
 #include "NeuronFragmentEditor.h"
 #include "../utility/ImageLoader.h"
+#include "AnalysisTools.h"
+
+const int NeuronFragmentEditor::MODE_UNDEFINED=-1;
+const int NeuronFragmentEditor::MODE_COMBINE=0;
+const int NeuronFragmentEditor::MODE_REVERSE_LABEL=1;
 
 NeuronFragmentEditor::NeuronFragmentEditor()
 {
+    mode=MODE_COMBINE; // default
+    sourceImage=0L;
+    labelImage=0L;
+    label8=0L;
+    label16=0L;
+    outputPrefix="";
+    xdim=ydim=zdim=0;
 }
 
 NeuronFragmentEditor::~NeuronFragmentEditor()
@@ -13,47 +25,65 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
 {
     for (int i=0;i<argList->size();i++) {
         QString arg=(*argList)[i];
-	if (arg=="-sourceImage") {
-	  sourceImageFilepath=(*argList)[++i];
-	} else if (arg=="-labelIndex") {
-	  inputLabelIndexFilepath=(*argList)[++i];
-	} else if (arg=="-fragments") {
-	  fragmentListString=(*argList)[++i];
-	  QList<QString> fragmentListBeforeInt=fragmentListString.split(QRegExp(","));
-	  for (int f=0;f<fragmentListBeforeInt.length();f++) {
-	    QString fragmentString=fragmentListBeforeInt.at(f);
-	    int fragmentInt=fragmentString.toInt();
-	    fragmentList.append(fragmentInt);
-	  }
-	} else if (arg=="-outputMip") {
-	  outputMipFilepath=(*argList)[++i];
-	} else if (arg=="-outputStack") {
-	  outputStackFilepath=(*argList)[++i];
-	}
+        if (arg=="-mode") {
+            QString modeString=(*argList)[++i];
+            if (modeString=="combine") {
+                mode=MODE_COMBINE;
+            } else if (modeString=="reverse-label") {
+                mode=MODE_REVERSE_LABEL;
+            } else {
+                mode=MODE_UNDEFINED;
+            }
+        } else if (arg=="-sourceImage") {
+            sourceImageFilepath=(*argList)[++i];
+        } else if (arg=="-labelIndex") {
+            inputLabelIndexFilepath=(*argList)[++i];
+        } else if (arg=="-fragments") {
+            fragmentListString=(*argList)[++i];
+            QList<QString> fragmentListBeforeInt=fragmentListString.split(QRegExp(","));
+            for (int f=0;f<fragmentListBeforeInt.length();f++) {
+                QString fragmentString=fragmentListBeforeInt.at(f);
+                int fragmentInt=fragmentString.toInt();
+                fragmentList.append(fragmentInt);
+            }
+        } else if (arg=="-outputMip") {
+            outputMipFilepath=(*argList)[++i];
+        } else if (arg=="-outputStack") {
+            outputStackFilepath=(*argList)[++i];
+        } else if (arg=="-outputDir") {
+            outputDirPath=(*argList)[++i];
+        } else if (arg=="-outputPrefix") {
+            outputPrefix=(*argList)[++i];
+        }
     }
     bool argError=false;
+
+    if (mode!=MODE_COMBINE && mode!=MODE_REVERSE_LABEL) {
+        qDebug() << "Do not recognize valid mode";
+        argError=true;
+    }
     if (inputLabelIndexFilepath.length() < 1) {
-      qDebug() << "-labelIndex is required";
-      argError=true;
+        qDebug() << "-labelIndex is required";
+        argError=true;
     }
     if (fragmentListString.length() < 1) {
-      qDebug() << "-fragments list is required";
-      argError=true;
+        qDebug() << "-fragments list is required";
+        argError=true;
     }
     if (outputMipFilepath.length() < 1) {
-      qDebug() << "-outputMip is required";
-      argError=true;
+        qDebug() << "-outputMip is required";
+        argError=true;
     }
     if (outputStackFilepath.length() < 1) {
-      qDebug() << "-outputStack is required";
-      argError=true;
+        qDebug() << "-outputStack is required";
+        argError=true;
     }
     if (fragmentList.size() < 1) {
-      qDebug() << "fragment list must contain at least one fragment index number";
-      argError=true;
+        qDebug() << "fragment list must contain at least one fragment index number";
+        argError=true;
     }
     if (argError) {
-      return 1;
+        return 1;
     }
     return 0;
 }
@@ -61,23 +91,29 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
 
 bool NeuronFragmentEditor::execute()
 {
-  return createFragmentComposite();
+    if (mode==MODE_COMBINE) {
+        return createFragmentComposite();
+    } else if (mode==MODE_REVERSE_LABEL) {
+        return reverseLabel();
+    } else {
+        return false;
+    }
 }
 
-bool NeuronFragmentEditor::createFragmentComposite()
+bool NeuronFragmentEditor::loadSourceAndLabelImages()
 {
     // Open consolidated signal label file
     ImageLoader sourceLoader;
-    My4DImage * sourceImage=sourceLoader.loadImage(sourceImageFilepath);
-    V3DLONG xdim=sourceImage->getXDim();
-    V3DLONG ydim=sourceImage->getYDim();
-    V3DLONG zdim=sourceImage->getZDim();
-    V3DLONG cdim=sourceImage->getCDim();
+    sourceImage=sourceLoader.loadImage(sourceImageFilepath);
+    xdim=sourceImage->getXDim();
+    ydim=sourceImage->getYDim();
+    zdim=sourceImage->getZDim();
+    cdim=sourceImage->getCDim();
 
     qDebug() << "Using source x=" << xdim << " y=" << ydim << " z=" << zdim << " c=" << cdim;
 
     ImageLoader labelLoader;
-    My4DImage * labelImage=labelLoader.loadImage(inputLabelIndexFilepath);
+    labelImage=labelLoader.loadImage(inputLabelIndexFilepath);
 
     qDebug() << "Checking source and label dimension correspondence";
 
@@ -95,6 +131,14 @@ bool NeuronFragmentEditor::createFragmentComposite()
     }
     if (cdim<3) {
         qDebug() << "Expected source image to contain at least 3 channels";
+        return false;
+    }
+    return true;
+}
+
+bool NeuronFragmentEditor::createFragmentComposite()
+{
+    if (!loadSourceAndLabelImages()) {
         return false;
     }
 
@@ -202,7 +246,7 @@ bool NeuronFragmentEditor::createFragmentComposite()
 
     qDebug() << "Creating mip";
 
-    My4DImage * compositeMIP = createMIPFromImage(compositeImage);
+    My4DImage * compositeMIP = AnalysisTools::createMIPFromImage(compositeImage);
 
     qDebug() << "Saving mip";
 
@@ -217,38 +261,392 @@ bool NeuronFragmentEditor::createFragmentComposite()
     return true;
 }
 
-My4DImage * NeuronFragmentEditor::createMIPFromImage(My4DImage * image) {
+/*
 
-    if (image->getDatatype()!=V3D_UINT8) {
-        qDebug() << "createMIPFromImage only supports datatype 1";
-        return 0;
+  Format for mask and channel files.
+
+  Mask files:
+
+  int xsize;
+  int ysize;
+  int zsize;
+  long totalVoxels;
+  unsigned char axis; // 0=yz(x), 1=xz(y), 2=xy(z)
+  { // For each ray
+    int skip;
+    int pairs;
+    { // For each pair
+        int start;
+        int end; // such that end-start is length, i.e., end is exclusive
     }
-    Image4DProxy<My4DImage> stackProxy(image);
-    My4DImage * mip = new My4DImage();
-    mip->loadImage( stackProxy.sx, stackProxy.sy, 1 /* z */, stackProxy.sc, V3D_UINT8 );
-    memset(mip->getRawData(), 0, mip->getTotalBytes());
-    Image4DProxy<My4DImage> mipProxy(mip);
+  }
 
-    for (int y=0;y<stackProxy.sy;y++) {
-        for (int x=0;x<stackProxy.sx;x++) {
-            V3DLONG maxIntensity=0;
-            int maxPosition=0;
-            for (int z=0;z<stackProxy.sz;z++) {
-                V3DLONG currentIntensity=0;
-                for (int c=0;c<stackProxy.sc;c++) {
-                    currentIntensity+=(*stackProxy.at(x,y,z,c));
+  Channel files:
+
+  long totalVoxels;
+  unsigned char channels; // number of channels
+  unsigned char bitdepth; // 0=8-bit, 1=16-bit
+  { // For each channel
+    { // For each voxel
+        B value;
+    }
+  }
+
+ */
+
+bool NeuronFragmentEditor::reverseLabel()
+{
+    if (!loadSourceAndLabelImages()) {
+        return false;
+    }
+
+    QDir outputDir(outputDirPath);
+    if (!outputDir.exists()) {
+        QDir().mkdir(outputDirPath);
+    }
+
+    // First, we will profile and index all label voxels
+    if (labelImage->getDatatype()==V3D_UINT8) {
+        label8=(v3d_uint8*)(labelImage->getRawDataAtChannel(0));
+    } else {
+        label16=(v3d_uint16*)(labelImage->getRawDataAtChannel(0));
+    }
+
+    const int MAX_LABEL=65536;
+    long* labelIndex=new long[MAX_LABEL];
+    for (int i=0;i<MAX_LABEL;i++) {
+        labelIndex[i]=0;
+    }
+
+    for (int z=0;z<zdim;z++) {
+        for (int y=0;y<ydim;y++) {
+            for (int x=0;x<xdim;x++) {
+                V3DLONG offset=z*ydim*xdim + y*xdim + x;
+                int labelValue=-1;
+                if (label8>0L) {
+                    labelValue=label8[offset];
+                } else {
+                    labelValue=label16[offset];
                 }
-                if (currentIntensity>maxIntensity) {
-                    maxIntensity=currentIntensity;
-                    maxPosition=z;
+                if (labelValue>=0) {
+                    labelIndex[labelValue]++;
                 }
-            }
-            for (int c=0;c<stackProxy.sc;c++) {
-                mipProxy.put_at(x,y,0,c,(*stackProxy.at(x,y,maxPosition,c)));
             }
         }
     }
-    return mip;
+
+    QList<int> labelList;
+    for (int i=1;i<MAX_LABEL;i++) { // ignore 0
+        if (labelIndex[i]>0) {
+            labelList.append(i);
+        }
+    }
+
+    // For the outermost loop, we iterate through each label and score
+    // each axis for efficiency.
+    for (int l=0;l<labelList.size();l++) {
+        int label=labelList[l];
+
+        QList<long> pairCountList; // x=0, y=1, z=2
+        QList<MaskRay*> xRayList;
+        QList<MaskRay*> yRayList;
+        QList<MaskRay*> zRayList;
+
+        for (int direction=0;direction<3;direction++) {
+
+            QList<MaskRay*> * rayList;
+            long pairCount=0L;
+            long countCheck=0L;
+
+            if (direction==0) {
+                rayList=&xRayList;
+            } else if (direction==1) {
+                rayList=&yRayList;
+            } else {
+                rayList=&zRayList;
+            }
+
+            axisTracer(direction, label, rayList, pairCount, countCheck);
+
+            pairCountList.append(pairCount);
+            pairCount=0L;
+
+            if (countCheck!=labelIndex[label]) {
+                qDebug() << "Count check failed : direction=" << direction << " countCheck=" << countCheck << " labelIndex=" << labelIndex[label];
+                return false;
+            }
+
+            // clear
+            for (int i=0;i<rayList->size();i++) {
+                MaskRay* ray = (*rayList)[i];
+                delete ray;
+            }
+            rayList->clear();
+        }
+
+        // We have computed the ray set for each axis, we will save the one with the
+        // smallest size.
+
+        for (int s=0;s<pairCountList.size();s++) {
+            qDebug() << "pairCount " << s << " : " << pairCountList[s];
+        }
+
+        unsigned char smallestSize=0;
+        if (pairCountList[1]<pairCountList[smallestSize]) {
+            smallestSize=1;
+        }
+        if (pairCountList[2]<pairCountList[smallestSize]) {
+            smallestSize=2;
+        }
+
+        qDebug() << "Using axis " << smallestSize;
+
+        // Write out the mask file
+        QString maskFilename="";
+        if (outputPrefix.length()>0) {
+            maskFilename.append(outputPrefix);
+            maskFilename.append("_");
+        }
+        maskFilename.append(label);
+        maskFilename.append(".mask");
+
+        QString maskFullPath=outputDirPath;
+        maskFullPath.append("/");
+        maskFullPath.append(maskFilename);
+
+        qDebug() << "Writing to file " << maskFullPath;
+
+        FILE* fid = fopen(maskFullPath.toAscii().data(), "wb");
+        if (!fid) {
+            qDebug() << "Could not open file " << maskFullPath << " to write";
+            return false;
+        }
+
+        fwrite(&xdim, sizeof(int), 1, fid);
+        fwrite(&ydim, sizeof(int), 1, fid);
+        fwrite(&zdim, sizeof(int), 1, fid);
+        long totalVoxels=labelIndex[label];
+        fwrite(&totalVoxels, sizeof(long), 1, fid);
+        fwrite(&smallestSize, sizeof(unsigned char), 1, fid);
+
+        if (smallestSize==0) {
+            writeMaskList(fid, xRayList);
+        } else if (smallestSize==1) {
+            writeMaskList(fid, yRayList);
+        } else {
+            writeMaskList(fid, zRayList);
+        }
+        fflush(fid);
+        fclose(fid);
+        fid=0L;
+
+        // Write out the channel file
+        QString channelFilename="";
+        if (outputPrefix.length()>0) {
+            channelFilename.append(outputPrefix);
+            channelFilename.append("_");
+        }
+        channelFilename.append(label);
+        channelFilename.append(".chan");
+
+        QString channelFullPath=outputDirPath;
+        channelFullPath.append("/");
+        channelFullPath.append(channelFilename);
+
+        qDebug() << "Writing to file " << channelFullPath;
+
+        fid = fopen(channelFullPath.toAscii().data(), "wb");
+        if (!fid) {
+            qDebug() << "Could not open file " << channelFullPath << " to write";
+            return false;
+        }
+
+        fwrite(&totalVoxels, sizeof(long), 1, fid);
+        unsigned char numChannels=sourceImage->getCDim();
+        fwrite(&numChannels, sizeof(unsigned char), 1, fid);
+        unsigned char datatype=0; // 8-bit
+        if (label8==0L) {
+            datatype=1; // 16-bit
+        }
+        fwrite(&datatype, sizeof(unsigned char), 1, fid);
+
+        // allocate space for data
+        long unitsNeeded=totalVoxels*cdim;
+        void* data=0L;
+        if (sourceImage->getDatatype()==V3D_UINT8) {
+            data=(void*) new v3d_uint8[unitsNeeded];
+        } else {
+            data=(void*) new v3d_uint16[unitsNeeded];
+        }
+
+        // re-run axis-tracer and populate channel intensity data
+        QList<MaskRay*> * rayList;
+        long pairCount=0L;
+        long countCheck=0L;
+
+        if (smallestSize==0) {
+            rayList=&xRayList;
+        } else if (smallestSize==1) {
+            rayList=&yRayList;
+        } else {
+            rayList=&zRayList;
+        }
+
+        axisTracer(smallestSize, label, rayList, pairCount, countCheck, data, totalVoxels);
+
+        if (countCheck!=totalVoxels) {
+            qDebug() << "In second pass of axisTracer, countCheck=" << countCheck << " totalVoxels=" << totalVoxels;
+            exit(1);
+        }
+
+        fwrite(data, totalVoxels, (datatype+1), fid);
+        fflush(fid);
+        fclose(fid);
+
+        qDebug() << "Wrote " << channelFullPath;
+    }
+
+    // Global cleanup
+    delete sourceImage;
+    delete labelImage;
 }
+
+void NeuronFragmentEditor::writeMaskList(FILE* fid, QList<MaskRay*>& list)
+{
+    for (int i=0;i<list.size();i++) {
+        fwrite(&(list[i]->skipCount), sizeof(int), 1, fid);
+        int pairListSize=list[i]->endList.size();
+        fwrite(&pairListSize, sizeof(int), 1, fid);
+        for(int j=0;j<list[i]->endList.size();j++) {
+            int start=list[i]->startList[j];
+            fwrite(&start, sizeof(int), 1, fid);
+            int end=list[i]->endList[j];
+            fwrite(&end, sizeof(int), 1, fid);
+        }
+    }
+}
+
+void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
+                                      void* data, long assumedVoxelCount)
+{
+
+    int skipCount=0L;
+    int start=-1;
+    int end=-1;
+    MaskRay* ray=0L;
+    int D0, D1, D2;
+
+    if (direction==0) { // X-axis
+        D0=ydim;
+        D1=zdim;
+        D2=xdim;
+    } else if (direction==1) { // Y-axis
+        D0=xdim;
+        D1=zdim;
+        D2=ydim;
+    } else if (direction==2) { // Z-axis
+        D0=xdim;
+        D1=ydim;
+        D2=zdim;
+    }
+
+    long cdim=sourceImage->getCDim();
+    long cOffset=sourceImage->getTotalUnitNumberPerChannel();
+    v3d_uint8* source8=0L;
+    v3d_uint16* source16=0L;
+    v3d_uint8* data8=0L;
+    v3d_uint16* data16=0L;
+    if (sourceImage->getDatatype()==V3D_UINT8) {
+        source8=(v3d_uint8*)sourceImage->getData();
+        data8=(v3d_uint8*)data;
+    } else {
+        source16=(v3d_uint16*)sourceImage->getData();
+        data16=(v3d_uint16*)data;
+    }
+
+
+    voxelCount=0L;
+    pairCount=0L;
+    long dataPosition=0L;
+
+    for (int d0=0;d0<D0;d0++) {
+        for (int d1=0;d1<D1;d1++) {
+            for (int d2=0;d2<D2;d2++) {
+                long offset=0L;
+                if (direction==0) {
+                    offset=d1*ydim*xdim + d0*xdim + d2;
+                } else if (direction==1) {
+                    offset=d1*ydim*xdim + d2*xdim + d0;
+                } else { // direction==2
+                    offset=d2*ydim*xdim + d1*xdim + d0;
+                }
+                int labelValue=-1;
+                if (label8>0L) {
+                    labelValue=label8[offset];
+                } else {
+                    labelValue=label16[offset];
+                }
+                if (start==-1 && labelValue==label) {
+                    if (ray==0L) {
+                        ray=new MaskRay();
+                        ray->skipCount=skipCount;
+                        skipCount=0L;
+                    }
+                    start=d2;
+                    end=-1;
+                    ray->startList.append(start);
+                } else if (start>=0 && ( labelValue!=label || ( labelValue==label && d2==(D2-1) ) ) ) {
+                    end=d2;
+                    if (labelValue==label && d2==(D2-1)) { // handle last-case
+                        end=D2;
+                    }
+                    ray->endList.append(end);
+                    voxelCount+=(end-start);
+                    if (data>0L) {
+                        if (voxelCount > assumedVoxelCount) {
+                            qDebug() << "Error: assumedVoxelCount greater than voxelCount";
+                            exit(1);
+                        }
+                        for (int i=start;i<end;i++) {
+                            long sourcePosition=0L;
+                            if (direction==0) {
+                                sourcePosition=d1*ydim*xdim + d0*xdim + i;
+                            } else if (direction==1) {
+                                sourcePosition=d1*ydim*xdim + i*xdim + d0;
+                            } else { // direction==2
+                                sourcePosition=i*ydim*xdim + d1*xdim + d0;
+                            }
+                            for (long c=0;c<cdim;c++) {
+                                long cof=c*cOffset;
+                                long dof=c*assumedVoxelCount;
+                                if (data8>0L) {
+                                    data8[dataPosition+dof]=source8[sourcePosition+cof];
+                                } else {
+                                    data16[dataPosition+dof]=source16[sourcePosition+cof];
+                                }
+                            }
+                            dataPosition++;
+                        }
+                    }
+                    start=-1;
+                    end=-1;
+                }
+            }
+        }
+        if (ray>0L) {
+            rayList->append(ray);
+            pairCount+=ray->endList.size();
+            ray=0L;
+        } else {
+            skipCount++;
+        }
+    }
+
+}
+
+
+
+
+
 
 
