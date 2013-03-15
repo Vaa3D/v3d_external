@@ -1,6 +1,7 @@
 #include "NeuronFragmentEditor.h"
 #include "../utility/ImageLoader.h"
 #include "AnalysisTools.h"
+#include <climits>
 
 const int NeuronFragmentEditor::MODE_UNDEFINED=-1;
 const int NeuronFragmentEditor::MODE_COMBINE=0;
@@ -277,17 +278,23 @@ bool NeuronFragmentEditor::createFragmentComposite()
 
   Mask files:
 
-  int xsize;
-  int ysize;
-  int zsize;
+  long xsize; // space
+  long ysize; // space
+  long zsize; // space
+  long x0; // bounding box
+  long x1; // bounding box, such that x0 is inclusive, x1 exclusive, etc
+  long y0; // bb
+  long y1; // bb
+  long z0; // bb
+  long z1; // bb
   long totalVoxels;
   unsigned char axis; // 0=yz(x), 1=xz(y), 2=xy(z)
   { // For each ray
-    int skip;
-    int pairs;
+    long skip;
+    long pairs;
     { // For each pair
-        int start;
-        int end; // such that end-start is length, i.e., end is exclusive
+        long start;
+        long end; // such that end-start is length, i.e., end is exclusive
     }
   }
 
@@ -295,7 +302,10 @@ bool NeuronFragmentEditor::createFragmentComposite()
 
   long totalVoxels;
   unsigned char channels; // number of channels
-  unsigned char bitdepth; // 0=8-bit, 1=16-bit
+  unsigned char recommendedRedChannel;
+  unsigned char recommendedGreenChannel;
+  unsigned char recommendedBlueChannel;
+  unsigned char bytesPerChannel; // 1=8-bit, 2=16-bit
   { // For each channel
     { // For each voxel
         B value;
@@ -328,10 +338,10 @@ bool NeuronFragmentEditor::reverseLabel()
         labelIndex[i]=0;
     }
 
-    for (int z=0;z<zdim;z++) {
-        for (int y=0;y<ydim;y++) {
-            for (int x=0;x<xdim;x++) {
-                V3DLONG offset=z*ydim*xdim + y*xdim + x;
+    for (long z=0;z<zdim;z++) {
+        for (long y=0;y<ydim;y++) {
+            for (long x=0;x<xdim;x++) {
+                long offset=z*ydim*xdim + y*xdim + x;
                 int labelValue=-1;
                 if (label8>0L) {
                     labelValue=label8[offset];
@@ -364,6 +374,13 @@ bool NeuronFragmentEditor::reverseLabel()
         QList<MaskRay*> yRayList;
         QList<MaskRay*> zRayList;
 
+        QList<long> x0List;
+        QList<long> x1List;
+        QList<long> y0List;
+        QList<long> y1List;
+        QList<long> z0List;
+        QList<long> z1List;
+
         for (int direction=0;direction<3;direction++) {
 
             QList<MaskRay*> * rayList;
@@ -378,7 +395,16 @@ bool NeuronFragmentEditor::reverseLabel()
                 rayList=&zRayList;
             }
 
-            axisTracer(direction, label, rayList, pairCount, countCheck);
+            long x0,x1,y0,y1,z0,z1;
+
+            axisTracer(direction, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1);
+
+            x0List.append(x0);
+            x1List.append(x1);
+            y0List.append(y0);
+            y1List.append(y1);
+            z0List.append(z0);
+            z1List.append(z1);
 
             pairCountList.append(pairCount);
             pairCount=0L;
@@ -430,9 +456,24 @@ bool NeuronFragmentEditor::reverseLabel()
             return false;
         }
 
-        fwrite(&xdim, sizeof(int), 1, fid);
-        fwrite(&ydim, sizeof(int), 1, fid);
-        fwrite(&zdim, sizeof(int), 1, fid);
+        fwrite(&xdim, sizeof(long), 1, fid);
+        fwrite(&ydim, sizeof(long), 1, fid);
+        fwrite(&zdim, sizeof(long), 1, fid);
+
+        long x0=x0List[smallestSize];
+        long x1=x1List[smallestSize];
+        long y0=y0List[smallestSize];
+        long y1=y1List[smallestSize];
+        long z0=z0List[smallestSize];
+        long z1=z1List[smallestSize];
+
+        fwrite(&x0, sizeof(long), 1, fid);
+        fwrite(&x1, sizeof(long), 1, fid);
+        fwrite(&y0, sizeof(long), 1, fid);
+        fwrite(&y1, sizeof(long), 1, fid);
+        fwrite(&z0, sizeof(long), 1, fid);
+        fwrite(&z1, sizeof(long), 1, fid);
+
         long totalVoxels=labelIndex[label];
         fwrite(&totalVoxels, sizeof(long), 1, fid);
         fwrite(&smallestSize, sizeof(unsigned char), 1, fid);
@@ -520,7 +561,7 @@ bool NeuronFragmentEditor::reverseLabel()
 
         qDebug() << "calling axisTracer 2nd pass data=" << data;
 
-        axisTracer(smallestSize, label, rayList, pairCount, countCheck, data, totalVoxels);
+        axisTracer(smallestSize, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1, data, totalVoxels);
 
         if (countCheck!=totalVoxels) {
             qDebug() << "In second pass of axisTracer, countCheck=" << countCheck << " totalVoxels=" << totalVoxels;
@@ -542,31 +583,40 @@ bool NeuronFragmentEditor::reverseLabel()
 void NeuronFragmentEditor::writeMaskList(FILE* fid, QList<MaskRay*>& list)
 {
     for (int i=0;i<list.size();i++) {
-        fwrite(&(list[i]->skipCount), sizeof(int), 1, fid);
-        int pairListSize=list[i]->endList.size();
-        fwrite(&pairListSize, sizeof(int), 1, fid);
+        fwrite(&(list[i]->skipCount), sizeof(long), 1, fid);
+        long pairListSize=list[i]->endList.size();
+        fwrite(&pairListSize, sizeof(long), 1, fid);
+        //qDebug() << "skip=" << list[i]->skipCount << " pairs=" << pairListSize;
         for(int j=0;j<list[i]->endList.size();j++) {
-            int start=list[i]->startList[j];
-            fwrite(&start, sizeof(int), 1, fid);
-            int end=list[i]->endList[j];
-            fwrite(&end, sizeof(int), 1, fid);
+            long start=list[i]->startList[j];
+            fwrite(&start, sizeof(long), 1, fid);
+            long end=list[i]->endList[j];
+            fwrite(&end, sizeof(long), 1, fid);
+            //qDebug() << "start=" << start << " end=" << end;
         }
     }
 }
 
 void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
-                                      void* data, long assumedVoxelCount)
+        long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data, long assumedVoxelCount)
 {
 
     bool debug=false;
 //    if (label==23) {
 //        debug=true;
 //    }
-    int skipCount=0L;
-    int start=-1;
-    int end=-1;
+    long skipCount=0L;
+    long start=-1;
+    long end=-1;
     MaskRay* ray=0L;
-    int D0, D1, D2;
+    long D0, D1, D2;
+
+    x0=LONG_MAX;
+    x1=0L;
+    y0=LONG_MAX;
+    y1=0L;
+    z0=LONG_MAX;
+    z1=0L;
 
     if (direction==0) { // X-axis
         D0=ydim;
@@ -607,9 +657,11 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
     const int START_STATE_JUST_STARTED=1;
     const int START_STATE_STARTED_IN_LAST_POSITION=2;
 
-    for (int d0=0;d0<D0;d0++) {
-        for (int d1=0;d1<D1;d1++) {
-            for (int d2=0;d2<D2;d2++) {
+    for (long d0=0;d0<D0;d0++) {
+        for (long d1=0;d1<D1;d1++) {
+            start=-1;
+            end=-1;
+            for (long d2=0;d2<D2;d2++) {
                 int startState=START_STATE_BEGIN;
                 long offset=0L;
                 if (direction==0) {
@@ -681,13 +733,38 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
                     end=-1;
                 }
             }
-        }
-        if (ray>0L) {
-            rayList->append(ray);
-            pairCount+=ray->endList.size();
-            ray=0L;
-        } else {
-            skipCount++;
+            if (ray>0L) {
+                pairCount+=ray->endList.size();
+                // Update max values - we will just check first and last values
+                long start=ray->startList[0];
+                long end=ray->endList[ray->endList.size()-1];
+                if (direction==0) { // x=d2 y=d0 z=d1
+                    if (start<x0) x0=start;
+                    if (end>x1) x1=end;
+                    if (d0<y0) y0=d0;
+                    if (d0>y1) y1=d0;
+                    if (d1<z0) z0=d1;
+                    if (d1>z1) z1=d1;
+                } else if (direction==1) { // x=d0 y=d2 z=d1
+                    if (d0<x0) x0=d0;
+                    if (d0>x1) x1=d0;
+                    if (start<y0) y0=start;
+                    if (end>y1) y1=end;
+                    if (d1<z0) z0=d1;
+                    if (d1>z1) z1=d1;
+                } else if (direction==2) { // x=d0 y=d1 z=d2
+                    if (d0<x0) x0=d0;
+                    if (d0>x1) x1=d0;
+                    if (d1<y0) y0=d1;
+                    if (d1>y1) y1=d1;
+                    if (start<z0) z0=start;
+                    if (end>z1) z1=end;
+                }
+                rayList->append(ray);
+                ray=0L;
+            } else {
+                skipCount++;
+            }
         }
     }
 

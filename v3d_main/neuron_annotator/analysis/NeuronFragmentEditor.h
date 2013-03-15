@@ -11,9 +11,9 @@ using namespace std;
 class MaskRay
 {
 public:
-    int skipCount;
-    QList<int> startList;
-    QList<int> endList;
+    long skipCount;
+    QList<long> startList;
+    QList<long> endList;
 };
 
 class NeuronFragmentEditor
@@ -65,10 +65,10 @@ private:
     QString inputLabelIndexFilepath;
     My4DImage* sourceImage;
     My4DImage* labelImage;
-    int xdim;
-    int ydim;
-    int zdim;
-    int cdim;
+    long xdim;
+    long ydim;
+    long zdim;
+    long cdim;
     v3d_uint8* label8;
     v3d_uint16* label16;
 
@@ -83,7 +83,8 @@ private:
     QString outputPrefix;
 
     void writeMaskList(FILE* fid, QList<MaskRay*>& list);
-    void axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount, void* data=0L, long assumedVoxels=0L);
+    void axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
+                    long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data=0L, long assumedVoxels=0L);
 
 };
 
