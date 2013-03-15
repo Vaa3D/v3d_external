@@ -531,9 +531,18 @@ bool NeuronFragmentEditor::reverseLabel()
         fwrite(&totalVoxels, sizeof(long), 1, fid);
         unsigned char numChannels=sourceImage->getCDim();
         fwrite(&numChannels, sizeof(unsigned char), 1, fid);
-        unsigned char datatype=0; // 8-bit
+
+        unsigned char recRed=0;
+        unsigned char recGreen=1;
+        unsigned char recBlue=2;
+
+        fwrite(&recRed, sizeof(unsigned char), 1, fid);
+        fwrite(&recGreen, sizeof(unsigned char), 1, fid);
+        fwrite(&recBlue, sizeof(unsigned char), 1, fid);
+
+        unsigned char datatype=1; // 8-bit
         if (label8==0L) {
-            datatype=1; // 16-bit
+            datatype=2; // 16-bit
         }
         fwrite(&datatype, sizeof(unsigned char), 1, fid);
 
