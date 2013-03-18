@@ -1472,6 +1472,8 @@ void Na3DWidget::updateRendererZoomRatio(qreal relativeScale)
     float desiredPixelsPerImageVoxel = defaultScale * relativeScale;
     float desiredVerticalImageVoxelsDisplayed = height() / desiredPixelsPerImageVoxel;
     float desiredVerticalGlUnitsDisplayed = desiredVerticalImageVoxelsDisplayed * glUnitsPerImageVoxel();
+    // Correct for downsampled OpenGL texture?
+    // desiredVerticalGlUnitsDisplayed *= getRendererNa()->sampleScaleX;
     float desiredVerticalApertureInRadians = 2.0 * atan2(desiredVerticalGlUnitsDisplayed/2.0f, (float)getRendererNa()->getViewDistance());
     float desiredVerticalApertureInDegrees = desiredVerticalApertureInRadians * 180.0 / 3.14159;
     if (desiredVerticalApertureInDegrees > 180.0)

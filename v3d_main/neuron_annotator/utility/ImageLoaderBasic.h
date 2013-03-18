@@ -69,7 +69,10 @@ protected:
     void updateCompressionBuffer8(unsigned char * updatedCompressionBuffer);
     void updateCompressionBuffer16(unsigned char * updatedCompressionBuffer);
     virtual int exitWithError(std::string errorMessage);
-    virtual int exitWithError(const char* errorMessage){return exitWithError(std::string(errorMessage));}
+    virtual int exitWithError(const char* errorMessage){
+        // avoid stack overflow from infinite virtual recursion by specifying this class method
+        return ImageLoaderBasic::exitWithError(std::string(errorMessage));
+    }
 
     volatile bool bIsCanceled;
     FILE * fid;

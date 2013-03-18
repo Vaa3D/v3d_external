@@ -4,6 +4,7 @@
 #include "../3drenderer/v3dr_common.h"
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../geometry/Rotation3D.h"
+#include "../utility/FooDebug.h"
 #include <stdint.h>
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
@@ -132,9 +133,18 @@ void RendererNeuronAnnotator::applyCutPlaneInImageFrame(Vector3D point, Vector3D
 {
     // cout << point << direction << endl;
     // convert focus to lie within unit cube, to match opengl transforms used.
+    /*
+    fooDebug() << "Cut plane"
+            << point.x() << point.y() << point.z()
+            << dim1 << dim2 << dim3
+            << thicknessX << thicknessY << thicknessZ;
+            */
+    //
+    // Use reduced dimensions (image[XYZ]/safe[XYZ]) vs. dimXYZ/size12345/
     point.x() = point.x() / (dim1);
     point.y() = 1.0 - point.y() / (dim2);
     point.z() = 1.0 - point.z() / (dim3);
+    //
     // skew direction by scaled axes
     direction.x() *= dim1 * thicknessX;
     direction.y() *= dim2 * thicknessY;
