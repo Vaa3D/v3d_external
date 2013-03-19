@@ -283,7 +283,7 @@ bool NeuronFragmentEditor::createFragmentComposite()
   long zsize; // space
   float xMicrons; // voxel size x
   float yMicrons; // voxel size y
-  float zMicrons; // voxel size z;
+  float zMicrons; // voxel size z
   long x0; // bounding box
   long x1; // bounding box, such that x0 is inclusive, x1 exclusive, etc
   long y0; // bb
