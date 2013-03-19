@@ -281,6 +281,9 @@ bool NeuronFragmentEditor::createFragmentComposite()
   long xsize; // space
   long ysize; // space
   long zsize; // space
+  float xMicrons; // voxel size x
+  float yMicrons; // voxel size y
+  float zMicrons; // voxel size z;
   long x0; // bounding box
   long x1; // bounding box, such that x0 is inclusive, x1 exclusive, etc
   long y0; // bb
@@ -459,6 +462,14 @@ bool NeuronFragmentEditor::reverseLabel()
         fwrite(&xdim, sizeof(long), 1, fid);
         fwrite(&ydim, sizeof(long), 1, fid);
         fwrite(&zdim, sizeof(long), 1, fid);
+
+        float xMicrons=0.0;
+        float yMicrons=0.0;
+        float zMicrons=0.0;
+
+        fwrite(&xMicrons, sizeof(float), 1, fid);
+        fwrite(&yMicrons, sizeof(float), 1, fid);
+        fwrite(&zMicrons, sizeof(float), 1, fid);
 
         long x0=x0List[smallestSize];
         long x1=x1List[smallestSize];
