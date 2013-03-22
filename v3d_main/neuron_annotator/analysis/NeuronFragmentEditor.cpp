@@ -5,7 +5,8 @@
 
 const int NeuronFragmentEditor::MODE_UNDEFINED=-1;
 const int NeuronFragmentEditor::MODE_COMBINE=0;
-const int NeuronFragmentEditor::MODE_REVERSE_LABEL=1;
+const int NeuronFragmentEditor::MODE_COMBINE_MASK=1;
+const int NeuronFragmentEditor::MODE_REVERSE_LABEL=2;
 
 NeuronFragmentEditor::NeuronFragmentEditor()
 {
@@ -30,6 +31,8 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             QString modeString=(*argList)[++i];
             if (modeString=="combine") {
                 mode=MODE_COMBINE;
+            } else if (modeString=="combine-mask") {
+                mode=MODE_COMBINE_MASK;
             } else if (modeString=="reverse-label") {
                 mode=MODE_REVERSE_LABEL;
             } else {
@@ -55,10 +58,20 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             outputDirPath=(*argList)[++i];
         } else if (arg=="-outputPrefix") {
             outputPrefix=(*argList)[++i];
+        } else if (arg=="-maskFiles") {
+            do {
+                QString possibleMaskFile=(*argList)[++i];
+                if (possibleMaskFile.startsWith("-")) {
+                    break;
+                } else {
+                    // Assume is mask file
+                    maskFilePaths.append(possibleMaskFile);
+                }
+            } while( i < (argList->size()-1) );
         }
     }
     bool argError=false;
-    if (mode!=MODE_COMBINE && mode!=MODE_REVERSE_LABEL) {
+    if (mode!=MODE_COMBINE && mode!=MODE_COMBINE_MASK && mode!=MODE_REVERSE_LABEL) {
         qDebug() << "Do not recognize valid mode";
         argError=true;
     }
@@ -70,11 +83,7 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
         qDebug() << "-labelIndex is required";
         argError=true;
     }
-    if (mode==MODE_COMBINE) {
-        if (fragmentListString.length() < 1) {
-            qDebug() << "-fragments list is required";
-            argError=true;
-        }
+    if (mode==MODE_COMBINE || mode==MODE_COMBINE_MASK) {
         if (outputMipFilepath.length() < 1) {
             qDebug() << "-outputMip is required";
             argError=true;
@@ -83,8 +92,19 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             qDebug() << "-outputStack is required";
             argError=true;
         }
+    }
+    if (mode==MODE_COMBINE) {
+        if (fragmentListString.length() < 1) {
+            qDebug() << "-fragments list is required";
+            argError=true;
+        }
         if (fragmentList.size() < 1) {
             qDebug() << "fragment list must contain at least one fragment index number";
+            argError=true;
+        }
+    } else if (mode==MODE_COMBINE_MASK) {
+        if (maskFilePaths.size() < 1) {
+            qDebug() << "-maskFiles list is required";
             argError=true;
         }
     } else if (mode==MODE_REVERSE_LABEL) {
@@ -104,6 +124,8 @@ bool NeuronFragmentEditor::execute()
 {
     if (mode==MODE_COMBINE) {
         return createFragmentComposite();
+    } else if (mode==MODE_COMBINE_MASK) {
+        return createMaskComposite();
     } else if (mode==MODE_REVERSE_LABEL) {
         return reverseLabel();
     } else {
@@ -787,6 +809,260 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
             }
         }
     }
+
+}
+
+bool NeuronFragmentEditor::createMaskComposite()
+{
+    My4DImage* outputStack = 0L;
+
+    // Use the first mask file to dictate the dimensions
+    FILE* fid=0L;
+    xdim=-1;
+    ydim=-1;
+    zdim=-1;
+    cdim=-1;
+
+    for (int i=0;i<maskFilePaths.size();i++) {
+        QString maskFilePath=maskFilePaths[i];
+        if ( (fid=fopen(maskFilePath.toAscii().data(), "rb"))==0) {
+            qDebug() << "Could not open file " << maskFilePath << " to read";
+            return false;
+        }
+
+        long chanVoxels=0L;
+        unsigned char chanChannelCount=0;
+        unsigned char chanRecRed=0;
+        unsigned char chanRecGreen=0;
+        unsigned char chanRecBlue=0;
+        unsigned char chanBytesPerChannel=0;
+        unsigned char* chanData=0L;
+        long chanTotalDataBytes=0L;
+        QString chanFilePath=QString("");
+        int maskFilePrefixPosition=maskFilePath.lastIndexOf(".");
+        if (maskFilePrefixPosition > 0) {
+            chanFilePath.append(maskFilePath.left(maskFilePrefixPosition));
+            chanFilePath.append(".chan");
+            FILE* fid2=0L;
+            if ( (fid2=fopen(chanFilePath.toAscii().data(), "rb"))>0) {
+                fread(&chanVoxels, sizeof(long), 1, fid2);
+                fread(&chanChannelCount, sizeof(unsigned char), 1, fid2);
+                fread(&chanRecRed, sizeof(unsigned char), 1, fid2);
+                fread(&chanRecGreen, sizeof(unsigned char), 1, fid2);
+                fread(&chanRecBlue, sizeof(unsigned char), 1, fid2);
+                fread(&chanBytesPerChannel, sizeof(unsigned char), 1, fid2);
+                chanTotalDataBytes=chanBytesPerChannel*chanVoxels*chanChannelCount;
+                chanData=new unsigned char[chanTotalDataBytes];
+                fread(&chanData, sizeof(unsigned char), chanTotalDataBytes, fid2);
+                fclose(fid2);
+                if (cdim==-1) {
+                    cdim=chanChannelCount;
+                } else {
+                    if (cdim!=chanChannelCount) {
+                        qDebug() << "Expected channel counts to match between mask files";
+                        return false;
+                    }
+                }
+            }
+        }
+
+        long xsize=0L;
+        long ysize=0L;
+        long zsize=0L;
+        fread(&xsize, sizeof(long), 1, fid);
+        fread(&ysize, sizeof(long), 1, fid);
+        fread(&zsize, sizeof(long), 1, fid);
+
+        if (xdim==-1) {
+            xdim=xsize;
+        } else {
+            if (xsize!=xdim) {
+                qDebug() << "xsize " << xsize << " in file " << maskFilePath << " does not match " << xdim;
+            }
+        }
+
+        if (ydim==-1) {
+            ydim=ysize;
+        } else {
+            if (ysize!=ydim) {
+                qDebug() << "ysize " << ysize << " in file " << maskFilePath << " does not match " << ydim;
+            }
+        }
+
+        if (zdim==-1) {
+            zdim=zsize;
+        } else {
+            if (zsize!=zdim) {
+                qDebug() << "zsize " << zsize << " in file " << maskFilePath << " does not match " << zdim;
+            }
+        }
+
+        if (outputStack==0L) {
+            outputStack=new My4DImage();
+            if (chanBytesPerChannel==0 || chanBytesPerChannel==1) {
+                outputStack->loadImage(xdim, ydim, zdim, cdim, V3D_UINT8);
+            } else if (chanBytesPerChannel==2) {
+                outputStack->loadImage(xdim, ydim, zdim, cdim, V3D_UINT16);
+            } else {
+                qDebug() << "Do not understand chanBytesPerChannel=" << chanBytesPerChannel;
+                return false;
+            }
+        }
+
+        float xmicrons=0.0;
+        float ymicrons=0.0;
+        float zmicrons=0.0;
+
+        // we ignore these for now
+        fread(&xmicrons, sizeof(float), 1, fid);
+        fread(&ymicrons, sizeof(float), 1, fid);
+        fread(&zmicrons, sizeof(float), 1, fid);
+
+        long x0;
+        long x1;
+        long y0;
+        long y1;
+        long z0;
+        long z1;
+
+        // bounding box
+        fread(&x0, sizeof(long), 1, fid);
+        fread(&x1, sizeof(long), 1, fid);
+        fread(&y0, sizeof(long), 1, fid);
+        fread(&y1, sizeof(long), 1, fid);
+        fread(&z0, sizeof(long), 1, fid);
+        fread(&z1, sizeof(long), 1, fid);
+
+        long totalVoxels;
+        fread(&totalVoxels, sizeof(long), 1, fid);
+
+        if (chanVoxels>0L && chanVoxels!=totalVoxels) {
+            qDebug() << "Mask and Chan totalVoxel counts do not match";
+            return false;
+        }
+
+        unsigned char axis;
+        fread(&axis, sizeof(unsigned char), 1, fid);
+
+        long readVoxels=0L;
+        long planePosition=0L;
+
+        v3d_uint8** data8=new v3d_uint8*[cdim];
+        v3d_uint16** data16=new v3d_uint16*[cdim];
+
+        for (int c=0;c<cdim;c++) {
+            if (chanBytesPerChannel==0 || chanBytesPerChannel==1) {
+                data8[c]=outputStack->getRawDataAtChannel(c);
+                data16[c]=0L;
+            } else {
+                data8[c]=0L;
+                data16[c]=(v3d_uint16*)outputStack->getRawDataAtChannel(c);
+            }
+        }
+
+        v3d_uint16* chanData16=(v3d_uint16*)chanData;
+
+        while(readVoxels<totalVoxels) {
+            // Start new ray
+            long skip=0L;
+            fread(&skip, sizeof(long), 1, fid);
+            planePosition+=skip;
+            long pairs=0L;
+            fread(&pairs, sizeof(long), 1, fid);
+            for (long p=0;p<pairs;p++) {
+                long start=0L;
+                long end=0L;
+                fread(&start, sizeof(long), 1, fid);
+                fread(&end, sizeof(long), 1, fid);
+                if (axis==0) { // yz(x)
+                    long y=planePosition/zdim;
+                    long z=planePosition-(zdim*y);
+                    for (int x=start;x<end;x++) {
+                        long offset=z*ydim*xdim+y*xdim+x;
+                        if (chanBytesPerChannel==0) {
+                            for (int c=0;c<cdim;c++) {
+                                data8[c][offset]=255;
+                            }
+                        } else if (chanBytesPerChannel==1) {
+                            for (int c=0;c<cdim;c++) {
+                                data8[c][offset]=chanData[readVoxels+(x-start)+c*chanVoxels];
+                            }
+                        } else if (chanBytesPerChannel==2) {
+                            for (int c=0;c<cdim;c++) {
+                                data16[c][offset]=chanData16[readVoxels+(x-start)+c*chanVoxels];
+                            }
+                        }
+                    }
+                } else if (axis==1) { // xz(y)
+                    long x=planePosition/zdim;
+                    long z=planePosition-(zdim*x);
+                    for (int y=start;y<end;y++) {
+                        long offset=z*ydim*xdim+y*xdim+x;
+                        if (chanBytesPerChannel==0) {
+                            for (int c=0;c<cdim;c++) {
+                                data8[c][offset]=255;
+                            }
+                        } else if (chanBytesPerChannel==1) {
+                            for (int c=0;c<cdim;c++) {
+                                data8[c][offset]=chanData[readVoxels+(y-start)+c*chanVoxels];
+                            }
+                        } else if (chanBytesPerChannel==2) {
+                            for (int c=0;c<cdim;c++) {
+                                data16[c][offset]=chanData16[readVoxels+(y-start)+c*chanVoxels];
+                            }
+                        }
+                    }
+                } else if (axis==2) { // xy(z)
+                    long x=planePosition/ydim;
+                    long y=planePosition-(ydim*x);
+                    for (int z=start;z<end;z++) {
+                        long offset=z*ydim*xdim+y*xdim+x;
+                        if (chanBytesPerChannel==0) {
+                            for (int c=0;c<cdim;c++) {
+                                data8[c][offset]=255;
+                            }
+                        } else if (chanBytesPerChannel==1) {
+                            for (int c=0;c<cdim;c++) {
+                                data8[c][offset]=chanData[readVoxels+(z-start)+c*chanVoxels];
+                            }
+                        } else if (chanBytesPerChannel==2) {
+                            for (int c=0;c<cdim;c++) {
+                                data16[c][offset]=chanData16[readVoxels+(z-start)+c*chanVoxels];
+                            }
+                        }
+                    }
+                }
+                readVoxels+=(end-start);
+            }
+            planePosition++;
+        }
+        fclose(fid);
+
+        if (chanData!=0L) {
+            delete [] chanData;
+        }
+    }
+
+    qDebug() << "Saving composite";
+
+    ImageLoader compositeLoader;
+    compositeLoader.saveImage(outputStack, outputStackFilepath);
+
+    qDebug() << "Creating mip";
+
+    My4DImage * compositeMIP = AnalysisTools::createMIPFromImage(outputStack);
+
+    qDebug() << "Saving mip";
+
+    ImageLoader compositeMIPSaver;
+    compositeMIPSaver.saveImage(compositeMIP, outputMipFilepath);
+
+    qDebug() << "Starting cleanup";
+
+    delete outputStack;
+    delete compositeMIP;
+
+    return true;
 
 }
 
