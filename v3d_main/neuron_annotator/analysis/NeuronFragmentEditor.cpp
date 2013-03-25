@@ -75,13 +75,15 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
         qDebug() << "Do not recognize valid mode";
         argError=true;
     }
-    if (sourceImageFilepath.length() < 1) {
-        qDebug() << "-sourceImageFilepath is required";
-        argError=true;
-    }
-    if (inputLabelIndexFilepath.length() < 1) {
-        qDebug() << "-labelIndex is required";
-        argError=true;
+    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL) {
+        if (sourceImageFilepath.length() < 1) {
+            qDebug() << "-sourceImageFilepath is required";
+            argError=true;
+        }
+        if (inputLabelIndexFilepath.length() < 1) {
+            qDebug() << "-labelIndex is required";
+            argError=true;
+        }
     }
     if (mode==MODE_COMBINE || mode==MODE_COMBINE_MASK) {
         if (outputMipFilepath.length() < 1) {
