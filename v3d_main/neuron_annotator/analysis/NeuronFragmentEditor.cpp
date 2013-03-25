@@ -855,13 +855,13 @@ bool NeuronFragmentEditor::createMaskComposite()
                 fread(&chanBytesPerChannel, sizeof(unsigned char), 1, fid2);
                 chanTotalDataBytes=chanBytesPerChannel*chanVoxels*chanChannelCount;
                 chanData=new unsigned char[chanTotalDataBytes];
-                fread(&chanData, sizeof(unsigned char), chanTotalDataBytes, fid2);
+                fread(chanData, sizeof(unsigned char), chanTotalDataBytes, fid2);
                 fclose(fid2);
                 if (cdim==-1) {
                     cdim=chanChannelCount;
                 } else {
                     if (cdim!=chanChannelCount) {
-                        qDebug() << "Expected channel counts to match between mask files";
+                        qDebug() << "Expected channel counts to match between mask files, cdim=" << cdim << " chanChannelCount=" << chanChannelCount;
                         return false;
                     }
                 }
