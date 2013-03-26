@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CutPlannerDialog</class>
+ <widget class="QDialog" name="CutPlannerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>624</width>
+    <height>294</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>microCT Cut Planner</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="SingleCut" name="topCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="frontCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="rightCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="rearCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="leftCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SingleCut</class>
+   <extends>QWidget</extends>
+   <header>../neuron_annotator/microCT/SingleCut.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

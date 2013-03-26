@@ -1808,6 +1808,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="menuStereo_3D"/>
     <addaction name="separator"/>
     <addaction name="actionMeasure_Frame_Rate"/>
+    <addaction name="actionOpen_microCT_Cut_Planner"/>
    </widget>
    <widget class="QMenu" name="menuWork_Mode">
     <property name="title">
@@ -2240,6 +2241,14 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="actionOpen_Octree_Volume">
    <property name="text">
     <string>Open Octree Volume...</string>
+   </property>
+  </action>
+  <action name="actionOpen_microCT_Cut_Planner">
+   <property name="text">
+    <string>Open microCT Cut Planner</string>
+   </property>
+   <property name="toolTip">
+    <string>Open microCT cut planning tool</string>
    </property>
   </action>
  </widget>

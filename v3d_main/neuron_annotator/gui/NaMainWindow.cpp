@@ -87,6 +87,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     , isInCustomCutMode(false)
     , bShowCrosshair(true) // default to on
     , viewMode(VIEW_SINGLE_STACK)
+    , cutPlanner(NULL)
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
 #ifdef ENABLE_STEREO
@@ -879,24 +880,29 @@ void NaMainWindow::applyCustomCut()
 }
 
 /* slot */
-void NaMainWindow::toggleCustomCutMode()
+void NaMainWindow::setCustomCutMode(bool doCustom)
 {
-    if (isInCustomCutMode)
-    {
-        // Turn off custom cut mode
-        ui.defineClipPlaneButton->setText(tr("Custom..."));
-        ui.customCutButton->setEnabled(false);
-        ui.v3dr_glwidget->cancelCustomCutMode();
-    }
-    else
+    if (doCustom)
     {
         // Activate custom cut mode
         ui.defineClipPlaneButton->setText(tr("Cancel"));
         ui.customCutButton->setEnabled(true);
         ui.v3dr_glwidget->setCustomCutMode();
     }
-    // Switch mode flag
-    isInCustomCutMode = ! isInCustomCutMode;
+    else
+    {
+        // Turn off custom cut mode
+        ui.defineClipPlaneButton->setText(tr("Custom..."));
+        ui.customCutButton->setEnabled(false);
+        ui.v3dr_glwidget->cancelCustomCutMode();
+    }
+    isInCustomCutMode = doCustom;
+}
+
+/* slot */
+void NaMainWindow::toggleCustomCutMode()
+{
+    setCustomCutMode(!isInCustomCutMode);
 }
 
 /* slot */
@@ -1136,6 +1142,11 @@ void NaMainWindow::onViewerChanged(int viewerIndex)
     ui.statusbar->showMessage(msg);
 }
 
+void NaMainWindow::setRotation(Rotation3D r) {
+    sharedCameraModel.setRotation(r);
+    ui.v3dr_glwidget->update();
+}
+
 void NaMainWindow::setNutate(bool bDoNutate)
 {
     if (bDoNutate) {
@@ -1264,6 +1275,21 @@ void NaMainWindow::setV3DDefaultModeCheck(bool checkState) {
 void NaMainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
     QAction* ui_actionNeuronAnnotator = qFindChild<QAction*>(this, "actionNeuronAnnotator");
     ui_actionNeuronAnnotator->setChecked(checkState);
+}
+
+void NaMainWindow::on_actionOpen_microCT_Cut_Planner_triggered()
+{
+    if (cutPlanner == NULL) {
+        cutPlanner = new CutPlanner(sharedCameraModel, *ui.v3dr_glwidget, this);
+        connect(cutPlanner, SIGNAL(rotationAdjusted(Rotation3D)),
+                this, SLOT(setRotation(Rotation3D)));
+        connect(cutPlanner, SIGNAL(clipPlaneRequested()),
+                this, SLOT(applyCustomCut()));
+        connect(cutPlanner, SIGNAL(cutGuideRequested(bool)),
+                this, SLOT(setCustomCutMode(bool)));
+    }
+    setCustomCutMode(true);
+    cutPlanner->show();
 }
 
 void NaMainWindow::on_actionOpen_triggered()

@@ -16,6 +16,7 @@
 #include "NeuronContextMenu.h"
 #include "DynamicRangeTool.h"
 #include "../NeuronSelector.h"
+#include "../microCT/CutPlanner.h"
 
 class NutateThread : public QThread
 {
@@ -125,6 +126,7 @@ public slots:
     void openFileOrUrl(QString name);
     void on_actionV3DDefault_triggered();
     void on_actionMeasure_Frame_Rate_triggered();
+    void on_actionOpen_microCT_Cut_Planner_triggered();
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
     void on_actionOpen_triggered();
@@ -139,6 +141,7 @@ public slots:
     void setZRange(int minZ, int maxZ); // update number of z slices
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same
     void setNutate(bool bDoNutate);
+    void setRotation(Rotation3D);
     void nutate(const Rotation3D&);
     void resetView();
     void updateViewers();
@@ -174,6 +177,7 @@ protected slots:
     void completeProgress();
     void abortProgress(QString);
     void applyCustomCut();
+    void setCustomCutMode(bool doCustom);
     void toggleCustomCutMode();
     void onExportFinished(QString fileName);
     void onExportFailed(QString fileName, QString message);
@@ -233,6 +237,8 @@ private:
 
     QVector<OpenFileAction*> recentFileActions;
     QTime mainWindowStopWatch;
+
+    CutPlanner* cutPlanner;
 };
 
 #endif // NAMAINWINDOW_H

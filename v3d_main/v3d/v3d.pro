@@ -141,6 +141,8 @@ HEADERS += \
     ../neuron_annotator/gui/DynamicRangeTool.h \
     ../neuron_annotator/gui/ColorRangeSliderWidget.h \
     ../neuron_annotator/gui/Stereo3DMode.h \
+    ../neuron_annotator/microCT/CutPlanner.h \
+    ../neuron_annotator/microCT/SingleCut.h \
     ../neuron_annotator/render/ActorGL.h \
     ../neuron_annotator/render/CubeTestActorGL.h \
     ../neuron_annotator/render/CameraTransformGL.h \
@@ -290,6 +292,8 @@ SOURCES += \
     ../neuron_annotator/gui/DynamicRangeTool.cpp \
     ../neuron_annotator/gui/ColorRangeSliderWidget.cpp \
     ../neuron_annotator/gui/Stereo3DMode.cpp \
+    ../neuron_annotator/microCT/CutPlanner.cpp \
+    ../neuron_annotator/microCT/SingleCut.cpp \
     ../neuron_annotator/NeuronSelector.cpp \
     ../neuron_annotator/ExportFile.cpp \
     ../neuron_annotator/utility/JacsUtil.cpp \
@@ -324,7 +328,9 @@ FORMS += \
     ../neuron_annotator/gui/AnnotationWidget.ui \
     ../neuron_annotator/gui/DynamicRangeTool.ui \
     ../neuron_annotator/gui/PreferencesNa.ui \
-    ../neuron_annotator/gui/ZoomWidget.ui
+    ../neuron_annotator/gui/ZoomWidget.ui \
+    ../neuron_annotator/microCT/micro_ct.ui \
+    ../neuron_annotator/microCT/single_cut.ui
 
 INCLUDEPATH = $$unique(INCLUDEPATH)
 LIBS = $$unique(LIBS)

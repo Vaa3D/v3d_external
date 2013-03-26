@@ -6,7 +6,9 @@ include_directories(../v3d)
 include_directories(../3drenderer)
 include_directories(${Boost_INCLUDE_DIR})
 
-file(GLOB NA_UI_FILES gui/*.ui)
+file(GLOB NA_UI_FILES 
+    "gui/*.ui"
+    "microCT/*.ui")
 QT4_WRAP_UI(NA_UI_SRCS 
     ${NA_UI_FILES}
     # Repeat some ui files to avoid circular dependencies
@@ -17,7 +19,12 @@ QT4_WRAP_UI(NA_UI_SRCS
 # Look for "Q_OBJECT" in headers to determine which ones to MOC
 # Begin with a list of all header file candidates
 message(STATUS "Finding header files containing 'Q_OBJECT' macro...")
-file(GLOB NA_MOC_CANDIDATES gui/*.h data_model/*.h gui/trees/*.h utility/*.h)
+file(GLOB NA_MOC_CANDIDATES 
+    gui/*.h 
+    data_model/*.h 
+    gui/trees/*.h
+    microCT/*.h
+    utility/*.h)
 foreach(NA_MOC_CAND ${NA_MOC_CANDIDATES})
     # Examine beginning of each header file
     file(READ "${NA_MOC_CAND}" HEADER_TEXT LIMIT 10000)
@@ -41,7 +48,7 @@ endif()
 QT4_WRAP_CPP(NA_MOC_SRCS
     ${NA_MOC_FILES}
     geometry/CameraModel.h
-    utility/ConsoleObserver.h
+     utility/ConsoleObserver.h
     utility/DataThread.h
     utility/ImageLoader.h
     data_model/Fast3DTexture.h
@@ -53,13 +60,14 @@ QT4_WRAP_CPP(NA_MOC_SRCS
 )
 
 file(GLOB NA_SRCS 
-    "*.cpp" 
+    "*.cpp"
     # "*/*.cpp" # don't want "tests"
     "analysis/*.cpp" 
     "data_model/*.cpp" 
     "entity_model/*.cpp" 
     "geometry/*.cpp" 
     "gui/*.cpp" 
+    "microCT/*.cpp"
     "utility/*.cpp" 
     "gui/trees/*.cpp" 
     "../webservice/*/*.cpp"

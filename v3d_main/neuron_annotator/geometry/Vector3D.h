@@ -116,6 +116,13 @@ public:
         result.negate();
         return result;
     }
+
+    Vector3D cross(const BaseVector3D& rhs) const {
+        return Vector3D(
+                y()*rhs.z() - z()*rhs.y(),
+                z()*rhs.x() - x()*rhs.z(),
+                x()*rhs.y() - y()*rhs.x());
+    }
 };
 
 // Length-modifying operators must return a Vector3D, even if a UnitVector3D was an argument
@@ -153,6 +160,12 @@ public:
     {
         (*this) /= BaseVector3D::norm(); // don't use UnitVector3::norm()!
     }
+    UnitVector3D operator-() const {
+        UnitVector3D result = *this;
+        result.negate();
+        return result;
+    }
+
 
     qreal norm() const {return 1.0;}
     qreal normSquared() const {return 1.0;}
