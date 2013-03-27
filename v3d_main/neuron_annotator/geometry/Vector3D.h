@@ -58,6 +58,7 @@ protected:
 
     BaseVector3D& negate() {
         (*this) *= -1;
+        return *this;
     }
 
     // Writeable access is OK for Vector3D, but not for UnitVector3D
