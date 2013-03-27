@@ -17,8 +17,8 @@ CutPlanner::CutPlanner(CameraModel& camera, Na3DWidget& widget3d, QWidget* paren
     initSingleCut(ui.topCutWidget, "Top", "+Z");
     initSingleCut(ui.frontCutWidget, "Front/A", "-Y");
     initSingleCut(ui.rightCutWidget, "Right/B", "+X");
-    initSingleCut(ui.rearCutWidget, "Rear/D", "+Y");
-    initSingleCut(ui.leftCutWidget, "Left/C", "-X");
+    initSingleCut(ui.rearCutWidget, "Rear/C", "+Y");
+    initSingleCut(ui.leftCutWidget, "Left/D", "-X");
 }
 
 CutPlanner::~CutPlanner()

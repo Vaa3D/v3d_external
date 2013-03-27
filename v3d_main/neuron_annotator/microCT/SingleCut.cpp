@@ -34,10 +34,12 @@ void SingleCut::on_axisBox_activated(const QString& text)
 {
     if (text == "Free")
         return; // no restriction
+    // TODO - WHY is X-axis appearance opposite to the other axes?
+    // (judging by axis tool)
     else if (text == "+X")
-        setUpVector(Vector3D(1, 0, 0));
-    else if (text == "-X")
         setUpVector(Vector3D(-1, 0, 0));
+    else if (text == "-X")
+        setUpVector(Vector3D(1, 0, 0));
     else if (text == "+Y")
         setUpVector(Vector3D(0, 1, 0));
     else if (text == "-Y")

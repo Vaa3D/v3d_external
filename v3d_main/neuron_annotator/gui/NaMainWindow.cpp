@@ -873,7 +873,7 @@ void NaMainWindow::connectCustomCut()
 /* slot */
 void NaMainWindow::applyCustomCut()
 {
-    assert(isInCustomCutMode);
+    // assert(isInCustomCutMode);
     ui.v3dr_glwidget->applyCustomCut();
     if (isInCustomCutMode)
         toggleCustomCutMode();
