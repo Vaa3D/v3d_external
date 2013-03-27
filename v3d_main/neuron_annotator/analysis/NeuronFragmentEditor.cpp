@@ -483,6 +483,8 @@ bool NeuronFragmentEditor::reverseLabel()
             return false;
         }
 
+        qDebug() << "Writing xdim=" << xdim << " ydim=" << ydim << " zdim=" << zdim;
+
         fwrite(&xdim, sizeof(long), 1, fid);
         fwrite(&ydim, sizeof(long), 1, fid);
         fwrite(&zdim, sizeof(long), 1, fid);
