@@ -1369,6 +1369,11 @@ void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
+        // Single channel single volumes used to crash at this point,
+        // because RendererNeuronAnnotator assumes it has 4 channels.
+        // This is the easiest place I could find to stanch the flow.
+        if (! volumeReader.hasNeuronMask()) return;
+        if (volumeReader.getNumberOfNeurons() < 1) return;
         loc = getRendererNa()->screenPositionToVolumePosition(pos, volumeReader);
     }
 
