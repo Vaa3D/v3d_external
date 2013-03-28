@@ -277,9 +277,9 @@ bool writeMarker_file(const QString & filename, const QList <ImageMarker> & list
 	}
 
 	fclose(fp);
-#ifndef DISABLE_V3D_MSG
+//#ifndef DISABLE_V3D_MSG
 	v3d_msg(QString("done with saving file: %1").arg(curFile), false);
-#endif
+//#endif
 	return true;
 }
 

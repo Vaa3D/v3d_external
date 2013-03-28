@@ -710,10 +710,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				QString curFile = "";
 				if (curImg)
 				{
-					QFileDialog::getSaveFileName(0,
+					curFile = QFileDialog::getSaveFileName(0,
 															   "Select a text (CSV format with .marker extension) file to save the coordinates of landmark points... ",
 															   curImg->getXWidget()->getOpenFileNameLabel()+".marker","");
-				if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
+                    if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
 					return update;
 				}
 				saveLandmarks_to_file(curFile); //use "" an empty string to force open a file dialog
