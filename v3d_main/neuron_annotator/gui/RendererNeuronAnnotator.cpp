@@ -1051,7 +1051,7 @@ float RendererNeuronAnnotator::glUnitsPerImageVoxel() const
     else if (boundingBox.Dy() >= boundingBox.Dz())
         return 2.0 * sampleScaleY / imageY;
     else
-        return 2.0 * sampleScaleZ / imageZ;
+        return (2.0 * sampleScaleZ / imageZ) / thicknessZ;
 }
 
 bool RendererNeuronAnnotator::hasBadMarkerViewMatrix() const // to help avoid a crash
