@@ -57,6 +57,7 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("     -query <image volume to use as query>                                                              \n");
         usage.append("     -queryChannel <channel number>                                                                     \n");
+        usage.append("     -outputFile <outputFile>                                                                           \n");
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
         usage.append("     [ -skipzeros : ignores all zero-valued voxels in query during search ]                             \n");
         usage.append("     [ -full : use index first, then use full images, slower but more accurate, default=false]          \n");
@@ -89,6 +90,7 @@ private:
 
     QString queryImageFilePath;
     int queryChannel;
+    QString outputFilePath;
     int maxHits;
     bool fullSearch;
     bool skipzeros;

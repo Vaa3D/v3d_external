@@ -166,6 +166,8 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         } else if (arg=="-queryChannel") {
             QString queryChannelString=(*argList)[++i];
             queryChannel=queryChannelString.toInt();
+        } else if (arg=="outputFile") {
+            outputFilePath=(*argList)[++i];
         } else if (arg=="-maxHits") {
             QString maxHitsString=(*argList)[++i];
             maxHits=maxHitsString.toInt();
@@ -198,6 +200,10 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             qz1=z1;z1=-1;
             if (queryChannel==-1) {
                 qDebug() << "queryChannel must be defined";
+                return 1;
+            }
+            if (outputFilePath.length()<1) {
+                qDebug() << "outputFile must be defined";
                 return 1;
             }
         }
@@ -684,14 +690,24 @@ bool VolumePatternIndex::doSearch()
 
     qDebug() << "==============================================================";
 
+    QFile outputFile(outputFilePath);
+    if (!outputFile.open(QIODevice::WriteOnly)) {
+      qDebug() << "Could not open file=" << outputFilePath;
+      return false;
+    }
+    QTextStream scoreOutput(&outputFile);
+
     for (int i=0;i<finalResultSize;i++) {
         int position=i+1;
         QPair<V3DLONG, int> p=finalResultList[i];
         V3DLONG score=p.first;
         int index=p.second;
         QString filename=indexFileList[index];
-        qDebug() << position << ". " << score << " : " << filename;
+        scoreOutput << position << ". " << score << " : " << filename;
     }
+
+    scoreOutput.flush();
+    outputFile.close();
 
     if (indexData!=0L) { delete [] indexData; indexData=0L; }
     if (queryIndex!=0L) { delete [] queryIndex; queryIndex=0L; }
