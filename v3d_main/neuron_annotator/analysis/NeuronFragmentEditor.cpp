@@ -164,10 +164,10 @@ bool NeuronFragmentEditor::loadSourceAndLabelImages()
         qDebug() << "source and label zdim do not match";
         return false;
     }
-    if (cdim<3) {
-        qDebug() << "Expected source image to contain at least 3 channels";
-        return false;
-    }
+//    if (cdim<3) {
+//        qDebug() << "Expected source image to contain at least 3 channels";
+//        return false;
+//    }
     return true;
 }
 
