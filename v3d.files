@@ -1992,6 +1992,8 @@ v3d_main/neuron_annotator/DataFlowModel.h
 v3d_main/neuron_annotator/DataFlowModel.cpp
 v3d_main/neuron_annotator/utility/ImageLoader.h
 v3d_main/neuron_annotator/utility/ImageLoader.cpp
+v3d_main/neuron_annotator/utility/ImageLoaderBasic.h
+v3d_main/neuron_annotator/utility/ImageLoaderBasic.cpp
 v3d_main/neuron_annotator/gui/NeuronQAction.h
 v3d_main/neuron_annotator/gui/NeuronQAction.cpp
 v3d_main/neuron_annotator/gui/NeuronContextMenu.h

@@ -5,6 +5,7 @@
 #include "data_model/NaVolumeData.h"
 #include "data_model/NeuronSelectionModel.h"
 #include "data_model/DataColorModel.h"
+#include "geometry/CameraModel.h"
 #include <QString>
 #include <QThread>
 #include <QMutex>
@@ -29,7 +30,9 @@ public:
     		QString fileName,
     		const NaVolumeData& volumeData,
     		const NeuronSelectionModel& selectionModel,
-    		const DataColorModel& colorModel);
+            const DataColorModel& colorModel,
+            const CameraModel& cameraModel,
+            bool is2D=false);
     ~ExportFile();
 	
 signals:
@@ -46,11 +49,15 @@ public:
     const NaVolumeData& volumeData;
     const NeuronSelectionModel& selectionModel;
     const DataColorModel& colorModel;
+    const CameraModel& cameraModel;
     QString filename;
 	
 private:
     QMutex mutex;
     ImageLoader imageLoader;
+    bool is2D;
+
+
 };
 
 

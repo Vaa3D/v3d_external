@@ -1,5 +1,6 @@
 #include "ExportFile.h"
 #include "DataFlowModel.h"
+#include "geometry/CameraModel.h"
 #include <QMutexLocker>
 
 template <class Tinput, class Tmask, class Tref, class Toutput>
@@ -123,11 +124,15 @@ ExportFile::ExportFile(
 		QString fileName,
 		const NaVolumeData& volumeData,
 		const NeuronSelectionModel& selectionModel,
-		const DataColorModel& colorModel)
+        const DataColorModel& colorModel,
+        const CameraModel& cameraModel,
+        bool is2D)
 	: filename(fileName)
 	, volumeData(volumeData)
 	, selectionModel(selectionModel)
     , colorModel(colorModel)
+    , cameraModel(cameraModel)
+    , is2D(is2D)
     , stopped(true)
 {}
 
