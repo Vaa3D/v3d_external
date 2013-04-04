@@ -56,8 +56,7 @@ private:
     QMutex mutex;
     ImageLoader imageLoader;
     bool is2D;
-
-
+    My4DImage* padAndRotateImage(My4DImage* image, const Rotation3D& rotation);
 };
 
 

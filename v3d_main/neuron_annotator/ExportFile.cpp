@@ -1,6 +1,7 @@
 #include "ExportFile.h"
 #include "DataFlowModel.h"
 #include "geometry/CameraModel.h"
+#include "analysis/AnalysisTools.h"
 #include <QMutexLocker>
 
 template <class Tinput, class Tmask, class Tref, class Toutput>
@@ -328,14 +329,30 @@ void ExportFile::run()
 			++cOut; // prepare next channel
 	    }
 
-	    if (imageLoader.saveImage(&outputImage, filename)) {
-	    	    stopped = true;
-	    }
-	    else {
-	    	    bSucceeded = false;
-	    	    message = "Failed to write to file";
-	    	    stopped = true;
-	    }
+        if (is2D) {
+            My4DImage* rotatedImage = padAndRotateImage(&outputImage, cameraModel.rotation());
+            My4DImage* rotatedMip = AnalysisTools::createMIPFromImage(rotatedImage);
+            delete rotatedImage;
+            if (imageLoader.saveImage(rotatedMip, filename)) {
+                stopped = true;
+            } else {
+                bSucceeded = false;
+                message = "Failed to write to file";
+                stopped = true;
+            }
+
+        } else {
+
+            if (imageLoader.saveImage(&outputImage, filename)) {
+                stopped = true;
+            }
+            else {
+                bSucceeded = false;
+                message = "Failed to write to file";
+                stopped = true;
+            }
+
+        }
     } // release read locks
 
 	if (bSucceeded)
@@ -349,4 +366,37 @@ void ExportFile::run()
 
     //
     return;
+}
+
+My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rotation)
+{
+    // To allocate space for a rotated version of an image, we need to account for a
+    // larger size, which is the largest diagonal length.
+
+    double xDim=image->getXDim();
+    double yDim=image->getYDim();
+    double zDim=image->getZDim();
+
+    double xyLength = sqrt(xDim*xDim+yDim*yDim); // major axis=Z, 2
+    double yzLength = sqrt(yDim*yDim + zDim*zDim); // major axis=X, 0
+    double zxLength = sqrt(zDim*zDim+xDim*xDim); // major axis=Y, 1
+
+    int majorAxis=0;
+    double majorLength=0.0;
+
+    if (xyLength > yzLength && xyLength > zxLength) {
+        majorAxis=2;
+        majorLength=xyLength;
+    } else if (yzLength > xyLength && yzLength)  {
+        majorAxis=0;
+        majorLength=yzLength;
+    } else {
+        majorAxis=1;
+        majorLength=zxLength;
+    }
+
+    // still in development...
+
+    return 0L;
+
 }
