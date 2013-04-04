@@ -1,6 +1,7 @@
 #include "NeuronFragmentEditor.h"
 #include "../utility/ImageLoader.h"
 #include "AnalysisTools.h"
+#include "SleepThread.h"
 #include <climits>
 
 const int NeuronFragmentEditor::MODE_UNDEFINED=-1;
@@ -360,7 +361,7 @@ bool NeuronFragmentEditor::reverseLabel()
     }
 
     const int MAX_LABEL=65536;
-    long* labelIndex=new long[MAX_LABEL];
+    labelIndex=new long[MAX_LABEL];
     for (int i=0;i<MAX_LABEL;i++) {
         labelIndex[i]=0;
     }
@@ -392,238 +393,270 @@ bool NeuronFragmentEditor::reverseLabel()
 
     // For the outermost loop, we iterate through each label and score
     // each axis for efficiency.
+    QList< QFuture<bool> > labelProcessList;
     for (int l=0;l<labelList.size();l++) {
         int label=labelList[l];
         qDebug() << "Processing label=" << label << " voxels=" << labelIndex[label];
+        QFuture<bool> labelJob = QtConcurrent::run(this, &NeuronFragmentEditor::createMaskChanForLabel, label);
+        labelProcessList.append(labelJob);
+    }
 
-        QList<long> pairCountList; // x=0, y=1, z=2
-        QList<MaskRay*> xRayList;
-        QList<MaskRay*> yRayList;
-        QList<MaskRay*> zRayList;
-
-        QList<long> x0List;
-        QList<long> x1List;
-        QList<long> y0List;
-        QList<long> y1List;
-        QList<long> z0List;
-        QList<long> z1List;
-
-        for (int direction=0;direction<3;direction++) {
-
-            QList<MaskRay*> * rayList;
-            long pairCount=0L;
-            long countCheck=0L;
-
-            if (direction==0) {
-                rayList=&xRayList;
-            } else if (direction==1) {
-                rayList=&yRayList;
-            } else {
-                rayList=&zRayList;
+    while(1) {
+        SleepThread st;
+        st.msleep(1000);
+        int doneCount=0;
+        for (int i=0;i<labelProcessList.size();i++) {
+            QFuture<bool> labelJob = labelProcessList.at(i);
+            if (labelJob.isFinished()) {
+                if (labelJob.result()==true) {
+                    doneCount++;
+                } else {
+                    qDebug() << "Label job returned false";
+                    return false;
+                }
             }
-
-            long x0,x1,y0,y1,z0,z1;
-
-            axisTracer(direction, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1);
-
-            x0List.append(x0);
-            x1List.append(x1);
-            y0List.append(y0);
-            y1List.append(y1);
-            z0List.append(z0);
-            z1List.append(z1);
-
-            pairCountList.append(pairCount);
-            pairCount=0L;
-
-            if (countCheck!=labelIndex[label]) {
-                qDebug() << "Count check failed : direction=" << direction << " countCheck=" << countCheck << " labelIndex=" << labelIndex[label];
-                return false;
-            } else {
-                qDebug() << "Direction " << direction << " passed voxel count check";
-            }
-
         }
-
-        // We have computed the ray set for each axis, we will save the one with the
-        // smallest size.
-
-        for (int s=0;s<pairCountList.size();s++) {
-            qDebug() << "pairCount " << s << " : " << pairCountList[s];
-        }
-
-        unsigned char smallestSize=0;
-        if (pairCountList[1]<pairCountList[smallestSize]) {
-            smallestSize=1;
-        }
-        if (pairCountList[2]<pairCountList[smallestSize]) {
-            smallestSize=2;
-        }
-
-        qDebug() << "Using axis " << smallestSize;
-
-        // Write out the mask file
-        QString maskFilename="";
-        if (outputPrefix.length()>0) {
-            maskFilename.append(outputPrefix);
-            maskFilename.append("_");
-        }
-        maskFilename.append(QString::number(label));
-        maskFilename.append(".mask");
-
-        QString maskFullPath=outputDirPath;
-        maskFullPath.append("/");
-        maskFullPath.append(maskFilename);
-
-        qDebug() << "Writing to file " << maskFullPath;
-
-        FILE* fid = fopen(maskFullPath.toAscii().data(), "wb");
-        if (!fid) {
-            qDebug() << "Could not open file " << maskFullPath << " to write";
-            return false;
-        }
-
-        qDebug() << "Writing xdim=" << xdim << " ydim=" << ydim << " zdim=" << zdim;
-
-        fwrite(&xdim, sizeof(long), 1, fid);
-        fwrite(&ydim, sizeof(long), 1, fid);
-        fwrite(&zdim, sizeof(long), 1, fid);
-
-        float xMicrons=0.0;
-        float yMicrons=0.0;
-        float zMicrons=0.0;
-
-        fwrite(&xMicrons, sizeof(float), 1, fid);
-        fwrite(&yMicrons, sizeof(float), 1, fid);
-        fwrite(&zMicrons, sizeof(float), 1, fid);
-
-        long x0=x0List[smallestSize];
-        long x1=x1List[smallestSize];
-        long y0=y0List[smallestSize];
-        long y1=y1List[smallestSize];
-        long z0=z0List[smallestSize];
-        long z1=z1List[smallestSize];
-
-        fwrite(&x0, sizeof(long), 1, fid);
-        fwrite(&x1, sizeof(long), 1, fid);
-        fwrite(&y0, sizeof(long), 1, fid);
-        fwrite(&y1, sizeof(long), 1, fid);
-        fwrite(&z0, sizeof(long), 1, fid);
-        fwrite(&z1, sizeof(long), 1, fid);
-
-        long totalVoxels=labelIndex[label];
-        fwrite(&totalVoxels, sizeof(long), 1, fid);
-        fwrite(&smallestSize, sizeof(unsigned char), 1, fid);
-
-        if (smallestSize==0) {
-            writeMaskList(fid, xRayList);
-        } else if (smallestSize==1) {
-            writeMaskList(fid, yRayList);
+        int stillActive=labelProcessList.size()-doneCount;
+        if (stillActive==0) {
+            break;
         } else {
-            writeMaskList(fid, zRayList);
+            qDebug() << "Waiting on " << stillActive << " label process jobs";
         }
-        fflush(fid);
-        fclose(fid);
-        fid=0L;
-
-        // Write out the channel file
-
-        // First, clear the previous masks
-        for (int d=0;d<3;d++) {
-            QList<MaskRay*> * rayList;
-            if (d==0) {
-                rayList=&xRayList;
-            } else if (d==1) {
-                rayList=&yRayList;
-            } else {
-                rayList=&zRayList;
-            }
-            for (int i=0;i<rayList->size();i++) {
-                MaskRay* ray = (*rayList)[i];
-                delete ray;
-            }
-            rayList->clear();
-        }
-
-        QString channelFilename="";
-        if (outputPrefix.length()>0) {
-            channelFilename.append(outputPrefix);
-            channelFilename.append("_");
-        }
-        channelFilename.append(QString::number(label));
-        channelFilename.append(".chan");
-
-        QString channelFullPath=outputDirPath;
-        channelFullPath.append("/");
-        channelFullPath.append(channelFilename);
-
-        qDebug() << "Writing to file " << channelFullPath;
-
-        fid = fopen(channelFullPath.toAscii().data(), "wb");
-        if (!fid) {
-            qDebug() << "Could not open file " << channelFullPath << " to write";
-            return false;
-        }
-
-        fwrite(&totalVoxels, sizeof(long), 1, fid);
-        unsigned char numChannels=sourceImage->getCDim();
-        fwrite(&numChannels, sizeof(unsigned char), 1, fid);
-
-        unsigned char recRed=0;
-        unsigned char recGreen=1;
-        unsigned char recBlue=2;
-
-        fwrite(&recRed, sizeof(unsigned char), 1, fid);
-        fwrite(&recGreen, sizeof(unsigned char), 1, fid);
-        fwrite(&recBlue, sizeof(unsigned char), 1, fid);
-
-        unsigned char datatype=1; // 8-bit
-        if (sourceImage->getDatatype()==V3D_UINT16) {
-            datatype=2; // 16-bit
-        }
-        fwrite(&datatype, sizeof(unsigned char), 1, fid);
-
-        // allocate space for data
-        long unitsNeeded=totalVoxels*cdim;
-        void* data=0L;
-        if (sourceImage->getDatatype()==V3D_UINT8) {
-            data=(void*) new v3d_uint8[unitsNeeded];
-        } else {
-            data=(void*) new v3d_uint16[unitsNeeded];
-        }
-
-        // re-run axis-tracer and populate channel intensity data
-        QList<MaskRay*> * rayList;
-        long pairCount=0L;
-        long countCheck=0L;
-
-        if (smallestSize==0) {
-            rayList=&xRayList;
-        } else if (smallestSize==1) {
-            rayList=&yRayList;
-        } else {
-            rayList=&zRayList;
-        }
-
-        qDebug() << "calling axisTracer 2nd pass data=" << data;
-
-        axisTracer(smallestSize, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1, data, totalVoxels);
-
-        if (countCheck!=totalVoxels) {
-            qDebug() << "In second pass of axisTracer, countCheck=" << countCheck << " totalVoxels=" << totalVoxels;
-            exit(1);
-        }
-
-        fwrite(data, totalVoxels*cdim, (datatype+1), fid);
-        fflush(fid);
-        fclose(fid);
-
-        qDebug() << "Wrote " << channelFullPath;
     }
 
     // Global cleanup
     delete sourceImage;
     delete labelImage;
+
+    return true;
+}
+
+bool NeuronFragmentEditor::createMaskChanForLabel(int label)
+{
+    QList<long> pairCountList; // x=0, y=1, z=2
+    QList<MaskRay*> xRayList;
+    QList<MaskRay*> yRayList;
+    QList<MaskRay*> zRayList;
+
+    QList<long> x0List;
+    QList<long> x1List;
+    QList<long> y0List;
+    QList<long> y1List;
+    QList<long> z0List;
+    QList<long> z1List;
+
+    for (int direction=0;direction<3;direction++) {
+
+        QList<MaskRay*> * rayList;
+        long pairCount=0L;
+        long countCheck=0L;
+
+        if (direction==0) {
+            rayList=&xRayList;
+        } else if (direction==1) {
+            rayList=&yRayList;
+        } else {
+            rayList=&zRayList;
+        }
+
+        long x0,x1,y0,y1,z0,z1;
+
+        axisTracer(direction, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1);
+
+        x0List.append(x0);
+        x1List.append(x1);
+        y0List.append(y0);
+        y1List.append(y1);
+        z0List.append(z0);
+        z1List.append(z1);
+
+        pairCountList.append(pairCount);
+        pairCount=0L;
+
+        if (countCheck!=labelIndex[label]) {
+            qDebug() << "Count check failed : direction=" << direction << " countCheck=" << countCheck << " labelIndex=" << labelIndex[label];
+            return false;
+        } else {
+            qDebug() << "Direction " << direction << " passed voxel count check";
+        }
+
+    }
+
+    // We have computed the ray set for each axis, we will save the one with the
+    // smallest size.
+
+    for (int s=0;s<pairCountList.size();s++) {
+        qDebug() << "pairCount " << s << " : " << pairCountList[s];
+    }
+
+    unsigned char smallestSize=0;
+    if (pairCountList[1]<pairCountList[smallestSize]) {
+        smallestSize=1;
+    }
+    if (pairCountList[2]<pairCountList[smallestSize]) {
+        smallestSize=2;
+    }
+
+    qDebug() << "Using axis " << smallestSize;
+
+    // Write out the mask file
+    QString maskFilename="";
+    if (outputPrefix.length()>0) {
+        maskFilename.append(outputPrefix);
+        maskFilename.append("_");
+    }
+    maskFilename.append(QString::number(label));
+    maskFilename.append(".mask");
+
+    QString maskFullPath=outputDirPath;
+    maskFullPath.append("/");
+    maskFullPath.append(maskFilename);
+
+    qDebug() << "Writing to file " << maskFullPath;
+
+    FILE* fid = fopen(maskFullPath.toAscii().data(), "wb");
+    if (!fid) {
+        qDebug() << "Could not open file " << maskFullPath << " to write";
+        return false;
+    }
+
+    qDebug() << "Writing xdim=" << xdim << " ydim=" << ydim << " zdim=" << zdim;
+
+    fwrite(&xdim, sizeof(long), 1, fid);
+    fwrite(&ydim, sizeof(long), 1, fid);
+    fwrite(&zdim, sizeof(long), 1, fid);
+
+    float xMicrons=0.0;
+    float yMicrons=0.0;
+    float zMicrons=0.0;
+
+    fwrite(&xMicrons, sizeof(float), 1, fid);
+    fwrite(&yMicrons, sizeof(float), 1, fid);
+    fwrite(&zMicrons, sizeof(float), 1, fid);
+
+    long x0=x0List[smallestSize];
+    long x1=x1List[smallestSize];
+    long y0=y0List[smallestSize];
+    long y1=y1List[smallestSize];
+    long z0=z0List[smallestSize];
+    long z1=z1List[smallestSize];
+
+    fwrite(&x0, sizeof(long), 1, fid);
+    fwrite(&x1, sizeof(long), 1, fid);
+    fwrite(&y0, sizeof(long), 1, fid);
+    fwrite(&y1, sizeof(long), 1, fid);
+    fwrite(&z0, sizeof(long), 1, fid);
+    fwrite(&z1, sizeof(long), 1, fid);
+
+    long totalVoxels=labelIndex[label];
+    fwrite(&totalVoxels, sizeof(long), 1, fid);
+    fwrite(&smallestSize, sizeof(unsigned char), 1, fid);
+
+    if (smallestSize==0) {
+        writeMaskList(fid, xRayList);
+    } else if (smallestSize==1) {
+        writeMaskList(fid, yRayList);
+    } else {
+        writeMaskList(fid, zRayList);
+    }
+    fflush(fid);
+    fclose(fid);
+    fid=0L;
+
+    // Write out the channel file
+
+    // First, clear the previous masks
+    for (int d=0;d<3;d++) {
+        QList<MaskRay*> * rayList;
+        if (d==0) {
+            rayList=&xRayList;
+        } else if (d==1) {
+            rayList=&yRayList;
+        } else {
+            rayList=&zRayList;
+        }
+        for (int i=0;i<rayList->size();i++) {
+            MaskRay* ray = (*rayList)[i];
+            delete ray;
+        }
+        rayList->clear();
+    }
+
+    QString channelFilename="";
+    if (outputPrefix.length()>0) {
+        channelFilename.append(outputPrefix);
+        channelFilename.append("_");
+    }
+    channelFilename.append(QString::number(label));
+    channelFilename.append(".chan");
+
+    QString channelFullPath=outputDirPath;
+    channelFullPath.append("/");
+    channelFullPath.append(channelFilename);
+
+    qDebug() << "Writing to file " << channelFullPath;
+
+    fid = fopen(channelFullPath.toAscii().data(), "wb");
+    if (!fid) {
+        qDebug() << "Could not open file " << channelFullPath << " to write";
+        return false;
+    }
+
+    fwrite(&totalVoxels, sizeof(long), 1, fid);
+    unsigned char numChannels=sourceImage->getCDim();
+    fwrite(&numChannels, sizeof(unsigned char), 1, fid);
+
+    unsigned char recRed=0;
+    unsigned char recGreen=1;
+    unsigned char recBlue=2;
+
+    fwrite(&recRed, sizeof(unsigned char), 1, fid);
+    fwrite(&recGreen, sizeof(unsigned char), 1, fid);
+    fwrite(&recBlue, sizeof(unsigned char), 1, fid);
+
+    unsigned char datatype=1; // 8-bit
+    if (sourceImage->getDatatype()==V3D_UINT16) {
+        datatype=2; // 16-bit
+    }
+    fwrite(&datatype, sizeof(unsigned char), 1, fid);
+
+    // allocate space for data
+    long unitsNeeded=totalVoxels*cdim;
+    void* data=0L;
+    if (sourceImage->getDatatype()==V3D_UINT8) {
+        data=(void*) new v3d_uint8[unitsNeeded];
+    } else {
+        data=(void*) new v3d_uint16[unitsNeeded];
+    }
+
+    // re-run axis-tracer and populate channel intensity data
+    QList<MaskRay*> * rayList;
+    long pairCount=0L;
+    long countCheck=0L;
+
+    if (smallestSize==0) {
+        rayList=&xRayList;
+    } else if (smallestSize==1) {
+        rayList=&yRayList;
+    } else {
+        rayList=&zRayList;
+    }
+
+    qDebug() << "calling axisTracer 2nd pass data=" << data;
+
+    axisTracer(smallestSize, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1, data, totalVoxels);
+
+    if (countCheck!=totalVoxels) {
+        qDebug() << "In second pass of axisTracer, countCheck=" << countCheck << " totalVoxels=" << totalVoxels;
+        exit(1);
+    }
+
+    fwrite(data, totalVoxels*cdim, (datatype+1), fid);
+    fflush(fid);
+    fclose(fid);
+
+    qDebug() << "Wrote " << channelFullPath;
+    return true;
 }
 
 void NeuronFragmentEditor::writeMaskList(FILE* fid, QList<MaskRay*>& list)
