@@ -525,24 +525,22 @@ int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThrea
         return exitWithError(std::string("Failed to read from URL"));
     }
     V3DLONG fileSize = reply->header(QNetworkRequest::ContentLengthHeader).toLongLong();
-    QIODevice * device = reply;
+    int result = false;
     if (fileSize == 0) {
         // Unknown size? Use an in memory IO Device
         QByteArray bytes = reply->readAll();
         fileSize = bytes.size();
         QBuffer* buffer = new QBuffer(&bytes);
         buffer->open(QIODevice::ReadOnly);
-        int result = loadRaw2StackPBD(*buffer, fileSize, image, useThreading);
+        result = loadRaw2StackPBD(*buffer, fileSize, image, useThreading);
         buffer->close();
-        reply->deleteLater();
         buffer->deleteLater();
-        return result;
     } else {
         // Stream from URL
-        int result = loadRaw2StackPBD(*device, fileSize, image, useThreading);
-        reply->deleteLater();
-        return result;
+        result = loadRaw2StackPBD(*reply, fileSize, image, useThreading);
     }
+    reply->deleteLater();
+    return result;
 }
 
 int ImageLoader::loadRaw2StackPBD(const char * filename, Image4DSimple * image, bool useThreading)
