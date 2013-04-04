@@ -643,179 +643,6 @@ void NeuronFragmentEditor::writeMaskList(FILE* fid, QList<MaskRay*>& list)
     }
 }
 
-void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
-        long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data, long assumedVoxelCount)
-{
-
-    bool debug=false;
-//    if (label==23) {
-//        debug=true;
-//    }
-    long skipCount=0L;
-    long start=-1;
-    long end=-1;
-    MaskRay* ray=0L;
-    long D0, D1, D2;
-
-    x0=LONG_MAX;
-    x1=0L;
-    y0=LONG_MAX;
-    y1=0L;
-    z0=LONG_MAX;
-    z1=0L;
-
-    if (direction==0) { // X-axis
-        D0=ydim;
-        D1=zdim;
-        D2=xdim;
-    } else if (direction==1) { // Y-axis
-        D0=xdim;
-        D1=zdim;
-        D2=ydim;
-    } else if (direction==2) { // Z-axis
-        D0=xdim;
-        D1=ydim;
-        D2=zdim;
-    }
-
-    long cdim=sourceImage->getCDim();
-    long cOffset=sourceImage->getTotalUnitNumberPerChannel();
-    v3d_uint8* source8=0L;
-    v3d_uint16* source16=0L;
-    v3d_uint8* data8=0L;
-    v3d_uint16* data16=0L;
-    if (sourceImage->getDatatype()==V3D_UINT8) {
-        source8=(v3d_uint8*)sourceImage->getRawData();
-        data8=(v3d_uint8*)data;
-    } else {
-        source16=(v3d_uint16*)sourceImage->getRawData();
-        data16=(v3d_uint16*)data;
-    }
-
-    //qDebug() << "Inside axisTracer data8=" << data8 << " source8=" << source8 <<" data16=" << data16 << " source16=" << source16;
-
-
-    voxelCount=0L;
-    pairCount=0L;
-    long dataPosition=0L;
-
-    const int START_STATE_BEGIN=0;
-    const int START_STATE_JUST_STARTED=1;
-    const int START_STATE_STARTED_IN_LAST_POSITION=2;
-
-    for (long d0=0;d0<D0;d0++) {
-        for (long d1=0;d1<D1;d1++) {
-            start=-1;
-            end=-1;
-            for (long d2=0;d2<D2;d2++) {
-                int startState=START_STATE_BEGIN;
-                long offset=0L;
-                if (direction==0) {
-                    offset=d1*ydim*xdim + d0*xdim + d2;
-                } else if (direction==1) {
-                    offset=d1*ydim*xdim + d2*xdim + d0;
-                } else { // direction==2
-                    offset=d2*ydim*xdim + d1*xdim + d0;
-                }
-                int labelValue=-1;
-                if (label8>0L) {
-                    labelValue=label8[offset];
-                } else {
-                    labelValue=label16[offset];
-                }
-                if (start==-1 && labelValue==label) {
-                    startState=START_STATE_JUST_STARTED;
-                    if (ray==0L) {
-                        ray=new MaskRay();
-                        ray->skipCount=skipCount;
-                        skipCount=0L;
-                    }
-                    start=d2;
-                    end=-1;
-                    ray->startList.append(start);
-                    if (d2==(D2-1)) {
-                        startState=START_STATE_STARTED_IN_LAST_POSITION;
-                    }
-                }
-                if (startState==START_STATE_STARTED_IN_LAST_POSITION ||
-                        (startState==START_STATE_BEGIN && (start>=0 && ( labelValue!=label || ( labelValue==label && d2==(D2-1) ) ) ) ) ) {
-                    end=d2;
-                    if (labelValue==label && d2==(D2-1)) { // handle last-case
-                        end=D2;
-                    }
-                    ray->endList.append(end);
-                    voxelCount+=(end-start);
-                    if (debug) {
-                        qDebug() << "start=" << start << " end=" << end << " voxelCount=" << voxelCount;
-                    }
-                    if (data>0L) {
-                        if (voxelCount > assumedVoxelCount) {
-                            qDebug() << "Error: assumedVoxelCount greater than voxelCount";
-                            exit(1);
-                        }
-                        for (int i=start;i<end;i++) {
-                            long sourcePosition=0L;
-                            if (direction==0) {
-                                sourcePosition=d1*ydim*xdim + d0*xdim + i;
-                            } else if (direction==1) {
-                                sourcePosition=d1*ydim*xdim + i*xdim + d0;
-                            } else { // direction==2
-                                sourcePosition=i*ydim*xdim + d1*xdim + d0;
-                            }
-                            for (long c=0;c<cdim;c++) {
-                                long cof=c*cOffset;
-                                long dof=c*assumedVoxelCount;
-                                //qDebug() << "dataPosition=" << dataPosition << " c=" << c << " dof=" << dof << " cof=" << cof << " voxelCount=" << voxelCount;
-                                if (data8>0L) {
-                                    data8[dataPosition+dof]=source8[sourcePosition+cof];
-                                } else {
-                                    data16[dataPosition+dof]=source16[sourcePosition+cof];
-                                }
-                            }
-                            dataPosition++;
-                        }
-                    }
-                    start=-1;
-                    end=-1;
-                }
-            }
-            if (ray>0L) {
-                pairCount+=ray->endList.size();
-                // Update max values - we will just check first and last values
-                long start=ray->startList[0];
-                long end=ray->endList[ray->endList.size()-1];
-                if (direction==0) { // x=d2 y=d0 z=d1
-                    if (start<x0) x0=start;
-                    if (end>x1) x1=end;
-                    if (d0<y0) y0=d0;
-                    if (d0>y1) y1=d0;
-                    if (d1<z0) z0=d1;
-                    if (d1>z1) z1=d1;
-                } else if (direction==1) { // x=d0 y=d2 z=d1
-                    if (d0<x0) x0=d0;
-                    if (d0>x1) x1=d0;
-                    if (start<y0) y0=start;
-                    if (end>y1) y1=end;
-                    if (d1<z0) z0=d1;
-                    if (d1>z1) z1=d1;
-                } else if (direction==2) { // x=d0 y=d1 z=d2
-                    if (d0<x0) x0=d0;
-                    if (d0>x1) x1=d0;
-                    if (d1<y0) y0=d1;
-                    if (d1>y1) y1=d1;
-                    if (start<z0) z0=start;
-                    if (end>z1) z1=end;
-                }
-                rayList->append(ray);
-                ray=0L;
-            } else {
-                skipCount++;
-            }
-        }
-    }
-
-}
-
 bool NeuronFragmentEditor::createMaskComposite()
 {
     My4DImage* outputStack = 0L;
@@ -1070,7 +897,245 @@ bool NeuronFragmentEditor::createMaskComposite()
 
 }
 
+void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
+        long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data, long assumedVoxelCount)
+{
 
+    bool debug=false;
+    long skipCount=0L;
+    long start=-1;
+    long end=-1;
+    MaskRay* ray=0L;
+    long D0, D1, D2;
+
+    x0=LONG_MAX;
+    x1=0L;
+    y0=LONG_MAX;
+    y1=0L;
+    z0=LONG_MAX;
+    z1=0L;
+
+    if (direction==0) { // X-axis
+        D0=ydim;
+        D1=zdim;
+        D2=xdim;
+    } else if (direction==1) { // Y-axis
+        D0=xdim;
+        D1=zdim;
+        D2=ydim;
+    } else if (direction==2) { // Z-axis
+        D0=xdim;
+        D1=ydim;
+        D2=zdim;
+    }
+
+    long cdim=sourceImage->getCDim();
+    long cOffset=sourceImage->getTotalUnitNumberPerChannel();
+    v3d_uint8* source8=0L;
+    v3d_uint16* source16=0L;
+    v3d_uint8* data8=0L;
+    v3d_uint16* data16=0L;
+    if (sourceImage->getDatatype()==V3D_UINT8) {
+        source8=(v3d_uint8*)sourceImage->getRawData();
+        data8=(v3d_uint8*)data;
+    } else {
+        source16=(v3d_uint16*)sourceImage->getRawData();
+        data16=(v3d_uint16*)data;
+    }
+
+    //qDebug() << "Inside axisTracer data8=" << data8 << " source8=" << source8 <<" data16=" << data16 << " source16=" << source16;
+
+
+    voxelCount=0L;
+    pairCount=0L;
+    long dataPosition=0L;
+
+    const int START_STATE_BEGIN=0;
+    const int START_STATE_JUST_STARTED=1;
+    const int START_STATE_STARTED_IN_LAST_POSITION=2;
+
+    long xdimydim=xdim*ydim;
+
+    for (long d0=0;d0<D0;d0++) {
+        long d0xdim=d0*xdim;
+        for (long d1=0;d1<D1;d1++) {
+
+            start=-1;
+            end=-1;
+            long d1Offset=d1*xdimydim;
+            long d1xdim=d1*xdim;
+            long offset=0L;
+
+            // do label check for this ray
+            bool foundLabelInThisRay=false;
+            if (label8>0L) {
+                if (direction==0) {
+                    for (long d2=0;d2<D2;d2++) {
+                        offset=d1Offset + d0xdim + d2;
+                        if (label8[offset]==label) {
+                            foundLabelInThisRay=true;
+                            break;
+                        }
+                    }
+                } else if (direction==1) {
+                    for (long d2=0;d2<D2;d2++) {
+                        offset=d1Offset + d2*xdim + d0;
+                        if (label8[offset]==label) {
+                            foundLabelInThisRay=true;
+                            break;
+                        }
+                    }
+                } else { // direction==2
+                    for (long d2=0;d2<D2;d2++) {
+                        offset=d2*xdimydim + d1xdim + d0;
+                        if (label8[offset]==label) {
+                            foundLabelInThisRay=true;
+                            break;
+                        }
+                    }
+                }
+            } else { // label16
+                if (direction==0) {
+                    for (long d2=0;d2<D2;d2++) {
+                        offset=d1Offset + d0xdim + d2;
+                        if (label16[offset]==label) {
+                            foundLabelInThisRay=true;
+                            break;
+                        }
+                    }
+                } else if (direction==1) {
+                    for (long d2=0;d2<D2;d2++) {
+                        offset=d1Offset + d2*xdim + d0;
+                        if (label16[offset]==label) {
+                            foundLabelInThisRay=true;
+                            break;
+                        }
+                    }
+                } else { // direction==2
+                    for (long d2=0;d2<D2;d2++) {
+                        offset=d2*xdimydim + d1xdim + d0;
+                        if (label16[offset]==label) {
+                            foundLabelInThisRay=true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (foundLabelInThisRay) {
+
+                for (long d2=0;d2<D2;d2++) {
+                    int startState=START_STATE_BEGIN;
+                    offset=0L;
+                    if (direction==0) {
+                        offset=d1Offset + d0xdim + d2;
+                    } else if (direction==1) {
+                        offset=d1Offset + d2*xdim + d0;
+                    } else { // direction==2
+                        offset=d2*xdimydim + d1xdim + d0;
+                    }
+                    int labelValue=-1;
+                    if (label8>0L) {
+                        labelValue=label8[offset];
+                    } else {
+                        labelValue=label16[offset];
+                    }
+                    if (start==-1 && labelValue==label) {
+                        startState=START_STATE_JUST_STARTED;
+                        if (ray==0L) {
+                            ray=new MaskRay();
+                            ray->skipCount=skipCount;
+                            skipCount=0L;
+                        }
+                        start=d2;
+                        end=-1;
+                        ray->startList.append(start);
+                        if (d2==(D2-1)) {
+                            startState=START_STATE_STARTED_IN_LAST_POSITION;
+                        }
+                    }
+                    if (startState==START_STATE_STARTED_IN_LAST_POSITION ||
+                            (startState==START_STATE_BEGIN && (start>=0 && ( labelValue!=label || ( labelValue==label && d2==(D2-1) ) ) ) ) ) {
+                        end=d2;
+                        if (labelValue==label && d2==(D2-1)) { // handle last-case
+                            end=D2;
+                        }
+                        ray->endList.append(end);
+                        voxelCount+=(end-start);
+                        if (debug) {
+                            qDebug() << "start=" << start << " end=" << end << " voxelCount=" << voxelCount;
+                        }
+                        if (data>0L) {
+                            if (voxelCount > assumedVoxelCount) {
+                                qDebug() << "Error: assumedVoxelCount greater than voxelCount";
+                                exit(1);
+                            }
+                            for (int i=start;i<end;i++) {
+                                long sourcePosition=0L;
+                                if (direction==0) {
+                                    sourcePosition=d1Offset + d0xdim + i;
+                                } else if (direction==1) {
+                                    sourcePosition=d1Offset + i*xdim + d0;
+                                } else { // direction==2
+                                    sourcePosition=i*xdimydim + d1xdim + d0;
+                                }
+                                for (long c=0;c<cdim;c++) {
+                                    long cof=c*cOffset;
+                                    long dof=c*assumedVoxelCount;
+                                    //qDebug() << "dataPosition=" << dataPosition << " c=" << c << " dof=" << dof << " cof=" << cof << " voxelCount=" << voxelCount;
+                                    if (data8>0L) {
+                                        data8[dataPosition+dof]=source8[sourcePosition+cof];
+                                    } else {
+                                        data16[dataPosition+dof]=source16[sourcePosition+cof];
+                                    }
+                                }
+                                dataPosition++;
+                            }
+                        }
+                        start=-1;
+                        end=-1;
+                    }
+                }
+
+            } // if foundLabelInThisRay
+
+
+            if (ray>0L) {
+                pairCount+=ray->endList.size();
+                // Update max values - we will just check first and last values
+                long start=ray->startList[0];
+                long end=ray->endList[ray->endList.size()-1];
+                if (direction==0) { // x=d2 y=d0 z=d1
+                    if (start<x0) x0=start;
+                    if (end>x1) x1=end;
+                    if (d0<y0) y0=d0;
+                    if (d0>y1) y1=d0;
+                    if (d1<z0) z0=d1;
+                    if (d1>z1) z1=d1;
+                } else if (direction==1) { // x=d0 y=d2 z=d1
+                    if (d0<x0) x0=d0;
+                    if (d0>x1) x1=d0;
+                    if (start<y0) y0=start;
+                    if (end>y1) y1=end;
+                    if (d1<z0) z0=d1;
+                    if (d1>z1) z1=d1;
+                } else if (direction==2) { // x=d0 y=d1 z=d2
+                    if (d0<x0) x0=d0;
+                    if (d0>x1) x1=d0;
+                    if (d1<y0) y0=d1;
+                    if (d1>y1) y1=d1;
+                    if (start<z0) z0=start;
+                    if (end>z1) z1=end;
+                }
+                rayList->append(ray);
+                ray=0L;
+            } else {
+                skipCount++;
+            }
+        }
+    }
+
+}
 
 
 
