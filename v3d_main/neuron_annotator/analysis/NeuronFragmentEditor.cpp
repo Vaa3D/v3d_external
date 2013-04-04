@@ -145,12 +145,12 @@ bool NeuronFragmentEditor::loadSourceAndLabelImages()
     zdim=sourceImage->getZDim();
     cdim=sourceImage->getCDim();
 
-    qDebug() << "Using source x=" << xdim << " y=" << ydim << " z=" << zdim << " c=" << cdim;
+    qDebug() << "Using source x=" << xdim << " y=" << ydim << " z=" << zdim << " c=" << cdim << " datatype=" << sourceImage->getDatatype();
 
     ImageLoader labelLoader;
     labelImage=labelLoader.loadImage(inputLabelIndexFilepath);
 
-    qDebug() << "Checking source and label dimension correspondence";
+    qDebug() << "Label Image has datatype=" << labelImage->getDatatype() << " , checking source and label dimension correspondence";
 
     if (labelImage->getXDim()!=xdim) {
         qDebug() << "source and label xdim do not match";
@@ -274,14 +274,14 @@ bool NeuronFragmentEditor::createFragmentComposite()
         }
     }
 
+    qDebug() << "Creating mip";
+
+    My4DImage * compositeMIP = AnalysisTools::createMIPFromImage(compositeImage);
+
     qDebug() << "Saving composite";
 
     ImageLoader compositeLoader;
     compositeLoader.saveImage(compositeImage, outputStackFilepath);
-
-    qDebug() << "Creating mip";
-
-    My4DImage * compositeMIP = AnalysisTools::createMIPFromImage(compositeImage);
 
     qDebug() << "Saving mip";
 
@@ -578,7 +578,7 @@ bool NeuronFragmentEditor::reverseLabel()
         fwrite(&recBlue, sizeof(unsigned char), 1, fid);
 
         unsigned char datatype=1; // 8-bit
-        if (label8==0L) {
+        if (sourceImage->getDatatype()==V3D_UINT16) {
             datatype=2; // 16-bit
         }
         fwrite(&datatype, sizeof(unsigned char), 1, fid);
@@ -682,6 +682,7 @@ bool NeuronFragmentEditor::createMaskComposite()
                 fread(&chanRecGreen, sizeof(unsigned char), 1, fid2);
                 fread(&chanRecBlue, sizeof(unsigned char), 1, fid2);
                 fread(&chanBytesPerChannel, sizeof(unsigned char), 1, fid2);
+                qDebug() << "File " << chanFilePath << " has chanBytesPerChannel=" << chanBytesPerChannel;
                 chanTotalDataBytes=chanBytesPerChannel*chanVoxels*chanChannelCount;
                 chanData=new unsigned char[chanTotalDataBytes];
                 fread(chanData, sizeof(unsigned char), chanTotalDataBytes, fid2);

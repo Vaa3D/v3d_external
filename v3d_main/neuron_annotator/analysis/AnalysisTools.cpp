@@ -279,7 +279,7 @@ My4DImage * AnalysisTools::getChannelSubImageFromMask(My4DImage* sourceImage, My
 My4DImage * AnalysisTools::createMIPFromImage(My4DImage * image) {
 
     if (image->getDatatype()!=V3D_UINT8) {
-        qDebug() << "createMIPFromImage only supports datatype 1";
+        qDebug() << "image has datatype=" << image->getDatatype() << " , createMIPFromImage only supports datatype 1";
         return 0;
     }
     Image4DProxy<My4DImage> stackProxy(image);
