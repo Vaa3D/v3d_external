@@ -1300,15 +1300,22 @@ void NaMainWindow::on_actionOpen_triggered()
 
 bool NaMainWindow::openMulticolorImageStack(QString dirName)
 {
-    QDir imageDir(dirName);
+    // string could be a folder name or a URL string
 
-    if ( ! imageDir.exists() )
-    {
-        QMessageBox::warning(this, tr("No such directory"),
-                             QString("'%1'\n No such directory.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
+    // Try for folder name
+    QDir imageDir(dirName);
+    if (imageDir.exists()) {
+        QUrl url = QUrl::fromLocalFile(imageDir.absolutePath());
+        return openMulticolorImageStack(url);
+    }
+
+    // That didn't work: try for a URL
+    QUrl url(dirName);
+    if (! url.isValid()) {
+        QMessageBox::warning(this, tr("No such directory or URL"),
+                             QString("'%1'\n No such directory or URL.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
         return false;
     }
-    QUrl url = QUrl::fromLocalFile(imageDir.absolutePath());
     return openMulticolorImageStack(url);
 }
 

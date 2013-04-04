@@ -15,7 +15,10 @@ QList<QUrl> MultiColorImageStackNode::getPathsToLsmMetadataFiles()
     QList<QUrl> metadataPathList;
     QString dirString = imageDir.toLocalFile();
     if (dirString.isEmpty()) {
-        return metadataPathList; // TODO - handle non-local directories
+        // Only local files can be loaded this way.
+        // Use Entity OpticalResolution instead.
+        // TODO - handle non-local directories that way.
+        return metadataPathList;
     }
     // Load file list from local file system
     QDir dir(dirString);
