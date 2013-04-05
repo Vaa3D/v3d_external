@@ -887,6 +887,7 @@ bool NaVolumeData::Writer::loadStacks()
         m_data->referenceStack->updateminmaxvalues();
 
     // Approximate 16-bit data for 8-it data volumes
+    // qDebug() << m_data->originalImageStackFileUrl;
     m_data->originalImageStack =
             transformStackToLinear(m_data->originalImageStack,
                                    m_data->originalImageStackFileUrl);

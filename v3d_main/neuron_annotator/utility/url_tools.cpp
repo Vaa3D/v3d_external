@@ -35,6 +35,9 @@ bool exists(const QUrl& url)
     QNetworkReply * reply = manager.get(request);
     loop.exec();
     bool result = (reply->error() == QNetworkReply::NoError);
+    if (! result) {
+        // qDebug() << "No such url" << url;
+    }
     reply->deleteLater();
     reply = NULL;
     // qDebug() << url.scheme() << url.path() << localPath << result << __FILE__ << __LINE__;

@@ -2066,3 +2066,5 @@ v3d_main/neuron_annotator/render/CameraTransformGL.cpp
 v3d_main/neuron_annotator/render/ActorGL.h
 v3d_main/neuron_annotator/render/ActorGL.cpp
 
+v3d_main/neuron_annotator/utility/url_tools.h
+v3d_main/neuron_annotator/utility/url_tools.cpp

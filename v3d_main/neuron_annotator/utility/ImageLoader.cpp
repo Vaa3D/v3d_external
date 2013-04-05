@@ -526,6 +526,7 @@ int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThrea
     }
     V3DLONG fileSize = reply->header(QNetworkRequest::ContentLengthHeader).toLongLong();
     int result = false;
+    // if (true) {
     if (fileSize == 0) {
         // Unknown size? Use an in memory IO Device
         QByteArray bytes = reply->readAll();

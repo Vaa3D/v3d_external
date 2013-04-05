@@ -176,7 +176,9 @@ bool DataFlowModel::loadLsmMetadata()
         return false;
     QList<QUrl> lsmMetadataFilepathList=multiColorImageStackNode->getPathsToLsmMetadataFiles();
     if (lsmMetadataFilepathList.size()==0) {
-        qDebug() << "DataFlowModel::loadLsmMetadata() received empty list of lsm metadata files";
+        // Empty list is OK, as long as voxel size is isotropic, or
+        // if Optical Resolution is availabel from entity model.
+        // qDebug() << "DataFlowModel::loadLsmMetadata() received empty list of lsm metadata files";
         return false;
     } else {
         UrlStream stream(lsmMetadataFilepathList.at(0));
