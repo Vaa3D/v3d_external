@@ -88,6 +88,7 @@ private:
     v3d_uint8* label8;
     v3d_uint16* label16;
     long* labelIndex;
+    QMutex mutex;
 
     // mode=combine | combine-mask
     QString outputMipFilepath;

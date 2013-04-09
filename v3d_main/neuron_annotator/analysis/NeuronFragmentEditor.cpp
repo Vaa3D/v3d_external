@@ -512,7 +512,9 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     maskFullPath.append("/");
     maskFullPath.append(maskFilename);
 
-    qDebug() << "Writing to file " << maskFullPath;
+    qDebug() << "Writing to file and locking with QMutex" << maskFullPath;
+
+    QMutexLocker locker(&mutex); // Will be deleted from stack
 
     FILE* fid = fopen(maskFullPath.toAscii().data(), "wb");
     if (!fid) {
