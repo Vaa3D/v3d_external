@@ -477,7 +477,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
             qDebug() << "Count check failed : direction=" << direction << " countCheck=" << countCheck << " labelIndex=" << labelIndex[label];
             return false;
         } else {
-            qDebug() << "Direction " << direction << " passed voxel count check";
+            //qDebug() << "Direction " << direction << " passed voxel count check";
         }
 
     }
@@ -486,7 +486,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     // smallest size.
 
     for (int s=0;s<pairCountList.size();s++) {
-        qDebug() << "pairCount " << s << " : " << pairCountList[s];
+        //qDebug() << "pairCount " << s << " : " << pairCountList[s];
     }
 
     unsigned char smallestSize=0;
@@ -497,7 +497,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         smallestSize=2;
     }
 
-    qDebug() << "Using axis " << smallestSize;
+    //qDebug() << "Using axis " << smallestSize;
 
     // Write out the mask file
     QString maskFilename="";
@@ -512,7 +512,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     maskFullPath.append("/");
     maskFullPath.append(maskFilename);
 
-    qDebug() << "Writing to file and locking with QMutex" << maskFullPath;
+    //qDebug() << "Writing to file and locking with QMutex" << maskFullPath;
 
     QMutexLocker locker(&mutex); // Will be deleted from stack
 
@@ -522,7 +522,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         return false;
     }
 
-    qDebug() << "Writing xdim=" << xdim << " ydim=" << ydim << " zdim=" << zdim;
+    //qDebug() << "Writing xdim=" << xdim << " ydim=" << ydim << " zdim=" << zdim;
 
     fwrite(&xdim, sizeof(long), 1, fid);
     fwrite(&ydim, sizeof(long), 1, fid);
@@ -596,7 +596,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     channelFullPath.append("/");
     channelFullPath.append(channelFilename);
 
-    qDebug() << "Writing to file " << channelFullPath;
+    //qDebug() << "Writing to file " << channelFullPath;
 
     fid = fopen(channelFullPath.toAscii().data(), "wb");
     if (!fid) {
@@ -644,7 +644,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         rayList=&zRayList;
     }
 
-    qDebug() << "calling axisTracer 2nd pass data=" << data;
+    //qDebug() << "calling axisTracer 2nd pass data=" << data;
 
     axisTracer(smallestSize, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1, data, totalVoxels);
 
@@ -657,7 +657,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     fflush(fid);
     fclose(fid);
 
-    qDebug() << "Wrote " << channelFullPath;
+    //qDebug() << "Wrote " << channelFullPath;
     return true;
 }
 
