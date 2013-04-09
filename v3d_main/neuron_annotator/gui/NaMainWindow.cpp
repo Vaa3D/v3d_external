@@ -691,8 +691,19 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
     loadSingleStack(fileName, false);
 }
 
+static bool isFolder(QString path) {
+    if (path.isEmpty())
+        return false;
+    if (path.endsWith("/"))
+        return true;
+    if (QFileInfo(path).suffix().isEmpty())
+        return true;
+    return false;
+}
+
 void NaMainWindow::openFileOrUrl(QString name)
 {
+    // qDebug() << "NaMainWindow::openFileOrUrl" << name << __FILE__ << __LINE__;
     if (name.isEmpty())
         return;
 
@@ -701,7 +712,7 @@ void NaMainWindow::openFileOrUrl(QString name)
         url = QUrl::fromLocalFile(name);
     bool isDir = true;
     if (url.isValid() && (!url.isRelative()) && url.toLocalFile().isEmpty())
-        isDir = url.path().endsWith("/"); // non-file URL
+        isDir = isFolder(url.path()); // non-file URL
     else
         isDir = QFileInfo(url.toLocalFile()).isDir(); // local file
     if (isDir)
@@ -779,7 +790,7 @@ QUrl checkDragEvent(QDropEvent* event)
     if (fileExtension.startsWith("mp4")) // v3draw or v3dpdb
         return url;
 #endif
-    bool isDir = url.path().endsWith("/");
+    bool isDir = isFolder(url.path());
     if (isDir)
         return url; // neuron separation folder
 
@@ -1300,6 +1311,7 @@ void NaMainWindow::on_actionOpen_triggered()
 
 bool NaMainWindow::openMulticolorImageStack(QString dirName)
 {
+    // qDebug() << "NaMainWindow::openMulticolorImageStack" << __FILE__ << __LINE__;
     // string could be a folder name or a URL string
 
     // Try for folder name
@@ -1308,6 +1320,10 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
         QUrl url = QUrl::fromLocalFile(imageDir.absolutePath());
         return openMulticolorImageStack(url);
     }
+
+    // Path is always a folder, so make it explicit
+    if (! dirName.endsWith("/"))
+        dirName = dirName + "/";
 
     // That didn't work: try for a URL
     QUrl url(dirName);
@@ -1321,6 +1337,7 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
 
 bool NaMainWindow::openMulticolorImageStack(QUrl url)
 {
+    // qDebug() << "NaMainWindow::openMulticolorImageStack" << url << __FILE__ << __LINE__;
     mainWindowStopWatch.start();
     // std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
     emit benchmarkTimerResetRequested();

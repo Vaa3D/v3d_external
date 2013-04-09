@@ -394,6 +394,7 @@ bool ImageLoader::validateFile() {
 
 bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
 {
+    // qDebug() << "loadImage stack url" << url << __FILE__ << __LINE__;
     if (hasPbdExtension(url.path().toStdString().c_str())) {
         if (loadRaw2StackPBD(url, stackp, true) == 0)
             return true;
@@ -418,6 +419,7 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
 
 bool ImageLoader::loadImage(Image4DSimple * stackp, const char* filepath)
 {
+    // qDebug() << "loadImage stack string" << filepath << __FILE__ << __LINE__;
     bool bSucceeded = false;
     std::string extension = getFileExtension(std::string(filepath));
 
@@ -441,14 +443,14 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, const char* filepath)
 }
 
 My4DImage* ImageLoader::loadImage(QUrl url) {
-    // qDebug() << "Starting to load file " << filepath;
+    // qDebug() << "Starting to load file " << url << __FILE__ << __LINE__;
     My4DImage* image=new My4DImage();
     loadImage(image, url);
     return image;
 }
 
 My4DImage* ImageLoader::loadImage(const char* filepath) {
-    // qDebug() << "Starting to load file " << filepath;
+    // qDebug() << "Starting to load file " << filepath << __FILE__ << __LINE__;
     My4DImage* image=new My4DImage();
     loadImage(image, filepath);
     return image;
@@ -500,6 +502,7 @@ QString ImageLoader::getFilePrefix(const char* filepath0) {
 
 int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThreading)
 {
+    // qDebug() << "loadRaw2StackPBD" << url;
     QUrl localUrl = url;
     if (localUrl.host() == "localhost")
         localUrl.setHost("");
@@ -521,6 +524,7 @@ int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThrea
     loop.exec();
     if (reply->error() != QNetworkReply::NoError) {
         // qDebug() << reply->error();
+        reply->close();
         reply->deleteLater();
         return exitWithError(std::string("Failed to read from URL"));
     }
@@ -529,17 +533,22 @@ int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThrea
     // if (true) {
     if (fileSize == 0) {
         // Unknown size? Use an in memory IO Device
+        // qDebug() << "Buffering file..." << url;
         QByteArray bytes = reply->readAll();
         fileSize = bytes.size();
         QBuffer* buffer = new QBuffer(&bytes);
+        // qDebug() << "Done buffering file" << url;
         buffer->open(QIODevice::ReadOnly);
+        // qDebug() << "Decoding buffer..." << url;
         result = loadRaw2StackPBD(*buffer, fileSize, image, useThreading);
+        // qDebug() << "Done decoding buffer" << url;
         buffer->close();
         buffer->deleteLater();
     } else {
         // Stream from URL
         result = loadRaw2StackPBD(*reply, fileSize, image, useThreading);
     }
+    reply->close();
     reply->deleteLater();
     return result;
 }

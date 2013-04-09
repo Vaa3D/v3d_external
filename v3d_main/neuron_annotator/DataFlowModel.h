@@ -35,8 +35,12 @@ public:
 
     bool loadLsmMetadata();
 
-    double getZRatio() const { return zRatio; }
-    void setZRatio(double ZRatioParam) { zRatio=ZRatioParam; }
+    double getZRatio() const {
+        return zRatio;
+    }
+    void setZRatio(double ZRatioParam) {
+        zRatio=ZRatioParam;
+    }
 
     void setMultiColorImageStackNode(MultiColorImageStackNode* node)
     {

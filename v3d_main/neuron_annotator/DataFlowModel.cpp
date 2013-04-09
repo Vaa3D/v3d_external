@@ -206,7 +206,8 @@ bool DataFlowModel::loadLsmMetadata()
                 double d2=d2String.toDouble();
                 QString d3String=doubleArgs.at(2);
                 double d3=d3String.toDouble();
-                zRatio=d3/d1;
+                setZRatio(d3/d1);
+                // zRatio=d3/d1;
                 // qDebug() << "Using lsm dimension ratios " << d1 << " " << d2 << " " << d3 << " setting zRatio=" << zRatio;
                 parseSuccess=true;
                 break;

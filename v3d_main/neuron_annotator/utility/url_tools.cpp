@@ -17,6 +17,7 @@ QUrl appendPath(const QUrl& parent, const QString& fileName)
 
 bool exists(const QUrl& url)
 {
+    // qDebug() << "exists?" << url << __FILE__ << __LINE__;
     if (! url.isValid())
         return false;
     if (url.isEmpty())
@@ -32,15 +33,20 @@ bool exists(const QUrl& url)
     QObject::connect(&manager, SIGNAL(finished(QNetworkReply*)),
             &loop, SLOT(quit()));
     QNetworkRequest request = QNetworkRequest(url);
-    QNetworkReply * reply = manager.get(request);
+    // Perhaps "head()" is faster than "get()"?
+    QNetworkReply * reply = manager.head(request);
+    // QObject::connect(reply, SIGNAL(readyRead()),
+    //                  &loop, SLOT(quit()));
     loop.exec();
     bool result = (reply->error() == QNetworkReply::NoError);
     if (! result) {
         // qDebug() << "No such url" << url;
     }
+    reply->close();
     reply->deleteLater();
     reply = NULL;
     // qDebug() << url.scheme() << url.path() << localPath << result << __FILE__ << __LINE__;
+    // qDebug() << "exists == " << result << __FILE__ << __LINE__;
     return result;
 }
 
@@ -89,6 +95,7 @@ QIODevice* UrlStream::io()
 UrlStream::~UrlStream()
 {
     if (reply != NULL) {
+        reply->close();
         reply->deleteLater();
         reply = NULL;
     }

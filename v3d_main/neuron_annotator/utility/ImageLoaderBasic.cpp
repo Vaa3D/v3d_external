@@ -41,6 +41,7 @@ ImageLoaderBasic::~ImageLoaderBasic()
 /* virtual */
 bool ImageLoaderBasic::loadImage(Image4DSimple * stackp, const char* filepath)
 {
+    // cerr << "loadImageBasic stack string " << filepath << __FILE__ << __LINE__ << endl;
     bool bSucceeded = false;
     std::string extension = getFileExtension(std::string(filepath));
     if (extension == "lsm") {

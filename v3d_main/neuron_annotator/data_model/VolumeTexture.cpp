@@ -183,6 +183,7 @@ void VolumeTexture::loadOneVolume(ProgressiveCompanion* item, QList<QUrl> folder
         ProgressiveFileCompanion* fileItem = dynamic_cast<
                 ProgressiveFileCompanion*>(item);
         QUrl fileUrl = fileItem->getFileUrl(foldersToSearch);
+        // qDebug() << "VolumeTexture::loadOneVolume" << fileUrl << __FILE__ << __LINE__;
         // fooDebug() << "Loading" << fileName << __FILE__ << __LINE__;
         SignalChannel channel = fileItem->second;
         if (channel == CHANNEL_LABEL) {

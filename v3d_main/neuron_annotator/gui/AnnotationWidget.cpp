@@ -220,7 +220,8 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
 
     ui->annotatedBranchTreeView->resizeColumnToContents(0);
     if (openStack) {
-        if (naMainWindow->openMulticolorImageStack(annotatedBranch->getFilePath())) {
+        QString path = annotatedBranch->getFilePath();
+        if (naMainWindow->openMulticolorImageStack(path)) {
             // Populate physical voxel size from entity model
             QString ores = annotatedBranch->entity()->getValueByAttributeName("Optical Resolution");
             if (!ores.isEmpty()) {
@@ -232,6 +233,7 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
                     double z = dims[2].toDouble(&ok);
                     if ((x > 0.0) && (z/x > 0.0)) {
                         naMainWindow->getDataFlowModel()->setZRatio(z/x);
+                        naMainWindow->get3DWidget()->setThickness(z/x);
                     }
                 }
             }

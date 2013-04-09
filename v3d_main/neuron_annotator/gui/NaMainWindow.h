@@ -96,6 +96,7 @@ public:
     DataFlowModel* getDataFlowModel() const;
     QString getStackPathWithDialog();
     QString getDataDirectoryPathWithDialog();
+    Na3DWidget* get3DWidget() {return ui.v3dr_glwidget;}
 
 signals:
     void channelVisibilityChanged(int, bool);

@@ -292,6 +292,7 @@ void NaVolumeData::loadSecondaryVolumeDataFromFiles()
 /* slot */
 void NaVolumeData::loadStagedVolumes()
 {
+    // qDebug() << "NaVolumeData::loadStagedVolumes" << __FILE__ << __LINE__;
     bool bChanged = false;
     QUrl signalPath, labelPath, referencePath;
     // Loop over all volumes to load
@@ -302,16 +303,20 @@ void NaVolumeData::loadStagedVolumes()
         ProgressiveFileCompanion* fileItem =
                 dynamic_cast<ProgressiveFileCompanion*>(item);
         QUrl fileUrl = fileItem->getFileUrl(progressiveLoader.getFoldersToSearch());
+        // qDebug() << "fileUrl =" << fileUrl << __FILE__ << __LINE__;
         SignalChannel channel = fileItem->second;
         if (channel == CHANNEL_LABEL) {
             labelPath = fileUrl;
+            // qDebug() << "Label" << fileUrl << __FILE__ << __LINE__;
         }
         else if (channel == CHANNEL_ALPHA) {
             referencePath = fileUrl;
+            // qDebug() << "Reference" << fileUrl << __FILE__ << __LINE__;
         }
         else {
             signalPath = fileUrl;
             doFlipY = fileItem->isFlippedY();
+            // qDebug() << "Signal" << fileUrl << __FILE__ << __LINE__;
         }
     }
     {
@@ -332,6 +337,7 @@ void NaVolumeData::loadStagedVolumes()
     if (bChanged) {
         loadVolumeDataFromFiles();
     }
+    // qDebug() << "end NaVolumeData::loadStagedVolumes" << __FILE__ << __LINE__;
 }
 
 /* slot */
