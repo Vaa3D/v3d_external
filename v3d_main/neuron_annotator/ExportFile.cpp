@@ -235,6 +235,9 @@ void copyChannel(My4DImage& dest, int destChannel,
 
 void ExportFile::run()
 {
+
+    qDebug() << "ExportFile::run()";
+
     if(stopped)
     {
         stopped = false;
@@ -330,9 +333,24 @@ void ExportFile::run()
 	    }
 
         if (is2D) {
+
+            qDebug() << "is2D==true";
+
+            qDebug() << "Calling padAndRotateImage";
             My4DImage* rotatedImage = padAndRotateImage(&outputImage, cameraModel.rotation());
+
+            QString rotatedString(filename);
+            rotatedString.append("_rotate.v3dpbd");
+            ImageLoader rotatedDebugger;
+            rotatedDebugger.saveImage(rotatedImage, rotatedString);
+
+            qDebug() << "Calling createMIPFromImage";
             My4DImage* rotatedMip = AnalysisTools::createMIPFromImage(rotatedImage);
+
+            qDebug() << "Deleting rotatedImage";
             delete rotatedImage;
+
+            qDebug() << "Calling imageLoader.saveImage";
             if (imageLoader.saveImage(rotatedMip, filename)) {
                 stopped = true;
             } else {
@@ -341,7 +359,12 @@ void ExportFile::run()
                 stopped = true;
             }
 
+            qDebug() << "Calling delete rotatedMip";
+            delete rotatedMip;
+
         } else {
+
+            qDebug() << "is2D==false";
 
             if (imageLoader.saveImage(&outputImage, filename)) {
                 stopped = true;
@@ -373,13 +396,14 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
     // To allocate space for a rotated version of an image, we need to account for a
     // larger size, which is the largest diagonal length.
 
-    double xDim=image->getXDim();
-    double yDim=image->getYDim();
-    double zDim=image->getZDim();
+    long xDim=image->getXDim();
+    long yDim=image->getYDim();
+    long zDim=image->getZDim();
+    int cDim=image->getCDim();
 
-    double xyLength = sqrt(xDim*xDim+yDim*yDim); // major axis=Z, 2
+    double xyLength = sqrt(xDim*xDim + yDim*yDim); // major axis=Z, 2
     double yzLength = sqrt(yDim*yDim + zDim*zDim); // major axis=X, 0
-    double zxLength = sqrt(zDim*zDim+xDim*xDim); // major axis=Y, 1
+    double zxLength = sqrt(zDim*zDim + xDim*xDim); // major axis=Y, 1
 
     int majorAxis=0;
     double majorLength=0.0;
@@ -387,7 +411,7 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
     if (xyLength > yzLength && xyLength > zxLength) {
         majorAxis=2;
         majorLength=xyLength;
-    } else if (yzLength > xyLength && yzLength)  {
+    } else if (yzLength > xyLength && yzLength > zxLength)  {
         majorAxis=0;
         majorLength=yzLength;
     } else {
@@ -395,8 +419,159 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
         majorLength=zxLength;
     }
 
-    // still in development...
+    // We need to create a cube of this dimension
+    My4DImage* rotatedImage = new My4DImage();
+    rotatedImage->loadImage(majorLength, majorLength, majorLength, image->getCDim(), image->getDatatype());
 
-    return 0L;
+    // Step through the original image, and for each voxel make an intensity contribution according to
+    // subvoxel proximity, such that the entire intensity value is transferred.
+    v3d_uint8** data8=0L;
+    v3d_uint16** data16=0L;
+
+    v3d_uint8** target8=0L;
+    v3d_uint16** target16=0L;
+
+    qDebug() << "Image datatype=" << image->getDatatype();
+
+    if (image->getDatatype()==V3D_UINT8) {
+        qDebug() << "Using 8-bit data";
+        data8=new v3d_uint8*[cDim];
+        target8=new v3d_uint8*[cDim];
+        for (int c=0;c<cDim;c++) {
+            data8[c]=image->getRawDataAtChannel(c);
+            target8[c]=rotatedImage->getRawDataAtChannel(c);
+        }
+    } else {
+        qDebug() << "Using 16-bit data";
+        data16=new v3d_uint16*[cDim];
+        target16=new v3d_uint16*[cDim];
+        for (int c=0;c<cDim;c++) {
+            data16[c]=(v3d_uint16*)image->getRawDataAtChannel(c);
+            target16[c]=(v3d_uint16*)rotatedImage->getRawDataAtChannel(c);
+        }
+    }
+
+    for (long z=0;z<zDim;z++) {
+        long zOffset=z*yDim*xDim;
+        for (long y=0;y<yDim;y++) {
+            long yOffset=y*xDim;
+            for (long x=0;x<xDim;x++) {
+
+//                Vector3D imagePosition=Vector3D(x,y,z);
+//                Vector3D rotationPosition=rotation*imagePosition;
+
+//                long rX=rotationPosition.m_x;
+//                long rY=rotationPosition.m_y;
+//                long rZ=rotationPosition.m_z;
+
+//                double rXr=rotationPosition.m_x-rX;
+//                double rYr=rotationPosition.m_y-rY;
+//                double rZr=rotationPosition.m_z-rZ;
+
+                long offset=zOffset+yOffset+x;
+
+//                long targetX=x+(majorLength-xDim)/2;
+//                long targetY=y+(majorLength-yDim)/2;
+//                long targetZ=z+(majorLength-zDim)/2;
+
+                long targetX=x;
+                long targetY=y;
+                long targetZ=z;
+
+                long tOffset=targetZ*majorLength*majorLength+targetY*majorLength+targetX;
+
+                for (int c=0;c<cDim;c++) {
+                    if (data8>0L) {
+                        v3d_uint8* d8=image->getRawDataAtChannel(c);
+                        v3d_uint8* t8=rotatedImage->getRawDataAtChannel(c);
+                        t8[tOffset]=d8[offset];
+                    } else {
+                        target16[c][tOffset]=data16[c][offset];
+                    }
+                }
+
+                //qDebug() << "z=" << z << " y=" << y << " x=" << x << " m_z=" << rotationPosition.m_z << " m_y=" << rotationPosition.m_y << " m_x=" << rotationPosition.m_x;
+                //qDebug() << "tz= " << targetZ <<" ty=" << targetY << " tx=" << targetX;
+
+//                double zFraction=0.0;
+//                if (rZr<0.0) {
+//                    zFraction=-1.0*rZr;
+//                } else {
+//                    zFraction=rZr;
+//                }
+
+//                double yFraction=0.0;
+//                if (rYr<0.0) {
+//                    yFraction=-1.0*rYr;
+//                } else {
+//                    yFraction=rYr;
+//                }
+
+//                double xFraction=0.0;
+//                if (rXr<0.0) {
+//                    xFraction=-1.0*rXr;
+//                } else {
+//                    xFraction=rXr;
+//                }
+
+                //qDebug() << "zFraction=" << zFraction << " yFraction=" << yFraction << " xFraction=" << xFraction;
+
+//                for (int z2=-1;z2<2;z2++) {
+//                    if (z2<1 && rZr<0.0 || z2>-1 && rZr>=0.0) {
+//                        for (int y2=-1;y2<2;y2++) {
+//                            if (y2<1 && rYr<0.0 || y2>-1 && rYr>=0.0) {
+//                                for (int x2=-1;x2<2;x2++) {
+//                                    if (x2<1 && rXr<0.0 || x2>-1 && rXr>=0.0) {
+
+//                                        long tX=targetX+x2;
+//                                        long tY=targetY+y2;
+//                                        long tZ=targetZ+z2;
+
+//                                        if (tX<majorLength && tY<majorLength && tZ<majorLength
+//                                                                       &&  tX>-1 && tY >-1 && tZ>-1) {
+//                                            long tOffset=tZ*majorLength*majorLength+tY*majorLength+tX;
+
+//                                            if (z2==0) {
+//                                                zFraction=1.0-zFraction;
+//                                            }
+
+//                                            if (y2==0) {
+//                                                yFraction=1.0-yFraction;
+//                                            }
+
+//                                            if (x2==0) {
+//                                                xFraction=1.0-xFraction;
+//                                            }
+
+//                                            double subvolume=zFraction*yFraction*xFraction;
+
+//                                            if (data8>0L) {
+//                                                for (int c=0;c<cDim;c++) {
+//                                                    unsigned char value=data8[c][offset];
+//                                                    target8[c][tOffset]=target8[c][tOffset]+subvolume*value;
+//                                                }
+//                                            } else { // 16-bit
+//                                                for (int c=0;c<cDim;c++) {
+//                                                    v3d_uint16 value=data16[c][offset];
+//                                                    target16[c][tOffset]=target16[c][tOffset]+subvolume*value;
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+
+            }
+        }
+    }
+
+//    ImageLoader debugSaver;
+//    QString originalStack = QString("originalStack.v3dpbd");
+//    debugSaver.saveImage(image, originalStack);
+
+    return rotatedImage;
 
 }
