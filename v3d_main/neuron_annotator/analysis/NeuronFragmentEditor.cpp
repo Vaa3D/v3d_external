@@ -37,6 +37,8 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
                 mode=MODE_COMBINE_MASK;
             } else if (modeString=="reverse-label") {
                 mode=MODE_REVERSE_LABEL;
+            } else if (modeString=="mips") {
+                mode=MODE_MIPS;
             } else {
                 mode=MODE_UNDEFINED;
             }
@@ -70,8 +72,6 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
                     maskFilePaths.append(possibleMaskFile);
                 }
             } while( i < (argList->size()-1) );
-        } else if (arg=="-mips") {
-            mode=MODE_MIPS;
         }
     }
     bool argError=false;
