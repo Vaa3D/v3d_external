@@ -1239,7 +1239,7 @@ bool NeuronFragmentEditor::createMips()
         QList<int> singletonList;
         singletonList.append(label);
         QString outputStackFilename="";
-        QString outputMipFilename=createFullPathFromLabel(label, "");
+        QString outputMipFilename=createFullPathFromLabel(label, ".tif");
         qDebug() << "Creating " << outputMipFilename;
         if (!createImagesFromFragmentList(singletonList, outputStackFilename, outputMipFilename)) {
             qDebug() << "createImagesFromFragmentList() failed at label=" << label;
