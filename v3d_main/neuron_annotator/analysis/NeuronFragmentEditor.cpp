@@ -75,7 +75,7 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
         }
     }
     bool argError=false;
-    if (mode!=MODE_COMBINE && mode!=MODE_COMBINE_MASK && mode!=MODE_REVERSE_LABEL) {
+    if (mode!=MODE_COMBINE && mode!=MODE_COMBINE_MASK && mode!=MODE_REVERSE_LABEL && mode!=MODE_MIPS) {
         qDebug() << "Do not recognize valid mode";
         argError=true;
     }
