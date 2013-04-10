@@ -505,7 +505,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         maskFilename.append(outputPrefix);
         maskFilename.append("_");
     }
-    maskFilename.append(QString::number(label));
+    maskFilename.append(QString::number(label-1));
     maskFilename.append(".mask");
 
     QString maskFullPath=outputDirPath;
@@ -589,7 +589,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         channelFilename.append(outputPrefix);
         channelFilename.append("_");
     }
-    channelFilename.append(QString::number(label));
+    channelFilename.append(QString::number(label-1));
     channelFilename.append(".chan");
 
     QString channelFullPath=outputDirPath;
