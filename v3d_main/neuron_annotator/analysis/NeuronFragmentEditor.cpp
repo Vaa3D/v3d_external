@@ -8,6 +8,7 @@ const int NeuronFragmentEditor::MODE_UNDEFINED=-1;
 const int NeuronFragmentEditor::MODE_COMBINE=0;
 const int NeuronFragmentEditor::MODE_COMBINE_MASK=1;
 const int NeuronFragmentEditor::MODE_REVERSE_LABEL=2;
+const int NeuronFragmentEditor::MODE_MIPS=3;
 
 NeuronFragmentEditor::NeuronFragmentEditor()
 {
@@ -69,6 +70,8 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
                     maskFilePaths.append(possibleMaskFile);
                 }
             } while( i < (argList->size()-1) );
+        } else if (arg=="-mips") {
+            mode=MODE_MIPS;
         }
     }
     bool argError=false;
@@ -76,7 +79,7 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
         qDebug() << "Do not recognize valid mode";
         argError=true;
     }
-    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL) {
+    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL || mode==MODE_MIPS) {
         if (sourceImageFilepath.length() < 1) {
             qDebug() << "-sourceImageFilepath is required";
             argError=true;
@@ -110,9 +113,13 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             qDebug() << "-maskFiles list is required";
             argError=true;
         }
-    } else if (mode==MODE_REVERSE_LABEL) {
+    } else if (mode==MODE_REVERSE_LABEL || mode==MODE_MIPS) {
         if (outputDirPath.size() < 1) {
             qDebug() << "-outputDir is required";
+            argError=true;
+        }
+        if (outputPrefix.size() < 1) {
+            qDebug() << "-outputPrefix is required";
             argError=true;
         }
     }
@@ -131,6 +138,8 @@ bool NeuronFragmentEditor::execute()
         return createMaskComposite();
     } else if (mode==MODE_REVERSE_LABEL) {
         return reverseLabel();
+    } else if (mode==MODE_MIPS) {
+        return createMips();
     } else {
         return false;
     }
@@ -172,18 +181,67 @@ bool NeuronFragmentEditor::loadSourceAndLabelImages()
     return true;
 }
 
+QList<int> NeuronFragmentEditor::getFragmentListFromLabelStack()
+{
+    QList<int> labelList;
+    unsigned char* checkList=new unsigned char[256*256]; // 16-bit
+    for (int i=0;i<256*256;i++) {
+        checkList[i]=0;
+    }
+    v3d_uint8* label8=0L;
+    v3d_uint16* label16=0L;
+    if (labelImage->getDatatype()==V3D_UINT8) {
+        label8=labelImage->getRawDataAtChannel(0);
+    } else {
+        label16=(v3d_uint16*)labelImage->getRawDataAtChannel(0);
+    }
+    for (long z=0;z<zdim;z++) {
+        long zOffset=z*ydim*xdim;
+        for (long y=0;y<ydim;y++) {
+            long yOffset=y*xdim;
+            for (long x=0;x<xdim;x++) {
+                long offset=zOffset+yOffset+x;
+                int labelValue=0;
+                if (label8>0L) {
+                    labelValue=label8[offset];
+                } else {
+                    labelValue=label16[offset];
+                }
+                if (labelValue>0) {
+                    if (checkList[labelValue]>0) {
+                        // do nothing
+                    } else {
+                        checkList[labelValue]=1;
+                    }
+                }
+            }
+        }
+    }
+    for (int i=0;i<256.*256;i++) {
+        if (checkList[i]>0) {
+            labelList.append(i);
+        }
+    }
+    return labelList;
+}
+
 bool NeuronFragmentEditor::createFragmentComposite()
 {
     if (!loadSourceAndLabelImages()) {
         return false;
     }
+    createImagesFromFragmentList(fragmentList, outputStackFilepath, outputMipFilepath);
+}
 
-    qDebug() << "Creating compositeImage";
+
+bool NeuronFragmentEditor::createImagesFromFragmentList(QList<int> fragmentList, QString stackFilename, QString mipFilename)
+{
+    qDebug() << "createImagesFromFragmentList() start";
 
     My4DImage * compositeImage = new My4DImage();
     compositeImage->loadImage(xdim, ydim, zdim, cdim, V3D_UINT8);
 
-    qDebug() << "Setting up channel pointeres";
+    qDebug() << "Setting up channel pointers";
 
     v3d_uint16 * label=(v3d_uint16*)(labelImage->getRawDataAtChannel(0));
 
@@ -279,15 +337,23 @@ bool NeuronFragmentEditor::createFragmentComposite()
 
     My4DImage * compositeMIP = AnalysisTools::createMIPFromImage(compositeImage);
 
-    qDebug() << "Saving composite";
+    if (stackFilename.length()>0) {
 
-    ImageLoader compositeLoader;
-    compositeLoader.saveImage(compositeImage, outputStackFilepath);
+        qDebug() << "Saving composite";
 
-    qDebug() << "Saving mip";
+        ImageLoader compositeLoader;
+        compositeLoader.saveImage(compositeImage, stackFilename);
 
-    ImageLoader compositeMIPSaver;
-    compositeMIPSaver.saveImage(compositeMIP, outputMipFilepath);
+    }
+
+    if (mipFilename.length()>0) {
+
+        qDebug() << "Saving mip";
+
+        ImageLoader compositeMIPSaver;
+        compositeMIPSaver.saveImage(compositeMIP, mipFilename);
+
+    }
 
     qDebug() << "Starting cleanup";
 
@@ -296,6 +362,7 @@ bool NeuronFragmentEditor::createFragmentComposite()
     delete compositeMIP;
     return true;
 }
+
 
 /*
 
@@ -500,17 +567,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     //qDebug() << "Using axis " << smallestSize;
 
     // Write out the mask file
-    QString maskFilename="";
-    if (outputPrefix.length()>0) {
-        maskFilename.append(outputPrefix);
-        maskFilename.append("_");
-    }
-    maskFilename.append(QString::number(label-1));
-    maskFilename.append(".mask");
-
-    QString maskFullPath=outputDirPath;
-    maskFullPath.append("/");
-    maskFullPath.append(maskFilename);
+    QString maskFullPath=createFullPathFromLabel(label, ".mask");
 
     //qDebug() << "Writing to file and locking with QMutex" << maskFullPath;
 
@@ -584,17 +641,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         rayList->clear();
     }
 
-    QString channelFilename="";
-    if (outputPrefix.length()>0) {
-        channelFilename.append(outputPrefix);
-        channelFilename.append("_");
-    }
-    channelFilename.append(QString::number(label-1));
-    channelFilename.append(".chan");
-
-    QString channelFullPath=outputDirPath;
-    channelFullPath.append("/");
-    channelFullPath.append(channelFilename);
+    QString channelFullPath=createFullPathFromLabel(label, ".mask");
 
     //qDebug() << "Writing to file " << channelFullPath;
 
@@ -1173,7 +1220,49 @@ void NeuronFragmentEditor::axisTracer(int direction, int label, QList<MaskRay*> 
 
 }
 
+bool NeuronFragmentEditor::createMips()
+{
+    QDir outputDir(outputDirPath);
+    if (!outputDir.exists()) {
+        QDir().mkdir(outputDirPath);
+    }
 
+    if (!loadSourceAndLabelImages()) {
+        qDebug() << "Error loading source and label images";
+        return false;
+    }
+
+    QList<int> labelList=getFragmentListFromLabelStack();
+
+    for (int i=0;i<labelList.size();i++) {
+        int label=labelList[i];
+        QList<int> singletonList;
+        singletonList.append(label);
+        QString outputStackFilename="";
+        QString outputMipFilename=createFullPathFromLabel(label, "");
+        qDebug() << "Creating " << outputMipFilename;
+        if (!createImagesFromFragmentList(singletonList, outputStackFilename, outputMipFilename)) {
+            qDebug() << "createImagesFromFragmentList() failed at label=" << label;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+QString NeuronFragmentEditor::createFullPathFromLabel(int label, QString extension)
+{
+    QString filename=outputDirPath;
+    filename.append("/");
+    if (outputPrefix.length()>0) {
+        filename.append(outputPrefix);
+        filename.append("_");
+    }
+    filename.append(QString::number(label-1));
+    filename.append(extension);
+
+    return filename;
+}
 
 
 

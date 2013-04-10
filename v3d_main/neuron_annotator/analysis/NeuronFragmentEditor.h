@@ -23,6 +23,7 @@ public:
     static const int MODE_COMBINE;
     static const int MODE_COMBINE_MASK;
     static const int MODE_REVERSE_LABEL;
+    static const int MODE_MIPS;
 
     NeuronFragmentEditor();
 
@@ -41,10 +42,11 @@ public:
         usage.append("   combine: given signal/label images, combine fragments into a new 3D stack and mip                    \n");
         usage.append("   combine-mask: given a list of mask files, combine into new 3D stack and mip                          \n");
         usage.append("   reverse-label: given signal/label images, produce a set of mask/channel files                        \n");
+        usage.append("   mips: generate all mips for signal/label stacks                                                      \n");
         usage.append("                                                                                                        \n");
-        usage.append("   [ -mode < combine | combine-mask | reverse-label , default=combine> ]                                \n");
+        usage.append("   [ -mode < combine | combine-mask | reverse-label | mips , default=combine> ]                         \n");
         usage.append("                                                                                                        \n");
-        usage.append("  For modes combine | reverse-label:                                                                    \n");
+        usage.append("  For modes combine | reverse-label | mips:                                                             \n");
         usage.append("   -sourceImage <original image file>                                                                   \n");
         usage.append("   -labelIndex <consolidated signal label index file>                                                   \n");
         usage.append("                                                                                                        \n");
@@ -60,10 +62,10 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("   -maskFiles <list of fullpaths for mask files to be included, will look for corres chan files>        \n");
         usage.append("                                                                                                        \n");
-        usage.append("  For mode=reverse-label, split label file to constituent mask/intensity subfiles:                      \n");
+        usage.append("  For mode=reverse-label | mips                                                                         \n");
         usage.append("                                                                                                        \n");
         usage.append("   -outputDir <output directory>                                                                        \n");
-        usage.append("   [ -outputPrefix <prefix for each output file> ]                                                      \n");
+        usage.append("   -outputPrefix <prefix for each output file>                                                          \n");
         usage.append("                                                                                                        \n");
         return usage;
     }
@@ -71,9 +73,11 @@ public:
     bool execute();
     int processArgs(vector<char*> *argList);
     bool createFragmentComposite();
+    bool createImagesFromFragmentList(QList<int> fragmentList, QString stackFilename, QString mipFilename);
     bool createMaskComposite();
     bool reverseLabel();
     bool loadSourceAndLabelImages();
+    bool createMips();
 
 private:
     int mode;
@@ -110,6 +114,10 @@ private:
                     long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data=0L, long assumedVoxels=0L);
 
     bool createMaskChanForLabel(int label);
+
+    QList<int> getFragmentListFromLabelStack();
+
+    QString createFullPathFromLabel(int label, QString extension);
 
 };
 
