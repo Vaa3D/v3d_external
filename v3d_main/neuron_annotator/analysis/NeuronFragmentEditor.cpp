@@ -641,7 +641,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         rayList->clear();
     }
 
-    QString channelFullPath=createFullPathFromLabel(label, ".mask");
+    QString channelFullPath=createFullPathFromLabel(label, ".chan");
 
     //qDebug() << "Writing to file " << channelFullPath;
 

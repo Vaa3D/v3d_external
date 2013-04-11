@@ -421,7 +421,8 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
 
     // We need to create a cube of this dimension
     My4DImage* rotatedImage = new My4DImage();
-    rotatedImage->loadImage(majorLength, majorLength, majorLength, image->getCDim(), image->getDatatype());
+    //rotatedImage->loadImage(majorLength, majorLength, majorLength, image->getCDim(), image->getDatatype());
+    rotatedImage->loadImage(xDim, yDim, zDim, image->getCDim(), image->getDatatype());
 
     // Step through the original image, and for each voxel make an intensity contribution according to
     // subvoxel proximity, such that the entire intensity value is transferred.
@@ -478,7 +479,8 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
                 long targetY=y;
                 long targetZ=z;
 
-                long tOffset=targetZ*majorLength*majorLength+targetY*majorLength+targetX;
+                //long tOffset=targetZ*majorLength*majorLength+targetY*majorLength+targetX;
+                long tOffset=offset;
 
                 for (int c=0;c<cDim;c++) {
                     if (data8>0L) {
