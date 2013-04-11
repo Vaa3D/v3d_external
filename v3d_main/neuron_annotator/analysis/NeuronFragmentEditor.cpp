@@ -632,6 +632,8 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     //    fid=0L;
     maskFile.close();
 
+    qDebug() << "Wrote " << maskFullPath;
+
     // Write out the channel file
 
     // First, clear the previous masks
@@ -654,6 +656,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     QString channelFullPath=createFullPathFromLabel(label, ".chan");
 
     QFile channelFile(channelFullPath);
+    channelFile.open( QIODevice::WriteOnly );
 
     //qDebug() << "Writing to file " << channelFullPath;
 
@@ -719,7 +722,7 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     //    fclose(fid);
     channelFile.close();
 
-    //qDebug() << "Wrote " << channelFullPath;
+    qDebug() << "Wrote " << channelFullPath;
     return true;
 }
 
