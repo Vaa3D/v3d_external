@@ -396,7 +396,9 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
 {
     // qDebug() << "loadImage stack url" << url << __FILE__ << __LINE__;
     if (hasPbdExtension(url.path().toStdString().c_str())) {
-        if (loadRaw2StackPBD(url, stackp, true) == 0)
+        QString path=url.path();
+        const char* pathData = path.toAscii().data();
+        if (loadRaw2StackPBD(pathData, stackp, true) == 0)
             return true;
         else
             return false;
