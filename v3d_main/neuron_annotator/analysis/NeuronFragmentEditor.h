@@ -92,7 +92,7 @@ private:
     v3d_uint8* label8;
     v3d_uint16* label16;
     long* labelIndex;
-    QMutex mutex;
+    QReadWriteLock mutex;
 
     // mode=combine | combine-mask
     QString outputMipFilepath;
@@ -109,7 +109,7 @@ private:
     QString outputDirPath;
     QString outputPrefix;
 
-    void writeMaskList(FILE* fid, QList<MaskRay*>& list);
+    void writeMaskList(QDataStream& dataOut, QList<MaskRay*>& list);
     void axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
                     long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data=0L, long assumedVoxels=0L);
 

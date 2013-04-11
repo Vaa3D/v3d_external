@@ -571,27 +571,36 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
 
     //qDebug() << "Writing to file and locking with QMutex" << maskFullPath;
 
-    QMutexLocker locker(&mutex); // Will be deleted from stack
+    QWriteLocker locker(&mutex); // Will be deleted from stack
 
-    FILE* fid = fopen(maskFullPath.toAscii().data(), "wb");
-    if (!fid) {
-        qDebug() << "Could not open file " << maskFullPath << " to write";
-        return false;
-    }
+    QFile maskFile(maskFullPath);
+
+
+
+    ////////////////////////////////////////////////////////////////////////
+
+    //    FILE* fid = fopen(maskFullPath.toAscii().data(), "wb");
+    //    if (!fid) {
+    //        qDebug() << "Could not open file " << maskFullPath << " to write";
+    //        return false;
+    //    }
+
+    maskFile.open( QIODevice::WriteOnly );
+    QDataStream maskOut(&maskFile);
 
     //qDebug() << "Writing xdim=" << xdim << " ydim=" << ydim << " zdim=" << zdim;
 
-    fwrite(&xdim, sizeof(long), 1, fid);
-    fwrite(&ydim, sizeof(long), 1, fid);
-    fwrite(&zdim, sizeof(long), 1, fid);
+    maskOut.writeRawData( (const char*) &xdim, sizeof(long));
+    maskOut.writeRawData( (const char *)&ydim, sizeof(long));
+    maskOut.writeRawData( (const char *)&zdim, sizeof(long));
 
     float xMicrons=0.0;
     float yMicrons=0.0;
     float zMicrons=0.0;
 
-    fwrite(&xMicrons, sizeof(float), 1, fid);
-    fwrite(&yMicrons, sizeof(float), 1, fid);
-    fwrite(&zMicrons, sizeof(float), 1, fid);
+    maskOut.writeRawData( (const char *)&xMicrons, sizeof(float));
+    maskOut.writeRawData( (const char *)&yMicrons, sizeof(float));
+    maskOut.writeRawData( (const char *)&zMicrons, sizeof(float));
 
     long x0=x0List[smallestSize];
     long x1=x1List[smallestSize];
@@ -600,27 +609,28 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     long z0=z0List[smallestSize];
     long z1=z1List[smallestSize];
 
-    fwrite(&x0, sizeof(long), 1, fid);
-    fwrite(&x1, sizeof(long), 1, fid);
-    fwrite(&y0, sizeof(long), 1, fid);
-    fwrite(&y1, sizeof(long), 1, fid);
-    fwrite(&z0, sizeof(long), 1, fid);
-    fwrite(&z1, sizeof(long), 1, fid);
+    maskOut.writeRawData( (const char *)&x0, sizeof(long));
+    maskOut.writeRawData( (const char *)&x1, sizeof(long));
+    maskOut.writeRawData( (const char *)&y0, sizeof(long));
+    maskOut.writeRawData( (const char *)&y1, sizeof(long));
+    maskOut.writeRawData( (const char *)&z0, sizeof(long));
+    maskOut.writeRawData( (const char *)&z1, sizeof(long));
 
     long totalVoxels=labelIndex[label];
-    fwrite(&totalVoxels, sizeof(long), 1, fid);
-    fwrite(&smallestSize, sizeof(unsigned char), 1, fid);
+    maskOut.writeRawData( (const char *)&totalVoxels, sizeof(long));
+    maskOut.writeRawData( (const char *)&smallestSize, sizeof(unsigned char));
 
     if (smallestSize==0) {
-        writeMaskList(fid, xRayList);
+        writeMaskList(maskOut, xRayList);
     } else if (smallestSize==1) {
-        writeMaskList(fid, yRayList);
+      writeMaskList(maskOut, yRayList);
     } else {
-        writeMaskList(fid, zRayList);
+        writeMaskList(maskOut, zRayList);
     }
-    fflush(fid);
-    fclose(fid);
-    fid=0L;
+    //    fflush(fid);
+    //    fclose(fid);
+    //    fid=0L;
+    maskFile.close();
 
     // Write out the channel file
 
@@ -643,31 +653,35 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
 
     QString channelFullPath=createFullPathFromLabel(label, ".chan");
 
+    QFile channelFile(channelFullPath);
+
     //qDebug() << "Writing to file " << channelFullPath;
 
-    fid = fopen(channelFullPath.toAscii().data(), "wb");
-    if (!fid) {
-        qDebug() << "Could not open file " << channelFullPath << " to write";
-        return false;
-    }
+    //    fid = fopen(channelFullPath.toAscii().data(), "wb");
+    //    if (!fid) {
+    //        qDebug() << "Could not open file " << channelFullPath << " to write";
+    //        return false;
+    //    }
 
-    fwrite(&totalVoxels, sizeof(long), 1, fid);
+    QDataStream chanOut(&channelFile);
+
+    chanOut.writeRawData( (const char *)&totalVoxels, sizeof(long));
     unsigned char numChannels=sourceImage->getCDim();
-    fwrite(&numChannels, sizeof(unsigned char), 1, fid);
+    chanOut.writeRawData( (const char *)&numChannels, sizeof(unsigned char));
 
     unsigned char recRed=0;
     unsigned char recGreen=1;
     unsigned char recBlue=2;
 
-    fwrite(&recRed, sizeof(unsigned char), 1, fid);
-    fwrite(&recGreen, sizeof(unsigned char), 1, fid);
-    fwrite(&recBlue, sizeof(unsigned char), 1, fid);
+    chanOut.writeRawData( (const char *)&recRed, sizeof(unsigned char));
+    chanOut.writeRawData( (const char *)&recGreen, sizeof(unsigned char));
+    chanOut.writeRawData( (const char *)&recBlue, sizeof(unsigned char));
 
     unsigned char datatype=1; // 8-bit
     if (sourceImage->getDatatype()==V3D_UINT16) {
         datatype=2; // 16-bit
     }
-    fwrite(&datatype, sizeof(unsigned char), 1, fid);
+    chanOut.writeRawData( (const char *)&datatype, sizeof(unsigned char));
 
     // allocate space for data
     long unitsNeeded=totalVoxels*cdim;
@@ -700,26 +714,27 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         exit(1);
     }
 
-    fwrite(data, totalVoxels*cdim, (datatype+1), fid);
-    fflush(fid);
-    fclose(fid);
+    chanOut.writeRawData( (const char *)data, totalVoxels*cdim*datatype);
+    //    fflush(fid);
+    //    fclose(fid);
+    channelFile.close();
 
     //qDebug() << "Wrote " << channelFullPath;
     return true;
 }
 
-void NeuronFragmentEditor::writeMaskList(FILE* fid, QList<MaskRay*>& list)
+void NeuronFragmentEditor::writeMaskList(QDataStream& dataOut, QList<MaskRay*>& list)
 {
     for (int i=0;i<list.size();i++) {
-        fwrite(&(list[i]->skipCount), sizeof(long), 1, fid);
+        dataOut.writeRawData( (const char *)&(list[i]->skipCount), sizeof(long));
         long pairListSize=list[i]->endList.size();
-        fwrite(&pairListSize, sizeof(long), 1, fid);
+        dataOut.writeRawData( (const char *)&pairListSize, sizeof(long));
         //qDebug() << "skip=" << list[i]->skipCount << " pairs=" << pairListSize;
         for(int j=0;j<list[i]->endList.size();j++) {
             long start=list[i]->startList[j];
-            fwrite(&start, sizeof(long), 1, fid);
+            dataOut.writeRawData( (const char *)&start, sizeof(long));
             long end=list[i]->endList[j];
-            fwrite(&end, sizeof(long), 1, fid);
+            dataOut.writeRawData( (const char *)&end, sizeof(long));
             //qDebug() << "start=" << start << " end=" << end;
         }
     }
