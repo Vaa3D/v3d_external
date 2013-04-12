@@ -4386,7 +4386,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
                                 if (b_img1)
                                 {
-                                    data1d[idx] = p1dImg1[offset_j1 + i];
+                                    data1d[idx] = ((unsigned short *)p1dImg1)[offset_j1 + i];
                                 }
                                 else
                                 {
@@ -4814,7 +4814,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             for(V3DLONG i=0; i<pagesz; i++)
             {
                 //data1d[offset + i] = 0.5*((unsigned short *)p1dImg1)[offset1+i] + 0.5*((unsigned short *)p1dImg2)[offset2+i];
-                data1d[offset + i] = p1dImg1[offset1 + i];
+                data1d[offset + i] = ((unsigned short *)p1dImg1)[offset1 + i];
             }
 
             // step 5. cutting the blank plane introduced by blending
