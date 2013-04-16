@@ -166,7 +166,7 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         } else if (arg=="-queryChannel") {
             QString queryChannelString=(*argList)[++i];
             queryChannel=queryChannelString.toInt();
-        } else if (arg=="outputFile") {
+        } else if (arg=="-outputFile") {
             outputFilePath=(*argList)[++i];
         } else if (arg=="-maxHits") {
             QString maxHitsString=(*argList)[++i];
@@ -703,7 +703,7 @@ bool VolumePatternIndex::doSearch()
         V3DLONG score=p.first;
         int index=p.second;
         QString filename=indexFileList[index];
-        scoreOutput << position << ". " << score << " : " << filename;
+        scoreOutput << position << ". " << score << " : " << filename << "\n";
     }
 
     scoreOutput.flush();
