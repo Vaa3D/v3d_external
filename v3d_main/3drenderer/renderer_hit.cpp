@@ -176,7 +176,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actSaveSurfaceObj=0,
 			*actLockSceneEditObjGeometry=0, *actAddtoMarkerPool=0, *actClearMarkerPool=0,//ZJL
 			*actMarkerCreate1=0, *actMarkerCreate1Stroke=0, *actMarkerCreate2=0, *actMarkerCreate3=0, *actMarkerRefineT=0, *actMarkerRefineC=0, *actMarkerRefineLocal=0, *actMarkerAutoSeed=0,
-			*actMarkerZoomin3D=0, *actMarkerMoveToMiddleZ=0,
+			*actMarkerZoomin3D=0, *actMarkerZoomin3D_terefly=0,
+            *actMarkerMoveToMiddleZ=0,
 			*actMarkerDelete=0, *actMarkerClearAll=0, *actMarkerCreateNearestNeuronNode=0,
 			*actMarkerTraceFromStartPos=0, *actMarkerTraceFromStartPos_selPara=0, *actMarkerLineProfileFromStartPos=0, *actMarkerLineProfileFromStartPos_drawline=0, *actMarkerLabelAsStartPos=0,
 			*actMarkerTraceFromOnePos=0, *actMarkerTraceFromOnePosToOtherMarkers=0,
@@ -418,6 +419,26 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actMarkerZoomin3D = new QAction("open the local zoom-in 3d viewer", w));
 #endif
+
+
+                QDir pluginsDir = QDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+                if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+                    pluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+                if (pluginsDir.dirName() == "MacOS") {
+                    pluginsDir.cdUp();
+                    pluginsDir.cdUp();
+                    pluginsDir.cdUp();
+                }
+#endif
+
+                QDir pluginsDir1 = pluginsDir;
+                if (pluginsDir1.cd("plugins/teramanager")==true)
+                {
+                    listAct.append(actMarkerZoomin3D_terefly = new QAction("Zoom-in to this select marker location", w));
+                }
+                
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
@@ -1260,6 +1281,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) ); //090710 090714 RZC
 		}
 	}
+    else if (act==actMarkerZoomin3D_terefly) // by PHC, 20130417
+    {
+        v3d_msg("Need to add code here to invoke terefly local-zoomin");
+    }
 	else if (act==actMarkerCreateNearestNeuronNode)
 	{
 		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));

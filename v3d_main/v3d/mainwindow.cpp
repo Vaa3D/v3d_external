@@ -827,6 +827,13 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 }
             }
         }
+        else if (curfile_info.suffix().toUpper()=="MARKER" ||  curfile_info.suffix().toUpper()=="CSV")
+                 //added by PHC, 20130420.
+        {
+            v3d_msg("Directly loading a marker or csv file into Vaa3D's main window is ambiguous. \n"
+                    "You can either open it directly in a 3D viewer window, or literally associate \n"
+                    "it with an existing image, or literally convert it to a Point Cloud .APO file and then open.");
+        }
         else if (curfile_info.suffix().toUpper()=="APO" ||
                  curfile_info.suffix().toUpper()=="SWC" ||
                  curfile_info.suffix().toUpper()=="ESWC" ||
@@ -842,9 +849,14 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             mypara_3Dview->xwidget = 0;
             mypara_3Dview->V3Dmainwindow = this; //added on 090503
             //set up data
-            if (curfile_info.suffix().toUpper()=="APO") mypara_3Dview->pointcloud_file_list.append(fileName);
-            else if (curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="ESWC") mypara_3Dview->swc_file_list.append(fileName);
-            else if (curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS" || curfile_info.suffix().toUpper()=="VAA3DS")
+            if (curfile_info.suffix().toUpper()=="APO")
+                mypara_3Dview->pointcloud_file_list.append(fileName);
+            else if (curfile_info.suffix().toUpper()=="SWC" ||
+                     curfile_info.suffix().toUpper()=="ESWC")
+                mypara_3Dview->swc_file_list.append(fileName);
+            else if (curfile_info.suffix().toUpper()=="OBJ" ||
+                     curfile_info.suffix().toUpper()=="V3DS" ||
+                     curfile_info.suffix().toUpper()=="VAA3DS")
                 mypara_3Dview->surface_file = fileName;
             else {delete mypara_3Dview; mypara_3Dview=0; return;}
             //
