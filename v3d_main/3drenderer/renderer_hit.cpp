@@ -776,6 +776,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
                 vector <XYZ> loc_vec;
                 XYZ loc; loc.x = mk.x; loc.y = mk.y; loc.z = mk.z;
+                loc_vec.push_back(loc);
                 
                 b_grabhighrez = true;
                 produceZoomViewOf3DRoi(loc_vec);
