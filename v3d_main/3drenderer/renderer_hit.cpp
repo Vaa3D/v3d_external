@@ -176,7 +176,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actSaveSurfaceObj=0,
 			*actLockSceneEditObjGeometry=0, *actAddtoMarkerPool=0, *actClearMarkerPool=0,//ZJL
 			*actMarkerCreate1=0, *actMarkerCreate1Stroke=0, *actMarkerCreate2=0, *actMarkerCreate3=0, *actMarkerRefineT=0, *actMarkerRefineC=0, *actMarkerRefineLocal=0, *actMarkerAutoSeed=0,
-			*actMarkerZoomin3D=0, *actMarkerZoomin3D_terefly=0,
+			*actMarkerZoomin3D=0, *actMarkerZoomin3D_terafly=0,
             *actMarkerMoveToMiddleZ=0,
 			*actMarkerDelete=0, *actMarkerClearAll=0, *actMarkerCreateNearestNeuronNode=0,
 			*actMarkerTraceFromStartPos=0, *actMarkerTraceFromStartPos_selPara=0, *actMarkerLineProfileFromStartPos=0, *actMarkerLineProfileFromStartPos_drawline=0, *actMarkerLabelAsStartPos=0,
@@ -436,7 +436,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 QDir pluginsDir1 = pluginsDir;
                 if (pluginsDir1.cd("plugins/teramanager")==true)
                 {
-                    listAct.append(actMarkerZoomin3D_terefly = new QAction("Zoom-in to this select marker location", w));
+                    listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
                 }
                 
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -764,6 +764,26 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		listCurveMarkerPool.clear();
 	}
+    else if (act==actMarkerZoomin3D_terafly) // by PHC, 20130417
+    {
+        if (w && curImg)
+		{
+			int tmpind = names[2]-1;
+			if (tmpind>=0)
+			{
+				LocationSimple mk = curImg->listLandmarks.at(tmpind); //get the specified landmark
+
+				v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
+                vector <XYZ> loc_vec;
+                XYZ loc; loc.x = mk.x; loc.y = mk.y; loc.z = mk.z;
+                
+                b_grabhighrez = true;
+                produceZoomViewOf3DRoi(loc_vec);
+			}
+		}
+    }
+
+    
 #ifndef test_main_cpp
 	else if (act == actLockSceneEditObjGeometry)
 	{
@@ -1281,10 +1301,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) ); //090710 090714 RZC
 		}
 	}
-    else if (act==actMarkerZoomin3D_terefly) // by PHC, 20130417
-    {
-        v3d_msg("Need to add code here to invoke terefly local-zoomin");
-    }
 	else if (act==actMarkerCreateNearestNeuronNode)
 	{
 		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
@@ -3028,7 +3044,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			}
 			//set up parameters
 			v3d_imaging_paras myimagingp;
-			myimagingp.OPS = "Acquisition: ROI from High Resolution Image";
+			myimagingp.OPS = "Acquisition: ROI from High Resolution Image"; //this is to open a new local 3D viewer window
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 			myimagingp.xs = mx;
 			myimagingp.ys = my;
