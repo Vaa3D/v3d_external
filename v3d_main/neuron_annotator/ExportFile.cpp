@@ -337,7 +337,7 @@ void ExportFile::run()
             qDebug() << "is2D==true";
 
             qDebug() << "Calling padAndRotateImage";
-            My4DImage* rotatedImage = padAndRotateImage(&outputImage, cameraModel.rotation());
+            My4DImage* rotatedImage = padAndRotateImage(&outputImage, cameraModel.rotation(), true /* flipY */);
 
             QString rotatedString(filename);
             rotatedString.append("_rotate.v3dpbd");
@@ -391,7 +391,7 @@ void ExportFile::run()
     return;
 }
 
-My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rotation)
+My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rotation, bool flipY)
 {
     // To allocate space for a rotated version of an image, we need to account for a
     // larger size, which is the largest diagonal length.
@@ -401,28 +401,37 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
     long zDim=image->getZDim();
     int cDim=image->getCDim();
 
+    qDebug() << "Export xDim=" << xDim << " yDim=" << yDim << " zDim= " << zDim;
+
     double xyLength = sqrt(xDim*xDim + yDim*yDim); // major axis=Z, 2
     double yzLength = sqrt(yDim*yDim + zDim*zDim); // major axis=X, 0
     double zxLength = sqrt(zDim*zDim + xDim*xDim); // major axis=Y, 1
 
     int majorAxis=0;
-    double majorLength=0.0;
+    double majorLengthD=0.0;
 
     if (xyLength > yzLength && xyLength > zxLength) {
         majorAxis=2;
-        majorLength=xyLength;
+        majorLengthD=xyLength;
     } else if (yzLength > xyLength && yzLength > zxLength)  {
         majorAxis=0;
-        majorLength=yzLength;
+        majorLengthD=yzLength;
     } else {
         majorAxis=1;
-        majorLength=zxLength;
+        majorLengthD=zxLength;
     }
+
+    long majorLength=majorLengthD;
+    majorLength++;
 
     // We need to create a cube of this dimension
     My4DImage* rotatedImage = new My4DImage();
-    //rotatedImage->loadImage(majorLength, majorLength, majorLength, image->getCDim(), image->getDatatype());
-    rotatedImage->loadImage(xDim, yDim, zDim, image->getCDim(), image->getDatatype());
+    rotatedImage->loadImage(majorLength, majorLength, majorLength, image->getCDim(), image->getDatatype());
+    long xTim=majorLength;
+    long yTim=majorLength;
+    long zTim=majorLength;
+
+    rotatedImage->loadImage(xTim, yTim, zTim, image->getCDim(), image->getDatatype());
 
     // Step through the original image, and for each voxel make an intensity contribution according to
     // subvoxel proximity, such that the entire intensity value is transferred.
@@ -452,35 +461,60 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
         }
     }
 
+    Vector3D vec = rotation.convertBodyFixedXYZRotationToThreeAngles();
+
+    double rotationX=vec.m_x;
+    double rotationY=vec.m_y;
+    double rotationZ=vec.m_z;
+
+    Rotation3D rotationT = rotation;
+
+    rotationT.setRotationFromBodyFixedXYZAngles(-1.0 * rotationX, -1.0 * rotationY, rotationZ);
+
     for (long z=0;z<zDim;z++) {
         long zOffset=z*yDim*xDim;
         for (long y=0;y<yDim;y++) {
-            long yOffset=y*xDim;
+            long fY=y;
+            if (flipY) {
+                fY=yDim-y-1;
+            }
+            long yOffset=fY*xDim;
             for (long x=0;x<xDim;x++) {
 
-//                Vector3D imagePosition=Vector3D(x,y,z);
-//                Vector3D rotationPosition=rotation*imagePosition;
+                long cX=x-xDim/2;
+                long cY=y-yDim/2;
+                long cZ=z-zDim/2;
 
-//                long rX=rotationPosition.m_x;
-//                long rY=rotationPosition.m_y;
-//                long rZ=rotationPosition.m_z;
+                Vector3D imagePosition=Vector3D(cX,cY,cZ);
+                Vector3D rotationPosition=rotationT*imagePosition;
 
-//                double rXr=rotationPosition.m_x-rX;
-//                double rYr=rotationPosition.m_y-rY;
-//                double rZr=rotationPosition.m_z-rZ;
+                long rX=rotationPosition.m_x+xDim/2;
+                long rY=rotationPosition.m_y+yDim/2;
+                long rZ=rotationPosition.m_z+zDim/2;
 
                 long offset=zOffset+yOffset+x;
 
-//                long targetX=x+(majorLength-xDim)/2;
-//                long targetY=y+(majorLength-yDim)/2;
-//                long targetZ=z+(majorLength-zDim)/2;
+                long targetX=rX+(majorLength-xDim)/2;
+                long targetY=rY+(majorLength-yDim)/2;
+                long targetZ=rZ+(majorLength-zDim)/2;
 
-                long targetX=x;
-                long targetY=y;
-                long targetZ=z;
+                if (targetX >= xTim) {
+                    targetX=xTim-1;
+                } else if (targetX < 0) {
+                    targetX=0;
+                }
+                if (targetY >= yTim) {
+                    targetY=yTim-1;
+                } else if (targetY < 0) {
+                    targetY=0;
+                }
+                if (targetZ >= zTim) {
+                    targetZ=zTim-1;
+                } else if (targetZ < 0) {
+                    targetZ=0;
+                }
 
-                //long tOffset=targetZ*majorLength*majorLength+targetY*majorLength+targetX;
-                long tOffset=offset;
+                long tOffset=targetZ*yTim*xTim + targetY*xTim + targetX;
 
                 for (int c=0;c<cDim;c++) {
                     if (data8>0L) {
@@ -492,87 +526,11 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
                     }
                 }
 
-                //qDebug() << "z=" << z << " y=" << y << " x=" << x << " m_z=" << rotationPosition.m_z << " m_y=" << rotationPosition.m_y << " m_x=" << rotationPosition.m_x;
-                //qDebug() << "tz= " << targetZ <<" ty=" << targetY << " tx=" << targetX;
 
-//                double zFraction=0.0;
-//                if (rZr<0.0) {
-//                    zFraction=-1.0*rZr;
-//                } else {
-//                    zFraction=rZr;
-//                }
-
-//                double yFraction=0.0;
-//                if (rYr<0.0) {
-//                    yFraction=-1.0*rYr;
-//                } else {
-//                    yFraction=rYr;
-//                }
-
-//                double xFraction=0.0;
-//                if (rXr<0.0) {
-//                    xFraction=-1.0*rXr;
-//                } else {
-//                    xFraction=rXr;
-//                }
-
-                //qDebug() << "zFraction=" << zFraction << " yFraction=" << yFraction << " xFraction=" << xFraction;
-
-//                for (int z2=-1;z2<2;z2++) {
-//                    if (z2<1 && rZr<0.0 || z2>-1 && rZr>=0.0) {
-//                        for (int y2=-1;y2<2;y2++) {
-//                            if (y2<1 && rYr<0.0 || y2>-1 && rYr>=0.0) {
-//                                for (int x2=-1;x2<2;x2++) {
-//                                    if (x2<1 && rXr<0.0 || x2>-1 && rXr>=0.0) {
-
-//                                        long tX=targetX+x2;
-//                                        long tY=targetY+y2;
-//                                        long tZ=targetZ+z2;
-
-//                                        if (tX<majorLength && tY<majorLength && tZ<majorLength
-//                                                                       &&  tX>-1 && tY >-1 && tZ>-1) {
-//                                            long tOffset=tZ*majorLength*majorLength+tY*majorLength+tX;
-
-//                                            if (z2==0) {
-//                                                zFraction=1.0-zFraction;
-//                                            }
-
-//                                            if (y2==0) {
-//                                                yFraction=1.0-yFraction;
-//                                            }
-
-//                                            if (x2==0) {
-//                                                xFraction=1.0-xFraction;
-//                                            }
-
-//                                            double subvolume=zFraction*yFraction*xFraction;
-
-//                                            if (data8>0L) {
-//                                                for (int c=0;c<cDim;c++) {
-//                                                    unsigned char value=data8[c][offset];
-//                                                    target8[c][tOffset]=target8[c][tOffset]+subvolume*value;
-//                                                }
-//                                            } else { // 16-bit
-//                                                for (int c=0;c<cDim;c++) {
-//                                                    v3d_uint16 value=data16[c][offset];
-//                                                    target16[c][tOffset]=target16[c][tOffset]+subvolume*value;
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
 
             }
         }
     }
-
-//    ImageLoader debugSaver;
-//    QString originalStack = QString("originalStack.v3dpbd");
-//    debugSaver.saveImage(image, originalStack);
 
     return rotatedImage;
 

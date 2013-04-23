@@ -1603,21 +1603,21 @@ void NaMainWindow::on_action2D_MIP_triggered() {
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 2D MIP to an .tif file"), ".", QObject::tr("2D MIP (*.tif)"));
     if (!(filename.isEmpty())){
 
-        bool saved = ui.naLargeMIPWidget->saveImage(filename); // REPLACING WITH 3D MIP USING ROTATION and CUT PLANES
+        // bool saved = ui.naLargeMIPWidget->saveImage(filename); // REPLACING WITH 3D MIP USING ROTATION and CUT PLANES
 
-//        ExportFile *pExport = new ExportFile(
-//                filename,
-//                dataFlowModel->getVolumeData(),
-//                dataFlowModel->getNeuronSelectionModel(),
-//                dataFlowModel->getDataColorModel(),
-//                sharedCameraModel,
-//                true /* is2D */);
-//        connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
-//        connect(pExport, SIGNAL(exportFinished(QString)),
-//                this, SLOT(onExportFinished(QString)));
-//        connect(pExport, SIGNAL(exportFailed(QString, QString)),
-//                this, SLOT(onExportFinished(QString, QString)));
-//        pExport->start();
+        ExportFile *pExport = new ExportFile(
+                filename,
+                dataFlowModel->getVolumeData(),
+                dataFlowModel->getNeuronSelectionModel(),
+                dataFlowModel->getDataColorModel(),
+                sharedCameraModel,
+                true /* is2D */);
+        connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
+        connect(pExport, SIGNAL(exportFinished(QString)),
+                this, SLOT(onExportFinished(QString)));
+        connect(pExport, SIGNAL(exportFailed(QString, QString)),
+                this, SLOT(onExportFinished(QString, QString)));
+        pExport->start();
     }
 }
 
