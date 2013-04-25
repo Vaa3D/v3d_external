@@ -3842,13 +3842,19 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
 
     QDir pluginsDir1 = pluginsDir;
     if (pluginsDir1.cd("plugins/teramanager")==true)
+    {
         b_grabhighrez = true;
+        produceZoomViewOf3DRoi(loc_vec);
+        return 1;
+    }
     else
+    {
         b_grabhighrez = false;
-
+        produceZoomViewOf3DRoi(loc_vec);
+        return 2;
+    }
     //now invoke the code!!
 
-    produceZoomViewOf3DRoi(loc_vec);
 
-    return 1;
+    return 0;
 }
