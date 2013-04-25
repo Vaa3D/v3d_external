@@ -2380,7 +2380,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
 int Renderer_gl1::hitWheel(int x, int y)
 {
-    qDebug("  Renderer_gl1::hitWheel");
+    qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
     wheelPos.x = x;
     wheelPos.y = y;
     for (int i=0; i<4; i++)
@@ -2391,7 +2391,6 @@ int Renderer_gl1::hitWheel(int x, int y)
         wheelPos.MV[i] = markerViewMatrix[i];
     }
     return 1;
-    qDebug("\t (%d, %d)", x,y);
 }
 
 int Renderer_gl1::hitPen(int x, int y)
@@ -3027,7 +3026,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 		}
 		qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
 		V3DLONG margin=5; //the default margin is small
-		if (loc_vec.size()==1) margin=21; //for marker then define a bigger margin
+        if (loc_vec.size()==1) margin=61; //for marker then define a bigger margin
 		mx -= margin; Mx += margin; if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
 		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
 		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
