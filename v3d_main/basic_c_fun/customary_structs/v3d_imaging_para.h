@@ -36,6 +36,7 @@ from this software without specific prior written permission.
 
 
 //by Hanchuan Peng, 2010-10-07
+//last change: 2013-04-25. by PHC. add an ops_type in the data structure and also add an init function
 
 #ifndef __V3D_IMAGING_PARA_H__
 #define __V3D_IMAGING_PARA_H__
@@ -47,13 +48,25 @@ from this software without specific prior written permission.
 struct v3d_imaging_paras
 {
 	QString OPS; //operation
-	
+    int ops_type; //a new field indicating what is the [sub-]type of the operation or the nature of the operation. This can be used to
+                  // distinguish different ways to call TeraFly or other modules.
+
 	Image4DSimple *imgp; //the image data for a plugin to call	
 	V3DLONG xs, ys, zs; //starting coordinates (in pixel space)
 	V3DLONG xe, ye, ze; //ending coordinates (in pixel space)
 	double xrez, yrez, zrez; //imaging step size in 3D (in physical space, and also assuming the unit (e.g. micron) is unchanging)
 
 	LandmarkList list_landmarks; //a series of 3D locations for ablation
+
+    v3d_imaging_paras()
+    {
+        OPS="";
+        ops_type=0; //not valid yet
+        imgp = 0;
+        xs = ys = zs = 0;
+        xe = ye = ze = 0;
+        xrez = yrez = zrez = 0;
+    }
 };
 
 #endif

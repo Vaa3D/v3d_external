@@ -779,7 +779,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 loc_vec.push_back(loc);
                 
                 b_grabhighrez = true;
-                produceZoomViewOf3DRoi(loc_vec);
+                produceZoomViewOf3DRoi(loc_vec,
+                                       1  //one means from non-wheel event
+                                       );
 			}
 		}
     }
@@ -2983,7 +2985,9 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		if (b_ablation)
 			ablate3DLocationSeries(loc_vec);
 		if (b_imaging || b_grabhighrez)
-			produceZoomViewOf3DRoi(loc_vec);
+            produceZoomViewOf3DRoi(loc_vec,
+                                   1  //one means from non-wheel event
+                                   );
 	}
 	else //100821
 	{
@@ -2992,10 +2996,12 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		//added by PHC, 120506
 		if (b_ablation)
 			ablate3DLocationSeries(loc_vec);
-		produceZoomViewOf3DRoi(loc_vec);
-	}
+        produceZoomViewOf3DRoi(loc_vec,
+                               1  //one means from non-wheel event
+                               );
+    }
 }
-void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
+void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
@@ -3038,6 +3044,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			//set up parameters
 			v3d_imaging_paras myimagingp;
 			myimagingp.OPS = "Acquisition: ROI from 3D Viewer";
+            myimagingp.ops_type = ops_type;
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 			myimagingp.xs = mx;
 			myimagingp.ys = my;
@@ -3062,8 +3069,9 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			}
 			//set up parameters
 			v3d_imaging_paras myimagingp;
-			myimagingp.OPS = "Acquisition: ROI from High Resolution Image"; //this is to open a new local 3D viewer window
-			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+            myimagingp.OPS = "Fetch Highrez Image Data from File"; //this is to open a new local 3D viewer window
+            myimagingp.ops_type = ops_type;
+            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 			myimagingp.xs = mx;
 			myimagingp.ys = my;
 			myimagingp.zs = mz; //starting coordinates (in pixel space)
@@ -3350,8 +3358,10 @@ double Renderer_gl1::solveMarkerCenter()
 		loc_vec.push_back(loc);
 		if (b_ablation)
 			ablate3DLocationSeries(loc_vec);
-		produceZoomViewOf3DRoi(loc_vec);
-	}
+        produceZoomViewOf3DRoi(loc_vec,
+                               1  //one means from non-wheel event
+                               );
+    }
     return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
 }
 void Renderer_gl1::solveMarkerViews()
@@ -3844,7 +3854,9 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
     if (pluginsDir1.cd("plugins/teramanager")==true)
     {
         b_grabhighrez = true;
-        produceZoomViewOf3DRoi(loc_vec);
+        produceZoomViewOf3DRoi(loc_vec,
+                               2    //2 means zoom-in from wheel event
+                               );
         return 1;
     }
     else
