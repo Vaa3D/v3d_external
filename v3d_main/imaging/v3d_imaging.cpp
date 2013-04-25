@@ -68,7 +68,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
                 return false;
             }            
         }
-        else if (p.OPS == "Acquisition: ROI from High Resolution Image")
+        else if (p.OPS == "Fetch Highrez Image Data from File")
         {
             if (pluginsDir.cd("plugins/teramanager")==false) 
             {
