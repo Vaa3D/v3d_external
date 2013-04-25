@@ -684,6 +684,7 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     else // default
     {
     	setZoom((-zoomStep) + _zoom); // scroll down to zoom in
+        (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
     }
 
 	event->accept();
@@ -1642,8 +1643,14 @@ void V3dR_GLWidget::setZoom(int zr)
 	zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
 	if (int(_zoom) != zr) {
 		_zoom = zr;
-		if (renderer) renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
-		emit zoomChanged(zr);
+        if (renderer)
+        {
+            if (zr>40)
+                renderer->zoomview_wheel_event();
+            else
+                renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
+        }
+        emit zoomChanged(zr);
 		POST_updateGL();
 	}
 }
@@ -1654,7 +1661,13 @@ void V3dR_GLWidget::setZoom(float zr)
     zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
     if (_zoom != zr) {
         _zoom = zr;
-        if (renderer) renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
+        if (renderer)
+        {
+            if (zr>40)
+                renderer->zoomview_wheel_event();
+            else
+                renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
+        }
         emit zoomChanged(int(zr));
         POST_updateGL();
     }

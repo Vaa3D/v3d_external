@@ -115,8 +115,13 @@ public:
 				{return 0;} //add return 0 on 2010-05-10 to fix the "must return a value" bug. by PHC.
 	virtual int movePen(int x, int y, bool b_move)		//called by mouse move event
 				{return 0;} //add return 0 on 2010-05-10 to fix the "must return a value" bug. by PHC.
+    virtual int hitWheel(int x, int y) //by PHC, 130424.
+                {return 0;}
 
-        virtual int hitMenu(int x, int y, bool b_glwidget){return 0;}  //overwrite pop-up menu by mouse right click of neuron annotator
+    virtual int zoomview_wheel_event()//by PHC, 20130424
+            {return 0;}
+
+    virtual int hitMenu(int x, int y, bool b_glwidget){return 0;}  //overwrite pop-up menu by mouse right click of neuron annotator
 
 // link to Rendering function
 protected:

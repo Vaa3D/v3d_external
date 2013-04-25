@@ -100,6 +100,9 @@ public:
 	virtual int hitPen(int x, int y); //return 0 means not processed
 	virtual int movePen(int x, int y, bool b_move); //return 0 means not processed
 	virtual void _appendMarkerPos(int x, int y);
+
+    virtual int hitWheel(int x, int y); //by PHC, 130424.
+
 	virtual void blendTrack();       // called by paint()
      virtual void setRenderTextureLast(bool renderTextureLast);
 
@@ -191,12 +194,15 @@ public:
 	virtual void loadObjectFilename(const QString& filename); // updateBoundingBox // makeCurrent
 	virtual void loadObjectListFromFile();             // call loadObjectFilename
 	virtual void loadObjectFromFile(const char* url);  // call loadObjectFilename
-	virtual void saveSurfFile();
-        void loadV3DSFile(const QString& filename);
+    virtual void saveSurfFile();
+
+    void loadV3DSFile(const QString& filename);
 
 	virtual void endSelectMode();
 	virtual void updateLandmark();
 	virtual void updateTracedNeuron();
+
+    virtual int zoomview_wheel_event();//by PHC, 20130424
 
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -252,6 +258,7 @@ protected:
 	};
 	QList <MarkerPos> listMarkerPos; //081221, screen projection position
 	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position list for curve
+    MarkerPos wheelPos; //130424, by PHC. a one time record of the last wheel/cursor location
 
      QList <LocationSimple> listCurveMarkerPool; // used for curve drawing from marker pool
 
@@ -276,7 +283,7 @@ protected:
 	QCursor oldCursor;
 	int lastSliceType; //for cross-section
 	int currentMarkerName;
-	XYZ getCenterOfMarkerPos(const MarkerPos& pos);
+    XYZ getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno=-1);
 	double solveMarkerCenter();
 	void solveMarkerViews();
 	void refineMarkerTranslate();

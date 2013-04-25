@@ -2375,6 +2375,23 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	this->sShowTrack = 0;
 	return 0; //no 2d track to display
 }
+
+int Renderer_gl1::hitWheel(int x, int y)
+{
+    qDebug("  Renderer_gl1::hitWheel");
+    wheelPos.x = x;
+    wheelPos.y = y;
+    for (int i=0; i<4; i++)
+        wheelPos.view[i] = viewport[i];
+    for (int i=0; i<16; i++)
+    {
+        wheelPos.P[i]  = projectionMatrix[i];
+        wheelPos.MV[i] = markerViewMatrix[i];
+    }
+    return 1;
+    qDebug("\t (%d, %d)", x,y);
+}
+
 int Renderer_gl1::hitPen(int x, int y)
 {
 	qDebug("  Renderer_gl1::hitPen");
@@ -3256,10 +3273,14 @@ void Renderer_gl1::solveCurveFromMarkers()
 #endif
 }
 #define __creat_marker___
-XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos)
+XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
 {
 	////////////////////////////////////////////////////////////////////////
-	int chno = checkCurChannel();
+    int chno;
+    if (defaultChanno>=0 && defaultChanno<dim4)
+        chno = defaultChanno; //130424, by PHC
+    else
+        chno = checkCurChannel();
 	////////////////////////////////////////////////////////////////////////
 	qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
 	////////////////////////////////////////////////////////////////////////
@@ -3775,4 +3796,59 @@ XYZ Renderer_gl1::getCenterOfLocal(XYZ P)
 	//	if (loc.y < 0) loc.y = 0;  if (loc.y >= dim2) loc.y = dim2-1;
 	//	if (loc.z < 0) loc.z = 0;  if (loc.z >= dim3) loc.z = dim3-1;
 	return P;
+}
+
+int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
+{
+    //find the center line XYZ loc, and then 4 corner's XYZ locs, then based on all five locs define the bounding box and return
+    QList <MarkerPos> curlist;
+    curlist.append(wheelPos);
+
+    int i;
+    for (i=0; i<4; i++)
+    {
+        MarkerPos p;
+        p = wheelPos;
+        switch (i)
+        {
+            case 0: p.x = wheelPos.view[0]; p.y = wheelPos.view[1]; break;
+            case 1: p.x = wheelPos.view[0]; p.y = wheelPos.view[3]; break;
+            case 2: p.x = wheelPos.view[2]; p.y = wheelPos.view[1]; break;
+            case 3: p.x = wheelPos.view[2]; p.y = wheelPos.view[3]; break;
+            default:break;
+        }
+        curlist.append(p);
+    }
+
+    vector <XYZ> loc_vec;
+    for (i=0;i<curlist.size();i++)
+    {
+        XYZ loc = getCenterOfMarkerPos(curlist.at(i));
+        loc_vec.push_back(loc);
+    }
+
+    //check if terafly exists
+    QDir pluginsDir = QDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+    if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+        pluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+    if (pluginsDir.dirName() == "MacOS") {
+        pluginsDir.cdUp();
+        pluginsDir.cdUp();
+        pluginsDir.cdUp();
+    }
+#endif
+
+    QDir pluginsDir1 = pluginsDir;
+    if (pluginsDir1.cd("plugins/teramanager")==true)
+        b_grabhighrez = true;
+    else
+        b_grabhighrez = false;
+
+    //now invoke the code!!
+
+    produceZoomViewOf3DRoi(loc_vec);
+
+    return 1;
 }

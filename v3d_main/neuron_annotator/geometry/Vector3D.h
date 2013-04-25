@@ -68,6 +68,7 @@ protected:
     qreal& y() {return m_y;}
     qreal& z() {return m_z;}
 
+public: //added by PHC, 20130424 to make it possible to build for Vaa3D
     union {
         qreal data[3];
         struct {qreal m_x, m_y, m_z;};
