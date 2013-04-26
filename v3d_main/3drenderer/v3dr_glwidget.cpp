@@ -1646,7 +1646,10 @@ void V3dR_GLWidget::setZoom(int zr)
         if (renderer)
         {
             if (zr>40)
+            {
+                //v3d_msg("Now prepare to enter the zr>40 wheel event!");
                 renderer->zoomview_wheel_event();
+            }
             else
                 renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
         }
@@ -1664,7 +1667,10 @@ void V3dR_GLWidget::setZoom(float zr)
         if (renderer)
         {
             if (zr>40)
+            {
+                //v3d_msg("Now prepare to enter the zr>40 wheel event!");
                 renderer->zoomview_wheel_event();
+            }
             else
                 renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
         }

@@ -389,7 +389,7 @@ protected:
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
 
 	//for local view
-    void produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type=0);
+    bool produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type=0);
 	void ablate3DLocationSeries(vector <XYZ> & loc_vec); //added by PHC, 120506
 
 

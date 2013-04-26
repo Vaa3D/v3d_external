@@ -3005,7 +3005,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
                                );
     }
 }
-void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
+bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
@@ -3043,7 +3043,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
 			{
 				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-				return;
+                return false;
 			}
 			//set up parameters
 			v3d_imaging_paras myimagingp;
@@ -3060,7 +3060,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			myimagingp.yrez = curImg->getRezY() / 2.0;
 			myimagingp.zrez = curImg->getRezZ() / 2.0;
 			//do imaging
-			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+            return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
 		else if (b_grabhighrez && curXWidget) //120717
 		{
@@ -3069,7 +3069,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
 			{
 				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-				return;
+                return false;
 			}
 			//set up parameters
 			v3d_imaging_paras myimagingp;
@@ -3086,16 +3086,19 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			myimagingp.yrez = curImg->getRezY() / 2.0;
 			myimagingp.zrez = curImg->getRezZ() / 2.0;
 			//do imaging
-			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+            return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
 		else //b_imaging does not open 3D Viewer here
 		{
 			curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
 			//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
 			curXWidget->doImage3DLocalBBoxView(); //by PHC 101012. move from before if(b_imaging...)
+            return true;
 		}
 	}
 #endif //test_main_cpp
+
+    return false;
 }
 void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506, PHC
 {
@@ -3984,10 +3987,11 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
 {
     //first check the wheelPos is valid, if not, then reset to the center of the viewport
 
-    if (wheelPos.x<viewport[0] || wheelPos.x>=viewport[2] ||
-        wheelPos.y<viewport[1] || wheelPos.y>=viewport[3] )
+    //qDebug("wheel pos x=%5.3f,y=%5.3f, view port[%d, %d, %d, %d]",wheelPos.x,wheelPos.y, viewport[0], viewport[1], viewport[2], viewport[3]);
+    if (wheelPos.x<viewport[0]+5 || wheelPos.x>=viewport[2]-5 ||
+        wheelPos.y<viewport[1]+5 || wheelPos.y>=viewport[3]-5 ) //add a margin 5 to force have a hitWhell event in case wheelPos has not been initialized
     {
-        qDebug("reset wheel pos in zoomview_wheel_event()");
+        //v3d_msg("reset wheel pos in zoomview_wheel_event()");
         hitWheel((viewport[0]+viewport[2])/2.0, (viewport[1]+viewport[3])/2.0);
     }
 
@@ -4031,9 +4035,7 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
                i, loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z
                );
 
-        qDebug("%5.3f, %5.3f, %5.3f,1,1,,,\n%5.3f,%5.3f,%5.3f,1,1,,, \n",
-               loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z
-               );
+        //qDebug("%5.3f, %5.3f, %5.3f,1,1,,,\n%5.3f,%5.3f,%5.3f,1,1,,, \n", loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z);
 
     }
 
@@ -4054,9 +4056,14 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
     if (pluginsDir1.cd("plugins/teramanager")==true)
     {
         b_grabhighrez = true;
-        produceZoomViewOf3DRoi(loc_vec,
+        if (!produceZoomViewOf3DRoi(loc_vec,
                                2    //2 means zoom-in from wheel event
-                               );
+                               ))
+        {  //if fail, which means the data is returned, then use the default Vaa3D module
+            b_grabhighrez = false;
+            produceZoomViewOf3DRoi(loc_vec,2);
+            return 2;
+        }
         return 1;
     }
     else
