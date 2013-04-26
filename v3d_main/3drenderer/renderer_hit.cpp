@@ -2383,9 +2383,14 @@ int Renderer_gl1::hitWheel(int x, int y)
     qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
     wheelPos.x = x;
     wheelPos.y = y;
-    for (int i=0; i<4; i++)
+    int i;
+    for (i=0; i<4; i++)
+    {
         wheelPos.view[i] = viewport[i];
-    for (int i=0; i<16; i++)
+    }
+    qDebug(" wheel pos (x=%5.3f y=%5.3f) viewport (%d, %d, %d, %d)", wheelPos.x, wheelPos.y,
+           wheelPos.view[0], wheelPos.view[1], wheelPos.view[2], wheelPos.view[3]);
+    for (i=0; i<16; i++)
     {
         wheelPos.P[i]  = projectionMatrix[i];
         wheelPos.MV[i] = markerViewMatrix[i];
@@ -3308,10 +3313,10 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
 	else //find max value location in all channels
 	{
 		float maxval, curval;
-		for (int chno=0; chno<dim4; chno++)
+        for (int ichno=0; ichno<dim4; ichno++)
 		{
-			XYZ curloc = getCenterOfLineProfile(loc0, loc1, clipplane, chno, &curval);
-			if (chno==0)
+            XYZ curloc = getCenterOfLineProfile(loc0, loc1, clipplane, ichno, &curval);
+            if (ichno==0)
 			{
 				maxval = curval;
 				loc = curloc;
@@ -3752,6 +3757,174 @@ XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
 	//100721: Now small tag added in sampling3dUINT8atBounding makes loc in bound box
 	return loc;
 }
+
+
+int Renderer_gl1::getVolumeXsectPosOfMarkerLine(XYZ & locA, XYZ & locB, const MarkerPos& pos, int defaultChanno)
+{
+    ////////////////////////////////////////////////////////////////////////
+    int chno;
+    if (defaultChanno>=0 && defaultChanno<dim4)
+        chno = defaultChanno; //130424, by PHC
+    else
+        chno = checkCurChannel();
+    ////////////////////////////////////////////////////////////////////////
+    qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
+    ////////////////////////////////////////////////////////////////////////
+    //in View space, keep for dot(clip, pos)>=0
+    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+    clipplane[3] = viewClip;
+    ViewPlaneToModel(pos.MV, clipplane);
+    //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+    ////////////////////////////////////////////////////////////////////////
+    XYZ loc0, loc1;
+    _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+    // qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+    XYZ loc;
+    if (chno>=0 && chno<dim4)
+    {
+        getVolumeXsectPosOfMarkerLine(loc0, loc1, clipplane, chno, locA, locB);
+    }
+    else //use locations in all channels
+    {
+        float maxval, curval;
+        for (int ichno=0; ichno<dim4; ichno++)
+        {
+            XYZ curlocA, curlocB;
+            getVolumeXsectPosOfMarkerLine(loc0, loc1, clipplane, ichno, curlocA, curlocB);
+
+            if (ichno==0)
+            {
+                locA = curlocA;
+                locB = curlocB;
+            }
+            else
+            {
+                locA = locA+curlocA;
+                locB = locB+curlocB;
+            }
+        }
+
+        locA = locA*(1.0/dim4);
+        locB = locB*(1.0/dim4);
+    }
+
+    return 1;
+}
+// in Image space (model space), by PHC 20130425
+int Renderer_gl1::getVolumeXsectPosOfMarkerLine(XYZ P1, XYZ P2,
+        double clipplane[4],	//clipplane==0 means no clip plane
+        int chno,    			//must be a valid channel number
+        XYZ & posCloseToP1, XYZ & posCloseToP2 //output
+        )
+{
+    int VIS_TH=1; //a threshold determining what intensity of a pixel is "visible"
+
+    XYZ loc = (P1+P2)*0.5;
+#ifndef test_main_cpp
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = v3dr_getImage4d(_idep);
+    if (curImg && data4dp && chno>=0 &&  chno <dim4)
+    {
+        XYZ D = P2-P1; normalize(D);
+        unsigned char* vp = 0;
+        switch (curImg->getDatatype())
+        {
+            case V3D_UINT8:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+                break;
+            case V3D_UINT16:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+                break;
+            case V3D_FLOAT32:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+                break;
+            default:
+                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                return 0;
+        }
+
+        {
+            double length = norm(P2-P1);
+            if (length < 0.5) // pixel
+            {
+                posCloseToP1 = P1;
+                posCloseToP2 = P2;
+                return 0;
+            }
+
+            int nstep = int(length + 0.5);
+            double step = length/nstep;
+            XYZ sumloc(0,0,0);
+            float sum = 0;
+            int i;
+            for (i=0; i<=nstep; i++)
+            {
+                XYZ P = P1 + D*step*(i);
+                float value;
+                switch (curImg->getDatatype())
+                {
+                    case V3D_UINT8:
+                        value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                        break;
+                    case V3D_UINT16:
+                        value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                        break;
+                    case V3D_FLOAT32:
+                        value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                        break;
+                    default:
+                        v3d_msg("Unsupported data type found. You should never see this.", 0);
+                        return 0;
+                }
+
+                if (value>VIS_TH)
+                {
+                    posCloseToP1 = P;
+                    break;
+                }
+            }
+            if (i==nstep)
+            {
+                posCloseToP1 = (P1+P2)*0.5;
+                posCloseToP2 = (P1+P2)*0.5;
+                return 0; //in this case, no need to do the following any more
+            }
+
+            for (i=0; i<=nstep; i++)
+            {
+                XYZ P = P2 - D*step*(i);
+                float value;
+                switch (curImg->getDatatype())
+                {
+                    case V3D_UINT8:
+                        value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                        break;
+                    case V3D_UINT16:
+                        value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                        break;
+                    case V3D_FLOAT32:
+                        value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                        break;
+                    default:
+                        v3d_msg("Unsupported data type found. You should never see this.", 0);
+                        return 0;
+                }
+
+                if (value>VIS_TH)
+                {
+                    posCloseToP2 = P;
+                    break;
+                }
+            }
+
+        }
+
+    }//valid data
+#endif
+    return 1;
+}
+
+
 #define NUM_ITER_POSITION 10
 bool fit_center_position(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
 		XYZ & P)
@@ -3811,29 +3984,43 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
 {
     //find the center line XYZ loc, and then 4 corner's XYZ locs, then based on all five locs define the bounding box and return
     QList <MarkerPos> curlist;
-    curlist.append(wheelPos);
+    //curlist.append(wheelPos);
+    qDebug("wheel pos x=%5.3f,y=%5.3f",wheelPos.x,wheelPos.y);
 
     int i;
-    for (i=0; i<4; i++)
+    for (i=0; i<5; i++)
     {
         MarkerPos p;
         p = wheelPos;
         switch (i)
         {
-            case 0: p.x = wheelPos.view[0]; p.y = wheelPos.view[1]; break;
-            case 1: p.x = wheelPos.view[0]; p.y = wheelPos.view[3]; break;
-            case 2: p.x = wheelPos.view[2]; p.y = wheelPos.view[1]; break;
-            case 3: p.x = wheelPos.view[2]; p.y = wheelPos.view[3]; break;
+            case 0: p.x = (wheelPos.view[0]+wheelPos.view[2])/2.0; p.y = (wheelPos.view[1]+wheelPos.view[3])/2.0; break;
+            case 1: p.x = wheelPos.view[0]+1; p.y = wheelPos.view[1]+1; break;
+            case 2: p.x = wheelPos.view[0]+1; p.y = wheelPos.view[3]-1; break;
+            case 3: p.x = wheelPos.view[2]-1; p.y = wheelPos.view[1]+1; break;
+            case 4: p.x = wheelPos.view[2]-1; p.y = wheelPos.view[3]-1; break;
             default:break;
         }
         curlist.append(p);
+        qDebug("i=%d, x=%5.3f,y=%5.3f",i, p.x,p.y);
     }
 
     vector <XYZ> loc_vec;
     for (i=0;i<curlist.size();i++)
     {
-        XYZ loc = getCenterOfMarkerPos(curlist.at(i));
-        loc_vec.push_back(loc);
+        //XYZ loc_m = getCenterOfMarkerPos(curlist.at(i));
+
+        XYZ loc0, loc1;
+        getVolumeXsectPosOfMarkerLine(loc0, loc1, curlist.at(i), 0);
+
+        //XYZ loc = (loc0+loc1)*0.5;
+
+        loc_vec.push_back(loc0);
+        loc_vec.push_back(loc1);
+
+        qDebug("i=%d loc0(%5.3f %5.3f %5.3f) loc1(%5.3f,%5.3f,%5.3f) \n",
+               i, loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z
+               );
     }
 
     //check if terafly exists

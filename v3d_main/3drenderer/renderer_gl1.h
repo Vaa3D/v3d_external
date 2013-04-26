@@ -276,6 +276,13 @@ protected:
 			);
 	XYZ getCenterOfLocal(XYZ loc);
 
+    int getVolumeXsectPosOfMarkerLine(XYZ & locA, XYZ & locB, const MarkerPos& pos, int defaultChanno=-1);//by PHC 20130425
+    int getVolumeXsectPosOfMarkerLine(XYZ P1, XYZ P2,
+            double clipplane[4],	//clipplane==0 means no clip plane
+            int chno,    			//must be a valid channel number
+            XYZ & posCloseToP1, XYZ & posCloseToP2 //output
+            ); //by PHC 20130425
+
 	int checkCurChannel();
 	bool isInBound(const XYZ & loc, float factor=0.001, bool b_message=true);
 
@@ -304,7 +311,8 @@ protected:
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();
 	void solveCurveFromMarkers();
-     // beginning of ZJL
+
+    // beginning of ZJL
      void solveCurveFromMarkersFastMarching(); //using fast marching method
      void getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double &dist);
      void getRgnPropertyAt(XYZ &pos, LocationSimple &pt);

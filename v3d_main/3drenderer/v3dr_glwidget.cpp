@@ -683,8 +683,8 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     }
     else // default
     {
-    	setZoom((-zoomStep) + _zoom); // scroll down to zoom in
         (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
+        setZoom((-zoomStep) + _zoom); // scroll down to zoom in
     }
 
 	event->accept();
