@@ -3982,6 +3982,15 @@ XYZ Renderer_gl1::getCenterOfLocal(XYZ P)
 
 int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
 {
+    //first check the wheelPos is valid, if not, then reset to the center of the viewport
+
+    if (wheelPos.x<viewport[0] || wheelPos.x>=viewport[2] ||
+        wheelPos.y<viewport[1] || wheelPos.y>=viewport[3] )
+    {
+        qDebug("reset wheel pos in zoomview_wheel_event()");
+        hitWheel((viewport[0]+viewport[2])/2.0, (viewport[1]+viewport[3])/2.0);
+    }
+
     //find the center line XYZ loc, and then 4 corner's XYZ locs, then based on all five locs define the bounding box and return
     QList <MarkerPos> curlist;
     //curlist.append(wheelPos);
