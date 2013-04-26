@@ -4021,6 +4021,11 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
         qDebug("i=%d loc0(%5.3f %5.3f %5.3f) loc1(%5.3f,%5.3f,%5.3f) \n",
                i, loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z
                );
+
+        qDebug("%5.3f, %5.3f, %5.3f,1,1,,,\n%5.3f,%5.3f,%5.3f,1,1,,, \n",
+               loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z
+               );
+
     }
 
     //check if terafly exists
@@ -4039,7 +4044,7 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
     QDir pluginsDir1 = pluginsDir;
     if (pluginsDir1.cd("plugins/teramanager")==true)
     {
-        b_grabhighrez = true;
+        //b_grabhighrez = true;
         produceZoomViewOf3DRoi(loc_vec,
                                2    //2 means zoom-in from wheel event
                                );
