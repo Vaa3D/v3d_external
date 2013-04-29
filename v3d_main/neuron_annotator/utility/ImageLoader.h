@@ -51,8 +51,8 @@ public:
     virtual bool loadImage(Image4DSimple * stackp, const char* filepath);
     bool loadImage(Image4DSimple * stackp, QUrl url);
     virtual int loadRaw2StackPBD(const char * filename, Image4DSimple * image, bool useThreading);
-    int loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThreading);
-    int loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * image, bool useThreading);
+    int loadRaw2StackPBDFromUrl(QUrl url, Image4DSimple * image, bool useThreading);
+    int loadRaw2StackPBDFromStream(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * image, bool useThreading);
 
     bool saveImage(My4DImage *stackp, const char* filepath, bool saveTo8bit=false);
     bool saveImage(My4DImage * stackp, const QString& filepath, bool saveTo8bit=false) {

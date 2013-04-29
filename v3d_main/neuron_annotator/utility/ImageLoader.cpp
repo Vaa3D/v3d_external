@@ -396,9 +396,7 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
 {
     // qDebug() << "loadImage stack url" << url << __FILE__ << __LINE__;
     if (hasPbdExtension(url.path().toStdString().c_str())) {
-        QString path=url.path();
-        const char* pathData = path.toAscii().data();
-        if (loadRaw2StackPBD(pathData, stackp, true) == 0)
+        if (loadRaw2StackPBDFromUrl(url, stackp, true) == 0)
             return true;
         else
             return false;
@@ -502,9 +500,9 @@ QString ImageLoader::getFilePrefix(const char* filepath0) {
 }
 
 
-int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThreading)
+int ImageLoader::loadRaw2StackPBDFromUrl(QUrl url, Image4DSimple * image, bool useThreading)
 {
-    // qDebug() << "loadRaw2StackPBD" << url;
+    // qDebug() << "loadRaw2StackPBDFromUrl" << url;
     QUrl localUrl = url;
     if (localUrl.host() == "localhost")
         localUrl.setHost("");
@@ -542,13 +540,13 @@ int ImageLoader::loadRaw2StackPBD(QUrl url, Image4DSimple * image, bool useThrea
         // qDebug() << "Done buffering file" << url;
         buffer->open(QIODevice::ReadOnly);
         // qDebug() << "Decoding buffer..." << url;
-        result = loadRaw2StackPBD(*buffer, fileSize, image, useThreading);
+        result = loadRaw2StackPBDFromStream(*buffer, fileSize, image, useThreading);
         // qDebug() << "Done decoding buffer" << url;
         buffer->close();
         buffer->deleteLater();
     } else {
         // Stream from URL
-        result = loadRaw2StackPBD(*reply, fileSize, image, useThreading);
+        result = loadRaw2StackPBDFromStream(*reply, fileSize, image, useThreading);
     }
     reply->close();
     reply->deleteLater();
@@ -561,12 +559,12 @@ int ImageLoader::loadRaw2StackPBD(const char * filename, Image4DSimple * image, 
     if (! fileStream.open(QIODevice::ReadOnly))
         return exitWithError(std::string("Fail to open file for reading."));
     V3DLONG fileSize = fileStream.size();
-    return loadRaw2StackPBD(fileStream, fileSize, image, useThreading);
+    return loadRaw2StackPBDFromStream(fileStream, fileSize, image, useThreading);
 }
 
-int ImageLoader::loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * image, bool useThreading)
+int ImageLoader::loadRaw2StackPBDFromStream(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * image, bool useThreading)
 {
-    // qDebug() << "ImageLoader::loadRaw2StackPBD starting filename=" << filename;
+    // qDebug() << "ImageLoader::loadRaw2StackPBDFromStream starting filename=" << filename;
 
     int progressValue = 0;
     emit progressValueChanged(++progressValue, progressIndex);
@@ -576,7 +574,7 @@ int ImageLoader::loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image
 
     QTime stopwatch;
     stopwatch.start();
-    // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
+    // qDebug() << "ImageLoader::loadRaw2StackPBDFromStream" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
 
     int datatype;
 
@@ -667,7 +665,7 @@ int ImageLoader::loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image
     } else if (datatype==2) {
         image->setDatatype(V3D_UINT16);
     } else {
-        return exitWithError(std::string("ImageLoader::loadRaw2StackPBD : only datatype=1 or datatype=2 supported"));
+        return exitWithError(std::string("ImageLoader::loadRaw2StackPBDFromStream : only datatype=1 or datatype=2 supported"));
     }
     loadDatatype=image->getDatatype(); // used for threaded loading
 
@@ -730,7 +728,7 @@ int ImageLoader::loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image
     // done reading header
     emit progressValueChanged(++progressValue, progressIndex);
 
-    // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
+    // qDebug() << "ImageLoader::loadRaw2StackPBDFromStream" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
 
     // Transfer data to My4DImage
 
@@ -745,7 +743,7 @@ int ImageLoader::loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image
 
     while (remainingBytes>0)
     {
-        // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
+        // qDebug() << "ImageLoader::loadRaw2StackPBDFromStream" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
         if (isCanceled()) {
             // clean and return
             // fclose(fid);
@@ -797,7 +795,7 @@ int ImageLoader::loadRaw2StackPBD(QIODevice& fileStream, V3DLONG fileSize, Image
             emit progressValueChanged(progressValue, progressIndex);
         }
     }
-    // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
+    // qDebug() << "ImageLoader::loadRaw2StackPBDFromStream" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
     // qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
 
     if (useThreading) {
