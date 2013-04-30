@@ -113,7 +113,7 @@ public slots:
 //    void setZRotStep(int t);
 //    void setNSteps(int t);
 
-protected:
+public:
 	iDrawExternalParameter null_idep; //090918: for editing swc
 	iDrawExternalParameter* _idep;
 	QString title_prefix;

@@ -817,7 +817,7 @@ void V3dR_MainWindow::connectSignal()
 	// zoom & shift group
 
 	if (zoomSlider) {
-		connect(zoomSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setZoom(int)));
+                connect(zoomSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setZoom(int)));
 		connect(glWidget, SIGNAL(zoomChanged(int)), zoomSlider, SLOT(setValue(int)));
 		if (zoomBox) {
 			connect(zoomSlider, SIGNAL(valueChanged(int)), zoomBox, SLOT(setValue(int)));
@@ -826,7 +826,7 @@ void V3dR_MainWindow::connectSignal()
 	}
 	if (xShiftSlider) {
 		connect(xShiftSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setXShift(int)));
-		connect(glWidget, SIGNAL(xShiftChanged(int)), xShiftSlider, SLOT(setValue(int)));
+                connect(glWidget, SIGNAL(xShiftChanged(int)), xShiftSlider, SLOT(setValue(int)));
 		if (xShiftBox) {
 			connect(xShiftSlider, SIGNAL(valueChanged(int)), xShiftBox, SLOT(setValue(int)));
 			connect(xShiftBox, SIGNAL(valueChanged(int)), xShiftSlider, SLOT(setValue(int)));
