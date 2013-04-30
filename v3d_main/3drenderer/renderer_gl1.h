@@ -109,7 +109,7 @@ public:
      virtual void _updateDragPoints(int x, int y); // For rubber editing. ZJL 110920
 
 // link to Rendering function
-protected:
+//protected:
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
 
 	virtual void loadObj();  	// called by initialize()  	// makeCurrent
@@ -135,7 +135,7 @@ protected:
 	virtual void updateThicknessBox();
 
 // Rendering execution function
-protected:
+//protected:
 	virtual void setMarkerSpace();
 	virtual void drawMarker();  // called by paint(), not by drawObj()
 
@@ -175,7 +175,7 @@ protected:
 	virtual void drawCrossLine(float lineWidth=1);
 
 // public View control interface
-public:
+//public:
 	virtual void setRenderMode(RenderMode);
 	virtual void setThickness(double t);
 	virtual void toggleTexFilter();
@@ -246,7 +246,7 @@ public:
 
 
 // define Marker/Curve  ///////////////////////////////////////////////
-protected:
+//protected:
 	GLint viewport[4];
 	GLdouble projectionMatrix[16];
 	GLdouble markerViewMatrix[16];
@@ -394,7 +394,7 @@ protected:
 
 
 // Volume Parameters /////////////////////////////////////////////
-protected:
+//protected:
 	void* _idep;
 	bool isSimulatedData;
 	int data_unitbytes;
@@ -473,7 +473,8 @@ private:
 
 
 // Surface Object //////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
+public:
+//protected:
 	// landmark
 	QList <ImageMarker> listMarker;
 	// 0-pxUnknown, 1-pxLocaNotUseful, 2-pxLocaUseful, 3-pxLocaUnsure, 4-pxTemp

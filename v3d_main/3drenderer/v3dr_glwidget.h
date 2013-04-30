@@ -89,7 +89,7 @@ public:
     int getNeuronIndex() {return neuronIndex;}
     virtual void preparingRenderer();
     
-protected:
+//protected:
 	virtual void choiceRenderer();
 	virtual void settingRenderer(); // for setting the default renderer state when initialize
      virtual void initializeGL();
@@ -128,7 +128,7 @@ protected:
 	int currentPluginState;                              // May 29, 2012 by Hang
 	map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
 
-protected slots:
+//protected slots:
    	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
 
 
@@ -384,7 +384,7 @@ signals:
         void neuronIndexChanged(int index);
         void neuronClearAllSelections();
 
-protected:
+public:
 	bool _still, _stillpaint_need, _stillpaint_pending;
     QTimer still_timer;
     static const int still_timer_interval = 1000; //1000 is safe enough

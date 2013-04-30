@@ -71,7 +71,7 @@ public:
 //	virtual void togglePolygonMode() {polygonMode = (polygonMode +1) %5;} // FILL,LINE,POINT, transparent,outline
 
 // link to Rendering function
-protected:
+//protected:
 	virtual void loadShader();  // called by initialize()  	// makeCurrent
 	virtual void cleanShader(); // called by ~Renderer_gl2 	// makeCurrent
 
@@ -99,7 +99,7 @@ public:
     RGBA8 colormap[FILL_CHANNEL][256];      // [n-channel][256-intensity]
 
 ////////////////////////////////////
-protected:
+//protected:
 	cwc::glShaderManager SMgr;
 	cwc::glShader *shader, *shaderTex2D, *shaderTex3D, *shaderObj;
 

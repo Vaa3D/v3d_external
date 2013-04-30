@@ -74,7 +74,8 @@ public:
                       smDeleteMultiNeurons, // for delete multi neurons, ZJL 20120806
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
-protected:
+
+//protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
      SelectMode refineMode;
@@ -124,8 +125,10 @@ public:
     virtual int hitMenu(int x, int y, bool b_glwidget){return 0;}  //overwrite pop-up menu by mouse right click of neuron annotator
 
 // link to Rendering function
-protected:
-	virtual void setProjection(); 			// called by setupView & selectObj
+
+//protected:
+
+    virtual void setProjection(); 			// called by setupView & selectObj
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0)	// called by selectObj. add x,y by PHC 090204
 				{return 0;} // 0 for no any hit. Here just is a virtual interface to process hit.
 
@@ -223,7 +226,7 @@ public:
 	const char* try_vol_state();
 
 // internal state
-protected:
+//protected:
 	int volTimePoint, volTimeOffset;
 	BoundingBox boundingBox, surfBoundingBox;
 	double thickness; //changed from int to double, PHC, 090215
