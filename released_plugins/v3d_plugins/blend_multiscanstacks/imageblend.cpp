@@ -4898,7 +4898,6 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p); outfile = outfilelist->at(0);}  // specify output
         if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
 
-        bool b_saveimage = true; // save the blended image by default
         bool b_morecolorstack_first = false; // keep inputs order by default
 
         if(paras)
@@ -5105,28 +5104,28 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             qDebug()<<"switched stack 2 "<<p1dImg2<< " "<<sz_img2[0]<< " "<<sz_img2[1]<< " "<<sz_img2[2]<< " "<<sz_img2[3]<< " "<<p4DImage2.getTotalUnitNumber();
         }
 
-        if( (QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0) && (QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0) )
-        {
-            Y_LSMINFO<V3DLONG> lsminfo1(m_InputFileName1.toStdString());
-            lsminfo1.loadHeader();
+//        if( (QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0) && (QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0) )
+//        {
+//            Y_LSMINFO<V3DLONG> lsminfo1(m_InputFileName1.toStdString());
+//            lsminfo1.loadHeader();
 
-            c1 = new int [ sz_img1[3] ];
-            for(int i=0; i<sz_img1[3]; i++)
-            {
-                c1[i] = getChannelNum(lsminfo1.colorchannels.at(i).R, lsminfo1.colorchannels.at(i).G, lsminfo1.colorchannels.at(i).B);
-            }
+//            c1 = new int [ sz_img1[3] ];
+//            for(int i=0; i<sz_img1[3]; i++)
+//            {
+//                c1[i] = getChannelNum(lsminfo1.colorchannels.at(i).R, lsminfo1.colorchannels.at(i).G, lsminfo1.colorchannels.at(i).B);
+//            }
 
-            Y_LSMINFO<V3DLONG> lsminfo2(m_InputFileName2.toStdString());
-            lsminfo2.loadHeader();
+//            Y_LSMINFO<V3DLONG> lsminfo2(m_InputFileName2.toStdString());
+//            lsminfo2.loadHeader();
 
-            c2 = new int [ sz_img2[3] ];
-            for(int i=0; i<sz_img2[3]; i++)
-            {
-                c2[i] = getChannelNum(lsminfo2.colorchannels.at(i).R, lsminfo2.colorchannels.at(i).G, lsminfo2.colorchannels.at(i).B);
-            }
+//            c2 = new int [ sz_img2[3] ];
+//            for(int i=0; i<sz_img2[3]; i++)
+//            {
+//                c2[i] = getChannelNum(lsminfo2.colorchannels.at(i).R, lsminfo2.colorchannels.at(i).G, lsminfo2.colorchannels.at(i).B);
+//            }
 
-            b_infoloaded = true;
-        }
+//            b_infoloaded = true;
+//        }
 
         //
         V3DLONG pagesz = sz_img1[0]*sz_img1[1]*sz_img1[2];
