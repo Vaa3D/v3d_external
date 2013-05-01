@@ -403,9 +403,9 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
 
     qDebug() << "Export xDim=" << xDim << " yDim=" << yDim << " zDim= " << zDim;
 
-    double xyLength = sqrt(xDim*xDim + yDim*yDim); // major axis=Z, 2
-    double yzLength = sqrt(yDim*yDim + zDim*zDim); // major axis=X, 0
-    double zxLength = sqrt(zDim*zDim + xDim*xDim); // major axis=Y, 1
+    double xyLength = sqrt((double)(xDim*xDim + yDim*yDim)); // major axis=Z, 2
+    double yzLength = sqrt((double)(yDim*yDim + zDim*zDim)); // major axis=X, 0
+    double zxLength = sqrt((double)(zDim*zDim + xDim*xDim)); // major axis=Y, 1
 
     int majorAxis=0;
     double majorLengthD=0.0;
