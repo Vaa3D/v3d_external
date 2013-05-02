@@ -25,6 +25,7 @@ public:
     void setCamera(CameraModel& cameraParam) {camera = &cameraParam;}
     void setName(const QString& name);
     void setAxis(const QString& axis);
+    void setMicrometersPerVoxel(double mpv) {micrometersPerVoxel = mpv;}
 
 signals:
     void cutGuideRequested(bool doShow);
@@ -47,7 +48,7 @@ private:
     Vector3D cutPoint;
     Vector3D cutNormal;
     bool hasCut;
-    double voxelsPerMicrometer;
+    double micrometersPerVoxel;
 };
 
 #endif /* SINGLECUT_H_ */

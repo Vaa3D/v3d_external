@@ -24,6 +24,7 @@ public:
             Na3DWidget& widget3d,
             QWidget* parent = NULL);
     virtual ~CutPlanner();
+    double getMicrometersPerVoxel() const {return micrometersPerVoxel;}
 
 signals:
     void clipPlaneRequested();

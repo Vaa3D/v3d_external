@@ -6,6 +6,7 @@
  */
 
 #include "SingleCut.h"
+#include "CutPlanner.h"
 #include <iostream>
 
 using namespace std;
@@ -14,9 +15,13 @@ SingleCut::SingleCut(QWidget* parent)
     : QWidget(parent)
     , camera(NULL)
     , hasCut(false)
-    , voxelsPerMicrometer(0.64)
+    , micrometersPerVoxel(0.64)
 {
     ui.setupUi(this);
+    CutPlanner* planner = dynamic_cast<CutPlanner*>(parent);
+    if (planner != NULL) {
+        micrometersPerVoxel = planner->getMicrometersPerVoxel();
+    }
 }
 
 SingleCut::~SingleCut()
@@ -128,7 +133,7 @@ void SingleCut::updateCutDistance()
         double dist1 = cutNormal.dot(edgePoint);
         double dist2 = cutNormal.dot(cutPoint);
         double dd = dist1 - dist2; // Distance in XY voxel units
-        dd *= voxelsPerMicrometer; // hard code microCT voxel size for now.
+        dd *= micrometersPerVoxel; // hard code microCT voxel size for now.
         // qDebug() << "Distance to previous plane =" << dd << "micrometers";
         ui.cutDistanceLineEdit->setText(QString("%1").arg(dd, 0, 'f', 0));
         emit clipPlaneRequested();
