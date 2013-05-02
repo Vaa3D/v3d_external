@@ -103,6 +103,7 @@ bool CellCounter3D::loadPlanFile() {
         }
     }
     planFile.close();
+    return true;
 }
 
 
