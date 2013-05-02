@@ -184,7 +184,7 @@ bool NeuronFragmentEditor::loadSourceAndLabelImages()
 QList<int> NeuronFragmentEditor::getFragmentListFromLabelStack()
 {
     QList<int> labelList;
-    unsigned char* checkList=new unsigned char[256*256]; // 16-bit
+    long* checkList=new long[256*256]; // 16-bit
     for (int i=0;i<256*256;i++) {
         checkList[i]=0;
     }
@@ -208,17 +208,14 @@ QList<int> NeuronFragmentEditor::getFragmentListFromLabelStack()
                     labelValue=label16[offset];
                 }
                 if (labelValue>0) {
-                    if (checkList[labelValue]>0) {
-                        // do nothing
-                    } else {
-                        checkList[labelValue]=1;
-                    }
+                    checkList[labelValue] += 1;
                 }
             }
         }
     }
-    for (int i=0;i<256.*256;i++) {
+    for (int i=0;i<256*256;i++) {
         if (checkList[i]>0) {
+            qDebug() << "Found " << checkList[i] << " voxels for label=" << i;
             labelList.append(i);
         }
     }
@@ -274,7 +271,7 @@ bool NeuronFragmentEditor::createImagesFromFragmentList(QList<int> fragmentList,
                 int labelValue=label[offset];
                 bool include=false;
                 for (int f=0;f<fragmentListSize;f++) {
-                    if (labelValue==fragmentArr[f]+1) {
+                    if (labelValue==fragmentArr[f]) {
                         include=true;
                     }
                 }
@@ -309,7 +306,7 @@ bool NeuronFragmentEditor::createImagesFromFragmentList(QList<int> fragmentList,
                 int labelValue=label[offset];
                 bool include=false;
                 for (int f=0;f<fragmentListSize;f++) {
-                    if (labelValue==fragmentArr[f]+1) {
+                    if (labelValue==fragmentArr[f]) {
                         include=true;
                     }
                 }
