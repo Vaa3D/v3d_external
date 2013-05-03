@@ -561,6 +561,48 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
         smallestSize=2;
     }
 
+    long x0=x0List[smallestSize];
+    long x1=x1List[smallestSize];
+    long y0=y0List[smallestSize];
+    long y1=y1List[smallestSize];
+    long z0=z0List[smallestSize];
+    long z1=z1List[smallestSize];
+
+    long totalVoxels=labelIndex[label];
+
+    // allocate space for data
+    long unitsNeeded=totalVoxels*cdim;
+    void* data=0L;
+    if (sourceImage->getDatatype()==V3D_UINT8) {
+        data=(void*) new v3d_uint8[unitsNeeded];
+    } else {
+        data=(void*) new v3d_uint16[unitsNeeded];
+    }
+
+    // re-run axis-tracer and populate channel intensity data
+    QList<MaskRay*> * rayList;
+    long pairCount=0L;
+    long countCheck=0L;
+
+    if (smallestSize==0) {
+        rayList=&xRayList;
+    } else if (smallestSize==1) {
+        rayList=&yRayList;
+    } else {
+        rayList=&zRayList;
+    }
+
+    //qDebug() << "calling axisTracer 2nd pass data=" << data;
+
+    rayList->clear(); // will get re-populated
+
+    axisTracer(smallestSize, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1, data, totalVoxels);
+
+    if (countCheck!=totalVoxels) {
+        qDebug() << "In second pass of axisTracer, countCheck=" << countCheck << " totalVoxels=" << totalVoxels;
+        exit(1);
+    }
+
     //qDebug() << "Using axis " << smallestSize;
 
     // Write out the mask file
@@ -571,7 +613,6 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     QWriteLocker locker(&mutex); // Will be deleted from stack
 
     QFile maskFile(maskFullPath);
-
 
 
     ////////////////////////////////////////////////////////////////////////
@@ -599,13 +640,6 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     maskOut.writeRawData( (const char *)&yMicrons, sizeof(float));
     maskOut.writeRawData( (const char *)&zMicrons, sizeof(float));
 
-    long x0=x0List[smallestSize];
-    long x1=x1List[smallestSize];
-    long y0=y0List[smallestSize];
-    long y1=y1List[smallestSize];
-    long z0=z0List[smallestSize];
-    long z1=z1List[smallestSize];
-
     maskOut.writeRawData( (const char *)&x0, sizeof(long));
     maskOut.writeRawData( (const char *)&x1, sizeof(long));
     maskOut.writeRawData( (const char *)&y0, sizeof(long));
@@ -613,7 +647,6 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     maskOut.writeRawData( (const char *)&z0, sizeof(long));
     maskOut.writeRawData( (const char *)&z1, sizeof(long));
 
-    long totalVoxels=labelIndex[label];
     maskOut.writeRawData( (const char *)&totalVoxels, sizeof(long));
     maskOut.writeRawData( (const char *)&smallestSize, sizeof(unsigned char));
 
@@ -683,36 +716,6 @@ bool NeuronFragmentEditor::createMaskChanForLabel(int label)
     }
     chanOut.writeRawData( (const char *)&datatype, sizeof(unsigned char));
 
-    // allocate space for data
-    long unitsNeeded=totalVoxels*cdim;
-    void* data=0L;
-    if (sourceImage->getDatatype()==V3D_UINT8) {
-        data=(void*) new v3d_uint8[unitsNeeded];
-    } else {
-        data=(void*) new v3d_uint16[unitsNeeded];
-    }
-
-    // re-run axis-tracer and populate channel intensity data
-    QList<MaskRay*> * rayList;
-    long pairCount=0L;
-    long countCheck=0L;
-
-    if (smallestSize==0) {
-        rayList=&xRayList;
-    } else if (smallestSize==1) {
-        rayList=&yRayList;
-    } else {
-        rayList=&zRayList;
-    }
-
-    //qDebug() << "calling axisTracer 2nd pass data=" << data;
-
-    axisTracer(smallestSize, label, rayList, pairCount, countCheck, x0, x1, y0, y1, z0, z1, data, totalVoxels);
-
-    if (countCheck!=totalVoxels) {
-        qDebug() << "In second pass of axisTracer, countCheck=" << countCheck << " totalVoxels=" << totalVoxels;
-        exit(1);
-    }
 
     chanOut.writeRawData( (const char *)data, totalVoxels*cdim*datatype);
     //    fflush(fid);
