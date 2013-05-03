@@ -21,6 +21,7 @@ if(WIN32)
         PATHS
             "$ENV{PROGRAMFILES}/fftw"
             "$ENV{PROGRAMW6432}/fftw64_3.3.1"
+            "$ENV{PROGRAMW6432}/fftw-3.3.3"
     )
     find_library(FFTW_THREADS_LIBRARY
         NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
