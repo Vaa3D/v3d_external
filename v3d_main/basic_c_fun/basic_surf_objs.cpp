@@ -38,6 +38,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "basic_surf_objs.h"
 #include "v3d_message.h"
 
+#include <QString>
+
 QList <CellAPO> readAPO_file(const QString& filename)
 {
     QList <CellAPO> mylist;
@@ -129,7 +131,7 @@ bool writeAPO_file(const QString& filename, const QList <CellAPO> & listCell)
 			return false;
 	}
 
-	FILE * fp = fopen(curFile.toAscii(), "wt");
+    FILE * fp = fopen(curFile.toLatin1(), "wt");
 	if (!fp)
 	{
 #ifndef DISABLE_V3D_MSG
@@ -251,7 +253,7 @@ bool writeMarker_file(const QString & filename, const QList <ImageMarker> & list
 			return false;
 	}
 
-	FILE * fp = fopen(curFile.toAscii(), "wt");
+    FILE * fp = fopen(curFile.toLatin1(), "wt");
 	if (!fp)
 	{
 #ifndef DISABLE_V3D_MSG
@@ -389,7 +391,7 @@ bool writeSWC_file(const QString& filename, const NeuronTree& nt, const QStringL
 			return false;
 	}
     
-	FILE * fp = fopen(curFile.toAscii(), "wt");
+    FILE * fp = fopen(curFile.toLatin1(), "wt");
 	if (!fp)
 	{
 #ifndef DISABLE_V3D_MSG
@@ -441,7 +443,7 @@ bool writeESWC_file(const QString& filename, const NeuronTree& nt)
 			return false;
 	}
     
-	FILE * fp = fopen(curFile.toAscii(), "wt");
+    FILE * fp = fopen(curFile.toLatin1(), "wt");
 	if (!fp)
 	{
 #ifndef DISABLE_V3D_MSG
@@ -483,11 +485,11 @@ bool importKeywordString2FileType(QString ss, QString vv, QString basedir, P_Obj
 	QDir tmpdir;
 	
 	tvv = basedir+tvv;
-	printf("Locating file under the basedir [%s]... \n", tvv.toAscii().data());
+    printf("Locating file under the basedir [%s]... \n", tvv.toLatin1().data());
 	if (tmpdir.exists(tvv)==false)
 	{
 		tvv = vv.trimmed();
-		printf("!!! Did not find the file under the basedir. Re-Locating file using the directly supplied name [%s]... \n", tvv.toAscii().data());
+        printf("!!! Did not find the file under the basedir. Re-Locating file using the directly supplied name [%s]... \n", tvv.toLatin1().data());
 		if (tmpdir.exists(tvv)==false)
 		{
 			v3d_msg(QString("The specified file is not found. Do nothing.\n[%1]\n").arg(tvv));	//modified by Lei Qu 2009/11/16: show non-exist file's name
