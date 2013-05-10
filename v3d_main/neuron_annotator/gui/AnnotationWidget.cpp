@@ -801,13 +801,22 @@ void AnnotationWidget::selectNeuron(int index)
         fragmentParentEntity = nfed->childEntity;
     }
 
+    // Look for slightly different entity structure observed May 2013 CMB
+    if (nfed == 0) {
+        nfed = annotatedBranch->entity()->getEntityDataByAttributeName("Mask Entity Collection");
+        if (nfed!=0 && nfed->childEntity!=0) {
+            fragmentParentEntity = nfed->childEntity;
+        }
+    }
+
     QSetIterator<EntityData *> i(fragmentParentEntity->entityDataSet);
     while (i.hasNext())
     {
         EntityData *ed = i.next();
         Entity *entity = ed->childEntity;
         if (entity==0) continue;
-        if (getNeuronNumber(entity) == index && selectedEntity!=entity)
+        int testIndex = getNeuronNumber(entity);
+        if (testIndex == index && selectedEntity!=entity)
         {
             if (entity->entityType->endsWith("2D Image")) // TODO: remove this case in the future
             {
