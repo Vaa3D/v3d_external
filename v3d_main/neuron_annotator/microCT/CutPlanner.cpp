@@ -14,11 +14,11 @@ CutPlanner::CutPlanner(CameraModel& camera, Na3DWidget& widget3d, QWidget* paren
     , micrometersPerVoxel(1.00)
 {
     ui.setupUi(this);
-    initSingleCut(ui.topCutWidget, "Top", "-X");
-    initSingleCut(ui.frontCutWidget, "Front/A", "-Z");
-    initSingleCut(ui.rightCutWidget, "Right/B", "-Y");
-    initSingleCut(ui.rearCutWidget, "Rear/C", "+Z");
-    initSingleCut(ui.leftCutWidget, "Left/D", "+Y");
+    initSingleCut(ui.topCutWidget, "Top", "+Z");
+    initSingleCut(ui.frontCutWidget, "Front/A", "-Y");
+    initSingleCut(ui.rightCutWidget, "Right/B", "+X");
+    initSingleCut(ui.rearCutWidget, "Rear/C", "+Y");
+    initSingleCut(ui.leftCutWidget, "Left/D", "-X");
 }
 
 CutPlanner::~CutPlanner()
