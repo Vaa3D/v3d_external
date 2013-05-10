@@ -87,8 +87,8 @@ bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
     a=0.0; b=0.0;
 
     //
-//    float sumfg=0.0;
-//    float sumgg=0.0;
+    //    float sumfg=0.0;
+    //    float sumgg=0.0;
 
     float meanf=0.0;
     float meang=0.0;
@@ -104,16 +104,16 @@ bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
         meanf += valf;
         meang += valg;
 
-//        sumfg += valf*valg;
-//        sumgg += valg*valg;
+        //        sumfg += valf*valg;
+        //        sumgg += valg*valg;
     }
     meanf /= N;
     meang /= N;
 
     // least square
     // a might be negative, this will introduce some errors, will fix it later
-//    a = (sumfg - (float)szimg*meanf*meang)/(sumgg - (float)szimg*meang*meang);
-//    b = meanf - a*meang;
+    //    a = (sumfg - (float)szimg*meanf*meang)/(sumgg - (float)szimg*meang*meang);
+    //    b = meanf - a*meang;
 
 
     // use mean and standard deviation to solve a and b
@@ -432,7 +432,7 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
                             return false;
                         }
 
-                        pTmp[idx] += (Tdata)(val*coef); // linear blending
+                        pTmp[idx] += val*coef; // linear blending
 
                     }
                 }
@@ -482,17 +482,17 @@ QStringList ImageFusionPlugin::funclist() const
 {
     return QStringList() << "iblender"
                          <<"inormalizer"
-                         <<"help";
+                        <<"help";
 }
 
 bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
 {
-     if (func_name == tr("help"))
-     {
-          printf("\nUsage: v3d -x ifusion -f iblender -i <folder> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)>\"\n");
-          printf("\nUsage: v3d -x ifusion -f inormalizer -i <folder> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)>\"\n");
-     }
-     else if (func_name == tr("iblender")) // linear blending
+    if (func_name == tr("help"))
+    {
+        printf("\nUsage: v3d -x ifusion -f iblender -i <folder> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)>\"\n");
+        printf("\nUsage: v3d -x ifusion -f inormalizer -i <folder> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)>\"\n");
+    }
+    else if (func_name == tr("iblender")) // linear blending
     {
         // parsing parameters
         if(input.size()<1) return false; // no inputs
@@ -976,8 +976,8 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
 
                 // find whether they have common overlap region
                 if(  ( (ix_s>=jx_s && ix_s<=jx_e) || (ix_e>=jx_s && ix_e<=jx_e) || (jx_s>=ix_s && jx_s<=ix_e) || (jx_e>=ix_s && jx_e<=ix_e) )
-                   && ( (iy_s>=jy_s && iy_s<=jy_e) || (iy_e>=jy_s && iy_e<=jy_e) || (jy_s>=iy_s && jy_s<=iy_e) || (jy_e>=iy_s && jy_e<=iy_e) )
-                   && ( (iz_s>=jz_s && iz_s<=jz_e) || (iz_e>=jz_s && iz_e<=jz_e) || (jz_s>=iz_s && jz_s<=iz_e) || (jz_e>=iz_s && jz_e<=iz_e) ) )
+                     && ( (iy_s>=jy_s && iy_s<=jy_e) || (iy_e>=jy_s && iy_e<=jy_e) || (jy_s>=iy_s && jy_s<=iy_e) || (jy_e>=iy_s && jy_e<=iy_e) )
+                     && ( (iz_s>=jz_s && iz_s<=jz_e) || (iz_e>=jz_s && iz_e<=jz_e) || (jz_s>=iz_s && jz_s<=iz_e) || (jz_e>=iz_s && jz_e<=iz_e) ) )
                 {
                     findoverlap = true;
                     break;
@@ -1188,8 +1188,8 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
 
                 // find whether they have common overlap region
                 if(  ( (ix_s>=jx_s && ix_s<=jx_e) || (ix_e>=jx_s && ix_e<=jx_e) || (jx_s>=ix_s && jx_s<=ix_e) || (jx_e>=ix_s && jx_e<=ix_e) )
-                   && ( (iy_s>=jy_s && iy_s<=jy_e) || (iy_e>=jy_s && iy_e<=jy_e) || (jy_s>=iy_s && jy_s<=iy_e) || (jy_e>=iy_s && jy_e<=iy_e) )
-                   && ( (iz_s>=jz_s && iz_s<=jz_e) || (iz_e>=jz_s && iz_e<=jz_e) || (jz_s>=iz_s && jz_s<=iz_e) || (jz_e>=iz_s && jz_e<=iz_e) ) )
+                     && ( (iy_s>=jy_s && iy_s<=jy_e) || (iy_e>=jy_s && iy_e<=jy_e) || (jy_s>=iy_s && jy_s<=iy_e) || (jy_e>=iy_s && jy_e<=iy_e) )
+                     && ( (iz_s>=jz_s && iz_s<=jz_e) || (iz_e>=jz_s && iz_e<=jz_e) || (jz_s>=iz_s && jz_s<=iz_e) || (jz_e>=iz_s && jz_e<=iz_e) ) )
                 {
                     findoverlap = true;
                     break;
@@ -1356,11 +1356,11 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
         }
         // de-alloc
-//        while (!adjparaList.isEmpty())
-//        {
-//            adjparaList.at(0).clean();
-//            adjparaList.pop_front();
-//        }
+        //        while (!adjparaList.isEmpty())
+        //        {
+        //            adjparaList.at(0).clean();
+        //            adjparaList.pop_front();
+        //        }
 
         if(datatype_tile == V3D_UINT8)
         {
