@@ -100,7 +100,7 @@ istream& MyLibArrayImposter::loadFile(istream& is, bool debug)
     // discard void* data pointer
     void* data_ptr = NULL;
     is.read((char*)&data_ptr, sizeof(void*)); // discard
-    data.reset(NULL);
+    data.reset((char *)NULL);
     // Read size in each spatial dimension
     // TODO - I somehow missed 4 more bytes that need to be consumed.
     // 32 bit int?

@@ -68,7 +68,7 @@ struct MyLibArrayImposter
     typedef unsigned int Dimn_Type;
 
 public:
-    MyLibArrayImposter() : data(NULL) {}
+    MyLibArrayImposter() : data((char *)NULL) {}
     std::istream& loadFile(std::istream& is, bool debug = false);
     int64_t data_size() const {return size * Value_Type_Size[type];}
 

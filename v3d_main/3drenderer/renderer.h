@@ -41,7 +41,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define V3D_RENDERER_H
 
 #include "v3dr_common.h"
-
+// CMB 05May2013 rearrange headers to compile with Qt4.8.4/MSVC2012
+#ifdef __APPLE__
+#include <OpenGL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Renderer
 // to create:

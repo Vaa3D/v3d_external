@@ -1066,7 +1066,7 @@ const char* bgl_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights
 	for (V3DLONG j=0; j<n_edges; ++j)
 	{
 		edge_descriptor e; bool inserted;
-		tie(e, inserted) = add_edge(edge_array[j].first, edge_array[j].second, g);		weightmap[e] = weights[j];
+		std::tie(e, inserted) = add_edge(edge_array[j].first, edge_array[j].second, g);		weightmap[e] = weights[j];
 	}
 
     printf("num_vertices(g)=%ld  num_edges(g)=%ld \n", num_vertices(g), num_edges(g));
@@ -1100,7 +1100,7 @@ const char* bgl_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights
 //	std::cout << "distances and parents:" << std::endl;
 	graph_traits < graph_t >::vertex_iterator vi, vend;
 	V3DLONG i=0;
-	for (tie(vi, vend) = vertices(g), i=0;
+	for (std::tie(vi, vend) = vertices(g), i=0;
 		i<n_nodes && vi != vend;
 		++vi, i++)
 	{

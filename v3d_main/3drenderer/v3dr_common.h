@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
 
-#include <QtOpenGL>
+// #include <QtOpenGL>
 //#include <QtTest>
 
 #include <exception>

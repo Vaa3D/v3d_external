@@ -41,6 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_common.h"
 #include "renderer.h"
 #include "../basic_c_fun/basic_view3d.h"
+#include <QGLWidget>
 
 class Renderer;
 class V3dR_MainWindow;
