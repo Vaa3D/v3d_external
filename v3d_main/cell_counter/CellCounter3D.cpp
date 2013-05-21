@@ -4,6 +4,8 @@
 #include "CellCounter3D.h"
 #include "../v3d/v3d_core.h"
 
+#include "../neuron_annotator/analysis/SleepThread.h" //added by PHC, 20130521, to avoid a linking error on Windows
+
 #define DIALATE 0
 #define ERODE 1
 
@@ -14,6 +16,7 @@ int CellCounter3D::ARG_STATUS_USAGE=0;
 int CellCounter3D::ARG_STATUS_OK=1;
 int CellCounter3D::ARG_STATUS_HELP=2;
 
+/*  //commented by PHC, 20130521, to avoid a linking error on Windows
 class SleepThread : QThread {
 public:
     SleepThread() {}
@@ -21,6 +24,7 @@ public:
         QThread::msleep(miliseconds);
     }
 };
+*/
 
 CellCounter3D::CellCounter3D()
 {

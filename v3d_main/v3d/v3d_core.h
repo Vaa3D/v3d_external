@@ -85,7 +85,9 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 
 #include "mapview.h"
 
-#include "arthurwidgets.h"
+//#include "arthurwidgets.h"
+#include "/Users/pengh/Qt5.0.2/5.0.2/clang_64/examples/widgets/painting/shared/arthurwidgets.h"
+
 
 #include "../cellseg/template_matching_seg.h"
 #include "template_matching_cellseg_dialog.h"

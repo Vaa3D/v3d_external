@@ -39,8 +39,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 ***************************************************************************
 */
 
-#include "../basic_c_fun/v3d_interface.h"
 #include "../3drenderer/v3dr_glwidget.h"
+#include "../basic_c_fun/v3d_interface.h"
 #include "../3drenderer/renderer_gl1.h"
 #include "../3drenderer/v3dr_mainwindow.h"
 #include "../v3d/mainwindow.h"
