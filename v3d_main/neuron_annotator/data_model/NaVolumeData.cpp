@@ -11,6 +11,17 @@
 #include "../utility/loadV3dFFMpeg.h"
 #endif
 
+#include "../neuron_annotator/analysis/SleepThread.h" //added by PHC, 20130521, to avoid a linking error on Windows
+/*  //commented by PHC, 20130521, to avoid a linking error on Windows
+class SleepThread : QThread {
+public:
+    SleepThread() {}
+    void msleep(int miliseconds) {
+        QThread::msleep(miliseconds);
+    }
+};
+*/
+
 using namespace std;
 using namespace jfrc;
 
@@ -19,13 +30,6 @@ using namespace jfrc;
 // NaVolumeDataLoadableStack methods //
 /////////////////////////////////////////
 
-class SleepThread : QThread {
-public:
-    SleepThread() {}
-    void msleep(int milliseconds) {
-        QThread::msleep(milliseconds);
-    }
-};
 
 NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QUrl fileUrlParam, int stackIndexParam)
    : QObject(NULL)

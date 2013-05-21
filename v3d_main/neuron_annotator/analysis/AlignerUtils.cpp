@@ -4,6 +4,8 @@
 const int AlignerUtils::MODE_UNDEFINED=-1;
 const int AlignerUtils::MODE_SUBVOLUME=0;
 
+#include "../neuron_annotator/analysis/SleepThread.h" //added by PHC, 20130521, to avoid a linking error on Windows
+/*  //commented by PHC, 20130521, to avoid a linking error on Windows
 class SleepThread : QThread {
 public:
     SleepThread() {}
@@ -11,6 +13,7 @@ public:
         QThread::msleep(miliseconds);
     }
 };
+*/
 
 AlignerUtils::AlignerUtils()
 {
