@@ -6887,8 +6887,9 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
     // construct lookup table
     vim.y_clut(vim.tilesList.size());
+
     // save lut
-    vim.y_save(tmp_filename.toStdString());
+    //vim.y_save(tmp_filename.toStdString());
 
     qDebug("offset[0] %ld offset[1] %ld offset[2] %ld pos_x %ld pos_y %ld pos_z %ld", offset[0], offset[1], offset[2], pos_x, pos_y, pos_z);
 
