@@ -67,6 +67,9 @@ public:
         usage.append("   -outputDir <output directory>                                                                        \n");
         usage.append("   -outputPrefix <prefix for each output file>                                                          \n");
         usage.append("                                                                                                        \n");
+        usage.append("  For all modes:                                                                                        \n");
+        usage.append("                                                                                                        \n");
+        usage.append("   -maxThreadCount <max threads>                                                                        \n");
         return usage;
     }
 
@@ -93,6 +96,7 @@ private:
     v3d_uint16* label16;
     long* labelIndex;
     QReadWriteLock mutex;
+    int maxThreadCount;
 
     // mode=combine | combine-mask
     QString outputMipFilepath;

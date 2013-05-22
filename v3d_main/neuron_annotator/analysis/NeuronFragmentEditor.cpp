@@ -19,6 +19,7 @@ NeuronFragmentEditor::NeuronFragmentEditor()
     label16=0L;
     outputPrefix="";
     xdim=ydim=zdim=0;
+    maxThreadCount=0;
 }
 
 NeuronFragmentEditor::~NeuronFragmentEditor()
@@ -72,6 +73,9 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
                     maskFilePaths.append(possibleMaskFile);
                 }
             } while( i < (argList->size()-1) );
+        } else if (arg=="-maxThreadCount") {
+            QString maxThreadString=(*argList)[++i];
+            maxThreadCount=maxThreadString.toInt();
         }
     }
     bool argError=false;
@@ -132,6 +136,11 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
 
 bool NeuronFragmentEditor::execute()
 {
+    if (maxThreadCount>0) {
+        QThreadPool *globalThreadPool = QThreadPool::globalInstance();
+        qDebug() << "Setting max thread count=" << maxThreadCount;
+        globalThreadPool->setMaxThreadCount(maxThreadCount);
+    }
     if (mode==MODE_COMBINE) {
         return createFragmentComposite();
     } else if (mode==MODE_COMBINE_MASK) {
