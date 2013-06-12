@@ -4066,7 +4066,9 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
         }
         return 1;
     }
-    else
+    else //this following session of seems OK for a local 3D viewer,
+        //but somehow cause a crashing bug in the global 3D viewer. why??
+        //by PHC, 2013-06-11.
     {
         b_grabhighrez = false;
         produceZoomViewOf3DRoi(loc_vec);

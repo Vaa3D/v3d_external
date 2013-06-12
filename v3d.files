@@ -2068,3 +2068,7 @@ v3d_main/neuron_annotator/render/ActorGL.cpp
 
 v3d_main/neuron_annotator/utility/url_tools.h
 v3d_main/neuron_annotator/utility/url_tools.cpp
+v3d_main/3drenderer/marchingcubes.h
+v3d_main/3drenderer/nstroke.cpp
+v3d_main/3drenderer/nstroke_tracing.cpp
+v3d_main/3drenderer/marchingcubes.cpp

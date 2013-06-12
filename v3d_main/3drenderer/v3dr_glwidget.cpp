@@ -265,7 +265,7 @@ void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 ex
 		PROGRESS_PERCENT(30);
 		if (renderer)
 		{
-			renderer->setupData(this->_idep);
+            renderer->setupData(this->_idep);
 			if (renderer->hasError())	POST_CLOSE(this);
 			renderer->getLimitedDataSize(_data_size); //for update slider size
 		}
@@ -1648,7 +1648,26 @@ void V3dR_GLWidget::setZoom(int zr)
             if (zr>40)
             {
                 //v3d_msg("Now prepare to enter the zr>40 wheel event!");
-                renderer->zoomview_wheel_event();
+                //check if terafly exists
+                QDir pluginsDir = QDir(qApp->applicationDirPath());
+            #if defined(Q_OS_WIN)
+                if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+                    pluginsDir.cdUp();
+            #elif defined(Q_OS_MAC)
+                if (pluginsDir.dirName() == "MacOS") {
+                    pluginsDir.cdUp();
+                    pluginsDir.cdUp();
+                    pluginsDir.cdUp();
+                }
+            #endif
+
+                QDir pluginsDir1 = pluginsDir;
+                if (pluginsDir1.cd("plugins/teramanager")==true)
+                {
+                    renderer->zoomview_wheel_event();
+                }
+                else
+                    renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
             }
             else
                 renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
@@ -1669,7 +1688,26 @@ void V3dR_GLWidget::setZoom(float zr)
             if (zr>40)
             {
                 //v3d_msg("Now prepare to enter the zr>40 wheel event!");
-                renderer->zoomview_wheel_event();
+                //check if terafly exists
+                QDir pluginsDir = QDir(qApp->applicationDirPath());
+            #if defined(Q_OS_WIN)
+                if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+                    pluginsDir.cdUp();
+            #elif defined(Q_OS_MAC)
+                if (pluginsDir.dirName() == "MacOS") {
+                    pluginsDir.cdUp();
+                    pluginsDir.cdUp();
+                    pluginsDir.cdUp();
+                }
+            #endif
+
+                QDir pluginsDir1 = pluginsDir;
+                if (pluginsDir1.cd("plugins/teramanager")==true)
+                {
+                    renderer->zoomview_wheel_event();
+                }
+                else
+                    renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
             }
             else
                 renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
