@@ -39,8 +39,9 @@ public:
         help.append("Help Page\n");
         help.append("\n");
         help.append("This tool takes as input an .lsm file (a specialized 3D .tif file) containing an image\n");
-        help.append("stack with 2 channels of data. The first channel (0) is expected to be a reference channel\n");
-        help.append("(background). The second channel (1) is expected to be cell marker signal\n");
+        help.append("stack with 2 channels of data. The first channel (0) is expected to be the cell signal channel\n");
+        help.append("(background). The second channel (1) is expected to be the background signal. These are configurable\n");
+        help.append("using the -cch and -bch options.\n");
         help.append("\n");
         help.append("The tool will attempt to locate the position of cells in the 3D volume. If successful, two\n");
         help.append("output files will be generated in the same location as the input file:\n");
@@ -137,6 +138,8 @@ public:
         usage.append("  CellCounter3D by Sean Murphy for HHMI JFRC                              \n");
         usage.append(" [ -h   This will print the help page for the cell counter               ]\n");
         usage.append("   -i   <input lsm filepath>\n");
+        usage.append(" [ -cch <channel to use for cell signal, int     0-255  default=0>       ]\n");
+        usage.append(" [ -bch  <background, or reference channel, int  0-255  default=1>       ]\n");
         usage.append(" [ -ist <initial signal threshold,       int     0-255  default=10>      ]\n");
         usage.append(" [ -ibt <initial background threshold,   int     0-255  default=10>      ]\n");
         usage.append(" [ -sn  <sigma normalization,            double  >0.0   default=2.0>     ]\n");
@@ -216,6 +219,8 @@ protected:
     QString inputFilePath;
 
     // Command-Line parameters /////////////////////////
+    int CELL_CHANNEL;
+    int BACKGROUND_CHANNEL;
     int INITIAL_SIGNAL_THRESHOLD;
     int INITIAL_BACKGROUND_THRESHOLD;
     double SIGMA_NORMALIZATION;

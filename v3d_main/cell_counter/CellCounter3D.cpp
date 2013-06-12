@@ -18,9 +18,6 @@ public:
 #define DIALATE 0
 #define ERODE 1
 
-#define CELL 0
-#define BACKGROUND 1
-
 int CellCounter3D::ARG_STATUS_USAGE=0;
 int CellCounter3D::ARG_STATUS_OK=1;
 int CellCounter3D::ARG_STATUS_HELP=2;
@@ -37,6 +34,8 @@ CellCounter3D::CellCounter3D()
 
 void CellCounter3D::resetParameters() {
     // Command-line parameters
+    CELL_CHANNEL=0;
+    BACKGROUND_CHANNEL=1;
     INITIAL_SIGNAL_THRESHOLD=10;
     INITIAL_BACKGROUND_THRESHOLD=10;
     SIGMA_NORMALIZATION=2.0;
@@ -157,11 +156,11 @@ bool CellCounter3D::findCells() {
             processParameters(planParameterLines[planStepPosition]);
         }
 
-        long dataChannel0Count=countNonZero(data[CELL]);
-        long dataChannel1Count=countNonZero(data[BACKGROUND]);
+        long dataChannel0Count=countNonZero(data[CELL_CHANNEL]);
+        long dataChannel1Count=countNonZero(data[BACKGROUND_CHANNEL]);
 
-        qDebug() << "data channel 0 voxel count = " << dataChannel0Count;
-        qDebug() << "data channel 1 voxel count = " << dataChannel1Count;
+        qDebug() << "data channel " << CELL_CHANNEL << " voxel count = " << dataChannel0Count;
+        qDebug() << "data channel " << BACKGROUND_CHANNEL << " voxel count = " << dataChannel1Count;
 
         // Step 1: create buffers
         //
@@ -178,13 +177,13 @@ bool CellCounter3D::findCells() {
         for (int z=0;z<zDim;z++) {
             for (int y=0;y<yDim;y++) {
                 for (int x=0;x<xDim;x++) {
-                    workingData[0][CELL][z][y][x]=0;
-                    workingData[1][CELL][z][y][x]=data[CELL][z][y][x];
+                    workingData[0][0][z][y][x]=0;
+                    workingData[1][0][z][y][x]=data[CELL_CHANNEL][z][y][x];
                 }
             }
         }
 
-        long dataCellVoxelCount=countNonZero(workingData[1][CELL]);
+        long dataCellVoxelCount=countNonZero(workingData[1][0]);
         qDebug() << "Data cell voxel count = " << dataCellVoxelCount;
 
         for (int i=0;i<regionGroups.size();i++) {
@@ -197,7 +196,7 @@ bool CellCounter3D::findCells() {
                 int z=group[j];   zTotal+=z;
                 int y=group[j+1]; yTotal+=y;
                 int x=group[j+2]; xTotal+=x;
-                workingData[1][CELL][z][y][x]=0;
+                workingData[1][0][z][y][x]=0;
             }
             V3DLONG zAvg=(zTotal*3)/groupSize;
             V3DLONG yAvg=(yTotal*3)/groupSize;
@@ -228,10 +227,10 @@ bool CellCounter3D::findCells() {
                         }
                         double distance = std::sqrt((double)((sz-zAvg)*(sz-zAvg)+(sy-yAvg)*(sy-yAvg)+(sx-xAvg)*(sx-xAvg)));
                         if (distance<MARK_RADIUS) {
-                            if (workingData[1][CELL][sz][sy][sx]>0) {
+                            if (workingData[1][0][sz][sy][sx]>0) {
                                 flipCount++;
                             }
-                            workingData[1][CELL][sz][sy][sx]=0;
+                            workingData[1][0][sz][sy][sx]=0;
                             if (planStepPosition==2) {
                             }
                             zeroCount++;
@@ -242,7 +241,7 @@ bool CellCounter3D::findCells() {
             qDebug() << "Removed " << zeroCount << ", flipCount=" << flipCount << " group=" << i;
         }
 
-        long passCellVoxelCount=countNonZero(workingData[1][CELL]);
+        long passCellVoxelCount=countNonZero(workingData[1][0]);
         qDebug() << "Pass cell voxel count = " << passCellVoxelCount;
 
         // Step 3: initial threshold
@@ -251,44 +250,44 @@ bool CellCounter3D::findCells() {
         for (int z=0;z<zDim;z++) {
             for (int y=0;y<yDim;y++) {
                 for (int x=0;x<xDim;x++) {
-                    unsigned char red=workingData[1][CELL][z][y][x];
+                    unsigned char red=workingData[1][0][z][y][x];
                     if (red < INITIAL_SIGNAL_THRESHOLD) {
                         red = 0;
                     }
-                    unsigned char green=data[BACKGROUND][z][y][x];
+                    unsigned char green=data[BACKGROUND_CHANNEL][z][y][x];
                     if (green < INITIAL_BACKGROUND_THRESHOLD) {
                         green = 0;
                     }
                     if (red > green) {
-                        workingData[0][CELL][z][y][x]=red;
+                        workingData[0][0][z][y][x]=red;
                     } else {
-                        workingData[0][CELL][z][y][x]=0;
+                        workingData[0][0][z][y][x]=0;
                     }
                 }
             }
         }
 
-        long prenormCellVoxelCount=countNonZero(workingData[w][CELL]);
+        long prenormCellVoxelCount=countNonZero(workingData[w][0]);
         qDebug() << "Prenorm cell voxel count = " << prenormCellVoxelCount;
 
-        normalizeNonZero(workingData[w][CELL], SIGMA_NORMALIZATION);
+        normalizeNonZero(workingData[w][0], SIGMA_NORMALIZATION);
 
-        clearChannel(BACKGROUND, data);
+        clearChannel(BACKGROUND_CHANNEL, data);
 
-        long initialCellVoxelCount=countNonZero(workingData[w][CELL]);
+        long initialCellVoxelCount=countNonZero(workingData[w][0]);
         qDebug() << "Initial cell voxel count = " << initialCellVoxelCount;
 
         int w1 = w;
         int w2 = (w1==0 ? 1 : 0);
 
         qDebug() << "Doing sanity-check on pre-binary threshold w1=" << w1;
-        V3DLONG preBinaryViolationCount=regionViolationCount(workingData[w1][CELL]);
+        V3DLONG preBinaryViolationCount=regionViolationCount(workingData[w1][0]);
         qDebug() << "violation count=" << preBinaryViolationCount;
 
-        applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], NORMALIZATION_THRESHOLD);
+        applyBinaryThreshold(workingData[w1][0], workingData[w2][0], NORMALIZATION_THRESHOLD);
 
         qDebug() << "Doing sanity-check on post-binary threshold w2=" << w2;
-        V3DLONG postBinaryViolationCount=regionViolationCount(workingData[w2][CELL]);
+        V3DLONG postBinaryViolationCount=regionViolationCount(workingData[w2][0]);
         qDebug() << "violation count=" << postBinaryViolationCount;
 
         w1 = (w1==0 ? 1 : 0);
@@ -317,8 +316,8 @@ bool CellCounter3D::findCells() {
         int i=0;
         for (i=0;i<EROSION_CYCLES;i++) {
             qDebug() << "Beginning erosion iteration = " << i;
-            dialateOrErode(ERODE, workingData[w1][CELL], workingData[w2][CELL], EROSION_ELEMENT_SIZE, EROSION_THRESHOLD);
-            voxelCount=countNonZero(workingData[w2][CELL]);
+            dialateOrErode(ERODE, workingData[w1][0], workingData[w2][0], EROSION_ELEMENT_SIZE, EROSION_THRESHOLD);
+            voxelCount=countNonZero(workingData[w2][0]);
             w1 = (w1==0 ? 1 : 0);
             w2 = (w2==0 ? 1 : 0);
             if (voxelCount==lastVoxelCount) {
@@ -331,25 +330,25 @@ bool CellCounter3D::findCells() {
         }
 
         qDebug() << "Doing sanity-check after erosion, w1=" << w1;
-        V3DLONG postErosionViolationCount=regionViolationCount(workingData[w1][CELL]);
+        V3DLONG postErosionViolationCount=regionViolationCount(workingData[w1][0]);
         qDebug() << "violation count=" << postErosionViolationCount;
 
 
         // Dialate CELL signal to fill nucleus and gaps.
         for (int i=0;i<DIALATION_CYCLES;i++) {
             qDebug() << "Beginning dialation iteration = " << i;
-            dialateOrErode(DIALATE, workingData[w1][CELL], workingData[w2][CELL], DIALATION_ELEMENT_SIZE, DIALATION_THRESHOLD);
-            voxelCount=countNonZero(workingData[w2][CELL]);
+            dialateOrErode(DIALATE, workingData[w1][0], workingData[w2][0], DIALATION_ELEMENT_SIZE, DIALATION_THRESHOLD);
+            voxelCount=countNonZero(workingData[w2][0]);
             qDebug() << "Updated voxel count = " << voxelCount;
             w1 = (w1==0 ? 1 : 0);
             w2 = (w2==0 ? 1 : 0);
         }
 
         qDebug() << "Doing sanity-check after dialation, w1=" << w1;
-        V3DLONG postDialationViolationCount=regionViolationCount(workingData[w1][CELL]);
+        V3DLONG postDialationViolationCount=regionViolationCount(workingData[w1][0]);
         qDebug() << "violation count=" << postDialationViolationCount;
 
-        centerSurroundFilter(workingData[w1][CELL], workingData[w2][CELL], CS_CENTER_RADIUS, CS_CENTER_VALUE, CS_SURROUND_RADIUS, CS_SURROUND_VALUE);
+        centerSurroundFilter(workingData[w1][0], workingData[w2][0], CS_CENTER_RADIUS, CS_CENTER_VALUE, CS_SURROUND_RADIUS, CS_SURROUND_VALUE);
 
         w1 = (w1==0 ? 1 : 0);
         w2 = (w2==0 ? 1 : 0);
@@ -361,7 +360,7 @@ bool CellCounter3D::findCells() {
 //        }
 
         qDebug() << "Doing sanity-check after center-surround, w1=" << w1;
-        V3DLONG postCenterSurroundViolationCount=regionViolationCount(workingData[w1][CELL]);
+        V3DLONG postCenterSurroundViolationCount=regionViolationCount(workingData[w1][0]);
         qDebug() << "violation count=" << postCenterSurroundViolationCount;
 
 
@@ -370,8 +369,8 @@ bool CellCounter3D::findCells() {
         int csThreshold=CS_THRESHOLD_START;
         while(!csSuccess && (csThreshold <= CS_THRESHOLD_MAX)) {
             qDebug() << "Center-Surround search, threshold=" << csThreshold << " of max=" << CS_THRESHOLD_MAX;
-            applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], csThreshold);
-            if (findConnectedRegions(workingData[w2][CELL]) && errorStatus==0) {
+            applyBinaryThreshold(workingData[w1][0], workingData[w2][0], csThreshold);
+            if (findConnectedRegions(workingData[w2][0]) && errorStatus==0) {
                 qDebug() << "Center-Surround search successful";
                 csSuccess=true;
                 w1 = (w1==0 ? 1 : 0);
@@ -1138,11 +1137,17 @@ int CellCounter3D::processArgs(vector<char*> *argList) {
     processParameters(parameterList);
 
     // Validation of mandatory information
-    if (inputFilePath.length()>0) {
-        return ARG_STATUS_OK;
-    } else {
+    if (inputFilePath.length()<1) {
         return ARG_STATUS_USAGE;
     }
+
+    // Channel uniqueness check
+    if (CELL_CHANNEL==BACKGROUND_CHANNEL) {
+        qDebug() << "CELL_CHANNEL must differ from BACKGROUND_CHANNEL";
+        return ARG_STATUS_USAGE;
+    }
+
+    return ARG_STATUS_OK;
 }
 
 void CellCounter3D::processParameters(QString parameterLine) {
@@ -1154,7 +1159,19 @@ void CellCounter3D::processParameters(QString parameterLine) {
 void CellCounter3D::processParameters(QStringList parameterList) {
     for (int i=0;i<parameterList.size();i++) {
         QString arg=parameterList[i];
-        if (arg=="-ist") {
+        if (arg=="-cch") {
+            i++;
+            QString cellChannel=parameterList[i];
+            CELL_CHANNEL=cellChannel.toInt();
+            qDebug() << "Set CELL_CHANNEL=" << CELL_CHANNEL;
+        }
+        else if (arg=="-bch") {
+            i++;
+            QString backgroundChannel=parameterList[i];
+            BACKGROUND_CHANNEL=backgroundChannel.toInt();
+            qDebug() << "Set BACKGROUND_CHANNEL=" << BACKGROUND_CHANNEL;
+        }
+        else if (arg=="-ist") {
             i++;
             QString initialSignalThreshold=parameterList[i];
             INITIAL_SIGNAL_THRESHOLD=initialSignalThreshold.toInt();
