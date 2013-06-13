@@ -96,6 +96,7 @@ public:
 	virtual ~V3DPluginCallback() {}
 	virtual bool callPluginFunc(const QString & plugin_name, const QString & func_name,
 			const V3DPluginArgList & input, V3DPluginArgList & output) = 0;
+	virtual bool callPluginMenu(const QString & plugin_name, const QString & menu_name) = 0;
 
 	virtual v3dhandleList getImageWindowList() const = 0;
 	virtual v3dhandle currentImageWindow() = 0;

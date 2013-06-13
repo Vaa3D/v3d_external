@@ -625,6 +625,79 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 	}
 }
 
+bool V3d_PluginLoader::callPluginMenu(const QString &plugin_name,
+                                      const QString &menu_name)
+{
+    
+	loadPlugins(); // ensure pluginFilenameList unempty 20110520 YuY
+	
+	QString fullpath;
+    QList<QDir> pluginsDirList = getPluginsDirList();
+    foreach (const QDir& pluginsDir, pluginsDirList)
+    {
+        // Find the first plugin directory with such a file
+        if (pluginsDir.exists(plugin_name)) {
+            fullpath = pluginsDir.absoluteFilePath(plugin_name);
+            break;
+        }
+    }
+	qDebug()<<"callPluginMenu fullpath: " <<fullpath;
+	int idx = pluginFilenameList.indexOf(fullpath);
+	//qDebug()<<"callPluginFunc idx: " <<idx;
+	if (idx < 0)
+	{
+		qDebug()<<QString("ERROR: callPluginFunc cannot find this plugin_name: '%1'").arg(plugin_name);
+		return false;
+	}
+    
+	Q_ASSERT(idx>=0 && idx<pluginList.size());
+	QPluginLoader *loader = pluginList.at(idx);
+    
+	loader->unload(); ///
+    QObject *plugin = loader->instance();
+    if (! plugin)
+    {
+    	qDebug("ERROR in V3d_PluginLoader::callPluginMenu: loader->instance()");
+    	return false;
+    }
+    
+	V3DPluginInterface2 *iface = qobject_cast<V3DPluginInterface2 *>(plugin);
+	V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
+    if (iface && callback) {
+        try
+        {
+            iface->domenu(menu_name, *callback, (QWidget*)0);
+            return true;
+        }
+        catch (...)
+        {
+            v3d_msg(QString("The plugin fails to call [%1]. Check your plugin code please.").arg(menu_name));
+            return false;
+        }
+        return true;
+    }
+    else if (iface2_1 && callback) {
+        try
+        {
+            iface2_1->domenu(menu_name, *callback, (QWidget*)0);
+            return true;
+        }
+        catch (...)
+        {
+            v3d_msg(QString("The plugin fails to call [%1]. Check your plugin code please.").arg(menu_name));
+            return false;
+        }
+        return true;
+    }
+    else // (! (iface && callback) )
+	{
+		qDebug()<<QString("ERROR: callPluginMenu cannot cast (Vaa3DPluginInterface2_1) of plugin '%1'").arg(plugin_name);
+		return false;
+	}
+}
+
+
 //==================================================================
 
 
