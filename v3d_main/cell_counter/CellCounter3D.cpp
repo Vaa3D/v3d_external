@@ -459,7 +459,7 @@ void CellCounter3D::markImage() {
                     }
                     double distance = std::sqrt((double)((sz-z)*(sz-z)+(sy-y)*(sy-y)+(sx-x)*(sx-x)));
                     if (distance<=MARK_RADIUS) {
-                        unsigned char signal=data[0][sz][sy][sx];
+                        unsigned char signal=data[CELL_CHANNEL][sz][sy][sx];
                         int r=(MARK_COLOR[0]*signal)/255;
                         int g=(MARK_COLOR[1]*signal)/255;
                         int b=(MARK_COLOR[2]*signal)/255;
@@ -510,7 +510,7 @@ void CellCounter3D::markImage() {
     for (int z=0;z<zDim;z++) {
         for (int y=0;y<yDim;y++) {
             for (int x=0;x<xDim;x++) {
-                unsigned char signal=data[0][z][y][x];
+                unsigned char signal=data[CELL_CHANNEL][z][y][x];
                 int r=(SIGNAL_COLOR[0]*signal)/255;
                 int g=(SIGNAL_COLOR[1]*signal)/255;
                 int b=(SIGNAL_COLOR[2]*signal)/255;
@@ -665,7 +665,7 @@ void CellCounter3D::copyToImage(unsigned char*** d, unsigned char**** data) {
         for (int y=0;y<yDim;y++) {
             for (int x=0;x<xDim;x++) {
                 unsigned char value=d[z][y][x];
-                data[0][z][y][x]=value;
+                data[CELL_CHANNEL][z][y][x]=value;
             }
         }
     }
