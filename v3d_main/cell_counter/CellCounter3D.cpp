@@ -231,8 +231,6 @@ bool CellCounter3D::findCells() {
                                 flipCount++;
                             }
                             workingData[1][0][sz][sy][sx]=0;
-                            if (planStepPosition==2) {
-                            }
                             zeroCount++;
                         }
                     }
@@ -370,6 +368,8 @@ bool CellCounter3D::findCells() {
         while(!csSuccess && (csThreshold <= CS_THRESHOLD_MAX)) {
             qDebug() << "Center-Surround search, threshold=" << csThreshold << " of max=" << CS_THRESHOLD_MAX;
             applyBinaryThreshold(workingData[w1][0], workingData[w2][0], csThreshold);
+	    int regionGroupsRollbackMark=regionGroups.size();
+	    int regionCoordinatesRollbackMark=regionCoordinates.size();
             if (findConnectedRegions(workingData[w2][0]) && errorStatus==0) {
                 qDebug() << "Center-Surround search successful";
                 csSuccess=true;
@@ -379,6 +379,13 @@ bool CellCounter3D::findCells() {
             } else {
                 errorStatus=0;
                 csThreshold+=CS_THRESHOLD_INCREMENT;
+		// Rollback entries
+		for (int g=regionGroups.size();g>regionGroupsRollbackMark;g--) {
+		  regionGroups.removeLast();
+		}
+		for (int c=regionCoordinates.size();c>regionCoordinatesRollbackMark;c--) {
+		  regionCoordinates.removeLast();
+		}
             }
         }
         if (!csSuccess) {
@@ -392,6 +399,8 @@ bool CellCounter3D::findCells() {
 
         // Debug
         //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
+
+	qDebug() << "Step " << planStepPosition << " finishing with regionGroups=" << regionGroups.size() << " and regionCoordinates=" << regionCoordinates.size();
 
     }
 
@@ -990,8 +999,7 @@ bool CellCounter3D::findConnectedRegions(unsigned char*** d) {
                     findNeighbors(x,y,z,d,mask,groupList);
                     if (errorStatus) {
                         qDebug() << "CellCounter3D::findConnectedRegions() : Error status indicated after call to findNeighbors";
-                        regionCoordinates.clear();
-                        return false;
+                        return false; // this will trigger rollback in above layer
                     }
                     int zTotal=0;
                     int yTotal=0;
@@ -1093,6 +1101,7 @@ void CellCounter3D::writeOutputImageFile() {
 }
 
 void CellCounter3D::writeOutputReportFile() {
+    qDebug() << "writeOutputReportFile: regionCoordinates size=" << regionCoordinates.size();
     if (errorStatus) {
         qDebug() << "writeOutputReportFile() skipping due to error state";
         return;
@@ -1105,7 +1114,7 @@ void CellCounter3D::writeOutputReportFile() {
         qDebug() << "Could not open file " << outputFilePath << " to write";
     }
     QTextStream out(&file);
-    for (int i=0;i<regionCoordinates.length();i=i+3) {
+    for (int i=0;i<regionCoordinates.size();i=i+3) {
         int index=(i/3)+1;
         int z=regionCoordinates.at(i);
         int y=regionCoordinates.at(i+1);
