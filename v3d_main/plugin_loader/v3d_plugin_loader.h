@@ -95,8 +95,7 @@ public:
 public:
 	virtual bool callPluginFunc(const QString &plugin_name,
 			const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output);
-	virtual bool callPluginMenu(const QString &plugin_name,
-                                const QString &func_name);
+    //virtual bool callPluginMenu(const QString &plugin_name, const QString &func_name); //a bug caused in v2.823?
 
 	virtual v3dhandleList getImageWindowList() const;
 	virtual v3dhandle currentImageWindow();

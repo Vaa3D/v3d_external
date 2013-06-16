@@ -625,6 +625,8 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 	}
 }
 
+////a bug caused in v2.823?
+/*
 bool V3d_PluginLoader::callPluginMenu(const QString &plugin_name,
                                       const QString &menu_name)
 {
@@ -697,6 +699,7 @@ bool V3d_PluginLoader::callPluginMenu(const QString &plugin_name,
 	}
 }
 
+*/
 
 //==================================================================
 
