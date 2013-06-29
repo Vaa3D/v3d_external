@@ -475,13 +475,13 @@ bool point_bdb_minus_2d_localwinmass_bl(unsigned char ** inimg_data2d, V3DLONG i
 			//image force
 			int b_use_M_term=1;
 			M_term.x = M_term.y = 0;
-			V3DLONG x0 = round(mCoord_in.at(j).x - radius_x);
+			V3DLONG x0 = V3DLONG(mCoord_in.at(j).x - radius_x + 0.5);
 			x0 = (x0<0)?0:x0;
-			V3DLONG x1 = round(mCoord_in.at(j).x + radius_x);
+			V3DLONG x1 = V3DLONG(mCoord_in.at(j).x + radius_x + 0.5);
 			x1 = (x1>=(inimg_sz0-1))?(inimg_sz0-1):x1;
-			V3DLONG y0 = round(mCoord_in.at(j).y - radius_y);
+			V3DLONG y0 = V3DLONG(mCoord_in.at(j).y - radius_y + 0.5);
 			y0 = (y0<0)?0:y0;
-			V3DLONG y1 = round(mCoord_in.at(j).y + radius_y);
+			V3DLONG y1 = V3DLONG(mCoord_in.at(j).y + radius_y + 0.5);
 			y1 = (y1>=(inimg_sz1-1))?(inimg_sz1-1):y1;
 			//	cout << "x0 "<< x0 << ' ' << x1 << " y0 " << ' ' << y0 <<  ' ' << y1 << endl;
 			V3DLONG ix, iy;
@@ -909,9 +909,15 @@ bool straight_nearestfill(UINT8_TYPE * invol1d, V3DLONG *insz, int szlen,
 				}
 				continue;
 			}
+            
+#ifdef _WIN32
+			V3DLONG cpx0 = (V3DLONG)(curpx), cpx1 = (V3DLONG)(ceil(curpx));
+			V3DLONG cpy0 = (V3DLONG)(curpy), cpy1 = (V3DLONG)(ceil(curpy));
+#else
 			V3DLONG cpx0 = (V3DLONG)(floor(curpx)), cpx1 = (V3DLONG)(ceil(curpx));
 			V3DLONG cpy0 = (V3DLONG)(floor(curpy)), cpy1 = (V3DLONG)(ceil(curpy));
-			double w0x0y = (cpx1-curpx)*(cpy1-curpy);
+#endif
+            double w0x0y = (cpx1-curpx)*(cpy1-curpy);
 			double w0x1y = (cpx1-curpx)*(curpy-cpy0);
 			double w1x0y = (curpx-cpx0)*(cpy1-curpy);
 			double w1x1y = (curpx-cpx0)*(curpy-cpy0);
