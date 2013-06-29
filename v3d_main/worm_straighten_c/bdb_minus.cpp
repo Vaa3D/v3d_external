@@ -32,6 +32,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+
+#ifdef _WIN32
+#define fabs(x) ((x<0)?-x:x)
+#endif
+
 //#include <QtGlobal>
 int Coord2D::dim=2;
 int Coord3D::dim=3;
@@ -878,7 +884,7 @@ bool straight_nearestfill(UINT8_TYPE * invol1d, V3DLONG *insz, int szlen,
 	//============ generate nearest interpolation ===================
 	double base0 = 0;
 	V3DLONG Krad = 0;
-	if (floor(OutWid/2)*2==OutWid)
+	if ((V3DLONG)(OutWid/2)*2==OutWid)
 	{
 		Krad = (OutWid-1)/2;
 		base0 = 0;
