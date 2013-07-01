@@ -207,7 +207,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actDispNeuronNodeInfo=0,	*actAveDistTwoNeurons=0, *actDispNeuronMorphoInfo=0,
             *actDoNeuronToolBoxPlugin=0,
 			*actDispSurfVertexInfo=0,
-			*actComputeSurfArea=0, *actComputeSurfVolume=0;
+            *actComputeSurfArea=0, *actComputeSurfVolume=0,
+            *actZoomin_currentviewport=0 //PHC, 130701
+            ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
 	if (qsName.size()>0)
@@ -329,6 +331,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in view: 1-right-stroke ROI", w));
 				listAct.append(actMarkerCreate_zoom = new QAction("Zoom-in view: 1-right-click ROI", w));
+                listAct.append(actZoomin_currentviewport = new QAction("Zoom-in view: current viewport content ROI", w));
                 { //conditionally add tera manager
 					QDir pluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
@@ -1014,6 +1017,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_grabhighrez = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
+    else if (act == actZoomin_currentviewport)
+    {
+        zoomview_currentviewport();
+    }
     
 #define __v3d_imaging_func__ // dummy, just for easy locating
 	else if (act == actMarkerCreate_zoom_imaging)
@@ -4068,6 +4075,78 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
     }
     else //this following session of seems OK for a local 3D viewer,
         //but somehow cause a crashing bug in the global 3D viewer. why??
+        //by PHC, 2013-06-11.
+    {
+        b_grabhighrez = false;
+        produceZoomViewOf3DRoi(loc_vec);
+        return 2;
+    }
+    //now invoke the code!!
+
+
+    return 0;
+}
+
+
+int Renderer_gl1::zoomview_currentviewport()//by PHC, revised from zoomview_wheel_event, 20130701
+{
+    //first check the wheelPos is valid, if not, then reset to the center of the viewport
+
+    //qDebug("wheel pos x=%5.3f,y=%5.3f, view port[%d, %d, %d, %d]",wheelPos.x,wheelPos.y, viewport[0], viewport[1], viewport[2], viewport[3]);
+    if (wheelPos.x<viewport[0]+5 || wheelPos.x>=viewport[2]-5 ||
+        wheelPos.y<viewport[1]+5 || wheelPos.y>=viewport[3]-5 ) //add a margin 5 to force have a hitWhell event in case wheelPos has not been initialized
+    {
+        //v3d_msg("reset wheel pos in zoomview_wheel_event()");
+        hitWheel((viewport[0]+viewport[2])/2.0, (viewport[1]+viewport[3])/2.0);
+    }
+
+    //find the center line XYZ loc, and then 4 corner's XYZ locs, then based on all five locs define the bounding box and return
+    QList <MarkerPos> curlist;
+    //curlist.append(wheelPos);
+    qDebug("wheel pos x=%5.3f,y=%5.3f",wheelPos.x,wheelPos.y);
+
+    int i;
+    for (i=0; i<5; i++)
+    {
+        MarkerPos p;
+        p = wheelPos;
+        switch (i)
+        {
+            case 0: p.x = (wheelPos.view[0]+wheelPos.view[2])/2.0; p.y = (wheelPos.view[1]+wheelPos.view[3])/2.0; break;
+            case 1: p.x = wheelPos.view[0]+1; p.y = wheelPos.view[1]+1; break;
+            case 2: p.x = wheelPos.view[0]+1; p.y = wheelPos.view[3]-1; break;
+            case 3: p.x = wheelPos.view[2]-1; p.y = wheelPos.view[1]+1; break;
+            case 4: p.x = wheelPos.view[2]-1; p.y = wheelPos.view[3]-1; break;
+            default:break;
+        }
+        curlist.append(p);
+        qDebug("i=%d, x=%5.3f,y=%5.3f",i, p.x,p.y);
+    }
+
+    vector <XYZ> loc_vec;
+    for (i=0;i<curlist.size();i++)
+    {
+        //XYZ loc_m = getCenterOfMarkerPos(curlist.at(i));
+
+        XYZ loc0, loc1;
+        getVolumeXsectPosOfMarkerLine(loc0, loc1, curlist.at(i), 0);
+
+        //XYZ loc = (loc0+loc1)*0.5;
+
+        loc_vec.push_back(loc0);
+        loc_vec.push_back(loc1);
+
+        qDebug("i=%d loc0(%5.3f %5.3f %5.3f) loc1(%5.3f,%5.3f,%5.3f) \n",
+               i, loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z
+               );
+
+        //qDebug("%5.3f, %5.3f, %5.3f,1,1,,,\n%5.3f,%5.3f,%5.3f,1,1,,, \n", loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z);
+
+    }
+
+
+    //this following session of seems OK for a local 3D viewer,
+     //but somehow cause a crashing bug in the global 3D viewer. why??
         //by PHC, 2013-06-11.
     {
         b_grabhighrez = false;

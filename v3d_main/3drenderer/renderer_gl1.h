@@ -203,6 +203,7 @@ public:
 	virtual void updateTracedNeuron();
 
     virtual int zoomview_wheel_event();//by PHC, 20130424
+    virtual int zoomview_currentviewport();//by PHC, 20130701
 
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
