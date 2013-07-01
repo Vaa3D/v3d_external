@@ -4090,15 +4090,13 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
 
 int Renderer_gl1::zoomview_currentviewport()//by PHC, revised from zoomview_wheel_event, 20130701
 {
-    //first check the wheelPos is valid, if not, then reset to the center of the viewport
-
     //qDebug("wheel pos x=%5.3f,y=%5.3f, view port[%d, %d, %d, %d]",wheelPos.x,wheelPos.y, viewport[0], viewport[1], viewport[2], viewport[3]);
-    if (wheelPos.x<viewport[0]+5 || wheelPos.x>=viewport[2]-5 ||
-        wheelPos.y<viewport[1]+5 || wheelPos.y>=viewport[3]-5 ) //add a margin 5 to force have a hitWhell event in case wheelPos has not been initialized
-    {
+//    if (wheelPos.x<viewport[0]+5 || wheelPos.x>=viewport[2]-5 ||
+//        wheelPos.y<viewport[1]+5 || wheelPos.y>=viewport[3]-5 ) //add a margin 5 to force have a hitWhell event in case wheelPos has not been initialized
+//    {
         //v3d_msg("reset wheel pos in zoomview_wheel_event()");
         hitWheel((viewport[0]+viewport[2])/2.0, (viewport[1]+viewport[3])/2.0);
-    }
+//    }
 
     //find the center line XYZ loc, and then 4 corner's XYZ locs, then based on all five locs define the bounding box and return
     QList <MarkerPos> curlist;
@@ -4144,17 +4142,6 @@ int Renderer_gl1::zoomview_currentviewport()//by PHC, revised from zoomview_whee
 
     }
 
-
-    //this following session of seems OK for a local 3D viewer,
-     //but somehow cause a crashing bug in the global 3D viewer. why??
-        //by PHC, 2013-06-11.
-    {
-        b_grabhighrez = false;
-        produceZoomViewOf3DRoi(loc_vec);
-        return 2;
-    }
-    //now invoke the code!!
-
-
+    produceZoomViewOf3DRoi(loc_vec);
     return 0;
 }
