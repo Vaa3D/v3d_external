@@ -2572,7 +2572,7 @@ int Write_IFD_Image(Tiff_IFD *ifd, FILE *output)
             }
         }
 
-      return;
+      return (0);
     }
 
   { uint8     buffer[X_BUFFER_LEN];

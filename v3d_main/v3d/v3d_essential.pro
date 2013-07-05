@@ -129,6 +129,8 @@ macx {
     # For faster neuron toggling. CMB 20 June 2011
     QMAKE_CXXFLAGS+=-O3
     CXXFLAGS+=-O3
+    # On mountain lion use clang compiler, not broken llvm/gcc compiler
+    QMAKE_CXX=c++
 }
 
 unix:!macx {
