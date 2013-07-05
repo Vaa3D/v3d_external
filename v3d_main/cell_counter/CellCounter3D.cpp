@@ -1288,6 +1288,12 @@ void CellCounter3D::processParameters(QStringList parameterList) {
             MARK_SIZE=markSize.toInt();
             qDebug() << "Set MARK_SIZE=" << MARK_SIZE;
         }
+        else if (arg=="-mr") {
+            i++;
+            QString markRadius=parameterList[i];
+            MARK_RADIUS=markRadius.toInt();
+            qDebug() << "Set MARK_RADIUS=" << MARK_RADIUS;
+        }
         else if (arg=="-mc") {
             i++;
             QString markColor0=parameterList[i++];
