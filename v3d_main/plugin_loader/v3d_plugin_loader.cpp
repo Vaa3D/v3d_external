@@ -556,11 +556,25 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 	
 	QString fullpath;
     QList<QDir> pluginsDirList = getPluginsDirList();
+
+    QStringList existingPluginsList = getPluginNameList();
+
     foreach (const QDir& pluginsDir, pluginsDirList)
     {
-        // Find the first plugin directory with such a file
-        if (pluginsDir.exists(plugin_name)) {
-            fullpath = pluginsDir.absoluteFilePath(plugin_name);
+//        // Find the first plugin directory with such a file
+//        if (pluginsDir.exists(plugin_name)) {
+//            fullpath = pluginsDir.absoluteFilePath(plugin_name);
+//            break;
+//        }
+
+//the following was sugegsted by Zhi Zhou to do partial name match. 20130706
+
+        std::cout << pluginsDir.dirName().toStdString() << std::endl;
+        // Find the first plugin directory with such a file name or partial name by  Zhi Zhou 20130705
+        foreach (QString file, existingPluginsList )
+        if (file.contains(plugin_name))
+        {
+            fullpath = pluginsDir.absoluteFilePath(file);
             break;
         }
     }
