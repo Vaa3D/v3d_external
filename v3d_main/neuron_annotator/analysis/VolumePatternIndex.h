@@ -46,7 +46,7 @@ public:
         usage.append("     -indexFile <index file>                                                                            \n");
 // NOT IMPLEMENTED        usage.append("     [ -subVolume \"x0 x1 y0 y1 z0 z1\" : default is full size ]                                        \n");
         usage.append("                                                                                                        \n");
-        usage.append("    For mode index:                                                                                     \n");
+        usage.append("    For mode index:  (note: .mask files or stacks OK - masks treated as max intensity)                  \n");
         usage.append("                                                                                                        \n");
         usage.append("     -inputList <file with list of stacks to index, format=<file> [ <channel#> ] >                      \n");
         usage.append("     -defaultChannelToIndex <channel number>                                                            \n");
