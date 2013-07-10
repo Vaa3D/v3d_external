@@ -81,6 +81,7 @@ private:
     QString inputLabelIndexFilepath;
     My4DImage* sourceImage;
     My4DImage* labelImage;
+    MaskChan maskChan;
     long xdim;
     long ydim;
     long zdim;
@@ -105,14 +106,6 @@ private:
     // mode=reverse-label
     QString outputDirPath;
     QString outputPrefix;
-
-    void writeMaskList(QDataStream& dataOut, QList<MaskRay*>& list);
-    void axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
-                    long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data=0L, long assumedVoxels=0L);
-
-    bool createMaskChanForLabel(int label);
-
-    QList<int> getFragmentListFromLabelStack();
 
     QString createFullPathFromLabel(int label, QString extension);
 
