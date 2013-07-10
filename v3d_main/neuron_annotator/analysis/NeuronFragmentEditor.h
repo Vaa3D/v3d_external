@@ -5,16 +5,9 @@
 #include <QtCore>
 #include <QDir>
 #include "../../v3d/v3d_core.h"
+#include "MaskChan.h"
 
 using namespace std;
-
-class MaskRay
-{
-public:
-    long skipCount;
-    QList<long> startList;
-    QList<long> endList;
-};
 
 class NeuronFragmentEditor
 {
