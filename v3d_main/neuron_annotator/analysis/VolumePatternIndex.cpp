@@ -325,6 +325,7 @@ bool VolumePatternIndex::populateIndexFileList() {
         QStringList fList=line.split(splitRegex);
         if (fList.size()>1) {
             channel=fList[1].toInt();
+	    line=fList[0];
         } else {
             channel=defaultChannelToIndex;
         }
