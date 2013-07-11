@@ -64,16 +64,16 @@ class MaskChan
   bool setSourceImage(My4DImage* image);
   bool setLabelImage(My4DImage* labelImage);
   QList<int> getFragmentListFromLabelStack();
-
-
   bool createMaskChanForLabel(int label, const QString& maskFullPath, const QString& channelFullPath, QReadWriteLock* mutex);
-  void writeMaskList(QDataStream& dataOut, QList<MaskRay*>& list);
+  My4DImage* createImageFromMaskFiles(QStringList& maskFilePaths);
 
   static const int MAX_LABEL;
 
  private:
   void axisTracer(int direction, int label, QList<MaskRay*> * rayList, long& pairCount, long& voxelCount,
 		  long& x0, long& x1, long& y0, long& y1, long& z0, long& z1, void* data=0L, long assumedVoxelCount=0L);
+
+  void writeMaskList(QDataStream& dataOut, QList<MaskRay*>& list);
 
   My4DImage* sourceImage;
   My4DImage* labelImage;
