@@ -382,41 +382,48 @@ bool VolumePatternIndex::createIndex()
     int fileIndex=0;
     indexData=0L;
     for (fileIndex=0;fileIndex<indexFileList.size();fileIndex++) {
-        My4DImage sourceImage;
-        ImageLoader loader;
-        if (!loader.loadImage(&sourceImage, indexFileList[fileIndex])) {
+      My4DImage* sourceImage=0L;
+      ImageLoader loader;
+      QString filenameToLoad=indexFileList[fileIndex];
+      if (filenameToLoad.endsWith(".mask")) {
+	  MaskChan mc;
+	  QStringList ql;
+	  ql.append(filenameToLoad);
+	  sourceImage=mc.createImageFromMaskFiles(ql);
+      } else {
+        if (!loader.loadImage(sourceImage, indexFileList[fileIndex])) {
             qDebug() << "Could not load file=" << indexFileList[fileIndex];
             return false;
-        } else {
-            qDebug() << "Indexing " << fileIndex << " of " << indexFileList.size() << " : " << indexFileList[fileIndex] << "...";
         }
-        if (fileIndex==0 && x0==-1) {
-            // Then assume we are to use the first image to set the selection region
-            qDebug() << "createIndex::Formatting subregion. x0=" << x0;
-            x0=0; x1=sourceImage.getXDim();
-            y0=0; y1=sourceImage.getYDim();
-            z0=0; z1=sourceImage.getZDim();
-            if (subregion==0L) {
-                subregion=new V3DLONG[6];
-            }
-            formatSubregion(subregion);
-            qDebug() << "Done formatting subregion";
-            for (int i=0;i<6;i++) {
-                qDebug() << "subregion " << i << " =" << subregion[i];
-            }
-        }
-        indexImage(&sourceImage, indexChannelList[fileIndex], subregion, false);
-        if (indexData==0L) {
-            qDebug() << "Error with indexImage";
-            return false;
-        }
-        if (fileIndex==0) {
-            if (!openIndexAndWriteHeader()) {
-                qDebug() << "Could not open index file and write header";
-                return false;
-            }
-        }
-        fwrite(indexData, sizeof(unsigned char), indexTotalBytes, fid);
+      }
+      qDebug() << "Indexing " << fileIndex << " of " << indexFileList.size() << " : " << indexFileList[fileIndex] << "...";
+      if (fileIndex==0 && x0==-1) {
+	// Then assume we are to use the first image to set the selection region
+	qDebug() << "createIndex::Formatting subregion. x0=" << x0;
+	x0=0; x1=sourceImage->getXDim();
+	y0=0; y1=sourceImage->getYDim();
+	z0=0; z1=sourceImage->getZDim();
+	if (subregion==0L) {
+	  subregion=new V3DLONG[6];
+	}
+	formatSubregion(subregion);
+	qDebug() << "Done formatting subregion";
+	for (int i=0;i<6;i++) {
+	  qDebug() << "subregion " << i << " =" << subregion[i];
+	}
+      }
+      indexImage(sourceImage, indexChannelList[fileIndex], subregion, false);
+      if (indexData==0L) {
+	qDebug() << "Error with indexImage";
+	return false;
+      }
+      if (fileIndex==0) {
+	if (!openIndexAndWriteHeader()) {
+	  qDebug() << "Could not open index file and write header";
+	  return false;
+	}
+      }
+      fwrite(indexData, sizeof(unsigned char), indexTotalBytes, fid);
     }
     if (indexData!=0) {
         delete [] indexData;

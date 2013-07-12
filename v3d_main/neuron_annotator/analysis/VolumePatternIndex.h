@@ -6,6 +6,7 @@
 #include <QDir>
 #include "../../v3d/v3d_core.h"
 #include "AnalysisTools.h"
+#include "MaskChan.h"
 
 using namespace std;
 
