@@ -18,6 +18,7 @@ public:
     static const int DEFAULT_THRESHOLD_A;
     static const int DEFAULT_THRESHOLD_B;
     static const int DEFAULT_THRESHOLD_C;
+    static const double DEFAULT_MIN_SCORE;
     static const int DEFAULT_MAX_HITS;
     static const QString DEFAULT_MATRIX_STRING;
     static const QString DEFAULT_FULL_MATRIX_STRING;
@@ -59,6 +60,7 @@ public:
         usage.append("     -query <image volume or .mask file to use as query>                                                \n");
         usage.append("     -queryChannel <channel number>                                                                     \n");
         usage.append("     -outputFile <outputFile>                                                                           \n");
+	usage.append("     [ -minScore <minimum score to quality as hit> : default=-1000000.0                                 \n");
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
         usage.append("     [ -skipzeros : ignores all zero-valued voxels in query during search ]                             \n");
         usage.append("     [ -full : use index first, then use full images, slower but more accurate, default=false]          \n");
@@ -92,6 +94,7 @@ private:
     QString queryImageFilePath;
     int queryChannel;
     QString outputFilePath;
+    double minScore;
     int maxHits;
     bool fullSearch;
     bool skipzeros;

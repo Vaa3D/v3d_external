@@ -82,6 +82,7 @@ const int VolumePatternIndex::DEFAULT_UNIT_SIZE = 10;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_B = 20;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_C = 50;
+const double VolumePatternIndex::DEFAULT_MIN_SCORE = -1000000.0;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
 const int VolumePatternIndex::DEFAULT_BINARY_PROXY_VALUE = 255;
 const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("      0 -1 -4 -16       -1 1 -1 -8       -4 -1 8 4     -16 -8 4 32 ");
@@ -111,6 +112,7 @@ VolumePatternIndex::VolumePatternIndex()
     fullmatrix=0L;
     unitSize=DEFAULT_UNIT_SIZE;
     threshold=0L;
+    minScore=DEFAULT_MIN_SCORE;
     maxHits=DEFAULT_MAX_HITS;
     DEBUG_FLAG=false;
     skipzeros=false;
@@ -171,6 +173,9 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         } else if (arg=="-maxHits") {
             QString maxHitsString=(*argList)[++i];
             maxHits=maxHitsString.toInt();
+        } else if (arg=="-minScore") {
+            QString minScoreString=(*argList)[++i];
+            minScore=minScoreString.toDouble();
         } else if (arg=="-full") {
             fullSearch=true;
         } else if (arg=="-skipzeros") {
@@ -719,7 +724,10 @@ bool VolumePatternIndex::doSearch()
         V3DLONG score=p.first;
         int index=p.second;
         QString filename=indexFileList[index];
-        scoreOutput << position << ". " << score << " : " << filename << "\n";
+	double dScore = 1.0L * score;
+	if (dScore >= minScore) {
+	  scoreOutput << position << ". " << score << " : " << filename << "\n";
+	}
     }
 
     scoreOutput.flush();
