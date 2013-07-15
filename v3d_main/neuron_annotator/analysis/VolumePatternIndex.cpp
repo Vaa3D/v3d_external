@@ -519,11 +519,19 @@ bool VolumePatternIndex::doSearch()
     }
 
     qDebug() << "Read query...";
-    ImageLoader queryLoader;
-    queryImage=new My4DImage();
-    if (!queryLoader.loadImage(queryImage, queryImageFilePath)) {
-        qDebug() << "Could not load query image file=" << queryImageFilePath;
-        return false;
+    queryImage=0L;
+    if (queryImageFilePath.endsWith(".mask")) {
+      MaskChan qmc;
+      QStringList qmcList;
+      qmcList.append(queryImageFilePath);
+      queryImage=qmc.createImageFromMaskFiles(qmcList);
+    } else {
+      ImageLoader queryLoader;
+      queryImage=new My4DImage();
+      if (!queryLoader.loadImage(queryImage, queryImageFilePath)) {
+	qDebug() << "Could not load query image file=" << queryImageFilePath;
+	return false;
+      }
     }
 
     // Binary check

@@ -56,7 +56,7 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("    For mode search:                                                                                    \n");
         usage.append("                                                                                                        \n");
-        usage.append("     -query <image volume to use as query>                                                              \n");
+        usage.append("     -query <image volume or .mask file to use as query>                                                \n");
         usage.append("     -queryChannel <channel number>                                                                     \n");
         usage.append("     -outputFile <outputFile>                                                                           \n");
         usage.append("     [ -maxHits <maximum number of hits> : default=100 ]                                                \n");
