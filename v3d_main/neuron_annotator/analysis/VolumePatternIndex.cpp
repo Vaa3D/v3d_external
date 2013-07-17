@@ -349,6 +349,7 @@ bool VolumePatternIndex::populateIndexFileList() {
         indexFileList.append(line);
     }
     indexFileListFile.close();
+    return true;
 }
 
 void VolumePatternIndex::formatSubregion(V3DLONG* subregion)
@@ -387,14 +388,18 @@ bool VolumePatternIndex::createIndex()
     int fileIndex=0;
     indexData=0L;
     for (fileIndex=0;fileIndex<indexFileList.size();fileIndex++) {
+      qDebug() << "Processing file " << fileIndex;
       My4DImage* sourceImage=0L;
       ImageLoader loader;
       QString filenameToLoad=indexFileList[fileIndex];
+      qDebug() << "Starting with file=" << filenameToLoad;
       if (filenameToLoad.endsWith(".mask")) {
 	  MaskChan mc;
 	  QStringList ql;
 	  ql.append(filenameToLoad);
+	  qDebug() << "Check 1";
 	  sourceImage=mc.createImageFromMaskFiles(ql);
+	  qDebug() << "Check 10";
       } else {
         if (!loader.loadImage(sourceImage, indexFileList[fileIndex])) {
             qDebug() << "Could not load file=" << indexFileList[fileIndex];
@@ -429,6 +434,8 @@ bool VolumePatternIndex::createIndex()
 	}
       }
       fwrite(indexData, sizeof(unsigned char), indexTotalBytes, fid);
+      qDebug() << "Cleaning up";
+      delete sourceImage;
     }
     if (indexData!=0) {
         delete [] indexData;
@@ -1078,6 +1085,7 @@ bool VolumePatternIndex::openIndexAndReadHeader()
             return false;
         }
         fread(filenameBuffer, sizeof(char), filenameSize, fid);
+	filenameBuffer[filenameSize]='\0';
         QString filename(filenameBuffer);
         indexFileList.append(filename);
         int channelIndex;

@@ -616,10 +616,13 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
     zdim=-1;
     cdim=-1;
 
-    v3d_uint8** data8=new v3d_uint8*[cdim];
-    v3d_uint16** data16=new v3d_uint16*[cdim];
+    v3d_uint8** data8=0L;
+    v3d_uint16** data16=0L;
+
+    qDebug() << "Check 2";
 
     for (int i=0;i<maskFilePaths.size();i++) {
+      qDebug() << "Check 3";
         QString maskFilePath=maskFilePaths[i];
         if ( (fid=fopen(maskFilePath.toAscii().data(), "rb"))==0) {
             qDebug() << "Could not open file " << maskFilePath << " to read";
@@ -662,6 +665,13 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
                 }
             }
         }
+
+	if (data8==0L) {
+	  data8=new v3d_uint8*[cdim];
+	} 
+	if (data16==0L) {
+	  data16=new v3d_uint16*[cdim];
+	}
 
         long xsize=0L;
         long ysize=0L;
