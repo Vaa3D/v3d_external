@@ -57,6 +57,7 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             }
         } else if (arg=="-outputMip") {
             outputMipFilepath=(*argList)[++i];
+	    qDebug() << "Set -outputMip = " << outputMipFilepath;
         } else if (arg=="-outputStack") {
             outputStackFilepath=(*argList)[++i];
         } else if (arg=="-outputDir") {
@@ -67,6 +68,7 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             do {
                 QString possibleMaskFile=(*argList)[++i];
                 if (possibleMaskFile.startsWith("-")) {
+		  i--;
                     break;
                 } else {
                     // Assume is mask file
