@@ -171,6 +171,9 @@ bool NeuronFragmentEditor::loadSourceAndLabelImages()
     ImageLoader labelLoader;
     labelImage=labelLoader.loadImage(inputLabelIndexFilepath);
 
+    maskChan.setSourceImage(sourceImage);
+    maskChan.setLabelImage(labelImage);
+
     qDebug() << "Label Image has datatype=" << labelImage->getDatatype() << " , checking source and label dimension correspondence";
 
     if (labelImage->getXDim()!=xdim) {

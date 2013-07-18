@@ -80,6 +80,7 @@ bool MaskChan::setLabelImage(My4DImage *image)
 
 QList<int> MaskChan::getFragmentListFromLabelStack()
 {
+  qDebug() << "getFragmentListFromLabelStack zdim=" << zdim << " ydim=" << ydim << " xdim=" << xdim;
   QList<int> labelList;
   long* checkList=new long[256*256]; // 16-bit
   for (int i=0;i<256*256;i++) {
