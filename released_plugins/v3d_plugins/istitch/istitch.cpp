@@ -11795,6 +11795,13 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             (&vim.tilesList.at(i))->sz_image[2] = tz;
             (&vim.tilesList.at(i))->sz_image[3] = tc;
 
+            // error check
+            if(channel1>=tc)
+            {
+                cout<<"Invalid the reference channel number input!"<<endl;
+                return false;
+            }
+
             // channel of target
             V3DLONG offsets_tar = channel1*tx*ty*tz;
 
@@ -11823,6 +11830,13 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     (&vim.tilesList.at(j))->sz_image[1] = sy;
                     (&vim.tilesList.at(j))->sz_image[2] = sz;
                     (&vim.tilesList.at(j))->sz_image[3] = sc;
+                }
+
+                // error check
+                if(channel1>=sc)
+                {
+                    cout<<"Invalid the reference channel number input!"<<endl;
+                    return false;
                 }
 
                 // channel of subject
