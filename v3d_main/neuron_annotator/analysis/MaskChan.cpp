@@ -6,6 +6,8 @@ MaskChan::MaskChan()
 {
   sourceImage=0L;
   labelImage=0L;
+  label8=0L;
+  label16=0L;
 }
 
 bool MaskChan::setSourceImage(My4DImage *image)
