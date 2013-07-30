@@ -250,6 +250,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         long sz01 = sz0 * sz1;
         //int cnn_type = 2;  // ?
         cout<<"cnn_type = "<<cnn_type<<endl;
+        cout<<"fastmarching_linker";
 
         float * phi = new float[tol_sz]; for(long i = 0; i < tol_sz; i++){phi[i] = INF;}
         map<long, MyMarker> sub_map, tar_map;
@@ -300,6 +301,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                 state[ind] = ALIVE;
                 phi[ind] = 0.0;
         }
+        cout << "totalsize=" << tol_sz <<endl;
         int * parent = new int[tol_sz]; for(int ind = 0; ind < tol_sz; ind++) parent[ind] = ind;
 
         BasicHeap<HeapElemX> heap;
@@ -318,6 +320,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         int time_counter = sub_markers.size();
         double process1 = time_counter*1000.0/tol_sz;
         long stop_ind = -1;
+        cout << "now prepare test heap";
         while(!heap.empty())
         {
                 double process2 = (time_counter++)*1000.0/tol_sz;
@@ -393,6 +396,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
 
         V3DLONG in_sz[4] = {sz0, sz1, sz2, 1};
         double thresh = 20;
+        cout<<"set thres=20";
         // connect markers according to disjoint set
         {
                 // add tar_marker

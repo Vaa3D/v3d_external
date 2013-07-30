@@ -57,9 +57,9 @@ for i=1:length(L),
   S.mass = 0;
   rr = rand(3,1);
   rr = rr./sqrt(sum(rr.*rr)).*255;
-  S.color.r = rr(1);
-  S.color.g = rr(2);
-  S.color.b = rr(3);
+  S.color.r = round(rr(1));
+  S.color.g = round(rr(2));
+  S.color.b = round(rr(3));
 
   if (cnt>=2), S.orderinfo = segs{2}; end;
   if (cnt>=3), S.name = segs{3}; end;

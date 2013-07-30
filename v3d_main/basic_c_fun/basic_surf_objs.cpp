@@ -95,7 +95,7 @@ QList <CellAPO> readAPO_file(const QString& filename)
         	else if (i==16) S.color.g = qsl[i].toUInt();
         	else if (i==17) S.color.b = qsl[i].toUInt();
         }
-        //qDebug("%s  ///  %d %s (%g %g %g) %g %g (%d %d %d)", buf, S.n, S.name, S.x, S.y, S.z, S.intensity, S.size, S.r,S.g,S.b);
+        qDebug("%s  ///  %d %s (%g %g %g) %g %g (%d %d %d)", buf, S.n, qPrintable(S.name), S.x, S.y, S.z, S.intensity, S.volsize, S.color.r,S.color.g,S.color.b);
 		if (qsl.size()-1<8)
 			S.intensity = rand()%255;
 		if (qsl.size()-1<10)
