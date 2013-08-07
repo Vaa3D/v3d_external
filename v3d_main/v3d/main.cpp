@@ -72,7 +72,7 @@ void printHelp_align();
 void printHelp_straight();
 void printHelp_trace();
 
-V3dApplication* V3dApplication::theApp;
+V3dApplication* V3dApplication::theApp = 0;
 
 void printHelp_v3d()
 {

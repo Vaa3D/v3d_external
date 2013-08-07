@@ -129,7 +129,7 @@ public:
 	int currentPluginState;                              // May 29, 2012 by Hang
 	map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
 
-//protected slots:
+public slots:
    	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
 
 

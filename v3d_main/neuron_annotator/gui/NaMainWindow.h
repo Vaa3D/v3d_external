@@ -96,7 +96,7 @@ public:
     DataFlowModel* getDataFlowModel() const;
     QString getStackPathWithDialog();
     QString getDataDirectoryPathWithDialog();
-    Na3DWidget* get3DWidget() {return ui.v3dr_glwidget;}
+    Na3DWidget* get3DWidget() {return ui->v3dr_glwidget;}
 
 signals:
     void channelVisibilityChanged(int, bool);
@@ -210,7 +210,7 @@ private:
     static const int maxRecentFiles = 10;
 
     DataFlowModel* dataFlowModel;
-    Ui::NaMainWindow ui;
+    Ui::NaMainWindow * ui;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread *nutateThread;
     NeuronSelector neuronSelector;

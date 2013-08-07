@@ -73,6 +73,7 @@ void NutateThread::unpause() {paused = false;}
 
 NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
+    , ui(new Ui::NaMainWindow)
     , nutateThread(NULL)
     , statusProgressBar(NULL)
     , neuronSelector(this)
@@ -105,7 +106,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
 
     recentFileActions.fill(NULL, NaMainWindow::maxRecentFiles);
 
-    ui.setupUi(this);
+    ui->setupUi(this);
     setAcceptDrops(true);
 
     // Z value comes from camera model
@@ -113,10 +114,10 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
 
     // hide neuron gallery until there are neurons to show
     setViewMode(VIEW_SINGLE_STACK);
-    // ui.mipsFrame->setVisible(false);
+    // ui->mipsFrame->setVisible(false);
 
     // hide compartment map until it works correctly and is not so slow on Mac
-    ui.compartmentSelectGroupBox->hide();
+    ui->compartmentSelectGroupBox->hide();
 
     dataFlowModel=0;
     // TODO - neuronSelector should probably be a member of Na3DViewer, not of NaMainWindow
@@ -125,7 +126,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     // Create stubs for recent file menu
     for (int i = 0; i < maxRecentFiles; ++i) {
         recentFileActions[i] = new OpenFileAction(this);
-        ui.menuOpen_Recent->addAction(recentFileActions[i]);
+        ui->menuOpen_Recent->addAction(recentFileActions[i]);
         recentFileActions[i]->setVisible(false);
         connect(recentFileActions[i], SIGNAL(openFileRequested(QString)),
                 this, SLOT(openFileOrUrl(QString)));
@@ -144,217 +145,217 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     statusProgressMessage->hide();
 
     // hide progress bar for 3d viewer until it is needed
-    ui.widget_progress3d->hide();
+    ui->widget_progress3d->hide();
 
     // hide the File->Open 3D Image stack menu item
-    ui.menuFile->removeAction(ui.actionLoad_Tiff);
-    ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
+    ui->menuFile->removeAction(ui->actionLoad_Tiff);
+    ui->menuFile->removeAction(ui->actionCell_Counter_3D_2ch_lsm);
 
     // hide dev-version rotate-X movie maker, until it become more user-friendly
-    ui.menuExport->removeAction(ui.actionX_Rotation_Movie);
+    ui->menuExport->removeAction(ui->actionX_Rotation_Movie);
 
     // hide fps option: it's for debugging
-    ui.menuView->removeAction(ui.actionMeasure_Frame_Rate);
+    ui->menuView->removeAction(ui->actionMeasure_Frame_Rate);
 
     // hide octree test item
-    ui.menuFile->removeAction(ui.actionOpen_Octree_Volume);
+    ui->menuFile->removeAction(ui->actionOpen_Octree_Volume);
 
 #ifdef USE_FFMPEG
-    ui.actionLoad_movie_as_texture->setVisible(true);
-    ui.actionLoad_fast_separation_result->setVisible(true);
+    ui->actionLoad_movie_as_texture->setVisible(true);
+    ui->actionLoad_fast_separation_result->setVisible(true);
 #else
-    ui.actionLoad_movie_as_texture->setVisible(false);
-    ui.actionLoad_fast_separation_result->setVisible(false);
+    ui->actionLoad_movie_as_texture->setVisible(false);
+    ui->actionLoad_fast_separation_result->setVisible(false);
 #endif
 
     // visualize compartment map
     //QDockWidget *dock = new QDockWidget(tr("Compartment Map"), this);
-    //dock->setWidget( ui.compartmentMapWidget);
+    //dock->setWidget( ui->compartmentMapWidget);
     qRegisterMetaType<QList<LabelSurf> >("QList<LabelSurf>");
 
-    ui.compartmentMapWidget->setComboBox(ui.compartmentMapComboBox);
-    connect(ui.compartmentMapComboBox, SIGNAL(currentIndexChanged(int)), ui.compartmentMapWidget, SLOT(switchCompartment(int)));
-    //connect(ui.compartmentMapWidget, SIGNAL(viscomp3dview(QList<LabelSurf>)), (Renderer_gl1*)(ui.v3dr_glwidget->getRenderer()), SLOT(setListLabelSurf(QList<LabelSurf>))); // vis compartments in Na3Dviewer
+    ui->compartmentMapWidget->setComboBox(ui->compartmentMapComboBox);
+    connect(ui->compartmentMapComboBox, SIGNAL(currentIndexChanged(int)), ui->compartmentMapWidget, SLOT(switchCompartment(int)));
+    //connect(ui->compartmentMapWidget, SIGNAL(viscomp3dview(QList<LabelSurf>)), (Renderer_gl1*)(ui->v3dr_glwidget->getRenderer()), SLOT(setListLabelSurf(QList<LabelSurf>))); // vis compartments in Na3Dviewer
     
     // Wire up MIP viewer
     // Status bar message
-    connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
+    connect(ui->naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
             statusBar(), SLOT(showMessage(const QString&)));
-    connect(ui.naZStackWidget, SIGNAL(statusMessage(const QString&)),
+    connect(ui->naZStackWidget, SIGNAL(statusMessage(const QString&)),
             statusBar(), SLOT(showMessage(const QString&)));
-    ui.progressWidgetMip->hide();
-    connect(ui.naLargeMIPWidget, SIGNAL(showProgress()),
-            ui.progressWidgetMip, SLOT(show()));
-    connect(ui.naLargeMIPWidget, SIGNAL(hideProgress()),
-            ui.progressWidgetMip, SLOT(hide()));
-    connect(ui.naLargeMIPWidget, SIGNAL(setProgressMax(int)),
-            ui.progressBarMip, SLOT(setMaximum(int)));
-    connect(ui.naLargeMIPWidget, SIGNAL(setProgress(int)),
-            ui.progressBarMip, SLOT(setValue(int)));
-    ui.progressWidgetZ->hide();
+    ui->progressWidgetMip->hide();
+    connect(ui->naLargeMIPWidget, SIGNAL(showProgress()),
+            ui->progressWidgetMip, SLOT(show()));
+    connect(ui->naLargeMIPWidget, SIGNAL(hideProgress()),
+            ui->progressWidgetMip, SLOT(hide()));
+    connect(ui->naLargeMIPWidget, SIGNAL(setProgressMax(int)),
+            ui->progressBarMip, SLOT(setMaximum(int)));
+    connect(ui->naLargeMIPWidget, SIGNAL(setProgress(int)),
+            ui->progressBarMip, SLOT(setValue(int)));
+    ui->progressWidgetZ->hide();
 
-    // ui.gammaWidget_Zstack->hide();
+    // ui->gammaWidget_Zstack->hide();
     // Distinguish the two gamma sliders
-    ui.sharedGammaWidget->gamma_label->setText("N "); // "neurons"
-    ui.sharedGammaWidget->setToolTip(tr("Brightness/gamma of data"));
-    ui.referenceGammaWidget->gamma_label->setText("R "); // "reference"
-    ui.referenceGammaWidget->setToolTip(tr("Brightness/gamma of reference channel"));
+    ui->sharedGammaWidget->gamma_label->setText("N "); // "neurons"
+    ui->sharedGammaWidget->setToolTip(tr("Brightness/gamma of data"));
+    ui->referenceGammaWidget->gamma_label->setText("R "); // "reference"
+    ui->referenceGammaWidget->setToolTip(tr("Brightness/gamma of reference channel"));
 
-    ui.BoxSize_spinBox->setMinimum(NaZStackWidget::minHdrBoxSize);
+    ui->BoxSize_spinBox->setMinimum(NaZStackWidget::minHdrBoxSize);
     
     // Wire up Z-stack / HDR viewer
-    connect(ui.HDR_checkBox, SIGNAL(toggled(bool)),
-            ui.naZStackWidget, SLOT(setHDRCheckState(bool)));
-    connect(ui.naZStackWidget, SIGNAL(changedHDRCheckState(bool)),
-            ui.HDR_checkBox, SLOT(setChecked(bool)));
-    connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
-            ui.naZStackWidget, SLOT(setRedChannel()));
-    connect(ui.HDRGreen_pushButton, SIGNAL(clicked()),
-            ui.naZStackWidget, SLOT(setGreenChannel()));
-    connect(ui.HDRBlue_pushButton, SIGNAL(clicked()),
-            ui.naZStackWidget, SLOT(setBlueChannel()));
-    connect(ui.HDRNc82_pushButton, SIGNAL(clicked()),
-            ui.naZStackWidget, SLOT(setNc82Channel()));
-    connect(ui.naZStackWidget, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)),
+    connect(ui->HDR_checkBox, SIGNAL(toggled(bool)),
+            ui->naZStackWidget, SLOT(setHDRCheckState(bool)));
+    connect(ui->naZStackWidget, SIGNAL(changedHDRCheckState(bool)),
+            ui->HDR_checkBox, SLOT(setChecked(bool)));
+    connect(ui->HDRRed_pushButton, SIGNAL(clicked()),
+            ui->naZStackWidget, SLOT(setRedChannel()));
+    connect(ui->HDRGreen_pushButton, SIGNAL(clicked()),
+            ui->naZStackWidget, SLOT(setGreenChannel()));
+    connect(ui->HDRBlue_pushButton, SIGNAL(clicked()),
+            ui->naZStackWidget, SLOT(setBlueChannel()));
+    connect(ui->HDRNc82_pushButton, SIGNAL(clicked()),
+            ui->naZStackWidget, SLOT(setNc82Channel()));
+    connect(ui->naZStackWidget, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)),
             this, SLOT(onHdrChannelChanged(NaZStackWidget::Color)));
-    ui.naZStackWidget->setHDRCheckState(false);
+    ui->naZStackWidget->setHDRCheckState(false);
 
-    connect(ui.ZSlice_horizontalScrollBar, SIGNAL(valueChanged(int)),
-            ui.naZStackWidget, SLOT(setCurrentZSlice(int)));
-    connect(ui.naZStackWidget, SIGNAL(curZsliceChanged(int)),
-            ui.ZSlice_horizontalScrollBar, SLOT(setValue(int)));
-    connect(ui.BoxSize_spinBox, SIGNAL(valueChanged(int)),
-            ui.naZStackWidget, SLOT(setHdrBoxSize(int)));
-    connect(ui.naZStackWidget, SIGNAL(hdrBoxSizeChanged(int)),
-            ui.BoxSize_spinBox, SLOT(setValue(int)));
+    connect(ui->ZSlice_horizontalScrollBar, SIGNAL(valueChanged(int)),
+            ui->naZStackWidget, SLOT(setCurrentZSlice(int)));
+    connect(ui->naZStackWidget, SIGNAL(curZsliceChanged(int)),
+            ui->ZSlice_horizontalScrollBar, SLOT(setValue(int)));
+    connect(ui->BoxSize_spinBox, SIGNAL(valueChanged(int)),
+            ui->naZStackWidget, SLOT(setHdrBoxSize(int)));
+    connect(ui->naZStackWidget, SIGNAL(hdrBoxSizeChanged(int)),
+            ui->BoxSize_spinBox, SLOT(setValue(int)));
 
     // 3D viewer
-    connect(ui.rotationResetButton, SIGNAL(clicked()),
-            ui.v3dr_glwidget, SLOT(resetRotation()));
-    connect(ui.nutateButton, SIGNAL(toggled(bool)),
+    connect(ui->rotationResetButton, SIGNAL(clicked()),
+            ui->v3dr_glwidget, SLOT(resetRotation()));
+    connect(ui->nutateButton, SIGNAL(toggled(bool)),
             this, SLOT(setNutate(bool)));
     connect(this, SIGNAL(nutatingChanged(bool)),
-            ui.nutateButton, SLOT(setChecked(bool)));
-    connect(ui.actionAnimate_3D_nutation, SIGNAL(toggled(bool)),
+            ui->nutateButton, SLOT(setChecked(bool)));
+    connect(ui->actionAnimate_3D_nutation, SIGNAL(toggled(bool)),
             this, SLOT(setNutate(bool)));
     connect(this, SIGNAL(nutatingChanged(bool)),
-            ui.actionAnimate_3D_nutation, SLOT(setChecked(bool)));
-    connect(ui.v3dr_glwidget, SIGNAL(signalTextureLoaded()),
+            ui->actionAnimate_3D_nutation, SLOT(setChecked(bool)));
+    connect(ui->v3dr_glwidget, SIGNAL(signalTextureLoaded()),
             this, SLOT(onDataLoadFinished()));
     /* obsolete.  now we toggle channels.
-    connect(ui.redToggleButton, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setChannelR(bool)));
-    connect(ui.greenToggleButton, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setChannelG(bool)));
-    connect(ui.blueToggleButton, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setChannelB(bool)));
+    connect(ui->redToggleButton, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setChannelR(bool)));
+    connect(ui->greenToggleButton, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setChannelG(bool)));
+    connect(ui->blueToggleButton, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setChannelB(bool)));
             */
     // 3D rotation
     // synchronize compartment map
     connect(&sharedCameraModel, SIGNAL(rotationChanged(const Rotation3D&)),
-            ui.compartmentMapWidget, SLOT(setRotation(const Rotation3D&)));
+            ui->compartmentMapWidget, SLOT(setRotation(const Rotation3D&)));
     // connect(&sharedCameraModel, SIGNAL(focusChanged(const Vector3D&)),
-    //        ui.compartmentMapWidget, SLOT(setFocus(const Vector3D&)));
+    //        ui->compartmentMapWidget, SLOT(setFocus(const Vector3D&)));
 
-    connect(&(ui.v3dr_glwidget->cameraModel), SIGNAL(rotationChanged(const Rotation3D&)),
+    connect(&(ui->v3dr_glwidget->cameraModel), SIGNAL(rotationChanged(const Rotation3D&)),
             this, SLOT(on3DViewerRotationChanged(const Rotation3D&)));
-    connect(ui.rotXWidget, SIGNAL(angleChanged(int)),
+    connect(ui->rotXWidget, SIGNAL(angleChanged(int)),
             this, SLOT(update3DViewerXYZBodyRotation()));
-    connect(ui.rotYWidget, SIGNAL(angleChanged(int)),
+    connect(ui->rotYWidget, SIGNAL(angleChanged(int)),
             this, SLOT(update3DViewerXYZBodyRotation()));
-    connect(ui.rotZWidget, SIGNAL(angleChanged(int)),
+    connect(ui->rotZWidget, SIGNAL(angleChanged(int)),
             this, SLOT(update3DViewerXYZBodyRotation()));
-    connect(ui.v3dr_glwidget, SIGNAL(progressValueChanged(int)),
+    connect(ui->v3dr_glwidget, SIGNAL(progressValueChanged(int)),
             this, SLOT(set3DProgress(int)));
-    connect(ui.v3dr_glwidget, SIGNAL(progressComplete()),
+    connect(ui->v3dr_glwidget, SIGNAL(progressComplete()),
             this, SLOT(complete3DProgress()));
-    connect(ui.v3dr_glwidget, SIGNAL(progressMessageChanged(QString)),
+    connect(ui->v3dr_glwidget, SIGNAL(progressMessageChanged(QString)),
             this, SLOT(set3DProgressMessage(QString)));
-    connect(ui.v3dr_glwidget, SIGNAL(progressAborted(QString)),
+    connect(ui->v3dr_glwidget, SIGNAL(progressAborted(QString)),
             this, SLOT(complete3DProgress()));
 
     // 3D volume cut
-    connect(ui.v3dr_glwidget, SIGNAL(changeXCut0(int)), ui.XcminSlider, SLOT(setValue(int))); // x-cut
-    connect(ui.XcminSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setXCut0(int)));
-    connect(ui.v3dr_glwidget, SIGNAL(changeXCut1(int)), ui.XcmaxSlider, SLOT(setValue(int)));
-    connect(ui.XcmaxSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setXCut1(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(changeXCut0(int)), ui->XcminSlider, SLOT(setValue(int))); // x-cut
+    connect(ui->XcminSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setXCut0(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(changeXCut1(int)), ui->XcmaxSlider, SLOT(setValue(int)));
+    connect(ui->XcmaxSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setXCut1(int)));
 
-    connect(ui.v3dr_glwidget, SIGNAL(changeYCut0(int)), ui.YcminSlider, SLOT(setValue(int))); // y-cut
-    connect(ui.YcminSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setYCut0(int)));
-    connect(ui.v3dr_glwidget, SIGNAL(changeYCut1(int)), ui.YcmaxSlider, SLOT(setValue(int)));
-    connect(ui.YcmaxSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setYCut1(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(changeYCut0(int)), ui->YcminSlider, SLOT(setValue(int))); // y-cut
+    connect(ui->YcminSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setYCut0(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(changeYCut1(int)), ui->YcmaxSlider, SLOT(setValue(int)));
+    connect(ui->YcmaxSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setYCut1(int)));
 
-    connect(ui.v3dr_glwidget, SIGNAL(changeZCut0(int)), ui.ZcminSlider, SLOT(setValue(int))); // z-cut
-    connect(ui.ZcminSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setZCut0(int)));
-    connect(ui.v3dr_glwidget, SIGNAL(changeZCut1(int)), ui.ZcmaxSlider, SLOT(setValue(int)));
-    connect(ui.ZcmaxSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setZCut1(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(changeZCut0(int)), ui->ZcminSlider, SLOT(setValue(int))); // z-cut
+    connect(ui->ZcminSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setZCut0(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(changeZCut1(int)), ui->ZcmaxSlider, SLOT(setValue(int)));
+    connect(ui->ZcmaxSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setZCut1(int)));
 
-    connect(ui.XCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setXCutLock(int)));
-    connect(ui.YCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setYCutLock(int)));
-    connect(ui.ZCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setZCutLock(int)));
+    connect(ui->XCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setXCutLock(int)));
+    connect(ui->YCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setYCutLock(int)));
+    connect(ui->ZCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setZCutLock(int)));
 
-    connect(ui.slabThicknessSlider, SIGNAL(valueChanged(int)),
-            ui.v3dr_glwidget, SLOT(setSlabThickness(int)));
-    connect(ui.slabPositionSlider, SIGNAL(valueChanged(int)),
-            ui.v3dr_glwidget, SLOT(setSlabPosition(int)));
-    connect(ui.v3dr_glwidget, SIGNAL(slabThicknessChanged(int)),
+    connect(ui->slabThicknessSlider, SIGNAL(valueChanged(int)),
+            ui->v3dr_glwidget, SLOT(setSlabThickness(int)));
+    connect(ui->slabPositionSlider, SIGNAL(valueChanged(int)),
+            ui->v3dr_glwidget, SLOT(setSlabPosition(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(slabThicknessChanged(int)),
             this, SLOT(onSlabThicknessChanged(int)));
-            // ui.slabThicknessSlider, SLOT(setValue(int)));
-    connect(ui.v3dr_glwidget, SIGNAL(slabPositionChanged(int)),
-            ui.slabPositionSlider, SLOT(setValue(int)));
-    connect(ui.freezeFrontBackButton, SIGNAL(clicked()),
-            ui.v3dr_glwidget, SLOT(clipSlab()));
+            // ui->slabThicknessSlider, SLOT(setValue(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(slabPositionChanged(int)),
+            ui->slabPositionSlider, SLOT(setValue(int)));
+    connect(ui->freezeFrontBackButton, SIGNAL(clicked()),
+            ui->v3dr_glwidget, SLOT(clipSlab()));
 
     // alpha blending
-    connect(ui.action3D_alpha_blending, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setAlphaBlending(bool)));
-    connect(ui.v3dr_glwidget, SIGNAL(alphaBlendingChanged(bool)),
-            ui.action3D_alpha_blending, SLOT(setChecked(bool)));
+    connect(ui->action3D_alpha_blending, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setAlphaBlending(bool)));
+    connect(ui->v3dr_glwidget, SIGNAL(alphaBlendingChanged(bool)),
+            ui->action3D_alpha_blending, SLOT(setChecked(bool)));
 
     // show axes
-    connect(ui.actionShow_Axes, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setShowCornerAxes(bool)));
+    connect(ui->actionShow_Axes, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setShowCornerAxes(bool)));
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
-    connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),
+    connect(ui->actionLink_viewers, SIGNAL(toggled(bool)),
             this, SLOT(unifyCameras(bool)));
     unifyCameras(true); // Start with cameras linked
-    connect(ui.resetViewButton, SIGNAL(clicked()),
+    connect(ui->resetViewButton, SIGNAL(clicked()),
             this, SLOT(resetView()));
-    connect(ui.zoomWidget, SIGNAL(zoomValueChanged(qreal)),
+    connect(ui->zoomWidget, SIGNAL(zoomValueChanged(qreal)),
             &sharedCameraModel, SLOT(setScale(qreal)));
     connect(&sharedCameraModel, SIGNAL(scaleChanged(qreal)),
-            ui.zoomWidget, SLOT(setZoomValue(qreal)));
+            ui->zoomWidget, SLOT(setZoomValue(qreal)));
     connect(&sharedCameraModel, SIGNAL(scaleChanged(qreal)),
             this, SLOT(updateViewers()));
     // Colors
-    connect(ui.redToggleButton, SIGNAL(toggled(bool)),
+    connect(ui->redToggleButton, SIGNAL(toggled(bool)),
             this, SLOT(setChannelZeroVisibility(bool)));
-    connect(ui.greenToggleButton, SIGNAL(toggled(bool)),
+    connect(ui->greenToggleButton, SIGNAL(toggled(bool)),
             this, SLOT(setChannelOneVisibility(bool)));
-    connect(ui.blueToggleButton, SIGNAL(toggled(bool)),
+    connect(ui->blueToggleButton, SIGNAL(toggled(bool)),
             this, SLOT(setChannelTwoVisibility(bool)));
 
     // Crosshair
-    connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
+    connect(ui->actionShow_Crosshair, SIGNAL(toggled(bool)),
             this, SLOT(setCrosshairVisibility(bool)));
     connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
-            ui.actionShow_Crosshair, SLOT(setChecked(bool)));
+            ui->actionShow_Crosshair, SLOT(setChecked(bool)));
     connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
-            ui.naLargeMIPWidget, SLOT(showCrosshair(bool)));
+            ui->naLargeMIPWidget, SLOT(showCrosshair(bool)));
     connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
-            ui.v3dr_glwidget, SLOT(showCrosshair(bool)));
+            ui->v3dr_glwidget, SLOT(showCrosshair(bool)));
     connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
-            ui.naZStackWidget, SLOT(showCrosshair(bool)));
+            ui->naZStackWidget, SLOT(showCrosshair(bool)));
     retrieveCrosshairVisibilitySetting();
 
     // Axes
     // TODO I want a small set of axes that sits in the lower left corner.  The gigantic axes are less useful.
-    // connect(ui.actionShow_Axes, SIGNAL(toggled(bool)),
-    //         ui.v3dr_glwidget, SLOT(enableShowAxes(bool)));
+    // connect(ui->actionShow_Axes, SIGNAL(toggled(bool)),
+    //         ui->v3dr_glwidget, SLOT(enableShowAxes(bool)));
 
     // Clear status message when viewer changes
-    connect(ui.viewerStackedWidget, SIGNAL(currentChanged(int)),
+    connect(ui->viewerStackedWidget, SIGNAL(currentChanged(int)),
             this, SLOT(onViewerChanged(int)));
 
     // Create "Undo" menu options
@@ -364,47 +365,47 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     undoAction->setShortcuts(QKeySequence::Undo);
     QAction * redoAction = undoGroup->createRedoAction(this);
     redoAction->setShortcuts(QKeySequence::Redo);
-    ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
-    ui.menuEdit->insertAction(redoAction, undoAction);
+    ui->menuEdit->insertAction(ui->menuEdit->actions().at(0), redoAction);
+    ui->menuEdit->insertAction(redoAction, undoAction);
     // expose undoStack
     undoStack = new QUndoStack(undoGroup);
     undoGroup->setActiveStack(undoStack);
-    ui.v3dr_glwidget->setUndoStack(*undoStack);
+    ui->v3dr_glwidget->setUndoStack(*undoStack);
 
     // Connect sort buttons to gallery widget
-    connect(ui.gallerySortBySizeButton, SIGNAL(clicked()),
-            ui.fragmentGalleryWidget, SLOT(sortBySize()));
-    connect(ui.gallerySortByColorButton, SIGNAL(clicked()),
-            ui.fragmentGalleryWidget, SLOT(sortByColor()));
-    connect(ui.gallerySortByIndexButton, SIGNAL(clicked()),
-            ui.fragmentGalleryWidget, SLOT(sortByIndex()));
+    connect(ui->gallerySortBySizeButton, SIGNAL(clicked()),
+            ui->fragmentGalleryWidget, SLOT(sortBySize()));
+    connect(ui->gallerySortByColorButton, SIGNAL(clicked()),
+            ui->fragmentGalleryWidget, SLOT(sortByColor()));
+    connect(ui->gallerySortByIndexButton, SIGNAL(clicked()),
+            ui->fragmentGalleryWidget, SLOT(sortByIndex()));
 
     // Allow cross-thread signals/slots that pass QList<int>
     qRegisterMetaType< QList<int> >("QList<int>");
 
     // Set up the annotation widget
-    ui.annotationFrame->setMainWindow(this);
-    ui.centralwidget->installEventFilter(ui.annotationFrame);
-    ui.annotationFrame->consoleConnect(3);
+    ui->annotationFrame->setMainWindow(this);
+    ui->centralwidget->installEventFilter(ui->annotationFrame);
+    ui->annotationFrame->consoleConnect(3);
 
     // NeuronSelector helper class for selecting neurons
     connect(&neuronSelector, SIGNAL(neuronSelected(int)),
-            ui.annotationFrame, SLOT(selectNeuron(int)));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)),
+            ui->annotationFrame, SLOT(selectNeuron(int)));
+    connect(ui->v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)),
             &neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
-    connect(ui.actionDynamic_range, SIGNAL(triggered(bool)),
+    connect(ui->actionDynamic_range, SIGNAL(triggered(bool)),
             this, SLOT(showDynamicRangeTool()));
 
-    connect(ui.actionFull_Screen, SIGNAL(toggled(bool)),
+    connect(ui->actionFull_Screen, SIGNAL(toggled(bool)),
             this, SLOT(setFullScreen(bool)));
 
     connect(this, SIGNAL(benchmarkTimerResetRequested()),
             this, SLOT(resetBenchmarkTimer()));
     connect(this, SIGNAL(benchmarkTimerPrintRequested(QString)),
             this, SLOT(printBenchmarkTimer(QString)));
-    connect(ui.v3dr_glwidget, SIGNAL(benchmarkTimerPrintRequested(QString)),
+    connect(ui->v3dr_glwidget, SIGNAL(benchmarkTimerPrintRequested(QString)),
             this, SIGNAL(benchmarkTimerPrintRequested(QString)));
-    connect(ui.v3dr_glwidget, SIGNAL(benchmarkTimerResetRequested()),
+    connect(ui->v3dr_glwidget, SIGNAL(benchmarkTimerResetRequested()),
             this, SIGNAL(benchmarkTimerResetRequested()));
 
     initializeContextMenus();
@@ -416,12 +417,12 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
 void NaMainWindow::onSlabThicknessChanged(int t)
 {
     // qDebug() << "NaMainWindow::onSlabThicknessChanged()" << t << __FILE__ << __LINE__;
-    if (t > ui.slabThicknessSlider->maximum()) {
-        ui.slabThicknessSlider->setMaximum(t);
-        ui.slabPositionSlider->setMaximum(t/2);
-        ui.slabPositionSlider->setMinimum(-t/2);
+    if (t > ui->slabThicknessSlider->maximum()) {
+        ui->slabThicknessSlider->setMaximum(t);
+        ui->slabPositionSlider->setMaximum(t/2);
+        ui->slabPositionSlider->setMinimum(-t/2);
     }
-    ui.slabThicknessSlider->setValue(t);
+    ui->slabThicknessSlider->setValue(t);
 }
 
 /* slot */
@@ -455,15 +456,15 @@ void NaMainWindow::setViewMode(ViewMode mode)
     //     return; // no change
     viewMode = mode;
     if (mode == VIEW_SINGLE_STACK) {
-        ui.mipsFrame->setVisible(false);
-        ui.annotationFrame->setVisible(true);
-        ui.referenceGammaWidget->setVisible(false);
+        ui->mipsFrame->setVisible(false);
+        ui->annotationFrame->setVisible(true);
+        ui->referenceGammaWidget->setVisible(false);
         // qDebug() << "Changing to single stack mode" << __FILE__ << __LINE__;
     }
     if (mode == VIEW_NEURON_SEPARATION) {
-        ui.mipsFrame->setVisible(true);
-        ui.annotationFrame->setVisible(true);
-        ui.referenceGammaWidget->setVisible(true);
+        ui->mipsFrame->setVisible(true);
+        ui->annotationFrame->setVisible(true);
+        ui->referenceGammaWidget->setVisible(true);
         // qDebug() << "Changing to separation result mode" << __FILE__ << __LINE__;
     }
     update();
@@ -476,10 +477,10 @@ void NaMainWindow::exitFullScreen()
         return;
     if (viewMode == VIEW_NEURON_SEPARATION)
     {
-        ui.mipsFrame->show();
+        ui->mipsFrame->show();
     }
-    ui.annotationFrame->show();
-    ui.viewerSelectorAndControlFrame->show();
+    ui->annotationFrame->show();
+    ui->viewerSelectorAndControlFrame->show();
     statusBar()->show();
     showNormal();
 }
@@ -491,9 +492,9 @@ void NaMainWindow::setFullScreen(bool b)
         return;
     if (b)
     {
-        ui.annotationFrame->hide();
-        ui.mipsFrame->hide();
-        ui.viewerSelectorAndControlFrame->hide();
+        ui->annotationFrame->hide();
+        ui->mipsFrame->hide();
+        ui->viewerSelectorAndControlFrame->hide();
         statusBar()->hide();
         showFullScreen();
     }
@@ -622,7 +623,7 @@ void NaMainWindow::on_actionMeasure_Frame_Rate_triggered()
         currentRotation = dRot * currentRotation;
         sharedCameraModel.setRotation(currentRotation);
         QCoreApplication::processEvents();
-        ui.v3dr_glwidget->updateGL();
+        ui->v3dr_glwidget->updateGL();
         QCoreApplication::processEvents();
     }
     qint64 msTime = timer.elapsed();
@@ -816,7 +817,7 @@ void NaMainWindow::dropEvent(QDropEvent * event)
 void NaMainWindow::moveEvent ( QMoveEvent * event )
 {
     // qDebug() << "NaMainWindow::moveEvent()" << __FILE__ << __LINE__;
-    ui.v3dr_glwidget->updateScreenPosition();
+    ui->v3dr_glwidget->updateScreenPosition();
     QMainWindow::moveEvent(event);
 }
 
@@ -844,7 +845,7 @@ void NaMainWindow::loadSingleStack(QUrl url, bool useVaa3dClassic)
     mainWindowStopWatch.start();
     if (useVaa3dClassic) {
         // Open in Vaa3D classic mode
-        ui.actionV3DDefault->trigger(); // switch mode
+        ui->actionV3DDefault->trigger(); // switch mode
         QString fileName = url.toLocalFile();
         if (! fileName.isEmpty())
             emit defaultVaa3dFileLoadRequested(fileName);
@@ -875,9 +876,9 @@ void NaMainWindow::loadSingleStack(QUrl url, bool useVaa3dClassic)
 
 void NaMainWindow::connectCustomCut()
 {
-    connect(ui.customCutButton, SIGNAL(pressed()),
+    connect(ui->customCutButton, SIGNAL(pressed()),
             this, SLOT(applyCustomCut()));
-    connect(ui.defineClipPlaneButton, SIGNAL(pressed()),
+    connect(ui->defineClipPlaneButton, SIGNAL(pressed()),
             this, SLOT(toggleCustomCutMode()));
 }
 
@@ -885,7 +886,7 @@ void NaMainWindow::connectCustomCut()
 void NaMainWindow::applyCustomCut()
 {
     // assert(isInCustomCutMode);
-    ui.v3dr_glwidget->applyCustomCut();
+    ui->v3dr_glwidget->applyCustomCut();
     if (isInCustomCutMode)
         toggleCustomCutMode();
 }
@@ -896,16 +897,16 @@ void NaMainWindow::setCustomCutMode(bool doCustom)
     if (doCustom)
     {
         // Activate custom cut mode
-        ui.defineClipPlaneButton->setText(tr("Cancel"));
-        ui.customCutButton->setEnabled(true);
-        ui.v3dr_glwidget->setCustomCutMode();
+        ui->defineClipPlaneButton->setText(tr("Cancel"));
+        ui->customCutButton->setEnabled(true);
+        ui->v3dr_glwidget->setCustomCutMode();
     }
     else
     {
         // Turn off custom cut mode
-        ui.defineClipPlaneButton->setText(tr("Custom..."));
-        ui.customCutButton->setEnabled(false);
-        ui.v3dr_glwidget->cancelCustomCutMode();
+        ui->defineClipPlaneButton->setText(tr("Custom..."));
+        ui->customCutButton->setEnabled(false);
+        ui->v3dr_glwidget->cancelCustomCutMode();
     }
     isInCustomCutMode = doCustom;
 }
@@ -933,11 +934,11 @@ void NaMainWindow::showDynamicRangeTool()
 void NaMainWindow::onDataLoadStarted()
 {
     // Give strong indication to user that load is in progress
-    ui.viewerControlTabWidget->setEnabled(false);
-    ViewerIndex currentIndex = (ViewerIndex)ui.viewerStackedWidget->currentIndex();
+    ui->viewerControlTabWidget->setEnabled(false);
+    ViewerIndex currentIndex = (ViewerIndex)ui->viewerStackedWidget->currentIndex();
     if (currentIndex != VIEWER_WAIT_LOADING_SCREEN)
         recentViewer = currentIndex;
-    ui.viewerStackedWidget->setCurrentIndex(VIEWER_WAIT_LOADING_SCREEN);
+    ui->viewerStackedWidget->setCurrentIndex(VIEWER_WAIT_LOADING_SCREEN);
     update();
 }
 
@@ -945,8 +946,8 @@ void NaMainWindow::onDataLoadFinished()
 {
     if (undoStack)
         undoStack->clear();
-    ui.viewerStackedWidget->setCurrentIndex(recentViewer);
-    ui.viewerControlTabWidget->setEnabled(true);
+    ui->viewerStackedWidget->setCurrentIndex(recentViewer);
+    ui->viewerControlTabWidget->setEnabled(true);
     // qDebug() << "Data load took" << mainWindowStopWatch.elapsed()/1000.0 << "seconds";
     update();
 }
@@ -956,45 +957,45 @@ void NaMainWindow::initializeStereo3DOptions()
     // Only check one stereo format at a time
     QActionGroup* stereoModeGroup = new QActionGroup(this);
     stereoModeGroup->setExclusive(true);
-    stereoModeGroup->addAction(ui.actionMono_Off);
-    stereoModeGroup->addAction(ui.actionLeft_eye_view);
-    stereoModeGroup->addAction(ui.actionRight_eye_view);
-    stereoModeGroup->addAction(ui.actionQuadro_120_Hz);
-    stereoModeGroup->addAction(ui.actionAnaglyph_Red_Cyan);
-    stereoModeGroup->addAction(ui.actionAnaglyph_Green_Magenta);
-    stereoModeGroup->addAction(ui.actionRow_Interleaved_Zalman);
-    stereoModeGroup->addAction(ui.actionChecker_Interleaved_3DTV);
-    stereoModeGroup->addAction(ui.actionColumn_Interleaved);
+    stereoModeGroup->addAction(ui->actionMono_Off);
+    stereoModeGroup->addAction(ui->actionLeft_eye_view);
+    stereoModeGroup->addAction(ui->actionRight_eye_view);
+    stereoModeGroup->addAction(ui->actionQuadro_120_Hz);
+    stereoModeGroup->addAction(ui->actionAnaglyph_Red_Cyan);
+    stereoModeGroup->addAction(ui->actionAnaglyph_Green_Magenta);
+    stereoModeGroup->addAction(ui->actionRow_Interleaved_Zalman);
+    stereoModeGroup->addAction(ui->actionChecker_Interleaved_3DTV);
+    stereoModeGroup->addAction(ui->actionColumn_Interleaved);
 
-    connect(ui.actionMono_Off, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoOff(bool)));
-    connect(ui.actionLeft_eye_view, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoLeftEye(bool)));
-    connect(ui.actionRight_eye_view, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoRightEye(bool)));
-    connect(ui.actionQuadro_120_Hz, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoQuadBuffered(bool)));
-    connect(ui.actionAnaglyph_Red_Cyan, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoAnaglyphRedCyan(bool)));
-    connect(ui.actionAnaglyph_Green_Magenta, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoAnaglyphGreenMagenta(bool)));
-    connect(ui.actionRow_Interleaved_Zalman, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoRowInterleaved(bool)));
-    connect(ui.actionChecker_Interleaved_3DTV, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoCheckerInterleaved(bool)));
-    connect(ui.actionColumn_Interleaved, SIGNAL(toggled(bool)),
-            ui.v3dr_glwidget, SLOT(setStereoColumnInterleaved(bool)));
+    connect(ui->actionMono_Off, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoOff(bool)));
+    connect(ui->actionLeft_eye_view, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoLeftEye(bool)));
+    connect(ui->actionRight_eye_view, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoRightEye(bool)));
+    connect(ui->actionQuadro_120_Hz, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoQuadBuffered(bool)));
+    connect(ui->actionAnaglyph_Red_Cyan, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoAnaglyphRedCyan(bool)));
+    connect(ui->actionAnaglyph_Green_Magenta, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoAnaglyphGreenMagenta(bool)));
+    connect(ui->actionRow_Interleaved_Zalman, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoRowInterleaved(bool)));
+    connect(ui->actionChecker_Interleaved_3DTV, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoCheckerInterleaved(bool)));
+    connect(ui->actionColumn_Interleaved, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(setStereoColumnInterleaved(bool)));
 
-    connect(ui.v3dr_glwidget, SIGNAL(quadStereoSupported(bool)),
+    connect(ui->v3dr_glwidget, SIGNAL(quadStereoSupported(bool)),
             this, SLOT(supportQuadStereo(bool)));
 }
 
 /* slot */
 void NaMainWindow::supportQuadStereo(bool b)
 {
-    ui.actionQuadro_120_Hz->setEnabled(b);
-    if ( (!b) && ui.actionQuadro_120_Hz->isChecked() )
-        ui.actionMono_Off->setChecked(true);
+    ui->actionQuadro_120_Hz->setEnabled(b);
+    if ( (!b) && ui->actionQuadro_120_Hz->isChecked() )
+        ui->actionMono_Off->setChecked(true);
 }
 
 void NaMainWindow::connectContextMenus(const NeuronSelectionModel& neuronSelectionModel)
@@ -1013,9 +1014,9 @@ void NaMainWindow::initializeContextMenus()
     viewerContextMenu = new QMenu(this);
     neuronContextMenu = new NeuronContextMenu(this);
     // Some QActions were already made in Qt Designer
-    showAllNeuronsInEmptySpaceAction = ui.actionShow_all_neurons_in_empty_space;
-    hideAllAction = ui.actionClear_Hide_All;
-    selectNoneAction = ui.actionSelect_None;
+    showAllNeuronsInEmptySpaceAction = ui->actionShow_all_neurons_in_empty_space;
+    hideAllAction = ui->actionClear_Hide_All;
+    selectNoneAction = ui->actionSelect_None;
     //
     viewerContextMenu->addAction(showAllNeuronsInEmptySpaceAction);
     viewerContextMenu->addAction(hideAllAction);
@@ -1026,9 +1027,9 @@ void NaMainWindow::initializeContextMenus()
     neuronContextMenu->addAction(hideAllAction);
     neuronContextMenu->addAction(selectNoneAction);
     //
-    ui.naLargeMIPWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
-    ui.naZStackWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
-    ui.v3dr_glwidget->setContextMenus(viewerContextMenu, neuronContextMenu);
+    ui->naLargeMIPWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
+    ui->naZStackWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
+    ui->v3dr_glwidget->setContextMenus(viewerContextMenu, neuronContextMenu);
 }
 
 /* slot */
@@ -1038,16 +1039,16 @@ void NaMainWindow::onHdrChannelChanged(NaZStackWidget::Color channel)
     {
     // Due to exclusive group, checking one button unchecks the others.
     case NaZStackWidget::COLOR_RED:
-        ui.HDRRed_pushButton->setChecked(true);
+        ui->HDRRed_pushButton->setChecked(true);
         break;
     case NaZStackWidget::COLOR_GREEN:
-        ui.HDRGreen_pushButton->setChecked(true);
+        ui->HDRGreen_pushButton->setChecked(true);
         break;
     case NaZStackWidget::COLOR_BLUE:
-        ui.HDRBlue_pushButton->setChecked(true);
+        ui->HDRBlue_pushButton->setChecked(true);
         break;
     case NaZStackWidget::COLOR_NC82:
-        ui.HDRNc82_pushButton->setChecked(true);
+        ui->HDRNc82_pushButton->setChecked(true);
         break;
     }
 }
@@ -1061,16 +1062,16 @@ void NaMainWindow::onColorModelChanged()
     {
         DataColorModel::Reader colorReader(dataFlowModel->getDataColorModel());
         if (dataFlowModel->getDataColorModel().readerIsStale(colorReader)) return;
-        ui.redToggleButton->setChecked(colorReader.getChannelVisibility(0));
-        ui.greenToggleButton->setChecked(colorReader.getChannelVisibility(1));
-        ui.blueToggleButton->setChecked(colorReader.getChannelVisibility(2));
+        ui->redToggleButton->setChecked(colorReader.getChannelVisibility(0));
+        ui->greenToggleButton->setChecked(colorReader.getChannelVisibility(1));
+        ui->blueToggleButton->setChecked(colorReader.getChannelVisibility(2));
 
         // Gamma
-        ui.sharedGammaWidget->setGammaBrightness(colorReader.getSharedGamma());
+        ui->sharedGammaWidget->setGammaBrightness(colorReader.getSharedGamma());
         const int refIndex = 3;
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (volumeReader.hasReadLock() && volumeReader.hasReferenceImage())
-            ui.referenceGammaWidget->setGammaBrightness(colorReader.getChannelGamma(refIndex));
+            ui->referenceGammaWidget->setGammaBrightness(colorReader.getChannelGamma(refIndex));
 
         // Communicate reference channel changes between NeuronSelectionModel and DataColorModel
         bReferenceColorIsVisible = colorReader.getChannelVisibility(refIndex);
@@ -1150,12 +1151,12 @@ void NaMainWindow::onViewerChanged(int viewerIndex)
         return; // wait window gets no message
         break;
     }
-    ui.statusbar->showMessage(msg);
+    ui->statusbar->showMessage(msg);
 }
 
 void NaMainWindow::setRotation(Rotation3D r) {
     sharedCameraModel.setRotation(r);
-    ui.v3dr_glwidget->update();
+    ui->v3dr_glwidget->update();
 }
 
 void NaMainWindow::setNutate(bool bDoNutate)
@@ -1189,46 +1190,46 @@ void NaMainWindow::setNutate(bool bDoNutate)
 void NaMainWindow::nutate(const Rotation3D& R) {
     // qDebug() << "nutate!";
     // std::cout << R << std::endl;
-    CameraModel& cam = ui.v3dr_glwidget->cameraModel;
-    if (!ui.v3dr_glwidget->mouseIsDragging()) {
+    CameraModel& cam = ui->v3dr_glwidget->cameraModel;
+    if (!ui->v3dr_glwidget->mouseIsDragging()) {
         cam.setRotation(R * cam.rotation());
         // TODO - use a signal here instead of processEvents
         QCoreApplication::processEvents(); // keep responsive during nutation
-        ui.v3dr_glwidget->update();
+        ui->v3dr_glwidget->update();
     }
 }
 
 void NaMainWindow::resetView()
 {
     // TODO - might not work if cameras are not linked
-    Vector3D newFocus = ui.v3dr_glwidget->getDefaultFocus();
+    Vector3D newFocus = ui->v3dr_glwidget->getDefaultFocus();
     // cerr << newFocus << __LINE__ << __FILE__;
     sharedCameraModel.setFocus(newFocus);
     sharedCameraModel.setRotation(Rotation3D()); // identity rotation
     sharedCameraModel.setScale(1.0); // fit to window
-    ui.viewerStackedWidget->update(); // whichever viewer is shown
+    ui->viewerStackedWidget->update(); // whichever viewer is shown
 }
 
 void NaMainWindow::updateViewers()
 {
-    ui.naLargeMIPWidget->update();
-    ui.naZStackWidget->update();
-    ui.v3dr_glwidget->update();
+    ui->naLargeMIPWidget->update();
+    ui->naZStackWidget->update();
+    ui->v3dr_glwidget->update();
 }
 
 void NaMainWindow::unifyCameras(bool bDoUnify)
 {
     // TODO - explicitly copy parameters from active displayed viewer
     if (bDoUnify) {
-        ui.naLargeMIPWidget->synchronizeWithCameraModel(&sharedCameraModel);
-        ui.naZStackWidget->synchronizeWithCameraModel(&sharedCameraModel);
-        ui.v3dr_glwidget->synchronizeWithCameraModel(&sharedCameraModel);
+        ui->naLargeMIPWidget->synchronizeWithCameraModel(&sharedCameraModel);
+        ui->naZStackWidget->synchronizeWithCameraModel(&sharedCameraModel);
+        ui->v3dr_glwidget->synchronizeWithCameraModel(&sharedCameraModel);
         // qDebug() << "unify cameras";
     }
     else {
-        ui.naLargeMIPWidget->decoupleCameraModel(&sharedCameraModel);
-        ui.naZStackWidget->decoupleCameraModel(&sharedCameraModel);
-        ui.v3dr_glwidget->decoupleCameraModel(&sharedCameraModel);
+        ui->naLargeMIPWidget->decoupleCameraModel(&sharedCameraModel);
+        ui->naZStackWidget->decoupleCameraModel(&sharedCameraModel);
+        ui->v3dr_glwidget->decoupleCameraModel(&sharedCameraModel);
         // qDebug() << "disband cameras";
     }
 }
@@ -1237,11 +1238,11 @@ void NaMainWindow::setZRange(int minZ, int maxZ) {
     // qDebug() << "minZ = " << minZ << "; maxZ = " << maxZ;
     QString text = QString("of %1").arg(maxZ);
     // qDebug() << text;
-    ui.ZSliceTotal_label->setText(text);
-    ui.ZSlice_horizontalScrollBar->setMaximum(maxZ);
-    ui.ZSlice_spinBox->setMaximum(maxZ);
-    ui.ZSlice_horizontalScrollBar->setMinimum(minZ);
-    ui.ZSlice_spinBox->setMinimum(minZ);
+    ui->ZSliceTotal_label->setText(text);
+    ui->ZSlice_horizontalScrollBar->setMaximum(maxZ);
+    ui->ZSlice_spinBox->setMaximum(maxZ);
+    ui->ZSlice_horizontalScrollBar->setMinimum(minZ);
+    ui->ZSlice_spinBox->setMinimum(minZ);
 }
 
 void NaMainWindow::handleCoordinatedCloseEvent(QCloseEvent *e)
@@ -1291,7 +1292,7 @@ void NaMainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 void NaMainWindow::on_actionOpen_microCT_Cut_Planner_triggered()
 {
     if (cutPlanner == NULL) {
-        cutPlanner = new CutPlanner(sharedCameraModel, *ui.v3dr_glwidget, this);
+        cutPlanner = new CutPlanner(sharedCameraModel, *ui->v3dr_glwidget, this);
         connect(cutPlanner, SIGNAL(rotationAdjusted(Rotation3D)),
                 this, SLOT(setRotation(Rotation3D)));
         connect(cutPlanner, SIGNAL(clipPlaneRequested()),
@@ -1351,7 +1352,7 @@ bool NaMainWindow::openMulticolorImageStack(QUrl url)
 
     createNewDataFlowModel();
     // reset front/back clip slab
-    ui.v3dr_glwidget->resetSlabThickness();
+    ui->v3dr_glwidget->resetSlabThickness();
     emit initializeColorModelRequested();
 
     VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
@@ -1368,7 +1369,7 @@ bool NaMainWindow::openMulticolorImageStack(QUrl url)
     if(volumeTexture.hasFastVolumesQueued()) {
         // Fast loading is only interesting if 3D viewer is selected.
         // So show the 3D viewer
-        ui.viewerControlTabWidget->setCurrentIndex(2);
+        ui->viewerControlTabWidget->setCurrentIndex(2);
         setViewMode(VIEW_SINGLE_STACK); // no gallery yet.
     }
 
@@ -1481,7 +1482,7 @@ void NaMainWindow::updateRecentFileActions()
 {
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
-    ui.menuOpen_Recent->setEnabled(files.size() > 0);
+    ui->menuOpen_Recent->setEnabled(files.size() > 0);
     for (int i = 0; i < maxRecentFiles; ++i)
     {
         if ( (i < files.size() && (! files[i].isEmpty())) ) { // active
@@ -1603,7 +1604,7 @@ void NaMainWindow::on_action2D_MIP_triggered() {
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 2D MIP to an .tif file"), ".", QObject::tr("2D MIP (*.tif)"));
     if (!(filename.isEmpty())){
 
-        // bool saved = ui.naLargeMIPWidget->saveImage(filename); // REPLACING WITH 3D MIP USING ROTATION and CUT PLANES
+        // bool saved = ui->naLargeMIPWidget->saveImage(filename); // REPLACING WITH 3D MIP USING ROTATION and CUT PLANES
 
         ExportFile *pExport = new ExportFile(
                 filename,
@@ -1624,7 +1625,7 @@ void NaMainWindow::on_action2D_MIP_triggered() {
 void NaMainWindow::on_actionScreenShot_triggered() {
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D View to an .tif file"), ".", QObject::tr("screenshot (*.tif)"));
     if (!(filename.isEmpty())){
-        bool saved = ui.v3dr_glwidget->screenShot(filename);
+        bool saved = ui->v3dr_glwidget->screenShot(filename);
     }
 
 }
@@ -1657,7 +1658,7 @@ void NaMainWindow::on_actionX_Rotation_Movie_triggered()
             2.0 * 3.14159 / frameCount,
             UnitVector3D(1, 0, 0));
     Rotation3D currentRotation = sharedCameraModel.rotation();
-    ui.v3dr_glwidget->resize(1280, 720);
+    ui->v3dr_glwidget->resize(1280, 720);
     for (int f = 0; f < frameCount; ++f)
     {
         QString fnum = QString("_%1.").arg(f, 5, 10, QChar('0'));
@@ -1665,9 +1666,9 @@ void NaMainWindow::on_actionX_Rotation_Movie_triggered()
         fooDebug() << fName;
         currentRotation = dRot * currentRotation;
         sharedCameraModel.setRotation(currentRotation);
-        ui.v3dr_glwidget->repaint();
+        ui->v3dr_glwidget->repaint();
         QCoreApplication::processEvents();
-        QImage frameImage = ui.v3dr_glwidget->grabFrameBuffer();
+        QImage frameImage = ui->v3dr_glwidget->grabFrameBuffer();
         frameImage.save(fName, NULL, 95);
     }
 }
@@ -1686,10 +1687,10 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     }
 
     dataFlowModel = dataFlowModelParam;
-    ui.v3dr_glwidget->setDataFlowModel(dataFlowModel);
-    ui.naLargeMIPWidget->setDataFlowModel(dataFlowModel);
-    ui.naZStackWidget->setDataFlowModel(dataFlowModel);
-    ui.fragmentGalleryWidget->setDataFlowModel(dataFlowModel);
+    ui->v3dr_glwidget->setDataFlowModel(dataFlowModel);
+    ui->naLargeMIPWidget->setDataFlowModel(dataFlowModel);
+    ui->naZStackWidget->setDataFlowModel(dataFlowModel);
+    ui->fragmentGalleryWidget->setDataFlowModel(dataFlowModel);
     neuronSelector.setDataFlowModel(dataFlowModel);
 
     // was in loadAnnotationSessionFromDirectory June 27, 2012
@@ -1703,7 +1704,7 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     // No connecting if the model is NULL
     if (NULL == dataFlowModel)
     {
-        ui.naLargeMIPWidget->setMipMergedData(NULL);
+        ui->naLargeMIPWidget->setMipMergedData(NULL);
         return;
     }
 
@@ -1716,12 +1717,12 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             this, SIGNAL(benchmarkTimerResetRequested()));
 
     // Connect mip viewer to data flow model
-    ui.naLargeMIPWidget->setMipMergedData(&dataFlowModel->getMipMergedData());
+    ui->naLargeMIPWidget->setMipMergedData(&dataFlowModel->getMipMergedData());
 
     connectContextMenus(dataFlowModel->getNeuronSelectionModel());
 
     connect(dataFlowModel, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
-            ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
+            ui->fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
 
     connect(&dataFlowModel->getVolumeData(), SIGNAL(channelsLoaded(int)),
             this, SLOT(processUpdatedVolumeData()));
@@ -1737,10 +1738,10 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
             &dataFlowModel->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
 
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
-            ui.annotationFrame, SLOT(deselectNeurons()));
-    connect(ui.annotationFrame, SIGNAL(neuronSelected(int)),
+            ui->annotationFrame, SLOT(deselectNeurons()));
+    connect(ui->annotationFrame, SIGNAL(neuronSelected(int)),
             &dataFlowModel->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
-    connect(ui.annotationFrame, SIGNAL(neuronsDeselected()),
+    connect(ui->annotationFrame, SIGNAL(neuronsDeselected()),
             &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(this, SIGNAL(initializeSelectionModelRequested()),
             &dataFlowModel->getNeuronSelectionModel(), SLOT(initializeSelectionModel()));
@@ -1771,15 +1772,15 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
     // Color toggling
     connect(this, SIGNAL(channelVisibilityChanged(int,bool)),
             &dataFlowModel->getDataColorModel(), SLOT(setChannelVisibility(int,bool)));
-    connect(ui.resetColorsButton, SIGNAL(clicked()),
+    connect(ui->resetColorsButton, SIGNAL(clicked()),
             &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
-    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+    connect(ui->sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             &dataFlowModel->getDataColorModel(), SLOT(setSharedGamma(qreal)));
-    connect(ui.referenceGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+    connect(ui->referenceGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             &dataFlowModel->getDataColorModel(), SLOT(setReferenceGamma(qreal)));
     connect(&dataFlowModel->getDataColorModel(), SIGNAL(dataChanged()),
             this, SLOT(onColorModelChanged()));
-    connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
+    connect(ui->naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
             &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
     connect(this, SIGNAL(initializeColorModelRequested()),
             &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
@@ -1808,10 +1809,10 @@ bool NaMainWindow::createNewDataFlowModel()
     }
     DataFlowModel* dfm = new DataFlowModel();
     setDataFlowModel(dfm);
-    ui.v3dr_glwidget->invalidate();
-    ui.naZStackWidget->invalidate();
-    ui.naLargeMIPWidget->invalidate();
-    ui.v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
+    ui->v3dr_glwidget->invalidate();
+    ui->naZStackWidget->invalidate();
+    ui->naLargeMIPWidget->invalidate();
+    ui->v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
     return true;
 }
 
@@ -1846,13 +1847,13 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 
     // Start in middle of volume
     // No, initial position should be set in 3D viewer
-    // ui.naZStackWidget->setCurrentZSlice(img_sz / 2 + 1);
+    // ui->naZStackWidget->setCurrentZSlice(img_sz / 2 + 1);
 
     // Need at least two colors for use of the color buttons to make sense
-    ui.HDRRed_pushButton->setEnabled(img_sc > 1);
-    ui.HDRGreen_pushButton->setEnabled(img_sc > 1);
-    ui.HDRBlue_pushButton->setEnabled(img_sc > 2);
-    ui.HDRNc82_pushButton->setEnabled(ref_sc > 0);
+    ui->HDRRed_pushButton->setEnabled(img_sc > 1);
+    ui->HDRGreen_pushButton->setEnabled(img_sc > 1);
+    ui->HDRBlue_pushButton->setEnabled(img_sc > 2);
+    ui->HDRNc82_pushButton->setEnabled(ref_sc > 0);
 
     resetVolumeCutRange();
 }
@@ -1889,20 +1890,20 @@ void NaMainWindow::resetVolumeCutRange()
         return;
 
     // volume cut update
-    ui.XcminSlider->setRange(0, mx);
-    ui.XcminSlider->setValue(0);
-    ui.XcmaxSlider->setRange(0, mx);
-    ui.XcmaxSlider->setValue(mx);
+    ui->XcminSlider->setRange(0, mx);
+    ui->XcminSlider->setValue(0);
+    ui->XcmaxSlider->setRange(0, mx);
+    ui->XcmaxSlider->setValue(mx);
 
-    ui.YcminSlider->setRange(0, my);
-    ui.YcminSlider->setValue(0);
-    ui.YcmaxSlider->setRange(0, my);
-    ui.YcmaxSlider->setValue(my);
+    ui->YcminSlider->setRange(0, my);
+    ui->YcminSlider->setValue(0);
+    ui->YcmaxSlider->setRange(0, my);
+    ui->YcmaxSlider->setValue(my);
 
-    ui.ZcminSlider->setRange(0, my);
-    ui.ZcminSlider->setValue(0);
-    ui.ZcmaxSlider->setRange(0, my);
-    ui.ZcmaxSlider->setValue(my);
+    ui->ZcminSlider->setRange(0, my);
+    ui->ZcminSlider->setValue(0);
+    ui->ZcmaxSlider->setRange(0, my);
+    ui->ZcmaxSlider->setValue(my);
 
 } // release lock
 
@@ -1935,7 +1936,7 @@ void NaMainWindow::updateGalleries()
             }
         }
     }
-    // ui.mipsFrame->setVisible(bShowGalleries);
+    // ui->mipsFrame->setVisible(bShowGalleries);
     if (bShowGalleries)
         setViewMode(VIEW_NEURON_SEPARATION);
 }
@@ -2026,7 +2027,7 @@ void NaMainWindow::initializeNeuronGallery()
     if (neuronGalleryButtonList.size() != mipReader.getNumberOfNeurons())
     {
         neuronGalleryButtonList.clear();
-        ui.fragmentGalleryWidget->clear(); // deletes buttons
+        ui->fragmentGalleryWidget->clear(); // deletes buttons
 
         // qDebug() << "Number of neuron masks = " << mipReader.getNumberOfNeurons();
         for (int i = 0; i < mipReader.getNumberOfNeurons(); ++i)
@@ -2038,7 +2039,7 @@ void NaMainWindow::initializeNeuronGallery()
                     GalleryButton::NEURON_BUTTON);
             button->setContextMenu(neuronContextMenu);
             neuronGalleryButtonList.append(button);
-            ui.fragmentGalleryWidget->appendFragment(button);
+            ui->fragmentGalleryWidget->appendFragment(button);
         }
 
         // qDebug() << "createMaskGallery() end size=" << mipReader.getNumberOfNeurons();
@@ -2052,7 +2053,7 @@ void NaMainWindow::initializeNeuronGallery()
         neuronGalleryButtonList[i]->setNeuronSelectionModel(
                 dataFlowModel->getNeuronSelectionModel());
     }
-    ui.fragmentGalleryWidget->updateButtonsGeometry();
+    ui->fragmentGalleryWidget->updateButtonsGeometry();
 }
 
 void NaMainWindow::updateNeuronGallery()
@@ -2071,7 +2072,7 @@ void NaMainWindow::updateNeuronGallery()
             neuronGalleryButtonList[i]->setChecked(selectionReader.getMaskStatusList().at(i));
             neuronGalleryButtonList[i]->update();
         }
-        ui.fragmentGalleryWidget->updateButtonsGeometry();
+        ui->fragmentGalleryWidget->updateButtonsGeometry();
     }
 }
 
@@ -2081,32 +2082,32 @@ void NaMainWindow::on3DViewerRotationChanged(const Rotation3D& rot)
     int rotX = Na3DWidget::radToDeg(angles.x());
     int rotY = Na3DWidget::radToDeg(angles.y());
     int rotZ = Na3DWidget::radToDeg(angles.z());
-    int oldRotX = ui.rotXWidget->spinBox->value();
-    int oldRotY = ui.rotYWidget->spinBox->value();
-    int oldRotZ = ui.rotZWidget->spinBox->value();
+    int oldRotX = ui->rotXWidget->spinBox->value();
+    int oldRotY = ui->rotYWidget->spinBox->value();
+    int oldRotZ = ui->rotZWidget->spinBox->value();
     if (Na3DWidget::eulerAnglesAreEquivalent(rotX, rotY, rotZ, oldRotX, oldRotY, oldRotZ))
         return;
     // Block signals from individual rot widgets until we update them all
-    ui.rotXWidget->blockSignals(true);
-    ui.rotYWidget->blockSignals(true);
-    ui.rotZWidget->blockSignals(true);
+    ui->rotXWidget->blockSignals(true);
+    ui->rotYWidget->blockSignals(true);
+    ui->rotZWidget->blockSignals(true);
 
-    ui.rotXWidget->setAngle(rotX);
-    ui.rotYWidget->setAngle(rotY);
-    ui.rotZWidget->setAngle(rotZ);
+    ui->rotXWidget->setAngle(rotX);
+    ui->rotYWidget->setAngle(rotY);
+    ui->rotZWidget->setAngle(rotZ);
 
-    ui.rotXWidget->blockSignals(false);
-    ui.rotYWidget->blockSignals(false);
-    ui.rotZWidget->blockSignals(false);
+    ui->rotXWidget->blockSignals(false);
+    ui->rotYWidget->blockSignals(false);
+    ui->rotZWidget->blockSignals(false);
 }
 
 void NaMainWindow::update3DViewerXYZBodyRotation()
 {
-    int rotX = ui.rotXWidget->spinBox->value();
-    int rotY = ui.rotYWidget->spinBox->value();
-    int rotZ = ui.rotZWidget->spinBox->value();
+    int rotX = ui->rotXWidget->spinBox->value();
+    int rotY = ui->rotYWidget->spinBox->value();
+    int rotZ = ui->rotZWidget->spinBox->value();
     // qDebug() << rotX << ", " << rotY << ", " << rotZ;
-    ui.v3dr_glwidget->setXYZBodyRotationInt(rotX, rotY, rotZ);
+    ui->v3dr_glwidget->setXYZBodyRotationInt(rotX, rotY, rotZ);
 }
 
 // update neuron selected status
@@ -2185,9 +2186,9 @@ void NaMainWindow::set3DProgress(int prog)
         return;
     }
     if (use3DProgress) {
-        ui.progressBar3d->setValue(prog);
-        // ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
-        ui.widget_progress3d->show();
+        ui->progressBar3d->setValue(prog);
+        // ui->v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
+        ui->widget_progress3d->show();
     }
     else
         setProgressValue(prog);
@@ -2196,13 +2197,13 @@ void NaMainWindow::set3DProgress(int prog)
 void NaMainWindow::complete3DProgress()
 {
     if (use3DProgress) {
-        ui.widget_progress3d->hide();
+        ui->widget_progress3d->hide();
         // avoid jerky resize to accomodated progress widget
         QCoreApplication::processEvents(); // flush pending resize events
-        ui.v3dr_glwidget->resizeEvent(NULL);
-        ui.v3dr_glwidget->setResizeEnabled(true);
+        ui->v3dr_glwidget->resizeEvent(NULL);
+        ui->v3dr_glwidget->setResizeEnabled(true);
         //
-        ui.v3dr_glwidget->update();
+        ui->v3dr_glwidget->update();
     }
     else completeProgress();
 }
@@ -2210,9 +2211,9 @@ void NaMainWindow::complete3DProgress()
 void NaMainWindow::set3DProgressMessage(QString msg)
 {
     if (use3DProgress) {
-        ui.progressLabel3d->setText(msg);
-        ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
-        ui.widget_progress3d->show();
+        ui->progressLabel3d->setText(msg);
+        ui->v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
+        ui->widget_progress3d->show();
     }
     else
         setProgressMessage(msg);

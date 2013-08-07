@@ -867,7 +867,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <attribute name="title">
                           <string>Rotation</string>
                          </attribute>
-                         <widget class="AngleWidget" name="rotXWidget">
+                         <widget class="AngleWidget" name="rotXWidget" native="true">
                           <property name="geometry">
                            <rect>
                             <x>13</x>
@@ -897,11 +897,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
                           <property name="toolTip">
                            <string>Rotate about the object X axis</string>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotX</string>
                           </property>
                          </widget>
-                         <widget class="AngleWidget" name="rotZWidget">
+                         <widget class="AngleWidget" name="rotZWidget" native="true">
                           <property name="geometry">
                            <rect>
                             <x>13</x>
@@ -931,11 +931,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
                           <property name="toolTip">
                            <string>Rotate about the object Z axis</string>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotZ</string>
                           </property>
                          </widget>
-                         <widget class="AngleWidget" name="rotYWidget">
+                         <widget class="AngleWidget" name="rotYWidget" native="true">
                           <property name="geometry">
                            <rect>
                             <x>13</x>
@@ -965,7 +965,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                           <property name="toolTip">
                            <string>Rotate about the object Y axis</string>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotY</string>
                           </property>
                          </widget>
@@ -1394,7 +1394,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="ZoomWidget" name="zoomWidget"/>
+                 <widget class="ZoomWidget" name="zoomWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QPushButton" name="resetViewButton">
@@ -1425,10 +1425,10 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="GammaWidget" name="sharedGammaWidget"/>
+                 <widget class="GammaWidget" name="sharedGammaWidget" native="true"/>
                 </item>
                 <item>
-                 <widget class="GammaWidget" name="referenceGammaWidget"/>
+                 <widget class="GammaWidget" name="referenceGammaWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="sharedColorFrame">
@@ -1723,7 +1723,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <x>0</x>
      <y>0</y>
      <width>1367</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
