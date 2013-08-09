@@ -3952,11 +3952,12 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 	}
 
 	int dt;
+    ImagePixelType curtype;
 	switch (datatype)
 	{
-		case 1:  dt=1; break;
-		case 2:  dt=2; break;
-		case 4:  dt=4; break;
+        case 1:  dt=1; curtype = V3D_UINT8; break;
+        case 2:  dt=2; curtype = V3D_UINT16; break;
+        case 4:  dt=4; curtype = V3D_FLOAT32; break;
 		default:
 			printf("The data type is unsupported. Nothing done.\n");
 			return false;
@@ -3984,7 +3985,27 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 			return false;
 		}
 	}
-	else //then assume it is Hanchuan's RAW format
+#ifdef _ALLOW_WORKMODE_MENU_
+    else if (curFileSuffix && ImageLoaderBasic::hasPbdExtension(filename) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    {
+        v3d_msg("prepare for pbd file saving", 0);
+        ImageLoaderBasic imageLoader;
+        if (!imageLoader.saveStack2RawPBD(filename, curtype, (unsigned char *)data1d, sz)) {
+            printf("Error happens in v3dpbd file saving. Stop. \n");
+            return false;
+        }
+    }
+#endif
+
+    else if (curFileSuffix && strcasecmp(curFileSuffix, "v3dpbd")==0) //write .raw5 data
+    {
+        if (saveStack2Raw5d(filename, data1d, sz, dt))
+        {
+            printf("Error happens in writing V3D .raw5 file [%s]. Stop. \n", filename);
+            return false;
+        }
+    }
+    else //then assume it is Hanchuan's RAW format
 	{
 		if (b_VERBOSE_PRINT)
 			printf("The data is not with a TIF surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
