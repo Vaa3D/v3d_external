@@ -1266,10 +1266,14 @@ void RendererNeuronAnnotator::paintClipGuide()
     glPushMatrix();
     glLoadIdentity();
 
+    // Leave a little gap in the center, like a reticule
+    double gapSize = 0.15;
     glDisable(GL_DEPTH_TEST); // draw over the existing scene
     glBegin(GL_LINES);
         glColor3f(0.9f, 0.9f, 0.4f); // yellow
         glVertex3f(-2, 0, 0);
+        glVertex3f(-gapSize/2, 0, 0);
+        glVertex3f(+gapSize/2, 0, 0);
         glVertex3f(+2, 0, 0);
     glEnd();
 

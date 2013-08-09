@@ -27,6 +27,8 @@ public:
     void setAxis(const QString& axis);
     void setMicrometersPerVoxel(double mpv);
 
+    Ui::SingleCut ui;
+
 signals:
     void cutGuideRequested(bool doShow);
     void clipPlaneRequested();
@@ -45,7 +47,6 @@ private:
     void setUpDirection(Vector3D);
     bool setUpDirectionFromLabel(const QString& text);
 
-    Ui::SingleCut ui;
     CameraModel* camera; // for access to focus, rotation, and restricting rotation
     Vector3D edgePoint;
     Vector3D edgeNormal;

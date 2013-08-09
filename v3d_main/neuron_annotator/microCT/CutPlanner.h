@@ -37,6 +37,7 @@ public slots:
 
 private:
     void initSingleCut(SingleCut* widget, QString name, QString axis);
+    void setBasePlaneWidget(SingleCut* widget, QString name, QString axis);
     void setMicrometersPerVoxel(double val);
 
     Ui::CutPlannerDialog ui;
