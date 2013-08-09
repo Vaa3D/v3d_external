@@ -4683,7 +4683,7 @@ bool XFormWidget::saveData()
 													  "Choose a filename to save under",
 													  //"./",
 													  QString(openFileNameLabel)+".v3draw",
-													  "Save file format (*.tif *.v3draw *.raw)");
+                                                      "Save file format (*.v3draw *.v3dpbd *.tif *.raw)");
 
 	while (outputFile.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
 	{
@@ -4694,7 +4694,7 @@ bool XFormWidget::saveData()
 		outputFile = QFileDialog::getSaveFileName(0,
 												  "Choose a filename to save under",
 												  "./",
-												  "Save file format (*.tif *.v3draw *.raw)");
+                                                  "Save file format (*.v3draw *.v3dpbd *.tif *.raw)");
 	}
 
 	saveFile(outputFile);
