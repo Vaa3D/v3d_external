@@ -3996,15 +3996,6 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
         }
     }
 #endif
-
-    else if (curFileSuffix && strcasecmp(curFileSuffix, "v3dpbd")==0) //write .raw5 data
-    {
-        if (saveStack2Raw5d(filename, data1d, sz, dt))
-        {
-            printf("Error happens in writing V3D .raw5 file [%s]. Stop. \n", filename);
-            return false;
-        }
-    }
     else //then assume it is Hanchuan's RAW format
 	{
 		if (b_VERBOSE_PRINT)
@@ -4016,8 +4007,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 		}
 	}
 
-
-	return true;
+    return true;
 }
 
 
