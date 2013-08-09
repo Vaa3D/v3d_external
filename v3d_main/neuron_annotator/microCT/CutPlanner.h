@@ -33,9 +33,11 @@ signals:
 
 public slots:
     void onRotationChanged(Rotation3D rotation);
+    void on_micrometersBox_valueChanged(double val);
 
 private:
     void initSingleCut(SingleCut* widget, QString name, QString axis);
+    void setMicrometersPerVoxel(double val);
 
     Ui::CutPlannerDialog ui;
     CameraModel& camera; // for access to focus, rotation, and restricting rotation

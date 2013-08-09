@@ -14,6 +14,7 @@ CutPlanner::CutPlanner(CameraModel& camera, Na3DWidget& widget3d, QWidget* paren
     , micrometersPerVoxel(1.00)
 {
     ui.setupUi(this);
+    initSingleCut(ui.basePlaneWidget, "Base", "+Z");
     initSingleCut(ui.topCutWidget, "Top", "+Z");
     initSingleCut(ui.frontCutWidget, "Front/A", "-Y");
     initSingleCut(ui.rightCutWidget, "Right/B", "+X");
@@ -38,9 +39,24 @@ void CutPlanner::initSingleCut(SingleCut* widget, QString name, QString axis) {
 
 }
 
+void CutPlanner::setMicrometersPerVoxel(double val) {
+    ui.basePlaneWidget->setMicrometersPerVoxel(val);
+    ui.topCutWidget->setMicrometersPerVoxel(val);
+    ui.frontCutWidget->setMicrometersPerVoxel(val);
+    ui.rightCutWidget->setMicrometersPerVoxel(val);
+    ui.rearCutWidget->setMicrometersPerVoxel(val);
+    ui.leftCutWidget->setMicrometersPerVoxel(val);
+}
+
 /* slot */
 void CutPlanner::onRotationChanged(Rotation3D rotation)
 {
     // TODO - optionally restrict rotation
+}
+
+/* slot */
+void CutPlanner::on_micrometersBox_valueChanged(double val) {
+    qDebug("valueChanged");
+    setMicrometersPerVoxel(val);
 }
 

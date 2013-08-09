@@ -16,6 +16,7 @@ SingleCut::SingleCut(QWidget* parent)
     , camera(NULL)
     , hasCut(false)
     , micrometersPerVoxel(0.64)
+    , upVector(1,0,0)
 {
     ui.setupUi(this);
     CutPlanner* planner = dynamic_cast<CutPlanner*>(parent);
@@ -34,25 +35,43 @@ void SingleCut::init()
     ui.edgeButton->setDefault(true);
 }
 
+void SingleCut::setMicrometersPerVoxel(double mpv) {
+    if (micrometersPerVoxel == mpv)
+        return;
+    micrometersPerVoxel = mpv;
+    updateCutDistance();
+}
+
+bool SingleCut::setUpDirectionFromLabel(const QString& text) {
+    // TODO - WHY is X-axis appearance opposite to the other axes?
+    // (judging by axis tool)
+    Vector3D newDirection = upVector;
+    if (text == "+X")
+        newDirection = Vector3D(-1, 0, 0);
+    else if (text == "-X")
+        newDirection = Vector3D(1, 0, 0);
+    else if (text == "+Y")
+        newDirection = Vector3D(0, 1, 0);
+    else if (text == "-Y")
+        newDirection = Vector3D(0, -1, 0);
+    else if (text == "+Z")
+        newDirection = Vector3D(0, 0, 1);
+    else if (text == "-Z")
+        newDirection = Vector3D(0, 0, -1);
+    else
+        return false;
+    if (upVector == newDirection)
+        return false;
+    setUpDirection(newDirection);
+    return true;
+}
+
 /* slot */
 void SingleCut::on_axisBox_activated(const QString& text)
 {
-    if (text == "Free")
-        return; // no restriction
-    // TODO - WHY is X-axis appearance opposite to the other axes?
-    // (judging by axis tool)
-    else if (text == "+X")
-        setUpVector(Vector3D(-1, 0, 0));
-    else if (text == "-X")
-        setUpVector(Vector3D(1, 0, 0));
-    else if (text == "+Y")
-        setUpVector(Vector3D(0, 1, 0));
-    else if (text == "-Y")
-        setUpVector(Vector3D(0, -1, 0));
-    else if (text == "+Z")
-        setUpVector(Vector3D(0, 0, 1));
-    else if (text == "-Z")
-        setUpVector(Vector3D(0, 0, -1));
+    if (! setUpDirectionFromLabel(text))
+        return;
+    alignViewToUpVector();
     // Light up Edge button for next step
     // (unless we are already at the cut stage)
     if (! ui.cutButton->isDefault())
@@ -93,6 +112,7 @@ void SingleCut::setAxis(const QString& axis)
     if (index == -1)
         return; // not found
     ui.axisBox->setCurrentIndex(index);
+    setUpDirectionFromLabel(axis);
 }
 
 void SingleCut::setName(const QString& name)
@@ -100,17 +120,37 @@ void SingleCut::setName(const QString& name)
     ui.nameField->setText(name);
 }
 
-void SingleCut::setUpVector(Vector3D up) {
+void SingleCut::setUpDirection(Vector3D up) {
+    if (upVector == up)
+        return;
+    upVector = up;
+}
+
+void SingleCut::alignViewToUpVector() {
     const Rotation3D oldRot = camera->rotation();
     UnitVector3D oldUp = -oldRot[1];
-    double dot = up.dot(oldUp);
+    double dot = upVector.dot(oldUp);
     if ((dot - 1.0) > -1e-3) {
         cout << "close enough" << endl;
         return; // close enough
     }
     // Change rotation to place up axis vertical
     double angle = acos(dot);
-    UnitVector3D axis = UnitVector3D(up.cross(oldUp));
+    UnitVector3D axis = UnitVector3D(upVector.cross(oldUp));
+    // axis can be bogus if newUp == -oldUp
+    if (dot < -0.9999) {
+        // 180 degree rotation might have poorly computed axis
+        // Just choose any orthogonal axis
+        // First choose a non-coaligned second vector from two possibilities
+        Vector3D v1 = Vector3D(1,0,0);
+        double d1 = std::abs(upVector.dot(v1));
+        Vector3D v2 = Vector3D(0,1,0);
+        double d2 = std::abs(upVector.dot(v2));
+        if (d1 < d2) // First vector is less coaligned
+            axis = UnitVector3D(upVector.cross(v1));
+        else
+            axis = UnitVector3D(upVector.cross(v2));
+    }
     Rotation3D r;
     r.setRotationFromAngleAboutUnitVector(angle, axis);
     r = oldRot * r;

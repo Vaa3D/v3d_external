@@ -25,21 +25,25 @@ public:
     void setCamera(CameraModel& cameraParam) {camera = &cameraParam;}
     void setName(const QString& name);
     void setAxis(const QString& axis);
-    void setMicrometersPerVoxel(double mpv) {micrometersPerVoxel = mpv;}
+    void setMicrometersPerVoxel(double mpv);
 
 signals:
     void cutGuideRequested(bool doShow);
     void clipPlaneRequested();
     void rotationAdjusted(Rotation3D rotation); // To maintain axis alignment
+    void orientRequested();
 
 public slots:
     void on_axisBox_activated(const QString& text);
     void on_cutButton_clicked();
     void on_edgeButton_clicked();
+    void on_orientButton_clicked() {alignViewToUpVector();}
 
 private:
     void updateCutDistance();
-    void setUpVector(Vector3D);
+    void alignViewToUpVector();
+    void setUpDirection(Vector3D);
+    bool setUpDirectionFromLabel(const QString& text);
 
     Ui::SingleCut ui;
     CameraModel* camera; // for access to focus, rotation, and restricting rotation
@@ -47,6 +51,7 @@ private:
     Vector3D edgeNormal;
     Vector3D cutPoint;
     Vector3D cutNormal;
+    Vector3D upVector;
     bool hasCut;
     double micrometersPerVoxel;
 };

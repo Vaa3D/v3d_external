@@ -6,14 +6,69 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>624</width>
-    <height>294</height>
+    <width>618</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>microCT Cut Planner</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Voxel size:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="micrometersBox">
+        <property name="suffix">
+         <string>µm</string>
+        </property>
+        <property name="minimum">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>468</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="basePlaneWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="SingleCut" name="topCutWidget" native="true">
      <property name="minimumSize">

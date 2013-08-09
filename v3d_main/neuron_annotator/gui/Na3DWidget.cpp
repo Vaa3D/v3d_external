@@ -52,10 +52,10 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
     // valgrind has some complaints about the context
 #ifdef ENABLE_STEREO
-    QGLFormat glFormat(format());
-    glFormat.setDoubleBuffer(true);
-    glFormat.setStereo(true);
-    setFormat(glFormat);
+    QGLFormat * glFormat = new QGLFormat(format());
+    glFormat->setDoubleBuffer(true);
+    glFormat->setStereo(true);
+    setFormat(*glFormat);
 #endif
 
     bHasQuadStereo = true;
