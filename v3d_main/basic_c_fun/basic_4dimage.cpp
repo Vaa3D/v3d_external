@@ -238,7 +238,11 @@ bool Image4DSimple::saveImage(const char filename[])
 			break;
 	}
 
-	//061009
+    return ::saveImage(filename, data1d, mysz, dt);
+        /*
+
+
+    //061009
 	char * curFileSurfix = getSurfix((char *)filename);
 	printf("The current output file has the surfix [%s]\n", curFileSurfix);
 	if (curFileSurfix && (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)) //read tiff stacks
@@ -263,6 +267,8 @@ bool Image4DSimple::saveImage(const char filename[])
 	}
 
 	return true;
+    */
+
 }
 
 
