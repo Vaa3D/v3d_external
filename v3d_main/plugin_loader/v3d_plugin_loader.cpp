@@ -893,6 +893,28 @@ bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt)
 	return false;
 }
 
+Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
+{
+    if (!filename)
+        return 0;
+
+    Image4DSimple * myimg = new Image4DSimple;
+    myimg->loadImage(filename);
+    if (myimg->valid())
+        return myimg;
+    else
+        return 0;
+}
+
+bool V3d_PluginLoader::saveImage(Image4DSimple * img, char *filename)
+{
+    if (!img || !filename || !img->valid())
+        return false;
+
+    return img->saveImage(filename);
+}
+
+
 
 V3D_GlobalSetting V3d_PluginLoader::getGlobalSetting()
 {

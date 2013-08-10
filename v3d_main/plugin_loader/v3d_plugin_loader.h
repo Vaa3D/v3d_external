@@ -122,6 +122,9 @@ public:
 	virtual NeuronTree getSWC(v3dhandle image_window);
 	virtual bool setSWC(v3dhandle image_window, NeuronTree & nt);
 
+    virtual Image4DSimple * loadImage(char *filename);  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
+    virtual bool saveImage(Image4DSimple * img, char *filename);
+
 	virtual V3D_GlobalSetting getGlobalSetting();
 	virtual bool setGlobalSetting( V3D_GlobalSetting & gs );
 

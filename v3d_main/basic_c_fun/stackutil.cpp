@@ -3986,11 +3986,12 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_
-    else if (curFileSuffix && (ImageLoaderBasic::hasPbdExtension(filename) || strcasecmp(curFileSuffix, "v3dpbd")==0) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    else if (curFileSuffix &&  (strcasecmp(curFileSuffix, "v3dpbd")==0)) //  v3dpbd - pack-bit-difference encoding for sparse stacks
+        // || strcasecmp(curFileSuffix, "mp4")==0) ) //to add mp4 later
     {
         v3d_msg("prepare for pbd file saving", 0);
         ImageLoaderBasic imageLoader;
-        if (!imageLoader.saveStack2RawPBD(filename, curtype, (unsigned char *)data1d, sz)) {
+        if (imageLoader.saveStack2RawPBD(filename, curtype, (unsigned char *)data1d, sz)) {
             printf("Error happens in v3dpbd file saving. Stop. \n");
             return false;
         }
