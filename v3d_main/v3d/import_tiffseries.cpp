@@ -613,7 +613,7 @@ bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * &
 	}
 	else //then assume it is Hanchuan's RAW format
 	{
-		printf("The data is not with a TIF surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
+        printf("The data is not with a valid Vaa3D format, -- now this program assumes it is a Vaa3D RAW format defined by Hanchuan Peng. \n");
 		if (loadRaw2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 		{
 			printf("The data doesn't look like a correct 4-byte-size RAW file. Try 2-byte-raw. \n");

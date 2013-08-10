@@ -135,7 +135,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	}
 	else //then assume it is Hanchuan's RAW format
 	{
-		v3d_msg("The data is not with a TIF surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n", false);
+        v3d_msg("The data is not with any known Vaa3D formats, -- now this program assumes it is a Vaa3D RAW format. \n", false);
 		if (loadRaw2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 		{
 			printf("The data doesn't look like a correct 4-byte-size RAW file. Try 2-byte-raw. \n");
@@ -398,31 +398,7 @@ bool Image4DSimple::saveImage(const char filename[])
 			break;
 	}
 
-	//061009
-	char * curFileSurfix = getSurfix((char *)filename);
-	printf("The current output file has the surfix [%s]\n", curFileSurfix);
-	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
-	{
-		if (saveStack2Tif(filename, data1d, mysz, dt)!=0)
-		{
-			v3d_msg("Error happens in TIF file writing. Stop. \n");
-			b_error=1;
-			return false;
-		}
-	}
-	else //then assume it is Hanchuan's RAW format
-	{
-		printf("The data is not with a TIF surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
-		if (saveStack2Raw(filename, data1d, mysz, dt)!=0)   //0 is no error //note that as I updated the saveStack2Raw to RAW-4-byte, the actual mask file cannot be read by the old wano program, i.e. the wano must be updated on Windows machine as well. 060921
-			//if (saveStack2Raw_2byte(filename, data1d, mysz, dt)!=0)   //for compatability save it to 2-byte raw //re-commented on 081124. always save to 4-byte raw
-		{
-			v3d_msg("Fail to save data to file [%s].\n", filename);
-			b_error=1;
-			return false;
-		}
-	}
-
-	return true;
+    return ::saveImage(filename, data1d, mysz, dt);
 }
 
 

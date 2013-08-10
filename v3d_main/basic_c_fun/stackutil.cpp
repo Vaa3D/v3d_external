@@ -3999,7 +3999,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
     else //then assume it is Hanchuan's RAW format
 	{
 		if (b_VERBOSE_PRINT)
-			printf("The data is not with a TIF surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
+            printf("The data is not with a known Vaa3D format, -- now this program assumes it is a Vaa3D RAW format. \n");
 		if (saveStack2Raw(filename, data1d, sz, dt)!=0) //0 is no error //note that as I updated the saveStack2Raw to RAW-4-byte, the actual mask file cannot be read by the old wano program, i.e. the wano must be updated on Windows machine as well. 060921
 		{
 			printf("Error happens in writing RAW file stack [defined by Hanchuan Peng] [%s].\n", filename);
