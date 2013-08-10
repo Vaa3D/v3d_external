@@ -3986,7 +3986,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_
-    else if (curFileSuffix && ImageLoaderBasic::hasPbdExtension(filename) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    else if (curFileSuffix && (ImageLoaderBasic::hasPbdExtension(filename) || strcasecmp(curFileSuffix, "v3dpbd")==0) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
         v3d_msg("prepare for pbd file saving", 0);
         ImageLoaderBasic imageLoader;
