@@ -117,6 +117,7 @@ public slots:
     void exitFullScreen();
     void setFullScreen(bool);
     void setViewMode(ViewMode mode);
+    void labelNeuronsAsFlyBrainCompartments();
     void loadSingleStack(QUrl url);
     void loadSingleStack(QString fileName);
     void loadSingleStack(QUrl url, bool useVaa3dClassic);
@@ -139,6 +140,7 @@ public slots:
     void on_actionLoad_movie_as_texture_triggered();
     void on_actionPreferences_triggered();
     void on_actionX_Rotation_Movie_triggered();
+    void on_zThicknessDoubleSpinBox_valueChanged(double val);
     void setZRange(int minZ, int maxZ); // update number of z slices
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same
     void setNutate(bool bDoNutate);

@@ -165,7 +165,6 @@ void FragmentGalleryWidget::sortByColor()
     sortOrder = SORT_BY_COLOR;
     order = &colorOrder;
     updateThumbnailPositions();
-    // TODO
 }
 
 /* slot */
@@ -175,7 +174,15 @@ void FragmentGalleryWidget::sortBySize() {
     sortOrder = SORT_BY_SIZE;
     order = &sizeOrder;
     updateThumbnailPositions();
-    // TODO
+}
+
+/* slot */
+void FragmentGalleryWidget::sortByName() {
+    if (sortOrder == SORT_BY_NAME)
+        return;
+    sortOrder = SORT_BY_NAME;
+    order = &nameOrder;
+    updateThumbnailPositions();
 }
 
 // Index is a class to help compute sort orders
@@ -189,7 +196,7 @@ struct IndexSorter
     // comparison function sorts indices based on values in values table
     bool operator() (int i, int j) const
     {
-
+        // qDebug() << i << j << values[i] << values[j] << (values[i] < values[j]);
         if (bAscending)
             return (values[i] < values[j]);
         // Cannot simply negate bAscending result, because >= is not a strict weak ordering
@@ -215,20 +222,42 @@ struct IndexSorter
     const std::vector<T>& values;
 };
 
+
+std::vector<QString> FragmentGalleryWidget::getButtonNames() {
+    std::vector<QString> result;
+    for (int i = 0; i < contents.size(); ++i) {
+        result.push_back(contents[i]->getLabelText());
+    }
+    return result;
+}
+
+void FragmentGalleryWidget::updateNameSortTable() {
+    // NAMES - from button labels
+    std::vector<QString> names = getButtonNames();
+    IndexSorter<QString> nameSorter(names, true);
+    nameOrder = nameSorter.computeIndexOrder();
+    repaint();
+}
+
 void FragmentGalleryWidget::updateSortTables()
 {
     // qDebug() << "FragmentGalleryWidget::updateSortTables()";
+    // NAMES - from button labels
+    updateNameSortTable();
     if (!neuronFragmentData) return;
     {
         NeuronFragmentData::Reader fragmentReader(*neuronFragmentData);
         if (neuronFragmentData->readerIsStale(fragmentReader)) return;
         int sf = fragmentReader.getNumberOfFragments();
+        // INDEX
         // Sort by index is easy.  We don't need to look anything up.
         if (indexOrder.size() != sf) indexOrder.assign(sf, 0);
         for (int f = 0; f < sf; ++f)
             indexOrder[f] = f;
+        // SIZE (number of voxels)
         IndexSorter<int> sizeSorter(fragmentReader.getFragmentSizes(), false);
         sizeOrder = sizeSorter.computeIndexOrder();
+        // COLOR (hue)
         IndexSorter<float> hueSorter(fragmentReader.getFragmentHues());
         colorOrder = hueSorter.computeIndexOrder();
     }

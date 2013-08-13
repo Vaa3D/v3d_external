@@ -26,7 +26,7 @@ GalleryButton::GalleryButton(
     // QSize thumbnailSize(GalleryButton::ThumbnailPixelHeight, GalleryButton::ThumbnailPixelHeight);
     pushButton->setIconSize(image.size());
     label = new QLabel(name);
-    label->setAlignment(Qt::AlignCenter);
+    label->setAlignment(Qt::AlignLeft);
     layout->addWidget(pushButton);
     layout->addWidget(label);
     this->setLayout(layout);

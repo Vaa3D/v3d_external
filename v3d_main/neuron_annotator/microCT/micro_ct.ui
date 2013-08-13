@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>microCT Cut Planner</string>
+   <string>microCT Trim Planner</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -55,6 +55,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="labelBrainCompartmentsButton">
+        <property name="text">
+         <string>Label Brain Compartments</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

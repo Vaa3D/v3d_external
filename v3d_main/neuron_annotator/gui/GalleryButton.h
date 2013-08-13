@@ -26,6 +26,7 @@ public:
             QWidget *parent = 0);
     ~GalleryButton();
     int getIndex() { return index; }
+    QString getLabelText() {return label->text();}
     QString getName() { return label->text(); }
     bool isChecked() { return pushButton->isChecked(); }
     void setChecked(bool checked) { pushButton->setChecked(checked); }
@@ -53,6 +54,7 @@ public slots:
     // this operation.
     void setThumbnailIcon(const QImage& scaledImage);
     void showContextMenu(QPoint point);
+    void setLabelText(const QString& text) {label->setText(text);}
 
 private:
     typedef QWidget super;

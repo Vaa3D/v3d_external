@@ -18,7 +18,8 @@ public:
     enum SortOrder {
         SORT_BY_SIZE,
         SORT_BY_INDEX,
-        SORT_BY_COLOR
+        SORT_BY_COLOR,
+        SORT_BY_NAME
     };
 
 public:
@@ -43,11 +44,14 @@ public slots:
     void sortByIndex();
     void sortByColor();
     void sortBySize();
+    void sortByName();
+    void updateNameSortTable();
     void updateSortTables();
 
 protected:
     void updateScrollBar();
     void updateThumbnailPositions();
+    std::vector<QString> getButtonNames();
 
     QList<GalleryButton *> contents;
     int buttonWidth;
@@ -57,6 +61,7 @@ protected:
     std::vector<int> indexOrder;
     std::vector<int> sizeOrder;
     std::vector<int> colorOrder;
+    std::vector<int> nameOrder;
     std::vector<int> * order;
     const NeuronFragmentData * neuronFragmentData;
 

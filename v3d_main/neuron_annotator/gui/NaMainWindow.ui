@@ -1288,6 +1288,35 @@ You can also resize the box by Ctrl + left mouse click.</string>
                        </widget>
                       </item>
                       <item>
+                       <widget class="QWidget" name="widget_2" native="true">
+                        <layout class="QHBoxLayout" name="horizontalLayout_17">
+                         <item>
+                          <widget class="QLabel" name="label_4">
+                           <property name="text">
+                            <string>Z Thickness</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="zThicknessDoubleSpinBox">
+                           <property name="minimum">
+                            <double>0.010000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>100.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                           <property name="value">
+                            <double>1.000000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
                        <spacer name="verticalSpacer_5">
                         <property name="orientation">
                          <enum>Qt::Vertical</enum>
@@ -1659,6 +1688,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
                </property>
                <property name="autoExclusive">
                 <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="gallerySortByNameButton">
+               <property name="text">
+                <string>Name</string>
                </property>
               </widget>
              </item>

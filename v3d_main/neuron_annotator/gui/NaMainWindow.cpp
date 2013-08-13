@@ -379,6 +379,8 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
             ui->fragmentGalleryWidget, SLOT(sortByColor()));
     connect(ui->gallerySortByIndexButton, SIGNAL(clicked()),
             ui->fragmentGalleryWidget, SLOT(sortByIndex()));
+    connect(ui->gallerySortByNameButton, SIGNAL(clicked()),
+            ui->fragmentGalleryWidget, SLOT(sortByName()));
 
     // Allow cross-thread signals/slots that pass QList<int>
     qRegisterMetaType< QList<int> >("QList<int>");
@@ -690,6 +692,10 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
     }
 
     loadSingleStack(fileName, false);
+}
+
+void NaMainWindow::on_zThicknessDoubleSpinBox_valueChanged(double val) {
+    ui->v3dr_glwidget->setThickness(val);
 }
 
 static bool isFolder(QString path) {
@@ -1299,6 +1305,8 @@ void NaMainWindow::on_actionOpen_microCT_Cut_Planner_triggered()
                 this, SLOT(applyCustomCut()));
         connect(cutPlanner, SIGNAL(cutGuideRequested(bool)),
                 this, SLOT(setCustomCutMode(bool)));
+        connect(cutPlanner, SIGNAL(compartmentNamingRequested()),
+                this, SLOT(labelNeuronsAsFlyBrainCompartments()));
     }
     setCustomCutMode(true);
     cutPlanner->show();
@@ -2054,6 +2062,90 @@ void NaMainWindow::initializeNeuronGallery()
                 dataFlowModel->getNeuronSelectionModel());
     }
     ui->fragmentGalleryWidget->updateButtonsGeometry();
+}
+
+// For microCT mode
+/* slot */
+void NaMainWindow::labelNeuronsAsFlyBrainCompartments() {
+    // If a second renaming scheme is ever needed, refactor this to load names from an
+    // external data source.
+    QList<QString> compartmentNames;
+    compartmentNames << "FB (Fan-shaped Body)";
+    compartmentNames << "EB (Ellipsoid Body)";
+    compartmentNames << "SAD (Saddle)";
+    compartmentNames << "NO (Noduli)";
+    compartmentNames << "SOG (Suboesophageal Ganglion)";
+    compartmentNames << "PB (Protocerebral Bridge)";
+    compartmentNames << "CRE_R (Crepine)";
+    compartmentNames << "EPA_R (Epaulette)";
+    compartmentNames << "VES_R (Vesta)";
+    compartmentNames << "ATL_R (Antler)";
+    compartmentNames << "PLP_R (Posterior Lateral Protocerebrum)";
+    compartmentNames << "AVLP_R (Anterior Ventro-lateral protocerebrum)";
+    compartmentNames << "AL_R (Antennal Lobe)";
+    compartmentNames << "GOR_R (Gorget)";
+    compartmentNames << "SCL_R (Superior Clamp)";
+    compartmentNames << "FLA (Flange)";
+    compartmentNames << "ICL_R (Inferior Clamp)";
+    compartmentNames << "ME_R (Medulla)";
+    compartmentNames << "LOP_R (Lobula Plate)";
+    compartmentNames << "LO_R (Lobula)";
+    compartmentNames << "MB_R (Mushroom Body)";
+    compartmentNames << "PVLP_R (Posterior Ventro-lateral Protocerebrum)";
+    compartmentNames << "OTU_R (Optic Tubercle)";
+    compartmentNames << "WED_R (Wedge)";
+    compartmentNames << "SMP_R (Superior Medial Protocerebrum)";
+    compartmentNames << "LH_R (Lateral Horn)";
+    compartmentNames << "SLP_R (Superior Lateral Protocerebrum)";
+    compartmentNames << "LB_R (Lateral Bulb)";
+    compartmentNames << "SIP_R (Superior Intermediate Protocerebrum)";
+    compartmentNames << "IB_R (Inferior Bridge)";
+    compartmentNames << "IVLP_R (Inferior Ventro-lateral Protocerebrum)";
+    compartmentNames << "IPS_R (Inferior Posterior Slope)";
+    compartmentNames << "SPS_R (Superior Posterior Slope)";
+    compartmentNames << "LAL_R (Lateral Accessory Lobe)";
+    compartmentNames << "PRW (Prow)";
+    compartmentNames << "AME_R (Accessory Medulla)";
+    compartmentNames << "GA_R (Gall)";
+    compartmentNames << "CRE_L (Crepine)";
+    compartmentNames << "EPA_L (Epaulette)";
+    compartmentNames << "VES_L (Vesta)";
+    compartmentNames << "ATL_L (Antler)";
+    compartmentNames << "PLP_L (Posterior Lateral Protocerebrum)";
+    compartmentNames << "AVLP_L (Anterior Ventro-lateral protocerebrum)";
+    compartmentNames << "AL_L (Antennal Lobe)";
+    compartmentNames << "GOR_L (Gorget)";
+    compartmentNames << "SCL_L (Superior Clamp)";
+    compartmentNames << "ICL_L (Inferior Clamp)";
+    compartmentNames << "ME_L (Medulla)";
+    compartmentNames << "LOP_L (Lobula Plate)";
+    compartmentNames << "LO_L (Lobula)";
+    compartmentNames << "MB_L (Mushroom Body)";
+    compartmentNames << "PVLP_L (Posterior Ventro-lateral Protocerebrum)";
+    compartmentNames << "OTU_L (Optic Tubercle)";
+    compartmentNames << "WED_L (Wedge)";
+    compartmentNames << "SMP_L (Superior Medial Protocerebrum)";
+    compartmentNames << "LH_L (Lateral Horn)";
+    compartmentNames << "SLP_L (Superior Lateral Protocerebrum)";
+    compartmentNames << "LB_L (Lateral Bulb)";
+    compartmentNames << "SIP_L (Superior Intermediate Protocerebrum)";
+    compartmentNames << "IB_L (Inferior Bridge)";
+    compartmentNames << "IVLP_L (Inferior Ventro-lateral Protocerebrum)";
+    compartmentNames << "IPS_L (Inferior Posterior Slope)";
+    compartmentNames << "SPS_L (Superior Posterior Slope)";
+    compartmentNames << "LAL_L (Lateral Accessory Lobe)";
+    compartmentNames << "AME_L (Accessory Medulla)";
+    compartmentNames << "GA_L (Gall)";
+    compartmentNames << "AMMC_L (Antennal Mechanosensory and Motor Centre)";
+    compartmentNames << "AMMC_R (Antennal Mechanosensory and Motor Centre)";
+
+    for (int i = 0; i < neuronGalleryButtonList.size(); ++ i) {
+        if (i >= compartmentNames.size())
+            break;
+        neuronGalleryButtonList[i]->setLabelText(compartmentNames[i]);
+    }
+
+    ui->fragmentGalleryWidget->updateNameSortTable();
 }
 
 void NaMainWindow::updateNeuronGallery()
