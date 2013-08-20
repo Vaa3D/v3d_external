@@ -2281,7 +2281,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
   </action>
   <action name="actionOpen_microCT_Cut_Planner">
    <property name="text">
-    <string>Open microCT Cut Planner</string>
+    <string>Open microCT Trim Planner</string>
    </property>
    <property name="toolTip">
     <string>Open microCT cut planning tool</string>

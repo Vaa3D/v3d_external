@@ -898,6 +898,16 @@ void NaMainWindow::applyCustomCut()
 }
 
 /* slot */
+void NaMainWindow::applyCustomKeepPlane()
+{
+    // qDebug() << "NaMainWindow::applyCustomKeepPlane()" << __FILE__ << __LINE__;
+    // assert(isInCustomCutMode);
+    ui->v3dr_glwidget->applyCustomKeepPlane();
+    if (isInCustomCutMode)
+        toggleCustomCutMode();
+}
+
+/* slot */
 void NaMainWindow::setCustomCutMode(bool doCustom)
 {
     if (doCustom)
@@ -1303,6 +1313,8 @@ void NaMainWindow::on_actionOpen_microCT_Cut_Planner_triggered()
                 this, SLOT(setRotation(Rotation3D)));
         connect(cutPlanner, SIGNAL(clipPlaneRequested()),
                 this, SLOT(applyCustomCut()));
+        connect(cutPlanner, SIGNAL(keepPlaneRequested()),
+                this, SLOT(applyCustomKeepPlane()));
         connect(cutPlanner, SIGNAL(cutGuideRequested(bool)),
                 this, SLOT(setCustomCutMode(bool)));
         connect(cutPlanner, SIGNAL(compartmentNamingRequested()),

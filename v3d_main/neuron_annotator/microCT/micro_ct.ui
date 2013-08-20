@@ -59,7 +59,7 @@
       <item>
        <widget class="QPushButton" name="labelBrainCompartmentsButton">
         <property name="text">
-         <string>Label Brain Compartments</string>
+         <string>Label Neuropil Compartments</string>
         </property>
        </widget>
       </item>

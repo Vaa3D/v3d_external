@@ -12,14 +12,19 @@ CutPlanner::CutPlanner(CameraModel& camera, Na3DWidget& widget3d, QWidget* paren
     , camera(camera)
     , widget3d(widget3d)
     , micrometersPerVoxel(1.00)
+    , currentWidget(NULL)
+    , nextWidgetIndex(0)
 {
     ui.setupUi(this);
-    setBasePlaneWidget(ui.basePlaneWidget, "Base", "+Z");
+
+    setBasePlaneWidget(ui.basePlaneWidget, "Base", "-Z");
     initSingleCut(ui.topCutWidget, "Top", "+Z");
     initSingleCut(ui.frontCutWidget, "Front/A", "-Y");
     initSingleCut(ui.rightCutWidget, "Right/B", "+X");
     initSingleCut(ui.rearCutWidget, "Rear/C", "+Y");
     initSingleCut(ui.leftCutWidget, "Left/D", "-X");
+
+    setCurrentWidget(ui.basePlaneWidget->getWidgetIndex());
 }
 
 CutPlanner::~CutPlanner()
@@ -30,12 +35,17 @@ void CutPlanner::initSingleCut(SingleCut* widget, QString name, QString axis) {
     widget->setName(name);
     widget->setAxis(axis);
     widget->setMicrometersPerVoxel(micrometersPerVoxel);
+    widget->setWidgetIndex(nextWidgetIndex);
+    indexWidgets[nextWidgetIndex] = widget;
+    nextWidgetIndex++;
     connect(widget, SIGNAL(clipPlaneRequested()),
            this, SIGNAL(clipPlaneRequested()));
     connect(widget, SIGNAL(cutGuideRequested(bool)),
             this, SIGNAL(cutGuideRequested(bool)));
     connect(widget, SIGNAL(rotationAdjusted(Rotation3D)),
             this, SIGNAL(rotationAdjusted(Rotation3D)));
+    connect(widget, SIGNAL(currentWidgetRequested(int)),
+        this, SLOT(setCurrentWidget(int)));
 }
 
 void CutPlanner::setBasePlaneWidget(SingleCut* widget, QString name, QString axis) {
@@ -43,17 +53,25 @@ void CutPlanner::setBasePlaneWidget(SingleCut* widget, QString name, QString axi
     widget->setName(name);
     widget->setAxis(axis);
     widget->setMicrometersPerVoxel(micrometersPerVoxel);
+    widget->setKeepPlane(true);
+    widget->setWidgetIndex(nextWidgetIndex);
+    indexWidgets[nextWidgetIndex] = widget;
+    nextWidgetIndex++;
     // Remove elements that are only relevant for cut planes, not show planes
-    widget->ui.cutButton->hide();
+    widget->ui.edgeButton->hide();
     widget->ui.cutDistanceLineEdit->hide();
     widget->ui.label->hide();
+    widget->ui.cutButton->setEnabled(true);
     // connect(widget, SIGNAL(clipPlaneRequested()),
     //        this, SIGNAL(clipPlaneRequested()));
     connect(widget, SIGNAL(cutGuideRequested(bool)),
             this, SIGNAL(cutGuideRequested(bool)));
     connect(widget, SIGNAL(rotationAdjusted(Rotation3D)),
             this, SIGNAL(rotationAdjusted(Rotation3D)));
-    // TODO show plane requested
+    connect(widget, SIGNAL(keepPlaneRequested()),
+           this, SIGNAL(keepPlaneRequested()));
+    connect(widget, SIGNAL(currentWidgetRequested(int)),
+        this, SLOT(setCurrentWidget(int)));
 }
 
 void CutPlanner::setMicrometersPerVoxel(double val) {

@@ -28,6 +28,7 @@ public:
 
 signals:
     void clipPlaneRequested();
+    void keepPlaneRequested();
     void cutGuideRequested(bool doShow);
     void rotationAdjusted(Rotation3D rotation); // To maintain axis alignment
     void compartmentNamingRequested();
@@ -36,6 +37,19 @@ public slots:
     void onRotationChanged(Rotation3D rotation);
     void on_micrometersBox_valueChanged(double val);
     void on_labelBrainCompartmentsButton_clicked() {emit compartmentNamingRequested();}
+    void setCurrentWidget(int index) {
+        if (indexWidgets.find(index) == indexWidgets.end())
+            return;
+        SingleCut* widget = indexWidgets.find(index)->second;
+        // qDebug() << "set current widget" << __FILE__ << __LINE__;
+        if (widget == currentWidget)
+            return;
+        if (currentWidget != NULL) {
+            currentWidget->setStyleSheet("");
+        }
+        currentWidget = widget;
+        currentWidget->setStyleSheet("background-color:#ffffee;");
+    }
 
 private:
     void initSingleCut(SingleCut* widget, QString name, QString axis);
@@ -46,6 +60,9 @@ private:
     CameraModel& camera; // for access to focus, rotation, and restricting rotation
     Na3DWidget& widget3d; // for access to Renderer::applyCutPlaneInImageFrame()
     double micrometersPerVoxel;
+    SingleCut* currentWidget;
+    int nextWidgetIndex;
+    std::map<int, SingleCut*> indexWidgets;
 };
 
 #endif /* CUTPLANNER_H_ */

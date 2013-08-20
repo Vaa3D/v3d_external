@@ -14,6 +14,7 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     , bShowClipGuide(false)
     , slabThickness(1000)
     , slabDepth(0)
+    , keepPlane(0,0,0,0)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
     shaderTex3D = NULL;
@@ -100,33 +101,20 @@ void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
     Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
     Vector3D down_obj = R_obj_eye * Vector3D(0, 1, 0);
     applyCutPlaneInImageFrame(cameraModel.focus(), down_obj);
+}
 
-#ifdef MICROCT_HACK_1
-    // Help measure microCT cut distances
-    if (previousClipDirection != Vector3D(0,0,0)) {
-        // TODO - put microCT computations here
-        // Are the planes parallel?
-        double dot = previousClipDirection.dot(down_obj);
-        if (dot > 1.1)
-            qDebug() << "Plane equation error!" << __FILE__ << __LINE__;
-        else if (dot < 0.5)
-            qDebug() << "Previous plane does not match current plane. Skipping." << __FILE__ << __LINE__;
-        else { // Compute distance between planes (at start point)
-            double dist1 = down_obj.dot(previousClipPoint);
-            double dist2 = down_obj.dot(cameraModel.focus());
-            double dd = dist1 - dist2; // Distance in XY voxel units
-            dd *= 0.64; // hard code microCT voxel size for now.
-            qDebug() << "Distance to previous plane =" << dd << "micrometers";
-        }
-    }
-    previousClipPoint = cameraModel.focus();
-    previousClipDirection = down_obj;
-#endif
+void RendererNeuronAnnotator::applyKeepCut(const CameraModel& cameraModel)
+{
+    // qDebug() << "RendererNeuronAnnotator::applyKeepCut" << __FILE__ << __LINE__;
+    Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
+    Vector3D down_obj = R_obj_eye * Vector3D(0, 1, 0);
+    applyKeepPlaneInImageFrame(cameraModel.focus(), down_obj);
 }
 
 void RendererNeuronAnnotator::clearClipPlanes()
 {
     customClipPlanes.clearAll();
+    keepPlane = jfrc::ClipPlane(0,0,0,0);
 }
 
 void RendererNeuronAnnotator::applyCutPlaneInImageFrame(Vector3D point, Vector3D direction)
@@ -153,6 +141,24 @@ void RendererNeuronAnnotator::applyCutPlaneInImageFrame(Vector3D point, Vector3D
     direction.x() *= -1; // ?
     double distance = point.dot(direction);
     customClipPlanes.addPlane(direction.x(), direction.y(), direction.z(), -distance);
+}
+
+void RendererNeuronAnnotator::applyKeepPlaneInImageFrame(Vector3D point, Vector3D direction)
+{
+    // qDebug() << "RendererNeuronAnnotator::applyKeepPlaneInImageFrame" << __FILE__ << __LINE__;
+    // Use reduced dimensions (image[XYZ]/safe[XYZ]) vs. dimXYZ/size12345/
+    point.x() = point.x() / (dim1);
+    point.y() = 1.0 - point.y() / (dim2);
+    point.z() = 1.0 - point.z() / (dim3);
+    //
+    // skew direction by scaled axes
+    direction.x() *= dim1 * thicknessX;
+    direction.y() *= dim2 * thicknessY;
+    direction.z() *= dim3 * thicknessZ;
+    direction /= direction.norm(); // convert to unit length
+    direction.x() *= -1; // ?
+    double distance = point.dot(direction);
+    keepPlane = jfrc::ClipPlane(direction.x(), direction.y(), direction.z(), -distance);
 }
 
 void RendererNeuronAnnotator::clipSlab(const CameraModel& cameraModel) // Apply clip plane to current slab
@@ -267,7 +273,6 @@ void RendererNeuronAnnotator::loadShader()
                          Q_CSTR(
                                 defClip +
                                 QString("#undef TEX3D \n") + deftexlod + resourceTextFile(volFragmentShaderName)));
-
             // qDebug("+++++++++ shader for Volume texture3D");
             linkGLShader(SMgr, shaderTex3D,
                          Q_CSTR(
@@ -275,6 +280,7 @@ void RendererNeuronAnnotator::loadShader()
                                 resourceTextFile(volVertexShaderName)),
                          Q_CSTR(defClip +
                                 QString("#define TEX3D \n") + deftexlod + resourceTextFile(volFragmentShaderName)));
+            qDebug() << "vertex shader 3d" + defClip + resourceTextFile(volVertexShaderName) + volVertexShaderName;
 
     }
     catch (...) {
@@ -311,6 +317,12 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                     QString varStr = QString("clipPlane[%1]").arg(p);
                     shader->setUniform4f(varStr.toStdString().c_str(), v[0], v[1], v[2], v[3]);
                 }
+
+                // And KEEP plane (for microCT)
+                // double keep[] = {-1,0,0,0.5}; // testing
+                // double keep[] = {0,0,0,0}; // keep nothing
+                const double* kpd = &keepPlane[0];
+                shader->setUniform4f("keepPlane", kpd[0], kpd[1], kpd[2], kpd[3]);
 
                 glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
                 glEnable(GL_TEXTURE_2D);

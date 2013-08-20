@@ -180,6 +180,7 @@ protected slots:
     void completeProgress();
     void abortProgress(QString);
     void applyCustomCut();
+    void applyCustomKeepPlane();
     void setCustomCutMode(bool doCustom);
     void toggleCustomCutMode();
     void onExportFinished(QString fileName);

@@ -26,20 +26,28 @@ public:
     void setName(const QString& name);
     void setAxis(const QString& axis);
     void setMicrometersPerVoxel(double mpv);
+    void setKeepPlane(bool k) {isKeepPlane = k;}
+    void setWidgetIndex(int i) {widgetIndex = i;}
+    int getWidgetIndex() {return widgetIndex;}
 
     Ui::SingleCut ui;
 
 signals:
     void cutGuideRequested(bool doShow);
     void clipPlaneRequested();
+    void keepPlaneRequested();
     void rotationAdjusted(Rotation3D rotation); // To maintain axis alignment
     void orientRequested();
+    void currentWidgetRequested(int);
 
 public slots:
     void on_axisBox_activated(const QString& text);
     void on_cutButton_clicked();
     void on_edgeButton_clicked();
-    void on_orientButton_clicked() {alignViewToUpVector();}
+    void on_orientButton_clicked() {
+        alignViewToUpVector();
+        emit currentWidgetRequested(widgetIndex);
+    }
 
 private:
     void updateCutDistance();
@@ -55,6 +63,8 @@ private:
     Vector3D upVector;
     bool hasCut;
     double micrometersPerVoxel;
+    bool isKeepPlane;
+    int widgetIndex;
 };
 
 #endif /* SINGLECUT_H_ */

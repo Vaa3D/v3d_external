@@ -1,6 +1,10 @@
 
 uniform vec4 clipPlane[MaxClipPlanes];
+// one plane to NOT clip for microCT
+uniform vec4 keepPlane = vec4(0,0,0,0);
+
 // Radeon/Mac brokenness of custom clip planes requires slow slow fragment level manual clipping
+varying float keepDistance;
 varying float clipDistance[MaxClipPlanes];
 
 void main()
@@ -11,9 +15,13 @@ void main()
     // Why is apple always years and years behind on Java and OpenGL? GLSL 1.3 was released in 2008.
     //
     // gl_ClipVertex = gl_Vertex; // no effect on Radeon
+
+	// Manually clip planes
     for (int p = 0; p < MaxClipPlanes; ++p) {
         clipDistance[p] = dot(gl_Vertex, clipPlane[p]);
     }
+	// And one plane to anti-clip
+	keepDistance = dot(gl_Vertex, keepPlane);
 
     // We use 4 textures, so need to pass along 4 texture coordinates
     gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;

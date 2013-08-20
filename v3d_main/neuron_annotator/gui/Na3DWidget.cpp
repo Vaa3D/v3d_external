@@ -557,6 +557,15 @@ void Na3DWidget::applyCustomCut()
     cancelCustomCutMode();
 }
 
+/* slot */
+void Na3DWidget::applyCustomKeepPlane()
+{
+    // qDebug() << "Na3DWidget::applyCustomKeepPlane()" << __FILE__ << __LINE__;
+    if (renderer)
+        getRendererNa()->applyKeepCut(cameraModel);
+    cancelCustomCutMode();
+}
+
 // VolumeTexture methods that must be run in the main/OpenGL thread are implemented in
 // Na3DViewer slots
 

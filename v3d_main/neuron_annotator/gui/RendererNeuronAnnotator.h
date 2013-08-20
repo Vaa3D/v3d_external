@@ -83,6 +83,8 @@ public:
     void setShowClipGuide(bool b) {bShowClipGuide = b;}
     void applyCustomCut(const CameraModel&);
     void applyCutPlaneInImageFrame(Vector3D point, Vector3D direction);
+    void applyKeepCut(const CameraModel& cameraModel);
+    void applyKeepPlaneInImageFrame(Vector3D point, Vector3D direction);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
     void clearClipPlanes();
     using Renderer_gl2::sampleScaleX;
@@ -133,6 +135,7 @@ protected:
     bool bShowClipGuide;
 
     jfrc::CustomClipPlanes customClipPlanes;
+    jfrc::ClipPlane keepPlane;
 
     int slabThickness;
     int slabDepth;

@@ -14,16 +14,22 @@ uniform int blend_mode;
 uniform int format_bgra;
 
 varying float clipDistance[MaxClipPlanes];
+varying float keepDistance; // one plane to not clip, for microCT
 
 //////////////////////////////////////
 void main()
 {
     // Apply user clip planes (slowly) in fragment shader because useless ATI/Mac combo is broken for years at a time.
-    for (int p = 0; p < MaxClipPlanes; ++p) {
-        if (clipDistance[p] < 0) {
-            discard;
-        }
-    }
+	if (keepDistance < 0)
+	    ; // keep, don't clip
+	else 
+	{
+		for (int p = 0; p < MaxClipPlanes; ++p) {
+			if (clipDistance[p] < 0) {
+				discard;
+			}
+		}
+	}
 
     // Use 3D texture coordinate in texture unit 3 to get neuron label position
     float neuronIx = texture3D(neuronLabel, gl_TexCoord[3].xyz).r;

@@ -17,6 +17,7 @@ SingleCut::SingleCut(QWidget* parent)
     , hasCut(false)
     , micrometersPerVoxel(0.64)
     , upVector(1,0,0)
+    , isKeepPlane(false)
 {
     ui.setupUi(this);
     CutPlanner* planner = dynamic_cast<CutPlanner*>(parent);
@@ -77,12 +78,13 @@ void SingleCut::on_axisBox_activated(const QString& text)
     if (! ui.cutButton->isDefault())
         ui.edgeButton->setDefault(true);
     emit cutGuideRequested(true);
+    emit currentWidgetRequested(widgetIndex);
 }
 
 /* slot */
 void SingleCut::on_cutButton_clicked()
 {
-    cout << "Cut" << endl;
+    // cout << "Cut" << endl;
     if (camera == NULL)
         return;
     cutPoint = camera->focus();
@@ -90,6 +92,8 @@ void SingleCut::on_cutButton_clicked()
     hasCut = true;
     ui.cutButton->setDefault(false);
     updateCutDistance();
+    emit currentWidgetRequested(widgetIndex);
+    emit cutGuideRequested(true);
 }
 
 /* slot */
@@ -104,6 +108,7 @@ void SingleCut::on_edgeButton_clicked()
     ui.edgeButton->setDefault(false);
     ui.cutButton->setDefault(true);
     updateCutDistance();
+    emit currentWidgetRequested(widgetIndex);
 }
 
 void SingleCut::setAxis(const QString& axis)
@@ -160,6 +165,12 @@ void SingleCut::alignViewToUpVector() {
 
 void SingleCut::updateCutDistance()
 {
+    if (isKeepPlane) {
+        // Less bookkeeping needed when its just the Base plane...
+        // qDebug() << "emit keep plane" << __FILE__ << __LINE__;
+        emit keepPlaneRequested();
+        return;
+    }
     if (! hasCut) {
         ui.cutDistanceLineEdit->setText("?");
         return;

@@ -142,6 +142,7 @@ public slots:
     void setCustomCutMode();
     void cancelCustomCutMode();
     void applyCustomCut();
+    void applyCustomKeepPlane();
     void setSlabThickness(int); // range 2-1000 voxels
     void setSlabPosition(int); // range -500 - +500 voxels
     void clipSlab(); // Apply clip plane to current slab
