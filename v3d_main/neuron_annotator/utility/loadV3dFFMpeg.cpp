@@ -72,7 +72,7 @@ bool loadStackFFMpeg(QUrl url, Image4DSimple& img)
         for (int z = 0; z < sz; ++z)
         {
             video.fetchFrame(z);
-            int z = frameCount;
+            // int z = frameCount;
             frameCount++;
             for(int c = 0; c < sc; ++c) {
                 for (int y = 0; y < sy; ++y) {
@@ -115,7 +115,7 @@ bool loadStackFFMpegAsGray(QUrl url, Image4DSimple& img)
         for (int z = 0; z < sz; ++z)
         {
             video.fetchFrame(z);
-            int z = frameCount;
+            // int z = frameCount;
             frameCount++;
             for (int y = 0; y < sy; ++y) {
                 for (int x = 0; x < sx; ++x) {

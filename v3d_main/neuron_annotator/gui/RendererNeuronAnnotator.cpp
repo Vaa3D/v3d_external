@@ -280,7 +280,7 @@ void RendererNeuronAnnotator::loadShader()
                                 resourceTextFile(volVertexShaderName)),
                          Q_CSTR(defClip +
                                 QString("#define TEX3D \n") + deftexlod + resourceTextFile(volFragmentShaderName)));
-            qDebug() << "vertex shader 3d" + defClip + resourceTextFile(volVertexShaderName) + volVertexShaderName;
+            // qDebug() << "vertex shader 3d" + defClip + resourceTextFile(volVertexShaderName) + volVertexShaderName;
 
     }
     catch (...) {

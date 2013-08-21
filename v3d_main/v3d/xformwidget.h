@@ -550,6 +550,7 @@ public:    // in mainwindow_interface.cpp
 		{
 			return imgData->getValidZSliceNum();
 		}
+                return 0;
 	}
 
 	virtual void setValidZslice(V3DLONG curslice)
@@ -566,6 +567,7 @@ public:    // in mainwindow_interface.cpp
 		{
 			return imgData->getPreValidZSliceNum();
 		}
+                return 0;
 	}
 
 	virtual void setPreValidZslice(V3DLONG preslice)

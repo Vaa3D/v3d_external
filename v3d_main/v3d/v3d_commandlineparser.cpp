@@ -121,6 +121,8 @@ bool CLP::check_filename(QString fn)
         }
     }
 
+    return false;
+
 }
 
 // parsing parameters

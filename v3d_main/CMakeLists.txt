@@ -141,17 +141,18 @@ else()
   include_directories(${QT4_DEMOS_INCLUDE_DIR})
 endif()
 
-# Keep Mac compatibility to OSX 10.5 (Leopard)
-# even when building on Snow Leopard
-find_path(TMP_OSX_SYSROOT MacOSX10.5.sdk PATHS /Developer/SDKs NO_DEFAULT_PATH)
+# Keep Mac compatibility to OSX 10.6 (Snow Leopard)
+# even when building on <later versions>
+# (trying to keep 10.5 compatibility broke something in libavcodec on Mountain Lion Aug 2013 cmb)
+find_path(TMP_OSX_SYSROOT MacOSX10.6.sdk PATHS /Developer/SDKs NO_DEFAULT_PATH)
 mark_as_advanced(TMP_OSX_SYSROOT)
 if(APPLE AND TMP_OSX_SYSROOT)
     if(NOT V3D_INITIALIZED_MAX_OSX_TO_DEFAULT) # Only force it the first time.
         set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING 
             "Build architectures for OSX" FORCE)
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.5" CACHE STRING 
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6" CACHE STRING 
             "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value." FORCE)
-        set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.5.sdk" CACHE PATH
+        set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.6.sdk" CACHE PATH
             "The product will be built against the headers and libraries located inside the indicated SDK." FORCE)
         set(V3D_INITIALIZED_MAX_OSX_TO_DEFAULT TRUE CACHE INTERNAL "Whether default v3d values of Mac compatibility has been set.")
     endif()

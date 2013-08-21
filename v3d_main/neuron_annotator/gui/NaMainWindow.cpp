@@ -1332,7 +1332,7 @@ void NaMainWindow::on_actionOpen_triggered()
 
 bool NaMainWindow::openMulticolorImageStack(QString dirName)
 {
-    // qDebug() << "NaMainWindow::openMulticolorImageStack" << __FILE__ << __LINE__;
+    qDebug() << "NaMainWindow::openMulticolorImageStack" << dirName << __FILE__ << __LINE__;
     // string could be a folder name or a URL string
 
     // Try for folder name
@@ -1353,7 +1353,17 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
                              QString("'%1'\n No such directory or URL.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
         return false;
     }
-    return openMulticolorImageStack(url);
+
+    qDebug() << url;
+
+    bool result = openMulticolorImageStack(url);
+    if (! result) {
+        QMessageBox::warning(this, tr("Error opening directory or URL"),
+                             QString("'%1'\n Could not open directory or URL.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
+
+    }
+
+    return result;
 }
 
 bool NaMainWindow::openMulticolorImageStack(QUrl url)

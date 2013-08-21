@@ -9,6 +9,7 @@
 #include "../../basic_c_fun/stackutil.h"
 #include <iostream>
 #include <sstream>
+#include <string>
 
 using std::cerr;
 using std::endl;
@@ -1186,7 +1187,7 @@ void ImageLoaderBasic::updateCompressionBuffer16(unsigned char * updatedCompress
 
 /* virtual */
 int ImageLoaderBasic::exitWithError(std::string errorMessage) {
-    std::cerr << errorMessage;
+    std::cerr << errorMessage << std::endl;
     if (fid!=0) {
         fclose(fid);
         fid = 0;
