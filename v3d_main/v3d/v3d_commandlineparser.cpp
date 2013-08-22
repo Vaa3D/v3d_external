@@ -77,11 +77,12 @@ int CLP::error( void (*help)() )
 // check if the file is valid
 bool CLP::check_filename(QString fn)
 {
-    qDebug()<<"file name ..."<<fn;
+    qDebug()<<"file name ... ["<<fn << "]";
 
     QFileInfo curfile_info(fn);
 
-    if(curfile_info.isDir())
+    if(curfile_info.isDir() ||
+          curfile_info.suffix().isEmpty())  // added for support some files without an extension and may not even exist. added by PHC 2013-08-21  )
     {
         return true;
     }
@@ -304,7 +305,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                     }
                                     else
                                     {
-                                        cout << "The file format is not supported or the file does not exist."<<endl;
+                                        cout << "The file format is not supported for Vaa3D -i option."<<endl;
                                         return false;
                                     }
                                 }
