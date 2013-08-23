@@ -9,6 +9,7 @@ const int NeuronFragmentEditor::MODE_COMBINE=0;
 const int NeuronFragmentEditor::MODE_COMBINE_MASK=1;
 const int NeuronFragmentEditor::MODE_REVERSE_LABEL=2;
 const int NeuronFragmentEditor::MODE_MIPS=3;
+const int NeuronFragmentEditor::MODE_MASK_FROM_STACK=4;
 
 NeuronFragmentEditor::NeuronFragmentEditor()
 {
@@ -20,6 +21,8 @@ NeuronFragmentEditor::NeuronFragmentEditor()
     outputPrefix="";
     xdim=ydim=zdim=0;
     maxThreadCount=0;
+    channel=0;
+    threshold=0.0;
 }
 
 NeuronFragmentEditor::~NeuronFragmentEditor()
@@ -40,7 +43,9 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
                 mode=MODE_REVERSE_LABEL;
             } else if (modeString=="mips") {
                 mode=MODE_MIPS;
-            } else {
+            } else if (modeString=="mask-from-stack") {
+	        mode=MODE_MASK_FROM_STACK;
+	    } else {
                 mode=MODE_UNDEFINED;
             }
         } else if (arg=="-sourceImage") {
@@ -78,18 +83,26 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
         } else if (arg=="-maxThreadCount") {
             QString maxThreadString=(*argList)[++i];
             maxThreadCount=maxThreadString.toInt();
-        }
+        } else if (arg=="-channel") {
+	  QString channelString=(*argList)[++i];
+	  channel=channelString.toInt();
+	} else if (arg=="-threshold") {
+	  QString thresholdString=(*argList)[++i];
+	  threshold=thresholdString.toDouble();
+	}
     }
     bool argError=false;
-    if (mode!=MODE_COMBINE && mode!=MODE_COMBINE_MASK && mode!=MODE_REVERSE_LABEL && mode!=MODE_MIPS) {
+    if (mode!=MODE_COMBINE && mode!=MODE_COMBINE_MASK && mode!=MODE_REVERSE_LABEL && mode!=MODE_MIPS && mode!=MODE_MASK_FROM_STACK) {
         qDebug() << "Do not recognize valid mode";
         argError=true;
     }
-    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL || mode==MODE_MIPS) {
+    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL || mode==MODE_MIPS || mode==MODE_MASK_FROM_STACK) {
         if (sourceImageFilepath.length() < 1) {
             qDebug() << "-sourceImageFilepath is required";
             argError=true;
         }
+    }
+    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL || mode==MODE_MIPS) {
         if (inputLabelIndexFilepath.length() < 1) {
             qDebug() << "-labelIndex is required";
             argError=true;
@@ -119,7 +132,7 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             qDebug() << "-maskFiles list is required";
             argError=true;
         }
-    } else if (mode==MODE_REVERSE_LABEL || mode==MODE_MIPS) {
+    } else if (mode==MODE_REVERSE_LABEL || mode==MODE_MIPS || mode==MODE_MASK_FROM_STACK) {
         if (outputDirPath.size() < 1) {
             qDebug() << "-outputDir is required";
             argError=true;
@@ -144,20 +157,112 @@ bool NeuronFragmentEditor::execute()
         globalThreadPool->setMaxThreadCount(maxThreadCount);
     }
     if (mode==MODE_COMBINE) {
-        return createFragmentComposite();
+      return createFragmentComposite();
     } else if (mode==MODE_COMBINE_MASK) {
-        return createMaskComposite();
+      return createMaskComposite();
     } else if (mode==MODE_REVERSE_LABEL) {
-        return reverseLabel();
+      return reverseLabel();
     } else if (mode==MODE_MIPS) {
-        return createMips();
+      return createMips();
+    } else if (mode==MODE_MASK_FROM_STACK) {
+      return createMaskFromStack();
     } else {
         return false;
     }
 }
 
+bool NeuronFragmentEditor::createMaskFromStack()
+{
+  ImageLoader preLoader;
+  My4DImage* preImage=preLoader.loadImage(sourceImageFilepath);
+
+  xdim=preImage->getXDim();
+  ydim=preImage->getYDim();
+  zdim=preImage->getZDim();
+  cdim=preImage->getCDim();
+
+  qDebug() << "Using source x=" << xdim << " y=" << ydim << " z=" << zdim << " c=" << cdim << " datatype=" << preImage->getDatatype();
+
+  sourceImage = new My4DImage();
+  sourceImage->loadImage(xdim, ydim, zdim, 1, preImage->getDatatype());
+
+  // For the label image, we will create an artificial label stack, and use the label field with a '1' when the source intensity is
+  // above threshold, and a '0' when it is below
+
+  labelImage = new My4DImage();
+  labelImage->loadImage(xdim, ydim, zdim, 1, V3D_UINT8);
+  
+  v3d_uint8* label8 = (v3d_uint8*)(labelImage->getRawDataAtChannel(0));
+
+  if (sourceImage->getDatatype()==V3D_UINT8) {
+    v3d_uint8* pre8 = (v3d_uint8*)(preImage->getRawDataAtChannel(channel));
+    v3d_uint8* source8 = (v3d_uint8*)(sourceImage->getRawDataAtChannel(0));
+    v3d_uint8 t = 255.0*threshold;
+    long rawSize=xdim*ydim*zdim;
+    for (long i=0;i<rawSize;i++) {
+      source8[i]=pre8[i];
+      if (pre8[i]>t) {
+	label8[i]=1;
+      } else {
+	label8[i]=0;
+      }
+    }
+  } else if (sourceImage->getDatatype()==V3D_UINT16) {
+    v3d_uint16* pre16 = (v3d_uint16*)(preImage->getRawDataAtChannel(channel));
+    v3d_uint16* source16 = (v3d_uint16*)(sourceImage->getRawDataAtChannel(0));
+    v3d_uint16 t = 4095.0*threshold;
+    long rawSize=xdim*ydim*zdim;
+    for (long i=0;i<rawSize;i++) {
+      source16[i]=pre16[i];
+      if (pre16[i]>t) {
+	label8[i]=1;
+      } else {
+	label8[i]=0;
+      }
+    }
+  } else {
+    qDebug() << "Do not recognize image type";
+    return false;
+  }
+
+  delete preImage;
+
+  maskChan.setSourceImage(sourceImage);
+  maskChan.setLabelImage(labelImage);
+
+  // For output paths, we will use the prefix of the source image stack
+
+  QDir outputDir(outputDirPath);
+  if (!outputDir.exists()) {
+    QDir().mkdir(outputDirPath);
+  }
+
+  QString filename=outputDirPath;
+  filename.append("/");
+  if (outputPrefix.length()>0) {
+    filename.append(outputPrefix);
+  }
+
+  QString maskFullPath=filename;
+  maskFullPath.append(".mask");
+  QString chanFullPath=filename;
+  chanFullPath.append(".chan");
+
+  QReadWriteLock* nullMutex=0L;
+  bool resultStatus= maskChan.createMaskChanForLabel(1, maskFullPath, chanFullPath, nullMutex);
+  
+  delete labelImage;
+  delete sourceImage;
+
+  labelImage=0L;
+  sourceImage=0L;
+}
+
 bool NeuronFragmentEditor::loadSourceAndLabelImages()
 {
+
+  qDebug() << "NeuronFragmentEditor::loadSourceAndLabelImages()";
+
     // Open consolidated signal label file
     ImageLoader sourceLoader;
     sourceImage=sourceLoader.loadImage(sourceImageFilepath);
@@ -218,7 +323,7 @@ bool NeuronFragmentEditor::createImagesFromFragmentList(QList<int> fragmentList,
     v3d_uint8 * sourceR=sourceImage->getRawDataAtChannel(0);
     v3d_uint8 * sourceG=sourceImage->getRawDataAtChannel(1);
     v3d_uint8 * sourceB=sourceImage->getRawDataAtChannel(2);
-
+ 
     v3d_uint8 * compR=compositeImage->getRawDataAtChannel(0);
     v3d_uint8 * compG=compositeImage->getRawDataAtChannel(1);
     v3d_uint8 * compB=compositeImage->getRawDataAtChannel(2);
