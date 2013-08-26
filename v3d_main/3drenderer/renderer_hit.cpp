@@ -3084,11 +3084,11 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			//set the hiddenSelectWidget for the V3D mainwindow
 
             int tmpcnt=0;
-            while (tmpcnt<3 && !curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+            while (tmpcnt<100 && !curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
             {
-                v3d_msg("produceZoomViewOf3DRoi(): Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.", 0);
-                simple_delay(1);
                 tmpcnt++;
+                v3d_msg(QString("produceZoomViewOf3DRoi(): Try again [%1] to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.").arg(tmpcnt), 0);
+                simple_delay(1);
             }
             if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
 			{
