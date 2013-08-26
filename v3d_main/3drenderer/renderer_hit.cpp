@@ -3012,6 +3012,15 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
                                );
     }
 }
+
+
+void simple_delay(V3DLONG n) //delay n seconds
+{
+    QTime dieTime= QTime::currentTime().addSecs(n);
+    while( QTime::currentTime() < dieTime )
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
 bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -3073,12 +3082,21 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 		{
 			b_grabhighrez = false;
 			//set the hiddenSelectWidget for the V3D mainwindow
-			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+
+            int tmpcnt=0;
+            while (tmpcnt<3 && !curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+            {
+                v3d_msg("produceZoomViewOf3DRoi(): Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.", 0);
+                simple_delay(1);
+                tmpcnt++;
+            }
+            if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
 			{
-				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+                v3d_msg("produceZoomViewOf3DRoi(): Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
                 return false;
 			}
-			//set up parameters
+
+            //set up parameters
 			v3d_imaging_paras myimagingp;
             myimagingp.OPS = "Fetch Highrez Image Data from File"; //this is to open a new local 3D viewer window
             myimagingp.ops_type = ops_type;
