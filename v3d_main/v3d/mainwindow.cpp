@@ -1783,7 +1783,9 @@ void MainWindow::updateProcessingMenu()
     {
         //		if (proc_plugin_manager) pluginProcMenu->addAction(proc_plugin_manager);
         //		pluginProcMenu->addSeparator();
-        pluginLoader->populateMenus();
+
+        //pluginLoader->populateMenus(); //commented and change to the following rescanPlugins() on 20130826 to ensure every time there is a refresh plugin list. This may be a memory leak issue as the few menus might need to be created every time. by PHC
+        pluginLoader->rescanPlugins();
     }
 #endif //end V3D Pro compiling
 }
