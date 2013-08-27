@@ -57,7 +57,12 @@ bool NaVolumeDataLoadableStack::load()
     if (! exists(fullFileUrl))
         return false;
     imageLoader.setProgressIndex(stackIndex);
-    imageLoader.loadImage(stackp, fullFileUrl);
+    // qDebug() << fullFileUrl << __FILE__ << __LINE__;
+    if (! imageLoader.loadImage(stackp, fullFileUrl)) {
+        emit failed();
+        qDebug() << "Error loading image" << fullFileUrl;
+        return false;
+    }
     /*
     // stackp->isEmpty() is returning 'true' for correctly loaded images.
     // so I'm commenting out this block.

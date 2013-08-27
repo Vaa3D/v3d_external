@@ -1332,7 +1332,7 @@ void NaMainWindow::on_actionOpen_triggered()
 
 bool NaMainWindow::openMulticolorImageStack(QString dirName)
 {
-    qDebug() << "NaMainWindow::openMulticolorImageStack" << dirName << __FILE__ << __LINE__;
+    // qDebug() << "NaMainWindow::openMulticolorImageStack" << dirName << __FILE__ << __LINE__;
     // string could be a folder name or a URL string
 
     // Try for folder name
@@ -1354,7 +1354,7 @@ bool NaMainWindow::openMulticolorImageStack(QString dirName)
         return false;
     }
 
-    qDebug() << url;
+    // qDebug() << url;
 
     bool result = openMulticolorImageStack(url);
     if (! result) {

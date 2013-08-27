@@ -39,7 +39,15 @@ bool exists(const QUrl& url)
     //                  &loop, SLOT(quit()));
     loop.exec();
     bool result = (reply->error() == QNetworkReply::NoError);
-    if (! result) {
+    if (result) {
+        long fileSize = reply->header(QNetworkRequest::ContentLengthHeader).toLongLong();
+        // KLUDGE - some files of size 25 are corrupt...
+        if ((fileSize > 0) && (fileSize < 43) && (url.path().contains(".v3dpbd"))) {
+            qDebug() << "WARNING: Ignoring seemingly corrupt file " << url;
+            result = false;
+        }
+    }
+    else {
         // qDebug() << "No such url" << url;
     }
     reply->close();
