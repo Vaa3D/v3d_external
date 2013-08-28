@@ -1552,7 +1552,14 @@ void MainWindow::updateMenus()
     proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI)");
     proc3DViewer->setEnabled(hasMdiChild);
     proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
+
+    if (pluginLoader)  // rescanPlugins() on 20130826 to ensure every time there is a refresh plugin list.
+                       //This may be a memory leak issue as the few menus might need to be created every time. by PHC
+    {
+        pluginLoader->rescanPlugins();
+    }
 }
+
 #ifdef _ALLOW_WORKMODE_MENU_
 void MainWindow::updateModeMenu()
 {
@@ -1564,6 +1571,7 @@ void MainWindow::updateModeMenu()
     }
 }
 #endif
+
 void MainWindow::updateWindowMenu()
 {
     if (!windowMenu)
@@ -1628,6 +1636,7 @@ void MainWindow::updateProcessingMenu()
     advancedProcMenu->clear();
     visualizeProcMenu->clear();
     pluginProcMenu->clear();
+
 #if COMPILE_TARGET_LEVEL != 0  //for V3D Pro or Advantage compiling
     proc_datatype_menu = basicProcMenu->addMenu(tr("image type"));
     proc_geometry_transform_menu = basicProcMenu->addMenu(tr("geometry"));
@@ -1783,9 +1792,7 @@ void MainWindow::updateProcessingMenu()
     {
         //		if (proc_plugin_manager) pluginProcMenu->addAction(proc_plugin_manager);
         //		pluginProcMenu->addSeparator();
-
-        //pluginLoader->populateMenus(); //commented and change to the following rescanPlugins() on 20130826 to ensure every time there is a refresh plugin list. This may be a memory leak issue as the few menus might need to be created every time. by PHC
-        pluginLoader->rescanPlugins();
+        pluginLoader->populateMenus();
     }
 #endif //end V3D Pro compiling
 }
