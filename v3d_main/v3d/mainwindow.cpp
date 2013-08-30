@@ -1556,7 +1556,7 @@ void MainWindow::updateMenus()
     if (pluginLoader)  // rescanPlugins() on 20130826 to ensure every time there is a refresh plugin list.
                        //This may be a memory leak issue as the few menus might need to be created every time. by PHC
     {
-        pluginLoader->rescanPlugins();
+        //pluginLoader->rescanPlugins(); //do nothing for now, as it seems rescanning every time is slowing down other menus and also is related to TeraFly zoom-out warning. by PHC 20130830
     }
 }
 
