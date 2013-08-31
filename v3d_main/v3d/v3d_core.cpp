@@ -165,26 +165,26 @@ inline bool isIndexColor(ImageDisplayColorType c) { return (c>=colorPseudoMaskCo
 
 #if defined (Q_OS_LINUX)
 #if defined (__x86_64__)
-double th_use_memory=20.0; //for Hanchuan's linux box
+double TH_USE_MEMORY=64.0; //64bit Linux
 #else
-double th_use_memory=1.5; //for Hanchuan's linux box
+double TH_USE_MEMORY=1.5; //32bit Linux
 #endif
 
 #else
 
 #if defined (__APPLE__)
 #if defined(__MAC_x86_64__)
-double th_use_memory=20.0; //allow use 6G memory for 64bit v3d of mac
+double TH_USE_MEMORY=64.0; //64bit Mac
 #else
-double th_use_memory=1.5; //should be 1.1 for 32bit mac version of v3d
+double TH_USE_MEMORY=1.1; //32bit Mac
 #endif
 
 #else
 #if defined (WIN32) || defined (_WIN32)
 #if defined (_WIN64)
-double th_use_memory=20.0; //allow use 8G window memory for 64bit windows
+double TH_USE_MEMORY=64.0; //64bit Windows
 #else
-double th_use_memory=1.5; //allow 1.5G memory for 32bit windows
+double TH_USE_MEMORY=1.5; //32bit Windows
 #endif
 #endif
 
@@ -4541,10 +4541,12 @@ bool XFormWidget::loadData()
 {
 	//try to get a rough estimation of available amount of memory
 	V3DLONG nbytes = estimateRoughAmountUsedMemory();
-	if (nbytes>(unsigned V3DLONG)((double(1024)*1024*1024*th_use_memory)))
+    if (nbytes>(unsigned V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
 	{
-                printf("machine info: double upper limit =%5.4f V3DLONG upper limit=%ld\n long_n_bytes=%zd",(double(1024)*1024*1024*th_use_memory), (V3DLONG)(double(1024)*1024*1024*th_use_memory), sizeof(V3DLONG));
-		v3d_msg(QString("You already used about %1 bytes of memory, which is more than %2 G bytes for your images. Please close some stacks to assure you have enough memory.\n").arg(nbytes).arg(th_use_memory));
+        printf("machine info: double upper limit =%5.4f V3DLONG upper limit=%ld\n long_n_bytes=%zd",
+               (double(1024)*1024*1024*TH_USE_MEMORY), (V3DLONG)(double(1024)*1024*1024*TH_USE_MEMORY), sizeof(V3DLONG));
+        v3d_msg(QString("You already used about %1 bytes of memory, which is more than %2 G bytes for your images. "
+                        "Please either enlarge the memory threshold (in Preferences) or close some stacks to ensure you have enough memory.\n").arg(nbytes).arg(TH_USE_MEMORY));
 		return false;
 	}
 
@@ -4807,8 +4809,6 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 	if (!b_local && mypara_3Dview.b_still_open)
 	{
 		mypara_3Dview.window3D->raise_and_activate(); // activateWindow();
-		//printf("The 3D view window is still open. Please close it or re-use it.\n");
-		//QMessageBox::warning(0, "3D view window is still open", "Your 3D view window is still open. Please re-use it or close it before re-open.");
 		return;
 	}
 	if (b_local && mypara_3Dlocalview.b_still_open)
@@ -4831,22 +4831,10 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 
 	if (imgData)
 	{
-		//	QString	tmpfile = QFileDialog::getOpenFileName(
-		//                    this,
-		//                    "Choose an atlas/annotation file to open",
-		//                    "./",
-		//                    "File (*.txt *.ano)");
-		//
-		//    if (tmpfile.isEmpty()) // do nothing if nothing is chosen
-		//	{
-		//	    return;
-		//	}
-
-
 		V3DLONG nbytes = estimateRoughAmountUsedMemory();
-		if (nbytes>(V3DLONG)((double(1024)*1024*1024*th_use_memory)))
+        if (nbytes>(V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
 		{
-			v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(th_use_memory));
+            v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(TH_USE_MEMORY));
 			return;
 		}
 
@@ -4970,7 +4958,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 		catch (...)
 		{
 			v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or "
-					"try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of V3D).");
+                    "try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
 			return;
 		}
 	}

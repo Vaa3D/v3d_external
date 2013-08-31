@@ -3674,9 +3674,9 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //tif file at most should be 900M bytes
+        if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //tif file at most should be 900M bytes
 		{
-			printf("The tif file may not exist or may be too big to load [sz threshold=%ld bytes].\n", (V3DLONG)1024*1024*2047);
+            printf("The tif file may not exist or may be too big to load [sz threshold=%ld bytes].\n", (V3DLONG)1024*1024*ZZBIG);
 			return false;
 		}
 		if (loadTif2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
@@ -3709,9 +3709,9 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 #endif
 	else if ( curFileSuffix && strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //lsm file at most should be 900M bytes
+        if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //2047 //lsm file at most should be 900M bytes
 		{
-			printf("The lsm file may not exist or may be too big to load [sz threshold=%ld bytes].\n", (V3DLONG)1024*1024*2047);
+            printf("The lsm file may not exist or may be too big to load [sz threshold=%ld bytes].\n", (V3DLONG)1024*1024*ZZBIG);
 			return false;
 		}
 		if (loadLsm2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
@@ -3841,7 +3841,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //tif file at most should be 900M bytes
+        if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //tif file at most should be 900M bytes
 		{
 			printf("The tif file may not exist or may be too big to load.\n");
 			return false;
@@ -3854,7 +3854,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	}
 	else if ( curFileSuffix && strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //lsm file at most should be 900M bytes
+        if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //lsm file at most should be 900M bytes
 		{
 			printf("The lsm file may not exist or may be too big to load.\n");
 			return false;
