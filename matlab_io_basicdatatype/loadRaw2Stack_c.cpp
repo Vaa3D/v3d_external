@@ -95,7 +95,7 @@ int main (int argc, char *argv[])
   long * sz = 0; /* note that this variable must be initialized as NULL. */
   int datatype = 0;
 
-  char * curFileSuffix = getSurfix(input_dfile);
+  char * curFileSuffix = getSuffix(input_dfile);
   printf("The current input file has the suffix [%s]\n", curFileSuffix);
   if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
   {
@@ -186,7 +186,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   long * sz = 0; /* note that this variable must be initialized as NULL. */
   int datatype = 0;
 
-  char * curFileSuffix = getSurfix(buf);
+  char * curFileSuffix = getSuffix(buf);
   printf("The current input file has the suffix [%s]\n", curFileSuffix);
   if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
   {

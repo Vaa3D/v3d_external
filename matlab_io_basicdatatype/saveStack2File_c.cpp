@@ -87,7 +87,7 @@ int main (int argc, char *argv[])
   long * sz = 0; /* note that this variable must be initialized as NULL. */
   int datatype = 0;
 
-  char * curFileSurfix = getSurfix(input_dfile);
+  char * curFileSurfix = getSuffix(input_dfile);
   printf("The current input file has the surfix [%s]\n", curFileSurfix);
   if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
   {
@@ -184,7 +184,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   else if (mxIsUint16(prhs[0])) datatype=2;
   else datatype=4;
   
-  char * curFileSurfix = getSurfix(buf);
+  char * curFileSurfix = getSuffix(buf);
   printf("The current input file has the surfix [%s]\n", curFileSurfix);
   if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
   {

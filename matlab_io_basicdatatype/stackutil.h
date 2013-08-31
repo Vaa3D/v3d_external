@@ -69,7 +69,7 @@ int loadRawSlice_2byte(char * filename, unsigned char * & img, long * & sz, int 
 
 //
 
-char * getSurfix(char *filename); //note that no need to delete the returned pointer as it is actually a location to the "filename"
+char * getSuffix(char *filename); //note that no need to delete the returned pointer as it is actually a location to the "filename"
 
 bool ensure_file_exists_and_size_not_too_big(char *filename, long sz_thres);
 

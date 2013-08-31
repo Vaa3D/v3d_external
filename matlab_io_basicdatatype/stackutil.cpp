@@ -64,7 +64,7 @@ extern "C" {
 //int b_VERBOSE_PRINT=1;
 /* a simple surfix function.*/
 
-char * getSurfix(char *filename)
+char * getSuffix(char *filename)
 {
 	if (!filename)
 		return 0;
@@ -2322,7 +2322,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, long * &sz, int & dat
 	long * tmp_sz = 0; /* note that this variable must be initialized as NULL. */
 	int tmp_datatype = 0;
 	
-	char * curFileSuffix = getSurfix(imgSrcFile);
+    char * curFileSuffix = getSuffix(imgSrcFile);
 	if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
@@ -2433,7 +2433,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const long *
 			break;
 	}
   	
-	char * curFileSuffix = getSurfix((char *)filename);
+    char * curFileSuffix = getSuffix((char *)filename);
     if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks

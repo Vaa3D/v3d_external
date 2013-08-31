@@ -593,7 +593,7 @@ bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * &
 	V3DLONG * tmp_sz = 0; // note that this variable must be initialized as NULL. 
 	int tmp_datatype = 0;
 	
-	char * curFileSurfix = getSurfix(imgSrcFile);
+    char * curFileSurfix = getSuffix(imgSrcFile);
 	printf("The current input file has the surfix [%s]\n", curFileSurfix);
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
 	{

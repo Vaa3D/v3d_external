@@ -128,7 +128,7 @@ extern "C" {
 
 
 #define b_VERBOSE_PRINT 1
-#define ZZBIG 10000 //previous I define it as 1500, so that to limit the size of an image is at most 1.5G //change 2010-05-21 // hang 2011-08-25 6000->10000
+#define ZZBIG 32000 //previous I define it as 1500, so that to limit the size of an image is at most 1.5G //change 2010-05-21 // hang 2011-08-25 6000->10000
 
 #ifdef _MSC_VER       //2010-05-21, by PHC
 #include <sys/stat.h>
@@ -142,7 +142,7 @@ extern "C" {
 //int b_VERBOSE_PRINT=1;
 /* a simple surfix function.*/
 
-char * getSurfix(char *filename)
+char * getSuffix(char *filename)
 {
 	if (!filename)
 		return 0;
@@ -1000,7 +1000,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	fclose(fid); //bug fix on 060412
 
 	//a debug check of the min max value
-	double minvv=10000, maxvv=-1;
+    double minvv=1000000, maxvv=-1;
 	for (V3DLONG myii=0; myii<sz[0]*sz[1]*sz[2];myii++)
 	{
 		if (minvv>img[myii]) minvv=img[myii];
@@ -3669,7 +3669,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	int tmp_datatype = 0;
 	bool b_5d=false;
 
-	char * curFileSuffix = getSurfix(imgSrcFile);
+    char * curFileSuffix = getSuffix(imgSrcFile);
 	if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
@@ -3836,7 +3836,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	V3DLONG * tmp_sz = 0; /* note that this variable must be initialized as NULL. */
 	int tmp_datatype = 0;
 
-	char * curFileSuffix = getSurfix(imgSrcFile);
+    char * curFileSuffix = getSuffix(imgSrcFile);
 	if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
@@ -3964,7 +3964,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 			break;
 	}
 
-	char * curFileSuffix = getSurfix((char *)filename);
+    char * curFileSuffix = getSuffix((char *)filename);
     if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
     

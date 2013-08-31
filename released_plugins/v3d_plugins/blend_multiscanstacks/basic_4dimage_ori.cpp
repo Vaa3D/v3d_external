@@ -56,14 +56,13 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	int tmp_datatype = 0;
 	int pixelnbits=1; //100817
 
-	//060815, 060924, 070805
-	char * curFileSurfix = getSurfix(imgSrcFile);
-	printf("The current input file has the surfix [%s]\n", curFileSurfix);
+    char * curFileSurfix = getSuffix(imgSrcFile);
+    printf("The current input file has the suffix [%s]\n", curFileSurfix);
 
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
 		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
-            printf("Image4DSimple::loadImage loading filename=%s\n", filename);
+            printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
 
 #if defined _WIN32 		
 		{
