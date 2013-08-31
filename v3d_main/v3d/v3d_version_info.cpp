@@ -432,7 +432,7 @@ QString V3DVersionChecker::getDefaultV3DVersionUrl()
 //            + getDefaultV3DVersionXmlFileName();
 
     //use the following instead
-    return "http://penglab.janelia.org/proj/vaa3d/cur_release/vaa3d_version.xml";
+    return "http://penglab.janelia.org/proj/vaa3d/current_release/vaa3d_version.xml";
 }
 
 V3DVersionChecker::V3DVersionChecker(QWidget *guiParent_param)
@@ -669,6 +669,8 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
 
 void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
 {
+    v3d_msg(QString("Process obtained version info."), 0);
+
     QDomElement root = versionDoc.documentElement();
     if (root.tagName() != "v3d_version") {
         qDebug() << "Unrecognized root element " << root.tagName();
@@ -704,7 +706,7 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
     }
     else
     {
-        v3d_msg(QString("Your Vaa3D is the newest."));
+        v3d_msg(QString("Your Vaa3D is the newest."), b_showAllMessages);
     }
 
     return;

@@ -255,14 +255,15 @@ int main(int argc, char **argv)
                     }
                 }
             }
-            if ( (nchild == 0) && userCanUpdate ) {
+            //if ( (nchild == 0) && userCanUpdate )
+            {
                 // This is the automatic check for latest version
-                // v3d_msg("Starting V3D version checker...",0);
+                v3d_msg("Starting Vaa3D version checker...", 0);
                 v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(mainWin);
-                if (versionChecker->shouldCheckNow()) {
+                //if (versionChecker->shouldCheckNow()) {
                     // v3d_msg("It is time to check for software updates...",0);
-                    // versionChecker->checkForLatestVersion(false);
-                }
+                    versionChecker->checkForLatestVersion(false); //turn on 20130831. PHC
+                //}
             }
 
 			// launch v3d
