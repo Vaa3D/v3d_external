@@ -539,7 +539,10 @@ void MainWindow::dropEvent(QDropEvent *event)
     }
     //
     if (!QFile::exists(fileName))
+    {
+        v3d_msg(QString("The file [%1] specified does not exist").arg(fileName));
         return;
+    }
     loadV3DFile(fileName, true, global_setting.b_autoOpenImg3DViewer); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
     setBackgroundRole(QPalette::Dark);
     event->acceptProposedAction();
@@ -838,7 +841,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                  //added by PHC, 20130420.
         {
             v3d_msg("Directly loading a marker or csv file into Vaa3D's main window is ambiguous. \n"
-                    "You can either open it directly in a 3D viewer window, or literally associate \n"
+                    "You can either open it directly in a 3D viewer window of an image, or literally associate \n"
                     "it with an existing image, or literally convert it to a Point Cloud .APO file and then open.");
         }
         else if (curfile_info.suffix().toUpper()=="APO" ||
@@ -924,7 +927,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         }
         else if (curfile_info.suffix().toUpper()=="ZIP")
         {
-            QString cmd_unzip = QString("unzip -o %1 -d %2").arg(fileName, curfile_info.canonicalPath());
+            QString cmd_unzip = QString("unzip -o %1 -j -d %2").arg(fileName, curfile_info.canonicalPath());
             //v3d_msg(cmd_unzip);
             system(qPrintable(cmd_unzip));
             QString tmp_filename = fileName.left(fileName.size()-4);
@@ -954,12 +957,16 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             {
                 size_t start_t = clock();
                 XFormWidget *child = createMdiChild();
+                v3d_msg(QString("Trying to load an image file [%1]").arg(fileName), 0);
+
                 if (child->loadFile(fileName))
                 {
-                    if(!child) return;
-                    if(!child->getImageData()) return;
+//                    if(!child) return;
+//                    if(!child->getImageData()) return;
+
                     //if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
                     //bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operations unable to finish. should be disabled!!.
+
                     statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
                     if (global_setting.b_autoConvert2_8bit)
                     {
@@ -998,6 +1005,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 else
                 {
                     child->close();
+                    v3d_msg(QString("Cannot open the specified image [%1]").arg(fileName));
                 }
             }
             catch(...)
@@ -1261,8 +1269,13 @@ void MainWindow::openRecentFile()
                 loadV3DUrl(url);
                 return;
             }
+            else
+            {
+                v3d_msg(QString("The file you try to open [%1] does not seem to be valid. Do nothing.").arg(fileOrUrl));
+            }
         }
         else {
+            v3d_msg(QString("The file you try to open [%1] does not seem to exist. Do nothing.").arg(fileOrUrl));
             // error in file name
         }
         // qDebug("Recent file chosen");
