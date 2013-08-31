@@ -20,7 +20,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Do you want to check for V3D software updates?</string>
+      <string>Do you want to check for Vaa3D software updates?</string>
      </property>
     </widget>
    </item>

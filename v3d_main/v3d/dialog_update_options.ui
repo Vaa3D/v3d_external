@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>How often do you want V3D to automatically check for updates?</string>
+      <string>How often do you want Vaa3D to automatically check for updates?</string>
      </property>
     </widget>
    </item>
@@ -105,7 +105,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>V3D version URL</string>
+        <string>Vaa3D version URL</string>
        </property>
       </widget>
      </item>
@@ -132,7 +132,7 @@
      <item>
       <widget class="QPushButton" name="useDefaultVersionButton">
        <property name="text">
-        <string>Use official V3D version URL</string>
+        <string>Use official Vaa3D version URL</string>
        </property>
       </widget>
      </item>

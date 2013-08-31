@@ -106,6 +106,7 @@ MainWindow::MainWindow()
     previousAct = 0;
     separator_ImgWindows_Act = 0;
     checkForUpdatesAct = 0;
+    generateVersionInfoAct = 0;
     aboutAct = 0;
     procLandmarkManager = 0;
     procAtlasViewer = 0;
@@ -652,6 +653,12 @@ void MainWindow::checkForUpdates(bool b_verbose)
         versionChecker->checkForLatestVersion(b_verbose);
     }
 }
+void MainWindow::generateVersionInfo()
+{
+    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
+    versionChecker->createVersionXml();
+}
+
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 {
     int numfind = 0; //20110427 YuY
@@ -1917,11 +1924,13 @@ void MainWindow::createActions()
             workspace, SLOT(activatePreviousWindow()));
     separator_ImgWindows_Act = new QAction(this);
     separator_ImgWindows_Act->setSeparator(true);
-    checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);
+    checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);  
     checkForUpdatesAct->setStatusTip(tr("Check whether a more recent version "
                                         "of Vaa3D is available."));
-    connect(checkForUpdatesAct, SIGNAL(triggered()),
-            this, SLOT(checkForUpdates()));
+    connect(checkForUpdatesAct, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
+
+    generateVersionInfoAct = new QAction(tr("Generate/check current version info on the local machine"), this);
+    connect(generateVersionInfoAct, SIGNAL(triggered()), this, SLOT(generateVersionInfo()));
     aboutAct = new v3d::ShowV3dAboutDialogAction(this);
     //    aboutQtAct = new QAction(tr("About &Qt"), this);
     //    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
@@ -2112,15 +2121,9 @@ void MainWindow::createActions()
 void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
-    //    fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(openWebUrlAct);
-    //    fileMenu->addAction(procGeneral_open_image_in_windows);
-    //    fileMenu->addAction(atlasViewAct);
     fileMenu->addAction(saveAct);
-    //    fileMenu->addAction(saveAsAct);
-    //proc_general_menu->addAction(procGeneral_open_image_in_windows); //disabled 080930
-    //fileMenu->addAction(procGeneral_save_image);
     fileMenu->addSeparator();
     fileMenu->addAction(procSettings);
     fileMenu->addSeparator();
@@ -2141,10 +2144,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(exitAct);
     updateRecentFileActions();
     connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
-    //    editMenu = menuBar()->addMenu(tr("&Edit"));
-    //    editMenu->addAction(cutAct);
-    //    editMenu->addAction(copyAct);
-    //    editMenu->addAction(pasteAct);
+
     //basic processing
     basicProcMenu = menuBar()->addMenu(tr("Image/Data"));
     connect(basicProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
@@ -2178,6 +2178,7 @@ void MainWindow::createMenus()
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction( aboutAct );
     helpMenu->addAction(checkForUpdatesAct);
+    helpMenu->addAction(generateVersionInfoAct);
     helpMenu->addAction( new v3d::OpenV3dWebPageAction(this) );
     //    helpMenu->addAction(aboutQtAct);
 }

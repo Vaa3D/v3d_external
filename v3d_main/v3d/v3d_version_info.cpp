@@ -31,6 +31,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //by Hanchuan Peng
 //081115: separated from the v3d_core.cpp
 //last update: 090801 by PHC
+//last update: 130830 by PHC
 
 #include "v3d_version_info.h"
 #include "v3d_compile_constraints.h"
@@ -49,11 +50,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.834);
+    VersionInfo thisVersionOfV3D(2.835);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
-        "), Vaa3D-Neuron (2.0), Vaa3D Plugin Interface (2.11) ";
+        "), Vaa3D-Neuron (2.0), Vaa3D Plugin Interface (2.12) ";
 }
 
 
@@ -61,7 +62,7 @@ void v3d_aboutinfo()
 {
     QString helptext =
         "<H3>Vaa3D: A Swiss army knife for 3D/4D/5D volume image and surface visualization and processing, developed by Hanchuan Peng, Zongcai Ruan, Fuhui Long, et al. All rights reserved.</H3> "
-//      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of V3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
+//      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of Vaa3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
         "If you have used Vaa3D, please cite as the following: <br><br>"
         "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353, DOI: 10.1038/nbt.1612. (http://vaa3d.org) </span><br> "
         "<br>"
@@ -188,9 +189,9 @@ void v3d_aboutinfo()
         "<tr><td>Neuron editing: the 'merge to nearby segments' function may produce extra root-nodes</td>     <td>The neuron editing function can become quite complicated as we'd like to support any graph. if you see unwanted roots, you may choose 'reverse' nearby segments to correct; but this may make other segments' directions change.  Suggest use 'break' combined by 'tracing' instead of direct 'merge'.</td></tr>"
         "</table><br>"
         "<H2>Key releases:</H2><br> Feb 2006, Aug 16 (v1.1), Sept (v2.400), 2009. "
-        "Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Aug (v2.6), 2011. "
+        "Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Aug (v2.6), 2011. 2012-2013 (v2.8)"
         "All rights reserved.<br><br> "
-        "Version Note: if you see a version number followed by a letter (e.g. 1.80a), this is a customized build for a particular research lab. "
+        "Version Note: if you see a version number followed by a letter (e.g. 1.80a), it is a customized build for a particular research lab. "
         "Vaa3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";
 
     //QMessageBox::information(0, versionnumber, versionnumber + "<br>" + helptext);
@@ -425,9 +426,13 @@ QString V3DVersionChecker::getDefaultV3DVersionXmlFileName() {
 QString V3DVersionChecker::getDefaultV3DVersionUrl()
 {
     // return "http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/" // testing
-    return "http://penglab.janelia.org/proj/vaa3d/stable_version/"
-            + getPlatformString() + "/"
-            + getDefaultV3DVersionXmlFileName();
+
+//    return "http://penglab.janelia.org/proj/vaa3d/stable_version/"
+//            + getPlatformString() + "/"
+//            + getDefaultV3DVersionXmlFileName();
+
+    //use the following instead
+    return "http://penglab.janelia.org/proj/vaa3d/cur_release/vaa3d_version.xml";
 }
 
 V3DVersionChecker::V3DVersionChecker(QWidget *guiParent_param)
@@ -612,6 +617,7 @@ bool V3DVersionChecker::shouldCheckNow()
     return bCheckNow;
 }
 
+
 void V3DVersionChecker::gotVersion(QNetworkReply* reply)
 {
     // User might have pressed "cancel"
@@ -638,7 +644,7 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
     // If we get this far, consider the update "checked" for the purpose
     // of update check timeout interval.  In particular, even if the update
     // file is unparsable, don't necessarily check again immediately.
-	QSettings settings("HHMI", "Vaa3D");
+    QSettings settings("HHMI", "Vaa3D");
     settings.setValue("timeOfLatestUpdateCheck", QDateTime::currentDateTime());
 
     // CMB Oct-22-2010
@@ -663,6 +669,47 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
 
 void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
 {
+    QDomElement root = versionDoc.documentElement();
+    if (root.tagName() != "v3d_version") {
+        qDebug() << "Unrecognized root element " << root.tagName();
+        if (b_showAllMessages) {
+            v3d_msg("Unable to parse version information or "
+                    "Could not parse latest version information.\n"
+                    "Please try again later.");
+        }
+        return; // silently continue on version finding error
+    }
+
+    QString remote_version = "0";
+    // Parse update xml file
+    QDomNode node = root.firstChild();
+    while (!node.isNull())
+    {
+        QDomElement elem = node.toElement();
+        if (!elem.isNull())
+        {
+            // Check plugin versions
+            if (elem.tagName() == "v3d_component")
+            {
+                remote_version = elem.attribute("version", "0");
+                break;
+            }
+        }
+        node = node.nextSibling();
+    }
+
+    if (remote_version.toFloat() > v3d::thisVersionOfV3D.toFloat())
+    {
+        v3d_msg(QString("There is a newer version [%1] Vaa3D. You should consdier either download from the Vaa3D website (http://vaa3d.org) or check out the latest source code to build.").arg(remote_version));
+    }
+    else
+    {
+        v3d_msg(QString("Your Vaa3D is the newest."));
+    }
+
+    return;
+    //do NOT use the following code for now as it is over-complicated. Commented by PHC, 20130830.
+/*
     QDomElement root = versionDoc.documentElement();
     if (root.tagName() != "v3d_version") {
         qDebug() << "Unrecognized root element " << root.tagName();
@@ -776,6 +823,8 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         }
         qDebug("V3D version is up to date");
     }
+
+*/
 }
 
 void V3DVersionChecker::show_update_list()

@@ -93,6 +93,7 @@ public slots:
 #endif
     void finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheFile, bool b_forceopen3dviewer); // By CMB 08-Oct-2010
     void checkForUpdates(bool b_informOnNoUpdate = true); // CMB Oct-22-2010
+    void generateVersionInfo(); //PHC 20130830
     void atlasView();
     void save();
     void saveAs();
@@ -313,6 +314,8 @@ private:
     QAction *previousAct;
     QAction *separator_ImgWindows_Act;
     QAction *checkForUpdatesAct; // CMB Oct-22-2010
+    QAction *generateVersionInfoAct;
+
     v3d::ShowV3dAboutDialogAction *aboutAct;
 //    QAction *aboutQtAct;
 	//all the image processing menu items are listed below
