@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.837);
+    VersionInfo thisVersionOfV3D(2.838);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -702,14 +702,15 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
 
     if (remote_version.toFloat() > v3d::thisVersionOfV3D.toFloat())
     {
-        v3d_msg(QString("There is a newer version [%1] Vaa3D. You should consdier either download from the Vaa3D website (http://vaa3d.org) or check out the latest source code to build.").arg(remote_version));
+        v3d_msg(QString("There is a newer version [%1] Vaa3D. You should consider either download from the Vaa3D website (http://vaa3d.org) or check out the latest source code to build.").arg(remote_version));
     }
     else
     {
-        v3d_msg(QString("Your Vaa3D is the newest."), b_showAllMessages);
+        v3d_msg(QString("Your Vaa3D is the newer than the current binary release. You do not have to update for now."), b_showAllMessages);
     }
 
     return;
+
     //do NOT use the following code for now as it is over-complicated. Commented by PHC, 20130830.
 /*
     QDomElement root = versionDoc.documentElement();
