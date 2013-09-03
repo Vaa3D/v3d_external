@@ -706,7 +706,7 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
     }
     else
     {
-        v3d_msg(QString("Your Vaa3D is the newer than the current binary release. You do not have to update for now."), b_showAllMessages);
+        v3d_msg(QString("Your Vaa3D is NOT older than the current binary release. You do NOT have to update for now."), b_showAllMessages);
     }
 
     return;
