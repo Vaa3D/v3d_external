@@ -454,5 +454,65 @@ public:
 };
 
 
+//some additional simple inline functions for image IO
+inline bool simple_loadimage_wrapper(V3DPluginCallback & cb, const char * filename, unsigned char * & pdata, V3DLONG sz[4], int & datatype)
+{
+    if (!filename || !sz)
+        return false;
+
+    Image4DSimple *inimg = cb.loadImage((char *)filename);
+    if (!inimg || !inimg->valid())
+        return false;
+
+    if (pdata) {delete []pdata; pdata=0;}
+
+    V3DLONG totalbytes = inimg->getTotalBytes();
+    try
+    {
+        pdata = new unsigned char [totalbytes];
+        if (!pdata)
+            goto Label_error_simple_loadimage_wrapper;
+
+        memcpy(pdata, inimg->getRawData(), totalbytes);
+        datatype = inimg->getUnitBytes(); //1,2,or 4
+        sz[0] = inimg->getXDim();
+        sz[1] = inimg->getYDim();
+        sz[2] = inimg->getZDim();
+        sz[3] = inimg->getCDim();
+    }
+    catch (...)
+    {
+        goto Label_error_simple_loadimage_wrapper;
+    }
+
+    return true;
+
+Label_error_simple_loadimage_wrapper:
+    if (inimg) {delete inimg; inimg=0;}
+    return false;
+}
+
+inline bool simple_saveimage_wrapper(V3DPluginCallback & cb, const char * filename, unsigned char * pdata, V3DLONG sz[4], int datatype)
+{
+    if (!filename || !sz || !pdata)
+        return false;
+
+    ImagePixelType dt;
+    if (datatype==1)
+        dt = V3D_UINT8;
+    else if (datatype==2)
+        dt = V3D_UINT16;
+    else if (datatype==4)
+        dt = V3D_FLOAT32;
+    else
+        return false;
+
+    Image4DSimple * outimg = new Image4DSimple;
+    outimg->setData(pdata, sz[0], sz[1], sz[2], sz[3], dt);
+
+    return cb.saveImage(outimg, (char *)filename);
+    //in this case no need to delete "outimg" pointer as it is just a container and will not use too much memory
+}
+
 #endif /* _V3D_INTERFACE_H_ */
 
