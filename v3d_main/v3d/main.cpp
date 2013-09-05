@@ -256,6 +256,8 @@ int main(int argc, char **argv)
                 }
             }
             //if ( (nchild == 0) && userCanUpdate )
+
+#ifndef V3D_SKIP_AUTO_VERSION_CHECK
             {
                 // This is the automatic check for latest version
                 v3d_msg("Starting Vaa3D version checker...", 0);
@@ -265,6 +267,7 @@ int main(int argc, char **argv)
                     versionChecker->checkForLatestVersion(false); //turn on 20130831. PHC
                 //}
             }
+#endif
 
 			// launch v3d
 			try 

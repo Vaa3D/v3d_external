@@ -23,6 +23,11 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE) # Default to Release
 endif()
 
+set(V3D_AUTO_NAG_FOR_SOFTWARE_UPDATE OFF CACHE BOOL "Whether to alert user at startup that a newer version of Vaa3D is available")
+if (NOT V3D_AUTO_NAG_FOR_SOFTWARE_UPDATE)
+    add_definitions(-DV3D_SKIP_AUTO_VERSION_CHECK=1) # Skip automatic nag to update software
+endif()
+
 # I want to use my local version of the STGZ header input
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake")
 
