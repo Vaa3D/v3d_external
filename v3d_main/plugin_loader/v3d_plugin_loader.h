@@ -164,6 +164,10 @@ public:
 	virtual QList <CellAPO>    * getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w);        
     virtual QList <LabelSurf> getListLabelSurf_Any3DViewer(V3dR_MainWindow *w);
     virtual bool setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput);    
+
+    //added PHC 20130904 allow a plugin program to refresh and rescan all plugins
+    virtual void refreshMainMenuPluginList();
+
 };
 
 #endif

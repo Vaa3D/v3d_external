@@ -1216,3 +1216,8 @@ bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <L
     return setListLabelSurf_3DGLWidget(vi, listLabelSurfinput);
 }
 
+//added PHC 20130904 allow a plugin program to refresh and rescan all plugins
+void V3d_PluginLoader::refreshMainMenuPluginList()
+{
+    rescanPlugins();
+}
