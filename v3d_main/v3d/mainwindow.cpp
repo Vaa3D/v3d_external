@@ -248,6 +248,8 @@ MainWindow::MainWindow()
 //	qDebug("***v3d: MainWindow::postClose");
 //	QCoreApplication::postEvent(this, new QEvent(QEvent::Close)); // this OK
 //}
+
+
 MainWindow::~MainWindow()
 {
     qDebug("***vaa3d: ~MainWindow");
@@ -1573,12 +1575,19 @@ void MainWindow::updateMenus()
     proc3DViewer->setEnabled(hasMdiChild);
     proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
 
+}
+
+void MainWindow::updatePluginMenu()
+{
+    v3d_msg("hello updatePluginMenu enter");
     if (pluginLoader)  // rescanPlugins() on 20130826 to ensure every time there is a refresh plugin list.
-                       //This may be a memory leak issue as the few menus might need to be created every time. by PHC
+                   //This may be a memory leak issue as the few menus might need to be created every time. by PHC
     {
-        //pluginLoader->rescanPlugins(); //do nothing for now, as it seems rescanning every time is slowing down other menus and also is related to TeraFly zoom-out warning. by PHC 20130830
+        v3d_msg("hello updatePluginMenu");
+        pluginLoader->rescanPlugins(); //do nothing for now, as it seems rescanning every time is slowing down other menus and also is related to TeraFly zoom-out warning. by PHC 20130830
     }
 }
+
 
 #ifdef _ALLOW_WORKMODE_MENU_
 void MainWindow::updateModeMenu()
@@ -2175,9 +2184,19 @@ void MainWindow::createMenus()
     //connect(pipelineProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     //connect(pipelineProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     //plugin menu
+
     pluginProcMenu = menuBar()->addMenu(tr("Plug-In"));
+//    //20130904, PHC
+//    pluginProcMenu = new Vaa3DPluginMenu(tr("Plug-In"));
+//    pluginProcMenu->setPluginLoader(pluginLoader);
+//    menuBar()->addMenu(pluginProcMenu);
+//    //menuBar()->addMenu((QMenu *)pluginProcMenu);
+
     connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
-    connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
+//    connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
+    connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updatePluginMenu()));
+//    connect(pluginProcMenu, SIGNAL(QAction::triggered()), this, SLOT(updatePluginMenu()));
+
     //others
     windowMenu = menuBar()->addMenu(tr("&Window"));
     connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));

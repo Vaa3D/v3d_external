@@ -124,6 +124,16 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin)
 
 //==============================================================
 
+//void Vaa3DPluginMenu::mousePressEvent ( QMouseEvent * e )
+//{
+//    v3d_msg("enter mouse press");
+//    if (ploader)
+//        ploader->rescanPlugins();
+//    QMenu::mousePressEvent(e);
+//};
+
+//===============================================================
+
 V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 {
 	this->v3d_menuPlugin = menuPlugin;
@@ -136,8 +146,11 @@ V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 
 V3d_PluginLoader::V3d_PluginLoader(MainWindow* mainwindow)
 {
-	this->v3d_menuPlugin = 0;
-	this->v3d_mainwindow = mainwindow;
+    if (mainwindow) //20130904
+    {
+        this->v3d_mainwindow = mainwindow;
+        this->v3d_menuPlugin = mainwindow->pluginProcMenu; //changed from 0, 20130904, PHC
+    }
 }
 
 
@@ -234,7 +247,7 @@ void V3d_PluginLoader::loadPlugins()
     if (pluginsDirList.size() == 0)
     {
     	qDebug("Cannot find ./plugins directory!");
-    	return;;
+        return;
     }
 
     qDebug("Searching in ./plugins ...... ");
@@ -551,8 +564,8 @@ bool V3d_PluginLoader::runPluginInterface2_1(QObject* plugin, const QString& com
 bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output)
 {
-    
-	loadPlugins(); // ensure pluginFilenameList unempty 20110520 YuY
+    if (pluginFilenameList.isEmpty()) //added by PHC 20130904 to avoid duplicated menu of YuY's code below
+        loadPlugins(); // ensure pluginFilenameList unempty 20110520 YuY
 	
 	QString fullpath;
     QList<QDir> pluginsDirList = getPluginsDirList();
@@ -608,7 +621,8 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 	V3DPluginInterface2 *iface = qobject_cast<V3DPluginInterface2 *>(plugin);
 	V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
 	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
-    if (iface && callback) {
+    if (iface && callback)
+    {
         try
         {
             return iface->dofunc(func_name, input, output, *callback, (QWidget*)0);
@@ -637,6 +651,7 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		qDebug()<<QString("ERROR: callPluginFunc cannot cast (Vaa3DPluginInterface2_1) of plugin '%1'").arg(plugin_name);
 		return false;
 	}
+
 }
 
 ////a bug caused in v2.823?
@@ -1216,8 +1231,8 @@ bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <L
     return setListLabelSurf_3DGLWidget(vi, listLabelSurfinput);
 }
 
-//added PHC 20130904 allow a plugin program to refresh and rescan all plugins
-void V3d_PluginLoader::refreshMainMenuPluginList()
-{
-    rescanPlugins();
-}
+//added PHC 20130904 allow a plugin program to refresh and rescan all plugins //not working by PHC 20130904
+//void V3d_PluginLoader::refreshMainMenuPluginList()
+//{
+//    rescanPlugins();
+//}

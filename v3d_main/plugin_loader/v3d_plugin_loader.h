@@ -50,12 +50,24 @@ QStringList v3d_getInterfaceMenuList(QObject *plugin);
 QStringList v3d_getInterfaceFuncList(QObject *plugin);
 
 class MainWindow;
+class V3d_PluginLoader;
+
+//class Vaa3DPluginMenu : public QMenu
+//{
+//private:
+//    V3d_PluginLoader *ploader;
+//public:
+//    Vaa3DPluginMenu(const QString & title, QWidget * parent = 0) : QMenu(title, parent) {ploader=0;}
+//    void setPluginLoader(V3d_PluginLoader *p) {ploader = p;}
+//    void mousePressEvent ( QMouseEvent * e );
+//};
 
 class V3d_PluginLoader : public QObject, public V3DPluginCallback2
 {
     Q_OBJECT;
 
 public:
+    //V3d_PluginLoader(Vaa3DPluginMenu* menuPlugin, MainWindow* mainwindow);
     V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow);
     V3d_PluginLoader(MainWindow* mainwindow); //by PHC, 101008. a convenience function for access plugin interface w/o a menu
     virtual ~V3d_PluginLoader() {clear();}
@@ -166,7 +178,7 @@ public:
     virtual bool setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput);    
 
     //added PHC 20130904 allow a plugin program to refresh and rescan all plugins
-    virtual void refreshMainMenuPluginList();
+    //virtual void refreshMainMenuPluginList(); //not working, by PHC 20130904
 
 };
 

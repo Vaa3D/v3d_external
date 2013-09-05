@@ -191,8 +191,8 @@ public:
     virtual QList <LabelSurf> getListLabelSurf_Any3DViewer(V3dR_MainWindow *w) = 0;
     virtual bool setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput) = 0;    
 
-    //added PHC 20130904 allow a plugin program to refresh and rescan all plugins
-    virtual void refreshMainMenuPluginList() = 0;
+    //added PHC 20130904 allow a plugin program to refresh and rescan all plugins //commented as it does not work. by PHC 20130904
+    //virtual void refreshMainMenuPluginList() = 0;
 };
 
 class V3DPluginInterface2

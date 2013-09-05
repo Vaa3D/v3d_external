@@ -59,6 +59,8 @@ class MdiChild;
 class QSignalMapper;
 class XFormWidget;
 class V3dR_MainWindow;
+class Vaa3DPluginMenu;
+
 //class QList <V3dR_MainWindow *>;
 //struct LocationSimple; //080107
 //class QList <LocationSimple>; //080107
@@ -103,6 +105,7 @@ public slots:
     // void about();
 	void openRecentFile();
     void updateMenus();
+    void updatePluginMenu(); //PHC 20130904
 #ifdef _ALLOW_WORKMODE_MENU_
     void updateModeMenu();
 #endif
@@ -455,7 +458,8 @@ public: //for image processing, some of the parameters should be globally set
 		if (workspace) workspace->cascade();
 	}
 #define __used_by_v3d_interface__
-	QMenu *pluginProcMenu; // for dynamically hooking plug-in menu
+    //Vaa3DPluginMenu *pluginProcMenu;
+    QMenu *pluginProcMenu; // for dynamically hooking plug-in menu
 	V3d_PluginLoader *pluginLoader;
 public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	XFormWidget* currentImageWindow();
