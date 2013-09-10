@@ -103,6 +103,10 @@ RESOURCES += ../neuron_annotator/resources.qrc
 
 # Input
 HEADERS += \
+    ../neuron_annotator/animation/AnimationFrame.h \
+    ../neuron_annotator/animation/interpolate.h \
+    ../neuron_annotator/animation/KeyFrame.h \
+    ../neuron_annotator/animation/Movie.h \
     ../neuron_annotator/data_model/CustomClipPlanes.h \
     ../neuron_annotator/data_model/Dimension.h \
     ../neuron_annotator/data_model/Fast3DTexture.h \
@@ -215,6 +219,7 @@ HEADERS += \
 
 
 SOURCES += \
+    ../neuron_annotator/animation/interpolate.cpp \
     ../neuron_annotator/gui/NaViewer.cpp \
     ../neuron_annotator/gui/Na2DViewer.cpp \
     ../neuron_annotator/gui/NaMainWindow.cpp \
