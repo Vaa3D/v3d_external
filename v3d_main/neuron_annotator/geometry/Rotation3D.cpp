@@ -6,6 +6,10 @@
 // Quaternion methods //
 ////////////////////////
 
+Quaternion::Quaternion(const Rotation3D& rotation) {
+    setQuaternionFromRotation(rotation);
+}
+
 Quaternion& Quaternion::setQuaternionFromAngleAxis( const qreal& a, const UnitVector3D& v )
 {
     /// The cost of this method is approximately 80 flops (one sin and one cos).
@@ -22,6 +26,98 @@ Quaternion& Quaternion::setQuaternionFromAngleAxis( const qreal& a, const UnitVe
     q[2] = v2[1];
     q[3] = v2[2];
     return *this;
+}
+
+Quaternion& Quaternion::setQuaternionFromRotation(const Rotation3D& R) 
+{
+    // Stores the return values [cos(theta/2), lambda1*sin(theta/2), lambda2*sin(theta/2), lambda3*sin(theta/2)]
+    Quaternion& q = *this;
+
+    // Check if the trace is larger than any diagonal
+    const double tr = R.trace();
+    if( tr >= R[0][0]  &&  tr >= R[1][1]  &&  tr >= R[2][2] ) {
+        q[0] = 1 + tr;
+        q[1] = R[2][1] - R[1][2];
+        q[2] = R[0][2] - R[2][0];
+        q[3] = R[1][0] - R[0][1];
+
+    // Check if R[0][0] is largest along the diagonal
+    } else if( R[0][0] >= R[1][1]  &&  R[0][0] >= R[2][2]  ) {
+        q[0] = R[2][1] - R[1][2];
+        q[1] = 1 - (tr - 2*R[0][0]);
+        q[2] = R[0][1]+R[1][0];
+        q[3] = R[0][2]+R[2][0];
+
+    // Check if R[1][1] is largest along the diagonal
+    } else if( R[1][1] >= R[2][2] ) {
+        q[0] = R[0][2] - R[2][0];
+        q[1] = R[0][1] + R[1][0];
+        q[2] = 1 - (tr - 2*R[1][1]);
+        q[3] = R[1][2] + R[2][1];
+
+    // R[2][2] is largest along the diagonal
+    } else {
+        q[0] = R[1][0] - R[0][1];
+        q[1] = R[0][2] + R[2][0];
+        q[2] = R[1][2] + R[2][1];
+        q[3] = 1 - (tr - 2*R[2][2]);
+    }
+    // Scale to unit length
+    qreal scale = 0.0;
+    for (int i = 0; i < 4; ++i)
+        scale += q[i] * q[i];
+    scale = std::sqrt(scale);
+    if( q[0] < 0 )  scale = -scale;   // canonicalize
+    for (int i = 0; i < 4; ++i)
+        q[i] *= 1.0/scale;
+
+    return *this;
+};
+
+Quaternion Quaternion::slerp(const Quaternion& qB, qreal alpha, qreal spin) const {
+        /**
+        Spherical linear interpolation of quaternions.
+        From page 448 of "Visualizing Quaternions" by Andrew J. Hanson
+         */
+        const Quaternion& qA = *this;
+        qreal cos_t = 0;
+        for (int i = 0; i < 4; ++i)
+            cos_t += qA[i] * qB[i];
+        // If qB is on opposite hemisphere from qA, use -qB instead
+        bool bFlip = false;
+        if (cos_t < 0.0) {
+            cos_t = -cos_t;
+            bFlip = true;
+        }
+        // If qB is the same as qA (within precision)
+        // just linear interpolate between qA and qB.
+        // Can't do spins, since we don't know what direction to spin.
+        qreal beta;
+        if ((1.0 - cos_t) < 1e-7) {
+            beta = 1.0 - alpha;
+        }
+        else { // normal case
+            qreal theta = acos(cos_t);
+            qreal phi = theta + spin * 3.14159;
+            qreal sin_t = sin(theta);
+            beta = sin(theta - alpha * phi) / sin_t;
+            alpha = sin(alpha * phi) / sin_t;
+        }
+        if (bFlip)
+            alpha = -alpha;
+        // interpolate
+        Quaternion result;
+        qreal scale = 0;
+        for (int i = 0; i < 4; ++i) {
+            result[i] = beta*qA[i] + alpha*qB[i];
+            scale += result[i] * result[i];
+        }
+        // scale to unit length (1.0)
+        scale = 1.0 / std::sqrt(scale);
+        for (int i = 0; i < 4; ++i) {
+            result[i] *= scale;
+        }
+        return result;
 }
 
 ////////////////////////
@@ -149,6 +245,11 @@ Vector3D Rotation3D::convertBodyFixedXYZRotationToThreeAngles() const
     // -pi/2 <=  theta2  <=  +pi/2   (Rsum is inherently positive)
     // -pi   <=  theta3  <=  +pi
     return Vector3D( theta1, theta2, theta3 );
+}
+
+qreal Rotation3D::trace() const {
+    const Rotation3D& R = *this;
+    return R[0][0] + R[1][1] + R[2][2];
 }
 
 Rotation3D& Rotation3D::setRotationFromBodyFixedXYZAngles(qreal rotX, qreal rotY, qreal rotZ)

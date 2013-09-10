@@ -63,6 +63,7 @@ file(GLOB NA_SRCS
     "*.cpp"
     # "*/*.cpp" # don't want "tests"
     "analysis/*.cpp" 
+    "animation/*.cpp"
     "data_model/*.cpp" 
     "entity_model/*.cpp" 
     "geometry/*.cpp" 

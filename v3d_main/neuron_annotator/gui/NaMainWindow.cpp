@@ -597,6 +597,14 @@ QString NaMainWindow::getStackPathWithDialog()
 }
 
 /* slot */
+void NaMainWindow::on_actionAppend_key_frame_at_current_view_triggered() {
+    // qDebug() << "append frame";
+    KeyFrame newFrame(2.0);
+    newFrame.storeCameraSettings(sharedCameraModel);
+    currentMovie.appendKeyFrame(newFrame);
+}
+
+/* slot */
 void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 {
 #ifdef USE_FFMPEG
@@ -605,6 +613,10 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
     if (! dataFlowModel) return;
     dataFlowModel->getFast3DTexture().loadFile(fileName);
 #endif
+}
+
+void NaMainWindow::on_actionClear_movie_triggered() {
+    currentMovie.clear();
 }
 
 /* slot */
@@ -692,6 +704,67 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
     }
 
     loadSingleStack(fileName, false);
+}
+
+void NaMainWindow::on_actionPlay_movie_triggered() {
+    // qDebug() << "Play movie";
+    currentMovie.rewind();
+    double secondsElapsed = 0.0;
+    while (currentMovie.hasMoreFrames()) {
+        AnimationFrame frame = currentMovie.getNextFrame();
+        secondsElapsed += currentMovie.secondsPerFrame;
+        // qDebug() << secondsElapsed << frame.cameraFocus[0];
+        frame.retrieveCameraSettings(sharedCameraModel);
+        ui->v3dr_glwidget->update();
+        QApplication::processEvents();
+    }
+}
+
+void NaMainWindow::on_actionSave_movie_frames_triggered() {
+    // Get output folder
+    static QString startFolder;
+    QString sf;
+    if (! startFolder.isEmpty())
+        sf = startFolder;
+    QString folderName = QFileDialog::getExistingDirectory(this,
+        tr("Choose folder to store movie frame images"),
+        sf);
+    if (folderName.isEmpty())
+        return;
+    QDir folder(folderName);
+    if (! folder.exists()) {
+        QMessageBox::warning(this, "No such folder", "Folder " +folderName+ " does not exist");
+        return;
+    }
+
+    currentMovie.rewind();
+    double secondsElapsed = 0.0;
+    int frameIndex = 0;
+    int savedCount = 0;
+    while (currentMovie.hasMoreFrames()) {
+        AnimationFrame frame = currentMovie.getNextFrame();
+        secondsElapsed += currentMovie.secondsPerFrame;
+        // qDebug() << secondsElapsed << frame.cameraFocus[0];
+        frame.retrieveCameraSettings(sharedCameraModel);
+        ui->v3dr_glwidget->update();
+        QApplication::processEvents();
+        QImage grabbedFrame = ui->v3dr_glwidget->grabFrameBuffer(true); // true->with alpha
+        frameIndex += 1;
+        QString fileName;
+        fileName.sprintf("frame_%05d.png", frameIndex);
+        fileName = folder.absoluteFilePath(fileName);
+        qDebug() << fileName;
+        if (grabbedFrame.save(fileName)) {
+            savedCount += 1;
+        }
+        else {
+            // TODO - better error handling
+            qDebug() << "Failed to save frame" << fileName;
+        }
+    }
+    QMessageBox::information(this, "Finished saving frames", QString("Saved %1 frames").arg(savedCount));
+    // Remember this folder next time
+    startFolder = folderName;
 }
 
 void NaMainWindow::on_zThicknessDoubleSpinBox_valueChanged(double val) {

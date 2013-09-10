@@ -9,14 +9,23 @@
 #include <cmath>
 #include <iostream>
 
+class Rotation3D;
+
 class Quaternion
 {
 public:
     // Default constructor yields the identity quaternion
     Quaternion() : m_w(1.0), m_x(0), m_y(0), m_z(0) {}
+    Quaternion(const qreal& angleInRadians, const UnitVector3D& axis) {
+        setQuaternionFromAngleAxis(angleInRadians, axis);
+    }
+    Quaternion(const Rotation3D& rotation);
+
     Quaternion& setQuaternionFromAngleAxis( const qreal& angleInRadians, const UnitVector3D& axis );
     // read-only access to preserve special properties
     const qreal& operator[](int index) const {return m_data[index];}
+    Quaternion& setQuaternionFromRotation(const Rotation3D& R);
+    Quaternion slerp(const Quaternion& rhs, qreal alpha, qreal spin = 0.0) const;
 
 protected:
     qreal& operator[](int index) {return m_data[index];}
@@ -38,6 +47,10 @@ public:
 
     Rotation3D();
     Rotation3D(const GLdouble mRot[16]);
+    Rotation3D(const Quaternion& quat) {
+        setRotationFromQuaternion(quat);
+    }
+
     // read-only version of index operator is public
     const Row& operator[](int r) const {return data[r];}
     // compose rotation matrices
@@ -59,6 +72,7 @@ public:
     Rotation3D& setRotationFromAngleAboutUnitVector( qreal angleInRadians, const UnitVector3D& unitVector );
     Rotation3D& setRotationFromQuaternion( const Quaternion& q );
     void setGLMatrix(GLdouble mRot[16]) const;
+    qreal trace() const;
 
 protected:
     static const qreal& getEps(); // machine precision

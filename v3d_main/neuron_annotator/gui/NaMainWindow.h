@@ -17,6 +17,7 @@
 #include "DynamicRangeTool.h"
 #include "../NeuronSelector.h"
 #include "../microCT/CutPlanner.h"
+#include "../animation/Movie.h"
 
 class NutateThread : public QThread
 {
@@ -126,6 +127,8 @@ public slots:
     bool openMulticolorImageStack(QUrl url);
     bool openMulticolorImageStack(QString dirName);
     void openFileOrUrl(QString name);
+    void on_actionAppend_key_frame_at_current_view_triggered();
+    void on_actionClear_movie_triggered();
     void on_actionV3DDefault_triggered();
     void on_actionMeasure_Frame_Rate_triggered();
     void on_actionOpen_microCT_Cut_Planner_triggered();
@@ -134,11 +137,13 @@ public slots:
     void on_actionOpen_triggered();
     void on_actionOpen_Octree_Volume_triggered();
     void on_actionOpen_Single_Movie_Stack_triggered();
+    void on_actionPlay_movie_triggered();
     void on_action3D_Volume_triggered();
     void on_action2D_MIP_triggered();
     void on_actionScreenShot_triggered();
     void on_actionLoad_movie_as_texture_triggered();
     void on_actionPreferences_triggered();
+    void on_actionSave_movie_frames_triggered();
     void on_actionX_Rotation_Movie_triggered();
     void on_zThicknessDoubleSpinBox_valueChanged(double val);
     void setZRange(int minZ, int maxZ); // update number of z slices
@@ -243,6 +248,8 @@ private:
     QTime mainWindowStopWatch;
 
     CutPlanner* cutPlanner;
+
+    Movie currentMovie;
 };
 
 #endif // NAMAINWINDOW_H
