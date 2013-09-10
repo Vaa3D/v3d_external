@@ -51,7 +51,7 @@ Rotation3D catmullRomInterpolate(
 }
 
 AnimationFrame catmullRomInterpolate(
-    AnimationFrame p0, AnimationFrame p1, AnimationFrame p2, AnimationFrame p3, 
+    const AnimationFrame& p0, const AnimationFrame& p1, const AnimationFrame& p2, const AnimationFrame& p3, 
     double t)
 {
     AnimationFrame result;
