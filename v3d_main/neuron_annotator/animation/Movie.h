@@ -9,7 +9,7 @@ public:
     double secondsPerFrame;
 
     Movie() 
-        : secondsPerFrame(1.0/24.0)
+        : secondsPerFrame(1.0/60.0)
     {
         rewind();
     }

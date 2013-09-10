@@ -55,6 +55,7 @@ AnimationFrame catmullRomInterpolate(
     double t)
 {
     AnimationFrame result;
+
     result.cameraFocus = catmullRomInterpolate(
         p0.cameraFocus, p1.cameraFocus, p2.cameraFocus, p3.cameraFocus,
         t);
@@ -64,5 +65,19 @@ AnimationFrame catmullRomInterpolate(
     result.cameraZoom = catmullRomInterpolate(
         p0.cameraZoom, p1.cameraZoom, p2.cameraZoom, p3.cameraZoom,
         t);
+
+    result.channelZeroVisibility = catmullRomInterpolate(
+        p0.channelZeroVisibility, p1.channelZeroVisibility, p2.channelZeroVisibility, p3.channelZeroVisibility,
+        t);
+    result.channelOneVisibility = catmullRomInterpolate(
+        p0.channelOneVisibility, p1.channelOneVisibility, p2.channelOneVisibility, p3.channelOneVisibility,
+        t);
+    result.channelTwoVisibility = catmullRomInterpolate(
+        p0.channelTwoVisibility, p1.channelTwoVisibility, p2.channelTwoVisibility, p3.channelTwoVisibility,
+        t);
+    result.channelThreeVisibility = catmullRomInterpolate(
+        p0.channelThreeVisibility, p1.channelThreeVisibility, p2.channelThreeVisibility, p3.channelThreeVisibility,
+        t);
+
     return result;
 }

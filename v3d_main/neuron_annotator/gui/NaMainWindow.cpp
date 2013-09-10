@@ -597,10 +597,24 @@ QString NaMainWindow::getStackPathWithDialog()
 }
 
 /* slot */
+void NaMainWindow::on_action1280x720_triggered() {
+    int w = ui->v3dr_glwidget->width();
+    int h = ui->v3dr_glwidget->height();
+    int dw = 1280 - w;
+    int dh = 720 - h;
+    resize(width() + dw, height() + dh);
+}
+
+/* slot */
 void NaMainWindow::on_actionAppend_key_frame_at_current_view_triggered() {
     // qDebug() << "append frame";
-    KeyFrame newFrame(2.0);
+    KeyFrame newFrame(3.0);
     newFrame.storeCameraSettings(sharedCameraModel);
+    if (dataFlowModel != NULL)
+    {
+        DataColorModel::Reader reader(dataFlowModel->getDataColorModel());
+        newFrame.storeChannelColorModel(reader);
+    }
     currentMovie.appendKeyFrame(newFrame);
 }
 
@@ -711,13 +725,36 @@ void NaMainWindow::on_actionPlay_movie_triggered() {
     currentMovie.rewind();
     double secondsElapsed = 0.0;
     while (currentMovie.hasMoreFrames()) {
-        AnimationFrame frame = currentMovie.getNextFrame();
-        secondsElapsed += currentMovie.secondsPerFrame;
-        // qDebug() << secondsElapsed << frame.cameraFocus[0];
-        frame.retrieveCameraSettings(sharedCameraModel);
-        ui->v3dr_glwidget->update();
-        QApplication::processEvents();
+        animateToFrame(currentMovie.getNextFrame());
     }
+}
+
+void NaMainWindow::animateToFrame(const AnimationFrame& frame) {
+    frame.retrieveCameraSettings(sharedCameraModel);
+    // One channel visibility at a time
+    // Test for positive comparisons, to avoid NaN values
+    if (frame.channelZeroVisibility >= 0.5)
+        emit setChannelZeroVisibility(true);
+    else if (frame.channelZeroVisibility < 0.5)
+        emit setChannelZeroVisibility(false);
+    //
+    if (frame.channelOneVisibility >= 0.5)
+        emit setChannelOneVisibility(true);
+    else if (frame.channelOneVisibility < 0.5)
+        emit setChannelOneVisibility(false);
+    //
+    if (frame.channelTwoVisibility >= 0.5)
+        emit setChannelTwoVisibility(true);
+    else if (frame.channelTwoVisibility < 0.5)
+        emit setChannelTwoVisibility(false);
+    //
+    if (frame.channelThreeVisibility >= 0.5)
+        emit setChannelThreeVisibility(true);
+    else if (frame.channelThreeVisibility < 0.5)
+        emit setChannelThreeVisibility(false);
+
+    ui->v3dr_glwidget->update();
+    QApplication::processEvents();
 }
 
 void NaMainWindow::on_actionSave_movie_frames_triggered() {
@@ -742,12 +779,7 @@ void NaMainWindow::on_actionSave_movie_frames_triggered() {
     int frameIndex = 0;
     int savedCount = 0;
     while (currentMovie.hasMoreFrames()) {
-        AnimationFrame frame = currentMovie.getNextFrame();
-        secondsElapsed += currentMovie.secondsPerFrame;
-        // qDebug() << secondsElapsed << frame.cameraFocus[0];
-        frame.retrieveCameraSettings(sharedCameraModel);
-        ui->v3dr_glwidget->update();
-        QApplication::processEvents();
+        animateToFrame(currentMovie.getNextFrame());
         QImage grabbedFrame = ui->v3dr_glwidget->grabFrameBuffer(true); // true->with alpha
         frameIndex += 1;
         QString fileName;

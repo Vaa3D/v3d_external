@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <limits>
+#include "../data_model/DataColorModel.h"
 
 class AnimationFrame {
 public:
@@ -10,6 +11,11 @@ public:
     Vector3D cameraFocus;
     Quaternion cameraRotation;
     double cameraZoom;
+    // Channel visibility
+    double channelZeroVisibility;
+    double channelOneVisibility;
+    double channelTwoVisibility;
+    double channelThreeVisibility;
 
     /**
      * Values set to "NaN" imply that such values should not be used in the animation.
@@ -19,12 +25,31 @@ public:
         , cameraFocus(nan, nan, nan)
         // TODO rotation to nan
         , cameraZoom(nan)
+        , channelZeroVisibility(nan)
+        , channelOneVisibility(nan)
+        , channelTwoVisibility(nan)
+        , channelThreeVisibility(nan)
     {}
 
     void storeCameraSettings(const CameraModel& camera) {
         cameraFocus = camera.focus();
         cameraRotation.setQuaternionFromRotation(camera.rotation());
         cameraZoom = camera.scale();
+    }
+
+    void storeChannelColorModel(const DataColorModel::Reader& reader) {
+        // Initialize to NaN
+        double* cv[] = {&channelZeroVisibility, &channelOneVisibility, &channelTwoVisibility, &channelThreeVisibility};
+        for (int i = 0; i < 4; ++i)
+            *cv[i] = nan;
+        int sc = reader.getNumberOfDataChannels();
+        for (int i = 0; i < sc; ++i) {
+            if (i >= 4) break; // we only know how to store 4 channels
+            if (reader.getChannelVisibility(i))
+                *cv[i] = 1.0;
+            else
+                *cv[i] = 0.0;
+        }
     }
 
     void retrieveCameraSettings(CameraModel& camera) const {

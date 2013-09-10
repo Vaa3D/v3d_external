@@ -127,6 +127,7 @@ public slots:
     bool openMulticolorImageStack(QUrl url);
     bool openMulticolorImageStack(QString dirName);
     void openFileOrUrl(QString name);
+    void on_action1280x720_triggered();
     void on_actionAppend_key_frame_at_current_view_triggered();
     void on_actionClear_movie_triggered();
     void on_actionV3DDefault_triggered();
@@ -193,6 +194,7 @@ protected slots:
 
 
 protected:
+    void animateToFrame(const AnimationFrame& frame);
     void setDataFlowModel(DataFlowModel* dataFlowModelParam);
     void initializeContextMenus();
     void initializeStereo3DOptions();

@@ -1841,6 +1841,12 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <addaction name="actionClear_movie"/>
      <addaction name="separator"/>
     </widget>
+    <widget class="QMenu" name="menuSet_canvas_size">
+     <property name="title">
+      <string>Set canvas size</string>
+     </property>
+     <addaction name="action1280x720"/>
+    </widget>
     <addaction name="actionShow_all_neurons_in_empty_space"/>
     <addaction name="actionClear_Hide_All"/>
     <addaction name="actionFull_Screen"/>
@@ -1858,6 +1864,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionOpen_microCT_Cut_Planner"/>
     <addaction name="separator"/>
     <addaction name="menuAnimate"/>
+    <addaction name="menuSet_canvas_size"/>
    </widget>
    <widget class="QMenu" name="menuWork_Mode">
     <property name="title">
@@ -2318,6 +2325,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="actionSave_movie_frames">
    <property name="text">
     <string>Save movie frames</string>
+   </property>
+  </action>
+  <action name="action1280x720">
+   <property name="text">
+    <string>1280x720</string>
    </property>
   </action>
  </widget>
