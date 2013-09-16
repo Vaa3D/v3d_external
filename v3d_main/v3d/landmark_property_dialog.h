@@ -45,7 +45,7 @@ landmark_property_dialog.h
 #include "ui_landmark_property.h"
 
 class QTableWidgetItem;
-class LocationSimple;
+struct LocationSimple;
 class My4DImage;
 
 class LandmarkPropertyDialog : public QDialog, private Ui_LandmarkPropertyDialog

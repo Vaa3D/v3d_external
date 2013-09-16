@@ -47,9 +47,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 class V3dR_GLWidget;
 class Renderer_gl1;
-class NeuronTree;
+struct NeuronTree;
 
-class CellAPO;
+struct CellAPO;
 
 enum SOG_Operation {SOG_SHIFT_X, SOG_SHIFT_Y, SOG_SHIFT_Z, SOG_SCALE_X, SOG_SCALE_Y, SOG_SCALE_Z, SOG_GSCALE_X, SOG_GSCALE_Y, SOG_GSCALE_Z, SOG_SCALE_R, SOG_FLIP_X, SOG_FLIP_Y, SOG_FLIP_Z, SOG_ROT_X, SOG_ROT_Y, SOG_ROT_Z};
 

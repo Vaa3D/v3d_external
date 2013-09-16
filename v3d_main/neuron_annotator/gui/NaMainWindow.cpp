@@ -606,10 +606,40 @@ void NaMainWindow::on_action1280x720_triggered() {
 }
 
 /* slot */
+void NaMainWindow::on_actionAdd_landmark_at_cursor_triggered() {
+    // qDebug() << "add landmark";
+    RendererNeuronAnnotator * rna = ui->v3dr_glwidget->getRendererNa();
+    if (rna != NULL) {
+        float radius = 20.0;
+        Vector3D focus = sharedCameraModel.focus();
+        // Shape comes from type not shape argument. whatever
+        //  0 - dodecahedron
+        //  1 - cube
+        ImageMarker landmark = ImageMarker(2, 0, focus.x(), rna->dim2 - focus.y(), rna->dim3 - focus.z(), radius);
+        // cycle colors red->green->blue
+        int c = viewerLandmarks3D.size() % 3;
+        if (c == 0)
+            landmark.color.i = 0xff5050ff;
+        else if (c == 1)
+            landmark.color.i = 0xff50ff50;
+        else if (c == 2)
+            landmark.color.i = 0xffff5050;
+        viewerLandmarks3D << landmark;
+        rna->sShowMarkers = true;
+        rna->markerSize = (int) radius;
+        rna->setLandmarks(viewerLandmarks3D);
+        rna->b_showMarkerLabel = false;
+        rna->b_showMarkerName = false;
+        // rna->updateLandmark(); // deletes markerList!
+    }
+}
+
+/* slot */
 void NaMainWindow::on_actionAppend_key_frame_at_current_view_triggered() {
     // qDebug() << "append frame";
-    KeyFrame newFrame(3.0);
+    KeyFrame newFrame(4.0);
     newFrame.storeCameraSettings(sharedCameraModel);
+    newFrame.storeLandmarkVisibility(viewerLandmarks3D);
     if (dataFlowModel != NULL)
     {
         DataColorModel::Reader reader(dataFlowModel->getDataColorModel());
@@ -627,6 +657,14 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
     if (! dataFlowModel) return;
     dataFlowModel->getFast3DTexture().loadFile(fileName);
 #endif
+}
+
+void NaMainWindow::on_actionClear_landmarks_triggered() {
+    viewerLandmarks3D.clear();
+    RendererNeuronAnnotator * rna = ui->v3dr_glwidget->getRendererNa();
+    if (rna != NULL) {
+        rna->clearLandmarks();
+    }
 }
 
 void NaMainWindow::on_actionClear_movie_triggered() {
@@ -731,6 +769,14 @@ void NaMainWindow::on_actionPlay_movie_triggered() {
 
 void NaMainWindow::animateToFrame(const AnimationFrame& frame) {
     frame.retrieveCameraSettings(sharedCameraModel);
+    frame.retrieveLandmarkVisibility(viewerLandmarks3D);
+    RendererNeuronAnnotator * rna = ui->v3dr_glwidget->getRendererNa();
+    if (rna != NULL) {
+        rna->clearLandmarks();
+        rna->setLandmarks(viewerLandmarks3D);
+        rna->sShowMarkers = true;
+    }
+
     // One channel visibility at a time
     // Test for positive comparisons, to avoid NaN values
     if (frame.channelZeroVisibility >= 0.5)
@@ -2004,9 +2050,9 @@ void NaMainWindow::resetVolumeCutRange()
         if (! dataFlowModel->getVolumeTexture().readerIsStale(textureReader))
         {
             Dimension size = textureReader.originalImageSize();
-            mx = size.x() - 1;
-            my = size.y() - 1;
-            mz = size.z() - 1;
+            mx = (int)size.x() - 1;
+            my = (int)size.y() - 1;
+            mz = (int)size.z() - 1;
         }
     }
     // if that fails, try VolumeData

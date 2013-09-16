@@ -1865,6 +1865,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="separator"/>
     <addaction name="menuAnimate"/>
     <addaction name="menuSet_canvas_size"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_landmark_at_cursor"/>
+    <addaction name="actionClear_landmarks"/>
    </widget>
    <widget class="QMenu" name="menuWork_Mode">
     <property name="title">
@@ -2330,6 +2333,16 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="action1280x720">
    <property name="text">
     <string>1280x720</string>
+   </property>
+  </action>
+  <action name="actionAdd_landmark_at_cursor">
+   <property name="text">
+    <string>Add landmark at cursor</string>
+   </property>
+  </action>
+  <action name="actionClear_landmarks">
+   <property name="text">
+    <string>Clear landmarks</string>
    </property>
   </action>
  </widget>

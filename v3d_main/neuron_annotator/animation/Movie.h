@@ -25,7 +25,7 @@ public:
 
     AnimationFrame getNextFrame() {
         // Avoid going past final key frame
-        int finalIndex = keyFrames.size() - 1;
+        int finalIndex = (int)keyFrames.size() - 1;
         if (currentKeyFrameIndex >= finalIndex)
             currentKeyFrameIndex = finalIndex;
         KeyFrame* keyFrame = &keyFrames[currentKeyFrameIndex];
@@ -47,8 +47,8 @@ public:
         int i0 = std::max(0, i1 - 1);
         int i2 = std::min(finalIndex, i1 + 1);
         int i3 = std::min(finalIndex, i1 + 2);
-        AnimationFrame frame = catmullRomInterpolate(
-            keyFrames[i0], keyFrames[i1], keyFrames[i2], keyFrames[i3],
+        AnimationFrame frame = keyFrames[i1].catmullRomInterpolateFrame(
+            keyFrames[i0], keyFrames[i2], keyFrames[i3],
             interpolationParameter);
 
         // Prepare for next frame

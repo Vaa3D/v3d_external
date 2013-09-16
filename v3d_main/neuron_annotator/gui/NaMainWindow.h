@@ -128,7 +128,9 @@ public slots:
     bool openMulticolorImageStack(QString dirName);
     void openFileOrUrl(QString name);
     void on_action1280x720_triggered();
+    void on_actionAdd_landmark_at_cursor_triggered();
     void on_actionAppend_key_frame_at_current_view_triggered();
+    void on_actionClear_landmarks_triggered();
     void on_actionClear_movie_triggered();
     void on_actionV3DDefault_triggered();
     void on_actionMeasure_Frame_Rate_triggered();
@@ -252,6 +254,7 @@ private:
     CutPlanner* cutPlanner;
 
     Movie currentMovie;
+    QList<ImageMarker> viewerLandmarks3D;
 };
 
 #endif // NAMAINWINDOW_H

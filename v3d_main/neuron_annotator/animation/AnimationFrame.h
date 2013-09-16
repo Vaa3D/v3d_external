@@ -3,7 +3,11 @@
 
 #include <cmath>
 #include <limits>
+#include "../geometry/Vector3D.h"
+#include "../geometry/Rotation3D.h"
+#include "../geometry/CameraModel.h"
 #include "../data_model/DataColorModel.h"
+#include "../../basic_c_fun/basic_surf_objs.h"
 
 class AnimationFrame {
 public:
@@ -20,52 +24,21 @@ public:
     /**
      * Values set to "NaN" imply that such values should not be used in the animation.
      */
-    AnimationFrame() 
-        : nan(std::numeric_limits<double>::quiet_NaN())
-        , cameraFocus(nan, nan, nan)
-        // TODO rotation to nan
-        , cameraZoom(nan)
-        , channelZeroVisibility(nan)
-        , channelOneVisibility(nan)
-        , channelTwoVisibility(nan)
-        , channelThreeVisibility(nan)
-    {}
+    AnimationFrame();
 
-    void storeCameraSettings(const CameraModel& camera) {
-        cameraFocus = camera.focus();
-        cameraRotation.setQuaternionFromRotation(camera.rotation());
-        cameraZoom = camera.scale();
-    }
+    AnimationFrame catmullRomInterpolateFrame(
+        const AnimationFrame& p0, const AnimationFrame& p2, const AnimationFrame& p3, 
+        double t) const;
 
-    void storeChannelColorModel(const DataColorModel::Reader& reader) {
-        // Initialize to NaN
-        double* cv[] = {&channelZeroVisibility, &channelOneVisibility, &channelTwoVisibility, &channelThreeVisibility};
-        for (int i = 0; i < 4; ++i)
-            *cv[i] = nan;
-        int sc = reader.getNumberOfDataChannels();
-        for (int i = 0; i < sc; ++i) {
-            if (i >= 4) break; // we only know how to store 4 channels
-            if (reader.getChannelVisibility(i))
-                *cv[i] = 1.0;
-            else
-                *cv[i] = 0.0;
-        }
-    }
+    void retrieveCameraSettings(CameraModel& camera) const;
+    void retrieveLandmarkVisibility(QList<ImageMarker>& landmarks) const;
 
-    void retrieveCameraSettings(CameraModel& camera) const {
-        if (! my_is_nan(cameraFocus[0]))
-            camera.setFocus(cameraFocus);
-        if (! my_is_nan(cameraRotation[0]))
-            camera.setRotation(Rotation3D(cameraRotation));
-        if (! my_is_nan(cameraZoom))
-            camera.setScale(cameraZoom);
-    }
+    void storeCameraSettings(const CameraModel& camera);
+    void storeChannelColorModel(const DataColorModel::Reader& reader);
+    void storeLandmarkVisibility(const QList<ImageMarker>& landmarks);
 
 private:
-    bool my_is_nan(double x) const {
-        return x != x;
-    }
-
+    std::vector<double> landmarkVisibility;
 };
 
 #endif

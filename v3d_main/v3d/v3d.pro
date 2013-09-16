@@ -219,6 +219,7 @@ HEADERS += \
 
 
 SOURCES += \
+    ../neuron_annotator/animation/AnimationFrame.cpp \
     ../neuron_annotator/animation/interpolate.cpp \
     ../neuron_annotator/gui/NaViewer.cpp \
     ../neuron_annotator/gui/Na2DViewer.cpp \
