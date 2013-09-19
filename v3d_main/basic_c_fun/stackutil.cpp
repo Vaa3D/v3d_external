@@ -128,7 +128,7 @@ extern "C" {
 
 
 #define b_VERBOSE_PRINT 1
-#define ZZBIG 32000 //previous I define it as 1500, so that to limit the size of an image is at most 1.5G //change 2010-05-21 // hang 2011-08-25 6000->10000
+#define ZZBIG 320000 //previous I define it as 1500, so that to limit the size of an image is at most 1.5G //change 2010-05-21 // hang 2011-08-25 6000->10000
 
 #ifdef _MSC_VER       //2010-05-21, by PHC
 #include <sys/stat.h>
