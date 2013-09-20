@@ -341,7 +341,7 @@ int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, 
 		}
 		
 		remainingBytes -= nBytes2G;
-        printf("Finish reading %5.4f\%\r", 1-double(remainingBytes)/(double(totalBytes))); fflush(stdout);
+        printf("Finish reading %5.4f\%\r", (1-double(remainingBytes)/(double(totalBytes)))*100.0); fflush(stdout);
         cntBuf++;
 	}
 	
@@ -564,7 +564,7 @@ int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, 
 		}
 		
 		remainingBytes -= nBytes2G;
-        printf("Finish reading %5.4f\%\r", 1-double(remainingBytes)/(double(totalBytes))); fflush(stdout);
+        printf("Finish reading %5.4f\%\r", (1-double(remainingBytes)/(double(totalBytes))*100.0)); fflush(stdout);
         cntBuf++;
 	}
 
@@ -970,7 +970,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		
 		remainingBytes -= nBytes2G;
 
-        printf("Finish reading %5.4f\%\r", 1-double(remainingBytes)/(double(totalBytes))); fflush(stdout);
+        printf("Finish reading %5.4f\%\r", (1-double(remainingBytes)/(double(totalBytes)))*100.0); fflush(stdout);
 
 		cntBuf++;
 	}
@@ -1235,7 +1235,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		}
 		
 		remainingBytes -= nBytes2G;
-        printf("Finish reading %5.4f\%\r", 1-double(remainingBytes)/(double(totalBytes))); fflush(stdout);
+        printf("Finish reading %5.4f\%\r", (1-double(remainingBytes)/(double(totalBytes)))*100.0); fflush(stdout);
         cntBuf++;
 	}
 	
