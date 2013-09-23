@@ -1804,11 +1804,30 @@ void NaMainWindow::on_action2D_MIP_triggered() {
 }
 
 void NaMainWindow::on_actionScreenShot_triggered() {
-    QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D View to an .tif file"), ".", QObject::tr("screenshot (*.tif)"));
-    if (!(filename.isEmpty())){
-        bool saved = ui->v3dr_glwidget->screenShot(filename);
+    static QString dirname = ".";
+    QString filename = QFileDialog::getSaveFileName(
+        ui->v3dr_glwidget, 
+        QObject::tr("Save 3D View to an image file"), 
+        dirname, 
+        QObject::tr("Images (*.tif *.png *.jpg *.ppm *.xpm)"));
+    if (filename.isEmpty())
+        return; // User cancelled
+    bool saved = ui->v3dr_glwidget->screenShot(filename);
+    if (saved) {
+        QMessageBox::information(ui->v3dr_glwidget,
+            "Successfully saved screen shot",
+            "Successfully saved screen shot to file " + filename);
+        // Remember this directory next time
+        // TODO - use QSettings for more persistent memory
+        dirname = filename;
     }
-
+    else {
+        QMessageBox::critical(this,
+            "Failed to save screen shot",
+            "Failed to save screen shot to file " + filename 
+            + " \nDo you have write permission in that folder?"
+            + " \nMaybe a different image format would work better?");
+    }
 }
 
 void NaMainWindow::on_actionPreferences_triggered()
