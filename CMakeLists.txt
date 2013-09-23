@@ -71,7 +71,7 @@ if(APPLE)
 endif()
 
 set(V3D_PLATFORM_NAME "${PLATFORM_FLAVOR}" CACHE STRING "Platform name describing this particular Vaa3D binary type.")
-add_definitions(-DV3D_PLATFORM_NAME=\"${V3D_PLATFORM_NAME}\") # so we can access platform name from running code.
+add_definitions(-DV3D_PLATFORM_NAME=\"${V3D_PLATFORM_NAME}\") # " # so we can access platform name from running code.
 
 # I want to have a runnable arrangement of Vaa3D and plugins in the build area
 set(V3D_STAGING_BASE_DIR "${CMAKE_BINARY_DIR}/v3d/${V3D_PLATFORM_NAME}" CACHE PATH "Build location for v3d and plugin binaries.")
@@ -229,9 +229,15 @@ if(BUILD_WIN64)
     # Default install to "Program Files", not "Program Files(86)" on 64-bit machine
     set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
     # Install MSVC2010 runtime on machines lacking MSVC2010
-    set(MS_REDIST_EXE vcredist_x64_msvc10sp1.exe)
+    if(MSVC11)
+        set(MS_REDIST_EXE vcredist_x64.exe)
+        set(MS_REDIST_FOLDER msvc11)
+    else()
+        set(MS_REDIST_EXE vcredist_x64_msvc10sp1.exe)
+        set(MS_REDIST_FOLDER msvc10)
+    endif()
     install(PROGRAMS
-        v3d_main/cmake_installer/msvc10/${MS_REDIST_EXE}
+        v3d_main/cmake_installer/${MS_REDIST_FOLDER}/${MS_REDIST_EXE}
         DESTINATION ${V3D_INSTALL_DIR}
         COMPONENT RuntimeLibraries)
     # quiet version

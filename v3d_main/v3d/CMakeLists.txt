@@ -260,6 +260,13 @@ else(APPLE)
             QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll
             mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll"
             libfftw3f-3.dll)
+		# Install Qt plugins for image formats, at least on Windows
+		if (QT_PLUGINS_DIR)
+			file(GLOB QT_IMAGEFORMAT_PLUGINS "${QT_PLUGINS_DIR}/imageformats/*.dll")
+			install(PROGRAMS ${QT_IMAGEFORMAT_PLUGINS}
+				DESTINATION "${V3D_INSTALL_DIR}/imageformats"
+				COMPONENT v3d)
+		endif()
     endif()
     if(UNIX AND NOT APPLE) # Linux
         set(LIB_PATHS "")
