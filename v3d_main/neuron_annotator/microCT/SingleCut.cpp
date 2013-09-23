@@ -109,6 +109,7 @@ void SingleCut::on_edgeButton_clicked()
     ui.cutButton->setDefault(true);
     updateCutDistance();
     emit currentWidgetRequested(widgetIndex);
+    emit cutGuideRequested(true); // Why is this sometimes necessary?
 }
 
 void SingleCut::setAxis(const QString& axis)
