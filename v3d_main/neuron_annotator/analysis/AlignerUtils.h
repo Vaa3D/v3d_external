@@ -5,6 +5,7 @@
 #include <QtCore>
 #include <QDir>
 #include "../../v3d/v3d_core.h"
+#include "../../v3d/histogramsimple.h"
 
 using namespace std;
 
@@ -13,7 +14,7 @@ class AlignerUtils
 public:
 
     static const int MODE_UNDEFINED;
-    static const int MODE_SUBVOLUME;
+    static const int MODE_REFERENCE_RANK;
 
     AlignerUtils();
 
@@ -28,10 +29,14 @@ public:
         usage.append("  Aligner Utilities                                                                                     \n");
         usage.append("                                                                                                        \n");
         usage.append("    Tools for working with the brain aligner.                                                           \n");
+	usage.append("       Mode reference_rank ranks each channel in a list, with the first channel as suggested reference  \n");
+	usage.append("        and each channel thereafter ranked from most intensity to least.                                \n");
+	usage.append("                                                                                                        \n");
+	usage.append("     -mode <reference_rank>                                                                             \n");
         usage.append("                                                                                                        \n");
+	usage.append("    For mode reference_rank:                                                                            \n");
+	usage.append("                                                                                                        \n");
         usage.append("     -sourceStack <stack from which to create subvolume>                                                \n");
-        usage.append("     -subVolume \"x0 x1 y0 y1 z0 z1\"                                                                   \n");
-        usage.append("     -outputStack <output stack>                                                                        \n");
         usage.append("                                                                                                        \n");
         return usage;
     }
@@ -42,12 +47,10 @@ public:
 private:
 
     int mode;
-
     QString sourceStackFilepath;
-    QString subVolumeString;
-    QString outputStackFilepath;
+    HistogramSimple histogram;
 
-    bool createSubVolume();
+    bool referenceRank();
 
 };
 
