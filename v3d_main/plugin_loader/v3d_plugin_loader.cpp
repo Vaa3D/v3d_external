@@ -317,7 +317,9 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu, const QDir& pluginsDir)
         }
         else
         {
-            qDebug() << "Fail instantiation: " <<fullpath;
+            qDebug() << "Fail instantiation("<<loader->errorString().toStdString().c_str()<<"): " <<fullpath;
+
+            //qDebug() << "Fail instantiation: " <<fullpath;
         }
 
         //unload or left ? is a problem
