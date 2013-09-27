@@ -91,6 +91,12 @@ public slots:
 	void mapHanchuanColor() {selectedColor(1);}
 	void mapRandomColor()   {selectedColor(-1);}
 
+    void doMenuOfDisplayMode();
+    void setSWCDisplayMode(int v);
+    void setSWCDisplayUsingGlobalSettings() {setSWCDisplayMode(-1);}
+    void setSWCDisplayUsingLine() {setSWCDisplayMode(1);}
+    void setSWCDisplayUsingTube() {setSWCDisplayMode(0);}
+
 	void pressedClickHandler(int row, int col);
 	void doubleClickHandler(int row, int col);
 	void pickSurf(int row, int col);
@@ -127,10 +133,15 @@ protected:
 	void createMenuOfColor();
 	QMenu menuColor;
 
+    void createMenuOfDisplayMode();
+    QMenu menuDisplayMode;
+
 	QPushButton *okButton, *cancelButton, *undoButton,
 				*selectAllButton, *deselectAllButton, *inverseSelectButton,
 				*onSelectButton, *offSelectButton, *colorSelectButton,
-				*editNameCommentButton, *markerLocalView;
+                *editNameCommentButton, *markerLocalView,
+                *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
+
 	QTabWidget *tabOptions;
 	QTableWidget *table[1+5];
 	QCheckBox *checkBox_accumulateLastHighlightHits, *checkBox_attachedToCurrentView;
@@ -159,6 +170,7 @@ protected:
 		okButton=cancelButton=undoButton=0;
 		selectAllButton=deselectAllButton=inverseSelectButton=
 			onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=markerLocalView =0;
+        objectSetDisplayModeButton = 0;
 		for (int i=0; i<=5; i++)  table[i]=0; //by PHC, 090521 change to 5
 		tabOptions=0;
 		checkBox_accumulateLastHighlightHits = checkBox_attachedToCurrentView =0;//100809 RZC

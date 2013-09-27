@@ -1409,6 +1409,12 @@ void Renderer_gl1::drawNeuronTree(int index)
 	RGBA8 rgba = listNeuronTree.at(index).color;
 	bool on    = listNeuronTree.at(index).on;
 	bool editable = listNeuronTree.at(index).editable;
+    int cur_linemode = listNeuronTree.at(index).linemode; //added by PHC 20130926
+
+    v3d_msg(QString("%1").arg(cur_linemode), 0);
+
+    int cur_lineType = (cur_linemode==0 || cur_linemode==1) ? cur_linemode : lineType;
+
 	NeuronSWC S0, S1;
      // for neuron color: same as neuron label color (ZJL)
      GLubyte neuronColor[3];
@@ -1489,7 +1495,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 			float rf = 2;
 			r1 *= rf;
 			r0 *= rf;
-			if (lineType==0)
+            if (cur_lineType==0)
 			{
 				GLfloat m[4][4];
 				XYZ A, B, C;
@@ -1530,7 +1536,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				}
 				glPopMatrix();
 			}
-			else if (lineType==1)
+            else if (cur_lineType==1)
 			{
 				if (length >0)  // branch line
 				{
@@ -1591,11 +1597,28 @@ void Renderer_gl1::drawNeuronTreeList()
 	if (sShowSurfObjects==0) return;
 	if (listNeuronTree.size()<1)  return;
 	glPushAttrib(GL_LIGHTING_BIT | GL_POLYGON_BIT);
-	if (lineType==1) // float line
-	{
-		glDisable(GL_LIGHTING);
-	}
-	glFrontFace(GL_CW);
+
+    {
+        V3DLONG nlines_1=0, nlines_minus1=0;
+        for (V3DLONG i=0; i<listNeuronTree.size();i++)
+        {
+            if (listNeuronTree[i].linemode==1)
+                nlines_1++;
+            else if (listNeuronTree[i].linemode!=0 && listNeuronTree[i].linemode!=1)
+                nlines_minus1++;
+        }
+
+        if (nlines_1==listNeuronTree.size() ) // float line  // consider combination of tube and line mode displayed neuron now. by PHC 20130926
+        {
+            glDisable(GL_LIGHTING);
+        }
+        else if (nlines_minus1==listNeuronTree.size() && lineType==1)
+        {
+            glDisable(GL_LIGHTING);
+        }
+    }
+
+    glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	//	if (lineType==0 && sShowSurfObjects==1) // restore depth buffer // very very slowly!!! discard, by RZC 080902

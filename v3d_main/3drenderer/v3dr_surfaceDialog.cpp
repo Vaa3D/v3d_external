@@ -278,13 +278,15 @@ void V3dr_surfaceDialog::createFirst()
     onSelectButton = new QPushButton("On");
     offSelectButton = new QPushButton("Off");
     colorSelectButton = new QPushButton("Color >>");
+    objectSetDisplayModeButton = new QPushButton("Display Mode >>"); //by PHC 20130926
     editNameCommentButton = new QPushButton("Name/Comments"); //by PHC, 090219
     undoButton = new QPushButton("Undo");
     changeLayout->addWidget(onSelectButton,  		1+3,0, 1,1);
     changeLayout->addWidget(offSelectButton, 		1+3,1, 1,1);
     changeLayout->addWidget(colorSelectButton,		2+3,0, 1,2);
-    changeLayout->addWidget(editNameCommentButton,	3+3,0, 1,2);
-    changeLayout->addWidget(undoButton,				4+3,0, 1,2);
+    changeLayout->addWidget(objectSetDisplayModeButton,		3+3,0, 1,2);
+    changeLayout->addWidget(editNameCommentButton,	4+3,0, 1,2);
+    changeLayout->addWidget(undoButton,				5+3,0, 1,2);
 
 //    markerLocalView = new QPushButton("Local 3D View around Marker");
 
@@ -335,6 +337,7 @@ void V3dr_surfaceDialog::createFirst()
 	HALF_MARGINS(allLayout);
 
 	createMenuOfColor();
+    createMenuOfDisplayMode();
 
     if (okButton)		connect(okButton, SIGNAL(clicked()),    this, SLOT(accept()));
 	if (cancelButton)	connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
@@ -345,6 +348,7 @@ void V3dr_surfaceDialog::createFirst()
 	if (onSelectButton)		connect(onSelectButton, SIGNAL(clicked()),    this, SLOT(selectedOn()));
 	if (offSelectButton)	connect(offSelectButton, SIGNAL(clicked()),   this, SLOT(selectedOff()));
 	if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(doMenuOfColor()));
+    if (objectSetDisplayModeButton) connect(objectSetDisplayModeButton, SIGNAL(clicked()),   this, SLOT(doMenuOfDisplayMode()));
 	if (editNameCommentButton) connect(editNameCommentButton, SIGNAL(clicked()),   this, SLOT(editObjNameAndComments()));
 
 	if (searchTextEdit && doSearchTextNext) connect(doSearchTextNext, SIGNAL(clicked()), this, SLOT(findNext()));
@@ -394,8 +398,73 @@ void V3dr_surfaceDialog::doMenuOfColor()
 	}
 	catch (...)
 	{
-		printf("Fail to run the V3dr_surfaceDialog::doMenuOfColor() function.\n");
+        v3d_msg("Fail to run the V3dr_surfaceDialog::doMenuOfColor() function.");
 	}
+}
+
+void V3dr_surfaceDialog::createMenuOfDisplayMode()
+{
+    QAction* Act;
+
+    Act = new QAction(tr("Use global setting..."), this);
+    connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingGlobalSettings()));
+    menuDisplayMode.addAction(Act);
+
+    Act = new QAction(tr("Always line mode"), this);
+    connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingLine()));
+    menuDisplayMode.addAction(Act);
+
+    Act = new QAction(tr("Always tube mode"), this);
+    connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingTube()));
+    menuDisplayMode.addAction(Act);
+}
+
+void V3dr_surfaceDialog::doMenuOfDisplayMode()
+{
+    try
+    {
+        menuDisplayMode.exec(QCursor::pos());
+    }
+    catch (...)
+    {
+        v3d_msg("Fail to run the V3dr_surfaceDialog::doMenuOfDisplayMode() function.");
+    }
+}
+
+void V3dr_surfaceDialog::setSWCDisplayMode(int v) //NOT sure if this will influence the Undo function. Need to check and test for that later. noted by PHC 20130926
+{
+    Renderer_gl1* r = renderer;
+    if (! r)  return;
+
+    QTableWidget* t = currentTableWidget();
+    if (!t || !table || t!=table[stNeuronStructure])
+        return;
+
+    QString vs = "global";
+    if (v==1) vs = "line";
+    else if (v==0) vs = "tube";
+    v3d_msg(vs, 0);
+
+    PROGRESS_DIALOG("Updating display mode    ", this);
+    begin_batch();
+
+    V3DLONG n_row = t->rowCount();
+    for (V3DLONG i=0; i<n_row; i++)
+    {
+        PROGRESS_PERCENT(i*100/n_row);
+
+        QTableWidgetItem * curItem = t->item(i,3);
+        if (curItem->isSelected()) // skip un-selected
+        {
+            r->listNeuronTree[i].linemode = v;
+            curItem->setData(0, qVariantFromValue(vs));
+        }
+    }
+
+    end_batch();
+    PROGRESS_PERCENT(100);
+
+    updatedContent(t);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -626,7 +695,6 @@ void V3dr_surfaceDialog::selectedColor(int map)
 	updatedContent(t);
 }
 
-
 #define ADD_ONOFF(b)	{curItem = new QTableWidgetItem();	t->setItem(i, j++, curItem); \
 						curItem->setCheckState(BOOL_TO_CHECKED(b));}
 
@@ -781,7 +849,7 @@ QTableWidget* V3dr_surfaceDialog::createTableSWC()
 	if (! r)  return 0;
 
 	QStringList qsl;
-	qsl << "on/off" << "color" << "count" << "editing" << "name" << "comment"<< "file name";
+    qsl << "on/off" << "color" << "count" << "display mode" << "editing" << "name" << "comment"<< "file name";
 	int row = (r->listNeuronTree.size());
 	int col = qsl.size();
 
@@ -800,7 +868,14 @@ QTableWidget* V3dr_surfaceDialog::createTableSWC()
 
 		ADD_STRING( tr("%1").arg(r->listNeuronTree[i].listNeuron.size()) );
 
-		if (r->listNeuronTree[i].editable) {
+        switch (r->listNeuronTree[i].linemode)
+        {
+        case 1: ADD_STRING( tr("line") ); break;
+        case 0: ADD_STRING( tr("tube") ); break;
+        default: ADD_STRING( tr("global") ); break;
+        }
+
+        if (r->listNeuronTree[i].editable) {
 			ADD_STRING( tr("Yes") );
 		} else
 			ADD_STRING( tr("") );

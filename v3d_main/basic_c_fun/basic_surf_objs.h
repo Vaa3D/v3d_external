@@ -161,8 +161,13 @@ struct NeuronTree : public BasicSurfObj
 	QHash <int, int>  hashNeuron;
 	QString file;
 	bool editable;
+    int linemode; //local control if a neuron will displayed as line or tube mode(s). by PHC 20130926
 
-	NeuronTree() {listNeuron.clear(); hashNeuron.clear(); file=""; editable=false;}
+    NeuronTree()
+    {
+        listNeuron.clear(); hashNeuron.clear(); file=""; editable=false;
+        linemode=-1; //-1 is no defined. 0 is NO, and 1 is yes
+    }
 	void copy(const NeuronTree & p)
 	{
 		n=p.n; color=p.color; on=p.on; selected=p.selected; name=p.name; comment=p.comment;
@@ -170,6 +175,7 @@ struct NeuronTree : public BasicSurfObj
 		hashNeuron = p.hashNeuron;
 		file     = p.file;
 		editable = p.editable;
+        linemode = p.linemode;
 	}
 	void copyGeometry(const NeuronTree & p)
 	{
