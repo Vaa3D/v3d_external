@@ -580,6 +580,7 @@ bool ScreenPatternAnnotator::loadCompartmentIndex()
         qDebug() << "loadCompartmentIndex: Could not load compartmentIndexImage from file=" << compartmentIndexImageFilepath;
         return false;
     }
+    return true;
 }
 
 bool ScreenPatternAnnotator::annotate() {
@@ -780,6 +781,7 @@ bool ScreenPatternAnnotator::loadMaskNameIndex()
     }
     abbreviationMapFile.close();
     qDebug() << "Done with abbreviationMapFile";
+    return true;
 }
 
 // Here, we will treat any non-zero position in the index image as being part-of the composite, and then
@@ -1602,6 +1604,7 @@ bool ScreenPatternAnnotator::arnimScore()
   }
   scoreOutput.flush();
   outputFile.close();
+  return true;
 }
 
 
@@ -1919,6 +1922,7 @@ bool ScreenPatternAnnotator::createSimilarityList()
   }
   outputStream.flush();
   outputFile.close();
+  return true;
 }
 
 SortableStringDouble ScreenPatternAnnotator::computeStackSimilarityManager(int subjectStackIndex)
