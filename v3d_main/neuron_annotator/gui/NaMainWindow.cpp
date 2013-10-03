@@ -761,10 +761,23 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
 void NaMainWindow::on_actionPlay_movie_triggered() {
     // qDebug() << "Play movie";
     currentMovie.rewind();
-    double secondsElapsed = 0.0;
+    QTime movieTimer;
+    movieTimer.start();
+    double movieElapsedTime = 0.0;
+    AnimationFrame frame;
+    bool bPlayRealTime = true;
     while (currentMovie.hasMoreFrames()) {
-        animateToFrame(currentMovie.getNextFrame());
+        frame = currentMovie.getNextFrame();
+        // Skip frames to catch up, if behind schedule
+        movieElapsedTime += currentMovie.secondsPerFrame;
+        if (bPlayRealTime && (movieElapsedTime < movieTimer.elapsed()/1000.0))
+            continue; // race to next frame
+        //
+        animateToFrame(frame);
     }
+    // Alway finish in final frame.
+    if (bPlayRealTime)
+        animateToFrame(frame);
 }
 
 void NaMainWindow::animateToFrame(const AnimationFrame& frame) {
