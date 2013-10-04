@@ -941,6 +941,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     delete normalizedCompartmentHeatmapFullSize;
 
     double * compartmentZoneFractions = quantifyCompartmentZones(inputImage, compartmentIndexImage, index, bb);
+
     for (int g=0;g<5;g++) {
         QString gLine=QString("%1.z%2=%3").arg(abbreviation).arg(g).arg(compartmentZoneFractions[g]);
         quantifierList.append(gLine);
@@ -953,7 +954,26 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     cubeBB.y1 = bb.y1/CUBE_SIZE;
     cubeBB.z0 = bb.z0/CUBE_SIZE;
     cubeBB.z1 = bb.z1/CUBE_SIZE;
+
+    V3DLONG cubeXmax=inputImageCubified->getXDim();
+    V3DLONG cubeYmax=inputImageCubified->getYDim();
+    V3DLONG cubeZmax=inputImageCubified->getZDim();
+
+    if (cubeBB.x1>=cubeXmax) {
+      cubeBB.x1=cubeXmax-1;
+      qDebug() << "cubeBB.x1=" << cubeBB.x1;
+    }
+    if (cubeBB.y1>=cubeYmax) {
+      cubeBB.y1=cubeYmax-1;
+      qDebug() << "cubeBB.y1=" << cubeBB.y1;
+    }
+    if (cubeBB.z1>=cubeZmax) {
+      cubeBB.z1=cubeZmax-1;
+      qDebug() << "cubeBB.z1=" << cubeBB.z1;
+    }
+
     double * compartmentCubeZoneFractions = quantifyCompartmentZones(inputImageCubified, compartmentIndexImageCubified, index, cubeBB);
+
     for (int g=0;g<5;g++) {
         QString gLine=QString("%1.c%2=%3").arg(abbreviation).arg(g).arg(compartmentCubeZoneFractions[g]);
         quantifierList.append(gLine);
@@ -981,6 +1001,7 @@ double * ScreenPatternAnnotator::quantifyCompartmentZones(My4DImage * sourceImag
     V3DLONG ymax=sourceImage->getYDim();
     V3DLONG xmax=sourceImage->getXDim();
     V3DLONG compartmentVoxelCount=0;
+
     for (V3DLONG z=bb.z0;z<=bb.z1;z++) {
         V3DLONG zoffset=z*ymax*xmax;
         for (V3DLONG y=bb.y0;y<=bb.y1;y++) {
@@ -1005,6 +1026,7 @@ double * ScreenPatternAnnotator::quantifyCompartmentZones(My4DImage * sourceImag
             }
         }
     }
+
     double * compartmentZoneFractions = new double[5];
     for (int z=0;z<5;z++) {
         double c=cz[z];
