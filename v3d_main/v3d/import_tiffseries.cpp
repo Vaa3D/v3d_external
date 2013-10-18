@@ -313,6 +313,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
     d.numimgBox->setMinimum(p.countImg);
     d.startimgBox->setMaximum(p.countImg);
     d.incBox->setMaximum(p.countImg);
+    d.endimgBox->setMaximum(p.countImg);
 
 	int res = d.exec();
 	if (res==QDialog::Accepted)
@@ -323,7 +324,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 		myList = myList.filter(p.filt);
 		
 		tmpList.clear();
-        for (V3DLONG i = p.startImg-1; i < myList.size(); i+=p.inc)
+        for (V3DLONG i = p.startImg-1; i<= p.endImg-1; i+=p.inc)
 			tmpList << myList.at(i);//.toLocal8Bit().constData();
 			
         myList = tmpList;

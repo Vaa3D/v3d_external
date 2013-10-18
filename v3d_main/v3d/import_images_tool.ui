@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>319</width>
-    <height>325</height>
+    <width>317</width>
+    <height>362</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,19 +18,15 @@
     <rect>
      <x>21</x>
      <y>21</y>
-     <width>273</width>
-     <height>277</height>
+     <width>276</width>
+     <height>321</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="numimgButton">
-        <property name="text">
-         <string># files in the same folder</string>
-        </property>
-       </widget>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="startimgBox"/>
       </item>
       <item row="0" column="1">
        <widget class="QSpinBox" name="numimgBox"/>
@@ -38,35 +34,49 @@
       <item row="1" column="0">
        <widget class="QPushButton" name="startimgButton">
         <property name="text">
-         <string>Starting Image</string>
+         <string>Start Image</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="startimgBox"/>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="numimgButton">
+        <property name="text">
+         <string># files in the same folder</string>
+        </property>
+       </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QPushButton" name="incButton">
         <property name="text">
          <string>Increment</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QSpinBox" name="incBox"/>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QPushButton" name="filterButton">
         <property name="text">
          <string>File Name Contains</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QLineEdit" name="filterEdit"/>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="5" column="0" colspan="2">
        <widget class="QComboBox" name="comboPack"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="startimgButton_2">
+        <property name="text">
+         <string>End Image</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="endimgBox"/>
       </item>
      </layout>
     </item>
@@ -74,7 +84,7 @@
      <widget class="QLabel" name="label">
       <property name="text">
        <string>info: the Names of the filtered images 
-are sorted numerically</string>
+are sorted numerically.</string>
       </property>
      </widget>
     </item>

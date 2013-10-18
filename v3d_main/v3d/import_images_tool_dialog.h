@@ -49,12 +49,15 @@ import_images_tool_dialog.h
 
 #include "ui_import_images_tool.h"
 
+#include "../basic_c_fun/v3d_basicdatatype.h"
+
 struct ImportImgPara
 {
-	int startImg;
-	int countImg;
+    V3DLONG startImg;
+    V3DLONG endImg;
+    V3DLONG countImg;
 	QString filt;
-	int inc;
+    V3DLONG inc;
 	int packType;
 };
 
@@ -73,13 +76,16 @@ public:
 		//initialization codes for read directory
         numimgBox->setMaximum(10000000);
         startimgBox->setMaximum(10000000);
-        incBox->setMaximum(10000000);
 		startimgBox->setMinimum(1);
-		incBox->setMinimum(1);
+        incBox->setMaximum(10000000);
+        incBox->setMinimum(1);
+        endimgBox->setMaximum(10000000);
+        endimgBox->setMinimum(1);
 
 		startimgBox->setValue(1);
 		incBox->setValue(1);
-		filterEdit->setText("");
+        endimgBox->setValue(1);
+        filterEdit->setText("");
 
 		comboPack->clear();
 		comboPack->insertItem(0, "Pack images in 'Z' dimension");
@@ -92,7 +98,8 @@ public:
 		if (!p) return;
 		p->countImg = numimgBox->value();
 		p->startImg = startimgBox->value();
-		p->inc = incBox->value();
+        p->endImg = endimgBox->value();
+        p->inc = incBox->value();
 		p->filt = filterEdit->text();
 		p->packType = comboPack->currentIndex();
 	}
