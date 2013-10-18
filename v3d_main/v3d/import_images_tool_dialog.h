@@ -71,9 +71,9 @@ public:
 		connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
 		//initialization codes for read directory
-		numimgBox->setMaximum(1000);
-		startimgBox->setMaximum(1000);
-		incBox->setMaximum(1000);
+        numimgBox->setMaximum(10000000);
+        startimgBox->setMaximum(10000000);
+        incBox->setMaximum(10000000);
 		startimgBox->setMinimum(1);
 		incBox->setMinimum(1);
 

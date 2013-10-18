@@ -268,7 +268,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 	QMap<V3DLONG, QString> mapList;
 	
 	mapList.clear();
-	for(int i=0; i<myList.size(); ++i)
+    for(V3DLONG i=0; i<myList.size(); ++i)
 	{
 		fileNameStr = myList.at(i);
 		
@@ -293,14 +293,27 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 	myList = mapList.values();
 	//foreach (QString qs, myList)  qDebug() << qs;
 	
+    //no need to pop-out a dialog if no meaningful file has been detected. 131017
+    if (myList.isEmpty())
+    {
+        v3d_msg("It seems no file contains a digit-portion in the file name. Naming convention should be sth like xxx_000001.yyy, xxx_000002.yyy, .... Check your data before importing.");
+        return myList;
+    }
+
 	//Get the tiff image sequence by usr interaction
 	
 	ImportImgPara p;
 	p.countImg = myList.size();
 	
 	import_images_tool_Dialog d(curFilePath);
-	
-	d.numimgBox->setValue(p.countImg);
+
+    //need to update the information based on the current myList info. 131017
+    d.numimgBox->setMaximum(p.countImg);
+    d.numimgBox->setValue(p.countImg);
+    d.numimgBox->setMinimum(p.countImg);
+    d.startimgBox->setMaximum(p.countImg);
+    d.incBox->setMaximum(p.countImg);
+
 	int res = d.exec();
 	if (res==QDialog::Accepted)
 	{
@@ -310,11 +323,11 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 		myList = myList.filter(p.filt);
 		
 		tmpList.clear();
-		for (int i = p.startImg-1; i < myList.size(); i+=p.inc)
+        for (V3DLONG i = p.startImg-1; i < myList.size(); i+=p.inc)
 			tmpList << myList.at(i);//.toLocal8Bit().constData();
 			
-			myList = tmpList;
-			packtype = (p.packType==0)? TIME_PACK_Z : TIME_PACK_C;
+        myList = tmpList;
+        packtype = (p.packType==0)? TIME_PACK_Z : TIME_PACK_C;
 	}
 	else
 	{
