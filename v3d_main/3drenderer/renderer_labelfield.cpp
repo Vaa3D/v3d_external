@@ -272,6 +272,8 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 {
 	qDebug("    Renderer_gl1::constructLabelfieldSurf");
 
+    V3DLONG i;
+
 	//==========================================
 	//090222: try to import surface obj name if possible
 	QList <CellAPO> mycelllist;
@@ -296,24 +298,33 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 	qtime.start();
 
 	////////////////////////////////////////////
-	cleanLabelfieldSurf();
+    if (QMessageBox::question (0, "", "Clean existing surface objects? (If choose NO, then the new surface objects will be appended to existing ones)",
+                               QMessageBox::Yes, QMessageBox::No)
+        == QMessageBox::Yes)
+    {
+        cleanLabelfieldSurf();
+    }
+
+    V3DLONG num_surf0 = listLabelSurf.size(); //the existing number of surfaces. PHC 131021
+
 	////////////////////////////////////////////
 
 	////////////////////////////////////////////////
 	//count label list
-	listLabelSurf.clear();
+    //listLabelSurf.clear(); //a duplicated call, no longer need. // PHC 131021
+
     if (mesh_type==0) // 090423 RZC: for Label Surface
     {
 		qDebug("-------------------------------------------------------");
-		unsigned int count = 0;
+        unsigned V3DLONG count = 0;
 		{
-			for (int z=0; z<lf_sz2; z++)
+            for (V3DLONG z=0; z<lf_sz2; z++)
 			{
 				PROGRESS_TEXT( QObject::tr("Counting label: %1 labels").arg(count));
 				PROGRESS_PERCENT(z*99/lf_sz2);
 
-				for(int y=0; y<lf_sz1; y++)
-				for(int x=0; x<lf_sz0; x++)
+                for(V3DLONG y=0; y<lf_sz1; y++)
+                for(V3DLONG x=0; x<lf_sz0; x++)
 				{
 					if (count==lf_mask) break;
 
@@ -366,7 +377,7 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 	//==========================================
 	//090222: try to import surface obj name if possible
 
-	for (int i=0;i<mycelllist.size() && i<listLabelSurf.size();i++)
+    for (i=0;i<mycelllist.size() && i<listLabelSurf.size();i++)
 	{
 		listLabelSurf[i].name = mycelllist[i].name;
 		listLabelSurf[i].comment = mycelllist[i].comment;
@@ -375,11 +386,11 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 	//=========================================
 	//MESSAGE_ASSERT(0);
 
-	int f_num = 0;
-	int num_surf = listLabelSurf.size();
-	for (int i=0; i<num_surf; i++)
+    V3DLONG f_num = 0;
+    V3DLONG num_surf = listLabelSurf.size();
+    for (i=0; i<num_surf; i++)
 	{
-		int t_num = 0;
+        V3DLONG t_num = 0;
 		PROGRESS_TEXT( QObject::tr("Creating geometric group/label %1 of %2").arg(i+1).arg(num_surf) );
 		PROGRESS_PERCENT((i+1)*90/num_surf);
 		{
@@ -407,7 +418,10 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 		}
 		f_num += t_num;
 	}
-	qDebug( "num_surf=%d, list_pTriangle.size()=%d", num_surf, list_listTriangle.size());
+
+    num_surf += num_surf0;
+
+    qDebug( "num_surf=%ld, list_pTriangle.size()=%ld", num_surf, list_listTriangle.size());
 	MESSAGE_ASSERT(num_surf==list_listTriangle.size());
 
 	PROGRESS_TEXT("Compiling geometric data");
@@ -488,13 +502,13 @@ void Renderer_gl1::compileLabelfieldSurf(int update)
 
 void Renderer_gl1::cleanLabelfieldSurf()
 {
-	for (int i=0; i<list_listTriangle.size(); i++)
+    for (V3DLONG i=0; i<list_listTriangle.size(); i++)
 	{
 		delTriangles(list_listTriangle[i]);
 	}
 	list_listTriangle.clear();
 
-	for (int i=0; i<list_glistLabel.size(); i++)
+    for (V3DLONG i=0; i<list_glistLabel.size(); i++)
 	{
 		glDeleteLists(list_glistLabel[i], 1);
 	}
