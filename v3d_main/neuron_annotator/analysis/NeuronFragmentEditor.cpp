@@ -174,6 +174,12 @@ bool NeuronFragmentEditor::execute()
 bool NeuronFragmentEditor::createMaskFromStack()
 {
   ImageLoader preLoader;
+  QFileInfo sourceFileInfo(sourceImageFilepath);
+  if (!sourceFileInfo.exists()) {
+    qDebug() << "Could not find source image file=" << sourceImageFilepath;
+    return false;
+  }
+
   My4DImage* preImage=preLoader.loadImage(sourceImageFilepath);
 
   xdim=preImage->getXDim();
