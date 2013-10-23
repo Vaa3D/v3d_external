@@ -44,6 +44,7 @@ public:
 
     bool execute();
     bool validateFile();
+    bool validateFile(QString filename);
 
     // URL versions, as oppose to file name versions
     My4DImage* loadImage(const char* filepath);
