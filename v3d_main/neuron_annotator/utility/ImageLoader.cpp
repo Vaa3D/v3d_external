@@ -381,8 +381,12 @@ unsigned char * ImageLoader::convertType2Type1(My4DImage *image) {
 
 
 bool ImageLoader::validateFile() {
-    qDebug() << "Input file = " << inputFilepath;
-    QFileInfo fileInfo(inputFilepath);
+  return validateFile(inputFilepath);
+}
+
+bool ImageLoader::validateFile(QString filename) {
+    qDebug() << "Validating file = " << filename;
+    QFileInfo fileInfo(filename);
     if (fileInfo.exists()) {
         qDebug() << " verified this file exists with size=" << fileInfo.size();
     } else {
@@ -419,6 +423,11 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
 
 bool ImageLoader::loadImage(Image4DSimple * stackp, const char* filepath)
 {
+  QString qFilepath(filepath);
+  if (!validateFile(qFilepath)) {
+    return false;
+  }
+
     // qDebug() << "loadImage stack string" << filepath << __FILE__ << __LINE__;
     bool bSucceeded = false;
     std::string extension = getFileExtension(std::string(filepath));
@@ -450,6 +459,10 @@ My4DImage* ImageLoader::loadImage(QUrl url) {
 }
 
 My4DImage* ImageLoader::loadImage(const char* filepath) {
+  QString qFilepath(filepath);
+  if (!validateFile(qFilepath)) {
+    return 0L;
+  }
     // qDebug() << "Starting to load file " << filepath << __FILE__ << __LINE__;
     My4DImage* image=new My4DImage();
     loadImage(image, filepath);
