@@ -3510,6 +3510,7 @@ bool Renderer_gl1::isInBound(const XYZ & loc, float factor, bool b_message)
 		return false;
 	}
 }
+
 #define ___computation_functions___
 XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMarker & S)
 {
@@ -3533,6 +3534,7 @@ XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMark
 	XYZ loc(Y(1), Y(2), Y(3));
 	return loc;
 }
+
 // in Image space (model space)
 void Renderer_gl1::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1)
 {
