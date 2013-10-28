@@ -1645,7 +1645,7 @@ void V3dR_GLWidget::setZoom(int zr)
 		_zoom = zr;
         if (renderer)
         {
-            if (zr>40)
+            if (zr>=100) //40
             {
                 //v3d_msg("Now prepare to enter the zr>40 wheel event!");
                 //check if terafly exists
@@ -1685,7 +1685,7 @@ void V3dR_GLWidget::setZoom(float zr)
         _zoom = zr;
         if (renderer)
         {
-            if (zr>40)
+            if (zr>=100) //40
             {
                 //v3d_msg("Now prepare to enter the zr>40 wheel event!");
                 //check if terafly exists
