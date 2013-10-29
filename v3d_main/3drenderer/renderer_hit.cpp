@@ -3409,9 +3409,9 @@ void Renderer_gl1::refineMarkerTranslate()
 {
 	if (currentMarkerName<1 || currentMarkerName>listMarker.size())  return;
 	if (listMarkerPos.size()<1)  return;
-	const MarkerPos & pos = listMarkerPos.at(0);
-	const ImageMarker & S = listMarker[currentMarkerName-1];
-    XYZ loc = getTranslateOfMarkerPos(pos, S);
+    const MarkerPos & pos = listMarkerPos.at(0);
+    const ImageMarker & S = listMarker[currentMarkerName-1];
+    XYZ loc = getTranslateOfMarkerPos(pos, S); //what is the problem here with the new XCode compiler?? by PHC20131029
 	//added by PHC, 090120. update the marker location in both views
 	updateMarkerLocation(currentMarkerName-1, loc);
 }
@@ -3513,10 +3513,12 @@ bool Renderer_gl1::isInBound(const XYZ & loc, float factor, bool b_message)
 }
 
 #define ___computation_functions___
+
+//
 XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarker& S)
-{
+{    
 	XYZ pt(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
-	ColumnVector X(4);		X << pt.x << pt.y << pt.z << 1;
+    ColumnVector X(4);		X << pt.x << pt.y << pt.z << 1;
 	Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
 	Matrix M(4,4);		M << pos.MV;  M = M.t();
 	Matrix PM = P * M;

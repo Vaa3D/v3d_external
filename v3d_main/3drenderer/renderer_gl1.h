@@ -267,7 +267,7 @@ public:
 	void _MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1);
 	double distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos);
 	XYZ getLocationOfListMarkerPos();
-	XYZ getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarker& S);
+    XYZ getTranslateOfMarkerPos(const MarkerPos &pos, const ImageMarker &S);
 	XYZ getPointOnPlane(XYZ P1, XYZ P2, double plane[4]);
 	XYZ getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]=0);
 	XYZ getCenterOfLineProfile(XYZ p1, XYZ p2,
