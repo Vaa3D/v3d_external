@@ -3519,22 +3519,24 @@ XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarke
 {    
 	XYZ pt(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
     ColumnVector X(4);		X << pt.x << pt.y << pt.z << 1;
+
 	Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
 	Matrix M(4,4);		M << pos.MV;  M = M.t();
 	Matrix PM = P * M;
-	//cout << "P M PM \n" << P << endl << M << endl << PM << endl;
+
+    //cout << "P M PM \n" << P << endl << M << endl << PM << endl;
 	ColumnVector pX  = PM * X;
-	pX = pX / pX(4);
+
+    pX = pX / pX(4);
 	//cout << " pX \n" << pX.t() << endl;
-	double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
+    double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
 	double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
 	double z = pX(3);                              // hold the clip space depth
-	ColumnVector pY(4); 	pY << x << y << z << 1;
+    ColumnVector pY(4); 	pY << x << y << z << 1;
 	ColumnVector Y = PM.i() * pY;
 	Y = Y / Y(4);
-	cout << "refine from: " << X.t() //<< endl
-		<< "         to: " << Y.t() << endl;;
-	XYZ loc(Y(1), Y(2), Y(3));
+    cout << "refine from: " << X.t()  << "   to: " << Y.t() << endl;
+    XYZ loc(Y(1), Y(2), Y(3));
 	return loc;
 }
 

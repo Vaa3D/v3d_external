@@ -19,7 +19,6 @@ include(v3d.pro)
 macx {
 LIBS -= -L../common_lib/lib_mac32  #100811: -lv3dtiff for both 32/64-bit
 LIBS += -L../common_lib/lib_mac64 
-#LIBS += -L/Users/pengh/work/v3d_external/v3d_main/jba/c++/ -lv3dnewmat
 }
 
 # 090713 RZC cp tiff64/libtiff.a to libtiff64.a in /usr/local/lib
