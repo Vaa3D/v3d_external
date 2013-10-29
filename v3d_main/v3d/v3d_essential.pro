@@ -365,7 +365,8 @@ unix:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
     
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff \
-    -lv3dnewmat 
+
+#    -lv3dnewmat
 #    -framework GLUT
 macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	
 # CMB Nov 29 2010 Snow leopard GLee_r.o requires CoreServices framework
