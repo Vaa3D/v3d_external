@@ -3828,281 +3828,285 @@ using namespace RBD_LIBRARIES;
 
 bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 {
-	//first generate the sum image of all planes for a particular axis code
-	if (!data4d_uint8 && !data4d_uint16 && !data4d_float32)
-	{
-	  v3d_msg("None of the 4D pointers is valid in proj_general_principal_axis().");  return false;
-	}
+    //first generate the sum image of all planes for a particular axis code
+    if (!data4d_uint8 && !data4d_uint16 && !data4d_float32)
+    {
+        v3d_msg("None of the 4D pointers is valid in proj_general_principal_axis().");  return false;
+    }
 
-	Options_Rotate tmp_opt;
-	tmp_opt.b_keepSameSize = (QMessageBox::Yes == QMessageBox::question (0, "", "Keep rotated image the same size with the original image?", QMessageBox::Yes, QMessageBox::No)) ?
-		true : false;
+    Options_Rotate tmp_opt;
+    tmp_opt.b_keepSameSize = (QMessageBox::Yes == QMessageBox::question (0, "", "Keep rotated image the same size with the original image?", QMessageBox::Yes, QMessageBox::No)) ?
+                true : false;
 
-	tmp_opt.fillcolor=0;
+    tmp_opt.fillcolor=0;
 
-	//
+    //
 
-	float * sumdata1d = 0;
-	float ** sumdata2d = 0;
+    float * sumdata1d = 0;
+    float ** sumdata2d = 0;
 
-	V3DLONG i,j,k,c;
-	V3DLONG d0, d1;
+    V3DLONG i,j,k,c;
+    V3DLONG d0, d1;
 
-	switch (ptype)
-	{
-		case imgPlaneX:
-			d0 = this->getYDim(); d1 = this->getZDim();
-			sumdata1d = new float [(V3DLONG)d0*d1];
-			if (!sumdata1d) return false;
-			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
+    switch (ptype)
+    {
+    case imgPlaneX:
+        d0 = this->getYDim(); d1 = this->getZDim();
+        sumdata1d = new float [(V3DLONG)d0*d1];
+        if (!sumdata1d) return false;
+        if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
-			if (data4d_uint8)
-			{
-			for (k=0;k<this->getZDim();k++)
-			{
-				for (j=0;j<this->getYDim();j++)
-				{
-					double tmp=0;
-					for (i=0;i<this->getXDim();i++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_uint8[c][k][j][i]);
-					sumdata2d[k][j]=tmp;
-				}
-			}
-			}
-			else if (data4d_uint16)
-{
-			for (k=0;k<this->getZDim();k++)
-			{
-				for (j=0;j<this->getYDim();j++)
-				{
-					double tmp=0;
-					for (i=0;i<this->getXDim();i++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_uint16[c][k][j][i]);
-					sumdata2d[k][j]=tmp;
-				}
-			}
-}
-			else if (data4d_float32)
-{
-			for (k=0;k<this->getZDim();k++)
-			{
-				for (j=0;j<this->getYDim();j++)
-				{
-					double tmp=0;
-					for (i=0;i<this->getXDim();i++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_float32[c][k][j][i]);
-					sumdata2d[k][j]=tmp;
-				}
-			}
-}
+        if (data4d_uint8)
+        {
+            for (k=0;k<this->getZDim();k++)
+            {
+                for (j=0;j<this->getYDim();j++)
+                {
+                    double tmp=0;
+                    for (i=0;i<this->getXDim();i++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_uint8[c][k][j][i]);
+                    sumdata2d[k][j]=tmp;
+                }
+            }
+        }
+        else if (data4d_uint16)
+        {
+            for (k=0;k<this->getZDim();k++)
+            {
+                for (j=0;j<this->getYDim();j++)
+                {
+                    double tmp=0;
+                    for (i=0;i<this->getXDim();i++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_uint16[c][k][j][i]);
+                    sumdata2d[k][j]=tmp;
+                }
+            }
+        }
+        else if (data4d_float32)
+        {
+            for (k=0;k<this->getZDim();k++)
+            {
+                for (j=0;j<this->getYDim();j++)
+                {
+                    double tmp=0;
+                    for (i=0;i<this->getXDim();i++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_float32[c][k][j][i]);
+                    sumdata2d[k][j]=tmp;
+                }
+            }
+        }
 
-			break;
+        break;
 
-		case imgPlaneY:
-			d0 = this->getXDim(); d1 = this->getZDim();
-			sumdata1d = new float [(V3DLONG)d0*d1];
-			if (!sumdata1d) return false;
-			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
+    case imgPlaneY:
+        d0 = this->getXDim(); d1 = this->getZDim();
+        sumdata1d = new float [(V3DLONG)d0*d1];
+        if (!sumdata1d) return false;
+        if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
-if (data4d_uint8)
-{
-			for (k=0;k<this->getZDim();k++)
-			{
-				for (i=0;i<this->getXDim(); i++)
-				{
-					double tmp=0;
-					for (j=0;j<this->getYDim(); j++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_uint8[c][k][j][i]);
-					sumdata2d[k][i]=tmp;
-				}
-			}
-}
-else if (data4d_uint16)
-{
-			for (k=0;k<this->getZDim();k++)
-			{
-				for (i=0;i<this->getXDim(); i++)
-				{
-					double tmp=0;
-					for (j=0;j<this->getYDim(); j++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_uint16[c][k][j][i]);
-					sumdata2d[k][i]=tmp;
-				}
-			}
-}
-else if (data4d_float32)
-{
-			for (k=0;k<this->getZDim();k++)
-			{
-				for (i=0;i<this->getXDim(); i++)
-				{
-					double tmp=0;
-					for (j=0;j<this->getYDim(); j++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_float32[c][k][j][i]);
-					sumdata2d[k][i]=tmp;
-				}
-			}
-}
+        if (data4d_uint8)
+        {
+            for (k=0;k<this->getZDim();k++)
+            {
+                for (i=0;i<this->getXDim(); i++)
+                {
+                    double tmp=0;
+                    for (j=0;j<this->getYDim(); j++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_uint8[c][k][j][i]);
+                    sumdata2d[k][i]=tmp;
+                }
+            }
+        }
+        else if (data4d_uint16)
+        {
+            for (k=0;k<this->getZDim();k++)
+            {
+                for (i=0;i<this->getXDim(); i++)
+                {
+                    double tmp=0;
+                    for (j=0;j<this->getYDim(); j++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_uint16[c][k][j][i]);
+                    sumdata2d[k][i]=tmp;
+                }
+            }
+        }
+        else if (data4d_float32)
+        {
+            for (k=0;k<this->getZDim();k++)
+            {
+                for (i=0;i<this->getXDim(); i++)
+                {
+                    double tmp=0;
+                    for (j=0;j<this->getYDim(); j++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_float32[c][k][j][i]);
+                    sumdata2d[k][i]=tmp;
+                }
+            }
+        }
 
-			break;
+        break;
 
-		case imgPlaneZ:
-			d0 = this->getXDim(); d1 = this->getYDim();
-			sumdata1d = new float [(V3DLONG)d0*d1];
-			if (!sumdata1d) return false;
-			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
+    case imgPlaneZ:
+        d0 = this->getXDim(); d1 = this->getYDim();
+        sumdata1d = new float [(V3DLONG)d0*d1];
+        if (!sumdata1d) return false;
+        if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
-if (data4d_uint8)
-{
-			for (j=0;j<this->getYDim();j++)
-			{
-				for (i=0;i<this->getXDim(); i++)
-				{
-					double tmp=0;
-					for (k=0;k<this->getZDim(); k++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_uint8[c][k][j][i]);
-					sumdata2d[j][i]=tmp;
-				}
-			}
-}
-else if (data4d_uint16)
-{
-			for (j=0;j<this->getYDim();j++)
-			{
-				for (i=0;i<this->getXDim(); i++)
-				{
-					double tmp=0;
-					for (k=0;k<this->getZDim(); k++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_uint16[c][k][j][i]);
-					sumdata2d[j][i]=tmp;
-				}
-			}
-}
-else if (data4d_float32)
-{
-			for (j=0;j<this->getYDim();j++)
-			{
-				for (i=0;i<this->getXDim(); i++)
-				{
-					double tmp=0;
-					for (k=0;k<this->getZDim(); k++)
-						for (c=0;c<this->getCDim();c++)
-							tmp += float(data4d_float32[c][k][j][i]);
-					sumdata2d[j][i]=tmp;
-				}
-			}
-}
-			break;
+        if (data4d_uint8)
+        {
+            for (j=0;j<this->getYDim();j++)
+            {
+                for (i=0;i<this->getXDim(); i++)
+                {
+                    double tmp=0;
+                    for (k=0;k<this->getZDim(); k++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_uint8[c][k][j][i]);
+                    sumdata2d[j][i]=tmp;
+                }
+            }
+        }
+        else if (data4d_uint16)
+        {
+            for (j=0;j<this->getYDim();j++)
+            {
+                for (i=0;i<this->getXDim(); i++)
+                {
+                    double tmp=0;
+                    for (k=0;k<this->getZDim(); k++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_uint16[c][k][j][i]);
+                    sumdata2d[j][i]=tmp;
+                }
+            }
+        }
+        else if (data4d_float32)
+        {
+            for (j=0;j<this->getYDim();j++)
+            {
+                for (i=0;i<this->getXDim(); i++)
+                {
+                    double tmp=0;
+                    for (k=0;k<this->getZDim(); k++)
+                        for (c=0;c<this->getCDim();c++)
+                            tmp += float(data4d_float32[c][k][j][i]);
+                    sumdata2d[j][i]=tmp;
+                }
+            }
+        }
+        break;
 
-		default:
-			return false;
-	}
+    default:
+        return false;
+    }
 
-	//then find the major axis for this plane's sum image
+    //then find the major axis for this plane's sum image
 
-	//first get the means
-	double d0mean=0, d1mean=0, s=0;
-	for (j=0;j<d1;j++)
-	{
-		for (i=0;i<d0;i++)
-		{
-			d1mean += sumdata2d[j][i]*j;
-			d0mean += sumdata2d[j][i]*i;
-			s += sumdata2d[j][i];
-		}
-	}
-	d1mean /= s;
-	d0mean /= s; //this is the intensity weighted mean values, thus the center of mass of the sum image
+    //first get the means
+    double d0mean=0, d1mean=0, s=0;
+    for (j=0;j<d1;j++)
+    {
+        for (i=0;i<d0;i++)
+        {
+            d1mean += sumdata2d[j][i]*j;
+            d0mean += sumdata2d[j][i]*i;
+            s += sumdata2d[j][i];
+        }
+    }
+    d1mean /= s;
+    d0mean /= s; //this is the intensity weighted mean values, thus the center of mass of the sum image
 
-	//then get the covariance
-	double p00=0, p11=0, p01=0, df0, df1, w;
-	for (j=0;j<d1;j++)
-	{
-		df1 = (j-d1mean);
-		for (i=0;i<d0;i++)
-		{
-			df0 = (i-d0mean);
-			w = sumdata2d[j][i];
-			p00 += w*df0*df0;
-			p11 += w*df1*df1;
-			p01 += w*df1*df0;
-		}
-	}
-	p00 /= s;
-	p01 /= s;
-	p11 /= s;
+    //then get the covariance
+    double p00=0, p11=0, p01=0, df0, df1, w;
+    for (j=0;j<d1;j++)
+    {
+        df1 = (j-d1mean);
+        for (i=0;i<d0;i++)
+        {
+            df0 = (i-d0mean);
+            w = sumdata2d[j][i];
+            p00 += w*df0*df0;
+            p11 += w*df1*df1;
+            p01 += w*df1*df0;
+        }
+    }
+    p00 /= s;
+    p01 /= s;
+    p11 /= s;
 
-	//then find the eigen vector
-	SymmetricMatrix Cov_Matrix(2);
-	Cov_Matrix.Row(1) << p00;
-	Cov_Matrix.Row(2) << p01 << p11;
+    //then find the eigen vector
+    SymmetricMatrix Cov_Matrix(2);
+    Cov_Matrix.Row(1) << p00;
+    Cov_Matrix.Row(2) << p01 << p11;
 
-	DiagonalMatrix DD;
-	Matrix VV;
-	EigenValues(Cov_Matrix,DD,VV);
+    DiagonalMatrix DD;
+    Matrix VV;
+    EigenValues(Cov_Matrix,DD,VV);
 
-	double r_angle = acos(VV(2,1)/sqrt(VV(2,2)*VV(2,2)+VV(2,1)*VV(2,1)))/3.141592635*180.0;
-	if (1)
-	{
-		cout << "Cov_Matrix" << endl;
-		cout << setw(12) << setprecision(3) << Cov_Matrix << endl <<endl;
+    double r_angle = acos(VV(2,1)/sqrt(VV(2,2)*VV(2,2)+VV(2,1)*VV(2,1)))/3.141592635*180.0;
 
-		cout << "DD_Matrix" << endl;
-		cout << setw(12) << setprecision(3) << DD << endl <<endl;
+    //commented 131029, by PHC
+    /*
+    if (1)
+    {
+        cout << "Cov_Matrix" << endl;
+        cout << setw(12) << setprecision(3) << Cov_Matrix << endl <<endl;
 
-		cout << "VV_Matrix" << endl;
-		cout << setw(12) << setprecision(3) << VV << endl <<endl;
+        cout << "DD_Matrix" << endl;
+        cout << setw(12) << setprecision(3) << DD << endl <<endl;
 
-		cout << setw(12) << setprecision(3) << r_angle << endl <<endl;
-	}
+        cout << "VV_Matrix" << endl;
+        cout << setw(12) << setprecision(3) << VV << endl <<endl;
 
-	//free space that no longer needed
-	if (sumdata2d) {delete2dpointer(sumdata2d, d0, d1);}
-	if (sumdata1d) {delete []sumdata1d, sumdata1d=0;}
+        cout << setw(12) << setprecision(3) << r_angle << endl <<endl;
+    }
+    */
 
-	//finally rotate image in plane
+    //free space that no longer needed
+    if (sumdata2d) {delete2dpointer(sumdata2d, d0, d1);}
+    if (sumdata1d) {delete []sumdata1d, sumdata1d=0;}
 
-	switch (ptype)
-	{
-		case imgPlaneX:
-			tmp_opt.degree = -r_angle/180.0*3.141592635;
-			tmp_opt.center_x = (this->getXDim()-1.0)/2;
-			tmp_opt.center_y = d0mean;
-			tmp_opt.center_z = d1mean;
-			break;
+    //finally rotate image in plane
 
-		case imgPlaneY:
-			tmp_opt.degree = -r_angle/180.0*3.141592635;
-			tmp_opt.center_x = d0mean;
-			tmp_opt.center_y = (this->getYDim()-1.0)/2;
-			tmp_opt.center_z = d1mean;
-			break;
+    switch (ptype)
+    {
+    case imgPlaneX:
+        tmp_opt.degree = -r_angle/180.0*3.141592635;
+        tmp_opt.center_x = (this->getXDim()-1.0)/2;
+        tmp_opt.center_y = d0mean;
+        tmp_opt.center_z = d1mean;
+        break;
 
-		case imgPlaneZ:
-			tmp_opt.degree = -r_angle/180.0*3.141592635;
-			tmp_opt.center_x = d0mean;
-			tmp_opt.center_y = d1mean;
-			tmp_opt.center_z = (this->getZDim()-1.0)/2;
-			break;
+    case imgPlaneY:
+        tmp_opt.degree = -r_angle/180.0*3.141592635;
+        tmp_opt.center_x = d0mean;
+        tmp_opt.center_y = (this->getYDim()-1.0)/2;
+        tmp_opt.center_z = d1mean;
+        break;
 
-		default:
-			return false;
-	}
+    case imgPlaneZ:
+        tmp_opt.degree = -r_angle/180.0*3.141592635;
+        tmp_opt.center_x = d0mean;
+        tmp_opt.center_y = d1mean;
+        tmp_opt.center_z = (this->getZDim()-1.0)/2;
+        break;
 
-	if (!rotate(ptype, tmp_opt)) //this will update image, so remove the following code
-		return false;
+    default:
+        return false;
+    }
 
-	//update view
-	updateViews();
-	return true;
+    if (!rotate(ptype, tmp_opt)) //this will update image, so remove the following code
+        return false;
+
+    //update view
+    updateViews();
+    return true;
 }
 
 bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double target_rez, double cur_rez, int interp_method)

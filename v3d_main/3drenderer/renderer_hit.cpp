@@ -3535,7 +3535,7 @@ XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarke
     ColumnVector pY(4); 	pY << x << y << z << 1;
 	ColumnVector Y = PM.i() * pY;
 	Y = Y / Y(4);
-    cout << "refine from: " << X.t()  << "   to: " << Y.t() << endl;
+    //std::cout << "refine from: " << X.t()  << "   to: " << Y.t() << endl; //20131029. by PHC avoid OSX 10.9 issue
     XYZ loc(Y(1), Y(2), Y(3));
 	return loc;
 }

@@ -134,6 +134,9 @@ macx {
                     #Indeed it seems the compiler is better to be set by a symbolic link on the local machine, instead of in
                     #the generic pro file here. See the Vaa3D Google Code page http://code.google.com/p/vaa3d/wiki/BuildVaa3D
                     #at the section "What you need: Qt & C++ compilers"
+
+    QMAKE_CXXFLAGS += " -stdlib=libstdc++"
+    QMAKE_LFLAGS += " -stdlib=libstdc++"
 }
 
 unix:!macx {
