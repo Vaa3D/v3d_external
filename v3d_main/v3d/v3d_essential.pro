@@ -130,7 +130,7 @@ macx {
     QMAKE_CXXFLAGS+=-O3
     CXXFLAGS+=-O3
     # On mountain lion use clang compiler, not broken llvm/gcc compiler
-    QMAKE_CXX=c++  #commented this on 2013-08-09 by HP as this sentence will make the building on Qt 4.7 and OSX 10.7 fail.
+#    QMAKE_CXX=c++  #commented this on 2013-08-09 by HP as this sentence will make the building on Qt 4.7 and OSX 10.7 fail.
                     #Indeed it seems the compiler is better to be set by a symbolic link on the local machine, instead of in
                     #the generic pro file here. See the Vaa3D Google Code page http://code.google.com/p/vaa3d/wiki/BuildVaa3D
                     #at the section "What you need: Qt & C++ compilers"
