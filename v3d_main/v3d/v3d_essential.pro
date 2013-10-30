@@ -135,8 +135,9 @@ macx {
                     #the generic pro file here. See the Vaa3D Google Code page http://code.google.com/p/vaa3d/wiki/BuildVaa3D
                     #at the section "What you need: Qt & C++ compilers"
 
-    QMAKE_CXXFLAGS += " -stdlib=libstdc++"
-    QMAKE_LFLAGS += " -stdlib=libstdc++"
+#    for Mac OS X 10.9
+#    QMAKE_CXXFLAGS += " -stdlib=libstdc++"
+#    QMAKE_LFLAGS += " -stdlib=libstdc++"
 }
 
 unix:!macx {
