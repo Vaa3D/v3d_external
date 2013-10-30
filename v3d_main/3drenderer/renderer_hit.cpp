@@ -4050,6 +4050,9 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
         qDebug("i=%d, x=%5.3f,y=%5.3f",i, p.x,p.y);
     }
 
+    QTime t1;
+    t1.start();
+
     vector <XYZ> loc_vec;
     for (i=0;i<curlist.size();i++)
     {
@@ -4070,6 +4073,7 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
         //qDebug("%5.3f, %5.3f, %5.3f,1,1,,,\n%5.3f,%5.3f,%5.3f,1,1,,, \n", loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z);
 
     }
+    v3d_msg(QString("** time to find zoom-in area costs [%1] ms.").arg(t1.elapsed()*1000),0);
 
     //check if terafly exists
     QDir pluginsDir = QDir(qApp->applicationDirPath());

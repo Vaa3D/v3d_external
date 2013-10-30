@@ -108,9 +108,11 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		//mypluginloader.runPlugin(loader, QString("about this plugin"));
 		curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
 		
+        QTime t;
+        t.start();
 		mypluginloader.runPlugin(loader, p.OPS);
 		//mypluginloader.runPlugin(loader, "about");
-			
+        v3d_msg(QString("** invoke time for the plugin is [%1] ms.").arg(t.elapsed()*1000), 0);
 	}
 	catch (...)
 	{
