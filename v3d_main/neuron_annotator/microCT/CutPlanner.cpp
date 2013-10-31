@@ -91,7 +91,8 @@ void CutPlanner::onRotationChanged(Rotation3D rotation)
 
 /* slot */
 void CutPlanner::on_micrometersBox_valueChanged(double val) {
-    qDebug("valueChanged");
+    // qDebug("valueChanged");
     setMicrometersPerVoxel(val);
+    emit cutGuideRequested(true);
 }
 

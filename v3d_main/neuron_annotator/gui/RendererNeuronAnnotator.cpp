@@ -1239,6 +1239,7 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
     return;
 }
 
+// Aug/Sept 2013 Tanya is seeing many crashes in this method.
 void RendererNeuronAnnotator::setupData(void* idep)
 {
     // qDebug("  RendererNeuronAnnotator::setupData");
@@ -1247,7 +1248,10 @@ void RendererNeuronAnnotator::setupData(void* idep)
     isSimulatedData = false;
 
     // TODO - set image4d to NULL, after refactoring neuron clicking to not use image4d
-    My4DImage* image4d = v3dr_getImage4d(_idep);
+    // So factor out call to v3dr_getImage4d
+	My4DImage* image4d = NULL;
+	if (idep)
+		image4d = ( ((iDrawExternalParameter*)idep)->image4d );
     if (image4d)
         data4dp = image4d->getRawData();
 
