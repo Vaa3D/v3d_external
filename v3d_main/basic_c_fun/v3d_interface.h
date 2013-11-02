@@ -123,6 +123,7 @@ public:
 	virtual bool setSWC(v3dhandle image_window, NeuronTree & nt) = 0;
 
     virtual Image4DSimple * loadImage(char *filename) = 0;  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
+    virtual Image4DSimple * loadImage(char *filename, V3DLONG zsliceno) = 0;  //2013-11-02. load one single slice from an image, useful when the image is large
     virtual bool saveImage(Image4DSimple * img, char *filename) = 0;
 
     virtual V3D_GlobalSetting getGlobalSetting() = 0;
@@ -458,12 +459,16 @@ public:
 
 
 //some additional simple inline functions for image IO
-inline bool simple_loadimage_wrapper(V3DPluginCallback & cb, const char * filename, unsigned char * & pdata, V3DLONG sz[4], int & datatype)
+inline bool simple_loadimage_wrapper(V3DPluginCallback & cb, const char * filename, unsigned char * & pdata, V3DLONG sz[4], int & datatype, V3DLONG zsliceno=-1)
 {
     if (!filename || !sz)
         return false;
 
-    Image4DSimple *inimg = cb.loadImage((char *)filename);
+    Image4DSimple *inimg = 0;
+    if (zsliceno>=0)
+        inimg = cb.loadImage((char *)filename, zsliceno);
+    else
+        cb.loadImage((char *)filename);
     if (!inimg || !inimg->valid())
         return false;
 

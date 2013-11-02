@@ -923,6 +923,21 @@ Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two m
         return 0;
 }
 
+Image4DSimple * V3d_PluginLoader::loadImage(char *filename, V3DLONG zsliceno)  //2013-11-02
+{
+    if (!filename || zsliceno<0)
+        return 0;
+
+    bool b_UseMyLib=true;
+    Image4DSimple * myimg = new Image4DSimple;
+    myimg->loadImage_slice(filename, b_UseMyLib, zsliceno);
+    if (myimg->valid())
+        return myimg;
+    else
+        return 0;
+}
+
+
 bool V3d_PluginLoader::saveImage(Image4DSimple * img, char *filename)
 {
     if (!img || !filename || !img->valid())

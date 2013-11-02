@@ -29,6 +29,7 @@
 
 
 //100817. by PHC
+//last change 2013-11-02 by PHC. add single slice reading function
 
 #include <stdio.h>
 #include <string.h>
@@ -39,6 +40,15 @@
 extern "C" {
 #include "../common_lib/src_packages/mylib_tiff/image.h"
 };
+
+void freeMylibArray(Array * indata)
+{
+    if (indata)
+    {
+        Kill_Array(indata);
+        indata=0;
+    } //still need to free space
+}
 
 void freeMylibBundle(Layer_Bundle * indata)
 {
@@ -206,6 +216,121 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 	//free space
 	freeMylibBundle(indata);
 	return 0;
+}
+
+int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int &nbits, V3DLONG layer)
+{
+    if (!filename)
+        return 1;
+
+    //read data
+    V3DLONG n; //n for the number of layers
+
+    Array * indata = Read_Image(filename, layer);
+    if (!indata)
+    {
+        fprintf(stderr, "************* MYLIB Error MSG: [%s]\n", Image_Error());
+        return 1;
+    }
+
+    //find the number of channels in the output data
+    V3DLONG nchannels=0;
+    {
+        if (indata->type != UINT8 && indata->type != UINT16 && indata->type != FLOAT32)
+        {
+            fprintf(stderr, "************* MYLIB returns a data type that is not oen of UINT8, UINT16, and FLOAT32. V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
+            freeMylibArray(indata);
+            return 1;
+        }
+
+        if (indata->ndims>4)
+        {
+            fprintf(stderr, "************* MYLIB returns a 5D or more-dimensional array. V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
+            freeMylibArray(indata);
+            return 1;
+        }
+
+        if (indata->ndims < 4)
+            nchannels += 1;
+        else //==4
+            nchannels += indata->dims[3];
+
+        //also do a redundant verification of the datatype & dims (Gene indicated this not needed, but I still add in case an error which will cause a crash)
+    }
+
+    //prepare the output buffer
+    if (img)
+    {
+        printf("Warning: The pointer for 1d data storage is not empty. This pointer will be freed first and the  reallocated. \n");
+        delete []img; img=0;
+    }
+    if (sz)
+    {
+        printf("Warning: The pointer for size is not empty. This pointer will be freed first and the  reallocated. \n");
+        delete []sz; sz=0;
+    }
+
+    try
+    {
+        sz = new V3DLONG [4];
+    }
+    catch(...)
+    {
+        printf("Fail to alocate memory for the size variable.\n");
+        return false;
+    }
+
+    //now copy data
+
+    switch (indata->type)
+    {
+        case UINT8:		datatype=1; break;
+        case UINT16:	datatype=2; break;
+        case FLOAT32:	datatype=4; break;
+        default:
+            fprintf(stderr, "Unsupport data type detected in loadTif2StackMylib_slice(). You should never see this message. Contact V3D developers!.\n");
+            return 1;
+    }
+
+    nbits = indata->scale;
+
+    V3DLONG i, unitsPerLayer=1;
+    V3DLONG upper = (indata->ndims);
+    if (upper>3) upper = 3;
+    for (i=0;i<upper;i++)
+    {
+        sz[i] = indata->dims[i];
+        unitsPerLayer *= sz[i];
+    }
+    for (i=upper;i<3;i++)
+    {
+        sz[i] = 1;
+        // since sz[i] is 1, then no need to multiply to totalunits
+    }
+    sz[3] = nchannels;
+    fprintf(stdout, "The dimensions of the image will be [%ld %ld %ld %ld].\n", sz[0], sz[1], sz[2], sz[3]);
+
+    V3DLONG lengthPerLayers = unitsPerLayer * datatype;
+    V3DLONG totallen = lengthPerLayers * sz[3];
+    try
+    {
+        img = new unsigned char [totallen];
+    }
+    catch(...)
+    {
+        fprintf(stderr, "Fail to allocate memory in loadTif2StackMylib_slice().");
+        if (sz) {delete []sz; sz=0;}
+        return 1;
+    }
+
+    {
+        printf("Now copy layer %ld's data...\n", layer);
+        memcpy(img, (unsigned char*)indata->data, (V3DLONG)(indata->size)*datatype); //copy data
+    }
+
+    //free space
+    freeMylibArray(indata);
+    return 0;
 }
 
 int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int & nbits, int chan_id_to_load) //overload for convenience to read only 1 channel
