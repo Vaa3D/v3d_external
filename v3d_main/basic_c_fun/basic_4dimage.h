@@ -261,7 +261,7 @@ public:
 	//Normally for the plugin interfaces you don't need to call the following functions
 	void loadImage(char filename[]);
 	void loadImage(char filename[], bool b_useMylib);
-    void loadImage_slice(char filename[], bool b_useMyLib, V3DLONG layer);
+    void loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zsliceno);
 	bool saveImage(const char filename[]);
     
 	bool createImage(V3DLONG mysz0, V3DLONG mysz1, V3DLONG mysz2, V3DLONG mysz3, ImagePixelType mytype);

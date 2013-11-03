@@ -47,7 +47,7 @@
 //use MYLIB to read tiff/lsm files. MUST < 4G //added 100817
 //add a single slice reading function 2013-11-02
 
-int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int &nbits, V3DLONG layer);
+int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int &nbits, V3DLONG zsliceno);
 int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int & nbits);
 int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int & nbits, int chan_id_to_load); //overload for convenience to read only 1 channel
 int saveStack2TifMylib(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype);

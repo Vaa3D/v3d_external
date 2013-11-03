@@ -184,4 +184,8 @@ void         Write_Plane_Series(File_Bundle *bundle, Array *image, int compress)
 Layer_Bundle *G(Read_Planes_Series)(File_Bundle *bundle);
 void          Write_Planes_Series(File_Bundle *bundle, Layer_Bundle *images, int compress);
 
+//the following routines are defined by Hanchuan Peng, 2013-11-02
+Dimn_Type get_Tiff_Depth_mylib(char *filename);
+
+
 #endif

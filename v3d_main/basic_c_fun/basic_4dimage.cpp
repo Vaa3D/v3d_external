@@ -39,6 +39,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "stackutil.h"
 #include "basic_4dimage.h"
 
+extern "C" {
+#include "../common_lib/src_packages/mylib_tiff/image.h"
+};
+
 #ifdef _ALLOW_WORKMODE_MENU_
 #include "../neuron_annotator/utility/ImageLoaderBasic.h"
 #endif
@@ -210,7 +214,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	return;
 }
 
-void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG layer)
+void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zsliceno)
 {
     cleanExistData(); // note that this variable must be initialized as NULL.
 
@@ -226,14 +230,14 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG la
     if (curFileSurfix && (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
         strcasecmp(curFileSurfix, "lsm")==0) ) //read tiff/lsm stacks
     {
-            printf("Image4DSimple::loadImage loading filename=[%s] slice =[%ld]\n", filename, layer);
+            printf("Image4DSimple::loadImage loading filename=[%s] slice =[%ld]\n", filename, zsliceno);
 
 #if defined _WIN32
         {
             v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
             if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
             {
-                if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, layer, false))
+                if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
                     v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
                     b_error=1;
@@ -241,7 +245,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG la
             }
             else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
             {
-                if (loadLsmSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, layer, false))
+                if (loadLsmSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
                     v3d_msg("Error happens in LSM file reading (using libtiff, slightly revised by PHC). \n", false);
                     b_error=1;
@@ -252,7 +256,9 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG la
 #else
         if (b_useMyLib)
         {
-            v3d_msg("Now try to use MYLIB to read the TIFF/LSM again...\n",0);
+            V3DLONG n = get_Tiff_Depth_mylib(filename);
+            v3d_msg(QString("Now try to use MYLIB to read the TIFF/LSM again... total slice number=%1\n").arg(n));
+            /*
             if (loadTif2StackMylib_slice(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits, layer))
             {
                 v3d_msg("Error happens in TIF/LSM file reading (using MYLIB). Stop. \n", false);
@@ -260,6 +266,9 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG la
                 return;
             }
             else
+            */
+            b_error=1; return;
+
                 b_error=0; //when succeed then reset b_error
         }
         else
@@ -267,7 +276,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG la
             v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
             if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
             {
-                if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, layer, false))
+                if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
                     v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
                     b_error=1;
@@ -275,7 +284,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG la
             }
             else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
             {
-                if (loadLsmSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, layer, false))
+                if (loadLsmSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
                     v3d_msg("Error happens in LSM file reading (using libtiff, slightly revised by PHC). \n", false);
                     b_error=1;

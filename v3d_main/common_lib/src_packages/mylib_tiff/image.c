@@ -821,6 +821,12 @@ static Tiff_Reader *series_reader(int state, char *routine)
   return (tif);
 }
 
+Dimn_Type get_Tiff_Depth_mylib(char *filename)
+{
+    Reader_Source = filename;
+    return image_depth("Read_Images");
+}
+
 static void *read_array(Tiff_Reader *(*reader)(int, char *), Dimn_Type (*depthfind)(),
                         char *routine, void *file_source, int layer)
 { Dimn_Type     depth;

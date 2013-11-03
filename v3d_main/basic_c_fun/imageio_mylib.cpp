@@ -218,15 +218,13 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 	return 0;
 }
 
-int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int &nbits, V3DLONG layer)
+int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int &nbits, V3DLONG zsliceno)
 {
     if (!filename)
         return 1;
 
     //read data
-    V3DLONG n; //n for the number of layers
-
-    Array * indata = Read_Image(filename, layer);
+    Array * indata = Read_Image(filename, zsliceno);
     if (!indata)
     {
         fprintf(stderr, "************* MYLIB Error MSG: [%s]\n", Image_Error());
@@ -324,7 +322,7 @@ int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * &
     }
 
     {
-        printf("Now copy layer %ld's data...\n", layer);
+        printf("Now copy slice %ld's data...\n", zsliceno);
         memcpy(img, (unsigned char*)indata->data, (V3DLONG)(indata->size)*datatype); //copy data
     }
 
