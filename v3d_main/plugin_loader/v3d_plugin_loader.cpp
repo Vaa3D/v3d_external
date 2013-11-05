@@ -916,7 +916,7 @@ Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two m
         return 0;
 
     Image4DSimple * myimg = new Image4DSimple;
-    myimg->loadImage(filename);
+    myimg->loadImage(filename, true); //add using mylib support 20131105
     if (myimg->valid())
         return myimg;
     else
