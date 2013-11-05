@@ -19,6 +19,7 @@ SOURCES       = istitch.cpp
 SOURCES      += $$V3DMAINDIR/basic_c_fun/stackutil.cpp
 SOURCES      +=	$$V3DMAINDIR/basic_c_fun/mg_utilities.cpp
 SOURCES      +=	$$V3DMAINDIR/basic_c_fun/mg_image_lib.cpp
+SOURCES      += $$V3DMAINDIR/basic_c_fun/v3d_message.cpp
 
 LIBS         += -lm -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
 LIBS         += -lpthread

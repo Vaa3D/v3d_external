@@ -45,6 +45,8 @@
 #include "basic_landmark.h"
 #include "basic_4dimage.h"
 
+#include "v3d_message.h"
+
 // extracrt roi image
 #include "../basic_c_fun/customary_structs/v3d_imaging_para.h"
 
@@ -8803,7 +8805,10 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
                                                       QDir::currentPath(),
                                                       QObject::tr("Image Configuration (*.tc)"));
     if(m_FileName.isEmpty())
+    {
+        v3d_msg("The file name is NULL. Do nothing.");
         return -1;
+    }
 
     QString curFilePath = QFileInfo(m_FileName).path();
     curFilePath.append("/");
@@ -8814,7 +8819,10 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
     Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
 
     if( !vim.y_load(filename) )
+    {
+        v3d_msg("Fail to load the virtual image.");
         return -1;
+    }
 
     //vim.y_save(QString(filename.c_str()).append(".tc").toStdString()); ///< Test y_load and y_save funcs
 
@@ -9044,22 +9052,27 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
             if(relative1d) {delete []relative1d; relative1d=0;}
             if(sz_relative) {delete []sz_relative; sz_relative=0;}
         }
-
     }
+
+
 
     //display
     Image4DSimple p4DImage;
+    V3DLONG dtmp[4]; dtmp[0] = vx; dtmp[1] = vy; dtmp[2] = vz; dtmp[3] = vc;
 
     if(datatype == V3D_UINT8)
     {
+        simple_saveimage_wrapper(callback, "test1.v3draw", pVImg_UINT8, dtmp, datatype);
         p4DImage.setData((unsigned char*)pVImg_UINT8, vx, vy, vz, vc, datatype);
     }
     else if(datatype == V3D_UINT16)
     {
+        simple_saveimage_wrapper(callback, "test1.v3draw", (unsigned char*)pVImg_UINT16, dtmp, datatype);
         p4DImage.setData((unsigned char*)pVImg_UINT16, vx, vy, vz, vc, datatype);
     }
     else if(datatype == V3D_FLOAT32)
     {
+        simple_saveimage_wrapper(callback, "test1.v3draw", (unsigned char*)pVImg_FLOAT32, dtmp, datatype);
         p4DImage.setData((unsigned char*)pVImg_FLOAT32, vx, vy, vz, vc, datatype);
     }
     else
