@@ -925,8 +925,11 @@ Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two m
 
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename, V3DLONG zsliceno)  //2013-11-02
 {
-    if (!filename || zsliceno<0)
+    if (!filename)
         return 0;
+
+    if (zsliceno<0)
+        return loadImage(filename);
 
     bool b_UseMyLib=true;
     Image4DSimple * myimg = new Image4DSimple;

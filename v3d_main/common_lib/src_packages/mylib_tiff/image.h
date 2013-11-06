@@ -186,6 +186,8 @@ void          Write_Planes_Series(File_Bundle *bundle, Layer_Bundle *images, int
 
 //the following routines are defined by Hanchuan Peng, 2013-11-02
 Dimn_Type get_Tiff_Depth_mylib(char *filename);
+Layer_Bundle * read_One_Tiff_ZSlice(char * filename,
+                                    Dimn_Type zsliceno);
 
 
 #endif

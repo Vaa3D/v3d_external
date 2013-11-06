@@ -827,6 +827,321 @@ Dimn_Type get_Tiff_Depth_mylib(char *filename)
     return image_depth("Read_Images");
 }
 
+Layer_Bundle * read_One_Tiff_ZSlice(char * filename,
+                                    Dimn_Type zsliceno //read_handler will be "Read_Images"
+                                    )
+{
+    if (!filename || zsliceno<0)
+        return NULL;
+
+    Dimn_Type totalNSlices = get_Tiff_Depth_mylib(filename);
+    if (zsliceno>=totalNSlices)
+        return NULL;
+
+    Reader_Source = filename;
+
+    Tiff_Reader *tif = image_reader(0, "read_One_Tiff_ZSlice");
+    if (tif == NULL)
+        return (NULL);
+
+    //skip the "zslice-1" planes
+
+    Tiff_IFD    *ifd;
+    Tiff_Image  *img;
+
+    Dimn_Type d=0;
+    while (d<zsliceno-1)
+    {
+        ifd = Read_Tiff_IFD(tif);
+        if (ifd == NULL)
+        {
+            sprintf(Error_String,"Error reading Tif IFD: '%s' in read_One_Tiff_ZSlice()\n",Tiff_Error_String());
+            return (NULL);
+        }
+        d++;
+        //printf("(d=%ld totalNslice=%ld) ", d, totalNSlices);fflush(stdout);  if (d%20 == 0) printf("\n");
+
+        //in the future here may be inserted a direct call to extract slice
+    }
+
+    ifd = Read_Tiff_IFD(tif);
+    if (ifd == NULL)
+    {
+        sprintf(Error_String,"Error reading Tif IFD: '%s' read_One_Tiff_ZSlice()\n",Tiff_Error_String());
+        return (NULL);
+    }
+    d++;
+    printf("\n d=%ld\n", d);fflush(stdout);
+
+    img = Get_Tiff_Image(ifd);
+    if (img == NULL)
+    {
+        sprintf(Error_String,"Error reading Tif Image: '%s' read_One_Tiff_ZSlice()\n",
+                Tiff_Error_String());
+        Free_Tiff_IFD(ifd);
+        goto cleanup;
+    }
+
+    //Write_Image(char *file_name, Array *image, int compress)
+
+    int nlayers, cidx, kind, layer, lidx;
+
+    nlayers = 0;
+    for (cidx = 0; cidx < img->number_channels; cidx += kind_size[kind])
+    {
+        kind = determine_kind(img,cidx);
+        if (layer == nlayers)
+          break;
+        nlayers += 1;
+    }
+    if (layer >= 0)
+    {
+        if (cidx >= img->number_channels)
+        {
+            fprintf(stderr,"Layer %d does not exit in tiff (%s)\n",layer,routine);
+            exit (1);
+        }
+        lidx = cidx;
+        nlayers += 1;
+    }
+
+    if (nlayers > Max_Layers)
+    {
+        Max_Layers = nlayers + 5;
+        images.layers = (Array **)
+                          Guarded_Realloc(images.layers,sizeof(Array *)*Max_Layers,routine);
+        area   = (Size_Type *)
+                          Guarded_Realloc(area,(sizeof(Size_Type)+sizeof(int))*Max_Layers,routine);
+        invert = (int *) (area + Max_Layers);
+    }
+
+    if (img->number_channels > Max_Planes)
+    {
+        Max_Planes = img->number_channels + 5;
+        planes     = (void **) Guarded_Realloc(planes,sizeof(void *)*Max_Planes,routine);
+    }
+
+    {
+        int i;
+        for (i = 0; i < img->number_channels; i++)
+            planes[i] = NULL;
+    }
+
+    images.num_layers = nlayers;
+
+    array  = images.layers;
+    width  = img->width;
+    height = img->height;
+
+    dims[0] = width;
+    dims[1] = height;
+    dims[2] = depth;
+
+    if (layer >= 0)
+      { cidx = lidx; lnum = layer; }
+    else
+      lnum = cidx = 0;
+    for ( ; lnum < nlayers; lnum++, cidx += kind_size[kind])
+      { kind         = determine_kind(img,cidx);
+        type         = determine_type(img,cidx);
+        scale        = img->channels[cidx]->scale;
+        invert[lnum] = (img->channels[cidx]->interpretation == CHAN_WHITE);
+        area[lnum]   = (((Indx_Type) width) * height) * type_size[type];
+        array[lnum]  = Make_Array(kind,type,2 + (depth != 1),dims);
+        array[lnum]->scale = scale;
+      }
+
+    map = NULL;
+    if (img->channels[0]->interpretation == CHAN_MAPPED)
+    {
+        int dom = (1 << img->channels[0]->scale);
+
+        dims[0] = dom;
+        map = Make_Array(RGB_KIND,UINT16,1,dims);
+
+        memcpy(map->data,img->map,map->size*type_size[UINT16]);
+    }
+
+    if ((text = (char *) Get_Tiff_Tag(ifd,TIFF_JF_ANO_BLOCK,&type,&count)) == NULL)
+        text = Empty_String;
+    if (layer > 0)
+        Set_Array_Text(array[layer],text);
+    else
+        Set_Array_Text(array[0],text);
+
+    //read the data
+
+    Layer_Bundle *images = new Layer_Bundle;
+    Indx_Type   *area   = NULL;
+    int         *invert = NULL;
+    int          Max_Layers = 0;
+    void       **planes = NULL;
+    int          Max_Planes = 0;
+
+    Array      **array;
+    Array       *map;
+    int          cidx, lidx, lnum, nlayers;
+    Dimn_Type    width, height;
+    int          kind, scale;
+    Tiff_Type    type;
+    Tiff_Reader *tif;
+    Tiff_IFD    *ifd;
+    Tiff_Image  *img;
+    char        *text;
+    int          count;
+    Dimn_Type    dims[4];
+
+    *pmap = NULL;
+
+    images.num_layers = nlayers;
+
+    {
+        int       i;
+        Dimn_Type d;
+
+        d = 0;
+        while (1)
+        {
+            Tiff_Channel **chan = img->channels;
+
+            if (layer >= 0)
+            {
+                cidx = lidx; lnum = layer;
+            }
+            else
+                lnum = cidx = 0;
+            for ( ; lnum < nlayers; lnum++)
+            {
+                Indx_Type base;
+
+                kind = array[lnum]->kind;
+                if (kind == RGB_KIND)
+                    for (i = 0; i < 3; i++)
+                    {
+                        base = channel_order(chan[cidx+i]);
+                        planes[cidx+i] = array[lnum]->data+area[lnum]*(d+depth*base);
+                    }
+                else if (kind == RGBA_KIND)
+                    for (i = 0; i < 4; i++)
+                    {
+                        base = channel_order(chan[cidx+i]);
+                        planes[cidx+i] = array[lnum]->data+area[lnum]*(d+depth*base);
+                    }
+                else // kind == PLAIN_KIND
+                    planes[cidx] = array[lnum]->data+area[lnum]*d;
+                cidx += kind_size[kind];
+            }
+            Load_Tiff_Image_Planes(img, planes);
+
+            Free_Tiff_Image(img);
+            Free_Tiff_IFD(ifd);
+
+            d += 1;
+            if (d >= depth) break;
+
+            tif = read_handler(1,routine);
+            if (tif == NULL)
+                goto cleanup;
+
+            while (1)
+            {
+                int *tag;
+
+                ifd = Read_Tiff_IFD(tif);
+                if (ifd == NULL)
+                {
+                    sprintf(Error_String,"Error reading Tif IFD: '%s' (%s)\n",
+                            Tiff_Error_String(),routine);
+                    goto cleanup;
+                }
+                tag = (int *) Get_Tiff_Tag(ifd,TIFF_NEW_SUB_FILE_TYPE,&type,&count);
+                if (tag == NULL || (*tag & TIFF_VALUE_REDUCED_RESOLUTION) == 0)
+                    break;
+                Free_Tiff_IFD(ifd);
+            }
+            img = Get_Tiff_Image(ifd);
+            if (img == NULL)
+            {
+                sprintf(Error_String,"Error reading Tif Image: '%s' (%s)\n",
+                        Tiff_Error_String(),routine);
+                Free_Tiff_IFD(ifd);
+                goto cleanup;
+            }
+
+            if (img->width != width || img->height != height)
+            {
+                sprintf(Error_String,
+                        "Planes of a stack are not of the same dimensions (%s)!\n",routine);
+                Free_Tiff_Image(img);
+                Free_Tiff_IFD(ifd);
+                goto cleanup;
+            }
+
+            if (layer >= 0)
+            {
+                cidx = lidx; lnum = layer;
+            }
+            else
+                lnum = cidx = 0;
+            for ( ; lnum < nlayers; lnum++)
+            {
+                kind = array[lnum]->kind;
+                if (determine_type(img,cidx) != array[lnum]->type ||
+                        determine_kind(img,cidx) != kind ||
+                        img->channels[cidx]->scale != array[lnum]->scale)
+                {
+                    sprintf(Error_String,"Planes of a stack are not of the same type (%s)!\n",routine);
+                    Free_Tiff_Image(img);
+                    Free_Tiff_IFD(ifd);
+                    goto cleanup;
+                }
+                cidx += kind_size[kind];
+            }
+        }
+    }
+
+    read_handler(-1,routine);
+
+    if (layer >= 0)
+    { cidx = lidx; lnum = layer; }
+    else
+        lnum = cidx = 0;
+    for ( ; lnum < nlayers; lnum++)
+    {
+        if (invert[lnum])
+        {
+            double max;
+            if (array[lnum]->type <= UINT32)
+                max = ((((uint64) 1) << array[lnum]->scale) - 1);
+            else if (array[lnum]->type <= INT32)
+                max = ((((uint64) 1) << (array[lnum]->scale-1)) - 1);
+            else
+                max = 1.0;
+            Scale_Array(array[lnum], -1., -max);
+        }
+        cidx += kind_size[array[lnum]->kind];
+    }
+
+    *pmap = map;
+    return (&images);
+
+cleanup:
+    if (layer >= 0)
+    { cidx = lidx; lnum = layer; }
+    else
+        lnum = cidx = 0;
+    for ( ; lnum < nlayers; lnum++)
+        Free_Array(array[lnum]);
+    if (map != NULL) Free_Array(map);
+    *pmap = NULL;
+
+    */
+
+    return (NULL);
+}
+
+
+
 static void *read_array(Tiff_Reader *(*reader)(int, char *), Dimn_Type (*depthfind)(),
                         char *routine, void *file_source, int layer)
 { Dimn_Type     depth;
