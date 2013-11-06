@@ -227,8 +227,10 @@ int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * &
 //    V3DLONG n = get_Tiff_Depth_mylib(filename);
 
     //read data
-    Layer_Bundle * indata0 = read_One_Tiff_ZSlice(filename, zsliceno);
-    if (!indata0 || !indata0->layers)
+
+//commented for now to avoid builing error for some systems. by PHC 20131105    
+//Layer_Bundle * indata0 = read_One_Tiff_ZSlice(filename, zsliceno);
+    //if (!indata0 || !indata0->layers)
         return 1;
 
     Array * indata = indata0->layers[0];
