@@ -387,8 +387,6 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
 
 bool Image4DSimple::saveImage(const char filename[])
 {
-    v3d_msg("Here. Image4DSimple::saveImage\n");
-
     if (!data1d || !filename)
 	{
 		v3d_msg("This image data is empty or the file name is invalid. Nothing done.\n");
