@@ -517,12 +517,18 @@ inline bool simple_saveimage_wrapper(V3DPluginCallback & cb, const char * filena
         dt = V3D_FLOAT32;
     else
     {
-        v3d_msg("the specified save data type in simple_saveimage_wrapper() is not valid.", 0);
+        v3d_msg(QString("the specified save data type in simple_saveimage_wrapper() is not valid, dt=[%1].").arg(dt), 0);
         return false;
     }
 
     Image4DSimple * outimg = new Image4DSimple;
-    outimg->setData(pdata, sz[0], sz[1], sz[2], sz[3], dt);
+    if (outimg)
+        outimg->setData(pdata, sz[0], sz[1], sz[2], sz[3], dt);
+    else
+    {
+        v3d_msg("Fail to new Image4DSimple for outimg.");
+        return false;
+    }
 
     return cb.saveImage(outimg, (char *)filename);
     //in this case no need to delete "outimg" pointer as it is just a container and will not use too much memory
