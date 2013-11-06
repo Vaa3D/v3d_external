@@ -503,7 +503,10 @@ Label_error_simple_loadimage_wrapper:
 inline bool simple_saveimage_wrapper(V3DPluginCallback & cb, const char * filename, unsigned char * pdata, V3DLONG sz[4], int datatype)
 {
     if (!filename || !sz || !pdata)
+    {
+        v3d_msg("some of the parameters for simple_saveimage_wrapper() are not valid.", 0);
         return false;
+    }
 
     ImagePixelType dt;
     if (datatype==1)
@@ -513,7 +516,10 @@ inline bool simple_saveimage_wrapper(V3DPluginCallback & cb, const char * filena
     else if (datatype==4)
         dt = V3D_FLOAT32;
     else
+    {
+        v3d_msg("the specified save data type in simple_saveimage_wrapper() is not valid.", 0);
         return false;
+    }
 
     Image4DSimple * outimg = new Image4DSimple;
     outimg->setData(pdata, sz[0], sz[1], sz[2], sz[3], dt);

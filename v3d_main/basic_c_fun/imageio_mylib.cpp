@@ -35,6 +35,7 @@
 #include <string.h>
 
 #include "v3d_basicdatatype.h"
+#include "v3d_message.h"
 #include "imageio_mylib.h"
 
 extern "C" {
@@ -223,8 +224,14 @@ int loadTif2StackMylib_slice(char * filename, unsigned char * & img, V3DLONG * &
     if (!filename)
         return 1;
 
+//    V3DLONG n = get_Tiff_Depth_mylib(filename);
+
     //read data
-    Array * indata = Read_Image(filename, zsliceno);
+    Layer_Bundle * indata0 = read_One_Tiff_ZSlice(filename, zsliceno);
+    if (!indata0 || !indata0->layers)
+        return 1;
+
+    Array * indata = indata0->layers[0];
     if (!indata)
     {
         fprintf(stderr, "************* MYLIB Error MSG: [%s]\n", Image_Error());

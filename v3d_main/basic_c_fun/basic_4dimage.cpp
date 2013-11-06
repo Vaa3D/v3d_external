@@ -39,9 +39,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "stackutil.h"
 #include "basic_4dimage.h"
 
-extern "C" {
-#include "../common_lib/src_packages/mylib_tiff/image.h"
-};
+//extern "C" {
+//#include "../common_lib/src_packages/mylib_tiff/image.h"
+//};
 
 #ifdef _ALLOW_WORKMODE_MENU_
 #include "../neuron_annotator/utility/ImageLoaderBasic.h"
@@ -256,19 +256,13 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
 #else
         if (b_useMyLib)
         {
-            V3DLONG n = get_Tiff_Depth_mylib(filename);
-            v3d_msg(QString("Now try to use MYLIB to read the TIFF/LSM again... total slice number=%1\n").arg(n));
-            /*
-            if (loadTif2StackMylib_slice(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits, layer))
+            if (loadTif2StackMylib_slice(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits, zsliceno))
             {
                 v3d_msg("Error happens in TIF/LSM file reading (using MYLIB). Stop. \n", false);
                 b_error=1;
                 return;
             }
             else
-            */
-            b_error=1; return;
-
                 b_error=0; //when succeed then reset b_error
         }
         else
