@@ -468,7 +468,7 @@ inline bool simple_loadimage_wrapper(V3DPluginCallback & cb, const char * filena
     if (zsliceno>=0)
         inimg = cb.loadImage((char *)filename, zsliceno);
     else
-        cb.loadImage((char *)filename);
+        inimg = cb.loadImage((char *)filename);
     if (!inimg || !inimg->valid())
         return false;
 
