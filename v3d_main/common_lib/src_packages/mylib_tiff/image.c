@@ -843,7 +843,7 @@ Layer_Bundle * read_One_Tiff_ZSlice(char * filename,
     Tiff_Reader *tif = image_reader(0, "read_One_Tiff_ZSlice");
     if (tif == NULL)
         return (NULL);
-
+/*
     //skip the "zslice-1" planes
 
     Tiff_IFD    *ifd;
