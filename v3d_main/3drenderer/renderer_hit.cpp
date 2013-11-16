@@ -2862,6 +2862,12 @@ int Renderer_gl1::checkCurChannel()
 #define __creat_curve___
 void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 {
+    QTime t1a;
+    t1a.start();
+    v3d_msg("staring the timer for solveCurveCenter()",0);
+
+    //
+
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
 	if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
 	bool b_use_last_approximate=true;
@@ -2986,6 +2992,11 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	//
 	if (b_use_seriespointclick==false)
 		smooth_curve(loc_vec, 5);
+
+    int etime1 = t1a.restart();
+    v3d_msg(QString("** time to calculate 3d curve costs [%1] ms.").arg(etime1),0);
+
+
 #endif
 	if (b_addthiscurve)
 	{
@@ -3011,6 +3022,9 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
                                1  //one means from non-wheel event
                                );
     }
+
+    v3d_msg(QString("** time to invoke subsquent operation 3d curve costs [%1] ms, to calculate curve costs [%2] ms.").arg(t1a.restart()).arg(etime1),0);
+
 }
 
 
@@ -4073,7 +4087,7 @@ int Renderer_gl1::zoomview_wheel_event()//by PHC, 20130424
         //qDebug("%5.3f, %5.3f, %5.3f,1,1,,,\n%5.3f,%5.3f,%5.3f,1,1,,, \n", loc0.x, loc0.y, loc0.z, loc1.x, loc1.y, loc1.z);
 
     }
-    v3d_msg(QString("** time to find zoom-in area costs [%1] ms.").arg(t1.elapsed()*1000),0);
+    v3d_msg(QString("** time to find zoom-in area costs [%1] ms.").arg(t1.elapsed()),0);
 
     //check if terafly exists
     QDir pluginsDir = QDir(qApp->applicationDirPath());
