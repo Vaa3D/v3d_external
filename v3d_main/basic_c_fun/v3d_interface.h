@@ -556,7 +556,7 @@ inline bool simple_saveimage_wrapper(V3DPluginCallback & cb, const char * filena
         dt = V3D_FLOAT32;
     else
     {
-        v3d_msg(QString("the specified save data type in simple_saveimage_wrapper() is not valid, dt=[%1].").arg(dt), 0);
+        v3d_msg(QString("the specified save data type in simple_saveimage_wrapper() is not valid, dt=[%1].").arg(datatype), 0);
         return false;
     }
 
