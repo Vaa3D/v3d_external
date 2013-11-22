@@ -36,6 +36,17 @@ void SingleCut::init()
     ui.edgeButton->setDefault(true);
 }
 
+void SingleCut::savePlanFileLine(QTextStream& out) {
+    out << ui.axisBox->currentText()
+        << "\t"
+        << ui.nameField->text()
+        << "\t"
+        << ui.cutDistanceLineEdit->text()
+        << "\t"
+        << QChar(0x00b5) << "m" // micrometers
+        << "\n";
+}
+
 void SingleCut::setMicrometersPerVoxel(double mpv) {
     if (micrometersPerVoxel == mpv)
         return;

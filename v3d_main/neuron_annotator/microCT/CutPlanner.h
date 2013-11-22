@@ -37,6 +37,7 @@ public slots:
     void onRotationChanged(Rotation3D rotation);
     void on_micrometersBox_valueChanged(double val);
     void on_labelBrainCompartmentsButton_clicked() {emit compartmentNamingRequested();}
+    void on_savePlanButton_clicked();
     void setCurrentWidget(int index) {
         if (indexWidgets.find(index) == indexWidgets.end())
             return;
@@ -52,7 +53,9 @@ public slots:
     }
 
 private:
+    QString getPlanFileName();
     void initSingleCut(SingleCut* widget, QString name, QString axis);
+    void savePlanFile(QTextStream& out);
     void setBasePlaneWidget(SingleCut* widget, QString name, QString axis);
     void setMicrometersPerVoxel(double val);
 

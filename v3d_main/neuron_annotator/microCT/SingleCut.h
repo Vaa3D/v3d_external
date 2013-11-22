@@ -22,6 +22,7 @@ public:
     SingleCut(QWidget* parent = NULL);
     virtual ~SingleCut();
     void init();
+    void savePlanFileLine(QTextStream& out);
     void setCamera(CameraModel& cameraParam) {camera = &cameraParam;}
     void setName(const QString& name);
     void setAxis(const QString& axis);

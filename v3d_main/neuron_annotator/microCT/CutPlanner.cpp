@@ -96,3 +96,56 @@ void CutPlanner::on_micrometersBox_valueChanged(double val) {
     emit cutGuideRequested(true);
 }
 
+QString CutPlanner::getPlanFileName() {
+    static QString planFolder = "";
+    QString planFileName = QFileDialog::getSaveFileName(this,
+        "Save Trim Plan File",
+        planFolder,
+        "*.txt");
+    if (planFileName.isEmpty())
+        return planFileName;
+    if (QFileInfo(planFileName).suffix().isEmpty())
+        planFileName.append(".txt");
+    return planFileName;
+}
+
+/* slot */
+void CutPlanner::on_savePlanButton_clicked() {
+    QString planFileName = getPlanFileName();
+    if (planFileName.isEmpty())
+        return;
+    QFile file(planFileName);
+    if (! file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(
+            this,
+            "Error writing plan file",
+            "Could not create plan file");
+        return;
+    }
+    QTextStream out(&file);
+    savePlanFile(out);
+    file.close();
+    QMessageBox::information(
+        this,
+        "Plan file saved",
+        "Finished saving file "+planFileName);
+}
+
+void CutPlanner::savePlanFile(QTextStream& out) {
+    out << "MicroCT Trim plan\n";
+    out << QDateTime::currentDateTime().toLocalTime().toString() << "\n";
+    out << "Axis"
+        << "\t"
+        << "Name"
+        << "\t"
+        << "Amount"
+        << "\t"
+        << "Units"
+        << "\n";
+    ui.topCutWidget->savePlanFileLine(out);
+    ui.frontCutWidget->savePlanFileLine(out);
+    ui.rightCutWidget->savePlanFileLine(out);
+    ui.rearCutWidget->savePlanFileLine(out);
+    ui.leftCutWidget->savePlanFileLine(out);
+}
+
