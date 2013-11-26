@@ -1008,6 +1008,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 {
                     child->close();
                     v3d_msg(QString("Cannot open the specified image [%1]").arg(fileName));
+
+                    //call 3rd party file loader //20131125. by PHC
                 }
             }
             catch(...)
