@@ -39,8 +39,9 @@
 class View3DControl
 {
 public:
-	virtual ~View3DControl() {};
+    virtual ~View3DControl() {};
 
+    virtual int isShowSurfObjects() const = 0; //Nov. 27, Zhi Zhou
 	virtual void setState(int state, bool is_enable) = 0; // May 29, 2012 by Hang
 	virtual void addStateFunc(int state, void(*mouse_func)(void *)) = 0; // May 29, 2012 by Hang
 	virtual void deleteStateFunc(int state) = 0; // May 29, 2012 by Hang
@@ -55,7 +56,7 @@ public:
 	virtual int xRot() const =0;
 	virtual int yRot() const =0;
 	virtual int zRot() const =0;
-	virtual int zoom() const =0;
+    virtual int zoom() const =0;
 	virtual int xShift() const =0;
 	virtual int yShift() const =0;
 	virtual int zShift() const =0;
@@ -82,7 +83,7 @@ public:
 
 	virtual bool isVolCompress() const =0;
 	virtual bool isShowBoundingBox() const =0;
-	virtual bool isShowAxes() const =0;
+    virtual bool isShowAxes() const =0;
 
 	virtual void hideTool() =0;
 	virtual void showTool() =0;
