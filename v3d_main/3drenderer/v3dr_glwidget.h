@@ -140,8 +140,9 @@ public:
 // begin View3DControl interface
 //----------------------------------------------------------------------------------------
 public:
+    virtual int isShowSurfObjects() const { return renderer->sShowSurfObjects;} // Nov. 27, 2013 Zhi Zhou
 
-	virtual void setState(int state, bool is_enable){ if(is_enable) currentPluginState = state; else currentPluginState = -1;}             // May 29, 2012 by Hang
+    virtual void setState(int state, bool is_enable){ if(is_enable) currentPluginState = state; else currentPluginState = -1;}             // May 29, 2012 by Hang
 	virtual void addStateFunc(int state, void(*mouse_func)(void *)){pluginLeftMouseFuncs[state] = mouse_func;} // May 29, 2012 by Hang
 	virtual void deleteStateFunc(int state){pluginLeftMouseFuncs.erase(state);} // May 29, 2012 by Hang
 
