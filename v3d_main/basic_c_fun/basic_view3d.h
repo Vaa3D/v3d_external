@@ -41,7 +41,15 @@ class View3DControl
 public:
     virtual ~View3DControl() {};
 
-    virtual int isShowSurfObjects() const = 0; //Nov. 27, Zhi Zhou
+    // Expose surface cut getters, Dec.01,2013 by Zhi Zhou
+    virtual int xClip0() const =0;
+    virtual int xClip1() const =0;
+    virtual int yClip0() const =0;
+    virtual int yClip1() const =0;
+    virtual int zClip0() const =0;
+    virtual int zClip1() const =0;
+
+    virtual int isShowSurfObjects() const = 0; //Nov. 27, 2013 by Zhi Zhou
 	virtual void setState(int state, bool is_enable) = 0; // May 29, 2012 by Hang
 	virtual void addStateFunc(int state, void(*mouse_func)(void *)) = 0; // May 29, 2012 by Hang
 	virtual void deleteStateFunc(int state) = 0; // May 29, 2012 by Hang

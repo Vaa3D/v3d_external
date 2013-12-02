@@ -140,7 +140,16 @@ public:
 // begin View3DControl interface
 //----------------------------------------------------------------------------------------
 public:
-    virtual int isShowSurfObjects() const { return renderer->sShowSurfObjects;} // Nov. 27, 2013 Zhi Zhou
+    // Expose surface cut getters, Dec.01,2013 by Zhi Zhou
+    virtual int xClip0() const { return _xClip0; }
+    virtual int xClip1() const { return _xClip1; }
+    virtual int yClip0() const { return _yClip0; }
+    virtual int yClip1() const { return _yClip1; }
+    virtual int zClip0() const { return _zClip0; }
+    virtual int zClip1() const { return _zClip1; }
+
+
+    virtual int isShowSurfObjects() const { return renderer->sShowSurfObjects;} // Nov. 27, 2013 by Zhi Zhou
 
     virtual void setState(int state, bool is_enable){ if(is_enable) currentPluginState = state; else currentPluginState = -1;}             // May 29, 2012 by Hang
 	virtual void addStateFunc(int state, void(*mouse_func)(void *)){pluginLeftMouseFuncs[state] = mouse_func;} // May 29, 2012 by Hang
