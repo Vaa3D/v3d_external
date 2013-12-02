@@ -31,24 +31,35 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 	{
 		const char* filename=p.imgp->getFileName();
         //v3d_msg(QString("[")+filename+"]");
-		XFormWidget *curw = mainwindow->findMdiChild(QString(filename)); //search window using name. ZJL
-		//unsigned char* rawdata=p.imgp->getRawData();
-		//QList <V3dR_MainWindow *> winlist=mainwindow->list_3Dview_win;   
-		//V3dR_MainWindow *curwin;
-		//for(int i=0;i<winlist.size();i++)
-		//{
-		//	unsigned char* winrawdata=winlist.at(i)->getGLWidget()->getiDrawExternalParameter()->image4d->getRawData();
-		//	if(rawdata==winrawdata)
-		//	{
-		//		curwin=winlist.at(i);
-		//		continue;
-		//	}
-		//}
-		if (!curw)
-		{
-			v3d_msg(QString("No window open yet (error detected in v3d_imaging() main entry point [filename={%1}]).").arg(filename));
-			return false;
-		}
+        XFormWidget *curw = 0;
+        if (!filename)
+        {
+            curw = mainwindow->findMdiChild(QString(filename)); //search window using name. ZJL
+            //unsigned char* rawdata=p.imgp->getRawData();
+            //QList <V3dR_MainWindow *> winlist=mainwindow->list_3Dview_win;
+            //V3dR_MainWindow *curwin;
+            //for(int i=0;i<winlist.size();i++)
+            //{
+            //	unsigned char* winrawdata=winlist.at(i)->getGLWidget()->getiDrawExternalParameter()->image4d->getRawData();
+            //	if(rawdata==winrawdata)
+            //	{
+            //		curwin=winlist.at(i);
+            //		continue;
+            //	}
+            //}
+            if (!curw)
+            {
+                v3d_msg(QString("No window open yet (error detected in v3d_imaging() main entry point [filename={%1}]).").arg(filename));
+                return false;
+            }
+        }
+        else
+        {
+            if (p.OPS != "Load file using Vaa3D data IO manager") //only allow data IO manager to pass an empty file name parameter here
+                return false;
+        }
+
+
 		QDir pluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
 		if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
@@ -73,6 +84,14 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
             if (pluginsDir.cd("plugins/teramanager")==false) 
             {
                 v3d_msg("Cannot find ./plugins/teramanager directory!");
+                return false;
+            }
+        }
+        else if (p.OPS == "Load file using Vaa3D data IO manager")
+        {
+            if (pluginsDir.cd("plugins/data_IO/data_IO_manager")==false)
+            {
+                v3d_msg("Cannot find ./plugins/data_IO/data_IO_manager directory!");
                 return false;
             }
         }
@@ -105,14 +124,25 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		v3d_msg(fullpath, 0);
 		
 		V3d_PluginLoader mypluginloader(mainwindow);
-		//mypluginloader.runPlugin(loader, QString("about this plugin"));
-		curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
-		
-        QTime t;
-        t.start();
-		mypluginloader.runPlugin(loader, p.OPS);
-		//mypluginloader.runPlugin(loader, "about");
-        v3d_msg(QString("** invoke time for the plugin is [%1] ms.").arg(t.elapsed()*1000), 0);
+
+        if (curw)
+        {
+            //mypluginloader.runPlugin(loader, QString("about this plugin"));
+            curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
+
+            QTime t;
+            t.start();
+            mypluginloader.runPlugin(loader, p.OPS);
+            //mypluginloader.runPlugin(loader, "about");
+            v3d_msg(QString("** invoke time for the plugin is [%1] ms.").arg(t.elapsed()*1000), 0);
+        }
+        else //for data IO manager in which case curw is NULL
+        {
+            QTime t;
+            t.start();
+            mypluginloader.runPlugin(loader, p.datafilename); //the data IO manager is specially designed to pass the datafilename parameter in this way. 2013-12-02. by PHC. what an ugly design here!
+            v3d_msg(QString("** invoke time for the plugin is [%1] ms.").arg(t.elapsed()*1000), 0);
+        }
 	}
 	catch (...)
 	{

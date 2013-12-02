@@ -48,6 +48,7 @@ from this software without specific prior written permission.
 struct v3d_imaging_paras
 {
 	QString OPS; //operation
+    QString datafilename; //for file IO. added on 12-02-2013
     int ops_type; //a new field indicating what is the [sub-]type of the operation or the nature of the operation. This can be used to
                   // distinguish different ways to call TeraFly or other modules.
 

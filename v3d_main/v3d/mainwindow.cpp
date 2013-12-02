@@ -52,6 +52,9 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "import_images_tool_dialog.h"
 #include "DownloadManager.h" // CMB 08-Oct-2010
 #include "mapview.h"
+
+#include "../imaging/v3d_imaging.h"
+
 #ifdef __v3d_custom_toolbar__
 #include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-08-2011
 #endif
@@ -1007,15 +1010,29 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 else
                 {
                     child->close();
-                    v3d_msg(QString("Cannot open the specified image [%1]").arg(fileName));
+                    if (QMessageBox::question(0, "File Open options",
+                                              "Cannot open the specified image [%1] using Vaa3D's default file opener. "
+                                              "Do you want to try other file opener in Vaa3D plugins?", QMessageBox::Yes, QMessageBox::No)
+                            == QMessageBox::Yes)
+                    {
+                        //call 3rd party file loader //20131125. by PHC
+                        //(QString("").arg(fileName));
 
-                    //call 3rd party file loader //20131125. by PHC
+                        v3d_imaging_paras myimagingp;
+                        myimagingp.OPS = "Load file using Vaa3D data IO manager";
+                        myimagingp.datafilename = fileName;
+                        myimagingp.imgp = 0; //the image data for a plugin to call
+                        //do data loading
+                        if (!v3d_imaging(this, myimagingp))
+                            v3d_msg("Even the data IO manager cannot load this file. You need to use 3rd party converter to convert the file format first.");
+                        return;
+                    }
                 }
             }
             catch(...)
             {
-                v3d_msg("You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
-                v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
+                v3d_msg(QString("You fail to open a new window for the specified image [%1]."
+                                "The file may have certain problem, or is simply too big but you don't have enough memory.").arg(fileName));
             }
         }
 //		else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
@@ -1119,8 +1136,21 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 //        } // end hraw
         else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
         {
-            v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something Vaa3D can read (e.g. a standard TIF file).").arg(fileName), 1);
+            v3d_msg(QString("The file [%1] has an unsupported file name extension and cannot be opened properly! "
+                            "You should check the data type or file extension and you can convert the file format to something Vaa3D can read (e.g. a standard TIF file); but now Vaa3D is going to use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc) "
+                            "to attempt reading the data ...").arg(fileName), 1);
+
+            //maybe should invoke the other file loader here
+
+            v3d_imaging_paras myimagingp;
+            myimagingp.OPS = "Load file using Vaa3D data IO manager";
+            myimagingp.datafilename = fileName;
+            myimagingp.imgp = 0; //the image data for a plugin to call
+            //do data loading
+            if (!v3d_imaging(this, myimagingp))
+                v3d_msg("Even the data IO manager cannot load this file. You need to use 3rd party converter to convert the file format first.");
             return;
+
         }
         //child->close();delete child; child=0; //this should be correspond to the error place! by phc, 080429
     }
