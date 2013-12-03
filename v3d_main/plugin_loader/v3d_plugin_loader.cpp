@@ -1058,6 +1058,15 @@ bool V3d_PluginLoader::screenShot3DWindow(v3dhandle image_window, QString filena
 
 	return r;
 }
+
+//added Dec. 02,2013 by Zhi Zhou
+
+void V3d_PluginLoader::screenShotAny3DWindow(V3dR_MainWindow *w,QString filename)
+{
+    V3dR_GLWidget * v = w->getGLWidget();
+    v->screenShot(filename);
+}
+
 bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString filename)
 {
 	bool r =false;
@@ -1079,11 +1088,22 @@ View3DControl * V3d_PluginLoader::getView3DControl(v3dhandle image_window)
 	if_XFormWidget(w, image_window)
 	{
 		//vi = w->getView3DControl();
-		vi = dynamic_cast<View3DControl *>(w->getView3D());
+        vi = dynamic_cast<View3DControl *>(w->getView3D());
 		qDebug() << "V3d_PluginLoader getView3DControl = "<< vi <<" : " << w <<"/"<< image_window;
 	}
 	return vi;
 }
+
+//added Dec. 02,2013 by Zhi Zhou
+
+View3DControl * V3d_PluginLoader::getAnyView3DControl(V3dR_MainWindow *w)
+{
+    View3DControl * vi = 0;
+    vi = dynamic_cast<View3DControl *>(w->getGLWidget());
+    return vi;
+}
+
+
 View3DControl * V3d_PluginLoader::getLocalView3DControl(v3dhandle image_window)
 {
 	View3DControl * vi = 0;

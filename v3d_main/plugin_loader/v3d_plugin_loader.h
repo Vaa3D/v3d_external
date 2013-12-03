@@ -156,7 +156,7 @@ public:
 
 //V3DPluginCallback2
 public:
-	virtual View3DControl * getView3DControl(v3dhandle image_window);
+    virtual View3DControl * getView3DControl(v3dhandle image_window);
 	virtual View3DControl * getLocalView3DControl(v3dhandle image_window);
 	virtual TriviewControl * getTriviewControl(v3dhandle image_window); //aded by PHC, 2010-12-08
 
@@ -181,6 +181,8 @@ public:
     //added PHC 20130904 allow a plugin program to refresh and rescan all plugins
     //virtual void refreshMainMenuPluginList(); //not working, by PHC 20130904
 
+    virtual View3DControl * getAnyView3DControl(V3dR_MainWindow *w);  //Dec. 02, 2013 by Zhi Zhou
+    virtual void screenShotAny3DWindow(V3dR_MainWindow *w,QString filename);//Dec. 02, 2013 by Zhi Zhou
 };
 
 #endif
