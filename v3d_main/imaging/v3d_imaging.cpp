@@ -32,7 +32,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		const char* filename=p.imgp->getFileName();
         //v3d_msg(QString("[")+filename+"]");
         XFormWidget *curw = 0;
-        if (!filename)
+        if (filename)
         {
             curw = mainwindow->findMdiChild(QString(filename)); //search window using name. ZJL
             //unsigned char* rawdata=p.imgp->getRawData();
