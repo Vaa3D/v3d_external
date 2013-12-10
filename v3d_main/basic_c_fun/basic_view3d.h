@@ -212,7 +212,6 @@ public:
 	virtual void updateImageData() =0;
 	virtual void reloadData() =0;
 	virtual void cancelSelect() =0;
-
 };
 
 #endif /* BASIC_VIEW3D_H_ */

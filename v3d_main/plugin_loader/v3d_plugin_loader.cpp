@@ -1061,10 +1061,14 @@ bool V3d_PluginLoader::screenShot3DWindow(v3dhandle image_window, QString filena
 
 //added Dec. 02,2013 by Zhi Zhou
 
-void V3d_PluginLoader::screenShotAny3DWindow(V3dR_MainWindow *w,QString filename)
+void V3d_PluginLoader::screenShot_Any3DViewer(V3dR_MainWindow *w,QString filename)
 {
-    V3dR_GLWidget * v = w->getGLWidget();
-    v->screenShot(filename);
+    if (w)
+    {
+        V3dR_GLWidget * v = w->getGLWidget();
+        if (v)
+            v->screenShot(filename);
+    }
 }
 
 bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString filename)
@@ -1096,13 +1100,14 @@ View3DControl * V3d_PluginLoader::getView3DControl(v3dhandle image_window)
 
 //added Dec. 02,2013 by Zhi Zhou
 
-View3DControl * V3d_PluginLoader::getAnyView3DControl(V3dR_MainWindow *w)
+View3DControl * V3d_PluginLoader::getView3DControl_Any3DViewer(V3dR_MainWindow *w)
 {
     View3DControl * vi = 0;
-    vi = dynamic_cast<View3DControl *>(w->getGLWidget());
-    return vi;
+    if (w)
+    {
+        return (vi = dynamic_cast<View3DControl *>(w->getGLWidget()));
+    }
 }
-
 
 View3DControl * V3d_PluginLoader::getLocalView3DControl(v3dhandle image_window)
 {
@@ -1151,6 +1156,11 @@ V3dR_MainWindow * V3d_PluginLoader::find3DViewerByName(QString fileName)
         return 0;
 }
 
+void V3d_PluginLoader::update_3DViewer(V3dR_MainWindow *w) //Dec, 9, 2013. PHC
+{
+    if (w)
+        w->update();
+}
 
 //the following 12 functions are added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
 

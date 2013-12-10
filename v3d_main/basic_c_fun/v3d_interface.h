@@ -195,8 +195,10 @@ public:
     //added PHC 20130904 allow a plugin program to refresh and rescan all plugins //commented as it does not work. by PHC 20130904
     //virtual void refreshMainMenuPluginList() = 0;
 
-    virtual View3DControl * getAnyView3DControl(V3dR_MainWindow *w) = 0;  //Dec. 02, 2013 by Zhi Zhou
-    virtual void screenShotAny3DWindow(V3dR_MainWindow *w,QString filename) = 0; //Dec. 02, 2013 by Zhi Zhou
+    virtual View3DControl * getView3DControl_Any3DViewer(V3dR_MainWindow *w) = 0;  //Dec. 02, 2013 by Zhi Zhou
+    virtual void screenShot_Any3DViewer(V3dR_MainWindow *w,QString filename) = 0; //Dec. 02, 2013 by Zhi Zhou
+
+    virtual void update_3DViewer(V3dR_MainWindow *w) = 0;//Dec, 9, 2013. PHC
 };
 
 class V3DPluginInterface2
