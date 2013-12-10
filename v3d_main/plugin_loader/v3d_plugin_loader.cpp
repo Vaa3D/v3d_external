@@ -1159,7 +1159,14 @@ V3dR_MainWindow * V3d_PluginLoader::find3DViewerByName(QString fileName)
 void V3d_PluginLoader::update_3DViewer(V3dR_MainWindow *w) //Dec, 9, 2013. PHC
 {
     if (w)
-        w->update();
+    {
+        V3dR_GLWidget * v = w->getGLWidget();
+        if (v)
+            v->update();
+    }
+
+    pumpEvents(); //131209 PHC
+
 }
 
 //the following 12 functions are added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
