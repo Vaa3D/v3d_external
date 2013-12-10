@@ -300,7 +300,7 @@ void RowInterleavedStereoView::fillStencil(int left, int top, int width, int hei
         || (mode == jfrc::STEREO_CHECKER_INTERLEAVED) )
     {
         // blank alternate columns
-        int offset = (top + 1) % 2; // even=>1; odd=>0
+        int offset = (left+1) % 2; 
         glBegin(GL_LINES);
         for(float x = 0.5 - offset; x <= width; x += 2) {
             glVertex3f(x, 0, 0);
@@ -315,6 +315,12 @@ void RowInterleavedStereoView::fillStencil(int left, int top, int width, int hei
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glPopAttrib();
+}
+
+ColumnInterleavedStereoView::ColumnInterleavedStereoView(Eye eye, Eye eyeGeom, const uint8_t* stipple)
+    : RowInterleavedStereoView(eye, eyeGeom, stipple)
+{
+    mode = STEREO_COLUMN_INTERLEAVED;
 }
 
 CheckerInterleavedStereoView::CheckerInterleavedStereoView(Eye eye, Eye eyeGeom, const uint8_t* stipple)

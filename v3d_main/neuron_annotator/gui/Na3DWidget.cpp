@@ -1970,7 +1970,6 @@ void Na3DWidget::paint_stereo()
         }
         break;
     case jfrc::STEREO_ROW_INTERLEAVED:
-    case jfrc::STEREO_COLUMN_INTERLEAVED:
         {
             {
                 jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
@@ -1979,6 +1978,20 @@ void Na3DWidget::paint_stereo()
             }
             {
                 jfrc::RowInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
+                // DO NOT CLEAR
+                paint_mono(false);
+            }
+            break;
+        }
+    case jfrc::STEREO_COLUMN_INTERLEAVED:
+        {
+            {
+                jfrc::ColumnInterleavedStereoView v(jfrc::StereoEyeView::LEFT, bStereoSwapEyes? jfrc::StereoEyeView::RIGHT : jfrc::StereoEyeView::LEFT);
+                v.fillStencil(stencilLeft, stencilTop, width(), height());
+                paint_mono();
+            }
+            {
+                jfrc::ColumnInterleavedStereoView v(jfrc::StereoEyeView::RIGHT, bStereoSwapEyes? jfrc::StereoEyeView::LEFT : jfrc::StereoEyeView::RIGHT);
                 // DO NOT CLEAR
                 paint_mono(false);
             }

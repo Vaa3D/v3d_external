@@ -70,6 +70,13 @@ public:
     const uint8_t* stipple;
 };
 
+class ColumnInterleavedStereoView : public RowInterleavedStereoView
+{
+public:
+
+    ColumnInterleavedStereoView(Eye eye, Eye eyeGeom, const uint8_t* stipple=checkStipple0);
+};
+
 class CheckerInterleavedStereoView : public RowInterleavedStereoView
 {
 public:
