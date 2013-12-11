@@ -1955,7 +1955,7 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 {
     if (menu_name == tr("Pairwise Image Stitching"))
     {
-    	pairwise_stitching(callback, parent);
+        pairwise_stitching(callback, parent);
     }
     else if (menu_name == tr("Group Image Stitching"))
     {
@@ -9888,7 +9888,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         if(infilelist->empty())
         {
             //print Help info
-            printf("\nUsage: v3d -x imageStitch -f v3dstitch -i <input_image_folder> -o <output_image_file> -p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio>] #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>\"\n");
+            printf("\nUsage: v3d -x imageStitch -f v3dstitch -i <input_image_folder> -o <output_image_file> -p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio>] #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1> #o <orders_of_tiles>\"\n");
 
 
             return true;
@@ -9903,6 +9903,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
         // init
         QString m_InputFolder(infile);
+        QString m_InputConfig=NULL;
 
         int channel1 = 0;
 
@@ -10008,6 +10009,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                                 img_show = atoi( argv[i+1] )?true:false;
                                 i++;
                             }
+                            else if(!strcmp(key, "o"))
+                            {
+                                m_InputConfig = QString(argv[i+1]);
+                                i++;
+                            }
                             else
                             {
                                 cout<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
@@ -10061,6 +10067,41 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             count++;
         }
 
+        // if the tile configuration input by users
+        CONF_INFO<V3DLONG> cinfo;
+        std::vector<CONF_INFO<V3DLONG> > cinfoList;
+        bool b_withconfig = false;
+        V3DLONG row_i, row_j, col_i, col_j, height_i, height_j;
+        if(!m_InputConfig.isEmpty())
+        {
+            b_withconfig = true;
+
+            ifstream pFile(m_InputConfig.toStdString().c_str());
+            string str;
+
+            if(pFile.is_open())
+            {
+                char buf[2000];
+
+                while( !pFile.eof() )
+                {
+                    while( getline(pFile, str) )
+                    {
+                        istringstream iss(str);
+
+                        iss>>buf;
+
+                        cinfo.fn_img = buf;
+
+                        iss>>cinfo.row;
+                        iss>>cinfo.col;
+
+                        cinfoList.push_back(cinfo);
+                    }
+                }
+            }
+        }
+
         // stitching image pairs
         // suppose 0 as a reference
         int NTILES = vim.tilesList.size();
@@ -10075,6 +10116,29 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             V3DLONG *sz_target = 0;
             int datatype_target = 0;
             unsigned char* target1d = 0;
+
+            if(b_withconfig)
+            {
+                row_i=-1, col_i=-1;
+
+                for(int ii=0; ii<cinfoList.size(); ii++)
+                {
+                    if(cinfoList.at(ii).fn_img.compare(vim.tilesList.at(i).fn_image)==0)
+                    {
+                        row_i = cinfoList.at(ii).row;
+                        col_i = cinfoList.at(ii).col;
+                        break;
+                    }
+                }
+
+                qDebug() << row_i << col_i;
+
+                if(row_i<0 || col_i<0)
+                {
+                    cout<<"Your files are inconsistent with your configuration file"<<endl;
+                    return -1;
+                }
+            }
 
             if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
             {
@@ -10115,6 +10179,33 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 V3DLONG *sz_subject = 0;
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
+
+                if(b_withconfig)
+                {
+                    row_j=-1, col_j=-1;
+
+                    for(int ii=0; ii<cinfoList.size(); ii++)
+                    {
+                        if(cinfoList.at(ii).fn_img.compare(vim.tilesList.at(j).fn_image)==0)
+                        {
+                            row_j = cinfoList.at(ii).row;
+                            col_j = cinfoList.at(ii).col;
+                            break;
+                        }
+
+                    }
+
+                    qDebug() << row_j << col_j;
+
+                    if(row_j<0 || col_j<0)
+                    {
+                        cout<<"Your files are inconsistent with your configuration file"<<endl;
+                        return -1;
+                    }
+
+                    if( !((row_i==row_j && y_abs(col_i-col_j)==1) ||  (col_i==col_j && y_abs(row_i-row_j)==1)))
+                        continue;
+                }
 
                 if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
@@ -10189,7 +10280,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             if(sz_target) {delete []sz_target; sz_target=0;}
 
         }
-
         // find mst of whole tiled images
         for(int i=0; i<NTILES; i++)
         {
@@ -10322,7 +10412,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     pos->x = vim.tilesList.at(current).offsets[0] + (sx-1);
                     pos->y = vim.tilesList.at(current).offsets[1] + (sy-1);
                     pos->z = vim.tilesList.at(current).offsets[2] + (sz-1);
-                    pos->value = vim.tilesList.at(current>previous?current:previous).record.at(current<previous?current:previous).score; //
+                    //pos->value = vim.tilesList.at(current>previous?current:previous).record.at(current<previous?current:previous).score; //
 
                     //
                     if(imgdatatype == V3D_UINT8)
@@ -11902,14 +11992,14 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
         }
 
-//        for(int i=0; i<NTILES_I; i++)
-//        {
-//            //
-//            for(int j=i+1; j<NTILES; j++)
-//            {
-//                qDebug()<<"current "<<j<<"previous "<<i<<"edge "<<vim.tilesList.at(j).record.at(i).score;
-//            }
-//        }
+        //        for(int i=0; i<NTILES_I; i++)
+        //        {
+        //            //
+        //            for(int j=i+1; j<NTILES; j++)
+        //            {
+        //                qDebug()<<"current "<<j<<"previous "<<i<<"edge "<<vim.tilesList.at(j).record.at(i).score;
+        //            }
+        //        }
 
         // find mst of whole tiled images
         for(int i=0; i<NTILES; i++)
@@ -11969,13 +12059,13 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
         }
 
-//        for(V3DLONG i=0; i<NTILES; i++)
-//        {
-//            for(V3DLONG j=0; j<NTILES; j++)
-//            {
-//                qDebug()<<"udgraph ..."<<i<<j<<udgraph[i][j];
-//            }
-//        }
+        //        for(V3DLONG i=0; i<NTILES; i++)
+        //        {
+        //            for(V3DLONG j=0; j<NTILES; j++)
+        //            {
+        //                qDebug()<<"udgraph ..."<<i<<j<<udgraph[i][j];
+        //            }
+        //        }
 
         // output
         QString tg_filename; // tiled image groups

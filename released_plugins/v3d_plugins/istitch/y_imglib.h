@@ -256,7 +256,7 @@ public:
         vx = (Tidx)(maxDimx - minDimx + 1.5);
         vy = (Tidx)(maxDimy - minDimy + 1.5);
         vz = (Tidx)(maxDimz - minDimz + 1.5);
-    
+
         //
         for(Tidx i=0; i<tcList.size(); i++)
         {
@@ -708,7 +708,7 @@ public:
                 Tdata sum=0;
                 for(Tidx j=0; j<column; j++)
                 {
-                     sum += v[j][i]*M.v[k][j];
+                    sum += v[j][i]*M.v[k][j];
                 }
                 T.v[k][i] = sum;
             }
@@ -1485,10 +1485,10 @@ public:
         {
             if (i==0) totalsz=sz[0];
             else
-            totalsz *= sz[i];
+                totalsz *= sz[i];
         }
         if (totalsz>0)
-        pImg=new T1 [totalsz];
+            pImg=new T1 [totalsz];
         else
         {
             printf("The sz info is incorrect.\n");
@@ -1755,7 +1755,7 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
             T1 ni, n2;
             T2 max_score = 0;
             T1 mse_node; // corresponding maxmum score edge
-            T1 parent;
+            T1 parent, previous;
             // step 2.
             for(T1 i=0; i<size; i++)
             {
@@ -1774,16 +1774,20 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
                         n1=n2;
                         n2=tmp;
                     }
+
                     // find highest score edge
-                    if(tilesList.at(n1).record.at(n2).score > max_score)
+                    if(tilesList.at(n1).record.size()>n2)
                     {
-                        max_score = tilesList.at(n1).record.at(n2).score;
-                        mse_node = j; parent = i;
+                        if(tilesList.at(n1).record.at(n2).score > max_score)
+                        {
+                            max_score = tilesList.at(n1).record.at(n2).score;
+                            mse_node = j; previous = i; parent = tilesList.at(n1).record.at(n2).n;
+                        }
                     }
                 } // j
             }// i
             // add new node to mst
-            T1 sn1=mse_node, sn2=parent, coef=1;
+            T1 sn1=mse_node, sn2=previous, coef=1;
             if(sn1<sn2)
             {
                 T1 tmp = sn1;
@@ -1792,7 +1796,7 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
                 coef = -1;
             }
             //
-            qDebug()<<"mst: current "<<sn1<<"previous "<<sn2<<"score "<<max_score;
+            qDebug()<<"mst: current "<<sn1<<"previous "<<parent<<"score "<<max_score;
             //
             (&tilesList.at(mse_node))->offsets[0] = coef*tilesList.at(sn1).record.at(sn2).offsets[0];
             (&tilesList.at(mse_node))->offsets[1] = coef*tilesList.at(sn1).record.at(sn2).offsets[1];
