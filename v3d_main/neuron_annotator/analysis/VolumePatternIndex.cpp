@@ -39,14 +39,8 @@
 
   1. Steps
 
-  Search will be either one-phase or two-phase. If one-phase, or "fast", then
-  only the index will be used. If two-phase, then the results of the fast
-  search will be further refined in the second phase by using the actual source
-  image files.
-
-  A floating-point value will be multiplied by the "maxHits" parameters and this
-  number (rounded to the nearest integer) will be used as the number of fast
-  results to be forwarded to the second pass.
+  The input 3D mask is sampled into search dimensions, and scored against each
+  index entry.
 
   2. Scoring
 
@@ -77,6 +71,7 @@ Qry    low         -1         1        -1       -8
 #include "../utility/ImageLoader.h"
 
 const int VolumePatternIndex::FILENAME_BUFFER_SIZE = 2000;
+const int VolumePatternIndex::ID_BUFFER_SIZE = 1000;
 
 const int VolumePatternIndex::DEFAULT_UNIT_SIZE = 10;
 const int VolumePatternIndex::DEFAULT_THRESHOLD_A = 7;
@@ -86,17 +81,19 @@ const double VolumePatternIndex::DEFAULT_MIN_SCORE = -1000000.0;
 const int VolumePatternIndex::DEFAULT_MAX_HITS = 100;
 const int VolumePatternIndex::DEFAULT_BINARY_PROXY_VALUE = 255;
 const QString VolumePatternIndex::DEFAULT_MATRIX_STRING("      0 -1 -4 -16       -1 1 -1 -8       -4 -1 8 4     -16 -8 4 32 ");
-const QString VolumePatternIndex::DEFAULT_FULL_MATRIX_STRING(" 0  0 -4 -16        0 0 -1 -8       -8 -1 8 4     -32 -8 4 32 ");
 
 const int VolumePatternIndex::MODE_UNDEFINED=-1;
 const int VolumePatternIndex::MODE_INDEX=0;
 const int VolumePatternIndex::MODE_SEARCH=1;
+const int VolumePatternIndex::MODE_APPEND=2;
+
+const int VolumePatternIndex::INDEX_STATE_CREATE=0;
+const int VolumePatternIndex::INDEX_STATE_APPEND=1;
 
 VolumePatternIndex::VolumePatternIndex()
 {
     fid=0;
     mode=MODE_UNDEFINED;
-    fullSearch=false;
     defaultChannelToIndex=-1;
     queryChannel=-1;
     iXmax=-1;
@@ -109,13 +106,13 @@ VolumePatternIndex::VolumePatternIndex()
     queryIndexSkipPositions=0L;
     indexTotalBytes=-1L;
     matrix=0L;
-    fullmatrix=0L;
     unitSize=DEFAULT_UNIT_SIZE;
     threshold=0L;
     minScore=DEFAULT_MIN_SCORE;
     maxHits=DEFAULT_MAX_HITS;
     DEBUG_FLAG=false;
     skipzeros=false;
+    indexState=INDEX_STATE_CREATE;
 }
 
 VolumePatternIndex::~VolumePatternIndex()
@@ -130,6 +127,8 @@ bool VolumePatternIndex::execute()
         return createIndex();
     } else if (mode==MODE_SEARCH) {
         return doSearch();
+    } else if (mode==MODE_APPEND) {
+      return appendIndex();
     }
     return false;
 }
@@ -147,13 +146,6 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             defaultChannelToIndex=defaultChannelToIndexString.toInt();
         } else if (arg=="-indexFile") {
             indexFilePath=(*argList)[++i];
-// NOT IMPLEMENTED
-//        } else if (arg=="-subVolume") {
-//            QString subVolumeString=(*argList)[++i];
-//            if (!parseSubVolumeString(subVolumeString)) {
-//                qDebug() << "Could not parse subVolumeString=" << subVolumeString;
-//                return 1;
-//            }
         } else if (arg=="-unitSize") {
             QString unitSizeString=(*argList)[++i];
             unitSize=unitSizeString.toInt();
@@ -176,8 +168,6 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         } else if (arg=="-minScore") {
             QString minScoreString=(*argList)[++i];
             minScore=minScoreString.toDouble();
-        } else if (arg=="-full") {
-            fullSearch=true;
         } else if (arg=="-skipzeros") {
             skipzeros=true;
         } else if (arg=="-matrix") {
@@ -185,17 +175,14 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             if (!parseMatrixString(matrixString)) {
                 qDebug() << "Could not parse matrix string=" << matrixString;
             }
-        } else if (arg=="-fullmatrix") {
-            QString fullmatrixString=(*argList)[++i];
-            if (!parseFullMatrixString(fullmatrixString)) {
-                qDebug() << "Could not parse full matrix string=" << fullmatrixString;
-            }
         }
     }
     if (modeString.size()>0) {
         if (modeString=="index") {
             mode=MODE_INDEX;
-        } else if (modeString=="search") {
+        } else if (modeString=="append") {
+	  mode=MODE_APPEND;
+	} else if (modeString=="search") {
             mode=MODE_SEARCH;
             qx0=x0;x0=-1;
             qx1=x1;x1=-1;
@@ -219,12 +206,6 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
             return 1;
         }
     }
-    if (fullmatrix==0L) {
-        if (!parseFullMatrixString(DEFAULT_FULL_MATRIX_STRING)) {
-            qDebug() << "Could not parse default full matrix string=" << DEFAULT_FULL_MATRIX_STRING;
-            return 1;
-        }
-    }
     if (threshold==0L) {
         threshold=new int[3];
         threshold[0]=DEFAULT_THRESHOLD_A;
@@ -232,31 +213,6 @@ int VolumePatternIndex::processArgs(vector<char*> *argList)
         threshold[2]=DEFAULT_THRESHOLD_C;
     }
     return 0;
-}
-
-bool VolumePatternIndex::parseSubVolumeString(QString subVolumeString) {
-    QRegExp splitRegex("\\s+");
-    QStringList volList=subVolumeString.split(splitRegex);
-    if (volList.size()!=6) {
-        if (volList.size()>0) {
-            for (int i=0;i<volList.size();i++) {
-                qDebug() << "i=" << i << " string=" << volList[i];
-            }
-        }
-        return false;
-    }
-    QString x0String=volList[0];
-    x0=x0String.toLong();
-    QString x1String=volList[1];
-    x1=x1String.toLong();
-    QString y0String=volList[2];
-    y0=y0String.toLong();
-    QString y1String=volList[3];
-    y1=y1String.toLong();
-    QString z0String=volList[4];
-    z0=z0String.toLong();
-    QString z1String=volList[5];
-    z1=z1String.toLong();
 }
 
 bool VolumePatternIndex::parseThresholdString(QString thresholdString) {
@@ -295,27 +251,6 @@ bool VolumePatternIndex::parseMatrixString(QString matrixString) {
     return true;
 }
 
-bool VolumePatternIndex::parseFullMatrixString(QString matrixString) {
-    QRegExp splitRegex("\\s+");
-    QStringList mList=matrixString.trimmed().split(splitRegex);
-    if (mList.size()!=16) {
-        for (int i=0;i<mList.size();i++) {
-            qDebug() << "i=" << i << " string=" << mList[i];
-        }
-        return false;
-    }
-    fullmatrix=new int[16];
-    for (int i=0;i<16;i++) {
-        fullmatrix[i]=mList[i].toInt();
-        qDebug() << "Using full matrix " << i << " = " << fullmatrix[i];
-    }
-    return true;
-}
-
-bool VolumePatternIndex::createSubVolume() {
-    return true;
-}
-
 bool VolumePatternIndex::populateIndexFileList() {
     QFile indexFileListFile(inputFileListPath);
     if (!indexFileListFile.open(QIODevice::ReadOnly)) {
@@ -324,58 +259,169 @@ bool VolumePatternIndex::populateIndexFileList() {
     }
     while(!indexFileListFile.atEnd()) {
         QString line=indexFileListFile.readLine();
-        line=line.trimmed();
-        int channel=-1;
-        QRegExp splitRegex("\\s+");
-        QStringList fList=line.split(splitRegex);
-        if (fList.size()>1) {
-            channel=fList[1].toInt();
-	    line=fList[0];
-        } else {
-            channel=defaultChannelToIndex;
-        }
-        if (channel<0) {
-            qDebug() << "Index channel not defined - must specify defaultChannelToIndex if channel not given";
-            return false;
-        } else {
-            indexChannelList.append(channel);
-        }
-        QFileInfo fileInfo(line);
-        if (!fileInfo.exists()) {
-            qDebug() << "Could not verify that file=" << line << " exists";
-            return false;
-        }
-        qDebug() << "Verified " << line << " exists";
-        indexFileList.append(line);
+	QStringList indexInfoList=parseIndexFileLine(line);
+	if (indexInfoList.size()==3) {
+
+	  qDebug() << "indexInfoList 0=" << indexInfoList[0] << " 1=" << indexInfoList[1] << " 2=" << indexInfoList[2];
+
+	  // Check for repeats
+	  QString idQString=indexInfoList[0];
+	  if (idPathHash.contains(idQString)) {
+	    qDebug() << "Encountered repeat of hash entry=" << idQString;
+	    return false;
+	  }
+	  indexIdList.append(idQString);
+	  indexChannelList.append(indexInfoList[2].toInt());
+	  QString filePath=indexInfoList[1];
+	  QFileInfo fileInfo(filePath);
+	  if (!fileInfo.exists()) {
+	    qDebug() << "Could not verify that file=" << filePath << " exists";
+	    return false;
+	  }
+	  qDebug() << "Verified " << filePath << " exists";
+	  indexFileList.append(filePath);
+	  idPathHash[idQString]=filePath;
+	} else if (indexInfoList.size() > 0) {
+	  qDebug() << "Could not process information from line=" << line;
+	  return false;
+	}
     }
     indexFileListFile.close();
     return true;
 }
 
-void VolumePatternIndex::formatSubregion(V3DLONG* subregion)
+// This method returns a list with 3 values { id, path, channel }, or an empty list if the line is empty
+QStringList VolumePatternIndex::parseIndexFileLine(QString line)
 {
-    subregion[0]=x0;
-    subregion[1]=x1;
-    subregion[2]=y0;
-    subregion[3]=y1;
-    subregion[4]=z0;
-    subregion[5]=z1;
+  QStringList resultList;
+  qDebug() << "Parsing index file line=" << line;
+  line=line.trimmed();
+  if (line.length()==0) {
+    return resultList; // empty
+  }
+  int channel=-1;
+  QRegExp splitRegex("\\s+");
+  QStringList fList=line.split(splitRegex);
+  for (int i=0;i<fList.size();i++) {
+    qDebug() << "line " << i << "=" << fList[i];
+  }
+  QString id;
+  QString filePath;
+  if (fList.size()==1) {
+    return resultList; // empty
+  } 
+  id=fList[0];
+  filePath=fList[1];
+  if (fList.size()>2) {
+    channel=fList[2].toInt();
+    if (channel<0 || channel>1000) {
+      channel=defaultChannelToIndex;
+    }
+  } else {
+    channel=defaultChannelToIndex;
+  }
+  resultList.append(id);
+  resultList.append(filePath);
+  QString channelString=QString::number(channel);
+  resultList.append(channelString);
+  return resultList;
 }
 
-void VolumePatternIndex::formatQuerySubregion(V3DLONG* subregion)
+bool VolumePatternIndex::appendIndex()
 {
-    subregion[0]=qx0;
-    subregion[1]=qx1;
-    subregion[2]=qy0;
-    subregion[3]=qy1;
-    subregion[4]=qz0;
-    subregion[5]=qz1;
+
+  // Validate index file path - these are the new files to be added
+  QFileInfo indexFileInfo(indexFilePath);
+  if (!indexFileInfo.exists()) {
+    qDebug() << "Could not find pre-existing index file to append, " << indexFilePath;
+    return false;
+  }
+  
+  // Get dimensional info from current index, and then move to end to add new entries
+  if (!openIndexAndReadHeader()) {
+    qDebug() << "Could not open and read header of file=" << indexFilePath;
+    return false;
+  }
+
+  // Skip through index file and populate id/path hash
+  int idLength=0;
+  int pathLength=0;
+  char* filePathBuffer=new char[FILENAME_BUFFER_SIZE];
+  char* idBuffer=new char[ID_BUFFER_SIZE];
+
+  size_t readSize=0;
+  while( (readSize=fread(&idLength, 1, sizeof(int), fid))==sizeof(int) ) {
+    if (readSize>=ID_BUFFER_SIZE) {
+      qDebug() << "idLength exceeds ID_BUFFER_SIZE";
+      return false;
+    }
+    if ( (readSize=fread(idBuffer, 1, idLength, fid))!=idLength) {
+      fclose(fid);
+      qDebug() << "Unexpectedly could not read path from index file";
+      return false;
+    }
+    if ( !(readSize=fread(&pathLength, 1, sizeof(int), fid))==sizeof(int) ) {
+      qDebug() << "pathLength could not be read";
+      return false;
+    }
+
+    if (pathLength>=FILENAME_BUFFER_SIZE) {
+      qDebug() << "pathLength exceeds FILENAME_BUFFER_SIZE";
+      return false;
+    }
+    if ( (readSize=fread(filePathBuffer, 1, pathLength, fid))!=pathLength) {
+      fclose(fid);
+      qDebug() << "Unexpectedly could not read path from index file";
+      return false;
+    }
+    idBuffer[idLength]='\0';
+    QString idQString=QString(idBuffer);
+    filePathBuffer[pathLength]='\0';
+    QString pathQString=QString(filePathBuffer);
+    idPathHash[idQString]=pathQString;
+
+    // Read the channel size
+    int channelSize;
+    if ( (readSize=fread(&channelSize, 1, sizeof(int), fid))!=sizeof(int) ) {
+      fclose(fid);
+      qDebug() << "Unexpectedly could not channel size for entry";
+      return false;
+    }
+    
+    // Next, advance the file pointer past the index data
+    if (fseek(fid, indexTotalBytes, SEEK_CUR)!=0) {
+      qDebug() << "Could not advance file pointer past index data";
+      return false;
+    }
+  }
+
+  // Now, close the index file for reading, and re-open for writing, in preparation
+  // for adding new entries.
+
+  fclose(fid);
+  fid=0L;
+
+  fid=fopen(indexFilePath.toAscii().data(), "ab");
+  if (!fid) {
+    qDebug() << "Could not open file=" << indexFilePath << " to append";
+    return false;
+  }
+
+  indexState=INDEX_STATE_APPEND;
+  return addEntriesToIndex();
+  
 }
 
 bool VolumePatternIndex::createIndex()
 {
-    qDebug() << "createIndex() start";
-    V3DLONG* subregion=0L;
+  indexState=INDEX_STATE_CREATE;
+  return addEntriesToIndex();
+}
+
+
+bool VolumePatternIndex::addEntriesToIndex()
+{
+    qDebug() << "addEntriesToIndex() start";
 
     if (!populateIndexFileList()) {
         qDebug() << "populateIndexFileList failed";
@@ -387,62 +433,79 @@ bool VolumePatternIndex::createIndex()
     }
     int fileIndex=0;
     indexData=0L;
+    char* filePathBuffer=new char[FILENAME_BUFFER_SIZE];
+    char* idBuffer=new char[ID_BUFFER_SIZE];
     for (fileIndex=0;fileIndex<indexFileList.size();fileIndex++) {
       qDebug() << "Processing file " << fileIndex;
       My4DImage* sourceImage=0L;
       ImageLoader loader;
-      QString filenameToLoad=indexFileList[fileIndex];
-      qDebug() << "Starting with file=" << filenameToLoad;
-      if (filenameToLoad.endsWith(".mask")) {
+      QString filePathToLoad=indexFileList[fileIndex];
+      qDebug() << "Starting with file=" << filePathToLoad;
+      if (filePathToLoad.endsWith(".mask")) {
 	  MaskChan mc;
 	  QStringList ql;
-	  ql.append(filenameToLoad);
-	  qDebug() << "Check 1";
+	  ql.append(filePathToLoad);
 	  sourceImage=mc.createImageFromMaskFiles(ql);
-	  qDebug() << "Check 10";
       } else {
-        if (!loader.loadImage(sourceImage, indexFileList[fileIndex])) {
-            qDebug() << "Could not load file=" << indexFileList[fileIndex];
+	sourceImage=new My4DImage();
+        if (!loader.loadImage(sourceImage, filePathToLoad)) {
+            qDebug() << "Could not load file=" << filePathToLoad;
             return false;
         }
       }
-      qDebug() << "Indexing " << fileIndex << " of " << indexFileList.size() << " : " << indexFileList[fileIndex] << "...";
-      if (fileIndex==0 && x0==-1) {
+      qDebug() << "Indexing " << fileIndex << " of " << indexFileList.size() << " : " << filePathToLoad << "...";
+      // Note: if indexState==INDEX_STATE_APPEND, then we assume the dimensions have been read by the index read step previously
+      if (indexState==INDEX_STATE_CREATE && (fileIndex==0 && x0==-1) ) {
 	// Then assume we are to use the first image to set the selection region
-	qDebug() << "createIndex::Formatting subregion. x0=" << x0;
-	x0=0; x1=sourceImage->getXDim();
+ 	x0=0; x1=sourceImage->getXDim();
 	y0=0; y1=sourceImage->getYDim();
 	z0=0; z1=sourceImage->getZDim();
-	if (subregion==0L) {
-	  subregion=new V3DLONG[6];
-	}
-	formatSubregion(subregion);
-	qDebug() << "Done formatting subregion";
-	for (int i=0;i<6;i++) {
-	  qDebug() << "subregion " << i << " =" << subregion[i];
-	}
       }
-      indexImage(sourceImage, indexChannelList[fileIndex], subregion, false);
+      indexImage(sourceImage, indexChannelList[fileIndex], false);
       if (indexData==0L) {
 	qDebug() << "Error with indexImage";
 	return false;
       }
-      if (fileIndex==0) {
+      if (fileIndex==0 && indexState==INDEX_STATE_CREATE) {
 	if (!openIndexAndWriteHeader()) {
 	  qDebug() << "Could not open index file and write header";
 	  return false;
 	}
       }
+
+      // Write id, path, and channel for this entry before index data
+      QString indexId=indexIdList[fileIndex];
+      int length=indexId.length();
+
+      if (length>ID_BUFFER_SIZE) {
+	qDebug() << "Id buffer is not large enough for=" << indexId;
+	return false;
+      }
+      fwrite(&length, sizeof(int), 1, fid);
+      strcpy(idBuffer, indexId.toAscii().data());
+      fwrite(idBuffer, sizeof(char), length, fid);
+
+      length=filePathToLoad.length();
+      if (length>FILENAME_BUFFER_SIZE) {
+	qDebug() << "File path length name buffer not large enough for=" << filePathToLoad;
+	return false;
+      }
+      fwrite(&length, sizeof(int), 1, fid);
+      strcpy(filePathBuffer, filePathToLoad.toAscii().data());
+      fwrite(filePathBuffer, sizeof(char), length, fid);
+      int channelIndex=indexChannelList[fileIndex];
+      fwrite(&channelIndex, sizeof(int), 1, fid);
+
+      // Next, write the index data
       fwrite(indexData, sizeof(unsigned char), indexTotalBytes, fid);
+
       qDebug() << "Cleaning up";
       delete sourceImage;
     }
     if (indexData!=0) {
         delete [] indexData;
     }
-    if (subregion!=0) {
-        delete [] subregion;
-    }
+    delete [] filePathBuffer;
     fclose(fid);
     fid=0;
     return true;
@@ -496,30 +559,6 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
     fwrite(&iXmax, sizeof(V3DLONG), 1, fid);
     fwrite(&iYmax, sizeof(V3DLONG), 1, fid);
     fwrite(&iZmax, sizeof(V3DLONG), 1, fid);
-
-    // 5. Number of Index Files
-
-    // Next, write the number of index files
-    int numIndexFiles=indexFileList.size();
-    fwrite(&numIndexFiles, sizeof(int), 1, fid);
-
-    // 6. Index File Paths w/ Channel Index
-
-    // Next, write the paths for the index files, along with channel indices
-    char* filePathBuffer=new char[FILENAME_BUFFER_SIZE];
-    for (int i=0;i<indexFileList.size();i++) {
-        QString filePath=indexFileList[i];
-        int length=filePath.length();
-        if (length>FILENAME_BUFFER_SIZE) {
-            qDebug() << "File path length name buffer not large enough for=" << filePath;
-            return false;
-        }
-        fwrite(&length, sizeof(int), 1, fid);
-        strcpy(filePathBuffer, filePath.toAscii().data());
-        fwrite(filePathBuffer, sizeof(char), length, fid);
-        int channelIndex=indexChannelList[i];
-        fwrite(&channelIndex, sizeof(int), 1, fid);
-    }
 }
 
 bool VolumePatternIndex::doSearch()
@@ -529,6 +568,7 @@ bool VolumePatternIndex::doSearch()
         qDebug() << "Could not open and read header of file=" << indexFilePath;
         return false;
     }
+    V3DLONG indexTotal=iXmax*iYmax*iZmax;
 
     qDebug() << "Read query...";
     queryImage=0L;
@@ -575,7 +615,6 @@ bool VolumePatternIndex::doSearch()
 
 
     qDebug() << "Convert query to index format...";
-    V3DLONG* subregion=0L;
     if (qx0==-1L) {
         qx0=0;
         qx1=queryImage->getXDim();
@@ -584,11 +623,9 @@ bool VolumePatternIndex::doSearch()
         qz0=0;
         qz1=queryImage->getZDim();
     }
-    subregion=new V3DLONG[6];
-    formatQuerySubregion(subregion);
     indexData=0L;
     if (skipzeros) {
-        indexImage(queryImage, queryChannel, subregion, true);
+        indexImage(queryImage, queryChannel, true);
         V3DLONG nonskipCount=0L;
         V3DLONG skipCount=0L;
         V3DLONG cubifiedTotal=iXmax*iYmax*iZmax;
@@ -601,7 +638,7 @@ bool VolumePatternIndex::doSearch()
         }
         qDebug() << "Total non-skip count after indexImage=" << nonskipCount << " whereas skipCount=" << skipCount;
     } else {
-        indexImage(queryImage, queryChannel, subregion, false);
+        indexImage(queryImage, queryChannel, false);
 
     }
     if (indexData==0) {
@@ -624,126 +661,144 @@ bool VolumePatternIndex::doSearch()
         indexData[m]=0;
     }
 
-//    for (int i=0;i<indexTotalBytes;i++) {
-//        qDebug() << "queryCheck " << i << " : " << queryIndex[i];
-//    }
+  // Skip through index file and populate id/path hash
+  int idLength=0;
+  int pathLength=0;
+  char* filePathBuffer=new char[FILENAME_BUFFER_SIZE];
+  char* idBuffer=new char[ID_BUFFER_SIZE];
 
-//    qDebug() << "Begin scoring (index phase)...";
-    V3DLONG indexTotal=iXmax*iYmax*iZmax;
-    for (int i=0;i<indexFileList.size();i++) {
-        size_t readSize=0;
-        if ( (readSize=fread(indexData, 1, indexTotalBytes, fid))!=indexTotalBytes ) {
-            qDebug() << "Could not read full block of " << indexTotalBytes << " , read " << readSize << " instead";
-            return false;
-        }
-//        qDebug() << "Calculating index score for " << indexFileList[i];
-//        QString filename=indexFileList[i];
-//        if (filename.contains("20110728100929640")) {
-//            DEBUG_FLAG=true;
-//        } else {
-//            DEBUG_FLAG=false;
-//        }
-        V3DLONG score=calculateIndexScore(queryIndex, indexData, indexTotal, queryIndexSkipPositions);
-        //qDebug() << i << ". score=" << score;
-        indexScoreList.append(score);
-    }
+  size_t readSize=0;
 
-    qDebug() << "Begin sorting...";
+  qDebug() << "Start index scoring loop...";
 
-    QList< QPair<V3DLONG, int> > pairList;
-
-    qDebug() << "indexScoreList size=" << indexScoreList.size();
-
-    for (int i=0;i<indexScoreList.size();i++) {
-        pairList.append(qMakePair(indexScoreList[i], i));
-    }
-
-    qSort(pairList.begin(), pairList.end(), VolumePatternIndex::compareScores);
-
-    qDebug() << "pairList size=" << pairList.size();
-
-    int finalResultSize=maxHits;
-    if (finalResultSize>pairList.size()) {
-        finalResultSize=pairList.size();
-    }
-
-    QList< QPair<V3DLONG, int> > finalResultList;
-
-    if (fullSearch) {
-
-        qDebug() << "Doing full search";
-
-        for (int i=0;i<finalResultSize;i++) {
-            int p = pairList[i].second;
-            qDebug() << "Using " << i << ". " << indexFileList[p];
-        }
-
-
-        QList< QPair<V3DLONG, int> > fullScoreList;
-
-        // Take the top maxHits and compute the full-resolution scores
-        for (int i=0;i<finalResultSize;i++) {
-            QPair<V3DLONG, int> p=pairList[i];
-            int index=p.second;
-            QString filename=indexFileList[index];
-            ImageLoader loader;
-            My4DImage* currentImage=new My4DImage();
-            qDebug() << "Full search - loading " << filename << "...";
-            loader.loadImage(currentImage, filename);
-            qDebug() << "Scoring...";
-            V3DLONG score;
-            int subjectChannel=indexChannelList[index];
-            if (!calculateImageScore(queryImage, currentImage, subjectChannel, &score)) {
-                qDebug() << "Error calculating score for " << filename;
-                return false;
-            }
-            fullScoreList.append(qMakePair(score, index));
-            delete currentImage;
-        }
-
-        qSort(fullScoreList.begin(), fullScoreList.end(), VolumePatternIndex::compareScores);
-
-        for (int i=0;i<finalResultSize;i++) {
-            finalResultList.append(fullScoreList[i]);
-        }
-
-    } else {
-
-        qDebug() << "Using initial results, finalResultSize=" << finalResultSize;
-
-        for (int i=0;i<finalResultSize;i++) {
-            finalResultList.append(pairList[i]);
-        }
-    }
-
-    qDebug() << "==============================================================";
-
-    QFile outputFile(outputFilePath);
-    if (!outputFile.open(QIODevice::WriteOnly)) {
-      qDebug() << "Could not open file=" << outputFilePath;
+  while( (readSize=fread(&idLength, 1, sizeof(int), fid))==sizeof(int) ) {
+    if (readSize>=ID_BUFFER_SIZE) {
+      qDebug() << "idLength exceeds ID_BUFFER_SIZE";
       return false;
     }
-    QTextStream scoreOutput(&outputFile);
-
-    for (int i=0;i<finalResultSize;i++) {
-        int position=i+1;
-        QPair<V3DLONG, int> p=finalResultList[i];
-        V3DLONG score=p.first;
-        int index=p.second;
-        QString filename=indexFileList[index];
-	double dScore = 1.0L * score;
-	if (dScore >= minScore) {
-	  scoreOutput << position << ". " << score << " : " << filename << "\n";
-	}
+    if ( (readSize=fread(idBuffer, 1, idLength, fid))!=idLength) {
+      fclose(fid);
+      qDebug() << "Unexpectedly could not read path from index file";
+      return false;
+    }
+    if ( !(readSize=fread(&pathLength, 1, sizeof(int), fid))==sizeof(int) ) {
+      qDebug() << "pathLength could not be read";
+      return false;
     }
 
-    scoreOutput.flush();
-    outputFile.close();
+    if (pathLength>=FILENAME_BUFFER_SIZE) {
+      qDebug() << "pathLength exceeds FILENAME_BUFFER_SIZE";
+      return false;
+    }
+    if ( (readSize=fread(filePathBuffer, 1, pathLength, fid))!=pathLength) {
+      fclose(fid);
+      qDebug() << "Unexpectedly could not read path from index file";
+      return false;
+    }
+    idBuffer[idLength]='\0';
+    QString idQString=QString(idBuffer);
+    filePathBuffer[pathLength]='\0';
+    QString pathQString=QString(filePathBuffer);
+    idPathHash[idQString]=pathQString;
 
-    if (indexData!=0L) { delete [] indexData; indexData=0L; }
-    if (queryIndex!=0L) { delete [] queryIndex; queryIndex=0L; }
+    indexIdList.append(idQString);
+    indexFileList.append(pathQString);
 
-    return true;
+    qDebug() << "id=" << idQString << " path=" << pathQString;
+
+    int channelSize;
+    if ( (readSize=fread(&channelSize, 1, sizeof(int), fid))!=sizeof(int) ) {
+      qDebug() << "Unexpectedly could not channel size for entry";
+      return false;
+    }
+    
+    if ( (readSize=fread(indexData, 1, indexTotalBytes, fid))!=indexTotalBytes) {
+      qDebug() << "Could not read full block of " << indexTotalBytes << " , read " << readSize << " instead";
+      return false;
+    }
+    
+    qDebug() << "Calculating index score for " << pathQString;
+
+    V3DLONG score=calculateIndexScore(queryIndex, indexData, indexTotal, queryIndexSkipPositions);
+    qDebug() << "score=" << score;
+    indexScoreList.append(score);
+  }
+
+  qDebug() << "Final readSize=" << readSize;
+
+  // Now, close the index file for reading, and re-open for writing, in preparation
+  // for adding new entries.
+
+  fclose(fid);
+  fid=0L;
+
+  qDebug() << "Begin sorting...";
+
+  QList< QPair<V3DLONG, int> > pairList;
+
+  qDebug() << "indexScoreList size=" << indexScoreList.size();
+
+  for (int i=0;i<indexScoreList.size();i++) {
+    pairList.append(qMakePair(indexScoreList[i], i));
+  }
+
+  qSort(pairList.begin(), pairList.end(), VolumePatternIndex::compareScores);
+
+  qDebug() << "pairList size=" << pairList.size();
+
+  int finalResultSize=maxHits;
+  if (finalResultSize>pairList.size()) {
+    finalResultSize=pairList.size();
+  }
+
+  QList< QPair<V3DLONG, int> > finalResultList;
+
+  qDebug() << "Using initial results, finalResultSize=" << finalResultSize;
+
+  for (int i=0;i<finalResultSize;i++) {
+    finalResultList.append(pairList[i]);
+  }
+
+  qDebug() << "==============================================================";
+
+  qDebug() << "Writing to output file=" << outputFilePath;
+
+  QFile outputFile(outputFilePath);
+  if (!outputFile.open(QIODevice::WriteOnly)) {
+    qDebug() << "Could not open file=" << outputFilePath;
+    return false;
+  }
+  QTextStream scoreOutput(&outputFile);
+
+
+  qDebug()  << "Starting sort...";
+
+  for (int i=0;i<finalResultSize;i++) {
+    int position=i+1;
+    QPair<V3DLONG, int> p=finalResultList[i];
+    V3DLONG score=p.first;
+    int index=p.second;
+    qDebug() << "score=" << score << " index=" << index;
+    QString filename=indexFileList[index];
+    QString id=indexIdList[index];
+    qDebug() << "filename=" << filename << " id=" << id;
+    double dScore = 1.0L * score;
+    if (dScore >= minScore) {
+      scoreOutput << position << ". " << score << " : " << id << " : " << filename << "\n";
+    }
+  }
+
+  qDebug() << "Flushing and closing files";
+
+  scoreOutput.flush();
+  outputFile.close();
+
+  qDebug() << "Done closing files";
+
+  if (indexData!=0L) { delete [] indexData; indexData=0L; }
+  if (queryIndex!=0L) { delete [] queryIndex; queryIndex=0L; }
+
+  return true;
 }
 
 V3DLONG VolumePatternIndex::computeTotalBytesFromIndexTotal(V3DLONG indexTotal) {
@@ -906,7 +961,7 @@ V3DLONG VolumePatternIndex::calculateIndexScore(unsigned char* queryIndex, unsig
     return score;
 }
 
-void VolumePatternIndex::indexImage(My4DImage* image, int channel, V3DLONG* subregion, bool skipzeros=false)
+void VolumePatternIndex::indexImage(My4DImage* image, int channel, bool skipzeros=false)
 {
 
     qDebug() << "indexImage : using threshold values " << threshold[0] << " " << threshold[1] << " " << threshold[2];
@@ -917,6 +972,16 @@ void VolumePatternIndex::indexImage(My4DImage* image, int channel, V3DLONG* subr
     V3DLONG count3=0L;
 
     My4DImage* cubifiedImage=0L;
+
+    V3DLONG subregion[6];
+
+    subregion[0]=x0;
+    subregion[1]=x1;
+    subregion[2]=y0;
+    subregion[3]=y1;
+    subregion[4]=z0;
+    subregion[5]=z1;
+    
     if (skipzeros) {
         qDebug() << "indexImage - skipzeros is true - populating queryIndexSkipPositions";
         cubifiedImage=AnalysisTools::cubifyImageByChannel(image, channel, unitSize, AnalysisTools::CUBIFY_TYPE_AVERAGE, subregion, true, &queryIndexSkipPositions);
@@ -1069,123 +1134,8 @@ bool VolumePatternIndex::openIndexAndReadHeader()
 
     V3DLONG indexTotal=iXmax*iYmax*iZmax;
     indexTotalBytes=computeTotalBytesFromIndexTotal(indexTotal);
-
-    // 5. Num Index Files
-    int numIndexFiles;
-    fread(&numIndexFiles, sizeof(int), 1, fid);
-
-    // 6. Index File Paths
-    char* filenameBuffer = new char[FILENAME_BUFFER_SIZE];
-    for (int i=0;i<numIndexFiles;i++) {
-        int filenameSize;
-        fread(&filenameSize, sizeof(int), 1, fid);
-        if (filenameSize>FILENAME_BUFFER_SIZE) {
-            qDebug() << "Exceeded max filename buffer size";
-            fclose(fid);
-            return false;
-        }
-        fread(filenameBuffer, sizeof(char), filenameSize, fid);
-	filenameBuffer[filenameSize]='\0';
-        QString filename(filenameBuffer);
-        indexFileList.append(filename);
-        int channelIndex;
-        fread(&channelIndex, sizeof(int), 1, fid);
-        indexChannelList.append(channelIndex);
-    }
     return true;
+
+    // Note: fid is intentionally not closed
 }
-
-bool VolumePatternIndex::calculateImageScore(My4DImage* queryImage, My4DImage* subjectImage, int subjectChannel, V3DLONG* score)
-{
-    V3DLONG xSize=qx1-qx0;
-    if (xSize!=(x1-x0)) {
-        qDebug() << "q and s xSize not compatible: " << qx0 << " " << qx1 << " " << x0 << " " << x1;
-        return false;
-    }
-    V3DLONG ySize=qy1-qy0;
-    if (ySize!=(y1-y0)) {
-        qDebug() << "q and s ySize not compatible: " << qy0 << " " << qy1 << " " << y0 << " " << y1;
-        return false;
-    }
-    V3DLONG zSize=qz1-qz0;
-    if (zSize!=(z1-z0)) {
-        qDebug() << "q and s zSize not compatible: " << qz0 << " " << qz1 << " " << z0 << " " << z1;
-        return false;
-    }
-
-    V3DLONG ox=qx1-x1;
-    V3DLONG oy=qy1-y1;
-    V3DLONG oz=qz1-z1;
-
-//    qDebug() << "calculateImageScore : qx0=" << qx0 << " qx1=" << qx1 << " qy0=" << qy0 << " qy1= " << qy1 << " qz0=" << qz0 << " qz1=" << qz1;
-//    qDebug() << "   xSize=" << xSize << " ySize= " << ySize << " zSize= " << zSize;
-
-    V3DLONG localScore=0L;
-
-    V3DLONG* matrixBins=new V3DLONG[16];
-    V3DLONG* matrixScores=new V3DLONG[16];
-    for (int m=0;m<16;m++) {
-        matrixBins[m]=0L;
-        matrixScores[m]=0L;
-    }
-
-    v3d_uint8* subjectData=subjectImage->getRawDataAtChannel(subjectChannel);
-    v3d_uint8* queryData=queryImage->getRawDataAtChannel(queryChannel);
-
-    for (V3DLONG z=qz0;z<qz1;z++) {
-        V3DLONG q_zoffset=z*ySize*xSize;
-        V3DLONG s_zoffset=(z-oz)*ySize*xSize;
-        for (V3DLONG y=qy0;y<qy1;y++) {
-            V3DLONG q_yoffset=q_zoffset+y*xSize;
-            V3DLONG s_yoffset=s_zoffset+(y-oy)*xSize;
-            for (V3DLONG x=qx0;x<qx1;x++) {
-                V3DLONG q_offset=q_yoffset+x;
-                V3DLONG s_offset=s_yoffset+(x-ox);
-
-                v3d_uint8 queryValue=queryData[q_offset];
-                v3d_uint8 subjectValue=subjectData[s_offset];
-
-                if (skipzeros && queryValue==0) {
-                    // do nothing
-                } else {
-
-                    int sPosition=3;
-                    if (subjectValue<threshold[0]) {
-                        sPosition=0;
-                    } else if (subjectValue<threshold[1]) {
-                        sPosition=1;
-                    } else if (subjectValue<threshold[2]) {
-                        sPosition=2;
-                    } // then implicitly=3
-
-                    int qPosition=3;
-                    if (queryValue<threshold[0]) {
-                        qPosition=0;
-                    } else if (queryValue<threshold[1]) {
-                        qPosition=1;
-                    } else if (queryValue<threshold[2]) {
-                        qPosition=2;
-                    } // then implicitly=3
-
-                    int matrixPosition=qPosition*4+sPosition;
-                    matrixBins[matrixPosition] += 1;
-                    int mScore=fullmatrix[matrixPosition];
-                    matrixScores[matrixPosition] += mScore;
-                    localScore += mScore;
-                }
-            }
-        }
-    }
-    *score=localScore;
-    qDebug() << "Local score=" << localScore;
-    for (int m=0;m<16;m++) {
-        qDebug() << m << "=" << matrixBins[m] << "  " << matrixScores[m];
-    }
-    delete [] matrixBins;
-    delete [] matrixScores;
-    return true;
-}
-
-
-
 
