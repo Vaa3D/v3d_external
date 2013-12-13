@@ -26,6 +26,9 @@ using std::endl;
 #include <list>
 #include <bitset>
 #include <set>
+#include "boost/graph/adjacency_list.hpp"
+#include "boost/graph/kruskal_min_spanning_tree.hpp"
+#include "boost/graph/prim_minimum_spanning_tree.hpp"
 // POSIX Threads
 //#include <pthread.h> 
 //#define PROCESSORS 1 // maximum threads
@@ -124,7 +127,7 @@ public:
     {
         length = N; // x,y,z
         offsets = NULL;
-        sz_image = NULL; // not using 
+        sz_image = NULL; // not using
         try
         {
             offsets = new T [length];
@@ -208,7 +211,7 @@ public:
 public:
     void clut() // construct look up table
     {
-        // 
+        //
         minDimx=INF;
         minDimy=INF;
         minDimz=INF;
@@ -276,7 +279,7 @@ public:
             
             tcList.at(i).aEX++;
             tcList.at(i).aEY++;
-            tcList.at(i).aEZ++;   
+            tcList.at(i).aEZ++;
         }
     }
     
@@ -397,6 +400,20 @@ public:
     T *end_pos;
     string fn_img;
 };
+// define a point structure
+template <class T1, class T2>
+class _POINT
+{
+public:
+    _POINT(){}
+    ~_POINT(){}
+public:
+    T1 x,y,z;
+    T2 intensity;
+    string fn;
+};
+// define a point type
+typedef _POINT<V3DLONG, float> POINT;
 // Define a indexed data structure
 template <class T1, class T2>
 class indexed_t
@@ -406,6 +423,7 @@ public:
     {
         T1 len = 3; //in_offsets.size();
         offsets_sa = NULL;
+        hasedge = false;
         
         try
         {
@@ -438,6 +456,7 @@ public:
     {
         T1 len = 3; // x, y, z
         offsets = NULL;
+        hasedge = false;
         
         try
         {
@@ -487,25 +506,14 @@ public:
     //	bool cp; // if cp=0 then offsets are curr tile to its child; if cp=1 then offsets are curr tile to its parent
     //	T *offsets_child;
     T1 predecessor; // adjacent prior image number | root's predecessor is -1
+    std::vector<T1> preList;
+    std::vector<POINT> offsetsList;
     bool visited; // init by false
+    bool hasedge;
     std::vector<indexed_t> record;
     //std::vector<indexed_t> path;
     //indexed_t *parent; // adjacent prior level 1: front -> back (z); level 2: upper -> down (y); level 3: left -> right (x)
 };
-// define a point structure
-template <class T1, class T2>
-class _POINT 
-{
-public:
-    _POINT(){}
-    ~_POINT(){}
-public:
-    T1 x,y,z;
-    T2 intensity;
-    string fn;
-};
-// define a point type
-typedef _POINT<V3DLONG, float> POINT;
 // swap
 template <class Tdata>
 void swap2v(Tdata a, Tdata b)
@@ -1243,7 +1251,7 @@ public:
                     if(strcmp(str.c_str(), TC_COMMENT7) == 0)
                     {
                         for(V3DLONG i=0; i<number_tiles; i++)
-                        { 
+                        {
                             indexed_t t;  //
                             
                             t.n = i;
@@ -1366,6 +1374,65 @@ public:
     // when add a new one into tileList, need to update the whole tileList
     void y_update()
     {
+        // compute accumulate offsets from path list
+        // t.ref_n = ref_n
+        // t.parent = parent
+        // t.record.at(0).offsets = offsets to ref
+
+        T2 i,NTILES = tilesList.size();
+        ref_n = 0;
+
+        for(i=0; i<NTILES; i++)
+        {
+            tilesList.at(i).visited = false;
+        }
+
+        for(i=0; i<NTILES; i++)
+        {
+            T2 offsets[3];
+
+            if(i==ref_n)
+            {
+                offsets[0] = 0;
+                offsets[1] = 0;
+                offsets[2] = 0;
+                indexed_t t(offsets);
+                (&tilesList.at(i))->record.push_back(t);
+            }
+            else
+            {
+                // ref
+                (&tilesList.at(i))->ref_n = ref_n;
+
+                int current = tilesList.at(i).n;
+                int previous = tilesList.at(i).predecessor;
+
+                //
+                offsets[0] = tilesList.at(i).offsets[0];
+                offsets[1] = tilesList.at(i).offsets[1];
+                offsets[2] = tilesList.at(i).offsets[2];
+                while(previous!=-1)
+                {
+                    if(tilesList.at(current).visited)
+                    {
+                        break;
+                    }
+
+                    offsets[0] += tilesList[previous].record[0].offsets[0];
+                    offsets[1] += tilesList[previous].record[0].offsets[1];
+                    offsets[2] += tilesList[previous].record[0].offsets[2];
+
+                    //
+                    current = previous;
+                    previous = tilesList.at(current).predecessor;
+                }
+
+                indexed_t t(offsets);
+                (&tilesList.at(i))->record.push_back(t);
+
+                (&tilesList.at(i))->visited = true;
+            }
+        }
     }
     // make a visual image real and be loaded into memory
     void y_visualize(T2 *start, T2 *end)
@@ -1429,6 +1496,509 @@ public:
             }
         }
     }
+    void y_constructLUT()
+    {
+        T2 i,j;
+        number_tiles = tilesList.size();
+
+        // rename the n and predecessor
+        for(i=0; i<number_tiles; i++)
+        {
+            (&tilesList.at(i))->visited = false;
+        }
+        for(j=0; j<number_tiles; j++)
+        {
+            T2 cur = tilesList[j].n;
+            for(i=0; i<number_tiles; i++)
+            {
+                T2 pre = tilesList[i].predecessor;
+
+                if(pre==cur && !tilesList[i].visited)
+                {
+                    (&tilesList.at(i))->predecessor = j;
+                    (&tilesList.at(i))->visited = true;
+                }
+            }
+            (&tilesList.at(j))->n = j;
+        }
+
+        // update offsets
+        y_update();
+
+        // construct lut
+        y_clut(number_tiles);
+
+    }
+
+    void y_delete(T2 n)
+    {
+        T2 size = tilesList.size();
+
+        if(n<0 || n>=size)
+        {
+            cout<<"invalid input number"<<endl;
+            return;
+        }
+
+        T2 i, j, sizerecord;
+        if(size>2)
+        {
+            if(n<size-1)
+            {
+                for(i=n+1; i<size; i++)
+                {
+                    tilesList.at(i).n--;
+                    if(tilesList.at(i).predecessor>n)
+                        tilesList.at(i).predecessor--;
+
+                    if(tilesList.at(i).ref_n>n)
+                        tilesList.at(i).ref_n--;
+
+                    sizerecord = tilesList.at(i).record.size();
+                    for(j=0; j<sizerecord; j++)
+                    {
+                        if(tilesList.at(i).record.at(j).n>n)
+                            tilesList.at(i).record.at(j).n--;
+                    }
+
+                }
+            }
+
+            tilesList.erase(tilesList.begin()+n,tilesList.begin()+n+1);
+        }
+
+        //
+        return;
+    }
+
+    void y_reverse()
+    {
+        T2 n = tilesList.size();
+
+        if(n>1)
+        {
+            tilesList.reverse(tilesList.begin(), tilesList.end());
+        }
+
+        return;
+    }
+
+    T2 y_find(string fn)
+    {
+        T2 i,n = tilesList.size();
+        T2 len = fn.length();
+
+        if(n>1)
+        {
+            for(i=0; i<n; i++)
+            {
+                unsigned foundstr = fn.find(tilesList.at(i).fn_image);
+                if(foundstr<len)
+                {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    T2 y_ref()
+    {
+        T2 i,n=tilesList.size();
+        T2 minsz = INF;
+
+        ref_n = -1;
+        if(n>1)
+        {
+            for(i=0; i<n; i++)
+            {
+                if(tilesList.at(i).record.size()<minsz)
+                {
+                    ref_n = i;
+                    minsz = tilesList.at(i).record.size();
+                }
+            }
+        }
+
+        return ref_n;
+    }
+
+    bool y_ks(vector<indexed_t> tilesList)
+    {
+        T2 i,size = tilesList.size();
+        for(i=0; i<size; i++)
+        {
+            if(!tilesList.at(i).visited)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool y_ks(vector<bool> visited)
+    {
+        T2 i,size = visited.size();
+        for(i=0; i<size; i++)
+        {
+            if(!visited[i])
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int y_mstKruskal(T2 num_edges)
+    {
+        //
+        if(num_edges<=0)
+        {
+            cout<<"No edges"<<endl;
+            return -1;
+        }
+
+        //
+        qDebug()<<"test ...";
+        vector<indexed_t> mst;
+        mst.clear();
+        qDebug()<<"test ... ...";
+
+        //
+        T2 i,j,size = tilesList.size();
+
+        //
+        if(size<1)	return -1;
+        else if(size==1) return 0;
+        else if(size==2)
+        {
+            //step 1. choose ref as anchor image
+            T2 ref = y_ref();
+            (&tilesList.at(ref))->predecessor = -1;
+            (&tilesList.at(ref))->visited = true;
+            //step 2. adjust the other's offsets
+            T2 other = 1-ref;
+            (&tilesList.at(other))->predecessor = 0;
+            (&tilesList.at(other))->visited = true;
+            (&tilesList.at(other))->offsets[0] = tilesList.at(other).record.at(0).offsets[0]; // tilesList.at(other).record.at(0).n == ref
+            (&tilesList.at(other))->offsets[1] = tilesList.at(other).record.at(0).offsets[1];
+            (&tilesList.at(other))->offsets[2] = tilesList.at(other).record.at(0).offsets[2];
+
+            return 0;
+        }
+        else
+        {
+            qDebug()<<"test ... b";
+            //init
+            typedef boost::adjacency_list < boost::vecS, boost::vecS, boost::undirectedS, boost::no_property, boost::property < boost::edge_weight_t, REAL > > Graph;
+            typedef boost::graph_traits < Graph >::edge_descriptor Edge;
+            typedef boost::graph_traits < Graph >::vertex_descriptor Vertex;
+            typedef std::pair<int, int> E;
+            qDebug()<<"test ... bb";
+
+            E *edge_array = NULL;
+            REAL *weights = NULL;
+
+            qDebug()<<"test ... n";
+            y_new<E, T2>(edge_array, num_edges);
+            y_new<REAL, T2>(weights, num_edges);
+            vector<bool> visited;
+            qDebug()<<"test ... nn";
+
+            T2 idx=0;
+            for(i=0; i<size; i++)
+            {
+                visited.push_back(false); // init
+                for(j=0; j<tilesList.at(i).record.size(); j++)
+                {
+                    edge_array[idx] = E(i,tilesList.at(i).record.at(j).n);
+                    weights[idx++] = -tilesList.at(i).record.at(j).score; // maximum spanning tree
+                }
+            }
+
+#if defined(BOOST_MSVC) && BOOST_MSVC <= 1300
+            Graph g(size);
+            boost::property_map<Graph, boost::edge_weight_t>::type weightmap = get(boost::edge_weight, g);
+            for (std::size_t j = 0; j < num_edges; ++j) {
+                Edge e; bool inserted;
+                boost::tie(e, inserted) = add_edge(edge_array[j].first, edge_array[j].second, g);
+                weightmap[e] = weights[j];
+            }
+#else
+            Graph g(edge_array, edge_array + num_edges, weights, size);
+#endif
+            boost::property_map < Graph, boost::edge_weight_t >::type weight = get(boost::edge_weight, g);
+            std::vector < Edge > spanning_tree;
+            boost::kruskal_minimum_spanning_tree(g, std::back_inserter(spanning_tree));
+
+            std::vector < Edge >::iterator ei,ej;
+            std::vector < Edge >::iterator ebegin = spanning_tree.begin();
+
+            T2 ref = target(*ebegin, g);
+
+            qDebug()<<"test ... 1 ... ";
+
+            if(ref>=0)
+            {
+                T2 offset[3];
+                offset[0] = 0;
+                offset[1] = 0;
+                offset[2] = 0;
+
+                indexed_t t(offset);
+                t.n = tilesList.at(ref).n;
+                t.ref_n = -1;
+                t.predecessor = -1;
+                t.fn_image.assign(tilesList.at(ref).fn_image.c_str());
+                t.score = 0;
+                t.sz_image[0] = tilesList.at(ref).sz_image[0];
+                t.sz_image[1] = tilesList.at(ref).sz_image[1];
+                t.sz_image[2] = tilesList.at(ref).sz_image[2];
+
+                mst.push_back(t);
+                visited[t.n] = true; //
+            }
+
+            qDebug()<<"test ... 11 ... ";
+
+            T2 cursize = 0;
+            while(y_ks(visited))
+            {
+                qDebug()<<"test ... 111 ... "<<mst.size();
+
+                if(mst.size()>cursize)
+                    cursize = mst.size();
+                else
+                    break;
+
+                for(T2 imst=0; imst<mst.size(); imst++)
+                {
+                    T2 cur = mst[imst].n;
+
+                    for(ei=ebegin; ei!=spanning_tree.end(); ++ei)
+                    {
+                        T2 offset[3];
+                        T2 src=source(*ei, g);
+                        T2 tar=target(*ei, g);
+
+                        if(src==cur)
+                        {
+                            if(!visited[tar])
+                            {
+                                visited[tar] = true;
+
+                                T2 n2, nrecord = tilesList.at(src).record.size();
+                                if(nrecord>0)
+                                {
+                                    n2 = -1;
+                                    for(T2 k=0; k<nrecord; k++)
+                                    {
+                                        if(tilesList.at(src).record.at(k).n == tar)
+                                        {
+                                            n2 = k;
+                                        }
+                                    }
+
+                                    if(n2>=0) // adjacent
+                                    {
+                                        offset[0] = -tilesList.at(src).record.at(n2).offsets[0];
+                                        offset[1] = -tilesList.at(src).record.at(n2).offsets[1];
+                                        offset[2] = -tilesList.at(src).record.at(n2).offsets[2];
+                                    }
+                                    else
+                                    {
+                                        offset[0] = 0;
+                                        offset[1] = 0;
+                                        offset[2] = 0;
+                                    }
+                                }
+
+                                indexed_t t(offset);
+                                t.n = tilesList.at(tar).n;
+                                t.ref_n = ref;
+                                t.predecessor = tilesList.at(src).n;
+                                t.fn_image.assign(tilesList.at(tar).fn_image.c_str());
+                                t.score = weight[*ei];
+                                t.sz_image[0] = tilesList.at(tar).sz_image[0];
+                                t.sz_image[1] = tilesList.at(tar).sz_image[1];
+                                t.sz_image[2] = tilesList.at(tar).sz_image[2];
+
+                                mst.push_back(t);
+                            }
+                        }
+
+                        if(tar==cur)
+                        {
+                            if(!visited[src])
+                            {
+                                visited[src] = true;
+
+                                T2 n2, nrecord = tilesList.at(src).record.size();
+                                if(nrecord>0)
+                                {
+                                    n2 = -1;
+                                    for(T2 k=0; k<nrecord; k++)
+                                    {
+                                        if(tilesList.at(src).record.at(k).n == tar)
+                                        {
+                                            n2 = k;
+                                        }
+                                    }
+
+                                    if(n2>=0) // adjacent
+                                    {
+                                        offset[0] = tilesList.at(src).record.at(n2).offsets[0];
+                                        offset[1] = tilesList.at(src).record.at(n2).offsets[1];
+                                        offset[2] = tilesList.at(src).record.at(n2).offsets[2];
+                                    }
+                                    else
+                                    {
+                                        offset[0] = 0;
+                                        offset[1] = 0;
+                                        offset[2] = 0;
+                                    }
+                                }
+
+                                indexed_t t(offset);
+                                t.n = tilesList.at(src).n;
+                                t.ref_n = ref;
+                                t.predecessor = tilesList.at(tar).n;
+                                t.fn_image.assign(tilesList.at(src).fn_image.c_str());
+                                t.score = weight[*ei];
+                                t.sz_image[0] = tilesList.at(src).sz_image[0];
+                                t.sz_image[1] = tilesList.at(src).sz_image[1];
+                                t.sz_image[2] = tilesList.at(src).sz_image[2];
+
+                                mst.push_back(t);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // de-alloc
+            y_del<E>(edge_array);
+            y_del<REAL>(weights);
+            visited.clear();
+
+            //
+            tilesList.clear();
+            tilesList.assign(mst.begin(),mst.end());
+
+            return 0;
+        }
+    }
+
+    int y_mstPrim(vector<indexed_t> &tilesList)
+    {
+        //
+        T1 size = tilesList.size();
+        if(size<1)	return -1;
+        else if(size==1) return 0;
+        else if(size==2)
+        {
+            //step 1. choose 0 as anchor image
+            (&tilesList.at(0))->predecessor = -1;
+            (&tilesList.at(0))->visited = true;
+            //step 2. adjust 1's offsets
+            (&tilesList.at(1))->predecessor = 0;
+            (&tilesList.at(1))->visited = true;
+            (&tilesList.at(1))->hasedge = true;
+            (&tilesList.at(1))->offsets[0] = tilesList.at(1).record.at(0).offsets[0];
+            (&tilesList.at(1))->offsets[1] = tilesList.at(1).record.at(0).offsets[1];
+            (&tilesList.at(1))->offsets[2] = tilesList.at(1).record.at(0).offsets[2];
+        }
+        else
+        {
+            // Prim's algorithm
+            //-------------------------------------------------------------
+            //1. Start with a tree which contains only one node.
+            //2. Identify a node (outside the tree) which is closest to the tree and add the minimum weight edge from that node to some node in the tree and incorporate the additional node as a part of the tree.
+            //3. If there are less then n – 1 edges in the tree, go to 2
+            //
+            //step 1. choose 0 as anchor image
+            (&tilesList.at(0))->predecessor = -1;
+            (&tilesList.at(0))->visited = true;
+            //step 2.
+            //func extractHighestScoreEdge()
+            //step 3.
+            T1 cnt=0;
+            T1 nedge=tilesList.size();
+
+            for(T1 i=0; i<nedge; i++)
+            {
+                for(T1 j=0; j<tilesList.at(i).record.size(); j++)
+                {
+                    (&(&tilesList[i])->record[j])->visited = false;
+                }
+            }
+            while(cnt<nedge)
+            {
+                T1 ni, n1, n2, nr1, nr2;
+                T2 max_score = 0;
+                T1 mse_node; // corresponding maxmum score edge
+                T1 parent, previous;
+                // step 2.
+                for(T1 i=0; i<size; i++)
+                {
+                    //
+                    //if(!tilesList.at(i).visited) continue;
+                    ni = i;
+                    for(T1 j=1; j<size; j++)
+                    {
+                        //if(tilesList.at(j).visited) continue;
+                        n1 = ni;
+                        n2 = j;
+                        // let n1>n2
+                        if(n1<n2)
+                        {
+                            T1 tmp = n1;
+                            n1=n2;
+                            n2=tmp;
+                        }
+
+                        // find highest score edge
+                        if(tilesList.at(n1).record.size()>n2)
+                        {
+                            if(tilesList.at(n1).record.at(n2).score > max_score && !tilesList.at(n1).record.at(n2).visited)
+                            {
+                                max_score = tilesList.at(n1).record.at(n2).score;
+                                mse_node = j; previous = i; parent = tilesList.at(n1).record.at(n2).n;
+                                nr1=n1; nr2=n2;
+                            }
+                        }
+                    } // j
+                }// i
+                (&(&tilesList[nr1])->record[nr2])->visited = true;
+                // add new node to mst
+                T1 sn1=mse_node, sn2=previous, coef=1;
+                if(sn1<sn2)
+                {
+                    T1 tmp = sn1;
+                    sn1=sn2;
+                    sn2=tmp;
+                    coef = -1;
+                }
+                //
+                qDebug()<<"mst: current "<<sn1<<"previous "<<parent<<"score "<<max_score;
+
+                POINT offsets;
+                offsets.x = coef*tilesList.at(sn1).record.at(sn2).offsets[0];
+                offsets.y = coef*tilesList.at(sn1).record.at(sn2).offsets[1];
+                offsets.z = coef*tilesList.at(sn1).record.at(sn2).offsets[2];
+
+                (&tilesList.at(sn1))->offsetsList.push_back(offsets);
+                (&tilesList.at(sn1))->preList.push_back(parent);
+
+                //(&tilesList.at(sn1))->visited = true;
+                (&tilesList.at(sn1))->hasedge = true;
+
+                cnt++;
+            }
+        }
+        return 0;
+    }
     void y_clear()
     {
         if(pVim) {delete []pVim; pVim=0;}
@@ -1451,6 +2021,7 @@ public:
     // thumbnail file
     char fn_thumbnail[2048];
     bool b_thumbnailcreated;
+    T2 ref_n;
 };
 // configuration prior
 template <class T>
@@ -1584,7 +2155,7 @@ public:
             printf("Fail to allocate memory.\n");
             return;
         }
-	
+
         for(T2 i=0; i<len; i++)
         {
             sum1[i] = 0; sum2[i] = 0;
@@ -2532,7 +3103,7 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
                 }
             }
         }
-	
+
     }
     else
     {
@@ -2543,7 +3114,7 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
         out_sub = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * out_dims);
         out_tar = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * out_dims);
         p = fftwf_plan_dft_r2c_3d(sz_pad, sy_pad, sx_pad, pIn.pImg, out_tar, FFTW_ESTIMATE);
-	
+
         fftwf_execute(p);
         fftwf_destroy_plan(p);
         p = fftwf_plan_dft_r2c_3d(sz_pad, sy_pad, sx_pad, pOut.pImg, out_sub, FFTW_ESTIMATE);
@@ -4692,7 +5263,7 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
         
     }
     
-    if (listWeights.size()<=1) 
+    if (listWeights.size()<=1)
     {
         weights=1.0;
     }
@@ -4716,7 +5287,7 @@ bool computeWeightsTC(Y_TLUT tlut, Tidx i, Tidx j, Tidx k, Tidx tilei, T &weight
     Tidx weighti;
     Tidx ntiles = tlut.tcList.size();
     for(Tidx ii=0; ii<ntiles; ii++)
-    {        
+    {
         Tidx x_start = tlut.tcList.at(ii).aBX;
         Tidx x_end = tlut.tcList.at(ii).aEX;
         Tidx y_start = tlut.tcList.at(ii).aBY;
