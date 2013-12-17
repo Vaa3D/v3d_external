@@ -38,6 +38,8 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , bVisibilityTextureIsDirty(false)
         , bColorMapTextureIsDirty(false)
         , bSignalTextureIsDirty(false)
+        , globalScreenPosX(0)
+        , globalScreenPosY(0)
 {
     if (renderer) {
         delete renderer;
@@ -99,7 +101,11 @@ Na3DWidget::Na3DWidget(QWidget* parent)
 
 Na3DWidget::~Na3DWidget()
 {
-    delete _idep; _idep = NULL;
+    if (_idep != NULL) {
+        _idep->data4dp = NULL; // NA images are managed elsewhere
+        delete _idep;
+        _idep = NULL;
+    }
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
     glDeleteTextures(1, &defaultVolumeTextureId);
     glDeleteTextures(1, &defaultColormapTextureId);
@@ -109,6 +115,15 @@ Na3DWidget::~Na3DWidget()
             defaultColormapTextureId =
             defaultVisibilityTextureId =
             defaultLabelTextureId = 0;
+}
+
+/* slot */
+void Na3DWidget::clearImage() {
+    if (_idep != NULL)
+        _idep->data4dp = NULL;
+    RendererNeuronAnnotator * rna = getRendererNa();
+    if (rna != NULL)
+        rna->clearImage();
 }
 
 /* slot */
@@ -122,6 +137,7 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
 
     if (_idep==0) {
         _idep = new iDrawExternalParameter();
+        _idep->data4dp = NULL;
     }
 
     makeCurrent();

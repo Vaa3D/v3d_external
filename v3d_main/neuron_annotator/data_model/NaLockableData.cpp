@@ -16,6 +16,7 @@ NaLockableData::NaLockableData()
 NaLockableData::~NaLockableData()
 {
     invalidate();
+    disconnect(this); // Cut all signals
     // Acquire a write lock before we delete this object,
     // so pending Readers have a chance to finish.
     // As usual, acquire the lock in a local block.

@@ -186,6 +186,7 @@ bool NaVolumeData::loadBestVolumeFromDirectory(QUrl dirName)
     {
 
     }
+    return false; // This method is not implemented?
 }
 
 bool NaVolumeData::loadVolumeFromTexture()
@@ -522,17 +523,21 @@ void NaVolumeData::Writer::setLandmarks(const QList<LocationSimple> locations)
 
 void NaVolumeData::Writer::clearImageData()
 {
+    // qDebug() << "NaVolumeData::Writer::clearImageData()" << __FILE__ << __LINE__;
     if (m_data->originalImageStack != NULL) {
         delete m_data->originalImageStack;
         m_data->originalImageStack = NULL;
+        m_data->originalImageProxy.img0 = NULL;
     }
     if (m_data->neuronMaskStack != NULL) {
         delete m_data->neuronMaskStack;
         m_data->neuronMaskStack = NULL;
+        m_data->neuronMaskProxy.img0 = NULL;
     }
     if (m_data->referenceStack != NULL) {
         delete m_data->referenceStack;
         m_data->referenceStack = NULL;
+        m_data->referenceImageProxy.img0 = NULL;
     }
     if (m_data->emptyImage != NULL) {
         delete m_data->emptyImage;
@@ -575,7 +580,7 @@ int NaVolumeData::Writer::loadChannels(QUrl url) // includes loading general vol
 
 bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
 {
-   // qDebug() << "NaVolumeData::Writer::setSingleImageVolume";
+    // qDebug() << "NaVolumeData::Writer::setSingleImageVolume" << __FILE__ << __LINE__;
     if (m_data->originalImageStack == img)
         return false; // no change
     if (NULL == img)
@@ -584,6 +589,7 @@ bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
     {
         delete m_data->originalImageStack;
         m_data->originalImageStack = NULL;
+        m_data->originalImageProxy.img0 = NULL;
     }
     m_data->originalImageStack = img;
     if (! img->p_vmin)

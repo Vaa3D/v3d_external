@@ -284,6 +284,8 @@ bool PrivateDataColorModel::setChannelGamma(int index, qreal gammaParam)
 }
 
 QRgb PrivateDataColorModel::getChannelColor(int channelIndex) const {
+    if (channelIndex >= channelColors.size())
+        return 0;
     return channelColors[channelIndex].getColor();
 }
 
@@ -310,6 +312,8 @@ qreal PrivateDataColorModel::getReferenceScaledIntensity(qreal raw_intensity) co
 }
 
 qreal PrivateDataColorModel::getChannelScaledIntensity(int channel, qreal raw_intensity) const {
+    if (channelColors.size() <= channel)
+        return 0;
     return channelColors[channel].getScaledIntensity(raw_intensity);
 }
 

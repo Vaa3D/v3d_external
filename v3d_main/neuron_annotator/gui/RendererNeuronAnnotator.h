@@ -111,6 +111,7 @@ public slots:
     bool resetSlabThickness();
     void set3dTextureMode(unsigned int textureId);
     void setColorMapTextureId(unsigned int textureId);
+    void clearImage(); // avoid stale image pointers
 
 protected:
     virtual void shaderTexBegin(bool stream);

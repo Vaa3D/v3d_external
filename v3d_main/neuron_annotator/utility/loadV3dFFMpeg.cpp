@@ -95,7 +95,7 @@ bool loadStackFFMpeg(QUrl url, Image4DSimple& img)
 
 bool loadStackFFMpegAsGray(const char* fileName, Image4DSimple& img)
 {
-    loadStackFFMpegAsGray(QUrl::fromLocalFile(fileName), img);
+    return loadStackFFMpegAsGray(QUrl::fromLocalFile(fileName), img);
 }
 
 bool loadStackFFMpegAsGray(QUrl url, Image4DSimple& img)

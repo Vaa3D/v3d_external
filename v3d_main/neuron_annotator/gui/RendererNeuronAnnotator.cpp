@@ -19,6 +19,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
     shaderTex3D = NULL;
     shaderTex2D = NULL;
+    shaderObj = NULL;
+    shader = NULL;
 
     // black background for consistency with other viewers
     RGBA32f bg_color;
@@ -61,7 +63,13 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     // VolumeTexture manages the texture memory, not base class.  So set to NULL before it gets a chance to clear it.
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
-    data4dp = NULL;
+    // don't let base class destructor delete our images
+    clearImage();
+    iDrawExternalParameter* idep2 = static_cast<iDrawExternalParameter*>(_idep);
+    if (idep2) {
+        delete idep2;
+        _idep = NULL;
+    }
     if (NULL != total_rgbaBuf)
         delete [] total_rgbaBuf;
     total_rgbaBuf = rgbaBuf = NULL;
@@ -69,6 +77,14 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     rgbaBuf_Yzx = NULL;
     tex3D = 0; // don't let base class destructor delete our textures
     texColormap = 0;
+}
+
+/* slot */
+void RendererNeuronAnnotator::clearImage() {
+    data4dp = NULL;
+    iDrawExternalParameter* idep2 = static_cast<iDrawExternalParameter*>(_idep);
+    if (idep2 != NULL)
+        idep2->data4dp = NULL;
 }
 
 void RendererNeuronAnnotator::setColorMapTextureId(unsigned int textureId)
@@ -1245,15 +1261,20 @@ void RendererNeuronAnnotator::setupData(void* idep)
     // qDebug("  RendererNeuronAnnotator::setupData");
     // cleanData();
 
-    isSimulatedData = false;
-
+    // Try to avoid the problem, whatever it is
+    if (idep == NULL)
+        return;
     // TODO - set image4d to NULL, after refactoring neuron clicking to not use image4d
     // So factor out call to v3dr_getImage4d
-	My4DImage* image4d = NULL;
-	if (idep)
-		image4d = ( ((iDrawExternalParameter*)idep)->image4d );
-    if (image4d)
-        data4dp = image4d->getRawData();
+    iDrawExternalParameter* idep2 = static_cast<iDrawExternalParameter*>(idep);
+    if (idep2 == NULL)
+        return;
+    My4DImage* image4d = idep2->image4d;
+    if (image4d == NULL)
+        return;
+    data4dp = image4d->getRawData(); // Crashes here
+
+    isSimulatedData = false;
 
     this->_idep = idep;
     if (NULL == rgbaBuf)

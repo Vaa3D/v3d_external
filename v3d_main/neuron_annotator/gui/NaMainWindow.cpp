@@ -1544,6 +1544,9 @@ bool NaMainWindow::openMulticolorImageStack(QUrl url)
                  return false;
     }
 
+    // Try to avoid Dec 2013 crash
+    ui->v3dr_glwidget->clearImage();
+
     createNewDataFlowModel();
     // reset front/back clip slab
     ui->v3dr_glwidget->resetSlabThickness();

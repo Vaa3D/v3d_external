@@ -23,6 +23,8 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     , neuronContextMenu(NULL)
     , start_x(0), start_y(0)
     , end_x(20), end_y(20)
+    , startMousePos(start_x, start_y)
+    , endMousePos(end_x, end_y)
 {
     translateMouse_scale = 1;
 
