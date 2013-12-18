@@ -559,6 +559,8 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
     fwrite(&iXmax, sizeof(V3DLONG), 1, fid);
     fwrite(&iYmax, sizeof(V3DLONG), 1, fid);
     fwrite(&iZmax, sizeof(V3DLONG), 1, fid);
+
+    return true;
 }
 
 bool VolumePatternIndex::doSearch()

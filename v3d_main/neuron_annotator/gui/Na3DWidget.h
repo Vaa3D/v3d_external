@@ -150,6 +150,7 @@ public slots:
     void initializeDefaultTextures();
     virtual void invalidate() {NaViewer::invalidate();}
     bool resetSlabThickness();
+    void clearImage(); // Avoid dangling image pointer
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.
