@@ -10410,8 +10410,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         pos->z = vim.tilesList.at(current).offsetsList[j].z + (sz-1);
                         //pos->value = vim.tilesList.at(current>previous?current:previous).record.at(current<previous?current:previous).score; //
 
-                        qDebug()<<"before ... "<<vim.tilesList.at(current).offsetsList[j].x<<vim.tilesList.at(current).offsetsList[j].y<<vim.tilesList.at(current).offsetsList[j].z;
-
                         //
                         if(imgdatatype == V3D_UINT8)
                         {
@@ -10437,8 +10435,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         (&vim.tilesList.at(current))->offsetsList[j].y = pos->y - sy +1;
                         (&vim.tilesList.at(current))->offsetsList[j].z = pos->z - sz +1;
 
-                        qDebug()<<"after ... "<<vim.tilesList.at(current).offsetsList[j].x<<vim.tilesList.at(current).offsetsList[j].y<<vim.tilesList.at(current).offsetsList[j].z;
-
                         (&vim.tilesList.at(current))->visited = true;
 
                         //de-alloc
@@ -10455,10 +10451,8 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         //de-alloc
         y_del<REAL>(scale);
 
-
         // adjusting offset reference to ref. image
         // compute accumulate offsets from path list
-        int ref_image = vim.tilesList.at(0).n;
         (&vim.tilesList.at(0))->offsets[0] = 0;
         (&vim.tilesList.at(0))->offsets[1] = 0;
         (&vim.tilesList.at(0))->offsets[2] = 0;
@@ -10524,10 +10518,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         // construct lookup table
         vim.y_clut(vim.tilesList.size());
 
-        for(int i=0; i<NTILES; i++)
-        {
-            qDebug()<<"offsets ... ..."<<i<<vim.tilesList.at(i).predecessor<<vim.tilesList.at(i).offsets[0]<<vim.tilesList.at(i).offsets[1]<<vim.tilesList.at(i).offsets[2];
-        }
 
         //------------------------------------------------------------------------------------------------------------------------------------------
         // save lut

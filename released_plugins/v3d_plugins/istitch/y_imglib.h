@@ -1924,30 +1924,25 @@ public:
             //func extractHighestScoreEdge()
             //step 3.
             T1 cnt=0;
-            T1 nedge=tilesList.size();
+            T1 nedge=tilesList.size()-1;
 
-            for(T1 i=0; i<nedge; i++)
-            {
-                for(T1 j=0; j<tilesList.at(i).record.size(); j++)
-                {
-                    (&(&tilesList[i])->record[j])->visited = false;
-                }
-            }
             while(cnt<nedge)
             {
-                T1 ni, n1, n2, nr1, nr2;
+                T1 ni, n1, n2;
                 T2 max_score = 0;
                 T1 mse_node; // corresponding maxmum score edge
                 T1 parent, previous;
+                POINT offsets;
                 // step 2.
                 for(T1 i=0; i<size; i++)
                 {
                     //
-                    //if(!tilesList.at(i).visited) continue;
+                    if(!tilesList.at(i).visited) continue;
                     ni = i;
+
                     for(T1 j=1; j<size; j++)
                     {
-                        //if(tilesList.at(j).visited) continue;
+                        if(tilesList.at(j).visited) continue;
                         n1 = ni;
                         n2 = j;
                         // let n1>n2
@@ -1958,19 +1953,22 @@ public:
                             n2=tmp;
                         }
 
-                        // find highest score edge
-                        if(tilesList.at(n1).record.size()>n2)
+                        //
+                        for(T1 k=0; k<tilesList.at(n1).record.size(); k++)
                         {
-                            if(tilesList.at(n1).record.at(n2).score > max_score && !tilesList.at(n1).record.at(n2).visited)
+                            if(n2==tilesList.at(n1).record.at(k).n && tilesList.at(n1).record.at(k).score > max_score)
                             {
-                                max_score = tilesList.at(n1).record.at(n2).score;
-                                mse_node = j; previous = i; parent = tilesList.at(n1).record.at(n2).n;
-                                nr1=n1; nr2=n2;
+                                max_score = tilesList.at(n1).record.at(k).score;
+                                mse_node = j; previous = i; parent = n2;
+                                offsets.x = tilesList.at(n1).record.at(k).offsets[0];
+                                offsets.y = tilesList.at(n1).record.at(k).offsets[1];
+                                offsets.z = tilesList.at(n1).record.at(k).offsets[2];
                             }
                         }
+
                     } // j
                 }// i
-                (&(&tilesList[nr1])->record[nr2])->visited = true;
+
                 // add new node to mst
                 T1 sn1=mse_node, sn2=previous, coef=1;
                 if(sn1<sn2)
@@ -1983,15 +1981,15 @@ public:
                 //
                 qDebug()<<"mst: current "<<sn1<<"previous "<<parent<<"score "<<max_score;
 
-                POINT offsets;
-                offsets.x = coef*tilesList.at(sn1).record.at(sn2).offsets[0];
-                offsets.y = coef*tilesList.at(sn1).record.at(sn2).offsets[1];
-                offsets.z = coef*tilesList.at(sn1).record.at(sn2).offsets[2];
+//                offsets.x *= coef;
+//                offsets.y *= coef;
+//                offsets.z *= coef;
 
                 (&tilesList.at(sn1))->offsetsList.push_back(offsets);
                 (&tilesList.at(sn1))->preList.push_back(parent);
 
-                //(&tilesList.at(sn1))->visited = true;
+                (&tilesList.at(sn1))->visited = true;
+                (&tilesList.at(parent))->visited = true;
                 (&tilesList.at(sn1))->hasedge = true;
 
                 cnt++;
