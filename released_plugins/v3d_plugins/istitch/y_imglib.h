@@ -1902,12 +1902,17 @@ public:
             (&tilesList.at(0))->predecessor = -1;
             (&tilesList.at(0))->visited = true;
             //step 2. adjust 1's offsets
+            POINT offsets;
             (&tilesList.at(1))->predecessor = 0;
             (&tilesList.at(1))->visited = true;
             (&tilesList.at(1))->hasedge = true;
-            (&tilesList.at(1))->offsets[0] = tilesList.at(1).record.at(0).offsets[0];
-            (&tilesList.at(1))->offsets[1] = tilesList.at(1).record.at(0).offsets[1];
-            (&tilesList.at(1))->offsets[2] = tilesList.at(1).record.at(0).offsets[2];
+
+            offsets.x = tilesList.at(1).record.at(0).offsets[0];
+            offsets.y = tilesList.at(1).record.at(0).offsets[1];
+            offsets.z = tilesList.at(1).record.at(0).offsets[2];
+
+            (&tilesList.at(1))->offsetsList.push_back(offsets);
+            (&tilesList.at(1))->preList.push_back(0);
         }
         else
         {
@@ -1980,10 +1985,6 @@ public:
                 }
                 //
                 qDebug()<<"mst: current "<<sn1<<"previous "<<parent<<"score "<<max_score;
-
-//                offsets.x *= coef;
-//                offsets.y *= coef;
-//                offsets.z *= coef;
 
                 (&tilesList.at(sn1))->offsetsList.push_back(offsets);
                 (&tilesList.at(sn1))->preList.push_back(parent);
