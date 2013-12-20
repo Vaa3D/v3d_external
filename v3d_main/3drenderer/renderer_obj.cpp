@@ -168,9 +168,10 @@ void Renderer_gl1::saveSurfFile()
 	}
 	extern QString lf_data_title;
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save Surface File"),
-    		lf_data_title+".v3ds",
+            lf_data_title+".vaa3ds",
     		QObject::tr("Vaa3D Surface Object (*.vaa3ds)"
-    				";;Wavefront Object (*.obj)"
+                    ";;Vaa3D Surface Object (*.v3ds)"
+                    ";;Wavefront Object (*.obj)"
     				));
     qDebug()<< "save file: " << filename;
     try {
@@ -180,10 +181,16 @@ void Renderer_gl1::saveSurfFile()
 			saveWavefrontOBJ(filename);
 		}
 		// if v3ds
-		if (filename.endsWith(".vaa3ds", Qt::CaseInsensitive))
+        else if (filename.endsWith(".vaa3ds", Qt::CaseInsensitive) ||
+            filename.endsWith(".v3ds", Qt::CaseInsensitive) )
 		{
 			saveV3DSurface(filename);
 		}
+        else
+        {
+            v3d_msg("You have supplied a file extension which is not offcially supported. This file name will be used, but to load it correctly into Vaa3D, you will need to change it to .vaa3ds or .v3ds extension(s).");
+            saveV3DSurface(filename);
+        }
     } CATCH_handler( "Renderer_gl1::saveSurfFile" );
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
