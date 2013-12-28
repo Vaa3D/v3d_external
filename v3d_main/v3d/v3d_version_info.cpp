@@ -425,7 +425,7 @@ QString V3DVersionChecker::getDefaultV3DVersionXmlFileName() {
 // static
 QString V3DVersionChecker::getDefaultV3DVersionUrl()
 {
-    // return "http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/" // testing
+//      return "http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/" // testing
 
 //    return "http://penglab.janelia.org/proj/vaa3d/stable_version/"
 //            + getPlatformString() + "/"
@@ -515,15 +515,19 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
     this->b_showAllMessages = b_verbose;
 
     QUrl xmlFileUrl(getDefaultV3DVersionUrl()); // begin by assuming default
+    //v3d_msg(xmlFileUrl.toString(),0);
+
     // Is there already a setting for the url?
 	QSettings settings("HHMI", "Vaa3D");
     QString versionUrl = settings.value("versionUrl").toString();
-    if (versionUrl.length() > 0) xmlFileUrl = versionUrl;
+    if (versionUrl.length() > 0)
+        xmlFileUrl = versionUrl;
 
     // Remember xml url, for use in constructing absolute urls from relative ones.
+    v3d_msg(xmlFileUrl.toString(),1);
     xmlPathUrl = xmlFileUrl.resolved(QUrl("."));
-    // v3d_msg(xmlPathUrl.toString(),0);
-    // v3d_msg(xmlFileUrl.toString(),0);
+    //v3d_msg(xmlPathUrl.toString(),0);
+    //v3d_msg(xmlFileUrl.toString(),0);
 
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     connect(nam, SIGNAL(finished(QNetworkReply*)),
