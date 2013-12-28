@@ -700,6 +700,8 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         node = node.nextSibling();
     }
 
+    v3d_msg(QString("remote version=[%1] current version=[%2]\n").arg(remote_version.toFloat()).arg(v3d::thisVersionOfV3D.toFloat()), 0);
+
     if (remote_version.toFloat() > v3d::thisVersionOfV3D.toFloat())
     {
         v3d_msg(QString("There is a newer version [%1] Vaa3D. You should consider either download from the Vaa3D website (http://vaa3d.org) or check out the latest source code to build.").arg(remote_version));
