@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.865);
+    VersionInfo thisVersionOfV3D(2.866);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -524,7 +524,7 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
         xmlFileUrl = versionUrl;
 
     // Remember xml url, for use in constructing absolute urls from relative ones.
-    v3d_msg(xmlFileUrl.toString(),1);
+    v3d_msg(xmlFileUrl.toString(),0);
     xmlPathUrl = xmlFileUrl.resolved(QUrl("."));
     //v3d_msg(xmlPathUrl.toString(),0);
     //v3d_msg(xmlFileUrl.toString(),0);
