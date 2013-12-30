@@ -9912,8 +9912,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         bool axes_show = false; // show tile boundary
         bool img_show = true; // save stitching file
 
-        REAL *scale = new REAL [6];
+        //REAL* scale = NULL;
+        //y_new<REAL, V3DLONG>(scale, 6);
 
+        REAL scale[6];
         scale[0] = 0.2;
         scale[1] = 0.2;
         scale[2] = 0.2;
@@ -10448,8 +10450,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 }
             }
         }
-        //de-alloc
-        y_del<REAL>(scale);
 
         // adjusting offset reference to ref. image
         // compute accumulate offsets from path list
