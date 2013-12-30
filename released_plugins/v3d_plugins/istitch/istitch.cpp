@@ -10298,13 +10298,13 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             return false;
         }
 
-        for(int i=0; i<NTILES; i++)
-        {
-            for(int j=0; j<vim.tilesList.at(i).preList.size(); j++)
-            {
-                qDebug()<<" test ... ... "<<i<<j<<vim.tilesList.at(i).preList[j]<<vim.tilesList.at(i).offsetsList[j].x<<vim.tilesList.at(i).offsetsList[j].y<<vim.tilesList.at(i).offsetsList[j].z;
-            }
-        }
+//        for(int i=0; i<NTILES; i++)
+//        {
+//            for(int j=0; j<vim.tilesList.at(i).preList.size(); j++)
+//            {
+//                qDebug()<<" test ... ... "<<i<<j<<vim.tilesList.at(i).preList[j]<<vim.tilesList.at(i).offsetsList[j].x<<vim.tilesList.at(i).offsetsList[j].y<<vim.tilesList.at(i).offsetsList[j].z;
+//            }
+//        }
 
         //define threshold of correlation coeffecient score
         //REAL threshold_corr_score = 0.75; //
@@ -10471,16 +10471,28 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             {
                 if(vim.tilesList[i].visited) continue;
 
+//                qDebug()<<"working on ... "<<i;
+
                 // forward
                 for(int j=0; j<vim.tilesList.at(i).preList.size(); j++)
                 {
                     V3DLONG pre = vim.tilesList[i].preList[j];
 
+                    qDebug()<<"forward ... "<<j;
+
+
                     if(vim.tilesList[pre].predecessor==-1)
                     {
+
+
                         (&vim.tilesList.at(i))->offsets[0] = vim.tilesList[i].offsetsList[j].x + vim.tilesList[pre].offsets[0];
                         (&vim.tilesList.at(i))->offsets[1] = vim.tilesList[i].offsetsList[j].y + vim.tilesList[pre].offsets[1];
                         (&vim.tilesList.at(i))->offsets[2] = vim.tilesList[i].offsetsList[j].z + vim.tilesList[pre].offsets[2];
+
+//                        qDebug()<<" ... x ... "<<(&vim.tilesList.at(i))->offsets[0]<<" = "<<vim.tilesList[i].offsetsList[j].x<<" + "<<vim.tilesList[pre].offsets[0];
+//                        qDebug()<<" ... y ... "<<(&vim.tilesList.at(i))->offsets[1]<<" = "<<vim.tilesList[i].offsetsList[j].y<<" + "<<vim.tilesList[pre].offsets[1];
+//                        qDebug()<<" ... z ... "<<(&vim.tilesList.at(i))->offsets[2]<<" = "<<vim.tilesList[i].offsetsList[j].z<<" + "<<vim.tilesList[pre].offsets[2];
+
                         (&vim.tilesList.at(i))->predecessor = -1;
                         (&vim.tilesList.at(i))->visited = true;
 
@@ -10492,6 +10504,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 // backward
                 for(int j=i+1; j<NTILES; j++)
                 {
+
+                    qDebug()<<"backward ... "<<j;
+
                     if(vim.tilesList[j].predecessor==-1)
                     {
                         for(int k=0; k<vim.tilesList.at(j).preList.size(); k++)
@@ -10501,6 +10516,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                                 (&vim.tilesList.at(i))->offsets[0] = -vim.tilesList[j].offsetsList[k].x + vim.tilesList[j].offsets[0];
                                 (&vim.tilesList.at(i))->offsets[1] = -vim.tilesList[j].offsetsList[k].y + vim.tilesList[j].offsets[1];
                                 (&vim.tilesList.at(i))->offsets[2] = -vim.tilesList[j].offsetsList[k].z + vim.tilesList[j].offsets[2];
+
+//                                qDebug()<<" ... x ... "<<(&vim.tilesList.at(i))->offsets[0]<<" = "<<-vim.tilesList[j].offsetsList[k].x<<" + "<<vim.tilesList[j].offsets[0];
+//                                qDebug()<<" ... y ... "<<(&vim.tilesList.at(i))->offsets[1]<<" = "<<-vim.tilesList[j].offsetsList[k].y<<" + "<<vim.tilesList[j].offsets[1];
+//                                qDebug()<<" ... z ... "<<(&vim.tilesList.at(i))->offsets[2]<<" = "<<-vim.tilesList[j].offsetsList[k].z<<" + "<<vim.tilesList[j].offsets[2];
+
                                 (&vim.tilesList.at(i))->predecessor = -1;
                                 (&vim.tilesList.at(i))->visited = true;
 
@@ -12007,7 +12027,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         {
             vim.tilesList.at(i).visited = false;
         }
-        if(mstPrim(vim.tilesList)) // run Prim's algorithm
+        if(vim.y_mstPrim(vim.tilesList)) // run Prim's algorithm
         {
             cout<<"Fail to call MST approach!"<<endl;
             return false;
@@ -12041,23 +12061,44 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
         // grouping tiles
         REAL stitch_threshold = 0.885;
-        for(int i=1; i<NTILES; i++)
+//        for(int i=1; i<NTILES; i++)
+//        {
+//            //
+//            V3DLONG pre = vim.tilesList.at(i).predecessor;
+//            V3DLONG cur = i;
+
+//            if(pre>cur)
+//            {
+//                cur = pre;
+//                pre = i;
+//            }
+
+//            if(vim.tilesList.at(cur).record.at(pre).score>stitch_threshold)
+//            {
+//                udgraph[pre][cur] = true;
+//            }
+
+//        }
+
+        for(int i=0; i<NTILES; i++)
         {
+            V3DLONG cur = vim.tilesList[i].n;
             //
-            V3DLONG pre = vim.tilesList.at(i).predecessor;
-            V3DLONG cur = i;
-
-            if(pre>cur)
+            for(int j=0; j<vim.tilesList[i].preList.size(); j++)
             {
-                cur = pre;
-                pre = i;
-            }
+                V3DLONG pre = vim.tilesList[i].preList[j];
 
-            if(vim.tilesList.at(cur).record.at(pre).score>stitch_threshold)
-            {
-                udgraph[pre][cur] = true;
-            }
+                if(pre>cur)
+                {
+                    cur = pre;
+                    pre = i;
+                }
 
+                if(vim.tilesList[i].scoreList[j]>stitch_threshold)
+                {
+                    udgraph[pre][cur] = true;
+                }
+            }
         }
 
         //        for(V3DLONG i=0; i<NTILES; i++)

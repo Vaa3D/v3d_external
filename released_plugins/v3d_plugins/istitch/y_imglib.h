@@ -508,6 +508,7 @@ public:
     T1 predecessor; // adjacent prior image number | root's predecessor is -1
     std::vector<T1> preList;
     std::vector<POINT> offsetsList;
+    std::vector<REAL> scoreList;
     bool visited; // init by false
     bool hasedge;
     std::vector<indexed_t> record;
@@ -1933,19 +1934,20 @@ public:
 
             while(cnt<nedge)
             {
-                T1 ni, n1, n2;
-                T2 max_score = 0;
-                T1 mse_node; // corresponding maxmum score edge
-                T1 parent, previous;
+                T2 ni, n1, n2;
+                T1 max_score=0, score; // [0, 1]
                 POINT offsets;
+                T2 mse_node; // corresponding maxmum score edge
+                T2 parent, previous;
+
                 // step 2.
-                for(T1 i=0; i<size; i++)
+                for(T2 i=0; i<size; i++)
                 {
                     //
                     if(!tilesList.at(i).visited) continue;
                     ni = i;
 
-                    for(T1 j=1; j<size; j++)
+                    for(T2 j=1; j<size; j++)
                     {
                         if(tilesList.at(j).visited) continue;
                         n1 = ni;
@@ -1953,13 +1955,13 @@ public:
                         // let n1>n2
                         if(n1<n2)
                         {
-                            T1 tmp = n1;
+                            T2 tmp = n1;
                             n1=n2;
                             n2=tmp;
                         }
 
                         //
-                        for(T1 k=0; k<tilesList.at(n1).record.size(); k++)
+                        for(T2 k=0; k<tilesList.at(n1).record.size(); k++)
                         {
                             if(n2==tilesList.at(n1).record.at(k).n && tilesList.at(n1).record.at(k).score > max_score)
                             {
@@ -1968,6 +1970,7 @@ public:
                                 offsets.x = tilesList.at(n1).record.at(k).offsets[0];
                                 offsets.y = tilesList.at(n1).record.at(k).offsets[1];
                                 offsets.z = tilesList.at(n1).record.at(k).offsets[2];
+                                score = max_score;
                             }
                         }
 
@@ -1975,19 +1978,20 @@ public:
                 }// i
 
                 // add new node to mst
-                T1 sn1=mse_node, sn2=previous, coef=1;
+                T2 sn1=mse_node, sn2=previous, coef=1;
                 if(sn1<sn2)
                 {
-                    T1 tmp = sn1;
+                    T2 tmp = sn1;
                     sn1=sn2;
                     sn2=tmp;
                     coef = -1;
                 }
                 //
-                qDebug()<<"mst: current "<<sn1<<"previous "<<parent<<"score "<<max_score;
+                qDebug()<<"mst: current "<<sn1<<"previous "<<parent<<"score "<<score;
 
                 (&tilesList.at(sn1))->offsetsList.push_back(offsets);
                 (&tilesList.at(sn1))->preList.push_back(parent);
+                (&tilesList.at(sn1))->scoreList.push_back(score);
 
                 (&tilesList.at(sn1))->visited = true;
                 (&tilesList.at(parent))->visited = true;
