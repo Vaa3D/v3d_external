@@ -437,6 +437,8 @@ void Na3DWidget::initializeDefaultTextures()
     if (! bGLIsInitialized)
         return;
 
+    clearImage();
+
     // 3D volume texture in unit 0 set to all black
     {
         std::vector<uint32_t> buf((size_t)8*8*8, (uint32_t)0);

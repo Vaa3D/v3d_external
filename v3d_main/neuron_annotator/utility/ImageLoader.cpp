@@ -385,12 +385,12 @@ bool ImageLoader::validateFile() {
 }
 
 bool ImageLoader::validateFile(QString filename) {
-    qDebug() << "Validating file = " << filename;
+    // qDebug() << "Validating file = " << filename;
     QFileInfo fileInfo(filename);
     if (fileInfo.exists()) {
-        qDebug() << " verified this file exists with size=" << fileInfo.size();
+        // qDebug() << " verified this file exists with size=" << fileInfo.size();
     } else {
-        qDebug() << " file does not exist";
+        qDebug() << " file does not exist: " << filename;
         return false;
     }
     return true;

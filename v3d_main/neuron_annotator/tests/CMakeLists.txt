@@ -37,7 +37,8 @@ if(USE_FFMPEG)
     if (APPLE)
         set(test_progs
             # test_load_mp4
-            test_write_mp4)
+            # test_write_mp4
+        )
     else()
         set(test_progs "")
     endif()
