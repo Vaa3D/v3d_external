@@ -26,7 +26,8 @@ QList<QUrl> MultiColorImageStackNode::getPathsToLsmMetadataFiles()
     for (int i=0;i<fileInfoList.size();i++) {
         QFileInfo fileInfo=fileInfoList.at(i);
         if (fileInfo.fileName().endsWith(".metadata")) {
-            metadataPathList.append(fileInfo.absoluteFilePath());
+            metadataPathList.append(
+                    QUrl::fromLocalFile(fileInfo.absoluteFilePath()));
         }
     }
     return metadataPathList;
