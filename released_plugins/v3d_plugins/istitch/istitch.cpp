@@ -12080,6 +12080,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
 //        }
 
+
         for(int i=0; i<NTILES; i++)
         {
             V3DLONG cur = vim.tilesList[i].n;

@@ -1912,6 +1912,7 @@ public:
             offsets.y = tilesList.at(1).record.at(0).offsets[1];
             offsets.z = tilesList.at(1).record.at(0).offsets[2];
 
+            (&tilesList.at(1))->scoreList.push_back(tilesList.at(1).record.at(0).score);
             (&tilesList.at(1))->offsetsList.push_back(offsets);
             (&tilesList.at(1))->preList.push_back(0);
         }
