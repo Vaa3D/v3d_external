@@ -3023,7 +3023,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
                                );
     }
 
-    v3d_msg(QString("** time to invoke subsquent operation 3d curve costs [%1] ms, to calculate curve costs [%2] ms.", 0).arg(t1a.restart()).arg(etime1),1);
+    v3d_msg(QString("** time to invoke subsquent operation 3d curve costs [%1] ms, to calculate curve costs [%2] ms.").arg(t1a.restart()).arg(etime1), 0);
 
 }
 
