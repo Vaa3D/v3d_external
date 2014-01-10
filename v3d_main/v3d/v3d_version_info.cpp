@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.867);
+    VersionInfo thisVersionOfV3D(2.868);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -64,7 +64,8 @@ void v3d_aboutinfo()
         "<H3>Vaa3D: A Swiss army knife for 3D/4D/5D volume image and surface visualization and processing, developed by Hanchuan Peng, Zongcai Ruan, Fuhui Long, et al. All rights reserved.</H3> "
 //      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of Vaa3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
         "If you have used Vaa3D, please cite as the following: <br><br>"
-        "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353, DOI: 10.1038/nbt.1612. (http://vaa3d.org) </span><br> "
+        "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353. (http://vaa3d.org) </span><br> "
+        "<span style=\"color:#0000FF\">Peng, H., Bria, A., Zhou, Z., Iannello, G., and Long, F. (2014) \"Extensible visualization and analysis for multidimensional images using Vaa3D,\" Nature Protocols, Vol. 9, No. 1, pp. 193-208, 2014. (http://vaa3d.org) </span><br> "
         "<br>"
         "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://vaa3d.org\">http://vaa3d.org</a><br>"
         "<br>============================================="
