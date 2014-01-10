@@ -222,11 +222,16 @@ protected:
     bool bSignalTextureIsDirty;
 
     // We use 4 textures in the shader
-    // Some times we want to initialize them to non-pathological values
+    // Sometimes we want to initialize them to non-pathological values
     unsigned int defaultVolumeTextureId;
     unsigned int defaultColormapTextureId;
     unsigned int defaultVisibilityTextureId;
     unsigned int defaultLabelTextureId;
+    //
+    std::vector<uint32_t> defaultVolumeTextureData;
+    std::vector<uint32_t> defaultColormapTextureData;
+    std::vector<uint32_t> defaultVisibilityTextureData;
+    std::vector<uint16_t> defaultLabelTextureData;
 
     mutable Vector3D cachedDefaultFocus;
     mutable bool cachedDefaultFocusIsDirty;

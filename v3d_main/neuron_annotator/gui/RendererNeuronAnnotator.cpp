@@ -246,6 +246,7 @@ static void linkGLShader(cwc::glShaderManager& SMgr,
 /* virtual */
 void RendererNeuronAnnotator::cleanShader()
 {
+    makeCurrent();
     texColormap = 0; // Don't let cleanShader() delete our colomap texture
     Renderer_gl2::cleanShader();
 }
@@ -254,8 +255,8 @@ void RendererNeuronAnnotator::cleanShader()
 void RendererNeuronAnnotator::loadShader()
 {
     // qDebug() << "RendererNeuronAnnotator::loadShader()";
-    cleanShader(); //090705
     makeCurrent(); //ensure right context when multiple views animation or mouse drop
+    cleanShader(); //090705
 
     try {
 
@@ -308,6 +309,7 @@ void RendererNeuronAnnotator::loadShader()
 
 void RendererNeuronAnnotator::shaderTexBegin(bool stream)
 {
+    makeCurrent();
         shader = (texture_unit0_3D && !stream)? shaderTex3D : shaderTex2D;
 
         int format_bgra = (stream && pbo_image_format==GL_BGRA)? 1:0;
@@ -364,6 +366,7 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
 
 void RendererNeuronAnnotator::shaderTexEnd()
 {
+    makeCurrent();
         if (tryVolShader && shader && !b_selecting)
         {
                 // off colormap
@@ -387,6 +390,7 @@ void RendererNeuronAnnotator::shaderTexEnd()
 
 void RendererNeuronAnnotator::equAlphaBlendingProjection()
 {
+    makeCurrent();
     // qDebug() << "RendererNeuronAnnotator::equAlphaBlendingProjection()";
 
     // Renderer_gl2::equAlphaBlendingProjection();
@@ -645,12 +649,13 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(
 
 void RendererNeuronAnnotator::loadVol()
 {
+    makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
+
     // Renderer_gl1::loadVol();
     cleanVol(); // 081006: move to before setting imageX/Y/Z, 090705 move to first line
     cleanTexStreamBuffer(); //091012
 
     // qDebug("  Renderer_gl1::loadVol");
-    makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
     if ( bufSize[3]<1 ) return; // no image data, 081002
 
@@ -905,6 +910,7 @@ int RendererNeuronAnnotator::_getTexFillSize(int w)
 /* virtual */
 void RendererNeuronAnnotator::cleanVol()
 {
+    makeCurrent();
     // I manage the texture memory, not you.  So set to NULL before you get a chance to clear it.
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
@@ -922,6 +928,7 @@ void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
                 GLuint tex3D, GLuint texs[], int stack_i,
                 float direction, int section, bool b_tex3d, bool b_stream)
 {
+    makeCurrent();
         //qDebug("		s(%g-%g)h(%g-%g)w(%g-%g)", s0,s1, h0,h1, w0,w1);
         if ((s1-s0<0)||(h1-h0<0)||(w1-w0<0)) return; // no draw
         if (thickness <1) return; // only support thickness>=1
@@ -1113,12 +1120,14 @@ void RendererNeuronAnnotator::renderVol()
     // tex3D is not a pointer, but a texture id
     if ( (0 == tex3D) && (NULL == Ztex_list) )
         return;
+    makeCurrent();
     Renderer_gl1::renderVol();
 }
 
 // Copied from Renderer_gl1::paint() 27 Sep 2011 CMB
 void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
 {
+    makeCurrent();
         // turn_off_specular();
         //qDebug(" Renderer_gl1::paint(renderMode=%i)", renderMode);
 
@@ -1264,6 +1273,7 @@ void RendererNeuronAnnotator::setupData(void* idep)
     // Try to avoid the problem, whatever it is
     if (idep == NULL)
         return;
+    // qDebug() << "RendererNeuronAnnotator::setupData; idep = " << idep << __FILE__ << __LINE__;
     // TODO - set image4d to NULL, after refactoring neuron clicking to not use image4d
     // So factor out call to v3dr_getImage4d
     iDrawExternalParameter* idep2 = static_cast<iDrawExternalParameter*>(idep);
@@ -1272,7 +1282,7 @@ void RendererNeuronAnnotator::setupData(void* idep)
     My4DImage* image4d = idep2->image4d;
     if (image4d == NULL)
         return;
-    data4dp = image4d->getRawData(); // Crashes here
+    // data4dp = image4d->getRawData(); // Crashes here
 
     isSimulatedData = false;
 
@@ -1295,6 +1305,7 @@ void RendererNeuronAnnotator::setShowCornerAxes(bool b)
 // Draw a yellow line accross the screen for setting user clip plane
 void RendererNeuronAnnotator::paintClipGuide()
 {
+    makeCurrent();
     glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -1324,6 +1335,7 @@ void RendererNeuronAnnotator::paintClipGuide()
 
 void RendererNeuronAnnotator::paintCornerAxes()
 {
+    makeCurrent();
     // Keep rotation of scene, but not scale nor translation.
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();

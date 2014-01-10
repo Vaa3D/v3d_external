@@ -93,18 +93,20 @@ QUrl NaVolumeDataLoadableStack::determineFullFileUrl() const
 {
     if (exists(fileUrl))
         return fileUrl;
-    const char * extensions[] = {
+    QStringList extensions;
 #ifdef USE_FFMPEG
-        ".mp4",
+    // Is fast load preference enabled?
+    extensions << ".mp4";
 #endif
-        ".v3dpbd",
-        ".v3draw",
-        ".tif",
-        ".tif" // extra entry for when USE_FFMPEG is undefined
-    };
+    extensions
+        << ".v3dpbd"
+        << ".v3draw"
+        << ".tif"
+        << ".tif" // extra entry for when USE_FFMPEG is undefined
+    ;
     QUrl testUrl = fileUrl;
     QString path = testUrl.path();
-    for (int e = 0; e < 4; ++e)
+    for (int e = 0; e < extensions.size(); ++e)
     {
         QString fn = path + extensions[e];
         testUrl.setPath(fn);

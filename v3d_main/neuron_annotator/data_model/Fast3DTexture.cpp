@@ -325,8 +325,17 @@ void Fast3DTexture::loadFile(QUrl fileUrl, BlockScaler::Channel channel)
 /* slot */
 void Fast3DTexture::onHeaderLoaded(int x, int y, int z)
 {
-    // TODO - kill any outstanding scaling jobs
     scalers.clear();
+    // Kill any outstanding scaling jobs
+    for (int i = 0; i < blockScaleWatchers.size(); ++i) {
+        blockScaleWatchers[i]->disconnect();
+        QFuture<void> future = blockScaleWatchers[i]->future();
+        future.cancel();
+    }
+    for (int i = 0; i < blockScaleWatchers.size(); ++i) {
+        QFuture<void> future = blockScaleWatchers[i]->future();
+        future.waitForFinished();
+    }
     blockScaleWatchers.clear();
 
     // qDebug() << "Fast3DTexture::onHeaderLoaded" << x << y << z;

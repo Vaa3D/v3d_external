@@ -207,6 +207,8 @@ void MipMergedData::update()
         mipMergedWriter.clearData();
 
         if (! representsActualData()) return;
+        if (layerZValues != NULL)
+            delete layerZValues;
         layerZValues = new My4DImage();
         layerZValues->loadImage(
                 fragmentZProxy.sx,
@@ -220,6 +222,8 @@ void MipMergedData::update()
         layerZProxy = Image4DProxy<My4DImage>(layerZValues);
 
         if (! representsActualData()) return;
+        if (layerIntensities != NULL)
+            delete layerIntensities;
         layerIntensities = new My4DImage();
         layerIntensities->loadImage(
                 fragmentZProxy.sx,
@@ -232,6 +236,8 @@ void MipMergedData::update()
         layerIntensityProxy = Image4DProxy<My4DImage>(layerIntensities);
 
         if (! representsActualData()) return;
+        if (layerData != NULL)
+            delete layerData;
         layerData = new My4DImage();
         layerData->loadImage(
                 fragmentZProxy.sx,
@@ -244,6 +250,8 @@ void MipMergedData::update()
         layerDataProxy = Image4DProxy<My4DImage>(layerData);
 
         if (! representsActualData()) return;
+        if (layerNeurons != NULL)
+            delete layerNeurons;
         layerNeurons = new My4DImage();
         layerNeurons->loadImage(
                 fragmentZProxy.sx,
@@ -337,7 +345,10 @@ void MipMergedData::toggleNeuronVisibility(int index, bool status) // update a s
         Writer writer(*this);
         layers[ix]->setVisibility(status);
     }
-    layers[ix]->update(); // after lock, because it might emit.  It probably propagates directly in this thread.
+    {
+        Writer writer(*this);
+        layers[ix]->update(); // after lock, because it might emit.  It probably propagates directly in this thread.
+    }
     // qDebug() << "MipMergedData::toggleNeuronVisibility() took" << stopwatch.elapsed() << "milliseconds";
 }
 

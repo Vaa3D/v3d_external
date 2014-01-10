@@ -2004,6 +2004,7 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
 
 bool NaMainWindow::tearDownOldDataFlowModel()
 {
+    ui->v3dr_glwidget->clearImage();
     if (NULL == dataFlowModel)
         return true;
 
@@ -2028,6 +2029,7 @@ bool NaMainWindow::createNewDataFlowModel()
     ui->v3dr_glwidget->invalidate();
     ui->naZStackWidget->invalidate();
     ui->naLargeMIPWidget->invalidate();
+    ui->v3dr_glwidget->clearImage();
     ui->v3dr_glwidget->initializeDefaultTextures(); // <- this is how to reset the label texture
     return true;
 }

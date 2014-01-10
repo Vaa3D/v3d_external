@@ -458,68 +458,75 @@ bool VolumeTexture::queueSeparationFolder(QUrl url) // using new staged loader
 
 // Only mp4 files in this block
 #ifdef USE_FFMPEG
-    // 1) The smallest, fastest mpeg4 signal file we can find
-    progressiveLoader.addLoneFile("ConsolidatedSignal2_25.mp4");
-
-    ProgressiveLoadItem* fullSizeItem = new ProgressiveLoadItem();
-    // File candidates are ordered by decreasing size, starting with the
-    // largest that could fit in video memory.
-    while (mvoxels0 > 25)
+    bool useFastLoad = true; // by default, but user preference might say otherwise
+    QVariant flval = settings.value("NaBUseFastLoad3D");
+    if (flval.isValid())
+        useFastLoad = flval.toBool();
+    if (useFastLoad)
     {
-        // Load both signal and reference for these volumes
-        ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
-        QString mv = QString("%1").arg(mvoxels0);
-        // First the full color signal with poor color separation
-        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".mp4");
-        // Second the fourth reference channel to round out the channels
-        *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".mp4", CHANNEL_ALPHA); // companion file
-        // Next the individual color channels, to sharpen the colors
-        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Red_"+mv+".mp4", CHANNEL_RED); // companion file
-        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Green_"+mv+".mp4", CHANNEL_GREEN); // companion file
-        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Blue_"+mv+".mp4", CHANNEL_BLUE); // companion file
-        mvoxels0 /= 2;
-        *fullSizeItem << candidate;
+        // 1) The smallest, fastest mpeg4 signal file we can find
+        progressiveLoader.addLoneFile("ConsolidatedSignal2_25.mp4");
+
+        ProgressiveLoadItem* fullSizeItem = new ProgressiveLoadItem();
+        // File candidates are ordered by decreasing size, starting with the
+        // largest that could fit in video memory.
+        while (mvoxels0 > 25)
+        {
+            // Load both signal and reference for these volumes
+            ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
+            QString mv = QString("%1").arg(mvoxels0);
+            // First the full color signal with poor color separation
+            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".mp4");
+            // Second the fourth reference channel to round out the channels
+            *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".mp4", CHANNEL_ALPHA); // companion file
+            // Next the individual color channels, to sharpen the colors
+            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Red_"+mv+".mp4", CHANNEL_RED); // companion file
+            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Green_"+mv+".mp4", CHANNEL_GREEN); // companion file
+            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Blue_"+mv+".mp4", CHANNEL_BLUE); // companion file
+            mvoxels0 /= 2;
+            *fullSizeItem << candidate;
+        }
+        progressiveLoader << fullSizeItem;
+
+        // TODO - where does copying from NaVolumeData to VolumeTexture fit
+        // into all this?
+        //  - don't load from NaVolumeData if we got lossless data.
+        //  - but do load from NaVolumeData if we lack lossless data.
+        //  so it's not a part of a sequence, but rather an inferior
+        //  candidate at the lossless step.
+
+        // Feb 2013, BUT loading lossless v3dpbd into VolumeTexture is not
+        // working correctly for some reason. So leave it out for non-FFMPEG
+        // case for now...
+
+        // 4) The largest lossless signal file that will fit in texture memory
+        mvoxels0 = mvoxels;
+        while (mvoxels0 > 25)
+        {
+            // Load both signal and reference for these volumes
+            ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
+            QString mv = QString("%1").arg(mvoxels0);
+            // First the full color signal with poor color separation
+            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".v3dpbd");
+            // Second the fourth reference channel to round out the channels
+            *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".v3dpbd", CHANNEL_ALPHA); // companion file
+            // (lossless version needs no individual color channels)
+            *candidate << new ProgressiveFileCompanion("ConsolidatedLabel2_"+mv+".v3dpbd", CHANNEL_LABEL); // companion file
+            mvoxels0 /= 2;
+            *losslessItem << candidate;
+        }
+
+        // Add candidate for loading from NaVolumeData, in case subsampled files
+        // are unavailable
+        /*
+           ProgressiveLoadCandidate* volumeDataCandidate = new ProgressiveLoadCandidate();
+           const NaVolumeData& volumeData = dataFlowModel->getVolumeData();
+           *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_RGB);
+           *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_ALPHA);
+           *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_LABEL);
+           *losslessItem << volumeDataCandidate;
+        */
     }
-    progressiveLoader << fullSizeItem;
-
-    // TODO - where does copying from NaVolumeData to VolumeTexture fit
-    // into all this?
-    //  - don't load from NaVolumeData if we got lossless data.
-    //  - but do load from NaVolumeData if we lack lossless data.
-    //  so it's not a part of a sequence, but rather an inferior
-    //  candidate at the lossless step.
-
-    // Feb 2013, BUT loading lossless v3dpbd into VolumeTexture is not
-    // working correctly for some reason. So leave it out for non-FFMPEG
-    // case for now...
-
-    // 4) The largest lossless signal file that will fit in texture memory
-    mvoxels0 = mvoxels;
-    while (mvoxels0 > 25)
-    {
-        // Load both signal and reference for these volumes
-        ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
-        QString mv = QString("%1").arg(mvoxels0);
-        // First the full color signal with poor color separation
-        *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".v3dpbd");
-        // Second the fourth reference channel to round out the channels
-        *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".v3dpbd", CHANNEL_ALPHA); // companion file
-        // (lossless version needs no individual color channels)
-        *candidate << new ProgressiveFileCompanion("ConsolidatedLabel2_"+mv+".v3dpbd", CHANNEL_LABEL); // companion file
-        mvoxels0 /= 2;
-        *losslessItem << candidate;
-    }
-
-    // Add candidate for loading from NaVolumeData, in case subsampled files
-    // are unavailable
-    /*
-    ProgressiveLoadCandidate* volumeDataCandidate = new ProgressiveLoadCandidate();
-    const NaVolumeData& volumeData = dataFlowModel->getVolumeData();
-    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_RGB);
-    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_ALPHA);
-    *volumeDataCandidate << new ProgressiveVolumeCompanion(volumeData, CHANNEL_LABEL);
-    *losslessItem << volumeDataCandidate;
-    */
 #endif
 
     queueVolumeData(*losslessItem); // last resort load from NaVolumeData

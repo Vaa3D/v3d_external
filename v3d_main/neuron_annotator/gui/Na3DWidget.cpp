@@ -46,6 +46,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         renderer = NULL;
     }
     _idep = new iDrawExternalParameter();
+    qDebug() << "Na3DWidget constructor; _idep = " << _idep;
     _idep->image4d = NULL;
     resetView();
     setVolCompress(false); // might look nicer?
@@ -101,6 +102,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
 
 Na3DWidget::~Na3DWidget()
 {
+    makeCurrent();
     if (_idep != NULL) {
         _idep->data4dp = NULL; // NA images are managed elsewhere
         delete _idep;
@@ -214,7 +216,7 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
             return false;
         }
     }
-    glDisable(GL_TEXTURE_3D); // we are using a 3D texture
+    glDisable(GL_TEXTURE_3D); // we were using a 3D texture
 
     ra->set3dTextureMode(defaultVolumeTextureId);
 
@@ -437,17 +439,18 @@ void Na3DWidget::initializeDefaultTextures()
     if (! bGLIsInitialized)
         return;
 
+    makeCurrent();
     clearImage();
 
     // 3D volume texture in unit 0 set to all black
     {
-        std::vector<uint32_t> buf((size_t)8*8*8, (uint32_t)0);
-        loadSignalTexture3D(8,8,8,&buf[0]);
+        defaultVolumeTextureData.assign((size_t)8*8*8, (uint32_t)0);
+        loadSignalTexture3D(8,8,8,&defaultVolumeTextureData[0]);
     }
 
     // 2D colormap texture maps colors to themselves
     {
-        std::vector<uint32_t> buf2((size_t)4*256, (uint32_t)0);
+        defaultColormapTextureData.assign((size_t)4*256, (uint32_t)0);
         for (int c = 0; c < 4; ++c) {
             uint32_t color_mask = 0xff << (8 * c); // 0,1,2 => red,green,blue
             if (3 == c)
@@ -455,22 +458,22 @@ void Na3DWidget::initializeDefaultTextures()
             for (int i = 0; i < 256; ++i) {
                 // 0xAABBGGRR
                 uint32_t alpha_mask = i << 24; // 0xAA000000
-                buf2[c*256+i] = alpha_mask & color_mask;
+                defaultColormapTextureData[c*256+i] = alpha_mask & color_mask;
             }
         }
-        loadColorMapTexture2D(&buf2[0]);
+        loadColorMapTexture2D(&defaultColormapTextureData[0]);
     }
 
     // 2D visibility texture maps everything to red
     {
-        std::vector<uint32_t> buf((size_t)256*256, (uint32_t)0x000000ff); // red == visible but not selected
-        loadVisibilityTexture2D(&buf[0]);
+        defaultVisibilityTextureData.assign((size_t)256*256, (uint32_t)0x000000ff); // red == visible but not selected
+        loadVisibilityTexture2D(&defaultVisibilityTextureData[0]);
     }
 
     // 3D neuron label texture all zero == background
     {
-        std::vector<uint16_t> buf((size_t)8*8*8, (uint16_t)0);
-        loadLabelTexture3D(8, 8, 8, &buf[0]);
+        defaultLabelTextureData.assign((size_t)8*8*8, (uint16_t)0);
+        loadLabelTexture3D(8, 8, 8, &defaultLabelTextureData[0]);
     }
 
     glActiveTextureARB(GL_TEXTURE0_ARB);
@@ -532,6 +535,7 @@ void Na3DWidget::initializeGL()
     // Is the world ready for sRGB?  It's the right thing to do...
     // glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 
+    makeCurrent(); // probably unnecessary
     int gm3ts;
     glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &gm3ts);
     // qDebug() << "GL_MAX_3D_TEXTURE_SIZE" << gm3ts;
@@ -618,6 +622,7 @@ bool Na3DWidget::loadSignalTexture()
         // fooDebug() << textureSize.x() << __FILE__ << __LINE__;
         bTextureSizeChanged = (textureSize != getRendererNa()->getPaddedTextureDimensions());
         const uint32_t* data = textureReader.signalData3D();
+        clearImage(); // will repopulate image4d farther down.
         if (! loadSignalTexture3D(textureSize.x(), textureSize.y(), textureSize.z(), data))
             return false;
         getRendererNa()->updateSettingsFromVolumeTexture(textureReader);
@@ -1802,6 +1807,7 @@ void Na3DWidget::setShowCornerAxes(bool b)
 // Draw a little 3D cross for testing
 // In GL coordinates, where volume is contained within [-1,1]^3
 void Na3DWidget::paintFiducial(const Vector3D& v) {
+    makeCurrent();
     qreal dd1 = 4.0 * glUnitsPerImageVoxel() / getZoomScale();
     qreal dd2 = 10.0 * glUnitsPerImageVoxel() / getZoomScale(); // 10 pixel crosshair
     qreal x0 = v.x();
@@ -1825,6 +1831,7 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 
 void Na3DWidget::paintGL()
 {
+    makeCurrent();
     if (! representsActualData()) {
         glClearColor(0.63, 0.63, 0.64, 1.0); // try to match Qt::gray
         glClear(GL_COLOR_BUFFER_BIT);
@@ -1847,6 +1854,7 @@ void Na3DWidget::paintGL()
 
 void Na3DWidget::paint_mono(bool clearColorFirst)
 {
+    makeCurrent();
     // Reset background color and depth
     if (clearColorFirst) {
         glClearColor(0, 0, 0, 0); // always black for now TODO
@@ -1933,6 +1941,7 @@ void Na3DWidget::paint_mono(bool clearColorFirst)
 
 void Na3DWidget::paint_stereo()
 {
+    makeCurrent();
     // absolute screen coordinates for stencilling
     int stencilLeft = globalScreenPosX;
     int stencilTop = globalScreenPosY;
