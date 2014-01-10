@@ -65,6 +65,7 @@ void v3d_aboutinfo()
 //      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of Vaa3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
         "If you have used Vaa3D, please cite as the following: <br><br>"
         "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353. (http://vaa3d.org) </span><br> "
+        "<br>"
         "<span style=\"color:#0000FF\">Peng, H., Bria, A., Zhou, Z., Iannello, G., and Long, F. (2014) \"Extensible visualization and analysis for multidimensional images using Vaa3D,\" Nature Protocols, Vol. 9, No. 1, pp. 193-208, 2014. (http://vaa3d.org) </span><br> "
         "<br>"
         "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://vaa3d.org\">http://vaa3d.org</a><br>"
@@ -190,7 +191,7 @@ void v3d_aboutinfo()
         "<tr><td>Neuron editing: the 'merge to nearby segments' function may produce extra root-nodes</td>     <td>The neuron editing function can become quite complicated as we'd like to support any graph. if you see unwanted roots, you may choose 'reverse' nearby segments to correct; but this may make other segments' directions change.  Suggest use 'break' combined by 'tracing' instead of direct 'merge'.</td></tr>"
         "</table><br>"
         "<H2>Key releases:</H2><br> Feb 2006, Aug 16 (v1.1), Sept (v2.400), 2009. "
-        "Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Aug (v2.6), 2011. 2012-2013 (v2.8)"
+        "Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Aug (v2.6), 2011. 2012-2014 (v2.8)"
         "All rights reserved.<br><br> "
         "Version Note: if you see a version number followed by a letter (e.g. 1.80a), it is a customized build for a particular research lab. "
         "Vaa3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";
