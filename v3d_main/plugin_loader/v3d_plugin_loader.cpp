@@ -1293,3 +1293,23 @@ bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <L
 //{
 //    rescanPlugins();
 //}
+
+
+SurfaceLists_in_3dviewer fetch_3dviewer_datafilelist(V3DPluginCallback2 & cb, QString name3dviewer)
+{
+    SurfaceLists_in_3dviewer s;
+
+    V3dR_MainWindow * w = cb.find3DViewerByName(name3dviewer);
+    if (!w || !(w->_idep))
+        return s;
+
+    s.swc_file_list = w->_idep->swc_file_list;
+    s.pointcloud_file_list = w->_idep->pointcloud_file_list;
+    s.surface_file = w->_idep->surface_file;
+    s.labelfield_file = w->_idep->labelfield_file;
+
+    if (w->_idep->image4d)
+        s.imgfile = w->_idep->image4d->getFileName();
+
+    return s;
+}

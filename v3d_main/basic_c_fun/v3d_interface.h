@@ -578,5 +578,18 @@ inline bool simple_saveimage_wrapper(V3DPluginCallback & cb, const char * filena
     //in this case no need to delete "outimg" pointer as it is just a container and will not use too much memory
 }
 
+struct SurfaceLists_in_3dviewer
+{
+    QStringList swc_file_list;
+    QStringList pointcloud_file_list;
+    QString surface_file;
+    QString labelfield_file;
+
+    QString imgfile;
+};
+
+SurfaceLists_in_3dviewer fetch_3dviewer_datafilelist(V3DPluginCallback2 & cb, QString name3dviewer);
+
+
 #endif /* _V3D_INTERFACE_H_ */
 
