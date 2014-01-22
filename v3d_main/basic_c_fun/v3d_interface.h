@@ -165,6 +165,16 @@ class View3DControl;
 class MainWindow;
 class V3dR_MainWindow;
 
+struct DataLists_in_3dviewer
+{
+    QStringList swc_file_list;
+    QStringList pointcloud_file_list;
+    QString surface_file;
+    QString labelfield_file;
+    QString imgfile;
+};
+
+
 class V3DPluginCallback2 : public V3DPluginCallback
 {
 public:
@@ -199,6 +209,8 @@ public:
     virtual void screenShot_Any3DViewer(V3dR_MainWindow *w,QString filename) = 0; //Dec. 02, 2013 by Zhi Zhou
 
     virtual void update_3DViewer(V3dR_MainWindow *w) = 0;//Dec, 9, 2013. PHC
+
+    virtual DataLists_in_3dviewer fetch_3dviewer_datafilelist(QString name3dviewer) = 0; //20140122 a conveniece function to access the record of data in a 3D viewer
 };
 
 class V3DPluginInterface2
@@ -578,17 +590,6 @@ inline bool simple_saveimage_wrapper(V3DPluginCallback & cb, const char * filena
     //in this case no need to delete "outimg" pointer as it is just a container and will not use too much memory
 }
 
-struct SurfaceLists_in_3dviewer
-{
-    QStringList swc_file_list;
-    QStringList pointcloud_file_list;
-    QString surface_file;
-    QString labelfield_file;
-
-    QString imgfile;
-};
-
-SurfaceLists_in_3dviewer fetch_3dviewer_datafilelist(V3DPluginCallback2 & cb, QString name3dviewer);
 
 
 #endif /* _V3D_INTERFACE_H_ */
