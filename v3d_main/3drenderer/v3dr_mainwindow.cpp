@@ -188,18 +188,6 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
     	_idep->b_still_open = true;
     	if (_idep->xwidget)	data_title = _idep->xwidget->windowTitle();
     	if (_idep->V3Dmainwindow) setParent(_idep->V3Dmainwindow); //090710
-
-//    	qDebug() <<"_idep-> image4d=" <<_idep->image4d <<"\n"
-//			<<"swc : " <<_idep->swc_file <<"\n"
-//			<<"apo : " <<_idep->pointcloud_file  <<"\n"
-//			<<"obj : " <<_idep->surface_file  <<"\n"
-//			<<"tif : " <<_idep->labelfield_file;
-
-//		_idep->image4d = 0;
-//		_idep->swc_file = "/Users/ruanzongcai/temp/jefferis/CNG\ version/CT12T2.CNG.swc";
-//		_idep->pointcloud_file = "/Users/ruanzongcai/temp/cell_apo/ano_muscle_4bundle.apo";
-//		_idep->surface_file = "/Users/ruanzongcai/temp/channel_3_processed.tif.v3ds";
-//		_idep->labelfield_file = "";
 	}
 
     if (!_idep || !_idep->p_list_3Dview_win) //by PHC, 081003
