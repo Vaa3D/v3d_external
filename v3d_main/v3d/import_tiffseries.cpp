@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "import_images_tool_dialog.h"
 
+#include "../io/io_bioformats.h"
 
 bool XFormWidget::importGeneralImageFile(QString filename)
 {
@@ -616,9 +617,19 @@ bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * &
     }
     else //use Bioformats IO plugin
     {
+        QString outfilename;
+        if(!call_bioformats_io(imgSrcFile, outfilename))
+            return false;
 
-
-        return false;
+        if (loadImage((char *)qPrintable(outfilename), data1d, sz,  dt))
+        {
+            if (dt==1) datatype = V3D_UINT8;
+            else if (dt==2) datatype = V3D_UINT16;
+            else if (dt==4) datatype = V3D_FLOAT32;
+            return true;
+        }
+        else
+            return false;
     }
 
     return false;

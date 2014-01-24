@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.871);
+    VersionInfo thisVersionOfV3D(2.872);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -77,7 +77,7 @@ void v3d_aboutinfo()
         "You can also download a Matlab toolbox to read and write most of the basic data formats at the Vaa3D website <a href=\"http://vaa3d.org\">http://vaa3d.org</a>."
         "<br><table border=\"1\">"
         "<tr><td>.TIF, .TIFF, .LSM (Tiff and LSM stacks) </td><td>3D image stacks. </td></tr>"
-        "<tr><td>.RAW (Vaa3D's RAW) </td><td>a simple raw file which supports 8-bit unsigned char, 16-bit unsigned short, 32-bit single-precision float 4D image stacks. </td></tr>"
+        "<tr><td>.RAW (Vaa3D's RAW), .V3DRAW (Vaa3D's RAW), .VAA3DRAW (Vaa3D's RAW), .v3dpbd (Vaa3D's RAW with compression) </td><td>a simple raw file which supports 8-bit unsigned char, 16-bit unsigned short, 32-bit single-precision float 4D image stacks. </td></tr>"
         "<tr><td>.TIF (Series 2D tiff section) </td><td>the Leica scope produced series tiff files can be imported. </td></tr>"
         "<tr><td>.SWC </td><td>reconstructed neurons or other relational data which can be described as a graph. </td></tr>"
         "<tr><td>.APO </td><td>point cloud file used in WANO to describe the cells and any other image objects. </td></tr>"

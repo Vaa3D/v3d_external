@@ -252,7 +252,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/convert_type2uint8.h \
     ../jba/c++/jba_affine_xform.h \
     ../jba/c++/remove_nonaffine_points.h \
-	../custom_toolbar/v3d_custom_toolbar.h       
+    ../custom_toolbar/v3d_custom_toolbar.h \ 
+    ../io/io_bioformats.h
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h 
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h 
 
@@ -327,7 +328,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
     ../jba/c++/histeq.cpp \
-	../custom_toolbar/v3d_custom_toolbar.cpp
+    ../custom_toolbar/v3d_custom_toolbar.cpp \
+    ../io/io_bioformats.cpp
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 
