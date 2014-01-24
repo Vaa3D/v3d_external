@@ -311,9 +311,14 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
     d.numimgBox->setMaximum(p.countImg);
     d.numimgBox->setValue(p.countImg);
     d.numimgBox->setMinimum(p.countImg);
+
     d.startimgBox->setMaximum(p.countImg);
+    d.startimgBox->setValue(1);
+
     d.incBox->setMaximum(p.countImg);
+
     d.endimgBox->setMaximum(p.countImg);
+    d.endimgBox->setValue(p.countImg);
 
 	int res = d.exec();
 	if (res==QDialog::Accepted)
@@ -600,72 +605,23 @@ bool XFormWidget::importLeicaData()
 
 bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * & sz, ImagePixelType & datatype)
 {
-	if (data1d) {delete []data1d; data1d=0;}
-	if (sz) {delete []sz; sz=0;}
-	datatype=V3D_UNKNOWN;
-	
-	V3DLONG * tmp_sz = 0; // note that this variable must be initialized as NULL. 
-	int tmp_datatype = 0;
-	
-    char * curFileSurfix = getSuffix(imgSrcFile);
-	printf("The current input file has the surfix [%s]\n", curFileSurfix);
-	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
-	{
-		if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-		{
-			printf("Error happens in TIF file reading. Stop. \n");
-			return false;
-		}
-	}
-	else if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
-	{
-		if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-		{
-			printf("Error happens in LSM file reading. Stop. \n");
-			return false;
-		}
-	}
-	else //then assume it is Hanchuan's RAW format
-	{
-        printf("The data is not with a valid Vaa3D format, -- now this program assumes it is a Vaa3D RAW format defined by Hanchuan Peng. \n");
-		if (loadRaw2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-		{
-			printf("The data doesn't look like a correct 4-byte-size RAW file. Try 2-byte-raw. \n");
-			if (loadRaw2Stack_2byte(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-			{
-				printf("Error happens in reading 2-byte-size RAW file. Stop. \n");
-				return false;
-			}
-		}
-	}
-	
-	//convert to 8 bit in some cases
-	switch (tmp_datatype)
-	{
-		case 1:
-			datatype = V3D_UINT8;
-			break;
-			
-		case 2:
-			//	  convert_data_to_8bit((void *&)data1d, tmp_sz, tmp_datatype);
-			//	  datatype = V3D_UINT8; //UINT16;
-			datatype = V3D_UINT16;
-			break;
-			
-		case 4:
-			convert_data_to_8bit((void *&)data1d, tmp_sz, tmp_datatype);
-			datatype = V3D_UINT8; //FLOAT32;
-			break;
-			
-		default:
-			printf("Something wrong with the program, -- should NOT display this message at all. Check your program. \n");
-			if (data1d) {delete []data1d; data1d=0;}
-				if (tmp_sz) {delete []tmp_sz; tmp_sz=0;}
-				return false;
-	}
-	
-	sz = tmp_sz;
-	return true;
+    datatype = V3D_UNKNOWN;
+    int dt = 0;
+    if (loadImage(imgSrcFile, data1d, sz,  dt))
+    {
+        if (dt==1) datatype = V3D_UINT8;
+        else if (dt==2) datatype = V3D_UINT16;
+        else if (dt==4) datatype = V3D_FLOAT32;
+        return true;
+    }
+    else //use Bioformats IO plugin
+    {
+
+
+        return false;
+    }
+
+    return false;
 }
 
 
