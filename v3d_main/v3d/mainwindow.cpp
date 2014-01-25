@@ -1029,10 +1029,79 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     }
                 }
             }
-            catch(...)
+            catch (...)
             {
                 v3d_msg(QString("You fail to open a new window for the specified image [%1]."
-                                "The file may have certain problem, or is simply too big but you don't have enough memory.").arg(fileName));
+                                "The file may have certain problem - check the file format, or is simply too big but you don't have enough memory.").arg(fileName));
+            }
+        }
+        //the following is to use bioformats to load the file
+        else if ( (curfile_info.suffix().toUpper()=="BMP") ||
+                  (curfile_info.suffix().toUpper()=="PNG") ||
+                  (curfile_info.suffix().toUpper()=="JPG") ||
+                  (curfile_info.suffix().toUpper()=="JPEG") ||
+                  (curfile_info.suffix().toUpper()=="NRRD") ||
+                  (curfile_info.suffix().toUpper()=="CZI") ||
+                  (curfile_info.suffix().toUpper()=="LIF") ||
+                  (curfile_info.suffix().toUpper()=="JP2")
+                  )
+        {
+            try
+            {
+                size_t start_t = clock();
+                XFormWidget *child = createMdiChild();
+                v3d_msg(QString("Trying to load an image file [%1] using Bioformats IO library").arg(fileName), 0);
+
+                unsigned char * b_data1d=0;
+                V3DLONG * b_sz=0;
+                ImagePixelType b_dt;
+
+                if (readSingleImageFile((char *)qPrintable(fileName), b_data1d, b_sz, b_dt))
+                {
+                    child->setImageData(b_data1d, b_sz[0], b_sz[1], b_sz[2], b_sz[3], b_dt);
+                    child->setCurrentFileName(fileName);
+
+                    statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
+                    if (global_setting.b_autoConvert2_8bit)
+                    {
+                        if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
+                        {
+                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+                                child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
+                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+                                child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
+                        }
+                        else //otherwise do the conversion directly
+                        {
+                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+                                child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
+                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+                                child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
+                        }
+                    }
+                    if (global_setting.b_yaxis_up)
+                    {
+                        child->getImageData()->flip(axis_y);
+                    }
+                    child->show();
+                    if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
+                    {
+                        child->doImage3DView();
+                    }
+                    size_t end_t = clock();
+                    qDebug()<<"time consume ..."<<end_t-start_t;
+                }
+                else
+                {
+                    child->close();
+                }
+
+                if (b_sz) {delete []b_sz; b_sz=0;}
+            }
+            catch (...)
+            {
+                v3d_msg(QString("You fail to open a new window for the specified image [%1]."
+                                "The file may have certain problem - check the file format, or is simply too big but you don't have enough memory.").arg(fileName));
             }
         }
 //		else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302

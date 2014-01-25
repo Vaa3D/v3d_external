@@ -4593,7 +4593,7 @@ bool XFormWidget::loadData()
 		v3d_msg("File open error : Fail to open the image file you specified. This could be due to \n(1) The file does not exist. \n(2) The file format is not supported (V3D only supports TIFF stacks, most Zeiss LSM files, and Hanchuan Peng's RAW files. TIFF stacks are widely used and can be easily generated using other tools such as ImageJ or Hanchuan Peng's Matlab image fileio toolbox). \n(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files < 900M Bytes, and V3D's RAW file < 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.\n", 0);
 		v3d_msg("Fail to open the image file you specified. This could be due to <br><br>"
 				"(1) The file does not exist. <br>"
-				"(2) The file format is not supported (V3D only supports TIFF stacks, most Zeiss LSM files, and Hanchuan Peng's RAW files. TIFF stacks are widely used and can be easily generated using other tools such as ImageJ or Hanchuan Peng's Matlab image fileio toolbox). <br>"
+                "(2) The file format is not supported. <br>"
 				"(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files less than 900M Bytes, and Hanchuan's RAW file less than 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.<br>");
 		return false;
 	}
