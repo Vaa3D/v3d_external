@@ -517,9 +517,9 @@ Image *Read_Image(char *file_name)
 }
 
 Stack *Read_Stack(char *file_name)
-{ Stack *stack;
+{ Stack *stack=0;
 
-  TIFF  *tif;
+  TIFF  *tif=0;
   int    depth, width, height, kind;
 
   tif = Open_Tiff(file_name,"r");
@@ -529,6 +529,9 @@ Stack *Read_Stack(char *file_name)
   TIFFClose(tif);
 
   tif = Open_Tiff(file_name,"r");
+  if (!tif)
+      return 0;
+
   TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
   TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
 
