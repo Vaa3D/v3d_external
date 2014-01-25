@@ -88,29 +88,30 @@ bool CLP::check_filename(QString fn)
     }
     else if(curfile_info.isFile())
     {
-        if ( (curfile_info.suffix().toUpper()=="ANO") ||
-             (curfile_info.suffix().toUpper()=="APO" ||
-              curfile_info.suffix().toUpper()=="SWC" ||
-              (curfile_info.suffix().toUpper()=="ESWC") || //enhanced SWC, by PHC, 20120217
-              curfile_info.suffix().toUpper()=="OBJ" ||
-              curfile_info.suffix().toUpper()=="V3DS") ||
-             (curfile_info.suffix().toUpper()=="ATLAS") ||
-             (curfile_info.suffix().toUpper()=="ZIP") ||
-             (curfile_info.suffix().toUpper()=="LSM") ||
-             (curfile_info.suffix().toUpper()=="TIF")  ||
-             (curfile_info.suffix().toUpper()=="TIFF") ||
-             (curfile_info.suffix().toUpper()=="MRC") ||
-             (curfile_info.suffix().toUpper()=="RAW") ||
-             (curfile_info.suffix().toUpper()=="RAW5") ||
-             (curfile_info.suffix().toUpper()=="V3DRAW") ||
-             (curfile_info.suffix().toUpper()=="V3DPBD") ||
-             (curfile_info.suffix().toUpper()=="VAA3DPBD") ||
-             (curfile_info.suffix().toUpper()=="IMG") ||
-             (curfile_info.suffix().toUpper()=="HDR") ||
-             (curfile_info.suffix().toUpper()=="NII") ||
-             (curfile_info.suffix().toUpper()=="MARKER") || // added for reading marker file in -i by ZJL, 2012-05-10
-             (curfile_info.suffix().toUpper()=="TXT") ||    // added for reading txt file in -i by ZJL, 2012-05-10
-             (curfile_info.suffix().toUpper()=="DOMAIN") || // added for reading domain file in -i by ZJL, 2012-05-10
+        QString cur_suffix = curfile_info.suffix().toUpper();
+        if ( (cur_suffix=="ANO") ||
+             (cur_suffix=="APO" ||
+              cur_suffix=="SWC" ||
+              (cur_suffix=="ESWC") || //enhanced SWC, by PHC, 20120217
+              cur_suffix=="OBJ" ||
+              cur_suffix=="V3DS") ||
+             (cur_suffix=="ATLAS") ||
+             (cur_suffix=="ZIP") ||
+             (cur_suffix=="LSM") ||
+             (cur_suffix=="TIF")  ||
+             (cur_suffix=="TIFF") ||
+             (cur_suffix=="MRC") ||
+             (cur_suffix=="RAW") ||
+             (cur_suffix=="RAW5") ||
+             (cur_suffix=="V3DRAW") ||
+             (cur_suffix=="V3DPBD") ||
+             (cur_suffix=="VAA3DPBD") ||
+             (cur_suffix=="IMG") ||
+             (cur_suffix=="HDR") ||
+             (cur_suffix=="NII") ||
+             (cur_suffix=="MARKER") || // added for reading marker file in -i by ZJL, 2012-05-10
+             (cur_suffix=="TXT") ||    // added for reading txt file in -i by ZJL, 2012-05-10
+             (cur_suffix=="DOMAIN") || // added for reading domain file in -i by ZJL, 2012-05-10
              fn.contains("://") ) // url
         {
             return true;

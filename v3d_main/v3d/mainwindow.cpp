@@ -726,7 +726,10 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             return;
         }
         QFileInfo curfile_info(fileName);
-        if (curfile_info.suffix().toUpper()=="ANO")
+
+        QString cur_suffix = curfile_info.suffix().toUpper();
+
+        if (cur_suffix=="ANO")
         {
             P_ObjectFileType cc;
             if (!loadAnoFile(fileName, cc))
@@ -842,19 +845,19 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 }
             }
         }
-        else if (curfile_info.suffix().toUpper()=="MARKER" ||  curfile_info.suffix().toUpper()=="CSV")
+        else if (cur_suffix=="MARKER" ||  cur_suffix=="CSV")
                  //added by PHC, 20130420.
         {
             v3d_msg("Directly loading a marker or csv file into Vaa3D's main window is ambiguous. \n"
                     "You can either open it directly in a 3D viewer window of an image, or literally associate \n"
                     "it with an existing image, or literally convert it to a Point Cloud .APO file and then open.");
         }
-        else if (curfile_info.suffix().toUpper()=="APO" ||
-                 curfile_info.suffix().toUpper()=="SWC" ||
-                 curfile_info.suffix().toUpper()=="ESWC" ||
-                 curfile_info.suffix().toUpper()=="OBJ" ||
-                 curfile_info.suffix().toUpper()=="VAA3DS" ||
-                 curfile_info.suffix().toUpper()=="V3DS")
+        else if (cur_suffix=="APO" ||
+                 cur_suffix=="SWC" ||
+                 cur_suffix=="ESWC" ||
+                 cur_suffix=="OBJ" ||
+                 cur_suffix=="VAA3DS" ||
+                 cur_suffix=="V3DS")
         {
             //directly open the 3D viewer
             iDrawExternalParameter * mypara_3Dview = new iDrawExternalParameter;
@@ -864,14 +867,14 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             mypara_3Dview->xwidget = 0;
             mypara_3Dview->V3Dmainwindow = this; //added on 090503
             //set up data
-            if (curfile_info.suffix().toUpper()=="APO")
+            if (cur_suffix=="APO")
                 mypara_3Dview->pointcloud_file_list.append(fileName);
-            else if (curfile_info.suffix().toUpper()=="SWC" ||
-                     curfile_info.suffix().toUpper()=="ESWC")
+            else if (cur_suffix=="SWC" ||
+                     cur_suffix=="ESWC")
                 mypara_3Dview->swc_file_list.append(fileName);
-            else if (curfile_info.suffix().toUpper()=="OBJ" ||
-                     curfile_info.suffix().toUpper()=="V3DS" ||
-                     curfile_info.suffix().toUpper()=="VAA3DS")
+            else if (cur_suffix=="OBJ" ||
+                     cur_suffix=="V3DS" ||
+                     cur_suffix=="VAA3DS")
                 mypara_3Dview->surface_file = fileName;
             else {delete mypara_3Dview; mypara_3Dview=0; return;}
             //
@@ -891,7 +894,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             }
             //list_3Dview_win.append(my3dwin); //081003: no longer need to do this here. I changed the V3dR_MainWindow so that when it create, it will add it into the list; and close the window, then it will delete itself from the list
         }
-        else if (curfile_info.suffix().toUpper()=="ATLAS")
+        else if (cur_suffix=="ATLAS")
         {
             try
             {
@@ -930,7 +933,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 return;
             }
         }
-        else if (curfile_info.suffix().toUpper()=="ZIP")
+        else if (cur_suffix=="ZIP")
         {
             QString cmd_unzip = QString("unzip -o %1 -j -d %2").arg(fileName, curfile_info.canonicalPath());
             //v3d_msg(cmd_unzip);
@@ -943,18 +946,18 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 system(qPrintable(QString("rm -f %1").arg(tmp_filename)));
             }
         }
-        else if ( (curfile_info.suffix().toUpper()=="LSM") ||
-                  (curfile_info.suffix().toUpper()=="TIF") ||
-                  (curfile_info.suffix().toUpper()=="TIFF") ||
-                  (curfile_info.suffix().toUpper()=="RAW") ||
-                  (curfile_info.suffix().toUpper()=="V3DRAW") ||
-                  (curfile_info.suffix().toUpper()=="VAA3DRAW") ||
-                  (curfile_info.suffix().toUpper()=="RAW5") ||
-                  (curfile_info.suffix().toUpper()=="V3DRAW5") ||
-                  (curfile_info.suffix().toUpper()=="VAA3DRAW5") ||
-                  (curfile_info.suffix().toUpper()=="MRC") ||
-                  (curfile_info.suffix().toUpper()=="V3DPBD") ||
-                  (curfile_info.suffix().toUpper()=="VAA3DPBD") ||
+        else if ( (cur_suffix=="LSM") ||
+                  (cur_suffix=="TIF") ||
+                  (cur_suffix=="TIFF") ||
+                  (cur_suffix=="RAW") ||
+                  (cur_suffix=="V3DRAW") ||
+                  (cur_suffix=="VAA3DRAW") ||
+                  (cur_suffix=="RAW5") ||
+                  (cur_suffix=="V3DRAW5") ||
+                  (cur_suffix=="VAA3DRAW5") ||
+                  (cur_suffix=="MRC") ||
+                  (cur_suffix=="V3DPBD") ||
+                  (cur_suffix=="VAA3DPBD") ||
                   curfile_info.suffix().isEmpty() //then invoke raw reader in this case, 20120410. PHC
                   )
         {
@@ -1036,152 +1039,152 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             }
         }
         //the following is to use bioformats to load the file. NOTE THE FOLLOWING LIST HAS SOME REDUNDANCY. But the executation should be fine
-        else if ( (curfile_info.suffix().toUpper()=="BMP") ||
-                  (curfile_info.suffix().toUpper()=="PNG") ||
-                  (curfile_info.suffix().toUpper()=="JPG") ||
-                  (curfile_info.suffix().toUpper()=="JPEG") ||
-                  (curfile_info.suffix().toUpper()=="NRRD") ||
-                  (curfile_info.suffix().toUpper()=="CZI") ||
-                  (curfile_info.suffix().toUpper()=="LIF") ||
-                  (curfile_info.suffix().toUpper()=="JP2") ||
+        else if ( (cur_suffix=="BMP") ||
+                  (cur_suffix=="PNG") ||
+                  (cur_suffix=="JPG") ||
+                  (cur_suffix=="JPEG") ||
+                  (cur_suffix=="NRRD") ||
+                  (cur_suffix=="CZI") ||
+                  (cur_suffix=="LIF") ||
+                  (cur_suffix=="JP2") ||
 
-                  (curfile_info.suffix().toUpper()=="SLD") ||
-                  (curfile_info.suffix().toUpper()=="AIM") ||
-                  (curfile_info.suffix().toUpper()=="AL3D") ||
-                  (curfile_info.suffix().toUpper()=="GEL") ||
-                  (curfile_info.suffix().toUpper()=="AM") ||
-                  (curfile_info.suffix().toUpper()=="AMIRAMESH") ||
-                  (curfile_info.suffix().toUpper()=="GREY") ||
-                  (curfile_info.suffix().toUpper()=="HX") ||
-                  (curfile_info.suffix().toUpper()=="LABELS") ||
-                  (curfile_info.suffix().toUpper()=="IMG") ||
-                  (curfile_info.suffix().toUpper()=="HDR") ||
-                  (curfile_info.suffix().toUpper()=="PNG") ||
-                  (curfile_info.suffix().toUpper()=="SVS") ||
-                  (curfile_info.suffix().toUpper()=="HTD") ||
-                  (curfile_info.suffix().toUpper()=="PNL") ||
-                  (curfile_info.suffix().toUpper()=="AVI") ||
-                  (curfile_info.suffix().toUpper()=="ARF") ||
-                  (curfile_info.suffix().toUpper()=="EXP") ||
-                  (curfile_info.suffix().toUpper()=="SDT") ||
-                  (curfile_info.suffix().toUpper()=="1SC") ||
-                  (curfile_info.suffix().toUpper()=="PIC") ||
-                  (curfile_info.suffix().toUpper()=="XML") ||
-                  (curfile_info.suffix().toUpper()=="IMS") ||
-                  (curfile_info.suffix().toUpper()=="CR2") ||
-                  (curfile_info.suffix().toUpper()=="CRW") ||
-                  (curfile_info.suffix().toUpper()=="C01") ||
-                  (curfile_info.suffix().toUpper()=="VSI") ||
-                  (curfile_info.suffix().toUpper()=="DV") ||
-                  (curfile_info.suffix().toUpper()=="R3D") ||
-                  (curfile_info.suffix().toUpper()=="DCM") ||
-                  (curfile_info.suffix().toUpper()=="DICOM") ||
-                  (curfile_info.suffix().toUpper()=="V") ||
-                  (curfile_info.suffix().toUpper()=="EPS") ||
-                  (curfile_info.suffix().toUpper()=="EPSI") ||
-                  (curfile_info.suffix().toUpper()=="PS") ||
-                  (curfile_info.suffix().toUpper()=="FLEX") ||
-                  (curfile_info.suffix().toUpper()=="MEA") ||
-                  (curfile_info.suffix().toUpper()=="RES") ||
-                  (curfile_info.suffix().toUpper()=="FITS") ||
-                  (curfile_info.suffix().toUpper()=="DM3") ||
-                  (curfile_info.suffix().toUpper()=="DM2") ||
-                  (curfile_info.suffix().toUpper()=="GIF") ||
-                  (curfile_info.suffix().toUpper()=="NAF") ||
-                  (curfile_info.suffix().toUpper()=="HIS") ||
-                  (curfile_info.suffix().toUpper()=="NDPI") ||
-                  (curfile_info.suffix().toUpper()=="VMS") ||
-                  (curfile_info.suffix().toUpper()=="TXT") ||
-                  (curfile_info.suffix().toUpper()=="BMP") ||
-                  (curfile_info.suffix().toUpper()=="JPG") ||
-                  (curfile_info.suffix().toUpper()=="JPEG") ||
-                  (curfile_info.suffix().toUpper()=="ICS") ||
-                  (curfile_info.suffix().toUpper()=="IDS") ||
-                  (curfile_info.suffix().toUpper()=="FFF") ||
-                  (curfile_info.suffix().toUpper()=="SEQ") ||
-                  (curfile_info.suffix().toUpper()=="IPW") ||
-                  (curfile_info.suffix().toUpper()=="HED") ||
-                  (curfile_info.suffix().toUpper()=="MOD") ||
-                  (curfile_info.suffix().toUpper()=="LIFF") ||
-                  (curfile_info.suffix().toUpper()=="XDCE") ||
-                  (curfile_info.suffix().toUpper()=="FRM") ||
-                  (curfile_info.suffix().toUpper()=="INR") ||
-                  (curfile_info.suffix().toUpper()=="IPL") ||
-                  (curfile_info.suffix().toUpper()=="IPM") ||
-                  (curfile_info.suffix().toUpper()=="DAT") ||
-                  (curfile_info.suffix().toUpper()=="PAR") ||
-                  (curfile_info.suffix().toUpper()=="JP2") ||
-                  (curfile_info.suffix().toUpper()=="JPK") ||
-                  (curfile_info.suffix().toUpper()=="JPX") ||
-                  (curfile_info.suffix().toUpper()=="XV") ||
-                  (curfile_info.suffix().toUpper()=="BIP") ||
-                  (curfile_info.suffix().toUpper()=="FLI") ||
-                  (curfile_info.suffix().toUpper()=="LEI") ||
-                  (curfile_info.suffix().toUpper()=="LIF") ||
-                  (curfile_info.suffix().toUpper()=="SCN") ||
-                  (curfile_info.suffix().toUpper()=="SXM") ||
-                  (curfile_info.suffix().toUpper()=="L2D") ||
-                  (curfile_info.suffix().toUpper()=="LIM") ||
-                  (curfile_info.suffix().toUpper()=="STK") ||
-                  (curfile_info.suffix().toUpper()=="ND") ||
-                  (curfile_info.suffix().toUpper()=="MNC") ||
-                  (curfile_info.suffix().toUpper()=="MRW") ||
-                  (curfile_info.suffix().toUpper()=="MNG") ||
-                  (curfile_info.suffix().toUpper()=="STP") ||
-                  (curfile_info.suffix().toUpper()=="MRC") ||
-                  (curfile_info.suffix().toUpper()=="NEF") ||
-                  (curfile_info.suffix().toUpper()=="ND2") ||
-                  (curfile_info.suffix().toUpper()=="NRRD") ||
-                  (curfile_info.suffix().toUpper()=="NHDR") ||
-                  (curfile_info.suffix().toUpper()=="RAW") ||
-                  (curfile_info.suffix().toUpper()=="APL") ||
-                  (curfile_info.suffix().toUpper()=="MTB") ||
-                  (curfile_info.suffix().toUpper()=="TNB") ||
-                  (curfile_info.suffix().toUpper()=="OBSEP") ||
-                  (curfile_info.suffix().toUpper()=="OIB") ||
-                  (curfile_info.suffix().toUpper()=="OIF") ||
-                  (curfile_info.suffix().toUpper()=="OME") ||
-                  (curfile_info.suffix().toUpper()=="TOP") ||
-                  (curfile_info.suffix().toUpper()=="PCX") ||
-                  (curfile_info.suffix().toUpper()=="PDS") ||
-                  (curfile_info.suffix().toUpper()=="2") ||
-                  (curfile_info.suffix().toUpper()=="3") ||
-                  (curfile_info.suffix().toUpper()=="4") ||
-                  (curfile_info.suffix().toUpper()=="PGM") ||
-                  (curfile_info.suffix().toUpper()=="PSD") ||
-                  (curfile_info.suffix().toUpper()=="PICT") ||
-                  (curfile_info.suffix().toUpper()=="PNG") ||
-                  (curfile_info.suffix().toUpper()=="CFG") ||
-                  (curfile_info.suffix().toUpper()=="AFM") ||
-                  (curfile_info.suffix().toUpper()=="MOV") ||
-                  (curfile_info.suffix().toUpper()=="SM2") ||
-                  (curfile_info.suffix().toUpper()=="SM3") ||
-                  (curfile_info.suffix().toUpper()=="XQD") ||
-                  (curfile_info.suffix().toUpper()=="XQF") ||
-                  (curfile_info.suffix().toUpper()=="CXD") ||
-                  (curfile_info.suffix().toUpper()=="SPI") ||
-                  (curfile_info.suffix().toUpper()=="STK") ||
-                  (curfile_info.suffix().toUpper()=="TGA") ||
-                  (curfile_info.suffix().toUpper()=="VWS") ||
-                  (curfile_info.suffix().toUpper()=="TFR") ||
-                  (curfile_info.suffix().toUpper()=="FFR") ||
-                  (curfile_info.suffix().toUpper()=="ZFR") ||
-                  (curfile_info.suffix().toUpper()=="ZFP") ||
-                  (curfile_info.suffix().toUpper()=="2FL") ||
-                  (curfile_info.suffix().toUpper()=="SLD") ||
-                  (curfile_info.suffix().toUpper()=="PR3") ||
-                  (curfile_info.suffix().toUpper()=="DAT") ||
-                  (curfile_info.suffix().toUpper()=="FDF") ||
-                  (curfile_info.suffix().toUpper()=="DTI") ||
-                  (curfile_info.suffix().toUpper()=="XYS") ||
-                  (curfile_info.suffix().toUpper()=="HTML") ||
-                  (curfile_info.suffix().toUpper()=="MVD2") ||
-                  (curfile_info.suffix().toUpper()=="ACFF") ||
-                  (curfile_info.suffix().toUpper()=="WAT") ||
-                  (curfile_info.suffix().toUpper()=="ZVI") ||
-                  (curfile_info.suffix().toUpper()=="CZI") ||
-                  (curfile_info.suffix().toUpper()=="LSM") ||
-                  (curfile_info.suffix().toUpper()=="MDB")
+                  (cur_suffix=="SLD") ||
+                  (cur_suffix=="AIM") ||
+                  (cur_suffix=="AL3D") ||
+                  (cur_suffix=="GEL") ||
+                  (cur_suffix=="AM") ||
+                  (cur_suffix=="AMIRAMESH") ||
+                  (cur_suffix=="GREY") ||
+                  (cur_suffix=="HX") ||
+                  (cur_suffix=="LABELS") ||
+                  (cur_suffix=="IMG") ||
+                  (cur_suffix=="HDR") ||
+                  (cur_suffix=="PNG") ||
+                  (cur_suffix=="SVS") ||
+                  (cur_suffix=="HTD") ||
+                  (cur_suffix=="PNL") ||
+                  (cur_suffix=="AVI") ||
+                  (cur_suffix=="ARF") ||
+                  (cur_suffix=="EXP") ||
+                  (cur_suffix=="SDT") ||
+                  (cur_suffix=="1SC") ||
+                  (cur_suffix=="PIC") ||
+                  (cur_suffix=="XML") ||
+                  (cur_suffix=="IMS") ||
+                  (cur_suffix=="CR2") ||
+                  (cur_suffix=="CRW") ||
+                  (cur_suffix=="C01") ||
+                  (cur_suffix=="VSI") ||
+                  (cur_suffix=="DV") ||
+                  (cur_suffix=="R3D") ||
+                  (cur_suffix=="DCM") ||
+                  (cur_suffix=="DICOM") ||
+                  (cur_suffix=="V") ||
+                  (cur_suffix=="EPS") ||
+                  (cur_suffix=="EPSI") ||
+                  (cur_suffix=="PS") ||
+                  (cur_suffix=="FLEX") ||
+                  (cur_suffix=="MEA") ||
+                  (cur_suffix=="RES") ||
+                  (cur_suffix=="FITS") ||
+                  (cur_suffix=="DM3") ||
+                  (cur_suffix=="DM2") ||
+                  (cur_suffix=="GIF") ||
+                  (cur_suffix=="NAF") ||
+                  (cur_suffix=="HIS") ||
+                  (cur_suffix=="NDPI") ||
+                  (cur_suffix=="VMS") ||
+                  (cur_suffix=="TXT") ||
+                  (cur_suffix=="BMP") ||
+                  (cur_suffix=="JPG") ||
+                  (cur_suffix=="JPEG") ||
+                  (cur_suffix=="ICS") ||
+                  (cur_suffix=="IDS") ||
+                  (cur_suffix=="FFF") ||
+                  (cur_suffix=="SEQ") ||
+                  (cur_suffix=="IPW") ||
+                  (cur_suffix=="HED") ||
+                  (cur_suffix=="MOD") ||
+                  (cur_suffix=="LIFF") ||
+                  (cur_suffix=="XDCE") ||
+                  (cur_suffix=="FRM") ||
+                  (cur_suffix=="INR") ||
+                  (cur_suffix=="IPL") ||
+                  (cur_suffix=="IPM") ||
+                  (cur_suffix=="DAT") ||
+                  (cur_suffix=="PAR") ||
+                  (cur_suffix=="JP2") ||
+                  (cur_suffix=="JPK") ||
+                  (cur_suffix=="JPX") ||
+                  (cur_suffix=="XV") ||
+                  (cur_suffix=="BIP") ||
+                  (cur_suffix=="FLI") ||
+                  (cur_suffix=="LEI") ||
+                  (cur_suffix=="LIF") ||
+                  (cur_suffix=="SCN") ||
+                  (cur_suffix=="SXM") ||
+                  (cur_suffix=="L2D") ||
+                  (cur_suffix=="LIM") ||
+                  (cur_suffix=="STK") ||
+                  (cur_suffix=="ND") ||
+                  (cur_suffix=="MNC") ||
+                  (cur_suffix=="MRW") ||
+                  (cur_suffix=="MNG") ||
+                  (cur_suffix=="STP") ||
+                  (cur_suffix=="MRC") ||
+                  (cur_suffix=="NEF") ||
+                  (cur_suffix=="ND2") ||
+                  (cur_suffix=="NRRD") ||
+                  (cur_suffix=="NHDR") ||
+                  (cur_suffix=="RAW") ||
+                  (cur_suffix=="APL") ||
+                  (cur_suffix=="MTB") ||
+                  (cur_suffix=="TNB") ||
+                  (cur_suffix=="OBSEP") ||
+                  (cur_suffix=="OIB") ||
+                  (cur_suffix=="OIF") ||
+                  (cur_suffix=="OME") ||
+                  (cur_suffix=="TOP") ||
+                  (cur_suffix=="PCX") ||
+                  (cur_suffix=="PDS") ||
+                  (cur_suffix=="2") ||
+                  (cur_suffix=="3") ||
+                  (cur_suffix=="4") ||
+                  (cur_suffix=="PGM") ||
+                  (cur_suffix=="PSD") ||
+                  (cur_suffix=="PICT") ||
+                  (cur_suffix=="PNG") ||
+                  (cur_suffix=="CFG") ||
+                  (cur_suffix=="AFM") ||
+                  (cur_suffix=="MOV") ||
+                  (cur_suffix=="SM2") ||
+                  (cur_suffix=="SM3") ||
+                  (cur_suffix=="XQD") ||
+                  (cur_suffix=="XQF") ||
+                  (cur_suffix=="CXD") ||
+                  (cur_suffix=="SPI") ||
+                  (cur_suffix=="STK") ||
+                  (cur_suffix=="TGA") ||
+                  (cur_suffix=="VWS") ||
+                  (cur_suffix=="TFR") ||
+                  (cur_suffix=="FFR") ||
+                  (cur_suffix=="ZFR") ||
+                  (cur_suffix=="ZFP") ||
+                  (cur_suffix=="2FL") ||
+                  (cur_suffix=="SLD") ||
+                  (cur_suffix=="PR3") ||
+                  (cur_suffix=="DAT") ||
+                  (cur_suffix=="FDF") ||
+                  (cur_suffix=="DTI") ||
+                  (cur_suffix=="XYS") ||
+                  (cur_suffix=="HTML") ||
+                  (cur_suffix=="MVD2") ||
+                  (cur_suffix=="ACFF") ||
+                  (cur_suffix=="WAT") ||
+                  (cur_suffix=="ZVI") ||
+                  (cur_suffix=="CZI") ||
+                  (cur_suffix=="LSM") ||
+                  (cur_suffix=="MDB")
                   )
         {
             try
@@ -1242,7 +1245,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                                 "The file may have certain problem - check the file format, or is simply too big but you don't have enough memory.").arg(fileName));
             }
         }
-//		else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
+//		else if (cur_suffix=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
 //        {
 //			QString basename = curfile_info.baseName();
 //
@@ -1346,18 +1349,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             v3d_msg(QString("The file [%1] has an unsupported file name extension and cannot be opened properly! "
                             "You should check the data type or file extension and you can convert the file format to something Vaa3D can read (e.g. a standard TIF file); but now Vaa3D is going to use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc) "
                             "to attempt reading the data ...").arg(fileName), 1);
-
-            //maybe should invoke the other file loader here
-
-            v3d_imaging_paras myimagingp;
-            myimagingp.OPS = "Load file using Vaa3D data IO manager";
-            myimagingp.datafilename = fileName;
-            myimagingp.imgp = 0; //the image data for a plugin to call
-            //do data loading
-            if (!v3d_imaging(this, myimagingp))
-                v3d_msg("Even the data IO manager cannot load this file. You need to use 3rd party converter to convert the file format first.");
             return;
-
         }
         //child->close();delete child; child=0; //this should be correspond to the error place! by phc, 080429
     }
