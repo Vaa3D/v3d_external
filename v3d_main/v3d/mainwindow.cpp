@@ -1035,7 +1035,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                                 "The file may have certain problem - check the file format, or is simply too big but you don't have enough memory.").arg(fileName));
             }
         }
-        //the following is to use bioformats to load the file
+        //the following is to use bioformats to load the file. NOTE THE FOLLOWING LIST HAS SOME REDUNDANCY. But the executation should be fine
         else if ( (curfile_info.suffix().toUpper()=="BMP") ||
                   (curfile_info.suffix().toUpper()=="PNG") ||
                   (curfile_info.suffix().toUpper()=="JPG") ||
@@ -1043,7 +1043,145 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   (curfile_info.suffix().toUpper()=="NRRD") ||
                   (curfile_info.suffix().toUpper()=="CZI") ||
                   (curfile_info.suffix().toUpper()=="LIF") ||
-                  (curfile_info.suffix().toUpper()=="JP2")
+                  (curfile_info.suffix().toUpper()=="JP2") ||
+
+                  (curfile_info.suffix().toUpper()=="SLD") ||
+                  (curfile_info.suffix().toUpper()=="AIM") ||
+                  (curfile_info.suffix().toUpper()=="AL3D") ||
+                  (curfile_info.suffix().toUpper()=="GEL") ||
+                  (curfile_info.suffix().toUpper()=="AM") ||
+                  (curfile_info.suffix().toUpper()=="AMIRAMESH") ||
+                  (curfile_info.suffix().toUpper()=="GREY") ||
+                  (curfile_info.suffix().toUpper()=="HX") ||
+                  (curfile_info.suffix().toUpper()=="LABELS") ||
+                  (curfile_info.suffix().toUpper()=="IMG") ||
+                  (curfile_info.suffix().toUpper()=="HDR") ||
+                  (curfile_info.suffix().toUpper()=="PNG") ||
+                  (curfile_info.suffix().toUpper()=="SVS") ||
+                  (curfile_info.suffix().toUpper()=="HTD") ||
+                  (curfile_info.suffix().toUpper()=="PNL") ||
+                  (curfile_info.suffix().toUpper()=="AVI") ||
+                  (curfile_info.suffix().toUpper()=="ARF") ||
+                  (curfile_info.suffix().toUpper()=="EXP") ||
+                  (curfile_info.suffix().toUpper()=="SDT") ||
+                  (curfile_info.suffix().toUpper()=="1SC") ||
+                  (curfile_info.suffix().toUpper()=="PIC") ||
+                  (curfile_info.suffix().toUpper()=="XML") ||
+                  (curfile_info.suffix().toUpper()=="IMS") ||
+                  (curfile_info.suffix().toUpper()=="CR2") ||
+                  (curfile_info.suffix().toUpper()=="CRW") ||
+                  (curfile_info.suffix().toUpper()=="C01") ||
+                  (curfile_info.suffix().toUpper()=="VSI") ||
+                  (curfile_info.suffix().toUpper()=="DV") ||
+                  (curfile_info.suffix().toUpper()=="R3D") ||
+                  (curfile_info.suffix().toUpper()=="DCM") ||
+                  (curfile_info.suffix().toUpper()=="DICOM") ||
+                  (curfile_info.suffix().toUpper()=="V") ||
+                  (curfile_info.suffix().toUpper()=="EPS") ||
+                  (curfile_info.suffix().toUpper()=="EPSI") ||
+                  (curfile_info.suffix().toUpper()=="PS") ||
+                  (curfile_info.suffix().toUpper()=="FLEX") ||
+                  (curfile_info.suffix().toUpper()=="MEA") ||
+                  (curfile_info.suffix().toUpper()=="RES") ||
+                  (curfile_info.suffix().toUpper()=="FITS") ||
+                  (curfile_info.suffix().toUpper()=="DM3") ||
+                  (curfile_info.suffix().toUpper()=="DM2") ||
+                  (curfile_info.suffix().toUpper()=="GIF") ||
+                  (curfile_info.suffix().toUpper()=="NAF") ||
+                  (curfile_info.suffix().toUpper()=="HIS") ||
+                  (curfile_info.suffix().toUpper()=="NDPI") ||
+                  (curfile_info.suffix().toUpper()=="VMS") ||
+                  (curfile_info.suffix().toUpper()=="TXT") ||
+                  (curfile_info.suffix().toUpper()=="BMP") ||
+                  (curfile_info.suffix().toUpper()=="JPG") ||
+                  (curfile_info.suffix().toUpper()=="JPEG") ||
+                  (curfile_info.suffix().toUpper()=="ICS") ||
+                  (curfile_info.suffix().toUpper()=="IDS") ||
+                  (curfile_info.suffix().toUpper()=="FFF") ||
+                  (curfile_info.suffix().toUpper()=="SEQ") ||
+                  (curfile_info.suffix().toUpper()=="IPW") ||
+                  (curfile_info.suffix().toUpper()=="HED") ||
+                  (curfile_info.suffix().toUpper()=="MOD") ||
+                  (curfile_info.suffix().toUpper()=="LIFF") ||
+                  (curfile_info.suffix().toUpper()=="XDCE") ||
+                  (curfile_info.suffix().toUpper()=="FRM") ||
+                  (curfile_info.suffix().toUpper()=="INR") ||
+                  (curfile_info.suffix().toUpper()=="IPL") ||
+                  (curfile_info.suffix().toUpper()=="IPM") ||
+                  (curfile_info.suffix().toUpper()=="DAT") ||
+                  (curfile_info.suffix().toUpper()=="PAR") ||
+                  (curfile_info.suffix().toUpper()=="JP2") ||
+                  (curfile_info.suffix().toUpper()=="JPK") ||
+                  (curfile_info.suffix().toUpper()=="JPX") ||
+                  (curfile_info.suffix().toUpper()=="XV") ||
+                  (curfile_info.suffix().toUpper()=="BIP") ||
+                  (curfile_info.suffix().toUpper()=="FLI") ||
+                  (curfile_info.suffix().toUpper()=="LEI") ||
+                  (curfile_info.suffix().toUpper()=="LIF") ||
+                  (curfile_info.suffix().toUpper()=="SCN") ||
+                  (curfile_info.suffix().toUpper()=="SXM") ||
+                  (curfile_info.suffix().toUpper()=="L2D") ||
+                  (curfile_info.suffix().toUpper()=="LIM") ||
+                  (curfile_info.suffix().toUpper()=="STK") ||
+                  (curfile_info.suffix().toUpper()=="ND") ||
+                  (curfile_info.suffix().toUpper()=="MNC") ||
+                  (curfile_info.suffix().toUpper()=="MRW") ||
+                  (curfile_info.suffix().toUpper()=="MNG") ||
+                  (curfile_info.suffix().toUpper()=="STP") ||
+                  (curfile_info.suffix().toUpper()=="MRC") ||
+                  (curfile_info.suffix().toUpper()=="NEF") ||
+                  (curfile_info.suffix().toUpper()=="ND2") ||
+                  (curfile_info.suffix().toUpper()=="NRRD") ||
+                  (curfile_info.suffix().toUpper()=="NHDR") ||
+                  (curfile_info.suffix().toUpper()=="RAW") ||
+                  (curfile_info.suffix().toUpper()=="APL") ||
+                  (curfile_info.suffix().toUpper()=="MTB") ||
+                  (curfile_info.suffix().toUpper()=="TNB") ||
+                  (curfile_info.suffix().toUpper()=="OBSEP") ||
+                  (curfile_info.suffix().toUpper()=="OIB") ||
+                  (curfile_info.suffix().toUpper()=="OIF") ||
+                  (curfile_info.suffix().toUpper()=="OME") ||
+                  (curfile_info.suffix().toUpper()=="TOP") ||
+                  (curfile_info.suffix().toUpper()=="PCX") ||
+                  (curfile_info.suffix().toUpper()=="PDS") ||
+                  (curfile_info.suffix().toUpper()=="2") ||
+                  (curfile_info.suffix().toUpper()=="3") ||
+                  (curfile_info.suffix().toUpper()=="4") ||
+                  (curfile_info.suffix().toUpper()=="PGM") ||
+                  (curfile_info.suffix().toUpper()=="PSD") ||
+                  (curfile_info.suffix().toUpper()=="PICT") ||
+                  (curfile_info.suffix().toUpper()=="PNG") ||
+                  (curfile_info.suffix().toUpper()=="CFG") ||
+                  (curfile_info.suffix().toUpper()=="AFM") ||
+                  (curfile_info.suffix().toUpper()=="MOV") ||
+                  (curfile_info.suffix().toUpper()=="SM2") ||
+                  (curfile_info.suffix().toUpper()=="SM3") ||
+                  (curfile_info.suffix().toUpper()=="XQD") ||
+                  (curfile_info.suffix().toUpper()=="XQF") ||
+                  (curfile_info.suffix().toUpper()=="CXD") ||
+                  (curfile_info.suffix().toUpper()=="SPI") ||
+                  (curfile_info.suffix().toUpper()=="STK") ||
+                  (curfile_info.suffix().toUpper()=="TGA") ||
+                  (curfile_info.suffix().toUpper()=="VWS") ||
+                  (curfile_info.suffix().toUpper()=="TFR") ||
+                  (curfile_info.suffix().toUpper()=="FFR") ||
+                  (curfile_info.suffix().toUpper()=="ZFR") ||
+                  (curfile_info.suffix().toUpper()=="ZFP") ||
+                  (curfile_info.suffix().toUpper()=="2FL") ||
+                  (curfile_info.suffix().toUpper()=="SLD") ||
+                  (curfile_info.suffix().toUpper()=="PR3") ||
+                  (curfile_info.suffix().toUpper()=="DAT") ||
+                  (curfile_info.suffix().toUpper()=="FDF") ||
+                  (curfile_info.suffix().toUpper()=="DTI") ||
+                  (curfile_info.suffix().toUpper()=="XYS") ||
+                  (curfile_info.suffix().toUpper()=="HTML") ||
+                  (curfile_info.suffix().toUpper()=="MVD2") ||
+                  (curfile_info.suffix().toUpper()=="ACFF") ||
+                  (curfile_info.suffix().toUpper()=="WAT") ||
+                  (curfile_info.suffix().toUpper()=="ZVI") ||
+                  (curfile_info.suffix().toUpper()=="CZI") ||
+                  (curfile_info.suffix().toUpper()=="LSM") ||
+                  (curfile_info.suffix().toUpper()=="MDB")
                   )
         {
             try
