@@ -64,10 +64,10 @@ void Renderer_gl1::loadObjectFromFile(const char* url)
 	else
 	    filename = QFileDialog::getOpenFileName(0, QObject::tr("Open File"),
 	    		"",
-	    		QObject::tr("Supported file (*.swc *.apo *.raw *.tif *.tiff *.v3ds *.obj *.marker *.csv)"
+                QObject::tr("Supported file (*.swc *.apo *.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff *.v3ds *.vaa3ds *.obj *.marker *.csv)"
 	    				";;Neuron structure	(*.swc)"
 	    				";;Point Cloud		(*.apo)"
-	    				";;Label field		(*.raw *.tif *.tiff)"
+                        ";;Label field		(*.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff)"
 	    				";;Label Surface	(*.vaa3ds *.v3ds *.obj)"
 						";;Landmarks		(*.marker *.csv)"
 	    				));
@@ -106,6 +106,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
 	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105, 081122
 	int type = 0;
 	try {
+        iDrawExternalParameter * ep = (iDrawExternalParameter*)_idep;
 		// if create labelfield
 		if (filename.endsWith(".tif", Qt::CaseInsensitive) ||
             filename.endsWith(".tiff", Qt::CaseInsensitive) ||
@@ -115,41 +116,50 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
             )
 		{
 			loadLabelfieldSurf(filename);
+            ep->labelfield_file = filename;
 		}
 		// if label surface obj
 		else if (filename.endsWith(".obj", Qt::CaseInsensitive))
 		{
 			type = stLabelSurface;
 			loadWavefrontOBJ(filename);
-		}
+            ep->surface_file = filename;
+        }
 		// if label surface v3ds --binary format obj
 		else if (filename.endsWith(".v3ds", Qt::CaseInsensitive) || filename.endsWith(".vaa3ds", Qt::CaseInsensitive) )
 		{
 			type = stLabelSurface;
 			loadV3DSurface(filename);
-		}
+            ep->surface_file = filename;
+        }
 		else if (filename.endsWith(".marker", Qt::CaseInsensitive) || filename.endsWith(".csv", Qt::CaseInsensitive))
 		{
 			type = stImageMarker;
-			loadLandmarks_from_file(filename);
+			loadLandmarks_from_file(filename);            
 		}
 		// if swc
 		else if (filename.endsWith(".swc", Qt::CaseInsensitive))
 		{
 			type = stNeuronStructure;
-			loadNeuronTree(filename);
-		}
+			loadNeuronTree(filename);            
+            if (!(ep->swc_file_list.contains(filename)))
+                ep->swc_file_list << filename;
+        }
 		// if eswc
 		else if (filename.endsWith(".eswc", Qt::CaseInsensitive)) //PHC, 20120217
 		{
 			type = stNeuronStructure;
 			loadNeuronTree(filename);
-		}
+            if (!(ep->swc_file_list.contains(filename)))
+                ep->swc_file_list << filename;
+        }
 		// if apo
 		else if (filename.endsWith(".apo", Qt::CaseInsensitive))
 		{
 			type = stPointCloud;
 			loadCellAPO(filename);
+            if (!(ep->pointcloud_file_list.contains(filename)))
+                ep->pointcloud_file_list << filename;
 		}
 	} CATCH_handler( "Renderer_gl1::loadObjectFilename" );
     updateBoundingBox(); ///// 081121, all of loaded bounding-box are updated here

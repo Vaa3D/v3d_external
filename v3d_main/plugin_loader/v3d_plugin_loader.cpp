@@ -1262,8 +1262,16 @@ DataLists_in_3dviewer V3d_PluginLoader::fetch_3dviewer_datafilelist(QString name
     DataLists_in_3dviewer s;
 
     V3dR_MainWindow * w = find3DViewerByName(name3dviewer);
-    if (!w || !(w->_idep))
+    if (!w)
+    {
+        v3d_msg(QString("Fail to find valid V3dR_MainWindow for the name [%1].").arg(name3dviewer));
         return s;
+    }
+    if (!(w->_idep))
+    {
+        v3d_msg(QString("The found V3dR_MainWindow for the name [%1] has a NULL pointer to the 3D data.").arg(name3dviewer));
+        return s;
+    }
 
     s.swc_file_list = w->_idep->swc_file_list;
     s.pointcloud_file_list = w->_idep->pointcloud_file_list;
