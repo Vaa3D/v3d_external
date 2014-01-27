@@ -43,14 +43,17 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
     outfilename = QDir::tempPath().append("/").append(baseName).append(".tif");
 
     //need to add platform independent code here
+    int res_syscall;
     if (!QFile(outfilename).exists())
     {
 #if defined(Q_OS_WIN)
-        system(qPrintable(QString("del /F \"%1\"").arg(outfilename)));
+        res_syscall = system(qPrintable(QString("del /F \"%1\"").arg(outfilename)));
 #else
-        system(qPrintable(QString("rm -f \"%1\"").arg(outfilename)));
+        res_syscall = system(qPrintable(QString("rm -f \"%1\"").arg(outfilename)));
 #endif
     }
+
+    v3d_msg(QString("The system call to the Bioformats returns a value [%1]").arg(res_syscall));
 
     //look for loci_tools.jar
     if (!QFile(lociLibPath).exists())
