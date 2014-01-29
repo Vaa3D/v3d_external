@@ -44,7 +44,7 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
 
     //need to add platform independent code here
     int res_syscall;
-    if (!QFile(outfilename).exists())
+    if (QFile(outfilename).exists())
     {
 #if defined(Q_OS_WIN)
         res_syscall = system(qPrintable(QString("del /F \"%1\"").arg(outfilename)));
@@ -91,7 +91,7 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
 
     if (!QFile(outfilename).exists())
     {
-        v3d_msg("The temprary converted file does not exist. The conversion of format using Bioformats has failed. Please use another way to convert and load using Vaa3D.\n");
+        v3d_msg("The temprary converted file does not exist. The conversion of format using Bioformats has failed. Please check you have Java properly installed and/or use another way to convert and load using Vaa3D.\n");
         outfilename = "";
         return false;
     }
