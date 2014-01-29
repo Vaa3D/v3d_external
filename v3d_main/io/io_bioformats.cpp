@@ -53,7 +53,9 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
 #endif
     }
 
-    v3d_msg(QString("The system call to the Bioformats returns a value [%1]").arg(res_syscall));
+    v3d_msg(QString("The system call to delete the existing temp file returns a value [%1]").arg(res_syscall), 0);
+    if (res_syscall<0)
+        return false;
 
     //look for loci_tools.jar
     if (!QFile(lociLibPath).exists())
@@ -82,7 +84,10 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
             arg(infilename.toStdString().c_str()).
             arg(outfilename.toStdString().c_str());
 
-    system(qPrintable(cmd_loci));
+    res_syscall = system(qPrintable(cmd_loci));
+    v3d_msg(QString("The system call to the Bioformats returns a value [%1]").arg(res_syscall), 0);
+    if (res_syscall<0)
+        return false;
 
     if (!QFile(outfilename).exists())
     {

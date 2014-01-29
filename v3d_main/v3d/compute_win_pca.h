@@ -74,7 +74,7 @@ template <class T> bool compute_cube_win3d_pca(T ***img3d, V3DLONG sx, V3DLONG s
 	double w;
 
 	//first get the center of mass
-	double xm=0,ym=0,zm=0, s=0;
+    double xm=0,ym=0,zm=0, s=0, mv=0;
 	for (k=zb;k<=ze;k++)
 	{
 		for (j=yb;j<=ye;j++)
@@ -89,9 +89,11 @@ template <class T> bool compute_cube_win3d_pca(T ***img3d, V3DLONG sx, V3DLONG s
 			}
 		}
 	}
+
 	if (s>0)
 	{
 		xm /= s; ym /=s; zm /=s;
+        mv = s/(double(ze-zb+1)*(ye-yb+1)*(xe-xb+1));
 		if (b_disp_CoM_etc)
 			printf("center of mass is (xm, ym, zm) = %5.3f, %5.3f, %5.3f\n",xm,ym,zm);
 	}
@@ -118,7 +120,9 @@ template <class T> bool compute_cube_win3d_pca(T ***img3d, V3DLONG sx, V3DLONG s
 				dfx = double(i)-xm;
 				if (b_normalize_score) dfx /= maxrr;
 
-				w = img3d[k][j][i];
+//                w = img3d[k][j][i]; //140128
+                w = img3d[k][j][i] - mv;  if (w<0) w=0; //140128 try the new formula
+
 				cc11 += w*dfx*dfx;
 				cc12 += w*dfx*dfy;
 				cc13 += w*dfx*dfz;
@@ -194,7 +198,7 @@ template <class T> bool compute_sphere_win3d_pca(T ***img3d, V3DLONG sx, V3DLONG
 	double x2, y2, z2;
 	double rx2 = double(rx+1)*(rx+1), ry2 = (double)(ry+1)*(ry+1), rz2 = (double)(rz+1)*(rz+1); //+1 because later need to do use it for radius cmp
 	double tmpd;
-	double xm=0,ym=0,zm=0, s=0;
+    double xm=0,ym=0,zm=0, s=0, mv=0, n=0;
 	for (k=zb;k<=ze;k++)
 	{
 		z2 = k-z0; z2*=z2;
@@ -216,12 +220,14 @@ template <class T> bool compute_sphere_win3d_pca(T ***img3d, V3DLONG sx, V3DLONG
 				ym += w*j;
 				zm += w*k;
 				s += w;
+                n = n+1;
 			}
 		}
 	}
 	if (s>0)
 	{
 		xm /= s; ym /=s; zm /=s;
+        mv = s/n;
 		if (b_disp_CoM_etc)
 			printf("center of mass is (xm, ym, zm) = %5.3f, %5.3f, %5.3f\n",xm,ym,zm);
 	}
@@ -261,8 +267,10 @@ template <class T> bool compute_sphere_win3d_pca(T ***img3d, V3DLONG sx, V3DLONG
 				dfx = double(i)-xm;
 				if (b_normalize_score) dfx /= maxrr;
 
-				w = img3d[k][j][i];
-				cc11 += w*dfx*dfx;
+                //                w = img3d[k][j][i]; //140128
+                                w = img3d[k][j][i] - mv;  if (w<0) w=0; //140128 try the new formula
+
+                cc11 += w*dfx*dfx;
 				cc12 += w*dfx*dfy;
 				cc13 += w*dfx*dfz;
 				cc22 += w*dfy*dfy;
