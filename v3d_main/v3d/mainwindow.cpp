@@ -1235,6 +1235,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 else
                 {
                     child->close();
+                    v3d_msg("fail to load the image using Bioformats. You may want to use a Vaa3D plugin or some other 3rd party programs to load this image, or convert the format and load into Vaa3D.");
                 }
 
                 if (b_sz) {delete []b_sz; b_sz=0;}

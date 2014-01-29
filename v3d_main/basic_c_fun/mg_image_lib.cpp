@@ -282,7 +282,7 @@ void Reset_Stack()
 /*********** TIFF INTERFACE ****************************/
 
 TIFF *Open_Tiff(const char *file_name, const char *mode)
-{ TIFF *tif;
+{ TIFF *tif=0;
 
   if (Warnings)
     { Warnings = 0;
@@ -503,11 +503,13 @@ void Parse_Stack_Name(char *file_name, char **prefix, int *num_width, int *first
 }
 
 Image *Read_Image(char *file_name)
-{ TIFF  *tif;
-  Image *img;
+{ TIFF  *tif = 0;
+  Image *img = 0;
   int    lastone;
 
   tif = Open_Tiff(file_name,"r");
+  if (!tif)
+      return 0;
 
   img = Read_Tiff(tif,&lastone);
 
@@ -523,6 +525,8 @@ Stack *Read_Stack(char *file_name)
   int    depth, width, height, kind;
 
   tif = Open_Tiff(file_name,"r");
+  if (!tif) return 0;
+
   depth = 1;
   while (TIFFReadDirectory(tif))
     depth += 1;
@@ -570,9 +574,9 @@ Stack *Read_Stack(char *file_name)
 
 Stack *Read_LSM_Stack(char *file_name)
 {
-  Stack *stack;
+  Stack *stack=0;
 
-  TIFF  *tif;
+  TIFF  *tif=0;
   int    depth, width, height, kind;
 
   tif = Open_Tiff(file_name,"r");
@@ -585,6 +589,7 @@ Stack *Read_LSM_Stack(char *file_name)
   depth = depth / 2;		/* half the dirs are thumbnails */
 
   tif = Open_Tiff(file_name,"r");
+  if (!tif) return 0;
   TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
   TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
 
@@ -628,11 +633,11 @@ Stack *Read_LSM_Stack(char *file_name)
 }
 
 Stack *Read_Stack_Planes(char *prefix, int num_width, int first_num)
-{ Stack *stack;
+{ Stack *stack=0;
 
   char  sname[1000];
   int   width, height, depth, kind;
-  TIFF *tif;
+  TIFF *tif=0;
 
   depth = 0;
   while (1)
@@ -648,6 +653,7 @@ Stack *Read_Stack_Planes(char *prefix, int num_width, int first_num)
 
   sprintf(sname,"%s%0*d.tif",prefix,num_width,first_num);
   tif = Open_Tiff(sname,"r");
+  if (!tif) return 0;
   TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
   TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
 
@@ -671,6 +677,7 @@ Stack *Read_Stack_Planes(char *prefix, int num_width, int first_num)
 
         sprintf(sname,"%s%0*d.tif",prefix,num_width,first_num+d);
         tif = Open_Tiff(sname,"r");
+        if (!tif) return 0;
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
         if (width != stack->width || height != stack->height)
@@ -686,18 +693,20 @@ Stack *Read_Stack_Planes(char *prefix, int num_width, int first_num)
 }
 
 void Write_Image(char *file_name, Image *a_image)
-{ TIFF *tif;
+{ TIFF *tif=0;
 
   tif = Open_Tiff(file_name,"w");
+  if (!tif) return;
   Write_Tiff(tif,a_image);
   TIFFClose(tif);
 }
 
 void Write_Stack(char *file_name, Stack *a_stack)
-{ TIFF *tif;
+{ TIFF *tif=0;
   int   i;
 
   tif = Open_Tiff(file_name,"w");
+  if (!tif) return;
   for (i = 0; i < a_stack->depth; i++)
     Write_Tiff(tif,Select_Plane(a_stack,i));
   TIFFClose(tif);

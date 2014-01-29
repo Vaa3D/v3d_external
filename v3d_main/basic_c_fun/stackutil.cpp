@@ -2461,6 +2461,7 @@ int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	depth = depth / 2;		/* half the dirs are thumbnails */
 
 	tif = Open_Tiff(filename,"r");
+    if (!tif) return 1;
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
 	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
 	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &colorchannels);
@@ -2571,6 +2572,7 @@ int loadLsmThumbnail2Stack(char * filename, unsigned char * & img, V3DLONG * & s
 	depth = depth / 2;		/* half the dirs are thumbnails */
 
 	tif = Open_Tiff(filename,"r");
+    if (!tif) return 1;
 
 	TIFFReadDirectory(tif); //get to the first thumbnail image
 //
@@ -2681,6 +2683,8 @@ int loadLsmThumbnail2Stack_middle(char * filename, unsigned char * & img, V3DLON
 	depth = depth / 2;		/* half the dirs are thumbnails */
 
 	tif = Open_Tiff(filename,"r");
+    if (!tif) return 1;
+
 	TIFFReadDirectory(tif); //bypass a big image and get to the first thumbnail image
 
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
@@ -2793,6 +2797,7 @@ int loadLsm2Stack_middle(char * filename, unsigned char * & img, V3DLONG * & sz,
 	depth = depth / 2;		/* half the dirs are thumbnails */
 
 	tif = Open_Tiff(filename,"r");
+    if (!tif) return 1;
 
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
 	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
@@ -2914,6 +2919,7 @@ int loadLsmSlice(char * filename, unsigned char * & img, V3DLONG * & sz, int & d
 	//printf("slice #=%d\n", sliceno);
 
 	tif = Open_Tiff(filename,"r");
+    if (!tif) return 1;
 
 	if (b_thumbnail)
 		TIFFReadDirectory(tif); //by pass one big image and get to the first thumbnail image
@@ -3063,6 +3069,7 @@ int loadTifSlice(char * filename, unsigned char * & img, V3DLONG * & sz, int & d
 	//printf("slice #=%d\n", sliceno);
 
 	tif = Open_Tiff(filename,"r");
+    if (!tif) return 1;
 
 	//if (b_thumbnail) TIFFReadDirectory(tif); //by pass one big image and get to the first thumbnail image
 
