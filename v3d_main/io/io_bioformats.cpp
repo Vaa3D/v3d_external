@@ -32,6 +32,8 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
 {
     QSettings setting("Vaa3D_tools", "bioformats");
     QString lociLibPath = setting.value("bioformats_binary_path").toByteArray();
+    QString tmpfilePath = setting.value("bioformats_tmpfile_path").toByteArray();
+    v3d_msg(QString("The last saved name of the tmp file is [%1]\n").arg(tmpfilePath),0);
 
     if(infilename.isEmpty())
     {
@@ -40,7 +42,46 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
     }
 
     QString baseName = QFileInfo(infilename).baseName();
-    outfilename = QDir::tempPath().append("/").append(baseName).append(".tif");
+
+    if (!QFile(tmpfilePath).exists())
+    {
+        tmpfilePath = QDir::tempPath().append("/").append("test1.tif");
+    }
+
+    //test if the tmp folder is useable
+    QFileInfo qtf(tmpfilePath);
+    QFile tf(tmpfilePath);
+    if (!(tf.open(QIODevice::ReadWrite))) //the test fail
+    {
+        v3d_msg(QString("The temporary folder [%1] for holding the intermediate file is not useable. "
+                        "Please specify a folder that you can read/write and have enough space for "
+                        "storing the intermediate file for using Bioformats library.\n").arg(qtf.dir().absolutePath()));
+        QString tmpfilePathFolder = QFileDialog::getExistingDirectory(0, "Open Directory",
+                                                              QDir::tempPath(),
+                                                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+        if(tmpfilePathFolder.isEmpty())
+        {
+            return false;
+        }
+
+        tmpfilePath = tmpfilePathFolder.append("/").append("test1.tif");
+        v3d_msg(QString("The name of the newly selected tmp file is [%1]\n").arg(tmpfilePath), 0);
+        QFileInfo qtf1(tmpfilePath);
+        QFile tf1(tmpfilePath);
+        if (!(tf1.open(QIODevice::ReadWrite))) //the test fail
+        {
+            v3d_msg(QString("The temporary folder [%1] is still not valid. Try to rerun and use a different folder.\n").arg(qtf1.dir().absolutePath()));
+            return false;
+        }
+    }
+
+    setting.setValue("bioformats_tmpfile_path", qPrintable(tmpfilePath));
+
+    //
+
+    outfilename = tmpfilePath;
+    v3d_msg(QString("The name of the currently used tmp file is [%1]\n").arg(outfilename), 0);
 
     //need to add platform independent code here
     int res_syscall;
@@ -55,9 +96,17 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
 
     v3d_msg(QString("The system call to delete the existing temp file returns a value [%1]").arg(res_syscall), 0);
     if (res_syscall<0)
+    {
+        v3d_msg(QString("Fail to delete the tmp file [%1].").arg(outfilename));
         return false;
+    }
 
     //look for loci_tools.jar
+    if (!QFile(lociLibPath).exists())
+    {
+        lociLibPath = getAppPath().append("/").append("loci_tools.jar");
+    }
+
     if (!QFile(lociLibPath).exists())
     {
         v3d_msg(QString("Bioformats Java library is not detected specified correctly at [%1], so please specify the Bioformats Java library location.\n").arg(lociLibPath));
