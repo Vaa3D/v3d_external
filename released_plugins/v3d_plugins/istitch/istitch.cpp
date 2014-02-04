@@ -12081,11 +12081,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 //        }
 
 
-        for(int i=0; i<NTILES; i++)
+        for(V3DLONG i=0; i<NTILES; i++)
         {
             V3DLONG cur = vim.tilesList[i].n;
             //
-            for(int j=0; j<vim.tilesList[i].preList.size(); j++)
+            for(V3DLONG j=0; j<vim.tilesList[i].preList.size(); j++)
             {
                 V3DLONG pre = vim.tilesList[i].preList[j];
 
@@ -12122,56 +12122,101 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         pTGFile = fopen(tg_filename.toStdString().c_str(),"wt");
 
         V3DLONG count_group = 1;
-        for(V3DLONG i=0; i<NTILES; i++)
-        {
-            if(visited[i])
-            {
-                continue;
-            }
+        vector<int> sg,rg;
+        for(V3DLONG i=0; i<NTILES; i++) rg.push_back(i);
 
+        for(V3DLONG i=0; i<rg.size(); i++)
+        {
             fprintf(pTGFile, "# tiled image group %ld \n", count_group);
 
-            visited[i] = count_group;
-            fprintf(pTGFile, "%s \n", vim.tilesList.at(i).fn_image.c_str());
+            sg.push_back(rg[i]);
+            fprintf(pTGFile, "%s \n", vim.tilesList.at(rg[i]).fn_image.c_str());
+            rg.erase( rg.begin() + i);
 
-            for(int j=i; j<NTILES; j++)
+            bool ccfound = true;
+            V3DLONG cur, pre;
+
+            while(ccfound)
             {
-                if(visited[j] && visited[j]!=count_group)
+                int sgsz = sg.size();
+                for(V3DLONG k=0; k<sg.size(); k++)
                 {
-                    continue;
-                }
-
-                for(int k=0; k<j; k++)
-                {
-                    if(udgraph[k][j] && (visited[j]==count_group || visited[k]==count_group))
+                    pre = sg[k];
+                    for(V3DLONG j=0; j<rg.size(); j++)
                     {
-                        if(visited[j]!=count_group)
-                            fprintf(pTGFile, "%s \n", vim.tilesList.at(j).fn_image.c_str());
-                        if(visited[k]!=count_group)
-                            fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
+                        cur = rg[j];
 
-                        visited[j] = count_group;
-                        visited[k] = count_group;
+                        if(pre<cur && udgraph[pre][cur])
+                        {
+                            fprintf(pTGFile, "%s \n", vim.tilesList.at(cur).fn_image.c_str());
+                            rg.erase( rg.begin() + j);
+                            sg.push_back(cur);
+                        }
+                        else if(pre>cur && udgraph[cur][pre])
+                        {
+                            fprintf(pTGFile, "%s \n", vim.tilesList.at(cur).fn_image.c_str());
+                            rg.erase( rg.begin() + j);
+                            sg.push_back(cur);
+                        }
                     }
                 }
-
-                for(int k=j+1; k<NTILES; k++)
-                {
-                    if(udgraph[j][k] && (visited[j]==count_group || visited[k]==count_group))
-                    {
-                        if(visited[j]!=count_group)
-                            fprintf(pTGFile, "%s \n", vim.tilesList.at(j).fn_image.c_str());
-                        if(visited[k]!=count_group)
-                            fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
-
-                        visited[j] = count_group;
-                        visited[k] = count_group;
-                    }
-                }
+                if(sg.size()<=sgsz) ccfound = false;
             }
             fprintf(pTGFile, "\n");
             count_group++;
+            sg.clear();
         }
+
+//        for(V3DLONG i=0; i<NTILES; i++)
+//        {
+//            if(visited[i])
+//            {
+//                continue;
+//            }
+
+//            fprintf(pTGFile, "# tiled image group %ld \n", count_group);
+
+//            visited[i] = count_group;
+//            fprintf(pTGFile, "%s \n", vim.tilesList.at(i).fn_image.c_str());
+
+//            for(int j=i; j<NTILES; j++)
+//            {
+//                if(visited[j] && visited[j]!=count_group)
+//                {
+//                    continue;
+//                }
+
+//                for(int k=0; k<j; k++)
+//                {
+//                    if(udgraph[k][j] && (visited[j]==count_group || visited[k]==count_group))
+//                    {
+//                        if(visited[j]!=count_group)
+//                            fprintf(pTGFile, "%s \n", vim.tilesList.at(j).fn_image.c_str());
+//                        if(visited[k]!=count_group)
+//                            fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
+
+//                        visited[j] = count_group;
+//                        visited[k] = count_group;
+//                    }
+//                }
+
+//                for(int k=j+1; k<NTILES; k++)
+//                {
+//                    if(udgraph[j][k] && (visited[j]==count_group || visited[k]==count_group))
+//                    {
+//                        if(visited[j]!=count_group)
+//                            fprintf(pTGFile, "%s \n", vim.tilesList.at(j).fn_image.c_str());
+//                        if(visited[k]!=count_group)
+//                            fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
+
+//                        visited[j] = count_group;
+//                        visited[k] = count_group;
+//                    }
+//                }
+//            }
+//            fprintf(pTGFile, "\n");
+//            count_group++;
+//        }
         fclose(pTGFile);
 
         // de-alloc
