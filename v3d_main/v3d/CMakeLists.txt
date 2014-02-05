@@ -34,6 +34,7 @@ set(V3D_SRCS
   # ../neuron_toolbox/vaa3d_neurontoolbox.cpp
   ../basic_c_fun/basic_4dimage_create.cpp
   ../neuron_annotator/analysis/AlignerUtils.cpp
+  ../io/io_bioformats.cpp
   v3d_actions.cpp)
 
 set(V3D_RCCS 
