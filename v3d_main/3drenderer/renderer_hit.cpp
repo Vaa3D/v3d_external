@@ -721,6 +721,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				break;
 		}
 	}
+#ifndef test_main_cpp    //140211
 	else if (act == actSaveSurfaceObj)
 	{
 		switch (names[1])
@@ -750,6 +751,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
+#endif
+
+#ifndef test_main_cpp    //140211
+
 	else if (act == actAddtoMarkerPool) //ZJL
 	{
 		if (w && curImg)
@@ -768,10 +773,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
+#endif
+
 	else if (act == actClearMarkerPool) //ZJL
 	{
 		listCurveMarkerPool.clear();
 	}
+
+#ifndef test_main_cpp    //140211
+
     else if (act==actMarkerZoomin3D_terafly) // by PHC, 20130417
     {
         if (w && curImg)
@@ -793,7 +803,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
     }
-
+#endif
     
 #ifndef test_main_cpp
 	else if (act == actLockSceneEditObjGeometry)
@@ -911,7 +921,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         total_etime = 0; //reset the timer
 	}
-	else if (act == actCurveFrom1Marker_fm) // 20120328 ZJL
+#ifndef test_main_cpp    //140211
+    else if (act == actCurveFrom1Marker_fm) // 20120328 ZJL
 	{
 		selectMode = smCurveFrom1Marker_fm;
 		b_addthiscurve = true;
@@ -930,7 +941,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	else if (act == actCurveCreateTest) // 20120124 ZJL
+#endif
+    else if (act == actCurveCreateTest) // 20120124 ZJL
 	{
 		selectMode = smCurveCreateTest;
 		b_addthiscurve = true;
@@ -1831,6 +1843,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				endSelectMode();
 		}
 	}
+
+#ifndef test_main_cpp    //140211
     //curve generation
 	else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
@@ -1922,7 +1936,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				solveCurveFromMarkersGD(true); // ture means using customized bounding box
 				endSelectMode();
 			}
-			else if(selectMode == smCurveCreateTest)
+            else if(selectMode == smCurveCreateTest)
 			{
 				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 				My4DImage* curImg = 0;
@@ -2368,6 +2382,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			//press Esc to endSelectMode();
 		}
 	} // end of curve refine ZJL 110905
+#endif
+
 	// for rubber drag the curve
 	else if (selectMode == smCurveRubberDrag)
 	{
@@ -2942,6 +2958,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		}
 	}
 	if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
+
 #ifndef test_main_cpp
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
 	N = loc_vec.size(); //100722 RZC
@@ -2998,12 +3015,12 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	if (b_use_seriespointclick==false)
 		smooth_curve(loc_vec, 5);
 
+#endif
+
     int etime1 = t1a.restart();
     v3d_msg(QString("** time to calculate 3d curve costs [%1] ms.").arg(etime1),0);
 
-
-#endif
-	if (b_addthiscurve)
+    if (b_addthiscurve)
 	{
 		addCurveSWC(loc_vec, chno);
 		// used to convert loc_vec to NeuronTree and save SWC in testing

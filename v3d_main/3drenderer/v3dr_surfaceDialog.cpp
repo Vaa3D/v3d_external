@@ -398,7 +398,7 @@ void V3dr_surfaceDialog::doMenuOfColor()
 	}
 	catch (...)
 	{
-        v3d_msg("Fail to run the V3dr_surfaceDialog::doMenuOfColor() function.");
+        v3d_msg("Fail to run the V3dr_surfaceDialog::doMenuOfColor() function.", 1);
 	}
 }
 
@@ -427,7 +427,7 @@ void V3dr_surfaceDialog::doMenuOfDisplayMode()
     }
     catch (...)
     {
-        v3d_msg("Fail to run the V3dr_surfaceDialog::doMenuOfDisplayMode() function.");
+        v3d_msg("Fail to run the V3dr_surfaceDialog::doMenuOfDisplayMode() function.", 1);
     }
 }
 
