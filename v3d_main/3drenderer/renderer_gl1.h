@@ -106,8 +106,6 @@ public:
 	virtual void blendTrack();       // called by paint()
      virtual void setRenderTextureLast(bool renderTextureLast);
 
-     virtual void _updateDragPoints(int x, int y); // For rubber editing. ZJL 110920
-
 // link to Rendering function
 //protected:
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
@@ -185,8 +183,12 @@ public:
 	virtual void togglePolygonMode() {polygonMode = (polygonMode +1) %4;} // FILL,LINE,POINT, transparent
 	virtual void toggleLineType();
 
-     virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+#ifndef test_main_cpp //140211
+    virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
      virtual void setDragWinSize(int csize); // set rubber drag win size, ZJL 110921
+     virtual void _updateDragPoints(int x, int y); // For rubber editing. ZJL 110920
+
+#endif
 
 	//virtual void updateVolShadingOption();
 
@@ -314,7 +316,9 @@ public:
 	void solveCurveFromMarkers();
 
     // beginning of ZJL
+#ifndef test_main_cpp //140211
      void solveCurveFromMarkersFastMarching(); //using fast marching method
+#endif
      void getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double &dist);
      void getRgnPropertyAt(XYZ &pos, LocationSimple &pt);
 
@@ -323,7 +327,10 @@ public:
      void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower);
      void blendRubberNeuron();
      void solveCurveRubberDrag();
+
+#ifndef test_main_cpp //140211
      void blendDraggedNeuron();
+#endif
 
      void adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize);
      //void resampleCurveStrokes(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
@@ -342,7 +349,9 @@ public:
 
      bool pickSeedpointFromExistingCurves(const MarkerPos &pos, XYZ &nearest_loc); //change to this name, by PHC, 20120330
 
+#ifndef test_main_cpp //140211
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
+#endif
      void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);
      double distance_between_2lines(NeuronTree &line1, NeuronTree &line2);
 
@@ -355,14 +364,18 @@ public:
 
      void solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      double solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
+
+#ifndef test_main_cpp //140211
      void solveCurveFromMarkersGD(bool b_customized_bb);
+     void deleteMultiNeuronsByStroke();
+#endif
+
      bool withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa); // check wether pa is within the line seg (p1,p1)
      XYZ getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ p1, XYZ p2,
 			double clipplane[4]=0,	//clipplane==0 means no clip plane
 			int chno=0,    			//must be a valid channel number
 			float *value=0			//if value!=0, output value at center
 			);
-     void deleteMultiNeuronsByStroke();
 
      // for curve testing
      void swcBoundingBox(NeuronTree &line, XYZ &minloc, XYZ &maxloc);

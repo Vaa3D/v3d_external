@@ -842,7 +842,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
         total_etime = 0; //reset the timer
 	}
-	else if (act == actCurveCreateMarkerGD)
+
+#ifndef test_main_cpp //140211
+    else if (act == actCurveCreateMarkerGD)
 	{
 		selectMode = smCurveCreateMarkerGD;
 		b_addthiscurve = true;
@@ -862,6 +864,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
+#endif
 	else if (act == actCurveCreate_pointclick_fm)
 	{
 		selectMode = smCurveCreate_pointclick_fm;
@@ -870,7 +873,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
-	else if (act == actCurveMarkerPool_fm) // using fastmarching to trace curve through a marker pool
+#ifndef test_main_cpp    //140211
+    else if (act == actCurveMarkerPool_fm) // using fastmarching to trace curve through a marker pool
 	{//ZJL
 		selectMode = smCurveMarkerPool_fm;
 		b_addthiscurve = true;
@@ -893,6 +897,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		listCurveMarkerPool.clear();
 		endSelectMode();
 	}
+#endif
 	else if (act == actCurveMarkerLists_fm) // 20120124 ZJL
 	{
 		selectMode = smCurveMarkerLists_fm;
@@ -1766,7 +1771,9 @@ void Renderer_gl1::endSelectMode()
 			solveCurveFromMarkers(); //////////
 		}
 	}
-	if (selectMode == smCurveCreate_pointclick_fm)
+
+#ifndef test_main_cpp    //140211
+    if (selectMode == smCurveCreate_pointclick_fm)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -1774,7 +1781,9 @@ void Renderer_gl1::endSelectMode()
 			solveCurveFromMarkersFastMarching(); //////////
 		}
 	}
-	cntCur3DCurveMarkers = 0;
+#endif
+
+    cntCur3DCurveMarkers = 0;
 	list_listCurvePos.clear();
 	listMarkerPos.clear();
 	b_ablation = false; //by Jianlong Zhou, 20120726
@@ -1834,10 +1843,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                {
 				solveCurveViews();
                }
+#ifndef test_main_cpp    //140211
                else if (selectMode == smDeleteMultiNeurons)
                {
                     deleteMultiNeuronsByStroke();
                }
+#endif
 			list_listCurvePos.clear();
 			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode
 				endSelectMode();
@@ -2385,6 +2396,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 #endif
 
 	// for rubber drag the curve
+#ifndef test_main_cpp //140211
+
 	else if (selectMode == smCurveRubberDrag)
 	{
 		_appendMarkerPos(x, y);
@@ -2401,6 +2414,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		DraggedNeurons.clear();
 		// press Esc to endSelectMode();
 	}
+#endif
+
 	this->sShowRubberBand = 0;
 	this->sShowTrack = 0;
 	return 0; //no 2d track to display
@@ -3020,6 +3035,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
     int etime1 = t1a.restart();
     v3d_msg(QString("** time to calculate 3d curve costs [%1] ms.").arg(etime1),0);
 
+#ifndef test_main_cpp //140211
     if (b_addthiscurve)
 	{
 		addCurveSWC(loc_vec, chno);
@@ -3044,6 +3060,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
                                1  //one means from non-wheel event
                                );
     }
+#endif
 
     v3d_msg(QString("** time to invoke subsquent operation 3d curve costs [%1] ms, to calculate curve costs [%2] ms.").arg(t1a.restart()).arg(etime1), 0);
 

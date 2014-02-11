@@ -539,7 +539,11 @@ void Renderer_gl1::paint()
           glPushMatrix();
           setMarkerSpace();
 	     //blendRubberNeuron();
+
+#ifndef test_main_cpp //140211
           blendDraggedNeuron();
+#endif
+
           glPopMatrix();
           endHighlight();
           disObjLighting();
