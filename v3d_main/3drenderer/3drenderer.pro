@@ -35,6 +35,8 @@ QT += opengl
 LIBS += -L../jba/c++ -lv3dnewmat
 macx:LIBS += -framework CoreServices #Snow leopard GLee_r.o requires CoreServices framework
 
+INCLUDEPATH += ../basic_c_fun/
+
 HEADERS += GLee_r.h \
     renderer.h \
     renderer_gl1.h \

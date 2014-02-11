@@ -103,7 +103,8 @@ void Renderer_gl1::loadObjectListFromFile()
 }
 void Renderer_gl1::loadObjectFilename(const QString& filename)
 {
-	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105, 081122
+#ifndef test_main_cpp
+    makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105, 081122
 	int type = 0;
 	try {
         iDrawExternalParameter * ep = (iDrawExternalParameter*)_idep;
@@ -167,6 +168,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
 	{
 		((V3dR_GLWidget*)widget)->surfaceSelectTab(type-1);
 	}
+#endif
 }
 void Renderer_gl1::saveSurfFile()
 {
@@ -198,7 +200,7 @@ void Renderer_gl1::saveSurfFile()
 		}
         else
         {
-            v3d_msg("You have supplied a file extension which is not offcially supported. This file name will be used, but to load it correctly into Vaa3D, you will need to change it to .vaa3ds or .v3ds extension(s).");
+            v3d_msg("You have supplied a file extension which is not offcially supported. This file name will be used, but to load it correctly into Vaa3D, you will need to change it to .vaa3ds or .v3ds extension(s).", 1);
             saveV3DSurface(filename);
         }
     } CATCH_handler( "Renderer_gl1::saveSurfFile" );
@@ -976,7 +978,8 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 		qDebug("---------------------add %d lines, %d remained lines", count, listNeuron.size());
 		NeuronTree SS;
 		SS.n = -1;
-		SS.color = RGBA8(255, 0,0,0);//random_rgba8(255);
+        RGBA8 tt; tt.r = 255;tt.g = 0;tt.b = 0;tt.a = 0;
+        SS.color = tt; //RGBA8(255, 0,0,0);//random_rgba8(255);
 		SS.on = true;
 		SS.listNeuron = listNeuron;
 		SS.hashNeuron = hashNeuron;

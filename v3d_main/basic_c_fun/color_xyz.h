@@ -93,11 +93,14 @@ struct RGB8 { union {
     c_array<unsigned char, 3> c;
 	// unsigned char c[3];
 };};
-struct RGBA8 { union {
-	struct { unsigned char r,g,b,a; };
-	c_array<unsigned char, 4> c;
-	unsigned int i;
-};};
+struct RGBA8 {
+    union
+    {
+        struct { unsigned char r,g,b,a; };
+        c_array<unsigned char, 4> c;
+        unsigned int i;
+    };
+};
 struct BGR8 { union { // Windows-DIB
 	struct { unsigned char b,g,r; };
 	c_array<unsigned char, 3> c;

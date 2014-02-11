@@ -59,6 +59,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_4dimage.h"
 #include "../basic_c_fun/basic_surf_objs.h"
 #include "../basic_c_fun/color_xyz.h"
+
+#include "../basic_c_fun/basic_landmark.h"
+#include "../neuron_editing/v_neuronswc.h"
+
 //#include "color_xyz.h" // RGB/RGBA/8/16i/32i/32f, XYZ/XYZW, BoundingBox
 
 

@@ -33,6 +33,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "barFigureDialog.h"
 #include <fstream>
 #include <sstream>
+
 #ifndef test_main_cpp
 #include "../v3d/v3d_compile_constraints.h"
 #include "../v3d/landmark_property_dialog.h"
@@ -43,8 +44,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
-#endif //test_main_cpp
+
 #include "v3d_application.h"
+
+#endif //test_main_cpp
+
+
 double total_etime; //added by PHC, 20120412, as a convenient way to know the total elipsed time for a lengthy operation
 //#define _IMAGING_MENU_
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
