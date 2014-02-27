@@ -46,10 +46,10 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
 
     QString baseName = QFileInfo(infilename).baseName();
 
-    if (!QFile(tmpfilePath).exists())
-    {
-        tmpfilePath = QDir::tempPath().append("/").append("test1.v3draw");
-    }
+//    if (!QFile(tmpfilePath).exists())
+//    {
+//        tmpfilePath = QDir::tempPath().append("/").append("test1.v3draw");
+//    }
 
     //test if the tmp folder is useable
     QFileInfo qtf(tmpfilePath);
