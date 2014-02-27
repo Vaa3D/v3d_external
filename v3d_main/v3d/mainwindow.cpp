@@ -1220,7 +1220,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                                 child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
                         }
                     }
-                    if (1 || global_setting.b_yaxis_up) //add 1 here so that thgis condition is always true. This is becasue it seems Bioformats has a different way to orient an image from vaa3d. So always flip. by PHC, 140128
+                    if (global_setting.b_yaxis_up)
+                        //add 1 here so that this condition is always true. This is becasue it seems Bioformats has a different way to orient an image from vaa3d. So always flip. by PHC, 140128
+                        //remove 1 now because I use v3draw as tmp file right now.
                     {
                         child->getImageData()->flip(axis_y);
                     }
