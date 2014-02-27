@@ -33,7 +33,10 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
     QSettings setting("Vaa3D_tools", "bioformats");
     QString lociLibPath = setting.value("bioformats_binary_path").toByteArray();
     QString tmpfilePath = setting.value("bioformats_tmpfile_path").toByteArray();
-    v3d_msg(QString("The last saved name of the tmp file is [%1]\n").arg(tmpfilePath),0);
+    if (!(tmpfilePath.endsWith("v3draw")))
+        tmpfilePath = ""; //reset the file name
+    v3d_msg(QString("The last saved name of the tmp file or the reset name is [%1]\n").arg(tmpfilePath),0);
+
 
     if(infilename.isEmpty())
     {
