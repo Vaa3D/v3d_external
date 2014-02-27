@@ -65,7 +65,8 @@ bool call_bioformats_io(QString infilename, QString & outfilename)
             return false;
         }
 
-        tmpfilePath = tmpfilePathFolder.append("/").append("test1.tif");
+        tmpfilePath = tmpfilePathFolder.append("/").append("test1.v3draw");
+//        tmpfilePath = tmpfilePathFolder.append("/").append("test1.tif");
         v3d_msg(QString("The name of the newly selected tmp file is [%1]\n").arg(tmpfilePath), 0);
         QFileInfo qtf1(tmpfilePath);
         QFile tf1(tmpfilePath);
