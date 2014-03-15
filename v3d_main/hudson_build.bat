@@ -24,7 +24,7 @@ if NOT "%BUILD_VAA3D_WINDOWS%"=="1" (
   exit 0
 )
 
-set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacsData\JaneliaWorkstationStaging\JaneliaWorkstation_linux_%BUILD_VERSION%\
+set LINUX_BUILD_LOC=\\dm11.janelia.priv\jacs\jacsShare\JaneliaWorkstationStaging\JaneliaWorkstation_linux_%BUILD_VERSION%\
 if NOT EXIST %LINUX_BUILD_LOC% (
   echo %LINUX_BUILD_LOC% does not exist.  Therefore, the windows build cannot be completed.
   exit 10
@@ -104,7 +104,7 @@ if NOT EXIST %GATHER_LOC%\InstallVaa3d*.exe (
 )
 
 :: Copy the build over to the standard place.
-set WIN_STAGING_LOC=\\dm11.janelia.priv\jacsData\JaneliaWorkstationStaging\JaneliaWorkstation_windows_%BUILD_VERSION%\
+set WIN_STAGING_LOC=\\dm11.janelia.priv\jacs\jacsShare\JaneliaWorkstationStaging\JaneliaWorkstation_windows_%BUILD_VERSION%\
 if NOT EXIST %WIN_STAGING_LOC% (
   mkdir %WIN_STAGING_LOC%
 )
