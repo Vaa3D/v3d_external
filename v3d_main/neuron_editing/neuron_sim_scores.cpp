@@ -68,12 +68,14 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 	double sum12, sum21;
 	V3DLONG nseg1, nseg2;
 	double sum12big, sum21big;
+    double maxdist12 = -1, maxdist21 = -1; //set as some big numbers
 	V3DLONG nseg1big, nseg2big;
-	sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2);
-	sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1);
+    sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12);
+    sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21);
 
 	qDebug() << "sum12="<<sum12 << "npoints1="<< nseg1 << "sum21="<< sum21 << "npoint2="<< nseg2;
 	qDebug() << "sum12big="<<sum12big << "npoints1big="<< nseg1big << "sum21big="<< sum21big << "npoint2big="<< nseg2big;
+    qDebug() << "maxdist12="<<maxdist12 << "maxdist21="<< maxdist21;
 
 	ss.dist_allnodes = (sum12/nseg1 + sum21/nseg2)/2.0;
 	if (nseg1big>0)
@@ -92,10 +94,15 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 	}
 	ss.percent_apartnodes = (double(nseg1big)/nseg1 + double(nseg2big)/nseg2)/2.0;
 
+    ss.dist_max = (maxdist12<maxdist21) ? maxdist12 : maxdist21; //this max distance should refelect the meaningful measure.
+                                                                 // Becasue the two neurons (tracts) can have different starting and ending locations,
+                                                                 // the bigger one of  maxdist12 and maxdist21 could simply reflect the big difference of
+                                                                 // of the starting locations of the two tracts. Thus I use the smaller one, which
+                                                                // should correspond better to the max distance at the truck part of two tracts. PHC 20140318.
 	return ss;
 }
 
-double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big, const NeuronTree *p1, const NeuronTree *p2)
+double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big, const NeuronTree *p1, const NeuronTree *p2, double & maxdist)
 {
 	if (!p1 || !p2) return -1;
 	V3DLONG p1sz = p1->listNeuron.size(), p2sz = p2->listNeuron.size();
@@ -141,10 +148,19 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 			sum1 += cur_d;
 			nseg1++;
 
+            if (maxdist<0) //use <0 as a condition to check if maxdist has been set
+                maxdist = cur_d;
+            else
+            {
+                if (maxdist<cur_d)
+                    maxdist = cur_d;
+            }
+
             if (cur_d>=d_thres)
 			{
 				sum1big += cur_d;
 				nseg1big++;
+                qDebug() << "(" << cur_d << ", " << nseg1big << ")";
 			}
 
 		}

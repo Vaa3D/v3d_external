@@ -1684,8 +1684,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				NeuronDistSimple tmp_score = neuron_score_rounding_nearest_neighbor(&(listNeuronTree.at(names[2]-1)), &(listNeuronTree.at(ci)));
 				ts2.setNum(tmp_score.dist_allnodes); ts2.prepend(" are <br> entire-structure-average = "); tmpstr += ts2 + "<br>";
 				ts2.setNum(tmp_score.dist_apartnodes); ts2.prepend(" different-structure-average = "); tmpstr += ts2 + "<br>";
-				ts2.setNum(tmp_score.percent_apartnodes); ts2.prepend(" percent of different-structure = "); tmpstr += ts2 + "<br><br>";
-				qDebug() << "score between "<<names[2]<< " and "<<ci+1<< "=" << tmp_score.dist_allnodes << " " << tmp_score.dist_apartnodes << " " << tmp_score.percent_apartnodes;
+                ts2.setNum(tmp_score.percent_apartnodes); ts2.prepend(" percent of different-structure = "); tmpstr += ts2 + "<br>";
+                ts2.setNum(tmp_score.dist_max); ts2.prepend(" max distance of neurons' nodes = "); tmpstr += ts2 + "<br><br>";
+                qDebug() << "score between "<<names[2]
+                         << " and "<<ci+1<< "="
+                         << tmp_score.dist_allnodes << " "
+                         << tmp_score.dist_apartnodes << " "
+                         << tmp_score.percent_apartnodes << " "
+                         << tmp_score.dist_max;
 				ave_sd += tmp_score.dist_allnodes;
 				ave_ssd += tmp_score.dist_apartnodes;
 				ave_ssd_percent += tmp_score.percent_apartnodes;
