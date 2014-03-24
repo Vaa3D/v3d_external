@@ -366,8 +366,11 @@ LIBS += -L../jba/c++
 unix:LIBS += -L../common_lib/lib
 unix:LIBS += -lm -lv3dtiff
 unix:LIBS += -lv3dnewmat
-unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
+#unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
 unix:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
+
+#added 20140324 to cope with centos 64bit GL library issue. by HP
+#unix:LIBS += -L/usr/lib64 -lGL
     
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff -lv3dnewmat
