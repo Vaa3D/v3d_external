@@ -106,7 +106,7 @@ if(USE_FFMPEG)
     include(ExternalProject)
     ExternalProject_Add(
         Yasm-1-2-0
-        URL http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
+        URL https://github.com/yasm/yasm/archive/v1.2.0.tar.gz
         URL_MD5 4cfc0686cf5350dd1305c4d905eb55a6
         SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/src
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/install
