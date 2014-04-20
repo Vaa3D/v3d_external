@@ -246,31 +246,36 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         int FARST = 1;
 
         //clock_t t1=clock(); // start time
-        long tol_sz = sz0 * sz1 * sz2;
-        long sz01 = sz0 * sz1;
+        V3DLONG tol_sz = sz0 * sz1 * sz2;
+        V3DLONG sz01 = sz0 * sz1;
+
+        if (tol_sz<=0) {cout << "wrong size info in fastmarching_linker"<< endl; return false;}
+
         //int cnn_type = 2;  // ?
         cout<<"cnn_type = "<<cnn_type<<endl;
         cout<<"fastmarching_linker";
 
-        float * phi = new float[tol_sz]; for(long i = 0; i < tol_sz; i++){phi[i] = INF;}
-        map<long, MyMarker> sub_map, tar_map;
-        for(long i = 0; i < tar_markers.size(); i++)
+        V3DLONG i;
+        float * phi = new float[tol_sz];
+        for(i = 0; i < tol_sz; i++){phi[i] = INF;}
+        map<V3DLONG, MyMarker> sub_map, tar_map;
+        for(i = 0; i < tar_markers.size(); i++)
         {
-                int x = tar_markers[i].x + 0.5;
-                int y = tar_markers[i].y + 0.5;
-                int z = tar_markers[i].z + 0.5;
-                long ind = z*sz01 + y*sz0 + x;
+                V3DLONG x = tar_markers[i].x + 0.5;
+                V3DLONG y = tar_markers[i].y + 0.5;
+                V3DLONG z = tar_markers[i].z + 0.5;
+                V3DLONG ind = z*sz01 + y*sz0 + x;
                 //assert(x >= 0 && x <=sz0-1 && y >= 0 && y <=sz1-1 && z >= 0 && z <=sz2-1); //Hang indicated that this is the problem why there would be crashing, 120405.
                 if (x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2)
                     tar_map[ind] = tar_markers[i];
         }
 
-        for(long i = 0; i < sub_markers.size(); i++)
+        for(i = 0; i < sub_markers.size(); i++)
         {
-                int x = sub_markers[i].x + 0.5;
-                int y = sub_markers[i].y + 0.5;
-                int z = sub_markers[i].z + 0.5;
-                long ind = z*sz01 + y*sz0 + x;
+                V3DLONG x = sub_markers[i].x + 0.5;
+                V3DLONG y = sub_markers[i].y + 0.5;
+                V3DLONG z = sub_markers[i].z + 0.5;
+                V3DLONG ind = z*sz01 + y*sz0 + x;
                 //assert(x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2);
                 if (x >= 0 && x <= sz0-1 && y >= 0 && y <= sz1-1 && z >= 0 && z <= sz2-1)
                     sub_map[ind] = sub_markers[i];
@@ -279,7 +284,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         // GI parameter min_int, max_int, li
         double max_int = 0; // maximum intensity, used in GI
         double min_int = INF;
-        for(long i = 0; i < tol_sz; i++)
+        for(i = 0; i < tol_sz; i++)
         {
                 if(inimg1d[i] > max_int) max_int = inimg1d[i];
                 if(inimg1d[i] < min_int) min_int = inimg1d[i];
@@ -289,28 +294,28 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
 
         // initialization
         char * state = new char[tol_sz];
-        for(long i = 0; i < tol_sz; i++) state[i] = FARST;
+        for(i = 0; i < tol_sz; i++) state[i] = FARST;
 
-        vector<long> submarker_inds;
-        for(long s = 0; s < sub_markers.size(); s++) {
-                int i = sub_markers[s].x + 0.5;
-                int j = sub_markers[s].y + 0.5;
-                int k = sub_markers[s].z + 0.5;
-                long ind = k*sz01 + j*sz0 + i;
+        vector<V3DLONG> submarker_inds;
+        for(V3DLONG s = 0; s < sub_markers.size(); s++) {
+                V3DLONG ii = (V3DLONG)(sub_markers[s].x + 0.5);
+                V3DLONG jj = (V3DLONG)(sub_markers[s].y + 0.5);
+                V3DLONG kk = (V3DLONG)(sub_markers[s].z + 0.5);
+                V3DLONG ind = kk*sz01 + jj*sz0 + ii;
                 submarker_inds.push_back(ind);
                 state[ind] = ALIVE;
                 phi[ind] = 0.0;
         }
         cout << "totalsize=" << tol_sz <<endl;
-        int * parent = new int[tol_sz]; for(int ind = 0; ind < tol_sz; ind++) parent[ind] = ind;
+        V3DLONG * parent = new V3DLONG[tol_sz]; for(V3DLONG ind = 0; ind < tol_sz; ind++) parent[ind] = ind;
 
         BasicHeap<HeapElemX> heap;
-        map<long, HeapElemX*> elems;
+        map<V3DLONG, HeapElemX*> elems;
 
         // init heap
-        for(long s = 0; s < submarker_inds.size(); s++)
+        for(V3DLONG s = 0; s < submarker_inds.size(); s++)
         {
-                long index = submarker_inds[s];
+                V3DLONG index = submarker_inds[s];
                 HeapElemX *elem = new HeapElemX(index, phi[index]);
                 elem->prev_ind = index;
                 heap.insert(elem);
@@ -319,7 +324,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         // loop
         int time_counter = sub_markers.size();
         double process1 = time_counter*1000.0/tol_sz;
-        long stop_ind = -1;
+        V3DLONG stop_ind = -1;
         cout << "now prepare test heap";
         while(!heap.empty())
         {
@@ -334,39 +339,39 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                 HeapElemX* min_elem = heap.delete_min();
                 elems.erase(min_elem->img_ind);
 
-                long min_ind = min_elem->img_ind;
+                V3DLONG min_ind = min_elem->img_ind;
                 parent[min_ind] = min_elem->prev_ind;
                 if(tar_map.find(min_ind) != tar_map.end()){stop_ind = min_ind; break;}
 
                 delete min_elem;
 
                 state[min_ind] = ALIVE;
-                int i = min_ind % sz0;
-                int j = (min_ind/sz0) % sz1;
-                int k = (min_ind/sz01) % sz2;
-                int w, h, d;
+                V3DLONG i = min_ind % sz0;
+                V3DLONG j = (min_ind/sz0) % sz1;
+                V3DLONG k = (min_ind/sz01) % sz2;
+                V3DLONG w, h, d;
 
-                for(int kk = -1; kk <= 1; kk++)
+                for(V3DLONG kk = -1; kk <= 1; kk++)
                 {
                         d = k+kk;
                         if(d < 0 || d >= sz2) continue;
-                        for(int jj = -1; jj <= 1; jj++)
+                        for(V3DLONG jj = -1; jj <= 1; jj++)
                         {
                                 h = j+jj;
                                 if(h < 0 || h >= sz1) continue;
-                                for(int ii = -1; ii <= 1; ii++)
+                                for(V3DLONG ii = -1; ii <= 1; ii++)
                                 {
                                         w = i+ii;
                                         if(w < 0 || w >= sz0) continue;
-                                        int offset = ABS(ii) + ABS(jj) + ABS(kk);
+                                        V3DLONG offset = ABS(ii) + ABS(jj) + ABS(kk);
                                         if(offset == 0 || offset > cnn_type) continue;
                                         double factor = (offset == 1) ? 1.0 : ((offset == 2) ? 1.414214 : ((offset == 3) ? 1.732051 : 0.0));
-                                        long index = d*sz01 + h*sz0 + w;
+                                        V3DLONG index = d*sz01 + h*sz0 + w;
 
                                         if(state[index] != ALIVE)
                                         {
                                                 double new_dist = phi[min_ind] + (GI(index) + GI(min_ind))*factor*0.5;
-                                                long prev_ind = min_ind;
+                                                V3DLONG prev_ind = min_ind;
 
                                                 if(state[index] == FARST)
                                                 {
@@ -400,7 +405,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         // connect markers according to disjoint set
         {
                 // add tar_marker
-                long ind = stop_ind;
+                V3DLONG ind = stop_ind;
                 MyMarker tar_marker = tar_map[stop_ind];
                 MyMarker * new_marker = new MyMarker(tar_marker.x, tar_marker.y, tar_marker.z);
                 //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
@@ -412,9 +417,9 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                 ind = parent[ind];
                 while(sub_map.find(ind) == sub_map.end())
                 {
-                        int i = ind % sz0;
-                        int j = ind/sz0 % sz1;
-                        int k = ind/sz01 % sz2;
+                        V3DLONG i = ind % sz0;
+                        V3DLONG j = ind/sz0 % sz1;
+                        V3DLONG k = ind/sz01 % sz2;
                         new_marker = new MyMarker(i,j,k);
                         new_marker->parent = par_marker;
                         //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
@@ -1230,10 +1235,10 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	MyMarker nm1, nm2, fm1, fm2;
 	nm2 = near_markers[0];
 	fm2 = far_markers[0];
-	long sz01 = sz0 * sz1;
+    V3DLONG sz01 = (V3DLONG)sz0 * sz1;
 
 	vector<MyMarker> all_mask;
-	for(int m = 1; m < near_markers.size(); m++)
+    for(V3DLONG m = 1; m < near_markers.size(); m++)
 	{
 		nm1 = nm2; fm1 = fm2;
 		nm2 = near_markers[m]; fm2 = far_markers[m];
@@ -1333,19 +1338,19 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		o.y = rect[0].y - margin * a[1] - margin * b[1] - margin * c[1];
 		o.z = rect[0].z - margin * a[2] - margin * b[2] - margin * c[2];
 
-		long bsz0 = dist(rect[0], rect[3]) + 1 + 2 * margin + 0.5;
-		long bsz1 = dist(rect[0], rect[1]) + 1 + 2 * margin + 0.5;
-		long bsz2 = 1 + 2 * margin + 0.5;
-		long bsz01 = bsz0 * bsz1;
-		for(long k = 0; k < bsz2; k++)
+        V3DLONG bsz0 = dist(rect[0], rect[3]) + 1 + 2 * margin + 0.5;
+        V3DLONG bsz1 = dist(rect[0], rect[1]) + 1 + 2 * margin + 0.5;
+        V3DLONG bsz2 = 1 + 2 * margin + 0.5;
+        V3DLONG bsz01 = bsz0 * bsz1;
+        for(V3DLONG k = 0; k < bsz2; k++)
 		{
-			for(long j = 0; j < bsz1; j++)
+            for(V3DLONG j = 0; j < bsz1; j++)
 			{
-				for(long i = 0; i < bsz0; i++)
+                for(V3DLONG i = 0; i < bsz0; i++)
 				{
-					long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
-					long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
-					long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
+                    V3DLONG ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
+                    V3DLONG jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
+                    V3DLONG kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
 					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
 					{
 						all_mask.push_back(MyMarker(ii,jj,kk));
@@ -1355,8 +1360,8 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		}
 	}
 	// prepare boundingbox
-	long mx = MAX_INT, my = MAX_INT, mz = MAX_INT;
-	long Mx = 0, My = 0, Mz = 0;
+    V3DLONG mx = MAX_INT, my = MAX_INT, mz = MAX_INT;
+    V3DLONG Mx = 0, My = 0, Mz = 0;
 	for(vector<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
 	{
 		MyMarker marker = *it;
@@ -1368,11 +1373,11 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		Mz = MAX(Mz, marker.z);
 	}
 
-	long msz0 = Mx - mx + 1;
-	long msz1 = My - my + 1;
-	long msz2 = Mz - mz + 1;
-	long msz01 = msz0 * msz1;
-	long mtol_sz = msz2 * msz01;
+    V3DLONG msz0 = Mx - mx + 1;
+    V3DLONG msz1 = My - my + 1;
+    V3DLONG msz2 = Mz - mz + 1;
+    V3DLONG msz01 = msz0 * msz1;
+    V3DLONG mtol_sz = msz2 * msz01;
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
 	for(vector<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
 	{
@@ -1392,7 +1397,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	GET_LINE_MARKERS(nm1, fm1, sub_markers);
 	GET_LINE_MARKERS(nm2, fm2, tar_markers);
 	fastmarching_linker(sub_markers, tar_markers, mskimg1d, outswc, msz0, msz1, msz2, cnn_type);
-	for(int i = 0; i < outswc.size(); i++)
+    for(V3DLONG i = 0; i < outswc.size(); i++)
 	{
 		outswc[i]->x += mx;
 		outswc[i]->y += my;
