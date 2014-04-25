@@ -64,6 +64,7 @@ public:
     bool isCanceled() const {return bIsCanceled;}
 
 protected:
+    V3DLONG compressPBD3(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
     V3DLONG compressPBD8(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
     V3DLONG compressPBD16(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
     void updateCompressionBuffer8(unsigned char * updatedCompressionBuffer);
@@ -73,6 +74,14 @@ protected:
         // avoid stack overflow from infinite virtual recursion by specifying this class method
         return ImageLoaderBasic::exitWithError(std::string(errorMessage));
     }
+
+    V3DLONG pbd3FindRepeatCountFromCurrentPosition(unsigned char* sourceBuffer, V3DLONG position, V3DLONG maxPosition);
+    unsigned char pbd3EncodeShortRepeat(unsigned char sourceValue, V3DLONG count);
+    void pbd3EncodeLongRepeat(unsigned char sourceValue, V3DLONG count, unsigned char* returnBuffer);
+    V3DLONG pbd3FindDiffCountFromCurrentPosition(unsigned char* sourceBuffer, V3DLONG position, V3DLONG maxPosition);
+    void pbd3FindFirstRepeatOfMinLength(unsigned char* sourceBuffer, V3DLONG position, V3DLONG searchLength, V3DLONG minLength, V3DLONG* returnBuffer);
+    unsigned char* pbd3EncodeDiff(unsigned char* sourceBuffer, V3DLONG position, V3DLONG length, int* byteCount);
+    void pbd3FlushLiteral(unsigned char* compressionBuffer, unsigned char* sourceBuffer, V3DLONG* activeLiteralIndex, V3DLONG* p, V3DLONG i);
 
     volatile bool bIsCanceled;
     FILE * fid;

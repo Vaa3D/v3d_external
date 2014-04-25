@@ -21,6 +21,7 @@ const int ImageLoader::MODE_CONVERT=2;
 const int ImageLoader::MODE_CONVERT8=3;
 const int ImageLoader::MODE_MIP=4;
 const int ImageLoader::MODE_MAP_CHANNELS=5;
+const int ImageLoader::MODE_CONVERT3=6;
 
 ImageLoader::ImageLoader()
     : progressIndex(0)
@@ -71,6 +72,21 @@ int ImageLoader::processArgs(vector<char*> *argList) {
             } while(!done && i<(argList->size()-1));
         } else if (arg=="-convert8") {
             mode=MODE_CONVERT8;
+            bool haveInput=false;
+            do {
+                QString possibleFile=(*argList)[++i];
+                if (!possibleFile.startsWith("-") && !haveInput) {
+                    inputFilepath=possibleFile;
+                    haveInput=true;
+                } else if (!possibleFile.startsWith("-") && haveInput) {
+                    targetFilepath=possibleFile;
+                } else {
+                    done=true;
+                    i--; // rewind
+                }
+            } while(!done && i<(argList->size()-1));
+        } else if (arg=="-convert3") {
+            mode=MODE_CONVERT3;
             bool haveInput=false;
             do {
                 QString possibleFile=(*argList)[++i];
@@ -145,7 +161,7 @@ bool ImageLoader::execute() {
             return true;
         }
         return false;
-    } else if (mode==MODE_CONVERT || mode==MODE_CONVERT8) {
+    } else if (mode==MODE_CONVERT || mode==MODE_CONVERT8 || mode==MODE_CONVERT3) {
         if (inputFilepath.compare(targetFilepath)==0) {
             qDebug() << "ImageLoader::execute() - can not convert a file to itself";
             return false;
@@ -363,15 +379,34 @@ unsigned char * ImageLoader::convertType2Type1(My4DImage *image) {
     if (data==0) {
         return data;
     }
+
+    unsigned int divisor=16;
     for (V3DLONG s3=0;s3<sz[3];s3++) {
         for (V3DLONG s2=0;s2<sz[2];s2++) {
             for (V3DLONG s1=0;s1<sz[1];s1++) {
                 for (V3DLONG s0=0;s0<sz[0];s0++) {
-                    unsigned int v = (*proxy.at_uint16(s0,s1,s2,s3)) / 16;
-                    if (v>255) {
-                        v=255;
+		  unsigned int v = (*proxy.at_uint16(s0,s1,s2,s3));
+		  if (v>4095) {
+		    // True 16-bit
+		    divisor=256;
+		    break;
+		  }
+		}
+            }
+        }
+    }
+
+
+    for (V3DLONG s3=0;s3<sz[3];s3++) {
+        for (V3DLONG s2=0;s2<sz[2];s2++) {
+            for (V3DLONG s1=0;s1<sz[1];s1++) {
+                for (V3DLONG s0=0;s0<sz[0];s0++) {
+		  unsigned int v = (*proxy.at_uint16(s0,s1,s2,s3));
+		  unsigned int v8 = v/divisor;
+                    if (v8>255) {
+                        v8=255;
                     }
-                    data[s3*sz[2]*sz[1]*sz[0] + s2*sz[1]*sz[0] + s1*sz[0] + s0] = v;
+                    data[s3*sz[2]*sz[1]*sz[0] + s2*sz[1]*sz[0] + s1*sz[0] + s0] = v8;
                 }
             }
         }
@@ -469,11 +504,19 @@ My4DImage* ImageLoader::loadImage(const char* filepath) {
     return image;
 }
 
-bool ImageLoader::saveImage(My4DImage * stackp, const char* filepath, bool saveTo8bit)
+bool ImageLoader::saveImage(My4DImage * stackp, const char* filepath, bool saveTo8bit) {
+  if (saveTo8bit) {
+    return saveImage(stackp, filepath, MODE_CONVERT8);
+  } else {
+    return saveImage(stackp, filepath, MODE_CONVERT);
+  }
+}
+
+bool ImageLoader::saveImage(My4DImage * stackp, const char* filepath, int saveMode)
 {
     qDebug() << "Saving to file " << filepath;
     QString extension = QFileInfo(QString(filepath)).suffix().toLower();
-    if (saveTo8bit) {
+    if (saveMode==MODE_CONVERT8 || saveMode==MODE_CONVERT3) {
         convertType2Type1InPlace(stackp);
     }
     if (hasPbdExtension(filepath)) {
@@ -484,7 +527,12 @@ bool ImageLoader::saveImage(My4DImage * stackp, const char* filepath, bool saveT
         sz[3] = stackp->getCDim();
         unsigned char* data = 0;
         data = stackp->getRawData();
-        saveStack2RawPBD(filepath, stackp->getDatatype(), data, sz);
+	if (saveMode==MODE_CONVERT3) {
+	  // using V3D_UNKNOWN as a signal to do 3-bit PBD compression, since we are also assuming the stack has been converted to 8-bit in this case
+	  saveStack2RawPBD(filepath, V3D_UNKNOWN, data, sz); 
+	} else {
+	  saveStack2RawPBD(filepath, stackp->getDatatype(), data, sz);
+	}
     }
 #ifdef USE_FFMPEG
     else if (extension == "mp4") {

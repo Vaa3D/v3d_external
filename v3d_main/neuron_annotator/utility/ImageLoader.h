@@ -25,6 +25,7 @@ public:
     static const int MODE_CONVERT8;
     static const int MODE_MIP;
     static const int MODE_MAP_CHANNELS;
+    static const int MODE_CONVERT3;
 
     static string getCommandLineDescription() {
         return "image-loader";
@@ -37,6 +38,7 @@ public:
         usage.append("   -loadtest <filepath>                                                                                 \n");
         usage.append("   -convert  <source file>    <target file>                                                             \n");
         usage.append("   -convert8 <source file>    <target file>                                                             \n");
+	usage.append("   -convert3 <source file>    <target file>                                                             \n");
         usage.append("   -mip <stack input filepath>  <2D mip tif output filepath> [-flipy]                                   \n");
         usage.append("   -mapchannels <sourcestack> <targetstack> <csv map string, eg, \"0,1,2,0\" maps s0 to t1 and s2 to t0>\n");
         return usage;
@@ -101,6 +103,8 @@ protected:
         emit progressAborted(progressIndex);
         return berror;
     }
+
+    bool saveImage(My4DImage *stackp, const char* filepath, int saveMode);
 
 private:
     int mode;
