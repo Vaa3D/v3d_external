@@ -16,6 +16,8 @@ using std::endl;
 using std::string;
 using std::stringstream;
 
+static bool DEBUG = false;
+
 static const unsigned char oooooool = 1;
 static const unsigned char oooooolo = 2;
 static const unsigned char ooooooll = 3;
@@ -34,7 +36,10 @@ static const V3DLONG   PBD_3_MAX_REPEAT_LENGTH=33279;
 static const double    PBD_3_LITERAL_MAXEFF = 2.66;
 static const double    PBD_3_DIFF_MAXEFF = 5.2;
 static const V3DLONG   PBD_3_DIFF_REPEAT_THRESHOLD = 14;
-static const V3DLONG   PBD_3_MAX_DIFF_LENGTH = 52;
+static const V3DLONG   PBD_3_MAX_DIFF_LENGTH = 266;
+static const int       PBD_3_REPEAT_STARTING_POSITION = 0;
+static const int       PBD_3_REPEAT_COUNT = 1;
+static const V3DLONG   PBD_3_MAX_LITERAL = 24;
 
 
 ImageLoaderBasic::ImageLoaderBasic()
@@ -182,7 +187,7 @@ Specifies the 8-bit value to use as the upper bound.
 
 A - Literal) 0 to 23 : Implies the following n+1 3-bit positions are literal, requiring ceil((n+1)*3/8) following bytes. The maximum literal efficiency is 2.66 positions/byte.
 
-B - DifferencePositive) 24 to 74 : Implies the prior 3-bit value is to be followed by (n-22) difference-encoded doublet positions, for a maximum 74-22=52 (10 bytes), 3-bit-encoded accumulative two-step changes, to be interpreted as:
+B - Difference) 24 to 125 : Implies the prior 3-bit value is to be followed by (n-22) difference-encoded doublet positions, for a maximum 125-22 = 133 3-bit-encoded accumulative two-step changes, to be interpreted as:
 
 000 =  0,  0
 001 =  0, -1
@@ -193,16 +198,14 @@ B - DifferencePositive) 24 to 74 : Implies the prior 3-bit value is to be follow
 110 =  1, -1
 111 =  1,  1
 
-The maximum difference-encoding efficiency is 52/10 = 5.2 positions/byte.
+The maximum difference-encoding efficiency is (133*2)/51 = 5.2 positions/byte. NOTE: a sequence of { -1, -1 } can occur, as long as it is split by a 3-bit encoding boundary. 
 
-C - DifferenceNegative) 75 to 125 : Same as (24 to 74), the difference being that the specified 3-bit difference sequence is to be followed by { -1, -1 }. This again permits a maximum of 2 to 52 positions, but implies the additional {-1, -1}.
-
-D - Short Repeat) 126 to 255 : The following byte should be divided into two sections, the first 3-bits, and then the following 5-bits.
+C - Short Repeat) 126 to 255 : The following byte should be divided into two sections, the first 3-bits, and then the following 5-bits.
 
 The maximum value of the 5-bit section (31) is reserved as a signal for long-term repeat (see below).
 The first 3-bit value should be repeated ((n-125) + (5 bit value)) times, for a maximum repeat of (130+30)=160
 
-E - Long Repeat) If the 5-bit section is set at max (31), this means we are going to use an additional byte to encode an offset, such that the total encoding uses 3 bytes:
+D - Long Repeat) If the 5-bit section is set at max (31), this means we are going to use an additional byte to encode an offset, such that the total encoding uses 3 bytes:
 
 byte 1: the main starting byte, the value of which should be interpreted as (n-125), implying a value of 0 to 129 (note, this is different than the short repeat, which implies 1 to 130)
 byte 2: the value in the first 3 bits, with the next 5 bits always set to 31 (to imply long repeat)
@@ -336,11 +339,11 @@ int ImageLoaderBasic::saveStack2RawPBD(const char * filename, ImagePixelType dat
 
         V3DLONG compressionSize = 0;
 
-        if (datatype==1) {
+        if (dcode==1) {
 	  compressionSize=compressPBD8(&compressionBuffer[0], data, totalUnit*unitSize, maxSize);
-        } else if (datatype==2) {
+        } else if (dcode==2) {
 	  compressionSize=compressPBD16(&compressionBuffer[0], data, totalUnit*unitSize, maxSize);
-        } else if (datatype==PBD_3_BIT_DTYPE) {
+        } else if (dcode==PBD_3_BIT_DTYPE) {
 	  compressionSize=compressPBD3(&compressionBuffer[0], data, totalUnit*unitSize, maxSize);
 	}
 
@@ -1527,6 +1530,9 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
       sourceBuffer[p] = newValue;
     }
 
+    // Reset p
+    p=0L;
+
     // Write the min max values
     compressionBuffer[p++]=sourceMin;
     compressionBuffer[p++]=sourceMax;
@@ -1535,6 +1541,8 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
     V3DLONG* firstRepeatBuffer=new V3DLONG[2];
 
     for (V3DLONG i=0;i<sourceBufferLength;i++) {
+
+      if (DEBUG) cerr << "Top of main loop, i=" << i << "\n";
 
         if (p>=spaceLeft) {
             printf("ImageLoaderBasic::compressPBD3 ran out of space p=%ld\n", p);
@@ -1550,21 +1558,27 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
 	// Here, we do a look-ahead to see if we can get a repeat, the most efficient representation.
 	// PBD3 supports repeats up to 33279.
 
+	if (DEBUG) cerr << "Main Loop: finding repeat count\n";
+
 	V3DLONG currentRepeatTest=pbd3FindRepeatCountFromCurrentPosition(sourceBuffer, i, spaceLeft);
+
+	if (DEBUG) cerr << "currentRepeatTest=" << currentRepeatTest << "\n";
 
 	// Check if it is obvious we should go with repeat
 	if (currentRepeatTest>5 && currentRepeatTest < PBD_3_SHORT_REPEAT_MAX) {
+	  if (DEBUG) cerr << "Starting short repeat\n";
 	  // Short Repeat
 	  pbd3FlushLiteral(compressionBuffer, sourceBuffer, &activeLiteralIndex, &p, i);
 	  compressionBuffer[p++]=pbd3EncodeShortRepeat(sourceBuffer[i], currentRepeatTest+1);
 	  i+=currentRepeatTest;
 	} else if (currentRepeatTest >= PBD_3_SHORT_REPEAT_MAX) {
+	  if (DEBUG) cerr << "Starting long repeat\n";
 	  // Long Repeat
 	  if (currentRepeatTest>= PBD_3_MAX_REPEAT_LENGTH) {
 	    currentRepeatTest = (PBD_3_MAX_REPEAT_LENGTH-1);
 	  }
-	  pbd3EncodeLongRepeat(sourceBuffer[i], currentRepeatTest+1, encodedLongRepeatBuffer);
 	  pbd3FlushLiteral(compressionBuffer, sourceBuffer, &activeLiteralIndex, &p, i);
+	  pbd3EncodeLongRepeat(sourceBuffer[i], currentRepeatTest+1, encodedLongRepeatBuffer);
 	  compressionBuffer[p++]=encodedLongRepeatBuffer[0];
 	  compressionBuffer[p++]=encodedLongRepeatBuffer[1];
 	  compressionBuffer[p++]=encodedLongRepeatBuffer[2];
@@ -1578,43 +1592,73 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
 	  // completely fresh bytes for repeat, which means another byte with 2 more doublets = 14 positions.
 	  // This means if the repeat is 14 or greater, we always want to use a repeat, but if the repeat is
 	  // less than 14, we should use Diff if the Diff can cover the repeat.
-	  V3DLONG diffTest = pbd3FindDiffCountFromCurrentPosition(sourceBuffer, i, spaceLeft);
+
+	  if (DEBUG) cerr << "Starting diff test\n";
+
+	  V3DLONG diffTest = pbd3FindDiffCountFromCurrentPosition(sourceBuffer, i, sourceBufferLength);
+
+	  if (DEBUG) cerr << "diffTest=" << diffTest << "\n";
+
 	  // Reset repeat buffer
 	  firstRepeatBuffer[0]=0;
 	  firstRepeatBuffer[1]=0;
 	  // Check for repeats within the diff region
 	  if (diffTest>PBD_3_DIFF_REPEAT_THRESHOLD) {
+	    if (DEBUG) cerr << "Check1\n";
 	    pbd3FindFirstRepeatOfMinLength(sourceBuffer, i, diffTest, PBD_3_DIFF_REPEAT_THRESHOLD, firstRepeatBuffer);
-	  } else if (diffTest<-1*PBD_3_DIFF_REPEAT_THRESHOLD) {
-	    pbd3FindFirstRepeatOfMinLength(sourceBuffer, i, diffTest*-1, PBD_3_DIFF_REPEAT_THRESHOLD, firstRepeatBuffer);
 	  }
+	  if (DEBUG) cerr << "Check3\n";
 	  // If we found a qualifying repeat, then we need to encode the pre-repeat section, then let the outer loop
 	  // detect the following repeat. If not, then we need to encode the diff sequence if 3 or greater, otherwise
 	  // just accumulate this in the literal outer context.
-	  if (diffTest > 2 || diffTest < -2) {
-	    if (firstRepeatBuffer[1] > 0 && (firstRepeatBuffer[0]>2)) {
-	      // Implies repeat found - encode the pre-repeat region. We assume diffTest is positive since a -1,-1 would force an end before the repeat.
-	      diffTest=firstRepeatBuffer[0];
+	  if (diffTest > 2) {
+	    if (firstRepeatBuffer[PBD_3_REPEAT_STARTING_POSITION] > 0 && (firstRepeatBuffer[PBD_3_REPEAT_COUNT]>2)) {
+	      // Implies repeat found - encode the pre-repeat region. 
+	      diffTest=firstRepeatBuffer[PBD_3_REPEAT_COUNT];
+	      // If diffTest is not even, this means the repeat starts off-stride, so grab the extra position
+	      if (diffTest % 2 != 0) {
+		diffTest+=1;
+	      }
 	    }
+	    if (DEBUG) cerr << "Check3.5 diffTest=" << diffTest << "\n";
+	    // Handle max-size issue
+	    if (diffTest>PBD_3_MAX_DIFF_LENGTH) {
+	      diffTest=PBD_3_MAX_DIFF_LENGTH;
+	    }
+	    if (DEBUG) cerr << "Check4 diffTest=" << diffTest << "\n";
 	    int diffByteCount=0;
 	    pbd3FlushLiteral(compressionBuffer, sourceBuffer, &activeLiteralIndex, &p, i);
+	    if (DEBUG) cerr << "Check5 - diffTest=" << diffTest << "\n";
 	    unsigned char* diffEncoding=pbd3EncodeDiff(sourceBuffer, i, diffTest, &diffByteCount);
+	    if (DEBUG) cerr << "Returned diffEncoding with " << diffByteCount << " bytes\n";
 	    int di=0;
 	    while(di<diffByteCount) {
+	      if (DEBUG) cerr << "Adding compression for diff byte " << di;
 	      compressionBuffer[p++]=diffEncoding[di++];
 	    }
+	    if (DEBUG) cerr << "Done adding diff encoded compression bytes - clearing array\n";
 	    delete [] diffEncoding;
+	    if (DEBUG) cerr << "Done clearing diff result array - diffTest=" << diffTest << "\n";
 	    i+=diffTest-1;
+	    if (DEBUG) cerr << "========= Now i=" << i << " diffTest=" << diffTest << "\n";
 	  } else {
 	    // Neither repeat nor diff qualify, continue (or start if necessary) literal mode
 	    if (activeLiteralIndex>-1) {
-	      // we have an active literal mode - just let it continue
+	      // we have an active literal mode - just let it continue - but check if we have to flush it
+	      if ( (i-activeLiteralIndex) >= PBD_3_MAX_LITERAL) {
+		pbd3FlushLiteral(compressionBuffer, sourceBuffer, &activeLiteralIndex, &p, i);
+		double cRatio = (i * 1.0) / (p * 1.0);
+		if (DEBUG) cerr << "Flushing literal at i=" << i << " cRatio=" << cRatio << "\n";
+		activeLiteralIndex=i;
+	      }
 	    } else {
 	      activeLiteralIndex=i;
 	    }
 	  }
 	}
     }
+
+    if (DEBUG) cerr << "Done main loop - deleting buffers\n";
 
     delete [] encodedLongRepeatBuffer;
     delete [] firstRepeatBuffer;
@@ -1672,11 +1716,11 @@ unsigned char ImageLoaderBasic::pbd3EncodeShortRepeat(unsigned char sourceValue,
    returnBuffer[2]=remainder;
  }
 
-// NOTE: This method returns a negative value if the diff sequence ends with { -1, -1 }
  V3DLONG ImageLoaderBasic::pbd3FindDiffCountFromCurrentPosition(unsigned char* sourceBuffer, V3DLONG position, V3DLONG maxPosition)
 {
-  // Here, we want to simply see how far we can get making single-step changes to the value. If we see a {-1, -1} then we must stop because the spec can
-  // only encode a single such event at the end.
+  // Here, we want to simply see how far we can get making single-step changes to the value. If we see an in-stride {-1, -1} then we must stop.
+  if (DEBUG)  cerr << "ImageLoaderBasic::pbd3FindDiffCountFromCurrentPosition: position=" << position << " maxPosition=" << maxPosition << "\n";
+
   unsigned char priorValue=0;
   if (position>0) {
     priorValue=sourceBuffer[position-1];
@@ -1687,27 +1731,34 @@ unsigned char ImageLoaderBasic::pbd3EncodeShortRepeat(unsigned char sourceValue,
   if (maxPosition > (position + PBD_3_MAX_DIFF_LENGTH)) {
     maxPosition=position+PBD_3_MAX_DIFF_LENGTH;
   }
+  bool pairComplete=true; // start in this state
   while(position<maxPosition) {
+    if (DEBUG) cerr << "inner loop: position=" << position << " maxPosition=" << maxPosition << "\n";
     unsigned char currentValue=sourceBuffer[position];
     d2=d1;
     d1=currentValue-priorValue;
     if (d1==0 || d1==-1 || d1==1) {
-      r++;
+      if (!pairComplete) {
+	if (d1==-1 && d2==-1) {
+	  // Have to bail without incrementing r
+	  if (DEBUG) cerr << "Found -1 -1, returning r=" << r << "\n";
+	  break;
+	}
+	r+=2;
+	pairComplete=true;
+      } else {
+	pairComplete=false;
+      }
       position++;
       priorValue=currentValue;
-      // Check if we've hit { -1, -1 }
-      if (d1==-1 && d2==-1) {
-	break;
-      }
     } else {
+      // Violated diff region
       break;
     }
   }
-  if (d1==-1 && d2==-1) {
-    return -1 * r;
-  } else {
-    return r;
-  }
+  if (DEBUG) cerr << "Done, returning r=" << r << "\n";
+  if (DEBUG) fflush(stderr);
+  return r;
 }
 
 // Returns [0] the index of the first repeat relative to the starting position, [1] the length of the first repeat. A length of 0 means there are no repeated values, a length of 1 means two values are the same, etc.
@@ -1738,30 +1789,28 @@ unsigned char ImageLoaderBasic::pbd3EncodeShortRepeat(unsigned char sourceValue,
       position++;
     }
     if (foundQualifyingRepeat) {
-      returnBuffer[0]=position-repeatCount;
-      returnBuffer[1]=repeatCount;
+      returnBuffer[PBD_3_REPEAT_STARTING_POSITION]=position-repeatCount;
+      returnBuffer[PBD_3_REPEAT_COUNT]=repeatCount;
     }
   }
   return;
 }
 
- // When this method is called, we expect a diff region with the specified region to be viable, which may or
- // may not end with { -1, -1 }. If it does, then the first byte needs to reflect this.
+ // When this method is called, we expect a diff region with the specified region to be viable.
 unsigned char* ImageLoaderBasic::pbd3EncodeDiff(unsigned char* sourceBuffer, V3DLONG position, V3DLONG length, int* byteCount)
 {
+  if (DEBUG)  cerr << "ImageLoaderBasic::pbd3EncodeDiff start, length=" << length << "\n";
   unsigned char* resultBuffer=new unsigned char[PBD_3_MAX_DIFF_LENGTH]; // the actual length should be far less than this, since we are using 3 bits per 2 positions
-  bool needToConfirmLastDoubleNegative=false;
-  if ( (length>-1 && length<2) || (length==-1) ) {
-    cerr << "Diff length cannot be encoded when less than 2";
+  if (length<2) {
+    cerr << "Diff length cannot be encoded when less than 2\n";
     exit(1);
   }
-  unsigned char keyByte=length+22;
-  if (length<0) {
-    // need to encode -1 -1 implicitly
-    length*=-1;
-    keyByte=length+73;
-    needToConfirmLastDoubleNegative=true;
+  if (length % 2 != 0) {
+    cerr << "pbd3 diff encoding must be an even length - length=" << length << "\n";
+    exit(1);
   }
+  V3DLONG doubletCount=length/2;
+  unsigned char keyByte=doubletCount+22;
   unsigned char priorValue=0;
   if (position>0) {
     priorValue=sourceBuffer[position-1];
@@ -1773,40 +1822,16 @@ unsigned char* ImageLoaderBasic::pbd3EncodeDiff(unsigned char* sourceBuffer, V3D
   bool createEntry=false;
   int entryCount=0;
   resultBuffer[0]=keyByte;
+  if (DEBUG)  cerr << "Beginning main loop...\n";
   while (p < maxPosition) {
+    if (DEBUG) cerr << "Top of loop, p=" << p << "\n";
     unsigned char v=sourceBuffer[p];
     d2=d1;
     d1=v-priorValue;
     priorValue=v;
-    if (p==(maxPosition-1)) {
-      // This is the last position
-      if (needToConfirmLastDoubleNegative) {
-	if (!(d1==-1 && d2==-1)) {
-	  cerr << "Could not verify implied diff ending of -1 -1";
-	  exit(1);
-	}
-	// The last position is -1 -1, which will not form an entry. There are two possibilities: we could have just encoded an entry,
-	// meaning there is nothing to encode, or there could be a left-over difference.
-	if (!createEntry) {
-	  // This means we have an error, because -1 -1 will only exist if it captures an entire entry boundary
-	  cerr << "Expected to be positioned to implicitly encode -1 -1 on this step";
-	  exit(1);
-	} else {
-	  // We do not increment the entryCount, but merely break out of the position loop
-	  break;
-	}
-      } else {
-	// The last position is not -1 -1, we need to encode it as-usual
-	if (!createEntry) {
-	  // just add zero on end
-	  d2=d1;
-	  d1=0;
-	  createEntry=true;
-	}
-      }
-    }
-    // We will not arrive here if the last entry is -1 -1
+    if (DEBUG) cerr << "d2=" << d2 << ", d1=" << d1 << "\n";
     if (createEntry) {
+      if (DEBUG) cerr << "Start createEntry\n";
       int currentByte=((entryCount*3)/8) + 1; // the +1 is for the keyByte
       int bitOffset=entryCount*3-8*currentByte;
       unsigned char entryByte=0;
@@ -1827,11 +1852,16 @@ unsigned char* ImageLoaderBasic::pbd3EncodeDiff(unsigned char* sourceBuffer, V3D
       } else if (d2==1 && d1==1) {
 	entryByte=ooooolll;
       } else if (d2==-1 && d1==-1) {
-	cerr << "We should never see -1 -1 in the diff loop - it should only be at the end";
+	cerr << "We should never see -1 -1 in the diff loop\n";
+	exit(1);
+      } else {
+	cerr << "Diff values should be -1, 0, 1 : should never have d2=" << d2 << " and d1=" << d1 << "\n";
 	exit(1);
       }
+      if (DEBUG) cerr << "Done setting entryByte, currentByte=" << currentByte << " maxPosition=" << maxPosition << "\n";
       entryByte <<= bitOffset;
       resultBuffer[currentByte]=resultBuffer[currentByte] |= entryByte;
+      if (DEBUG) cerr << "Done setting resultBuffer\n";
       entryCount++;
       // The next position will be used to gather one difference, not to encode
       createEntry=false;
@@ -1843,21 +1873,26 @@ unsigned char* ImageLoaderBasic::pbd3EncodeDiff(unsigned char* sourceBuffer, V3D
     p++;
   }
   *byteCount=((entryCount*3)/8)+2; // of the +2, 1, is for the leftover diff byte, the other 1 is for the keyByte
+  if (DEBUG)  cerr << "End - entryCount=" << entryCount << ", byteCount=" << *byteCount << "\n";
   return resultBuffer;
 }
 
-void ImageLoaderBasic::pbd3FlushLiteral(unsigned char* compressionBuffer, unsigned char* sourceBuffer, V3DLONG* activeLiteralIndex, V3DLONG* p, V3DLONG i) {
+void ImageLoaderBasic::pbd3FlushLiteral(unsigned char* compressionBuffer, unsigned char* sourceBuffer, V3DLONG* activeLiteralIndex, V3DLONG* pp, V3DLONG i) {
   if (*activeLiteralIndex>-1) {
     V3DLONG a=*activeLiteralIndex;
-    V3DLONG aLength=i-*activeLiteralIndex;
-    if (aLength>24) {
-      cerr << "Can not support literal length greater than 24";
+    V3DLONG aLength=i-a;
+    if (aLength>PBD_3_MAX_LITERAL) {
+      cerr << "Can not support literal length greater than " << PBD_3_MAX_LITERAL;
       exit(1);
     }
+    V3DLONG p = *pp;
+    compressionBuffer[p++]=(unsigned char)aLength; // key value
     V3DLONG bitOffset=0;
     unsigned char cByte=0;
+    if (DEBUG) cerr << "Starting literal flush loop\n";
     while (a<i) {
       unsigned char v=sourceBuffer[a];
+      if (DEBUG) cerr << "a= " << a << " i=" << i << " v=" << v << "\n";
       if (bitOffset==0) {
 	// Just assign
 	cByte=v;
@@ -1867,7 +1902,7 @@ void ImageLoaderBasic::pbd3FlushLiteral(unsigned char* compressionBuffer, unsign
 	cByte |= v;
 	bitOffset+=3;
 	if (bitOffset==8) {
-	  compressionBuffer[(*p)++]=cByte;
+	  compressionBuffer[p++]=cByte;
 	  bitOffset=0;
 	}
       } else if (bitOffset==6) {
@@ -1875,7 +1910,7 @@ void ImageLoaderBasic::pbd3FlushLiteral(unsigned char* compressionBuffer, unsign
 	v <<= bitOffset;
 	v &= lloooooo;
 	cByte |= v;
-	compressionBuffer[(*p)++]=cByte;
+	compressionBuffer[p++]=cByte;
 	vCopy >>= 2;
 	vCopy &= oooooool;
 	cByte=vCopy;
@@ -1885,13 +1920,15 @@ void ImageLoaderBasic::pbd3FlushLiteral(unsigned char* compressionBuffer, unsign
 	v <<= bitOffset;
 	v &= looooooo;
 	cByte |= v;
-	compressionBuffer[(*p)++]=cByte;
+	compressionBuffer[p++]=cByte;
 	vCopy >>= 1;
 	vCopy &= ooooooll;
 	cByte=vCopy;
 	bitOffset=2;
       }
+      a++;
     }
+    *pp = p;
   }
   *activeLiteralIndex=-1;
 }

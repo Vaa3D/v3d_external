@@ -87,6 +87,7 @@ int ImageLoader::processArgs(vector<char*> *argList) {
             } while(!done && i<(argList->size()-1));
         } else if (arg=="-convert3") {
             mode=MODE_CONVERT3;
+	    qDebug() << "ImageLoader::processArgs: setting mode to MODE_CONVERT3";
             bool haveInput=false;
             do {
                 QString possibleFile=(*argList)[++i];
@@ -162,6 +163,7 @@ bool ImageLoader::execute() {
         }
         return false;
     } else if (mode==MODE_CONVERT || mode==MODE_CONVERT8 || mode==MODE_CONVERT3) {
+      qDebug() << "ImageLoader::execute() mode=" << mode;
         if (inputFilepath.compare(targetFilepath)==0) {
             qDebug() << "ImageLoader::execute() - can not convert a file to itself";
             return false;
@@ -169,8 +171,8 @@ bool ImageLoader::execute() {
         image=loadImage(inputFilepath);
         qDebug() << "Loading time is " << stopwatch.elapsed() / 1000.0 << " seconds";
         stopwatch.restart();
-        qDebug() << "Saving to file " << targetFilepath;
-        bool saveStatus=saveImage(image, targetFilepath, mode==MODE_CONVERT8);
+        qDebug() << "Saving to file " << targetFilepath << " with mode=" << mode;
+        bool saveStatus=saveImageByMode(image, targetFilepath.toStdString().c_str(), mode);
         if (image!=0) {
             delete image;
             image=0;
@@ -505,16 +507,17 @@ My4DImage* ImageLoader::loadImage(const char* filepath) {
 }
 
 bool ImageLoader::saveImage(My4DImage * stackp, const char* filepath, bool saveTo8bit) {
+  qDebug() << "ImageLoader::saveImage (bool version)";
   if (saveTo8bit) {
-    return saveImage(stackp, filepath, MODE_CONVERT8);
+    return saveImageByMode(stackp, filepath, MODE_CONVERT8);
   } else {
-    return saveImage(stackp, filepath, MODE_CONVERT);
+    return saveImageByMode(stackp, filepath, MODE_CONVERT);
   }
 }
 
-bool ImageLoader::saveImage(My4DImage * stackp, const char* filepath, int saveMode)
+bool ImageLoader::saveImageByMode(My4DImage * stackp, const char* filepath, int saveMode)
 {
-    qDebug() << "Saving to file " << filepath;
+  qDebug() << "Saving to file " << filepath << " under mode=" << saveMode;
     QString extension = QFileInfo(QString(filepath)).suffix().toLower();
     if (saveMode==MODE_CONVERT8 || saveMode==MODE_CONVERT3) {
         convertType2Type1InPlace(stackp);
@@ -529,6 +532,7 @@ bool ImageLoader::saveImage(My4DImage * stackp, const char* filepath, int saveMo
         data = stackp->getRawData();
 	if (saveMode==MODE_CONVERT3) {
 	  // using V3D_UNKNOWN as a signal to do 3-bit PBD compression, since we are also assuming the stack has been converted to 8-bit in this case
+	  qDebug() << "ImageLoader::saveImageByMode: calling saveStack2RawPBD with datatype = V3D_UNKNOWN";
 	  saveStack2RawPBD(filepath, V3D_UNKNOWN, data, sz); 
 	} else {
 	  saveStack2RawPBD(filepath, stackp->getDatatype(), data, sz);

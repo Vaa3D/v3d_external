@@ -104,7 +104,7 @@ protected:
         return berror;
     }
 
-    bool saveImage(My4DImage *stackp, const char* filepath, int saveMode);
+    bool saveImageByMode(My4DImage *stackp, const char* filepath, int saveMode);
 
 private:
     int mode;
