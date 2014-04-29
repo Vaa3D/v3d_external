@@ -8229,40 +8229,63 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
     if(m_FileName.isEmpty())
         return -1;
 
-    string filename =m_FileName.toStdString();
+    // group stitch
+    int start_t = clock();
 
+    Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
+
+    // if the tile configuration input by users
     CONF_INFO<V3DLONG> cinfo;
     std::vector<CONF_INFO<V3DLONG> > cinfoList;
-
-    ifstream pFile(filename.c_str());
-    string str;
-
-    if(pFile.is_open())
+    bool b_withconfig = false;
+    V3DLONG row_i, row_j, col_i, col_j, height_i, height_j;
+    if(!m_FileName.isEmpty())
     {
-        char buf[2000];
+        b_withconfig = true;
 
-        while( !pFile.eof() )
+        ifstream pFile(m_FileName.toStdString().c_str());
+        string str;
+
+        if(pFile.is_open())
         {
-            while( getline(pFile, str) )
+            char buf[2000];
+
+            while( !pFile.eof() )
             {
-                istringstream iss(str);
+                V3DLONG count=0;
+                while( getline(pFile, str) )
+                {
+                    istringstream iss(str);
 
-                iss>>buf;
+                    iss>>buf;
 
-                cinfo.fn_img = buf;
+                    cinfo.fn_img = buf;
 
-                iss>>cinfo.row;
-                iss>>cinfo.col;
+                    iss>>cinfo.row;
+                    iss>>cinfo.col;
 
-                cinfoList.push_back(cinfo);
+                    cinfoList.push_back(cinfo);
+
+                    V3DLONG offset[3];
+                    offset[0]=0; offset[1]=0; offset[2]=0;
+
+                    indexed_t<V3DLONG, REAL> idx_t(offset);
+
+                    idx_t.n = count;
+                    idx_t.ref_n = 0; // init with default values
+                    idx_t.fn_image = buf;
+                    idx_t.score = 0;
+
+                    vim.tilesList.push_back(idx_t);
+
+                    count++;
+                }
             }
         }
     }
 
-    qDebug() << cinfoList.size();
-    QString m_InputFileName = QString(cinfo.fn_img.c_str()); // absolute path
+    QString m_InputFileName = QString(cinfo.fn_img.c_str());
 
-    // init
     GroupImageStitchingDialog dialog(callback, parent, m_InputFileName);
     if (dialog.exec()!=QDialog::Accepted)
         return -1;
@@ -8291,66 +8314,50 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
     ImagePixelType imgdatatype;
     V3DLONG cdim;
 
-    int start_t = clock();
-
-    // load tiles and stitch
-    //----------------------------------------------------------------------------------------------------------------------------------------------------
-    QStringList imgList = importSeriesFileList_addnumbersort(QFileInfo(m_InputFileName).path());
-
-    Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
-
-    V3DLONG count=0;
-    foreach (QString img_str, imgList)
-    {
-        V3DLONG offset[3];
-        offset[0]=0; offset[1]=0; offset[2]=0;
-
-        indexed_t<V3DLONG, REAL> idx_t(offset);
-
-        idx_t.n = count;
-        idx_t.ref_n = 0;
-        idx_t.fn_image = img_str.toStdString();
-        idx_t.score = 0;
-
-        vim.tilesList.push_back(idx_t);
-
-        count++;
-    }
-
-    qDebug() << "debug..." <<vim.tilesList.size();
-
     // stitching image pairs
-    // suppose 0 as a reference
-    for(int i=0; i<vim.tilesList.size(); i++) // record all the sz_image information
+    int NTILES = vim.tilesList.size();
+    int NTILES_I = NTILES - 1;
+    int NTILES_II = NTILES_I - 1;
+
+    // first step: rough estimation in a coarse scale
+    V3DLONG offsets[3];
+    V3DLONG *sz_target = 0;
+    int datatype_target = 0;
+    unsigned char* target1d = 0;
+    for(int i=0; i<NTILES_I; i++) // record all the sz_image information
     {
+        //loading target files
+        sz_target = 0;
+        datatype_target = 0;
+        target1d = 0;
 
-        string str_fn_i = vim.tilesList.at(i).fn_image;
-        V3DLONG row_i=-1, col_i=-1;
-
-        for(int ii=0; ii<cinfoList.size(); ii++)
+        if(b_withconfig)
         {
-            if(cinfoList.at(ii).fn_img.compare(str_fn_i)==0)
+            row_i=-1, col_i=-1;
+
+            for(int ii=0; ii<cinfoList.size(); ii++)
             {
-                row_i = cinfoList.at(ii).row;
-                col_i = cinfoList.at(ii).col;
-                break;
+                if(cinfoList.at(ii).fn_img.compare(vim.tilesList.at(i).fn_image)==0)
+                {
+                    row_i = cinfoList.at(ii).row;
+                    col_i = cinfoList.at(ii).col;
+                    break;
+                }
+            }
+
+            qDebug() << " ~~~ tile i ... " << row_i << col_i;
+
+            if(row_i<0 || col_i<0)
+            {
+                cout<<"Your files are inconsistent with your configuration file"<<endl;
+                return -1;
             }
         }
-
-        qDebug() << row_i << col_i;
-
-        if(row_i<0 || col_i<0)
-            return -1;
-
-        //loading target files
-        V3DLONG *sz_target = 0;
-        int datatype_target = 0;
-        unsigned char* target1d = 0;
 
         if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
-            return -1;
+            return false;
         }
         V3DLONG tx=sz_target[0], ty=sz_target[1], tz=sz_target[2], tc=sz_target[3];
         cdim = tc; // init
@@ -8365,7 +8372,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             if(datatype_target != imgdatatype)
             {
                 printf("The program only support all tiled images with the same datatype.\n");
-                return -1;
+                return false;
             }
         }
 
@@ -8377,55 +8384,75 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
         (&vim.tilesList.at(i))->sz_image[3] = tc;
 
         // channel of target
-        V3DLONG offsets_tar = (dialog.channel1-1)*tx*ty*tz;
+        V3DLONG offsets_tar = channel1*tx*ty*tz;
 
         // try rest of tiles
-        for(int j=i+1; j<vim.tilesList.size(); j++)
+        V3DLONG *sz_subject = 0;
+        int datatype_subject = 0;
+        unsigned char* subject1d = 0;
+        bool b_init = true;
+        for(int j=i+1; j<NTILES; j++)
         {
+            //loading subject files
+            sz_subject = 0;
+            datatype_subject = 0;
+            subject1d = 0;
 
-            string str_fn_j = vim.tilesList.at(j).fn_image;
-            V3DLONG row_j=-1, col_j=-1;
-
-            for(int ii=0; ii<cinfoList.size(); ii++)
+            if(b_withconfig)
             {
-                if(cinfoList.at(ii).fn_img.compare(str_fn_j)==0)
+                row_j=-1, col_j=-1;
+
+                for(int ii=0; ii<cinfoList.size(); ii++)
                 {
-                    row_j = cinfoList.at(ii).row;
-                    col_j = cinfoList.at(ii).col;
-                    break;
+                    if(cinfoList.at(ii).fn_img.compare(vim.tilesList.at(j).fn_image)==0)
+                    {
+                        row_j = cinfoList.at(ii).row;
+                        col_j = cinfoList.at(ii).col;
+                        break;
+                    }
+
                 }
 
+                qDebug() << " ~~~ tile j ... ... " << row_j << col_j;
+
+                if(row_j<0 || col_j<0)
+                {
+                    cout<<"Your files are inconsistent with your configuration file"<<endl;
+                    return -1;
+                }
+
+                if( !((row_i==row_j && y_abs(col_i-col_j)==1) ||  (col_i==col_j && y_abs(row_i-row_j)==1)))
+                    continue;
             }
-            qDebug() << row_i << col_i;
-
-            if(row_j<0 || col_j<0)
-                return -1;
-
-            if( !((row_i==row_j && y_abs(col_i-col_j)==1) ||  (col_i==col_j && y_abs(row_i-row_j)==1)))
-                continue;
-
-            //loading subject files
-            V3DLONG *sz_subject = 0;
-            int datatype_subject = 0;
-            unsigned char* subject1d = 0;
 
             if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(j).fn_image.c_str());
-                return -1;
+                return false;
             }
 
             V3DLONG sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];
 
-            qDebug()<< "i j ..."<< i <<  j << "row col ..." << row_i << col_i << row_j << col_j;
+            // init
+            if(i==NTILES_II && b_init)
+            {
+
+                (&vim.tilesList.at(j))->sz_image = new V3DLONG [4];
+
+                (&vim.tilesList.at(j))->sz_image[0] = sx;
+                (&vim.tilesList.at(j))->sz_image[1] = sy;
+                (&vim.tilesList.at(j))->sz_image[2] = sz;
+                (&vim.tilesList.at(j))->sz_image[3] = sc;
+
+                b_init = false;
+            }
 
             // channel of subject
-            V3DLONG offsets_sub = (dialog.channel1-1)*sx*sy*sz;
+            V3DLONG offsets_sub = channel1*sx*sy*sz;
 
             // try
             PEAKS *pos = new PEAKS;
 
-            //
             if(imgdatatype == V3D_UINT8)
             {
                 success = stitching_bb_thickplanes<unsigned char, Y_IMG_UINT8>((unsigned char *)subject1d+offsets_sub, sz_subject, (unsigned char *)target1d+offsets_tar, sz_target, overlap_percent, m_similarity, scale, pos, 1);
@@ -8441,89 +8468,237 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             else
             {
                 printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
-                return -1;
+                return false;
             }
             if(success!=true) return false;
 
-            if(pos->value > vim.tilesList.at(j).score)
-            {
-                //
-                cout << vim.tilesList.at(i).fn_image << " over " << vim.tilesList.at(j).fn_image << endl;
+            cout<< "pairwise pos " << pos->x << " " << pos->y  << " " << pos->z << " " << pos->value << endl;
 
-                vim.tilesList.at(j).score = pos->value;
+            //record n by n-1
+            offsets[0] = pos->x - sx +1;
+            offsets[1] = pos->y - sy +1;
+            offsets[2] = pos->z - sz +1;
 
-                (&vim.tilesList.at(j))->ref_n = vim.tilesList.at(i).n;
+            indexed_t<V3DLONG, REAL> t(offsets);  //
 
-                //offset
-                V3DLONG offset[3];
-                offset[0] = pos->x - sx +1;
-                offset[1] = pos->y - sy +1;
-                offset[2] = pos->z - sz +1;
+            t.score = pos->value;
+            t.n = vim.tilesList.at(i).n;
 
-                (&vim.tilesList.at(j))->offsets[0] = offset[0];
-                (&vim.tilesList.at(j))->offsets[1] = offset[1];
-                (&vim.tilesList.at(j))->offsets[2] = offset[2];
-            }
+            (&vim.tilesList.at(j))->record.push_back(t);
+
+            qDebug()<<"subimg"<<j<<"tarimg"<<i<<"offsets ..."<<t.offsets[0]<<t.offsets[1]<<t.offsets[2];
+
+            cout << " subject "<< vim.tilesList.at(i).fn_image << " over " << " target " <<vim.tilesList.at(j).fn_image << endl;
 
             //de-alloc
-            if(subject1d) {delete []subject1d; subject1d=0;}
-            if(sz_subject) {delete []sz_subject; sz_subject=0;}
-
+            y_del<unsigned char>(subject1d);
+            y_del<V3DLONG>(sz_subject);
         }
-
         //de-alloc
-        if(target1d) {delete []target1d; target1d=0;}
-        if(sz_target) {delete []sz_target; sz_target=0;}
-
+        y_del<unsigned char>(target1d);
+        y_del<V3DLONG>(sz_target);
     }
-    //de-alloc
-    if(scale) {delete []scale; scale=0;}
-
-    qDebug()<<"debug..."<<"basically done";
-
-    // adjusting offset reference to 0
-    for(int i=1; i<vim.tilesList.size(); i++)
+    // find mst of whole tiled images
+    for(int i=0; i<NTILES; i++)
     {
+        vim.tilesList.at(i).visited = false;
+    }
+    if(vim.y_mstPrim(vim.tilesList)) // run Prim's algorithm
+    {
+        cout<<"Fail to call MST approach!"<<endl;
+        return false;
+    }
 
-        while(vim.tilesList.at(i).ref_n!=0)
+    //stitch at a fine scale
+    NTILES = vim.tilesList.size();
+    NTILES_I = NTILES - 1;
+    NTILES_II = NTILES_I - 1;
+
+    if(scale[0]==1 && scale[1]==1 && scale[2]==1)
+    {
+        //continue;
+    }
+    else
+    {
+        //
+        for(int i=0; i<NTILES; i++)
         {
-            V3DLONG ref = vim.tilesList.at(i).ref_n;
-
-            V3DLONG offset_i[3], offset_ref[3];
-
-            offset_i[0] = vim.tilesList.at(i).offsets[0];
-            offset_i[1] = vim.tilesList.at(i).offsets[1];
-            offset_i[2] = vim.tilesList.at(i).offsets[2];
-
-            offset_ref[0] = vim.tilesList.at(ref).offsets[0];
-            offset_ref[1] = vim.tilesList.at(ref).offsets[1];
-            offset_ref[2] = vim.tilesList.at(ref).offsets[2];
-
-            // ref
-            (&vim.tilesList.at(i))->ref_n = vim.tilesList.at(ref).ref_n;
-
-            // combine
-            offset_i[0] += offset_ref[0];
-            offset_i[1] += offset_ref[1];
-            offset_i[2] += offset_ref[2];
-
-            // update
-            (&vim.tilesList.at(i))->offsets[0] = offset_i[0];
-            (&vim.tilesList.at(i))->offsets[1] = offset_i[1];
-            (&vim.tilesList.at(i))->offsets[2] = offset_i[2];
+            vim.tilesList.at(i).visited = false;
         }
+
+        //
+        for(int i=0; i<NTILES; i++) // traverse all tiled images
+        {
+            PEAKS *pos = new PEAKS;
+
+            V3DLONG current = vim.tilesList[i].n;
+            if(vim.tilesList.at(current).visited) // computed
+            {
+                continue;
+            }
+
+            if(vim.tilesList.at(i).hasedge)
+            {
+                //loading subject files
+                V3DLONG *sz_subject = 0;
+                int datatype_subject = 0;
+                unsigned char* subject1d = 0;
+
+                if (loadImage(const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                {
+                    fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(current).fn_image.c_str());
+                    return false;
+                }
+                V3DLONG sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];
+
+                for(int j=0; j<vim.tilesList.at(i).preList.size(); j++)
+                {
+                    V3DLONG previous = vim.tilesList[i].preList[j];
+
+                    //loading target files
+                    V3DLONG *sz_target = 0;
+                    int datatype_target = 0;
+                    unsigned char* target1d = 0;
+
+                    if (loadImage(const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+                    {
+                        fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(previous).fn_image.c_str());
+                        return false;
+                    }
+                    V3DLONG tx=sz_target[0], ty=sz_target[1], tz=sz_target[2], tc=sz_target[3];
+
+                    //
+                    V3DLONG offsets_tar = channel1*tx*ty*tz;
+                    V3DLONG offsets_sub = channel1*sx*sy*sz;
+
+                    //
+                    pos->x = vim.tilesList.at(current).offsetsList[j].x + (sx-1);
+                    pos->y = vim.tilesList.at(current).offsetsList[j].y + (sy-1);
+                    pos->z = vim.tilesList.at(current).offsetsList[j].z + (sz-1);
+                    //pos->value = vim.tilesList.at(current>previous?current:previous).record.at(current<previous?current:previous).score; //
+
+                    //
+                    if(imgdatatype == V3D_UINT8)
+                    {
+                        success = stitching_bb_thickplanes<unsigned char, Y_IMG_UINT8>((unsigned char *)subject1d+offsets_sub, sz_subject, (unsigned char *)target1d+offsets_tar, sz_target, overlap_percent, m_similarity, scale, pos, 2);
+                    }
+                    else if(imgdatatype == V3D_UINT16)
+                    {
+                        success = stitching_bb_thickplanes<unsigned short, Y_IMG_UINT16>((unsigned short *)(subject1d)+offsets_sub, sz_subject, (unsigned short *)(target1d)+offsets_tar, sz_target, overlap_percent, m_similarity, scale, pos, 2);
+                    }
+                    else if(imgdatatype == V3D_FLOAT32)
+                    {
+                        success = stitching_bb_thickplanes<REAL, Y_IMG_REAL>((REAL *)(subject1d)+offsets_sub, sz_subject, (REAL *)(target1d)+offsets_tar, sz_target, overlap_percent, m_similarity, scale, pos, 2);
+                    }
+                    else
+                    {
+                        printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+                        return -1;
+                    }
+                    if(success!=true) return false;
+
+                    // update offsets of current to previous
+                    (&vim.tilesList.at(current))->offsetsList[j].x = pos->x - sx +1;
+                    (&vim.tilesList.at(current))->offsetsList[j].y = pos->y - sy +1;
+                    (&vim.tilesList.at(current))->offsetsList[j].z = pos->z - sz +1;
+
+                    (&vim.tilesList.at(current))->visited = true;
+
+                    //de-alloc
+                    if(target1d) {delete []target1d; target1d=0;}
+                    if(sz_target) {delete []sz_target; sz_target=0;}
+                }
+                //de-alloc
+                if(subject1d) {delete []subject1d; subject1d=0;}
+                if(sz_subject) {delete []sz_subject; sz_subject=0;}
+
+            }
+        }
+    }
+
+    // adjusting offset reference to ref. image
+    // compute accumulate offsets from path list
+    (&vim.tilesList.at(0))->offsets[0] = 0;
+    (&vim.tilesList.at(0))->offsets[1] = 0;
+    (&vim.tilesList.at(0))->offsets[2] = 0;
+
+    for(int i=0; i<NTILES; i++)
+    {
+        vim.tilesList.at(i).visited = false;
+        vim.tilesList.at(i).predecessor = 0;
+    }
+    vim.tilesList[0].visited = true;
+    vim.tilesList[0].predecessor = -1;
+
+    while(vim.y_ks(vim.tilesList))
+    {
+        for(int i=1; i<NTILES; i++)
+        {
+            if(vim.tilesList[i].visited) continue;
+
+            // forward
+            for(int j=0; j<vim.tilesList.at(i).preList.size(); j++)
+            {
+                V3DLONG pre = vim.tilesList[i].preList[j];
+
+                qDebug()<<"forward ... "<<j;
+
+
+                if(vim.tilesList[pre].predecessor==-1)
+                {
+
+
+                    (&vim.tilesList.at(i))->offsets[0] = vim.tilesList[i].offsetsList[j].x + vim.tilesList[pre].offsets[0];
+                    (&vim.tilesList.at(i))->offsets[1] = vim.tilesList[i].offsetsList[j].y + vim.tilesList[pre].offsets[1];
+                    (&vim.tilesList.at(i))->offsets[2] = vim.tilesList[i].offsetsList[j].z + vim.tilesList[pre].offsets[2];
+
+                    (&vim.tilesList.at(i))->predecessor = -1;
+                    (&vim.tilesList.at(i))->visited = true;
+
+                    break;
+                }
+
+            }
+
+            // backward
+            for(int j=i+1; j<NTILES; j++)
+            {
+
+                qDebug()<<"backward ... "<<j;
+
+                if(vim.tilesList[j].predecessor==-1)
+                {
+                    for(int k=0; k<vim.tilesList.at(j).preList.size(); k++)
+                    {
+                        if(vim.tilesList[j].preList[k]==i)
+                        {
+                            (&vim.tilesList.at(i))->offsets[0] = -vim.tilesList[j].offsetsList[k].x + vim.tilesList[j].offsets[0];
+                            (&vim.tilesList.at(i))->offsets[1] = -vim.tilesList[j].offsetsList[k].y + vim.tilesList[j].offsets[1];
+                            (&vim.tilesList.at(i))->offsets[2] = -vim.tilesList[j].offsetsList[k].z + vim.tilesList[j].offsets[2];
+
+                            (&vim.tilesList.at(i))->predecessor = -1;
+                            (&vim.tilesList.at(i))->visited = true;
+
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+        }
+
     }
 
     // construct lookup table
     vim.y_clut(vim.tilesList.size());
 
+
     //------------------------------------------------------------------------------------------------------------------------------------------
     // save lut
     QString tmp_filename = QFileInfo(m_InputFileName).path() + "/" + "stitched_image.tc"; //.tc tile configuration
 
-    qDebug()<<"debug..."<<tmp_filename;
-
-    //vim.y_save(tmp_filename.toStdString()); // change it later
+    vim.y_save(tmp_filename.toStdString());
 
     //
     int end_t = clock();
@@ -8537,7 +8712,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
     pText->show();
 
     //------------------------------------------------------------------------------------------------------------------------------------------
-    //visualization
+    // output
     if(img_show)
     {
         V3DLONG vx, vy, vz, vc;
@@ -8550,6 +8725,17 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
         V3DLONG pagesz_vim = vx*vy*vz*vc;
 
         qDebug()<<"vim dims ..."<< vx << vy << vz << vc;
+
+//        QString stitchFileName;
+//        m_InputFileName.chop(4);
+//        if(!outfile)
+//            stitchFileName = m_InputFileName + "_stitched.raw";
+//        else
+//            stitchFileName = QString(outfile);
+
+        V3DLONG sz_tmp[4];
+
+        sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc;
 
         if(imgdatatype == V3D_UINT8)
         {
@@ -8565,11 +8751,18 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             catch (...)
             {
                 printf("Fail to allocate memory.\n");
-                return -1;
+                return false;
             }
 
             //
             success = groupi_fusing<unsigned char>((unsigned char *)pVImg, vim, vx, vy, vz, vc, axes_show);
+
+            //save
+//            if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 1)!=true)
+//            {
+//                fprintf(stderr, "Error happens in file writing. Exit. \n");
+//                return false;
+//            }
 
             //display
             Image4DSimple p4DImage;
@@ -8579,6 +8772,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             callback.setImage(newwin, &p4DImage);
             callback.setImageName(newwin, "Stitched_Image");
             callback.updateImageWindow(newwin);
+
         }
         else if(imgdatatype == V3D_UINT16)
         {
@@ -8594,11 +8788,18 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             catch (...)
             {
                 printf("Fail to allocate memory.\n");
-                return -1;
+                return false;
             }
 
             //
             success = groupi_fusing<unsigned short>((unsigned short *)pVImg, vim, vx, vy, vz, vc, axes_show);
+
+            //save
+//            if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 2)!=true)
+//            {
+//                fprintf(stderr, "Error happens in file writing. Exit. \n");
+//                return false;
+//            }
 
             //display
             Image4DSimple p4DImage;
@@ -8623,11 +8824,18 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             catch (...)
             {
                 printf("Fail to allocate memory.\n");
-                return -1;
+                return false;
             }
 
             //
             success = groupi_fusing<REAL>((REAL *)pVImg, vim, vx, vy, vz, vc, axes_show);
+
+            //save
+//            if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 4)!=true)
+//            {
+//                fprintf(stderr, "Error happens in file writing. Exit. \n");
+//                return false;
+//            }
 
             //display
             Image4DSimple p4DImage;
@@ -8641,29 +8849,9 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
         else
         {
             printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
-            return -1;
+            return false;
         }
         if(success!=true) return false;
-
-        //
-        return true;
-
-
-        //Output
-        //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        //	//saving
-        //	//temprary image
-        //	QString tmp_filename = m_InputFileName + ".tmp.raw";
-        //	V3DLONG sz_tmp[4];
-        //
-        //	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc;
-        //
-        //	if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 1)!=true)
-        //	{
-        //		fprintf(stderr, "Error happens in file writing. Exit. \n");
-        //		return -1;
-        //	}
-
     }
 
     return true;
