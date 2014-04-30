@@ -441,7 +441,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         //for(int i = 0; i < tar_markers.size(); i++) outswc.push_back(tar_markers[i]);
 
 
-        if(!elems.empty()) for(map<long, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
+        if(!elems.empty()) for(map<V3DLONG, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
         if(phi) {delete [] phi; phi = 0;}
         if(parent) {delete [] parent; parent = 0;}
         if(state) {delete [] state; state = 0;}
