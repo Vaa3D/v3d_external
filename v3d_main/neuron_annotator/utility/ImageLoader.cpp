@@ -716,6 +716,10 @@ int ImageLoader::loadRaw2StackPBDFromStream(QIODevice& fileStream, V3DLONG fileS
         datatype = 4;
         break;
 
+    case PBD_3_BIT_DTYPE: // Used for PBD 3
+      datatype = PBD_3_BIT_DTYPE;
+      break; 
+
     default:
         stringstream msg;
         msg << "Unrecognized data type code [" << dcode;
@@ -725,7 +729,7 @@ int ImageLoader::loadRaw2StackPBDFromStream(QIODevice& fileStream, V3DLONG fileS
 
     // qDebug() << "Setting datatype=" << datatype;
 
-    if (datatype==1) {
+    if (datatype==1 || datatype==PBD_3_BIT_DTYPE) {
         image->setDatatype(V3D_UINT8);
     } else if (datatype==2) {
         image->setDatatype(V3D_UINT16);
@@ -799,7 +803,11 @@ int ImageLoader::loadRaw2StackPBDFromStream(QIODevice& fileStream, V3DLONG fileS
 
     // Allocating memory can take seconds.  So send a message
     emit progressMessageChanged("Allocating image memory...");
-    image->createBlankImage(sz[0], sz[1], sz[2], sz[3], datatype);
+    short int blankImageDataType=datatype;
+    if (datatype==PBD_3_BIT_DTYPE) {
+      blankImageDataType=1;
+    }
+    image->createBlankImage(sz[0], sz[1], sz[2], sz[3], blankImageDataType);
     emit progressMessageChanged("Decompressing image...");
     decompressionBuffer = image->getRawData();
 

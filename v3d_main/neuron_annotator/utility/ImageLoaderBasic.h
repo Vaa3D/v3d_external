@@ -14,6 +14,7 @@
 #include <vector>
 #include <cstdio>
 
+static const short int PBD_3_BIT_DTYPE = 33;
 
 // Abstraction for possibly reading from sources that are not files.
 class DataStream
@@ -76,12 +77,14 @@ protected:
     }
 
     V3DLONG pbd3FindRepeatCountFromCurrentPosition(unsigned char* sourceBuffer, V3DLONG position, V3DLONG maxPosition);
-    unsigned char pbd3EncodeShortRepeat(unsigned char sourceValue, V3DLONG count);
+    void pbd3EncodeRepeat(unsigned char sourceValue, V3DLONG count, unsigned char* keyByte, unsigned char* valueByte);
     void pbd3EncodeLongRepeat(unsigned char sourceValue, V3DLONG count, unsigned char* returnBuffer);
     V3DLONG pbd3FindDiffCountFromCurrentPosition(unsigned char* sourceBuffer, V3DLONG position, V3DLONG maxPosition);
     void pbd3FindFirstRepeatOfMinLength(unsigned char* sourceBuffer, V3DLONG position, V3DLONG searchLength, V3DLONG minLength, V3DLONG* returnBuffer);
     unsigned char* pbd3EncodeDiff(unsigned char* sourceBuffer, V3DLONG position, V3DLONG length, int* byteCount);
     void pbd3FlushLiteral(unsigned char* compressionBuffer, unsigned char* sourceBuffer, V3DLONG* activeLiteralIndex, V3DLONG* p, V3DLONG i);
+    void updateCompressionBuffer3(unsigned char * updatedCompressionBuffer);
+    V3DLONG decompressPBD3(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
 
     volatile bool bIsCanceled;
     FILE * fid;
@@ -94,6 +97,9 @@ protected:
     int decompressionPrior;
     std::vector<char> keyread;
     int loadDatatype;
+
+    unsigned char pbd3_source_min;
+    unsigned char pbd3_source_max;
 };
 
 
