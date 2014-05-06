@@ -4329,41 +4329,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     }
 
                     if(!b_img1)
-                    {
-                        if(b_img2existNULL)
-                        {
-                            if(c2!=nullcolor2)
-                            {
-                                offset_c2 = c2*pagesz;
-                            }
-                            else
-                            {
-                                c2++;
-
-                                if(c2<sz_img2[3])
-                                    offset_c2 = c2*pagesz;
-                                else
-                                    continue;
-                            }
-                        }
-
-                        if(c2!=ref2)
-                        {
-                            offset_c2 = c2*pagesz;
-                        }
-                        else
-                        {
-                            c2++;
-
-                            if(c2<sz_img2[3])
-                                offset_c2 = c2*pagesz;
-                            else
-                                continue;
-                        }
-
+                    { 
+                        // assume image2 is single float deformed signal channel
                         qDebug()<<"color 2 ..."<<c2<<c;
 
-                        c2++;
+                        offset_c2=0;
                     }
 
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
