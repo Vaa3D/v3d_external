@@ -85,6 +85,7 @@ protected:
     void pbd3FlushLiteral(unsigned char* compressionBuffer, unsigned char* sourceBuffer, V3DLONG* activeLiteralIndex, V3DLONG* p, V3DLONG i);
     void updateCompressionBuffer3(unsigned char * updatedCompressionBuffer);
     V3DLONG decompressPBD3(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
+    int pbd3GetRepeatCountFromBytes(unsigned char keyByte, unsigned char valueByte, unsigned char* repeatValue);
 
     volatile bool bIsCanceled;
     FILE * fid;
