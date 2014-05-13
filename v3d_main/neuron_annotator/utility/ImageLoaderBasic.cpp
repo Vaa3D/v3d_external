@@ -313,7 +313,11 @@ int ImageLoaderBasic::saveStack2RawPBD(const char * filename, ImagePixelType dat
         for (i=0;i<4;i++)
         {
                 totalUnit *= sz[i];
+		pbd_sz[i]=sz[i];
+		cerr << "Set pbd_sz " << i << " to " << pbd_sz[i] << "\n";
         }
+
+	channelLength = pbd_sz[0] * pbd_sz[1] * pbd_sz[2];
 
         cerr << "Using totalUnit=" << totalUnit << " unitSize=" << unitSize << endl;
 
@@ -1423,6 +1427,8 @@ int ImageLoaderBasic::loadRaw2StackPBD(DataStream& fileStream, V3DLONG fileSize,
     for (i=0;i<4;i++)
     {
         sz[i] = (V3DLONG)mysz[i];
+	pbd_sz[i]=sz[i];
+	cerr << "Set pbd_sz " << i << " to " << pbd_sz[i] << "\n";
         totalUnit *= sz[i];
     }
 
@@ -1432,13 +1438,13 @@ int ImageLoaderBasic::loadRaw2StackPBD(DataStream& fileStream, V3DLONG fileSize,
     V3DLONG headerSize=4*4+2+1+lenkey;
     V3DLONG compressedBytes=fileSize-headerSize;
     maxDecompressionSize=totalUnit*unitSize;
-
+    channelLength=sz[0]*sz[1]*sz[2];
     compressionBuffer.resize(compressedBytes);
+    pbd3_current_channel=0;
 
     V3DLONG remainingBytes = compressedBytes;
     //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
-    //    V3DLONG readStepSizeBytes = V3DLONG(1024)*20000; // PREVIOUS
-    V3DLONG readStepSizeBytes = V3DLONG(1024)*100; // DEBUG
+    V3DLONG readStepSizeBytes = V3DLONG(1024)*20000; // PREVIOUS
     totalReadBytes = 0;
 
     // done reading header
@@ -1462,9 +1468,16 @@ int ImageLoaderBasic::loadRaw2StackPBD(DataStream& fileStream, V3DLONG fileSize,
         }
 
         V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
+	pbd3_current_channel=totalReadBytes/channelLength;
+	cerr << "pbd3_current_channel " << pbd3_current_channel << "\n";
+	V3DLONG bytesToChannelBoundary=(pbd3_current_channel+1)*channelLength - totalReadBytes;
+	curReadBytes = (curReadBytes>bytesToChannelBoundary) ? bytesToChannelBoundary : curReadBytes;
         // nread = fread(&compressionBuffer[0]+totalReadBytes, 1, curReadBytes, fid);
         nread = fileStream.read((char*)(&compressionBuffer[0]+totalReadBytes), curReadBytes);
         totalReadBytes+=nread;
+
+	cerr << "nread=" << nread << " curReadBytes=" << curReadBytes << " bytesToChannelBoundary=" << bytesToChannelBoundary << " totalReadBytes=" << totalReadBytes << "\n";
+
         if (nread!=curReadBytes)
         {
             stringstream msg;
@@ -1506,34 +1519,43 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
     }
     V3DLONG activeLiteralIndex=-1; // if -1 this means there is no literal mode started
 
-    // First, find the min and max values so that we know our 3-bit range within the 8-bit envelope
-    unsigned char sourceMin=255;
+    // Now that we have the min and max values, we can replace the source array in-place with the 3-bit version
+    int channelCount=pbd_sz[3];
+    cerr << "channelCount=" << channelCount << " channelLength=" << channelLength << "\n";
+    pbd3_source_min=new unsigned char[channelCount];
+    pbd3_source_max=new unsigned char[channelCount];
+    unsigned char sourceMin=0;
     unsigned char sourceMax=0;
-    for (p=0;p<sourceBufferLength;p++) {
-      unsigned char value=sourceBuffer[p];
-      if (value<sourceMin) {
-	sourceMin=value;
-      } 
-      if (value>sourceMax) {
-	sourceMax=value;
+    for (int c=0;c<channelCount;c++) {
+      sourceMin=255;
+      sourceMax=0;
+      V3DLONG cStart=c*channelLength;
+      V3DLONG cEnd=cStart+channelLength;
+      // Find the min and max values so that we know our 3-bit range within the 8-bit envelope
+      for (V3DLONG cp=cStart;cp<cEnd;cp++) {
+	unsigned char value=sourceBuffer[cp];
+	if (value<sourceMin) {
+	  sourceMin=value;
+	} 
+	if (value>sourceMax) {
+	  sourceMax=value;
+	}
+      }
+      pbd3_source_min[c]=sourceMin;
+      pbd3_source_max[c]=sourceMax;
+      compressionBuffer[p++]=sourceMin;
+      compressionBuffer[p++]=sourceMax;
+      int iMin=sourceMin;
+      int iMax=sourceMax;
+      cerr << "channel " << c << " sourceMin=" << iMin << " sourceMax=" << iMax << "\n";
+      int diffDivisor=(sourceMax - sourceMin);
+      for (V3DLONG cp=cStart;cp<cEnd;cp++) {
+	int diff = sourceBuffer[cp] - sourceMin;
+	int newValue = (diff * 8) / diffDivisor;
+	if (newValue >= 8) newValue=7;
+	sourceBuffer[cp] = newValue;
       }
     }
-
-    // Now that we have the min and max values, we can replace the source array in-place with the 3-bit version
-    int diffDivisor=(sourceMax - sourceMin);
-    for (p=0;p<sourceBufferLength;p++) {
-      int diff = sourceBuffer[p] - sourceMin;
-      int newValue = (diff * 8) / diffDivisor;
-      if (newValue >= 8) newValue=7;
-      sourceBuffer[p] = newValue;
-    }
-
-    // Reset p
-    p=0L;
-
-    // Write the min max values
-    compressionBuffer[p++]=sourceMin;
-    compressionBuffer[p++]=sourceMax;
 
     V3DLONG* firstRepeatBuffer=new V3DLONG[2];
 
@@ -1541,6 +1563,8 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
     DEBUG=false;
 
     V3DLONG i=0;
+
+    cerr << "sourceBufferLength = " << sourceBufferLength << "\n";
 
     for (;i<sourceBufferLength;i++) {
 
@@ -2061,15 +2085,27 @@ void ImageLoaderBasic::updateCompressionBuffer3(unsigned char * updatedCompressi
   //  cerr << "updateCompressionBuffer3 - updatedCompressionBuffer=" << uP << "\n";
 
     if (compressionPosition==0) {
+      //      for (int j=0;j<50;j++) {
+      //	int ci=compressionBuffer[j];
+      //	cerr << "cp=" << j << " value=" << ci << " hex=" << std::hex << ci << std::dec << "\n";
+      //      }
       // Just starting
       compressionPosition=&compressionBuffer[0];
-      pbd3_source_min=compressionBuffer[0];
-      pbd3_source_max=compressionBuffer[1];
-      int imin=pbd3_source_min;
-      int imax=pbd3_source_max;
-      cerr << "Using pbd3 min=" << imin << " max=" << imax << "\n";
-      compressionPosition+=2;
+      int channelCount=pbd_sz[3];
+      cerr << "channelCount=" << channelCount << "\n";
+      pbd3_source_min = new unsigned char[channelCount];
+      pbd3_source_max = new unsigned char[channelCount];
+      for (int i=0;i<channelCount;i++) {
+	pbd3_source_min[i]=compressionBuffer[i*2];
+	pbd3_source_max[i]=compressionBuffer[i*2+1];
+	int iMin=pbd3_source_min[i];
+	int iMax=pbd3_source_max[i];
+	cerr << "Using channel " << i << " pbd3 min=" << iMin << " max=" << iMax << "\n";
+      }
+      compressionPosition+=(channelCount*2);
     }
+    pbd3_current_min=pbd3_source_min[pbd3_current_channel];
+    pbd3_current_max=pbd3_source_max[pbd3_current_channel];
     unsigned char * lookAhead=compressionPosition;
     while(lookAhead<updatedCompressionBuffer) {
       unsigned char lav=*lookAhead;
@@ -2177,8 +2213,8 @@ V3DLONG ImageLoaderBasic::decompressPBD3(unsigned char * sourceData, unsigned ch
   V3DLONG cp=0;
   V3DLONG dp=0;
   unsigned char value=0;
-  int sMax=pbd3_source_max;
-  int sMin=pbd3_source_min;
+  int sMax=pbd3_current_max;
+  int sMin=pbd3_current_min;
   int sourceRange = sMax - sMin;
   unsigned char bitOffset=0;
   unsigned char currentByte=sourceData[cp];

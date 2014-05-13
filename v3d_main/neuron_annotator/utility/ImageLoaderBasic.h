@@ -91,6 +91,7 @@ protected:
     FILE * fid;
     V3DLONG totalReadBytes;
     V3DLONG maxDecompressionSize;
+    V3DLONG channelLength;
     std::vector<unsigned char> compressionBuffer;
     unsigned char * decompressionBuffer;
     unsigned char * compressionPosition;
@@ -99,8 +100,12 @@ protected:
     std::vector<char> keyread;
     int loadDatatype;
 
-    unsigned char pbd3_source_min;
-    unsigned char pbd3_source_max;
+    unsigned char* pbd3_source_min;
+    unsigned char* pbd3_source_max;
+    int pbd3_current_channel;
+    unsigned char pbd3_current_min;
+    unsigned char pbd3_current_max;
+    V3DLONG pbd_sz[4];
 };
 
 
