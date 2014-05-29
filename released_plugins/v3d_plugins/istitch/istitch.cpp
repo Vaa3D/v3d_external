@@ -3737,17 +3737,17 @@ int region_groupfusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG,
         for(V3DLONG k=z_start; k<z_end; k++)
         {
             V3DLONG o_k = o_c + (k-start[2])*offset_pagesz_v;
-            V3DLONG o_r_k = o_r_c + (k-z_start)*offset_pagesz_r;
+            V3DLONG o_r_k = o_r_c + (k-tile2vi_zs)*offset_pagesz_r;
 
             for(V3DLONG j=y_start; j<y_end; j++)
             {
                 V3DLONG o_j = o_k + (j-start[1])*vx;
-                V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
+                V3DLONG o_r_j = o_r_k + (j-tile2vi_ys)*rx;
 
                 for(V3DLONG i=x_start; i<x_end; i++)
                 {
                     V3DLONG idx = o_j + i-start[0];
-                    V3DLONG idx_r = o_r_j + (i-x_start);
+                    V3DLONG idx_r = o_r_j + (i-tile2vi_xs);
 
                     if(pVImg[idx])
                     {
