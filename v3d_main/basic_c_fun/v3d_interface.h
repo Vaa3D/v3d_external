@@ -501,7 +501,7 @@ inline bool simple_loadimage_wrapper(V3DPluginCallback & cb, const char * filena
         sz[1] = inimg->getYDim();
         sz[2] = inimg->getZDim();
         sz[3] = inimg->getCDim();
-        if (inimg) {delete inimg; inimg=0;}
+        if (inimg) {delete inimg; inimg=0;} //delete "outimg" pointer, added by Z.ZHOU 06122014
 
     }
     catch (...)
@@ -544,7 +544,7 @@ inline bool simple_loadimage_wrapper_singleslice(V3DPluginCallback & cb, const c
         sz[1] = inimg->getYDim();
         sz[2] = inimg->getZDim();
         sz[3] = inimg->getCDim();
-        if (inimg) {delete inimg; inimg=0;}
+        if (inimg) {delete inimg; inimg=0;}//delete "outimg" pointer, added by Z.ZHOU 06122014
 
     }
     catch (...)
