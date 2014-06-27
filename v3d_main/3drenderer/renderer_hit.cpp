@@ -730,6 +730,22 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				break;
 			case stImageMarker:
 				LIST_COLOR(listMarker, names[2]-1, w);
+         //ALSO UPDATE THE TRIVIEW's marker color //by PHC 20140626
+#ifndef test_main_cpp
+        {
+            My4DImage* image4d = v3dr_getImage4d(_idep);
+            if (image4d)
+            {
+                if (names[2]-1>=0 && names[2]-1<listMarker.size())
+                {
+                    RGBA8 cc = listMarker.at(names[2]-1).color;
+                    LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
+                    s->color = cc;
+                }
+            }
+        }
+#endif
+
 				break;
 		}
 	}
@@ -3516,13 +3532,24 @@ void Renderer_gl1::addMarker(XYZ &loc)
 	{
 		QList <LocationSimple> & listLoc = image4d->listLandmarks;
 		LocationSimple S;
-		S.inputProperty = pxLocaUseful;
-		S.x = pt.x;
+
+        if (listLoc.size()>0)
+        {
+            S.inputProperty = listLoc.last().inputProperty;
+            S.comments = listLoc.last().comments;
+            S.category = listLoc.last().category;
+            S.color = listLoc.last().color;
+        }
+        else
+        {
+            S.inputProperty = pxLocaUseful;
+            S.color = random_rgba8(255);
+        }
+        S.x = pt.x;
 		S.y = pt.y;
 		S.z = pt.z;
 		if (V3Dmainwindow)
 			S.radius = V3Dmainwindow->global_setting.default_marker_radius;
-		S.color = random_rgba8(255);
 		S.on = true;
 		listLoc.append(S);
 		updateLandmark();
@@ -3533,8 +3560,15 @@ void Renderer_gl1::addMarker(XYZ &loc)
 	S.x = pt.x;
 	S.y = pt.y;
 	S.z = pt.z;
-	S.color = random_rgba8(255);
-	S.on = true;
+    if (listMarker.size()>0)
+    {
+        S.color = listMarker.last().color;
+    }
+    else
+    {
+        S.color = random_rgba8(255);
+    }
+    S.on = true;
 	listMarker.append(S);
 #endif
 }
