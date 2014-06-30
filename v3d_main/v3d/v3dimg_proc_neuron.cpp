@@ -1619,7 +1619,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes(NeuronTree *p_tree)
 	return proj_trace_mergeAllClosebyNeuronNodes();
 }
 
-bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()
+bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this function? tentatively disable this in the render_hit as of 20140630.
 {
 	//this function will merge closeby nodes in different segments.
 	bool res=true;

@@ -615,7 +615,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                          listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w)); // ZJL, 20120806
                     }
 				//listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
-				listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w));
+                //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
 				if (curImg->tracedNeuron.isJointed()==false)
 				{
 					listAct.append(actBreakNeuronSegNearestNeuronNode = new QAction("break the segment using nearest neuron-node", w));
