@@ -916,11 +916,17 @@ Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two m
         return 0;
 
     Image4DSimple * myimg = new Image4DSimple;
-    myimg->loadImage(filename, true); //add using mylib support 20131105
-    if (myimg->valid())
-        return myimg;
+    myimg->loadImage(filename, false); //first try libtiff
+    if (myimg->valid()==false) //add this double-loading as of 140630 to cope with Zhi's request
+    {
+        myimg->loadImage(filename, true); //add using mylib support 20131105
+        if (myimg->valid())
+            return myimg;
+        else
+            return 0;
+    }
     else
-        return 0;
+        return myimg;
 }
 
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename, V3DLONG zsliceno)  //2013-11-02
