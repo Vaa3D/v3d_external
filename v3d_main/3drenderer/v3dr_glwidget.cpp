@@ -2674,20 +2674,20 @@ void V3dR_GLWidget::reloadData()
 	QString qtitle = "Reload data";
 	if (QMessageBox::question(0, qtitle,
 						tr("Are you sure to RELOAD the initial data set? \n\n"
-						   "(return to the initial data set, drop other data, but user-controlled parameters isn't changed)."),
+                           "(return to the initial data set, drop other data, but user-controlled parameters/users generated data structures won't be changed)."),
 						QMessageBox::No | QMessageBox::Yes,
 						QMessageBox::Yes)
 		==QMessageBox::No)
 		return;
 
-	qDebug("V3dR_GLWidget::reloadData -----------------------------------------");
+    v3d_msg("V3dR_GLWidget::reloadData -----------------------------------------");
 
 	//makeCurrent(); //ensure right context when concurrent animation, 081025 //090705 delete
 
 	PROGRESS_DIALOG( QObject::tr("Reloading"), this);
 	PROGRESS_PERCENT(10);
 	{
-		//if (renderer)	renderer->cleanData(); //090705 delete this line
+        //if (renderer)	renderer->cleanData(); //090705 delete this line
 
 		PROGRESS_PERCENT(30);
 		//=============================================================================
