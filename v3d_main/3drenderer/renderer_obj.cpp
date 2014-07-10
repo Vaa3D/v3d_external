@@ -107,7 +107,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
     makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105, 081122
 	int type = 0;
 	try {
-        iDrawExternalParameter * ep = (iDrawExternalParameter*)_idep;
+        //iDrawExternalParameter * ep = (iDrawExternalParameter*)_idep;
 		// if create labelfield
 		if (filename.endsWith(".tif", Qt::CaseInsensitive) ||
             filename.endsWith(".tiff", Qt::CaseInsensitive) ||
@@ -117,21 +117,21 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
             )
 		{
 			loadLabelfieldSurf(filename);
-            ep->labelfield_file = filename;
+        //    ep->labelfield_file = filename;
 		}
 		// if label surface obj
 		else if (filename.endsWith(".obj", Qt::CaseInsensitive))
 		{
 			type = stLabelSurface;
 			loadWavefrontOBJ(filename);
-            ep->surface_file = filename;
+        //    ep->surface_file = filename;
         }
 		// if label surface v3ds --binary format obj
 		else if (filename.endsWith(".v3ds", Qt::CaseInsensitive) || filename.endsWith(".vaa3ds", Qt::CaseInsensitive) )
 		{
 			type = stLabelSurface;
 			loadV3DSurface(filename);
-            ep->surface_file = filename;
+        //    ep->surface_file = filename;
         }
 		else if (filename.endsWith(".marker", Qt::CaseInsensitive) || filename.endsWith(".csv", Qt::CaseInsensitive))
 		{
@@ -143,24 +143,24 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
 		{
 			type = stNeuronStructure;
 			loadNeuronTree(filename);            
-            if (!(ep->swc_file_list.contains(filename)))
-                ep->swc_file_list << filename;
+        //    if (!(ep->swc_file_list.contains(filename)))
+        //        ep->swc_file_list << filename;
         }
 		// if eswc
 		else if (filename.endsWith(".eswc", Qt::CaseInsensitive)) //PHC, 20120217
 		{
 			type = stNeuronStructure;
 			loadNeuronTree(filename);
-            if (!(ep->swc_file_list.contains(filename)))
-                ep->swc_file_list << filename;
+        //    if (!(ep->swc_file_list.contains(filename)))
+        //        ep->swc_file_list << filename;
         }
 		// if apo
 		else if (filename.endsWith(".apo", Qt::CaseInsensitive))
 		{
 			type = stPointCloud;
 			loadCellAPO(filename);
-            if (!(ep->pointcloud_file_list.contains(filename)))
-                ep->pointcloud_file_list << filename;
+        //    if (!(ep->pointcloud_file_list.contains(filename)))
+        //        ep->pointcloud_file_list << filename;
 		}
 	} CATCH_handler( "Renderer_gl1::loadObjectFilename" );
     updateBoundingBox(); ///// 081121, all of loaded bounding-box are updated here
