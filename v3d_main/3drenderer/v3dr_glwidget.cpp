@@ -2682,6 +2682,12 @@ void V3dR_GLWidget::reloadData()
 
     v3d_msg("V3dR_GLWidget::reloadData -----------------------------------------");
 
+    //reset by Hanchuan Peng 20140710
+    this->_idep->labelfield_file.clear();
+    this->_idep->swc_file_list.clear();
+    this->_idep->surface_file.clear();
+    this->_idep->pointcloud_file_list.clear();
+
 	//makeCurrent(); //ensure right context when concurrent animation, 081025 //090705 delete
 
 	PROGRESS_DIALOG( QObject::tr("Reloading"), this);
