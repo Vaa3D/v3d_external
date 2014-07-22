@@ -80,6 +80,8 @@ public slots:
     void runPlugin();
 	void runPlugin(QPluginLoader *loader, const QString & menuString); //by PHC, 101008
 
+    void runRecentPlugin(); //added by Zhi Z, 20140721
+
 protected:
 	bool runSingleImageInterface(QObject* plugin, const QString& command);
 	bool runPluginInterface(QObject* plugin, const QString& command);
@@ -91,11 +93,15 @@ protected:
 	void addToMenu(QMenu *menu, QObject *plugin, const QStringList &texts, const char *member);
 	void searchPluginDirs(QMenu* menu, const QDir& pluginsDir);
 	void searchPluginFiles(QMenu* menu, const QDir& pluginsDir);
+    void addrecentPlugins(QMenu* menu); //add by Zhi Z, 20140721
 
     // QList<QDir> pluginsDirList;
     QStringList pluginFilenameList;
     QList<QPluginLoader*> pluginList;
     QMenu plugin_menu;
+
+    QStringList recentpluginsNameList;
+    QStringList recentpluginsPathList; //added by Zhi Z, 20140721
 
     QMenu* v3d_menuPlugin;
     MainWindow* v3d_mainwindow;

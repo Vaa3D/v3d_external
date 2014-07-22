@@ -239,6 +239,7 @@ void V3d_PluginLoader::loadPlugins()
 	{
 		plugin_menu.addAction(plugin_manager);
 		plugin_menu.addAction(plugin_rescan);
+        addrecentPlugins(&plugin_menu); //added by Zhi Z 20140721
 		plugin_menu.addSeparator();
 	}
 
@@ -257,6 +258,34 @@ void V3d_PluginLoader::loadPlugins()
         searchPluginFiles(&plugin_menu, pluginsDir);
         qDebug("Searching ./plugins done.");
     }
+}
+
+//added by Zhi Z 20140721
+void V3d_PluginLoader::addrecentPlugins(QMenu* menu)
+{
+    if (! menu)  return;
+
+    QMenu *plugin_recent = new QMenu(tr("Recently used plugins"));
+    menu->addMenu(plugin_recent);
+    for(int i = recentpluginsNameList.size() - 1; i >= 0; i--)
+    {
+        QAction *action = new QAction(recentpluginsNameList.at(i),this);
+        connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+        plugin_recent->addAction(action);
+    }
+}
+
+void V3d_PluginLoader::runRecentPlugin()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    int i;
+    for(i = 0; i< recentpluginsNameList.size(); i++)
+    {
+        if(recentpluginsNameList.at(i) == action->text())
+            break;
+    }
+    QPluginLoader* loader = new QPluginLoader(recentpluginsPathList.at(i));
+    return runPlugin(loader,recentpluginsNameList.at(i));
 }
 
 void V3d_PluginLoader::searchPluginDirs(QMenu* menu, const QDir& pluginsDir)
@@ -385,6 +414,8 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	//
     if (!done)  {v3d_msg("No interface found.",0);}
 	
+    //rescanPlugins(); //rescan the plugins to update recently used plugin list, added by Zhi Z, 20140714
+
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
 	//    if (loader->isLoaded())
@@ -403,6 +434,10 @@ void V3d_PluginLoader::runPlugin()
     	v3d_msg("ERROR in V3d_PluginLoader::runPlugin: qobject_cast<QPluginLoader *>");
     	return;
     }
+
+    //added by Zhi Z, 20140721
+    recentpluginsNameList.append(action->text());
+    recentpluginsPathList.append(loader->fileName());
 	
 	return runPlugin(loader, action->text());
 }
