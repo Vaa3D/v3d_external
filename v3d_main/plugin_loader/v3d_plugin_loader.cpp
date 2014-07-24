@@ -164,7 +164,6 @@ V3d_PluginLoader::V3d_PluginLoader(MainWindow* mainwindow)
 void V3d_PluginLoader::clear()
 {
 	plugin_menu.clear();
-
 	foreach (QPluginLoader* loader, pluginList)
     {
         //while (loader->isLoaded())
@@ -240,6 +239,7 @@ void V3d_PluginLoader::loadPlugins()
 		plugin_menu.addAction(plugin_manager);
 		plugin_menu.addAction(plugin_rescan);
         addrecentPlugins(&plugin_menu); //added by Zhi Z 20140721
+        updated_recentPlugins();
 		plugin_menu.addSeparator();
 	}
 
@@ -264,10 +264,20 @@ void V3d_PluginLoader::loadPlugins()
 void V3d_PluginLoader::addrecentPlugins(QMenu* menu)
 {
     if (! menu)  return;
+    QSettings settings("HHMI", "Vaa3D");
+    QStringList pluginpaths = settings.value("recentPluginList").toStringList();
+    QStringList pluginnames = settings.value("recentPluginName").toStringList();
 
-    QMenu *plugin_recent = new QMenu(tr("Recently used plugins"));
+    recentpluginsNameList = pluginnames;
+    recentpluginsPathList = pluginpaths;
+
+    plugin_recent = new QMenu(tr("Recently used plugins"));
     menu->addMenu(plugin_recent);
-    for(int i = recentpluginsNameList.size() - 1; i >= 0; i--)
+}
+void V3d_PluginLoader::updated_recentPlugins()
+{
+    plugin_recent->clear();
+    for(int i = 0; i < recentpluginsNameList.size(); i++)
     {
         QAction *action = new QAction(recentpluginsNameList.at(i),this);
         connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
@@ -413,8 +423,30 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     if (!done)  { done = runSingleImageInterface(plugin, menuString); v3d_msg("done with runSingleImageInterface().",0); }
 	//
     if (!done)  {v3d_msg("No interface found.",0);}
-	
-    //rescanPlugins(); //rescan the plugins to update recently used plugin list, added by Zhi Z, 20140714
+
+    //added by Zhi Z, 20140724
+    QSettings settings("HHMI", "Vaa3D");
+    QStringList pluginpaths = settings.value("recentPluginList").toStringList();
+    QStringList pluginnames = settings.value("recentPluginName").toStringList();
+
+    for(int i = 0; i < pluginpaths.size(); i++)
+    {
+        if(pluginpaths.at(i) == loader->fileName())
+        {
+            pluginpaths.removeAt(i);
+            pluginnames.removeAt(i);
+        }
+    }
+    pluginpaths.prepend(loader->fileName());
+    settings.setValue("recentPluginList", pluginpaths);
+
+    pluginnames.prepend(menuString);
+    settings.setValue("recentPluginName", pluginnames);
+
+    recentpluginsNameList = pluginnames;
+    recentpluginsPathList = pluginpaths;
+    updated_recentPlugins();
+    plugin_menu.update();
 
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
@@ -435,10 +467,6 @@ void V3d_PluginLoader::runPlugin()
     	return;
     }
 
-    //added by Zhi Z, 20140721
-    recentpluginsNameList.append(action->text());
-    recentpluginsPathList.append(loader->fileName());
-	
 	return runPlugin(loader, action->text());
 }
 

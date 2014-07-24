@@ -94,6 +94,7 @@ protected:
 	void searchPluginDirs(QMenu* menu, const QDir& pluginsDir);
 	void searchPluginFiles(QMenu* menu, const QDir& pluginsDir);
     void addrecentPlugins(QMenu* menu); //add by Zhi Z, 20140721
+    void updated_recentPlugins();
 
     // QList<QDir> pluginsDirList;
     QStringList pluginFilenameList;
@@ -101,7 +102,8 @@ protected:
     QMenu plugin_menu;
 
     QStringList recentpluginsNameList;
-    QStringList recentpluginsPathList; //added by Zhi Z, 20140721
+    QStringList recentpluginsPathList;
+    QMenu *plugin_recent;//added by Zhi Z, 20140721
 
     QMenu* v3d_menuPlugin;
     MainWindow* v3d_mainwindow;
