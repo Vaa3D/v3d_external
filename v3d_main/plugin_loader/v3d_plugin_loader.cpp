@@ -193,7 +193,7 @@ void V3d_PluginLoader::clear()
 
 void V3d_PluginLoader::rescanPlugins()
 {
-	clear();
+    clear();
 
 	loadPlugins();
 
@@ -233,13 +233,18 @@ void V3d_PluginLoader::loadPlugins()
 {
 	QAction *plugin_manager = new QAction(tr("Plug-in manager"), this);
 	connect(plugin_manager, SIGNAL(triggered()), this, SLOT(aboutPlugins()));
-	QAction *plugin_rescan = new QAction(tr("Re-scan all plugins"), this);
+    QAction *plugin_rescan = new QAction(tr("Re-scan all plugins"), this);
 	connect(plugin_rescan, SIGNAL(triggered()), this, SLOT(rescanPlugins()));
+    QAction * plugin_clear = new QAction(tr("Clear used plugins history"),this);
+    connect(plugin_clear, SIGNAL(triggered()), this, SLOT(clear_recentPlugins()));
 	{
 		plugin_menu.addAction(plugin_manager);
 		plugin_menu.addAction(plugin_rescan);
+
         addrecentPlugins(&plugin_menu); //added by Zhi Z 20140721
         updated_recentPlugins();
+
+        plugin_menu.addAction(plugin_clear);
 		plugin_menu.addSeparator();
 	}
 
@@ -265,23 +270,52 @@ void V3d_PluginLoader::addrecentPlugins(QMenu* menu)
 {
     if (! menu)  return;
     QSettings settings("HHMI", "Vaa3D");
-    QStringList pluginpaths = settings.value("recentPluginList").toStringList();
-    QStringList pluginnames = settings.value("recentPluginName").toStringList();
 
-    recentpluginsNameList = pluginnames;
-    recentpluginsPathList = pluginpaths;
+    recentpluginsList = settings.value("recentPluginList").toStringList();
+    recentpluginsIndex = settings.value("recentPluginIndex").toList();
 
     plugin_recent = new QMenu(tr("Recently used plugins"));
+    plugin_most = new QMenu(tr("Most used plugins"));
     menu->addMenu(plugin_recent);
+    menu->addMenu(plugin_most);
+
 }
 void V3d_PluginLoader::updated_recentPlugins()
 {
     plugin_recent->clear();
-    for(int i = 0; i < recentpluginsNameList.size(); i++)
+    plugin_most->clear();
+
+    QList<QVariant> recentpluginsIndex_temp = recentpluginsIndex;
+    QList <int> sort_index;
+    for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
+        sort_index.append(i);
+
+    for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
     {
-        QAction *action = new QAction(recentpluginsNameList.at(i),this);
+        if (i > 0)
+        {
+            V3DLONG j = i;
+            while(j > 0 && recentpluginsIndex_temp.at(j-1).toInt()<recentpluginsIndex_temp.at(j).toInt())
+            {
+                recentpluginsIndex_temp.swap(j,j-1);
+                sort_index.swap(j,j-1);
+                j--;
+            }
+        }
+    }
+
+    QRegExp reg("%");
+    for(int i = 0; i < recentpluginsList.size(); i++)
+    {
+        QStringList plugininfo = recentpluginsList.at(i).split(reg);
+        QAction *action = new QAction(plugininfo.at(0),this);
         connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
         plugin_recent->addAction(action);
+
+        QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
+        QAction *action_index = new QAction(plugininfo_index.at(0),this);
+        connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+        plugin_most->addAction(action_index);
     }
 }
 
@@ -289,13 +323,31 @@ void V3d_PluginLoader::runRecentPlugin()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     int i;
-    for(i = 0; i< recentpluginsNameList.size(); i++)
+    QRegExp reg("%");
+    QStringList plugininfo;
+    for(i = 0; i< recentpluginsList.size(); i++)
     {
-        if(recentpluginsNameList.at(i) == action->text())
+        plugininfo = recentpluginsList.at(i).split(reg);
+        if(plugininfo.at(0) == action->text())
             break;
     }
-    QPluginLoader* loader = new QPluginLoader(recentpluginsPathList.at(i));
-    return runPlugin(loader,recentpluginsNameList.at(i));
+    QPluginLoader* loader = new QPluginLoader(plugininfo.at(1));
+    return runPlugin(loader,plugininfo.at(0));
+}
+
+void V3d_PluginLoader::clear_recentPlugins()
+{
+    if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to clear the history of used plugins?"), QMessageBox::Yes, QMessageBox::No))
+    {
+
+        QSettings settings("HHMI", "Vaa3D");
+        settings.remove("recentPluginList");
+        settings.remove("recentPluginIndex");
+
+        plugin_recent->clear();
+        plugin_most->clear();
+    }
+
 }
 
 void V3d_PluginLoader::searchPluginDirs(QMenu* menu, const QDir& pluginsDir)
@@ -426,25 +478,28 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 
     //added by Zhi Z, 20140724
     QSettings settings("HHMI", "Vaa3D");
-    QStringList pluginpaths = settings.value("recentPluginList").toStringList();
-    QStringList pluginnames = settings.value("recentPluginName").toStringList();
+    recentpluginsList = settings.value("recentPluginList").toStringList();
+    recentpluginsIndex = settings.value("recentPluginIndex").toList();
 
-    for(int i = 0; i < pluginpaths.size(); i++)
+    QString CurrentpluginInfo = menuString + "%" + loader->fileName();
+    int currentIndex = 0;
+
+    for(int i=0; i< recentpluginsList.size(); i++)
     {
-        if(pluginpaths.at(i) == loader->fileName())
+        if(recentpluginsList.at(i) == CurrentpluginInfo)
         {
-            pluginpaths.removeAt(i);
-            pluginnames.removeAt(i);
+            currentIndex = recentpluginsIndex.at(i).toInt();
+            recentpluginsList.removeAt(i);
+            recentpluginsIndex.removeAt(i);
+            break;
         }
     }
-    pluginpaths.prepend(loader->fileName());
-    settings.setValue("recentPluginList", pluginpaths);
+    recentpluginsList.prepend(CurrentpluginInfo);
+    recentpluginsIndex.prepend(currentIndex + 1);
 
-    pluginnames.prepend(menuString);
-    settings.setValue("recentPluginName", pluginnames);
+    settings.setValue("recentPluginList", recentpluginsList);
+    settings.setValue("recentPluginIndex", recentpluginsIndex);
 
-    recentpluginsNameList = pluginnames;
-    recentpluginsPathList = pluginpaths;
     updated_recentPlugins();
     plugin_menu.update();
 
