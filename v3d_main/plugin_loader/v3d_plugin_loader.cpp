@@ -289,19 +289,23 @@ void V3d_PluginLoader::updated_recentPlugins()
     {
         QList<QVariant> recentpluginsIndex_temp = recentpluginsIndex;
         QList <int> sort_index;
+
         for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
             sort_index.append(i);
 
-        for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
+        if(recentpluginsIndex.size()>1)
         {
-            if (i > 0)
+            for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
             {
-                V3DLONG j = i;
-                while(j > 0 && recentpluginsIndex_temp.at(j-1).toInt()<recentpluginsIndex_temp.at(j).toInt())
+                if (i > 0)
                 {
-                    recentpluginsIndex_temp.swap(j,j-1);
-                    sort_index.swap(j,j-1);
-                    j--;
+                    V3DLONG j = i;
+                    while(j > 0 && recentpluginsIndex_temp.at(j-1).toInt()<recentpluginsIndex_temp.at(j).toInt())
+                    {
+                        recentpluginsIndex_temp.swap(j,j-1);
+                        sort_index.swap(j,j-1);
+                        j--;
+                    }
                 }
             }
         }
@@ -487,14 +491,17 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     QString CurrentpluginInfo = menuString + "%" + loader->fileName();
     int currentIndex = 0;
 
-    for(int i=0; i< recentpluginsList.size(); i++)
+    if(recentpluginsIndex.size() > 0)
     {
-        if(recentpluginsList.at(i) == CurrentpluginInfo)
+        for(int i=0; i< recentpluginsList.size(); i++)
         {
-            currentIndex = recentpluginsIndex.at(i).toInt();
-            recentpluginsList.removeAt(i);
-            recentpluginsIndex.removeAt(i);
-            break;
+            if(recentpluginsList.at(i) == CurrentpluginInfo)
+            {
+                currentIndex = recentpluginsIndex.at(i).toInt();
+                recentpluginsList.removeAt(i);
+                recentpluginsIndex.removeAt(i);
+                break;
+            }
         }
     }
     recentpluginsList.prepend(CurrentpluginInfo);
