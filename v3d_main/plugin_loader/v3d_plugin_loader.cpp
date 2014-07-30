@@ -285,37 +285,40 @@ void V3d_PluginLoader::updated_recentPlugins()
     plugin_recent->clear();
     plugin_most->clear();
 
-    QList<QVariant> recentpluginsIndex_temp = recentpluginsIndex;
-    QList <int> sort_index;
-    for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
-        sort_index.append(i);
-
-    for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
+    if(recentpluginsIndex.size()>0)
     {
-        if (i > 0)
+        QList<QVariant> recentpluginsIndex_temp = recentpluginsIndex;
+        QList <int> sort_index;
+        for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
+            sort_index.append(i);
+
+        for(V3DLONG i = 0; i < recentpluginsList.size(); i++)
         {
-            V3DLONG j = i;
-            while(j > 0 && recentpluginsIndex_temp.at(j-1).toInt()<recentpluginsIndex_temp.at(j).toInt())
+            if (i > 0)
             {
-                recentpluginsIndex_temp.swap(j,j-1);
-                sort_index.swap(j,j-1);
-                j--;
+                V3DLONG j = i;
+                while(j > 0 && recentpluginsIndex_temp.at(j-1).toInt()<recentpluginsIndex_temp.at(j).toInt())
+                {
+                    recentpluginsIndex_temp.swap(j,j-1);
+                    sort_index.swap(j,j-1);
+                    j--;
+                }
             }
         }
-    }
 
-    QRegExp reg("%");
-    for(int i = 0; i < recentpluginsList.size(); i++)
-    {
-        QStringList plugininfo = recentpluginsList.at(i).split(reg);
-        QAction *action = new QAction(plugininfo.at(0),this);
-        connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-        plugin_recent->addAction(action);
+        QRegExp reg("%");
+        for(int i = 0; i < recentpluginsList.size(); i++)
+        {
+            QStringList plugininfo = recentpluginsList.at(i).split(reg);
+            QAction *action = new QAction(plugininfo.at(0),this);
+            connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+            plugin_recent->addAction(action);
 
-        QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
-        QAction *action_index = new QAction(plugininfo_index.at(0),this);
-        connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-        plugin_most->addAction(action_index);
+            QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
+            QAction *action_index = new QAction(plugininfo_index.at(0),this);
+            connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+            plugin_most->addAction(action_index);
+        }
     }
 }
 
