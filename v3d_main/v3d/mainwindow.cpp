@@ -629,6 +629,7 @@ void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile, bool b_forceopen3dv
     else
         downloadManager->startDownload(url, fileName);
 }
+
 // This method is called once an asynchronous web download has completed.
 // By CMB Oct-08-2010
 void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheLocalFile, bool b_forceopen3dviewer)
@@ -648,6 +649,7 @@ void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cach
         emit imageLoaded2Plugin(); //20110426 YuY
     }
 }
+
 void MainWindow::checkForUpdates(bool b_verbose)
 {
     // In interactive mode, bring up a pre-dialog where user can set update frequency
