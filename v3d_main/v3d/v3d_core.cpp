@@ -2877,7 +2877,12 @@ void XFormView::drawROI(QPainter *painter)
 	}
 
     curColor = (b_color==1) ? QColor(255, 0, 0, alpha) : QColor(255, 255, 255, alpha);
-    painter->setPen(QPen(curColor, 1, Qt::DashDotLine, Qt::FlatCap, Qt::BevelJoin));
+
+    double adj_width = 1./imgData->getXWidget()->disp_zoom; //by PHC, zoom-based ROI border line
+    if (adj_width<1)
+        adj_width = 1;
+
+    painter->setPen(QPen(curColor, adj_width, Qt::DashDotLine, Qt::FlatCap, Qt::BevelJoin)); //use adj_width instead of 1.
 	painter->drawPolygon(roiPolygon);
 }
 
