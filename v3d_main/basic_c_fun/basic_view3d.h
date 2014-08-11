@@ -212,6 +212,14 @@ public:
 	virtual void updateImageData() =0;
 	virtual void reloadData() =0;
 	virtual void cancelSelect() =0;
+
+    //defined for Katie's need to export the local 3D viewer starting and local locations //140811
+    virtual int getLocalStartPosX()=0;
+    virtual int getLocalStartPosY()=0;
+    virtual int getLocalStartPosZ()=0;
+    virtual int getLocalEndPosX()=0;
+    virtual int getLocalEndPosY()=0;
+    virtual int getLocalEndPosZ()=0;
 };
 
 #endif /* BASIC_VIEW3D_H_ */

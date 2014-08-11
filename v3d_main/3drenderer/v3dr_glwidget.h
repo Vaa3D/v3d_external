@@ -307,6 +307,16 @@ public slots:
 	virtual void toggleLineType();
 	virtual void toggleObjShader();
 
+    //defined for Katie's need to export the local 3D viewer starting and local locations //140811
+    virtual int getLocalStartPosX();
+    virtual int getLocalStartPosY();
+    virtual int getLocalStartPosZ();
+    virtual int getLocalEndPosX();
+    virtual int getLocalEndPosY();
+    virtual int getLocalEndPosZ();
+
+    //
+
      virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
 
      virtual void setDragWinSize(int csize); // ZJL 110927

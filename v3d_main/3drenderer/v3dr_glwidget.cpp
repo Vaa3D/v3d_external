@@ -2244,6 +2244,57 @@ void V3dR_GLWidget::createSurfCurrentB()
 	}
 }
 
+
+//defined for Katie's need to export the local 3D viewer starting and local locations //140811
+int V3dR_GLWidget::getLocalStartPosX()
+{
+    if (_idep)
+        return _idep->local_start.x;
+    else
+        return -1;
+}
+
+int V3dR_GLWidget::getLocalStartPosY()
+{
+    if (_idep)
+        return _idep->local_start.z;
+    else
+        return -1;
+}
+
+int V3dR_GLWidget::getLocalStartPosZ()
+{
+    if (_idep)
+        return _idep->local_start.z;
+    else
+        return -1;
+}
+
+int V3dR_GLWidget::getLocalEndPosX()
+{
+if (_idep)
+    return _idep->local_start.x + _idep->local_size.x - 1;
+else
+    return -1;
+}
+
+int V3dR_GLWidget::getLocalEndPosY()
+{
+    if (_idep)
+        return _idep->local_start.y + _idep->local_size.y - 1;
+    else
+        return -1;
+}
+
+int V3dR_GLWidget::getLocalEndPosZ()
+{
+    if (_idep)
+        return _idep->local_start.z + _idep->local_size.z - 1;
+    else
+        return -1;
+}
+
+
 //void V3dR_GLWidget::loadObjectFromFile()
 //{
 //	if (renderer)
