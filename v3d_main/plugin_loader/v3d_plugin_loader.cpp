@@ -484,8 +484,10 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     for(int i = 0; i < pluginFilenameList.size();i++)
     {
         if(pluginFilenameList.at(i) == loader->fileName())
+        {
             flag = 1;
-
+            break;
+        }
     }
 
     if(flag == 1)
