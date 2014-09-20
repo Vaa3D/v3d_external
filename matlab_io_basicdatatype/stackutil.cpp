@@ -38,6 +38,7 @@
  * 20080930: return the original tiff pixel value but not the automatically scaled down version
  */
 
+#define _FILE_OFFSET_BITS  64  //20140919
 
 #ifndef __STACKUTIL_CPP__
 #define __STACKUTIL_CPP__
@@ -774,7 +775,7 @@ char checkMachineEndian()
     else
         e = 'N';
 	
-    //printf("[%c] \n", e);
+    printf("[%c] \n", e);
     return e;
 }
 
