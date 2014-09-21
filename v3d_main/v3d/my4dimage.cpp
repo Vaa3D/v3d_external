@@ -928,12 +928,36 @@ bool My4DImage::updateminmaxvalues()
 		case V3D_FLOAT32:
 			for(i=0;i<this->getCDim();i++)
 			{
-				float minvv,maxvv;
+                float minvv,maxvv;
+
 				V3DLONG tmppos_min, tmppos_max;
 				float *datahead = (float *)getRawDataAtChannel(i);
-				minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
-				p_vmax[i] = maxvv; p_vmin[i] = minvv;
-				v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(p_vmin[i]).arg(p_vmax[i]),0);
+
+                if (0) //for debugging purpose. 2014-08-22
+                {
+                    minvv=datahead[0], maxvv=datahead[0];
+                    for (V3DLONG myii=1; myii<channelPageSize;myii++)
+                    {
+                        if (minvv>datahead[myii]) minvv=datahead[myii];
+                        else if (maxvv<datahead[myii]) maxvv=datahead[myii];
+                    }
+
+                    p_vmax[i] = maxvv; p_vmin[i] = minvv;
+                    v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(p_vmin[i]).arg(p_vmax[i]));
+                }
+                else
+                {
+                    if (minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv))
+                    {
+                        p_vmax[i] = maxvv; p_vmin[i] = minvv;
+                        v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(p_vmin[i]).arg(p_vmax[i]), 0);
+                    }
+                    else
+                    {
+                        v3d_msg("fail");
+                    }
+                }
+
 			}
 			break;
 

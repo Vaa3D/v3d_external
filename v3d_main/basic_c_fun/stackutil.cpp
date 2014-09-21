@@ -79,9 +79,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * 20120410: fix a bug when strcasecmp_l() taking a NULL parameter so that it crashes
  */
 
+#define _FILE_OFFSET_BITS  64  //20140919
 
 #ifndef __STACKUTIL_CPP__
 #define __STACKUTIL_CPP__
+
+
 
 // 64-bit and 32-bit checking
 // Windows
@@ -887,7 +890,6 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	{
 		for (i=0;i<4;i++)
 		{
-			//swap2bytes((void *)(mysz+i));
 			if (b_VERBOSE_PRINT)
 				printf("mysz raw read unit[%ld]: [%d] ", i, mysz[i]);
 			swap4bytes((void *)(mysz+i));
@@ -956,10 +958,17 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	while (remainingBytes>0)
 	{
 		V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
-		V3DLONG curReadUnits = curReadBytes/unitSize;
-		nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
-		if (nread!=curReadUnits)
-		{
+
+//        V3DLONG curReadUnits = curReadBytes/unitSize; //no need to use, 2014-9-21
+
+        //nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid); //this seems to be the bug in the unable to read >2G float data, 20140921, by PHC
+        nread = fread(img+cntBuf*nBytes2G, 1, curReadBytes, fid); // a fix of the bug for ">2G float data " reading,. seems there is a bug in fread()!!!
+
+         printf("Just read %ld units, each unit has the size = %ld\n", nread/unitSize, unitSize);   fflush(stdout);
+
+//		if (nread!=curReadUnits)
+        if (nread!=curReadBytes) //20140921. by PHC
+        {
 			printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
 			if (keyread) {delete []keyread; keyread=0;}
 			if (sz) {delete []sz; sz=0;}
@@ -972,10 +981,15 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 
 //        printf("Finish reading %5.4f%% \r", (1-double(remainingBytes)/(double(totalBytes)))*100.0); fflush(stdout);
         if (remainingBytes>0)
-        {printf("Finish reading %5.4f%% \n", (1-double(remainingBytes)/(double(totalBytes)))*100.0); fflush(stdout); }
+        {
+            printf("Finish reading %5.4f%% \n", (1-double(remainingBytes)/(double(totalBytes)))*100.0);
+            fflush(stdout);
+        }
         else
-        {printf("Finish reading 100%% \n"); fflush(stdout);}
-
+        {
+            printf("Finish reading 100%% \n");
+            fflush(stdout);
+        }
 
 		cntBuf++;
 	}
@@ -1007,20 +1021,61 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 
 	// clean and return 
 
-//    v3d_msg("here");
-
 	if (keyread) {delete [] keyread; keyread = 0;}
 	fclose(fid); //bug fix on 060412
 
-	//a debug check of the min max value
-    double minvv=1000000, maxvv=-1;
-	for (V3DLONG myii=0; myii<sz[0]*sz[1]*sz[2];myii++)
-	{
-		if (minvv>img[myii]) minvv=img[myii];
-		else if (maxvv<img[myii]) maxvv=img[myii];
-	}
-	printf("*** for loadRaw2Stack() all readin bytes: minvv=%5.3f maxvv=%5.3f\n", minvv, maxvv);	
-	
+    if (b_VERBOSE_PRINT && 0)
+    {
+        //a debug check of the min max value
+        switch (dcode)
+        {
+        case 1:
+        {
+            unsigned char *img1 = img;
+            float minvv=img1[0], maxvv=img1[0];
+            for (V3DLONG myii=1; myii<totalUnit;myii++)
+            {
+                if (minvv>img1[myii]) minvv=img1[myii];
+                else if (maxvv<img1[myii]) maxvv=img1[myii];
+            }
+            printf("*** for loadRaw2Stack() all readin units: [minvv=%5.3f maxvv=%5.3f]\n", minvv, maxvv);
+        }
+            break;
+
+        case 2:
+        {
+            unsigned short int *img1 = (unsigned short int *)img;
+            float minvv=img1[0], maxvv=img1[0];
+            for (V3DLONG myii=1; myii<totalUnit;myii++)
+            {
+                if (minvv>img1[myii]) minvv=img1[myii];
+                else if (maxvv<img1[myii]) maxvv=img1[myii];
+            }
+            printf("*** for loadRaw2Stack() all readin units: [minvv=%5.3f maxvv=%5.3f]\n", minvv, maxvv);
+        }
+            break;
+
+        case 4:
+        {
+            float *img1 = (float *)img;
+            float minvv=img1[0], maxvv=img1[0];
+            for (V3DLONG myii=1; myii<totalUnit;myii++)
+            {
+                if (minvv>img1[myii]) minvv=img1[myii];
+                else if (maxvv<img1[myii]) maxvv=img1[myii];
+            }
+            printf("*** for loadRaw2Stack() all readin units: [minvv=%5.3f maxvv=%5.3f]\n", minvv, maxvv);
+        }
+            break;
+
+        default:
+            printf("Unrecognized data type code [%d]. The file type is incorrect or this code is not supported in this version.\n", dcode);
+            if (keyread) {delete []keyread; keyread=0;}
+            berror = 1;
+            return berror;
+        }
+    }
+
 	return berror;
 }
 
@@ -1229,10 +1284,16 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	while (remainingBytes>0)
 	{
 		V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
-		V3DLONG curReadUnits = curReadBytes/unitSize;
-		nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
-		if (nread!=curReadUnits)
-		{
+
+        //the following is changed on 2014-09-21 consistent with the loadRaw2Stack() function to fix the big (>2G) float data reading bug seemingly in fread(). by PHC
+
+//		V3DLONG curReadUnits = curReadBytes/unitSize;
+//		nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
+//		if (nread!=curReadUnits)
+
+        nread = fread(img+cntBuf*nBytes2G, 1, curReadBytes, fid);
+        if (nread!=curReadBytes)
+        {
 			printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
 			if (keyread) {delete []keyread; keyread=0;}
 			if (sz) {delete []sz; sz=0;}
@@ -1324,9 +1385,6 @@ int saveStack2Raw(const char * filename, const unsigned char * img, const V3DLON
 		return berror;
 	}
 
-	//int b_swap = (endianCodeMachine==endianCodeData)?0:1;
-	//int b_swap = 0; //for this machine itself, should not swap data.
-
 	short int dcode = (short int)datatype;
 	if (dcode!=1 && dcode!=2 && dcode!=4)
 	{
@@ -1335,8 +1393,7 @@ int saveStack2Raw(const char * filename, const unsigned char * img, const V3DLON
 		return berror;
 	}
 
-	//if (b_swap) swap2bytes((void *)&dcode);
-	nwrite=fwrite(&dcode, 2, 1, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
+    nwrite=fwrite(&dcode, 2, 1, fid);
 	if (nwrite!=1)
 	{
 		printf("Writing file error.\n");
@@ -1347,13 +1404,9 @@ int saveStack2Raw(const char * filename, const unsigned char * img, const V3DLON
 	V3DLONG unitSize = datatype; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
 
 	//short int mysz[4];
-	BIT32_UNIT mysz[4];//060806
-					   //if (b_swap)  {
-					   //for (i=0;i<4;i++) mysz[i] = (short int) sz[i];
-		for (i=0;i<4;i++) mysz[i] = (BIT32_UNIT) sz[i];
-		//swap2bytes((void *)(mysz+i));
-		//}
-		nwrite = fwrite(mysz, 4, 4, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
+    BIT32_UNIT mysz[4];
+    for (i=0;i<4;i++) mysz[i] = (BIT32_UNIT) sz[i];
+    nwrite = fwrite(mysz, 4, 4, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
 	if (nwrite!=4)
 	{
 		printf("Writing file error.\n");
