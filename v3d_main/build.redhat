@@ -7,6 +7,7 @@
 #echo 2010-08-12, by Hanchuan Peng
 #echo 2010-08018, by Hanchuan Peng
 #echo 2011-0203, updated by Hanchuan Peng
+#echo 2014-0930, add bigtiff support.
 #echo -----------------------------------------------------------------
 #echo on
 
@@ -23,13 +24,15 @@ fi
 
 if [ ! -f common_lib/lib/libv3dtiff.a ]; then
   cd common_lib/src_packages
-  tar zxvf tiff-3.8.2.1.tar.gz
+#  tar zxvf tiff-3.8.2.1.tar.gz
 #  tar zxvf tiff-4.0.0beta6.tar.gz
+  tar zxvf tiff-4.0.2.tar.gz
   cd ../
   tifpath=`pwd`
   cd build
-  ../src_packages/tiff-3.8.2.1/configure --prefix=$tifpath
+#  ../src_packages/tiff-3.8.2.1/configure --prefix=$tifpath
 #  ../src_packages/tiff-4.0.0beta6/configure --prefix=$tifpath
+  ../src_packages/tiff-4.0.2/configure --prefix=$tifpath
   make clean
   make -j4
   make install
