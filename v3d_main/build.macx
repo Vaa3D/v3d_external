@@ -19,6 +19,7 @@ shopt -s expand_aliases;
 # 110711: updated by RZC, change ARGS,QARGS to ARG_LIB,ARG_V3D 
 # 110801: updated by RZC, add -norun 
 # 111108: updated by PHC, use vaa3d instead of v3d
+# 140930: change tiff from 3.8.2.1 to 4.02 to support bigtiff. suggested by Gib Bogle and tested by Brian Long and Zhi Zhou
 #
 # Arguments:
 #    -jx                        #compile using some 'x' number of processors 
@@ -178,18 +179,18 @@ fi
 
 if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   cd common_lib/src_packages
-  tar zxvf tiff-3.8.2.1.tar.gz
-#  tar zxvf tiff-4.0.0beta6.tar.gz
+#  tar zxvf tiff-3.8.2.1.tar.gz
+  tar zxvf tiff-4.0.2.tar.gz
   cd ../
   TIFFPATH=`pwd`
   cd build
   if [ $SYSTEMBITS == "64" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
-#    ../src_packages/tiff-4.0.0beta6/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
+#    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
+   ../src_packages/tiff-4.0.2/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
   fi
   if [ $SYSTEMBITS == "32" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
-#    ../src_packages/tiff-4.0.0beta6/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
+#    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
+    ../src_packages/tiff-4.0.2/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
   fi
   make clean
   make 
