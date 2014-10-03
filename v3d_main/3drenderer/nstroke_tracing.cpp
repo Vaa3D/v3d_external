@@ -1310,7 +1310,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
     if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return -1;
     if (index < 0 || index>=list_listCurvePos.size())
     {
-        v3d_msg("The index variable in solveCurveMarkerLists_fm() is incorrect. Chgeck your program.\n");
+        v3d_msg("The index variable in solveCurveMarkerLists_fm() is incorrect. Check your program.\n");
       return -1;//by PHC
     }
     else

@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.921);
+    VersionInfo thisVersionOfV3D(2.922);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -706,7 +706,7 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         node = node.nextSibling();
     }
 
-    v3d_msg(QString("remote version=[%1] current version=[%2]\n").arg(remote_version.toFloat()).arg(v3d::thisVersionOfV3D.toFloat()), 0);
+    v3d_msg(QString("remote version=[%1] current version=[%2]\n").arg(remote_version.toFloat()).arg(v3d::thisVersionOfV3D.toFloat()));
 
     if (remote_version.toFloat() > v3d::thisVersionOfV3D.toFloat())
     {

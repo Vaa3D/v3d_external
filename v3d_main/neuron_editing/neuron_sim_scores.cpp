@@ -372,7 +372,7 @@ QString get_neuron_morpho_features_str(const NeuronTree *p)
 	tmpstr += "total length = "; ts2.setNum(tmp_info.total_length); tmpstr += ts2 + "<br>";
 	tmpstr += "total nodes = "; ts2.setNum(tmp_info.n_node); tmpstr += ts2 + "<br>";
 	tmpstr += "total segments = "; ts2.setNum(tmp_info.n_segment); tmpstr += ts2 + "<br>";
-	tmpstr += "total branches = "; ts2.setNum(tmp_info.n_branch); tmpstr += ts2 + "<br>";
+    tmpstr += "total branch points = "; ts2.setNum(tmp_info.n_branch); tmpstr += ts2 + "<br>";
 	tmpstr += "total tips = "; ts2.setNum(tmp_info.n_tip); tmpstr += ts2 + "<br>";
 	return tmpstr;
 }

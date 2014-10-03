@@ -1689,13 +1689,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		tmpstr.setNum(n_id); tmpstr.prepend("The neuron node has row index ");
 		tmpstr.append("\n");
 		tmpstr.append(info_NeuronNode(n_id, p_tree));
-		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).n); tmpstr1.prepend("\nnode number (1st col in SWC) = "); tmpstr.append(tmpstr1);
-		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).type); tmpstr1.prepend("\ntype (2th col) = "); tmpstr.append(tmpstr1);
-		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).x); tmpstr1.prepend("\nx coord (3rd col) = "); tmpstr.append(tmpstr1);
-		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).y); tmpstr1.prepend("\ny coord (4th col) = "); tmpstr.append(tmpstr1);
-		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).z); tmpstr1.prepend("\nz coord (5th col) = "); tmpstr.append(tmpstr1);
-		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).r); tmpstr1.prepend("\nradius (6th col) = "); tmpstr.append(tmpstr1);
-		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).pn); tmpstr1.prepend("\nparent number (7th col) = "); tmpstr.append(tmpstr1);
 		QMessageBox::information(0, "neuron node info", tmpstr);
 	}
 	else if (act==actAveDistTwoNeurons)
