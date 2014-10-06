@@ -49,7 +49,7 @@ SOURCES      += plugin_image_registration.cpp
 
 TARGET        = $$qtLibraryTarget(plugin_PQ_imagereg)
 
-DESTDIR       = ../../v3d/plugins/image_registration/SSD_registration 
+DESTDIR       = $$V3DPATH/../bin/plugins/image_registration/SSD_registration
 
 
 # the following were added for pdb file support, the modularity must be improved in this future!

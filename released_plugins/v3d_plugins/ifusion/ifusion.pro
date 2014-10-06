@@ -31,5 +31,5 @@ LIBS         += -L$$V3DMAINDIR/common_lib/lib -lv3dfftw3f_threads
 LIBS         += -lm -lpthread
 
 TARGET        = $$qtLibraryTarget(ifusion)
-DESTDIR       = ../../v3d/plugins/image_stitching/ifusion
+DESTDIR       = $$V3DMAINDIR/../bin/plugins/image_stitching/ifusion
 
