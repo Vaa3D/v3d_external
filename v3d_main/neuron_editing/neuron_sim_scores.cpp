@@ -358,9 +358,30 @@ NeuronMorphoInfo neuron_morpho_features(const NeuronTree *p) //collect the morph
 	//neuron_branch_tip_count(n_branch, n_tip, seg_vec);
 
 	// 091212 RZC: count changed using link_map
-	V_NeuronSWC v_neuron = join_V_NeuronSWC_vec(seg_vec);
-	//V_NeuronSWC v_neuron = get_v_neuron_swc(p);
-	neuron_branch_tip_count(n_branch, n_tip, v_neuron);
+    V_NeuronSWC v_neuron = join_V_NeuronSWC_vec(seg_vec);
+    //V_NeuronSWC v_neuron = get_v_neuron_swc(p);
+    neuron_branch_tip_count(n_branch, n_tip, v_neuron);
+
+    //141006 CHB: above may cause error when there is overlapping point in the file, corrrected:
+    vector<int> num_child (p->listNeuron.size(),0);
+    for(int i=0; i<p->listNeuron.size(); i++){
+        V3DLONG pn=p->listNeuron.at(i).pn, pid=-1;
+        if(p->hashNeuron.contains(pn))
+            pid=p->hashNeuron[pn];
+        else
+            continue;
+        num_child[pid]++;
+    }
+    n_branch=0;
+    n_tip=0;
+    for(int i=0; i<num_child.size(); i++){
+        if(p->listNeuron.at(i).pn<0) //skip root
+            continue;
+        if(num_child[i]==0) //tips
+            n_tip++;
+        if(num_child[i]>1) //branch points
+            n_branch++;
+    }
 
 	return m;
 }
@@ -453,6 +474,8 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 	n_branch = 0;
 	n_tip = 0;
 
+    V3DLONG n_path=0, n_single=0; //for test
+
 	Link_Map_Iter it;
 	for (it=link_map.begin(); it!=link_map.end(); it++)
 	{
@@ -460,10 +483,12 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 //		Node_Link & nodelink = link_map[V3DLONG(cur_node.n)];
 		Node_Link & nodelink = (*it).second;
 
+        if(nodelink.nlink == 0) n_single++;
+
 		if (nodelink.nlink == 1)
 			n_tip ++;
 
-		//if (nodelink.nlink == 2) // path point
+        if (nodelink.nlink == 2) n_path++;// path point
 
 		if (nodelink.nlink >= 3)
 		{
@@ -471,4 +496,6 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 			//qDebug("branch #%d (%g %g %g) %d", V3DLONG(cur_node.n),cur_node.x,cur_node.y,cur_node.z, nodelink.nlink);
 		}
 	}
+
+    qDebug("cojoc: all:%d/link:%d/0:%d/1:%d/2:%d/3+:%d",in_swc.row.size(),link_map.size(),n_single,n_tip,n_path,n_branch);
 }
