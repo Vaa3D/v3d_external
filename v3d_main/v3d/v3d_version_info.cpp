@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.922);
+    VersionInfo thisVersionOfV3D(2.923);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -67,6 +67,8 @@ void v3d_aboutinfo()
         "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353. (http://vaa3d.org) </span><br> "
         "<br>"
         "<span style=\"color:#0000FF\">Peng, H., Bria, A., Zhou, Z., Iannello, G., and Long, F. (2014) \"Extensible visualization and analysis for multidimensional images using Vaa3D,\" Nature Protocols, Vol. 9, No. 1, pp. 193-208. (http://vaa3d.org) </span><br> "
+        "<br>"
+        "<span style=\"color:#0000FF\">Peng, H., et al. (2014) \"Virtual finger boosts three-dimensional imaging and microsurgery as well as terabyte volume image visualization and analysis,\" Nature Communications, Vol. 5, No. 4342, DOI: 10.1038/ncomms5342. </span><br> "
         "<br>"
         "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://vaa3d.org\">http://vaa3d.org</a><br>"
         "<br>============================================="
@@ -706,7 +708,7 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         node = node.nextSibling();
     }
 
-    v3d_msg(QString("remote version=[%1] current version=[%2]\n").arg(remote_version.toFloat()).arg(v3d::thisVersionOfV3D.toFloat()));
+    v3d_msg(QString("remote version=[%1] current version=[%2]\n").arg(remote_version.toFloat()).arg(v3d::thisVersionOfV3D.toFloat()), 0);
 
     if (remote_version.toFloat() > v3d::thisVersionOfV3D.toFloat())
     {
