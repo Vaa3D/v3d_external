@@ -1231,6 +1231,18 @@ bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString fil
 	return r;
 }
 
+//added Oct. 08, 2014 by Hanbo Chen
+void V3d_PluginLoader::update_NeuronBoundingBox(V3dR_MainWindow *w)
+{
+    if(w && w->getGLWidget())
+    {
+        V3dR_GLWidget * g = w->getGLWidget();
+        Renderer_gl1 * gp = (Renderer_gl1 *) g->getRenderer();
+        gp->updateNeuronBoundingBox();
+        gp->updateBoundingBox();
+    }
+}
+
 
 //V3DPluginCallback2
 
