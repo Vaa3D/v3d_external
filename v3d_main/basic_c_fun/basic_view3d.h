@@ -172,6 +172,7 @@ public:
 
 	virtual void enableShowAxes(bool b) =0;
 	virtual void enableShowBoundingBox(bool b) =0;
+    virtual void enableClipBoundingBox(bool b) =0;
 	virtual void enableOrthoView(bool b) =0;
 	virtual void setBackgroundColor() =0;
 	virtual void setBright() =0;

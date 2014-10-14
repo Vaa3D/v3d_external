@@ -283,7 +283,8 @@ public slots:
 	virtual void setZCutLock(bool);
 
 	virtual void enableShowAxes(bool b);
-	virtual void enableShowBoundingBox(bool b);
+    virtual void enableShowBoundingBox(bool b);
+    virtual void enableClipBoundingBox(bool b);  //141013 Hanbo Chen
 	virtual void enableOrthoView(bool b);
 	virtual void setBackgroundColor();
 	virtual void setBright();
@@ -437,7 +438,7 @@ public:
 	int _CStransparency, _markerSize, _curChannel;
 	float _thickness;
 	int _Bright, _Contrast, sUpdate_bright, sUpdate_track;
-	bool _showAxes, _showBoundingBox, _absRot, _orthoView;
+    bool _showAxes, _showBoundingBox, _absRot, _orthoView, _clipBoxEnable;
 	bool _volCompress, _volFilter;
 
 	int _volumeTimePoint; float volumeTimPoint_fraction;
@@ -474,7 +475,7 @@ public:
 
 		_Bright=_Contrast=sUpdate_bright=sUpdate_track=0;
 		_showAxes = _showBoundingBox = _absRot = _orthoView =false;
-		_volCompress = _volFilter =true;
+        _clipBoxEnable = _volCompress = _volFilter =true;
 
 		_volumeTimePoint=0;
 		volumeTimPoint_fraction=0;

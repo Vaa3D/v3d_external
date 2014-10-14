@@ -2112,6 +2112,14 @@ void V3dR_GLWidget::enableShowAxes(bool s)
 	}
 }
 
+void V3dR_GLWidget::enableClipBoundingBox(bool b)  //141013 Hanbo Chen
+{
+    if (renderer)
+    {
+        renderer->b_useClipBoxforSubjectObjs = _clipBoxEnable = (b>0);
+    }
+}
+
 void V3dR_GLWidget::enableShowBoundingBox(bool s)
 {
 	//qDebug("V3dR_GLWidget::setShowBoundingBox = %i",s);

@@ -301,7 +301,7 @@ template <class T> bool compute_sphere_win3d_pca(T ***img3d, V3DLONG sx, V3DLONG
 		//output the result
 		pc1 = DD(3);
 		pc2 = DD(2);
-		pc3 = DD(1);
+        pc3 = DD(1);
 	}
 	catch (...)
 	{
