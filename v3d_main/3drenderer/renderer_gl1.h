@@ -228,6 +228,8 @@ public:
 	QList <NeuronTree> * getHandleNeuronTrees() {return &listNeuronTree;}
 	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double & best_dist);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
 
+    QList <ImageMarker> * getHandleLandmark() {return &listMarker;} //20141016, by Hanbo Chen
+
 	QList <CellAPO> *getHandleAPOCellList() {return &listCell;}
 
 	Triangle * findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist);
