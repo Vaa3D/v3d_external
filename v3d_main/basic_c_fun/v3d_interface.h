@@ -212,6 +212,8 @@ public:
 
     virtual void update_NeuronBoundingBox(V3dR_MainWindow *w) = 0; //Oct. 08, 2014 by Hanbo Chen
 
+    virtual QList<ImageMarker> * getHandleImageMarkerList_Any3DViewer(V3dR_MainWindow *w) = 0; //Oct. 16, 2014 by Hanbo Chen
+
     virtual DataLists_in_3dviewer fetch_3dviewer_datafilelist(QString name3dviewer) = 0; //20140122 a conveniece function to access the record of data in a 3D viewer
 };
 
