@@ -1243,6 +1243,20 @@ void V3d_PluginLoader::update_NeuronBoundingBox(V3dR_MainWindow *w)
     }
 }
 
+QList<ImageMarker> * V3d_PluginLoader::getHandleImageMarkerList_Any3DViewer(V3dR_MainWindow *w) //Oct. 16, 2014 by Hanbo Chen
+{
+    if (!w) return 0;
+    V3dR_GLWidget * vi = w->getGLWidget();
+    if (!vi) return 0;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return 0;
+        else
+            return (gp->getHandleLandmark());
+    }
+}
 
 //V3DPluginCallback2
 
