@@ -2696,6 +2696,20 @@ void V3dR_GLWidget::updateWithTriView()
 	}
 }
 
+void V3dR_GLWidget::updateLandmark() //141018 Hanbo Chen
+{
+    if (renderer)
+    try
+    {
+        renderer->updateLandmark();
+        POST_updateGL();
+    }
+    catch(...)
+    {
+        printf("Fail to run the V3dR_GLWidget::updateLandmark() function.\n");
+    }
+}
+
 void V3dR_GLWidget::updateImageData()
 {
 	qDebug("V3dR_GLWidget::updateImageData -----------------------------------------");

@@ -4273,3 +4273,13 @@ int Renderer_gl1::zoomview_currentviewport()//by PHC, revised from zoomview_whee
     produceZoomViewOf3DRoi(loc_vec);
     return 0;
 }
+
+LandmarkList * Renderer_gl1::getHandleLandmark() //by Hanbo Chen, 20141018
+{
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d){
+        return &(image4d->listLandmarks);
+    }else{
+        return 0;
+    }
+}

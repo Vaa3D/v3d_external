@@ -334,6 +334,7 @@ public slots:
 	virtual void showGLinfo();
 
 	virtual void updateWithTriView();
+    virtual void updateLandmark();
 	virtual void updateImageData();
 	virtual void reloadData();
 	virtual void cancelSelect();
