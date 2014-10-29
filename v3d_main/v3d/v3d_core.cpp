@@ -1776,6 +1776,11 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
         tmpLocation.x = sx;
         tmpLocation.y = sy;
         tmpLocation.z = sz;
+
+        //20141029. add by PHC
+        QString tmp_label;
+        tmpLocation.name = qPrintable(tmp_label.setNum(imgData->listLandmarks.count()+1).prepend("landmark "));
+        tmpLocation.radius = imgData->getXWidget()->getMainControlWindow()->global_setting.default_marker_radius; //add a default landmark size
         
         imgData->listLandmarks.append(tmpLocation);
 		v3d_msg(QString("Add new marker at location %1 %2 %3\n").arg(sx).arg(sy).arg(sz), 0);
@@ -2049,14 +2054,12 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
    	QStringList items;
     QString item;
 
-
     double stepx = 1, stepy = 1; //default size is 1 pixel by pixel
 	//qDebug()<<"init: "<<stepx<<" "<<stepy;
 
 	//printf("[%d]\n",e->modifiers()); //don't know why this cause a crash!!
 
     //if (e->modifiers()==Qt::ShiftModifier) //note that e->modifiers() does not work!!!
-
 
 	if (!imgData) return;
 	if (imgData->isEmpty()) return;
