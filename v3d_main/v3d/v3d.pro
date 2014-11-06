@@ -200,6 +200,7 @@ HEADERS += \
     ../neuron_annotator/analysis/NeuronFragmentEditor.h \
     ../neuron_annotator/analysis/AlignerUtils.h \
     ../neuron_annotator/analysis/VolumePatternIndex.h \
+    ../neuron_annotator/analysis/VolumeIndex.h \
     ../neuron_annotator/analysis/SleepThread.h \
     ../neuron_annotator/analysis/AnalysisTools.h \
     ../neuron_annotator/analysis/MaskChan.h \
@@ -314,6 +315,7 @@ SOURCES += \
     ../neuron_annotator/analysis/AlignerUtils.cpp \
     ../neuron_annotator/analysis/NeuronFragmentEditor.cpp \
     ../neuron_annotator/analysis/VolumePatternIndex.cpp \
+    ../neuron_annotator/analysis/VolumeIndex.cpp \
     ../neuron_annotator/analysis/SleepThread.cpp \
     ../neuron_annotator/analysis/AnalysisTools.cpp \
     ../neuron_annotator/analysis/MaskChan.cpp \
