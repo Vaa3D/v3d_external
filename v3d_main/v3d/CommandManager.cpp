@@ -12,6 +12,7 @@
 #include "../neuron_annotator/analysis/NeuronFragmentEditor.h"
 #include "../neuron_annotator/analysis/AlignerUtils.h"
 #include "../neuron_annotator/analysis/VolumePatternIndex.h"
+#include "../neuron_annotator/analysis/VolumeIndex.h"
 
 using namespace std;
 
@@ -108,6 +109,14 @@ bool CommandManager::execute() {
             return false;
         }
         return volumePatternIndex.execute();
+    } else if (firstArg==VolumeIndex::getCommandLineDescription()) {
+        VolumeIndex volumeIndex;
+        int status=volumeIndex.processArgs(argList);
+        if (status!=0) {
+            cout << getUsageString();
+            return false;
+        }
+        return volumeIndex.execute();
     } else {
         cout << getUsageString();
         return false;
@@ -156,6 +165,10 @@ string CommandManager::getUsageString() {
     usage.append(VolumePatternIndex::getCommandLineDescription());
     usage.append("\n");
     usage.append(VolumePatternIndex::getUsage());
+    usage.append("\n");
+    usage.append(VolumeIndex::getCommandLineDescription());
+    usage.append("\n");
+    usage.append(VolumeIndex::getUsage());
     usage.append("\n");
     return usage;
 }
