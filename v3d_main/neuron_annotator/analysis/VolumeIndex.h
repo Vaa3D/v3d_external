@@ -16,6 +16,10 @@ class IndexSpecification
 {
  public:
 
+  IndexSpecification() { 
+    thresholdArray=0L;
+  }
+
   QString space;
 
   double optical_x;
@@ -28,11 +32,10 @@ class IndexSpecification
 
   int index_unit;
   int bit_depth;
-  int binary_threshold;
+  int thresholdCount;
+  int* thresholdArray;
   
   QString rootPath;
-
-  IndexSpecification() {}
 
   QString toString() {
 
@@ -74,9 +77,16 @@ class IndexSpecification
     q.append(QString::number(bit_depth));
     q.append("\n");
 
-    q.append("threshold=");
-    q.append(QString::number(binary_threshold));
-    q.append("\n");
+    if (thresholdArray!=0L) {
+      for (int i=0;i<thresholdCount;i++) {
+	int t=thresholdArray[i];
+	q.append("threshold ");
+	q.append(QString::number(i));
+	q.append(" = ");
+	q.append(QString::number(t));
+	q.append("\n");
+      }
+    }
 
     q.append("root=");
     q.append(rootPath);
@@ -199,6 +209,8 @@ public:
     static const int MODE_SEARCH;
     static const int MODE_ADD_SAMPLE_INDEX_FILE_TO_CONSOLIDATED_INDEX;
 
+    static const char ENTRY_CODE;
+
     VolumeIndex();
 
     ~VolumeIndex();
@@ -273,13 +285,34 @@ private:
     char* firstStageIndex;
     int firstStageIndexLength;
 
-    char* secondStageIndex;
-    int secondStageIndexLength;
+    // Note: these get cleared re-written with every fragment (or sample signal)
+    QList<char*> secondStageIndex; // includes x,y,z,fragmentId,sampleId,data - each entry for subvolume
+    QList<int> secondStageIndexLength; // length of full entry including x,y,z,fragmentId,sampleId,data - each entry for subvolume
+    int secondStageVoxelCount; // for the current sample/fragment
+
+    void clearSecondStageData();
 
     int divideDimensionByUnit(int originalSie, int unit);
-    int subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char* targetMask, int unit, int threshold);
+    int* subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char* targetMask, int unit, int threshold);
+    bool createSecondStageEntry(My4DImage* image, long fragmentId, long sampleId, bool updateFirstStage);
+    char* getAddressOfFirstStageMaskAtCoordinate(int x, int y, int z);
 
     bool createFirstStageIndex();
+    bool createSecondStageIndex();
+    bool writeSampleIndexHeaderAndFirstStage();
+    bool writeSampleIndexUpdate();
+
+    bool validatePositiveFirstStageEntry(int x, int y, int z);
+
+    bool initParamsFromSpecification();
+
+    // Settings for shared work
+    int X_SIZE, Y_SIZE, Z_SIZE;
+    int UNIT;
+    int BITS;
+    long SAMPLE_ID;
+    QString OWNER;
+    int X1_SIZE, Y1_SIZE, Z1_SIZE;
 
 };
 
