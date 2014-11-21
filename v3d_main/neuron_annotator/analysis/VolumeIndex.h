@@ -305,6 +305,7 @@ private:
     bool validatePositiveFirstStageEntry(int x, int y, int z);
 
     bool initParamsFromSpecification();
+    int firstStageCorrectionCount;
 
     // Settings for shared work
     int X_SIZE, Y_SIZE, Z_SIZE;

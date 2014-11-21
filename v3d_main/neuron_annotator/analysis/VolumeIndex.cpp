@@ -71,6 +71,7 @@ If there are multiple matching alignments, the one with the most recent "NEURON 
 
  */
 
+#include "MaskChan.h"
 #include "VolumeIndex.h"
 #include "../utility/ImageLoader.h"
 
@@ -101,6 +102,7 @@ VolumeIndex::VolumeIndex()
   sampleSpecification=0L;
   sampleConsolidatedSignalImage=0L;
   firstStageIndex=0L;
+  firstStageCorrectionCount=0;
 
   X_SIZE=Y_SIZE=Z_SIZE=UNIT=BITS=0;
   SAMPLE_ID=0L;
@@ -206,6 +208,7 @@ bool VolumeIndex::createSampleIndexFile()
   }
   fclose(fid);
   delete sampleConsolidatedSignalImage;
+  qDebug() << "First stage correction count=" << firstStageCorrectionCount;
   return true;
 }
 
@@ -260,10 +263,12 @@ bool VolumeIndex::readIndexSpecificationFile()
 	    qDebug() << "Could not parse threshold line=" << eqList[1];
 	    return false;
 	  }
-	  indexSpecification->thresholdCount=eqList.size();
+	  indexSpecification->thresholdCount=cList.size();
 	  indexSpecification->thresholdArray=new int[indexSpecification->thresholdCount];
-	  for (int i=0;i<eqList.size();i++) {
-	    indexSpecification->thresholdArray[i]=eqList[i].trimmed().toInt();
+	  for (int i=0;i<cList.size();i++) {
+	    qDebug() << "Processing threshold entry=" << cList[i];
+	    indexSpecification->thresholdArray[i]=cList[i].trimmed().toInt();
+	    qDebug() << "Adding threshold entry at position " << i << " value=" << indexSpecification->thresholdArray[i];
 	  }
 	} else if (eqList[0]=="root") {
 	  indexSpecification->rootPath=eqList[1];
@@ -271,7 +276,8 @@ bool VolumeIndex::readIndexSpecificationFile()
       }
     }
   }
-  if (indexSpecification->bit_depth!=indexSpecification->thresholdCount) {
+  if ( ! ((indexSpecification->bit_depth==2 && indexSpecification->thresholdCount==1) ||
+	  (indexSpecification->bit_depth==4 && indexSpecification->thresholdCount==3))) {
     qDebug() << "indexSpecification bit_depth does not match thresholdCount";
     return false;
   }
@@ -571,6 +577,7 @@ bool VolumeIndex::createFirstStageIndex()
   if (s1MaskSize*8<s1TotalSize) {
     s1MaskSize++;
   }
+  qDebug() << "Stage 1 total voxel count=" << s1TotalSize;
   int* nonZeroPlaceholder=(int*)cp;
   ip=(int*)cp;
   ip++;
@@ -578,6 +585,12 @@ bool VolumeIndex::createFirstStageIndex()
   int* sbmResults=subsampleAndThresholdToBinaryMask(sampleConsolidatedSignalImage, cp, UNIT, indexSpecification->thresholdArray[0]);
   int subsampledBinaryMaskSize = sbmResults[0];
   *nonZeroPlaceholder=sbmResults[1];
+
+  qDebug() << "total s1 byte count=" << sbmResults[0];
+  qDebug() << "non-zero entries in 1st stage=" << sbmResults[3];
+  qDebug() << "total s2 size=" << sbmResults[1];
+  qDebug() << "non-zero entries in 2nd stage=" << sbmResults[2];
+
   if (subsampledBinaryMaskSize!=s1MaskSize) {
     qDebug() << "Error, result mask does not equal expected mask size. Result=" << subsampledBinaryMaskSize << " expected=" << s1MaskSize;
     return false;
@@ -601,7 +614,9 @@ int VolumeIndex::divideDimensionByUnit(int originalSize, int unit)
 
 int* VolumeIndex::subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char* targetMask, int unit, int threshold)
 {
-  int* sbmResults=new int[2]; // 0 is total size, 1 is non-zero count
+  qDebug() << "subsampleAndThresholdToBinaryMask: using threshold=" << threshold;
+
+  int* sbmResults=new int[4]; // 0 is total s1 size, 1 is s2 total size, 2 is s2 non-zero count, 3 is s1 non-zero count
   if (sourceImage->getDatatype()!=V3D_UINT8) {
     qDebug() << "only compatible with 8-bit source image";
     return 0;
@@ -620,12 +635,16 @@ int* VolumeIndex::subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char
 
   const v3d_uint8 cThreshold=threshold;
 
+  qDebug() << "cThreshold=" << cThreshold;
+
   const int x_dim=sourceImage->getXDim();
   const int y_dim=sourceImage->getYDim();
   const int z_dim=sourceImage->getZDim();
   const int c_dim=sourceImage->getCDim();
 
-  int nonZeroCount=0;
+  int s2TotalCount=0;
+  int s2nonZeroCount=0;
+  int s1NonZeroCount=0;
 
   // Outer Loop
   int offset1=-1;
@@ -657,30 +676,37 @@ int* VolumeIndex::subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char
 	  x2_limit=x_dim;
 	}
 
+	int overThresholdCount=0;
+
 	for (int z2=z1*unit;z2<z2_limit;z2++) {
 	  int zyxOffset=z2*x_dim*y_dim;
 	  for (int y2=y1*unit;y2<y2_limit;y2++) {
-
-	    bool overThreshold=false;
 	    int yxOffset=y2*x_dim;
-
 	    for (int x2=x1*unit;x2<x2_limit;x2++) {
+	      s2TotalCount++;
 	      int rOffset=zyxOffset + yxOffset + x2;
+	      bool ot=false;
 	      for (int c=0;c<c_dim;c++) {
 		if (rArr[c][rOffset] > cThreshold) {
-		  overThreshold=true;
-		  break;
+		  ot=true;
 		}
 	      }
+	      if (ot) {
+		overThresholdCount++;
+	      }
 	    }
+	  }
+	}
 
-	    if (overThreshold) {
-	      nonZeroCount++;
-	      char oneC=1;
-	      oneC << bitOffset;
-	      targetMask[bytePosition] = targetMask[bytePosition] | oneC;
-	    }
-
+	if (overThresholdCount>0) {
+	  s2nonZeroCount += overThresholdCount;
+	  char oneC=1;
+	  oneC << bitOffset;
+	  char test=0;
+	  test = oneC & targetMask[bytePosition];
+	  if (test==0) {
+	    s1NonZeroCount++;
+	    targetMask[bytePosition] = targetMask[bytePosition] | oneC;
 	  }
 	}
 
@@ -689,7 +715,9 @@ int* VolumeIndex::subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char
   }
   delete [] rArr;
   sbmResults[0] = bytePosition+1;
-  sbmResults[1] = nonZeroCount;
+  sbmResults[1] = s2TotalCount;
+  sbmResults[2] = s2nonZeroCount;
+  sbmResults[3] = s1NonZeroCount;
   return sbmResults;
 }
 
@@ -744,13 +772,11 @@ bool VolumeIndex::createSecondStageIndex()
 
     FragmentSpecification* fs = sampleSpecification->fragmentList[i];
     QString imagePath=fs->maskPath;
-    My4DImage* fragmentImage = new My4DImage();
-    ImageLoader loader;
+    MaskChan maskChan;
+    QStringList fragmentPathList;
+    fragmentPathList.append(imagePath);
     qDebug() << "Loading fragment path=" << imagePath;
-    if (!loader.loadImage(fragmentImage, imagePath)) {
-      qDebug() << "Could not load fragment image=" << imagePath;
-      return false;
-    }
+    My4DImage* fragmentImage = maskChan.createImageFromMaskFiles(fragmentPathList);
     qDebug() << "Creating index entry for fragment from " << fs->maskPath;
     if (!createSecondStageEntry(fragmentImage, fs->fragmentId, sampleSpecification->sampleId, true)) {
       qDebug() << "Error generating second-stage index";
@@ -938,6 +964,7 @@ bool VolumeIndex::createSecondStageEntry(My4DImage* image, long fragmentId, long
 	if (updateFirstStage && overFirstStageThreshold) {
 	  if (!validatePositiveFirstStageEntry(x1, y1, z1)) {
 	    qDebug() << "Correcting first-stage entry at x=" << x1 << " y=" << y1 << " z=" << z1;
+	    firstStageCorrectionCount++;
 	  }
 	}
 
@@ -983,7 +1010,7 @@ bool VolumeIndex::writeSampleIndexHeaderAndFirstStage()
   fwrite(&UNIT, sizeof(int), 1, fid);
   fwrite(&BITS, sizeof(int), 1, fid);
 
-  qDebug() << "Writing " << firstStageIndexLength << " bytes for first stage index";
+  //  qDebug() << "Writing " << firstStageIndexLength << " bytes for first stage index";
   int l=fwrite(firstStageIndex, firstStageIndexLength, 1, fid);
   if (l!=1) {
     qDebug() << "fwrite failed, expected " << firstStageIndexLength << " but returned " << l;
@@ -1002,7 +1029,7 @@ bool VolumeIndex::writeSampleIndexUpdate()
     int voxelCountOffset = sizeof(char) + 3*sizeof(int) + 2*sizeof(long);
     int* vc = (int*)(fp + voxelCountOffset);
     *vc = secondStageVoxelCount;
-    qDebug() << "Writing " << fpSize << " bytes for second stage index";
+    //    qDebug() << "Writing " << fpSize << " bytes for second stage index";
     int l = fwrite(fp, fpSize, 1, fid);
     if (l!=1) {
       qDebug() << "fwrite failed";
