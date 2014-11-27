@@ -49,7 +49,7 @@ struct NeuronDistSimple
 };
 
 //round all neuronal node coordinates, and compute the average min distance matches for all places the neurons go through
-NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2);
+NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2, bool menu);
 double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big, const NeuronTree *p1, const NeuronTree *p2, double &maxdist);
 double dist_pt_to_swc(const XYZ & pt, const NeuronTree * p2);
 double dist_pt_to_line(const XYZ & p0, const XYZ &  p1, const XYZ &  p2); //p1 and p2 define a straight line, and p0 the point

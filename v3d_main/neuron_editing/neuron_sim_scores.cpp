@@ -46,17 +46,20 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 double d_thres = 2.0;
 
 //round all neuronal node coordinates, and compute the average min distance matches for all places the neurons go through
-NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2)
+NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2,bool bmenu)
 {
 	NeuronDistSimple ss;
 
     //===
-    bool ok1;
-    V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
-                                                   "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
-    if (ok1)
+    if(bmenu)
     {
-        d_thres = d_thres_new;
+        bool ok1;
+        V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
+                                                       "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
+        if (ok1)
+        {
+            d_thres = d_thres_new;
+        }
     }
     //===
 
