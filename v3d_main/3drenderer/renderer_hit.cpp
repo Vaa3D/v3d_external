@@ -1703,7 +1703,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			{
 				ts2.setNum(names[2]); ts2.prepend("dists between "); tmpstr += ts2;
 				ts2.setNum(ci+1); ts2.prepend(" and "); tmpstr += ts2;
-				NeuronDistSimple tmp_score = neuron_score_rounding_nearest_neighbor(&(listNeuronTree.at(names[2]-1)), &(listNeuronTree.at(ci)));
+                NeuronDistSimple tmp_score = neuron_score_rounding_nearest_neighbor(&(listNeuronTree.at(names[2]-1)), &(listNeuronTree.at(ci)),1);
 				ts2.setNum(tmp_score.dist_allnodes); ts2.prepend(" are <br> entire-structure-average = "); tmpstr += ts2 + "<br>";
 				ts2.setNum(tmp_score.dist_apartnodes); ts2.prepend(" different-structure-average = "); tmpstr += ts2 + "<br>";
                 ts2.setNum(tmp_score.percent_apartnodes); ts2.prepend(" percent of different-structure = "); tmpstr += ts2 + "<br>";
