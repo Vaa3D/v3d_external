@@ -148,6 +148,7 @@ using namespace std;
 #include "v3d_version_info.h"
 
 #include "../basic_c_fun/volimg_proc.h"
+#include "../basic_c_fun/stackutil.h" // For getSuffix
 
 #include "../3drenderer/v3dr_mainwindow.h" //v3d_drawmain-->v3dr_mainwindow, by RZC 20080921
 #include "../3drenderer/v3dr_glwidget.h" //090710 by RZC for XFormWidget::doImage3DView
@@ -160,6 +161,10 @@ inline bool isIndexColor(ImageDisplayColorType c) { return (c>=colorPseudoMaskCo
 
 
 #include "../multithreadimageIO/v3d_multithreadimageIO.h"
+
+#ifdef USE_FFMPEG
+#include "../neuron_annotator/utility/loadV3dFFMpeg.h"
+#endif
 
 /////// a global variable to limit the amount of memory use
 
@@ -1745,32 +1750,32 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	else if (b_moveCurrentLandmark==false && QApplication::keyboardModifiers()==Qt::ShiftModifier) //add to define marker list, by PHC, 20120702
     {
 		QPoint cp = mouseEventToImageCoords(e->pos()).toPoint();
-        
+
 		int sx,sy,sz; //current selection location's x,y,z
-        
+
 		switch(Ptype)
 		{
 			case imgPlaneZ:
 				sx = cp.x(); sy = cp.y(); sz = imgData->curFocusZ;
 				break;
-                
+
 			case imgPlaneX:
 				sz = cp.x(); sy = cp.y(); sx = imgData->curFocusX;
 				break;
-                
+
 			case imgPlaneY:
 				sx = cp.x(); sz = cp.y(); sy = imgData->curFocusY;
 				break;
-                
+
 			default:
 				return;
 				break;
 		}
-        
+
 		//LocationSimple tmpLocation(sx,sy,sz);
 		//tmpLocation.inputProperty = imgData->listLandmarks.at(ind_landmarkToBeChanged).inputProperty;
 		//tmpLocation.radius = imgData->listLandmarks.at(ind_landmarkToBeChanged).radius;
-        
+
         //the following 4 lines are suggested by Carlos Becker to replace the above three lines, 111004 to preserve the comments and other info when a marker is moved
         LocationSimple tmpLocation;
         tmpLocation.x = sx;
@@ -1781,10 +1786,10 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
         QString tmp_label;
         tmpLocation.name = qPrintable(tmp_label.setNum(imgData->listLandmarks.count()+1).prepend("landmark "));
         tmpLocation.radius = imgData->getXWidget()->getMainControlWindow()->global_setting.default_marker_radius; //add a default landmark size
-        
+
         imgData->listLandmarks.append(tmpLocation);
 		v3d_msg(QString("Add new marker at location %1 %2 %3\n").arg(sx).arg(sy).arg(sz), 0);
-        
+
 		//update();
 	    imgData->updateViews();
     }
@@ -3331,16 +3336,16 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 	switch (e->key())
 	{
 		case Qt::Key_Y: //add a timer for some events. This is an on/off switch. When pressing is OFF, then output the time to the last ON pressing
-            {                
+            {
                 if (imgData->b_triviewTimerON)
                 {
                     QString etime = QString("Elipsed time for triview timer is %1 seconds").arg(double(imgData->triviewTimer.elapsed())/1000);
-                    imgData->b_triviewTimerON = FALSE;                    
+                    imgData->b_triviewTimerON = FALSE;
                     v3d_msg(etime);
-                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow()) 
+                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
                         imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(etime);
                 }
-                else 
+                else
                 {
                     imgData->triviewTimer.start(); //should I use restart() sometimes as well
                     imgData->b_triviewTimerON = TRUE;
@@ -3351,7 +3356,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
                 }
             }
 			break;
-            
+
 		case Qt::Key_S:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -4592,9 +4597,13 @@ bool XFormWidget::loadData()
 		imgData->setMainWidget((XFormWidget *)this); //by PHC, added 100904 to ensure imgData can access global setting
 	}
 
+	char* filename = openFileNameLabel.toAscii().data();
+	char * curFileSurfix = getSuffix(filename);
 
-	printf("%s\n", openFileNameLabel.toAscii().data());
-	imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
+	if ( curFileSurfix && strcasecmp(curFileSurfix, "mp4") == 0 )
+		loadH264Image( filename );
+	else
+		imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
 	if (imgData->isEmpty())
 	{
 		delete imgData; imgData = 0;
@@ -4626,12 +4635,27 @@ bool XFormWidget::loadData()
 
 	// update the interface
 	updateDataRelatedGUI();
-    
+
     //v3d_msg(QString("The current file has the name [%1]").arg(imgData->getFileName()));
 
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
 	return true;
 
+}
+
+void XFormWidget::loadH264Image( char const* filename )
+{
+#ifdef USE_FFMPEG
+    v3d_msg( "start to try H.264 loader", 0 );
+
+    if ( !loadStackFFMpeg(filename, *imgData) )
+    {
+        v3d_msg( "Error happened in H.264 file reading. Stop. \n", false );
+        return;
+    }
+    imgData->setupData4D();
+    imgData->setFileName( filename ); // PHC added 20121213 to fix a bug in the PDB reading.
+#endif
 }
 
 bool XFormWidget::setCTypeBasedOnImageData() //separate this out on 2010-08-01. by PHC

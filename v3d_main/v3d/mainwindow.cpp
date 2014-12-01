@@ -960,6 +960,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   (cur_suffix=="MRC") ||
                   (cur_suffix=="V3DPBD") ||
                   (cur_suffix=="VAA3DPBD") ||
+                  (cur_suffix=="MP4") ||
                   curfile_info.suffix().isEmpty() //then invoke raw reader in this case, 20120410. PHC
                   )
         {

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 project(V3D)
 
 # Parse version number from source file
-file(STRINGS 
+file(STRINGS
     "${CMAKE_CURRENT_SOURCE_DIR}/v3d/v3d_version_info.cpp"
     V3D_VERSION_TMP
     REGEX "VersionInfo thisVersionOfV3D(.*)")
@@ -59,7 +59,7 @@ else()
   # message("PROGRAMFILES = $ENV{PROGRAMFILES}")
   FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES}
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
-	PATHS 
+	PATHS
         "$ENV{ProgramW6432}/libtiff64"
         "$ENV{ProgramW6432}/libtiff"
         # "C:/Program Files/libtiff64"
@@ -71,7 +71,7 @@ else()
 	PATH_SUFFIXES lib libtiff "")
   FIND_PATH(TIFF_INCLUDE_DIR tiff.h
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
-	PATHS 
+	PATHS
         "$ENV{ProgramW6432}/libtiff64"
         "$ENV{ProgramW6432}/libtiff"
         "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include"
@@ -88,6 +88,62 @@ else()
 endif()
 
 include_directories(${TIFF_INCLUDE_DIR})
+
+if(USE_FFMPEG)
+    include(ExternalProject)
+    ExternalProject_Add(
+        Yasm-1-2-0
+        URL http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
+        URL_MD5 4cfc0686cf5350dd1305c4d905eb55a6
+        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/src
+        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/install
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure
+            --prefix=<INSTALL_DIR>
+        BUILD_IN_SOURCE 1
+    )
+    set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
+    if(APPLE)
+        # trying to avoid weird _posix_memalign link errors
+        set(AV_CONFIG_FLAGS --enable-memalign-hack)
+    endif()
+    ExternalProject_Add(
+        LibAvcodec-0-10-2-head2012Apr25
+        DEPENDS Yasm-1-2-0
+        # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
+        # Use the exact distribution I developed against
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
+        SOURCE_DIR ${av_dir}/src
+        BINARY_DIR ${av_dir}/build
+        INSTALL_DIR ${av_dir}/install
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure
+            --prefix=<INSTALL_DIR>
+            --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
+            --arch=x86_64
+            --disable-vda
+            --enable-pic
+            --enable-shared
+            --extra-cflags="-D__STDC_CONSTANT_MACROS"
+            ${AV_CONFIG_FLAGS}
+    )
+    set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
+    set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice.a CACHE INTERNAL "path to a library")
+    set(AVFORMAT_LIBRARY ${av_dir}/install/lib/libavformat.a CACHE INTERNAL "path to a library")
+    set(AVFILTER_LIBRARY ${av_dir}/install/lib/libavfilter.a CACHE INTERNAL "path to a library")
+    set(AVCODEC_LIBRARY ${av_dir}/install/lib/libavcodec.a CACHE INTERNAL "path to a library")
+    set(SWSCALE_LIBRARY ${av_dir}/install/lib/libswscale.a CACHE INTERNAL "path to a library")
+    set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil.a CACHE INTERNAL "path to a library")
+
+    find_package(ZLIB)
+    find_package(BZip2)
+
+    include_directories(${AVCODEC_INCLUDE_DIR})
+    add_definitions(-D__STDC_CONSTANT_MACROS)
+
+    find_package(Threads)
+endif()
+
 
 # message("QTVERSION = ${QTVERSION}")
 find_path(QT4_DEMOS_INCLUDE_DIR
@@ -106,7 +162,7 @@ find_path(QT4_DEMOS_INCLUDE_DIR
 
 find_library(QT4_DEMOS_LIBRARY_RELEASE
   demo_shared
-  HINTS 
+  HINTS
         ${QT_LIBRARY_DIR}/..
         /Developer/Examples/Qt
 	/usr/lib/qt4
@@ -119,7 +175,7 @@ find_library(QT4_DEMOS_LIBRARY_RELEASE
   )
 find_library(QT4_DEMOS_LIBRARY_DEBUG
   demo_shared
-  HINTS 
+  HINTS
         ${QT_LIBRARY_DIR}/..
         /Developer/Examples/Qt
 	/usr/lib/qt4
@@ -148,9 +204,9 @@ find_path(TMP_OSX_SYSROOT MacOSX10.6.sdk PATHS /Developer/SDKs NO_DEFAULT_PATH)
 mark_as_advanced(TMP_OSX_SYSROOT)
 if(APPLE AND TMP_OSX_SYSROOT)
     if(NOT V3D_INITIALIZED_MAX_OSX_TO_DEFAULT) # Only force it the first time.
-        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING 
+        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING
             "Build architectures for OSX" FORCE)
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6" CACHE STRING 
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6" CACHE STRING
             "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value." FORCE)
         set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.6.sdk" CACHE PATH
             "The product will be built against the headers and libraries located inside the indicated SDK." FORCE)

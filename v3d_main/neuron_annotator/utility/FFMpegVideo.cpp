@@ -292,7 +292,9 @@ bool FFMpegVideo::openUsingInitializedContainer(enum PixelFormat formatParam)
 
     /* Compute the total number of frames in the file */
     /* duration is in microsecs */
-    numFrames = (int)(( container->duration / (double)AV_TIME_BASE ) * pCtx->time_base.den + 0.5);
+    numFrames = (int)(container->streams[videoStream]->nb_frames);
+    if ( numFrames == 0 )
+        numFrames = (int)(( container->duration / (double)AV_TIME_BASE ) * pCtx->time_base.den + 0.5);
 
     /* Get framebuffers */
     if (! (pRaw = avcodec_alloc_frame()) )
