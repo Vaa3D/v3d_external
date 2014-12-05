@@ -82,6 +82,9 @@ const int VolumeIndex::MODE_ADD_SAMPLE_INDEX_FILE_TO_CONSOLIDATED_INDEX=2;
 
 const char VolumeIndex::ENTRY_CODE=93;
 
+const QString VolumeIndex::PRIMARY_INDEX_FILENAME="primary_stage.gindex";
+const QString VolumeIndex::SECONDARY_INDEX_FILENAME="secondary_stage.gindex";
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool SampleSort::operator()(const SampleSpecification *s1, const SampleSpecification *s2 ) const {
@@ -96,6 +99,7 @@ bool SampleSort::operator()(const SampleSpecification *s1, const SampleSpecifica
 VolumeIndex::VolumeIndex()
 {
   fid=0;
+  mainIndexFid=0;
   mode=MODE_UNDEFINED;
   DEBUG_FLAG=false;
   indexSpecification=0L;
@@ -185,7 +189,11 @@ bool VolumeIndex::createSampleIndexFile()
     qDebug() << "Could not find matching alignment entry";
     return false;
   }
-  if (!initParamsFromSpecification()) {
+  if (!initParamsFromIndexSpecification()) {
+    qDebug() << "Problem initializing working parameters";
+    return false;
+  }
+  if (!initParamsFromSampleSpecification()) {
     qDebug() << "Problem initializing working parameters";
     return false;
   }
@@ -206,6 +214,8 @@ bool VolumeIndex::createSampleIndexFile()
     qDebug() << "Error creating second-stage index data";
     return false;
   }
+  long s2position=ftell(fid);
+  qDebug() << "Final file position for creation of index=" << s2position;
   fclose(fid);
   delete sampleConsolidatedSignalImage;
   qDebug() << "First stage correction count=" << firstStageCorrectionCount;
@@ -213,11 +223,6 @@ bool VolumeIndex::createSampleIndexFile()
 }
 
 bool VolumeIndex::doSearch()
- {
-   return true;
- }
-
- bool VolumeIndex::addSampleToConsolidatedIndex()
  {
    return true;
  }
@@ -266,9 +271,7 @@ bool VolumeIndex::readIndexSpecificationFile()
 	  indexSpecification->thresholdCount=cList.size();
 	  indexSpecification->thresholdArray=new int[indexSpecification->thresholdCount];
 	  for (int i=0;i<cList.size();i++) {
-	    qDebug() << "Processing threshold entry=" << cList[i];
 	    indexSpecification->thresholdArray[i]=cList[i].trimmed().toInt();
-	    qDebug() << "Adding threshold entry at position " << i << " value=" << indexSpecification->thresholdArray[i];
 	  }
 	} else if (eqList[0]=="root") {
 	  indexSpecification->rootPath=eqList[1];
@@ -289,6 +292,9 @@ bool VolumeIndex::readIndexSpecificationFile()
   qDebug() << "Index Specification:\n" << indexSpecification->toString();
   return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 bool VolumeIndex::readSampleSpecificationFile()
 {
@@ -598,7 +604,7 @@ bool VolumeIndex::createFirstStageIndex()
     qDebug() << "First stage mask matches expected length";
   }
   cp+=subsampledBinaryMaskSize;
-  firstStageIndexLength=cp-firstStageIndex;
+  firstStageIndexBytes=cp-firstStageIndex;
   delete [] sbmResults;
   return true;
 }
@@ -721,19 +727,31 @@ int* VolumeIndex::subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char
   return sbmResults;
 }
 
-bool VolumeIndex::initParamsFromSpecification()
+bool VolumeIndex::initParamsFromIndexSpecification()
 {
+  if (indexSpecification==0L) {
+    return false;
+  }
   X_SIZE=indexSpecification->pixel_x;
   Y_SIZE=indexSpecification->pixel_y;
   Z_SIZE=indexSpecification->pixel_z;
   UNIT=indexSpecification->index_unit;
   BITS=indexSpecification->bit_depth;
-  SAMPLE_ID=sampleSpecification->sampleId;
-  OWNER=sampleSpecification->owner;
   X1_SIZE=divideDimensionByUnit(X_SIZE, UNIT);
   Y1_SIZE=divideDimensionByUnit(Y_SIZE, UNIT);
   Z1_SIZE=divideDimensionByUnit(Z_SIZE, UNIT);
+  return true;
 }
+
+bool VolumeIndex::initParamsFromSampleSpecification()
+{
+  if (sampleSpecification==0L) {
+    return false;
+  }
+  SAMPLE_ID=sampleSpecification->sampleId;
+  OWNER=sampleSpecification->owner;
+  return true;
+ }
 
 void VolumeIndex::clearSecondStageData()
 {
@@ -830,6 +848,7 @@ bool VolumeIndex::validatePositiveFirstStageEntry(int x, int y, int z)
 
 bool VolumeIndex::createSecondStageEntry(My4DImage* image, long fragmentId, long sampleId, bool updateFirstStage)
 {
+  qDebug() << "createSecondStageEntry() fragmentId=" << fragmentId;
   int positionsPerByte=8;
   int nonZeroCount=0;
 
@@ -924,7 +943,7 @@ bool VolumeIndex::createSecondStageEntry(My4DImage* image, long fragmentId, long
 	      }
 
 	      int rOffset=zyxOffset + yxOffset + x2;
-	      char v=0;
+	      char v=-1;
 	      v3d_uint8 maxV=0;
 	      for (int c=0;c<c_dim;c++) {
 		v3d_uint8 rV=rArr[c][rOffset];
@@ -933,12 +952,14 @@ bool VolumeIndex::createSecondStageEntry(My4DImage* image, long fragmentId, long
 		}
 	      }
 	      for (int t=tN-1;t>-1;t--) {
+		//		qDebug() << "t=" << t << " tN=" << tN << " tArr=" << tArr[t];
 		if (maxV>=tArr[t]) {
 		  v=t;
+		  //		  qDebug() << "setting v=t with v=" << v;
 		  break;
 		}
 	      }
-	      if (v>0) {
+	      if (v>-1) {
 		overFirstStageThreshold=true;
 	      }
 	      // Now, v should be the correct level for this position
@@ -984,6 +1005,8 @@ bool VolumeIndex::createSecondStageEntry(My4DImage* image, long fragmentId, long
 
   delete [] UNIT_BUFFER;
 
+  qDebug() << "nonZeroCount=" << nonZeroCount;
+
   secondStageVoxelCount=nonZeroCount;
 
   return true;
@@ -1004,16 +1027,17 @@ bool VolumeIndex::writeSampleIndexHeaderAndFirstStage()
   // <int, 1> : unit
   // <int, 1> : bits
 
-  fwrite(&X_SIZE, sizeof(int), 1, fid);
-  fwrite(&Y_SIZE, sizeof(int), 1, fid);
-  fwrite(&Z_SIZE, sizeof(int), 1, fid);
-  fwrite(&UNIT, sizeof(int), 1, fid);
-  fwrite(&BITS, sizeof(int), 1, fid);
+  // These are already in the first stage index bytes
+  //  fwrite(&X_SIZE, sizeof(int), 1, fid);
+  //  fwrite(&Y_SIZE, sizeof(int), 1, fid);
+  //  fwrite(&Z_SIZE, sizeof(int), 1, fid);
+  //  fwrite(&UNIT, sizeof(int), 1, fid);
+  //  fwrite(&BITS, sizeof(int), 1, fid);
 
-  //  qDebug() << "Writing " << firstStageIndexLength << " bytes for first stage index";
-  int l=fwrite(firstStageIndex, firstStageIndexLength, 1, fid);
+  qDebug() << "Writing " << firstStageIndexBytes << " bytes for first stage index";
+  int l=fwrite(firstStageIndex, firstStageIndexBytes, 1, fid);
   if (l!=1) {
-    qDebug() << "fwrite failed, expected " << firstStageIndexLength << " but returned " << l;
+    qDebug() << "fwrite failed, expected " << firstStageIndexBytes << " but returned " << l;
     return false;
   }
 
@@ -1022,6 +1046,7 @@ bool VolumeIndex::writeSampleIndexHeaderAndFirstStage()
 
 bool VolumeIndex::writeSampleIndexUpdate()
 {
+  qDebug() << "writeSampleIndexUpdate() - secondStageIndex size=" << secondStageIndex.size();
   for (int i=0;i<secondStageIndex.size();i++) {
     char* fp = secondStageIndex[i];
     int fpSize = secondStageIndexLength[i];
@@ -1029,7 +1054,7 @@ bool VolumeIndex::writeSampleIndexUpdate()
     int voxelCountOffset = sizeof(char) + 3*sizeof(int) + 2*sizeof(long);
     int* vc = (int*)(fp + voxelCountOffset);
     *vc = secondStageVoxelCount;
-    //    qDebug() << "Writing " << fpSize << " bytes for second stage index";
+    qDebug() << "Writing " << fpSize << " bytes for second stage index entry";
     int l = fwrite(fp, fpSize, 1, fid);
     if (l!=1) {
       qDebug() << "fwrite failed";
@@ -1039,5 +1064,437 @@ bool VolumeIndex::writeSampleIndexUpdate()
   fflush(fid);
   return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+  What we want to do here is read in the sample index file, appending each entry to the appropriate binary index
+  in the master tree.
+ */
+
+ bool VolumeIndex::addSampleToConsolidatedIndex()
+ {
+   qDebug() << "addSampleToConsolidatedIndex() - starting parameter validation";
+   if (indexSpecificationFilepath.isNull()) {
+    qDebug() << "indexSpecificationFilepath not set";
+    return false;
+  }
+  if (!readIndexSpecificationFile()) {
+    qDebug() << "Could not read file " << indexSpecificationFilepath;
+    return false;
+  }
+  if (!initParamsFromIndexSpecification()) {
+    qDebug() << "Error initializing params from index specification";
+    return false;
+  }
+  if (sampleIndexFilepath.isNull() || sampleIndexFilepath.length()==0) {
+    qDebug() << "sampleIndexFilepath must be set";
+    return false;
+  }
+  qDebug() << "addSampleToConsolidatedIndex() - calling processSampleIndexToMainIndex()";
+  if (!processSampleIndexToMainIndex()) {
+    qDebug() << "Error processing sample Index for inclusion in main index";
+    return false;
+  }
+   return true;
+ }
+
+bool VolumeIndex::processSampleIndexToMainIndex()
+{
+  char* ownerBuffer = 0L;
+  qDebug() << "Opening sampleIndexFilepath=" << sampleIndexFilepath;
+  fid=fopen(sampleIndexFilepath.toAscii().data(), "rb");
+  if (!fid) {
+    qDebug() << "Error opening file " << sampleIndexFilepath << " to read";
+    return false;
+  }
+  int si_X_SIZE=0;
+  int si_Y_SIZE=0;
+  int si_Z_SIZE=0;
+  int si_UNIT=0;
+  int si_BITS=0;
+
+  qDebug() << "Reading dimensional info";
+
+  fread(&si_X_SIZE, 1, sizeof(int), fid);
+  fread(&si_Y_SIZE, 1, sizeof(int), fid);
+  fread(&si_Z_SIZE, 1, sizeof(int), fid);
+  fread(&si_UNIT, 1, sizeof(int), fid);
+  fread(&si_BITS, 1, sizeof(int), fid);
+
+  qDebug() << "Validating dimensional info";
+
+  if (si_X_SIZE != X_SIZE) {
+    qDebug() << "X_SIZE does not match between sampleIndex and main index";
+    return false;
+  }
+  if (si_Y_SIZE != Y_SIZE) {
+    qDebug() << "Y_SIZE does not match between sampleIndex and main index";
+    return false;
+  }
+  if (si_Z_SIZE != Z_SIZE) {
+    qDebug() << "Z_SIZE does not match between sampleIndex and main index";
+    return false;
+  }
+  if (si_UNIT != UNIT) {
+    qDebug() << "UNIT does not match between sampleIndex and main index";
+    return false;
+  }
+  if (si_BITS != BITS) {
+    qDebug() << "BITS does not match between sampleIndex and main index";
+    return false;
+  }
+
+  qDebug() << "Reading sampleId and owner";
+
+  fread(&SAMPLE_ID, 1, sizeof(long), fid);
+  int ownerLength=0;
+  fread(&ownerLength, 1, sizeof(int), fid);
+  qDebug() << "Owner buffer length=" << ownerLength;
+  ownerBuffer = new char[ownerLength+1];
+  qDebug() << "Check1";
+  int obLength=fread(ownerBuffer, sizeof(char), ownerLength, fid);
+  qDebug() << "Check2";
+  ownerBuffer[ownerLength]='\0';
+  qDebug() << "obLength=" << obLength;
+  OWNER = QString::fromLocal8Bit(ownerBuffer);
+
+  qDebug() << "Computing stage 1 dimensions";
+
+  int X1_SIZE = divideDimensionByUnit(X_SIZE, UNIT);
+  int Y1_SIZE = divideDimensionByUnit(Y_SIZE, UNIT);
+  int Z1_SIZE = divideDimensionByUnit(Z_SIZE, UNIT);
+
+  int s1TotalVoxels=X1_SIZE*Y1_SIZE*Z1_SIZE;
+
+  firstStageIndexBytes=0;
+  if (BITS==2) {
+    firstStageIndexBytes=s1TotalVoxels/8;
+    if (s1TotalVoxels!=8*firstStageIndexBytes) {
+      firstStageIndexBytes++;
+    }
+  } else if (BITS==4) {
+    firstStageIndexBytes=s1TotalVoxels/4;
+    if (s1TotalVoxels!=4*firstStageIndexBytes) {
+      firstStageIndexBytes++;
+    }
+  } else {
+    qDebug() << "Do not support BITS other than 2 or 4, value=" << BITS;
+    return false;
+  }
+
+  qDebug() << "Reading non-zero count";
+  int s1NonZeroCount=0;
+  fread(&s1NonZeroCount, 1, sizeof(int), fid);
+
+  firstStageIndex = new char[firstStageIndexBytes];
+
+  long t1_test = ftell(fid);
+
+  qDebug() << "t1_test=" << t1_test;
+
+  qDebug() << "Reading stage 1 data";
+
+  int f0 = feof(fid);
+  qDebug() << "f0=" << f0;
+
+  int s1ReadCount=fread(firstStageIndex, sizeof(char), firstStageIndexBytes, fid);
+  if (s1ReadCount!=firstStageIndexBytes) {
+    qDebug() << "Error with fread for stage 1 data, firstStageIndexBytes=" << firstStageIndexBytes << " but s1ReadCount=" << s1ReadCount;
+    return false;
+  }
+
+  // Before we add any data to the main index (either primary or secondary), we want to validate all entries.
+  qDebug() << "Beginning entry validation";
+  long fileStartPositionForSecondStage=ftell(fid);
+
+  qDebug() << "fileStartPositionForSecondStage=" << fileStartPositionForSecondStage;
+  
+  char entryCodeTest=0;
+  size_t entryCodeReadSize=0;
+
+  char* s2Buffer = new char[s1TotalVoxels]; // should be plenty of space
+
+  qDebug() << "Starting validation loop for stage 2 entries";
+
+  int f1 = feof(fid);
+
+  qDebug() << "f1=" << f1;
+
+  //  entryCodeReadSize=fread(&entryCodeTest, sizeof(char), 1, fid);
+
+  //  qDebug() << "test entryCodeReadSize=" << entryCodeReadSize << " entryCode=" << entryCodeTest;
+
+  while(!feof(fid)) {
+
+    qDebug() << "Top of stage 2 validation loop";
+
+    entryCodeReadSize=fread(&entryCodeTest, sizeof(char), 1, fid);
+
+    if (feof(fid)) {
+      qDebug() << "Detected end of file - exiting validation loop";
+      break;
+    }
+
+    qDebug() << "entryCodeReadSize=" << entryCodeReadSize;
+    
+    qDebug() << "entryCodeTest=" << entryCodeTest;
+
+    f1 = feof(fid);
+    
+    qDebug() << "try 2 f1=" << f1;
+
+    if (entryCodeTest!=ENTRY_CODE) {
+      qDebug() << "Unexpectedly did not receive entry code char marking beginning of next 2nd-stage entry";
+      fclose(fid);
+      return false;
+    }
+    int s2_xstart=0;
+    int s2_ystart=0;
+    int s2_zstart=0;
+    long s2_fragment_id=0L;
+    long s2_sample_id=0L;
+    int s2_nonzero=0;
+    
+    fread(&s2_xstart,1,sizeof(int),fid);
+    fread(&s2_ystart,1,sizeof(int),fid);
+    fread(&s2_zstart,1,sizeof(int),fid);
+    fread(&s2_fragment_id,1,sizeof(long),fid);
+    fread(&s2_sample_id,1,sizeof(long),fid);
+    fread(&s2_nonzero,1,sizeof(int),fid);
+
+    // validate
+    if (s2_xstart < 0 || s2_xstart > X_SIZE) {
+      qDebug() << "Could not validate s2 x index value=" << s2_xstart;
+      fclose(fid);
+      return false;
+    }
+
+    if (s2_ystart < 0 || s2_ystart > Y_SIZE) {
+      qDebug() << "Could not validate s2 y index value=" << s2_ystart;
+      fclose(fid);
+      return false;
+    }
+
+    if (s2_zstart < 0 || s2_zstart > Z_SIZE) {
+      qDebug() << "Could not validate s2 z index value=" << s2_zstart;
+      fclose(fid);
+      return false;
+    }
+
+    if (s2_sample_id != SAMPLE_ID) {
+      qDebug() << "s2 sample id does not match SAMPLE_ID=" << SAMPLE_ID;
+      fclose(fid);
+      return false;
+    }
+
+    // read sec data based on position
+    int xlength = X_SIZE-s2_xstart;
+    if (xlength > UNIT) {
+      xlength=UNIT;
+    }
+
+    int ylength = Y_SIZE-s2_ystart;
+    if (ylength > UNIT) {
+      ylength=UNIT;
+    }
+
+    int zlength = Z_SIZE-s2_zstart;
+    if (zlength > UNIT) {
+      zlength=UNIT;
+    }
+
+    // reduce dimension to compression size
+    int entrySize=0;
+    int voxelCount=xlength*ylength*zlength;
+    if (BITS==2) {
+      entrySize=voxelCount/8;
+      if (entrySize*8!=voxelCount) {
+	entrySize++;
+      }
+    } else if (BITS==4) {
+      entrySize=voxelCount/4;
+      if (entrySize*4!=voxelCount) {
+	entrySize++;
+      }
+    }
+
+    if (entrySize>s1TotalVoxels) {
+      qDebug() << "s2 buffer size is only " << s1TotalVoxels << " but s2 entry size=" << entrySize;
+      fclose(fid);
+      return false;
+    }
+    
+    qDebug() << "Reading into stage 2 buffer";
+
+    int s2ReadSize=0;
+    if ( (s2ReadSize=fread(s2Buffer,sizeof(char), entrySize, fid))!=entrySize) {
+      qDebug() << "Error reading s2 entry of size=" << entrySize;
+      fclose(fid);
+      return false;
+    }
+  }
+
+  // Write First Stage Main Index
+  mainIndexFid=openPrimaryIndex();
+  if (!mainIndexFid) {
+    qDebug() << "Error opening main index";
+    return false;
+  }
+  fwrite(&SAMPLE_ID, sizeof(long), 1, mainIndexFid);
+  fwrite(&ownerLength, sizeof(int), 1, mainIndexFid);
+  fwrite(ownerBuffer, sizeof(char), ownerLength, mainIndexFid);
+  fwrite(&s1NonZeroCount, sizeof(int), 1, mainIndexFid);
+  int s1WriteCount=fwrite(firstStageIndex, sizeof(char), firstStageIndexBytes, mainIndexFid);
+  if (s1WriteCount!=firstStageIndexBytes) {
+    qDebug() << "s1WriteCount does not match firstStageIndexBytes - error writing first stage index";
+    fclose(mainIndexFid);
+    return false;
+  }
+  fflush(mainIndexFid);
+  fclose(mainIndexFid);
+  mainIndexFid=0L;
+  
+  // Now we are post-validation, and can re-read the data while writing to the indices...
+  fseek(fid, fileStartPositionForSecondStage, SEEK_SET);
+
+  while ( (entryCodeReadSize=fread(&entryCodeTest, sizeof(char), 1, fid))==sizeof(char) ) {
+
+    qDebug() << "Top of stage 2 post-validation write loop";
+
+    if (entryCodeTest!=ENTRY_CODE) {
+      qDebug() << "Unexpectedly did not receive entry code char marking beginning of next 2nd-stage entry";
+      fclose(fid);
+      return false;
+    }
+    int s2_xstart=0;
+    int s2_ystart=0;
+    int s2_zstart=0;
+    long s2_fragment_id=0L;
+    long s2_sample_id=0L;
+    int s2_nonzero=0;
+    
+    fread(&s2_xstart,1,sizeof(int),fid);
+    fread(&s2_ystart,1,sizeof(int),fid);
+    fread(&s2_zstart,1,sizeof(int),fid);
+    fread(&s2_fragment_id,1,sizeof(long),fid);
+    fread(&s2_sample_id,1,sizeof(long),fid);
+    fread(&s2_nonzero,1,sizeof(int),fid);
+
+    // read sec data based on position
+    int xlength = X_SIZE-s2_xstart;
+    if (xlength > UNIT) {
+      xlength=UNIT;
+    }
+
+    int ylength = Y_SIZE-s2_ystart;
+    if (ylength > UNIT) {
+      ylength=UNIT;
+    }
+
+    int zlength = Z_SIZE-s2_zstart;
+    if (zlength > UNIT) {
+      zlength=UNIT;
+    }
+
+    // reduce dimension to compression size
+    int entrySize=0;
+    int voxelCount=xlength*ylength*zlength;
+    if (BITS==2) {
+      entrySize=voxelCount/8;
+      if (entrySize*8!=voxelCount) {
+	entrySize++;
+      }
+    } else if (BITS==4) {
+      entrySize=voxelCount/4;
+      if (entrySize*4!=voxelCount) {
+	entrySize++;
+      }
+    }
+
+    if (entrySize>s1TotalVoxels) {
+      qDebug() << "s2 buffer size is only " << s1TotalVoxels << " but s2 entry size=" << entrySize;
+      fclose(fid);
+      return false;
+    }
+
+    // clear buffer
+    for (int i=0;i<s1TotalVoxels;i++) {
+      s2Buffer[i]=0;
+    }
+
+    int s2ReadSize=0;
+    if ( (s2ReadSize=fread(&s2Buffer[0], sizeof(char), entrySize, fid))!=entrySize) {
+      qDebug() << "Error reading s2 entry of size=" << entrySize;
+      fclose(fid);
+      return false;
+    }
+
+    // Now we can flush this data to the main secondary index
+    mainIndexFid=openSecondaryIndex(s2_xstart, s2_ystart, s2_zstart);
+    fwrite(&ENTRY_CODE, sizeof(char), 1, mainIndexFid);
+    fwrite(&s2_xstart, sizeof(int), 1, mainIndexFid);
+    fwrite(&s2_ystart, sizeof(int), 1, mainIndexFid);
+    fwrite(&s2_zstart, sizeof(int), 1, mainIndexFid);
+    fwrite(&s2_fragment_id, sizeof(long), 1, mainIndexFid);
+    fwrite(&s2_sample_id, sizeof(long), 1, mainIndexFid);
+    fwrite(&s2_nonzero, sizeof(int), 1, mainIndexFid);
+    fwrite(s2Buffer, sizeof(char), s2ReadSize, mainIndexFid);
+    fflush(mainIndexFid);
+    fclose(mainIndexFid);
+    mainIndexFid=0L;
+  }
+
+  delete [] ownerBuffer;
+
+  delete [] s2Buffer;
+
+  return true;
+}
+
+FILE* VolumeIndex::openPrimaryIndex()
+{
+  if (mainIndexFid!=0L) {
+    fclose(mainIndexFid);
+  }
+  QString primaryIndexPath=indexSpecification->rootPath;
+  primaryIndexPath.append("/");
+  primaryIndexPath.append(PRIMARY_INDEX_FILENAME);
+  mainIndexFid=fopen(primaryIndexPath.toAscii().data(), "ab");
+  if (!mainIndexFid) {
+    qDebug() << "Could not open primary index file=" << primaryIndexPath;
+  }
+  return mainIndexFid;
+}
+
+FILE* VolumeIndex::openSecondaryIndex(int x, int y, int z)
+{
+  if (mainIndexFid!=0L) {
+    fclose(mainIndexFid);
+  }
+  QString secondaryPath=indexSpecification->rootPath;
+  secondaryPath.append("/");
+  secondaryPath.append(QString::number(x));
+  secondaryPath.append("/");
+  secondaryPath.append(QString::number(y));
+  secondaryPath.append("/");
+  secondaryPath.append(QString::number(z));
+  if (!QDir().mkpath(secondaryPath)) {
+    qDebug() << "Could not create secondary path=" << secondaryPath;
+    mainIndexFid=0L;
+    return mainIndexFid;
+  }
+  secondaryPath.append("/");
+  secondaryPath.append(SECONDARY_INDEX_FILENAME);
+  mainIndexFid=fopen(secondaryPath.toAscii().data(), "ab");
+  if (!mainIndexFid) {
+    qDebug() << "Could not open secondary index file=" << secondaryPath;
+  }
+  return mainIndexFid;
+}
+
+
+
+
 
 

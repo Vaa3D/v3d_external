@@ -211,6 +211,9 @@ public:
 
     static const char ENTRY_CODE;
 
+    static const QString PRIMARY_INDEX_FILENAME;
+    static const QString SECONDARY_INDEX_FILENAME;
+
     VolumeIndex();
 
     ~VolumeIndex();
@@ -252,6 +255,7 @@ public:
 
 private:
     FILE* fid;
+    FILE* mainIndexFid;
 
     bool DEBUG_FLAG;
     int mode;
@@ -283,7 +287,7 @@ private:
     bool validateImageSize(My4DImage* image);
 
     char* firstStageIndex;
-    int firstStageIndexLength;
+    int firstStageIndexBytes;
 
     // Note: these get cleared re-written with every fragment (or sample signal)
     QList<char*> secondStageIndex; // includes x,y,z,fragmentId,sampleId,data - each entry for subvolume
@@ -292,7 +296,7 @@ private:
 
     void clearSecondStageData();
 
-    int divideDimensionByUnit(int originalSie, int unit);
+    int divideDimensionByUnit(int originalSize, int unit);
     int* subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char* targetMask, int unit, int threshold);
     bool createSecondStageEntry(My4DImage* image, long fragmentId, long sampleId, bool updateFirstStage);
     char* getAddressOfFirstStageMaskAtCoordinate(int x, int y, int z);
@@ -304,7 +308,8 @@ private:
 
     bool validatePositiveFirstStageEntry(int x, int y, int z);
 
-    bool initParamsFromSpecification();
+    bool initParamsFromIndexSpecification();
+    bool initParamsFromSampleSpecification();
     int firstStageCorrectionCount;
 
     // Settings for shared work
@@ -315,6 +320,11 @@ private:
     QString OWNER;
     int X1_SIZE, Y1_SIZE, Z1_SIZE;
 
+    bool processSampleIndexToMainIndex();
+
+    FILE* openPrimaryIndex();
+    FILE* openSecondaryIndex(int x, int y, int z);
+
 };
 
-#endif // VOLUMEPATTERNINDEX_H
+#endif // VOLUMEINDEX_H
