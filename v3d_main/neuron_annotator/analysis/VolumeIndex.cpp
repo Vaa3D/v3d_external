@@ -1145,21 +1145,13 @@ bool VolumeIndex::processSampleIndexToMainIndex()
     return false;
   }
 
-  qDebug() << "Reading sampleId and owner";
-
   fread(&SAMPLE_ID, 1, sizeof(long), fid);
   int ownerLength=0;
   fread(&ownerLength, 1, sizeof(int), fid);
-  qDebug() << "Owner buffer length=" << ownerLength;
   ownerBuffer = new char[ownerLength+1];
-  qDebug() << "Check1";
   int obLength=fread(ownerBuffer, sizeof(char), ownerLength, fid);
-  qDebug() << "Check2";
   ownerBuffer[ownerLength]='\0';
-  qDebug() << "obLength=" << obLength;
   OWNER = QString::fromLocal8Bit(ownerBuffer);
-
-  qDebug() << "Computing stage 1 dimensions";
 
   int X1_SIZE = divideDimensionByUnit(X_SIZE, UNIT);
   int Y1_SIZE = divideDimensionByUnit(Y_SIZE, UNIT);
@@ -1183,20 +1175,10 @@ bool VolumeIndex::processSampleIndexToMainIndex()
     return false;
   }
 
-  qDebug() << "Reading non-zero count";
   int s1NonZeroCount=0;
   fread(&s1NonZeroCount, 1, sizeof(int), fid);
 
   firstStageIndex = new char[firstStageIndexBytes];
-
-  long t1_test = ftell(fid);
-
-  qDebug() << "t1_test=" << t1_test;
-
-  qDebug() << "Reading stage 1 data";
-
-  int f0 = feof(fid);
-  qDebug() << "f0=" << f0;
 
   int s1ReadCount=fread(firstStageIndex, sizeof(char), firstStageIndexBytes, fid);
   if (s1ReadCount!=firstStageIndexBytes) {
@@ -1205,44 +1187,23 @@ bool VolumeIndex::processSampleIndexToMainIndex()
   }
 
   // Before we add any data to the main index (either primary or secondary), we want to validate all entries.
+
   qDebug() << "Beginning entry validation";
+
   long fileStartPositionForSecondStage=ftell(fid);
 
-  qDebug() << "fileStartPositionForSecondStage=" << fileStartPositionForSecondStage;
-  
   char entryCodeTest=0;
   size_t entryCodeReadSize=0;
 
   char* s2Buffer = new char[s1TotalVoxels]; // should be plenty of space
 
-  qDebug() << "Starting validation loop for stage 2 entries";
-
-  int f1 = feof(fid);
-
-  qDebug() << "f1=" << f1;
-
-  //  entryCodeReadSize=fread(&entryCodeTest, sizeof(char), 1, fid);
-
-  //  qDebug() << "test entryCodeReadSize=" << entryCodeReadSize << " entryCode=" << entryCodeTest;
-
   while(!feof(fid)) {
-
-    qDebug() << "Top of stage 2 validation loop";
 
     entryCodeReadSize=fread(&entryCodeTest, sizeof(char), 1, fid);
 
     if (feof(fid)) {
-      qDebug() << "Detected end of file - exiting validation loop";
       break;
     }
-
-    qDebug() << "entryCodeReadSize=" << entryCodeReadSize;
-    
-    qDebug() << "entryCodeTest=" << entryCodeTest;
-
-    f1 = feof(fid);
-    
-    qDebug() << "try 2 f1=" << f1;
 
     if (entryCodeTest!=ENTRY_CODE) {
       qDebug() << "Unexpectedly did not receive entry code char marking beginning of next 2nd-stage entry";
@@ -1325,8 +1286,6 @@ bool VolumeIndex::processSampleIndexToMainIndex()
       return false;
     }
     
-    qDebug() << "Reading into stage 2 buffer";
-
     int s2ReadSize=0;
     if ( (s2ReadSize=fread(s2Buffer,sizeof(char), entrySize, fid))!=entrySize) {
       qDebug() << "Error reading s2 entry of size=" << entrySize;
@@ -1356,11 +1315,12 @@ bool VolumeIndex::processSampleIndexToMainIndex()
   mainIndexFid=0L;
   
   // Now we are post-validation, and can re-read the data while writing to the indices...
+
+  qDebug() << "Beginning writing of second stage index";
+
   fseek(fid, fileStartPositionForSecondStage, SEEK_SET);
 
   while ( (entryCodeReadSize=fread(&entryCodeTest, sizeof(char), 1, fid))==sizeof(char) ) {
-
-    qDebug() << "Top of stage 2 post-validation write loop";
 
     if (entryCodeTest!=ENTRY_CODE) {
       qDebug() << "Unexpectedly did not receive entry code char marking beginning of next 2nd-stage entry";
@@ -1380,6 +1340,8 @@ bool VolumeIndex::processSampleIndexToMainIndex()
     fread(&s2_fragment_id,1,sizeof(long),fid);
     fread(&s2_sample_id,1,sizeof(long),fid);
     fread(&s2_nonzero,1,sizeof(int),fid);
+
+    qDebug() << "Processing fragment_id=" << s2_fragment_id << " x=" << s2_xstart << " y=" << s2_ystart << " z=" << s2_zstart;
 
     // read sec data based on position
     int xlength = X_SIZE-s2_xstart;
@@ -1448,6 +1410,8 @@ bool VolumeIndex::processSampleIndexToMainIndex()
   delete [] ownerBuffer;
 
   delete [] s2Buffer;
+
+  qDebug() << "Done writing stage 2 data";
 
   return true;
 }
