@@ -112,6 +112,13 @@ VolumeIndex::VolumeIndex()
   SAMPLE_ID=0L;
   OWNER="";
   X1_SIZE=Y1_SIZE=Z1_SIZE=0;
+
+  queryThreshold=10;
+  maxHits=100;
+  backgroundWeight=1.0L;
+  maskDilation=0;
+
+  queryImage=0L;
 }
 
 VolumeIndex::~VolumeIndex()
@@ -150,9 +157,21 @@ int VolumeIndex::processArgs(vector<char*> *argList)
 	if (arg=="-query") {
 	  queryFilepath=(*argList)[++i];
 	}
+	if (arg=="-queryThreshold") {
+	  QString queryThresholdString=(*argList)[++i];
+	  queryThreshold=queryThresholdString.toInt();
+	}
 	if (arg=="-maxHits") {
 	  maxHitsString=(*argList)[++i];
 	  maxHits=maxHitsString.toInt();
+	}
+	if (arg=="-backgroundWeight") {
+	  QString backgroundWeightString=(*argList)[++i];
+	  backgroundWeight=backgroundWeightString.toDouble();
+	}
+	if (arg=="-maskDilation") {
+	  QString maskDilationString=(*argList)[++i];
+	  maskDilation=maskDilationString.toInt();
 	}
     }
     if (modeString.size()>0) {
@@ -224,6 +243,13 @@ bool VolumeIndex::createSampleIndexFile()
 
 bool VolumeIndex::doSearch()
  {
+   if (!loadQueryImage()) {
+     qDebug() << "Error loading query image " << queryFilepath;
+     return false;
+   }
+   if (maskDilation>0) {
+     dilateQueryMask();
+   }
    return true;
  }
 
@@ -1457,7 +1483,33 @@ FILE* VolumeIndex::openSecondaryIndex(int x, int y, int z)
   return mainIndexFid;
 }
 
+bool VolumeIndex::loadQueryImage()
+{
+  if (queryFilepath.endsWith(".mask")) {
+    MaskChan maskChan;
+    QStringList pathList;
+    pathList.append(queryFilepath);
+    qDebug() << "Loading mask query file=" << queryFilepath;
+    queryImage=maskChan.createImageFromMaskFiles(pathList);
+  } else {
+    ImageLoader loader;
+    if (queryFilepath.isNull() || queryFilepath.length()<1) {
+      qDebug() << "queryFilepath is not set";
+      return false;
+    }
+    queryImage=new My4DImage();
+    if (!loader.loadImage(queryImage, queryFilepath)) {
+      qDebug() << "Could not load query file=" << queryFilepath;
+      return false;
+    }
+    return true;
+  }
+}
 
+ void VolumeIndex::dilateQueryMask()
+{
+  
+}
 
 
 

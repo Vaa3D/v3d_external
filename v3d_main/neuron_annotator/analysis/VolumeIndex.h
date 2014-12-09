@@ -245,7 +245,10 @@ public:
 	usage.append("                                                                                                        \n");
 	usage.append("   For mode search:                                                                                     \n");
 	usage.append("     -query <query stack or mask file>                                                                  \n");
-        usage.append("     -maxHits <max number of hits>                                                                      \n");
+	usage.append("     -queryThreshold <if file non-binary, binarization threshold> [10]                                  \n");
+        usage.append("     -maxHits <max number of hits> [100]                                                                \n");
+	usage.append("     -backgroundWeight <float. 0=ignore 1=same >1=more than mask> [1.0]                                 \n");
+	usage.append("     -maskDilation <int, num cycles. 0=none 1=1, etc> [0]                                               \n");
         usage.append("                                                                                                        \n");
         return usage;
     }
@@ -264,10 +267,7 @@ private:
     QString indexSpecificationFilepath;
     QString sampleIndexFilepath;
     QString sampleSpecificationFilepath;
-    QString queryFilepath;
     QString maxHitsString;
-
-    int maxHits;
 
     bool createSampleIndexFile();
     bool doSearch();
@@ -324,6 +324,18 @@ private:
 
     FILE* openPrimaryIndex();
     FILE* openSecondaryIndex(int x, int y, int z);
+
+    QString queryFilepath;
+    int queryThreshold;
+    int maxHits;
+    double backgroundWeight;
+    int maskDilation;
+
+    My4DImage* queryImage;
+
+    bool loadQueryImage();
+
+    void dilateQueryMask();
 
 };
 
