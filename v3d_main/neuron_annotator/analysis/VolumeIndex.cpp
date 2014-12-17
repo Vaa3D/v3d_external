@@ -29,7 +29,7 @@ When samples are processed and their corresponding index files are generated (be
   <byte, 2 bits * x/unit * y/unit * z/unit | mod 8 > : sample data
 
 # NOTE: The second stage is NOT in any kind of order wrt the fragment sub-volume positions. This is because the fragment
-# data is read one-at-a-time from mask files, and all entries for one fragment are generated before the next fragment
+ # data is read one-at-a-time from mask files, and all entries for one fragment are generated before the next fragment
 # is considered.
 
 # Begin 2nd-stage subvolume series for sample data over threshold - the first entry is the sample signal data, followed
@@ -38,7 +38,7 @@ When samples are processed and their corresponding index files are generated (be
 
   <char, 1> : Entry-begin code (93)
   <int, 1> : x-start
-  <int, 1> : y-start
+   <int, 1> : y-start
   <int, 1> : z-start
   <long, 1> : fragmentID (which is the sampleID for the sample case)
   <long, 1> : sampleID (for compatibility with fragments - if both match then sample)
@@ -68,11 +68,59 @@ specified by the index specification, which is in the SPACE attribute.
 
 If there are multiple matching alignments, the one with the most recent "NEURON SEPARATION id" will be chosen.
 
+=======================================================================================================================
+Search
+=======================================================================================================================
 
- */
+Overall Management:
+
+* Search assumes that the overall score for a query vs subject can be computed by combining the independent scores from all the subvolumes
+* The way the index is constructed, only subvolumes with non-zero data are included (and those are explicitly specified).
+* Every sample:fragment entry needs to be scored
+* Because we are weighing background matches, we need to do a complete compute for all subvoumes, including the empty ones, vs the query
+* Therefore, (1) the first analysis step will be to compute, for each subvolume, the score of the query vs an empty subvolume
+* This "empty" score set can be used to complement the scores for non-zero subvolumes
+* The (2) second step will be to visit all subvolume indices (i.e., all subdirectories) and determine the scores, using a hash
+* (3) After visiting all 2nd-stage entries, we can then cycle through each <sample:fragment> and compute the overall score for each
+* (4) We will do this for each <sample:fragment> by iterating through a list of all subvolume positions and using either the non-zero score (as computed in #2), or the empty score from #1.
+* Once we have all the scores, they can be sorted
+
+Scoring Computation:
+
+* We know the non-zero and zero counts from the binary search mask (or we need to compute it)
+* We score both the non-zero and zero voxels of the query vs each subject voxel
+* The difference is simply the bit-distance (0,1 for binary or 0,1,2,3 for 4-bit)
+
+* The non-zero and zero groups are accumulated into separate groups
+* The average score for each group is normalized 0-1, resulting in two numbers, both between 0.0 and 1.0, for non-zero and zero, respectively
+* Then, the relative importance of non-zero to zero is taken into account
+* This provides an overall score, where lower is better
+
+Implementation
+
+* While there is no need to preserve the results of the individual subvolume q=>s computations, the blank-subject scores need to be available to fill-in missing components from subjects in general
+* The score from a subvolume needs to have several pieces of information:
+
+1) the total number of zero query voxels
+2) the total number of non-zero query voxels
+3) the total score of the zero query group (the sum of the differences)
+4) the total score of the non-zero query group
+
+* A 4D array will be created to store these values for the blank case
+* To do a search, we will:
+
+1) incrementally read each entry in the 1st-stage index
+2) for each 1st-stage index entry, launch a thread to compute the score
+3) each thread will serially compute the score for each sub-volume, and then when done compute the overall score, in addition to the overall counts
+4) each overall score and counts will be placed into a list of results
+5) the list will be sorted
+6) the results reported 
+
+*********************/
 
 #include "MaskChan.h"
 #include "VolumeIndex.h"
+#include "DilationErosion.h"
 #include "../utility/ImageLoader.h"
 
 const int VolumeIndex::MODE_UNDEFINED=-1;
@@ -114,11 +162,13 @@ VolumeIndex::VolumeIndex()
   X1_SIZE=Y1_SIZE=Z1_SIZE=0;
 
   queryThreshold=10;
+  minSubjectVoxels=200;
   maxHits=100;
   backgroundWeight=1.0L;
   maskDilation=0;
 
   queryImage=0L;
+  blankSubjectScore=0L;
 }
 
 VolumeIndex::~VolumeIndex()
@@ -156,6 +206,10 @@ int VolumeIndex::processArgs(vector<char*> *argList)
 	}
 	if (arg=="-query") {
 	  queryFilepath=(*argList)[++i];
+	}
+	if (arg=="-minSubjectVoxels") {
+	  QString minSubjectVoxelsString=(*argList)[++i];
+	  minSubjectVoxels=minSubjectVoxelsString.toInt();
 	}
 	if (arg=="-queryThreshold") {
 	  QString queryThresholdString=(*argList)[++i];
@@ -242,16 +296,27 @@ bool VolumeIndex::createSampleIndexFile()
 }
 
 bool VolumeIndex::doSearch()
- {
-   if (!loadQueryImage()) {
-     qDebug() << "Error loading query image " << queryFilepath;
-     return false;
-   }
-   if (maskDilation>0) {
-     dilateQueryMask();
-   }
-   return true;
- }
+{
+  if (!readIndexSpecificationFile()) {
+    qDebug() << "Error reading index specification file";
+    return false;
+  }
+  if (!initParamsFromIndexSpecification()) {
+    qDebug() << "Problem initializing working parameters";
+    return false;
+  }
+  if (!loadQueryImage()) {
+    qDebug() << "Error loading query image " << queryFilepath;
+    return false;
+  }
+  if (maskDilation>0) {
+    dilateQueryMask();
+  }
+  if (!computeBlankSubjectScore()) {
+    return false;
+  }
+  return true;
+}
 
 bool VolumeIndex::readIndexSpecificationFile()
 {
@@ -1485,32 +1550,261 @@ FILE* VolumeIndex::openSecondaryIndex(int x, int y, int z)
 
 bool VolumeIndex::loadQueryImage()
 {
+  // First, load the original image
+  My4DImage* originalQueryImage=0L;
   if (queryFilepath.endsWith(".mask")) {
     MaskChan maskChan;
     QStringList pathList;
     pathList.append(queryFilepath);
     qDebug() << "Loading mask query file=" << queryFilepath;
-    queryImage=maskChan.createImageFromMaskFiles(pathList);
+    originalQueryImage=maskChan.createImageFromMaskFiles(pathList);
   } else {
     ImageLoader loader;
     if (queryFilepath.isNull() || queryFilepath.length()<1) {
       qDebug() << "queryFilepath is not set";
       return false;
     }
-    queryImage=new My4DImage();
-    if (!loader.loadImage(queryImage, queryFilepath)) {
+    originalQueryImage=new My4DImage();
+    if (!loader.loadImage(originalQueryImage, queryFilepath)) {
       qDebug() << "Could not load query file=" << queryFilepath;
       return false;
     }
-    return true;
+  }
+
+  // Next, convert query to 1-channel and binarize
+  const int x_dim=originalQueryImage->getXDim();
+  const int y_dim=originalQueryImage->getYDim();
+  const int z_dim=originalQueryImage->getZDim();
+  const int c_dim=originalQueryImage->getCDim();
+
+  if (x_dim!=X_SIZE ||
+      y_dim!=Y_SIZE ||
+      z_dim!=Z_SIZE) {
+    qDebug() << "query dimensions do not match index dimensions";
+    return false;
+  }
+
+  queryImage=new My4DImage();
+  queryImage->loadImage(x_dim, y_dim, z_dim, 1 /* channel */, V3D_UINT8);
+
+  v3d_uint8** rArr=new v3d_uint8*[c_dim];
+
+  for (int i=0;i<c_dim;i++) {
+    rArr[i]=originalQueryImage->getRawDataAtChannel(i);
+  }
+
+  v3d_uint8* qArr=queryImage->getRawDataAtChannel(0);
+
+  for (int z1=0;z1<Z_SIZE;z1++) {
+    int offsetZ=z1*Y_SIZE*X_SIZE;
+    for (int y1=0;y1<Y_SIZE;y1++) {
+      int offsetY=y1*X_SIZE;
+      for (int x1=0;x1<X_SIZE;x1++) {
+	int offset=offsetZ + offsetY + x1;
+	char maxV=0;
+	for (int c=0;c<c_dim;c++) {
+	  char v=rArr[c][offset];
+	  if (v>maxV) {
+	    maxV=v;
+	  }
+	}
+	if (maxV>=queryThreshold) {
+	  qArr[offset]=255;
+	} else {
+	  qArr[offset]=0;
+	}
+      }
+    }
+  }
+
+  delete originalQueryImage;
+  return true;
+}
+
+void VolumeIndex::dilateQueryMask()
+{
+  My4DImage* queryWorkspace=new My4DImage();
+  queryWorkspace->loadImage(X_SIZE, Y_SIZE, Z_SIZE, 1 /* channel */, V3D_UINT8);
+  DilationErosion de;
+  unsigned char**** qd = (unsigned char****)queryImage->getData();
+  unsigned char**** qdStart=qd;
+  unsigned char**** qw = (unsigned char****)queryWorkspace->getData();
+  unsigned char* qwc = queryWorkspace->getRawDataAtChannel(0);
+  int voxelCount=X_SIZE*Y_SIZE*Z_SIZE;
+  for (int i=0;i<voxelCount;i++) {
+    qwc[i]=0;
+  }
+  for (int d=0;d<maskDilation;d++) {
+    de.dilateOrErode(DilationErosion::TYPE_DILATE, X_SIZE, Y_SIZE, Z_SIZE, qd[0], qw[0], 2, 24);
+    qd=qw;
+    qw=qd;
+  }
+  if (qd!=qdStart) {
+    delete queryImage;
+    queryImage=queryWorkspace;
+  } else {
+    delete queryWorkspace;
   }
 }
 
- void VolumeIndex::dilateQueryMask()
+/* This method assumes the query is binary 0/255 and the subject is either 2-bit or 4-bit via threshold info from index spec, and
+   has been preprocessed as values 0,1 or 0,1,2,3 */
+MaskScore VolumeIndex::computeSubvolumeScore(char* query, char* subject, int length)
 {
+  MaskScore ms;
   
+  ms.score=0.0;
+  ms.zeroCount=0;
+  ms.nonzeroCount=0;
+  ms.zeroScore=0;
+  ms.nonzeroScore=0;
+
+  if (indexSpecification->bit_depth==2) {
+
+    for (int i=0;i<length;i++) {
+      if (query[i]==0) {
+	ms.zeroCount++;
+	if (subject[i]==0) {
+	  // do nothing since match
+	} else {
+	  // Assume 1
+	  ms.zeroScore++;
+	}
+      } else {
+	ms.nonzeroCount++;
+	// Assume non-zero
+	if (subject[i]==0) {
+	  ms.nonzeroScore++;
+	} else {
+	  // Assume 1
+	  // do nothing since match
+	}
+      }
+    }
+
+  } else { // Assume bit depth==4
+
+    for (int i=0;i<length;i++) {
+      if (query[i]==0) {
+	ms.zeroCount++;
+	ms.zeroScore += subject[i]; // should be 0,1,2,3, which is difference
+      } else {
+	ms.nonzeroCount++;
+	ms.nonzeroScore += (3-subject[i]);
+      }
+    }
+
+  }
+
+  // Compute overall score
+  ms.score = backgroundWeight * (ms.zeroScore / (ms.zeroCount * 1.0)) + ms.nonzeroScore / (ms.nonzeroCount * 1.0);
+
+  return ms;
 }
 
+// This should only be called once
+bool VolumeIndex::computeBlankSubjectScore()
+{
+  if (blankSubjectScore!=0L) {
+    qDebug() << "computeBlankSubjectScore() should only be called once";
+    return false;
+  }
+  blankSubjectScore=new MaskScore**[Z1_SIZE];
+  for (int b1=0;b1<Z1_SIZE;b1++) {
+    blankSubjectScore[b1]=new MaskScore*[Y1_SIZE];
+    for (int b2=0;b2<Y1_SIZE;b2++) {
+      blankSubjectScore[b1][b2]=new MaskScore[X1_SIZE];
+    }
+  }
+  const int MAX_SUBVOLUME_SIZE=UNIT*UNIT*UNIT;
+  char* queryData=new char[MAX_SUBVOLUME_SIZE]; // max size for subvolume
+  char* subjectData=new char[MAX_SUBVOLUME_SIZE];
+  for (int i=0;i<MAX_SUBVOLUME_SIZE;i++) {
+    queryData[i]=0;
+    subjectData[i]=0;
+  }
+  int qCount=1;
+  char* qtArr=new char[1];
+  qtArr[0]=1;
+  for (int z1=0;z1<X1_SIZE;z1++) {
+    for (int y1=0;y1<Y1_SIZE;y1++) {
+      for (int x1=0;x1<X1_SIZE;x1++) {
+	int subvolumeSize=getImageSubvolumeDataByStage1Coordinates(queryImage, queryData, x1, y1, z1, qCount, qtArr);
+	// We now have query data from the subvolume as an array of 0,1 and also subject data as all zeros
+	MaskScore ms=computeSubvolumeScore(queryData, subjectData, subvolumeSize);
+	blankSubjectScore[z1][y1][x1]=ms;
+      }
+    }
+  }
+  delete [] qtArr;
+  delete [] queryData;
+  delete [] subjectData;
+}
 
+/* this extracts subvolume data from an image, and uses the threshold array to consolidate the information into a single array ordered by level */
+int VolumeIndex::getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char* data, int x1, int y1, int z1, int tCount, char* tArr)
+{
+  v3d_uint8** rArr=new v3d_uint8*[image->getCDim()];
 
+  for (int i=0;i<image->getCDim();i++) {
+    rArr[i]=image->getRawDataAtChannel(i);
+  }
+
+  const int x_dim=image->getXDim();
+  const int y_dim=image->getYDim();
+  const int z_dim=image->getZDim();
+  const int c_dim=image->getCDim();
+
+  // Inner Loop
+  int z2_limit=(z1+1)*UNIT;
+  if (z2_limit>z_dim) {
+    z2_limit=z_dim;
+  }
+
+  int y2_limit=(y1+1)*UNIT;
+  if (y2_limit>y_dim) {
+    y2_limit=y_dim;
+  }
+
+  int x2_limit=(x1+1)*UNIT;
+  if (x2_limit>x_dim) {
+    x2_limit=x_dim;
+  }
+
+  int dataPosition=-1;
+
+  for (int z2=z1*UNIT;z2<z2_limit;z2++) {
+    int zyxOffset=z2*x_dim*y_dim;
+    for (int y2=y1*UNIT;y2<y2_limit;y2++) {
+      int yxOffset=y2*x_dim;
+      for (int x2=x1*UNIT;x2<x2_limit;x2++) {
+	int rOffset=zyxOffset + yxOffset + x2;
+	dataPosition++;
+
+	char maxV=0;
+
+	for (int c=0;c<c_dim;c++) {
+	  char v=rArr[c][rOffset];
+	  if (v > maxV) {
+	    maxV=v;
+	  }
+	}
+
+	int t=0;
+	for (;t<tCount;t++) {
+	  if (maxV<tArr[t]) {
+	    break;
+	  }
+	}
+
+	data[dataPosition]=t;
+      }
+    }
+  }
+
+  delete [] rArr;
+  
+  dataPosition++;
+  return dataPosition;
+}
 

@@ -197,6 +197,22 @@ class SampleSort
   bool operator()(const SampleSpecification *s1, const SampleSpecification *s2 ) const;
 };
 
+class MaskScore
+{
+ public:
+  double score;
+  int zeroCount;
+  int nonzeroCount;
+  int zeroScore;
+  int nonzeroScore;
+  void operator=(const MaskScore& m2) {
+    zeroCount=m2.zeroCount;
+    nonzeroCount=m2.nonzeroCount;
+    zeroScore=m2.zeroScore;
+    nonzeroScore=m2.nonzeroScore;
+  }
+};
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -245,6 +261,7 @@ public:
 	usage.append("                                                                                                        \n");
 	usage.append("   For mode search:                                                                                     \n");
 	usage.append("     -query <query stack or mask file>                                                                  \n");
+	usage.append("     -minSubjectVoxels <int> [200]                                                                      \n");
 	usage.append("     -queryThreshold <if file non-binary, binarization threshold> [10]                                  \n");
         usage.append("     -maxHits <max number of hits> [100]                                                                \n");
 	usage.append("     -backgroundWeight <float. 0=ignore 1=same >1=more than mask> [1.0]                                 \n");
@@ -326,6 +343,7 @@ private:
     FILE* openSecondaryIndex(int x, int y, int z);
 
     QString queryFilepath;
+    int minSubjectVoxels;
     int queryThreshold;
     int maxHits;
     double backgroundWeight;
@@ -336,6 +354,12 @@ private:
     bool loadQueryImage();
 
     void dilateQueryMask();
+
+    MaskScore computeSubvolumeScore(char* query, char* subject, int length);
+
+    MaskScore*** blankSubjectScore;
+    bool computeBlankSubjectScore();
+    int getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char* data, int x1, int y1, int z1, int tCount, char* tArr);
 
 };
 

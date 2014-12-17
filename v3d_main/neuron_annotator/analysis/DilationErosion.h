@@ -14,7 +14,7 @@ class DilationErosion
 {
  public:
   DilationErosion();
-  ~DilationErosion();
+  ~DilationErosion() {}
 
   static const int TYPE_DILATE;
   static const int TYPE_ERODE;
