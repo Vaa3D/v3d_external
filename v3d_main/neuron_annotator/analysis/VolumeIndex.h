@@ -213,6 +213,43 @@ class MaskScore
   }
 };
 
+class SubjectScore
+{
+ public:
+  friend class ScoreSort;
+  long sampleId;
+  long fragmentId;
+  QString owner;
+  int nonzeroVoxelCount;
+  MaskScore maskScore;
+};
+
+class ScoreSort
+{
+ public:
+  bool operator()(const SubjectScore *s1, const SubjectScore *s2 ) const;
+};
+
+
+class FragmentThread
+{
+ public:
+  FILE* fid;
+  long sampleId;
+  long fragmentId;
+  SubjectScore score;
+};
+
+class SampleThread
+{
+ public:
+  FILE* fid;
+  long sampleId;
+  QString owner;
+  QList<FragmentThread*> fragmentThreadList;
+  QList< QFuture<FragmentThread*> > fragmentFutureList;
+};
+  
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -360,6 +397,16 @@ private:
     MaskScore*** blankSubjectScore;
     bool computeBlankSubjectScore();
     int getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char* data, int x1, int y1, int z1, int tCount, char* tArr);
+    
+    bool computeSubjectScores();
+
+    QList<SubjectScore*> searchResultList;
+    QList<SampleThread*> sampleThreadList;
+
+    SampleThread* runSampleThread(SampleThread* sampleThread);
+    FragmentThread* runFragmentThread(FragmentThread* fragmentThread);
+
+    QList< QFuture<SampleThread*> > sampleFutureList;
 
 };
 

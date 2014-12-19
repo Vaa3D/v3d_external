@@ -119,6 +119,7 @@ Implementation
 *********************/
 
 #include "MaskChan.h"
+#include "SleepThread.h"
 #include "VolumeIndex.h"
 #include "DilationErosion.h"
 #include "../utility/ImageLoader.h"
@@ -137,6 +138,13 @@ const QString VolumeIndex::SECONDARY_INDEX_FILENAME="secondary_stage.gindex";
 
 bool SampleSort::operator()(const SampleSpecification *s1, const SampleSpecification *s2 ) const {
   if (s1->neuronSeparationId>s2->neuronSeparationId) {
+    return true;
+  } 
+  return false;
+}
+
+bool ScoreSort::operator()(const SubjectScore *s1, const SubjectScore *s2 ) const {
+  if ( (s1->maskScore).score > (s2->maskScore).score) {
     return true;
   } 
   return false;
@@ -313,6 +321,10 @@ bool VolumeIndex::doSearch()
     dilateQueryMask();
   }
   if (!computeBlankSubjectScore()) {
+    return false;
+  }
+  if (!computeSubjectScores()) {
+    qDebug() << "Error computing subject scores";
     return false;
   }
   return true;
@@ -1807,4 +1819,103 @@ int VolumeIndex::getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char
   dataPosition++;
   return dataPosition;
 }
+
+bool VolumeIndex::computeSubjectScores()
+{
+  searchResultList.clear();
+
+  // We want to iterate through the 1st-stage index, spawning threads that are individually responsible for each sample. These 1st-stage
+  // threads will then visit each non-zero 2nd-stage index, and launch 2nd-stage threads which will add their results to the searchResultList.
+  // After all are finished, this list will be sorted and the results reported.
+
+  char* ownerBuffer=new char[2000];
+
+  fid=fopen(sampleIndexFilepath.toAscii().data(), "rb");
+  if (!fid) {
+    qDebug() << "Could not open file=" << sampleIndexFilepath << " to read";
+    return false;
+  }
+
+  int x_size, y_size, z_size;
+  int unit, bits;
+
+  fread(&x_size, 1, sizeof(int), fid);
+  fread(&y_size, 1, sizeof(int), fid);
+  fread(&z_size, 1, sizeof(int), fid);
+  fread(&unit, 1, sizeof(int), fid);
+  fread(&bits, 1, sizeof(int), fid);
+  
+  if (!(x_size==X_SIZE && y_size==Y_SIZE && z_size==Z_SIZE && unit==UNIT && bits==BITS)) {
+    qDebug() << "1st stage index dimensions do not match index specification";
+    return false;
+  }
+  sampleFutureList.clear();
+  int sampleIndex=0;
+  while(!feof(fid)) {
+    long sampleId;
+    int ownerLength;
+    fread(&sampleId, sizeof(long), 1, fid);
+    if (feof(fid)) {
+      break;
+    }
+    fread(&ownerLength, sizeof(int), 1, fid);
+    fread(ownerBuffer, sizeof(char), ownerLength, fid);
+    ownerBuffer[ownerLength]='\0';
+    QString owner = QString::fromLocal8Bit(ownerBuffer);
+    SampleThread* st=new SampleThread();
+    st->sampleId=sampleId;
+    st->owner=owner;
+    st->fid=0L;
+    sampleThreadList.append(st);
+    QFuture<SampleThread*> sf = QtConcurrent::run(this, &VolumeIndex::runSampleThread, st);
+    sampleFutureList.append(sf);
+  }
+
+  while(1) {
+    SleepThread st;
+    st.msleep(5000);
+    int doneCount=0;
+    for (int i=0;i<sampleFutureList.size();i++) {
+      QFuture<SampleThread*> sf=sampleFutureList.at(i);
+      if (sf.isFinished()) {
+	doneCount++;
+      }
+    }
+    int stillActive=sampleFutureList.size()-doneCount;
+    if (stillActive==0) {
+      break;
+    } else {
+      qDebug() << "Waiting on " << stillActive << " sample search threads";
+    }
+  }
+
+  for (int i=0;i<sampleThreadList.size();i++) {
+    SampleThread* st=sampleThreadList.at(i);
+    int flSize=st->fragmentThreadList.size();
+    for (int j=0;j<flSize;j++) {
+      FragmentThread* ft=st->fragmentThreadList.at(j);
+      searchResultList.append(&(ft->score));
+    }
+  }
+
+  // Now sort the results
+  qSort(searchResultList.begin(), searchResultList.end(), ScoreSort());
+
+  // Cleanup
+  fclose(fid);
+  fid=0L;
+  delete [] ownerBuffer;
+}
+
+SampleThread* VolumeIndex::runSampleThread(SampleThread* sampleThread)
+{
+  return 0L;
+}
+
+FragmentThread* VolumeIndex::runFragmentThread(FragmentThread* fragmentThread)
+{
+  return 0L;
+}
+
+
 
