@@ -200,7 +200,15 @@ class SampleSort
 class MaskScore
 {
  public:
+  MaskScore() {
+    score=0.0;
+    x=y=z=0;
+    zeroCount=nonzeroCount=nonzeroScore=zeroScore=0;
+  }
   double score;
+  int x;
+  int y;
+  int z;
   int zeroCount;
   int nonzeroCount;
   int zeroScore;
@@ -210,6 +218,12 @@ class MaskScore
     nonzeroCount=m2.nonzeroCount;
     zeroScore=m2.zeroScore;
     nonzeroScore=m2.nonzeroScore;
+  }
+  void operator+(const MaskScore& m2) {
+    zeroCount+=m2.zeroCount;
+    nonzeroCount+=m2.nonzeroCount;
+    zeroScore+=m2.zeroScore;
+    nonzeroScore+=m2.nonzeroScore;
   }
 };
 
@@ -221,7 +235,7 @@ class SubjectScore
   long fragmentId;
   QString owner;
   int nonzeroVoxelCount;
-  MaskScore maskScore;
+   MaskScore* maskScore;
 };
 
 class ScoreSort
@@ -231,13 +245,14 @@ class ScoreSort
 };
 
 
+// Not used in current implementation
 class FragmentThread
 {
  public:
-  FILE* fid;
+  FILE* fid; 
   long sampleId;
   long fragmentId;
-  SubjectScore score;
+  SubjectScore* score;
 };
 
 class SampleThread
@@ -246,8 +261,11 @@ class SampleThread
   FILE* fid;
   long sampleId;
   QString owner;
-  QList<FragmentThread*> fragmentThreadList;
-  QList< QFuture<FragmentThread*> > fragmentFutureList;
+  int firstStageVoxelCount;
+  char* firstStageData;
+  //  QList<FragmentThread*> fragmentThreadList;
+  //  QList< QFuture<FragmentThread*> > fragmentFutureList;
+  QMap<long, QList<MaskScore*> > fragmentScoreMap;
 };
   
 
@@ -266,6 +284,8 @@ public:
 
     static const QString PRIMARY_INDEX_FILENAME;
     static const QString SECONDARY_INDEX_FILENAME;
+
+    static const int MAX_OWNER_LENGTH;
 
     VolumeIndex();
 
@@ -314,6 +334,8 @@ private:
     FILE* fid;
     FILE* mainIndexFid;
 
+    bool ERROR_FLAG;
+
     bool DEBUG_FLAG;
     int mode;
 
@@ -353,14 +375,14 @@ private:
     int divideDimensionByUnit(int originalSize, int unit);
     int* subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char* targetMask, int unit, int threshold);
     bool createSecondStageEntry(My4DImage* image, long fragmentId, long sampleId, bool updateFirstStage);
-    char* getAddressOfFirstStageMaskAtCoordinate(int x, int y, int z);
+    char* getAddressOfFirstStageMaskAtCoordinate(int x, int y, int z, int ownerLength);
 
     bool createFirstStageIndex();
     bool createSecondStageIndex();
     bool writeSampleIndexHeaderAndFirstStage();
     bool writeSampleIndexUpdate();
 
-    bool validatePositiveFirstStageEntry(int x, int y, int z);
+    bool validatePositiveFirstStageEntry(int x, int y, int z, int ownerLength);
 
     bool initParamsFromIndexSpecification();
     bool initParamsFromSampleSpecification();
@@ -377,7 +399,10 @@ private:
     bool processSampleIndexToMainIndex();
 
     FILE* openPrimaryIndex();
-    FILE* openSecondaryIndex(int x, int y, int z);
+    FILE* openSecondaryIndexToAppend(int x, int y, int z);
+    FILE* openSecondaryIndexToRead(int x, int y, int z);
+    QString getSecondaryIndexFilepath(int x, int y, int z);
+    
 
     QString queryFilepath;
     int minSubjectVoxels;
@@ -392,13 +417,14 @@ private:
 
     void dilateQueryMask();
 
-    MaskScore computeSubvolumeScore(char* query, char* subject, int length);
+    MaskScore* computeSubvolumeScore(char* query, char* subject, int length);
 
-    MaskScore*** blankSubjectScore;
+    MaskScore**** blankSubjectScore;
     bool computeBlankSubjectScore();
     int getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char* data, int x1, int y1, int z1, int tCount, char* tArr);
     
     bool computeSubjectScores();
+    int getStage2DataByteCount(int units);
 
     QList<SubjectScore*> searchResultList;
     QList<SampleThread*> sampleThreadList;
@@ -407,6 +433,12 @@ private:
     FragmentThread* runFragmentThread(FragmentThread* fragmentThread);
 
     QList< QFuture<SampleThread*> > sampleFutureList;
+
+    void addMaskScoreForSecondStageEntry(long fragmentId, SampleThread* sampleThread, char* secondStageData, int dataUnits, int x1, int y1, int z1);
+    void computeMaskScore(MaskScore* maskScore);
+    void expandSubjectData(char* compressed, char* expanded, int units);
+    void addSampleResult(SampleThread* st);
+    
 
 };
 
