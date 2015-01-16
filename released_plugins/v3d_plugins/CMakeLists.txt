@@ -24,7 +24,8 @@ if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ireg)
         "${TIFF_INCLUDE_DIR}"
     )
     configure_v3d_plugin(ireg)
-    target_link_libraries(ireg mylib_tiff)
+    find_library(ZLIB z)
+    target_link_libraries(ireg mylib_tiff ${ZLIB})
 
     if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/imath)
         set(PLUGIN_HEADERS imath/imath.h) # Q_OBJECT macro containing files only
