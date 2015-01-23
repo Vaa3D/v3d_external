@@ -122,7 +122,7 @@ Implementation
 #include "SleepThread.h"
 #include "VolumeIndex.h"
 #include "DilationErosion.h"
-#include "../utility/ImageLoader.h"
+#include "../utility/ImageLoaderBasic.h"
 
 const int VolumeIndex::MODE_UNDEFINED=-1;
 const int VolumeIndex::MODE_CREATE_SAMPLE_INDEX_FILE=0;
@@ -264,6 +264,7 @@ bool VolumeIndex::createSampleIndexFile()
     qDebug() << "sampleSpecificationFilepath not set";
     return false;
   }
+  qDebug() << "calling readSampleSpecificationFile()";
   if (!readSampleSpecificationFile()) {
     qDebug() << "Could not read file " << sampleSpecificationFilepath;
     return false;
@@ -272,27 +273,33 @@ bool VolumeIndex::createSampleIndexFile()
     qDebug() << "Could not find matching alignment entry";
     return false;
   }
+  qDebug() << "calling initParamsFromIndexSpecification()";
   if (!initParamsFromIndexSpecification()) {
     qDebug() << "Problem initializing working parameters";
     return false;
   }
+  qDebug() << "calling initParamsFromSampleSpecification()";
   if (!initParamsFromSampleSpecification()) {
     qDebug() << "Problem initializing working parameters";
     return false;
   }
   QString consolidatedSignalFilepath=sampleSpecification->consolidatedSignalPath;
+  qDebug() << "calling loadSampleConsolidatedSignalImage()";
   if (!loadSampleConsolidatedSignalImage()) {
     qDebug() << "Could not load consolidatedSignalFilepath=" << consolidatedSignalFilepath;
     return false;
   }
+  qDebug() << "calling createFirstStageIndex()";
   if (!createFirstStageIndex()) {
     qDebug() << "Error creating first-stage index data";
     return false;
   }
+  qDebug() << "calling writeSampleIndexHeaderAndFirstStage()";
   if (!writeSampleIndexHeaderAndFirstStage()) {
     qDebug() << "Error writing sample index header and first stage";
     return false;
   }
+  qDebug() << "calling createSecondStageIndex()";
   if (!createSecondStageIndex()) {
     qDebug() << "Error creating second-stage index data";
     return false;
@@ -610,17 +617,19 @@ void VolumeIndex::addAlignmentIfMatchingSpace(SampleSpecification* ss) {
 
 bool VolumeIndex::loadSampleConsolidatedSignalImage()
 {
-  ImageLoader loader;
+  ImageLoaderBasic loader;
   QString consolidatedSignalFilepath=sampleSpecification->consolidatedSignalPath;
   if (consolidatedSignalFilepath.isNull()) {
     qDebug() << "consolidatedSignalFilepath is null";
     return false;
   }
   sampleConsolidatedSignalImage=new My4DImage();
-  if (!loader.loadImage(sampleConsolidatedSignalImage, consolidatedSignalFilepath)) {
+  qDebug() << "Using ImageLoaderBasic, calling loader.loadImage()";
+  if (!loader.loadImage(sampleConsolidatedSignalImage, consolidatedSignalFilepath.toUtf8().constData())) {
     qDebug() << "Could not load file=" << consolidatedSignalFilepath;
     return false;
   }
+  qDebug() << "after loader.loadImage()";
   return validateImageSize(sampleConsolidatedSignalImage);
 }
 
@@ -870,6 +879,8 @@ void VolumeIndex::clearSecondStageData()
 
 bool VolumeIndex::createSecondStageIndex()
 {
+  qDebug() << "createSecondStageIndex() start";
+
   if (sampleConsolidatedSignalImage==0L) {
     qDebug() << "sampleConsolidatedSignalImage must be populated before createSecondStageIndex";
     return false;
@@ -919,6 +930,8 @@ bool VolumeIndex::createSecondStageIndex()
 
     delete fragmentImage;
   }
+
+  return true;
 }
 
 char* VolumeIndex::getAddressOfFirstStageMaskAtCoordinate(int x, int y, int z, int ownerLength)
@@ -1566,13 +1579,13 @@ bool VolumeIndex::loadQueryImage()
     qDebug() << "Loading mask query file=" << queryFilepath;
     originalQueryImage=maskChan.createImageFromMaskFiles(pathList);
   } else {
-    ImageLoader loader;
+    ImageLoaderBasic loader;
     if (queryFilepath.isNull() || queryFilepath.length()<1) {
       qDebug() << "queryFilepath is not set";
       return false;
     }
     originalQueryImage=new My4DImage();
-    if (!loader.loadImage(originalQueryImage, queryFilepath)) {
+    if (!loader.loadImage(originalQueryImage, queryFilepath.toUtf8().constData())) {
       qDebug() << "Could not load query file=" << queryFilepath;
       return false;
     }
