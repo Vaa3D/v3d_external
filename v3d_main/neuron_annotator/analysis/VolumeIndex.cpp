@@ -2043,7 +2043,7 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
 
   // Then get subject data ready
   int s2bytes=getStage2DataByteCount(dataUnits);
-  char subjectData[maxS2Size];
+  char* subjectData = new char[maxS2Size];
   expandSubjectData(secondStageData, subjectData, dataUnits);
 
   // Then compute score
@@ -2059,6 +2059,7 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
   }
 
   delete [] queryData;
+  delete [] subjectData;
 }
 
  void VolumeIndex::expandSubjectData(char* compressed, char* expanded, int units)
