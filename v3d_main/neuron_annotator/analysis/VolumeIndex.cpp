@@ -2038,7 +2038,7 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
   char qtArr[1];
   qtArr[0]=1;
   int maxS2Size=UNIT*UNIT*UNIT;
-  char queryData[maxS2Size];
+  char* queryData = new char[maxS2Size];
   int subvolumeSize=getImageSubvolumeDataByStage1Coordinates(queryImage, queryData, x1, y1, z1, qCount, qtArr);
 
   // Then get subject data ready
@@ -2057,6 +2057,8 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
     fragmentMaskScoreList.append(ms);
     sampleThread->fragmentScoreMap[fragmentId]=fragmentMaskScoreList;
   }
+
+  delete [] queryData;
 }
 
  void VolumeIndex::expandSubjectData(char* compressed, char* expanded, int units)
