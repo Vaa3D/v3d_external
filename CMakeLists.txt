@@ -10,10 +10,16 @@ include_directories( ${CMAKE_BINARY_DIR}/v3d_main/v3d )
 
 set (V3D_MAIN "${CMAKE_SOURCE_DIR}/v3d_main")
 
+# Sidestep compile trouble with boost 1.46 with MSVC11/2012
+if(WIN32)
+    add_definitions(-DBOOST_NO_0X_HDR_INITIALIZER_LIST)
+endif()
+
+
 set(V3D_PACKAGE_AS_NEURON_ANNOTATOR OFF CACHE BOOL "Whether to package custom NeuronAnnotator mode")
 # V3D_PACKAGE_AS_NEURON_ANNOTATOR is not working well, at least on Windows
 if(WIN32)
-    mark_as_advanced(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+    mark_as_advanced(CLEAR V3D_PACKAGE_AS_NEURON_ANNOTATOR)
 else()
     mark_as_advanced(CLEAR V3D_PACKAGE_AS_NEURON_ANNOTATOR)
 endif()
