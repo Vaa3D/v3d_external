@@ -8,6 +8,8 @@ include(CTest)
 include_directories( ${CMAKE_BINARY_DIR}/v3d_main/cellseg )
 include_directories( ${CMAKE_BINARY_DIR}/v3d_main/v3d )
 
+set (V3D_MAIN "${CMAKE_SOURCE_DIR}/v3d_main")
+
 set(V3D_PACKAGE_AS_NEURON_ANNOTATOR OFF CACHE BOOL "Whether to package custom NeuronAnnotator mode")
 # V3D_PACKAGE_AS_NEURON_ANNOTATOR is not working well, at least on Windows
 if(WIN32)
