@@ -115,7 +115,8 @@ if(USE_FFMPEG)
         DEPENDS Yasm-1-2-0
         # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
         # Use the exact distribution I developed against
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
+        #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-2.5.1.tgz
         SOURCE_DIR ${av_dir}/src
         BINARY_DIR ${av_dir}/build
         INSTALL_DIR ${av_dir}/install
@@ -127,19 +128,22 @@ if(USE_FFMPEG)
             --disable-vda
             --enable-pic
             --enable-shared
+#           --enable-libx265
+#	          --enable-gpl
             --extra-cflags=${avcodec_cflags}
             ${AV_CONFIG_FLAGS}
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
-    set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice.a CACHE INTERNAL "path to a library")
-    set(AVFORMAT_LIBRARY ${av_dir}/install/lib/libavformat.a CACHE INTERNAL "path to a library")
-    set(AVFILTER_LIBRARY ${av_dir}/install/lib/libavfilter.a CACHE INTERNAL "path to a library")
-    set(AVCODEC_LIBRARY ${av_dir}/install/lib/libavcodec.a CACHE INTERNAL "path to a library")
-    set(SWSCALE_LIBRARY ${av_dir}/install/lib/libswscale.a CACHE INTERNAL "path to a library")
-    set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil.a CACHE INTERNAL "path to a library")
+    set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(AVFORMAT_LIBRARY ${av_dir}/install/lib/libavformat${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(AVFILTER_LIBRARY ${av_dir}/install/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(AVCODEC_LIBRARY ${av_dir}/install/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(SWSCALE_LIBRARY ${av_dir}/install/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
 
     find_package(ZLIB)
     find_package(BZip2)
+    find_package(Iconv)
 
     include_directories(${AVCODEC_INCLUDE_DIR})
     add_definitions(-D__STDC_CONSTANT_MACROS)
@@ -203,10 +207,10 @@ endif()
 # Keep Mac compatibility to OSX 10.8
 # even when building on <later versions>
 # (trying to keep 10.5 compatibility broke something in libavcodec on Mountain Lion Aug 2013 cmb)
-find_path(TMP_OSX_SYSROOT 
-    MacOSX10.8.sdk 
-    PATHS 
-        /Developer/SDKs 
+find_path(TMP_OSX_SYSROOT
+    MacOSX10.8.sdk
+    PATHS
+        /Developer/SDKs
         /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
     NO_DEFAULT_PATH)
 mark_as_advanced(CLEAR TMP_OSX_SYSROOT)

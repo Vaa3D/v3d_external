@@ -95,7 +95,7 @@ bool MpegLoader::loadMpegFile(QUrl fileUrl)
             for (int z = 0; z < depth; ++z)
             {
                 // Initialize persistent frame storage
-                frames[z] = avcodec_alloc_frame();
+                frames[z] = av_frame_alloc();
                 avpicture_fill((AVPicture*) frames[z], frame_data + z * frameBytes,
                                PIX_FMT_YUV420P, width, height);
                 // Load frame from disk
@@ -153,7 +153,7 @@ void BlockScaler::setup(int firstFrameParam, int finalFrameParam,
     width = mpegLoader->width;
     // qDebug() << "Channel =" << (int)channel << __FILE__ << __LINE__;
 
-    pFrameBgra = avcodec_alloc_frame();
+    pFrameBgra = av_frame_alloc();
     sliceBytesOut = height * width * 4;
     PixelFormat pixelFormat = PIX_FMT_BGRA;
     /*

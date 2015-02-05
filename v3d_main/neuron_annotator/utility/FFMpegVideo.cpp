@@ -525,7 +525,7 @@ bool FFMpegVideo::b_is_one_time_inited = false;
 ///////////////////////////
 
 
-FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum CodecID codec_id)
+FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum AVCodecID codec_id)
     : picture_yuv(NULL)
     , picture_rgb(NULL)
     , container(NULL)

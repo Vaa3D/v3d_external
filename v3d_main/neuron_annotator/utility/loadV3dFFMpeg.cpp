@@ -6,7 +6,7 @@
 
 using namespace std;
 
-bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum CodecID codec_id)
+bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum AVCodecID codec_id)
 {
     try {
         Image4DProxy<My4DImage> proxy(const_cast<My4DImage*>(&img));

@@ -112,6 +112,7 @@ if(USE_FFMPEG)
         ${AVUTIL_LIBRARY}
         ${BZIP2_LIBRARIES}
         ${ZLIB_LIBRARY}
+        ${ICONV_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
     )
     if(APPLE)
