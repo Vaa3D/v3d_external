@@ -377,8 +377,8 @@ private:
     bool createSecondStageEntry(My4DImage* image, long fragmentId, long sampleId, bool updateFirstStage);
     char* getAddressOfFirstStageMaskAtCoordinate(int x, int y, int z, int ownerLength);
 
-    bool createFirstStageIndex();
-    bool createSecondStageIndex();
+    bool createFirstStageIndexForSampleFile();
+    bool createSecondStageIndexForSampleFile();
     bool writeSampleIndexHeaderAndFirstStage();
     bool writeSampleIndexUpdate();
 
@@ -398,11 +398,11 @@ private:
 
     bool processSampleIndexToMainIndex();
 
-    FILE* openPrimaryIndex();
+    FILE* openPrimaryIndex(const char* filestring);
     FILE* openSecondaryIndexToAppend(int x, int y, int z);
     FILE* openSecondaryIndexToRead(int x, int y, int z);
     QString getSecondaryIndexFilepath(int x, int y, int z);
-    
+    QString getSecondaryIndexDir(int x, int y, int z);
 
     QString queryFilepath;
     int minSubjectVoxels;
@@ -438,7 +438,10 @@ private:
     void computeMaskScore(MaskScore* maskScore);
     void expandSubjectData(char* compressed, char* expanded, int units);
     void addSampleResult(SampleThread* st);
+
+    bool displaySearchResults();
     
+    void doVoxelCountReport(My4DImage* image);
 
 };
 

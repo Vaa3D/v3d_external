@@ -8,7 +8,7 @@ When samples are processed and their corresponding index files are generated (be
 
 3) Therefore, as we write the fragment data, it should be in (x,y,z) chunks that correspond to these subvolumes, in the order of the original x,y,z top-level data
 
-4) Therefore, we will try this format:
+4) Temporary index files created for samples will have this header corresponding to the index dimensions. This should be checked against the dimensions described by the index specification information to validate the index file before it is processed. NOTE: the actual first-stage binary index DOES NOT contain this header info, and starts with the "sampleID..." info below. In this way, the sample index files and the overall main index differ.
 
 # General index info
 <int, 1> : x
@@ -289,8 +289,8 @@ bool VolumeIndex::createSampleIndexFile()
     qDebug() << "Could not load consolidatedSignalFilepath=" << consolidatedSignalFilepath;
     return false;
   }
-  qDebug() << "calling createFirstStageIndex()";
-  if (!createFirstStageIndex()) {
+  qDebug() << "calling createFirstStageIndexForSampleFile()";
+  if (!createFirstStageIndexForSampleFile()) {
     qDebug() << "Error creating first-stage index data";
     return false;
   }
@@ -299,8 +299,8 @@ bool VolumeIndex::createSampleIndexFile()
     qDebug() << "Error writing sample index header and first stage";
     return false;
   }
-  qDebug() << "calling createSecondStageIndex()";
-  if (!createSecondStageIndex()) {
+  qDebug() << "calling createSecondStageIndexForSample()";
+  if (!createSecondStageIndexForSampleFile()) {
     qDebug() << "Error creating second-stage index data";
     return false;
   }
@@ -314,26 +314,36 @@ bool VolumeIndex::createSampleIndexFile()
 
 bool VolumeIndex::doSearch()
 {
+  qDebug() << "Reading index specification file";
   if (!readIndexSpecificationFile()) {
     qDebug() << "Error reading index specification file";
     return false;
   }
+  qDebug() << "Initializing index parameters";
   if (!initParamsFromIndexSpecification()) {
     qDebug() << "Problem initializing working parameters";
     return false;
   }
+  qDebug() << "Loading query image";
   if (!loadQueryImage()) {
     qDebug() << "Error loading query image " << queryFilepath;
     return false;
   }
   if (maskDilation>0) {
+    qDebug() << "Dilating query mask";
     dilateQueryMask();
   }
+  qDebug() << "Computing blank subject score";
   if (!computeBlankSubjectScore()) {
     return false;
   }
+  qDebug() << "Computing subject scores";
   if (!computeSubjectScores()) {
     qDebug() << "Error computing subject scores";
+    return false;
+  }
+  if (!displaySearchResults()) {
+    qDebug() << "Error displaying search results";
     return false;
   }
   return true;
@@ -645,7 +655,7 @@ bool VolumeIndex::validateImageSize(My4DImage* image)
   }
 }
 
-bool VolumeIndex::createFirstStageIndex()
+bool VolumeIndex::createFirstStageIndexForSampleFile()
 {
   if (sampleConsolidatedSignalImage==0L) {
     qDebug() << "createFirstStageIndex() depends on sampleConsolidatedSignalImage being instantiated";
@@ -658,8 +668,11 @@ bool VolumeIndex::createFirstStageIndex()
     sizeof(int) + // length of owner
     sizeof(char) * MAX_OWNER_LENGTH + 
     sizeof(int) + // non-zero voxel count for this 1st-stage entry
-    ((X_SIZE/UNIT + 1) * (Y_SIZE/UNIT + 1) * (Z_SIZE/UNIT + 1))/8 + 1; // size of 2-bit mask 
+    ((X_SIZE/UNIT + 1) * (Y_SIZE/UNIT + 1) * (Z_SIZE/UNIT + 1))/8 + 1; // size of 1-bit mask 
   firstStageIndex=new char[BUFFER_SIZE];
+  for (int i=0;i<BUFFER_SIZE;i++) {
+    firstStageIndex[i]=0;
+  }
 
   // Populate the data-independent part of the buffer
   int* ip=(int*)firstStageIndex;
@@ -821,12 +834,13 @@ int* VolumeIndex::subsampleAndThresholdToBinaryMask(My4DImage* sourceImage, char
 	if (overThresholdCount>0) {
 	  s2nonZeroCount += overThresholdCount;
 	  char oneC=1;
-	  oneC << bitOffset;
+	  oneC <<= bitOffset;
 	  char test=0;
 	  test = oneC & targetMask[bytePosition];
 	  if (test==0) {
 	    s1NonZeroCount++;
 	    targetMask[bytePosition] = targetMask[bytePosition] | oneC;
+	    qDebug() << "Adding 1st stage entry for x1=" << x1 << " y1=" << y1 << " z1=" << z1;
 	  }
 	}
 
@@ -877,9 +891,9 @@ void VolumeIndex::clearSecondStageData()
   secondStageVoxelCount=0;
 }
 
-bool VolumeIndex::createSecondStageIndex()
+bool VolumeIndex::createSecondStageIndexForSampleFile()
 {
-  qDebug() << "createSecondStageIndex() start";
+  qDebug() << "createSecondStageIndexForSample() start";
 
   if (sampleConsolidatedSignalImage==0L) {
     qDebug() << "sampleConsolidatedSignalImage must be populated before createSecondStageIndex";
@@ -955,14 +969,14 @@ bool VolumeIndex::validatePositiveFirstStageEntry(int x, int y, int z, int owner
   char* p=getAddressOfFirstStageMaskAtCoordinate(x, y, z, ownerLength);
   char v=*p;
   char bitOffset = unitOffset - 8*byteOffset;
-  v >> bitOffset;
+  v >>= bitOffset;
   char bitMask=1;
   char v2 = v & bitMask;
   if (v2>0) {
     // already set properly
     return true;
   } else {
-    bitMask << bitOffset;
+    bitMask <<= bitOffset;
     *p = *p | bitMask; 
     return false;
   }
@@ -1089,17 +1103,17 @@ bool VolumeIndex::createSecondStageEntry(My4DImage* image, long fragmentId, long
 	      }
 	      // Now, v should be the correct level for this position
 	      if (BITS==1) {
-		if (v==1) {
+		if (v==0) {
 		  char oneC=1;
 		  nonZeroCount++;
-		  oneC << bitOffset;
+		  oneC <<= bitOffset;
 		  UNIT_BUFFER[bytePosition] = UNIT_BUFFER[bytePosition] | oneC;
 		}
 	      } else if (BITS==2) {
-		char cv=v;
+		char cv=v+1;
 		if (cv>0) {
 		  nonZeroCount++;
-		  cv << bitOffset;
+		  cv <<= bitOffset;
 		  UNIT_BUFFER[bytePosition] = UNIT_BUFFER[bytePosition] | cv;
 		}
 	      }
@@ -1166,6 +1180,11 @@ bool VolumeIndex::writeSampleIndexHeaderAndFirstStage()
     return false;
   }
 
+  for (int i=0;i<firstStageIndexBytes;i++) {
+    int it=firstStageIndex[i];
+    qDebug() << i << " = " << it;
+  }
+
   return true;
 }
 
@@ -1176,7 +1195,7 @@ bool VolumeIndex::writeSampleIndexUpdate()
     char* fp = secondStageIndex[i];
     int fpSize = secondStageIndexLength[i];
     fwrite(&ENTRY_CODE, sizeof(char), 1, fid);
-    int voxelCountOffset = sizeof(char) + 3*sizeof(int) + 2*sizeof(long);
+    int voxelCountOffset = 3*sizeof(int) + 2*sizeof(long);
     int* vc = (int*)(fp + voxelCountOffset);
     *vc = secondStageVoxelCount;
     qDebug() << "Writing " << fpSize << " bytes for second stage index entry";
@@ -1400,7 +1419,7 @@ bool VolumeIndex::processSampleIndexToMainIndex()
   }
 
   // Write First Stage Main Index
-  mainIndexFid=openPrimaryIndex();
+  mainIndexFid=openPrimaryIndex("ab");
   if (!mainIndexFid) {
     qDebug() << "Error opening main index";
     return false;
@@ -1410,6 +1429,11 @@ bool VolumeIndex::processSampleIndexToMainIndex()
   fwrite(ownerBuffer, sizeof(char), ownerLength, mainIndexFid);
   fwrite(&s1NonZeroCount, sizeof(int), 1, mainIndexFid);
   int s1WriteCount=fwrite(firstStageIndex, sizeof(char), firstStageIndexBytes, mainIndexFid);
+  qDebug() << "First stage index bytes:";
+  for (int i=0;i<firstStageIndexBytes;i++) {
+    int it=firstStageIndex[i];
+    qDebug() << i << " = " << it;
+  }
   if (s1WriteCount!=firstStageIndexBytes) {
     qDebug() << "s1WriteCount does not match firstStageIndexBytes - error writing first stage index";
     fclose(mainIndexFid);
@@ -1487,7 +1511,13 @@ bool VolumeIndex::processSampleIndexToMainIndex()
     }
 
     // Now we can flush this data to the main secondary index
-    mainIndexFid=openSecondaryIndexToAppend(s2_xstart, s2_ystart, s2_zstart);
+    int s1_x=s2_xstart/UNIT;
+    int s1_y=s2_ystart/UNIT;
+    int s1_z=s2_zstart/UNIT;
+
+    qDebug() << "Using 1st stage x=" << s1_x << " y=" << s1_y << " z=" << s1_z;
+
+    mainIndexFid=openSecondaryIndexToAppend(s1_x, s1_y, s1_z);
     fwrite(&ENTRY_CODE, sizeof(char), 1, mainIndexFid);
     fwrite(&s2_xstart, sizeof(int), 1, mainIndexFid);
     fwrite(&s2_ystart, sizeof(int), 1, mainIndexFid);
@@ -1510,7 +1540,7 @@ bool VolumeIndex::processSampleIndexToMainIndex()
   return true;
 }
 
-FILE* VolumeIndex::openPrimaryIndex()
+FILE* VolumeIndex::openPrimaryIndex(const char* filestring)
 {
   if (mainIndexFid!=0L) {
     fclose(mainIndexFid);
@@ -1518,7 +1548,7 @@ FILE* VolumeIndex::openPrimaryIndex()
   QString primaryIndexPath=indexSpecification->rootPath;
   primaryIndexPath.append("/");
   primaryIndexPath.append(PRIMARY_INDEX_FILENAME);
-  mainIndexFid=fopen(primaryIndexPath.toAscii().data(), "ab");
+  mainIndexFid=fopen(primaryIndexPath.toAscii().data(), filestring);
   if (!mainIndexFid) {
     qDebug() << "Could not open primary index file=" << primaryIndexPath;
   }
@@ -1530,9 +1560,10 @@ FILE* VolumeIndex::openSecondaryIndexToAppend(int x, int y, int z)
   if (mainIndexFid!=0L) {
     fclose(mainIndexFid);
   }
+  QString secondaryDir=getSecondaryIndexDir(x,y,z);
   QString secondaryPath=getSecondaryIndexFilepath(x, y, z);
-  if (!QDir().mkpath(secondaryPath)) {
-    qDebug() << "Could not create secondary path=" << secondaryPath;
+  if (!QDir().mkpath(secondaryDir)) {
+    qDebug() << "Could not create secondary dir=" << secondaryDir;
     mainIndexFid=0L;
     return mainIndexFid;
   }
@@ -1554,7 +1585,7 @@ FILE* VolumeIndex::openSecondaryIndexToRead(int x, int y, int z)
 }
 
 
-QString VolumeIndex::getSecondaryIndexFilepath(int x, int y, int z)
+QString VolumeIndex::getSecondaryIndexDir(int x, int y, int z)
 {
   QString secondaryPath=indexSpecification->rootPath;
   secondaryPath.append("/");
@@ -1563,9 +1594,16 @@ QString VolumeIndex::getSecondaryIndexFilepath(int x, int y, int z)
   secondaryPath.append(QString::number(y));
   secondaryPath.append("/");
   secondaryPath.append(QString::number(z));
-  secondaryPath.append("/");
-  secondaryPath.append(SECONDARY_INDEX_FILENAME);
   return secondaryPath;
+}
+
+
+QString VolumeIndex::getSecondaryIndexFilepath(int x, int y, int z)
+{
+  QString secondaryDir=getSecondaryIndexDir(x, y, z);
+  secondaryDir.append("/");
+  secondaryDir.append(SECONDARY_INDEX_FILENAME);
+  return secondaryDir;
 }
 
 bool VolumeIndex::loadQueryImage()
@@ -1590,6 +1628,7 @@ bool VolumeIndex::loadQueryImage()
       return false;
     }
   }
+  doVoxelCountReport(originalQueryImage);
 
   // Next, convert query to 1-channel and binarize
   const int x_dim=originalQueryImage->getXDim();
@@ -1750,12 +1789,15 @@ bool VolumeIndex::computeBlankSubjectScore()
   int qCount=1;
   char qtArr[1];
   qtArr[0]=1;
-  for (int z1=0;z1<X1_SIZE;z1++) {
+  for (int z1=0;z1<Z1_SIZE;z1++) {
     for (int y1=0;y1<Y1_SIZE;y1++) {
       for (int x1=0;x1<X1_SIZE;x1++) {
 	int subvolumeSize=getImageSubvolumeDataByStage1Coordinates(queryImage, queryData, x1, y1, z1, qCount, qtArr);
 	// We now have query data from the subvolume as an array of 0,1 and also subject data as all zeros
 	MaskScore* ms=computeSubvolumeScore(queryData, subjectData, subvolumeSize);
+	ms->x=x1;
+	ms->y=y1;
+	ms->z=z1;
 	blankSubjectScore[z1][y1][x1]=ms;
       }
     }
@@ -1821,6 +1863,10 @@ int VolumeIndex::getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char
 	  }
 	}
 
+	if (maxV>0 && t==0) {
+	  qDebug() << "MAX V ERROR !!!!!!!!!!!!!!!!!!!!!!!";
+	}
+
 	data[dataPosition]=t;
       }
     }
@@ -1853,25 +1899,8 @@ bool VolumeIndex::computeSubjectScores()
 
   char* ownerBuffer=new char[2000];
 
-  fid=fopen(sampleIndexFilepath.toAscii().data(), "rb");
-  if (!fid) {
-    qDebug() << "Could not open file=" << sampleIndexFilepath << " to read";
-    return false;
-  }
+  fid=openPrimaryIndex("rb");
 
-  int x_size, y_size, z_size;
-  int unit, bits;
-
-  fread(&x_size, 1, sizeof(int), fid);
-  fread(&y_size, 1, sizeof(int), fid);
-  fread(&z_size, 1, sizeof(int), fid);
-  fread(&unit, 1, sizeof(int), fid);
-  fread(&bits, 1, sizeof(int), fid);
-  
-  if (!(x_size==X_SIZE && y_size==Y_SIZE && z_size==Z_SIZE && unit==UNIT && bits==BITS)) {
-    qDebug() << "1st stage index dimensions do not match index specification";
-    return false;
-  }
   sampleFutureList.clear();
 
   int s1TotalVoxels=X1_SIZE*Y1_SIZE*Z1_SIZE;
@@ -1881,7 +1910,17 @@ bool VolumeIndex::computeSubjectScores()
   }
 
   int sampleIndex=0;
+  
+  int debugCounter=0;
+
   while(!feof(fid)) {
+
+    debugCounter++;
+
+    if (debugCounter > 3) {
+      break;
+    }
+
     long sampleId;
     int ownerLength;
     int firstStageVoxelCount;
@@ -1902,28 +1941,49 @@ bool VolumeIndex::computeSubjectScores()
     st->owner=owner;
     st->fid=0L;
     fread(&firstStageVoxelCount, sizeof(int), 1, fid);
+
+    qDebug() << "sampleId=" << sampleId << " owner=" << owner << " firstStageVoxelCount=" << firstStageVoxelCount;
+
     st->firstStageVoxelCount=firstStageVoxelCount;
     st->firstStageData=new char[firstStageIndexBytes];
-    fread(st->firstStageData, sizeof(char), firstStageIndexBytes, fid);
+    int readCount=fread(st->firstStageData, sizeof(char), firstStageIndexBytes, fid);
+
+    qDebug() << "read " << readCount << " of " << firstStageIndexBytes << " first stage data";
+
+    for (int i=0;i<firstStageIndexBytes;i++) {
+      int it=st->firstStageData[i];
+      qDebug() << i << " = " << it;
+    }
+
     //    st=runSampleThread(st);
     //    delete [] st->firstStageData; // to clear space
     //    st->firstStageData=0L;
+
     sampleThreadList.append(st);
+    qDebug() << "Adding runSampleThread to sampleFutureList for sampleId=" << sampleId;
     QFuture<SampleThread*> sf = QtConcurrent::run(this, &VolumeIndex::runSampleThread, st);
     sampleFutureList.append(sf);
   }
 
+  qDebug() << "Check6 - sampleFutureList size=" << sampleFutureList.size();
+
   // THIS NEEDS TO BE RE-IMPLEMENTED WITH SEPARATE SAMPLE/FRAGMENT THREAD POOLS TO PREVENT DEADLOCK
   while(1) {
+    qDebug() << "Starting sleep";
     SleepThread st;
     st.msleep(5000);
+    qDebug() << "Done with sleep";
     int doneCount=0;
     for (int i=0;i<sampleFutureList.size();i++) {
+      qDebug() << "Checking sampleThread " << i;
       QFuture<SampleThread*> sf=sampleFutureList.at(i);
       if (sf.isFinished()) {
+	qDebug() << "thread is finished";
 	SampleThread* st = sf.result();
 	addSampleResult(st);
   	doneCount++;
+      } else {
+	qDebug() << "thread is not finished";
       }
     }
     if (ERROR_FLAG) {
@@ -1945,6 +2005,7 @@ bool VolumeIndex::computeSubjectScores()
   fclose(fid);
   fid=0L;
   delete [] ownerBuffer;
+
   return true;
 }
 
@@ -1965,6 +2026,7 @@ void VolumeIndex::addSampleResult(SampleThread* st)
 
 SampleThread* VolumeIndex::runSampleThread(SampleThread* sampleThread)
 {
+  qDebug() << "runSampleThread starting for id=" << sampleThread->sampleId;
   for (int z1=0;z1<Z1_SIZE;z1++) {
     for (int y1=0;y1<Y1_SIZE;y1++) {
       for (int x1=0;x1<X1_SIZE;x1++) {
@@ -1972,10 +2034,11 @@ SampleThread* VolumeIndex::runSampleThread(SampleThread* sampleThread)
 	int byte_position=x1_position/8;
 	int byteOffset = x1_position-8*byte_position;
 	char v=sampleThread->firstStageData[byte_position];
-	v >> byteOffset;
+	v >>= byteOffset;
 	char one=1;
 	if (v & one > 0) {
 	  // This position has data - open 2nd-stage index
+	  qDebug() << "For sample " << sampleThread->sampleId << " opening secondary index at position x=" << x1 << " y=" << y1 << " z=" << z1;
 	  sampleThread->fid=openSecondaryIndexToRead(x1, y1, z1);
 	  if (!sampleThread->fid) {
 	    QString secondaryIndexFilepath=getSecondaryIndexFilepath(x1, y1, z1);
@@ -1997,6 +2060,7 @@ SampleThread* VolumeIndex::runSampleThread(SampleThread* sampleThread)
 	  }
 	  int s2units=xlen*ylen*zlen;
 	  int s2byteLength=getStage2DataByteCount(s2units);
+	  char* secondStageData=new char[s2byteLength];
 	  // Now iterate through index file and select qualifying entries
 	  while (!feof(sampleThread->fid)) {
 	    char entryCode=0;
@@ -2004,10 +2068,16 @@ SampleThread* VolumeIndex::runSampleThread(SampleThread* sampleThread)
 	    if (feof(sampleThread->fid)) {
 	      break;
 	    }
+	    if (entryCode!=ENTRY_CODE) {
+	      qDebug() << "Error: ENTRY_CODE does not match";
+	      ERROR_FLAG=true;
+	      return sampleThread;
+	    } else {
+	      qDebug() << "Confirmed ENTRY_CODE is correct";
+	    }
 	    int xstart, ystart, zstart;
 	    long fragmentId, sampleId;
 	    int voxelCount;
-	    char* secondStageData;
 	    fread(&xstart, sizeof(int), 1, sampleThread->fid);
 	    fread(&ystart, sizeof(int), 1, sampleThread->fid);
 	    fread(&zstart, sizeof(int), 1, sampleThread->fid);
@@ -2020,9 +2090,16 @@ SampleThread* VolumeIndex::runSampleThread(SampleThread* sampleThread)
 	    fread(&sampleId, sizeof(long), 1, sampleThread->fid);
 	    fread(&voxelCount, sizeof(int), 1, sampleThread->fid);
 	    fread(secondStageData, sizeof(char), s2byteLength, sampleThread->fid);
+	    qDebug() << "runSampleThread sampleId=" << sampleId << " fragmentId=" << fragmentId << " voxelCount=" << voxelCount << " minSubjectVoxels=" << minSubjectVoxels;
 	    if (sampleId==sampleThread->sampleId && voxelCount >= minSubjectVoxels) {
+	      qDebug() << "Calling addMaskScoreForSecondStageEntry()";
 	      addMaskScoreForSecondStageEntry(fragmentId, sampleThread, secondStageData, s2units, x1, y1, z1);
 	    }
+	  }
+	  delete [] secondStageData;
+	  if (sampleThread->fid!=0L) {
+	    fclose(sampleThread->fid);
+	    sampleThread->fid=0L;
 	  }
 	}
       }
@@ -2048,11 +2125,17 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
 
   // Then compute score
   MaskScore* ms=computeSubvolumeScore(queryData, subjectData, dataUnits);
+  ms->x=x1;
+  ms->y=y1;
+  ms->z=z1;
+  qDebug() << "maskScore=" << ms->score << " x=" << ms->x << " y=" << ms->y << " z=" << ms->z << " zeroCount=" << ms->zeroCount << " nonzeroCount=" << ms->nonzeroCount << " zeroScore=" << ms->zeroScore << " nonzeroScore=" << ms->nonzeroScore;
   
   // Add to list
   if (sampleThread->fragmentScoreMap.contains(fragmentId)) {
+    qDebug() << "appending additional score for fragment";
     sampleThread->fragmentScoreMap[fragmentId].append(ms);
   } else {
+    qDebug() << "Creating new MaskScore list for fragment";
     QList<MaskScore*> fragmentMaskScoreList;
     fragmentMaskScoreList.append(ms);
     sampleThread->fragmentScoreMap[fragmentId]=fragmentMaskScoreList;
@@ -2072,7 +2155,7 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
        bytePosition=i/8;
        char v=compressed[bytePosition];
        int offset=i-bytePosition*8;
-       v >> offset;
+       v >>= offset;
        if (one & v) {
 	 expanded[i]=255;
        } else {
@@ -2084,7 +2167,7 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
        bytePosition=i/4;
        char v=compressed[bytePosition];
        int offset=(i-bytePosition*4)*2;
-       v >> offset;
+       v >>= offset;
        char v2=v & three;
        expanded[i]=v2;
      }
@@ -2111,5 +2194,54 @@ FragmentThread* VolumeIndex::runFragmentThread(FragmentThread* fragmentThread)
   return 0L;
 }
 
+bool VolumeIndex::displaySearchResults()
+{
+  qDebug() << "Displaying results for " << searchResultList.size() << " hits";
+  for (int i=0;i<searchResultList.size();i++) {
+    SubjectScore* ss=searchResultList[i];
+    MaskScore* ms=ss->maskScore;
+    qDebug() << i << " " << ss->sampleId << " " << ss->fragmentId << " " << ss->owner << " " << ss->nonzeroVoxelCount << " " << ms->score;
+  }
+}
 
+void VolumeIndex::doVoxelCountReport(My4DImage* sourceImage)
+{
+  
+  v3d_uint8** rArr=new v3d_uint8*[sourceImage->getCDim()];
+
+  for (int i=0;i<sourceImage->getCDim();i++) {
+    rArr[i]=sourceImage->getRawDataAtChannel(i);
+  }
+
+  const int x_dim=sourceImage->getXDim();
+  const int y_dim=sourceImage->getYDim();
+  const int z_dim=sourceImage->getZDim();
+  const int c_dim=sourceImage->getCDim();
+
+  int zeroCount=0;
+  int nonzeroCount=0;
+
+  for (int z1=0;z1<z_dim;z1++) {
+    for (int y1=0;y1<y_dim;y1++) {
+      for (int x1=0;x1<x_dim;x1++) {
+	int rOffset=z1*y_dim*x_dim + y1*x_dim + x1;
+	bool ot=false;
+	for (int c=0;c<c_dim;c++) {
+	  if (rArr[c][rOffset] > 0) {
+	    ot=true;
+	  }
+	}
+	if (ot) {
+	  nonzeroCount++;
+	} else {
+	  zeroCount++;
+	}
+      }
+    }
+  }
+
+  qDebug() << "doVoxelCountReport() zeroCount=" << zeroCount << " nonzeroCount=" << nonzeroCount;
+
+  delete [] rArr;
+}
 
