@@ -156,7 +156,7 @@ using namespace std;
 
 
 #include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
-#define USE_CHANNEL_TABLE  0
+#define USE_CHANNEL_TABLE  1
 inline bool isIndexColor(ImageDisplayColorType c) { return (c>=colorPseudoMaskColor); }
 
 

@@ -326,7 +326,7 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 	switch (cplane) //QImage(w,h)
 	{
 	case imgPlaneX: //(Z,Y)
-		pp = (cpos>sz0)? sz0-1:cpos-1;   pp = (pp<0)? 0:pp;
+        pp = (cpos>=sz0)? sz0-1:cpos;   pp = (pp<0)? 0:pp;//20150207. PHC
 		tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
 
 		for (y=0; y<sz1; y++)
@@ -344,7 +344,7 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 		break;
 
 	case imgPlaneY: //(X,Z)
-		pp = (cpos>sz1)? sz1-1:cpos-1;   pp = (pp<0)? 0:pp;
+        pp = (cpos>=sz1)? sz1-1:cpos;   pp = (pp<0)? 0:pp; //20150207. PHC
 		tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
 
 		for (z=0; z<sz2; z++)
@@ -362,8 +362,10 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 		break;
 
 	case imgPlaneZ: //(X,Y)
-		pp = (cpos>sz2)? sz2-1:cpos-1;   pp = (pp<0)? 0:pp;
-		tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
+        pp=cpos;//    v3d_msg(QString("cpos=%1").arg(cpos));
+        pp = (pp>=sz2)? sz2-1:pp;   pp = (pp<0)? 0:pp;//20150207. PHC
+
+        tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
 
 		for (y=0; y<sz1; y++)
 		for (x=0; x<sz0; x++)
@@ -482,7 +484,7 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 	switch (cplane) //QImage(w,h)
 	{
 	case imgPlaneX: //(Z,Y)
-		pp = (cpos>sz0)? sz0-1:cpos-1;   pp = (pp<0)? 0:pp;
+        pp=cpos; pp = (cpos>=sz0)? sz0-1:pp;   pp = (pp<0)? 0:pp;//20150207. PHC
 		tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
 
 		for (y=0; y<sz1; y++)
@@ -500,7 +502,7 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 		break;
 
 	case imgPlaneY: //(X,Z)
-		pp = (cpos>sz1)? sz1-1:cpos-1;   pp = (pp<0)? 0:pp;
+        pp=cpos; pp = (pp>=sz1)? sz1-1:pp;   pp = (pp<0)? 0:pp; //20150207. PHC
 		tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
 
 		for (z=0; z<sz2; z++)
@@ -518,7 +520,9 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 		break;
 
 	case imgPlaneZ: //(X,Y)
-		pp = (cpos>sz2)? sz2-1:cpos-1;   pp = (pp<0)? 0:pp;
+        pp=cpos;   //v3d_msg(QString("cpos=%1").arg(cpos));
+        pp = (pp>=sz2)? sz2-1:pp;   pp = (pp<0)? 0:pp; //20150207. PHC
+
 		tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
 
 		for (y=0; y<sz1; y++)
