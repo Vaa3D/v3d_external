@@ -1711,7 +1711,7 @@ void VolumeIndex::dilateQueryMask()
 MaskScore* VolumeIndex::computeSubvolumeScore(char* query, char* subject, int length)
 {
   MaskScore* ms = new MaskScore();
-  
+
   ms->score=0.0;
   ms->zeroCount=0;
   ms->nonzeroCount=0;
@@ -1719,7 +1719,6 @@ MaskScore* VolumeIndex::computeSubvolumeScore(char* query, char* subject, int le
   ms->nonzeroScore=0;
 
   if (indexSpecification->bit_depth==1) {
-
     for (int i=0;i<length;i++) {
       if (query[i]==0) {
 	ms->zeroCount++;
@@ -1742,7 +1741,6 @@ MaskScore* VolumeIndex::computeSubvolumeScore(char* query, char* subject, int le
     }
 
   } else { // Assume bit depth==2
-
     for (int i=0;i<length;i++) {
       if (query[i]==0) {
 	ms->zeroCount++;
@@ -1812,14 +1810,18 @@ int VolumeIndex::getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char
 {
   v3d_uint8** rArr=new v3d_uint8*[image->getCDim()];
 
-  for (int i=0;i<image->getCDim();i++) {
-    rArr[i]=image->getRawDataAtChannel(i);
-  }
+  int nonzeroCount=0;
 
   const int x_dim=image->getXDim();
   const int y_dim=image->getYDim();
   const int z_dim=image->getZDim();
   const int c_dim=image->getCDim();
+
+  int channelLength=z_dim*y_dim*x_dim;
+
+  for (int i=0;i<image->getCDim();i++) {
+    rArr[i]=image->getRawDataAtChannel(i);
+  }
 
   // Inner Loop
   int z2_limit=(z1+1)*UNIT;
@@ -1843,14 +1845,15 @@ int VolumeIndex::getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char
     int zyxOffset=z2*x_dim*y_dim;
     for (int y2=y1*UNIT;y2<y2_limit;y2++) {
       int yxOffset=y2*x_dim;
+      v3d_uint8 maxV=0;
       for (int x2=x1*UNIT;x2<x2_limit;x2++) {
 	int rOffset=zyxOffset + yxOffset + x2;
 	dataPosition++;
 
-	char maxV=0;
+	maxV=0;
 
 	for (int c=0;c<c_dim;c++) {
-	  char v=rArr[c][rOffset];
+	  v3d_uint8 v=rArr[c][rOffset];
 	  if (v > maxV) {
 	    maxV=v;
 	  }
@@ -1863,11 +1866,12 @@ int VolumeIndex::getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char
 	  }
 	}
 
-	if (maxV>0 && t==0) {
-	  qDebug() << "MAX V ERROR !!!!!!!!!!!!!!!!!!!!!!!";
+	data[dataPosition]=t;
+
+	if (t!=0) {
+	  nonzeroCount++;
 	}
 
-	data[dataPosition]=t;
       }
     }
   }
@@ -1885,6 +1889,8 @@ int VolumeIndex::getImageSubvolumeDataByStage1Coordinates(My4DImage* image, char
   } else {
     // assume BITS==2, then leave as 0,1,2,3
   }
+
+  qDebug() << "getImageSubvolumeDataByStage1Coordinates()  x1=" << x1 << " y1=" << y1 << " z1=" << z1 <<" dataPosition=" << dataPosition << " nonzeroCount=" << nonzeroCount;
 
   return dataPosition;
 }
@@ -1998,6 +2004,8 @@ bool VolumeIndex::computeSubjectScores()
     }
   }
 
+  qDebug() << "Finished with runSampleThread manager loop - searchResultList has " << searchResultList.size() << " entries";
+
   // Now sort the results
   qSort(searchResultList.begin(), searchResultList.end(), ScoreSort());
 
@@ -2011,7 +2019,25 @@ bool VolumeIndex::computeSubjectScores()
 
 void VolumeIndex::addSampleResult(SampleThread* st)
 {
-  
+  QList<long> keyList=st->fragmentScoreMap.keys();
+  for (int i=0;i<keyList.size();i++) {
+    long fragmentId=keyList[i];
+    MaskScore* wholeMaskScore=new MaskScore();
+    SubjectScore* ss=new SubjectScore();
+    ss->sampleId=st->sampleId;
+    ss->fragmentId=fragmentId;
+    ss->owner=st->owner;
+    QList<MaskScore*> maskScoreList=st->fragmentScoreMap[fragmentId];
+    if (maskScoreList.size()>0) {
+      for (int j=0;j<maskScoreList.size();j++) {
+	MaskScore* partialMaskScore=maskScoreList[j];
+	wholeMaskScore->append(partialMaskScore);
+      }
+    }
+    computeMaskScore(wholeMaskScore);
+    ss->maskScore=wholeMaskScore;
+    searchResultList.append(ss);
+  }
 }
 
 // The sample thread is responsible for visiting each nonzero second-stage
@@ -2131,8 +2157,9 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
   qDebug() << "maskScore=" << ms->score << " x=" << ms->x << " y=" << ms->y << " z=" << ms->z << " zeroCount=" << ms->zeroCount << " nonzeroCount=" << ms->nonzeroCount << " zeroScore=" << ms->zeroScore << " nonzeroScore=" << ms->nonzeroScore;
   
   // Add to list
+  qDebug() << "sampleThread->fragmentScoreMap has " << sampleThread->fragmentScoreMap.size() << " entries, before addition";
   if (sampleThread->fragmentScoreMap.contains(fragmentId)) {
-    qDebug() << "appending additional score for fragment";
+    qDebug() << "appending additional score for fragment, which already has " << sampleThread->fragmentScoreMap[fragmentId].size() << " entries";
     sampleThread->fragmentScoreMap[fragmentId].append(ms);
   } else {
     qDebug() << "Creating new MaskScore list for fragment";
@@ -2200,7 +2227,7 @@ bool VolumeIndex::displaySearchResults()
   for (int i=0;i<searchResultList.size();i++) {
     SubjectScore* ss=searchResultList[i];
     MaskScore* ms=ss->maskScore;
-    qDebug() << i << " " << ss->sampleId << " " << ss->fragmentId << " " << ss->owner << " " << ss->nonzeroVoxelCount << " " << ms->score;
+    qDebug() << i << " " << ss->sampleId << " " << ss->fragmentId << " " << ss->owner << " " << ss->maskScore->nonzeroCount << " " << ms->score;
   }
 }
 

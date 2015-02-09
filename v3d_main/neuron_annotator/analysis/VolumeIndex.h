@@ -213,18 +213,14 @@ class MaskScore
   int nonzeroCount;
   int zeroScore;
   int nonzeroScore;
-  void operator=(const MaskScore& m2) {
-    zeroCount=m2.zeroCount;
-    nonzeroCount=m2.nonzeroCount;
-    zeroScore=m2.zeroScore;
-    nonzeroScore=m2.nonzeroScore;
+  
+  void append(const MaskScore* m2) {
+    this->zeroCount+=m2->zeroCount;
+    this->nonzeroCount+=m2->nonzeroCount;
+    this->zeroScore+=m2->zeroScore;
+    this->nonzeroScore+=m2->nonzeroScore;
   }
-  void operator+(const MaskScore& m2) {
-    zeroCount+=m2.zeroCount;
-    nonzeroCount+=m2.nonzeroCount;
-    zeroScore+=m2.zeroScore;
-    nonzeroScore+=m2.nonzeroScore;
-  }
+
 };
 
 class SubjectScore
@@ -234,8 +230,7 @@ class SubjectScore
   long sampleId;
   long fragmentId;
   QString owner;
-  int nonzeroVoxelCount;
-   MaskScore* maskScore;
+  MaskScore* maskScore;
 };
 
 class ScoreSort
