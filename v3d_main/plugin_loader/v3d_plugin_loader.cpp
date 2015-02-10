@@ -1166,14 +1166,26 @@ void V3d_PluginLoader::closeROI3DWindow(v3dhandle image_window)
 	}
 }
 
-V3dR_MainWindow * V3d_PluginLoader::open3DViewerForSingleSurfaceFile(QString fileName)
+V3dR_MainWindow * V3d_PluginLoader::open3DViewerForSingleSurfaceFile(QString fileName) //By PHC 20150210
 {
-    return 0;
+    if (v3d_mainwindow)
+    {
+        v3d_mainwindow->loadV3DFile(fileName, true, this->v3d_mainwindow->global_setting.b_autoOpenImg3DViewer);
+        return v3d_mainwindow->find3DViewer(fileName);
+    }
+    else
+        return 0;
 }
 
-V3dR_MainWindow * V3d_PluginLoader::open3DViewerForLinkerFile(QString fileName)
+V3dR_MainWindow * V3d_PluginLoader::open3DViewerForLinkerFile(QString fileName) //By PHC 20150210
 {
-    return 0;
+    if (v3d_mainwindow)
+    {
+        v3d_mainwindow->loadV3DFile(fileName, true, this->v3d_mainwindow->global_setting.b_autoOpenImg3DViewer);
+        return v3d_mainwindow->find3DViewer(fileName);
+    }
+    else
+        return 0;
 }
 
 
