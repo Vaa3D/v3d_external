@@ -1166,6 +1166,17 @@ void V3d_PluginLoader::closeROI3DWindow(v3dhandle image_window)
 	}
 }
 
+V3dR_MainWindow * V3d_PluginLoader::open3DViewerForSingleSurfaceFile(QString fileName)
+{
+    return 0;
+}
+
+V3dR_MainWindow * V3d_PluginLoader::open3DViewerForLinkerFile(QString fileName)
+{
+    return 0;
+}
+
+
 void V3d_PluginLoader::pushObjectIn3DWindow(v3dhandle image_window)
 {
 	if_XFormWidget(w, image_window)

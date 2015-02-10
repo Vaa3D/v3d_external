@@ -215,6 +215,10 @@ public:
     virtual LandmarkList * getHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w) = 0; //Oct. 16, 2014 by Hanbo Chen
 
     virtual DataLists_in_3dviewer fetch_3dviewer_datafilelist(QString name3dviewer) = 0; //20140122 a conveniece function to access the record of data in a 3D viewer
+
+    // extend the plugin interface by allowing open a 3D surface file , PHC Feb 10, 2015
+    virtual V3dR_MainWindow * open3DViewerForSingleSurfaceFile(QString fileName) = 0;
+    virtual V3dR_MainWindow * open3DViewerForLinkerFile(QString fileName) = 0;
 };
 
 class V3DPluginInterface2
@@ -242,11 +246,6 @@ public:
         // As a particular plugin is improved,
         // this version number should monotonically increase
         virtual float getPluginVersion() const = 0;
-
-    // extend the plugin interface by allowing open a 3D surface file , PHC Feb 10, 2015
-    virtual V3dR_MainWindow * open3DViewerForSurfaceFile(QString fileName) = 0;
-    virtual V3dR_MainWindow * open3DViewerForLinkerFile(QString fileName) = 0;
-
 };
 
 

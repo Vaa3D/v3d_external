@@ -30,11 +30,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 /**************************************************************************
 *
-* V3D's plug-in loading support functions
+* Vaa3D's plug-in loading support functions
 *
 * 2009-08-11, Zongcai Ruan
 * Last change: 2010-10-08. Hanchuan Peng 
-*
+* Last change: 2015-02-10. Hanchuan Peng
 ***************************************************************************
 */
 
@@ -52,22 +52,11 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin);
 class MainWindow;
 class V3d_PluginLoader;
 
-//class Vaa3DPluginMenu : public QMenu
-//{
-//private:
-//    V3d_PluginLoader *ploader;
-//public:
-//    Vaa3DPluginMenu(const QString & title, QWidget * parent = 0) : QMenu(title, parent) {ploader=0;}
-//    void setPluginLoader(V3d_PluginLoader *p) {ploader = p;}
-//    void mousePressEvent ( QMouseEvent * e );
-//};
-
 class V3d_PluginLoader : public QObject, public V3DPluginCallback2
 {
     Q_OBJECT;
 
 public:
-    //V3d_PluginLoader(Vaa3DPluginMenu* menuPlugin, MainWindow* mainwindow);
     V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow);
     V3d_PluginLoader(MainWindow* mainwindow); //by PHC, 101008. a convenience function for access plugin interface w/o a menu
     virtual ~V3d_PluginLoader() {clear();}
@@ -96,7 +85,6 @@ protected:
 	void searchPluginFiles(QMenu* menu, const QDir& pluginsDir);
     void addrecentPlugins(QMenu* menu); //add by Zhi Z, 20140721
     void updated_recentPlugins();
-
 
     // QList<QDir> pluginsDirList;
     QStringList pluginFilenameList;
@@ -200,6 +188,10 @@ public:
     virtual LandmarkList * getHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w); //Oct. 16, 2014 by Hanbo Chen
 
     virtual DataLists_in_3dviewer fetch_3dviewer_datafilelist(QString name3dviewer); //20140122 a conveniece function to access the record of data in a 3D viewer
+
+    // extend the plugin interface by allowing open a 3D surface file , PHC Feb 10, 2015
+    virtual V3dR_MainWindow * open3DViewerForSingleSurfaceFile(QString fileName);
+    virtual V3dR_MainWindow * open3DViewerForLinkerFile(QString fileName);
 
 };
 
