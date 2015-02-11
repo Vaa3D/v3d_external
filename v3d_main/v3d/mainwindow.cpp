@@ -727,6 +727,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             existing_3dviewer->activateWindow();
             return;
         }
+
+        //
+
         QFileInfo curfile_info(fileName);
 
         QString cur_suffix = curfile_info.suffix().toUpper();
@@ -859,7 +862,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                  cur_suffix=="ESWC" ||
                  cur_suffix=="OBJ" ||
                  cur_suffix=="VAA3DS" ||
-                 cur_suffix=="V3DS")
+                 cur_suffix=="V3DS" ||
+                 cur_suffix=="NULL3DVIEWER")
         {
             //directly open the 3D viewer
             iDrawExternalParameter * mypara_3Dview = new iDrawExternalParameter;
@@ -868,6 +872,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             mypara_3Dview->b_use_512x512x256 = true;
             mypara_3Dview->xwidget = 0;
             mypara_3Dview->V3Dmainwindow = this; //added on 090503
+
             //set up data
             if (cur_suffix=="APO")
                 mypara_3Dview->pointcloud_file_list.append(fileName);
@@ -878,7 +883,15 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                      cur_suffix=="V3DS" ||
                      cur_suffix=="VAA3DS")
                 mypara_3Dview->surface_file = fileName;
-            else {delete mypara_3Dview; mypara_3Dview=0; return;}
+            else if (cur_suffix=="NULL3DVIEWER" || fileName=="NULL3DVIEWER")         //check if we should open a new empty 3D viewer. by PHC 2015-02-10
+            {
+                //do nothing
+            }
+            else
+            {
+                delete mypara_3Dview; mypara_3Dview=0; return;
+            }
+
             //
             V3dR_MainWindow *my3dwin = 0;
             try
@@ -2068,13 +2081,13 @@ void MainWindow::createActions()
     newAct->setShortcut(tr("Ctrl+N"));
     newAct->setStatusTip(tr("Create a new file"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
-    openAct = new QAction(QIcon(":/pic/open.png"), tr("&Open image/stack in a new window ..."), this);
+    openAct = new QAction(QIcon(":/pic/open.png"), tr("&Open image/stack/surface_file in a new window ..."), this);
     openAct->setShortcut(tr("Ctrl+O"));
     openAct->setStatusTip(tr("Open an existing image"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
     // New Open Web URL action, based on Open Action (openAct) example
     // By CMB 06-Oct-2010
-    openWebUrlAct = new QAction(QIcon(":/pic/web.png"), tr("&Open web image/stack ..."), this);
+    openWebUrlAct = new QAction(QIcon(":/pic/web.png"), tr("&Open web image/stack/surface_file ..."), this);
     openWebUrlAct->setShortcut(tr("Ctrl+W"));
     openWebUrlAct->setStatusTip(tr("Open a web (URL) image"));
     connect(openWebUrlAct, SIGNAL(triggered()), this, SLOT(openWebUrl()));

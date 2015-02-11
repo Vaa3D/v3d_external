@@ -219,6 +219,7 @@ public:
     // extend the plugin interface by allowing open a 3D surface file , PHC Feb 10, 2015
     virtual V3dR_MainWindow * open3DViewerForSingleSurfaceFile(QString fileName) = 0;
     virtual V3dR_MainWindow * open3DViewerForLinkerFile(QString fileName) = 0;
+    virtual V3dR_MainWindow * createEmpty3DViewer() = 0; //create a 3D viewer with no content
 };
 
 class V3DPluginInterface2
