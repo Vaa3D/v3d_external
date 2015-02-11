@@ -1208,7 +1208,7 @@ V3dR_MainWindow * V3d_PluginLoader::createEmpty3DViewer() //By PHC 20150210
 {
     if (v3d_mainwindow)
     {
-        open3DViewerForSingleSurfaceFile("NULL3DVIEWER");
+        open3DViewerForSingleSurfaceFile("noname.NULL3DVIEWER");
     }
 
     return 0;
