@@ -45,6 +45,13 @@ option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d"
 set(USE_FFMPEG FALSE CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
 if(USE_FFMPEG)
     add_definitions(-DUSE_FFMPEG)
+    set(USE_X265 FALSE CACHE BOOL "Whether to build FFMeg with x265 codec")
+endif()
+
+# HDF5
+set(USE_HDF5 FALSE CACHE BOOL "Build HDF5 loader")
+if(USE_HDF5)
+    add_definitions(-DUSE_HDF5)
 endif()
 
 add_subdirectory( common_lib )
@@ -104,6 +111,9 @@ if(USE_FFMPEG)
     )
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
     set(avcodec_cflags "-D__STDC_CONSTANT_MACROS")
+    if(USE_X265)
+      set(X265_FLAGS "--enable-libx265 --enable-gpl")
+    endif()
     if(APPLE)
         # trying to avoid weird _posix_memalign link errors
         set(AV_CONFIG_FLAGS --enable-memalign-hack)
@@ -121,6 +131,7 @@ if(USE_FFMPEG)
         BINARY_DIR ${av_dir}/build
         INSTALL_DIR ${av_dir}/install
         UPDATE_COMMAND ""
+        PATCH_COMMAND patch -p0 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-2.5.1.patch
         CONFIGURE_COMMAND <SOURCE_DIR>/configure
             --prefix=<INSTALL_DIR>
             --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
@@ -128,8 +139,7 @@ if(USE_FFMPEG)
             --disable-vda
             --enable-pic
             --enable-shared
-#           --enable-libx265
-#	          --enable-gpl
+            ${X265_FLAGS}
             --extra-cflags=${avcodec_cflags}
             ${AV_CONFIG_FLAGS}
     )
@@ -151,6 +161,27 @@ if(USE_FFMPEG)
     find_package(Threads)
 endif()
 
+if(USE_HDF5)
+    include(ExternalProject)
+    set(hdf_dir "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
+    ExternalProject_Add(
+        HDF5
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.8.14.tar.gz
+        SOURCE_DIR ${hdf_dir}/src
+        BINARY_DIR ${hdf_dir}/build
+        INSTALL_DIR ${hdf_dir}/install
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure
+            --prefix=<INSTALL_DIR>
+            --enable-cxx
+    )
+    set(HDF5_INCLUDE_DIR "${hdf_dir}/install/include")
+    set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+
+    include_directories(${HDF5_INCLUDE_DIR})
+endif()
 
 # message("QTVERSION = ${QTVERSION}")
 find_path(QT4_DEMOS_INCLUDE_DIR

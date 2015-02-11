@@ -108,6 +108,8 @@ bool CLP::check_filename(QString fn)
              (cur_suffix=="VAA3DPBD") ||
              (cur_suffix=="IMG") ||
              (cur_suffix=="HDR") ||
+             (cur_suffix=="MP4") ||
+             (cur_suffix=="H5J") ||
              (cur_suffix=="NII") ||
              (cur_suffix=="MARKER") || // added for reading marker file in -i by ZJL, 2012-05-10
              (cur_suffix=="TXT") ||    // added for reading txt file in -i by ZJL, 2012-05-10

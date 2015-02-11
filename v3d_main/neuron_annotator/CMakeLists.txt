@@ -115,6 +115,21 @@ if(USE_FFMPEG)
         ${ICONV_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
     )
+    if(USE_HDF5)
+        SET(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.46.0" "1.44" "1.44.0")
+        find_package(Boost 1.44.0 COMPONENTS filesystem system)
+        if(Boost_FOUND)
+            include_directories(${Boost_INCLUDE_DIR})
+            link_directories(${Boost_LIBRARY_DIRS})
+        endif()
+        target_link_libraries(NeuronAnnotatorLib
+            ${HDF5_CPP_LIBRARY}
+            ${HDF5_LIBRARY}
+            ${Boost_FILESYSTEM_LIBRARY}
+            ${Boost_SYSTEM_LIBRARY}
+        )
+    endif()
+
     if(APPLE)
         find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
         find_library(CORE_VIDEO_FRAMEWORK CoreVideo)

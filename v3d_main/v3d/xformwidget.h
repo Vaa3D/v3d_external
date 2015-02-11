@@ -224,6 +224,7 @@ protected:
 	//void focusInEvent ( QFocusEvent * event ); //080829
 
 	void loadH264Image( char const* filename );
+	void loadHDF5( char const* filename );
 
 	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for an engine
 

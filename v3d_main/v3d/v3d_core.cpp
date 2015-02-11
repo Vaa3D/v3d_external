@@ -166,6 +166,9 @@ inline bool isIndexColor(ImageDisplayColorType c) { return (c>=colorPseudoMaskCo
 #include "../neuron_annotator/utility/loadV3dFFMpeg.h"
 #endif
 
+#ifdef USE_HDF5
+#include "H5Cpp.h"
+#endif
 /////// a global variable to limit the amount of memory use
 
 #if defined (Q_OS_LINUX)
@@ -4602,6 +4605,8 @@ bool XFormWidget::loadData()
 
 	if ( curFileSurfix && strcasecmp(curFileSurfix, "mp4") == 0 )
 		loadH264Image( filename );
+	else if ( curFileSurfix && strcasecmp(curFileSurfix, "h5j") == 0 )
+		loadHDF5( filename );
 	else
 		imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
 	if (imgData->isEmpty())
@@ -4655,6 +4660,58 @@ void XFormWidget::loadH264Image( char const* filename )
     }
     imgData->setupData4D();
     imgData->setFileName( filename ); // PHC added 20121213 to fix a bug in the PDB reading.
+#endif
+}
+
+void XFormWidget::loadHDF5( char const* filename )
+
+{
+#ifdef USE_HDF5
+    v3d_msg( "start to try HDF loader", 0 );
+
+    H5::Exception::dontPrint();
+    H5::H5File file( filename, H5F_ACC_RDONLY );
+
+    for ( size_t i = 0; i < file.getObjCount(); i++ )
+    {
+        H5std_string name = file.getObjnameByIdx( i );
+        if ( name == "Channels" )
+        {
+            H5::Group channels = file.openGroup( name );
+            int num_channels = 0;
+            // Count the number of channels
+            for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
+                if ( channels.getObjTypeByIdx( obj ) == H5G_DATASET )
+                	num_channels++;
+
+            int channel_idx = 0;
+
+            for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
+            {
+                if ( channels.getObjTypeByIdx( obj ) == H5G_DATASET )
+                {
+                    H5std_string ds_name = channels.getObjnameByIdx( obj );
+                    H5::DataSet data = channels.openDataSet( ds_name );
+                    uint8_t* buffer = new uint8_t[ data.getStorageSize() ];
+                    data.read( buffer, data.getDataType() );
+                    QByteArray qbarray( (const char*)buffer, data.getStorageSize() );
+                    data.close();
+
+                    if ( !loadIndexedStackFFMpeg( &qbarray, *imgData, channel_idx++, num_channels ) )
+                    {
+                        v3d_msg( "Error happened in HDF file reading. Stop. \n", false );
+                        return;
+                    }
+
+                    delete [] buffer;
+                }
+            }
+        }
+    }
+
+    imgData->setupData4D();
+    imgData->setFileName( filename );
+
 #endif
 }
 

@@ -142,6 +142,18 @@ FFMpegVideo::FFMpegVideo(QUrl url, PixelFormat pixelFormat)
     isOpen = open(url, pixelFormat);
 }
 
+FFMpegVideo::FFMpegVideo(QByteArray* buffer, PixelFormat pixelFormat)
+    : isOpen(false)
+{
+    QMutexLocker lock(&FFMpegVideo::mutex);
+    initialize();
+    format = pixelFormat;
+    fileBuffer.setBuffer(buffer);
+    fileBuffer.open(QIODevice::ReadOnly);
+    QString foo("foo");
+    isOpen = open(fileBuffer, foo, pixelFormat);
+}
+
 /* virtual */
 FFMpegVideo::~FFMpegVideo()
 {

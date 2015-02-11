@@ -52,6 +52,7 @@ public:
 
     FFMpegVideo(PixelFormat pixelFormat=PIX_FMT_RGB24);
     FFMpegVideo(QUrl url, PixelFormat pixelFormat=PIX_FMT_RGB24);
+    FFMpegVideo(QByteArray* buffer, PixelFormat pixelFormat=PIX_FMT_RGB24);
     virtual ~FFMpegVideo();
     bool open(QUrl url, enum PixelFormat formatParam = PIX_FMT_RGB24);
     bool open(QIODevice& fileStream, QString& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);

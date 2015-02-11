@@ -974,6 +974,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   (cur_suffix=="V3DPBD") ||
                   (cur_suffix=="VAA3DPBD") ||
                   (cur_suffix=="MP4") ||
+                  (cur_suffix=="H5J") ||
                   curfile_info.suffix().isEmpty() //then invoke raw reader in this case, 20120410. PHC
                   )
         {
@@ -1783,7 +1784,7 @@ void MainWindow::updateMenus()
 		}
 #endif
         procTracing_APP2auto->setEnabled(pluginsDir.cd("plugins/neuron_tracing/Vaa3D_Neuron2"));
-        
+
         procTracing_one2others->setEnabled(activeMdiChild()->getImageData()->listLandmarks.size()>1);
         procTracing_trace_a_curve->setEnabled(activeMdiChild()->getImageData()->listLandmarks.size()>1);
         procTracing_undo_laststep->setEnabled(activeMdiChild()->getImageData()->tracedNeuron_historylist.size()>0);
@@ -1792,7 +1793,7 @@ void MainWindow::updateMenus()
     else
     {
         procTracing_APP2auto->setEnabled(hasMdiChild);
-        
+
         procTracing_one2others->setEnabled(hasMdiChild);
         procTracing_trace_a_curve->setEnabled(hasMdiChild);
         procTracing_undo_laststep->setEnabled(hasMdiChild);
@@ -2196,7 +2197,7 @@ void MainWindow::createActions()
             workspace, SLOT(activatePreviousWindow()));
     separator_ImgWindows_Act = new QAction(this);
     separator_ImgWindows_Act->setSeparator(true);
-    checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);  
+    checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);
     checkForUpdatesAct->setStatusTip(tr("Check whether a more recent version "
                                         "of Vaa3D is available."));
     connect(checkForUpdatesAct, SIGNAL(triggered()), this, SLOT(checkForUpdates()));

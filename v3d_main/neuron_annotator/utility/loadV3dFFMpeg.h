@@ -11,8 +11,11 @@ extern "C" {
 
 bool loadStackFFMpeg(const char* fileName, Image4DSimple& image);
 bool loadStackFFMpegAsGray(const char* fileName, Image4DSimple& img);
+
 bool loadStackFFMpeg(QUrl url, Image4DSimple& image);
+bool loadIndexedStackFFMpeg(QByteArray* buffer, Image4DSimple& img, int channel, int num_channels);
 bool loadStackFFMpegAsGray(QUrl url, Image4DSimple& img);
+
 bool saveStackFFMpeg(const char * fileName, const My4DImage& img, enum AVCodecID codec_id = AV_CODEC_ID_MPEG4);
 
 #endif // USE_FFMPEG
