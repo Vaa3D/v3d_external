@@ -1215,6 +1215,14 @@ V3dR_MainWindow * V3d_PluginLoader::createEmpty3DViewer() //By PHC 20150210
     return 0;
 }
 
+void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
+{
+    if (v3d_mainwindow )
+    {
+      w->setDataTitle(title);
+    }
+}
+
 
 void V3d_PluginLoader::pushObjectIn3DWindow(v3dhandle image_window)
 {
