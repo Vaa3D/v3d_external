@@ -2229,6 +2229,9 @@ bool VolumeIndex::displaySearchResults()
     MaskScore* ms=ss->maskScore;
     qDebug() << i << " " << ss->sampleId << " " << ss->fragmentId << " " << ss->owner << " " << ss->maskScore->nonzeroCount << " " << ms->score;
   }
+  // It looks like Sean means the return value to answer the question "did no errors occur?";
+  // So I'm setting the value to "true", to avoid Windows compile error while he's away.
+  return true;
 }
 
 void VolumeIndex::doVoxelCountReport(My4DImage* sourceImage)
