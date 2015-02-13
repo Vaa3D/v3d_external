@@ -150,7 +150,8 @@ int CLP::parse(int argc, char *argv[], void (*help)())
             key = argv[1];
             if (*key == OPTION_CHAR)
             {
-                while(*++key)
+                key++;
+                while(*key)
                 {
                     if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
                     {
