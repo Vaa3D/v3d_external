@@ -109,6 +109,11 @@ void printHelp_v3d()
 
 int main(int argc, char **argv)
 {
+ for (int myii=0; myii<argc;myii++)
+ {
+     v3d_msg(QString("[%1]").arg(argv[myii]));
+ }
+
 
 #ifdef COMPILE_TO_COMMANDLINE
 
