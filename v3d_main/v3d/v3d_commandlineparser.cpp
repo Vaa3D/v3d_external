@@ -150,9 +150,8 @@ int CLP::parse(int argc, char *argv[], void (*help)())
             key = argv[1];
             if (*key == OPTION_CHAR)
             {
-                while(*key)
+                while(*++key)
                 {
-                    key++;
                     if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
                     {
                         help();
@@ -227,9 +226,8 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                 key = argv[i];
                 if (*key == OPTION_CHAR)
                 {
-                    while(*key)
+                    while(*++key)
                     {
-                        key++;
                         if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
                         {
                             flagh++;
@@ -239,9 +237,8 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                 key = argv[i];
                 if(*key == OPTION_CHAR)
                 {
-                    while (*key)
+                    while (*++key)
                     {
-                        key++;
                         if(!strcmp(key, "x"))
                         {
                             flagx++;
@@ -271,9 +268,8 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                 key = argv[i];
                 if (*key == OPTION_CHAR)
                 {
-                    while(*key)
+                    while(*++key)
                     {
-                        key++;
                         if (!strcmp(key, "v"))
                         {
                             i_v3d.open3Dviewer = true;
@@ -294,9 +290,8 @@ int CLP::parse(int argc, char *argv[], void (*help)())
 
                     if (*key == OPTION_CHAR)
                     {
-                        while(*key)
+                        while(*++key)
                         {
-                            key++;
                             if (!strcmp(key, "i"))
                             {
                                 // open V3D
