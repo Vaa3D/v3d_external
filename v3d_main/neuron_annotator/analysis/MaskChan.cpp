@@ -650,7 +650,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
                 fread(&chanRecGreen, sizeof(unsigned char), 1, fid2);
                 fread(&chanRecBlue, sizeof(unsigned char), 1, fid2);
                 fread(&chanBytesPerChannel, sizeof(unsigned char), 1, fid2);
-                qDebug() << "File " << chanFilePath << " has chanBytesPerChannel=" << chanBytesPerChannel;
+		//                qDebug() << "File " << chanFilePath << " has chanBytesPerChannel=" << chanBytesPerChannel;
                 chanTotalDataBytes=chanBytesPerChannel*chanVoxels*chanChannelCount;
                 chanData=new unsigned char[chanTotalDataBytes];
                 fread(chanData, sizeof(unsigned char), chanTotalDataBytes, fid2);
