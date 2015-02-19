@@ -14,15 +14,14 @@ include(CTest)
 # include(CPack) # save cpack for parent directory
 
 if(WIN32)
-    message("Looking for fftw library")
-    # message("$ENV{PROGRAMW6432}/fftw64_3.3.1")
+    #message("Looking for fftw library")
     find_library(FFTW_LIBRARY
-        NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f libfftw3f-3
+        NAMES libfftw3f v3dfftw3f libfftw3f fftw3f libfftw3f-3
         PATHS
             "$ENV{PROGRAMFILES}/fftw"
             "$ENV{PROGRAMW6432}/fftw64_3.3.1"
             "$ENV{PROGRAMW6432}/fftw-3.3.3"
-    )
+	    )
     find_library(FFTW_THREADS_LIBRARY
         NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
     #
@@ -36,6 +35,14 @@ if(WIN32)
                 ${FFTW_LIB_DIR}
         )
         include_directories("${FFTW_INCLUDE_DIR}")
+	# for packaging purpose
+
+	set(lib_name "libfftw3f-3.dll")
+	install(PROGRAMS 
+		"${FFTW_INCLUDE_DIR}/${lib_name}"
+                DESTINATION ${V3D_INSTALL_DIR}
+                COMPONENT RuntimeLibraries
+                RENAME ${lib_name} )
     endif()
 else()
     # Build FFTW as an external project
@@ -75,6 +82,8 @@ else()
     add_dependencies(PluginPrerequisites LibFFTW)
     add_dependencies(PluginPrerequisites LibTIFF)
 endif()
+
+
 
 find_path(V3D_BINARY_DIR v3d)
 set(INSTALLATION_DIRECTORY ${V3D_BINARY_DIR}/plugins)

@@ -150,6 +150,9 @@ target_link_libraries( v3d
   ${OPENGL_glu_LIBRARY}
   ${QT4_DEMOS_LIBRARY}
   )
+
+
+
 if(UNIX AND NOT APPLE)
   find_package(ZLIB)
   find_package(JPEG)
@@ -157,6 +160,11 @@ if(UNIX AND NOT APPLE)
   target_link_libraries(v3d ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
 endif()
   
+if(MSVC)
+  find_package(ZLIB)
+  #target_link_libraries(v3d ${ZLIB_LIBRARY})
+endif()
+
 if (MSVC)
   target_link_libraries(v3d ${TIFF_LIBRARY})
 else()
@@ -255,12 +263,8 @@ else(APPLE)
         set(LIB_PATHS
             "${TIFF_INCLUDE_DIR}/../bin"
             "${QT_LIBRARY_DIR}/../bin"
-            "${FFTW_INCLUDE_DIR}"
             "${CXX_BINDIR}")
-        set(SHLIBS zlib1.dll jpeg62.dll libtiff3.dll
-            QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll
-            mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll"
-            libfftw3f-3.dll)
+        set(SHLIBS zlib1.dll jpeg62.dll libtiff3.dll QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
 		# Install Qt plugins for image formats, at least on Windows
 		if (QT_PLUGINS_DIR)
 			file(GLOB QT_IMAGEFORMAT_PLUGINS "${QT_PLUGINS_DIR}/imageformats/*.dll")
@@ -280,29 +284,36 @@ else(APPLE)
     # message("LIB_PATHS = ${LIB_PATHS}")
     foreach(SHLIB ${SHLIBS})
         # message("Searching for ${SHLIB}")
-        set(lib_var_name "${SHLIB}_LIB_FILE")
+	set(lib_var_name "${SHLIB}_LIB_FILE")
         find_file(${lib_var_name}
             NAMES 
                 ${SHLIB}
             PATHS "${LIB_PATHS}" 
             NO_DEFAULT_PATH)
-        find_file(${lib_var_name}
-            NAMES ${SHLIB}
-            PATHS /usr/lib /lib
-                "${TIFF_INCLUDE_DIR}/../bin" # ${LIB_PATHS} does not work if spaces are in name...
-           # Yes default paths, if above find_library failed
+        if  (${lib_var_name}_NOT_FOUND)
+       	    find_file(${lib_var_name}
+                NAMES ${SHLIB}
+                PATHS /usr/lib /lib
+                    "${TIFF_INCLUDE_DIR}/../bin" # ${LIB_PATHS} does not work if spaces are in name...
+             # Yes default paths, if above find_library failed
             )
+        endif()
+
         set(lib_name "${${lib_var_name}}")
+	#message("set ${lib_name} = ${${lib_var_name}} ")
         # Follow symlinks to the real file
         # So we don't just install symlinks
         if(lib_name)
             # message("Found ${lib_name}")
         else()
             # message("${SHLIB} (${lib_name}) not found")
+
         endif()
         get_filename_component(real_lib ${lib_name} REALPATH)
         get_filename_component(lib_name ${lib_name} NAME) # Strip path
+
         if(real_lib)
+            message("install  ${real_lib}")
             install(PROGRAMS
                 ${real_lib}
                 DESTINATION ${V3D_INSTALL_DIR}
@@ -314,6 +325,7 @@ else(APPLE)
     endforeach()
     
 endif(APPLE)
+
 
 # Enforce a particular location for v3d.exe at build time.  So it can be next to plugins, for testing  before install.
 # This must be defined after above check for BUNDLE_BUILD_DIR
