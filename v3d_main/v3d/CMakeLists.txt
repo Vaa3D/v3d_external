@@ -210,7 +210,7 @@ if(APPLE)
         # ...actual binary must be called "v3d", so macdeployqt tool can find it.
         set(MACOSX_BUNDLE_EXECUTABLE_NAME vaa3d_script)
         set(MACOSX_BUNDLE_INFO_STRING "vaa3d")
-        set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
+        set(MACOSX_BUNDLE_ICON_FILE "vaa3d.icns")
         set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.vaa3d")
         set(MACOSX_BUNDLE_LONG_VERSION_STRING ${V3D_VERSION})
         set(MACOSX_BUNDLE_BUNDLE_NAME vaa3d)
@@ -234,8 +234,8 @@ if(APPLE)
                 COPYONLY)
         endif()
         configure_file(
-            "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/v3d.icns"
-            "${BUNDLE_BUILD_DIR}/Contents/Resources/v3d.icns"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/vaa3d.icns"
+            "${BUNDLE_BUILD_DIR}/Contents/Resources/vaa3d.icns"
             COPYONLY)
         install(DIRECTORY ${BUNDLE_BUILD_DIR}
             DESTINATION "."
