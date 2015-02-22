@@ -1933,7 +1933,7 @@ bool VolumeIndex::computeSubjectScores()
   while(!feof(fid)) {
 
     debugCounter++;
-
+    
     if (debugCounter > 3) {
       break;
     }
@@ -1977,7 +1977,7 @@ bool VolumeIndex::computeSubjectScores()
     //    st->firstStageData=0L;
 
     sampleThreadList.append(st);
-    if (DEBUG_FLAG) qDebug() << "Adding runSampleThread to sampleFutureList for sampleId=" << sampleId;
+    qDebug() << "Adding runSampleThread to sampleFutureList for sampleId=" << sampleId;
     QFuture<SampleThread*> sf = QtConcurrent::run(this, &VolumeIndex::runSampleThread, st);
     sampleFutureList.append(sf);
   }
@@ -1985,12 +1985,13 @@ bool VolumeIndex::computeSubjectScores()
   if (DEBUG_FLAG) qDebug() << "Check6 - sampleFutureList size=" << sampleFutureList.size();
 
   // THIS NEEDS TO BE RE-IMPLEMENTED WITH SEPARATE SAMPLE/FRAGMENT THREAD POOLS TO PREVENT DEADLOCK
+  int doneCount=0;
   while(1) {
     if (DEBUG_FLAG) qDebug() << "Starting sleep";
     SleepThread st;
     st.msleep(5000);
     if (DEBUG_FLAG) qDebug() << "Done with sleep";
-    int doneCount=0;
+    qDebug() << "sampleFutureList has " << sampleFutureList.size() << " entries";
     for (int i=0;i<sampleFutureList.size();i++) {
       if (DEBUG_FLAG) qDebug() << "Checking sampleThread " << i;
       QFuture<SampleThread*> sf=sampleFutureList.at(i);
@@ -1998,7 +1999,9 @@ bool VolumeIndex::computeSubjectScores()
 	if (DEBUG_FLAG) qDebug() << "thread is finished";
 	SampleThread* st = sf.result();
 	addSampleResult(st);
+	sampleFutureList.removeOne(sf);
   	doneCount++;
+	qDebug() << "Finished " << doneCount << " runSampleThreads";
       } else {
 	if (DEBUG_FLAG) qDebug() << "thread is not finished";
       }
@@ -2007,7 +2010,7 @@ bool VolumeIndex::computeSubjectScores()
       if (DEBUG_FLAG) qDebug() << "Error during execution of SampleThreads";
       return false;
     }
-    int stillActive=sampleFutureList.size()-doneCount;
+    int stillActive=sampleFutureList.size();
     if (stillActive==0) {
       break;
     } else {
@@ -2030,6 +2033,7 @@ bool VolumeIndex::computeSubjectScores()
 
 void VolumeIndex::addSampleResult(SampleThread* st)
 {
+  long sampleId=st->sampleId;
   QList<long> keyList=st->fragmentScoreMap.keys();
   for (int i=0;i<keyList.size();i++) {
     long fragmentId=keyList[i];
@@ -2044,6 +2048,16 @@ void VolumeIndex::addSampleResult(SampleThread* st)
       for (int j=0;j<maskScoreList.size();j++) {
 	MaskScore* partialMaskScore=maskScoreList[j];
 	wholeMaskScore->append(partialMaskScore);
+      }
+    }
+    for (int z1=0;z1<Z1_SIZE;z1++) {
+      for (int y1=0;y1<Y1_SIZE;y1++) {
+	for (int x1=0;x1<X1_SIZE;x1++) {
+	  QString nonzeroSignature=QString::number(x1)+" "+QString::number(y1)+" "+QString::number(z1);
+	  if (!fragmentStage1NonzeroSet[fragmentId].contains(nonzeroSignature)) {
+	    wholeMaskScore->append(blankSubjectScore[z1][y1][x1]);
+	  }
+	}
       }
     }
     computeMaskScore(wholeMaskScore);
@@ -2148,6 +2162,9 @@ SampleThread* VolumeIndex::runSampleThread(SampleThread* sampleThread)
 
 void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread* sampleThread, char* secondStageData, int dataUnits, int x1, int y1, int z1)
 {
+  QString nonzeroSignature=QString::number(x1)+" "+QString::number(y1)+" "+QString::number(z1);
+  fragmentStage1NonzeroSet[fragmentId].insert(nonzeroSignature);
+
   // First get query data ready
   int qCount=1;
   char qtArr[1];
@@ -2174,7 +2191,7 @@ void VolumeIndex::addMaskScoreForSecondStageEntry(long fragmentId, SampleThread*
     if (DEBUG_FLAG) qDebug() << "appending additional score for fragment, which already has " << sampleThread->fragmentScoreMap[fragmentId].size() << " entries";
     sampleThread->fragmentScoreMap[fragmentId].append(ms);
   } else {
-    if (DEBUG_FLAG) qDebug() << "Creating new MaskScore list for fragment";
+    if (DEBUG_FLAG) qDebug() << "Creating new MaskScore list for sampleId=" << sampleThread->sampleId << " fragmentId=" << fragmentId;
     QList<MaskScore*> fragmentMaskScoreList;
     fragmentMaskScoreList.append(ms);
     sampleThread->fragmentScoreMap[fragmentId]=fragmentMaskScoreList;
@@ -2237,6 +2254,8 @@ bool VolumeIndex::displaySearchResults()
 {
   QTextStream output(stdout);
   if (DEBUG_FLAG) qDebug() << "Displaying results for " << searchResultList.size() << " hits";
+
+  output << "===============================================================================\n";
   for (int i=0;i<searchResultList.size();i++) {
     SubjectScore* ss=searchResultList[i];
     MaskScore* ms=ss->maskScore;

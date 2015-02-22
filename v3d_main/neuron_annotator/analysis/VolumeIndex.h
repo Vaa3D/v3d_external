@@ -426,6 +426,7 @@ private:
 
     QList<SubjectScore*> searchResultList;
     QList<SampleThread*> sampleThreadList;
+    QMap< long, QSet<QString> > fragmentStage1NonzeroSet;
 
     SampleThread* runSampleThread(SampleThread* sampleThread);
     FragmentThread* runFragmentThread(FragmentThread* fragmentThread);
