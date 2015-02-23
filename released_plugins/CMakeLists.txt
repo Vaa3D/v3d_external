@@ -6,8 +6,9 @@ endif(COMMAND CMAKE_POLICY)
 project(v3d_released_plugins)
 
 
-find_package(Qt4 REQUIRED)
+find_package(Qt4 4.7.0 REQUIRED)
 include( ${QT_USE_FILE} )
+include_directories( ${QT_INCLUDES} )
 
 include(CTest)
 

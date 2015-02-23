@@ -27,7 +27,7 @@ sub process_one_library
 {
     my $lib_file = shift;
     my $app_name = shift;
-
+    print $lib_file,"\n";
     open FH, "otool -L $lib_file |";
     my $line_num = 0;
     my $cmd = "install_name_tool";
@@ -45,11 +45,13 @@ sub process_one_library
         # Skip system entries
         next if $lib_name =~ m!^/usr/lib/!;
     
+        #print "\n lib name :  ", $lib_name,"\n";
         # Handle Qt entries
-        if ( $lib_name =~ m!^(Qt\w+\.framework/.*/Qt\w+$)! ) {
+        if ( $lib_name =~ m!(Qt\w+\.framework.*Qt\w+$)! ) {
             my $old = $1;
             my $new = "\@executable_path/../Frameworks/$old";
-            $args .= " -change $old $new";
+            $args .= " -change $lib_name $new";
+            #print "change", $lib_name, " to ",$new,"\n";
         }
 
         # Handle libtiff
@@ -69,6 +71,7 @@ sub process_one_library
 
     }
     if (length($args) > 0) {
+        #print "$cmd $args $lib_file";
         system "$cmd $args $lib_file";
     }
 }
