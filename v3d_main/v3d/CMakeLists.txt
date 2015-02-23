@@ -259,19 +259,20 @@ else(APPLE)
     
     # Also install shared libraries that are needed by v3d
     if(WIN32) # well, MSYS, mostly
-        get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
-        set(LIB_PATHS
-            "${TIFF_INCLUDE_DIR}/../bin"
-            "${QT_LIBRARY_DIR}/../bin"
-            "${CXX_BINDIR}")
-        set(SHLIBS zlib1.dll jpeg62.dll libtiff3.dll QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
-		# Install Qt plugins for image formats, at least on Windows
-		if (QT_PLUGINS_DIR)
-			file(GLOB QT_IMAGEFORMAT_PLUGINS "${QT_PLUGINS_DIR}/imageformats/*.dll")
-			install(PROGRAMS ${QT_IMAGEFORMAT_PLUGINS}
-				DESTINATION "${V3D_INSTALL_DIR}/imageformats"
-				COMPONENT v3d)
-		endif()
+      get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
+      set(LIB_PATHS
+        "${TIFF_INCLUDE_DIR}/../bin"
+        "${QT_LIBRARY_DIR}/../bin"
+        "${CXX_BINDIR}")
+      set(SHLIBS zlib1.dll jpeg62.dll libtiff3.dll QtCore4.dll QtGui4.dll QtNetwork4.dll 
+          QtOpenGL4.dll QtXml4.dll mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
+      # Install Qt plugins for image formats, at least on Windows
+      if (QT_PLUGINS_DIR)
+        file(GLOB QT_IMAGEFORMAT_PLUGINS "${QT_PLUGINS_DIR}/imageformats/*.dll")
+        install(PROGRAMS ${QT_IMAGEFORMAT_PLUGINS}
+          DESTINATION "${V3D_INSTALL_DIR}/imageformats"
+          COMPONENT v3d)
+      endif()
     endif()
     if(UNIX AND NOT APPLE) # Linux
         set(LIB_PATHS "")
@@ -283,20 +284,20 @@ else(APPLE)
     endif()
     # message("LIB_PATHS = ${LIB_PATHS}")
     foreach(SHLIB ${SHLIBS})
-        # message("Searching for ${SHLIB}")
-	set(lib_var_name "${SHLIB}_LIB_FILE")
+      # message("Searching for ${SHLIB}")
+      set(lib_var_name "${SHLIB}_LIB_FILE")
+      find_file(${lib_var_name}
+        NAMES 
+        ${SHLIB}
+        PATHS "${LIB_PATHS}" 
+        NO_DEFAULT_PATH)
+      if  (${lib_var_name}_NOT_FOUND)
         find_file(${lib_var_name}
-            NAMES 
-                ${SHLIB}
-            PATHS "${LIB_PATHS}" 
-            NO_DEFAULT_PATH)
-        if  (${lib_var_name}_NOT_FOUND)
-       	    find_file(${lib_var_name}
-                NAMES ${SHLIB}
-                PATHS /usr/lib /lib
-                    "${TIFF_INCLUDE_DIR}/../bin" # ${LIB_PATHS} does not work if spaces are in name...
-             # Yes default paths, if above find_library failed
-            )
+          NAMES ${SHLIB}
+          PATHS /usr/lib /lib
+          "${TIFF_INCLUDE_DIR}/../bin" # ${LIB_PATHS} does not work if spaces are in name...
+          # Yes default paths, if above find_library failed
+          )
         endif()
 
         set(lib_name "${${lib_var_name}}")
@@ -323,7 +324,7 @@ else(APPLE)
         endif()
         mark_as_advanced(${lib_var_name})
     endforeach()
-    
+
 endif(APPLE)
 
 
