@@ -238,7 +238,7 @@ endif()
 # Keep Mac compatibility to OSX 10.8
 # even when building on <later versions>
 # (trying to keep 10.5 compatibility broke something in libavcodec on Mountain Lion Aug 2013 cmb)
-find_path(TMP_OSX_SYSROOT
+find_file(TMP_OSX_SYSROOT
     MacOSX10.8.sdk
     PATHS
         /Developer/SDKs
