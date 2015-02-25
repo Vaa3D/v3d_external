@@ -1,24 +1,16 @@
-/************
-                                            ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+The basic modules of Vaa3D system use a slightly revised MIT License. Note, however, modules, extensions and plugins of Vaa3D may use different licenses when such situations are specified and documented. You will have to agree the following License terms, before downloading/using/running/editing/changing any portion of codes in this Vaa3D package. 
 
-You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
+Copyright (c) 2006-2014 (Hanchuan Peng and Howard Hughes Medical Institute - Janelia Farm Research Campus)
 
-1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
+Permission is hereby granted, free of charge, to any person obtaining a copy of the basic modules of Vaa3D and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-2. You agree to appropriately cite this work in your related studies and publications.
+1. You agree to cite this work and publications (Peng, et al, Nature Biotechnology, 28(4):348-353, 2010 and Peng, et al, Nature Protocols, 9(1):193-208, 2014) in all your related studies and publications.
 
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+2. Neither the name of Hanchuan Peng, nor Howard Hughes Medical Institute - Janelia Farm Research Campus may be used to endorse or promote products derived from this software without specific prior written permission.
 
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+3. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
-
-4. Neither the name of the Howard Hughes Medical Institute, Janelia Farm Research Campus, nor Hanchuan Peng, may be used to endorse or promote products derived from this software without specific prior written permission.
-
-*************/
-
-
+4. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
 
 
