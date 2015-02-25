@@ -135,11 +135,11 @@ for arg in $*; do
    	  echo "If you specify -m and -n together, the behavior of this batch script is NOT well defined!!"
       
       ARG_LIB+=" ARCH_x86_64=-archx86_64 " 
-	  ARG_MYLIBTIFF+=" ARCH_x86_64=-archx86_64 " 
+      ARG_MYLIBTIFF+=" ARCH_x86_64=-archx86_64 " 
       V3D_PRO_FILE="vaa3d64.pro"    # project file for qmake
       SYSTEMBITS="64" 
  
-      QMAKE_CONFIG+=" CONFIG+=x86_64"
+      QMAKE_CONFIG+=" CONFIG+=x86_64 "
       LOCAL_DIR=$PWD/common_lib
       #ADD_PATH="VPATH=$LOCAL_DIR/include:$LOCAL_DIR/lib_mac64"
       ADD_PATH=" I_PATH=$LOCAL_DIR/include L_PATH=$LOCAL_DIR/lib_mac64"
@@ -170,8 +170,10 @@ DOIT="YES"
 
 if [ ! -d common_lib/include/boost ]; then
   cd common_lib/src_packages
-  tar zvxf boost_1_46_0.tar.gz
-  mv boost_1_46_0/boost ../include/.
+  #tar zvxf boost_1_46_0.tar.gz
+  #mv boost_1_46_0/boost ../include/.
+  tar zvxf boost_1_57_0.tar.gz
+  mv boost_1_57_0/boost ../include/.
   cd ../../
 fi
 
@@ -196,7 +198,8 @@ if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   make 
   make install
   
-  mv ../lib/libtiff.a ../lib/libv3dtiff.a
+  #mv ../lib/libtiff.a ../lib/libv3dtiff.a
+  mv ../lib/libtiff.dylib ../lib/libv3dtiff.dylib
 
   if [ ! -d ../lib_mac32 ]; then
     mkdir ../lib_mac32
@@ -206,10 +209,12 @@ if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   fi
   
   if [ $SYSTEMBITS == "32" ]; then
-    cp ../lib/libv3dtiff.a ../lib_mac32/.
+    #cp ../lib/libv3dtiff.a ../lib_mac32/.
+    cp ../lib/libv3dtiff.dylib ../lib_mac32/.
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    cp ../lib/libv3dtiff.a ../lib_mac64/.
+    #cp ../lib/libv3dtiff.a ../lib_mac64/.
+    cp ../lib/libv3dtiff.dylib ../lib_mac64/.
   fi
   
   cd ../../
