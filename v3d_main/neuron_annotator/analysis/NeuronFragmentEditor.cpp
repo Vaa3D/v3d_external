@@ -10,6 +10,7 @@ const int NeuronFragmentEditor::MODE_COMBINE_MASK=1;
 const int NeuronFragmentEditor::MODE_REVERSE_LABEL=2;
 const int NeuronFragmentEditor::MODE_MIPS=3;
 const int NeuronFragmentEditor::MODE_MASK_FROM_STACK=4;
+const int NeuronFragmentEditor::MODE_SURFACE_VERTEX=5;
 
 NeuronFragmentEditor::NeuronFragmentEditor()
 {
@@ -23,6 +24,7 @@ NeuronFragmentEditor::NeuronFragmentEditor()
     maxThreadCount=0;
     channel=0;
     threshold=0.0;
+    normalizeVertexFile=false;
 }
 
 NeuronFragmentEditor::~NeuronFragmentEditor()
@@ -45,8 +47,10 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
                 mode=MODE_MIPS;
             } else if (modeString=="mask-from-stack") {
 	        mode=MODE_MASK_FROM_STACK;
+	    } else if (modeString=="surface-from-stack") {
+	      mode=MODE_SURFACE_VERTEX;
 	    } else {
-                mode=MODE_UNDEFINED;
+	      mode=MODE_UNDEFINED;
             }
         } else if (arg=="-sourceImage") {
             sourceImageFilepath=(*argList)[++i];
@@ -89,14 +93,23 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
 	} else if (arg=="-threshold") {
 	  QString thresholdString=(*argList)[++i];
 	  threshold=thresholdString.toDouble();
+	} else if (arg=="-surfaceVertexFile") {
+	  surfaceVertexFilepath=(*argList)[++i];
+	} else if (arg=="-normalizeVertexFile") {
+	  normalizeVertexFile=true;
 	}
     }
     bool argError=false;
-    if (mode!=MODE_COMBINE && mode!=MODE_COMBINE_MASK && mode!=MODE_REVERSE_LABEL && mode!=MODE_MIPS && mode!=MODE_MASK_FROM_STACK) {
+    if (mode!=MODE_COMBINE && 
+	mode!=MODE_COMBINE_MASK && 
+	mode!=MODE_REVERSE_LABEL && 
+	mode!=MODE_MIPS && 
+	mode!=MODE_MASK_FROM_STACK &&
+	mode!=MODE_SURFACE_VERTEX) {
         qDebug() << "Do not recognize valid mode";
         argError=true;
     }
-    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL || mode==MODE_MIPS || mode==MODE_MASK_FROM_STACK) {
+    if (mode==MODE_COMBINE || mode==MODE_REVERSE_LABEL || mode==MODE_MIPS || mode==MODE_MASK_FROM_STACK || mode==MODE_SURFACE_VERTEX) {
         if (sourceImageFilepath.length() < 1) {
             qDebug() << "-sourceImageFilepath is required";
             argError=true;
@@ -141,6 +154,11 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
             qDebug() << "-outputPrefix is required";
             argError=true;
         }
+    } else if (mode==MODE_SURFACE_VERTEX) {
+      if (surfaceVertexFilepath.size() < 1) {
+	qDebug() << "-surfaceVertexFile is required";
+	argError=true;
+      }
     }
     if (argError) {
         return 1;
@@ -166,6 +184,8 @@ bool NeuronFragmentEditor::execute()
       return createMips();
     } else if (mode==MODE_MASK_FROM_STACK) {
       return createMaskFromStack();
+    } else if (mode==MODE_SURFACE_VERTEX) {
+      return createSurfaceVertex();
     } else {
         return false;
     }
@@ -604,6 +624,171 @@ QString NeuronFragmentEditor::createFullPathFromLabel(int label, QString extensi
     filename.append(extension);
 
     return filename;
+}
+
+bool NeuronFragmentEditor::createSurfaceVertex()
+{
+  // We want to materialize the 3D stack, and then do a 3-way x,y,z approach, detecting transitions in and out
+  // of the mask.
+  My4DImage* sourceMask=0L;
+
+  if (sourceImageFilepath.endsWith(".mask")) {
+    QStringList fileList;
+    fileList.append(sourceImageFilepath);
+    MaskChan mc;
+    sourceMask=mc.createImageFromMaskFiles(fileList);
+  } else {
+    ImageLoader il;
+    sourceMask=il.loadImage(sourceImageFilepath);
+  }
+
+  QList<double> xList;
+  QList<double> yList;
+  QList<double> zList;
+
+  int cdim=sourceMask->getCDim();
+  int xdim=sourceMask->getXDim();
+  int ydim=sourceMask->getYDim();
+  int zdim=sourceMask->getZDim();
+
+  int mdim=xdim;
+  if (ydim>mdim) {
+    mdim=ydim;
+  }
+  if (zdim>mdim) {
+    mdim=zdim;
+  }
+  double mnorm=mdim*1.0;
+
+  v3d_uint8** cdata=new v3d_uint8*[cdim];
+
+  for (int c=0;c<cdim;c++) {
+    cdata[c]=sourceMask->getRawDataAtChannel(c);
+  }
+
+  bool priorPosition=false;
+
+  int xySize=ydim*xdim;
+
+  // Do x-pass
+  priorPosition=false;
+  for (int z=0;z<zdim;z++) {
+    for (int y=0;y<ydim;y++) {
+      for (int x=0;x<xdim;x++) {
+	bool ot=false;
+	int offset=z*xySize+y*xdim+x;
+	for (int c=0;c<cdim;c++) {
+	  if (cdata[c][offset]>0) {
+	    ot=true;
+	    break;
+	  }
+	}
+	if ( (priorPosition && !ot) ||
+	     (!priorPosition && ot) ||
+             (x==(xdim-1) && ot) ||
+             (y==(ydim-1) && ot) ||
+             (z==(zdim-1) && ot) ) {
+	  double xv=1.0*x;
+	  double yv=1.0*y+0.5;
+	  double zv=1.0*z+0.5;
+	  if (normalizeVertexFile) {
+	    xv/=mnorm;
+	    yv/=mnorm;
+	    zv/=mnorm;
+	  }
+	  xList.append(xv);
+	  yList.append(yv);
+	  zList.append(zv);
+	} 
+	priorPosition=ot;
+      }
+      priorPosition=false;
+    }
+  }
+
+  // Do y-pass
+  priorPosition=false;
+  for (int z=0;z<zdim;z++) {
+    for (int x=0;x<xdim;x++) {
+      for (int y=0;y<ydim;y++) {
+	bool ot=false;
+	int offset=z*xySize+y*xdim+x;
+	for (int c=0;c<cdim;c++) {
+	  if (cdata[c][offset]>0) {
+	    ot=true;
+	    break;
+	  }
+	}
+	if ( (priorPosition && !ot) ||
+	     (!priorPosition && ot) ||
+	     (x==(xdim-1) && ot) ||
+             (y==(ydim-1) && ot)  ||
+	     (z==(zdim-1) && ot) ) {
+	  double xv=1.0*x+0.5;
+	  double yv=1.0*y;
+	  double zv=1.0*z+0.5;
+	  if (normalizeVertexFile) {
+	    xv/=mnorm;
+	    yv/=mnorm;
+	    zv/=mnorm;
+	  }
+	  xList.append(xv);
+	  yList.append(yv);
+	  zList.append(zv);
+	} 
+	priorPosition=ot;
+      }
+      priorPosition=false;
+    }
+  }
+
+
+  // Do z-pass
+  priorPosition=false;
+  for (int y=0;y<ydim;y++) {
+    for (int x=0;x<xdim;x++) {
+      for (int z=0;z<zdim;z++) {
+	bool ot=false;
+	int offset=z*xySize+y*xdim+x;
+	for (int c=0;c<cdim;c++) {
+	  if (cdata[c][offset]>0) {
+	    ot=true;
+	    break;
+	  }
+	}
+	if ( (priorPosition && !ot) ||
+	     (!priorPosition && ot) ||
+	     (x==(xdim-1) && ot) ||
+	     (y==(ydim-1) && ot) ||
+	     (z==(zdim-1) && ot) ) {
+	  double xv=1.0*x+0.5;
+	  double yv=1.0*y+0.5;
+	  double zv=1.0*z;
+	  if (normalizeVertexFile) {
+	    xv/=mnorm;
+	    yv/=mnorm;
+	    zv/=mnorm;
+	  }
+	  xList.append(xv);
+	  yList.append(yv);
+	  zList.append(zv);
+	} 
+	priorPosition=ot;
+      }
+      priorPosition=false;
+    }
+  }
+
+  // Now write output file
+  QFile vertexFile(surfaceVertexFilepath);
+  vertexFile.open(QIODevice::WriteOnly | QIODevice::Text);
+  QTextStream out(&vertexFile);
+  for (int i=0;i<xList.size();i++) {
+    out << "v " << xList[i] << " " << yList[i] << " " << zList[i] << "\n";
+  }
+  vertexFile.close();
+
+  return true;
 }
 
 

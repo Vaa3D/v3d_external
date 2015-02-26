@@ -18,6 +18,7 @@ public:
     static const int MODE_REVERSE_LABEL;
     static const int MODE_MIPS;
     static const int MODE_MASK_FROM_STACK;
+    static const int MODE_SURFACE_VERTEX;
 
     NeuronFragmentEditor();
 
@@ -38,10 +39,11 @@ public:
         usage.append("   reverse-label: given signal/label images, produce a set of mask/channel files                        \n");
         usage.append("   mips: generate all mips for signal/label stacks                                                      \n");
 	usage.append("   mask-from-stack: given a stack, produce a single mask/chan e.g. for reference                        \n");
+	usage.append("   surface-from-stack: given mask or stack, binarize and create surface vertex OBJ file                 \n");
         usage.append("                                                                                                        \n");
-        usage.append("   [ -mode < combine | combine-mask | reverse-label | mips | mask-from-stack , default=combine> ]       \n");
+        usage.append("   [ -mode < combine | combine-mask | reverse-label | mips | mask-from-stack | surface-from-stack, default=combine> ] \n");
         usage.append("                                                                                                        \n");
-        usage.append("  For modes combine | reverse-label | mips | mask-from-stack:                                           \n");
+        usage.append("  For modes combine | reverse-label | mips | mask-from-stack | surface-from-stack:                      \n");
 	usage.append("                                                                                                        \n");
         usage.append("   -sourceImage <original image file>                                                                   \n");
 	usage.append("                                                                                                        \n");
@@ -49,6 +51,11 @@ public:
 	usage.append("                                                                                                        \n");
 	usage.append("   -channel <channel from stack to use>                                                                 \n");
 	usage.append("   -threshold <0.0 to 1.0, used as a percentage of range to use as cut-off for including>               \n");
+	usage.append("                                                                                                        \n");
+	usage.append("  For mode surface-from-stack:                                                                          \n");
+	usage.append("                                                                                                        \n");
+	usage.append("    -surfaceVertexFile <OBJ compatible output vertex file>                                              \n");
+	usage.append("    -normalizeVertexFile [this is a flag which normalizes the space to 0.0 1.0]                         \n");
         usage.append("                                                                                                        \n");
         usage.append("  For modes combine | reverse-label | mips:                                                             \n");
 	usage.append("                                                                                                        \n");
@@ -106,6 +113,8 @@ private:
     int maxThreadCount;
     int channel;
     double threshold;
+    QString surfaceVertexFilepath;
+    bool normalizeVertexFile;
 
     // mode=combine | combine-mask
     QString outputMipFilepath;
@@ -123,6 +132,8 @@ private:
     QString outputPrefix;
 
     QString createFullPathFromLabel(int label, QString extension);
+
+    bool createSurfaceVertex();
 
 };
 
