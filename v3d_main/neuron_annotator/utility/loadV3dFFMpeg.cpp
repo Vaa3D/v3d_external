@@ -2,6 +2,10 @@
 #include "FFMpegVideo.h"
 #include <iostream>
 
+#ifdef USE_HDF5
+#include "H5Cpp.h"
+#endif
+
 #ifdef USE_FFMPEG
 
 using namespace std;
@@ -48,9 +52,61 @@ bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum AVCodecI
     return false;
 }
 
+bool saveStackHDF5(const char * fileName, const My4DImage& img)
+{
+}
+
 bool loadStackFFMpeg(const char* fileName, Image4DSimple& img)
 {
     return loadStackFFMpeg(QUrl::fromLocalFile(fileName), img);
+}
+
+bool loadStackHDF5(const char* fileName, Image4DSimple& img)
+{
+    #ifdef USE_HDF5
+    H5::Exception::dontPrint();
+    H5::H5File file( fileName, H5F_ACC_RDONLY );
+
+    for ( size_t i = 0; i < file.getObjCount(); i++ )
+    {
+        H5std_string name = file.getObjnameByIdx( i );
+        if ( name == "Channels" )
+        {
+            H5::Group channels = file.openGroup( name );
+            int num_channels = 0;
+            // Count the number of channels
+            for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
+                if ( channels.getObjTypeByIdx( obj ) == H5G_DATASET )
+                    num_channels++;
+
+            int channel_idx = 0;
+
+            for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
+            {
+                if ( channels.getObjTypeByIdx( obj ) == H5G_DATASET )
+                {
+                    H5std_string ds_name = channels.getObjnameByIdx( obj );
+                    H5::DataSet data = channels.openDataSet( ds_name );
+                    uint8_t* buffer = new uint8_t[ data.getStorageSize() ];
+                    data.read( buffer, data.getDataType() );
+                    QByteArray qbarray( (const char*)buffer, data.getStorageSize() );
+                    data.close();
+
+                    if ( !loadIndexedStackFFMpeg( &qbarray, img, channel_idx++, num_channels ) )
+                    {
+                        v3d_msg( "Error happened in HDF file reading. Stop. \n", false );
+                        return false;
+                    }
+
+                    delete [] buffer;
+                }
+            }
+        }
+    }
+
+    #endif
+
+    return true;
 }
 
 bool loadStackFFMpeg(QUrl url, Image4DSimple& img)

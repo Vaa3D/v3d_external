@@ -112,7 +112,14 @@ if(USE_FFMPEG)
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
     set(avcodec_cflags "-D__STDC_CONSTANT_MACROS")
     if(USE_X265)
-      set(X265_FLAGS "--enable-libx265 --enable-gpl")
+      set(X265_FLAGS "--enable-libx265")
+      ExternalProject_Add(
+          X265-1.5
+          DEPENDS Yasm-1-2-0
+          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.5.tar.gz
+          CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}
+          UPDATE_COMMAND ""
+      )
     endif()
     if(APPLE)
         # trying to avoid weird _posix_memalign link errors
@@ -121,8 +128,8 @@ if(USE_FFMPEG)
         set(avcodec_cflags "-mmacosx-version-min=10.8")
     endif()
     ExternalProject_Add(
-        LibAvcodec-0-10-2-head2012Apr25
-        DEPENDS Yasm-1-2-0
+        FFMEG-2.5.1
+        DEPENDS Yasm-1-2-0 X265-1.5
         # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
         # Use the exact distribution I developed against
         #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
@@ -139,8 +146,11 @@ if(USE_FFMPEG)
             --disable-vda
             --enable-pic
             --enable-shared
+            --enable-gpl
+            --enable-nonfree
             ${X265_FLAGS}
             --extra-cflags=${avcodec_cflags}
+            --extra-ldflags="\"-Wl,-headerpad_max_install_names -lstdc++ -ldl\""
             ${AV_CONFIG_FLAGS}
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")

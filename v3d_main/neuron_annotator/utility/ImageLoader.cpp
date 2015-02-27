@@ -444,15 +444,20 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
     }
 
     QString extension = QFileInfo(url.path()).suffix().toLower();
+    QString fileName = url.toLocalFile();
+
 #ifdef USE_FFMPEG
     if (extension == "mp4")
         return loadStackFFMpeg(url, *stackp);
+#ifdef USE_HDF5
+    else if (extension == "h5j")
+        return loadStackHDF5(fileName.toStdString().c_str(), *stackp);
+#endif
 #endif
 
     // TODO - keep pushing URLs instead of file names deeper into the system
     if (url.host() == "localhost")
         url.setHost("");
-    QString fileName = url.toLocalFile();
     if (fileName.isEmpty())
         return false;
     return loadImage(stackp, fileName.toStdString().c_str());
@@ -484,6 +489,12 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, const char* filepath)
         if (loadStackFFMpeg(filepath, *stackp))
             bSucceeded = true;
     }
+#ifdef USE_HDF5
+    else if (extension == "h5j") {
+        if (loadStackHDF5(filepath, *stackp))
+            bSucceeded = true;
+    }
+#endif
 #endif
     return bSucceeded;
 }
@@ -533,7 +544,7 @@ bool ImageLoader::saveImageByMode(My4DImage * stackp, const char* filepath, int 
 	if (saveMode==MODE_CONVERT3) {
 	  // using V3D_UNKNOWN as a signal to do 3-bit PBD compression, since we are also assuming the stack has been converted to 8-bit in this case
 	  qDebug() << "ImageLoader::saveImageByMode: calling saveStack2RawPBD with datatype = V3D_UNKNOWN";
-	  saveStack2RawPBD(filepath, V3D_UNKNOWN, data, sz); 
+	  saveStack2RawPBD(filepath, V3D_UNKNOWN, data, sz);
 	} else {
 	  saveStack2RawPBD(filepath, stackp->getDatatype(), data, sz);
 	}
@@ -546,6 +557,14 @@ bool ImageLoader::saveImageByMode(My4DImage * stackp, const char* filepath, int 
         if (saveStackFFMpeg(filepath, *stackp, CODEC_ID_MPEG4))
             return true;
     }
+#ifdef USE_HDF5
+    else if (extension == "h5j") {
+        if (! stackp->p_vmin)
+            stackp->updateminmaxvalues();
+        if (saveStackHDF5(filepath, *stackp))
+            return true;
+    }
+#endif
 #endif
     else {
         stackp->saveImage(filepath);
@@ -718,7 +737,7 @@ int ImageLoader::loadRaw2StackPBDFromStream(QIODevice& fileStream, V3DLONG fileS
 
     case PBD_3_BIT_DTYPE: // Used for PBD 3
       datatype = PBD_3_BIT_DTYPE;
-      break; 
+      break;
 
     default:
         stringstream msg;

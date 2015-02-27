@@ -4,8 +4,8 @@
  # Prevent locale nonsense from breaking basic text processing.
  LC_ALL=C
  export LC_ALL
-+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
++PKG_CONFIG_PATH=../../lib/pkgconfig
 +export PKG_CONFIG_PATH
- 
+
  # make sure we are running under a compatible shell
  # try to make this part work with most shells
