@@ -1,6 +1,6 @@
 # Top level cmake to build v3d, standard v3d plugins, and platform-specific installers
 project(Vaa3D)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 
 include(CTest)
 
@@ -208,10 +208,15 @@ if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
     set(CPACK_PACKAGE_FILE_NAME "InstallNeuronAnnotator-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
     set(CPACK_PACKAGE_EXECUTABLES "NeuronAnnotator.exe" "NeuronAnnotator")
 else()
-    set(CPACK_PACKAGE_NAME Vaa3d)
+    set(CPACK_PACKAGE_NAME Vaa3D-${V3D_VERSION})
     set(CPACK_PACKAGE_FILE_NAME "InstallVaa3D-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
-    set(CPACK_PACKAGE_EXECUTABLES "vaa3d.exe" "vaa3d")
+    # only for NSIS and for older CMake versions, not necessary when
+    # CMAKE_NSIS_MENU_LINKS is used after CMake 2.8.4+
+    set(CPACK_PACKAGE_EXECUTABLES "vaa3d;vaa3d-${V3D_VERSION}") 
 endif()
+
+
+
 # name of dmg file
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
     "Vaa3D is a bioimage volume visualization and analysis application.")
@@ -219,8 +224,9 @@ set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/LICENSE")
 set(CPACK_PACKAGE_VERSION "${V3D_VERSION}")
 set(CPACK_PACKAGE_CONTACT "brunsc at janelia.hhmi.org")
+
 if(WIN32)
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY Vaa3d) # Upper case folder looks better on Windows
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY Vaa3D-${V3D_VERSION}) # Upper case folder looks better on Windows
 else()
     set(CPACK_PACKAGE_INSTALL_DIRECTORY vaa3d)
 endif()
@@ -271,7 +277,7 @@ if(APPLE)
         if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
             set(CPACK_BUNDLE_NAME NeuronAnnotator)
         else()
-            set(CPACK_BUNDLE_NAME Vaa3d)
+            set(CPACK_BUNDLE_NAME "Vaa3D-${V3D_VERSION}")
         endif()
         set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
         set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
@@ -314,8 +320,8 @@ elseif(WIN32)
         set(CPACK_NSIS_MENU_LINKS "bin/NeuronAnnotator.exe" "NeuronAnnotator")
         SET(CPACK_NSIS_DISPLAY_NAME NeuronAnnotator)
     else()
-        set(CPACK_NSIS_MENU_LINKS "bin/vaa3d.exe" "Vaa3D")
-        SET(CPACK_NSIS_DISPLAY_NAME Vaa3D)
+        set(CPACK_NSIS_MENU_LINKS "bin/vaa3d.exe" "Vaa3D-${V3D_VERSION}")
+        SET(CPACK_NSIS_DISPLAY_NAME Vaa3D-${V3D_VERSION})
     endif()
     SET(CPACK_NSIS_URL_INFO_ABOUT  
         "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
