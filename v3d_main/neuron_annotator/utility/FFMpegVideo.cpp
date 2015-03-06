@@ -610,9 +610,7 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
         // TODO
     }
 
-    if (pCtx->codec_id == AV_CODEC_ID_H264)
-        video_st->time_base = (AVRational){1, 25};
-
+    video_st->time_base = (AVRational){1, 25};
     pCtx->time_base = (AVRational){1, 25};
     // pCtx->time_base = (AVRational){1, 10};
     pCtx->gop_size = 12; // emit one intra frame every twelve frames
