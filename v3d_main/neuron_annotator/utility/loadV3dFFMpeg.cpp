@@ -1,5 +1,8 @@
 #include "loadV3dFFMpeg.h"
 #include "FFMpegVideo.h"
+
+#include <sstream>
+#include <fstream>
 #include <iostream>
 
 #ifdef USE_HDF5
@@ -46,14 +49,97 @@ bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum AVCodecI
             }
             encoder.write_frame();
         }
+
+        encoder.close();
+
         return true;
     } catch (...) {}
 
     return false;
 }
 
-bool saveStackHDF5(const char * fileName, const My4DImage& img)
+bool saveStackHDF5( const char* fileName, const My4DImage& img )
 {
+    try
+    {
+#ifdef USE_HDF5
+        H5::Exception::dontPrint();
+        H5::H5File file( fileName, H5F_ACC_TRUNC );
+        H5::Group* group = new H5::Group( file.createGroup( "/Channels" ));
+
+        Image4DProxy<My4DImage> proxy( const_cast<My4DImage*>( &img ) );
+
+        for ( int c = 0; c < proxy.sc; ++c )
+        {
+            double default_irange = 1.0; // assumes data range is 0-255.0
+            if ( proxy.su > 1 )
+            {
+                default_irange = 1.0 / 16.0; // 0-4096, like our microscope images
+            }
+            std::vector<double> imin( proxy.sc, 0.0 );
+            std::vector<double> irange2( proxy.sc, default_irange );
+            // rescale if converting from 16 bit to 8 bit
+            if ( proxy.su > 1 )
+            {
+                if ( img.p_vmin && img.p_vmax )
+                    proxy.set_minmax( img.p_vmin, img.p_vmax );
+                if ( proxy.has_minmax() )
+                {
+                    imin[c] = proxy.vmin[c];
+                    irange2[c] = 255.0 / ( proxy.vmax[c] - proxy.vmin[c] );
+                }
+            }
+
+            FFMpegEncoder encoder( NULL, proxy.sx, proxy.sy, AV_CODEC_ID_HEVC );
+            for ( int z = 0; z < proxy.sz; ++z )
+            {
+                for ( int y = 0; y < proxy.sy; ++y )
+                {
+                    for ( int x = 0; x < proxy.sx; ++x )
+                    {
+                        int ic = c;
+                        double val = proxy.value_at( x, y, z, ic );
+                        val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
+                        for ( int cc = 0; cc < 3; ++cc )
+                            encoder.setPixelIntensity( x, y, cc, ( int )val );
+                    }
+                }
+                encoder.write_frame();
+            }
+
+            for ( int rem = encoder.encoded_frames(); rem < proxy.sz; rem++ )
+                encoder.encode();
+
+            encoder.close();
+
+            hsize_t  dims[1];
+            dims[0] = encoder.buffer_size();
+            H5::DataSpace dataspace( 1, dims );
+            std: stringstream name;
+            name << "Channel_" << c;
+            H5::DataSet dataset = group->createDataSet( name.str(), H5::PredType::NATIVE_UINT8, dataspace );
+            dataset.write( encoder.buffer(), H5::PredType::NATIVE_UINT8 );
+            dataset.close();
+
+            std::cout << "Encoded channel is " << encoder.buffer_size() << " bytes." << std::endl;
+            // Uncomment this if you want to dump the individual movies to a temp file
+#if 0
+            name.str( std::string() );
+            name << "/tmp/foo_" << c << ".mp4";
+            std::ofstream myFile ( name.str(), ios::out | ios::binary );
+            myFile.write( ( const char* )encoder.buffer(), encoder.buffer_size() );
+            myFile.close();
+#endif
+        }
+#endif
+
+        file.close();
+
+        return true;
+    }
+    catch ( ... ) {}
+
+    return false;
 }
 
 bool loadStackFFMpeg(const char* fileName, Image4DSimple& img)

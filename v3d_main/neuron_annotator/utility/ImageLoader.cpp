@@ -553,8 +553,8 @@ bool ImageLoader::saveImageByMode(My4DImage * stackp, const char* filepath, int 
     else if (extension == "mp4") {
         if (! stackp->p_vmin)
             stackp->updateminmaxvalues();
-        // CODEC_ID_MPEG4 is the only codec I have found so far to work with the Quicktime player
-        if (saveStackFFMpeg(filepath, *stackp, CODEC_ID_MPEG4))
+        // AV_CODEC_ID_MPEG4 is the only codec I have found so far to work with the Quicktime player
+        if (saveStackFFMpeg(filepath, *stackp, AV_CODEC_ID_MPEG4))
             return true;
     }
 #ifdef USE_HDF5

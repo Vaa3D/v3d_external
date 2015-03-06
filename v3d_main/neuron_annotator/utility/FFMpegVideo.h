@@ -116,6 +116,12 @@ public:
     virtual ~FFMpegEncoder();
     void setPixelIntensity(int x, int y, int c, uint8_t value);
     void write_frame();
+    void close();
+    size_t buffer_size() { return _buffer_size; }
+    uint8_t* buffer() { return _buffer; }
+    void free_buffer() { if (_buffer_size > 0 ) { _buffer_size = 0; av_free( _buffer ); } }
+    void encode( AVFrame* picture = NULL );
+    int encoded_frames() { return _encoded_frames; }
 
 protected:
     AVFormatContext *container;
@@ -123,6 +129,11 @@ protected:
     AVFrame *picture_yuv;
     AVFrame *picture_rgb;
     struct SwsContext *Sctx;
+    bool use_buffer;
+    size_t _buffer_size;
+    uint8_t* _buffer;
+    int _frame_count;
+    int _encoded_frames;
 };
 
 

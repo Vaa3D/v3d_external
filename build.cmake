@@ -1,17 +1,10 @@
 #!/bin/bash
 # 2010-08-07 by Hanchuan Peng
-# a convenience script for building the system on Mac
-#
-# examples:
-#    sh build.macx
-#    sh build.macx debug
-#    sh build.macx release
-#    sh build.macx clean
-#    sh build.macx all
-#    sh build.macx -B            #force to rebuild files listed in makefile
-#    sh build.macx -m            #make for 64-bit
-#    sh build.macx -B -m -j4     #rebuild for 64-bit (not depend on order)
-#    sh build.macx -B -n -j4     #rebuild for 32-bit (not depend on order)
+# a convenience script for building the system with cmake
+# It will download and build CMake if it's not present,
+# then launch the build.
+
+# Run without arguments to see usage.
 
 function download {
     if [[ ! -e $2 ]]; then
@@ -23,6 +16,7 @@ function download {
 shopt -s expand_aliases;
 CMAKE_VERSION=3.1.3
 CMAKE_ARGS=
+CMAKE_BUILD="Release"
 
 set -eu
 
@@ -66,6 +60,9 @@ while [[ $# > 0 ]]; do
         -h5j)
             CMAKE_ARGS="-DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON"
             ;;
+        -debug)
+            CMAKE_BUILD="Debug"
+            ;;
         install)
             OPERATION=install
             ;;
@@ -84,8 +81,10 @@ done
 echo "Targeting platform \"$PLATFORM\""
 
 if [[ -z ${OPERATION:-} ]]; then
-    echo "Usage: build.cmake [-platform <name>] <install | clean | clobber>"
+    echo "Usage: build.cmake [-platform <name>] [-h5j] [-debug] <install | clean | clobber>"
     echo "where possible platform names are: linux-x86, linux-x86_64, macosx-x86_64, windows-x86, windows-x86_64, etc."
+    echo " -h5j - builds for the Janelia Farm HDF variant. Enables building of FFmpeg and HDF5"
+    echo " -debug - Generates a debug build (default is release)"
     echo " clean - removes the current build for platform"
     echo " clobber - cleans, and removes the current cmake directories"
     exit 1
@@ -109,7 +108,7 @@ case $OPERATION in
 			mkdir build_$PLATFORM
 		fi
 		cd build_$PLATFORM
-		../cmake-$CMAKE_VERSION/bin/cmake $CMAKE_ARGS ..
+		../cmake-$CMAKE_VERSION/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS ..
 		make
         ;;
     clean)

@@ -417,7 +417,7 @@ bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet
         if (!avtry(avcodec_decode_video2( pCtx, pYuv, &finished, &packet ), "Failed to decode video"))
             return false;
         // handle odd cases and debug
-        if((pCtx->codec_id==CODEC_ID_RAWVIDEO) && !finished)
+        if((pCtx->codec_id==AV_CODEC_ID_RAWVIDEO) && !finished)
         {
             avpicture_fill( (AVPicture * ) pYuv, blank, pCtx->pix_fmt,width, height ); // set to blank frame
             finished = 1;
@@ -511,6 +511,7 @@ void FFMpegVideo::maybeInitFFMpegLib()
 {
     if (FFMpegVideo::b_is_one_time_inited)
         return;
+
     av_register_all();
     avcodec_register_all();
     avformat_network_init();
@@ -541,7 +542,13 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
     : picture_yuv(NULL)
     , picture_rgb(NULL)
     , container(NULL)
+    , use_buffer( false )
+    , _buffer_size( 0 )
+    , _buffer( NULL )
+    , _frame_count( 0 )
+    , _encoded_frames( 0 )
 {
+
     if (0 != (width % 2))
         cerr << "WARNING: Video width is not a multiple of 2" << endl;
     if (0 != (height % 2))
@@ -553,15 +560,22 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
     if (NULL == container)
         throw std::runtime_error("Unable to allocate format context");
 
-    AVOutputFormat * fmt = av_guess_format(NULL, file_name, NULL);
+    AVOutputFormat* fmt = NULL;
+    if ( file_name == NULL )
+        fmt = av_guess_format("mp4", NULL, NULL);
+    else
+    {
+        fmt = av_guess_format(NULL, file_name, NULL);
+    }
     if (!fmt)
         fmt = av_guess_format("mpeg", NULL, NULL);
     if (!fmt)
         throw std::runtime_error("Unable to deduce video format");
+
     container->oformat = fmt;
 
     fmt->video_codec = codec_id;
-    // fmt->video_codec = CODEC_ID_H264; // fails to write
+    // fmt->video_codec = AV_CODEC_ID_H264; // fails to write
 
     AVStream * video_st = avformat_new_stream(container, NULL);
 
@@ -579,7 +593,7 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
     // "high quality" parameters from http://www.cs.ait.ac.th/~on/mplayer/pl/menc-feat-enc-libavcodec.html
     // vcodec=mpeg4:mbd=2:mv0:trell:v4mv:cbp:last_pred=3:predia=2:dia=2:vmax_b_frames=2:vb_strategy=1:precmp=2:cmp=2:subcmp=2:preme=2:vme=5:naq:qns=2
     if (false) // does not help
-    // if (pCtx->codec_id == CODEC_ID_MPEG4)
+    // if (pCtx->codec_id == AV_CODEC_ID_MPEG4)
     {
         pCtx->mb_decision = 2;
         pCtx->last_predictor_count = 3;
@@ -596,15 +610,19 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
         // TODO
     }
 
+    if (pCtx->codec_id == AV_CODEC_ID_H264)
+        video_st->time_base = (AVRational){1, 25};
+
     pCtx->time_base = (AVRational){1, 25};
     // pCtx->time_base = (AVRational){1, 10};
     pCtx->gop_size = 12; // emit one intra frame every twelve frames
     // pCtx->max_b_frames = 0;
-    pCtx->pix_fmt = PIX_FMT_YUV420P;
+    pCtx->pix_fmt = AV_PIX_FMT_YUV420P;
     if (fmt->flags & AVFMT_GLOBALHEADER)
         pCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-    if (pCtx->codec_id == CODEC_ID_H264)
+    AVDictionary* codec_options( 0 );
+    if (pCtx->codec_id == AV_CODEC_ID_H264)
     {
         // http://stackoverflow.com/questions/3553003/encoding-h-264-with-libavcodec-x264
         pCtx->coder_type = 1;  // coder = 1
@@ -633,15 +651,25 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
         // pCtx->flags2|=CODEC_FLAG2_8X8DCT;
         // pCtx->flags2^=CODEC_FLAG2_8X8DCT;    // flags2=-dct8x8
     }
+    else if ( pCtx->codec_id == AV_CODEC_ID_HEVC )
+    {
+        av_dict_set( &codec_options, "preset", "medium", 0 );
+        av_dict_set( &codec_options, "x265-params", "crf=15:psy-rd=1.0", 0 );
+//        av_dict_set( &codec_options, "psy-rd", "1.0", 0 );
+        pCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+        pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
+        if (fmt->flags & AVFMT_GLOBALHEADER)
+            pCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    }
 
     AVCodec * codec = avcodec_find_encoder(pCtx->codec_id);
     if (NULL == codec)
         throw std::runtime_error("Unable to find Mpeg4 codec");
-    if (codec->pix_fmts)
-        pCtx->pix_fmt = codec->pix_fmts[0];
+//    if (codec->pix_fmts)
+//        pCtx->pix_fmt = codec->pix_fmts[0];
     {
         QMutexLocker lock(&FFMpegVideo::mutex);
-        if (avcodec_open2(pCtx, codec, NULL) < 0)
+        if (avcodec_open2(pCtx, codec, &codec_options) < 0)
             throw std::runtime_error("Error opening codec");
     }
 
@@ -674,8 +702,15 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
     if (!(fmt->flags & AVFMT_NOFILE))
     {
         QMutexLocker lock(&FFMpegVideo::mutex);
-        if (avio_open(&container->pb, file_name, AVIO_FLAG_WRITE) < 0)
-             throw std::runtime_error("Error opening output video file");
+        if ( file_name == NULL )
+        {
+            use_buffer = true;
+            if ( avio_open_dyn_buf( &container->pb ) != 0 )
+                 throw std::runtime_error("Error opening memory buffer for encoding");
+        }
+        else
+            if (avio_open(&container->pb, file_name, AVIO_FLAG_WRITE) < 0)
+                 throw std::runtime_error("Error opening output video file");
     }
     avformat_write_header(container, NULL);
 }
@@ -699,35 +734,64 @@ void FFMpegEncoder::write_frame()
 
     /* encode the image */
     // use non-deprecated avcodec_encode_video2(...)
+    encode( picture_yuv );
+}
+
+void FFMpegEncoder::encode( AVFrame* picture )
+{
     AVPacket packet;
     av_init_packet(&packet);
     packet.data = NULL;
     packet.size = 0;
 
+    if ( pCtx->codec_id == AV_CODEC_ID_HEVC && picture )
+        picture->pts = _frame_count;
+
     int got_packet;
     int ret = avcodec_encode_video2(pCtx,
                                     &packet,
-                                    picture_yuv,
+                                    picture,
                                     &got_packet);
     if (ret < 0)
         throw std::runtime_error("Video encoding failed");
     if (got_packet)
     {
-        // std::cout << "encoding frame" << std::endl;
+        _encoded_frames++;
+
+        if ( pCtx->codec_id == AV_CODEC_ID_HEVC )
+        {
+            if (packet.pts == AV_NOPTS_VALUE && !(pCtx->codec->capabilities & CODEC_CAP_DELAY))
+                packet.pts = _frame_count;
+
+            av_packet_rescale_ts(&packet, pCtx->time_base, pCtx->time_base);
+        }
+
         int result = av_write_frame(container, &packet);
         av_destruct_packet(&packet);
+    }
+
+    _frame_count++;
+}
+
+void FFMpegEncoder::close()
+{
+    int result = av_write_frame(container, NULL); // flush
+    result = av_write_trailer(container);
+    {
+        QMutexLocker lock(&FFMpegVideo::mutex);
+        if ( use_buffer )
+            _buffer_size = avio_close_dyn_buf( container->pb, &_buffer );
+        else
+            avio_close(container->pb);
     }
 }
 
 /* virtual */
 FFMpegEncoder::~FFMpegEncoder()
 {
-    int result = av_write_frame(container, NULL); // flush
-    result = av_write_trailer(container);
-    {
-        QMutexLocker lock(&FFMpegVideo::mutex);
-        avio_close(container->pb);
-    }
+    if ( use_buffer )
+        av_free( _buffer );
+
     for (int i = 0; i < container->nb_streams; ++i)
         av_freep(container->streams[i]);
     av_free(container);
