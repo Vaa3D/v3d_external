@@ -161,9 +161,24 @@ if(EXISTS "${BINARY_PLUGIN_DIR}")
         DESTINATION "${PLUGIN_DESTINATION_DIR}"
         USE_SOURCE_PERMISSIONS
         COMPONENT Plugins
+        FILES_MATCHING
+        PATTERN "*"
         PATTERN ".svn" EXCLUDE
-    )
+        PATTERN "*.exp" EXCLUDE
+        PATTERN "*.lib" EXCLUDE
+        PATTERN "*.exe" EXCLUDE
+        PATTERN "*.jar" EXCLUDE
+        )
+    if(WIN32)  # package all the extra exes that are required to run plugins
+        file(GLOB programs "${BINARY_PLUGIN_DIR}/*.*")
+        install(PROGRAMS ${programs}
+            DESTINATION "${V3D_INSTALL_DIR}"
+            COMPONENT RuntimeLibraries
+            )
+    endif()
 endif()
+
+
 
 # Build plugins
 set(V3D_BASIC_C_FUN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/basic_c_fun)
