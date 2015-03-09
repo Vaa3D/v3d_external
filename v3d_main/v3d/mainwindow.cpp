@@ -367,7 +367,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
         }
         if (numfind<=0)
         {
-            v3d_msg("Vaa3D really cannot find this plugin. Do nothing.");
+            qCritical()<<"Error: Vaa3D really cannot find this plugin. Do nothing.";
             return;
         }
         else if(numfind > 1)	//20110429 YuY
