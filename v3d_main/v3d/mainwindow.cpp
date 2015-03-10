@@ -372,7 +372,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
         }
         else if(numfind > 1)	//20110429 YuY
         {
-            v3d_msg(QString("Too many choices. Please specify your plugin with whole name including absolute path and try again."), 1);
+            qCritical()<<QString("Error: Too many choices. Please specify your plugin with whole name including absolute path and try again.");
             return;
         }
         else if(numfind == 1)

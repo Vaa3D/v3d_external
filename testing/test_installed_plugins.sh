@@ -15,6 +15,7 @@ fi
 if [[ "$OSTYPE" == "win32" ]]; then
   V3D=".\vaa3d64"
 fi
+echo "Start to check each plugin listed in ./pluginlist.txt:"
 
 let count=0
 let error_count=0
@@ -30,8 +31,6 @@ do
   echo "$count: testing $plugin"
 
   output=$($command 2>&1 >/dev/null)
-  #output=$($command 2>&1)
-  #detect error
   if echo "$output" | grep -qi "Error"; then
     echo "error found!"
     echo "${output}"
