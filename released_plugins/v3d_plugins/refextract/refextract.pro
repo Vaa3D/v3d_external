@@ -24,6 +24,6 @@ LIBS         += -lpthread
 #LIBS	     += -lv3dfftw3f -lv3dfftw3f_threads
 
 TARGET        = $$qtLibraryTarget(refExtract)
-DESTDIR       = $$V3DMAINDIR/../bin/plugins/FlyWorkstation_utilities/refExtract
+DESTDIR       = $$V3DMAINDIR/../bin/plugins/refExtract
 
 
