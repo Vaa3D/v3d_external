@@ -15,9 +15,6 @@ datatypeconvert
 convert_img_to_atlasview
 rescale
 clonalSelect
-lobeseg
-lobe_seg
-refExtract
 histogram
 image_anisotropy_map
 blend_multiscanstacks
@@ -37,12 +34,14 @@ rotateimg90
 mipImageSeries
 mipZSlices
 plugin_warp_affin_tps
+littlequickwarp
 plugin_pointcloud_match
 plugin_PQ_imagereg
 example_reset_xyz_resolution
 roi_editor
 gvf_cellseg
 regiongrow
+lobeseg
 ifusion
 imageStitch
 mapviewer
@@ -52,6 +51,7 @@ linker_file_generator
 save3dviewer2linker
 marker2others
 marker2mst
+mean_shift_center_finder
 movie_format_convert
 moviefrom3dviewer
 ZMovieMaker
@@ -75,14 +75,14 @@ pruning_swc
 resample_swc
 sort_neuron_swc
 swc2mask
-swc_to_maskimage_cylinder_unit
-swc_to_maskimage_sphere_unit
+swc_to_maskimage
 neuron_tile_display
 typeset
 paint
 canvas_eraser
 updatepxlval
 principalskeleton_detection
+refExtract
 shape_extractor
 sync3D
 sync_z_cut
@@ -94,3 +94,7 @@ demo_opensurfacefile
 mouse_monitor
 newwindow
 extrafilters
+neurontracing_mip
+neurontracing_mst
+snake_tracing
+neutube
