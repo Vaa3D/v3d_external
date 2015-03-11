@@ -13,12 +13,31 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 if [[ "$OSTYPE" == "win32" ]]; then
-  V3D=".\vaa3d64"
+  V3D=../bin/vaa3d64
 fi
+
+if [[ "$OSTYPE" == "win32" ]]; then
+  V3D=../bin/vaa3d64
+fi
+
+if ! [ -e $V3D ]; then
+    echo "$V3D does not exsit"
+    echo "please input vaa3d executable path:"
+    read input
+    V3D=$input
+fi
+
 echo "Start to check each plugin listed in ./pluginlist.txt:"
 
 let count=0
 let error_count=0
+
+if ! [ -e pluginlist.txt ];then
+     echo " could not find pluginlist.txt in the current directory"
+     echo " please go to the testing directory first"
+     exit
+fi
+
 for plugin in `cat pluginlist.txt `;
 do
   ((count++))

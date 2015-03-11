@@ -79,7 +79,7 @@ swc_to_maskimage_cylinder_unit
 swc_to_maskimage_sphere_unit
 neuron_tile_display
 typeset
-Paint
+paint
 canvas_eraser
 updatepxlval
 principalskeleton_detection
