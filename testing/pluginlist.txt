@@ -75,7 +75,7 @@ pruning_swc
 resample_swc
 sort_neuron_swc
 swc2mask
-swc_to_maskimage
+swc_to_maskimage_sphere
 neuron_tile_display
 typeset
 paint
