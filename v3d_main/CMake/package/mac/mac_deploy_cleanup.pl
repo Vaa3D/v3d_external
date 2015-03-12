@@ -12,6 +12,7 @@ die $usage unless $app_name;
 die "Application $app_name does not exist" unless -e $app_name;
 
 process_all_plugins($app_name);
+process_one_library( "$app_name/Contents/MacOS/vaa3d",$app_name);
 
 sub process_all_plugins
 {
