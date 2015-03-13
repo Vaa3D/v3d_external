@@ -170,11 +170,15 @@ if(EXISTS "${BINARY_PLUGIN_DIR}")
         PATTERN "*.jar" EXCLUDE
         )
     if(WIN32)  # package all the extra exes that are required to run plugins
-        file(GLOB programs "${BINARY_PLUGIN_DIR}/*.*")
+	file(GLOB programs "${BINARY_PLUGIN_DIR}/../DEPENDENTS/windows_ffmpeg.exe")
         install(PROGRAMS ${programs}
             DESTINATION "${V3D_INSTALL_DIR}"
             COMPONENT RuntimeLibraries
             )
+        install(DIRECTORY "${BINARY_PLUGIN_DIR}/../DEPENDENTS/bioformats_tools"
+	    DESTINATION "${V3D_INSTALL_DIR}"
+            COMPONENT RuntimeLibraries
+	    )
     endif()
 endif()
 
