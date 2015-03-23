@@ -97,6 +97,7 @@ endif()
 include_directories(${TIFF_INCLUDE_DIR})
 
 if(USE_FFMPEG)
+  if(NOT WIN32)
     include(ExternalProject)
     ExternalProject_Add(
         Yasm-1-2-0
@@ -110,14 +111,14 @@ if(USE_FFMPEG)
         BUILD_IN_SOURCE 1
     )
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
-    set(avcodec_cflags "-D__STDC_CONSTANT_MACROS")
+    set(extra_cflags "-D__STDC_CONSTANT_MACROS")
     if(USE_X265)
       set(X265_FLAGS "--enable-libx265")
       ExternalProject_Add(
           X265-1.5
           DEPENDS Yasm-1-2-0
           URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.5.tar.gz
-          CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}
+          CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR} -DYASM_EXECUTABLE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm${CMAKE_EXECUTABLE_SUFFIX}
           UPDATE_COMMAND ""
       )
     endif()
@@ -125,10 +126,18 @@ if(USE_FFMPEG)
         # trying to avoid weird _posix_memalign link errors
         set(AV_CONFIG_FLAGS --enable-memalign-hack)
         # Avoid ___sincos_stret link error on Mac
-        set(avcodec_cflags "-mmacosx-version-min=10.8")
+        set(extra_cflags "${extra_cflags} -mmacosx-version-min=10.8")
     endif()
+    set(extra_ldflags "")
+    set(FFMPEG_PATCH_FILE "ffmpeg-2.5.1.patch")
+    if(NOT WIN32)
+      set(extra_ldflags "-Wl,-headerpad_max_install_names -lstdc++ -ldl")
+    else()
+      set(FFMPEG_PATCH_FILE "ffmpeg-2.5.4-windows.patch")
+    endif()
+
     ExternalProject_Add(
-        FFMEG-2.5.1
+        FFMPEG-2.5.1
         DEPENDS Yasm-1-2-0 X265-1.5
         # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
         # Use the exact distribution I developed against
@@ -138,7 +147,7 @@ if(USE_FFMPEG)
         BINARY_DIR ${av_dir}/build
         INSTALL_DIR ${av_dir}/install
         UPDATE_COMMAND ""
-        PATCH_COMMAND patch -p0 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-2.5.1.patch
+        PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/${FFMPEG_PATCH_FILE}
         CONFIGURE_COMMAND <SOURCE_DIR>/configure
             --prefix=<INSTALL_DIR>
             --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
@@ -149,8 +158,8 @@ if(USE_FFMPEG)
             --enable-gpl
             --enable-nonfree
             ${X265_FLAGS}
-            --extra-cflags=${avcodec_cflags}
-            --extra-ldflags="\"-Wl,-headerpad_max_install_names -lstdc++ -ldl\""
+            --extra-cflags=${extra_cflags}
+            --extra-ldflags=${extra_ldflags}
             ${AV_CONFIG_FLAGS}
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
@@ -165,10 +174,29 @@ if(USE_FFMPEG)
     find_package(BZip2)
     find_package(Iconv)
 
-    include_directories(${AVCODEC_INCLUDE_DIR})
-    add_definitions(-D__STDC_CONSTANT_MACROS)
-
     find_package(Threads)
+  else()
+    set(AVCODEC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/include")
+    set(av_dir "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/")
+    if (MINGW)
+      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavformat${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+    else()
+      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avdevice.lib CACHE INTERNAL "path to a library")
+      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avformat.lib CACHE INTERNAL "path to a library")
+      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avfilter.lib CACHE INTERNAL "path to a library")
+      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avcodec.lib CACHE INTERNAL "path to a library")
+      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/swscale.lib CACHE INTERNAL "path to a library")
+      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avutil.lib CACHE INTERNAL "path to a library")
+    endif()
+  endif()
+
+  include_directories(${AVCODEC_INCLUDE_DIR})
+  add_definitions(-D__STDC_CONSTANT_MACROS)
 endif()
 
 if(USE_HDF5)
@@ -177,18 +205,21 @@ if(USE_HDF5)
     ExternalProject_Add(
         HDF5
         URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.8.14.tar.gz
-        SOURCE_DIR ${hdf_dir}/src
-        BINARY_DIR ${hdf_dir}/build
-        INSTALL_DIR ${hdf_dir}/install
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_INSTALL_PREFIX:PATH=${hdf_dir}/install -DHDF5_BUILD_CPP_LIB:BOOL=ON -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_BUILD_TOOLS:BOOL=ON
         UPDATE_COMMAND ""
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure
-            --prefix=<INSTALL_DIR>
-            --enable-cxx
     )
+
     set(HDF5_INCLUDE_DIR "${hdf_dir}/install/include")
-    set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-    set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-    set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    if (MINGW)
+      # MINGW mangles the librariy names to be doubly prefixed with lib
+      set(HDF5_LIBRARY ${hdf_dir}/install/lib/hdf5.lib CACHE INTERNAL "path to a library")
+      set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/hdf5_cpp.lib CACHE INTERNAL "path to a library")
+      set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/hdf5_hl_cpp.lib CACHE INTERNAL "path to a library")
+    else()
+      set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    endif()
 
     include_directories(${HDF5_INCLUDE_DIR})
 endif()

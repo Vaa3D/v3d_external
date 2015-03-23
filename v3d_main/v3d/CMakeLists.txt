@@ -37,8 +37,8 @@ set(V3D_SRCS
   ../io/io_bioformats.cpp
   v3d_actions.cpp)
 
-set(V3D_RCCS 
-    v3d.qrc 
+set(V3D_RCCS
+    v3d.qrc
     ../3drenderer/3drenderer.qrc
     ../neuron_annotator/resources.qrc)
 
@@ -124,7 +124,7 @@ if (WIN32) # Windows MSYS build
       ${V3D_RCC_SRCS}
       v3d_win.rc)
 else()
-  add_executable( v3d 
+  add_executable( v3d
       main.cpp
       ${V3D_RCC_SRCS} )
 endif()
@@ -159,9 +159,9 @@ if(UNIX AND NOT APPLE)
   mark_as_advanced(CLEAR ZLIB_LIBRARY JPEG_LIBRARY)
   target_link_libraries(v3d ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
 endif()
-  
+
 if(MSVC)
-  	
+
   find_package(ZLIB)
   target_link_libraries(v3d ${ZLIB_LIBRARY})
 
@@ -182,6 +182,8 @@ endif()
 # CMB 11-Oct-2010
 target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
 target_link_libraries(v3d ${QT_QTXML_LIBRARY})
+target_link_libraries(v3d ${QT_QTGUI_LIBRARY})
+target_link_libraries(v3d ${QT_QTCORE_LIBRARY})
 
 if(APPLE)
     # There are two ways to build V3D on Mac.
@@ -261,10 +263,10 @@ else(APPLE)
 
     # On non-apple platforms, install executable, libraries, and plugins individually
     set(V3D_INSTALL_DIR "bin" CACHE INTERNAL "Relative path where V3D will be installed")
-    install(TARGETS v3d 
+    install(TARGETS v3d
         DESTINATION ${V3D_INSTALL_DIR}
         COMPONENT v3d)
-    
+
     # Also install shared libraries that are needed by v3d
     if(WIN32) # well, MSYS, mostly
       get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
@@ -272,13 +274,25 @@ else(APPLE)
         "${TIFF_INCLUDE_DIR}/../bin"
         "${QT_LIBRARY_DIR}/../bin"
         "${CXX_BINDIR}")
-      set(SHLIBS jpeg62.dll libtiff3.dll QtCore4.dll QtGui4.dll QtNetwork4.dll 
-          QtOpenGL4.dll QtXml4.dll mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
+      set(SHLIBS jpeg62.dll libtiff3.dll QtCore4.dll QtGui4.dll QtNetwork4.dll
+          QtOpenGL4.dll QtXml4.dll )
       # Install Qt plugins for image formats, at least on Windows
       if (QT_PLUGINS_DIR)
           file(GLOB QT_IMAGEFORMAT_PLUGINS "${QT_PLUGINS_DIR}/imageformats/*.dll")
           install(PROGRAMS ${QT_IMAGEFORMAT_PLUGINS}
           DESTINATION "${V3D_INSTALL_DIR}/imageformats"
+          COMPONENT v3d)
+      endif()
+      if(USE_FFMPEG)
+          file(GLOB FFMPEG_DLLS "${av_dir}/bin/*.dll")
+          install(PROGRAMS ${FFMPEG_DLLS}
+          DESTINATION "${V3D_INSTALL_DIR}"
+          COMPONENT v3d)
+      endif()
+      if(USE_HDF5)
+          file(GLOB HDF5_DLLS "${hdf_dir}/install/bin/*.dll")
+          install(PROGRAMS ${HDF5_DLLS}
+          DESTINATION "${V3D_INSTALL_DIR}"
           COMPONENT v3d)
       endif()
     endif()
@@ -295,7 +309,7 @@ else(APPLE)
         set(lib_var_name "${SHLIB}_LIB_FILE")
         find_file(${lib_var_name}
             NAMES ${SHLIB}
-            PATHS "${LIB_PATHS}" 
+            PATHS "${LIB_PATHS}"
             )
         if(${lib_var_name}_NOT_FOUND)
            find_file(${lib_var_name}

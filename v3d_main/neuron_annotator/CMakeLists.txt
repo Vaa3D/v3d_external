@@ -103,21 +103,22 @@ endif()
 # Permit loading 3D volumes from movie files
 
 if(USE_FFMPEG)
-    add_dependencies(NeuronAnnotatorLib LibAvcodec-0-10-2-head2012Apr25)
+    add_dependencies(NeuronAnnotatorLib FFMPEG-2.5.1)
     target_link_libraries(NeuronAnnotatorLib
         ${SWSCALE_LIBRARY}
         ${AVDEVICE_LIBRARY}
         ${AVFORMAT_LIBRARY}
         ${AVCODEC_LIBRARY}
         ${AVUTIL_LIBRARY}
-        ${BZIP2_LIBRARIES}
+#        ${BZIP2_LIBRARIES}
         ${ZLIB_LIBRARY}
-        ${ICONV_LIBRARIES}
+#        ${ICONV_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
     )
+
     if(USE_HDF5)
         SET(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.46.0" "1.44" "1.44.0")
-        find_package(Boost 1.44.0 COMPONENTS filesystem system)
+        find_package(Boost 1.44.0 )
         if(Boost_FOUND)
             include_directories(${Boost_INCLUDE_DIR})
             link_directories(${Boost_LIBRARY_DIRS})
@@ -125,8 +126,6 @@ if(USE_FFMPEG)
         target_link_libraries(NeuronAnnotatorLib
             ${HDF5_CPP_LIBRARY}
             ${HDF5_LIBRARY}
-            ${Boost_FILESYSTEM_LIBRARY}
-            ${Boost_SYSTEM_LIBRARY}
         )
     endif()
 
@@ -140,6 +139,11 @@ if(USE_FFMPEG)
             ${CORE_FOUNDATION_FRAMEWORK}
         )
     endif()
+endif()
+
+target_link_libraries(NeuronAnnotatorLib ${QT_QTNETWORK_LIBRARY})
+if (WIN32)
+    target_link_libraries(NeuronAnnotatorLib wsock32 ws2_32)
 endif()
 
 add_subdirectory(tests)

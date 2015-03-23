@@ -48,7 +48,7 @@
 # 090507: add import image list dialog.ui and .h
 # 090512: add dijkstra algorithm
 # 090516: add neuron_tracing subproject and head files, move file locations
-# 090516: add v3d_message 
+# 090516: add v3d_message
 # 090516: add filelist importer and related h/cpp files
 # 090517: add linker loader for APO files and also rename them with vano_prefix
 # 090517: add point cloud linker loader and related h/c++ files
@@ -58,14 +58,14 @@
 # 090605: move load_ano_file.h/cpp to basic_c_fun, merge the o_objects.h with basic_surf_objs.h
 # 090605: merge load_ano_file.h into basic_surf_objs.h, and change name of load_ano_file.cpp to io_ano_file.cpp
 # 090609: update the pointcloud_atlas_io.h/cpp location
-# 090629: modified for macx to make free either in ../ or in ../v3d/, it means you can copy it to ../ then qmake it from ../     
+# 090629: modified for macx to make free either in ../ or in ../v3d/, it means you can copy it to ../ then qmake it from ../
 # 090705: add ../neuron_editing/apo_xform.h/cpp
 # 090710: add the kill_wrongmatchcode
 # 090718: add histogramsimple.hcpp
 # 090812: add v3d plugins
 # 090819: separate the import_tiff_series.cpp from v3d_core.cpp
 # 091114: add v3dimg_proc_neuron.cpp
-# 100119: remove     ../basic_c_fun/io_ano_file.cpp 
+# 100119: remove     ../basic_c_fun/io_ano_file.cpp
 # 100601: add v3d_global_proference.h
 # 100801: separate module_flseg.cpp
 # 100801: separate module_jba.cpp
@@ -73,12 +73,12 @@
 # 100802: remove the three modules
 # 100807: remove some redundant libs
 # 100810: add xformwidget.h extracted from v3d_core.h
-# 100820: add restriction of the win32 to use MYLIB_TIFF 
+# 100820: add restriction of the win32 to use MYLIB_TIFF
 # 101008: add the imaging module
 # 101008: (CMB) add web url download
 # 101019: (CMB) add dialog_url_entry.ui
 # 101025: (CMB) add dialog_update_v3d.ui
-# 101119: add bundle test for mac 
+# 101119: add bundle test for mac
 # 101129: (CMB) add link to CoreServices framework on Snow Leopard
 # 101201: (CMB) add dialog_update_list.ui
 # 101213: (CMB) add more update dialogs
@@ -87,15 +87,15 @@
 # ######################################################################
 
 TEMPLATE = app
-TARGET += 
+TARGET +=
 DEPENDPATH += . v3d
-INCLUDEPATH += . 
+INCLUDEPATH += .
 
 # commented the -app_bundle as on Mac the not-automatically closed terminal is quite annoying!
 # macx: CONFIG-=app_bundle #by PHC, 101119
 
 # cross-OS-platform, cross-Qt-version
-QT_DIR = $$dirname(QMAKE_QMAKE)/..  # cross-Qt-version
+QT_DIR = $$[QT_INSTALL_PREFIX]
 LOCAL_DIR = ../common_lib/ 				# unix-liked platform: macx, unix, win32-msys-mingw
 
 MINGW_DIR = /mingw # platform: win32-msys-mingw
@@ -172,7 +172,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_surf_objs.h \
     ../basic_c_fun/basic_4dimage.h \
     ../basic_c_fun/basic_landmark.h \
-    ../basic_c_fun/v3d_interface.h \ 
+    ../basic_c_fun/v3d_interface.h \
     ../basic_c_fun/v3d_global_preference.h \
 	../basic_c_fun/customary_structs/v3d_imaging_para.h \
 	../basic_c_fun/basic_thread.h \
@@ -210,7 +210,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_global_preference_dialog.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
-    v3d_application.h \ 
+    v3d_application.h \
     colormap.h \
     ChannelTable.h \
     rotate_image.h \
@@ -252,10 +252,10 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/convert_type2uint8.h \
     ../jba/c++/jba_affine_xform.h \
     ../jba/c++/remove_nonaffine_points.h \
-    ../custom_toolbar/v3d_custom_toolbar.h \ 
+    ../custom_toolbar/v3d_custom_toolbar.h \
     ../io/io_bioformats.h
-unix:HEADERS += ../basic_c_fun/imageio_mylib.h 
-#macx:HEADERS += ../basic_c_fun/imageio_mylib.h 
+unix:HEADERS += ../basic_c_fun/imageio_mylib.h
+#macx:HEADERS += ../basic_c_fun/imageio_mylib.h
 
 
 SOURCES += ../basic_c_fun/mg_utilities.cpp \
@@ -353,7 +353,7 @@ FORMS += landmark_property.ui \
     dialog_update_list.ui \
     dialog_update_options.ui \
     dialog_update_downloading.ui \
-    dialog_update_checking.ui 
+    dialog_update_checking.ui
 
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
@@ -361,7 +361,7 @@ QT += opengl
 QT += network
 QT += xml svg
 
-LIBS += -L../jba/c++  
+LIBS += -L../jba/c++
 
 unix:LIBS += -L../common_lib/lib
 unix:LIBS += -lm -lv3dtiff
@@ -371,24 +371,24 @@ unix:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
 #unix:LIBS += -L/usr/lib64 -lGL
-    
+
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff -lv3dnewmat
 #    -framework GLUT
-macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	
+macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
 # CMB Nov 29 2010 Snow leopard GLee_r.o requires CoreServices framework
 macx:LIBS += -framework CoreServices
 
 win32:LIBS += -lm -lv3dtiff \
-    -lv3dnewmat 
+    -lv3dnewmat
 #    -lglut32 # win32-mingw, on unix link libglut.a
 #win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	#for win32 disable using MYLIB
 
 
-INCLUDEPATH += ../common_lib/include   
+INCLUDEPATH += ../common_lib/include
 
 
-#removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709 
+#removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
 INCLUDEPATH = $$unique(INCLUDEPATH)
 LIBS = $$unique(LIBS)
 # CONFIG = $$unique(CONFIG) # this only DOESN'T work on macx, very strange, by RZC 20080923

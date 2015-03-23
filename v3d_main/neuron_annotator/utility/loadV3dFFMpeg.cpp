@@ -1,9 +1,9 @@
-#include "loadV3dFFMpeg.h"
-#include "FFMpegVideo.h"
-
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
+#include "loadV3dFFMpeg.h"
+#include "FFMpegVideo.h"
 
 #ifdef USE_HDF5
 #include "H5Cpp.h"
@@ -166,7 +166,6 @@ bool loadStackHDF5(const char* fileName, Image4DSimple& img)
                     num_channels++;
 
             int channel_idx = 0;
-
             for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
             {
                 if ( channels.getObjTypeByIdx( obj ) == H5G_DATASET )

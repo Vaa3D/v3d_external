@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -44,20 +44,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 
 
-#ifndef BYTE
-#define BYTE signed char
-#endif
-
 #ifndef UBYTE
 #define UBYTE unsigned char
-#endif
-
-#ifndef BYTE16
-#define BYTE16 signed short int
-#endif
-
-#ifndef UBYTE16
-#define UBYTE16 unsigned short int
 #endif
 
 #ifndef MYFLOAT
@@ -68,74 +56,74 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //#include "palm_c.h"
 #include "../basic_c_fun/img_definition.h"
 
-class EMClustering  
+class EMClustering
 {
 public:
-	
+
 	EMClustering(double **data2d, V3DLONG numcases, V3DLONG ndims);
 	EMClustering();
 	virtual ~EMClustering();
-	
+
 	void SetData(double **data2d, V3DLONG numcases, V3DLONG ndims);
 	void DoEMClustering(int clusternum);
 	void GetDiscretization(UBYTE * data1d, V3DLONG numcases);
-	
+
 	void GetOptimalMixtures(double * & optprior, double ** & optmean, double ** & optvar, V3DLONG & ncluster, V3DLONG & ndim);  //070409
-	
+
 private:
-		
+
 	void Initialization();
 	void UnsetData();
-	
+
 	void GetDataRange();
 	void NormalizeData();
-	
+
 	void InitializeClusters(V3DLONG nClusters);
 	double DoClustering(V3DLONG nClusters);
 	void SaveDiscretization(V3DLONG nClusters);
-	double CalculateProbDensity(V3DLONG clusterIndex, 
-								V3DLONG dataIndex, 
-								double **data, 
-								double **mean, 
+	double CalculateProbDensity(V3DLONG clusterIndex,
+								V3DLONG dataIndex,
+								double **data,
+								double **mean,
 								double **variance);
 	void CopyToOptimal(V3DLONG nClusters);
-	
+
 	void PrintClusters(V3DLONG nClusters,double* prior,double** mean,double** variance);
-	
+
 	V3DLONG			gNVars;
 	V3DLONG			gNCases;
 	V3DLONG			gNColsToProcess;
-	
+
 	double**		gData;
-	
+
     V3DLONG			gNVarCases;
     double*			gLogFact;
-	
+
 	double*			gMin;
 	double*			gMax;
-	
+
 	double**		gMean;
 	double**		gVariance;
 	double*			gPrior;
 	double**		gPosterior;
-	
+
 	V3DLONG			gOptNClusters;
 	double**		gOptMean;
 	double**		gOptVariance;
 	double*			gOptPrior;
 	double**		gOptPosterior;
-	
+
 	V3DLONG			gMaxNTrials;
     V3DLONG			gMaxNClusters;
 	V3DLONG			gNRepeats;
-    
-	
+
+
 	double*			gMedian;
-	
+
 	bool bDataExist;
 	bool bFinishClustering;
 	bool bNormalizeData;
-	
+
 };
 
 

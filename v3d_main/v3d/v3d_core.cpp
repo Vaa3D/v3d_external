@@ -4597,8 +4597,12 @@ bool XFormWidget::loadData()
 		imgData->setMainWidget((XFormWidget *)this); //by PHC, added 100904 to ensure imgData can access global setting
 	}
 
-	char* filename = openFileNameLabel.toAscii().data();
-	char * curFileSurfix = getSuffix(filename);
+	// The previous version of toAscii().data() worked fine on OS X and Linux
+	// but barfs on Windows. According to the Qt docs using toAscii and its ilk
+	// has a memory leak, which apparently corrupts the pointer on Windows
+	QByteArray ba = openFileNameLabel.toUtf8();
+	const char* filename = ba.constData();
+	const char * curFileSurfix = getSuffix(filename);
 
 	if ( curFileSurfix && strcasecmp(curFileSurfix, "mp4") == 0 )
 		loadH264Image( filename );

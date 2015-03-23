@@ -8891,7 +8891,7 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
     point[1] = dialog.y;
     point[2] = dialog.z;
 
-    POINT p,q;
+    V3D_POINT p,q;
     p.x = point[0]; p.y = point[1]; p.z = point[2];
 
     q.intensity = 0; q.fn = "[No contained in any tile]"; q.x=p.x; q.y=p.y; q.z=p.z;

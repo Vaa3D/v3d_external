@@ -610,9 +610,16 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
         // TODO
     }
 
+#if (defined(_MSC_VER) && (_MSC_VER <= 1800) )
+	video_st->time_base.num = 1;
+	video_st->time_base.den = 25;
+	pCtx->time_base.num = 1;
+	pCtx->time_base.den = 25;
+#else
     video_st->time_base = (AVRational){1, 25};
     pCtx->time_base = (AVRational){1, 25};
-    // pCtx->time_base = (AVRational){1, 10};
+#endif
+	// pCtx->time_base = (AVRational){1, 10};
     pCtx->gop_size = 12; // emit one intra frame every twelve frames
     // pCtx->max_b_frames = 0;
     pCtx->pix_fmt = AV_PIX_FMT_YUV420P;

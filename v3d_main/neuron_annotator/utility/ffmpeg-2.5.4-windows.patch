@@ -1,0 +1,206 @@
+diff -rupN src/configure ffmpeg-2.5.1/configure
+--- src/configure	2014-12-15 17:44:55.000000000 -0500
++++ ffmpeg-2.5.1/configure	2015-03-12 10:25:33.000000000 -0400
+@@ -4915,7 +4915,7 @@ enabled libx264           && { use_pkg_c
+                                  warn "using libx264 without pkg-config"; } } &&
+                              { check_cpp_condition x264.h "X264_BUILD >= 118" ||
+                                die "ERROR: libx264 must be installed and version must be >= 0.118."; }
+-enabled libx265           && require_pkg_config x265 x265.h x265_encoder_encode &&
++enabled libx265           && require x265 x265.h x265_encoder_encode -lx265 -lstdc++ &&
+                              { check_cpp_condition x265.h "X265_BUILD >= 17" ||
+                                die "ERROR: libx265 version must be >= 17."; }
+ enabled libxavs           && require libxavs xavs.h xavs_encoder_encode -lxavs
+diff -rupN src/ffmpeg.c ffmpeg-2.5.1/ffmpeg.c
+--- src/ffmpeg.c	2014-12-15 17:44:43.000000000 -0500
++++ ffmpeg-2.5.1/ffmpeg.c	2015-03-12 10:46:28.000000000 -0400
+@@ -36,6 +36,10 @@
+ #if HAVE_IO_H
+ #include <io.h>
+ #endif
++#if HAVE_GETPROCESSMEMORYINFO
++#include <windows.h>
++#include <psapi.h>
++#endif
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+@@ -76,11 +80,6 @@
+ #elif HAVE_GETPROCESSTIMES
+ #include <windows.h>
+ #endif
+-#if HAVE_GETPROCESSMEMORYINFO
+-#include <windows.h>
+-#include <psapi.h>
+-#endif
+-
+ #if HAVE_SYS_SELECT_H
+ #include <sys/select.h>
+ #endif
+diff -rupN src/libavformat/cache.c ffmpeg-2.5.1/libavformat/cache.c
+--- src/libavformat/cache.c	2014-11-30 19:21:47.000000000 -0500
++++ ffmpeg-2.5.1/libavformat/cache.c	2015-03-12 11:08:39.000000000 -0400
+@@ -36,6 +36,9 @@
+ #if HAVE_IO_H
+ #include <io.h>
+ #endif
++#if HAVE_WINDOWS_H
++#include <windows.h>
++#endif
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+diff -rupN src/libavformat/dashenc.c ffmpeg-2.5.1/libavformat/dashenc.c
+--- src/libavformat/dashenc.c	2014-12-15 17:44:46.000000000 -0500
++++ ffmpeg-2.5.1/libavformat/dashenc.c	2015-03-12 11:09:13.000000000 -0400
+@@ -20,6 +20,10 @@
+  */
+ 
+ #include "config.h"
++#if HAVE_WINDOWS_H
++#include <windows.h>
++#endif
++
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+diff -rupN src/libavformat/file.c ffmpeg-2.5.1/libavformat/file.c
+--- src/libavformat/file.c	2014-11-30 19:21:47.000000000 -0500
++++ ffmpeg-2.5.1/libavformat/file.c	2015-03-12 11:09:27.000000000 -0400
+@@ -27,6 +27,9 @@
+ #if HAVE_IO_H
+ #include <io.h>
+ #endif
++#if HAVE_WINDOWS_H
++#include <windows.h>
++#endif
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+diff -rupN src/libavformat/hdsenc.c ffmpeg-2.5.1/libavformat/hdsenc.c
+--- src/libavformat/hdsenc.c	2014-12-15 17:44:46.000000000 -0500
++++ ffmpeg-2.5.1/libavformat/hdsenc.c	2015-03-12 11:09:42.000000000 -0400
+@@ -21,6 +21,9 @@
+ 
+ #include "config.h"
+ #include <float.h>
++#if HAVE_WINDOWS_H
++#include <windows.h>
++#endif
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+diff -rupN src/libavformat/smoothstreamingenc.c ffmpeg-2.5.1/libavformat/smoothstreamingenc.c
+--- src/libavformat/smoothstreamingenc.c	2014-12-15 17:44:46.000000000 -0500
++++ ffmpeg-2.5.1/libavformat/smoothstreamingenc.c	2015-03-12 11:10:04.000000000 -0400
+@@ -21,6 +21,9 @@
+ 
+ #include "config.h"
+ #include <float.h>
++#if HAVE_WINDOWS_H
++#include <windows.h>
++#endif
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+diff -rupN src/libavutil/file.c ffmpeg-2.5.1/libavutil/file.c
+--- src/libavutil/file.c	2014-12-15 17:44:47.000000000 -0500
++++ ffmpeg-2.5.1/libavutil/file.c	2015-03-12 10:30:04.000000000 -0400
+@@ -23,9 +23,6 @@
+ #include "mem.h"
+ #include <fcntl.h>
+ #include <sys/stat.h>
+-#if HAVE_UNISTD_H
+-#include <unistd.h>
+-#endif
+ #if HAVE_IO_H
+ #include <io.h>
+ #endif
+@@ -34,6 +31,9 @@
+ #elif HAVE_MAPVIEWOFFILE
+ #include <windows.h>
+ #endif
++#if HAVE_UNISTD_H
++#include <unistd.h>
++#endif
+ 
+ typedef struct {
+     const AVClass *class;
+diff -rupN src/libavutil/file_open.c ffmpeg-2.5.1/libavutil/file_open.c
+--- src/libavutil/file_open.c	2014-12-15 17:44:47.000000000 -0500
++++ ffmpeg-2.5.1/libavutil/file_open.c	2015-03-12 10:47:50.000000000 -0400
+@@ -22,9 +22,6 @@
+ #include <stdarg.h>
+ #include <fcntl.h>
+ #include <sys/stat.h>
+-#if HAVE_UNISTD_H
+-#include <unistd.h>
+-#endif
+ #if HAVE_IO_H
+ #include <io.h>
+ #endif
+@@ -63,6 +60,10 @@ fallback:
+ #define open win32_open
+ #endif
+ 
++#if HAVE_UNISTD_H
++#include <unistd.h>
++#endif
++
+ int avpriv_open(const char *filename, int flags, ...)
+ {
+     int fd;
+diff -rupN src/libavutil/log.c ffmpeg-2.5.1/libavutil/log.c
+--- src/libavutil/log.c	2014-12-15 17:44:47.000000000 -0500
++++ ffmpeg-2.5.1/libavutil/log.c	2015-03-12 10:48:56.000000000 -0400
+@@ -26,6 +26,10 @@
+ 
+ #include "config.h"
+ 
++#if defined(_WIN32) && !defined(__MINGW32CE__) && HAVE_SETCONSOLETEXTATTRIBUTE
++#include <windows.h>
++#endif
++
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+@@ -51,7 +55,6 @@ static int av_log_level = AV_LOG_INFO;
+ static int flags;
+ 
+ #if defined(_WIN32) && !defined(__MINGW32CE__) && HAVE_SETCONSOLETEXTATTRIBUTE
+-#include <windows.h>
+ static const uint8_t color[16 + AV_CLASS_CATEGORY_NB] = {
+     [AV_LOG_PANIC  /8] = 12,
+     [AV_LOG_FATAL  /8] = 12,
+diff -rupN src/libavutil/random_seed.c ffmpeg-2.5.1/libavutil/random_seed.c
+--- src/libavutil/random_seed.c	2014-12-15 17:44:47.000000000 -0500
++++ ffmpeg-2.5.1/libavutil/random_seed.c	2015-03-12 11:02:56.000000000 -0400
+@@ -19,7 +19,9 @@
+  */
+ 
+ #include "config.h"
+-
++#if HAVE_WINDOWS_H
++#include <windows.h>
++#endif
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+diff -rupN src/libavutil/time.c ffmpeg-2.5.1/libavutil/time.c
+--- src/libavutil/time.c	2014-12-15 17:44:47.000000000 -0500
++++ ffmpeg-2.5.1/libavutil/time.c	2015-03-12 11:02:43.000000000 -0400
+@@ -26,12 +26,12 @@
+ #if HAVE_GETTIMEOFDAY
+ #include <sys/time.h>
+ #endif
+-#if HAVE_UNISTD_H
+-#include <unistd.h>
+-#endif
+ #if HAVE_WINDOWS_H
+ #include <windows.h>
+ #endif
++#if HAVE_UNISTD_H
++#include <unistd.h>
++#endif
+ 
+ #include "time.h"
+ #include "error.h"

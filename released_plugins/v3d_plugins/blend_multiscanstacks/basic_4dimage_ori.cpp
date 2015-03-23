@@ -56,7 +56,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	int tmp_datatype = 0;
 	int pixelnbits=1; //100817
 
-    char * curFileSurfix = getSuffix(imgSrcFile);
+    const char * curFileSurfix = getSuffix(imgSrcFile);
     printf("The current input file has the suffix [%s]\n", curFileSurfix);
 
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||

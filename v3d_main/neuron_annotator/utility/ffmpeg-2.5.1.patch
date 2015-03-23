@@ -1,5 +1,5 @@
---- configure.new	2014-12-15 17:44:55.000000000 -0500
-+++ configure	2015-02-06 14:33:58.000000000 -0500
+--- src/configure.new	2014-12-15 17:44:55.000000000 -0500
++++ src/configure	2015-02-06 14:33:58.000000000 -0500
 @@ -10,6 +10,8 @@
  # Prevent locale nonsense from breaking basic text processing.
  LC_ALL=C
