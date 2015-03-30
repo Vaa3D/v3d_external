@@ -1,6 +1,10 @@
 #include "io_bioformats.h"
 #include "../basic_c_fun/v3d_message.h"
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 QString getAppPath()
 {

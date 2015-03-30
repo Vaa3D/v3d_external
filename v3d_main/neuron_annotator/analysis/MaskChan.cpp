@@ -624,8 +624,13 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
 
     for (int i=0;i<maskFilePaths.size();i++) {
         QString maskFilePath=maskFilePaths[i];
-        if ( (fid=fopen(maskFilePath.toAscii().data(), "rb"))==0) {
-            qDebug() << "Could not open file " << maskFilePath << " to read";
+        // According to the Qt docs using toAscii and its ilk
+        // has a memory leak, which apparently can corrupt the pointer on Windows
+        // and is deprecated in Qt5
+        QByteArray ba = maskFilePath.toUtf8();
+        const char* filepath = ba.constData();
+        if ( (fid=fopen(filepath, "rb"))==0) {
+            qDebug() << "Could not open file " << filepath << " to read";
             return false;
         }
 
@@ -643,7 +648,9 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
             chanFilePath.append(maskFilePath.left(maskFilePrefixPosition));
             chanFilePath.append(".chan");
             FILE* fid2=0L;
-            if ( (fid2=fopen(chanFilePath.toAscii().data(), "rb"))>0) {
+            ba = chanFilePath.toUtf8();
+            filepath = ba.constData();
+            if ( (fid2=fopen(filepath, "rb"))>0) {
                 fread(&chanVoxels, sizeof(long), 1, fid2);
                 fread(&chanChannelCount, sizeof(unsigned char), 1, fid2);
                 fread(&chanRecRed, sizeof(unsigned char), 1, fid2);
@@ -668,7 +675,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
 
 	if (data8==0L) {
 	  data8=new v3d_uint8*[cdim];
-	} 
+	}
 	if (data16==0L) {
 	  data16=new v3d_uint16*[cdim];
 	}
@@ -852,7 +859,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
     if (data8!=0L) {
       delete [] data8;
     }
-    
+
     if (data16!=0L) {
       delete [] data16;
     }

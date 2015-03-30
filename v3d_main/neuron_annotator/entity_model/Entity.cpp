@@ -74,10 +74,10 @@ void Entity::dumpEntity(int level) const
     const char * indent = ind.c_str();
 
     if (id != 0) qDebug("%sEntity.id: %lld",indent,*id);
-    if (name != 0) qDebug("%sName: %s",indent,name->toAscii().constData());
-    if (user != 0) qDebug("%sUser: %s",indent,user->toAscii().constData());
-    if (entityStatus != 0) qDebug("%sStatus: %s",indent,entityStatus->toAscii().constData());
-    if (entityType != 0) qDebug("%sType: %s",indent,entityType->toAscii().constData());
+    if (name != 0) qDebug("%sName: %s",indent,name->toUtf8().constData());
+    if (user != 0) qDebug("%sUser: %s",indent,user->toUtf8().constData());
+    if (entityStatus != 0) qDebug("%sStatus: %s",indent,entityStatus->toUtf8().constData());
+    if (entityType != 0) qDebug("%sType: %s",indent,entityType->toUtf8().constData());
 
     if (!entityDataSet.isEmpty())
     {

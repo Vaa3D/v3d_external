@@ -41,6 +41,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "mapview.h"
 
+#include <QMdiSubWindow>
+#include <QMenu>
+
 class V3dR_MainWindow;
 class V3dR_GLWidget;
 class MainWindow;
@@ -119,8 +122,11 @@ struct iDrawExternalParameter
      }
 };
 
-
+#ifdef USE_Qt5
+class XFormWidget : public QMdiSubWindow, public TriviewControl //class XFormWidget : public QMainWindow
+#else
 class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
+#endif
 {
     Q_OBJECT;
 

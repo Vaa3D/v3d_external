@@ -46,7 +46,7 @@ void getAllFiles(QString dirname, QStringList & fileList)
 {
 	QDir dir(dirname);
 	QStringList dirlist = dir.entryList(QDir::Dirs);
-	if(dirlist.size() == 2) 
+	if(dirlist.size() == 2)
 	{
 		QStringList files = dir.entryList(QDir::Files);
 		QStringList::iterator fit = files.begin();
@@ -264,7 +264,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 				QString par_menu_name = menuName;
 				int n = -1;
 				while((n = par_menu_name.lastIndexOf("::"))!=-1){
-					par_menu_name = par_menu_name.left(n); 
+					par_menu_name = par_menu_name.left(n);
 					treeWidgetItemOfMenuName[par_menu_name]->setExpanded(true);
 				}
 			}
@@ -457,7 +457,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 				}
 			}
 		}
-		//while(loader->isLoaded()) 
+		//while(loader->isLoaded())
 			loader->unload();
 		delete loader;
 	}
@@ -585,7 +585,7 @@ void CustomToolbarSelectWidget::setToolBarButton(bool state)
 		toolBar->addAction(cb->button);
 		cts->allActiveButtonList.push_back(cb);
 	}
-	else if(!state && cb->button->isVisible()) 
+	else if(!state && cb->button->isVisible())
 	{
 		cb->button->setVisible(false);
 		cts->allActiveButtonList.removeOne(cb);
@@ -595,7 +595,7 @@ void CustomToolbarSelectWidget::setToolBarButton(bool state)
 
 void CustomToolbarSelectWidget::openMe()
 {
-	if(isVisible()) 
+	if(isVisible())
 		setHidden(true);
 	else
 		show();
@@ -693,7 +693,7 @@ bool CustomToolButton::run()
 			{
 				iface->domenu(menu_name, *callback, 0/*parent*/); // 20120705 Hang, set parent to 0
 			}
-			//while(loader->isLoaded()) 
+			//while(loader->isLoaded())
 			loader->unload();
 			delete loader;
 
@@ -707,7 +707,7 @@ bool CustomToolButton::run()
 	}
 }
 
-bool saveToolBarSettings() 
+bool saveToolBarSettings()
 {
 	ofstream ofs(settingFilePath.toStdString().c_str());
 	if(ofs.fail())
@@ -858,7 +858,7 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 				(VoidFunc)(&MainWindow::func_procGeneral_rotate_angle))
 		<<SAF (QObject::tr("Image/Data::geometry::flip image"), \
 				(VoidFunc)(&MainWindow::func_procGeneral_flip))
-		<<SAF (QObject::tr("Image/Data::geometry::crop image (minMax Bounding Box)"), 
+		<<SAF (QObject::tr("Image/Data::geometry::crop image (minMax Bounding Box)"),
 				(VoidFunc)(&MainWindow::func_procGeneral_crop_image_minMaxBox))
 		<<SAF (QObject::tr("Image/Data::geometry::crop image (ROI-based)"), \
 				(VoidFunc)(&MainWindow::func_procGeneral_crop_bbox_roi))
@@ -931,19 +931,19 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 		<<SAF (QObject::tr("Plug-In::Re-scan all plugins"), \
 				(VoidFunc)(&V3d_PluginLoader::rescanPlugins))
 		<<SAF (QObject::tr("Window::Close"), \
-				(VoidFunc)(&QWorkspace::closeActiveWindow))
+				(VoidFunc)(&QMdiArea::closeActiveSubWindow))
 		<<SAF (QObject::tr("Window::Close All"), \
-				(VoidFunc)(&QWorkspace::closeAllWindows))
+				(VoidFunc)(&QMdiArea::closeAllSubWindows))
 		<<SAF (QObject::tr("Window::Tile"), \
-				(VoidFunc)(&QWorkspace::tile))
+				(VoidFunc)(&QMdiArea::tileSubWindows))
 		<<SAF (QObject::tr("Window::Cascade"), \
-				(VoidFunc)(&QWorkspace::cascade))
-		<<SAF (QObject::tr("Window::Arrange icons"), \
-				(VoidFunc)(&QWorkspace::arrangeIcons))
+				(VoidFunc)(&QMdiArea::cascadeSubWindows))
+//		<<SAF (QObject::tr("Window::Arrange icons"), \
+//				(VoidFunc)(&QMdiArea::arrangeIcons))
 		<<SAF (QObject::tr("Window::Next"), \
-				(VoidFunc)(&QWorkspace::activateNextWindow))
+				(VoidFunc)(&QMdiArea::activateNextSubWindow))
 		<<SAF (QObject::tr("Window::Previous"), \
-				(VoidFunc)(&QWorkspace::activatePreviousWindow))
+				(VoidFunc)(&QMdiArea::activatePreviousSubWindow))
 		//<<SAF (QObject::tr("Work-Mode::V3D Default"), \
 				(VoidFunc)(&MainWindow::func_procModeDefault))
 		//<<SAF (QObject::tr("Work-Mode::Neuron Annotator"), \

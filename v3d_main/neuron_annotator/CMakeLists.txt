@@ -9,7 +9,8 @@ include_directories(${Boost_INCLUDE_DIR})
 file(GLOB NA_UI_FILES
     "gui/*.ui"
     "microCT/*.ui")
-QT4_WRAP_UI(NA_UI_SRCS
+
+qt_wrap_ui(NA_UI_SRCS
     ${NA_UI_FILES}
     # Repeat some ui files to avoid circular dependencies
     ../v3d/v3d_global_preference.ui
@@ -45,19 +46,36 @@ message(STATUS "Finished examining header files")
 if(USE_FFMPEG)
     set(WRAP_OPTIONS "-DUSE_FFMPEG")
 endif()
-QT4_WRAP_CPP(NA_MOC_SRCS
-    ${NA_MOC_FILES}
-    geometry/CameraModel.h
-     utility/ConsoleObserver.h
-    utility/DataThread.h
-    utility/ImageLoader.h
-    data_model/Fast3DTexture.h
-    DataFlowModel.h
-    ExportFile.h
-    NeuronSelector.h
-    ../webservice/impl/ConsoleObserverServiceImpl.h
-    OPTIONS ${WRAP_OPTIONS}
-)
+if(NOT Qt5Core_FOUND)
+    QT4_WRAP_CPP(NA_MOC_SRCS
+        ${NA_MOC_FILES}
+        geometry/CameraModel.h
+         utility/ConsoleObserver.h
+        utility/DataThread.h
+        utility/ImageLoader.h
+        data_model/Fast3DTexture.h
+        DataFlowModel.h
+        ExportFile.h
+        NeuronSelector.h
+        ../webservice/impl/ConsoleObserverServiceImpl.h
+        OPTIONS ${WRAP_OPTIONS}
+    )
+else()
+    QT5_WRAP_CPP(NA_MOC_SRCS
+        ${NA_MOC_FILES}
+        geometry/CameraModel.h
+         utility/ConsoleObserver.h
+        utility/DataThread.h
+        utility/ImageLoader.h
+        data_model/Fast3DTexture.h
+        DataFlowModel.h
+        ExportFile.h
+        NeuronSelector.h
+        ../webservice/impl/ConsoleObserverServiceImpl.h
+        OPTIONS ${WRAP_OPTIONS}
+    )
+endif()
+
 
 file(GLOB NA_SRCS
     "*.cpp"

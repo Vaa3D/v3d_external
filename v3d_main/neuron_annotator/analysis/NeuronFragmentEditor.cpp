@@ -4,6 +4,10 @@
 #include "SleepThread.h"
 #include <climits>
 
+#ifdef USE_Qt5
+#include <QtConcurrent>
+#endif
+
 const int NeuronFragmentEditor::MODE_UNDEFINED=-1;
 const int NeuronFragmentEditor::MODE_COMBINE=0;
 const int NeuronFragmentEditor::MODE_COMBINE_MASK=1;
@@ -100,10 +104,10 @@ int NeuronFragmentEditor::processArgs(vector<char*> *argList)
 	}
     }
     bool argError=false;
-    if (mode!=MODE_COMBINE && 
-	mode!=MODE_COMBINE_MASK && 
-	mode!=MODE_REVERSE_LABEL && 
-	mode!=MODE_MIPS && 
+    if (mode!=MODE_COMBINE &&
+	mode!=MODE_COMBINE_MASK &&
+	mode!=MODE_REVERSE_LABEL &&
+	mode!=MODE_MIPS &&
 	mode!=MODE_MASK_FROM_STACK &&
 	mode!=MODE_SURFACE_VERTEX) {
         qDebug() << "Do not recognize valid mode";
@@ -217,7 +221,7 @@ bool NeuronFragmentEditor::createMaskFromStack()
 
   labelImage = new My4DImage();
   labelImage->loadImage(xdim, ydim, zdim, 1, V3D_UINT8);
-  
+
   v3d_uint8* label8 = (v3d_uint8*)(labelImage->getRawDataAtChannel(0));
 
   if (sourceImage->getDatatype()==V3D_UINT8) {
@@ -276,7 +280,7 @@ bool NeuronFragmentEditor::createMaskFromStack()
 
   QReadWriteLock* nullMutex=0L;
   bool resultStatus= maskChan.createMaskChanForLabel(1, maskFullPath, chanFullPath, nullMutex);
-  
+
   delete labelImage;
   delete sourceImage;
 
@@ -349,7 +353,7 @@ bool NeuronFragmentEditor::createImagesFromFragmentList(QList<int> fragmentList,
     v3d_uint8 * sourceR=sourceImage->getRawDataAtChannel(0);
     v3d_uint8 * sourceG=sourceImage->getRawDataAtChannel(1);
     v3d_uint8 * sourceB=sourceImage->getRawDataAtChannel(2);
- 
+
     v3d_uint8 * compR=compositeImage->getRawDataAtChannel(0);
     v3d_uint8 * compG=compositeImage->getRawDataAtChannel(1);
     v3d_uint8 * compB=compositeImage->getRawDataAtChannel(2);
@@ -699,7 +703,7 @@ bool NeuronFragmentEditor::createSurfaceVertex()
 	  xList.append(xv);
 	  yList.append(yv);
 	  zList.append(zv);
-	} 
+	}
 	priorPosition=ot;
       }
       priorPosition=false;
@@ -735,7 +739,7 @@ bool NeuronFragmentEditor::createSurfaceVertex()
 	  xList.append(xv);
 	  yList.append(yv);
 	  zList.append(zv);
-	} 
+	}
 	priorPosition=ot;
       }
       priorPosition=false;
@@ -772,7 +776,7 @@ bool NeuronFragmentEditor::createSurfaceVertex()
 	  xList.append(xv);
 	  yList.append(yv);
 	  zList.append(zv);
-	} 
+	}
 	priorPosition=ot;
       }
       priorPosition=false;

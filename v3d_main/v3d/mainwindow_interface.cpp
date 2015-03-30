@@ -37,14 +37,18 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 **
 ****************************************************************************/
 
-#include <QtGui>
-
+#include "../3drenderer/v3dr_common.h"
 #include "mainwindow.h"
 #include "v3d_core.h"
 #include "../3drenderer/v3dr_mainwindow.h"
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../3drenderer/renderer_gl1.h" //for finishEditingNeuronTree
 
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 #define __MainWindow_interface__
 
@@ -61,7 +65,11 @@ My4DImage* MainWindow::currentImage()
 QList<void*> MainWindow::allWindowList()
 {
 	QList<void*> list;
+#ifdef USE_Qt5
+	foreach (QWidget* w, workspace->subWindowList()) list << w;
+#else
 	foreach (QWidget* w, workspace->windowList()) list << w;
+#endif
 	//qDebug()<<"MainWindow allWindowList: " << list;
 	return list;
 }

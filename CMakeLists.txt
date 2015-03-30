@@ -10,6 +10,9 @@ include_directories( ${CMAKE_BINARY_DIR}/v3d_main/v3d )
 
 set (V3D_MAIN "${CMAKE_SOURCE_DIR}/v3d_main")
 
+# Switch Qt versions
+set(FORCE_QT4 ON CACHE BOOL "Build HDF5 loader")
+
 # Sidestep compile trouble with boost 1.46 with MSVC11/2012
 if(WIN32)
     add_definitions(-DBOOST_NO_0X_HDR_INITIALIZER_LIST)
@@ -26,8 +29,8 @@ endif()
 
 # It is important on Windows for both v3d and plugins to use same build type.
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
-        "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." 
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+        "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel."
         FORCE) # Default to Release
 endif()
 
@@ -186,7 +189,11 @@ endif()
 
 # Build plugins
 set(V3D_BASIC_C_FUN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/basic_c_fun)
-add_subdirectory(released_plugins)
+
+# Only build the plugins if Qt4 is requested
+if(FORCE_QT4)
+    add_subdirectory(released_plugins)
+endif()
 
 # Build jba application itself, if the directory has been checked out here
 # (at the same level as v3d_main)
@@ -231,7 +238,7 @@ else()
     set(CPACK_PACKAGE_FILE_NAME "InstallVaa3D-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
     # only for NSIS and for older CMake versions, not necessary when
     # CMAKE_NSIS_MENU_LINKS is used after CMake 2.8.4+
-    set(CPACK_PACKAGE_EXECUTABLES "vaa3d;vaa3d-${V3D_VERSION}") 
+    set(CPACK_PACKAGE_EXECUTABLES "vaa3d;vaa3d-${V3D_VERSION}")
 endif()
 
 
@@ -325,7 +332,7 @@ elseif(WIN32)
     set(CPACK_GENERATOR NSIS)
     # There is a bug in NSI that does not handle full unix paths properly. Make
     # sure there is at least one set of four (4) backslashes.
-    
+
     # Believe it or not, it seems all three of these icon settings are required to set the installer icon
     set(CPACK_NSIS_MUI_ICON
       "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3d.ico")
@@ -341,7 +348,7 @@ elseif(WIN32)
         set(CPACK_NSIS_MENU_LINKS "bin/vaa3d.exe" "Vaa3D-${V3D_VERSION}")
         SET(CPACK_NSIS_DISPLAY_NAME Vaa3D-${V3D_VERSION})
     endif()
-    SET(CPACK_NSIS_URL_INFO_ABOUT  
+    SET(CPACK_NSIS_URL_INFO_ABOUT
         "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
 
 # Linux installer is a self extracting shell archive
@@ -349,7 +356,7 @@ else() # Linux
     # If we are on a debian system (e.g. Ubuntu), make a deb installer
     find_program(DPKG dpkg)
     mark_as_advanced(DPKG)
-    # Unfortunately cpack 2.8.2 creates archives that cannot be opened with 
+    # Unfortunately cpack 2.8.2 creates archives that cannot be opened with
     # stock gnu tar 1.23 on Ubuntu.  So disable DEB for now... Nov-3-2010
     # cpack 2.8.3 is better, but it turns out that cpack/deb is inadequate to make a world class deb distribution.
     # if(DPKG)

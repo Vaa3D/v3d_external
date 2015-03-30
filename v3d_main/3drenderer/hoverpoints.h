@@ -74,7 +74,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef HOVERPOINTS_H
 #define HOVERPOINTS_H
 
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 //QT_FORWARD_DECLARE_CLASS(QBypassWidget)
 

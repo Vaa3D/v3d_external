@@ -54,6 +54,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "../3drenderer/v3dr_common.h"
+
 #include <QLayout>
 #include <QPainter>
 #include <QPainterPath>
@@ -400,8 +402,8 @@ My4DImage::My4DImage()
 
 	trace_bounding_box=NULL_BoundingBox; //090727 RZC: for trace from local view
 	trace_z_thickness=1; //090727 RZC: weight for z-distance of graph
-    
-    b_triviewTimerON = FALSE;
+
+    b_triviewTimerON = false;
 
 	connect(this, SIGNAL(focusFeatureViewTextUpdated()), this, SLOT(setText2FocusPointFeatureWidget()) );
 }
@@ -484,7 +486,7 @@ double My4DImage::at(int x, int y, int z, int c) const //return a double number 
 }
 
 
-void My4DImage::loadImage(char filename[])
+void My4DImage::loadImage(const char* filename)
 {
 	cleanExistData();
 
@@ -1096,7 +1098,12 @@ bool My4DImage::saveVANO_data()
 	//determine which channel the statistics should collected
 
 	bool ok1;
+#ifdef USE_Qt5
+	int ch_ind = QInputDialog::getInt(0, "channel index", "which channel you want to collect statitics and annotate?", 1, 1, getCDim(), 1, &ok1) - 1;
+#else
 	int ch_ind = QInputDialog::getInteger(0, "channel index", "which channel you want to collect statitics and annotate?", 1, 1, getCDim(), 1, &ok1) - 1;
+#endif
+
 	if (!ok1)
 		return false;
 
@@ -3241,7 +3248,7 @@ void My4DImage::loadLandmarkFromFile()
 	if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
 		return;
 
-	FILE * fp = fopen(curFile.toAscii(), "r");
+	FILE * fp = fopen(curFile.toUtf8().data(), "r");
 	if (!fp)
 	{
 		QMessageBox::information(0, "Control point loading error",
@@ -3253,7 +3260,7 @@ void My4DImage::loadLandmarkFromFile()
 		fclose(fp); //since I will open the file and close it in the function below, thus close it now
 	}
 
-	QList <LocationSimple> tmpList = readPosFile_usingMarkerCode(curFile.toAscii()); //revised on 090725 to use the unique interface
+	QList <LocationSimple> tmpList = readPosFile_usingMarkerCode(curFile.toUtf8().data()); //revised on 090725 to use the unique interface
 
 	if (tmpList.count()<=0)
 	{
@@ -3287,7 +3294,7 @@ void My4DImage::saveLandmarkToFile()
 	if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
 		return;
 
-	FILE * fp = fopen(curFile.toAscii(), "w");
+	FILE * fp = fopen(curFile.toUtf8().data(), "w");
 	if (!fp)
 	{
 		QMessageBox::information(0, "Control point saving error",
@@ -3749,7 +3756,11 @@ void My4DImage::exportLandmarkToPointCloudAPOFile()
 	}
 
 	bool ok1;
+#ifdef USE_Qt5
+	int channo = QInputDialog::getInt(0, "select number of color channel", "which color channel you want to collect statistics?", 1, 1, getCDim(), 1, &ok1);
+#else
 	int channo = QInputDialog::getInteger(0, "select number of color channel", "which color channel you want to collect statistics?", 1, 1, getCDim(), 1, &ok1);
+#endif
 	if (!ok1)
 		return;
 
@@ -3763,7 +3774,7 @@ void My4DImage::exportLandmarkToPointCloudAPOFile()
 	if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
 		return;
 
-	FILE * fp = fopen(curFile.toAscii(), "wt");
+	FILE * fp = fopen(curFile.toUtf8().data(), "wt");
 	if (!fp)
 	{
 		QMessageBox::information(0, "landmark exporting error", "Could not open the file to export the landmark points.\n");
@@ -3807,7 +3818,7 @@ void My4DImage::exportNeuronToSWCFile()
 	if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
 		return;
 
-	FILE * fp = fopen(curFile.toAscii(), "wt");
+	FILE * fp = fopen(curFile.toUtf8().data(), "wt");
 	if (!fp)
 	{
 		QMessageBox::information(0, "Neuron exporting error", "Could not open the file to export the neuron.\n");
@@ -4729,10 +4740,18 @@ bool My4DImage::proj_general_hist_display()
 	V3DLONG dmin=-1, dmax=-1;
 	if(QMessageBox::Yes == QMessageBox::question (0, "", "Do you want to specify a range of pixel intensity to compute the histogram?", QMessageBox::Yes, QMessageBox::No))
 	{
+#ifdef USE_Qt5
+		dmin = QInputDialog::getInt(0, QString("histogram range"), QString("min intensity of the histogram range"), 0, 0, 65535, 10, &ok1);
+#else
 		dmin = QInputDialog::getInteger(0, QString("histogram range"), QString("min intensity of the histogram range"), 0, 0, 65535, 10, &ok1);
+#endif
 		if (ok1)
 		{
+#ifdef USE_Qt5
+			dmax = QInputDialog::getInt(0, QString("histogram range"), QString("max intensity of the histogram range (max(8bits data)=255, max(16bit data)=65535)"), 255, 0, 65535, 10, &ok1);
+#else
 			dmax = QInputDialog::getInteger(0, QString("histogram range"), QString("max intensity of the histogram range (max(8bits data)=255, max(16bit data)=65535)"), 255, 0, 65535, 10, &ok1);
+#endif
 			if (!ok1)
 				return false;
 		}

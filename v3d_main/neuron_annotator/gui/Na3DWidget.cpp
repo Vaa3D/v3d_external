@@ -2208,7 +2208,7 @@ void Na3DWidget::DEPRECATEDonVolumeTextureDataChanged()
         return; // stale
     }
     emit progressComplete();
-    
+
     resetVolumeCutRange();
     setThickness(dataFlowModel->getZRatio());
     updateIncrementalColors(); // Otherwise reference channel might be garbled
@@ -2244,12 +2244,12 @@ bool Na3DWidget::screenShot(QString filename)
 
     if (image.save(filename, 0, 100)) //uncompressed
     {
-        printf("Successful to save screen-shot: [%s]\n",  filename.toAscii().data());
+        printf("Successful to save screen-shot: [%s]\n",  filename.toUtf8().data());
         return true;
     }
     else
     {
-        printf("Failed to save screen-shot: [%s]\n",  filename.toAscii().data());
+        printf("Failed to save screen-shot: [%s]\n",  filename.toUtf8().data());
         return false;
     }
 }

@@ -95,6 +95,7 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 
 #include <QBasicTimer>
 #include <QPolygonF>
+#include <QTextBrowser>
 
 class HoverPoints;
 class QLineEdit;
@@ -107,7 +108,6 @@ class QHBoxLayout;
 class QGridLayout;
 class QVBoxLayout;
 class QCheckBox;
-class QTextBrowser;
 class MainWindow;
 class XFormView;
 class XFormWidget;
@@ -253,7 +253,7 @@ public:
     return (!data4d_virtual || !(this->Image4DSimple::valid()) ) ?  false : true;
     }
 
-	void loadImage(char filename[]);
+	void loadImage(const char* filename);
 	void setupData4D();
 	void setupDefaultColorChannelMapping();
 	bool updateminmaxvalues();
@@ -341,9 +341,9 @@ public:
 	int atlasColorBlendChannel;
 	bool bUseFirstImgAsMask;
 	QString curSearchText;
-    
+
     //timer //20120702
-    QTime triviewTimer;  //added on 20120702. 
+    QTime triviewTimer;  //added on 20120702.
     bool b_triviewTimerON;
 
 	bool compute_rgn_stat(LocationSimple & pt, int channo);

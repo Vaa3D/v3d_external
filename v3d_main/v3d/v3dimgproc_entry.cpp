@@ -1,10 +1,10 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 /************
                                             ********* LICENSE NOTICE ************
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
 2. You agree to appropriately cite this work in your related studies and publications.
@@ -274,7 +274,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item==tr(" -- extract one channel"))
 			{
 				bool ok1;
+#ifdef USE_Qt5
+				V3DLONG bpos_c = QInputDialog::getInt(this, tr("Channel to extract"), tr("Which channel to extract:"), 1, 1, imgData->getCDim(), 1, &ok1);
+#else
 				V3DLONG bpos_c = QInputDialog::getInteger(this, tr("Channel to extract"), tr("Which channel to extract:"), 1, 1, imgData->getCDim(), 1, &ok1);
+#endif
 				if (ok1)
 				{
 					try {imgData->proj_general_split_channels(false, bpos_c-1);} //the first parameter=false determines one channel will be kept
@@ -321,7 +325,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 				ImageMaskingCode my_maskcode = IMC_XY;
 				bool b_inside=false;
 				bool ok1;
+#ifdef USE_Qt5
+				tval = QInputDialog::getInt(this, tr("fill value"), tr("fill value:"), 0, 0, 255, 10, &ok1); //090512 RZC
+#else
 				tval = QInputDialog::getInteger(this, tr("fill value"), tr("fill value:"), 0, 0, 255, 10, &ok1); //090512 RZC
+#endif
 				if (ok1)
 				{
 					imgData->maskBW_roi(tval, mincoord-1, maxcoord-1, my_maskcode, b_inside);
@@ -332,7 +340,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 				int mask_channel_no;
 				//int tval;
 				bool ok1;
+#ifdef USE_Qt5
+				mask_channel_no = QInputDialog::getInt(this, tr("range"), tr("which channel contains the mask (non-zero indicats the mask rgn:"), 3, 1, imgData->getCDim(), 1, &ok1);
+#else
 				mask_channel_no = QInputDialog::getInteger(this, tr("range"), tr("which channel contains the mask (non-zero indicats the mask rgn:"), 3, 1, imgData->getCDim(), 1, &ok1);
+#endif
 				if (ok1)
 				{
 					try {imgData->maskBW_channel(V3DLONG(mask_channel_no-1));}
@@ -441,7 +453,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 				bool ok1=true;
 				V3DLONG chno=1;
 				if (imgData->getCDim()>1)
+#ifdef USE_Qt5
+					chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(imgData->getCDim()), 1, &ok1);
+#else
 					chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(imgData->getCDim()), 1, &ok1);
+#endif
 				if (ok1)
 				{
 					QList <LocationSimple> rlist;
@@ -483,10 +499,18 @@ void XFormView::popupImageProcessingDialog(QString item)
 					else if (item_opt==tr("along X axis (to YZ plane)")) {myaxis = axis_x; mincoord = maxcoord = imgData->getXDim();}
 					else //if (item_opt==tr("along Y axis (to XZ plane)"))
 						{myaxis = axis_y; mincoord = maxcoord = imgData->getYDim();}
+#ifdef USE_Qt5
+					mincoord = QInputDialog::getInt(this, tr("range"), tr("start section:"), 1, 1, mincoord, 10, &ok1);
+#else
 					mincoord = QInputDialog::getInteger(this, tr("range"), tr("start section:"), 1, 1, mincoord, 10, &ok1);
+#endif
 					if (ok1)
 					{
+#ifdef USE_Qt5
+						maxcoord = QInputDialog::getInt(this, tr("range"), tr("end section:"), maxcoord, 1, maxcoord, 10, &ok1);
+#else
 						maxcoord = QInputDialog::getInteger(this, tr("range"), tr("end section:"), maxcoord, 1, maxcoord, 10, &ok1);
+#endif
 						if (ok1)
 							imgData->proj_general_projection(myaxis, mincoord-1, maxcoord-1);
 					}
@@ -512,10 +536,18 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				bool ok1;
 				int lowerbound, higherbound;
+#ifdef USE_Qt5
+				lowerbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Lowerbound of the foreground intensity:"), 30, 0, 255, 10, &ok1);
+#else
 				lowerbound = QInputDialog::getInteger(this, tr("Equalization range"), tr("Lowerbound of the foreground intensity:"), 30, 0, 255, 10, &ok1);
+#endif
 				if (ok1)
 				{
+#ifdef USE_Qt5
+					higherbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Higherbound of the foreground intensity:"), 255, 0, 255, 10, &ok1);
+#else
 					higherbound = QInputDialog::getInteger(this, tr("Equalization range"), tr("Higherbound of the foreground intensity:"), 255, 0, 255, 10, &ok1);
+#endif
 					if (ok1)
 						imgData->proj_general_hist_equalization((unsigned char)lowerbound, (unsigned char)higherbound);
 				}
@@ -535,7 +567,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item== tr(" -- convert 16bit image to 8 bit"))
 			{
 				bool ok1;
+#ifdef USE_Qt5
+				int shiftnbits = QInputDialog::getInt(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
+#else
 				int shiftnbits = QInputDialog::getInteger(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
+#endif
 				if (ok1)
 				{
 					imgData->proj_general_convert16bit_to_8bit(shiftnbits);
@@ -550,7 +586,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
+#ifdef USE_Qt5
+				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to scale intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to scale intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#endif
 				if (ok1)
 				{
 					double lower_th, higher_th, target_min=0, target_max=255;
@@ -577,7 +617,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
+#ifdef USE_Qt5
+				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to threshold intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to threshold intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#endif
 				if (ok1)
 				{
 					double th;
@@ -592,7 +636,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
+#ifdef USE_Qt5
+				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to binarize intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to binarize intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#endif
 				if (ok1)
 				{
 					double th;
@@ -612,7 +660,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
+#ifdef USE_Qt5
+				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to invert color (select 0 to invert *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to invert color (select 0 to invert *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+#endif
 				if (ok1)
 					if (imgData) imgData->invertcolor(channo-1);
 			}
@@ -626,7 +678,11 @@ void XFormView::popupImageProcessingDialog(QString item)
 				else
 				{
 					bool ok1;
+#ifdef USE_Qt5
+					int nchannels = QInputDialog::getInt(this, tr("select number of color channels"), tr("How many color channels to want to have:"), 2, 1, 10, 1, &ok1);
+#else
 					int nchannels = QInputDialog::getInteger(this, tr("select number of color channels"), tr("How many color channels to want to have:"), 2, 1, 10, 1, &ok1);
+#endif
 					if (ok1)
 					{
 						if (imgData->getZDim()/nchannels*nchannels!=imgData->getZDim())
@@ -823,7 +879,7 @@ void XFormView::popupImageProcessingDialog(QString item)
                 v3d_imaging_paras myimagingp;
                 myimagingp.OPS = "Vaa3D-Neuron2-APP2";
                 myimagingp.imgp = (Image4DSimple *)imgData; //the image data for a plugin to call
-                
+
                 if (imgData->getXWidget())
                     v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
                 else
@@ -865,7 +921,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				imgData->exportNeuronToSWCFile();
 			}
-/*			
+/*
 			else if (item==tr(" -- bottom-up marching"))
 			{
 			//need to incorprate the local searching codes. by Hanchuan Peng, 080424

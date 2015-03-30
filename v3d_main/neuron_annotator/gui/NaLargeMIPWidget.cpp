@@ -401,12 +401,12 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
 bool NaLargeMIPWidget::saveImage(QString filename){
     if (pixmap.save(filename, QFileInfo(filename).suffix().toStdString().c_str(), 100)) //uncompressed
     {
-        printf("Successful to save screen-shot: [%s]\n",  filename.toAscii().data());
+        printf("Successful to save screen-shot: [%s]\n",  filename.toUtf8().data());
         return true;
     }
     else
     {
-        printf("Failed to save screen-shot: [%s]\n",  filename.toAscii().data());
+        printf("Failed to save screen-shot: [%s]\n",  filename.toUtf8().data());
         return false;
     }
 }

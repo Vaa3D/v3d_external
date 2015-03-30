@@ -3,7 +3,11 @@
 
 #include "Na3DWidget.h"
 #include "NeuronContextMenu.h"
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 class GalleryButton : public QWidget
 {

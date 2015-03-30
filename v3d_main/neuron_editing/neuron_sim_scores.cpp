@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -34,6 +34,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //090430
 
 #include <QtGlobal>
+#include <QInputDialog>
 
 #include "neuron_sim_scores.h"
 #include "v_neuronswc.h"
@@ -54,8 +55,13 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
     if(bmenu)
     {
         bool ok1;
+#ifndef USE_Qt5
         V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
                                                        "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
+#else
+        V3DLONG d_thres_new = QInputDialog::getInt(0, "change the default distance threshold",
+                                                       "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
+#endif
         if (ok1)
         {
             d_thres = d_thres_new;

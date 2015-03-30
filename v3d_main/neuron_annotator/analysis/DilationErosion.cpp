@@ -1,6 +1,10 @@
 #include "DilationErosion.h"
 #include "SleepThread.h"
 
+#ifdef USE_Qt5
+#include <QtConcurrent>
+#endif
+
 const int DilationErosion::TYPE_DILATE=0;
 const int DilationErosion::TYPE_ERODE=1;
 
@@ -11,7 +15,7 @@ DilationErosion::DilationErosion()
   xDim=yDim=zDim=0;
 }
 
-void DilationErosion::dilateOrErode(int type, int xDim, int yDim, int zDim, 
+void DilationErosion::dilateOrErode(int type, int xDim, int yDim, int zDim,
 				    unsigned char*** s, unsigned char*** t, int elementSize, int neighborsForThreshold) {
     qDebug() << "CellCounter3D::dilateOrErode() start";
     currentSource=s;

@@ -1,9 +1,16 @@
 # Needs debugging on Windows
 if(NOT WIN32)
 
-QT4_WRAP_UI(PLUGIN_UI_SRCS
-    paradialog_rigidaffine.ui
-)
+if(NOT Qt5Core_FOUND)
+    QT4_WRAP_UI(PLUGIN_UI_SRCS
+        paradialog_rigidaffine.ui
+    )
+else()
+    QT5_WRAP_UI(PLUGIN_UI_SRCS
+        paradialog_rigidaffine.ui
+    )
+endif()
+
 set(PLUGIN_HEADERS  # Q_OBJECT macro containing files only
     plugin_image_registration.h
     q_paradialog_rigidaffine.h

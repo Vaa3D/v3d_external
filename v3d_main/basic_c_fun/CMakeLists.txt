@@ -1,8 +1,14 @@
 include_directories(${TIFF_INCLUDE_DIR})
 
-QT4_WRAP_CPP(QT_INTERFACE_MOC_SRCS
-  basic_thread.h
-)
+if(NOT Qt5Core_FOUND)
+  QT4_WRAP_CPP(QT_INTERFACE_MOC_SRCS
+    basic_thread.h
+  )
+else()
+  QT5_WRAP_CPP(QT_INTERFACE_MOC_SRCS
+      basic_thread.h
+  )
+endif()
 
 set(V3DInterface_SRCS
   ${QT_INTERFACE_MOC_SRCS}
@@ -18,7 +24,7 @@ set(V3DInterface_SRCS
   ../neuron_annotator/utility/ImageLoaderBasic.cpp
   basic_4dimage_create.cpp
   )
-  
+
 if (WIN32)
     set(V3DInterface_SRCS ${V3DInterface_SRCS} vcdiff.cpp)
 else()
@@ -28,7 +34,12 @@ endif()
 add_library(V3DInterface ${V3DInterface_SRCS})
 
 target_link_libraries(V3DInterface ${TIFF_LIBRARY})
-target_link_libraries(V3DInterface ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+if(NOT Qt5Core_FOUND)
+  target_link_libraries(V3DInterface ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+else()
+  target_link_libraries(V3DInterface Qt5::Widgets Qt5::Core)
+endif()
+
 if (NOT WIN32)
     target_link_libraries(V3DInterface mylib_tiff)
 endif()

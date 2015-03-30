@@ -119,11 +119,17 @@
 
 #include <math.h>
 
+#include "../3drenderer/v3dr_common.h" // Ensure Glee is loaded first
+
 #include <QLayout>
 #include <QPainter>
 #include <QPainterPath>
 //#include <QTextEdit>
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 #include "v3d_core.h"
 #include "mainwindow.h"
@@ -2957,7 +2963,11 @@ void XFormView::dispHistogram()
 
 #define _______XFormWidget_functions________
 
+#ifdef USE_Qt5
+XFormWidget::XFormWidget(QWidget *parent) : QMdiSubWindow(parent)
+#else
 XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
+#endif
 {
 	initialize();
 	createGUI();
@@ -2965,7 +2975,11 @@ XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
 	updateDataRelatedGUI();
 }
 
+#ifdef USE_Qt5
+XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QMdiSubWindow(parent) //added on 080814: this function is for future use. Not really get called now
+#else
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QWidget(parent) //added on 080814: this function is for future use. Not really get called now
+#endif
 {
 	setAttribute(f);
 
@@ -3340,7 +3354,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
                 if (imgData->b_triviewTimerON)
                 {
                     QString etime = QString("Elipsed time for triview timer is %1 seconds").arg(double(imgData->triviewTimer.elapsed())/1000);
-                    imgData->b_triviewTimerON = FALSE;
+                    imgData->b_triviewTimerON = false;
                     v3d_msg(etime);
                     if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
                         imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(etime);
@@ -3348,7 +3362,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
                 else
                 {
                     imgData->triviewTimer.start(); //should I use restart() sometimes as well
-                    imgData->b_triviewTimerON = TRUE;
+                    imgData->b_triviewTimerON = true;
                     QString mymsg = "Timer for the current image starts...";
                     v3d_msg(mymsg + "\n", 0);
                     if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
@@ -4609,7 +4623,7 @@ bool XFormWidget::loadData()
 	else if ( curFileSurfix && strcasecmp(curFileSurfix, "h5j") == 0 )
 		loadHDF5( filename );
 	else
-		imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
+		imgData->loadImage(filename);  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
 	if (imgData->isEmpty())
 	{
 		delete imgData; imgData = 0;
@@ -5808,16 +5822,29 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 			curInfo.pimg = tmp_pimg;
 
 			//then select the channel of this image
+#ifdef USE_Qt5
+			curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
+#else
 			curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
+#endif
 
 			//then select RGB info
 			int rgbVal;
+#ifdef USE_Qt5
+			rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
+			curInfo.rr = rgbVal/255.0;
+			rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
+			curInfo.gg = rgbVal/255.0;
+			rgbVal = QInputDialog::getInt(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
+			curInfo.bb = rgbVal/255.0;
+#else
 			rgbVal = QInputDialog::getInteger(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
 			curInfo.rr = rgbVal/255.0;
 			rgbVal = QInputDialog::getInteger(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 			curInfo.gg = rgbVal/255.0;
 			rgbVal = QInputDialog::getInteger(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 			curInfo.bb = rgbVal/255.0;
+#endif
 
 			//add the selected info to the bList
 			bList.append(curInfo);
@@ -5833,16 +5860,29 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 				curInfo.pimg = tmp_pimg;
 
 				//then select the channel of this image
+#ifdef USE_Qt5
+				curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
+#else
 				curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
+#endif
 
 				//then select RGB info
 				int rgbVal;
+#ifdef USE_Qt5
+				rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
+				curInfo.rr = rgbVal/255.0;
+				rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
+				curInfo.gg = rgbVal/255.0;
+				rgbVal = QInputDialog::getInt(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
+				curInfo.bb = rgbVal/255.0;
+#else
 				rgbVal = QInputDialog::getInteger(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.rr = rgbVal/255.0;
 				rgbVal = QInputDialog::getInteger(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.gg = rgbVal/255.0;
 				rgbVal = QInputDialog::getInteger(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.bb = rgbVal/255.0;
+#endif
 
 				//add the selected info to the bList
 				bList.append(curInfo);

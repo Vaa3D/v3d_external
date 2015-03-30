@@ -27,7 +27,7 @@ set(3DRenderer_SRCS
 
 # QT4_ADD_RESOURCES(V3D_RENDERER_RCC_SRCS "3drenderer.qrc")
 
-QT4_WRAP_CPP(QT_MOC_SRCS
+set(3DRENDERER_MOC_SRCS
   gradients.h
   hoverpoints.h
   ItemEditor.h
@@ -37,10 +37,17 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   v3dr_surfaceDialog.h
   )
 
+if(NOT Qt5Core_FOUND)
+  QT4_WRAP_CPP(QT_MOC_SRCS ${3DRENDERER_MOC_SRCS})
+else()
+  QT5_WRAP_CPP(QT_MOC_SRCS ${3DRENDERER_MOC_SRCS})
+endif()
+
+
 include_directories( ${V3D_BINARY_DIR}/v3dbase )
 include_directories( ${CMAKE_BINARY_DIR}/cellseg )
 
-add_library( 3drenderer 
+add_library( 3drenderer
     ${QT_MOC_SRCS}
     # ${V3D_RENDERER_RCC_SRCS} # no, this needs to be linked directly to v3d executable
     ${3DRenderer_SRCS})

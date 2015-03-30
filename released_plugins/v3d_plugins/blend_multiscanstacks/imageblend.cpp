@@ -5,7 +5,11 @@
  */
 
 
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 #include <cmath>
 #include <ctime>
@@ -91,11 +95,11 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     V3DLONG end_y=szInput[1]-1;
     V3DLONG start_x=0;
     V3DLONG end_x=szInput[0]-1;
-    
+
     V3DLONG colordim = szInput[3];
-    
+
     V3DLONG pagesz = szInput[0]*szInput[1]*szInput[2];
-    
+
     bool b_blankplanefound;
 
     // find NULL channel first
@@ -131,16 +135,16 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     while (b_blankplanefound)
     {
         double sum;
-        
+
         for(V3DLONG k=0; k<szInput[2]; k++)
         {
             V3DLONG offset_k = k*szInput[1]*szInput[0];
-            
+
             b_blankplanefound=false;
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
-                
+
                 if(c==nullc) continue;
 
                 V3DLONG offset_c = c*pagesz + offset_k;
@@ -152,13 +156,13 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                         sum += pInput[offset_j + i];
                     }
                 }
-                
+
                 if(sum<EMPTY)
                 {
                     b_blankplanefound = true;
                 }
             }
-            
+
             if(b_blankplanefound)
             {
                 pz++;
@@ -170,24 +174,24 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         }
         b_blankplanefound=false;
     }
-    
+
     // along z -
     b_blankplanefound=true;
     while (b_blankplanefound)
     {
         double sum;
-        
+
         for(V3DLONG k=szInput[2]-1; k>0; k--)
         {
             V3DLONG offset_k = k*szInput[1]*szInput[0];
-            
+
             b_blankplanefound=false;
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
 
                 if(c==nullc) continue;
-                
+
                 V3DLONG offset_c = c*pagesz + offset_k;
                 for(V3DLONG j=0; j<szInput[1]; j++)
                 {
@@ -197,13 +201,13 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                         sum += pInput[offset_j + i];
                     }
                 }
-                
+
                 if(sum<EMPTY)
                 {
                     b_blankplanefound = true;
                 }
             }
-            
+
             if(b_blankplanefound)
             {
                 nz++;
@@ -215,24 +219,24 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         }
         b_blankplanefound=false;
     }
-    
+
     // along y +
     b_blankplanefound=true;
     while (b_blankplanefound)
     {
         double sum;
-        
+
         for(V3DLONG j=0; j<szInput[1]; j++)
         {
             V3DLONG offset_j = j*szInput[0];
-            
+
             b_blankplanefound=false;
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
 
                 if(c==nullc) continue;
-                
+
                 V3DLONG offset_c = c*pagesz + offset_j;
                 for(V3DLONG k=0; k<szInput[2]; k++)
                 {
@@ -243,13 +247,13 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                         sum += pInput[offset_k + i];
                     }
                 }
-                
+
                 if(sum<EMPTY)
                 {
                     b_blankplanefound = true;
                 }
             }
-            
+
             if(b_blankplanefound)
             {
                 py++;
@@ -261,41 +265,41 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         }
         b_blankplanefound=false;
     }
-    
+
     // along y -
     b_blankplanefound=true;
     while (b_blankplanefound)
     {
         double sum;
-        
+
         for(V3DLONG j=szInput[1]-1; j>0; j--)
         {
             V3DLONG offset_j = j*szInput[0];
-            
+
             b_blankplanefound=false;
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
 
                 if(c==nullc) continue;
-                
+
                 V3DLONG offset_c = c*pagesz + offset_j;
                 for(V3DLONG k=0; k<szInput[2]; k++)
                 {
                     V3DLONG offset_k = offset_c + k*szInput[1]*szInput[0];
-                    
+
                     for(V3DLONG i=0; i<szInput[0]; i++)
                     {
                         sum += pInput[offset_k + i];
                     }
                 }
-                
+
                 if(sum<EMPTY)
                 {
                     b_blankplanefound = true;
                 }
             }
-            
+
             if(b_blankplanefound)
             {
                 ny++;
@@ -307,13 +311,13 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         }
         b_blankplanefound=false;
     }
-    
+
     // along x +
     b_blankplanefound=true;
     while (b_blankplanefound)
     {
         double sum;
-        
+
         for(V3DLONG i=0; i<szInput[0]; i++)
         {
             b_blankplanefound=false;
@@ -322,7 +326,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 sum = 0;
 
                 if(c==nullc) continue;
-                
+
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG k=0; k<szInput[2]; k++)
                 {
@@ -334,13 +338,13 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                         sum += pInput[offset_j + i];
                     }
                 }
-                
+
                 if(sum<EMPTY)
                 {
                     b_blankplanefound = true;
                 }
             }
-            
+
             if(b_blankplanefound)
             {
                 px++;
@@ -352,13 +356,13 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         }
         b_blankplanefound=false;
     }
-    
+
     // along x -
     b_blankplanefound=true;
     while (b_blankplanefound)
     {
         double sum;
-        
+
         for(V3DLONG i=szInput[0]-1; i>0; i--)
         {
             b_blankplanefound=false;
@@ -367,7 +371,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 sum = 0;
 
                 if(c==nullc) continue;
-                
+
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG k=0; k<szInput[2]; k++)
                 {
@@ -375,17 +379,17 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                     for(V3DLONG j=0; j<szInput[1]; j++)
                     {
                         V3DLONG offset_j = offset_k + j*szInput[0];
-                        
+
                         sum += pInput[offset_j + i];
                     }
                 }
-                
+
                 if(sum<EMPTY)
                 {
                     b_blankplanefound = true;
                 }
             }
-            
+
             if(b_blankplanefound)
             {
                 nx++;
@@ -397,21 +401,21 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         }
         b_blankplanefound=false;
     }
-    
+
     //
     start_x += px; start_y += py; start_z += pz;
     end_x -= nx; end_y -= ny; end_z -= nz;
-    
+
     V3DLONG sx = end_x - start_x + 1;
     V3DLONG sy = end_y - start_y + 1;
     V3DLONG sz = end_z - start_z + 1;
     V3DLONG pagesz_new = sx*sy*sz;
     V3DLONG totalplxs = pagesz_new*colordim;
-    
+
     // new image
     try {
         pOutput = new Tdata [totalplxs];
-        
+
         for(V3DLONG c=0; c<colordim; c++)
         {
             V3DLONG offset_c_old = c*pagesz;
@@ -431,12 +435,12 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 }
             }
         }
-        
+
         szOutput[0] = sx;
         szOutput[1] = sy;
         szOutput[2] = sz;
         szOutput[3] = colordim;
-        
+
     }
     catch (...) {
         cout<<"Fail to allocate new image memory."<<endl;
@@ -1577,7 +1581,7 @@ bool transformations_detection(Tdata *p1dImg1, Tdata *p1dImg2, Tidx *szImg, int 
     return true;
 }
 
-// 
+//
 bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, Image4DSimple &p4DImage2, V3DLONG ref2, bool b_transdet, int &transtype)
 {
     // stitching to obtain the translation offsets
@@ -1791,14 +1795,14 @@ template <class Tdata>
 double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
 {
     size_t start_t = clock();
-    
+
     // joint histogram
     double **jointHistogram = NULL;
     double *img1Hist=NULL;
     double *img2Hist=NULL;
-    
+
     V3DLONG szHist;
-    
+
     if(datatype==1) // 8-bit UINT8
     {
         szHist = 256;
@@ -1812,9 +1816,9 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
         cout<<"Your data is not 8bit or 12bit and is currently not supported!"<<endl;
         return -1;
     }
-    
+
     V3DLONG denomHist = szHist*szHist;
-    
+
     try
     {
         jointHistogram = new double * [szHist];
@@ -1823,10 +1827,10 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
             jointHistogram[i] = new double [szHist];
             memset(jointHistogram[i], 0, sizeof(double)*szHist);
         }
-        
+
         img1Hist = new double [szHist];
         img2Hist = new double [szHist];
-        
+
         memset(img1Hist, 0, sizeof(double)*szHist);
         memset(img2Hist, 0, sizeof(double)*szHist);
     }
@@ -1835,24 +1839,24 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
         qDebug()<<"Fail to allocate memory for joint histogram!";
         return -1;
     }
-    
+
     //
     for(V3DLONG i=0; i<szImg; i++)
     {
         jointHistogram[ (V3DLONG)pImg1[i] ][ (V3DLONG)pImg2[i] ] ++;
     }
-    
+
     double jointEntropy=0, img1Entropy=0, img2Entropy=0;
-    
+
     // normalized joint histogram
     for(V3DLONG i=0; i<szHist; i++)
     {
         for(V3DLONG j=0; j<szHist; j++)
         {
             jointHistogram[i][j] /= (double)(denomHist);
-            
+
             double val = jointHistogram[i][j]?jointHistogram[i][j]:1;
-            
+
             jointEntropy += val * log2(val);
         }
     }
@@ -1866,16 +1870,16 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
             img2Hist[i] += jointHistogram[j][i];
         }
     }
-    
+
     for(V3DLONG i=0; i<szHist; i++)
     {
         double val1 = img1Hist[i]?img1Hist[i]:1;
         double val2 = img2Hist[i]?img2Hist[i]:1;
-        
+
         img1Entropy += val1 * log2(val1);
         img2Entropy += val2 * log2(val2);
     }
-    
+
     // de-alloc
     if(jointHistogram) {
         for(int i=0; i<szHist; i++)
@@ -1886,12 +1890,12 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
     }
     if(img1Hist) {delete []img1Hist; img1Hist=NULL;}
     if(img2Hist) {delete []img2Hist; img2Hist=NULL;}
-    
+
     qDebug() << "time elapse for computing mutual information ... " <<clock()-start_t;
-    
+
     // MI
     return (jointEntropy - img1Entropy - img2Entropy);
-    
+
 }
 
 //plugin
@@ -1912,7 +1916,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
     if (func_name == tr("multiscanblend"))
     {
         if(input.size()<1) return false; // no inputs
-        
+
         vector<char*> * infilelist = (vector<char*> *)(input.at(0).p);
         vector<char*> * paralist;
         vector<char*> * outfilelist;
@@ -1923,33 +1927,33 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
             return true;
         }
-        
+
         if(infilelist->size()<2)
         {
             printf("\nThe multiscan blending program needs two images as input!\n");
-            
+
             return false;
         }
-        
+
         qDebug()<<"input files ..."<<infilelist->at(0)<<infilelist->at(1);
-        
+
         char * infile = infilelist->at(0); // input images
         char * paras = NULL; // parameters
         char * outfile = NULL; // outputs
-        
+
         if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p); outfile = outfilelist->at(0);}  // specify output
         if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
-        
+
         bool b_saveimage = true; // save the blended image by default
         bool b_morecolorstack_first = false; // keep inputs order by default
         bool b_deformed = false; // rigid transformation by default
-        
+
         // color mapping
         V3DLONG c10=-1, c11=-1, c12=-1;
         V3DLONG c20=-1, c21=-1;
-        
+
         qDebug()<<"parameters ..."<<paras;
-        
+
         if(paras)
         {
             int argc = 0;
@@ -1985,9 +1989,9 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 if(i+1 != argc) // check that we haven't finished parsing yet
                 {
                     key = argv[i];
-                    
+
                     qDebug()<<">>key ..."<<key;
-                    
+
                     if (*key == '#')
                     {
                         while(*++key)
@@ -2014,7 +2018,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                                 cout<<"parsing ..."<<key<<" "<<i<<" "<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
                                 return false;
                             }
-                            
+
                         }
                     }
                     else
@@ -2022,11 +2026,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         cout<<"parsing ..."<<key<<" "<<i<<" "<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
                         return false;
                     }
-                    
+
                 }
             }
         }
-        
+
         QString blendImageName;
         QString m_InputFileName(infile);
         m_InputFileName.chop(4);
@@ -2034,12 +2038,12 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             blendImageName = m_InputFileName + "_blended.v3draw";
         else
             blendImageName = QString(outfile);
-        
+
         if(QFileInfo(blendImageName).suffix().toUpper() != "V3DRAW")
         {
             blendImageName.append(".v3draw"); // force to save as .v3draw file
         }
-        
+
         // image blending
         QString m_InputFileName1(infilelist->at(0));
         QString m_InputFileName2(infilelist->at(1));
@@ -2068,18 +2072,18 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
         }
-        
+
         // info reader and color configuration
         bool b_infoloaded = false;
         int *c1=NULL, *c2=NULL;
-        
+
         // load images
         Image4DSimple p4DImage1, p4DImage2;
-        
+
         V3DLONG *sz_img1 = 0;
         int datatype_img1 = 0;
         unsigned char* p1dImg1 = 0;
-        
+
         if(QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0)
         {
             p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), true); // Mylib
@@ -2090,22 +2094,22 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         {
             p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), false); // libtiff
         }
-        
+
         p1dImg1 = p4DImage1.getRawData();
-        
+
         sz_img1 = new V3DLONG [4];
-        
+
         sz_img1[0] = p4DImage1.getXDim();
         sz_img1[1] = p4DImage1.getYDim();
         sz_img1[2] = p4DImage1.getZDim();
         sz_img1[3] = p4DImage1.getCDim();
-        
+
         datatype_img1 = p4DImage1.getUnitBytes();
-        
+
         V3DLONG *sz_img2 = 0;
         int datatype_img2 = 0;
         unsigned char* p1dImg2 = 0;
-        
+
         if(QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0)
         {
             p4DImage2.loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), true); // Mylib
@@ -2116,25 +2120,25 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         {
             p4DImage2.loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), false); // libtiff
         }
-        
+
         p1dImg2 = p4DImage2.getRawData();
-        
+
         sz_img2 = new V3DLONG [4];
-        
+
         sz_img2[0] = p4DImage2.getXDim();
         sz_img2[1] = p4DImage2.getYDim();
         sz_img2[2] = p4DImage2.getZDim();
         sz_img2[3] = p4DImage2.getCDim();
-        
+
         datatype_img2 = p4DImage2.getUnitBytes();
-        
+
         // check dims datatype
         if(datatype_img1 != datatype_img2)
         {
             cout<<"Images are different data types! Do nothing!"<<endl;
             return false;
         }
-        
+
         if(sz_img1[0] != sz_img2[0] || sz_img1[1] != sz_img2[1] || sz_img1[2] != sz_img2[2] ) // x, y, z
         {
             cout<<"Images are different dimensions! Do nothing!"<<endl;
@@ -2152,17 +2156,17 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             QString tmpName = m_InputFileName1;
             m_InputFileName1 = m_InputFileName2;
             m_InputFileName2 = tmpName;
-            
+
             //
             unsigned char *p1 = NULL;
             unsigned char *p2 = NULL;
-            
+
             try
             {
                 V3DLONG totalplxs1 = p4DImage1.getTotalBytes();
                 p1 = new unsigned char [totalplxs1];
                 memcpy(p1, p4DImage1.getRawData(), totalplxs1);
-                
+
                 V3DLONG totalplxs2 = p4DImage2.getTotalBytes();
                 p2 = new unsigned char [totalplxs2];
                 memcpy(p2, p4DImage2.getRawData(), totalplxs2);
@@ -2174,21 +2178,21 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 if (p2) {delete []p2; p2=0;}
                 return false;
             }
-            
+
             p4DImage1.setData(p2, sz_img2[0], sz_img2[1], sz_img2[2], sz_img2[3], (ImagePixelType)datatype_img2);
             p4DImage2.setData(p1, sz_img1[0], sz_img1[1], sz_img1[2], sz_img1[3], (ImagePixelType)datatype_img1);
-            
+
             //
             p1dImg1 = p4DImage1.getRawData();
             sz_img1[3] = p4DImage1.getCDim();
-            
+
             p1dImg2 = p4DImage2.getRawData();
             sz_img2[3] = p4DImage2.getCDim();
-            
+
             qDebug()<<"switched stack 1 "<<m_InputFileName1<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
             qDebug()<<"switched stack 2 "<<m_InputFileName2<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
         }
-        
+
         if( (QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0) && (QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0) )
         {
             //            char buf[512]; // read symbolic link
@@ -2221,11 +2225,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
         //
         V3DLONG pagesz = sz_img1[0]*sz_img1[1]*sz_img1[2];
-        
+
         // find reference : suppose reference color channels similar enough
         V3DLONG ref1=0, ref2=0, nullcolor1 = -1, nullcolor2 = -1;
         bool b_img1existNULL=false, b_img2existNULL=false;
-        
+
         if(b_infoloaded)
         {
             for(int i=0; i<sz_img1[3]; i++)
@@ -2850,7 +2854,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             //
             return true;
         }
-        
+
         //step 3: need to run a simple stitching to figure out the displacement
         int transtype;
         if(!stitch_paired_images_with_refchan(p4DImage1, ref1, p4DImage2, ref2, false, transtype))
@@ -2863,15 +2867,15 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         // suppose image1 and image2 have a common reference
         // the blended image color dim = image1 color dim + image2 color dim - 1
         V3DLONG colordim = sz_img1[3]+sz_img2[3]-1;
-        
+
         if(b_img1existNULL) colordim--;
         if(b_img2existNULL) colordim--;
-        
+
         V3DLONG sz_blend[4];
         sz_blend[0] = sz_img1[0]; sz_blend[1] = sz_img1[1]; sz_blend[2] = sz_img1[2]; sz_blend[3] = colordim;
-        
+
         V3DLONG totalplxs = colordim * pagesz;
-        
+
         if(datatype_img1 == V3D_UINT8)
         {
             //
@@ -2879,7 +2883,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             try
             {
                 data1d = new unsigned char [totalplxs];
-                
+
                 memset(data1d, 0, sizeof(unsigned char)*totalplxs);
             }
             catch(...)
@@ -2887,14 +2891,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 printf("Fail to allocate memory.\n");
                 return -1;
             }
-            
+
             //
             if(b_infoloaded)
             {
                 for(V3DLONG c=0; c<colordim-1; c++)
                 {
                     V3DLONG offset_c = c*pagesz;
-                    
+
                     V3DLONG offset_c1, offset_c2;
                     bool b_img1 = true;
 
@@ -2907,25 +2911,25 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     {
                         if(c2[ci]==c) {offset_c2 = ci*pagesz; b_img1=false;}
                     }
-                    
+
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
                         V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-                        
+
                         V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
                         V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-                        
+
                         for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
                             V3DLONG offset_j = offset_k + j*sz_img1[0];
-                            
+
                             V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
                             V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
-                            
+
                             for(V3DLONG i=0; i<sz_img1[0]; i++)
                             {
                                 V3DLONG idx = offset_j + i;
-                                
+
                                 if (b_img1)
                                 {
                                     data1d[idx] = p1dImg1[offset_j1 + i];
@@ -2942,18 +2946,18 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             else
             {
                 V3DLONG c1=0, c2=0;
-                
+
                 for(V3DLONG c=0; c<colordim-1; c++)
                 {
                     V3DLONG offset_c = c*pagesz;
-                    
+
                     V3DLONG offset_c1, offset_c2;
                     bool b_img1;
-                    
+
                     if(c1<sz_img1[3])
                     {
                         b_img1 = true;
-                        
+
                         if(b_img1existNULL)
                         {
                             if(c1!=nullcolor1)
@@ -2963,14 +2967,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             else
                             {
                                 c1++;
-                                
+
                                 if(c1<sz_img1[3])
                                     offset_c1 = c1*pagesz;
                                 else
                                     b_img1 = false;
                             }
                         }
-                        
+
                         if(c1!=ref1)
                         {
                             offset_c1 = c1*pagesz;
@@ -2978,22 +2982,22 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         else
                         {
                             c1++;
-                            
+
                             if(c1<sz_img1[3])
                                 offset_c1 = c1*pagesz;
                             else
                                 b_img1 = false;
                         }
-                        
+
                         qDebug()<<"color 1 ..."<<c1<<c;
-                        
+
                         c1++;
                     }
                     else
                     {
                         b_img1 = false;
                     }
-                    
+
                     if(!b_img1)
                     {
                         if(b_img2existNULL)
@@ -3005,14 +3009,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             else
                             {
                                 c2++;
-                                
+
                                 if(c2<sz_img2[3])
                                     offset_c2 = c2*pagesz;
                                 else
                                     continue;
                             }
                         }
-                        
+
                         if(c2!=ref2)
                         {
                             offset_c2 = c2*pagesz;
@@ -3020,36 +3024,36 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         else
                         {
                             c2++;
-                            
+
                             if(c2<sz_img2[3])
                                 offset_c2 = c2*pagesz;
                             else
                                 continue;
                         }
-                        
+
                         qDebug()<<"color 2 ..."<<c2<<c;
-                        
+
                         c2++;
                     }
-                    
+
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
                         V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-                        
+
                         V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
                         V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-                        
+
                         for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
                             V3DLONG offset_j = offset_k + j*sz_img1[0];
-                            
+
                             V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
                             V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
-                            
+
                             for(V3DLONG i=0; i<sz_img1[0]; i++)
                             {
                                 V3DLONG idx = offset_j + i;
-                                
+
                                 if (b_img1)
                                 {
                                     data1d[idx] = p1dImg1[offset_j1 + i];
@@ -3063,25 +3067,25 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     }
                 }
             }
-            
+
             V3DLONG offset = (colordim-1)*pagesz;
             V3DLONG offset1 = ref1*pagesz;
             V3DLONG offset2 = ref2*pagesz;
-            
+
             for(V3DLONG i=0; i<pagesz; i++)
             {
                 data1d[offset + i] = 0.5*p1dImg1[offset1+i] + 0.5*p1dImg2[offset2+i];
             }
-            
+
             // step 5. cutting the blank plane introduced by blending
             unsigned char *pOutput = NULL;
             V3DLONG szOutput[4];
-            
+
             img_cutting<unsigned char>( (unsigned char*)data1d, sz_blend, pOutput, szOutput);
-            
+
             // de-alloc
             if(data1d) {delete []data1d; data1d=NULL;}
-            
+
             // output
             if(b_saveimage)
             {
@@ -3091,26 +3095,26 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
                 }
-                
+
                 //de-alloc
                 if(pOutput) {delete []pOutput; pOutput=NULL;}
             }
             else
             {
                 V3DPluginArgItem arg;
-                
+
                 arg.type = "data"; arg.p = (void *)(pOutput); output << arg;
-                
+
                 V3DLONG metaImg[5]; // xyzc datatype
                 metaImg[0] = szOutput[0];
                 metaImg[1] = szOutput[1];
                 metaImg[2] = szOutput[2];
                 metaImg[3] = szOutput[3];
                 metaImg[4] = datatype_img1;
-                
+
                 arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
             }
-            
+
         }
         else if(datatype_img1 == V3D_UINT16)
         {
@@ -3119,7 +3123,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             try
             {
                 data1d = new unsigned short [totalplxs];
-                
+
                 memset(data1d, 0, sizeof(unsigned short)*totalplxs);
             }
             catch(...)
@@ -3133,10 +3137,10 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 for(V3DLONG c=0; c<colordim-1; c++)
                 {
                     V3DLONG offset_c = c*pagesz;
-                    
+
                     V3DLONG offset_c1, offset_c2;
                     bool b_img1 = true;
-                    
+
                     for(V3DLONG ci=0; ci<sz_img1[3]; ci++)
                     {
                         if(c1[ci]==c) offset_c1 = ci*pagesz;
@@ -3146,25 +3150,25 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     {
                         if(c2[ci]==c) {offset_c2 = ci*pagesz; b_img1=false;}
                     }
-                    
+
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
                         V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-                        
+
                         V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
                         V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-                        
+
                         for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
                             V3DLONG offset_j = offset_k + j*sz_img1[0];
-                            
+
                             V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
                             V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
-                            
+
                             for(V3DLONG i=0; i<sz_img1[0]; i++)
                             {
                                 V3DLONG idx = offset_j + i;
-                                
+
                                 if (b_img1)
                                 {
                                     data1d[idx] = ((unsigned short *)p1dImg1)[offset_j1 + i];
@@ -3181,11 +3185,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             else
             {
                 V3DLONG c1=0, c2=0;
-                
+
                 for(V3DLONG c=0; c<colordim-1; c++)
                 {
                     V3DLONG offset_c = c*pagesz;
-                    
+
                     V3DLONG offset_c1, offset_c2;
                     bool b_img1;
 
@@ -3217,7 +3221,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         else
                         {
                             c1++;
-                            
+
                             if(c1<sz_img1[3])
                                 offset_c1 = c1*pagesz;
                             else
@@ -3232,7 +3236,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     {
                         b_img1 = false;
                     }
-                    
+
                     if(!b_img1)
                     {
                         if(b_img2existNULL)
@@ -3259,7 +3263,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         else
                         {
                             c2++;
-                            
+
                             if(c2<sz_img2[3])
                                 offset_c2 = c2*pagesz;
                             else
@@ -3270,14 +3274,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
                         c2++;
                     }
-                    
+
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
                         V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-                        
+
                         V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
                         V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-                        
+
                         for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
                             V3DLONG offset_j = offset_k + j*sz_img1[0];
@@ -3302,27 +3306,27 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     }
                 }
             }
-            
+
             V3DLONG offset = (colordim-1)*pagesz;
             V3DLONG offset1 = ref1*pagesz;
             V3DLONG offset2 = ref2*pagesz;
-            
+
             for(V3DLONG i=0; i<pagesz; i++)
             {
                 data1d[offset + i] = 0.5*((unsigned short *)p1dImg1)[offset1+i] + 0.5*((unsigned short *)p1dImg2)[offset2+i];
             }
-            
+
             // step 5. cutting the blank plane introduced by blending
             unsigned short *pOutput = NULL;
             V3DLONG szOutput[4];
-            
+
             img_cutting<unsigned short>( (unsigned short*)data1d, sz_blend, pOutput, szOutput);
-            
+
             qDebug()<<"output ..."<<pOutput;
-            
+
             // de-alloc
             if(data1d) {delete []data1d; data1d=NULL;}
-            
+
             // output
             if(b_saveimage)
             {
@@ -3332,23 +3336,23 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
                 }
-                
+
                 //de-alloc
                 if(pOutput) {delete []pOutput; pOutput=NULL;}
             }
             else
             {
                 V3DPluginArgItem arg;
-                
+
                 arg.type = "data"; arg.p = (void *)(pOutput); output << arg;
-                
+
                 V3DLONG metaImg[5]; // xyzc datatype
                 metaImg[0] = szOutput[0];
                 metaImg[1] = szOutput[1];
                 metaImg[2] = szOutput[2];
                 metaImg[3] = szOutput[3];
                 metaImg[4] = datatype_img1;
-                
+
                 arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
             }
         }
@@ -3359,7 +3363,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             try
             {
                 data1d = new float [totalplxs];
-                
+
                 memset(data1d, 0, sizeof(float)*totalplxs);
             }
             catch(...)
@@ -3367,17 +3371,17 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 printf("Fail to allocate memory.\n");
                 return -1;
             }
-            
+
             //
             if(b_infoloaded)
             {
                 for(V3DLONG c=0; c<colordim-1; c++)
                 {
                     V3DLONG offset_c = c*pagesz;
-                    
+
                     V3DLONG offset_c1, offset_c2;
                     bool b_img1 = true;
-                    
+
                     for(V3DLONG ci=0; ci<sz_img1[3]; ci++)
                     {
                         if(c1[ci]==c) offset_c1 = ci*pagesz;
@@ -3387,25 +3391,25 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     {
                         if(c2[ci]==c) {offset_c2 = ci*pagesz; b_img1=false;}
                     }
-                    
+
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
                         V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-                        
+
                         V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
                         V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-                        
+
                         for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
                             V3DLONG offset_j = offset_k + j*sz_img1[0];
-                            
+
                             V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
                             V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
-                            
+
                             for(V3DLONG i=0; i<sz_img1[0]; i++)
                             {
                                 V3DLONG idx = offset_j + i;
-                                
+
                                 if (b_img1)
                                 {
                                     data1d[idx] = ((float *)p1dImg1)[offset_j1 + i];
@@ -3422,11 +3426,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             else
             {
                 V3DLONG c1=0, c2=0;
-                
+
                 for(V3DLONG c=0; c<colordim-1; c++)
                 {
                     V3DLONG offset_c = c*pagesz;
-                    
+
                     V3DLONG offset_c1, offset_c2;
                     bool b_img1;
 
@@ -3458,7 +3462,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         else
                         {
                             c1++;
-                            
+
                             if(c1<sz_img1[3])
                                 offset_c1 = c1*pagesz;
                             else
@@ -3473,7 +3477,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     {
                         b_img1 = false;
                     }
-                    
+
                     if(!b_img1)
                     {
                         if(b_img2existNULL)
@@ -3500,7 +3504,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         else
                         {
                             c2++;
-                            
+
                             if(c2<sz_img2[3])
                                 offset_c2 = c2*pagesz;
                             else
@@ -3511,14 +3515,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
                         c2++;
                     }
-                    
+
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
                         V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-                        
+
                         V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
                         V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-                        
+
                         for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
                             V3DLONG offset_j = offset_k + j*sz_img1[0];
@@ -3543,11 +3547,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     }
                 }
             }
-            
+
             V3DLONG offset = (colordim-1)*pagesz;
             V3DLONG offset1 = ref1*pagesz;
             V3DLONG offset2 = ref2*pagesz;
-            
+
             for(V3DLONG i=0; i<pagesz; i++)
             {
                 data1d[offset + i] = 0.5*((float *)p1dImg1)[offset1+i] + 0.5*((float *)p1dImg2)[offset2+i];
@@ -3556,12 +3560,12 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             // step 5. cutting the blank plane introduced by blending
             float *pOutput = NULL;
             V3DLONG szOutput[4];
-            
+
             img_cutting<float>( (float*)data1d, sz_blend, pOutput, szOutput);
-            
+
             // de-alloc
             if(data1d) {delete []data1d; data1d=NULL;}
-            
+
             // output
             if(b_saveimage)
             {
@@ -3571,23 +3575,23 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
                 }
-                
+
                 //de-alloc
                 if(pOutput) {delete []pOutput; pOutput=NULL;}
             }
             else
             {
                 V3DPluginArgItem arg;
-                
+
                 arg.type = "data"; arg.p = (void *)(pOutput); output << arg;
-                
+
                 V3DLONG metaImg[5]; // xyzc datatype
                 metaImg[0] = szOutput[0];
                 metaImg[1] = szOutput[1];
                 metaImg[2] = szOutput[2];
                 metaImg[3] = szOutput[3];
                 metaImg[4] = datatype_img1;
-                
+
                 arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
             }
         }
@@ -3596,7 +3600,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             printf("Currently this program only support UINT8, UINT16, FLOAT32 datatype.\n");
             return false;
         }
-        
+
         // de-alloc
         if(sz_img1) {delete []sz_img1; sz_img1=NULL;}
         if(sz_img2) {delete []sz_img2; sz_img2=NULL;}
@@ -4329,7 +4333,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     }
 
                     if(!b_img1)
-                    { 
+                    {
                         // assume image2 is single float deformed signal channel
                         qDebug()<<"color 2 ..."<<c2<<c;
 
@@ -5032,7 +5036,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             //
             qDebug()<<"original stack 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
             qDebug()<<"original stack 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
-            
+
             //
             QString tmpName = m_InputFileName1;
             m_InputFileName1 = m_InputFileName2;
@@ -6049,7 +6053,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         printf("\nWrong function specified.\n");
         return false;
     }
-    
+
     return true;
 }
 
@@ -6067,7 +6071,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
     {
         // anchor the image to handle
         QString m_FileName = QFileDialog::getOpenFileName(0, QObject::tr("Find a file"), QDir::currentPath(), QObject::tr("Image (*.lsm)"));
-        
+
         if ( !QFile::exists(m_FileName) )
         {
             cout<<"Image does not exist!"<<endl;
@@ -6075,11 +6079,11 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
         }
 
         string filename = m_FileName.toStdString();
-        
+
         // image header info
         Y_LSMINFO<V3DLONG> lsminfo(filename);
         lsminfo.loadHeader();
-        
+
         QTextEdit *lsminfoTxt = new QTextEdit(QString("image: %1 <br>\
                                                       <br><br> Dimensions: \
                                                       <br> x (%2) \
@@ -6102,8 +6106,8 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
         {
             cout<<"colors ..."<<lsminfo.colorchannels.at(i).R<<lsminfo.colorchannels.at(i).G<<lsminfo.colorchannels.at(i).B<<endl;
         }
-        
-        
+
+
         //
         return;
     }
@@ -6112,10 +6116,10 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
         ImageBlendingDialog dialog(callback, parent, NULL);
         if (dialog.exec()!=QDialog::Accepted)
             return;
-        
+
         QString m_InputFileName1 = dialog.fn_img1;
         QString m_InputFileName2 = dialog.fn_img2;
-        
+
         if ( !QFile::exists(m_InputFileName1) )
         {
             cout<<"Image 1 does not exist!"<<endl;
@@ -6126,71 +6130,71 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
             cout<<"Image 2 does not exist!"<<endl;
             return;
         }
-        
+
         // call dofunc
         V3DPluginArgItem arg;
         V3DPluginArgList pluginfunc_input;
         V3DPluginArgList pluginfunc_output;
-        
+
         vector<char*> fileList;
         vector<char*> paraList;
-        
+
         fileList.clear();
         paraList.clear();
-        
+
         QByteArray bytes1 = m_InputFileName1.toAscii();
         QByteArray bytes2 = m_InputFileName2.toAscii();
-        
+
         fileList.push_back(bytes1.data());
         fileList.push_back(bytes2.data());
-        
+
         paraList.push_back("#s 0");
-        
+
         arg.type = ""; arg.p = (void *)(&fileList); pluginfunc_input << arg;
         arg.type = ""; arg.p = (void *)(&paraList); pluginfunc_input << arg;
-        
+
         bool success = dofunc("multiscanblend", pluginfunc_input, pluginfunc_output, callback, parent);
-        
+
         if(!success)
         {
             QMessageBox::information(parent, "Warning: Image Blending", QString("Fail to run image blending program."));
             return;
         }
-        
+
         V3DLONG *metaImg = (V3DLONG *)(pluginfunc_output.at(1).p);
-        
+
         V3DLONG sx = metaImg[0];
         V3DLONG sy = metaImg[1];
         V3DLONG sz = metaImg[2];
-        
+
         V3DLONG colordim = metaImg[3];
         V3DLONG datatype = metaImg[4];
-        
+
         // show result in v3d
         if(datatype == V3D_UINT8)
         {
             //
             unsigned char* data1d = (unsigned char *)pluginfunc_output.at(0).p;
-            
+
             //display
             Image4DSimple p4DImage;
             p4DImage.setData((unsigned char*)data1d, sx, sy, sz, colordim, V3D_UINT8); //
-            
+
             v3dhandle newwin = callback.newImageWindow();
             callback.setImage(newwin, &p4DImage);
             callback.setImageName(newwin, "Blended Image");
             callback.updateImageWindow(newwin);
-            
+
         }
         else if(datatype == V3D_UINT16)
         {
             //
             unsigned short* data1d = (unsigned short *)pluginfunc_output.at(0).p;
-            
+
             //display
             Image4DSimple p4DImage;
             p4DImage.setData((unsigned char*)data1d, sx, sy, sz, colordim, V3D_UINT16); //
-            
+
             v3dhandle newwin = callback.newImageWindow();
             callback.setImage(newwin, &p4DImage);
             callback.setImageName(newwin, "Blended Image");
@@ -6200,11 +6204,11 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
         {
             //
             float* data1d = (float *)pluginfunc_output.at(0).p;;
-            
+
             //display
             Image4DSimple p4DImage;
             p4DImage.setData((unsigned char*)data1d, sx, sy, sz, colordim, V3D_FLOAT32); //
-            
+
             v3dhandle newwin = callback.newImageWindow();
             callback.setImage(newwin, &p4DImage);
             callback.setImageName(newwin, "Blended Image");
@@ -6215,7 +6219,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
             printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
             return;
         }
-        
+
     }
     else if (menu_name == tr("About"))
     {

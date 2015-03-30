@@ -25,9 +25,9 @@ void EntityData::dumpEntityData(int level)
 
     if (id != 0) qDebug("%sEntityData.id: %lld",indent,*id);
     if (orderIndex != 0) qDebug("%sOrder Index: %lld",indent,*orderIndex);
-    if (attributeName != 0) qDebug("%sAttribute: %s",indent,attributeName->toAscii().constData());
-    if (user != 0) qDebug("%sUser: %s",indent,user->toAscii().constData());
-    if (value != 0) qDebug("%sValue: %s",indent,value->toAscii().constData());
+    if (attributeName != 0) qDebug("%sAttribute: %s",indent,attributeName->toUtf8().constData());
+    if (user != 0) qDebug("%sUser: %s",indent,user->toUtf8().constData());
+    if (value != 0) qDebug("%sValue: %s",indent,value->toUtf8().constData());
     if (childEntity != 0)
     {
         childEntity->dumpEntity(level+1);

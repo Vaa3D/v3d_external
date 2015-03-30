@@ -1,6 +1,12 @@
-#include <QtGui>
+
 #include <cmath>
 #include "GalleryButton.h"
+
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 GalleryButton::GalleryButton(
         const QImage & image,

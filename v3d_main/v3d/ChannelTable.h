@@ -39,7 +39,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <assert.h>
 #include <QVector>
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
+#include <QTableWidget>
 #include "../basic_c_fun/color_xyz.h"
 #include "v3d_core.h"
 

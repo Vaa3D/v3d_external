@@ -2,6 +2,10 @@
 #include "../utility/ImageLoader.h"
 #include "../../v3d/histogramsimple.h"
 
+#ifdef USE_Qt5
+#include <QtConcurrent>
+#endif
+
 const int ScreenPatternAnnotator::MODE_UNDEFINED=-1;
 const int ScreenPatternAnnotator::MODE_ANNOTATE=0;
 const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
@@ -244,18 +248,18 @@ bool ScreenPatternAnnotator::createMaskGuide() {
   if (!maskOutputQDir.exists()) {
     QDir().mkdir(outputMaskDirectoryPath);
   }
-  
+
   // Step 3: Load RGB File and save copy to mask dir
   QFile rgbMaskQFile(inputMaskRGBFile);
   QFileInfo rgbMaskQFileInfo=QFileInfo(rgbMaskQFile);
   ImageLoader rgbSourceImageLoader;
-  
+
   My4DImage * rgbSourceMask = rgbSourceImageLoader.loadImage(rgbMaskQFileInfo.absoluteFilePath());
   QString maskPath(outputMaskDirectoryPath);
   maskPath.append(QDir::separator());
   maskPath.append("Mask.v3dpbd");
   rgbSourceImageLoader.saveImage(rgbSourceMask, maskPath);
-  
+
   // Step 4: Create MIP for main RGB file
   My4DImage * rgbSourceMIP = AnalysisTools::createMIPFromImage(rgbSourceMask);
   ImageLoader rgbSourceMIPSaver;
@@ -268,7 +272,7 @@ bool ScreenPatternAnnotator::createMaskGuide() {
   // Step 5: Step through each mask, and create a mask stack with ghost frame
   for (int maskIndex=0;maskIndex<maskNameList.length();maskIndex++) {
     QString maskName=maskNameList.at(maskIndex);
-    
+
     // Create ghost stack
     My4DImage * ghostImage = createMaskIndexGhostImage(rgbSourceMask, maskIndex+1, redList, greenList, blueList);
     ImageLoader ghostSaver;
@@ -1508,7 +1512,7 @@ bool ScreenPatternAnnotator::updateIndex() {
     maskNameMap[maskIndex]=compartmentName;
     qDebug() << "Adding mask index=" << maskIndex << " as name=" << compartmentName;
   }
-  
+
   // Add outside components
   QList<QString> outsideKeyList=outsideToMaskMap.keys();
   for (int i=0;i<outsideKeyList.length();i++) {
@@ -1653,7 +1657,7 @@ This is applied to a single lsm file and iterates through the mask list, calling
    - outputs overall stats for histarray
    - then, for each bin, outputs normalized statistics, such that the mask volume is used to generate a ratio
    - then, generates a 'fusionArray' which is the histArray weighted by the index
-   - the last lines of the output file are n bins with <index> <value index> <hist> <norm> 
+   - the last lines of the output file are n bins with <index> <value index> <hist> <norm>
 
 This script crops and generates histogram statistics on each mask.
 
@@ -1765,7 +1769,7 @@ int * ScreenPatternAnnotator::quantifyArnimCompartmentScores(My4DImage * sourceI
       hbin++;
     } // histogram
   } // threshold
-  
+
   double medSlopTotal=0.0;
   double noSlopTotal=0.0;
 
@@ -2064,14 +2068,14 @@ bool ScreenPatternAnnotator::createV2Heatmap()
 	if (v1Index==0 && v2Index > 0) {
 	  // This implies V2
 	  v2Flag=true;
-	} 
+	}
       }
     }
   }
 
   v3d_uint8 v1_r, v1_g, v1_b;
   v3d_uint8 v2_r, v2_g, v2_b;
-  
+
   for (V3DLONG z=0;z<zsize;z++) {
     for (V3DLONG y=0;y<ysize;y++) {
       for (V3DLONG x=0;x<xsize;x++) {
@@ -2098,7 +2102,7 @@ bool ScreenPatternAnnotator::createV2Heatmap()
       }
     }
   }
-  
+
   // Create mip
   int splitPosition=heatmapV2Filepath.lastIndexOf(".");
   QString mipFilename=heatmapV2Filepath.left(splitPosition);

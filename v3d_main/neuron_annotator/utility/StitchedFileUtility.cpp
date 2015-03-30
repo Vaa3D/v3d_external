@@ -43,7 +43,7 @@ bool StitchedFileUtility::execute() {
 
     // We will load the raw file into a My4DImage and inspect the contents
     My4DImage stitchedImage;
-    stitchedImage.loadImage(inputStitchedFilepath.toAscii().data());
+    stitchedImage.loadImage(inputStitchedFilepath.toUtf8().data());
     if (stitchedImage.isEmpty()) {
         qDebug() << "Error: stitched image is empty after loading";
         return false;
@@ -92,9 +92,9 @@ bool StitchedFileUtility::execute() {
 
 	// This version of mylib does not work with Windows.
 #if defined(_WIN32) || defined(_WIN64)
-	saveStack2Tif(outputTifFilepath.toAscii().data(), (const unsigned char*)signalImage.getData(), mysz, signalImage.getDatatype());
+	saveStack2Tif(outputTifFilepath.toUtf8().data(), (const unsigned char*)signalImage.getData(), mysz, signalImage.getDatatype());
 #else
-    saveStack2TifMylib(outputTifFilepath.toAscii().data(), (const unsigned char*)signalImage.getData(), mysz, signalImage.getDatatype());
+    saveStack2TifMylib(outputTifFilepath.toUtf8().data(), (const unsigned char*)signalImage.getData(), mysz, signalImage.getDatatype());
 #endif
 
     signalImage.cleanExistData();

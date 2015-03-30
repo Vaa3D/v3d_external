@@ -39,10 +39,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef V3DR_COMMON_H_
 #define V3DR_COMMON_H_
 
-//for X11/Qt, qt constant must be included before any header file that defines Status
-#include <QtGui>
-
 #include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
+
+//for X11/Qt, qt constant must be included before any header file that defines Status
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 // #include <QtOpenGL>
 //#include <QtTest>
@@ -252,8 +256,13 @@ inline RGBA8 RGBA8FromQColor(QColor qc)
 
 #define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
 #define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
+#ifdef USE_Qt5
+#define QCOLORV(var)    (var.value<QColor>( ))
+#define RGBA8V(var)     RGBA8FromQColor(var.value<QColor>( ))
+#else
 #define QCOLORV(var)    (qVariantValue<QColor>( var ))
 #define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
+#endif
 
 //it's global factory, so use table->setEditTriggers(QAbstractItemView::NoEditTriggers) for local table
 #define TURNOFF_ITEM_EDITOR()  QItemEditorFactory::setDefaultFactory(new QItemEditorFactory())

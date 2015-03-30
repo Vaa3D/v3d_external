@@ -5,10 +5,40 @@ endif(COMMAND CMAKE_POLICY)
 
 project(v3d_released_plugins)
 
+if (NOT FORCE_QT4)
+   find_package(Qt5Core CONFIG QUIET)
+   if (Qt5Core_FOUND)
+       message(STATUS "Using qt5")
+       # go on with other packages
+       find_package(Qt5 COMPONENTS Widgets Gui Xml Network)
 
-find_package(Qt4 4.7.0 REQUIRED)
-include( ${QT_USE_FILE} )
-include_directories( ${QT_INCLUDES} )
+       macro(qt_use_modules)
+            qt5_use_modules(${ARGN})
+       endmacro()
+
+       macro(qt_wrap_ui)
+           qt5_wrap_ui(${ARGN})
+       endmacro()
+
+       macro(qt_add_resources)
+           qt5_add_resources(${ARGN})
+       endmacro()
+
+       macro(qt_add_translation)
+           qt5_add_translation(${ARGN})
+       endmacro()
+
+  endif()
+endif()
+
+if(NOT Qt5Core_FOUND)
+  find_package(Qt4 4.7.0 REQUIRED)
+  set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
+  set(QT_USE_XML TRUE) # Oct-22-2010 CMB
+
+  include( ${QT_USE_FILE} )
+  include_directories( ${QT_INCLUDES} )
+endif()
 
 include(CTest)
 
@@ -39,7 +69,7 @@ if(WIN32)
 	# for packaging purpose
 
 	set(lib_name "libfftw3f-3.dll")
-	install(PROGRAMS 
+	install(PROGRAMS
 		"${FFTW_INCLUDE_DIR}/${lib_name}"
                 DESTINATION ${V3D_INSTALL_DIR}
                 COMPONENT RuntimeLibraries

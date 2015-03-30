@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -34,6 +34,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //2009-11-14
 //2010-01-30
 
+#include "../3drenderer/v3dr_common.h"
 #include "v3d_core.h"
 #include "dialog_curve_trace_para.h"
 #include "mainwindow.h"
@@ -80,7 +81,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		return false; \
 	}
 
-//#define SAVE_HISTORY_OF_TRACE_STEP -2 
+//#define SAVE_HISTORY_OF_TRACE_STEP -2
 #define SAVE_HISTORY_OF_TRACE_STEP 0 // must be <=0; 0 only save the final res, -1 also saves the smoothing res, -2 also save the graph step res. -3 for a special use
 //#define FORCE_GRAPH_RESOLUTION	//trace_para.sp_graph_resolution_step=2; //force high resolution
 
@@ -196,7 +197,7 @@ bool My4DImage::proj_trace_deformablepath_one_point_to_allotherpoints(V3DLONG st
 		if (trace_res && trace_para.b_estRadii) proj_trace_compute_radius_of_last_traced_neuron(trace_para, last_seg+1, tracedNeuron.nsegs()-1, trace_z_thickness);
 
 		if (trace_res && trace_para.b_postMergeClosebyBranches) proj_trace_mergeAllClosebyNeuronNodes(); //PHC, 100406
-	
+
 	} ////////////////////////////////////////////////////////////////////////////////
 	CATCH_TO_QString(etype, emsg);
 	TRACE_ERROR_MSG(etype, emsg, trace_res, "proj_trace_deformablepath_one_point_to_allotherpoints()");
@@ -292,7 +293,7 @@ bool My4DImage::proj_trace_deformablepath_two_points(V3DLONG startmark_id, V3DLO
 }
 
 //------------------------------------------------------------------------------
-// 
+//
 #define CHECK_DATA_trace_deformablepath() \
 	if (trace_para.channo<0 || trace_para.channo>=getCDim()) \
 	{ \
@@ -469,7 +470,7 @@ int My4DImage::proj_trace_deformablepath_all_points_shortestdist(LocationSimple 
 		printf("set z1=%ld\n", V3DLONG(trace_bounding_box.z1));
 	}
 	printf("z1=%ld\n", V3DLONG(trace_bounding_box.z1));
-	
+
         const char* s_error = find_shortest_path_graphimg(data4d_uint8[chano], getXDim(), getYDim(), getZDim(),
 			trace_z_thickness,
 			trace_bounding_box.x0, trace_bounding_box.y0, trace_bounding_box.z0,
@@ -601,7 +602,7 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 	if (n_end_nodes >=2)
 	{
 		merge_back_traced_paths(mmUnit); // start --> n end
-		
+
 #if SAVE_HISTORY_OF_TRACE_STEP<=-3
 		{
 			// append to tNeuron for saving history
@@ -609,21 +610,21 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 			{
 				//V3DLONG nexist = tNeuron.nnodes();
 				V3DLONG nexist = tNeuron.maxnoden();
-				
+
 				V_NeuronSWC cur_seg;	cur_seg.clear();//////////must clear
 				vector<V_NeuronSWC_unit> & mUnit = mmUnit[ii];
-				
+
 				for (V3DLONG i=0;i<mUnit.size();i++)
 				{
 					if (mUnit[i].nchild<0) continue; //here for saving the V3DLONG time of deleting nodes of nchild<0
-					
+
 					V_NeuronSWC_unit v;
 					set_simple_path_unit (v, nexist, mUnit, i, true); // n end --> start
-					
+
 					cur_seg.append(v);
 					//qDebug("%d ", cur_seg.nnodes());
 				}
-				
+
 				QString tmpss;  tmpss.setNum(tNeuron.nsegs()+1);
 				cur_seg.name = qPrintable(tmpss);
 				cur_seg.b_linegraph=true; //donot forget to do this
@@ -631,9 +632,9 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 				tNeuron.name = TRACED_NAME;
 				tNeuron.file = TRACED_FILE;
 			}
-			
+
 			proj_trace_history_append(tNeuron);
-			
+
 			// restore tNeuron.seg
 			for (V3DLONG ii=0;ii<mmUnit.size();ii++)	tNeuron.seg.pop_back();
 		}
@@ -644,14 +645,14 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 	{
 		//V3DLONG nexist = tNeuron.nnodes();
 		V3DLONG nexist = tNeuron.maxnoden();
-		
+
 		V_NeuronSWC cur_seg;	cur_seg.clear();
 		vector<V_NeuronSWC_unit> & mUnit = mmUnit[0];
-		
+
 		for (V3DLONG i=0;i<mUnit.size();i++)
 		{
 			if (mUnit[i].nchild<0) continue; //090610: here for saving the V3DLONG time of deleting nodes of nchild<0
-			
+
 			V_NeuronSWC_unit node = mUnit[i];
 			node.r = 0.5;
 			node.n += nexist;
@@ -659,7 +660,7 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 				else node.parent = -1;
 					cur_seg.append(node);
 		}
-		
+
 		QString tmpss;  tmpss.setNum(tNeuron.nsegs()+1);
 		cur_seg.name = qPrintable(tmpss);
 		cur_seg.b_linegraph=false; //don't forget to do this
@@ -667,28 +668,28 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 		tNeuron.name = TRACED_NAME;
 		tNeuron.file = TRACED_FILE;
 	}
-	
+
 	else
 	{
 		for (V3DLONG ii=0;ii<mmUnit.size();ii++)
 		{
 			//V3DLONG nexist = tNeuron.nnodes();
 			V3DLONG nexist = tNeuron.maxnoden();
-			
+
 			V_NeuronSWC cur_seg;	cur_seg.clear();
 			vector<V_NeuronSWC_unit> & mUnit = mmUnit[ii];
-			
+
 			for (V3DLONG i=0;i<mUnit.size();i++)
 			{
 				if (mUnit[i].nchild<0) continue; //090610: here for saving the V3DLONG time of deleting nodes of nchild<0
-				
+
 				V_NeuronSWC_unit v;
 				set_simple_path_unit (v, nexist, mUnit, i, (n_end_nodes==1)); // link_order determined by 1/N path
-				
+
 				cur_seg.append(v);
 				//qDebug("%d ", cur_seg.nnodes());
 			}
-			
+
 			QString tmpss;  tmpss.setNum(tNeuron.nsegs()+1);
 			cur_seg.name = qPrintable(tmpss);
 			cur_seg.b_linegraph=true; //don't forget to do this
@@ -697,7 +698,7 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 			tNeuron.file = TRACED_FILE;
 		}
 	}
-	
+
 	return mmUnit.size();
 }
 
@@ -753,39 +754,39 @@ bool My4DImage::proj_trace_shortestpath_rgnaroundcurve(CurveTracePara & trace_pa
 {
 //	v3d_msg("proj_trace_shortestpath_rgnaroundcurve(). \n",0);
 //	CHECK_DATA_trace_deformablepath();
-//	
+//
 //	V3DLONG nexist = 0; // re-create index number
-//	
+//
 //	// (VneuronSWC_list tracedNeuron).(V_neuronSWC seg[]).(V_nueronSWC_unit row[])
 //	for(int iseg=0; iseg<tracedNeuron.seg.size(); iseg++)
 //	{
 //		if (iseg <seg_begin || iseg >seg_end) continue; //091023
-//		
+//
 //		V_NeuronSWC & cur_seg = (tracedNeuron.seg[iseg]);
 //		printf("#seg=%d(%d)", iseg, cur_seg.row.size());
-//		
-//		vector<V_NeuronSWC_unit> & mUnit = cur_seg.row; 
+//
+//		vector<V_NeuronSWC_unit> & mUnit = cur_seg.row;
 //		{
 //			//------------------------------------------------------------
 //			vector<V_NeuronSWC_unit> mUnit_prior = mUnit; // a copy as prior
-//			
+//
 //			mUnit = downsample_curve(mUnit, trace_para.sp_downsample_step);
-//			
+//
 //			//------------------------------------------------------------
 //			int chano = trace_para.channo;
 //			shortestpath_around_curve(data4d_uint8[chano], getXDim(), getYDim(), getZDim(),
-//												  mUnit, trace_para, 
+//												  mUnit, trace_para,
 //												  mUnit_prior);
 //			//-------------------------------------------------------------
-//			
+//
 //		}
 //		printf(">>%d(%d) ", iseg, mUnit.size());
-//		
+//
 //		reset_simple_path_index (nexist, mUnit);
 //		nexist += mUnit.size();
 //	}
 //	printf("\n");
-//	
+//
 	return true;
 }
 
@@ -854,15 +855,15 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno)
 
 	V3DLONG cur_segid = tracedNeuron.nsegs()-1;
 
-	if (chno >=0) //100115, 100130: for solveCurveViews. 
-	{		
+	if (chno >=0) //100115, 100130: for solveCurveViews.
+	{
                 if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autodeform)
 			proj_trace_smooth_downsample_last_traced_neuron(trace_para, cur_segid, cur_segid);
 
 		bool b_use_shortestpath_rgnaroundcurve=true; //100130
 		if (b_use_shortestpath_rgnaroundcurve)
 			proj_trace_shortestpath_rgnaroundcurve(trace_para, cur_segid, cur_segid);
-		
+
                 if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
 			proj_trace_compute_radius_of_last_traced_neuron(trace_para, cur_segid, cur_segid, trace_z_thickness);
 	}
@@ -882,16 +883,16 @@ void My4DImage::proj_trace_history_append(V_NeuronSWC_list & tNeuron)
 {
 	//if (tracedNeuron.seg.size()<=0) return;
 	//null seg is also a undo/redo status
-	
+
 	// remove from cur_history+1
 	for (int i=cur_history+1; i>=0 && i<tracedNeuron_historylist.size();i++) tracedNeuron_historylist.removeAt(i);
-	
+
 	// make size <= MAX_history
 	while (tracedNeuron_historylist.size()>=MAX_history) tracedNeuron_historylist.pop_front();
-	
+
 	tracedNeuron_historylist.push_back(tNeuron);
 	cur_history = tracedNeuron_historylist.size()-1;
-	
+
 	//	qDebug()<<"***************************************************************";
 	//	qDebug()<<"APPEND historylist last ="<<tracedNeuron_historylist.size()-1<<"  cur_history ="<<cur_history;
 	//	qDebug()<<"***************************************************************";
@@ -973,6 +974,17 @@ bool My4DImage::proj_trace_changeNeuronSegType(V3DLONG node_id, NeuronTree *p_tr
 	bool res;
 	bool ok;
 	int node_type = p_tree->listNeuron.at(node_id).type;
+#ifdef USE_Qt5
+	node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+							  QObject::tr("SWC type: "
+										"\n 0 -- undefined (white)"
+										"\n 1 -- soma (black)"
+										"\n 2 -- axon (red)"
+										"\n 3 -- dendrite (blue)"
+										"\n 4 -- apical dendrite (purple)"
+										"\n else -- custom \n"),
+									  node_type, 0, 100, 1, &ok);
+#else
 	node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
 							  QObject::tr("SWC type: "
 										"\n 0 -- undefined (white)"
@@ -982,6 +994,7 @@ bool My4DImage::proj_trace_changeNeuronSegType(V3DLONG node_id, NeuronTree *p_tr
 										"\n 4 -- apical dendrite (purple)"
 										"\n else -- custom \n"),
 									  node_type, 0, 100, 1, &ok);
+#endif
 	if (ok)
 	{
 		res = change_type_in_seg_of_V_NeuronSWC_list(tracedNeuron, seg_id, node_type);
@@ -1013,12 +1026,22 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 			int channo = 1;
 			if (this->getCDim()!=1) //only ask channel no if it is not 1
 			{
+#ifdef USE_Qt5
+				channo = QInputDialog::getInt(0, qtitle,
+					  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
+#else
 				channo = QInputDialog::getInteger(0, qtitle,
 					  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
+#endif
 				if (! ok)  return false;
 			}
+#ifdef USE_Qt5
+			int win_sz = QInputDialog::getInt(0, qtitle,
+					  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
+#else
 			int win_sz = QInputDialog::getInteger(0, qtitle,
 					  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
+#endif
 			if (! ok)  return false;
 
 			CurveTracePara trace_para;
@@ -1031,14 +1054,24 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 			int channo = 1;
 			if (this->getCDim()!=1) //only ask channel no if it is not 1
 			{
+#ifdef USE_Qt5
+				channo = QInputDialog::getInt(0, qtitle,
+												  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
+#else
 				channo = QInputDialog::getInteger(0, qtitle,
 												  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
+#endif
 				if (! ok)  return false;
 			}
+#ifdef USE_Qt5
+			int win_sz = QInputDialog::getInt(0, qtitle,
+												  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
+#else
 			int win_sz = QInputDialog::getInteger(0, qtitle,
 												  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
+#endif
 			if (! ok)  return false;
-			
+
 			CurveTracePara trace_para;
 			trace_para.channo = channo-1;
 			trace_para.sp_smoothing_win_sz = win_sz;
@@ -1373,13 +1406,13 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 //		v3d_msg("Invalid data type (only uint8 is supported now) in proj_trace_mergeOneCloseNeuronSeg()");
 //		return false;
 //	}
-	
+
 	CHECK_segment_id(seg_id, node_id, p_tree);
 	V3DLONG nodeinseg_id = p_tree->listNeuron.at(node_id).nodeinseg_id;
-	
+
 	bool res=true;
 	double rr=10;
-	
+
 	int NSegs = tracedNeuron.seg.size();
 	if (seg_id<0 && seg_id>=NSegs)
 	{
@@ -1391,8 +1424,8 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 		v3d_msg("Only one segment. Do nothing.",0);
 		return false;
 	}
-	
-	//first find the closeby path 
+
+	//first find the closeby path
 	V_NeuronSWC & subject_swc = tracedNeuron.seg.at(seg_id);
 	if (!subject_swc.isLineGraph())
 	{
@@ -1403,7 +1436,7 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 	int slength = subject_swc.nrows();
 	if (slength<=0)
 		return false; //this should never happen
-	
+
 	int *sMergeT_segInd = new int [slength];
 	int *sMergeT_nodeInd = new int [slength];
 	double *sMergeT_mindist = new double [slength];
@@ -1426,11 +1459,11 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 	{
 		if (cur_sid==seg_id)
 			continue;
-		
+
 		V_NeuronSWC & target_swc = tracedNeuron.seg.at(cur_sid);
 		if (find_node_in_V_NeuronSWC(target_swc, scx, scy, scz) >= 0)
 		{
-			b_headoverlap = true; 
+			b_headoverlap = true;
 			break;
 		}
 	}
@@ -1441,13 +1474,13 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 	{
 		if (cur_sid==seg_id)
 			continue;
-		
+
 		V_NeuronSWC & target_swc = tracedNeuron.seg.at(cur_sid);
 		int tlength = target_swc.nrows();
-		
+
 		if (find_node_in_V_NeuronSWC(target_swc, scx, scy, scz) >= 0)
 		{
-			b_tailoverlap = true; 
+			b_tailoverlap = true;
 			break;
 		}
 	}
@@ -1459,14 +1492,14 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 		if (sMergeT_mindist) {delete []sMergeT_mindist; sMergeT_mindist=0;}
 		return false;
 	}
-	
-	
+
+
 	//the real search the diverging path
 	for (cur_sid=0;cur_sid<NSegs;cur_sid++)
 	{
 		if (cur_sid==seg_id)
 			continue;
-		
+
 		V_NeuronSWC & target_swc = tracedNeuron.seg.at(cur_sid);
 		map <V3DLONG, V3DLONG> target_index_map = unique_V_NeuronSWC_nodeindex(target_swc);
 		int tlength = target_swc.nrows();
@@ -1476,27 +1509,27 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 			scx = subject_swc.row.at(j).data[2];
 			scy = subject_swc.row.at(j).data[3];
 			scz = subject_swc.row.at(j).data[4];
-			double scr2 = subject_swc.row.at(j).data[5]; 
+			double scr2 = subject_swc.row.at(j).data[5];
 			scr2 *= scr2; //squared radius
 			for (V3DLONG i=0;i<tlength;i++)
 			{
 				double tcr2 = target_swc.row.at(i).data[5]; tcr2 *= tcr2; //squared radius
-				
-				double tt = (scr2>tcr2)?scr2:tcr2; 
+
+				double tt = (scr2>tcr2)?scr2:tcr2;
 				tt=tt/2; //devide by 2 so that the transition will be smoother
-				
+
 				double dtcx = target_swc.row.at(i).data[2] - scx; dtcx *= dtcx;
 				if (dtcx>tt)
-					continue; 
-				
+					continue;
+
 				double dtcy = target_swc.row.at(i).data[3] - scy; dtcy *= dtcy;
 				if (dtcy>tt || dtcy+dtcx>tt)
 					continue;
-				
+
 				double dtcz = target_swc.row.at(i).data[4] - scz; dtcz *= dtcz;
 				if (dtcz>tt || dtcz+dtcy+dtcx>tt)
 					continue;
-			
+
 				//keep the best one among all segments and all nodes
 				if (sMergeT_segInd[j]<0) //unset yet
 				{
@@ -1504,7 +1537,7 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 					sMergeT_nodeInd[j] = i;
 					sMergeT_mindist[j] = dtcz+dtcy+dtcx;
 				}
-				else 
+				else
 				{
 					if (sMergeT_mindist[j]>dtcz+dtcy+dtcx)
 					{
@@ -1514,15 +1547,15 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 					}
 				}
 				v3d_msg(QString("merge subject swc node %1 to target seg %2 node %3.").arg(j).arg(cur_sid).arg(i), 0);
-				
+
 				break;
 			}
 		}
 	}
-	
+
 	//detect the parts that need merging
 	vector <V_NeuronSWC> splitSegs;
-	
+
 	if (slength==1) //cannot be <1, or it should exit already
 	{
 		if (sMergeT_segInd[0]>=0) //then just delete this segment, or do nothing
@@ -1531,7 +1564,7 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 			if (res)  proj_trace_history_append();
 		}
 	}
-	else 
+	else
 	{
 		QVector <int> mnodes;
 		QVector <int> mnodes_direction;
@@ -1546,7 +1579,7 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 				if (sMergeT_segInd[j+1]>0) {mnodes << (j); mnodes_direction << 2; } //direction = 2 means keep before, remove behind
 			}
 		}
-		
+
 		for (V3DLONG tk=0;tk<mnodes.size();tk++) //chop to mnodes.size()+1 segments
 		{
 			if (mnodes_direction.at(tk)==1)
@@ -1558,9 +1591,9 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 				if (subject_swc.row[0].parent<0)
 					res_swc1.row[0].parent = -1;
 				res_swc1.b_linegraph=true; //this must be set
-				
+
 				splitSegs.push_back(res_swc1);
-				
+
 				//create a new segmention of two nodes, to connect to the main trunk
 				V_NeuronSWC res_swc2;
 				V_NeuronSWC_unit u = tracedNeuron.seg.at(sMergeT_segInd[mnodes.at(tk)-1]).row.at(sMergeT_nodeInd[mnodes.at(tk)-1]);
@@ -1581,13 +1614,13 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 				if (subject_swc.row[0].parent>0) //then the other end must <0
 					res_swc1.row[j-1].parent = -1;
 				res_swc1.b_linegraph=true; //this must be set
-				
+
 				splitSegs.push_back(res_swc1);
 
 				//create a new segmention of two nodes, to connect to the main trunk
 				V_NeuronSWC res_swc2;
 				V_NeuronSWC_unit u = tracedNeuron.seg.at(sMergeT_segInd[mnodes.at(tk)+1]).row.at(sMergeT_nodeInd[mnodes.at(tk)+1]);
-				
+
 				res_swc2.append(u);
 				res_swc2.append(subject_swc.row.at(mnodes.at(tk)));
 				res_swc2.row[0].data[0] = 0; res_swc2.row[0].parent = -1;
@@ -1597,14 +1630,14 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 				v3d_msg(QString("push res_swc2 [%1] direction=2").arg(splitSegs.size()),0);
 			}
 		}
-		
+
 		if (mnodes.size()==1)
 		{
 			tracedNeuron.append(splitSegs);
 			res = tracedNeuron.deleteSeg(seg_id);
 			if (res)  proj_trace_history_append();
 		}
-	}	
+	}
 
 	//free space
 	if (sMergeT_segInd) {delete []sMergeT_segInd; sMergeT_segInd=0;}
@@ -1623,19 +1656,19 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 {
 	//this function will merge closeby nodes in different segments.
 	bool res=true;
-	
+
 	V3DLONG seg_id, cur_sid;
 	V3DLONG i,j;
-	
+
 	int NSegs = tracedNeuron.seg.size();
 	if (NSegs==1) //do nothing when there is only one segment
 	{
 		v3d_msg("Only one segment. Do nothing.",0);
 		return false;
 	}
-	
+
 	//if there are multiple segs, then ensure each one is a line graph
-	for (seg_id=0; seg_id<NSegs;seg_id++) 
+	for (seg_id=0; seg_id<NSegs;seg_id++)
 	{
 		V_NeuronSWC & subject_swc = tracedNeuron.seg.at(seg_id);
 		if (!subject_swc.isLineGraph())
@@ -1644,7 +1677,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			return false;
 		}
 	}
-	
+
 	//first	determine the termini nodes which should be preserved
 	vector <V_NeuronSWC_unit> terminiNodePool;
 	vector <V_NeuronSWC_unit> realRootNodePool;
@@ -1653,20 +1686,20 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 		//for the first node of the segment
 		V_NeuronSWC & subject_swc = tracedNeuron.seg.at(seg_id);
 		int slength = subject_swc.nrows();
-		
-		bool b_termini; 
+
+		bool b_termini;
 		for (cur_sid=0, b_termini=true;cur_sid<NSegs;cur_sid++)
 		{
 			if (cur_sid==seg_id)
 				continue;
-			
+
 			V_NeuronSWC & target_swc = tracedNeuron.seg.at(cur_sid);
 			int tlength = target_swc.nrows();
-			
+
 			for (i=0;i<target_swc.row.size();i++)
 			{
 				if (subject_swc.row.at(0).get_coord() == target_swc.row.at(i).get_coord())
-				{	
+				{
 					b_termini=false;
 					break;
 				}
@@ -1674,28 +1707,28 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			if (!b_termini)
 				break;
 		}
-		
+
 		if (b_termini)
 		{
 			terminiNodePool.push_back(subject_swc.row.at(0));
 			if (subject_swc.row.at(0).parent<0) //then it is a root, and does not overlap with others; this should be real root in the whole swc file
 				realRootNodePool.push_back(subject_swc.row.at(0));
 		}
-		
+
 		if (slength>1) //for the last node of the segment
 		{
 			for (cur_sid=0, b_termini=true;cur_sid<NSegs;cur_sid++)
 			{
 				if (cur_sid==seg_id)
 					continue;
-				
+
 				V_NeuronSWC & target_swc = tracedNeuron.seg.at(cur_sid);
 				int tlength = target_swc.nrows();
-				
+
 				for (i=0;i<target_swc.row.size();i++)
 				{
 					if (subject_swc.row.at(slength-1).get_coord() == target_swc.row.at(i).get_coord())
-					{	
+					{
 						b_termini=false;
 						break;
 					}
@@ -1703,7 +1736,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 				if (!b_termini)
 					break;
 			}
-			
+
 			if (b_termini)
 			{
 				terminiNodePool.push_back(subject_swc.row.at(slength-1));
@@ -1712,56 +1745,56 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			}
 		}
 	}
-	
-	
-	//then find and update the location/radius that correspond to the merged nodes 
-	
+
+
+	//then find and update the location/radius that correspond to the merged nodes
+
 #define V3DNEURON_MERGE_TO_BIGSPHERE 1
-	
+
 	V_NeuronSWC_list tracedNeuronNew = tracedNeuron;
 	for (seg_id=0; seg_id<NSegs;seg_id++)
 	{
 		V_NeuronSWC & subject_swc = tracedNeuron.seg.at(seg_id);
 		V_NeuronSWC & subject_swc_new = tracedNeuronNew.seg.at(seg_id);
 		V3DLONG slength = subject_swc.nrows();
-		
+
 		for (j=0; j<slength; j++)
 		{
 			double scx = subject_swc.row.at(j).x;
 			double scy = subject_swc.row.at(j).y;
 			double scz = subject_swc.row.at(j).z;
-			double scr2 = subject_swc.row.at(j).r; 
+			double scr2 = subject_swc.row.at(j).r;
 			scr2 *= scr2; //squared radius
-			
+
 			V3DLONG ind_best_merge_seg=-1, ind_best_merge_node=-1;	double r_best_merge=-1, dist_best; //set as -1 for initialization
 			for (cur_sid=seg_id+1;cur_sid<NSegs;cur_sid++)
 			{
 				if (cur_sid==seg_id) //only find in a different seg
 					continue;
-					
+
 				V_NeuronSWC & target_swc = tracedNeuron.seg.at(cur_sid);
 				//map <V3DLONG, V3DLONG> target_index_map = unique_V_NeuronSWC_nodeindex(target_swc);
 				V3DLONG tlength = target_swc.nrows();
-			
+
 				for (i=0;i<tlength;i++)
 				{
 					double tcr2 = target_swc.row.at(i).r; tcr2 *= tcr2; //squared radius
-					
-					double tt = (scr2>tcr2)?scr2:tcr2; 
+
+					double tt = (scr2>tcr2)?scr2:tcr2;
 					tt=tt; //4; //devide by 2*2=4 so that the transition will be smoother
-					
+
 					double dtcx = target_swc.row.at(i).x - scx; dtcx *= dtcx;
 					if (dtcx>tt)
-						continue; 
-					
+						continue;
+
 					double dtcy = target_swc.row.at(i).y - scy; dtcy *= dtcy;
 					if (dtcy>tt || dtcy+dtcx>tt)
 						continue;
-					
+
 					double dtcz = target_swc.row.at(i).z - scz; dtcz *= dtcz;
 					if (dtcz>tt || dtcz+dtcy+dtcx>tt)
 						continue;
-					
+
 					if (tcr2>scr2 && tcr2>r_best_merge)
 					{
 						ind_best_merge_seg = cur_sid;
@@ -1771,7 +1804,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 					}
 				}
 			}
-			
+
 			if (ind_best_merge_seg>=0) // && ind_best_merge_node>=0 && r_best_merge>=0) //only one judgment is enough
 			{
 				V_NeuronSWC & target_swc = tracedNeuron.seg.at(ind_best_merge_seg);
@@ -1802,7 +1835,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			}
 		}
 	}
-	
+
 	//then determine the pool of all nodes
 	vector <V_NeuronSWC_unit> finalNodePool;
 	for (seg_id=0; seg_id<NSegs;seg_id++)
@@ -1820,7 +1853,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 					break;
 				}
 			}
-			if (!b_exist) 
+			if (!b_exist)
 				finalNodePool.push_back(subject_swc.row.at(j)); //thus finalNodePool contains unique coordinates. Note the respective radius has been updated to the largest already.
 		}
 	}
@@ -1839,17 +1872,17 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			printf("j=%ld key=%ld mapped row=%ld node=%ld x=%5.3f y=%5.3f z=%5.3f parent=%ld\n", j, V3DLONG(subject_swc.row.at(j).n), subject_index_map[V3DLONG(subject_swc.row.at(j).n)], V3DLONG(subject_swc.row.at(j).n), subject_swc.row.at(j).x, subject_swc.row.at(j).y, subject_swc.row.at(j).z, V3DLONG(subject_swc.row.at(j).parent));
 		}
 		printf("\n\n");
-		
+
 		for (j=0; j<slength; j++)
 		{
 			V3DLONG c = j;
 			V3DLONG p =  V3DLONG(subject_swc.row.at(j).parent);
 			if (p<0) continue;
 			else p = subject_index_map[p];
-			
+
 			//printf("c0=%ld p0=%ld c=%ld p=%ld\n", c0, p0, c, p);
 			if (p<0 || p>=slength) {v3d_msg(QString("detect a strange parent! row(%1) node=%2 parent=%3").arg(j).arg(subject_swc.row.at(j).n).arg(p)); continue;}
-			
+
 			V3DLONG ipos=-1;	for (i=0;i<finalNodePool.size();i++)	{if (subject_swc.row.at(c).get_coord() == finalNodePool.at(i).get_coord())	{ipos=i;break;	}}
 			V3DLONG ippos=-1;	for (i=0;i<finalNodePool.size();i++)	{if (subject_swc.row.at(p).get_coord() == finalNodePool.at(i).get_coord())	{ippos=i;break;	}}
 			if (ipos>=0 && ippos>=0)
@@ -1863,8 +1896,8 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			}
 		}
 	}
-	
-	
+
+
 	//find the indexes of the termini nodes and root nodes in the finalNodePool (which contains the complete node info)
 	V3DLONG *ind_end_nodes = new V3DLONG [terminiNodePool.size()], ind_startnode;
 	if (realRootNodePool.size()<=0)
@@ -1903,7 +1936,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			}
 		}
 	}
-	
+
 	//now recompute the neuron structure based on merged node locations
 	V3DLONG ntotalnodes = finalNodePool.size();
 	double *xa = new double [ntotalnodes];
@@ -1923,17 +1956,17 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 	V_NeuronSWC_list curTraceNeuron;
 	curTraceNeuron.name = tracedNeuron.name;
 	curTraceNeuron.file = tracedNeuron.file;
-	
+
         const char *err_msg = find_shortest_path_graphpointset(ntotalnodes,
 										   xa, ya, za, va, //the coordinates and values of all nodes
 										   zthickness, // z-thickness for weighted edge
-										   edge_array,	
-										   ind_startnode,        // start node's index 
+										   edge_array,
+										   ind_startnode,        // start node's index
 										   terminiNodePool.size(),          // n_end_nodes == (0 for shortest path tree) (1 for shortest path) (n-1 for n pair path)
 										   ind_end_nodes,      // all end nodes' indexes
 										   mmUnit, // change from Coord3D for shortest path tree
 										   para);
-	
+
 	int nsegsnew = mergeback_mmunits_to_neuron_path(terminiNodePool.size(), mmUnit, curTraceNeuron);
 
 	for (i=0;i<curTraceNeuron.seg.size();i++) //now use the already estimated radius information
@@ -1941,9 +1974,9 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 		for (j=0;j<curTraceNeuron.seg.at(i).row.size();j++)
 		{
 			bool b_find=false;
-			for (V3DLONG ipos=0;ipos<finalNodePool.size();ipos++)	
+			for (V3DLONG ipos=0;ipos<finalNodePool.size();ipos++)
 			{
-				if (curTraceNeuron.seg.at(i).row.at(j).get_coord() == finalNodePool.at(ipos).get_coord())	
+				if (curTraceNeuron.seg.at(i).row.at(j).get_coord() == finalNodePool.at(ipos).get_coord())
 				{
 					curTraceNeuron.seg.at(i).row.at(j).r = finalNodePool.at(ipos).r;
 					b_find=true;
@@ -1952,24 +1985,24 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			}
 			if (!b_find)
 			{
-				v3d_msg(QString("The %1 seg %2 node has an unmatched node.\n").arg(i).arg(j), 0); 
+				v3d_msg(QString("The %1 seg %2 node has an unmatched node.\n").arg(i).arg(j), 0);
 			}
 		}
 	}
-	
-	
-	
+
+
+
 	//tracedNeuron = curTraceNeuron; //overwrite the neuron tracing result
 	tracedNeuron.seg = curTraceNeuron.seg; //overwrite the neuron tracing result w/o producing an additional neuron. why? 100415
 	proj_trace_history_append();
-	
+
 	//free space
 	if (xa) {delete []xa; xa=0;}
 	if (ya) {delete []ya; ya=0;}
 	if (za) {delete []za; za=0;}
 	if (va) {delete []va; va=0;}
 	if (ind_end_nodes) {delete []ind_end_nodes; ind_end_nodes=0;}
-	
+
 	v3d_msg("quite merge all successfully", 0);
 	return res;
 }

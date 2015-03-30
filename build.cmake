@@ -15,8 +15,11 @@ function download {
 
 shopt -s expand_aliases;
 CMAKE_VERSION=3.1.3
-CMAKE_ARGS=
+CMAKE_ARGS=""
+CMAKE_PLATFORM_ARGS=
 CMAKE_BUILD="Release"
+CMAKE_EXE=""
+ROOT_DIR=`pwd`
 
 set -eu
 
@@ -29,9 +32,8 @@ case $KERNEL in
     mingw*)
         OS=windows
         KERNEL=windows
-        if [[ $TARGET_CPU == "x64" ]]; then
-            ARCH=x86_64
-        fi
+        ;;
+    windows-x86_64)
         ;;
     *)
         OS=$KERNEL
@@ -58,7 +60,10 @@ while [[ $# > 0 ]]; do
             PLATFORM="$1"
             ;;
         -h5j)
-            CMAKE_ARGS="-DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON"
+            CMAKE_ARGS+="-DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON"
+            ;;
+        -qt5)
+            CMAKE_ARGS+=" -DFORCE_QT4:BOOL=OFF"
             ;;
         -debug)
             CMAKE_BUILD="Debug"
@@ -79,37 +84,67 @@ while [[ $# > 0 ]]; do
     shift
 done
 echo "Targeting platform \"$PLATFORM\""
+echo "Root directory \"$ROOT_DIR\""
 
 if [[ -z ${OPERATION:-} ]]; then
-    echo "Usage: build.cmake [-platform <name>] [-h5j] [-debug] <install | clean | clobber>"
+    echo "Usage: build.cmake [-platform <name>] [-h5j] [-qt5] [-debug] <install | clean | clobber>"
     echo "where possible platform names are: linux-x86, linux-x86_64, macosx-x86_64, windows-x86, windows-x86_64, etc."
     echo " -h5j - builds for the Janelia Farm HDF variant. Enables building of FFmpeg and HDF5"
+    echo " -qt5 - build with Qt5 (experimental)"
     echo " -debug - Generates a debug build (default is release)"
     echo " clean - removes the current build for platform"
     echo " clobber - cleans, and removes the current cmake directories"
     exit 1
 fi
 
+if [ $PLATFORM = "windows-x86_64" ]; then
+    CMAKE_PLATFORM_ARGS="-DBoost_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
+    CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
+    CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/winlib64/libtiff.lib "
+    CMAKE_PLATFORM_ARGS+="-DFFTW_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/fftw-3.3.4-dll64 "
+    CMAKE_PLATFORM_ARGS+="-DFFTW_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/fftw-3.3.4-dll64/libfftw3f-3.lib"
+fi
+
 case $OPERATION in
     install)
-		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
-			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
-				echo "Downloading cmake"
-				download http://www.cmake.org/files/v3.1/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
-				tar xvzf cmake-$CMAKE_VERSION.tar.gz
-			fi
-			cd cmake-$CMAKE_VERSION
-			./configure --prefix=.
-			make
-			make install
-			cd ..
-		fi
+        if hash cmake 2>/dev/null; then
+            echo "Using system cmake"
+            CMAKE_EXE="cmake"
+        else
+    		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
+    			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
+    				echo "Downloading cmake"
+    				download http://www.cmake.org/files/v3.1/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
+    				tar xvzf cmake-$CMAKE_VERSION.tar.gz
+    			fi
+    			cd cmake-$CMAKE_VERSION
+    			./configure --prefix=.
+    			make
+    			make install
+    			cd ..
+    		fi
+            CMAKE_EXE="../cmake-$CMAKE_VERSION/bin/cmake"
+        fi
 		if [[ ! -e build_$PLATFORM ]]; then
 			mkdir build_$PLATFORM
 		fi
 		cd build_$PLATFORM
-		../cmake-$CMAKE_VERSION/bin/cmake -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS ..
-		make
+        if [ $PLATFORM = "windows-x86_64" ]; then
+            CMAKE_EXE+=" -G \"Visual Studio 12 2013 Win64\""
+        fi
+        echo $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS ..
+		eval $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS ..
+
+        if [ $PLATFORM = "windows-x86_64" ]; then
+            echo "Building HDF5"
+            devenv Vaa3D.sln -project HDF5 -build $CMAKE_BUILD -out hdf5.txt
+            echo "Building Vaa3D"
+            devenv Vaa3D.sln -build $CMAKE_BUILD -out all_build.txt
+            echo "Installing"
+            devenv Vaa3D.sln -project INSTALL -build $CMAKE_BUILD -out install.txt
+        else
+    		make
+        fi
         ;;
     clean)
         echo "Cleaning build_$PLATFORM directories"

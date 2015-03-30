@@ -30,10 +30,18 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #define __v3d_custom_toolbar__
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include <QMainWindow>
+#ifdef USE_Qt5
+#include <QMdiArea>
+#else
 #include <QWorkspace>
+#endif
 #include "v3d_actions.h"
 #include "v3d_compile_constraints.h"
 #include "../worm_straighten_c/bdb_minus.h"
@@ -54,7 +62,6 @@ class Image4DSimple;
 class My4DImage;
 class QAction;
 class QMenu;
-class QWorkspace;
 class MdiChild;
 class QSignalMapper;
 class XFormWidget;
@@ -263,10 +270,18 @@ private:
      //void saveDataFor3DViewer(iDrawExternalParameter* _idep);
 #ifdef __v3d_custom_toolbar__
 public :
-	QWorkspace *workspace;
-private:
+#ifdef USE_Qt5
+	QMdiArea *workspace;
 #else
 	QWorkspace *workspace;
+#endif
+private:
+#else
+#ifdef USE_Qt5
+	QMdiArea *workspace;
+#else
+	QWorkspace *workspace;
+#endif
 #endif
     QSignalMapper *windowMapper;
     QMenu *fileMenu;
@@ -444,18 +459,26 @@ public: //for image processing, some of the parameters should be globally set
 	QAction *recentFileActs[MaxRecentFiles];
 	QList <V3dR_MainWindow *> list_3Dview_win; //need to free later in the destructor //081002
 	V3dR_MainWindow * find3DViewer(QString fileName);
-//    QWorkspace *get_workspace_handle() {return workspace;}
+//    QMdiArea *get_workspace_handle() {return workspace;}
 	void updateWorkspace()
 	{
 		if (workspace)
 		{
 			workspace->update();
+#ifdef USE_Qt5
+			foreach (QWidget* w, workspace->subWindowList()) w->update();
+#else
 			foreach (QWidget* w, workspace->windowList()) w->update();
+#endif
 		}
 	}
 	void cascadeWindows()
 	{
+#ifdef USE_Qt5
+		if (workspace) workspace->cascadeSubWindows();
+#else
 		if (workspace) workspace->cascade();
+#endif
 	}
 #define __used_by_v3d_interface__
     //Vaa3DPluginMenu *pluginProcMenu;

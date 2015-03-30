@@ -101,7 +101,7 @@ public:
 
 		origin_x = origin_y = origin_z = 0;
 		p_customStruct = 0;
-		
+
 		valid_zslicenum = 0;
 	}
 	virtual ~Image4DSimple()
@@ -178,21 +178,21 @@ public:
 	void setZDim(V3DLONG v) {sz2=v;}
 	void setCDim(V3DLONG v) {sz3=v;}
 	void setTDim(V3DLONG v) {sz_time=v;}
-	bool setValidZSliceNum(V3DLONG v) 
+	bool setValidZSliceNum(V3DLONG v)
 	{
 		if (v==0 && sz2==0) {valid_zslicenum=0; return true;}
 		if (v>=0 && v<sz2) //in this case sz2>0
-		{valid_zslicenum = v; return true;} 
-		else 
+		{valid_zslicenum = v; return true;}
+		else
 			return false;
 	}
-	
-	bool setPreValidZSliceNum(V3DLONG v) 
+
+	bool setPreValidZSliceNum(V3DLONG v)
 	{
 		if (v==0 && sz2==0) {prevalid_zslicenum=0; return true;}
 		if (v>=0 && v<sz2) //in this case sz2>0
-		{prevalid_zslicenum = v; return true;} 
-		else 
+		{prevalid_zslicenum = v; return true;}
+		else
 			return false;
 	}
 
@@ -208,7 +208,7 @@ public:
 	void setOriginX(double a) { origin_x = a;}
 	void setOriginY(double a) { origin_y = a;}
 	void setOriginZ(double a) { origin_z = a;}
-	
+
 
 	void setCustomStructPointer(void *a) {p_customStruct = a;}
 	void * getCustomStructPointer() {return p_customStruct;}
@@ -259,11 +259,11 @@ public:
 
     //to call the following 4 functions you must link your project with basic_4dimage.cpp
 	//Normally for the plugin interfaces you don't need to call the following functions
-	void loadImage(char filename[]);
-	void loadImage(char filename[], bool b_useMylib);
+	void loadImage(const char* filename);
+	void loadImage(const char* filename, bool b_useMylib);
     void loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zsliceno);
 	bool saveImage(const char filename[]);
-    
+
 	bool createImage(V3DLONG mysz0, V3DLONG mysz1, V3DLONG mysz2, V3DLONG mysz3, ImagePixelType mytype);
     void createBlankImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype);
 

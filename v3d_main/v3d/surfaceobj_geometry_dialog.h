@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -40,10 +40,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef __SURFACEOBJ_GEOMETRY_DIALOG_H__
 #define __SURFACEOBJ_GEOMETRY_DIALOG_H__
 
-#include <QDialog>
-
-#include "ui_surfaceobj_geometry_dialog.h"
 #include "../3drenderer/renderer_gl1.h"
+#include "ui_surfaceobj_geometry_dialog.h"
+
+#include <QDialog>
 
 class V3dR_GLWidget;
 class Renderer_gl1;
@@ -67,32 +67,32 @@ protected:
 	int dataclass;
 	int surfaceobjtype;
 	int objectindex;
-	
+
 	NeuronTree * p_tree;
 	NeuronTree * p_tree1;
 	NeuronTree tree0; //the original tree
-	
+
 	QList <CellAPO> *p_apo;
 	QList <CellAPO> apo0;
-	
+
 	//data
 	double cur_shift_x, cur_shift_y, cur_shift_z,
 		   cur_scale_x, cur_scale_y, cur_scale_z,
 		   cur_gscale_x, cur_gscale_y, cur_gscale_z,
 		   cur_scale_r,
 		   cur_rotate_x, cur_rotate_y, cur_rotate_z;
-	double cur_cx, cur_cy, cur_cz; //center of the current object, which should NOT affected by a rotation, but should be updated if a shift happen	   
+	double cur_cx, cur_cy, cur_cz; //center of the current object, which should NOT affected by a rotation, but should be updated if a shift happen
     bool cur_use_rotation;
 	bool cur_flip_x, cur_flip_y, cur_flip_z;
-	
+
 	double last_val;
 	SOG_Operation cur_op;
-	
+
 private:
 	void resetInternalStates();
 	void create();
 	void updateContent();
-	
+
 public slots:
 	void reset();
 	void undo();

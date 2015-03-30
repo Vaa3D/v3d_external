@@ -5,6 +5,10 @@
 #include <iostream>
 #include <QFuture>
 #include <QUrl>
+#ifdef USE_Qt5
+#include <QtConcurrent>
+#endif
+
 #include <cassert>
 
 #ifdef USE_FFMPEG

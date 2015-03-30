@@ -64,7 +64,7 @@ bool SingleNeuronLsmSetReader::execute() {
     // to contain a reference channel and 1 signal channel.
 
     My4DImage lsmImage1;
-    lsmImage1.loadImage(inputLsmFileList.at(0).toAscii().data());
+    lsmImage1.loadImage(inputLsmFileList.at(0).toUtf8().data());
     if (lsmImage1.isEmpty()) {
         qDebug() << " error: image " << inputLsmFileList.at(0) << " loaded to empty state " << endl;
         return false;
@@ -72,7 +72,7 @@ bool SingleNeuronLsmSetReader::execute() {
     qDebug() << "Lsm file 1 dimensions: x=" << lsmImage1.getXDim() << " y=" << lsmImage1.getYDim() << " z=" << lsmImage1.getZDim() << " c=" << lsmImage1.getCDim();
 
     My4DImage lsmImage2;
-    lsmImage2.loadImage(inputLsmFileList.at(1).toAscii().data());
+    lsmImage2.loadImage(inputLsmFileList.at(1).toUtf8().data());
     if (lsmImage2.isEmpty()) {
         qDebug() << " error: image " << inputLsmFileList.at(1) << " loaded to empty state " << endl;
         return false;

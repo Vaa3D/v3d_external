@@ -5,7 +5,6 @@
 #include <windows.h>
 #endif
 
-#include <QUrlInfo>
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
@@ -176,7 +175,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui->compartmentMapWidget->setComboBox(ui->compartmentMapComboBox);
     connect(ui->compartmentMapComboBox, SIGNAL(currentIndexChanged(int)), ui->compartmentMapWidget, SLOT(switchCompartment(int)));
     //connect(ui->compartmentMapWidget, SIGNAL(viscomp3dview(QList<LabelSurf>)), (Renderer_gl1*)(ui->v3dr_glwidget->getRenderer()), SLOT(setListLabelSurf(QList<LabelSurf>))); // vis compartments in Na3Dviewer
-    
+
     // Wire up MIP viewer
     // Status bar message
     connect(ui->naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
@@ -202,7 +201,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui->referenceGammaWidget->setToolTip(tr("Brightness/gamma of reference channel"));
 
     ui->BoxSize_spinBox->setMinimum(NaZStackWidget::minHdrBoxSize);
-    
+
     // Wire up Z-stack / HDR viewer
     connect(ui->HDR_checkBox, SIGNAL(toggled(bool)),
             ui->naZStackWidget, SLOT(setHDRCheckState(bool)));
@@ -1460,12 +1459,12 @@ void NaMainWindow::on_actionNeuronAnnotator_triggered() {
 }
 
 void NaMainWindow::setV3DDefaultModeCheck(bool checkState) {
-    QAction* ui_actionV3DDefault = qFindChild<QAction*>(this, "actionV3DDefault");
+    QAction* ui_actionV3DDefault = this->findChild<QAction*>("actionV3DDefault");
     ui_actionV3DDefault->setChecked(checkState);
 }
 
 void NaMainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
-    QAction* ui_actionNeuronAnnotator = qFindChild<QAction*>(this, "actionNeuronAnnotator");
+    QAction* ui_actionNeuronAnnotator = this->findChild<QAction*>("actionNeuronAnnotator");
     ui_actionNeuronAnnotator->setChecked(checkState);
 }
 
@@ -1822,9 +1821,9 @@ void NaMainWindow::on_action2D_MIP_triggered() {
 void NaMainWindow::on_actionScreenShot_triggered() {
     static QString dirname = ".";
     QString filename = QFileDialog::getSaveFileName(
-        ui->v3dr_glwidget, 
-        QObject::tr("Save 3D View to an image file"), 
-        dirname, 
+        ui->v3dr_glwidget,
+        QObject::tr("Save 3D View to an image file"),
+        dirname,
         QObject::tr("Images (*.tif *.png *.jpg *.ppm *.xpm)"));
     if (filename.isEmpty())
         return; // User cancelled
@@ -1840,7 +1839,7 @@ void NaMainWindow::on_actionScreenShot_triggered() {
     else {
         QMessageBox::critical(this,
             "Failed to save screen shot",
-            "Failed to save screen shot to file " + filename 
+            "Failed to save screen shot to file " + filename
             + " \nDo you have write permission in that folder?"
             + " \nMaybe a different image format would work better?");
     }
@@ -2164,7 +2163,7 @@ void NaMainWindow::initializeOverlayGallery()
     // qDebug() << "NaMainWindow::initializeOverlayGallery()" << __FILE__ << __LINE__;
 
     // Create layout, only if needed.
-    QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
+    QFrame* ui_maskFrame = this->findChild<QFrame*>("maskFrame");
     if (! ui_maskFrame->layout()) {
         ui_maskFrame->setLayout(new QHBoxLayout());
         assert(ui_maskFrame->layout());

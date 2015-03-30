@@ -309,7 +309,7 @@ QStringList VolumePatternIndex::parseIndexFileLine(QString line)
   QString filePath;
   if (fList.size()==1) {
     return resultList; // empty
-  } 
+  }
   id=fList[0];
   filePath=fList[1];
   if (fList.size()>2) {
@@ -336,7 +336,7 @@ bool VolumePatternIndex::appendIndex()
     qDebug() << "Could not find pre-existing index file to append, " << indexFilePath;
     return false;
   }
-  
+
   // Get dimensional info from current index, and then move to end to add new entries
   if (!openIndexAndReadHeader()) {
     qDebug() << "Could not open and read header of file=" << indexFilePath;
@@ -387,7 +387,7 @@ bool VolumePatternIndex::appendIndex()
       qDebug() << "Unexpectedly could not channel size for entry";
       return false;
     }
-    
+
     // Next, advance the file pointer past the index data
     if (fseek(fid, indexTotalBytes, SEEK_CUR)!=0) {
       qDebug() << "Could not advance file pointer past index data";
@@ -401,7 +401,10 @@ bool VolumePatternIndex::appendIndex()
   fclose(fid);
   fid=0L;
 
-  fid=fopen(indexFilePath.toAscii().data(), "ab");
+  QByteArray ba = indexFilePath.toUtf8();
+  const char* filepath = ba.constData();
+
+  fid=fopen(filepath, "ab");
   if (!fid) {
     qDebug() << "Could not open file=" << indexFilePath << " to append";
     return false;
@@ -409,7 +412,7 @@ bool VolumePatternIndex::appendIndex()
 
   indexState=INDEX_STATE_APPEND;
   return addEntriesToIndex();
-  
+
 }
 
 bool VolumePatternIndex::createIndex()
@@ -423,91 +426,110 @@ bool VolumePatternIndex::addEntriesToIndex()
 {
     qDebug() << "addEntriesToIndex() start";
 
-    if (!populateIndexFileList()) {
+    if ( !populateIndexFileList() )
+    {
         qDebug() << "populateIndexFileList failed";
         return false;
     }
-    if (indexFileList.size()<1) {
+    if ( indexFileList.size() < 1 )
+    {
         qDebug() << "No files to index";
         return false;
     }
-    int fileIndex=0;
-    indexData=0L;
-    char* filePathBuffer=new char[FILENAME_BUFFER_SIZE];
-    char* idBuffer=new char[ID_BUFFER_SIZE];
-    for (fileIndex=0;fileIndex<indexFileList.size();fileIndex++) {
-      qDebug() << "Processing file " << fileIndex;
-      My4DImage* sourceImage=0L;
-      ImageLoader loader;
-      QString filePathToLoad=indexFileList[fileIndex];
-      qDebug() << "Starting with file=" << filePathToLoad;
-      if (filePathToLoad.endsWith(".mask")) {
-	  MaskChan mc;
-	  QStringList ql;
-	  ql.append(filePathToLoad);
-	  sourceImage=mc.createImageFromMaskFiles(ql);
-      } else {
-	sourceImage=new My4DImage();
-        if (!loader.loadImage(sourceImage, filePathToLoad)) {
-            qDebug() << "Could not load file=" << filePathToLoad;
+    int fileIndex = 0;
+    indexData = 0L;
+    char* filePathBuffer = new char[FILENAME_BUFFER_SIZE];
+    char* idBuffer = new char[ID_BUFFER_SIZE];
+    for ( fileIndex = 0; fileIndex < indexFileList.size(); fileIndex++ )
+    {
+        qDebug() << "Processing file " << fileIndex;
+        My4DImage* sourceImage = 0L;
+        ImageLoader loader;
+        QString filePathToLoad = indexFileList[fileIndex];
+        qDebug() << "Starting with file=" << filePathToLoad;
+        if ( filePathToLoad.endsWith( ".mask" ) )
+        {
+            MaskChan mc;
+            QStringList ql;
+            ql.append( filePathToLoad );
+            sourceImage = mc.createImageFromMaskFiles( ql );
+        }
+        else
+        {
+            sourceImage = new My4DImage();
+            if ( !loader.loadImage( sourceImage, filePathToLoad ) )
+            {
+                qDebug() << "Could not load file=" << filePathToLoad;
+                return false;
+            }
+        }
+        qDebug() << "Indexing " << fileIndex << " of " << indexFileList.size() << " : " << filePathToLoad << "...";
+        // Note: if indexState==INDEX_STATE_APPEND, then we assume the dimensions have been read by the index read step previously
+        if ( indexState == INDEX_STATE_CREATE && ( fileIndex == 0 && x0 == -1 ) )
+        {
+            // Then assume we are to use the first image to set the selection region
+            x0 = 0; x1 = sourceImage->getXDim();
+            y0 = 0; y1 = sourceImage->getYDim();
+            z0 = 0; z1 = sourceImage->getZDim();
+        }
+        indexImage( sourceImage, indexChannelList[fileIndex], false );
+        if ( indexData == 0L )
+        {
+            qDebug() << "Error with indexImage";
             return false;
         }
-      }
-      qDebug() << "Indexing " << fileIndex << " of " << indexFileList.size() << " : " << filePathToLoad << "...";
-      // Note: if indexState==INDEX_STATE_APPEND, then we assume the dimensions have been read by the index read step previously
-      if (indexState==INDEX_STATE_CREATE && (fileIndex==0 && x0==-1) ) {
-	// Then assume we are to use the first image to set the selection region
- 	x0=0; x1=sourceImage->getXDim();
-	y0=0; y1=sourceImage->getYDim();
-	z0=0; z1=sourceImage->getZDim();
-      }
-      indexImage(sourceImage, indexChannelList[fileIndex], false);
-      if (indexData==0L) {
-	qDebug() << "Error with indexImage";
-	return false;
-      }
-      if (fileIndex==0 && indexState==INDEX_STATE_CREATE) {
-	if (!openIndexAndWriteHeader()) {
-	  qDebug() << "Could not open index file and write header";
-	  return false;
-	}
-      }
+        if ( fileIndex == 0 && indexState == INDEX_STATE_CREATE )
+        {
+            if ( !openIndexAndWriteHeader() )
+            {
+                qDebug() << "Could not open index file and write header";
+                return false;
+            }
+        }
 
-      // Write id, path, and channel for this entry before index data
-      QString indexId=indexIdList[fileIndex];
-      int length=indexId.length();
+        // Write id, path, and channel for this entry before index data
+        QString indexId = indexIdList[fileIndex];
+        int length = indexId.length();
 
-      if (length>ID_BUFFER_SIZE) {
-	qDebug() << "Id buffer is not large enough for=" << indexId;
-	return false;
-      }
-      fwrite(&length, sizeof(int), 1, fid);
-      strcpy(idBuffer, indexId.toAscii().data());
-      fwrite(idBuffer, sizeof(char), length, fid);
+        if ( length > ID_BUFFER_SIZE )
+        {
+            qDebug() << "Id buffer is not large enough for=" << indexId;
+            return false;
+        }
+        fwrite( &length, sizeof( int ), 1, fid );
+        QByteArray ba = indexId.toUtf8();
+        const char* index_id = ba.constData();
 
-      length=filePathToLoad.length();
-      if (length>FILENAME_BUFFER_SIZE) {
-	qDebug() << "File path length name buffer not large enough for=" << filePathToLoad;
-	return false;
-      }
-      fwrite(&length, sizeof(int), 1, fid);
-      strcpy(filePathBuffer, filePathToLoad.toAscii().data());
-      fwrite(filePathBuffer, sizeof(char), length, fid);
-      int channelIndex=indexChannelList[fileIndex];
-      fwrite(&channelIndex, sizeof(int), 1, fid);
+        strcpy( idBuffer, index_id );
+        fwrite( idBuffer, sizeof( char ), length, fid );
 
-      // Next, write the index data
-      fwrite(indexData, sizeof(unsigned char), indexTotalBytes, fid);
+        length = filePathToLoad.length();
+        if ( length > FILENAME_BUFFER_SIZE )
+        {
+            qDebug() << "File path length name buffer not large enough for=" << filePathToLoad;
+            return false;
+        }
+        fwrite( &length, sizeof( int ), 1, fid );
+        ba = filePathToLoad.toUtf8();
+        const char* filepath = ba.constData();
+        strcpy( filePathBuffer, filepath );
+        fwrite( filePathBuffer, sizeof( char ), length, fid );
+        int channelIndex = indexChannelList[fileIndex];
+        fwrite( &channelIndex, sizeof( int ), 1, fid );
 
-      qDebug() << "Cleaning up";
-      delete sourceImage;
+        // Next, write the index data
+        fwrite( indexData, sizeof( unsigned char ), indexTotalBytes, fid );
+
+        qDebug() << "Cleaning up";
+        delete sourceImage;
     }
-    if (indexData!=0) {
+    if ( indexData != 0 )
+    {
         delete [] indexData;
     }
     delete [] filePathBuffer;
-    fclose(fid);
-    fid=0;
+    fclose( fid );
+    fid = 0;
     return true;
 }
 
@@ -515,7 +537,10 @@ bool VolumePatternIndex::openIndexAndWriteHeader() {
 
     qDebug() << "Writing header file...";
 
-    fid=fopen(indexFilePath.toAscii().data(), "wb");
+    QByteArray ba = indexFilePath.toUtf8();
+    const char* filepath = ba.constData();
+
+    fid=fopen(filepath, "wb");
     if (!fid) {
         qDebug() << "Could not open file=" << indexFilePath << " to write";
         return false;
@@ -713,12 +738,12 @@ bool VolumePatternIndex::doSearch()
       qDebug() << "Unexpectedly could not channel size for entry";
       return false;
     }
-    
+
     if ( (readSize=fread(indexData, 1, indexTotalBytes, fid))!=indexTotalBytes) {
       qDebug() << "Could not read full block of " << indexTotalBytes << " , read " << readSize << " instead";
       return false;
     }
-    
+
     qDebug() << "Calculating index score for " << pathQString;
 
     V3DLONG score=calculateIndexScore(queryIndex, indexData, indexTotal, queryIndexSkipPositions);
@@ -983,7 +1008,7 @@ void VolumePatternIndex::indexImage(My4DImage* image, int channel, bool skipzero
     subregion[3]=y1;
     subregion[4]=z0;
     subregion[5]=z1;
-    
+
     if (skipzeros) {
         qDebug() << "indexImage - skipzeros is true - populating queryIndexSkipPositions";
         cubifiedImage=AnalysisTools::cubifyImageByChannel(image, channel, unitSize, AnalysisTools::CUBIFY_TYPE_AVERAGE, subregion, true, &queryIndexSkipPositions);
@@ -1095,7 +1120,9 @@ void VolumePatternIndex::indexImage(My4DImage* image, int channel, bool skipzero
 bool VolumePatternIndex::openIndexAndReadHeader()
 {
     qDebug() << "Reading header file...";
-    fid=fopen(indexFilePath.toAscii().data(), "rb");
+    QByteArray ba = indexFilePath.toUtf8();
+    const char* filepath = ba.constData();
+    fid=fopen(filepath, "rb");
     if (!fid) {
         qDebug() << "Could not open file=" << indexFilePath << " to read";
         return false;

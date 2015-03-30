@@ -382,7 +382,11 @@ int V3dR_MainWindow::getAnimateRotTimePoints(QString qtitle, bool* ok, int v)
 	if (glWidget->dataDim5()>1)
 	{
 		timepoints = v;
+#ifdef USE_Qt5
+		timepoints = QInputDialog::getInt(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
+#else
 		timepoints = QInputDialog::getInteger(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
+#endif
 	}
 	else
 	{
@@ -411,8 +415,13 @@ void V3dR_MainWindow::setAnimateRotSpeedSec()
 	animateStep(); //to stop
 
 	bool ok;
+#ifdef USE_Qt5
+	int time_sec = QInputDialog::getInt(0, QObject::tr("Animation"),
+									QObject::tr("Seconds per rotation of speed:"), rotationSpeedSec, 0, 1000, 1, &ok);
+#else
 	int time_sec = QInputDialog::getInteger(0, QObject::tr("Animation"),
 									QObject::tr("Seconds per rotation of speed:"), rotationSpeedSec, 0, 1000, 1, &ok);
+#endif
 	if (ok)  rotationSpeedSec = time_sec;
 
 	if (oldAnimate==2) //continue
@@ -476,12 +485,12 @@ bool V3dR_GLWidget::screenShot(QString filename)
 	bool r =false;
 	if (image1.save(curfile, format, 100)) //uncompressed
 	{
-		printf("Successful to save screen-shot: [%s]\n",  curfile.toAscii().data());
+		printf("Successful to save screen-shot: [%s]\n",  curfile.toUtf8().data());
 		r = true;
 	}
 	else
 	{
-		printf("Failed to save screen-shot: [%s]\n",  curfile.toAscii().data());
+		printf("Failed to save screen-shot: [%s]\n",  curfile.toUtf8().data());
 	}
 	return r;
 }
@@ -500,11 +509,11 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 	QString curfile = QString("%1/a%2.%3").arg(outputDir).arg(i).arg(format);
 	if (image1.save(curfile, format, 100)) //uncompressed
 	{
-		printf("Successful to save frame %d: [%s]\n", i, curfile.toAscii().data());
+		printf("Successful to save frame %d: [%s]\n", i, curfile.toUtf8().data());
 	}
 	else
 	{
-		printf("Failed to save frame %d: [%s]\n", i, curfile.toAscii().data());
+		printf("Failed to save frame %d: [%s]\n", i, curfile.toUtf8().data());
 	}
 }
 
@@ -540,7 +549,11 @@ void V3dR_MainWindow::saveMovie()
 		}
 		// frames of rotation
 		{
+#ifdef USE_Qt5
+			rotation_frames = QInputDialog::getInt(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
+#else
 			rotation_frames = QInputDialog::getInteger(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
+#endif
 			if (! ok) return;
 		}
 		// time points of rotation
@@ -593,7 +606,7 @@ void V3dR_MainWindow::saveMovie()
 			//curdir.cd(outputDir);
 		}
 	}
-    printf("\nThe directory to save movie frames: [%s]\n", outputDir.toAscii().data());
+    printf("\nThe directory to save movie frames: [%s]\n", outputDir.toUtf8().data());
 
     sAnimate=1; // run once
 	doSaveMovie(loop_script, rotation_frames, rotation_timepoints); // 080930

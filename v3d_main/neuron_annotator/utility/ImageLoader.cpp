@@ -228,7 +228,7 @@ bool ImageLoader::mapChannels() {
     }
     My4DImage* sourceImage=new My4DImage();
     qDebug() << "Loading source image=" << inputFilepath;
-    loadImage(sourceImage, inputFilepath.toAscii().data());
+    loadImage(sourceImage, inputFilepath.toUtf8().data());
     Image4DProxy<My4DImage> sourceProxy(sourceImage);
     My4DImage* targetImage=new My4DImage();
     // Check to see if target already exists. If it does, then load it.
@@ -313,7 +313,7 @@ bool ImageLoader::mapChannels() {
 void ImageLoader::create2DMIPFromStack(My4DImage *image, QString mipFilepath) {
     My4DImage * mip=create2DMIPFromStack(image);
     qDebug() << "Saving mip to file " << mipFilepath;
-    mip->saveImage(mipFilepath.toAscii().data());
+    mip->saveImage(mipFilepath.toUtf8().data());
     delete mip;
 }
 

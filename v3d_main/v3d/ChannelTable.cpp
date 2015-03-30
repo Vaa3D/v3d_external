@@ -35,8 +35,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  */
 
 #include <assert.h>
-#include "ChannelTable.h"
 #include "../3drenderer/v3dr_common.h" //for v3dr_getColorDialog()
+#include "ChannelTable.h"
 
 
 static int xformChannelDim(XFormWidget* xform)

@@ -4,6 +4,8 @@
 #ifndef V3D_APPLICATION_H
 #define V3D_APPLICATION_H
 
+#include "../3drenderer/v3dr_common.h"
+
 #include <QApplication>
 #include <QMainWindow>
 #include "mainwindow.h"
@@ -23,7 +25,7 @@ private:
     static V3dApplication* theApp;
     static MainWindow* mainWindow;
     static bool mainWindowIsActive;
-    
+
 #ifdef _ALLOW_WORKMODE_MENU_
     static NaMainWindow* naMainWindow;
     static bool naMainWindowIsActive;
@@ -114,7 +116,7 @@ public:
         }
 #endif
     }
-    
+
 #ifdef _ALLOW_WORKMODE_MENU_
     static void activateNaMainWindow() {
         if (naMainWindowIsActive==false) {

@@ -7,7 +7,20 @@
 #define __IMAGEBLEND_H__
 
 //
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QTextEdit>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,8 +33,8 @@ class ImageBlendPlugin : public QObject, public V3DPluginInterface2_1
     Q_INTERFACES(V3DPluginInterface2_1);
 
 public:
-    float getPluginVersion() const {return 1.0f;} // version info 
-    
+    float getPluginVersion() const {return 1.0f;} // version info
+
     QStringList menulist() const;
     void domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
 
@@ -33,12 +46,12 @@ public:
 class ImageBlendingDialog : public QDialog
 {
     Q_OBJECT
-    
+
 public:
     ImageBlendingDialog(V3DPluginCallback &callback, QWidget *parentWidget, QString filename)
     {
         // create a dialog here
-        
+
         //image1
         label_image1 = new QLabel(QObject::tr("Choose the image 1: "));
 
@@ -47,16 +60,16 @@ public:
 
         if(!filename.isNull())
             edit_img1->setText(filename);
-        
+
         // image 2
-        label_image2 = new QLabel(QObject::tr("Choose the image 2: ")); 
+        label_image2 = new QLabel(QObject::tr("Choose the image 2: "));
 
         edit_img2 = new QLineEdit(QDir::currentPath());
         pb_browse_img2 = new QPushButton("Browse...");
 
         if(!filename.isNull())
             edit_img2->setText(filename);
-        
+
         //
         ok     = new QPushButton("OK");
         cancel = new QPushButton("Cancel");
@@ -96,7 +109,7 @@ public slots:
 
         edit_img1->setText(fn_img1);
     }
-    
+
     void get_img_name2()
     {
         fn_img2 = QFileDialog::getOpenFileName(0, QObject::tr("Choose the image 2 "),

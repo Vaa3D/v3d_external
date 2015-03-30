@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -50,18 +50,18 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 typedef unsigned short int USHORTINT16;
 
 
-void Image4DSimple::loadImage(char filename[])
+void Image4DSimple::loadImage(const char* filename)
 {
 	return this->loadImage(filename, false); //default don't use MYLib
 }
 
-void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
+void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 {
-	cleanExistData(); // note that this variable must be initialized as NULL. 
+	cleanExistData(); // note that this variable must be initialized as NULL.
 
 	strcpy(imgSrcFile, filename);
 
-	V3DLONG * tmp_sz = 0; // note that this variable must be initialized as NULL. 
+	V3DLONG * tmp_sz = 0; // note that this variable must be initialized as NULL.
 	int tmp_datatype = 0;
 	int pixelnbits=1; //100817
 
@@ -73,7 +73,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	{
             printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
 
-#if defined _WIN32 		
+#if defined _WIN32
 		{
 			v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
 			if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
@@ -83,7 +83,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 					v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
 					b_error=1;
 				}
-			}	
+			}
 			else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
 			{
 				if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
@@ -93,7 +93,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 				}
 			}
 		}
-		
+
 #else
 		if (b_useMyLib)
 		{
@@ -117,7 +117,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 					v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
 					b_error=1;
 				}
-			}	
+			}
 			else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
 			{
 				if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
@@ -126,11 +126,11 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 					b_error=1;
 				}
 			}
-		} 
+		}
                 printf("Image4DSimple::loadImage finished\n");
 
 #endif
-		
+
 	}
 	else if ( curFileSurfix && strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
 	{
@@ -141,7 +141,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 			return;
 		}
 	}
-#ifdef _ALLOW_WORKMODE_MENU_    
+#ifdef _ALLOW_WORKMODE_MENU_
     //else if ( curFileSurfix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     else if ( curFileSurfix && strcasecmp(curFileSurfix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
@@ -159,10 +159,10 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
         tmp_sz[1]=this->getYDim();
         tmp_sz[2]=this->getZDim();
         tmp_sz[3]=this->getCDim();
-        
+
         this->setFileName(filename); // PHC added 20121213 to fix a bug in the PDB reading.
     }
-#endif    
+#endif
 	else //then assume it is Hanchuan's Vaa3D RAW format
 	{
 		v3d_msg("The data does not have supported image file suffix, -- now this program assumes it is Vaa3D's RAW format and tries to load it... \n", false);

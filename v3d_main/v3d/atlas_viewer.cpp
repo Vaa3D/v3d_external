@@ -35,10 +35,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //20081217: force hide the move up/down etc button initially
 //20100118: add the color options
 
+#include "../3drenderer/v3dr_common.h"
+#include "../3drenderer/renderer_gl1.h"
 #include "atlas_viewer.h"
 #include "v3d_core.h"
 
-#include "../3drenderer/renderer_gl1.h"
 #include "../3drenderer/ItemEditor.h"
 
 #include "landmark_property_dialog.h"
@@ -688,12 +689,6 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#define QCOLOR(rgba8)   (QColorFromRGBA8( rgba8 ))
-#define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
-#define QCOLORV(v)    (qVariantValue<QColor>( v ))
-#define RGBA8V(v)     RGBA8FromQColor(qVariantValue<QColor>( v ))
-
 
 void V3D_atlas_viewerDialog::tabChanged(int t)
 {

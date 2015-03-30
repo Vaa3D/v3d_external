@@ -3,6 +3,9 @@
 #include "EntityTreeItem.h"
 #include "../../entity_model/Entity.h"
 
+#include <QAction>
+#include <QMenu>
+
 AnnotatedBranchTreeView::AnnotatedBranchTreeView(QWidget *parent) :
     EntityTreeView(parent)
 {

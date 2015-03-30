@@ -29,27 +29,20 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(CTest)
 
-find_package(Qt4 4.7.0 REQUIRED)
-set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
-set(QT_USE_XML TRUE) # Oct-22-2010 CMB
-
-include( ${QT_USE_FILE} )
-include_directories( ${QT_INCLUDES} )
-
 find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" ON )
 
 # Movie loading required libavcodec from ffmpeg
 # FFMpeg requires YASM
-set(USE_FFMPEG FALSE CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
+set(USE_FFMPEG OFF CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
 if(USE_FFMPEG)
     add_definitions(-DUSE_FFMPEG)
-    set(USE_X265 FALSE CACHE BOOL "Whether to build FFMeg with x265 codec")
+    set(USE_X265 OFF CACHE BOOL "Whether to build FFMeg with x265 codec")
 endif()
 
 # HDF5
-set(USE_HDF5 FALSE CACHE BOOL "Build HDF5 loader")
+set(USE_HDF5 OFF CACHE BOOL "Build HDF5 loader")
 if(USE_HDF5)
     add_definitions(-DUSE_HDF5)
 endif()
@@ -176,8 +169,8 @@ if(USE_FFMPEG)
 
     find_package(Threads)
   else()
-    set(AVCODEC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/include")
-    set(av_dir "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/")
+    set(AVCODEC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/include")
+    set(av_dir "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/")
     if (MINGW)
       set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavformat${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
@@ -186,12 +179,12 @@ if(USE_FFMPEG)
       set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
     else()
-      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avdevice.lib CACHE INTERNAL "path to a library")
-      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avformat.lib CACHE INTERNAL "path to a library")
-      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avfilter.lib CACHE INTERNAL "path to a library")
-      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avcodec.lib CACHE INTERNAL "path to a library")
-      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/swscale.lib CACHE INTERNAL "path to a library")
-      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/avutil.lib CACHE INTERNAL "path to a library")
+      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avdevice.lib CACHE INTERNAL "path to a library")
+      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avformat.lib CACHE INTERNAL "path to a library")
+      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avfilter.lib CACHE INTERNAL "path to a library")
+      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avcodec.lib CACHE INTERNAL "path to a library")
+      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/swscale.lib CACHE INTERNAL "path to a library")
+      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avutil.lib CACHE INTERNAL "path to a library")
     endif()
   endif()
 
@@ -224,56 +217,121 @@ if(USE_HDF5)
     include_directories(${HDF5_INCLUDE_DIR})
 endif()
 
-# message("QTVERSION = ${QTVERSION}")
-find_path(QT4_DEMOS_INCLUDE_DIR
-  arthurwidgets.h
-  PATHS
-        ${QT_LIBRARY_DIR}/..
-        /Developer/Examples/Qt
-	/usr/lib64/qt4
-	/usr/lib/qt4
-	/usr/local/Trolltech/Qt-${QTVERSION}
-	"C:/Qt/${QTVERSION}"
-  PATH_SUFFIXES
-	demos/shared
-	Demos/shared
-   )
+# search for Qt4
+if (NOT FORCE_QT4)
+   find_package(Qt5Core CONFIG QUIET)
+   if (Qt5Core_FOUND)
+       message(STATUS "Using qt5")
+       # go on with other packages
+       find_package(Qt5 COMPONENTS Widgets Xml Network OpenGL Concurrent)
 
-find_library(QT4_DEMOS_LIBRARY_RELEASE
-  demo_shared
-  HINTS
-        ${QT_LIBRARY_DIR}/..
-        /Developer/Examples/Qt
-	/usr/lib/qt4
-	/usr/local/Trolltech/Qt-${QTVERSION}
-	"C:/Qt/${QTVERSION}"
-  PATH_SUFFIXES
-	demos/shared
-	Demos/shared
-	demos/shared/release # Windows
-  )
-find_library(QT4_DEMOS_LIBRARY_DEBUG
-  demo_shared
-  HINTS
-        ${QT_LIBRARY_DIR}/..
-        /Developer/Examples/Qt
-	/usr/lib/qt4
-	/usr/local/Trolltech/Qt-${QTVERSION}
-	"C:/Qt/${QTVERSION}"
-  PATH_SUFFIXES
-	demos/shared
-	Demos/shared
-	demos/shared/debug # Windows
-  )
-set(QT4_DEMOS_LIBRARY "${QT4_DEMOS_LIBRARY_RELEASE}" CACHE PATH "")
-if (MSVC AND QT4_DEMOS_LIBRARY_RELEASE AND QT4_DEMOS_LIBRARY_DEBUG)
-    set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
+       macro(qt_use_modules)
+            qt5_use_modules(${ARGN})
+       endmacro()
+
+       macro(qt_wrap_ui)
+           qt5_wrap_ui(${ARGN})
+       endmacro()
+
+       macro(qt_add_resources)
+           qt5_add_resources(${ARGN})
+       endmacro()
+
+       macro(qt_add_translation)
+           qt5_add_translation(${ARGN})
+       endmacro()
+
+       add_definitions(-DUSE_Qt5)
+       include_directories( ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Network_INCLUDE_DIRS}
+                            ${Qt5Xml_INCLUDE_DIRS} ${Qt5OpenGL_INCLUDE_DIRS}
+                            ${Qt5Concurrent_INCLUDE_DIRS})
+  endif()
 endif()
 
-if(NOT QT4_DEMOS_INCLUDE_DIR)
-  message(FATAL "You need to install the Qt4 demo files")
+if(NOT Qt5Core_FOUND)
+  find_package(Qt4 4.7.0 REQUIRED)
+  set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
+  set(QT_USE_XML TRUE) # Oct-22-2010 CMB
+
+   macro(qt_use_modules)
+        qt4_use_modules(${ARGN})
+   endmacro()
+
+   macro(qt_wrap_ui)
+        qt4_wrap_ui(${ARGN})
+   endmacro()
+
+   macro(qt_add_resources)
+        qt4_add_resources(${ARGN})
+   endmacro()
+
+   macro(qt_add_translation)
+        qt4_add_translation(${ARGN})
+   endmacro()
+
+  include( ${QT_USE_FILE} )
+  include_directories( ${QT_INCLUDES} )
+endif()
+
+find_program(QT_QMAKE_EXECUTABLE qmake)
+execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
+                 OUTPUT_VARIABLE QT_DEMO_PREFIX
+                 OUTPUT_STRIP_TRAILING_WHITESPACE )
+message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
+message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
+
+# message("QTVERSION = ${QTVERSION}")
+find_path(QT_DEMOS_INCLUDE_DIR
+  arthurwidgets.h
+  PATHS
+        ${QT_DEMO_PREFIX}
+  PATH_SUFFIXES
+      	shared
+      	widgets/painting/shared
+  )
+
+if(NOT Qt5Core_FOUND)
+  find_library(QT4_DEMOS_LIBRARY_RELEASE
+    demo_shared
+    HINTS
+          ${QT_LIBRARY_DIR}/..
+          /Developer/Examples/Qt
+    /usr/lib/qt4
+    /usr/local/Trolltech/Qt-${QTVERSION}
+    "C:/Qt/${QTVERSION}"
+    PATH_SUFFIXES
+    demos/shared
+    Demos/shared
+    demos/shared/release # Windows
+    )
+  find_library(QT4_DEMOS_LIBRARY_DEBUG
+    demo_shared
+    HINTS
+          ${QT_LIBRARY_DIR}/..
+          /Developer/Examples/Qt
+    /usr/lib/qt4
+    /usr/local/Trolltech/Qt-${QTVERSION}
+    "C:/Qt/${QTVERSION}"
+    PATH_SUFFIXES
+    demos/shared
+    Demos/shared
+    demos/shared/debug # Windows
+    )
+
+  set(QT4_DEMOS_LIBRARY "${QT4_DEMOS_LIBRARY_RELEASE}" CACHE PATH "")
+  if (MSVC AND QT4_DEMOS_LIBRARY_RELEASE AND QT4_DEMOS_LIBRARY_DEBUG)
+    set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
+  endif()
 else()
-  include_directories(${QT4_DEMOS_INCLUDE_DIR})
+  set(arthurwidgets_path "${QT_DEMO_PREFIX}/widgets/painting/shared")
+endif()
+
+message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
+
+if(NOT QT_DEMOS_INCLUDE_DIR)
+  message(FATAL "You need to install the Qt demo files")
+else()
+  include_directories(${QT_DEMOS_INCLUDE_DIR})
 endif()
 
 # Keep Mac compatibility to OSX 10.8

@@ -1,3 +1,4 @@
+#include "../../3drenderer/v3dr_common.h" // Pick up Glee first
 #include "AnnotationWidget.h"
 #include "ui_AnnotationWidget.h"
 #include "trees/OntologyTreeModel.h"
@@ -14,7 +15,11 @@
 #include "../utility/DataThread.h"
 #include "../utility/JacsUtil.h"
 #include <QModelIndex>
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
 
 // Compiler bug workaround borrowed from 3drenderer/qtr_widget.h
 #ifdef Q_WS_X11

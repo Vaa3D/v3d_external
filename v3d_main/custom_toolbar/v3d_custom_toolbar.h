@@ -22,7 +22,11 @@ class EmptyClass{};
 typedef void (EmptyClass::*VoidFunc)();
 #ifndef __v3d_custom_toolbar_plugin__
 typedef void (MainWindow::*MainWindowFunc)();
+#ifdef USE_Qt5
+typedef void (QMdiArea::*WorkspaceFunc)();
+#else
 typedef void (QWorkspace::*WorkspaceFunc)();
+#endif
 typedef void (V3d_PluginLoader::*V3dPluginLoaderFunc)();
 #endif
 typedef void (TriviewControl::*TriviewFunc)();
@@ -77,7 +81,7 @@ class CustomToolButton : public QObject
 			//slot_class = 0;
 		}
 
-		public slots: 
+		public slots:
 			void setButtonText(const QString & text)
 			{
 				if(button && button->isVisible()) button->setText(text);
@@ -93,7 +97,7 @@ class CustomToolbarSetting
 		QString toolBarTitle;                        // preloaded toolbar title
 		Qt::ToolBarArea position;                    // preloaded toolbar position
 
-		QStringList preLoadedNameList;      
+		QStringList preLoadedNameList;
 		QStringList preLoadedAliasList;
 
 		QList<CustomToolButton*> activeMainWindowButtonList;
@@ -106,7 +110,7 @@ class CustomToolbarSetting
 	public:
 		CustomToolbarSetting(QString title)
 		{
-			toolBar = 0; 
+			toolBar = 0;
 			toolBarTitle = title;
 			position = Qt::TopToolBarArea;
 		}

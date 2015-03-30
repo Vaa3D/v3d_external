@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -39,13 +39,15 @@ July 21, 2006
 
 Last update: 2008-04-25: try to add command line based utilities
 Last update: 2010-04-12: add a global try-catch to catch all exceptions
-Last update: 2010-11-19: change some of the help info 
-Last update: 2011-04-19: fix some potential problem of null mainWin pointer 
+Last update: 2010-11-19: change some of the help info
+Last update: 2011-04-19: fix some potential problem of null mainWin pointer
 Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsistent return values of the main function
- 
+
 ****************************************************************************/
 
 #define COMPILE_TO_COMMANDLINE 1
+
+#include "../3drenderer/v3dr_common.h"
 
 #include "v3d_compile_constraints.h"
 
@@ -78,7 +80,7 @@ void printHelp_v3d()
 {
 	cout<<endl<<"Vaa3D: a 3D image visualization and analysis platform developed by Hanchuan Peng and colleagues."<<endl;
 	cout<<endl<<"Usage: v3d -h -M moduleCode [all other options specific to different modules]"<<endl;
-	
+
 	cout<<"    -h/H         help information."<<endl;
 
 	cout<<"    -i <file>                    open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
@@ -88,11 +90,11 @@ void printHelp_v3d()
     cout<<"    -f <function_name>           a string indicates which function of a plugin will be called."<<endl;
     cout<<"    -p <parameters>              a string indicates parameters that plugin function use"<<endl;
     cout<<"    -pf <configuration>          a string read from configuration file indicates parameters that plugin function use"<<endl;
-	
+
 	cout<<"    -v                           force to open a 3d viewer when loading an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
     cout<<"    -na                          open NeuronAnnotator work-mode directly"<<endl;
     cout<<"    -cmd  [headless command-line arguments, intended for compute grid use. Try \'-cmd -h\' for more information on this option]"<<endl;
-    
+
     //added by Hanchuan Peng, 20120217
     V3dApplication* app = V3dApplication::getInstance();
     if (!app) return;
@@ -126,7 +128,7 @@ int main(int argc, char **argv)
 		return false;
 	}
 	else
-	{        
+	{
 		if(parser.i_v3d.openV3D)
 		{
 			// ------ V3D GUI handling module ---------------------
@@ -137,7 +139,7 @@ int main(int argc, char **argv)
             {
                 app->activateMainWindow();
             }
-            
+
             MainWindow* mainWin=app->getMainWindow();
 
 			if (!mainWin)
@@ -147,15 +149,15 @@ int main(int argc, char **argv)
 			}
 
             app->installEventFilter(mainWin);
-			
-            if (mainWin) 
+
+            if (mainWin)
             {
                 mainWin->v3dclp.copy(parser.i_v3d);
-                
+
                 if(!parser.i_v3d.hideV3D)
                 {
                     mainWin->show();
-                    
+
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
 #ifdef _ALLOW_WORKMODE_MENU_
@@ -164,7 +166,7 @@ int main(int argc, char **argv)
                     }
                 }
             }
-            
+
 			// plugin module
 			if(parser.i_v3d.pluginname)
 			{
@@ -173,7 +175,7 @@ int main(int argc, char **argv)
 				mainWin->setPluginMethod(parser.i_v3d.pluginmethod);
 				mainWin->setPluginFunc(parser.i_v3d.pluginfunc);
 			}
-			
+
 			// multiple image/object handling module
 			if(parser.i_v3d.fileList.size()==0 || parser.i_v3d.hideV3D)
 			{
@@ -187,24 +189,24 @@ int main(int argc, char **argv)
 				for(int i=0; i<parser.i_v3d.fileList.size(); i++)
 				{
 					char *filename = parser.i_v3d.fileList.at(i);
-					
+
 					v3d_msg("now try open files ...", 0);
-					
+
 					QString qFile(filename);
-					
+
 					if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
 					{
 						// judge whether the file exists on the web
-						// "://" like "http://" "https://" "ftp://" 
-						
+						// "://" like "http://" "https://" "ftp://"
+
 						if(qFile.contains("://"))
 						{
 							QUrl url(filename);
-							
+
 							if(!url.isValid()) // valid or invalid url
 							{
 								v3d_msg(QString("The file path [%1] is not valid! Do nothing.").arg(filename), 0);
-								return false;	
+								return false;
 							}
 							else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
 							{
@@ -216,7 +218,7 @@ int main(int argc, char **argv)
 						else // impossible be a url
 						{
 							v3d_msg(QString("The file path [%1] seems invalid (not a local file or a URL)! Do nothing.").arg(filename), 0);
-							return false;	
+							return false;
 						}
 					}
 					else
@@ -227,7 +229,7 @@ int main(int argc, char **argv)
 					}
 				}
 			}
-						
+
 
             // Check for software updates.
             // But not if V3D has been invoked with a file to open immediately.
@@ -275,30 +277,30 @@ int main(int argc, char **argv)
 #endif
 
 			// launch v3d
-			try 
+			try
 			{
                 if(!parser.i_v3d.hideV3D)
                     return app->exec();
-                else 
+                else
                     return false;
 			}
-			catch (...) 
+			catch (...)
 			{
 				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the Vaa3D developers to figure out the problem.");
 				return false;
 			}
 			// -------------------------------------------------------
-		
+
 		}
 		else
 		{
 			return false;
 		}
-		
+
 	}
 
 #else  //why the following would have a pos() segment fault?? by PHC, 110825
-	
+
 	Q_INIT_RESOURCE(v3d);
 
 	QApplication app(argc, argv);
@@ -310,7 +312,7 @@ int main(int argc, char **argv)
 		v3d_msg("Unable to open the Vaa3D main window. Quit.");
 		return false;
 	}
-	
+
     // On Mac, allow mainWin to get QFileOpen events, such as when a tif
     // file is dragged onto the application icon.
     // CMB Nov-12-2010
@@ -346,11 +348,11 @@ int main(int argc, char **argv)
 	//iDrawMainWindow my3ddraw;
 	//my3ddraw.show();
 
-	try 
+	try
 	{
 		return app.exec();
 	}
-	catch (...) 
+	catch (...)
 	{
 		v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the Vaa3D developers to figure out the problem.");
 		return false;

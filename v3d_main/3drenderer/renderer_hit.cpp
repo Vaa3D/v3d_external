@@ -238,7 +238,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             actMarkerCreate1->setVisible(true);
             actMarkerCreate1->setIconVisibleInMenu(true);
             listAct.append(actMarkerCreate1Stroke = new QAction("1-right-stroke to define a marker (starting locus will be the output marker)", w));
-            
+
             actMarkerCreate1Stroke->setIcon(QIcon(":/icons/click1.svg"));
             actMarkerCreate1Stroke->setVisible(true);
             actMarkerCreate1Stroke->setIconVisibleInMenu(true);
@@ -272,7 +272,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 actCurveMarkerLists_fm->setVisible(true);
                 actCurveMarkerLists_fm->setIconVisibleInMenu(true);
             }
-            
+
             if (this->dataViewProcBox.x0 < this->dataViewProcBox.x1 &&
                 this->dataViewProcBox.y0 < this->dataViewProcBox.y1 &&
                 this->dataViewProcBox.z0 < this->dataViewProcBox.z1)
@@ -342,7 +342,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 actCurveRefine_fm->setVisible(true);
                 actCurveRefine_fm->setIconVisibleInMenu(true);
             }
-            
+
             //if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
             {
                 listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -361,7 +361,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         pluginsDir.cdUp();
                     }
 #endif
-                    
+
                     QDir pluginsDir1 = pluginsDir;
                     if (pluginsDir1.cd("plugins/teramanager")==true)
                     {
@@ -369,14 +369,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         listAct.append(actCurveCreate_zoom_grabhighrezdata = new QAction("Zoom-in HighRezImage: 1-right-stroke ROI", w));
                         listAct.append(actMarkerCreate_zoom_grabhighrezdata = new QAction("Zoom-in HighRezImage: 1-right-click ROI", w));
                     }
-                    
+
                     pluginsDir1 = pluginsDir;
                     if (pluginsDir1.cd("plugins/neuron_tracing/Vaa3D_Neuron2")==true)
                     {
                         listAct.append(act = new QAction("", w)); act->setSeparator(true);
                         listAct.append(actVaa3DNeuron2App2 = new QAction("Vaa3D-Neuron2 auto-tracing", w));
                     }
-                    
+
                 }
                 //101008
                 //#ifdef _WIN32 && _MSC_VER
@@ -458,7 +458,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 {
                     listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
                 }
-                
+
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
@@ -770,7 +770,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				{
 					curFile = QFileDialog::getSaveFileName(0,
 															   "Select a text (CSV format with .marker extension) file to save the coordinates of landmark points... ",
-					   (curImg->getXWidget())? curImg->getXWidget()->getOpenFileNameLabel()+".marker" : ".marker", 
+					   (curImg->getXWidget())? curImg->getXWidget()->getOpenFileNameLabel()+".marker" : ".marker",
                                                                 "");
                     if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
 					return update;
@@ -824,7 +824,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 vector <XYZ> loc_vec;
                 XYZ loc; loc.x = mk.x; loc.y = mk.y; loc.z = mk.z;
                 loc_vec.push_back(loc);
-                
+
                 b_grabhighrez = true;
                 produceZoomViewOf3DRoi(loc_vec,
                                        1  //one means from non-wheel event
@@ -833,7 +833,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}
     }
 #endif
-    
+
 #ifndef test_main_cpp
 	else if (act == actLockSceneEditObjGeometry)
 	{
@@ -1072,7 +1072,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     {
         zoomview_currentviewport();
     }
-    
+
 #define __v3d_imaging_func__ // dummy, just for easy locating
 	else if (act == actMarkerCreate_zoom_imaging)
 	{
@@ -1186,7 +1186,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			bool ok1=true;
 			V3DLONG chno=1;
 			if (curImg->getCDim()>1)
+#ifdef USE_Qt5
+				chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
+#else
 				chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
+#endif
 			if (ok1)
 			{
 				//QList <LocationSimple> rlist = curImg->autoMarkerFromImg(chno-1, this->dataBox, this->thicknessZ); //change to the following 091113, PHC
@@ -1199,7 +1203,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
-    
+
 #define __vaa3d_neuron2_auto_tracing__ // dummy, just for easy locating
 	else if (act == actVaa3DNeuron2App2)
 	{
@@ -1209,7 +1213,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             v3d_imaging_paras myimagingp;
 			myimagingp.OPS = "Vaa3D-Neuron2-APP2";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-            
+
 			//set the hiddenSelectWidget for the V3D mainwindow
             if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
             {
@@ -1221,7 +1225,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
 		}
 	}
-    
+
 #define __actions_of_marker__ // dummy, just for easy locating
 	else if (act == actMarkerDelete)
 	{
@@ -1959,7 +1963,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     XYZ & loc = loc_vec0.at(0);
                                         if (dataViewProcBox.isInner(loc, 0.5)) //keep this for now? PHC 121011. 100725 RZC
                                             dataViewProcBox.clamp(loc); //keep this for now? PHC 121011. 100722 RZC
-                    if (1) 
+                    if (1)
                     {
                         addMarker(loc);
                     }
@@ -3615,7 +3619,7 @@ bool Renderer_gl1::isInBound(const XYZ & loc, float factor, bool b_message)
 
 //
 XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarker& S)
-{    
+{
 	XYZ pt(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
     ColumnVector X(4);		X << pt.x << pt.y << pt.z << 1;
 

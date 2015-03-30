@@ -35,66 +35,89 @@ set(V3D_SRCS
   ../basic_c_fun/basic_4dimage_create.cpp
   ../neuron_annotator/analysis/AlignerUtils.cpp
   ../io/io_bioformats.cpp
-  v3d_actions.cpp)
+  v3d_actions.cpp
+  )
+
+set(ARTHUR_SRCS "")
 
 set(V3D_RCCS
     v3d.qrc
     ../3drenderer/3drenderer.qrc
     ../neuron_annotator/resources.qrc)
 
-QT4_ADD_RESOURCES(V3D_RCC_SRCS ${V3D_RCCS})
+set(V3D_UI_SRCS
+    v3d_global_preference.ui
+    template_matching_cellseg.ui
+    landmark_property.ui
+    surface_obj_annotation.ui
+    surfaceobj_geometry_dialog.ui
+    dialog_update_v3d.ui
+    dialog_update_list.ui
+    dialog_update_options.ui
+    dialog_update_downloading.ui
+    dialog_update_checking.ui
+    dialog_curve_trace.ui
+    dialog_imagecrop_bbox.ui
+    dialog_imageresample.ui
+    dialog_keypoint_features.ui
+    dialog_maskroi.ui
+    # dialog_pointcloudatlas_linkerloader.ui
+    # dialog_vano_linkerloader.ui
+    # FL_levelsetSegPara.ui
+    # FL_watershedSegPara.ui
+    import_filelist_dialog.ui
+    import_images_tool.ui
+    dialog_url_entry.ui
+)
 
-QT4_WRAP_UI(QT_UI_SRCS
-  v3d_global_preference.ui
-  template_matching_cellseg.ui
-  landmark_property.ui
-  surface_obj_annotation.ui
-  surfaceobj_geometry_dialog.ui
-  dialog_update_v3d.ui
-  dialog_update_list.ui
-  dialog_update_options.ui
-  dialog_update_downloading.ui
-  dialog_update_checking.ui
-  dialog_curve_trace.ui
-  dialog_imagecrop_bbox.ui
-  dialog_imageresample.ui
-  dialog_keypoint_features.ui
-  dialog_maskroi.ui
-  # dialog_pointcloudatlas_linkerloader.ui
-  # dialog_vano_linkerloader.ui
-  # FL_levelsetSegPara.ui
-  # FL_watershedSegPara.ui
-  import_filelist_dialog.ui
-  import_images_tool.ui
-  dialog_url_entry.ui
+set(V3D_MOC_SRCS
+    atlas_viewer.h
+    dialog_rotate.h
+    # dialog_watershed_para.h
+    dialog_imagecrop_bbox.h
+    dialog_maskroi.h
+    dialog_imageresample.h
+    dialog_curve_trace_para.h
+    dialog_keypoint_features.h
+    DownloadManager.h
+    glwidget.h
+    idrawmain.h
+    import_filelist_dialog.h
+    import_images_tool_dialog.h
+    landmark_property_dialog.h
+    mdichild.h
+    mainwindow.h
+    xformwidget.h
+    v3d_core.h
+    v3d_global_preference_dialog.h
+    v3d_version_info.h
+    v3d_actions.h
+    v3d_application.h
+    ChannelTable.h
+    ../custom_toolbar/v3d_custom_toolbar.h
   )
 
-QT4_WRAP_CPP(QT_MOC_SRCS
-  atlas_viewer.h
-  dialog_rotate.h
-  # dialog_watershed_para.h
-  dialog_imagecrop_bbox.h
-  dialog_maskroi.h
-  dialog_imageresample.h
-  dialog_curve_trace_para.h
-  dialog_keypoint_features.h
-  DownloadManager.h
-  glwidget.h
-  idrawmain.h
-  import_filelist_dialog.h
-  import_images_tool_dialog.h
-  landmark_property_dialog.h
-  mdichild.h
-  mainwindow.h
-  xformwidget.h
-  v3d_core.h
-  v3d_global_preference_dialog.h
-  v3d_version_info.h
-  v3d_actions.h
-  v3d_application.h
-  ChannelTable.h
-  ../custom_toolbar/v3d_custom_toolbar.h
+if(Qt5Core_FOUND)
+  set(ARTHUR_MOC_HEADERS
+      ${arthurwidgets_path}/arthurwidgets.h
+      ${arthurwidgets_path}/arthurstyle.h
   )
+  set(ARTHUR_SRCS
+      ${arthurwidgets_path}/arthurwidgets.cpp
+      ${arthurwidgets_path}/arthurstyle.cpp
+  )
+endif()
+
+if(NOT Qt5Core_FOUND)
+  QT4_WRAP_UI( QT_UI_SRCS ${V3D_UI_SRCS} )
+  QT4_WRAP_CPP(QT_MOC_SRCS ${V3D_MOC_SRCS})
+  QT4_ADD_RESOURCES(V3D_RCC_SRCS ${V3D_RCCS})
+else()
+  QT5_WRAP_UI( QT_UI_SRCS ${V3D_UI_SRCS} )
+  QT5_WRAP_CPP(QT_MOC_SRCS ${V3D_MOC_SRCS})
+  QT5_WRAP_CPP(ARTHUR_MOC_SRCS ${ARTHUR_MOC_HEADERS})
+  QT5_ADD_RESOURCES(V3D_RCC_SRCS ${V3D_RCCS})
+endif()
 
 include_directories( BEFORE
   "${CMAKE_CURRENT_BINARY_DIR}/../v3dbase"
@@ -104,6 +127,9 @@ include_directories( BEFORE
   "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
+if(Qt5Core_FOUND)
+  add_library(arthurwidgets ${ARTHUR_MOC_SRCS} ${ARTHUR_SRCS} )
+endif()
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
 target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIBRARIES} )
@@ -148,10 +174,7 @@ target_link_libraries( v3d
   # mylib_tiff
   cellseg
   ${OPENGL_glu_LIBRARY}
-  ${QT4_DEMOS_LIBRARY}
   )
-
-
 
 if(UNIX AND NOT APPLE)
   find_package(ZLIB)
@@ -161,29 +184,23 @@ if(UNIX AND NOT APPLE)
 endif()
 
 if(MSVC)
-
-  find_package(ZLIB)
-  target_link_libraries(v3d ${ZLIB_LIBRARY})
-
-  # for packaging
-  set(lib_name "zlib1.dll")
-  install(PROGRAMS
-	  ${ZLIB_LIBRARY}
-	  DESTINATION ${V3D_INSTALL_DIR}
-	  COMPONENT RuntimeLibraries
-	  RENAME ${lib_name}
-        )
-
   target_link_libraries(v3d ${TIFF_LIBRARY})
 else()
   target_link_libraries(v3d mylib_tiff)
 endif()
 
 # CMB 11-Oct-2010
-target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
-target_link_libraries(v3d ${QT_QTXML_LIBRARY})
-target_link_libraries(v3d ${QT_QTGUI_LIBRARY})
-target_link_libraries(v3d ${QT_QTCORE_LIBRARY})
+if(NOT Qt5Core_FOUND)
+  target_link_libraries( v3d ${QT4_DEMOS_LIBRARY} )
+  target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
+  target_link_libraries(v3d ${QT_QTXML_LIBRARY})
+  target_link_libraries(v3d ${QT_QTGUI_LIBRARY})
+  target_link_libraries(v3d ${QT_QTCORE_LIBRARY})
+else()
+  target_link_libraries( v3d arthurwidgets )
+  target_link_libraries(v3d Qt5::Widgets Qt5::Core Qt5::Network Qt5::Xml
+                            Qt5::OpenGL Qt5::Concurrent)
+endif()
 
 if(APPLE)
     # There are two ways to build V3D on Mac.
@@ -274,8 +291,14 @@ else(APPLE)
         "${TIFF_INCLUDE_DIR}/../bin"
         "${QT_LIBRARY_DIR}/../bin"
         "${CXX_BINDIR}")
-      set(SHLIBS jpeg62.dll libtiff3.dll QtCore4.dll QtGui4.dll QtNetwork4.dll
-          QtOpenGL4.dll QtXml4.dll )
+      if(Qt5Core_FOUND)
+        set(SHLIBS jpeg62.dll libtiff3.dll Qt5Core.dll Qt5Gui.dll Qt5Network.dll
+                    Qt5OpenGL.dll Qt5Xml.dll )
+      else()
+        set(SHLIBS jpeg62.dll libtiff3.dll QtCore4.dll QtGui4.dll QtNetwork4.dll
+                    QtOpenGL4.dll QtXml4.dll )
+      endif()
+
       # Install Qt plugins for image formats, at least on Windows
       if (QT_PLUGINS_DIR)
           file(GLOB QT_IMAGEFORMAT_PLUGINS "${QT_PLUGINS_DIR}/imageformats/*.dll")

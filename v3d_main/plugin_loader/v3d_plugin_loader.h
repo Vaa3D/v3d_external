@@ -33,7 +33,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 * Vaa3D's plug-in loading support functions
 *
 * 2009-08-11, Zongcai Ruan
-* Last change: 2010-10-08. Hanchuan Peng 
+* Last change: 2010-10-08. Hanchuan Peng
 * Last change: 2015-02-10. Hanchuan Peng
 ***************************************************************************
 */
@@ -41,7 +41,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef _V3D_PLUGIN_LOADER_H_
 #define _V3D_PLUGIN_LOADER_H_
 
-#include <QtGui>
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif// These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include "../basic_c_fun/v3d_interface.h"
 
 
@@ -98,7 +102,7 @@ protected:
 
     QMenu* v3d_menuPlugin;
     MainWindow* v3d_mainwindow;
-	
+
 public:
 	QStringList getPluginNameList(); //by YuY 20110429
 
@@ -151,7 +155,7 @@ public:
 
 	virtual bool screenShot3DWindow(v3dhandle image_window, QString filename);
 	virtual bool screenShotROI3DWindow(v3dhandle image_window, QString filename);
-	
+
 
 //V3DPluginCallback2
 public:
@@ -160,22 +164,22 @@ public:
 	virtual TriviewControl * getTriviewControl(v3dhandle image_window); //aded by PHC, 2010-12-08
 
     //added PHC 20120406. add a main window handle, to allow access everything in Vaa3D
-    
-    virtual MainWindow * getVaa3DMainWindow(); 
-    virtual QList <V3dR_MainWindow *> getListAll3DViewers(); 
-    virtual V3dR_MainWindow * find3DViewerByName(QString fileName); //the name can be partially matched    
-    
+
+    virtual MainWindow * getVaa3DMainWindow();
+    virtual QList <V3dR_MainWindow *> getListAll3DViewers();
+    virtual V3dR_MainWindow * find3DViewerByName(QString fileName); //the name can be partially matched
+
     //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer but based on a tri-view window
-	virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window); 
-	virtual QList <CellAPO>    * getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window);   
+	virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window);
+	virtual QList <CellAPO>    * getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window);
     virtual QList <LabelSurf> getListLabelSurf_3DGlobalViewer(v3dhandle image_window);
     virtual bool setListLabelSurf_3DGlobalViewer(v3dhandle image_window, QList <LabelSurf> listLabelSurfinput);
 
     //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
 	virtual QList <NeuronTree> * getHandleNeuronTrees_Any3DViewer(V3dR_MainWindow *w);
-	virtual QList <CellAPO>    * getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w);        
+	virtual QList <CellAPO>    * getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w);
     virtual QList <LabelSurf> getListLabelSurf_Any3DViewer(V3dR_MainWindow *w);
-    virtual bool setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput);    
+    virtual bool setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput);
 
     //added PHC 20130904 allow a plugin program to refresh and rescan all plugins
     //virtual void refreshMainMenuPluginList(); //not working, by PHC 20130904

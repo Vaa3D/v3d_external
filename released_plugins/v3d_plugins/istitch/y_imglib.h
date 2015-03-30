@@ -26,6 +26,15 @@ using std::endl;
 #include <list>
 #include <bitset>
 #include <set>
+
+#ifdef USE_Qt5
+  #include <QtWidgets>
+#else
+  #include <QtGui>
+#endif
+
+#include <QMessageBox>
+
 #include "boost/graph/adjacency_list.hpp"
 #include "boost/graph/kruskal_min_spanning_tree.hpp"
 #include "boost/graph/prim_minimum_spanning_tree.hpp"

@@ -154,7 +154,7 @@ bool ColorSeparatorConsolidator::generateMask() {
         QString maskFilename = maskFileList.at(i);
         cout << msgPrefix << " loading " << maskFilename.toStdString() << endl;
         // The following loadImage() step clears any previous data
-        maskImage.loadImage(maskFilename.toAscii().data());
+        maskImage.loadImage(maskFilename.toUtf8().data());
         if (maskImage.isEmpty()) {
             cerr << msgPrefix << " error: image loaded to empty state " << endl;
             return false;
