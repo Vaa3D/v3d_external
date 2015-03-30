@@ -128,10 +128,20 @@ case $OPERATION in
 		if [[ ! -e build_$PLATFORM ]]; then
 			mkdir build_$PLATFORM
 		fi
-		cd build_$PLATFORM
+
         if [ $PLATFORM = "windows-x86_64" ]; then
             CMAKE_EXE+=" -G \"Visual Studio 12 2013 Win64\""
+            cd v3d_main/common_lib
+            if [[ ! -e fftw-3.3.4-dll64 ]]; then
+                tar xzf fftw-3.3.4-dll64.tgz
+            fi
+            if [[ ! -e ffmpeg-2.5.2-win64 ]]; then
+                tar xzf ffmpeg-2.5.2-win64.tgz
+            fi
+            cd ../../
         fi
+
+        cd build_$PLATFORM
         echo $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS ..
 		eval $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS ..
 
