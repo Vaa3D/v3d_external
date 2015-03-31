@@ -108,8 +108,13 @@ fi
 case $OPERATION in
     install)
         if hash cmake 2>/dev/null; then
-            echo "Using system cmake"
-            CMAKE_EXE="cmake"
+        if [[ -e $CMAKE_DIR ]]; then
+                echo "Using cmake at $CMAKE_DIR/bin/cmake"
+                CMAKE_EXE="$CMAKE_DIR/bin/cmake"
+            else
+                echo "Using system cmake"
+                CMAKE_EXE="cmake"
+            fi
         else
     		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
     			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
