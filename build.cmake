@@ -105,31 +105,40 @@ if [ $PLATFORM = "windows-x86_64" ]; then
     CMAKE_PLATFORM_ARGS+="-DFFTW_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/fftw-3.3.4-dll64/libfftw3f-3.lib"
 fi
 
+: "${CMAKE_DIR:=""}"
+
 case $OPERATION in
     install)
-        if hash cmake 2>/dev/null; then
-        if [[ -e $CMAKE_DIR ]]; then
-                echo "Using cmake at $CMAKE_DIR/bin/cmake"
+        # See if the CMAKE_DIR is set
+        if [ ! "$CMAKE_DIR" = "" ]; then
+            if [[ -e $CMAKE_DIR ]]; then
                 CMAKE_EXE="$CMAKE_DIR/bin/cmake"
-            else
-                echo "Using system cmake"
-                CMAKE_EXE="cmake"
             fi
-        else
-    		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
-    			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
-    				echo "Downloading cmake"
-    				download http://www.cmake.org/files/v3.1/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
-    				tar xvzf cmake-$CMAKE_VERSION.tar.gz
-    			fi
-    			cd cmake-$CMAKE_VERSION
-    			./configure --prefix=.
-    			make
-    			make install
-    			cd ..
-    		fi
-            CMAKE_EXE="../cmake-$CMAKE_VERSION/bin/cmake"
         fi
+
+        # If CMAKE_EXE is not set, then either find or build cmake
+        if [ "$CMAKE_EXE" = "" ]; then
+            if hash cmake 2>/dev/null; then
+                CMAKE_EXE="cmake"
+            else
+        		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
+        			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
+        				echo "Downloading cmake"
+        				download http://www.cmake.org/files/v3.1/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
+        				tar xvzf cmake-$CMAKE_VERSION.tar.gz
+        			fi
+        			cd cmake-$CMAKE_VERSION
+        			./configure --prefix=.
+        			make
+        			make install
+        			cd ..
+        		fi
+                CMAKE_EXE="../cmake-$CMAKE_VERSION/bin/cmake"
+            fi
+        fi
+
+        echo "Using $CMAKE_EXE"
+
 		if [[ ! -e build_$PLATFORM ]]; then
 			mkdir build_$PLATFORM
 		fi
