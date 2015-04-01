@@ -69,6 +69,15 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img )
 
         Image4DProxy<My4DImage> proxy( const_cast<My4DImage*>( &img ) );
 
+        hsize_t dims[1] = { 1 };
+        H5::DataSpace attr_ds = H5::DataSpace(1, dims);
+        H5::Attribute attr = group->createAttribute( "width", H5::PredType::STD_I64LE, attr_ds );
+        attr.write( H5::PredType::NATIVE_INT, &(proxy.sx) );
+        attr = group->createAttribute( "height", H5::PredType::STD_I64LE, attr_ds );
+        attr.write( H5::PredType::NATIVE_INT, &(proxy.sy) );
+        attr = group->createAttribute( "frames", H5::PredType::STD_I64LE, attr_ds );
+        attr.write( H5::PredType::NATIVE_INT, &(proxy.sz) );
+
         for ( int c = 0; c < proxy.sc; ++c )
         {
             double default_irange = 1.0; // assumes data range is 0-255.0
