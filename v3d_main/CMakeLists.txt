@@ -124,7 +124,8 @@ if(USE_FFMPEG)
     set(extra_ldflags "")
     set(FFMPEG_PATCH_FILE "ffmpeg-2.5.1.patch")
     if(NOT WIN32)
-      set(extra_ldflags "-Wl,-headerpad_max_install_names -lstdc++ -ldl")
+      set(extra_ldflags "-Wl,-headerpad_max_install_names ")
+      set(extra_libs "-lstdc++ -ldl")
     else()
       set(FFMPEG_PATCH_FILE "ffmpeg-2.5.4-windows.patch")
     endif()
@@ -153,6 +154,7 @@ if(USE_FFMPEG)
             ${X265_FLAGS}
             --extra-cflags=${extra_cflags}
             --extra-ldflags=${extra_ldflags}
+            --extra-libs=${extra_libs}
             ${AV_CONFIG_FLAGS}
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
