@@ -104,7 +104,8 @@ if(USE_FFMPEG)
         BUILD_IN_SOURCE 1
     )
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
-    set(extra_cflags "-D__STDC_CONSTANT_MACROS")
+    set(extra_cflags "")
+    set(extra_ldflags "")
     if(USE_X265)
       set(X265_FLAGS "--enable-libx265")
       ExternalProject_Add(
@@ -119,12 +120,12 @@ if(USE_FFMPEG)
         # trying to avoid weird _posix_memalign link errors
         set(AV_CONFIG_FLAGS --enable-memalign-hack)
         # Avoid ___sincos_stret link error on Mac
-        set(extra_cflags "${extra_cflags} -mmacosx-version-min=10.8")
+        set(extra_cflags "-D__STDC_CONSTANT_MACROS -mmacosx-version-min=10.8")
+      	set(extra_ldflags "-Wl,-headerpad_max_install_names ")
     endif()
     set(extra_ldflags "")
     set(FFMPEG_PATCH_FILE "ffmpeg-2.5.1.patch")
     if(NOT WIN32)
-      set(extra_ldflags "-Wl,-headerpad_max_install_names ")
       set(extra_libs "-lstdc++ -ldl")
     else()
       set(FFMPEG_PATCH_FILE "ffmpeg-2.5.4-windows.patch")
@@ -145,12 +146,15 @@ if(USE_FFMPEG)
         CONFIGURE_COMMAND <SOURCE_DIR>/configure
             --prefix=<INSTALL_DIR>
             --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
-            --arch=x86_64
             --disable-vda
-            --enable-pic
+            --disable-iconv
+            --disable-libxcb
+            --disable-outdev=sdl
             --enable-shared
             --enable-gpl
             --enable-nonfree
+            --enable-version3
+            --enable-runtime-cpudetect
             ${X265_FLAGS}
             --extra-cflags=${extra_cflags}
             --extra-ldflags=${extra_ldflags}
@@ -163,6 +167,7 @@ if(USE_FFMPEG)
     set(AVFILTER_LIBRARY ${av_dir}/install/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
     set(AVCODEC_LIBRARY ${av_dir}/install/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
     set(SWSCALE_LIBRARY ${av_dir}/install/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+    set(SWRESAMPLE_LIBRARY ${av_dir}/install/lib/libswresample${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
     set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
 
     find_package(ZLIB)
@@ -179,6 +184,7 @@ if(USE_FFMPEG)
       set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libwresample{CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
     else()
       set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avdevice.lib CACHE INTERNAL "path to a library")
@@ -186,6 +192,7 @@ if(USE_FFMPEG)
       set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avfilter.lib CACHE INTERNAL "path to a library")
       set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avcodec.lib CACHE INTERNAL "path to a library")
       set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/swscale.lib CACHE INTERNAL "path to a library")
+      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/libwresample.lib CACHE INTERNAL "path to a library")
       set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avutil.lib CACHE INTERNAL "path to a library")
     endif()
   endif()

@@ -124,11 +124,12 @@ if(USE_FFMPEG)
     add_dependencies(NeuronAnnotatorLib FFMPEG-2.5.1)
     target_link_libraries(NeuronAnnotatorLib
         ${SWSCALE_LIBRARY}
+        ${SWRESAMPLE_LIBRARY}
         ${AVDEVICE_LIBRARY}
         ${AVFORMAT_LIBRARY}
         ${AVCODEC_LIBRARY}
         ${AVUTIL_LIBRARY}
-#        ${BZIP2_LIBRARIES}
+        ${BZIP2_LIBRARIES}
         ${ZLIB_LIBRARY}
 #        ${ICONV_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
@@ -144,6 +145,7 @@ if(USE_FFMPEG)
         target_link_libraries(NeuronAnnotatorLib
             ${HDF5_CPP_LIBRARY}
             ${HDF5_LIBRARY}
+	    ${CMAKE_DL_LIBS}
         )
     endif()
 

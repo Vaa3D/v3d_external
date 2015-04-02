@@ -39,7 +39,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef V3DR_COMMON_H_
 #define V3DR_COMMON_H_
 
-#include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
 
 //for X11/Qt, qt constant must be included before any header file that defines Status
 #ifdef USE_Qt5
@@ -48,6 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
   #include <QtGui>
 #endif
 
+#include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
 // #include <QtOpenGL>
 //#include <QtTest>
 
