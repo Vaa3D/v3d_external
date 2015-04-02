@@ -89,7 +89,7 @@ echo "Root directory \"$ROOT_DIR\""
 if [[ -z ${OPERATION:-} ]]; then
     echo "Usage: build.cmake [-platform <name>] [-h5j] [-qt5] [-debug] <install | clean | clobber>"
     echo "where possible platform names are: linux-x86, linux-x86_64, macosx-x86_64, windows-x86, windows-x86_64, etc."
-    echo " -h5j - builds for the Janelia Farm HDF variant. Enables building of FFmpeg and HDF5"
+    echo " -h5j - builds for the Janelia Farm HDF variant. Enables building of FFmpeg, HDF5 and X265(HEVC)"
     echo " -qt5 - build with Qt5 (experimental)"
     echo " -debug - Generates a debug build (default is release)"
     echo " clean - removes the current build for platform"
