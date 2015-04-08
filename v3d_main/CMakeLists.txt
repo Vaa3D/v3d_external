@@ -92,6 +92,17 @@ include_directories(${TIFF_INCLUDE_DIR})
 if(USE_FFMPEG)
   if(NOT WIN32)
     include(ExternalProject)
+
+    ExternalProject_Add(
+        PKG-CONFIG-0-28
+        URL http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
+        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/pkg-config/src
+        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure
+            --prefix=<INSTALL_DIR>
+        BUILD_IN_SOURCE 1
+    )
     ExternalProject_Add(
         Yasm-1-2-0
         URL http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
@@ -133,7 +144,7 @@ if(USE_FFMPEG)
 
     ExternalProject_Add(
         FFMPEG-2.5.1
-        DEPENDS Yasm-1-2-0 X265-1.5
+        DEPENDS Yasm-1-2-0 X265-1.5 PKG-CONFIG-0-28
         # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
         # Use the exact distribution I developed against
         #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
@@ -146,6 +157,7 @@ if(USE_FFMPEG)
         CONFIGURE_COMMAND <SOURCE_DIR>/configure
             --prefix=<INSTALL_DIR>
             --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
+            --pkg-config=${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install/bin/pkg-config
             --disable-vda
             --disable-iconv
             --disable-libxcb

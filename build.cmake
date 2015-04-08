@@ -97,8 +97,8 @@ if [[ -z ${OPERATION:-} ]]; then
     exit 1
 fi
 
+CMAKE_PLATFORM_ARGS="-DBoost_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
 if [ $PLATFORM = "windows-x86_64" ]; then
-    CMAKE_PLATFORM_ARGS="-DBoost_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
     CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
     CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/winlib64/libtiff.lib "
     CMAKE_PLATFORM_ARGS+="-DFFTW_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/fftw-3.3.4-dll64 "
