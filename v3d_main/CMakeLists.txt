@@ -101,6 +101,7 @@ if(USE_FFMPEG)
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND <SOURCE_DIR>/configure
             --prefix=<INSTALL_DIR>
+	    --with-internal-glib
         BUILD_IN_SOURCE 1
     )
     ExternalProject_Add(
