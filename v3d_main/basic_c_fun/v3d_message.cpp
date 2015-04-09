@@ -54,7 +54,7 @@ void v3d_msg(const QString & msg, bool b_disp_QTDialog) //note that if I don't f
 
 QString current_time_stamp()
 {
-	return QString(__TIME__" "__DATE__);
+    return QString(__TIME__) + " " + QString(__DATE__);
 }
 
 
