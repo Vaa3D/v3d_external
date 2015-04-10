@@ -89,6 +89,16 @@ endif()
 
 include_directories(${TIFF_INCLUDE_DIR})
 
+if(APPLE)
+    if(NOT V3D_INITIALIZED_MAX_OSX_TO_DEFAULT) # Only force it the first time.
+        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING
+            "Build architectures for OSX" FORCE)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING
+            "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value." FORCE)
+        set(V3D_INITIALIZED_MAX_OSX_TO_DEFAULT TRUE CACHE INTERNAL "Whether default v3d values of Mac compatibility has been set.")
+    endif()
+endif()
+
 if(USE_FFMPEG)
   if(NOT WIN32)
     include(ExternalProject)
@@ -220,7 +230,10 @@ if(USE_HDF5)
     ExternalProject_Add(
         HDF5
         URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.8.14.tar.gz
-        CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=OFF -DCMAKE_INSTALL_PREFIX:PATH=${hdf_dir}/install -DHDF5_BUILD_CPP_LIB:BOOL=ON -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_BUILD_TOOLS:BOOL=ON
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=OFF
+                   -DCMAKE_INSTALL_PREFIX:PATH=${hdf_dir}/install -DHDF5_BUILD_CPP_LIB:BOOL=ON
+                   -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_BUILD_TOOLS:BOOL=ON
+                   -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
         UPDATE_COMMAND ""
     )
 
@@ -354,28 +367,6 @@ if(NOT QT_DEMOS_INCLUDE_DIR)
   message(FATAL "You need to install the Qt demo files")
 else()
   include_directories(${QT_DEMOS_INCLUDE_DIR})
-endif()
-
-# Keep Mac compatibility to OSX 10.8
-# even when building on <later versions>
-# (trying to keep 10.5 compatibility broke something in libavcodec on Mountain Lion Aug 2013 cmb)
-find_file(TMP_OSX_SYSROOT
-    MacOSX10.8.sdk
-    PATHS
-        /Developer/SDKs
-        /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
-    NO_DEFAULT_PATH)
-mark_as_advanced(CLEAR TMP_OSX_SYSROOT)
-if(APPLE AND TMP_OSX_SYSROOT)
-    if(NOT V3D_INITIALIZED_MAX_OSX_TO_DEFAULT) # Only force it the first time.
-        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING
-            "Build architectures for OSX" FORCE)
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING
-            "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value." FORCE)
-        set(CMAKE_OSX_SYSROOT "${TMP_OSX_SYSROOT}" CACHE PATH
-            "The product will be built against the headers and libraries located inside the indicated SDK." FORCE)
-        set(V3D_INITIALIZED_MAX_OSX_TO_DEFAULT TRUE CACHE INTERNAL "Whether default v3d values of Mac compatibility has been set.")
-    endif()
 endif()
 
 # Define __NAWEBSERVICE__ symbol -D__NAWEBSERVICE__
