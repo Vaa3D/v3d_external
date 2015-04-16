@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -13,37 +15,46 @@
 
 using namespace std;
 
-bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum AVCodecID codec_id)
+bool saveStackFFMpeg( const char* file_name, const My4DImage& img, enum AVCodecID codec_id )
 {
-    try {
-        Image4DProxy<My4DImage> proxy(const_cast<My4DImage*>(&img));
+    try
+    {
+        Image4DProxy<My4DImage> proxy( const_cast<My4DImage*>( &img ) );
         double default_irange = 1.0; // assumes data range is 0-255.0
-        if (proxy.su > 1) {
+        if ( proxy.su > 1 )
+        {
             default_irange = 1.0 / 16.0; // 0-4096, like our microscope images
         }
-        std::vector<double> imin(proxy.sc, 0.0);
-        std::vector<double> irange2(proxy.sc, default_irange);
+        std::vector<double> imin( proxy.sc, 0.0 );
+        std::vector<double> irange2( proxy.sc, default_irange );
         // rescale if converting from 16 bit to 8 bit
-        if (proxy.su > 1) {
-            if (img.p_vmin && img.p_vmax)
-                proxy.set_minmax(img.p_vmin, img.p_vmax);
-            if (proxy.has_minmax()) {
-                for (int c = 0; c < proxy.sc; ++c) {
+        if ( proxy.su > 1 )
+        {
+            if ( img.p_vmin && img.p_vmax )
+                proxy.set_minmax( img.p_vmin, img.p_vmax );
+            if ( proxy.has_minmax() )
+            {
+                for ( int c = 0; c < proxy.sc; ++c )
+                {
                     imin[c] = proxy.vmin[c];
-                    irange2[c] = 255.0 / (proxy.vmax[c] - proxy.vmin[c]);
+                    irange2[c] = 255.0 / ( proxy.vmax[c] - proxy.vmin[c] );
                 }
             }
         }
-        FFMpegEncoder encoder(file_name, proxy.sx, proxy.sy, codec_id);
-        for (int z = 0; z < proxy.sz; ++z) {
-            for (int y = 0; y < proxy.sy; ++y) {
-                for (int x = 0; x < proxy.sx; ++x) {
-                    for (int c = 0; c < 3; ++c) {
+        FFMpegEncoder encoder( file_name, proxy.sx, proxy.sy, codec_id );
+        for ( int z = 0; z < proxy.sz; ++z )
+        {
+            for ( int y = 0; y < proxy.sy; ++y )
+            {
+                for ( int x = 0; x < proxy.sx; ++x )
+                {
+                    for ( int c = 0; c < 3; ++c )
+                    {
                         int ic = c;
-                        if (c >= proxy.sc) ic = 0; // single channel volume to gray RGB movie
-                        double val = proxy.value_at(x, y, z, ic);
-                        val = (val - imin[ic]) * irange2[ic]; // rescale to range 0-255
-                        encoder.setPixelIntensity(x, y, c, (int)val);
+                        if ( c >= proxy.sc ) ic = 0; // single channel volume to gray RGB movie
+                        double val = proxy.value_at( x, y, z, ic );
+                        val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
+                        encoder.setPixelIntensity( x, y, c, ( int )val );
                     }
                 }
             }
@@ -53,9 +64,18 @@ bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum AVCodecI
         encoder.close();
 
         return true;
-    } catch (...) {}
+    }
+    catch ( ... ) {}
 
     return false;
+}
+
+int nearestPowerOfEight( int val )
+{
+    int lb = val >> 3 << 3;
+    int ub = ( val + 8 ) >> 3 << 3;
+
+    return ( lb == val ) ? lb : ub;
 }
 
 bool saveStackHDF5( const char* fileName, const My4DImage& img )
@@ -65,18 +85,29 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img )
 #ifdef USE_HDF5
         H5::Exception::dontPrint();
         H5::H5File file( fileName, H5F_ACC_TRUNC );
-        H5::Group* group = new H5::Group( file.createGroup( "/Channels" ));
+        H5::Group* group = new H5::Group( file.createGroup( "/Channels" ) );
 
         Image4DProxy<My4DImage> proxy( const_cast<My4DImage*>( &img ) );
 
+        long scaledHeight = nearestPowerOfEight( proxy.sy );
+        long scaledWidth = nearestPowerOfEight( proxy.sx );
+
+        // Initialize the upper and lower bounds
+        long pad_right = ( scaledWidth - proxy.sx ) ;
+        long pad_bottom = ( scaledHeight - proxy.sy );
+
         hsize_t dims[1] = { 1 };
-        H5::DataSpace attr_ds = H5::DataSpace(1, dims);
+        H5::DataSpace attr_ds = H5::DataSpace( 1, dims );
         H5::Attribute attr = group->createAttribute( "width", H5::PredType::STD_I64LE, attr_ds );
-        attr.write( H5::PredType::NATIVE_INT, &(proxy.sx) );
+        attr.write( H5::PredType::NATIVE_INT, &( proxy.sx ) );
         attr = group->createAttribute( "height", H5::PredType::STD_I64LE, attr_ds );
-        attr.write( H5::PredType::NATIVE_INT, &(proxy.sy) );
+        attr.write( H5::PredType::NATIVE_INT, &( proxy.sy ) );
         attr = group->createAttribute( "frames", H5::PredType::STD_I64LE, attr_ds );
-        attr.write( H5::PredType::NATIVE_INT, &(proxy.sz) );
+        attr.write( H5::PredType::NATIVE_INT, &( proxy.sz ) );
+        attr = group->createAttribute( "pad_right", H5::PredType::STD_I64LE, attr_ds );
+        attr.write( H5::PredType::NATIVE_INT, &( pad_right ) );
+        attr = group->createAttribute( "pad_bottom", H5::PredType::STD_I64LE, attr_ds );
+        attr.write( H5::PredType::NATIVE_INT, &( pad_bottom ) );
 
         for ( int c = 0; c < proxy.sc; ++c )
         {
@@ -99,18 +130,26 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img )
                 }
             }
 
-            FFMpegEncoder encoder( NULL, proxy.sx, proxy.sy, AV_CODEC_ID_HEVC );
+            FFMpegEncoder encoder( NULL, scaledWidth, scaledHeight, AV_CODEC_ID_HEVC );
+            // If the image needs padding, fill the expanded border regions with black
             for ( int z = 0; z < proxy.sz; ++z )
             {
-                for ( int y = 0; y < proxy.sy; ++y )
+                for ( int y = 0; y < scaledHeight; ++y )
                 {
-                    for ( int x = 0; x < proxy.sx; ++x )
+                    for ( int x = 0; x < scaledWidth; ++x )
                     {
-                        int ic = c;
-                        double val = proxy.value_at( x, y, z, ic );
-                        val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
-                        for ( int cc = 0; cc < 3; ++cc )
-                            encoder.setPixelIntensity( x, y, cc, ( int )val );
+                        // If inside the area with valid data
+                        if ( x < proxy.sx && y < proxy.sy )
+                        {
+                            int ic = c;
+                            double val = proxy.value_at( x, y, z, ic );
+                            val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
+                            for ( int cc = 0; cc < 3; ++cc )
+                                encoder.setPixelIntensity( x, y, cc, ( int )val );
+                        }
+                        else
+                            for ( int cc = 0; cc < 3; ++cc )
+                                encoder.setPixelIntensity( x, y, cc, 0 );
                     }
                 }
                 encoder.write_frame();
@@ -124,7 +163,7 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img )
             hsize_t  dims[1];
             dims[0] = encoder.buffer_size();
             H5::DataSpace dataspace( 1, dims );
-            std: stringstream name;
+std: stringstream name;
             name << "Channel_" << c;
             H5::DataSet dataset = group->createDataSet( name.str(), H5::PredType::NATIVE_UINT8, dataspace );
             dataset.write( encoder.buffer(), H5::PredType::NATIVE_UINT8 );
@@ -151,14 +190,14 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img )
     return false;
 }
 
-bool loadStackFFMpeg(const char* fileName, Image4DSimple& img)
+bool loadStackFFMpeg( const char* fileName, Image4DSimple& img )
 {
-    return loadStackFFMpeg(QUrl::fromLocalFile(fileName), img);
+    return loadStackFFMpeg( QUrl::fromLocalFile( fileName ), img );
 }
 
-bool loadStackHDF5(const char* fileName, Image4DSimple& img)
+bool loadStackHDF5( const char* fileName, Image4DSimple& img )
 {
-    #ifdef USE_HDF5
+#ifdef USE_HDF5
     H5::Exception::dontPrint();
     H5::H5File file( fileName, H5F_ACC_RDONLY );
 
@@ -168,6 +207,18 @@ bool loadStackHDF5(const char* fileName, Image4DSimple& img)
         if ( name == "Channels" )
         {
             H5::Group channels = file.openGroup( name );
+
+            // Grab the attributes
+            H5::Attribute attr = channels.openAttribute( "width" );
+            H5::DataType type = attr.getDataType();
+            long width, height;
+            attr.read( type, &width );
+            attr.close();
+
+            attr = channels.openAttribute( "height" );
+            attr.read( type, &height );
+            attr.close();
+
             int num_channels = 0;
             // Count the number of channels
             for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
@@ -183,10 +234,11 @@ bool loadStackHDF5(const char* fileName, Image4DSimple& img)
                     H5::DataSet data = channels.openDataSet( ds_name );
                     uint8_t* buffer = new uint8_t[ data.getStorageSize() ];
                     data.read( buffer, data.getDataType() );
-                    QByteArray qbarray( (const char*)buffer, data.getStorageSize() );
+                    QByteArray qbarray( ( const char* )buffer, data.getStorageSize() );
                     data.close();
 
-                    if ( !loadIndexedStackFFMpeg( &qbarray, img, channel_idx++, num_channels ) )
+                    if ( !loadIndexedStackFFMpeg( &qbarray, img, channel_idx++, num_channels,
+                                                  width, height ) )
                     {
                         v3d_msg( "Error happened in HDF file reading. Stop. \n", false );
                         return false;
@@ -198,16 +250,17 @@ bool loadStackHDF5(const char* fileName, Image4DSimple& img)
         }
     }
 
-    #endif
+#endif
 
     return true;
 }
 
-bool loadStackFFMpeg(QUrl url, Image4DSimple& img)
+bool loadStackFFMpeg( QUrl url, Image4DSimple& img )
 {
-    try {
-        FFMpegVideo video(url);
-        if (! video.isOpen)
+    try
+    {
+        FFMpegVideo video( url );
+        if ( ! video.isOpen )
             return false;
         int sx = video.getWidth();
         int sy = video.getHeight();
@@ -215,21 +268,24 @@ bool loadStackFFMpeg(QUrl url, Image4DSimple& img)
         int sc = video.getNumberOfChannels();
         // cout << "Number of frames = " << sz << endl;
 
-        img.createBlankImage(sx, sy, sz, sc, 1); // 1 byte = 8 bits per value
-        Image4DProxy<Image4DSimple> proxy(&img);
+        img.createBlankImage( sx, sy, sz, sc, 1 ); // 1 byte = 8 bits per value
+        Image4DProxy<Image4DSimple> proxy( &img );
 
         int frameCount = 0;
-        for (int z = 0; z < sz; ++z)
+        for ( int z = 0; z < sz; ++z )
         {
-            video.fetchFrame(z);
+            video.fetchFrame( z );
             // int z = frameCount;
             frameCount++;
-            for(int c = 0; c < sc; ++c) {
-                for (int y = 0; y < sy; ++y) {
-                    for (int x = 0; x < sx; ++x) {
-                        proxy.put_at(x, y, z, c,
-                                     video.getPixelIntensity(x, y, (FFMpegVideo::Channel)c)
-                                     );
+            for ( int c = 0; c < sc; ++c )
+            {
+                for ( int y = 0; y < sy; ++y )
+                {
+                    for ( int x = 0; x < sx; ++x )
+                    {
+                        proxy.put_at( x, y, z, c,
+                                      video.getPixelIntensity( x, y, ( FFMpegVideo::Channel )c )
+                                    );
                     }
                 }
             }
@@ -238,16 +294,19 @@ bool loadStackFFMpeg(QUrl url, Image4DSimple& img)
 
         return true;
 
-    } catch(...) {}
+    }
+    catch ( ... ) {}
 
     return false;
 }
 
-bool loadIndexedStackFFMpeg(QByteArray* buffer, Image4DSimple& img, int channel, int num_channels)
+bool loadIndexedStackFFMpeg( QByteArray* buffer, Image4DSimple& img, int channel, int num_channels,
+                             long width, long height )
 {
-    try {
-        FFMpegVideo video(buffer);
-        if (! video.isOpen)
+    try
+    {
+        FFMpegVideo video( buffer );
+        if ( ! video.isOpen )
             return false;
         int sx = video.getWidth();
         int sy = video.getHeight();
@@ -256,9 +315,54 @@ bool loadIndexedStackFFMpeg(QByteArray* buffer, Image4DSimple& img, int channel,
         // cout << "Number of frames = " << sz << endl;
 
         if ( channel == 0 )
-            img.createBlankImage(sx, sy, sz, num_channels, 1); // 1 byte = 8 bits per value
+            img.createBlankImage( width, height, sz, num_channels, 1 ); // 1 byte = 8 bits per value
 
-        Image4DProxy<Image4DSimple> proxy(&img);
+        Image4DProxy<Image4DSimple> proxy( &img );
+
+        int frameCount = 0;
+        for ( int z = 0; z < sz; ++z )
+        {
+            video.fetchFrame( z );
+            // int z = frameCount;
+            frameCount++;
+            for ( int y = 0; y < height; ++y )
+            {
+                for ( int x = 0; x < width; ++x )
+                {
+                    proxy.put_at( x, y, z, channel,
+                                  video.getPixelIntensity( x, y, ( FFMpegVideo::Channel )0 )
+                                );
+                }
+            }
+        }
+        cout << "Number of frames found = " << frameCount << endl;
+
+        return true;
+
+    }
+    catch ( ... ) {}
+
+    return false;
+}
+
+bool loadStackFFMpegAsGray( const char* fileName, Image4DSimple& img )
+{
+    return loadStackFFMpegAsGray( QUrl::fromLocalFile( fileName ), img );
+}
+
+bool loadStackFFMpegAsGray( QUrl url, Image4DSimple& img )
+{
+    try
+    {
+        FFMpegVideo video( url );
+        int sx = video.getWidth();
+        int sy = video.getHeight();
+        int sz = video.getNumberOfFrames();
+        int sc = video.getNumberOfChannels();
+        // cout << "Number of frames = " << sz << endl;
+
+        img.createBlankImage( sx, sy, sz, 1, 1 ); // 1 byte = 8 bits per value
+        Image4DProxy<Image4DSimple> proxy( &img );
 
         int frameCount = 0;
         for ( int z = 0; z < sz; ++z )
@@ -270,54 +374,14 @@ bool loadIndexedStackFFMpeg(QByteArray* buffer, Image4DSimple& img, int channel,
             {
                 for ( int x = 0; x < sx; ++x )
                 {
-                    proxy.put_at( x, y, z, channel,
-                    video.getPixelIntensity( x, y, ( FFMpegVideo::Channel )0 )
-                                );
-                }
-            }
-        }
-        cout << "Number of frames found = " << frameCount << endl;
-
-        return true;
-
-    } catch(...) {}
-
-    return false;
-}
-
-bool loadStackFFMpegAsGray(const char* fileName, Image4DSimple& img)
-{
-    return loadStackFFMpegAsGray(QUrl::fromLocalFile(fileName), img);
-}
-
-bool loadStackFFMpegAsGray(QUrl url, Image4DSimple& img)
-{
-    try {
-        FFMpegVideo video(url);
-        int sx = video.getWidth();
-        int sy = video.getHeight();
-        int sz = video.getNumberOfFrames();
-        int sc = video.getNumberOfChannels();
-        // cout << "Number of frames = " << sz << endl;
-
-        img.createBlankImage(sx, sy, sz, 1, 1); // 1 byte = 8 bits per value
-        Image4DProxy<Image4DSimple> proxy(&img);
-
-        int frameCount = 0;
-        for (int z = 0; z < sz; ++z)
-        {
-            video.fetchFrame(z);
-            // int z = frameCount;
-            frameCount++;
-            for (int y = 0; y < sy; ++y) {
-                for (int x = 0; x < sx; ++x) {
                     // Use average of R,G,B as gray value
                     int val = 0;
-                    for(int c = 0; c < sc; ++c) {
-                        val += video.getPixelIntensity(x, y, (FFMpegVideo::Channel)c);
+                    for ( int c = 0; c < sc; ++c )
+                    {
+                        val += video.getPixelIntensity( x, y, ( FFMpegVideo::Channel )c );
                     }
                     val /= sc; // average of rgb
-                    proxy.put_at(x, y, z, 0, val);
+                    proxy.put_at( x, y, z, 0, val );
                 }
             }
         }
@@ -325,7 +389,8 @@ bool loadStackFFMpegAsGray(QUrl url, Image4DSimple& img)
 
         return true;
 
-    } catch(...) {}
+    }
+    catch ( ... ) {}
 
     return false;
 }
