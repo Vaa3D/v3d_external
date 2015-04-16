@@ -143,7 +143,32 @@ case $OPERATION in
 			mkdir build_$PLATFORM
 		fi
 
+        if [[ ! -e v3d_main/common_lib/include/boost ]]; then
+            echo "Unpacking Boost"
+            cd v3d_main/common_lib
+            tar xzf src_packages/boost_1_57_0.tar.gz
+            echo "Copying Boost headers"
+            cp -r boost_1_57_0/boost include
+            cd ../../
+        fi
+
+        if [[ ! -e v3d_main/common_lib/include/tiff.h ]]; then
+            echo "Configuring TIFF headers"
+            cd v3d_main/common_lib/build
+            tar xzf ../src_packages/tiff-4.0.2.tar.gz
+            cd tiff-4.0.2
+            nmake Makefile.vc
+            cp libtiff/tiff.h ../../include
+            cp libtiff/tiffconf.h ../../include
+            cp libtiff/tiffio.h ../../include
+            cp libtiff/tiffio.hxx ../../include
+            cp libtiff/tiffvers.h ../../include
+            cp libtiff/libtiff.lib ../../winlib64
+            cd ../../../..
+        fi
+
         if [ $PLATFORM = "windows-x86_64" ]; then
+            echo "Unpacking FFTW"
             CMAKE_EXE+=" -G \"Visual Studio 12 2013 Win64\""
             cd v3d_main/common_lib
             if [[ ! -e fftw-3.3.4-dll64 ]]; then
@@ -166,6 +191,7 @@ case $OPERATION in
             devenv Vaa3D.sln -build $CMAKE_BUILD -out all_build.txt
             echo "Installing"
             devenv Vaa3D.sln -project INSTALL -build $CMAKE_BUILD -out install.txt
+            echo "Done."
         else
     		make
         fi
