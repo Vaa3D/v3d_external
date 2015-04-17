@@ -41,6 +41,11 @@ if(USE_FFMPEG)
     set(USE_X265 OFF CACHE BOOL "Whether to build FFMeg with x265 codec")
 endif()
 
+set(HIGH_BIT_DEPTH OFF CACHE BOOL "Whether to build X265 with 16-bit pixel depth")
+if(HIGH_BIT_DEPTH)
+  add_definitions(-DHIGH_BIT_DEPTH)
+endif()
+
 # HDF5
 set(USE_HDF5 OFF CACHE BOOL "Build HDF5 loader")
 if(USE_HDF5)
@@ -129,12 +134,17 @@ if(USE_FFMPEG)
     set(extra_cflags "")
     set(extra_ldflags "")
     if(USE_X265)
+      set(bit_depth_flag "")
       set(X265_FLAGS "--enable-libx265")
+      if(HIGH_BIT_DEPTH)
+        set(bit_depth_flag "-DHIGH_BIT_DEPTH:BOOL=ON")
+      endif()
+      message("bit_depth_flag = ${bit_depth_flag}")
       ExternalProject_Add(
           X265-1.5
           DEPENDS Yasm-1-2-0
           URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.5.tar.gz
-          CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR} -DYASM_EXECUTABLE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm${CMAKE_EXECUTABLE_SUFFIX}
+          CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF ${bit_depth_flag} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR} -DYASM_EXECUTABLE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm${CMAKE_EXECUTABLE_SUFFIX}
           UPDATE_COMMAND ""
       )
     endif()

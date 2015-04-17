@@ -65,6 +65,9 @@ while [[ $# > 0 ]]; do
         -qt5)
             CMAKE_ARGS+=" -DFORCE_QT4:BOOL=OFF"
             ;;
+        -16)
+            CMAKE_ARGS+=" -DHIGH_BIT_DEPTH:BOOL=ON"
+            ;;
         -debug)
             CMAKE_BUILD="Debug"
             ;;
