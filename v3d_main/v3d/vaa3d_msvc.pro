@@ -57,7 +57,7 @@ win32 {
  
         ## Windows x64 (64bit) specific build here 
  	
- 		MSVC_DIR = "C:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\VC"
+ 		MSVC_DIR = "C:\\Program Files\\Microsoft Visual Studio 9.0\\VC"
 		MSSDK_DIR = "C:\\Program Files\\Microsoft SDKs\\Windows\\v6.0A\\"
 		LOCAL_DIR = ..\ 
 
