@@ -6,8 +6,7 @@ cellSegmentation
 channelsplit
 combine_file
 convert_file_format
-imageIO_Bioformat
-open_fiji
+bioformats_loader
 NifTi_reader
 saveZSlices
 movieZCswitch
@@ -98,8 +97,9 @@ neurontracing_mip
 neurontracing_mst
 snake_tracing
 neuTube
-calculate_score
 SWC_Resample
 fastmarching_spanningtree
-anisodiff
-
+anisodiff_general
+anisodiff_littequick
+convert_neuron_file_to_SWC
+calculate_reliability_score

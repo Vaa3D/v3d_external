@@ -8,17 +8,15 @@
 #only tested on mac so far! try it on other OSs at your own risk :p
 ############################# Warning #############################
 
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
   V3D=../bin/vaa3d64.app/Contents/MacOS/vaa3d64
 fi
 
 if [[ "$OSTYPE" == "win32" ]]; then
-  V3D=../bin/vaa3d64
+  V3D=../bin/vaa3d64.exe
 fi
 
-if [[ "$OSTYPE" == "win32" ]]; then
-  V3D=../bin/vaa3d64
-fi
 
 if ! [ -e $V3D ]; then
     echo "$V3D does not exsit"
