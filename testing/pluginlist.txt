@@ -98,3 +98,8 @@ neurontracing_mip
 neurontracing_mst
 snake_tracing
 neuTube
+calculate_score
+SWC_Resample
+fastmarching_spanningtree
+anisodiff
+
