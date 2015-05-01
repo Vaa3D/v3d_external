@@ -100,6 +100,6 @@ neuTube
 SWC_Resample
 fastmarching_spanningtree
 anisodiff_general
-anisodiff_littequick
+anisodiff_littlequick
 convert_neuron_file_to_SWC
 calculate_reliability_score

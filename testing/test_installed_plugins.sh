@@ -9,12 +9,14 @@
 ############################# Warning #############################
 
 
+V3D="vaa3d"
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
   V3D=../bin/vaa3d64.app/Contents/MacOS/vaa3d64
 fi
 
-if [[ "$OSTYPE" == "win32" ]]; then
-  V3D=../bin/vaa3d64.exe
+if [[ "$OSTYPE" == "cygwin" ]]; then
+  V3D=./bin/vaa3d.exe
 fi
 
 
@@ -26,6 +28,7 @@ if ! [ -e $V3D ]; then
 fi
 
 echo "Start to check each plugin listed in ./pluginlist.txt:"
+echo $V3D
 
 let count=0
 let error_count=0
@@ -39,13 +42,16 @@ fi
 for plugin in `cat pluginlist.txt `;
 do
   ((count++))
-  if [[ "$OSTYPE" == "win32" ]]; then
-    command="$V3D \h -x $plugin -f help"
-  else
-    command="$V3D -h -x $plugin -f help"
-  fi
   echo ""
   echo "$count: testing $plugin"
+  if [[ "$OSTYPE" == "cygwin" ]]; then
+    command="$V3D /h /x $plugin /f help"
+    echo $command
+  else
+    command="$V3D -h -x $plugin -f help"
+    echo $command
+  fi
+
 
   output=$($command 2>&1 >/dev/null)
   if echo "$output" | grep -qi "Error"; then
