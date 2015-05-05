@@ -241,7 +241,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 
 	QFileInfo fileInfo(individualFileName);
 	QString curFilePath = fileInfo.path();
-	QString curSuffix = fileInfo.suffix();
+        QString curSuffix = fileInfo.suffix();
 
 	QDir dir(curFilePath);
 	if (!dir.exists())
@@ -251,10 +251,10 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 	}
 
 	QStringList imgfilters;
-	imgfilters.append("*." + curSuffix);
+        imgfilters.append("*." + curSuffix);
 	foreach (QString file, dir.entryList(imgfilters, QDir::Files, QDir::Name))
 	{
-		myList += QFileInfo(dir, file).absoluteFilePath();
+        myList += QFileInfo(dir, file).absoluteFilePath();
 	}
 
 	//sort image sequence by numeric order instead of alphanumeric order
@@ -265,7 +265,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 	// 090731 RZC: fixed numerically sorting file names list, for XFormWidget::importGeneralImgSeries
 	//-----------------------------------------------------------------------
 	QString fileNameStr, fileNameDigits;	//absolute file name is separated to 2 parts: strings and digits
-	QRegExp r("(\\d+)");		//find digits
+        QRegExp r("(\\d+)");		//find digits
 	QMap<V3DLONG, QString> mapList;
 
 	mapList.clear();
@@ -278,16 +278,16 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 
 		V3DLONG pos = 0;
 		fileNameDigits = "";
-		while ((pos = r.indexIn(fileNameStr, pos)) != -1)
+        while ((pos = r.indexIn(fileNameStr, pos)) != -1 && r.cap(0) !="3")
 		{
-			fileNameDigits = r.cap(1);
-			pos += r.matchedLength();
+                    fileNameDigits = r.cap(0);
+                    pos += r.matchedLength();
 		}
 
 		if (fileNameDigits.isEmpty()) continue;
 
 
-		V3DLONG num = fileNameDigits.toULong();
+        V3DLONG num = fileNameDigits.toULong();
 		mapList.insert(num, fileNameStr);
 	}
 	// must be sorted by QMap
