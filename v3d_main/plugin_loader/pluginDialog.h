@@ -50,8 +50,8 @@ public:
                  QWidget *parent = 0);
 
 private:
-    void visitPlugins(const QString &path, const QStringList &fileNameList);
-    void populateTreeWidget(QObject *plugin, const QString &fileName);
+    V3DLONG visitPlugins(const QString &path, const QStringList &fileNameList);
+    bool populateTreeWidget(QObject *plugin, const QString &fileName);
     void addTreeItems(QTreeWidgetItem *pluginItem, QObject *plugin);
 
     QString appName;

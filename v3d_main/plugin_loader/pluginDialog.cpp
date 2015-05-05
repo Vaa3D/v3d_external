@@ -112,34 +112,43 @@ PluginDialog::PluginDialog(const QString &appname,
     menuIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
     funcIcon.addPixmap(style()->standardPixmap(QStyle::SP_MessageBoxInformation));
 
-    QString labelText = appName; ///appNmae==V3D
-    labelText += tr(" found the following plug-ins\n");
+    QString labelText = "";
+//    appName; ///appNmae==V3D
+//    labelText += tr(" found the following plug-ins\n");
+    V3DLONG cnt=0;
     foreach (const QDir& dir, paths) {
         labelText += QString("(%1):\n").arg(QDir::toNativeSeparators(dir.path()));
-        visitPlugins(dir.path(), fileNames);
+        cnt += visitPlugins(dir.path(), fileNames);
     }
+    labelText.prepend(QString(appName) + QString(" found the following %1 plug-ins\n").arg(cnt));
     label->setText(labelText);
 }
 
-void PluginDialog::visitPlugins(const QString &path, const QStringList &fileNameList)
+V3DLONG PluginDialog::visitPlugins(const QString &path, const QStringList &fileNameList)
 {
     const QDir dir(path);
 
+    V3DLONG cnt=0;
     foreach (QString fileName, fileNameList)
     {
         QPluginLoader loader(dir.absoluteFilePath(fileName));
 
         QObject *plugin = loader.instance(); // a new instance
 
+        bool cstatus=false;
         if (plugin)
-            populateTreeWidget(plugin, dir.relativeFilePath(fileName));//relativeFilePath
+            cstatus = populateTreeWidget(plugin, dir.relativeFilePath(fileName));//relativeFilePath
 
         loader.unload(); // unload this instance
         //qDebug() << "unload: " <<fileName;
+
+        if (cstatus) cnt++;
     }
+
+    return cnt;
 }
 
-void PluginDialog::populateTreeWidget(QObject *plugin, const QString &fileName)
+bool PluginDialog::populateTreeWidget(QObject *plugin, const QString &fileName)
 {
     QTreeWidgetItem *pluginItem = new QTreeWidgetItem(treeWidget);
 //    treeWidget->setItemExpanded(pluginItem, true);  //100804 expanded off
@@ -150,7 +159,10 @@ void PluginDialog::populateTreeWidget(QObject *plugin, const QString &fileName)
     if (plugin)
     {
 		addTreeItems(pluginItem, (plugin));
+        return true;
     }
+    else
+        return false;
 }
 
 void PluginDialog::addTreeItems(QTreeWidgetItem *pluginItem, QObject *plugin)
