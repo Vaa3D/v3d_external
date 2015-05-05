@@ -24,6 +24,17 @@ void asc_to_swc::readASC_file(NeuronTree &nt, char* fname_asc)
     nt.comment = "From .ASC file: ";
     nt.comment += fname_asc;
     OpenNeuroL(nt, fname_asc);
+
+    //construct hash tree
+    nt.hashNeuron.clear();
+    for(V3DLONG i=0; i<nt.listNeuron.size(); i++){
+        nt.hashNeuron.insert(nt.listNeuron.at(i).n, i);
+    }
+    //reset color
+    nt.color.r=0;
+    nt.color.g=0;
+    nt.color.b=0;
+    nt.color.a=0;
 }
 
 void asc_to_swc::add(NeuronTree &nt, int id, int type, double x, double y, double z, double radius, int pid)
