@@ -227,6 +227,10 @@ public slots:
         void func_procModeDefault();
         void func_procModeNeuronAnnotator();
 #endif
+
+#ifdef _ALLOW_TERAFLY_MENU_
+        void func_open_terafly();
+#endif
 // Dec-20-2010 YuY
 signals:
 	void triviewUpdateTriggered();
@@ -301,7 +305,7 @@ private:
 	QMenu *proc_landmark_control_menu;
 	QMenu *proc_general_menu;
 	QMenu *proc_segmentation_menu;
-	QMenu *proc_tracing_menu;
+    QMenu *proc_tracing_menu;
 	QMenu *proc_registration_menu;
 	QMenu *proc_standarization_menu;
 	QMenu *proc_pointcloud_atlas_menu;

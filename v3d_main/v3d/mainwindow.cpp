@@ -63,6 +63,11 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #ifdef __v3d_custom_toolbar__
 #include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-08-2011
 #endif
+
+#ifdef _ALLOW_TERAFLY_MENU_
+#include "CPlugin.h"
+#endif
+
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
 MainWindow::MainWindow()
@@ -2034,6 +2039,12 @@ void MainWindow::updateProcessingMenu()
 #ifdef _ALLOW_AUTOMARKER_MENU_
     proc_automarker_menu = advancedProcMenu->addMenu(tr("AutoMarker"));
 #endif
+#ifdef _ALLOW_TERAFLY_MENU_
+    QMenu *proc_terafly_menu = advancedProcMenu->addMenu(tr("Big-Image-Data"));
+    QAction* open_terafly_action = new QAction(tr("TeraFly"), this);
+    proc_terafly_menu->addAction(open_terafly_action);
+    connect(open_terafly_action, SIGNAL(triggered()), this, SLOT(func_open_terafly()));
+#endif
     //
 #ifdef _ALLOW_IMGSTD_MENU_
     proc_standarization_menu->addAction(procElongated_randomSeeding);
@@ -2822,6 +2833,15 @@ void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
     procModeNeuronAnnotator->setChecked(checkState);
 }
 #endif
+
+#ifdef _ALLOW_TERAFLY_MENU_
+void MainWindow::func_open_terafly()
+{
+    V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+    teramanager::CPlugin::domenu("TeraFly", *pl, this);
+}
+#endif
+
 //class V3D_PlugIn_Interface
 //{
 //public:

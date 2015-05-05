@@ -88,6 +88,7 @@
 
 
 include(v3d_essential.pro)
+include(../terafly/teramanager.pro)
 
 #CONFIG += console
 DEFINES += __NAWEBSERVICE__
