@@ -84,6 +84,7 @@
 # 101213: (CMB) add more update dialogs
 # 110806: (Hang) add ../custom_toolbar/v3d_custom_toolbar.h/.cpp
 # 110906: By Hanchuan Peng, produce a v3d_essential.pro for better maintainance of the project codebase for additional modules
+# 150506: by PHC, add asc_to_swc
 # ######################################################################
 
 TEMPLATE = app
@@ -253,7 +254,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/jba_affine_xform.h \
     ../jba/c++/remove_nonaffine_points.h \
     ../custom_toolbar/v3d_custom_toolbar.h \
-    ../io/io_bioformats.h
+    ../io/io_bioformats.h \
+    ../io/asc_to_swc.h
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h
 
@@ -329,7 +331,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
     ../jba/c++/histeq.cpp \
     ../custom_toolbar/v3d_custom_toolbar.cpp \
-    ../io/io_bioformats.cpp
+    ../io/io_bioformats.cpp \
+    ../io/asc_to_swc.cpp
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 

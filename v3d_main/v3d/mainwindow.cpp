@@ -885,6 +885,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         else if (cur_suffix=="APO" ||
                  cur_suffix=="SWC" ||
                  cur_suffix=="ESWC" ||
+                 cur_suffix=="ASC" ||
                  cur_suffix=="OBJ" ||
                  cur_suffix=="VAA3DS" ||
                  cur_suffix=="V3DS" ||
@@ -902,7 +903,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             if (cur_suffix=="APO")
                 mypara_3Dview->pointcloud_file_list.append(fileName);
             else if (cur_suffix=="SWC" ||
-                     cur_suffix=="ESWC")
+                     cur_suffix=="ESWC" ||
+                     cur_suffix=="ASC" )
                 mypara_3Dview->swc_file_list.append(fileName);
             else if (cur_suffix=="OBJ" ||
                      cur_suffix=="V3DS" ||

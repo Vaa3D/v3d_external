@@ -23,10 +23,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last update: 090716: by Hanchuan Peng, now use the apo file loader writer in the basic_c_fun directory
  * Last update: by PHC, 2010-06-02, separate the content of function copyToEditableNeuron() to NeuronTree__2__V_NeuronSWC_list()
  * Last update: 120209: by Yinan Wan, add matlab heat map to neuron_type_color list, it starts from type 19
+ * Last update: 150506: by PHC. add asc reading support
  */
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "freeglut_geometry_r.c"
+
+#include "../io/asc_to_swc.h"
+
 #define CALL_glutSolidTorus glutSolidTorus
 #define CALL_glutSolidDode  glutSolidDodecahedron
 // if error then just warning
@@ -64,8 +68,8 @@ void Renderer_gl1::loadObjectFromFile(const char* url)
 	else
 	    filename = QFileDialog::getOpenFileName(0, QObject::tr("Open File"),
 	    		"",
-                QObject::tr("Supported file (*.swc *.apo *.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff *.v3ds *.vaa3ds *.obj *.marker *.csv)"
-	    				";;Neuron structure	(*.swc)"
+                QObject::tr("Supported file (*.swc *.eswc *.asc *.apo *.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff *.v3ds *.vaa3ds *.obj *.marker *.csv)"
+                        ";;Neuron structure	(*.swc *.eswc *.asc)"
 	    				";;Point Cloud		(*.apo)"
                         ";;Label field		(*.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff)"
 	    				";;Label Surface	(*.vaa3ds *.v3ds *.obj)"
@@ -154,7 +158,15 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
             if (!(ep->swc_file_list.contains(filename)))
                 ep->swc_file_list << filename;
         }
-		// if apo
+        // if asc
+        else if (filename.endsWith(".asc", Qt::CaseInsensitive)) //PHC, 20150506
+        {
+            type = stNeuronStructure;
+            loadNeuronTree(filename);
+            if (!(ep->swc_file_list.contains(filename)))
+                ep->swc_file_list << filename;
+        }
+        // if apo
 		else if (filename.endsWith(".apo", Qt::CaseInsensitive))
 		{
 			type = stPointCloud;
@@ -910,7 +922,11 @@ void Renderer_gl1::loadNeuronTree(const QString& filename)
 	PROGRESS_PERCENT(50); // 0 or 100 not be displayed. 081102
     NeuronTree SS;
 #ifndef test_main_cpp
-    SS = readSWC_file(filename);
+    if (filename.endsWith(".swc", Qt::CaseInsensitive) || filename.endsWith(".eswc", Qt::CaseInsensitive))
+        SS = readSWC_file(filename);
+    else if (filename.endsWith(".asc", Qt::CaseInsensitive))
+        asc_to_swc::readASC_file(SS, (char *)(qPrintable(filename)));
+
 #endif
      // add to neuron_tree set
     if (contained && idx>=0 && idx<listNeuronTree.size())
