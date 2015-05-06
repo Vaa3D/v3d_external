@@ -1,6 +1,13 @@
 # include useful cmake scripts
 include(cmake/utils.cmake)
 
+# enable TeraFly code in Vaa3D
+# add_definitions(-D_ALLOW_TERAFLY_MENU_) # does not work since v3d CMakeLists is at the same level of the current CMakeLists 
+
+# enable TeraFly code in iomanager TeraFly's module
+add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
+
+
 # disable annoying warnings on MSVC compilers
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	warnings_disable(CMAKE_CXX_FLAGS /wd4290) # vs2012: can't properly handle exceptions
@@ -77,13 +84,6 @@ else()
   QT5_WRAP_CPP(TERAFLY_MOC_SRCS ${TERAFLY_MOC_FILES})
   QT5_ADD_RESOURCES(TERAFLY_QRC "icons.qrc")
 endif()
-
-
-# enable TeraFly code in Vaa3D
-# add_definitions(-D_ALLOW_TERAFLY_MENU_) # does not work since v3d CMakeLists is at the same level of the current CMakeLists 
-
-# enable TeraFly code in iomanager TeraFly's module
-add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
 
 # create TeraFly lib
 add_library(terafly STATIC

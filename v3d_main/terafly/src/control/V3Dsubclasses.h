@@ -1,5 +1,3 @@
-#ifdef USE_EXPERIMENTAL_FEATURES
-
 #ifndef V3DSUBCLASSES_H
 #define V3DSUBCLASSES_H
 
@@ -102,5 +100,3 @@ struct teramanager::point
 };
 
 #endif // V3DSUBCLASSES_H
-
-#endif // USE_EXPERIMENTAL_FEATURES

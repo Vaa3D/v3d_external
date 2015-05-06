@@ -1,5 +1,3 @@
-#ifdef USE_EXPERIMENTAL_FEATURES
-
 #include "V3Dsubclasses.h"
 #include "../presentation/PMain.h"
 #include "CViewer.h"
@@ -249,5 +247,3 @@ void myV3dR_GLWidget::updateImageDataFast()
     static_cast<Renderer_gl1*>(renderer)->loadVol();
     update();
 }
-
-#endif // USE_EXPERIMENTAL_FEATURES

@@ -107,6 +107,7 @@ PMain* PMain::getInstance()
     {
         itm::warning("TeraFly not yet instantiated", __itm__current__function__);
         QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
+		return 0;
     }
 }
 
@@ -647,13 +648,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomInMethod->addItem("Foreground (20 markers + mean-shift)");
     zoomInMethod->addItem("Foreground (1 marker)");
     zoomInMethod->installEventFilter(this);
-    #ifndef USE_EXPERIMENTAL_FEATURES
-    zoomInMethod->setCurrentIndex(2);
-    zoomInMethod->setEnabled(false);
-//    zoomInSens->setEnabled(false);
-    #else
     zoomInMethod->setCurrentIndex(1);
-    #endif
 
     //"Global coordinates" widgets
     /**/itm::debug(itm::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
@@ -1071,11 +1066,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     layout->setSpacing(0);
     setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    #ifdef USE_EXPERIMENTAL_FEATURES
-    setWindowTitle(QString("Vaa3D-TeraFly v").append(teramanager::version.c_str()).append("e"));
-    #else
     setWindowTitle(QString("Vaa3D-TeraFly v").append(teramanager::version.c_str()));
-    #endif
     this->setFont(tinyFont);
 
 

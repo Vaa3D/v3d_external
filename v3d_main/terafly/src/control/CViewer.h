@@ -406,12 +406,10 @@ class teramanager::CViewer : public QWidget
         void Vaa3D_rotationchanged(int s);
         void PMain_rotationchanged();
 
-        #ifdef USE_EXPERIMENTAL_FEATURES
         /**********************************************************************************
         * Linked to Vaa3D renderer slider
         ***********************************************************************************/
         void setZoom(int z);
-        #endif
 
     public:
 

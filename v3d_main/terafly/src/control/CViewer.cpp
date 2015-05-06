@@ -250,10 +250,8 @@ void CViewer::show()
         connect(pMain->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
         connect(pMain->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
 
-        #ifdef USE_EXPERIMENTAL_FEATURES
         disconnect(window3D->zoomSlider, SIGNAL(valueChanged(int)), view3DWidget, SLOT(setZoom(int)));
         connect(window3D->zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setZoom(int)));
-        #endif //USE_EXPERIMENTAL_FEATURES
 
         //changing window flags (disabling minimize/maximize buttons)
         // ---- Alessandro 2013-04-22 fixed: this causes (somehow) window3D not to respond correctly to the move() method
@@ -495,7 +493,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             }
         }
 
-        #ifdef USE_EXPERIMENTAL_FEATURES
         /******************** REDIRECTING MOUSE-WHEEL EVENTS *************************
         Mouse-wheel events are redirected to the customized wheelEvent handler
         ***************************************************************************/
@@ -505,22 +502,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
             return true;
         }
-        #else
-        if ((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
-        {
-            QWheelEvent* wheelEvt = (QWheelEvent*)event;
-            int zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, view3DWidget->zoom());
-            if(zr > PMain::getInstance()->zoomInSens->value() && !isHighestRes())
-            {
-                static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->selectMode = Renderer::smMarkerCreate1;
-                static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_addthismarker = false;
-                static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_imaging = false;
-                static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_grabhighrez = true;
-                forceZoomIn = true;
-                view3DWidget->getRenderer()->hitPoint(wheelEvt->x(), wheelEvt->y());
-            }
-        }
-        #endif
 
         /****************** INTERCEPTING MOUSE CLICK EVENTS ***********************
         Mouse click events are intercepted for handling annotations tools
@@ -624,17 +605,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
 
-            #ifdef USE_EXPERIMENTAL_FEATURES
             XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
             newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);
-            #else
-            static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->selectMode = Renderer::smMarkerCreate1;
-            static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_addthismarker = false;
-            static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_imaging = false;
-            static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_grabhighrez = true;
-            forceZoomIn = true;
-            view3DWidget->getRenderer()->hitPoint(mouseEvt->x(), mouseEvt->y());
-            #endif
             return true;
         }
 
@@ -1983,11 +1955,7 @@ XYZ CViewer::getRenderer3DPoint(int x, int y)  throw (RuntimeException)
 
     //view3DWidget->getRenderer()->selectObj(x,y, false);
 
-    #ifdef USE_EXPERIMENTAL_FEATURES
     return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
-    #else
-    throw RuntimeException("Double click zoom-in feature is disabled in the current version");
-    #endif
 
 
 //    Renderer_gl1* rend = static_cast<Renderer_gl1*>(view3DWidget->getRenderer());
@@ -2434,7 +2402,6 @@ void CViewer::PMain_rotationchanged()
     }
 }
 
-#ifdef USE_EXPERIMENTAL_FEATURES
 /**********************************************************************************
 * Linked to Vaa3D renderer slider
 ***********************************************************************************/
@@ -2444,7 +2411,6 @@ void CViewer::setZoom(int z)
 
     myV3dR_GLWidget::cast(view3DWidget)->setZoomO(z);
 }
-#endif
 
 /**********************************************************************************
 * Syncronizes widgets from <src> to <dst>
