@@ -84,6 +84,7 @@
 # 101213: (CMB) add more update dialogs
 # 110806: (Hang) add ../custom_toolbar/v3d_custom_toolbar.h/.cpp
 # 110906: by PHC. Now include v3d_essential.pro
+# 150506: by AB. Now include teramanager.pro
 # ######################################################################
 
 
