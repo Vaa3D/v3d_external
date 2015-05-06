@@ -2,6 +2,7 @@
 #define CIMAGEUTILS_H
 
 #include "CPlugin.h"
+#include "v3d_interface.h"
 
 class teramanager::CImageUtils
 {

@@ -30,8 +30,17 @@
 #define __TERAMANAGER_C_PLUGIN_H__
 
 #include <QtGui>
-#include <v3d_interface.h>
 #include <limits>
+
+class V3DPluginCallback2;
+
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
 
 /*******************************************************************************************************************************
  *   Interfaces, types, parameters and constants   													       *

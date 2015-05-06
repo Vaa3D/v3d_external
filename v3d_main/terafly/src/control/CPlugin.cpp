@@ -27,6 +27,7 @@
 ********************************************************************************************************************************************************************************************/
 
 #include <QErrorMessage>
+#include "v3d_interface.h"
 #include "../presentation/PMain.h"
 #include "../presentation/PConverter.h"
 #include "v3d_message.h"

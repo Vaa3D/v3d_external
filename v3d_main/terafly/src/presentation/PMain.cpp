@@ -68,7 +68,7 @@ string PMain::HTzoomInThres = "Select the <b>zoom</b> factor threshold to trigge
                              "Set it to 100 to disable this feature.";
 string PMain::HTzoomInMethod = "Choose from pull-down menu the method to be used for the computation of the zoom-in volume of interest (<b>VOI</b>)";
 string PMain::HTcacheSens = "Adjust data caching sensitivity when zooming-in with <i>mouse scroll up</i>. This controls the minimum amount of overlap between the requested VOI "
-                            " and the <b>cached VOI</b> that is required to restore the cached VOI instead of loading a new VOI. If you always want to zoom-in to the cached VOI, please set this to 0\%.";
+                            " and the <b>cached VOI</b> that is required to restore the cached VOI instead of loading a new VOI. If you always want to zoom-in to the cached VOI, please set this to 0%%.";
 string PMain::HTtraslatePos = "Translate the view along this axis in its <i>natural</i> direction.";
 string PMain::HTtraslateNeg = "Translate the view along this axis in its <i>opposite</i> direction.";
 string PMain::HTvolcuts = "Define a volume of interest (<b>VOI</b>) using <b>absolute spatial coordinates</b> (i.e. referred to the highest resolution). "
@@ -293,7 +293,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     xShiftMenu = new QMenu("X-shift overlap");
     xShiftWidget = new QWidgetAction(this);
     xShiftSBox = new QSpinBox();
-    xShiftSBox->setSuffix("\%");
+    xShiftSBox->setSuffix("%%");
     xShiftSBox->setMinimum(1);
     xShiftSBox->setMaximum(99);
     xShiftSBox->setValue(CSettings::instance()->getTraslX());
@@ -304,7 +304,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     yShiftMenu = new QMenu("Y-shift overlap");
     yShiftWidget = new QWidgetAction(this);
     yShiftSBox = new QSpinBox();
-    yShiftSBox->setSuffix("\%");
+    yShiftSBox->setSuffix("%%");
     yShiftSBox->setMinimum(1);
     yShiftSBox->setMaximum(99);
     yShiftSBox->setValue(CSettings::instance()->getTraslY());
@@ -315,7 +315,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zShiftMenu = new QMenu("Z-shift overlap");
     zShiftWidget = new QWidgetAction(this);
     zShiftSBox = new QSpinBox();
-    zShiftSBox->setSuffix("\%");
+    zShiftSBox->setSuffix("%%");
     zShiftSBox->setMinimum(1);
     zShiftSBox->setMaximum(99);
     zShiftSBox->setValue(CSettings::instance()->getTraslZ());
@@ -326,7 +326,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tShiftMenu = new QMenu("T-shift overlap");
     tShiftWidget = new QWidgetAction(this);
     tShiftSBox = new QSpinBox();
-    tShiftSBox->setSuffix("\%");
+    tShiftSBox->setSuffix("%%");
     tShiftSBox->setMinimum(0);
     tShiftSBox->setMaximum(99);
     tShiftSBox->setValue(CSettings::instance()->getTraslT());

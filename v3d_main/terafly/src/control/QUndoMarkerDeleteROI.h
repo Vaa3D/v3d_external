@@ -3,6 +3,7 @@
 
 #include <QUndoCommand>
 #include "../control/CPlugin.h"
+#include "v3d_interface.h"
 
 class teramanager::QUndoMarkerDeleteROI : public QUndoCommand
 {

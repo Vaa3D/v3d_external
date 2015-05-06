@@ -2,7 +2,7 @@
 #define CANNOTATIONS_H
 
 #include <set>
-
+#include "v3d_interface.h"
 #include "CPlugin.h"
 #include "math.h"
 

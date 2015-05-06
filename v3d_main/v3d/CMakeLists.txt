@@ -35,6 +35,7 @@ set(V3D_SRCS
   ../basic_c_fun/basic_4dimage_create.cpp
   ../neuron_annotator/analysis/AlignerUtils.cpp
   ../io/io_bioformats.cpp
+  ../io/asc_to_swc.cpp	# @FIXED by Alessandro on 2015-05-06: added missing .cpp file
   v3d_actions.cpp
   )
 
@@ -171,6 +172,7 @@ target_link_libraries( v3d
   3drenderer
   neuron_tracing
   worm_straighten_c
+  terafly
   # mylib_tiff
   cellseg
   ${OPENGL_glu_LIBRARY}

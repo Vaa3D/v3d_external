@@ -418,6 +418,9 @@ add_subdirectory( jba )
 
 add_subdirectory( cellseg )
 
+add_subdirectory( terafly )
+
 add_subdirectory( v3d )
 
 add_subdirectory( testing )
+

@@ -97,6 +97,9 @@ public slots:
     void newFile();
     void open();
     void openWebUrl(); // By CMB 08-Oct-2010
+#ifdef _ALLOW_TERAFLY_MENU_
+	void func_open_terafly();
+#endif
 #ifdef __v3d_custom_toolbar__
 	void addCustomToolbar(); // By Hang 06-Aug-2011
 #endif
@@ -228,9 +231,7 @@ public slots:
         void func_procModeNeuronAnnotator();
 #endif
 
-#ifdef _ALLOW_TERAFLY_MENU_
-        void func_open_terafly();
-#endif
+
 // Dec-20-2010 YuY
 signals:
 	void triviewUpdateTriggered();

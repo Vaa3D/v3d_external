@@ -48,7 +48,7 @@ QHelpBox::QHelpBox(QWidget *_parent) : QWidget(_parent)
 
 }
 
-void QHelpBox::setText(string text)
+void QHelpBox::setText(std::string text)
 {
     helpBox->setText(QString("<html><p style=\"text-align:justify;\">").append(text.c_str()).append("</p></html>"));
 }

@@ -50,9 +50,9 @@ class teramanager::CSettings
         }
 
         //TeraFly members
-        string volumePathLRU;
-        std::list<string> volumePathHistory;
-        string annotationPathLRU;
+		std::string volumePathLRU;
+        std::list<std::string> volumePathHistory;
+		std::string annotationPathLRU;
         int VOIdimV;
         int VOIdimH;
         int VOIdimD;
@@ -70,10 +70,10 @@ class teramanager::CSettings
         bool previewMode;
 
         //TeraConverter members
-        string volumeConverterInputPathLRU;
-        string volumeConverterOutputPathLRU;
-        string volumeConverterInputFormatLRU;
-        string volumeConverterOutputFormatLRU;
+        std::string volumeConverterInputPathLRU;
+        std::string volumeConverterOutputPathLRU;
+        std::string volumeConverterInputFormatLRU;
+        std::string volumeConverterOutputFormatLRU;
         int volumeConverterStacksWidthLRU;
         int volumeConverterStacksHeightLRU;
         int volumeConverterStacksDepthLRU;
@@ -94,9 +94,9 @@ class teramanager::CSettings
         ~CSettings();
 
         //GET and SET methods for TeraFly
-        string getVolumePathLRU(){return volumePathLRU;}
-        std::list<string>& getVolumePathHistory(){return volumePathHistory;}
-        string getAnnotationPathLRU(){return annotationPathLRU;}
+        std::string getVolumePathLRU(){return volumePathLRU;}
+        std::list<std::string>& getVolumePathHistory(){return volumePathHistory;}
+        std::string getAnnotationPathLRU(){return annotationPathLRU;}
         int getVOIdimV(){return VOIdimV;}
         int getVOIdimH(){return VOIdimH;}
         int getVOIdimD(){return VOIdimD;}
@@ -113,8 +113,8 @@ class teramanager::CSettings
         int getAnnotationMarkerSize(){return annotationMarkerSize;}
         bool getPreviewMode(){return previewMode;}
 
-        void setVolumePathLRU(string _volumePathLRU){volumePathLRU = _volumePathLRU;}
-        void addVolumePathToHistory(string _volumePath){
+        void setVolumePathLRU(std::string _volumePathLRU){volumePathLRU = _volumePathLRU;}
+        void addVolumePathToHistory(std::string _volumePath){
             if(volumePathHistory.size() > 10)
                 volumePathHistory.pop_front();
             volumePathHistory.push_back(_volumePath);
@@ -125,7 +125,7 @@ class teramanager::CSettings
             writeSettings();
         }
 
-        void setAnnotationPathLRU(string _annotationPathLRU){annotationPathLRU = _annotationPathLRU;}
+        void setAnnotationPathLRU(std::string _annotationPathLRU){annotationPathLRU = _annotationPathLRU;}
         void setVOIdimV(int _VOIdimV){VOIdimV = _VOIdimV;}
         void setVOIdimH(int _VOIdimH){VOIdimH = _VOIdimH;}
         void setVOIdimD(int _VOIdimD){VOIdimD = _VOIdimD;}
@@ -143,17 +143,17 @@ class teramanager::CSettings
         void setPreviewMode(bool newval){previewMode = newval;}
 
         //GET and SET methods for TeraConverter
-        string getVCInputPath(){return volumeConverterInputPathLRU;}
-        string getVCOutputPath(){return volumeConverterOutputPathLRU;}
-        string getVCInputFormat(){return volumeConverterInputFormatLRU;}
-        string getVCOutputFormat(){return volumeConverterOutputFormatLRU;}
+        std::string getVCInputPath(){return volumeConverterInputPathLRU;}
+        std::string getVCOutputPath(){return volumeConverterOutputPathLRU;}
+        std::string getVCInputFormat(){return volumeConverterInputFormatLRU;}
+        std::string getVCOutputFormat(){return volumeConverterOutputFormatLRU;}
         int getVCStacksWidth(){return volumeConverterStacksWidthLRU;}
         int getVCStacksHeight(){return volumeConverterStacksHeightLRU;}
         int getVCStacksDepth(){return volumeConverterStacksDepthLRU;}
-        void setVCInputPath(string newval){volumeConverterInputPathLRU = newval;}
-        void setVCOutputPath(string newval){volumeConverterOutputPathLRU = newval;}
-        void setVCInputFormat(string newval){volumeConverterInputFormatLRU = newval;}
-        void setVCOutputFormat(string newval){volumeConverterOutputFormatLRU = newval;}
+        void setVCInputPath(std::string newval){volumeConverterInputPathLRU = newval;}
+        void setVCOutputPath(std::string newval){volumeConverterOutputPathLRU = newval;}
+        void setVCInputFormat(std::string newval){volumeConverterInputFormatLRU = newval;}
+        void setVCOutputFormat(std::string newval){volumeConverterOutputFormatLRU = newval;}
         void setVCStacksWidth(int newval){volumeConverterStacksWidthLRU = newval;}
         void setVCStacksHeight(int newval){volumeConverterStacksHeightLRU = newval;}
         void setVCStacksDepth(int newval){volumeConverterStacksDepthLRU = newval;}

@@ -83,4 +83,3 @@ void itm::QUndoMarkerDeleteROI::redo()
     else
         redoFirstTime = false;
 }
-

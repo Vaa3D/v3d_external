@@ -25,7 +25,6 @@ class teramanager::QArrowButton : public QPushButton
         bool active;               //if true, mousePressEvent events are correctly forwarded to the superclass, otherwise they are ignored
 
         //prevents from using the default constructor
-        QArrowButton() : QPushButton(0){}
         QArrowButton(QWidget *parent = 0) : QPushButton(parent){}
 
     public:

@@ -46,6 +46,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //#define _ALLOW_ATLAS_POINTCLOUD_MENU_
 #define _ALLOW_ATLAS_IMAGE_MENU_
 
+#define _ALLOW_TERAFLY_MENU_
+
 //#define _ALLOW_ALPHA_TEST_MENUS_
 
 //#define _ALLOW_IMGREG_MENU_

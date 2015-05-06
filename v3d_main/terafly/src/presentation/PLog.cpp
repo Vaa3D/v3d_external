@@ -144,7 +144,7 @@ PLog::PLog(QWidget *parent) : QDialog(parent)
 //extracts from the given time field in the corresponding time measure
 float PLog::toFloat(QString timeField)
 {
-    string str = timeField.toStdString();
+    std::string str = timeField.toStdString();
     str = str.substr(0, str.find('s'));
     QString qstr = str.c_str();
     return qstr.toFloat();
@@ -166,9 +166,9 @@ void PLog::update()
     QString compText =  "Actual waiting time (with parallelism): " + QString::number(timeActual, 'f', 3).append("s\n") +
                         "Total  waiting time (w/o parallelism) : " + QString::number(timeSum, 'f', 3).append("s\n") +
                         "Performance gain : " + QString::number(perfGainf, 'f', 1).append("\%\n") +
-                        "I/O waiting time: " + QString::number(timeIO, 'f', 3).append("s (").append(QString::number(timeIOperc, 'f', 1)).append("\%)\n") +
-                        "GPU waiting time: " + QString::number(timeGPU, 'f', 3).append("s (").append(QString::number(timeGPUperc, 'f', 1)).append("\%)\n") +
-                        "CPU waiting time: " + QString::number(timeCPU, 'f', 3).append("s (").append(QString::number(timeCPUperc, 'f', 1)).append("\%)\n");
+                        "I/O waiting time: " + QString::number(timeIO, 'f', 3).append("s (").append(QString::number(timeIOperc, 'f', 1)).append("%%)\n") +
+                        "GPU waiting time: " + QString::number(timeGPU, 'f', 3).append("s (").append(QString::number(timeGPUperc, 'f', 1)).append("%%)\n") +
+                        "CPU waiting time: " + QString::number(timeCPU, 'f', 3).append("s (").append(QString::number(timeCPUperc, 'f', 1)).append("%%)\n");
     timeComponents->setText(compText);
 
     // time operations
