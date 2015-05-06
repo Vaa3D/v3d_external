@@ -1,7 +1,6 @@
 #last edit: by PHC, 20130722. make sure the static link of opencv works
 
 # enable Vaa3D-TeraFly mode
-#DEFINES += _ALLOW_TERAFLY_MENU_
 DEFINES += _VAA3D_TERAFLY_PLUGIN_MODE
 
 
@@ -216,12 +215,16 @@ SOURCES += ../terafly/src/core/imagemanager/TimeSeries.cpp
 SOURCES += ../terafly/src/core/imagemanager/VirtualFmtMngr.cpp
 SOURCES += ../terafly/src/core/imagemanager/VirtualVolume.cpp
 
+
+HEADERS += ../terafly/src/core/stitcher/resumer.h
+SOURCES += ../terafly/src/core/stitcher/resumer.cpp
+
 # set up volume converter
 INCLUDEPATH += ../terafly/src/core/VolumeConverter
 HEADERS += ../terafly/src/core/VolumeConverter/VolumeConverter.h
-HEADERS += ../terafly/src/core/VolumeConverter/resumer.h
+#HEADERS += ../terafly/src/core/VolumeConverter/resumer.h
 SOURCES += ../terafly/src/core/VolumeConverter/VolumeConverter.cpp
-SOURCES += ../terafly/src/core/VolumeConverter/resumer.cpp
+#SOURCES += ../terafly/src/core/VolumeConverter/resumer.cpp
 
 #set up TeraFly plugin (control and presentation classes)
 RESOURCES += ../terafly/icons.qrc
