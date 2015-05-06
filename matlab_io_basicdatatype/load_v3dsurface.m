@@ -52,8 +52,8 @@ for i=1:g_num,
     
     for iFace=1:t_num, % each face/triangle
         for iConner=1:3,
-            v.x = fread( f, 1, 'uint32' ); v.y = fread( f, 1, 'uint32' ); v.z = fread( f, 1, 'uint32' );
-            vn.x = fread( f, 1, 'uint32' ); vn.y = fread( f, 1, 'uint32' ); vn.z = fread( f, 1, 'uint32' );
+            v.x = fread( f, 1, 'float32' ); v.y = fread( f, 1, 'float32' ); v.z = fread( f, 1, 'float32' );
+            vn.x = fread( f, 1, 'float32' ); vn.y = fread( f, 1, 'float32' ); vn.z = fread( f, 1, 'float32' );
             
             pT.vertex(iConner).p0 = v.x;
             pT.vertex(iConner).p1 = v.y;
