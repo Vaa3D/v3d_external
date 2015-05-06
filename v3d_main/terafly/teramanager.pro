@@ -1,7 +1,7 @@
 #last edit: by PHC, 20130722. make sure the static link of opencv works
 
 # enable Vaa3D-TeraFly mode
-DEFINES += _ALLOW_TERAFLY_MENU_
+#DEFINES += _ALLOW_TERAFLY_MENU_
 DEFINES += _VAA3D_TERAFLY_PLUGIN_MODE
 
 
