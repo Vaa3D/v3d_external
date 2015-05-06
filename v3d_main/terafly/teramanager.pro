@@ -105,7 +105,6 @@ INCLUDEPATH += ../terafly/src/core/stitcher
 HEADERS += ../terafly/src/core/stitcher/S_config.h
 HEADERS += ../terafly/src/core/stitcher/Displacement.h
 HEADERS += ../terafly/src/core/stitcher/DisplacementMIPNCC.h
-HEADERS += ../terafly/src/core/stitcher/MergeTiles.h
 HEADERS += ../terafly/src/core/stitcher/PDAlgo.h
 HEADERS += ../terafly/src/core/stitcher/PDAlgoMIPNCC.h
 HEADERS += ../terafly/src/core/stitcher/StackRestorer.h
