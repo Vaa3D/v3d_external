@@ -610,11 +610,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
 				listAct.append(actReverseNeuronSeg = new QAction("reverse nearest neuron-segment link order", w));
 				listAct.append(actDeleteNeuronSeg = new QAction("delete the nearest neuron-segment", w));
-                    if(0)
-                    {
-                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w)); // ZJL, 20120806
-                    }
-				//listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
+
+                // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
+                listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
+
+                //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                 //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
 				if (curImg->tracedNeuron.isJointed()==false)
 				{
@@ -1871,16 +1871,17 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
 				solveCurveCenter(loc_vec_input);
 			}
-			else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
-               {
-				solveCurveViews();
-               }
-#ifndef test_main_cpp    //140211
-               else if (selectMode == smDeleteMultiNeurons)
-               {
-                    deleteMultiNeuronsByStroke();
-               }
-#endif
+            else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
+            {
+                solveCurveViews();
+            }
+
+            // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
+            else if (selectMode == smDeleteMultiNeurons)
+            {
+                deleteMultiNeuronsByStroke();
+            }
+
 			list_listCurvePos.clear();
 			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode
 				endSelectMode();
