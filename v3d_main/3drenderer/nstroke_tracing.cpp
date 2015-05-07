@@ -2900,7 +2900,7 @@ void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, in
      test_id = myList.size() + 1;
 }
 
-
+// @REVISED by Alessandro on 2015-05-07. Added 'delete every segment within contour' mode (enabled by Qt::KeyShift).
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -2908,45 +2908,108 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-     MainWindow* V3Dmainwindow = 0;
+    MainWindow* V3Dmainwindow = 0;
 	V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
 
-	if (V3Dmainwindow )
-	{
-          V3DLONG num_tree = listNeuronTree.size();
-          if (num_tree > 0)
-          {
-               for(V3DLONG j=0; j< num_tree; j++)
-               {
-                    V3DLONG num_pos = list_listCurvePos.at(0).size();
+    // @REVISED by Alessandro on 2015-05-07. Added 'delete every segment within contour' mode (enabled by Qt::KeyShift).
+    std::vector<QPoint> inPolyPoints;
+    if(w->getNumShiftHolding())
+    {
+        // build the polygon from the contourn drawn
+        QPolygon poly;
+        for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+            poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
 
-                    for (V3DLONG i=0; i<num_pos; i++)
+        // generate the set of in-polygon points
+        for(int x=poly.boundingRect().left(); x<poly.boundingRect().right(); x++)
+            for(int y=poly.boundingRect().top(); y<poly.boundingRect().bottom(); y++)
+                if(pointInPolygon(x, y, poly))
+                    inPolyPoints.push_back(QPoint(x,y));
+
+        // back-project the node curve points
+        for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+        {
+            NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+            if (p_tree)
+            {
+                QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+                if (!p_listneuron)
+                    continue;
+                for (V3DLONG i=0;i<p_listneuron->size();i++)
+                {
+                    GLdouble px, py, pz, ix, iy, iz;
+                    ix = p_listneuron->at(i).x;
+                    iy = p_listneuron->at(i).y;
+                    iz = p_listneuron->at(i).z;
+                    if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                     {
-                         const MarkerPos & pos = list_listCurvePos.at(0).at(i);
+                        py = viewport[3]-py; //the Y axis is reversed
 
-                         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-                         if (p_tree)
-                         {
-                              double best_dist;
-                              double th_delete = 120;
-                              V3DLONG n_id = findNearestNeuronNode_WinXY(pos.x, pos.y, p_tree, best_dist);
+                        QPoint p(static_cast<int>(px+0.5), static_cast<int>(py+0.5));
+                        if(poly.boundingRect().contains(p))
+                        {
+                            //qDebug()<< px << " " << py << "...";
+                            if(pointInPolygon(p.x(), p.y(), poly))
+                            {
+                                //qDebug() << "YES!";
+                                curImg->proj_trace_deleteNeuronSeg(i, p_tree);
+                                curImg->update_3drenderer_neuron_view(w, this);
+                            }
+                           //qDebug() << "\n";
+                        }
+                    }
+                    else
+                         v3d_msg("gluProject failed", 1);
+                }
+            }
+        }
+    }
+// slow (but 100% working) version
+//    if(w->getNumShiftHolding())
+//    {
+//      for(V3DLONG j=0; j<num_tree; j++)
+//      {
+//          for (int i=0; i<inPolyPoints.size(); i++)
+//          {
+//               NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+//               if (p_tree)
+//               {
+//                    double best_dist;
+//                    V3DLONG n_id = findNearestNeuronNode_WinXY(inPolyPoints[i].x(), inPolyPoints[i].y(), p_tree, best_dist);
 
-                              qDebug()<<"Current best_dist:" << best_dist;
-                              qDebug()<<"Current n_id:" << n_id;
+//                    if (n_id>=0 && best_dist<= 120)
+//                    {
+//                         curImg->proj_trace_deleteNeuronSeg(n_id, p_tree);
+//                         curImg->update_3drenderer_neuron_view(w, this);
+//                    }
+//               }
+//          }
+//      }
+//    }
+    else
+	{
+        for(V3DLONG j=0; j< listNeuronTree.size(); j++)
+        {
+            for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+            {
+                 const MarkerPos & pos = list_listCurvePos.at(0).at(i);
+                 NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
+                 if (p_tree)
+                 {
+                      double best_dist;
+                      V3DLONG n_id = findNearestNeuronNode_WinXY(pos.x, pos.y, p_tree, best_dist);
 
-                              if (n_id>=0 && best_dist<= th_delete)
-                              {
-                                   qDebug()<<"Run here before delete!";
-                                   // delete this neuron
-                                   curImg->proj_trace_deleteNeuronSeg(n_id, p_tree);
-                                   curImg->update_3drenderer_neuron_view(w, this);
-                                   qDebug()<<"Run here!";
-                              }
-                         }
-                    } // end for i<num_pos
-               }
-          }
+                      if (n_id>=0 && best_dist<= 120)
+                      {
+                           curImg->proj_trace_deleteNeuronSeg(n_id, p_tree);
+                           curImg->update_3drenderer_neuron_view(w, this);
+                      }
+                 }
+            }
+        }
 	}
+
+    w->resetNumShiftHolding();
 }
 
 

@@ -75,6 +75,11 @@ public:
 	QString getDataTitle()    {return data_title;}
 	void setDataTitle(QString newdt) {data_title = newdt;}
 	int getNumKeyHolding()    {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
+
+    // @ADDED by Alessandro on 2015-05-07. Needed for fast segment deleting.
+    bool getNumShiftHolding() {return _holding_shift;}
+    void resetNumShiftHolding(){_holding_shift = false;}
+
 	bool getStill() 		{return _still;} //used by Renderer::beStill()
 	void setStill(bool b) 	{_still = b;}    //used by V3dR_MainWindow::doSaveMovie()
     bool needStillPaint();
@@ -424,6 +429,9 @@ public:
 	char tipBuf[1000];
 	bool _holding_num[10];
 
+    // @ADDED by Alessandro on 2015-05-07. Needed for fast segment deleting.
+    bool _holding_shift;
+
 	int viewW, viewH;
 	GLdouble mRot[16];
 	static const int flip_X= +1, flip_Y= -1, flip_Z= -1; // make y-axis downward conformed with image coordinate
@@ -459,6 +467,9 @@ public:
 		for (int i=0; i<5; i++)	_data_size[i] = 0;
 
 		for (int i=0; i<10; i++) _holding_num[i] = false;
+
+        // @ADDED by Alessandro on 2015-05-07. Needed for fast segment deleting.
+        _holding_shift = false;
 
 		viewW=viewH=0;
 		for (int i=0; i<4; i++)

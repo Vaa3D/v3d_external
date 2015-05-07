@@ -4025,23 +4025,26 @@ void XFormWidget::createGUI()
 
      xy_view = new XFormView(viewGroup);
 	xy_view->setImgData(imgPlaneZ, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
-     xy_view->setFixedWidth(xy_view->get_disp_width());
-     xy_view->setFixedHeight(xy_view->get_disp_height());
+     xy_view->setFixedWidth(xy_view->get_disp_width()*1.5);
+     xy_view->setFixedHeight(xy_view->get_disp_height()*1.5);
+     xy_view->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
      xy_view->setFocusPolicy(Qt::ClickFocus);
 
      yz_view = new XFormView(viewGroup);
 	yz_view->setImgData(imgPlaneX, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
-     yz_view->setFixedWidth(yz_view->get_disp_width());
-     yz_view->setFixedHeight(yz_view->get_disp_height());
+     yz_view->setFixedWidth(yz_view->get_disp_width()*1.5);
+     yz_view->setFixedHeight(yz_view->get_disp_height()*1.5);
+    yz_view->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
      yz_view->setFocusPolicy(Qt::ClickFocus);
 
      zx_view = new XFormView(viewGroup);
 	zx_view->setImgData(imgPlaneY, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
-     zx_view->setFixedWidth(zx_view->get_disp_width());
-     zx_view->setFixedHeight(zx_view->get_disp_height());
+     zx_view->setFixedWidth(zx_view->get_disp_width()*1.5);
+     zx_view->setFixedHeight(zx_view->get_disp_height()*1.5);
+    zx_view->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
      zx_view->setFocusPolicy(Qt::ClickFocus);
 
-	//    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
+    //    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
 
      // information group
 
@@ -4202,8 +4205,17 @@ void XFormWidget::createGUI()
     infoGroupLayout = new QVBoxLayout(infoGroup);
 	infoGroupLayout->addWidget(focusPointFeatureWidget);
 
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls and infos.
+    hideDisplayInfoButton = new QPushButton();
+    hideDisplayInfoButton->setIcon(QIcon(":/pic/arrow_down.png"));
+    hideDisplayInfoButton->setFixedWidth(100);
+    hideDisplayInfoButton->setFixedHeight(25);
+    connect(hideDisplayInfoButton, SIGNAL(clicked()), this, SLOT(hideDisplayInfo()));
+
     dataGroupLayout = new QVBoxLayout(dataGroup);
-    dataGroupLayout->addWidget(viewGroup);
+    dataGroupLayout->addWidget(viewGroup, 1);
+    dataGroupLayout->addWidget(hideDisplayInfoButton, 0, Qt::AlignCenter);
+    dataGroupLayout->addSpacing(5);
     dataGroupLayout->addWidget(infoGroup);
     dataGroupLayout->addStretch(0);
 
@@ -4285,8 +4297,18 @@ void XFormWidget::createGUI()
 	QLayout *cur_layout=layout();
 	printf("cur layout=%ld\n", V3DLONG(cur_layout));
 
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls and infos.
+    hideDisplayControlsButton = new QPushButton();
+    hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_right.png"));
+    hideDisplayControlsButton->setFixedHeight(100);
+    hideDisplayControlsButton->setFixedWidth(25);
+
+    //hideDisplayControlsButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    connect(hideDisplayControlsButton, SIGNAL(clicked()), this, SLOT(hideDisplayControls()));
+
     allLayout = new QHBoxLayout(this);
-    allLayout->addWidget(dataGroup);
+    allLayout->addWidget(dataGroup, 1);
+    allLayout->addWidget(hideDisplayControlsButton);
     allLayout->addWidget(mainGroup);
 //	setLayout(allLayout);
 
@@ -4296,6 +4318,34 @@ void XFormWidget::createGUI()
 	setFocusPolicy(Qt::StrongFocus);
 	this->setFocus();
 	//QTimer::singleShot(500, this, SLOT(Focus()));
+}
+
+// @ADDED by Alessandro on 2015-05-07 : hide/display controls.
+void XFormWidget::hideDisplayControls()
+{
+    if(mainGroup->isVisible())
+    {
+        mainGroup->setVisible(false);
+        hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_left.png"));
+    }
+    else
+    {
+        mainGroup->setVisible(true);
+        hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_right.png"));
+    }
+}
+void XFormWidget::hideDisplayInfo()
+{
+    if(infoGroup->isVisible())
+    {
+        infoGroup->setVisible(false);
+        hideDisplayInfoButton->setIcon(QIcon(":/pic/arrow_up.png"));
+    }
+    else
+    {
+        infoGroup->setVisible(true);
+        hideDisplayInfoButton->setIcon(QIcon(":/pic/arrow_down.png"));
+    }
 }
 
 void XFormWidget::updateDataRelatedGUI()

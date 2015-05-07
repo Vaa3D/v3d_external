@@ -613,12 +613,14 @@ void V3dR_MainWindow::createControlWidgets()
     //------------------------------------------------
 
     // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
-    hideDisplayControlsButton = new QPushButton(">>");
+    hideDisplayControlsButton = new QPushButton("");
+    hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_right.png"));
     QFont smallFont;
-    smallFont.setPointSize(8);
+    smallFont.setPointSize(10);
     hideDisplayControlsButton->setFont(smallFont);
     hideDisplayControlsButton->setContentsMargins(0,0,0,0);
-    hideDisplayControlsButton->setMaximumWidth(20);
+    hideDisplayControlsButton->setMaximumWidth(25);
+    hideDisplayControlsButton->setFixedHeight(100);
     connect(hideDisplayControlsButton, SIGNAL(clicked()), this, SLOT(hideDisplayControls()));
     //hideDisplayControlsButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
@@ -684,12 +686,12 @@ void V3dR_MainWindow::hideDisplayControls()
     if(controlGroup->isVisible())
     {
         controlGroup->setVisible(false);
-        hideDisplayControlsButton->setText("<<");
+        hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_left.png"));
     }
     else
     {
         controlGroup->setVisible(true);
-        hideDisplayControlsButton->setText(">>");
+        hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_right.png"));
     }
 }
 

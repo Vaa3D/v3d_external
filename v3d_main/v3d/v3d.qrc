@@ -17,7 +17,11 @@
         <file>pic/default_zx_pic.jpg</file>
         <file>pic/v3dIcon128.png</file>
         <file>pic/rotate_icon.png</file>
-		<file>pic/customize.png</file>
-		<file alias="button_add.png">pic/button_add.png</file>
+        <file>pic/customize.png</file>
+        <file>pic/arrow_left.png</file>
+        <file>pic/arrow_right.png</file>
+        <file>pic/arrow_up.png</file>
+        <file>pic/arrow_down.png</file>
+        <file alias="button_add.png">pic/button_add.png</file>
     </qresource>
 </RCC>

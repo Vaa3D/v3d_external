@@ -300,6 +300,10 @@ private:
     QSpinBox *xValueSpinBox_mapv, *yValueSpinBox_mapv, *zValueSpinBox_mapv, *zoomSpinBox_mapv;
     QScrollBar *zoomSlider_mapv;
 
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls and info.
+    QPushButton *hideDisplayControlsButton;
+    QPushButton *hideDisplayInfoButton;
+
 
 	MyTextBrowser *focusPointFeatureWidget;
 
@@ -386,6 +390,10 @@ public slots:
     void changeYOffset_mapv(int y);
     void changeZOffset_mapv(int z);
     void changeLevel_mapv(int level);
+
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls and infos.
+    void hideDisplayControls();
+    void hideDisplayInfo();
 
 
 signals:
