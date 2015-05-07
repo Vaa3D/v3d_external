@@ -99,6 +99,7 @@ public slots:
     void openWebUrl(); // By CMB 08-Oct-2010
 #ifdef _ALLOW_TERAFLY_MENU_
 	void func_open_terafly();
+    void func_open_teraconverter();
 #endif
 #ifdef __v3d_custom_toolbar__
 	void addCustomToolbar(); // By Hang 06-Aug-2011

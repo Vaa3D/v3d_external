@@ -2044,6 +2044,9 @@ void MainWindow::updateProcessingMenu()
     QAction* open_terafly_action = new QAction(tr("TeraFly"), this);
     proc_terafly_menu->addAction(open_terafly_action);
     connect(open_terafly_action, SIGNAL(triggered()), this, SLOT(func_open_terafly()));
+    QAction* open_teraconverter_action = new QAction(tr("TeraConverter"), this);
+    proc_terafly_menu->addAction(open_teraconverter_action);
+    connect(open_teraconverter_action, SIGNAL(triggered()), this, SLOT(func_open_teraconverter()));
 #endif
     //
 #ifdef _ALLOW_IMGSTD_MENU_
@@ -2839,6 +2842,11 @@ void MainWindow::func_open_terafly()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
     teramanager::CPlugin::domenu("TeraFly", *pl, this);
+}
+void MainWindow::func_open_teraconverter()
+{
+    V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+    teramanager::CPlugin::domenu("TeraConverter", *pl, this);
 }
 #endif
 
