@@ -2927,39 +2927,43 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                     inPolyPoints.push_back(QPoint(x,y));
 
         // back-project the node curve points
-        for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+        for (int nstupidloop=0; nstupidloop<10; nstupidloop++) // a naive way to clean up. by PHC, 150507. need to improve.
         {
-            NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-            if (p_tree)
+            for(V3DLONG j=0; j<listNeuronTree.size(); j++)
             {
-                QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
-                if (!p_listneuron)
-                    continue;
-                for (V3DLONG i=0;i<p_listneuron->size();i++)
+                NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+                if (p_tree)
                 {
-                    GLdouble px, py, pz, ix, iy, iz;
-                    ix = p_listneuron->at(i).x;
-                    iy = p_listneuron->at(i).y;
-                    iz = p_listneuron->at(i).z;
-                    if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+                    QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+                    if (!p_listneuron)
+                        continue;
+                    for (V3DLONG i=0;i<p_listneuron->size();i++)
                     {
-                        py = viewport[3]-py; //the Y axis is reversed
-
-                        QPoint p(static_cast<int>(px+0.5), static_cast<int>(py+0.5));
-                        if(poly.boundingRect().contains(p))
+                        GLdouble px, py, pz, ix, iy, iz;
+                        ix = p_listneuron->at(i).x;
+                        iy = p_listneuron->at(i).y;
+                        iz = p_listneuron->at(i).z;
+                        if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                         {
-                            //qDebug()<< px << " " << py << "...";
-                            if(pointInPolygon(p.x(), p.y(), poly))
+                            py = viewport[3]-py; //the Y axis is reversed
+
+                            QPoint p(static_cast<int>(px+0.5), static_cast<int>(py+0.5));
+                            if(poly.boundingRect().contains(p))
                             {
-                                //qDebug() << "YES!";
-                                curImg->proj_trace_deleteNeuronSeg(i, p_tree);
-                                curImg->update_3drenderer_neuron_view(w, this);
+                                //qDebug()<< px << " " << py << "...";
+
+                                if(pointInPolygon(p.x(), p.y(), poly))
+                                {
+                                    //qDebug() << "YES!";
+                                    curImg->proj_trace_deleteNeuronSeg(i, p_tree);
+                                    curImg->update_3drenderer_neuron_view(w, this);
+                                }
+                                //qDebug() << "\n";
                             }
-                           //qDebug() << "\n";
                         }
+                        else
+                            v3d_msg("gluProject failed", 1);
                     }
-                    else
-                         v3d_msg("gluProject failed", 1);
                 }
             }
         }
