@@ -271,16 +271,19 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 	mapList.clear();
     for(V3DLONG i=0; i<myList.size(); ++i)
 	{
-		fileNameStr = myList.at(i);
+        fileNameStr = myList.at(i);
+        QFileInfo fileFullName(myList.at(i));
+        QString fileFullNameStr = fileFullName.completeBaseName();
+
 
 		//extract the fileNameDigits from fileNameStr
 		//e.g. "a9_b2009051801.tif.raw" into "a9_b.tif.raw" & "2009051801"
 
 		V3DLONG pos = 0;
 		fileNameDigits = "";
-        while ((pos = r.indexIn(fileNameStr, pos)) != -1 && r.cap(0) !="3")
+        while ((pos = r.indexIn(fileFullNameStr, pos)) != -1)
 		{
-                    fileNameDigits = r.cap(0);
+                    fileNameDigits = r.cap(1);
                     pos += r.matchedLength();
 		}
 
