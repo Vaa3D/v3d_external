@@ -179,7 +179,7 @@ fi
 
 #prepare the tiff library
 
-if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
+if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.dylib ]; then
   cd common_lib/src_packages
 #  tar zxvf tiff-3.8.2.1.tar.gz
   tar zxvf tiff-4.0.2.tar.gz
