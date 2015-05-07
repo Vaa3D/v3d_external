@@ -6,6 +6,8 @@
 
 class Image4DSimple;
 bool read_nrrd(char *filename, Image4DSimple *&img);
+bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype);
+
 bool write_nrrd(char *filename, Image4DSimple *img);
 
 #endif

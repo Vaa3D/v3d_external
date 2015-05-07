@@ -3746,7 +3746,21 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
     const char * curFileSuffix = getSuffix(imgSrcFile);
 	if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
-	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
+
+    if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0)) //read nrrd stacks
+    {
+        if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //tif file at most should be 900M bytes
+        {
+            printf("The tif file may not exist or may be too big to load.\n");
+            return false;
+        }
+        if (read_nrrd(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
+        {
+            printf("Error happens in NRRD file reading. Stop. \n");
+            return false;
+        }
+    }
+    else if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
 	{
         if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //tif file at most should be 900M bytes
 		{
@@ -3913,7 +3927,8 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
     const char * curFileSuffix = getSuffix(imgSrcFile);
 	if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
-	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
+
+    if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
 	{
         if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //tif file at most should be 900M bytes
 		{

@@ -1008,6 +1008,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   (cur_suffix=="VAA3DRAW5") ||
                   (cur_suffix=="MRC") ||
                   (cur_suffix=="V3DPBD") ||
+                  (cur_suffix=="NRRD") ||
                   (cur_suffix=="VAA3DPBD") ||
                   (cur_suffix=="MP4") ||
                   (cur_suffix=="H5J") ||

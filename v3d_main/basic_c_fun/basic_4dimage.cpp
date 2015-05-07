@@ -31,7 +31,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 /*
  * basic_4dimage.cpp
  * last update: 100819: Hanchuan Peng. use MYLIB only for Llinux and Mac, but not WIN32. FIXME: add VC support later.
- * 20120410: add curFileSurfix check for the potential strcmp crashing. by Hanchuan Peng
+ * 20120410: add curFileSuffix check for the potential strcmp crashing. by Hanchuan Peng
  */
 
 #include "v3d_message.h"
@@ -65,18 +65,27 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 	int tmp_datatype = 0;
 	int pixelnbits=1; //100817
 
-    const char * curFileSurfix = getSuffix(imgSrcFile);
-    printf("The current input file has the suffix [%s]\n", curFileSurfix);
+    const char * curFileSuffix = getSuffix(imgSrcFile);
+    printf("The current input file has the suffix [%s]\n", curFileSuffix);
 
-	if (curFileSurfix && (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
-		strcasecmp(curFileSurfix, "lsm")==0) ) //read tiff/lsm stacks
+    if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0)) //read nrrd stacks
+    {
+        printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
+        if (!read_nrrd(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+        {
+            v3d_msg("Error happens in NRRD file reading. Stop. \n", false);
+            b_error=1;
+        }
+    }
+    else if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
+        strcasecmp(curFileSuffix, "lsm")==0) ) //read tiff/lsm stacks
 	{
             printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
 
 #if defined _WIN32
 		{
 			v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
-			if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
+            if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
 			{
 				if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 				{
@@ -84,7 +93,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 					b_error=1;
 				}
 			}
-			else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+            else //if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 			{
 				if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 				{
@@ -110,7 +119,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 		else
 		{
 			v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
-			if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
+            if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
 			{
 				if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 				{
@@ -118,7 +127,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 					b_error=1;
 				}
 			}
-			else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+            else //if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 			{
 				if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 				{
@@ -132,7 +141,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 #endif
 
 	}
-	else if ( curFileSurfix && strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
+    else if ( curFileSuffix && strcasecmp(curFileSuffix, "mrc")==0 ) //read mrc stacks
 	{
 		if (loadMRC2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 		{
@@ -142,8 +151,8 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_
-    //else if ( curFileSurfix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
-    else if ( curFileSurfix && strcasecmp(curFileSurfix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    //else if ( curFileSuffix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    else if ( curFileSuffix && strcasecmp(curFileSuffix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
     	  v3d_msg("start to try v3dpbd", 0);
         ImageLoaderBasic imageLoader;
@@ -224,18 +233,18 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
     int tmp_datatype = 0;
     int pixelnbits=1; //100817
 
-    const char * curFileSurfix = getSuffix(imgSrcFile);
-    printf("The current input file has the suffix [%s]\n", curFileSurfix);
+    const char * curFileSuffix = getSuffix(imgSrcFile);
+    printf("The current input file has the suffix [%s]\n", curFileSuffix);
 
-    if (curFileSurfix && (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
-        strcasecmp(curFileSurfix, "lsm")==0) ) //read tiff/lsm stacks
+    if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
+        strcasecmp(curFileSuffix, "lsm")==0) ) //read tiff/lsm stacks
     {
             printf("Image4DSimple::loadImage loading filename=[%s] slice =[%ld]\n", filename, zsliceno);
 
 #if defined _WIN32
         {
             v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
-            if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
+            if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
             {
                 if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
@@ -243,7 +252,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
                     b_error=1;
                 }
             }
-            else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+            else //if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
             {
                 if (loadLsmSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
@@ -268,7 +277,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
         else
         {
             v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
-            if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
+            if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
             {
                 if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
@@ -276,7 +285,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
                     b_error=1;
                 }
             }
-            else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+            else //if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
             {
                 if (loadLsmSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
                 {
@@ -292,7 +301,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
     }
 
    /*
-    else if ( curFileSurfix && strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
+    else if ( curFileSuffix && strcasecmp(curFileSuffix, "mrc")==0 ) //read mrc stacks
     {
         if (loadMRC2Stack_slice(imgSrcFile, data1d, tmp_sz, tmp_datatype, layer))
         {
@@ -302,8 +311,8 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
         }
     }
 #ifdef _ALLOW_WORKMODE_MENU_
-    //else if ( curFileSurfix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
-    else if ( curFileSurfix && strcasecmp(curFileSurfix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    //else if ( curFileSuffix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    else if ( curFileSuffix && strcasecmp(curFileSuffix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
           v3d_msg("start to try v3dpbd", 0);
         ImageLoaderBasic imageLoader;

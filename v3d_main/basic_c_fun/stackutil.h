@@ -48,6 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * 090802: add .raw5d read and write interface
  * 100519: add v3d_basicdatatype.h
  * 100817: add mylib interface, PHC
+ * 150507: add nrrd support, PHC
  */
 
 #ifndef __STACKUTIL__
@@ -136,6 +137,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 
 
 #include "imageio_mylib.h" //100817. PHC
+#include "../io/nrrd.h" //150507, PHC
 
 #endif
 

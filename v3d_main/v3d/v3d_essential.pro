@@ -369,7 +369,8 @@ QT += xml svg
 
 LIBS += -L../jba/c++
 
-LIBS += -L../common_lib/lib -lteem  -lbz2 -lz #for nrrd support
+LIBS += -L../common_lib/lib -lteem  -lbz2  #for nrrd support
+LIBS += -lz  #for nrrd support
 
 unix:LIBS += -L../common_lib/lib
 unix:LIBS += -lm -lv3dtiff
