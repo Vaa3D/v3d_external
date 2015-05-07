@@ -81,7 +81,7 @@ void CPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
     else if(menu_name == tr("TeraConverter"))
     {
         // launch PConverter's GUI
-        PConverter::instance(&callback, parent);
+        PConverter::instance(&callback, 0);
         PConverter::instance()->show();
         PConverter::instance()->move(QApplication::desktop()->screen()->rect().center() - PConverter::instance()->rect().center());
         PConverter::instance()->raise();
