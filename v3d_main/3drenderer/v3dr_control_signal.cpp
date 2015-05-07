@@ -597,7 +597,7 @@ void V3dR_MainWindow::createControlWidgets()
 
     //------------------------------------------------
 
-    QGroupBox* controlGroup = new QGroupBox();
+    controlGroup = new QGroupBox();
     //QFrame *controlGroup = new QFrame;  controlGroup->setFrameStyle(QFrame::StyledPanel);
     controlGroup->setFixedWidth(CTRL_SIZEX);
     controlGroup->setTitle("Controls");
@@ -610,11 +610,21 @@ void V3dR_MainWindow::createControlWidgets()
     controlLayout->addWidget(tabRotZoom); //rotateBarGroup);
     controlLayout->addStretch(0);
     controlLayout->setSpacing(0);
-
     //------------------------------------------------
 
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
+    hideDisplayControlsButton = new QPushButton(">>");
+    QFont smallFont;
+    smallFont.setPointSize(8);
+    hideDisplayControlsButton->setFont(smallFont);
+    hideDisplayControlsButton->setContentsMargins(0,0,0,0);
+    hideDisplayControlsButton->setMaximumWidth(20);
+    connect(hideDisplayControlsButton, SIGNAL(clicked()), this, SLOT(hideDisplayControls()));
+    //hideDisplayControlsButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
     QHBoxLayout *centralLayout = new QHBoxLayout(this);
-    centralLayout->addWidget(viewGroup);
+    centralLayout->addWidget(viewGroup, 1);
+    centralLayout->addWidget(hideDisplayControlsButton, 0);
     centralLayout->addWidget(controlGroup);
     //centralLayout->setContentsMargins(10,10,10,10);
     setLayout(centralLayout);
@@ -668,6 +678,20 @@ void V3dR_MainWindow::createControlWidgets()
 	createMenuOfSurfFile(); // Load/Save Surface menu
 }
 
+// @ADDED by Alessandro on 2015-05-07 : hide/display controls.
+void V3dR_MainWindow::hideDisplayControls()
+{
+    if(controlGroup->isVisible())
+    {
+        controlGroup->setVisible(false);
+        hideDisplayControlsButton->setText("<<");
+    }
+    else
+    {
+        controlGroup->setVisible(true);
+        hideDisplayControlsButton->setText(">>");
+    }
+}
 
 void V3dR_MainWindow::connectSignal()
 {

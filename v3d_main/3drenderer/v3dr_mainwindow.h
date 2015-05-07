@@ -106,6 +106,9 @@ public slots:
 
 	void raise_and_activate() {if (isMinimized()) showNormal(); raise(); activateWindow();} //by PHC. 090626 to bring a 3D viewer to front and activate it
 
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
+    void hideDisplayControls();
+
 //	void about();
 //    //for movie control
 //    void setXRotStep(int t);
@@ -205,6 +208,10 @@ public:
     QPushButton *movieSaveButton, *animateButton;
     QComboBox * comboRotType;
 
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
+    QGroupBox *controlGroup;
+    QPushButton *hideDisplayControlsButton;
+
     QTabWidget *tabOptions;
 
     // rotation, zoom, shift control
@@ -259,6 +266,10 @@ public:
 		comboRotType=0;
 
 	    tabOptions=0;
+
+        // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
+        controlGroup = 0;
+        hideDisplayControlsButton = 0;
 
 		xRotSlider=yRotSlider=zRotSlider=0;
 		zoomSlider=xShiftSlider=yShiftSlider=0;
