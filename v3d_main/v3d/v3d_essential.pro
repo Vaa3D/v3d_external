@@ -369,14 +369,12 @@ QT += xml svg
 
 LIBS += -L../jba/c++
 
-LIBS += -L../common_lib/lib -lteem  -lbz2  #for nrrd support
-LIBS += -lz  #for nrrd support
-
 unix:LIBS += -L../common_lib/lib
 unix:LIBS += -lm -lv3dtiff
 unix:LIBS += -lv3dnewmat
 #unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
 unix:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
+unix:LIBS += -L../common_lib/lib_unix64 -lteem  -lbz2 -lz  #for nrrd support
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
 #unix:LIBS += -L/usr/lib64 -lGL
@@ -385,11 +383,13 @@ macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff -lv3dnewmat
 #    -framework GLUT
 macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
+macx:LIBS += -L../common_lib/lib_mac64 -lteem  -lbz2 -lz  #for nrrd support
 # CMB Nov 29 2010 Snow leopard GLee_r.o requires CoreServices framework
 macx:LIBS += -framework CoreServices
 
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat
+win32:LIBS += -L../common_lib/winlib64 -lteem  -lbz2 -lz  #for nrrd support
 #    -lglut32 # win32-mingw, on unix link libglut.a
 #win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	#for win32 disable using MYLIB
 
