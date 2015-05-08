@@ -199,7 +199,7 @@ if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   make install
   
   mv ../lib/libtiff.a ../lib/libv3dtiff.a
-#  mv ../lib/libtiff.dylib ../lib/libv3dtiff.dylib
+  mv ../lib/libtiff.dylib ../lib/libv3dtiff.dylib
 
   if [ ! -d ../lib_mac32 ]; then
     mkdir ../lib_mac32
@@ -209,11 +209,11 @@ if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   fi
   
   if [ $SYSTEMBITS == "32" ]; then
-    #cp ../lib/libv3dtiff.a ../lib_mac32/.
+    cp ../lib/libv3dtiff.a ../lib_mac32/.
     cp ../lib/libv3dtiff.dylib ../lib_mac32/.
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    #cp ../lib/libv3dtiff.a ../lib_mac64/.
+    cp ../lib/libv3dtiff.a ../lib_mac64/.
     cp ../lib/libv3dtiff.dylib ../lib_mac64/.
   fi
   
