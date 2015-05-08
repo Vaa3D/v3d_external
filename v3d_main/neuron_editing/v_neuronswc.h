@@ -231,8 +231,7 @@ struct V_NeuronSWC_list
 	void decompose();
 	bool reverse();
 	bool split(V3DLONG seg_id, V3DLONG nodeinseg_id);
-	bool deleteSeg(V3DLONG seg_id);    
-    bool deleteMultipleSegments(std::vector<V3DLONG> &seg_ids, bool sort_ids = true);
+    bool deleteSeg(V3DLONG seg_id);
 };
 
 bool verifyIsLineGraph(const V_NeuronSWC & in_swc); //this will use graph algorithm to verify if really a line graph as claimed

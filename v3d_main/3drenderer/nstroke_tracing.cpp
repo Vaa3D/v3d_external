@@ -2900,7 +2900,7 @@ void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, in
      test_id = myList.size() + 1;
 }
 
-// @REVISED by Alessandro on 2015-05-07. Added 'delete every segment within contour' mode (enabled by Qt::KeyShift).
+// @ADDED by Alessandro on 2015-05-07.
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -2955,7 +2955,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                                 if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
                                 {
                                    curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
-                                   break;   // no more need to continue on this inner loop
+                                   break;   // found intersection with neuron segment: no more need to continue on this inner loop
                                 }
                             }
                         }
@@ -2964,6 +2964,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 
                 // generate a new neuron tree w/o the segments previously marked
                 curImg->update_3drenderer_neuron_view(w, this);
+                curImg->proj_trace_history_append();
             }
         }
     }
