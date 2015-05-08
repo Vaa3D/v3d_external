@@ -2409,6 +2409,7 @@ void CViewer::setZoom(int z)
 {
     /**/itm::debug(itm::LEV3, strprintf("title = %s, zoom = %d", titleShort.c_str(), z).c_str(), __itm__current__function__);
 
+    //QMessageBox::information(this, "asd", QString("zoom ") + QString::number(z));
     myV3dR_GLWidget::cast(view3DWidget)->setZoomO(z);
 }
 
