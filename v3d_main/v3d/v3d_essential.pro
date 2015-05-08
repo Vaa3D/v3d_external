@@ -369,12 +369,14 @@ QT += xml svg
 
 LIBS += -L../jba/c++
 
-unix:LIBS += -L../common_lib/lib
-unix:LIBS += -lm -lv3dtiff
-unix:LIBS += -lv3dnewmat
+unix:!macx {
+  LIBS += -L../common_lib/lib
+  LIBS += -lm -lv3dtiff
+  LIBS += -lv3dnewmat
 #unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
-unix:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
-unix:LIBS += -L../common_lib/lib_unix64 -lteem  -lbz2 -lz  #for nrrd support
+  LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
+  LIBS += -L../common_lib/lib_unix64 -lteem  -lbz2 -lz  #for nrrd support
+}
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
 #unix:LIBS += -L/usr/lib64 -lGL
