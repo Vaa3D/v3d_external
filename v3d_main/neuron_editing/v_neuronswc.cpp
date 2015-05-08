@@ -133,6 +133,22 @@ bool V_NeuronSWC_list::deleteSeg(V3DLONG seg_id)
 	return delete_seg_in_V_NeuronSWC_list(*this, seg_id);
 }
 
+bool V_NeuronSWC_list::deleteMultipleSegments(std::vector<long> &seg_ids, bool sort_ids /*=true*/)
+{
+    if(sort_ids)
+        std::sort (seg_ids.begin(), seg_ids.end());
+
+    for(int i=seg_ids.size() - 1; i >= 0; i--)
+        if(seg_ids[i] < 0 || seg_ids[i] >= seg.size())
+            return false;
+        else
+            seg.erase(seg.begin() + seg_ids[i]);
+
+    last_seg_num=seg.size(); //added on 2010-02-10. by PHC, guess probably is RZC forgot to add
+
+    return true;
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 
 V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
@@ -143,6 +159,9 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 	V3DLONG nsegs = in_swc_list.seg.size();
 	for (k=0;k<nsegs;k++)
 	{
+        if(in_swc_list.seg.at(k).to_be_deleted)
+            continue;
+
 		vector <V_NeuronSWC_unit> &row = (in_swc_list.seg.at(k).row);
 		if (row.size()<=0) continue;
 
