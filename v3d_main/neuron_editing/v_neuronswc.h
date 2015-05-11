@@ -232,6 +232,11 @@ struct V_NeuronSWC_list
 	bool reverse();
 	bool split(V3DLONG seg_id, V3DLONG nodeinseg_id);
     bool deleteSeg(V3DLONG seg_id);
+
+    // @ADDED by Alessandro on 2015-05-08. Needed to support late delete of multiple neuron segments.
+    void                                            // no value returned
+        deleteMultiSeg(                             // by default, deletes neuron segments having 'to_be_deleted' field set to 'true'
+            std::vector <V3DLONG> *seg_ids = 0);    // if provided, deletes the corresponding neuron segments.
 };
 
 bool verifyIsLineGraph(const V_NeuronSWC & in_swc); //this will use graph algorithm to verify if really a line graph as claimed

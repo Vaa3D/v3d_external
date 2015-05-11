@@ -2963,8 +2963,9 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                 }
 
                 // generate a new neuron tree w/o the segments previously marked
-                curImg->update_3drenderer_neuron_view(w, this);
+                curImg->tracedNeuron.deleteMultiSeg();  // @FIXED by Alessandro on 2015-05-11. Delete also segments from tracedNeuron.
                 curImg->proj_trace_history_append();
+                curImg->update_3drenderer_neuron_view(w, this);
             }
         }
     }

@@ -133,6 +133,28 @@ bool V_NeuronSWC_list::deleteSeg(V3DLONG seg_id)
 	return delete_seg_in_V_NeuronSWC_list(*this, seg_id);
 }
 
+// @ADDED by Alessandro on 2015-05-08. Needed to support late delete of multiple neuron segments.
+void                                            // no value returned
+    V_NeuronSWC_list::deleteMultiSeg(           // by default, deletes neuron segments having 'to_be_deleted' field set to 'true'
+        std::vector <V3DLONG> *seg_ids /*= 0*/) // if provided, deletes the corresponding neuron segments.
+{
+    // first pass (optional) to mark segments to delete
+    if(seg_ids)
+        for(int k=0; k<seg_ids->size(); k++)
+            if((*seg_ids)[k] >= 0 && (*seg_ids)[k]<seg.size())
+                seg[(*seg_ids)[k]].to_be_deleted = true;
+
+    // second pass to delete segments
+    std::vector<V_NeuronSWC>::iterator iter = seg.begin();
+    while (iter != seg.end())
+        if (iter->to_be_deleted)
+            iter = seg.erase(iter);
+        else
+           ++iter;
+
+    last_seg_num=seg.size();
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 
 V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
@@ -142,11 +164,7 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 	V3DLONG n=0, i,j,k;
 	V3DLONG nsegs = in_swc_list.seg.size();
 	for (k=0;k<nsegs;k++)
-	{
-        // @ADDED by Alessandro on 2015-05-09. Ignore segments marked as "to be deleted"
-        if(in_swc_list.seg.at(k).to_be_deleted)
-            continue;
-
+    {
 		vector <V_NeuronSWC_unit> &row = (in_swc_list.seg.at(k).row);
 		if (row.size()<=0) continue;
 
@@ -166,8 +184,8 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 		V3DLONG n0=n;
 		for (j=0;j<row.size();j++)
 		{
-			v.seg_id = seg_id;
-			v.nodeinseg_id = j;
+            v.seg_id = seg_id;
+            v.nodeinseg_id = j;
 
 			v.n = (n0+1) + row[j].n-min_ind;
 			for (i=1;i<=5;i++)	v.data[i] = row[j].data[i];
@@ -176,7 +194,7 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 			//qDebug()<<row[j].n<<"->"<<v.n<<" "<<row[j].parent<<"->"<<v.parent<<" "<<n;
 
 			out_swc.row.push_back(v);
-			n++;
+            n++;
 		}
 	}
 	out_swc.color_uc[0] = in_swc_list.color_uc[0];

@@ -6536,7 +6536,7 @@ void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
 	merged_neuron.name = curImg->tracedNeuron.name;
 	merged_neuron.file = curImg->tracedNeuron.file;
-	curRen->updateNeuronTree(merged_neuron);
+    curRen->updateNeuronTree(merged_neuron);
 }
 
 void My4DImage::

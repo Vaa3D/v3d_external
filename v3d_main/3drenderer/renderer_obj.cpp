@@ -1035,7 +1035,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			S.y 	= seg.row.at(k).data[3];
 			S.z 	= seg.row.at(k).data[4];
 			S.r 	= seg.row.at(k).data[5];
-			S.pn 	= seg.row.at(k).data[6];
+            S.pn 	= seg.row.at(k).data[6];
 			//for hit & editing
 			S.seg_id       = seg.row.at(k).seg_id;
 			S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
