@@ -1,7 +1,8 @@
 #ifndef PANOTOOLBAR_H
 #define PANOTOOLBAR_H
 
-#include <QDialog>
+#include "theader.h"
+
 #include "../control/CPlugin.h"
 
 class teramanager::PAnoToolBar : public QWidget

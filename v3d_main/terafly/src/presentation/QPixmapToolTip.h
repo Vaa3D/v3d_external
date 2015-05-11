@@ -1,6 +1,8 @@
 #ifndef QPIXMAP_TOOLTIP_H
 #define QPIXMAP_TOOLTIP_H
 
+#include "theader.h"
+
 #include "../control/CPlugin.h"
 #include "../control/CImageUtils.h"
 
