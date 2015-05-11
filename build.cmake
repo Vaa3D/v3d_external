@@ -210,7 +210,7 @@ case $OPERATION in
 		if [[ -e cmake-$CMAKE_VERSION ]]; then
 			rm -rf cmake-$CMAKE_VERSION
 		fi
-		if [[ -e build ]]; then
+		if [[ -e build_$PLATFORM  ]]; then
 			rm -rf build_$PLATFORM
 		fi
         ;;
