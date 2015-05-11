@@ -347,7 +347,7 @@ FORMS += \
     ../neuron_annotator/microCT/single_cut.ui
 
 INCLUDEPATH = $$unique(INCLUDEPATH)
-LIBS = $$unique(LIBS)
+#LIBS = $$unique(LIBS)  # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
 message(CONFIG=$$CONFIG)
 
 # aborted attempt to implement reentrant tiff image loading

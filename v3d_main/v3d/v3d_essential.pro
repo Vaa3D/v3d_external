@@ -261,7 +261,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h
 
-
 SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/mg_image_lib.cpp \
     ../basic_c_fun/stackutil.cpp \
@@ -339,7 +338,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 
-
 FORMS += landmark_property.ui \
     surface_obj_annotation.ui \
     surfaceobj_geometry_dialog.ui \
@@ -389,6 +387,16 @@ macx:LIBS += -L../common_lib/lib_mac64 -lteem  -lbz2 -lz  #for nrrd support
 # CMB Nov 29 2010 Snow leopard GLee_r.o requires CoreServices framework
 macx:LIBS += -framework CoreServices
 
+# @ADDED by Alessandro on 2015-05-09. Method to get the path-based URL from the file-based URL
+CONFIG += dragdropfix
+macx:dragdropfix{
+    DEFINES += _ENABLE_MACX_DRAG_DROP_FIX_
+    OBJECTIVE_SOURCES += yosemiteFileURLfix.mm
+    QMAKE_LFLAGS += -F /System/Library/Frameworks/Foundation.framework/
+    LIBS += -framework Foundation
+}
+
+
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat
 win32:LIBS += -L../common_lib/winlib64 -lteem  -lbz2 -lz  #for nrrd support
@@ -401,6 +409,6 @@ INCLUDEPATH += ../common_lib/include
 
 #removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
 INCLUDEPATH = $$unique(INCLUDEPATH)
-LIBS = $$unique(LIBS)
+#LIBS = $$unique(LIBS) # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
 # CONFIG = $$unique(CONFIG) # this only DOESN'T work on macx, very strange, by RZC 20080923
 message(CONFIG=$$CONFIG)

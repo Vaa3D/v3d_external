@@ -163,6 +163,10 @@ bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * &
 
 QStringList importSeriesFileList_addnumbersort(const QString & individualFileName, TimePackType & timepacktype);
 
+// @ADDED by Alessandro on 2015-05-09. Method to get the path-based URL from the file-based URL
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+QString getPathFromYosemiteFileReferenceURL(QUrl);
+#endif
 
 // for mapview paras. ZJL
 struct Mapview_Paras {

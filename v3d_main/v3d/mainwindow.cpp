@@ -551,6 +551,15 @@ void MainWindow::dropEvent(QDropEvent *event)
 #ifdef WIN32
             url.remove(0,1); // remove the first '/' of "/C:/...", 081102
 #endif
+
+// @FIXED by Alessandro on 2015-05-09. Call method to fix the file-based URL (if any)
+#ifdef Q_OS_MAC
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+            if (urlList.at(i).path().startsWith("/.file/id="))
+                url = getPathFromYosemiteFileReferenceURL(urlList.at(i));
+#endif
+#endif
+
             fileName = url;
             qDebug() <<tr("  the file to open: [")+ fileName +("]");
         }
