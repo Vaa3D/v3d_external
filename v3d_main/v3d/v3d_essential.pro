@@ -388,7 +388,7 @@ macx:LIBS += -L../common_lib/lib_mac64 -lteem  -lbz2 -lz  #for nrrd support
 macx:LIBS += -framework CoreServices
 
 # @ADDED by Alessandro on 2015-05-09. Method to get the path-based URL from the file-based URL
-CONFIG += dragdropfix
+#CONFIG += dragdropfix
 macx:dragdropfix{
     DEFINES += _ENABLE_MACX_DRAG_DROP_FIX_
     OBJECTIVE_SOURCES += yosemiteFileURLfix.mm
