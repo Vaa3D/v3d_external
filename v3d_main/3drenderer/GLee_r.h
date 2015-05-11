@@ -71,6 +71,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef __glee_h_
 #define __glee_h_
 
+#ifdef __PHC_TEST_QT5_15May_
+
 #ifdef __gl_h_
 	#error gl.h included before glee.h
 #endif
@@ -85,6 +87,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #ifdef __glxext_h_
 	#error glxext.h included before glee.h
+#endif
+
 #endif
 
 //yuy added _WIN6, 2010-05-19

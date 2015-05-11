@@ -29,8 +29,9 @@
 #ifndef PDialogImport_H
 #define PDialogImport_H
 
-#include <QWidget>
-#include <QtGui>
+#include "theader.h"
+
+
 #include "../control/CPlugin.h"
 
 class teramanager::PDialogImport : public QDialog

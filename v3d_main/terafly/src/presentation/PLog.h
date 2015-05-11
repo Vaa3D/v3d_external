@@ -1,7 +1,10 @@
 #ifndef PLOG_H
 #define PLOG_H
 
-#include <QDialog>
+#include "theader.h"
+
+//#include <QDialog>
+
 #include "CPlugin.h"
 #include "COperation.h"
 

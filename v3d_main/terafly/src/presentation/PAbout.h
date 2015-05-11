@@ -1,7 +1,8 @@
 #ifndef PABOUT_H
 #define PABOUT_H
 
-#include <QDialog>
+#include "theader.h"
+
 #include "../control/CPlugin.h"
 
 class teramanager::PAbout : public QDialog

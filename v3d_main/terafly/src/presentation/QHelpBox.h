@@ -1,7 +1,8 @@
 #ifndef QHELPBOX_H
 #define QHELPBOX_H
 
-#include <QWidget>
+#include "theader.h"
+
 #include "../control/CPlugin.h"
 
 class teramanager::QHelpBox : public QWidget

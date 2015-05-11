@@ -93,6 +93,10 @@ TARGET +=
 DEPENDPATH += . v3d
 INCLUDEPATH += .
 
+
+DEFINES += USE_Qt5
+
+
 # commented the -app_bundle as on Mac the not-automatically closed terminal is quite annoying!
 # macx: CONFIG-=app_bundle #by PHC, 101119
 
@@ -395,6 +399,7 @@ macx:dragdropfix{
     QMAKE_LFLAGS += -F /System/Library/Frameworks/Foundation.framework/
     LIBS += -framework Foundation
 }
+
 
 
 win32:LIBS += -lm -lv3dtiff \
