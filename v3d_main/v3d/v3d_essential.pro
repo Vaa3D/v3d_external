@@ -119,7 +119,8 @@ LIBS += -L$$MINGW_DIR/lib \
 INCLUDEPATH += $$LOCAL_DIR/include #./basic_c_fun
 LIBS += -L$$LOCAL_DIR/lib
 
-INCLUDEPATH += $$QT_DIR/../lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
+
+INCLUDEPATH += $$QT_DIR/../clang_64/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
 
 SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
 include($$SHARED_FOLDER/shared.pri)
@@ -262,7 +263,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../custom_toolbar/v3d_custom_toolbar.h \
     ../io/io_bioformats.h \
     ../io/asc_to_swc.h \
-    ../io/nrrd.h
+    ../io/nrrd.h \
+    ../terafly/src/presentation/theader.h
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h
 
