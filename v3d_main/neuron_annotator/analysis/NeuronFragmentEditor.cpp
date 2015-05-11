@@ -4,9 +4,7 @@
 #include "SleepThread.h"
 #include <climits>
 
-#ifdef USE_Qt5
-#include <QtConcurrent>
-#endif
+#include "../terafly/src/presentation/theader.h"  //2015May PHC
 
 const int NeuronFragmentEditor::MODE_UNDEFINED=-1;
 const int NeuronFragmentEditor::MODE_COMBINE=0;

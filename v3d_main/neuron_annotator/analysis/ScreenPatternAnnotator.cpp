@@ -2,9 +2,7 @@
 #include "../utility/ImageLoader.h"
 #include "../../v3d/histogramsimple.h"
 
-#ifdef USE_Qt5
-#include <QtConcurrent>
-#endif
+#include "../terafly/src/presentation/theader.h"  //2015May PHC
 
 const int ScreenPatternAnnotator::MODE_UNDEFINED=-1;
 const int ScreenPatternAnnotator::MODE_ANNOTATE=0;

@@ -124,9 +124,7 @@ Implementation
 #include "DilationErosion.h"
 #include "../utility/ImageLoaderBasic.h"
 
-#ifdef USE_Qt5
-#include <QtConcurrent>
-#endif
+#include "../terafly/src/presentation/theader.h"  //2015May PHC
 
 const int VolumeIndex::MODE_UNDEFINED=-1;
 const int VolumeIndex::MODE_CREATE_SAMPLE_INDEX_FILE=0;

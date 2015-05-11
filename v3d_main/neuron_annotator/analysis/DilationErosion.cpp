@@ -1,9 +1,7 @@
 #include "DilationErosion.h"
 #include "SleepThread.h"
 
-#ifdef USE_Qt5
-#include <QtConcurrent>
-#endif
+#include "../terafly/src/presentation/theader.h"  //2015May PHC
 
 const int DilationErosion::TYPE_DILATE=0;
 const int DilationErosion::TYPE_ERODE=1;

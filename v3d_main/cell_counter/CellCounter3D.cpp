@@ -1,4 +1,6 @@
-#include <qtconcurrentrun.h>
+#include "../terafly/src/presentation/theader.h"  //2015May PHC
+
+
 #include <cmath>
 #include <vector>
 #include "CellCounter3D.h"

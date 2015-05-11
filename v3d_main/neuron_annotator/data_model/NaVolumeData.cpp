@@ -5,9 +5,8 @@
 #include <iostream>
 #include <QFuture>
 #include <QUrl>
-#ifdef USE_Qt5
-#include <QtConcurrent>
-#endif
+
+#include "../terafly/src/presentation/theader.h"  //2015May PHC
 
 #include <cassert>
 

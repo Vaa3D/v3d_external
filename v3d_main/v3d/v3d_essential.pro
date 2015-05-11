@@ -119,6 +119,7 @@ LIBS += -L$$MINGW_DIR/lib \
 INCLUDEPATH += $$LOCAL_DIR/include #./basic_c_fun
 LIBS += -L$$LOCAL_DIR/lib
 
+INCLUDEPATH += $$QT_DIR/../lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
 
 SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
 include($$SHARED_FOLDER/shared.pri)
