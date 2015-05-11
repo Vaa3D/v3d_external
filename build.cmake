@@ -155,29 +155,22 @@ case $OPERATION in
             cd ../../
         fi
 
-        if [[ ! -e v3d_main/common_lib/include/tiff.h ]]; then
-            echo "Configuring TIFF headers"
-            cd v3d_main/common_lib/build
-            tar xzf ../src_packages/tiff-4.0.2.tar.gz
-            cd tiff-4.0.2
-	    if [ $PLATFORM = "windows-x86_64" ]; then
-		nmake Makefile.vc
-	    else
-		./configure
-		make
-	    fi
-            cp libtiff/tiff.h ../../include
-            cp libtiff/tiffconf.h ../../include
-            cp libtiff/tiffio.h ../../include
-            cp libtiff/tiffio.hxx ../../include
-            cp libtiff/tiffvers.h ../../include
-            if [ $PLATFORM = "windows-x86_64" ]; then
-		cp libtiff/libtiff.lib ../../winlib64
-            fi
-	    cd ../../../..
-        fi
-
         if [ $PLATFORM = "windows-x86_64" ]; then
+          if [[ ! -e v3d_main/common_lib/include/tiff.h ]]; then
+              echo "Configuring TIFF headers"
+              cd v3d_main/common_lib/build
+              tar xzf ../src_packages/tiff-4.0.2.tar.gz
+              cd tiff-4.0.2
+              nmake Makefile.vc
+              cp libtiff/tiff.h ../../include
+              cp libtiff/tiffconf.h ../../include
+              cp libtiff/tiffio.h ../../include
+              cp libtiff/tiffio.hxx ../../include
+              cp libtiff/tiffvers.h ../../include
+              cp libtiff/libtiff.lib ../../winlib64
+              cd ../../../..
+          fi
+
             echo "Unpacking FFTW"
             CMAKE_EXE+=" -G \"Visual Studio 12 2013 Win64\""
             cd v3d_main/common_lib
