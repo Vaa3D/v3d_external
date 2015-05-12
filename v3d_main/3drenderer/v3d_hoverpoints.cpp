@@ -77,7 +77,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 
 //#include "arthurwidgets.h"
-#include "hoverpoints.h"
+#include "v3d_hoverpoints.h"
 
 //#define printf
 

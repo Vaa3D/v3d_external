@@ -72,7 +72,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 ****************************************************************************/
 
 #include "gradients.h"
-#include "hoverpoints.h"
 
 #define __running_road__
 //------------ initialize -------------------------------------------------------------------------------
@@ -300,6 +299,18 @@ void GradientEditor::pointsUpdated(int type, const QPolygonF &pts)
     emit gradientStopsChanged(stops); //trigger external slot to output colormap
 }
 
+inline static bool my_x_less_than(const QPointF &p1, const QPointF &p2)
+{
+    return p1.x() < p2.x();
+}
+
+
+inline static bool my_y_less_than(const QPointF &p1, const QPointF &p2)
+{
+    return p1.y() < p2.y();
+}
+
+
 QGradientStops GradientEditor::updateAlphaStops()
 {
 	//qDebug() << "GradientEditor::updtaAlphaStops";
@@ -312,7 +323,7 @@ QGradientStops GradientEditor::updateAlphaStops()
     if (m_blue_shade)   points += m_blue_shade->hoverPoints()->points();
     if (m_alpha_shade)  points += m_alpha_shade->hoverPoints()->points();
 
-    qSort(points.begin(), points.end(), x_less_than);
+    qSort(points.begin(), points.end(), my_x_less_than);
 
     QGradientStops stops;
 

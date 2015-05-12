@@ -1260,6 +1260,7 @@ XFormView::XFormView(QWidget *parent)
 //    : QWidget(parent)
 : ArthurFrame(parent)
 {
+
     setAttribute(Qt::WA_MouseTracking);
 
     Gtype = PixmapType;

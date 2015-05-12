@@ -78,7 +78,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <QtGui>
 
-#include "hoverpoints.h"
+#include "../v3d/painting/shared/hoverpoints.h"
 
 
 class ShadeWidget : public QWidget

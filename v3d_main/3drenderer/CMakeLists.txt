@@ -5,7 +5,7 @@ set(3DRenderer_SRCS
   barFigureDialog.cpp
   # glsl_r.cpp
   gradients.cpp
-  hoverpoints.cpp
+  # v3d_hoverpoints.cpp
   ItemEditor.cpp
   marchingcubes.cpp
   renderer.cpp

@@ -555,15 +555,17 @@ void MainWindow::dropEvent(QDropEvent *event)
 // @FIXED by Alessandro on 2015-05-09. Call method to fix the file-based URL (if any)
 #ifdef Q_OS_MAC
 
-//            if (urlList.at(i).path().startsWith("file:///.file/id=")) {
-//                    QUrl url(urlList.at(i).path());
-//                    CFURLRef cfurl = url.url().toCFURL();
-//                    CFErrorRef error = 0;
-//                    CFURLRef absurl = CFURLCreateFilePathURL(kCFAllocatorDefault, cfurl, &error);
-//                    url = QUrl::fromCFURL(absurl);
-//                    CFRelease(cfurl);
-//                    CFRelease(absurl);
-//                }
+#ifdef __TEST_DROP_QT5_MAC_
+            if (urlList.at(i).path().startsWith("file:///.file/id=")) {
+                    QUrl url(urlList.at(i).path());
+                    CFURLRef cfurl = url.toCFURL();
+                    CFErrorRef error = 0;
+                    CFURLRef absurl = CFURLCreateFilePathURL(kCFAllocatorDefault, cfurl, &error);
+                    url = QUrl::fromCFURL(absurl);
+                    CFRelease(cfurl);
+                    CFRelease(absurl);
+                }
+#endif
 
 #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
             if (urlList.at(i).path().startsWith("/.file/id="))

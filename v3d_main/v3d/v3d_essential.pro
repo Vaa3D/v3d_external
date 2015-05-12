@@ -122,11 +122,13 @@ LIBS += -L$$LOCAL_DIR/lib
 
 INCLUDEPATH += $$QT_DIR/../clang_64/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
 
-SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+#SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+SHARED_FOLDER = ./painting/shared/ # for arthurwidgets
 include($$SHARED_FOLDER/shared.pri)
 INCLUDEPATH += $$SHARED_FOLDER
-LIBS += -L$$SHARED_FOLDER \
-	-L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
+LIBS += -L$$SHARED_FOLDER
+
+win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
 
 macx {
     # Mac possible location of arthurwidgets.h with official Qt 4.7 installer
@@ -207,7 +209,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_colormapDialog.h \
     ../3drenderer/gradients.h \
-    ../3drenderer/hoverpoints.h \
+ \ #    ../3drenderer/v3d_hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
     ../3drenderer/line_box_intersection_check.h \
     ../neuron_tracing/heap.h \
@@ -265,6 +267,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../io/asc_to_swc.h \
     ../io/nrrd.h \
     ../terafly/src/presentation/theader.h
+#    ./painting/shared/arthurstyle.h \
+#    ./painting/shared/arthurwidgets.h
+
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h
 
@@ -302,7 +307,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
-    ../3drenderer/hoverpoints.cpp \
+ \ #    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
 	../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
@@ -342,6 +347,9 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
     ../io/nrrd.cpp
+#    ./painting/shared/arthurstyle.cpp \
+#    ./painting/shared/arthurwidgets.cpp
+
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 
