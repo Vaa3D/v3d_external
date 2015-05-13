@@ -6,8 +6,8 @@
 # installer releases.
 
 
-V3D="vaa3d"
-plugin_path="plugins"
+V3D="../bin/vaa3d"
+plugin_path="../bin/plugins"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   V3D=../bin/vaa3d64.app/Contents/MacOS/vaa3d64
@@ -21,7 +21,7 @@ fi
 
 if ! [ -e "$plugin_path" ];then
     echo "$plugin_path does not exist"
-    echo "please input vaa3d executable path:"
+    echo "please input plugin path:"
     read input
     plugin_path=$input
 fi
