@@ -17,13 +17,10 @@
 #include "refextract.h"
 
 #include "basic_surf_objs.h"
-#include "stackutil.h"
 #include "volimg_proc.h"
 #include "img_definition.h"
 #include "basic_landmark.h"
 
-#include "mg_utilities.h"
-#include "mg_image_lib.h"
 
 #include "basic_landmark.h"
 #include "basic_4dimage.h"
@@ -309,12 +306,12 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         }
 
         //
-        V3DLONG *sz_relative = 0;
+        V3DLONG sz_relative[4];
         unsigned char* relative1d = 0;
         int datatype_tile = 0;
         if(QFile(QString(infile)).exists())
         {
-            if (loadImage(const_cast<char *>(infile), relative1d, sz_relative, datatype_tile)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(infile), relative1d, sz_relative, datatype_tile)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",infile);
                 return false;
@@ -361,7 +358,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(qs_filename_img_output!=NULL)
         {
             sz_relative[3]=1;
-            if(!saveImage(qPrintable(qs_filename_img_output),pOutput,sz_relative,V3D_UINT8))
+            if(!simple_saveimage_wrapper(callback,qPrintable(qs_filename_img_output),pOutput,sz_relative,V3D_UINT8))
             {
                 printf("ERROR: saveImage() return false!\n");
                 return false;
@@ -505,12 +502,12 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         }
 
         //
-        V3DLONG *sz_relative = 0;
+        V3DLONG sz_relative[4];
         unsigned char* relative1d = 0;
         int datatype_tile = 0;
         if(QFile(QString(infile)).exists())
         {
-            if (loadImage(const_cast<char *>(infile), relative1d, sz_relative, datatype_tile)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(infile), relative1d, sz_relative, datatype_tile)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",infile);
                 return false;
@@ -578,7 +575,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         {
             sz_relative[2]=1;
             sz_relative[3]=1;
-            if(!saveImage(qPrintable(qs_filename_img_output),pOutput,sz_relative,V3D_UINT8))
+            if(!simple_saveimage_wrapper(callback,qPrintable(qs_filename_img_output),pOutput,sz_relative,V3D_UINT8))
             {
                 printf("ERROR: saveImage() return false!\n");
                 return false;
@@ -745,7 +742,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
         //
         float *pOutput = NULL;
-        V3DLONG *szOutput = NULL;
+        V3DLONG szOutput[4];
         V3DLONG cnt = 1;
         V3DLONG totalplxs = 0;
         foreach (QString img_str, imgList)
@@ -759,7 +756,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
             if(QFile(QString(fn_image.c_str())).exists())
             {
-                if (loadImage(const_cast<char *>(fn_image.c_str()), pImg1d, szImg, datatypeImg)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(fn_image.c_str()), pImg1d, szImg, datatypeImg)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", fn_image.c_str());
                     return false;
@@ -776,7 +773,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 // assume all images are with the same size
                 try
                 {
-                    szOutput = new V3DLONG [4];
+                    //szOutput = new V3DLONG [4];
                     szOutput[0] = szImg[0];
                     szOutput[1] = szImg[1];
                     szOutput[2] = szImg[2];
@@ -814,7 +811,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         // save
         if(qs_filename_img_output!=NULL)
         {
-            if(!saveImage(qPrintable(qs_filename_img_output),(unsigned char *)pOutput,szOutput,4))
+            if(!simple_saveimage_wrapper(callback,qPrintable(qs_filename_img_output),(unsigned char *)pOutput,szOutput,4))
             {
                 printf("ERROR: saveImage() return false!\n");
                 return false;
