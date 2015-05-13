@@ -1,24 +1,46 @@
 #!/bin/bash
 # This script aims to  1) detect missing plugins, according to the
 # wish list (./pluginlist.txt)  2) test the help function for each plugin.
+# 3) detect empty plugin folders.
 # This is a useful sannity check on the inventory of released plugins for
 # installer releases.
 
-############################# Warning #############################
-#only tested on mac so far! try it on other OSs at your own risk :p
-############################# Warning #############################
-
 
 V3D="vaa3d"
+plugin_path="plugins"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   V3D=../bin/vaa3d64.app/Contents/MacOS/vaa3d64
+  plugin_path=../bin/plugins
 fi
 
 if [[ "$OSTYPE" == "cygwin" ]]; then
   V3D=./bin/vaa3d.exe
+  plugin_path=./bin/plugins
 fi
 
+if ! [ -e "$plugin_path" ];then
+    echo "$plugin_path does not exist"
+    echo "please input vaa3d executable path:"
+    read input
+    plugin_path=$input
+fi
+
+## detect empy plugin folders
+echo "Checking for empty plugin folders in $plugin_path:"
+command="find  $plugin_path  -type d -empty"
+output=$($command 2>&1 )
+if  ! [ -z  $output ]; then
+    echo "Empty plugin folders found!"
+    echo "${output}"
+   # find  $plugin_path  -type d -empty -delete
+else
+    echo "No empty plugin folders!";
+fi
+
+echo ""
+echo ""
+echo ""
 
 if ! [ -e $V3D ]; then
     echo "$V3D does not exsit"
