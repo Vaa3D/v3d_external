@@ -10,14 +10,10 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "basic_surf_objs.h"
-#include "stackutil.h"
+
 #include "volimg_proc.h"
 #include "img_definition.h"
 #include "basic_landmark.h"
-
-#include "mg_utilities.h"
-#include "mg_image_lib.h"
 
 #include "basic_landmark.h"
 #include "basic_4dimage.h"
@@ -168,7 +164,7 @@ bool findHighestIntensityLevelTile(Tdata *f, Tdata *g, V3DLONG szimg, V3DLONG &t
 
 // reconstruct tiles into one stitched image
 template <class Tdata>
-bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange, QList<AdjustPara> adjparaList)
+bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange, QList<AdjustPara> adjparaList,V3DPluginCallback2 &callback)
 {
     //
     V3DLONG vx = vim.sz[0];
@@ -194,7 +190,7 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
     for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
     {
         // loading relative imagg files
-        V3DLONG *sz_relative = 0;
+        V3DLONG sz_relative[4];
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
 
@@ -211,7 +207,7 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
         }
 
         //
-        if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
             return false;
@@ -291,7 +287,6 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
 
         //de-alloc
         if(relative1d) {delete []relative1d; relative1d=0;}
-        if(sz_relative) {delete []sz_relative; sz_relative=0;}
     }
 
     float minval, maxval;
@@ -328,7 +323,7 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
 
 // reconstruct tiles into one stitched image
 template <class Tdata>
-bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange)
+bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange,V3DPluginCallback2 &callback)
 {
     //
     V3DLONG vx = vim.sz[0];
@@ -354,7 +349,7 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
     for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
     {
         // loading relative imagg files
-        V3DLONG *sz_relative = 0;
+        V3DLONG sz_relative[4];
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
 
@@ -371,7 +366,7 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
         }
 
         //
-        if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
             return false;
@@ -441,7 +436,6 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
 
         //de-alloc
         if(relative1d) {delete []relative1d; relative1d=0;}
-        if(sz_relative) {delete []sz_relative; sz_relative=0;}
     }
 
     float minval, maxval;
@@ -485,7 +479,7 @@ QStringList ImageFusionPlugin::funclist() const
                         <<"help";
 }
 
-bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
+bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback, QWidget * parent)
 {
     if (func_name == tr("help"))
     {
@@ -631,7 +625,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(ii>0) break; // get datatype
 
             // load tile
-            V3DLONG *sz_relative = 0;
+            V3DLONG sz_relative[4];
             unsigned char* relative1d = 0;
 
             QString curPath = QFileInfo(tcfile).path();;
@@ -640,7 +634,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
 
             vim.lut[ii].fn_img = fn; // absolute path
 
-            if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_tile)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_tile)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
                 return -1;
@@ -668,7 +662,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
 
             //
-            bool success = ireconstructing<unsigned char>((unsigned char *)pVImg, vim, 255);
+            bool success = ireconstructing<unsigned char>((unsigned char *)pVImg, vim, 255,callback);
             if(!success)
             {
                 printf("Fail to call function ireconstructing! \n");
@@ -679,7 +673,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(b_saveimage)
             {
                 //save
-                if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pVImg, vim.sz, 1)!=true)
+                if (simple_saveimage_wrapper(callback,blendImageName.toStdString().c_str(), (unsigned char *)pVImg, vim.sz, 1)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -723,7 +717,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
 
             //
-            bool success = ireconstructing<unsigned short>((unsigned short *)pVImg, vim, 4095);
+            bool success = ireconstructing<unsigned short>((unsigned short *)pVImg, vim, 4095,callback);
             if(!success)
             {
                 printf("Fail to call function ireconstructing! \n");
@@ -734,7 +728,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(b_saveimage)
             {
                 //save
-                if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pVImg, vim.sz, 2)!=true)
+                if (simple_saveimage_wrapper(callback,blendImageName.toStdString().c_str(), (unsigned char *)pVImg, vim.sz, 2)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -909,7 +903,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(ii>0) break; // get datatype
 
             // load tile
-            V3DLONG *sz_relative = 0;
+            V3DLONG sz_relative[4];
             unsigned char* relative1d = 0;
 
             QString curPath = QFileInfo(tcfile).path();
@@ -918,7 +912,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
 
             vim.lut[ii].fn_img = fn; // absolute path
 
-            if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_tile)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_tile)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
                 return false;
@@ -988,7 +982,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(findoverlap)
             {
                 // load image f
-                V3DLONG *sz_f = 0;
+                V3DLONG sz_f[4];
                 int datatype_f = 0;
                 unsigned char* f1d = 0;
 
@@ -1007,7 +1001,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 }
 
                 //
-                if (loadImage(const_cast<char *>(fn.c_str()), f1d, sz_f, datatype_f)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), f1d, sz_f, datatype_f)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",fn.c_str());
                     return false;
@@ -1015,7 +1009,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 V3DLONG fx=sz_f[0], fy=sz_f[1], fz=sz_f[2], fc=sz_f[3];
 
                 // load image g
-                V3DLONG *sz_g = 0;
+                V3DLONG sz_g[4];
                 int datatype_g = 0;
                 unsigned char* g1d = 0;
 
@@ -1032,7 +1026,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 }
 
                 //
-                if (loadImage(const_cast<char *>(fn.c_str()), g1d, sz_g, datatype_g)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), g1d, sz_g, datatype_g)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",fn.c_str());
                     return false;
@@ -1200,7 +1194,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(findoverlap)
             {
                 // load image f
-                V3DLONG *sz_f = 0;
+                V3DLONG sz_f[4];
                 int datatype_f = 0;
                 unsigned char* f1d = 0;
 
@@ -1219,7 +1213,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 }
 
                 //
-                if (loadImage(const_cast<char *>(fn.c_str()), f1d, sz_f, datatype_f)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), f1d, sz_f, datatype_f)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",fn.c_str());
                     return false;
@@ -1244,7 +1238,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 }
 
                 //
-                if (loadImage(const_cast<char *>(fn.c_str()), g1d, sz_g, datatype_g)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), g1d, sz_g, datatype_g)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",fn.c_str());
                     return false;
@@ -1383,7 +1377,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
 
             //
-            if(ireconstructingwnorm<unsigned char>((unsigned char *)pVImg, vim, 255, adjparaList)!=true)
+            if(ireconstructingwnorm<unsigned char>((unsigned char *)pVImg, vim, 255, adjparaList,callback)!=true)
             {
                 printf("Fail to call function ireconstructing! \n");
                 return false;
@@ -1393,7 +1387,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(b_saveimage)
             {
                 //save
-                if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pVImg, vim.sz, 1)!=true)
+                if (simple_saveimage_wrapper(callback,blendImageName.toStdString().c_str(), (unsigned char *)pVImg, vim.sz, 1)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -1439,7 +1433,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
 
             //
-            if(ireconstructingwnorm<unsigned short>((unsigned short *)pVImg, vim, 4095, adjparaList)!=true)
+            if(ireconstructingwnorm<unsigned short>((unsigned short *)pVImg, vim, 4095, adjparaList,callback)!=true)
             {
                 printf("Fail to call function ireconstructing! \n");
                 return false;
@@ -1449,7 +1443,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             if(b_saveimage)
             {
                 //save
-                if (saveImage(blendImageName.toStdString().c_str(), (const unsigned char *)pVImg, vim.sz, 2)!=true)
+                if (simple_saveimage_wrapper(callback,blendImageName.toStdString().c_str(), (unsigned char *)pVImg, vim.sz, 2)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
