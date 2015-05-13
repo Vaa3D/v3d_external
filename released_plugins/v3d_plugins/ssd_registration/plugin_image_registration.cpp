@@ -23,7 +23,7 @@ const QString title = "ImageRegistrationPlugin demo";
 
 void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const int i_regtype);
 void FFDNonrigidRegistration(V3DPluginCallback &callback, QWidget *parent);
-void releasememory_rigidaffine(long *&,long *&,unsigned char *&,unsigned char *&,unsigned char *&,unsigned char *&,double *&,double *&,unsigned char *&);
+void releasememory_rigidaffine(unsigned char *&,unsigned char *&,unsigned char *&,unsigned char *&,double *&,double *&,unsigned char *&);
 void releasememory_nonrigid_FFD(long *&,long *&,unsigned char *&,unsigned char *&,unsigned char *&,unsigned char *&,double *&,double *&,unsigned char *&);
 
 QStringList ImageRegistrationPlugin::menulist() const
@@ -121,7 +121,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             return;
         }
 
-        long *sz_img_tar_input=0,*sz_img_sub_input=0;
+        long sz_img_tar_input[4],sz_img_sub_input[4];
         unsigned char *p_img_tar_input=0,*p_img_sub_input=0;
         unsigned char *p_img8u_tar=0,*p_img8u_sub=0;
         double *p_img64f_tar=0,*p_img64f_sub=0;
@@ -129,10 +129,11 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
 
         printf("1. Read target and subject image. \n");
         int datatype_tar_input=0;
-        if(!loadImage((char *)qPrintable(qs_filename_img_tar),p_img_tar_input,sz_img_tar_input,datatype_tar_input))
+        if(!simple_loadimage_wrapper(callback,(char *)qPrintable(qs_filename_img_tar),p_img_tar_input,sz_img_tar_input,datatype_tar_input))
         {
             printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_tar));
-            releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+            if (p_img_tar_input) {delete []p_img_tar_input; p_img_tar_input=0;}
+            if (p_img_sub_input) {delete []p_img_sub_input; p_img_sub_input=0;}
             return;
         }
         printf("\t>>read target image file [%s] complete.\n",qPrintable(qs_filename_img_tar));
@@ -140,10 +141,11 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
         printf("\t\tdatatype: %d\n",datatype_tar_input);
 
         int datatype_sub_input=0;
-        if(!loadImage((char *)qPrintable(qs_filename_img_sub),p_img_sub_input,sz_img_sub_input,datatype_sub_input))
+        if(!simple_loadimage_wrapper(callback,(char *)qPrintable(qs_filename_img_sub),p_img_sub_input,sz_img_sub_input,datatype_sub_input))
         {
             printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_sub));
-            releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+            if (p_img_tar_input) {delete []p_img_tar_input; p_img_tar_input=0;}
+            if (p_img_sub_input) {delete []p_img_sub_input; p_img_sub_input=0;}
             return;
         }
         printf("\t>>read subject image file [%s] complete.\n",qPrintable(qs_filename_img_sub));
@@ -157,13 +159,13 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
         {
             //printf("ERROR: input target and subject image have different datatype or datatype is not uint8/uint16/float32!\n");
             printf("ERROR: input target and subject image have different datatype or datatype is not uint8!\n");
-            releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+            releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
             return;
         }
         if(sz_img_tar_input[3]<l_refchannel+1 || sz_img_sub_input[3]<l_refchannel+1)
         {
             printf("ERROR: invalid reference channel!\n");
-            releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+            releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
             return;
         }
 
@@ -173,7 +175,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_extractchannel(p_img_tar_input,sz_img_tar_input,l_refchannel,p_img_1c))
             {
                 printf("ERROR: q_extractchannel() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
             if(p_img8u_tar) 			{delete []p_img8u_tar;			p_img8u_tar=0;}
@@ -182,7 +184,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_extractchannel(p_img_sub_input,sz_img_sub_input,l_refchannel,p_img_1c))
             {
                 printf("ERROR: q_extractchannel() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
             if(p_img8u_sub) 			{delete []p_img8u_sub;			p_img8u_sub=0;}
@@ -210,7 +212,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
                 if(!q_imresize_3D(p_img8u_tar,sz_img_old,0,sz_img,p_img_tmp))
                 {
                     printf("ERROR: q_imresize_3D() return false!\n");
-                    releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                    releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                     return;
                 }
                 if(p_img8u_tar) 			{delete []p_img8u_tar;			p_img8u_tar=0;}
@@ -225,7 +227,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
                 if(!q_imresize_3D(p_img8u_sub,sz_img_old,0,sz_img,p_img_tmp))
                 {
                     printf("ERROR: q_imresize_3D() return false!\n");
-                    releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                    releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                     return;
                 }
                 if(p_img8u_sub) 			{delete []p_img8u_sub;			p_img8u_sub=0;}
@@ -245,7 +247,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
                                         p_img_tmp))
             {
                 printf("ERROR: q_histogram_matching_1c() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
             if(p_img8u_sub) 			{delete []p_img8u_sub;			p_img8u_sub=0;}
@@ -259,7 +261,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!p_img64f_tar || !p_img64f_sub)
             {
                 printf("ERROR: Fail to allocate memory for p_img64f_tar or p_img64f_sub!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
 
@@ -283,7 +285,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_gradientnorm(p_img64f_tar,sz_img,1,p_img64f_gradnorm))
             {
                 printf("ERROR: q_gradientnorm() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
             if(p_img64f_tar) 		{delete []p_img64f_tar;			p_img64f_tar=0;}
@@ -292,7 +294,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_gradientnorm(p_img64f_sub,sz_img,1,p_img64f_gradnorm))
             {
                 printf("ERROR: q_gradientnorm() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
             if(p_img64f_sub) 		{delete []p_img64f_sub;			p_img64f_sub=0;}
@@ -308,7 +310,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_kernel_gaussian_1D(l_kenelradius,d_sigma,vec1D_kernel))
             {
                 printf("ERROR: q_kernel_gaussian_1D() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
 
@@ -316,14 +318,14 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_convolve_img64f_3D_fast(p_img64f_tar,sz_img,vec1D_kernel))
             {
                 printf("ERROR: q_convolve64f_3D_fast() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
             printf("\tsmoothing subject image.\n");
             if(!q_convolve_img64f_3D_fast(p_img64f_sub,sz_img,vec1D_kernel))
             {
                 printf("ERROR: q_convolve64f_3D_fast() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
         }
@@ -337,7 +339,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
         if(!q_rigidaffine_registration(paras,p_img64f_tar,p_img64f_sub,sz_img,vec4D_grid))
         {
             printf("ERROR: q_affine_registration_SSD() return false!\n");
-            releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+            releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
             return;
         }
         if(p_img64f_tar) 		{delete []p_img64f_tar;			p_img64f_tar=0;}
@@ -360,7 +362,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_rigidaffine_savegrid_swc(vec4D_grid,sz_img_tar_input,qPrintable(qs_filename_swc_grid)))
             {
                 printf("ERROR: q_savegrid_swc() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
         }
@@ -373,7 +375,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(!q_imresize_3D(p_img_sub_input,sz_img_sub_input,0,sz_img_tar_input,p_img_sub_resize))
             {
                 printf("ERROR: q_imresize_3D() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
 
@@ -382,7 +384,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             {
                 printf("ERROR: q_warpimage_baseongrid() return false!\n");
                 if(p_img_sub_resize) 			{delete []p_img_sub_resize;			p_img_sub_resize=0;}
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
             if(p_img_sub_resize) 			{delete []p_img_sub_resize;			p_img_sub_resize=0;}
@@ -391,23 +393,22 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             
             qDebug()<<"p_img8u_sub_warp="<<p_img8u_sub_warp;
             qDebug()<<sz_img_tar_input[0] << " " <<sz_img_tar_input[1] << " " <<sz_img_tar_input[2] << " " <<sz_img_tar_input[3]; 
-            if(!saveImage(qPrintable(qs_filename_img_sub2tar),p_img8u_sub_warp,sz_img_tar_input,1))
+            if(!simple_saveimage_wrapper(callback,qPrintable(qs_filename_img_sub2tar),p_img8u_sub_warp,sz_img_tar_input,1))
             {
                 printf("ERROR: q_save64f01_image() return false!\n");
-                releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+                releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
                 return;
             }
         }
 
         printf(">>Free memory\n");
-        releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
+        releasememory_rigidaffine(p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
 
     }
     printf(">>Program exit success!\n\n");
 }
 
-void releasememory_rigidaffine(long *&sz_img_tar_input,long *&sz_img_sub_input,
-                               unsigned char *&p_img_tar_input,unsigned char *&p_img_sub_input,
+void releasememory_rigidaffine(unsigned char *&p_img_tar_input,unsigned char *&p_img_sub_input,
                                unsigned char *&p_img8u_tar,unsigned char *&p_img8u_sub,
                                double *&p_img64f_tar,double *&p_img64f_sub,
                                unsigned char *&p_img8u_output_sub)
@@ -419,8 +420,8 @@ void releasememory_rigidaffine(long *&sz_img_tar_input,long *&sz_img_sub_input,
     if(p_img64f_tar) 		{delete []p_img64f_tar;			p_img64f_tar=0;}
     if(p_img64f_sub) 		{delete []p_img64f_sub;			p_img64f_sub=0;}
     if(p_img8u_output_sub)  {delete []p_img8u_output_sub;	p_img8u_output_sub=0;}
-    if(sz_img_tar_input) 	{delete []sz_img_tar_input;		sz_img_tar_input=0;}
-    if(sz_img_sub_input) 	{delete []sz_img_sub_input;		sz_img_sub_input=0;}
+   // if(sz_img_tar_input) 	{delete []sz_img_tar_input;		sz_img_tar_input=0;}
+   // if(sz_img_sub_input) 	{delete []sz_img_sub_input;		sz_img_sub_input=0;}
     printf("Release all memory done!\n");
 }
 
@@ -833,36 +834,36 @@ void errorPrint()
 
 // function call
 
-bool wrapperLoadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
-{
-	v3d_msg("wrapperLoadImage", 0);
+//bool wrapperLoadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
+//{
+//	v3d_msg("wrapperLoadImage", 0);
 	
-	if (!imgSrcFile || data1d || sz)
-	{
-		v3d_msg("wrong input to wrapperLoadImage().",0);
-		return false;
-	}
+//	if (!imgSrcFile || data1d || sz)
+//	{
+//		v3d_msg("wrong input to wrapperLoadImage().",0);
+//		return false;
+//	}
 	
-	Image4DSimple *tmpimg=new Image4DSimple;
-	tmpimg->loadImage(imgSrcFile);
-	if (!(tmpimg->valid()))
-	{
-		v3d_msg(QString("Fail to load image [%1]").arg(imgSrcFile),0);
-		return false;
-	}
+//	Image4DSimple *tmpimg=new Image4DSimple;
+//	tmpimg->loadImage(imgSrcFile);
+//	if (!(tmpimg->valid()))
+//	{
+//		v3d_msg(QString("Fail to load image [%1]").arg(imgSrcFile),0);
+//		return false;
+//	}
 	
-    // The following few lines are to avoid disturbing the existing code below
+//    // The following few lines are to avoid disturbing the existing code below
     
-    data1d = tmpimg->getRawData();
-    datatype=tmpimg->getDatatype();
-    sz=new V3DLONG[4];
-    sz[0]=tmpimg->getXDim();
-    sz[1]=tmpimg->getYDim();
-    sz[2]=tmpimg->getZDim();
-    sz[3]=tmpimg->getCDim();
+//    data1d = tmpimg->getRawData();
+//    datatype=tmpimg->getDatatype();
+//    sz=new V3DLONG[4];
+//    sz[0]=tmpimg->getXDim();
+//    sz[1]=tmpimg->getYDim();
+//    sz[2]=tmpimg->getZDim();
+//    sz[3]=tmpimg->getCDim();
     
-    return true; 
-}
+//    return true;
+//}
 
 QStringList ImageRegistrationPlugin::funclist() const
 {
@@ -1098,7 +1099,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
 
         }
 
-        V3DLONG *sz_img_tar_input=0,*sz_img_sub_input=0;
+        V3DLONG sz_img_tar_input[4], sz_img_sub_input[4];
         unsigned char *p_img_tar_input=0,*p_img_sub_input=0;
         double *p_img64f_tar=0,*p_img64f_sub=0;
         unsigned char *p_img_sub_warp=0;
@@ -1111,13 +1112,13 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
 
         int datatype_tar_input=0;
 
-        if(!wrapperLoadImage((char *)qPrintable(qs_filename_img_tar),
+        if(!simple_loadimage_wrapper(callback,(char *)qPrintable(qs_filename_img_tar),
         		p_img_tar_input,
         		sz_img_tar_input,
         		datatype_tar_input))
         {
-            freeMemory2<unsigned char, V3DLONG>(p_img_tar_input, sz_img_tar_input);
-            freeMemory2<unsigned char, V3DLONG>(p_img_sub_input, sz_img_sub_input);
+            if (p_img_tar_input) {delete []p_img_tar_input; p_img_tar_input=0;}
+            if (p_img_sub_input) {delete []p_img_sub_input; p_img_sub_input=0;}
             return false;
         }
         printf("\t>>read target image file [%s] complete.\n",qPrintable(qs_filename_img_tar));
@@ -1125,13 +1126,13 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         printf("\t\tdatatype: %d\n",datatype_tar_input);
 
         int datatype_sub_input=0;
-        if(!wrapperLoadImage((char *)qPrintable(qs_filename_img_sub),
+        if(!simple_loadimage_wrapper(callback,(char *)qPrintable(qs_filename_img_sub),
         		p_img_sub_input,
         		sz_img_sub_input,
         		datatype_sub_input))
         {
-            freeMemory2<unsigned char, V3DLONG>(p_img_tar_input, sz_img_tar_input);
-            freeMemory2<unsigned char, V3DLONG>(p_img_sub_input, sz_img_sub_input);
+            if (p_img_tar_input) {delete []p_img_tar_input; p_img_tar_input=0;}
+            if (p_img_sub_input) {delete []p_img_sub_input; p_img_sub_input=0;}
             return false;
         }
         printf("\t>>read subject image file [%s] complete.\n",qPrintable(qs_filename_img_sub));
@@ -1141,9 +1142,8 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         if(sz_img_tar_input[3]<channel_ref_tar+1 || sz_img_sub_input[3]<channel_ref_sub+1)
         {
             printf("\nERROR: invalid reference channel!\n");
-
-            freeMemory2<unsigned char, V3DLONG>(p_img_tar_input, sz_img_tar_input);
-            freeMemory2<unsigned char, V3DLONG>(p_img_sub_input, sz_img_sub_input);
+            if (p_img_tar_input) {delete []p_img_tar_input; p_img_tar_input=0;}
+            if (p_img_sub_input) {delete []p_img_sub_input; p_img_sub_input=0;}
 
             errorPrint();
 
@@ -1525,7 +1525,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
                     freeMemory2<unsigned char, unsigned char>(p_img_sub_resize, p_img_sub_warp);
                     return false;
                 }
-                if(!saveImage(qPrintable(qs_filename_img_sub2tar),p_img_sub_resize,sz_img_output,datatype_sub_input))
+                if(!simple_saveimage_wrapper(callback,qPrintable(qs_filename_img_sub2tar),p_img_sub_resize,sz_img_output,datatype_sub_input))
                 {
                     printf("ERROR: saveImage() return false!\n");
                     return false;
@@ -1563,7 +1563,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
             freeMemory<unsigned char>(p_img_sub_resize);
 
             printf("\t>> Save warped subject image to file:[%s] \n",qPrintable(qs_filename_img_sub2tar));
-            if(!saveImage(qPrintable(qs_filename_img_sub2tar),p_img_sub_warp,sz_img_output,datatype_sub_input))
+            if(!simple_saveimage_wrapper(callback,qPrintable(qs_filename_img_sub2tar),p_img_sub_warp,sz_img_output,datatype_sub_input))
             {
                 printf("ERROR: saveImage() return false!\n");
                 return false;

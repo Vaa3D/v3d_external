@@ -14,47 +14,47 @@ double q_round(double r)
 	return (r>0.0) ? floor(r+0.5) : ceil(r-0.5);
 }
 
-bool q_save64f01_image(const double *p_img64f,const long sz_img[4],const char *filename)
-{
-	if(p_img64f==0)
-	{
-		printf("ERROR: Invalid input image pointer!\n");
-		return false;
-	}
-	if(sz_img[0]<=0 || sz_img[1]<=0 || sz_img[2]<=0 || sz_img[3]<=0)
-	{
-		printf("ERROR: Invalid input image size!\n");
-		return false;
-	}
-	if(!filename)
-	{
-		printf("ERROR: Invalid output image filename pointer!\n");
-		return false;
-	}
+//bool q_save64f01_image(const double *p_img64f,const long sz_img[4],const char *filename)
+//{
+//	if(p_img64f==0)
+//	{
+//		printf("ERROR: Invalid input image pointer!\n");
+//		return false;
+//	}
+//	if(sz_img[0]<=0 || sz_img[1]<=0 || sz_img[2]<=0 || sz_img[3]<=0)
+//	{
+//		printf("ERROR: Invalid input image size!\n");
+//		return false;
+//	}
+//	if(!filename)
+//	{
+//		printf("ERROR: Invalid output image filename pointer!\n");
+//		return false;
+//	}
 
-	long l_npixels=sz_img[0]*sz_img[1]*sz_img[2]*sz_img[3];
+//	long l_npixels=sz_img[0]*sz_img[1]*sz_img[2]*sz_img[3];
 
-	unsigned char *p_img4save=0;
-	p_img4save=new unsigned char[l_npixels]();
-	if(!p_img4save)
-	{
-		printf("ERROR: Fail to allocate memory for image.\n");
-		return false;
-	}
+//	unsigned char *p_img4save=0;
+//	p_img4save=new unsigned char[l_npixels]();
+//	if(!p_img4save)
+//	{
+//		printf("ERROR: Fail to allocate memory for image.\n");
+//		return false;
+//	}
 
-	for(long i=0;i<l_npixels;i++)
-	{
-		double tmp=p_img64f[i]*255.0;
-		tmp=tmp<0?0:tmp;	tmp=tmp>255?255:tmp;
-		p_img4save[i]=tmp+0.5;
-	}
+//	for(long i=0;i<l_npixels;i++)
+//	{
+//		double tmp=p_img64f[i]*255.0;
+//		tmp=tmp<0?0:tmp;	tmp=tmp>255?255:tmp;
+//		p_img4save[i]=tmp+0.5;
+//	}
 
-	saveImage(filename,p_img4save,sz_img,1);
+//	saveImage(filename,p_img4save,sz_img,1);
 
-	if(p_img4save) 	{delete []p_img4save;		p_img4save=0;}
+//	if(p_img4save) 	{delete []p_img4save;		p_img4save=0;}
 
-	return true;
-}
+//	return true;
+//}
 
 bool q_extractchannel(const unsigned char *p_img32u,const long sz_img[4],const long l_refchannel,unsigned char *&p_img32u_1c)
 {

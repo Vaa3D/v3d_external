@@ -14,7 +14,7 @@ INCLUDEPATH  += $$V3DPATH/basic_c_fun
 INCLUDEPATH  += $$V3DPATH/jba/newmat11
 INCLUDEPATH  += $$V3DPATH/common_lib/include
 
-LIBS 	     += -L$$V3DPATH/common_lib/lib -lv3dtiff
+#LIBS 	     += -L$$V3DPATH/common_lib/lib -lv3dtiff
 LIBS         += -L$$V3DPATH/jba/c++ -lv3dnewmat
 
 FORMS         = paradialog_rigidaffine.ui
@@ -35,9 +35,9 @@ HEADERS      += q_rigidaffine_registration.h
 HEADERS      += plugin_image_registration.h
 
 SOURCES      += $$V3DPATH/basic_c_fun/v3d_message.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/stackutil.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/mg_image_lib.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/mg_utilities.cpp
+#SOURCES      += $$V3DPATH/basic_c_fun/stackutil.cpp
+#SOURCES      += $$V3DPATH/basic_c_fun/mg_image_lib.cpp
+#SOURCES      += $$V3DPATH/basic_c_fun/mg_utilities.cpp
 
 SOURCES      += common/q_imresize.cpp
 SOURCES      += common/q_convolve.cpp
@@ -60,8 +60,8 @@ QT_DIR = $$dirname(QMAKE_QMAKE)/..
 SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
 INCLUDEPATH += $$SHARED_FOLDER
 
-HEADERS      += $$V3DPATH/neuron_annotator/utility/ImageLoaderBasic.h
-SOURCES      += $$V3DPATH/neuron_annotator/utility/ImageLoaderBasic.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage_create.cpp
-SOURCES      += $$V3DPATH/basic_c_fun/imageio_mylib.cpp
+#HEADERS      += $$V3DPATH/neuron_annotator/utility/ImageLoaderBasic.h
+#SOURCES      += $$V3DPATH/neuron_annotator/utility/ImageLoaderBasic.cpp
+#SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage.cpp
+#SOURCES      += $$V3DPATH/basic_c_fun/basic_4dimage_create.cpp
+#SOURCES      += $$V3DPATH/basic_c_fun/imageio_mylib.cpp
