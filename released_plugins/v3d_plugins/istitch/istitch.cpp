@@ -1407,7 +1407,7 @@ int pairwise_stitching(char *fn_target, V3DLONG ch_tar, char *fn_subject, V3DLON
     //
     if(QFile::exists(QString(fn_target)))
     {
-        if (loadImage(fn_target, target1d, sz_target, datatype_target)!=true)
+        if (simple_loadimage_wrapper(callback,fn_target, target1d, sz_target, datatype_target)!=true)
         {
             cout << "The target image does not exist."<<endl;
             return false;
@@ -1424,7 +1424,7 @@ int pairwise_stitching(char *fn_target, V3DLONG ch_tar, char *fn_subject, V3DLON
 
     if(QFile::exists(QString(fn_subject)))
     {
-        if (loadImage(const_cast<char *>( fn_subject ), subject1d, sz_subject, datatype_subject)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>( fn_subject ), subject1d, sz_subject, datatype_subject)!=true)
         {
             cout << "The subject image does not exist."<<endl;
             return false;
@@ -1713,7 +1713,7 @@ int pairwise_stitching(char *fn_target, V3DLONG ch_tar, char *fn_subject, V3DLON
         V3DLONG sz_output[4];
         sz_output[0] = new_sz0; sz_output[1] = new_sz1; sz_output[2] = new_sz2; sz_output[3] = sc;
 
-        saveImage(fn_stitched, (unsigned char *)data1d, sz_output, 1);
+        simple_saveimage_wrapper(callback,fn_stitched, (unsigned char *)data1d, sz_output, 1);
 
         // de-alloc
         if(data1d) {delete []data1d; data1d=NULL;}
@@ -1928,10 +1928,10 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent);
 template <class SDATATYPE> int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLONG *sz_subject, SDATATYPE *target1d, V3DLONG *sz_target, V3DLONG *offset, bool axes_show, QString m_InputFileName, V3DLONG new_sz0, V3DLONG new_sz1, V3DLONG new_sz2, V3DLONG pagesz_overlap, V3DLONG sub_c, V3DLONG tar_c);
 
 // pairwise image blending function
-template <class SDATATYPE> int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show);
+template <class SDATATYPE> int groupi_fusing(V3DPluginCallback2 &callback,SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show);
 
 // subspace stitching and linear blending tiles
-template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange, V3DLONG channel, bool flagFusion);
+template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(V3DPluginCallback2 &callback,Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange, V3DLONG channel, bool flagFusion);
 
 // open tutorial and download test data
 void OpenDownloadPage(QWidget *parent);
@@ -3531,7 +3531,7 @@ int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLO
 
 // group images blending function
 template <class SDATATYPE>
-int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show)
+int groupi_fusing(V3DPluginCallback2 &callback,SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show)
 {
     // for boundary counting
     V3DLONG n_swc=1;
@@ -3542,11 +3542,11 @@ int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL
     for(V3DLONG ii=0; ii<vim.tilesList.size(); ii++)
     {
         // loading relative imagg files
-        V3DLONG *sz_relative = 0;
+        V3DLONG sz_relative[4];
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
 
-        if (loadImage(const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_relative)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
             return -1;
@@ -3703,7 +3703,6 @@ int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL
 
         //de-alloc
         if(relative1d) {delete []relative1d; relative1d=0;}
-        if(sz_relative) {delete []sz_relative; sz_relative=0;}
     }
 
     return true;
@@ -3766,7 +3765,7 @@ int region_groupfusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG,
 }
 
 // subspace stitching and linear blending tiles
-template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange, V3DLONG channel, bool flagFusion)
+template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(V3DPluginCallback2 &callback,Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange, V3DLONG channel, bool flagFusion)
 {
     //
     V3DLONG vx = vim.sz[0];
@@ -3811,12 +3810,12 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             if(flagFusion)
             {
                 // loading ref image
-                V3DLONG *sz_ref = 0;
+                V3DLONG sz_ref[4];
                 int datatype_ref = 0;
                 unsigned char* ref1d = 0;
 
                 //
-                if (loadImage(const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), ref1d, sz_ref, datatype_ref)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), ref1d, sz_ref, datatype_ref)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
                     return false;
@@ -3882,7 +3881,6 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
                 //de-alloc
                 if(ref1d) {delete []ref1d; ref1d=0;}
-                if(sz_ref) {delete []sz_ref; sz_ref=0;}
             }
 
             continue;
@@ -3916,7 +3914,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         int datatype_f = 0;
         unsigned char* f1d = 0;
 
-        if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), f1d, sz_f, datatype_f)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), f1d, sz_f, datatype_f)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(j).fn_image.c_str());
             return false;
@@ -3924,12 +3922,12 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         V3DLONG fx=sz_f[0], fy=sz_f[1], fz=sz_f[2], fc=sz_f[3];
 
         // load image g
-        V3DLONG *sz_g = 0;
+        V3DLONG sz_g[4];
         int datatype_g = 0;
         unsigned char* g1d = 0;
 
         //
-        if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), g1d, sz_g, datatype_g)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), g1d, sz_g, datatype_g)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
             return false;
@@ -4633,12 +4631,12 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
     for(V3DLONG ii=1; ii<vim.number_tiles; ii++)
     {
         // loading relative image files
-        V3DLONG *sz_relative = 0;
+        V3DLONG sz_relative[4];
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
 
         //
-        if (loadImage(const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_relative)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
             return false;
@@ -4799,7 +4797,6 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         //de-alloc
         y_del<REAL>(prelative);
         y_del<unsigned char>(relative1d);
-        y_del<V3DLONG>(sz_relative);
     }
 
     float minval, maxval;
@@ -6529,7 +6526,7 @@ int pistitching(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *target1d
 
 // blending func
 template <class SDATATYPE, class Y_TLUT>
-bool ifusing(SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
+bool ifusing(V3DPluginCallback2 &callback,SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
 {
     //
     V3DLONG vx, vy, vz, vc;
@@ -6554,11 +6551,11 @@ bool ifusing(SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
     for(V3DLONG ii=0; ii<tlut.tcList.size(); ii++)
     {
         // loading relative imagg files
-        V3DLONG *sz_relative = 0;
+        V3DLONG sz_relative[4];
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
 
-        if (loadImage(const_cast<char *>(tlut.tcList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(tlut.tcList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_relative)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",tlut.tcList.at(ii).fn_image.c_str());
             return -1;
@@ -6664,7 +6661,6 @@ bool ifusing(SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
         y_del<REAL>(prelative);
         y_del<V3DLONG>(effectiveEnvelope);
         y_del<unsigned char>(relative1d);
-        y_del<V3DLONG>(sz_relative);
         y_del<V3DLONG>(effectiveEnvelope);
     }
 
@@ -7165,11 +7161,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
     for(int i=0; i<NTILES_I; i++) // record all the sz_image information
     {
         //loading target files
-        V3DLONG *sz_target = 0;
+        V3DLONG sz_target[4];
         int datatype_target = 0;
         unsigned char* target1d = 0;
 
-        if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
             return -1;
@@ -7205,11 +7201,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
         for(int j=i+1; j<NTILES; j++)
         {
             //loading subject files
-            V3DLONG *sz_subject = 0;
+            V3DLONG sz_subject[4];
             int datatype_subject = 0;
             unsigned char* subject1d = 0;
 
-            if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(j).fn_image.c_str());
                 return -1;
@@ -7273,13 +7269,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
             //de-alloc
             if(subject1d) {delete []subject1d; subject1d=0;}
-            if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
         }
 
         //de-alloc
         if(target1d) {delete []target1d; target1d=0;}
-        if(sz_target) {delete []sz_target; sz_target=0;}
 
     }
 
@@ -7361,11 +7355,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
             }
 
             //loading subject files
-            V3DLONG *sz_subject = 0;
+            V3DLONG sz_subject[4];
             int datatype_subject = 0;
             unsigned char* subject1d = 0;
 
-            if (loadImage(const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(current).fn_image.c_str());
                 return -1;
@@ -7378,11 +7372,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
             {
 
                 //loading target files
-                V3DLONG *sz_target = 0;
+                V3DLONG sz_target[4];
                 int datatype_target = 0;
                 unsigned char* target1d = 0;
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(previous).fn_image.c_str());
                     return -1;
@@ -7397,11 +7391,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
                     //de-alloc
                     if(subject1d) {delete []subject1d; subject1d=0;}
-                    if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
                     //
                     subject1d = target1d;
-                    sz_subject = sz_target;
+                    for(int i = 0; i<4 ;i++)
+                        sz_subject[i] = sz_target[i];
                     sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];
 
                     //
@@ -7451,17 +7445,16 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
                 //de-alloc
                 if(subject1d) {delete []subject1d; subject1d=0;}
-                if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
                 //
                 subject1d = target1d;
-                sz_subject = sz_target;
+                for(int i = 0; i< 4 ;i++)
+                    sz_subject[i] = sz_target[i];
                 sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];
 
                 if(previous==-1)
                 {
                     if(target1d) {delete []target1d; target1d=0;}
-                    if(sz_target) {delete []sz_target; sz_target=0;}
                 }
 
             }
@@ -7577,7 +7570,7 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
             }
 
             //
-            success = groupi_fusing<unsigned char>((unsigned char *)pVImg, vim, vx, vy, vz, vc, axes_show);
+            success = groupi_fusing<unsigned char>(callback,(unsigned char *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
             //display
             Image4DSimple p4DImage;
@@ -7606,7 +7599,7 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
             }
 
             //
-            success = groupi_fusing<unsigned short>((unsigned short *)pVImg, vim, vx, vy, vz, vc, axes_show);
+            success = groupi_fusing<unsigned short>(callback,(unsigned short *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
             //display
             Image4DSimple p4DImage;
@@ -7635,7 +7628,7 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
             }
 
             //
-            success = groupi_fusing<REAL>((REAL *)pVImg, vim, vx, vy, vz, vc, axes_show);
+            success = groupi_fusing<REAL>(callback,(REAL *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
             //display
             Image4DSimple p4DImage;
@@ -7778,11 +7771,11 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
         for(int i=0; i<NTILES_I; i++) // record all the sz_image information
         {
             //loading target files
-            V3DLONG *sz_target = 0;
+            V3DLONG sz_target[4];
             int datatype_target = 0;
             unsigned char* target1d = 0;
 
-            if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
                 return -1;
@@ -7818,11 +7811,11 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
             for(int j=i+1; j<NTILES; j++)
             {
                 //loading subject files
-                V3DLONG *sz_subject = 0;
+                V3DLONG sz_subject[4];
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(j).fn_image.c_str());
                     return -1;
@@ -7886,13 +7879,11 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
                 //de-alloc
                 if(subject1d) {delete []subject1d; subject1d=0;}
-                if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
             }
 
             //de-alloc
             if(target1d) {delete []target1d; target1d=0;}
-            if(sz_target) {delete []sz_target; sz_target=0;}
 
         }
 
@@ -7928,11 +7919,11 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
                 V3DLONG previous = vim.tilesList.at(i).predecessor;
 
                 //loading subject files
-                V3DLONG *sz_subject = 0;
+                V3DLONG sz_subject[4];
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(current).fn_image.c_str());
                     return -1;
@@ -7945,11 +7936,11 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
                 {
 
                     //loading target files
-                    V3DLONG *sz_target = 0;
+                    V3DLONG sz_target[4];
                     int datatype_target = 0;
                     unsigned char* target1d = 0;
 
-                    if (loadImage(const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+                    if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
                     {
                         fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(previous).fn_image.c_str());
                         return -1;
@@ -7964,11 +7955,11 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
                         //de-alloc
                         if(subject1d) {delete []subject1d; subject1d=0;}
-                        if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
                         //
                         subject1d = target1d;
-                        sz_subject = sz_target;
+                        for(int i = 0; i<4 ;i++)
+                            sz_subject[i] = sz_target[i];
                         sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];
 
                         //
@@ -8018,17 +8009,16 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
                     //de-alloc
                     if(subject1d) {delete []subject1d; subject1d=0;}
-                    if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
                     //
                     subject1d = target1d;
-                    sz_subject = sz_target;
+                    for(int i = 0; i<4 ;i++)
+                        sz_subject[i] = sz_target[i];
                     sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];
 
                     if(previous==-1)
                     {
                         if(target1d) {delete []target1d; target1d=0;}
-                        if(sz_target) {delete []sz_target; sz_target=0;}
                     }
 
                 }
@@ -8321,13 +8311,12 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
 
     // first step: rough estimation in a coarse scale
     V3DLONG offsets[3];
-    V3DLONG *sz_target = 0;
+    V3DLONG sz_target[4];
     int datatype_target = 0;
     unsigned char* target1d = 0;
     for(int i=0; i<NTILES_I; i++) // record all the sz_image information
     {
         //loading target files
-        sz_target = 0;
         datatype_target = 0;
         target1d = 0;
 
@@ -8354,7 +8343,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             }
         }
 
-        if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+        if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
             return false;
@@ -8387,14 +8376,13 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
         V3DLONG offsets_tar = channel1*tx*ty*tz;
 
         // try rest of tiles
-        V3DLONG *sz_subject = 0;
+        V3DLONG sz_subject[4];
         int datatype_subject = 0;
         unsigned char* subject1d = 0;
         bool b_init = true;
         for(int j=i+1; j<NTILES; j++)
         {
             //loading subject files
-            sz_subject = 0;
             datatype_subject = 0;
             subject1d = 0;
 
@@ -8425,7 +8413,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
                     continue;
             }
 
-            if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(j).fn_image.c_str());
                 return false;
@@ -8492,11 +8480,9 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
 
             //de-alloc
             y_del<unsigned char>(subject1d);
-            y_del<V3DLONG>(sz_subject);
         }
         //de-alloc
         y_del<unsigned char>(target1d);
-        y_del<V3DLONG>(sz_target);
     }
     // find mst of whole tiled images
     for(int i=0; i<NTILES; i++)
@@ -8540,11 +8526,11 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             if(vim.tilesList.at(i).hasedge)
             {
                 //loading subject files
-                V3DLONG *sz_subject = 0;
+                V3DLONG sz_subject[4];
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(current).fn_image.c_str());
                     return false;
@@ -8556,11 +8542,11 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
                     V3DLONG previous = vim.tilesList[i].preList[j];
 
                     //loading target files
-                    V3DLONG *sz_target = 0;
+                    V3DLONG sz_target[4];
                     int datatype_target = 0;
                     unsigned char* target1d = 0;
 
-                    if (loadImage(const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+                    if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
                     {
                         fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(previous).fn_image.c_str());
                         return false;
@@ -8606,11 +8592,9 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
 
                     //de-alloc
                     if(target1d) {delete []target1d; target1d=0;}
-                    if(sz_target) {delete []sz_target; sz_target=0;}
                 }
                 //de-alloc
                 if(subject1d) {delete []subject1d; subject1d=0;}
-                if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
             }
         }
@@ -8755,7 +8739,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             }
 
             //
-            success = groupi_fusing<unsigned char>((unsigned char *)pVImg, vim, vx, vy, vz, vc, axes_show);
+            success = groupi_fusing<unsigned char>(callback,(unsigned char *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
             //save
 //            if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 1)!=true)
@@ -8792,7 +8776,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             }
 
             //
-            success = groupi_fusing<unsigned short>((unsigned short *)pVImg, vim, vx, vy, vz, vc, axes_show);
+            success = groupi_fusing<unsigned short>(callback,(unsigned short *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
             //save
 //            if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 2)!=true)
@@ -8828,7 +8812,7 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
             }
 
             //
-            success = groupi_fusing<REAL>((REAL *)pVImg, vim, vx, vy, vz, vc, axes_show);
+            success = groupi_fusing<REAL>(callback,(REAL *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
             //save
 //            if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 4)!=true)
@@ -8914,7 +8898,7 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
             int datatype_relative = 0;
             unsigned char* relative1d = 0;
 
-            if (loadImage(const_cast<char *>(vim.lut[ii].fn_img.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.lut[ii].fn_img.c_str()), relative1d, sz_relative, datatype_relative)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
                 return -1;
@@ -9106,7 +9090,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
             qDebug()<<"testing..."<<curFilePath<< fn.c_str();
 
-            if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
                 return -1;
@@ -9429,7 +9413,7 @@ int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
                     qDebug()<<"testing..."<<curFilePath<< fn.c_str();
 
-                    if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+                    if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
                     {
                         fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
                         return -1;
@@ -9581,7 +9565,7 @@ int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
                 qDebug()<<"tmp_filename=="<<tmp_filename;
 
-                if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg_UINT8, sz, datatype)!=true)
+                if (simple_saveimage_wrapper(callback,tmp_filename.toStdString().c_str(), (unsigned char *)pVImg_UINT8, sz, datatype)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return -1;
@@ -9600,7 +9584,7 @@ int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
                 qDebug()<<"tmp_filename=="<<tmp_filename;
 
-                if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg_UINT16, sz, datatype)!=true)
+                if (simple_saveimage_wrapper(callback,tmp_filename.toStdString().c_str(), (unsigned char *)pVImg_UINT16, sz, datatype)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return -1 ;
@@ -9620,7 +9604,7 @@ int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
                 qDebug()<<"tmp_filename=="<<tmp_filename;
 
-                if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg_FLOAT32, sz, datatype)!=true)
+                if (simple_saveimage_wrapper(callback,tmp_filename.toStdString().c_str(), (unsigned char *)pVImg_FLOAT32, sz, datatype)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return -1;
@@ -9898,7 +9882,7 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
                 qDebug()<<"testing..."<<curFilePath<< fn.c_str();
 
-                if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
                     return -1;
@@ -10333,7 +10317,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 }
             }
 
-            if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
                 return false;
@@ -10404,7 +10388,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         continue;
                 }
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(j).fn_image.c_str());
                     return false;
@@ -10567,7 +10551,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     int datatype_subject = 0;
                     unsigned char* subject1d = 0;
 
-                    if (loadImage(const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                    if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                     {
                         fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(current).fn_image.c_str());
                         return false;
@@ -10583,7 +10567,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         int datatype_target = 0;
                         unsigned char* target1d = 0;
 
-                        if (loadImage(const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+                        if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
                         {
                             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(previous).fn_image.c_str());
                             return false;
@@ -10782,10 +10766,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 }
 
                 //
-                success = groupi_fusing<unsigned char>((unsigned char *)pVImg, vim, vx, vy, vz, vc, axes_show);
+                success = groupi_fusing<unsigned char>(callback,(unsigned char *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
                 //save
-                if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 1)!=true)
+                if (simple_saveimage_wrapper(callback, stitchFileName.toStdString().c_str(), (unsigned char *)pVImg, sz_tmp, 1)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -10810,10 +10794,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 }
 
                 //
-                success = groupi_fusing<unsigned short>((unsigned short *)pVImg, vim, vx, vy, vz, vc, axes_show);
+                success = groupi_fusing<unsigned short>(callback,(unsigned short *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
                 //save
-                if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 2)!=true)
+                if (simple_saveimage_wrapper(callback, stitchFileName.toStdString().c_str(), (unsigned char *)pVImg, sz_tmp, 2)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -10837,10 +10821,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 }
 
                 //
-                success = groupi_fusing<REAL>((REAL *)pVImg, vim, vx, vy, vz, vc, axes_show);
+                success = groupi_fusing<REAL>(callback,(REAL *)pVImg, vim, vx, vy, vz, vc, axes_show);
 
                 //save
-                if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 4)!=true)
+                if (simple_saveimage_wrapper(callback,stitchFileName.toStdString().c_str(), (unsigned char *)pVImg, sz_tmp, 4)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -11011,7 +10995,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
             if(QFile(QString(vim.tilesList.at(ii).fn_image.c_str())).exists())
             {
-                if (loadImage(const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_tile)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_tile)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
                     return -1;
@@ -11047,7 +11031,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
             //
             unsigned char intensityrange = 255;
-            bool success = iSubspaceStitching<unsigned char, Y_IMG_UINT8>((unsigned char *)pVImg, vim, intensityrange, channel1, img_show);
+            bool success = iSubspaceStitching<unsigned char, Y_IMG_UINT8>(callback,(unsigned char *)pVImg, vim, intensityrange, channel1, img_show);
             if(!success)
             {
                 printf("Fail to call function iSubspaceStitching! \n");
@@ -11064,7 +11048,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     stitchFileName = QString(outfile);
 
                 //save
-                if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, vim.sz, 1)!=true)
+                if (simple_saveimage_wrapper(callback,stitchFileName.toStdString().c_str(), (unsigned char *)pVImg, vim.sz, 1)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -11109,7 +11093,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
             //
             unsigned short intensityrange = 4095;
-            bool success = iSubspaceStitching<unsigned short, Y_IMG_UINT16>((unsigned short *)pVImg, vim, intensityrange, channel1, img_show);
+            bool success = iSubspaceStitching<unsigned short, Y_IMG_UINT16>(callback,(unsigned short *)pVImg, vim, intensityrange, channel1, img_show);
             if(!success)
             {
                 printf("Fail to call function iSubspaceStitching! \n");
@@ -11126,7 +11110,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     stitchFileName = QString(outfile);
 
                 //save
-                if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, vim.sz, 2)!=true)
+                if (simple_saveimage_wrapper(callback,stitchFileName.toStdString().c_str(), (unsigned char *)pVImg, vim.sz, 2)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -11374,7 +11358,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             int datatype_target = 0;
             unsigned char* target1d = 0;
 
-            if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
                 return false;
@@ -11414,7 +11398,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(j).fn_image.c_str());
                     return false;
@@ -11560,7 +11544,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 int datatype_target = 0;
                 unsigned char* target1d = 0;
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the target file [%s]. Exit. \n",vim.tilesList.at(j).fn_image.c_str());
                     return false;
@@ -11578,7 +11562,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     int datatype_subject = 0;
                     unsigned char* subject1d = 0;
 
-                    if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                    if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                     {
                         fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(i).fn_image.c_str());
                         return false;
@@ -11740,7 +11724,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 memset(pVImg, 0, sizeof(unsigned char)*pagesz_vim);
 
                 unsigned char intensityrange = 255;
-                bool success = ifusing<unsigned char, Y_TLUT<REAL, V3DLONG, DF<REAL, V3DLONG> > >((unsigned char *)pVImg, tlut, intensityrange);
+                bool success = ifusing<unsigned char, Y_TLUT<REAL, V3DLONG, DF<REAL, V3DLONG> > >(callback,(unsigned char *)pVImg, tlut, intensityrange);
                 if(!success)
                 {
                     printf("Fail to call function ifusing! \n");
@@ -11764,7 +11748,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 savedsz[3] = tlut.vc;
 
                 //save
-                if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, savedsz, 1)!=true)
+                if (simple_saveimage_wrapper(callback,stitchFileName.toStdString().c_str(), (unsigned char *)pVImg, savedsz, 1)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -11799,7 +11783,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 memset(pVImg, 0, sizeof(unsigned short)*pagesz_vim);
 
                 unsigned short intensityrange = 4095;
-                bool success = ifusing<unsigned short, Y_TLUT<REAL, V3DLONG, DF<REAL, V3DLONG> > >((unsigned short *)pVImg, tlut, intensityrange);
+                bool success = ifusing<unsigned short, Y_TLUT<REAL, V3DLONG, DF<REAL, V3DLONG> > >(callback,(unsigned short *)pVImg, tlut, intensityrange);
                 if(!success)
                 {
                     printf("Fail to call function ifusing! \n");
@@ -11823,7 +11807,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 savedsz[3] = tlut.vc;
 
                 //save
-                if (saveImage(stitchFileName.toStdString().c_str(), (const unsigned char *)pVImg, savedsz, 2)!=true)
+                if (simple_saveimage_wrapper(callback,stitchFileName.toStdString().c_str(), (unsigned char *)pVImg, savedsz, 2)!=true)
                 {
                     fprintf(stderr, "Error happens in file writing. Exit. \n");
                     return false;
@@ -12078,7 +12062,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             int datatype_target = 0;
             unsigned char* target1d = 0;
 
-            if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
+            if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
             {
                 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(i).fn_image.c_str());
                 return false;
@@ -12125,7 +12109,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
 
-                if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
+                if (simple_loadimage_wrapper(callback,const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(j).fn_image.c_str());
                     return false;
