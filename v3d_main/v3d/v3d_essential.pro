@@ -94,7 +94,7 @@ DEPENDPATH += . v3d
 INCLUDEPATH += .
 
 
-DEFINES += USE_Qt5
+#DEFINES += USE_Qt5
 
 
 # commented the -app_bundle as on Mac the not-automatically closed terminal is quite annoying!
@@ -119,14 +119,19 @@ LIBS += -L$$MINGW_DIR/lib \
 INCLUDEPATH += $$LOCAL_DIR/include #./basic_c_fun
 LIBS += -L$$LOCAL_DIR/lib
 
-
-INCLUDEPATH += $$QT_DIR/../clang_64/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
-
-#SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
-SHARED_FOLDER = ./painting/shared/ # for arthurwidgets
-include($$SHARED_FOLDER/shared.pri)
-INCLUDEPATH += $$SHARED_FOLDER
-LIBS += -L$$SHARED_FOLDER
+use_qt5 {
+  INCLUDEPATH += $$QT_DIR/../clang_64/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
+  #SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+  SHARED_FOLDER = ./painting/shared/ # for arthurwidgets
+  include($$SHARED_FOLDER/shared.pri)
+  INCLUDEPATH += $$SHARED_FOLDER
+  LIBS += -L$$SHARED_FOLDER
+} else {
+  SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+  include($$SHARED_FOLDER/shared.pri)
+  INCLUDEPATH += $$SHARED_FOLDER
+  LIBS += -L$$SHARED_FOLDER
+}
 
 win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
 
