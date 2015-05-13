@@ -145,16 +145,16 @@ bool ClonalSelectPlugin::dofunc(const QString & func_name, const V3DPluginArgLis
 
 
         /// load images
-        V3DLONG *sz_img = 0;
+        V3DLONG sz_img[4];
         int datatype_img = 0;
         unsigned char* p1dImg = 0;
 
         if(QFile::exists(qs_filename_img_input))
         {
-            if(!loadImage(const_cast<char *>(qs_filename_img_input.toStdString().c_str()),p1dImg,sz_img,datatype_img))
+            if(!simple_loadimage_wrapper(callback,const_cast<char *>(qs_filename_img_input.toStdString().c_str()),p1dImg,sz_img,datatype_img))
             {
                 printf("ERROR: loadImage() fails.\n");
-                y_del2<unsigned char, V3DLONG>(p1dImg, sz_img);
+                if(p1dImg) {delete []p1dImg; p1dImg = 0;}
                 return false;
             }
         }
@@ -171,7 +171,6 @@ bool ClonalSelectPlugin::dofunc(const QString & func_name, const V3DPluginArgLis
 
         // de-alloc
         y_del<unsigned char>(p1dImg);
-        y_del<V3DLONG>(sz_img);
 
         return true;
     }
