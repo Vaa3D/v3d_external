@@ -14,9 +14,6 @@ HEADERS += getopt.h
 
 HEADERS += lobeseg_main/lobeseg.h
 HEADERS += $$V3DMAINFOLER/basic_c_fun/basic_memory.h
-HEADERS += $$V3DMAINFOLER/basic_c_fun/stackutil.h
-HEADERS += $$V3DMAINFOLER/basic_c_fun/mg_utilities.h
-HEADERS += $$V3DMAINFOLER/basic_c_fun/mg_image_lib.h
 HEADERS += $$V3DMAINFOLER/basic_c_fun/volimg_proc.h
 
 
@@ -33,9 +30,6 @@ SOURCES	+= $$V3DMAINFOLER/basic_c_fun/v3d_message.cpp
 
 SOURCES += lobeseg_main/lobeseg.cpp
 SOURCES	+= $$V3DMAINFOLER/basic_c_fun/basic_memory.cpp
-SOURCES	+= $$V3DMAINFOLER/basic_c_fun/stackutil.cpp
-SOURCES	+= $$V3DMAINFOLER/basic_c_fun/mg_utilities.cpp
-SOURCES	+= $$V3DMAINFOLER/basic_c_fun/mg_image_lib.cpp
 SOURCES += $$V3DMAINFOLER/worm_straighten_c/bdb_minus.cpp
 SOURCES += $$V3DMAINFOLER/worm_straighten_c/mst_prim_c.cpp
 SOURCES += $$V3DMAINFOLER/worm_straighten_c/bfs_1root.cpp
