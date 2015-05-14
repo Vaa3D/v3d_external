@@ -582,8 +582,10 @@ void MainWindow::dropEvent(QDropEvent *event)
     {
         qDebug() <<tr("  Unknown drop data");
     }
+#ifdef Q_OS_LINUX
+    fileName.replace("%20"," ");//fixed the space path issue on Linux machine by Zhi Zhou May 14 2015
+#endif
 
-    fileName.replace("%20"," ");//fixed the space path issue on Linux machine
     //
     if (!QFile::exists(fileName))
     {
