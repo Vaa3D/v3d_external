@@ -29,7 +29,6 @@ set(3DRenderer_SRCS
 
 set(3DRENDERER_MOC_SRCS
   gradients.h
-  hoverpoints.h
   ItemEditor.h
   v3dr_colormapDialog.h
   v3dr_glwidget.h

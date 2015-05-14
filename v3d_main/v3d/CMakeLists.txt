@@ -35,6 +35,7 @@ set(V3D_SRCS
   ../basic_c_fun/basic_4dimage_create.cpp
   ../neuron_annotator/analysis/AlignerUtils.cpp
   ../io/io_bioformats.cpp
+  ../io/nrrd.cpp
   ../io/asc_to_swc.cpp	# @FIXED by Alessandro on 2015-05-06: added missing .cpp file
   v3d_actions.cpp
   )
@@ -178,28 +179,39 @@ target_link_libraries( v3d
   ${OPENGL_glu_LIBRARY}
   )
 
-if(UNIX AND NOT APPLE)
+if(MSVC)
+  target_link_libraries(v3d ${TIFF_LIBRARY})
+  find_library( TEEM_LIB "teem" "../common_lib/winlib64")
+  find_library( BZ2_LIB "bz2" "../common_lib/winlib64")
+else()
+  target_link_libraries(v3d mylib_tiff)
+  if (APPLE)
+    find_library( TEEM_LIB "teem" "../common_lib/lib_mac64")
+  find_library( BZ2_LIB "bz2" "../common_lib/lib_mac64")
+  else()
+    find_library( TEEM_LIB "teem" "../common_lib/lib_unix64")
+  find_library( BZ2_LIB "bz2" "../common_lib/lib_unix64")
+  endif()
+endif()
+
+target_link_libraries(v3d ${TEEM_LIB} ${BZ2_LIB})
+
+if(UNIX)
   find_package(ZLIB)
   find_package(JPEG)
   mark_as_advanced(CLEAR ZLIB_LIBRARY JPEG_LIBRARY)
   target_link_libraries(v3d ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
 endif()
 
-if(MSVC)
-  target_link_libraries(v3d ${TIFF_LIBRARY})
-else()
-  target_link_libraries(v3d mylib_tiff)
-endif()
-
 # CMB 11-Oct-2010
 if(NOT Qt5Core_FOUND)
-  target_link_libraries( v3d ${QT4_DEMOS_LIBRARY} )
+  target_link_libraries(v3d ${QT4_DEMOS_LIBRARY})
   target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
   target_link_libraries(v3d ${QT_QTXML_LIBRARY})
   target_link_libraries(v3d ${QT_QTGUI_LIBRARY})
   target_link_libraries(v3d ${QT_QTCORE_LIBRARY})
 else()
-  target_link_libraries( v3d arthurwidgets )
+  target_link_libraries(v3d arthurwidgets)
   target_link_libraries(v3d Qt5::Widgets Qt5::Core Qt5::Network Qt5::Xml
                             Qt5::OpenGL Qt5::Concurrent)
 endif()
