@@ -1,6 +1,5 @@
 #include <teem/nrrd.h>
 
-#include "../common_lib/include/teem/nrrd.h"
 #include "../basic_c_fun/basic_4dimage.h"
 #include "../basic_c_fun/basic_surf_objs.h"
 

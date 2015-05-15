@@ -132,11 +132,67 @@ include_directories( BEFORE
 if(Qt5Core_FOUND)
   add_library(arthurwidgets ${ARTHUR_MOC_SRCS} ${ARTHUR_SRCS} )
 endif()
+
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
 target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIBRARIES} )
 
+
+
+
+##########################
+# NRRD IO support
+include (ExternalProject)
+
+if (APPLE) # TODO: same fix for linux
+  ExternalProject_Add (
+    LibBz2
+    URL "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/src_packages/bzip2-1.0.6.tar.gz"
+    SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bz2
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make     # Command to drive the native build
+    BUILD_IN_SOURCE 1
+    INSTALL_COMMAND ""
+    )
+
+  set(BZ2_LIB "${CMAKE_CURRENT_BINARY_DIR}/bz2/libbz2.a") # bZip2
+
+  ExternalProject_Add (LibTeem
+    URL "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/src_packages/teem-1.11.0-src.tar.gz"
+    SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/teem/src
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/teem/build
+    UPDATE_COMMAND ""
+    CMAKE_CACHE_ARGS
+    -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+    -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+    -DBUILD_TESTING:BOOL=OFF
+    -DBUILD_SHARED_LIBS:BOOL=OFF
+    ${CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG}
+    -DTeem_USE_LIB_INSTALL_SUBDIR:BOOL=ON
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF
+    -DTeem_PTHREAD:BOOL=OFF
+    -DTeem_BZIP2:BOOL=OFF
+    #-DTeem_ZLIB:BOOL=ON
+    -DTeem_PNG:BOOL=OFF
+    #-DZLIB_ROOT:PATH=${ZLIB_ROOT}
+    #-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
+    #-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
+    #-DPNG_PNG_INCLUDE_DIR:PATH=${PNG_INCLUDE_DIR}
+    INSTALL_COMMAND ""
+    )
+
+  include_directories("${CMAKE_CURRENT_BINARY_DIR}/teem/build/include")
+  set(TEEM_LIB "${CMAKE_CURRENT_BINARY_DIR}/teem/build/bin/libteem.a" )
+endif(APPLE)
+
 add_library(v3dbase2 ${V3D_SRCS})
+
+if (APPLE) # TO DO: same fix for linux
+  target_link_libraries(v3dbase2 ${TEEM_LIB}  ${BZ2_LIB})
+  add_dependencies(v3dbase2 LibBz2)
+  add_dependencies(v3dbase2 LibTeem)
+endif(APPLE)
+
 add_dependencies(v3dbase2 v3dbase)
 add_dependencies(v3dbase2 NeuronAnnotatorLib)
 add_dependencies(v3dbase NeuronAnnotatorLib)
@@ -185,22 +241,14 @@ if(MSVC)
   find_library( BZ2_LIB "bz2" "../common_lib/winlib64")
 else()
   target_link_libraries(v3d mylib_tiff)
-  if (APPLE)
-    find_library( TEEM_LIB "teem" "../common_lib/lib_mac64")
-  find_library( BZ2_LIB "bz2" "../common_lib/lib_mac64")
-  else()
-    find_library( TEEM_LIB "teem" "../common_lib/lib_unix64")
-  find_library( BZ2_LIB "bz2" "../common_lib/lib_unix64")
-  endif()
 endif()
-
 target_link_libraries(v3d ${TEEM_LIB} ${BZ2_LIB})
 
 if(UNIX)
   find_package(ZLIB)
   find_package(JPEG)
   mark_as_advanced(CLEAR ZLIB_LIBRARY JPEG_LIBRARY)
-  target_link_libraries(v3d ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
+  target_link_libraries(v3d ${ZLIB_LIBRARY} ) #${JPEG_LIBRARY})
 endif()
 
 # CMB 11-Oct-2010
