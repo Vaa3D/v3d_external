@@ -9,7 +9,8 @@ bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 #if defined(Q_OS_WIN)
     v3d_msg("Direct NRRD file reading currently is not supported on Windows. You can use the Bioformats IO plugin to load instead.");
     return false;
-#endif
+
+#else
 
     if (data1d)
     {
@@ -72,6 +73,8 @@ bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 
         return true;
     }
+#endif
+
 }
 
 bool write_nrrd(char *filename,
