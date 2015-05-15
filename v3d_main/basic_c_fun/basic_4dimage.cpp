@@ -137,17 +137,22 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
     {
         printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
         float pxinfo[4];
-        if (!read_nrrd_with_pxinfo(imgSrcFile, data1d, tmp_sz, tmp_datatype, pxinfo))
+        float spaceorigin[3];
+        if (!read_nrrd_with_pxinfo(imgSrcFile, data1d, tmp_sz, tmp_datatype, pxinfo, spaceorigin))
         {
             v3d_msg("Error happens in NRRD file reading. Stop. \n", false);
             b_error=1;
         }
         else
-        {   //copy the pixel size info when the nrrd read is successful
+        {   //copy the pixel size and origin info when the nrrd read is successful
             //note that pixinfo[3] is reserved for future extension to include the temporal sampling rate. It is not used right now.
             rez_x = pxinfo[0];
             rez_y = pxinfo[1];
             rez_z = pxinfo[2];
+            
+            origin_x = spaceorigin[0];
+            origin_y = spaceorigin[1];
+            origin_z = spaceorigin[2];
         }
     }
 #endif
