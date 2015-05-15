@@ -6,8 +6,10 @@
 
 class Image4DSimple;
 bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype);
+bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype, float pixelsz[4]);
 
-bool write_nrrd(char *filename, Image4DSimple *img);
+bool write_nrrd(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype);
+bool write_nrrd_with_pxinfo(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype, float pixelsz[4]);
 
 #endif
 

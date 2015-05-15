@@ -136,10 +136,18 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
     else if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0)) //read nrrd stacks
     {
         printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
-        if (!read_nrrd(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+        float pxinfo[4];
+        if (!read_nrrd_with_pxinfo(imgSrcFile, data1d, tmp_sz, tmp_datatype, pxinfo))
         {
             v3d_msg("Error happens in NRRD file reading. Stop. \n", false);
             b_error=1;
+        }
+        else
+        {   //copy the pixel size info when the nrrd read is successful
+            //note that pixinfo[3] is reserved for future extension to include the temporal sampling rate. It is not used right now.
+            rez_x = pxinfo[0];
+            rez_y = pxinfo[1];
+            rez_z = pxinfo[2];
         }
     }
 #endif

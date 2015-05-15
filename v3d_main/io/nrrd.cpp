@@ -3,7 +3,15 @@
 #include "../basic_c_fun/basic_4dimage.h"
 #include "../basic_c_fun/basic_surf_objs.h"
 
+#include "nrrd.h"
+
 bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
+{
+    float pixelsz[4];
+    return read_nrrd_with_pxinfo(imgSrcFile, data1d, sz, datatype, pixelsz);
+}
+
+bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype, float pixelsz[4])
 {
 
 #if defined(Q_OS_WIN)
@@ -77,9 +85,16 @@ bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 
 }
 
-bool write_nrrd(char *filename,
-                Image4DSimple *img)
+bool write_nrrd(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype)
 {
+    float pixelsz[4];
+    pixelsz[0] = pixelsz[1] = pixelsz[2] = pixelsz[3] = 1;
+    return write_nrrd_with_pxinfo(imgSrcFile, data1d, sz, datatype, pixelsz);
+}
+
+bool write_nrrd_with_pxinfo(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype, float pixelsz[4])
+{
+    v3d_msg("To be implemented");
     //    Nrrd *nrrd = nrrdNew();
     //    if ( nrrdSave( nrrd, filename, NULL ) )
     //    {
@@ -87,5 +102,6 @@ bool write_nrrd(char *filename,
     //    }
     return true;
 }
+
 
 
