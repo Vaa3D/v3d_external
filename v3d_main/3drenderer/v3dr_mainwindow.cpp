@@ -643,6 +643,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
 
 #ifdef Q_OS_LINUX
         url.remove(0,7); // remove the first 'file://' of the name string, 090125
+        url.replace("%20"," ");//fixed the space path issue in 3D viewer on Linux machine by Zhi Zhou May 15 2015
 #endif
         qDebug("the file to open=[%s]",qPrintable(url));
         if (glWidget) glWidget->loadObjectFromFile(url);

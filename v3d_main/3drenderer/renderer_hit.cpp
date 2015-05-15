@@ -1384,7 +1384,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				for (ii=0;ii<listMarker.size();ii++)
 				{
 					p_marker = (ImageMarker *)(&(listMarker.at(ii)));
-					qDebug()<<ii<<" "<<p_marker->x<<" "<<p_marker->y<<" "<<p_marker->z;
+                    qDebug()<<ii<<" "<<p_marker->x<<" "<<p_marker->y<<" "<<p_marker->z;
 					if (cur_node.x==p_marker->x && cur_node.y==p_marker->y && cur_node.z==p_marker->z)
 					{
 						b_exist_marker=true;
@@ -3551,9 +3551,9 @@ void Renderer_gl1::addMarker(XYZ &loc)
 		S.on = true;
 		listLoc.append(S);
 		updateLandmark();
-	}
+    }
 #else
-	ImageMarker S;
+    ImageMarker S;
 	memset(&S, 0, sizeof(S));
 	S.x = pt.x;
 	S.y = pt.y;
@@ -3567,7 +3567,7 @@ void Renderer_gl1::addMarker(XYZ &loc)
         S.color = random_rgba8(255);
     }
     S.on = true;
-	listMarker.append(S);
+    listMarker.append(S);
 #endif
 }
 void Renderer_gl1::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC, 090120
