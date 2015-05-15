@@ -67,6 +67,7 @@ win32 {
 		
 		LIBS += \
 				-llibtiff \
+				-lteem \
 				-llibnewmat \ 
 				-llibjba \ 
 				-llibFL_cellseg \
