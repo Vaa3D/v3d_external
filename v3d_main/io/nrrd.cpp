@@ -5,6 +5,12 @@
 
 bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
 {
+
+#if defined(Q_OS_WIN)
+    v3d_msg("Direct NRRD file reading currently is not supported on Windows. You can use the Bioformats IO plugin to load instead.");
+    return false;
+#endif
+
     if (data1d)
     {
         delete []data1d;
@@ -61,6 +67,9 @@ bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
         sz[2] = ((nrrd->dim > 2) ? nrrd->axis[2].size : 1);
         sz[3] = ((nrrd->dim > 3) ? nrrd->axis[3].size : 1);
         datatype = dt;
+
+        nrrdNix(nrrd); //free nrrd data structure w/o the actual data it points to. Added based on Greg's suggestion.
+
         return true;
     }
 }

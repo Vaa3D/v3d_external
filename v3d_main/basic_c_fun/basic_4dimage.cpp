@@ -68,16 +68,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
     const char * curFileSuffix = getSuffix(imgSrcFile);
     printf("The current input file has the suffix [%s]\n", curFileSuffix);
 
-    if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0)) //read nrrd stacks
-    {
-        printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
-        if (!read_nrrd(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-        {
-            v3d_msg("Error happens in NRRD file reading. Stop. \n", false);
-            b_error=1;
-        }
-    }
-    else if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
+    if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
         strcasecmp(curFileSuffix, "lsm")==0) ) //read tiff/lsm stacks
 	{
             printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
@@ -140,7 +131,18 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 
 #endif
 
-	}
+	}    
+#ifndef Q_OS_WIN
+    else if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0)) //read nrrd stacks
+    {
+        printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
+        if (!read_nrrd(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+        {
+            v3d_msg("Error happens in NRRD file reading. Stop. \n", false);
+            b_error=1;
+        }
+    }
+#endif
     else if ( curFileSuffix && strcasecmp(curFileSuffix, "mrc")==0 ) //read mrc stacks
 	{
 		if (loadMRC2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
