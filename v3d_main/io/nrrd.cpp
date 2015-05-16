@@ -145,7 +145,7 @@ bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG *
 
 }
 
-bool write_nrrd(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype)
+bool write_nrrd(const char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype)
 {
     float pixelsz[4];
     pixelsz[0] = pixelsz[1] = pixelsz[2] = pixelsz[3] = 1;
@@ -155,7 +155,7 @@ bool write_nrrd(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int da
     return write_nrrd_with_pxinfo(imgSrcFile, data1d, sz, datatype, pixelsz, spaceorigin);
 }
 
-bool write_nrrd_with_pxinfo(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype,
+bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype,
                             float pixelsz[4], float spaceorigin[3])
 {
     int nrrdType = nrrdTypeUnknown;
