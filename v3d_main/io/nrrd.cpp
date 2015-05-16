@@ -67,7 +67,7 @@ bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG *
 
         if (dt==0)
         {
-            delete nrrd; nrrd=0;
+            nrrdNuke(nrrd);
             return false;
         }
 
