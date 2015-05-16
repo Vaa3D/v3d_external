@@ -206,9 +206,21 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
         // Vaa3d Image4DSimple assumes xyzct ordering
         // we may as well set this up already
         int kind[NRRD_DIM_MAX] = { nrrdKindSpace, nrrdKindSpace, nrrdKindSpace, nrrdKindList, nrrdKindTime};
-        nrrdAxisInfoSet_nva( nrrd, nrrdAxisInfoKind, kind );
+        nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoKind, kind);
         
-        nrrdAxisInfoSet_va( nrrd, nrrdAxisInfoLabel, "x", "y", "z", "c", "t");
+        nrrdAxisInfoSet_va(nrrd, nrrdAxisInfoLabel, "x", "y", "z", "c", "t");
+        
+        // Set up space directions to record voxel spacings.
+        double spaceDir[NRRD_DIM_MAX][NRRD_SPACE_DIM_MAX];
+        for ( int i = 0; i < 3; ++i )
+        {
+            for ( int j = 0; j < 3; ++j )
+            {
+                if (i == j) spaceDir[i][j] = (double) pixelsz[i];
+                else spaceDir[i][j] = 0.0; // Can't assume that memory is zeroed
+            }
+        }
+        nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoSpaceDirection, spaceDir);
 
         if ( nrrdSave( imgSrcFile, nrrd, nios ) )
         {
