@@ -101,6 +101,8 @@ bool CLP::check_filename(QString fn)
              (cur_suffix=="TIF")  ||
              (cur_suffix=="TIFF") ||
              (cur_suffix=="MRC") ||
+             (cur_suffix=="NRRD") ||
+             (cur_suffix=="NHDR") ||
              (cur_suffix=="RAW") ||
              (cur_suffix=="RAW5") ||
              (cur_suffix=="V3DRAW") ||
