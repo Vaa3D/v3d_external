@@ -195,6 +195,15 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
             throw( biffGetDone(NRRD) );
         }
         
+        nrrdSpaceDimensionSet( nrrd, 3 );
+        double origin[NRRD_DIM_MAX] = { spaceorigin[0], spaceorigin[1], spaceorigin[2]};
+        if ( nrrdSpaceOriginSet( nrrd, origin ) )
+        {
+            throw( biffGetDone(NRRD) );
+        }
+        
+        nrrdAxisInfoSet_va( nrrd, nrrdAxisInfoLabel, "x", "y", "z" );
+
         if ( nrrdSave( imgSrcFile, nrrd, nios ) )
         {
             throw( biffGetDone(NRRD) );
@@ -203,7 +212,7 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
     }
     catch ( char* err )
     {
-        v3d_msg(QString("ERROR: write_nrrd returned error '%s'\n").arg(err));
+        v3d_msg(QString("ERROR: write_nrrd returned error '[%1]'\n").arg(err));
         free( err );
         return false;
     }
