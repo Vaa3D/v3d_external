@@ -235,6 +235,7 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
         return false;
     }
     
+    nrrdIoStateNix( nios );
     // Free nrrd struct but not data that it points to
     nrrdNix(nrrd);
     return true;
