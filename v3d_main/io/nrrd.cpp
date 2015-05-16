@@ -133,7 +133,8 @@ bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG *
             // that would require permuting the nrrd data block to prepare it for Vaa3d
             // See http://teem.sourceforge.net/nrrd/lib.html#overview nrrdAxesPermute
             v3d_msg(QString("ERROR: Only nrrds with vector values in the final dimension (not [%1]) are currently supported").arg(nonSpatialDimension));
-            return 0;
+            
+            return false;
         }
         
         nrrdNix(nrrd); //free nrrd data structure w/o the actual data it points to. Added based on Greg's suggestion.
