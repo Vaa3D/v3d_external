@@ -186,6 +186,7 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
             throw("nrrd_write is presently unable to save 4D or 5D images");
         }
 
+        // For now always set image dimensions to 3
         if ( nrrdWrap_va( nrrd, data, (int) nrrdType, (unsigned int) 3,
                          (size_t) sz[0],
                          (size_t) sz[1],
@@ -194,6 +195,7 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
             throw( biffGetDone(NRRD) );
         }
         
+        // For now always set space dimensions to 3
         nrrdSpaceDimensionSet( nrrd, 3 );
         double origin[NRRD_DIM_MAX] = { spaceorigin[0], spaceorigin[1], spaceorigin[2]};
         if ( nrrdSpaceOriginSet( nrrd, origin ) )
@@ -201,7 +203,12 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
             throw( biffGetDone(NRRD) );
         }
         
-        nrrdAxisInfoSet_va( nrrd, nrrdAxisInfoLabel, "x", "y", "z" );
+        // Vaa3d Image4DSimple assumes xyzct ordering
+        // we may as well set this up already
+        int kind[NRRD_DIM_MAX] = { nrrdKindSpace, nrrdKindSpace, nrrdKindSpace, nrrdKindList, nrrdKindTime};
+        nrrdAxisInfoSet_nva( nrrd, nrrdAxisInfoKind, kind );
+        
+        nrrdAxisInfoSet_va( nrrd, nrrdAxisInfoLabel, "x", "y", "z", "c", "t");
 
         if ( nrrdSave( imgSrcFile, nrrd, nios ) )
         {
