@@ -1095,8 +1095,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 {
                     child->close();
                     if (QMessageBox::question(0, "File Open options",
-                                              "Cannot open the specified image [%1] using Vaa3D's default file opener. "
-                                              "Do you want to try other file opener in Vaa3D plugins?", QMessageBox::Yes, QMessageBox::No)
+                                              QString("Cannot open the specified image [%1] using Vaa3D's default file opener. "
+                                              "Do you want to try other file opener in Vaa3D plugins?").arg(fileName), QMessageBox::Yes, QMessageBox::No)
                             == QMessageBox::Yes)
                     {
                         //call 3rd party file loader //20131125. by PHC
