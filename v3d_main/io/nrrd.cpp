@@ -158,12 +158,51 @@ bool write_nrrd(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int da
 bool write_nrrd_with_pxinfo(char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], int datatype,
                             float pixelsz[4], float spaceorigin[3])
 {
-    v3d_msg("To be implemented");
-    //    Nrrd *nrrd = nrrdNew();
-    //    if ( nrrdSave( nrrd, filename, NULL ) )
-    //    {
-    //        return galse;
-    //    }
+    int nrrdType = nrrdTypeUnknown;
+    switch ( datatype )
+    {
+        case V3D_UINT8: nrrdType = nrrdTypeUChar; break;
+        case V3D_UINT16: nrrdType = nrrdTypeUShort; break;
+        case V3D_FLOAT32: nrrdType = nrrdTypeFloat; break;
+        default: 
+            v3d_msg("Error: unsupported type");
+            return false;
+            break;
+    }
+    
+    Nrrd *nrrd = nrrdNew();
+    
+    void* data = (void*) data1d;
+    
+    try
+    {
+        if ( sz[3]>1 ) {
+            throw("nrrd_write is presently unable to save 4D or 5D images");
+        }
+
+        if ( nrrdWrap_va( nrrd, data, (int) nrrdType, (unsigned int) 3,
+                         (size_t) sz[0],
+                         (size_t) sz[1],
+                         (size_t) sz[2]))
+        {
+            throw( biffGetDone(NRRD) );
+        }
+        
+        if ( nrrdSave( imgSrcFile, nrrd, NULL ) )
+        {
+            throw( biffGetDone(NRRD) );
+        }
+
+    }
+    catch ( char* err )
+    {
+        v3d_msg(QString("ERROR: write_nrrd returned error '%s'\n").arg(err));
+        free( err );
+        return false;
+    }
+    
+    // Free nrrd struct but not data that it points to
+    nrrdNix(nrrd);
     return true;
 }
 
