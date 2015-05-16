@@ -416,6 +416,16 @@ bool Image4DSimple::saveImage(const char filename[])
 		v3d_msg("This image data is empty or the file name is invalid. Nothing done.\n");
 		return false;
 	}
+    
+    if (strlen(filename) > 5 ) {
+        const char * suffix = getSuffix((char *)filename);
+        if (suffix && (strcasecmp(suffix, "nrrd")==0 ||
+                       strcasecmp(suffix, "nhdr")==0) )
+        {
+            // use nrrd_write
+            v3d_msg("I want to use nrrd_write!");
+        }
+    }
 
 	V3DLONG mysz[4];
 	mysz[0] = sz0;
