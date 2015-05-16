@@ -417,17 +417,7 @@ bool Image4DSimple::saveImage(const char filename[])
 		return false;
 	}
     
-    if (strlen(filename) > 5 ) {
-        const char * suffix = getSuffix((char *)filename);
-        if (suffix && (strcasecmp(suffix, "nrrd")==0 ||
-                       strcasecmp(suffix, "nhdr")==0) )
-        {
-            // use nrrd_write
-            v3d_msg("I want to use nrrd_write!");
-        }
-    }
-
-	V3DLONG mysz[4];
+    V3DLONG mysz[4];
 	mysz[0] = sz0;
 	mysz[1] = sz1;
 	mysz[2] = sz2;
@@ -445,6 +435,24 @@ bool Image4DSimple::saveImage(const char filename[])
 			break;
 	}
 
+    if (strlen(filename) > 5 ) {
+        const char * suffix = getSuffix((char *)filename);
+        if (suffix && (strcasecmp(suffix, "nrrd")==0 ||
+                       strcasecmp(suffix, "nhdr")==0) )
+        {
+            float pxinfo[4];
+            float spaceorigin[3];
+            // use nrrd_write
+            pxinfo[0] = rez_x;
+            pxinfo[1] = rez_y;
+            pxinfo[2] = rez_z;
+            
+            spaceorigin[0] = origin_x;
+            spaceorigin[1] = origin_y;
+            spaceorigin[2] = origin_z;
+            return write_nrrd_with_pxinfo(filename, data1d, mysz, dt, pxinfo, spaceorigin);
+        }
+    }
     return ::saveImage(filename, data1d, mysz, dt);
 }
 
