@@ -133,7 +133,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 
 	}    
 #ifndef Q_OS_WIN
-    else if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0)) //read nrrd stacks
+    else if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0 || strcasecmp(curFileSuffix, "nhdr")==0)) //read nrrd stacks
     {
         printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
         float pxinfo[4];
