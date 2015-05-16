@@ -3,25 +3,26 @@
 #include "../basic_c_fun/basic_4dimage.h"
 #include "../basic_c_fun/basic_surf_objs.h"
 
-#include "nrrd.h"
+#include "v3d_nrrd.h"
 
-bool read_nrrd(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
+//isnan and isfinite is a part of the C and C++ standards, support for these has been removed
+//from VC++ in the latest update of Visual Studio. (VS2012 Update 2)
+#include <math.h>  //for isnan() 
+#ifndef isnan 
+#define isnan(x) ((x)!=(x)) 
+#endif
+
+
+bool read_nrrd(const char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
 {
     float pixelsz[4];
     float spaceorigin[3];
     return read_nrrd_with_pxinfo(imgSrcFile, data1d, sz, datatype, pixelsz, spaceorigin);
 }
 
-bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype,
+bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype,
                            float pixelsz[4], float spaceorigin[3])
 {
-
-#if defined(Q_OS_WIN)
-    v3d_msg("Direct NRRD file reading currently is not supported on Windows. You can use the Bioformats IO plugin to load instead.");
-    return false;
-
-#else
-
     if (data1d)
     {
         delete []data1d;
@@ -140,7 +141,6 @@ bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG *
 
         return true;
     }
-#endif
 
 }
 

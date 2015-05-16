@@ -35,7 +35,7 @@ set(V3D_SRCS
   ../basic_c_fun/basic_4dimage_create.cpp
   ../neuron_annotator/analysis/AlignerUtils.cpp
   ../io/io_bioformats.cpp
-  ../io/nrrd.cpp
+  ../io/v3d_nrrd.cpp
   ../io/asc_to_swc.cpp	# @FIXED by Alessandro on 2015-05-06: added missing .cpp file
   v3d_actions.cpp
   )
@@ -193,6 +193,12 @@ if (APPLE) # TO DO: same fix for linux
   add_dependencies(v3dbase2 LibTeem)
 endif(APPLE)
 
+if (MSVC)
+  find_library( TEEM_LIB "teem" "../common_lib/winlib64")
+  find_library( BZ2_LIB "bz2" "../common_lib/winlib64")
+  target_link_libraries(v3dbase2 ${TEEM_LIB} ${BZ2_LIB})
+endif(MSVC)
+
 add_dependencies(v3dbase2 v3dbase)
 add_dependencies(v3dbase2 NeuronAnnotatorLib)
 add_dependencies(v3dbase NeuronAnnotatorLib)
@@ -237,12 +243,11 @@ target_link_libraries( v3d
 
 if(MSVC)
   target_link_libraries(v3d ${TIFF_LIBRARY})
-  find_library( TEEM_LIB "teem" "../common_lib/winlib64")
-  find_library( BZ2_LIB "bz2" "../common_lib/winlib64")
 else()
   target_link_libraries(v3d mylib_tiff)
 endif()
-target_link_libraries(v3d ${TEEM_LIB} ${BZ2_LIB})
+add_dependencies(v3d v3dbase2)
+
 
 if(UNIX)
   find_package(ZLIB)

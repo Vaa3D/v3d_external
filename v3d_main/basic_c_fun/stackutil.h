@@ -137,7 +137,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 
 
 #include "imageio_mylib.h" //100817. PHC
-#include "../io/nrrd.h" //150507, PHC
+#include "../io/v3d_nrrd.h" //150507, PHC
 
 #endif
 

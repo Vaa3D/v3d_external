@@ -270,7 +270,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../custom_toolbar/v3d_custom_toolbar.h \
     ../io/io_bioformats.h \
     ../io/asc_to_swc.h \
-    ../io/nrrd.h \
+    ../io/v3d_nrrd.h \
     ../terafly/src/presentation/theader.h
 #    ./painting/shared/arthurstyle.h \
 #    ./painting/shared/arthurwidgets.h
@@ -351,7 +351,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../custom_toolbar/v3d_custom_toolbar.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
-    ../io/nrrd.cpp
+    ../io/v3d_nrrd.cpp
 #    ./painting/shared/arthurstyle.cpp \
 #    ./painting/shared/arthurwidgets.cpp
 
