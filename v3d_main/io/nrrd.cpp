@@ -170,10 +170,17 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
             break;
     }
     
-    Nrrd *nrrd = nrrdNew();
-    
     void* data = (void*) data1d;
     
+    Nrrd *nrrd = nrrdNew();
+    // write gzipped if available, raw otherwise
+    NrrdIoState *nios = nrrdIoStateNew();
+    if (nrrdEncodingGzip->available() )
+    {
+        nrrdIoStateEncodingSet( nios, nrrdEncodingGzip );
+        nrrdIoStateSet( nios, nrrdIoStateZlibLevel, 9 );
+    }
+
     try
     {
         if ( sz[3]>1 ) {
@@ -188,7 +195,7 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
             throw( biffGetDone(NRRD) );
         }
         
-        if ( nrrdSave( imgSrcFile, nrrd, NULL ) )
+        if ( nrrdSave( imgSrcFile, nrrd, nios ) )
         {
             throw( biffGetDone(NRRD) );
         }
