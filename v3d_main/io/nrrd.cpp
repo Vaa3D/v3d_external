@@ -150,7 +150,7 @@ bool write_nrrd(const char imgSrcFile[], unsigned char * data1d, V3DLONG sz[4], 
     float pixelsz[4];
     pixelsz[0] = pixelsz[1] = pixelsz[2] = pixelsz[3] = 1;
     float spaceorigin[3];
-    spaceorigin[0] = spaceorigin[1] = spaceorigin[2] = 1;
+    spaceorigin[0] = spaceorigin[1] = spaceorigin[2] = 0;
 
     return write_nrrd_with_pxinfo(imgSrcFile, data1d, sz, datatype, pixelsz, spaceorigin);
 }
