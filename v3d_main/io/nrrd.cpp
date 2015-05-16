@@ -183,7 +183,8 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
     try
     {
         if ( sz[3]>1 ) {
-            throw("nrrd_write is presently unable to save 4D or 5D images");
+            v3d_msg("nrrd_write is presently unable to save 4D or 5D images");
+            return false;
         }
 
         // For now always set image dimensions to 3
