@@ -83,6 +83,59 @@ bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG *
         spaceorigin[1]=isnan(nrrd->spaceOrigin[1])?0.0f:(float) nrrd->spaceOrigin[1];
         spaceorigin[2]=isnan(nrrd->spaceOrigin[2])?0.0f:(float) nrrd->spaceOrigin[2];
 
+        // Fetch axis spacing
+        double spacing[3] = { 1.0, 1.0, 1.0 };
+        int firstSpaceAxis = -1;
+        int numSpaceAxesSoFar = 0;
+        int nonSpatialDimension = -1;
+        for ( unsigned int ax = 0; ax < nrrd->dim; ++ax )
+        {
+            switch ( nrrd->axis[ax].kind )
+            {
+                case nrrdKindUnknown:
+                case nrrdKindDomain:
+                case nrrdKindSpace:
+                case nrrdKindTime: firstSpaceAxis=firstSpaceAxis<0?ax:firstSpaceAxis; break;
+                default: nonSpatialDimension = ax; continue;
+            }
+            switch ( nrrdSpacingCalculate( nrrd, ax, spacing + numSpaceAxesSoFar, nrrd->axis[ax].spaceDirection ) )
+            {
+                case nrrdSpacingStatusScalarNoSpace:
+                    break;
+                case nrrdSpacingStatusDirection:
+                    break;
+                case nrrdSpacingStatusScalarWithSpace:
+                    printf("WARNING: nrrdSpacingCalculate returned nrrdSpacingStatusScalarWithSpace\n");
+                    spacing[numSpaceAxesSoFar] = (float) nrrd->axis[ax].spacing;
+                    break;
+                case nrrdSpacingStatusNone:
+                default:
+                    printf("WARNING: no pixel spacings in Nrrd for axis %d ; setting to 1.0\n",ax);
+                    spacing[numSpaceAxesSoFar] = 1.0f;
+                    break;
+            }
+            numSpaceAxesSoFar++;
+        }
+        if ( firstSpaceAxis < 0 || firstSpaceAxis >1 )
+        {
+            v3d_msg(QString("ERROR: Unable to identify first spatial axis in nrrd. Got [%1]").arg(firstSpaceAxis));
+            return false;
+        }
+        pixelsz[0]=(float) spacing[0];
+        pixelsz[1]=(float) spacing[1];
+        pixelsz[2]=(float) spacing[2];
+        
+        // Figure out size of non-spatial dimension (ie vector, colour etc)
+        int nDataVar = 1;
+        if ( nonSpatialDimension > nrrd->spaceDim) nDataVar = sz[nonSpatialDimension];
+        else if ( nrrd->spaceDim >= 0) {
+            // At the moment we can't handle having the non-spatial dimension dimension coming first
+            // that would require permuting the nrrd data block to prepare it for Vaa3d
+            // See http://teem.sourceforge.net/nrrd/lib.html#overview nrrdAxesPermute
+            v3d_msg(QString("ERROR: Only nrrds with vector values in the final dimension (not [%1]) are currently supported").arg(nonSpatialDimension));
+            return 0;
+        }
+        
         nrrdNix(nrrd); //free nrrd data structure w/o the actual data it points to. Added based on Greg's suggestion.
 
         return true;
