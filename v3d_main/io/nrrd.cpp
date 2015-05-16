@@ -78,6 +78,10 @@ bool read_nrrd_with_pxinfo(char imgSrcFile[], unsigned char *& data1d, V3DLONG *
         sz[2] = ((nrrd->dim > 2) ? nrrd->axis[2].size : 1);
         sz[3] = ((nrrd->dim > 3) ? nrrd->axis[3].size : 1);
         datatype = dt;
+        
+        spaceorigin[0]=isnan(nrrd->spaceOrigin[0])?0.0f:(float) nrrd->spaceOrigin[0];
+        spaceorigin[1]=isnan(nrrd->spaceOrigin[1])?0.0f:(float) nrrd->spaceOrigin[1];
+        spaceorigin[2]=isnan(nrrd->spaceOrigin[2])?0.0f:(float) nrrd->spaceOrigin[2];
 
         nrrdNix(nrrd); //free nrrd data structure w/o the actual data it points to. Added based on Greg's suggestion.
 
