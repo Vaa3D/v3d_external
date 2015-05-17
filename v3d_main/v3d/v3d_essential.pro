@@ -417,7 +417,7 @@ macx:dragdropfix{
 }
 
 
-
+# NOT REALLY USED, LIBS are replaced by vaa3d_msvc.pro
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat
 win32:LIBS += -L../common_lib/winlib64 -lteem  -lbz2 -lz  #for nrrd support
@@ -426,7 +426,8 @@ win32:LIBS += -L../common_lib/winlib64 -lteem  -lbz2 -lz  #for nrrd support
 
 
 INCLUDEPATH += ../common_lib/include
-
+DEFINES *= TEEM_STATIC
+QMAKE_CXXFLAGS += -DTEEM_STATIC
 
 #removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
 INCLUDEPATH = $$unique(INCLUDEPATH)
