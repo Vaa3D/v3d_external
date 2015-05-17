@@ -182,20 +182,16 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
 
     try
     {
-        if ( sz[3]>1 ) {
-            v3d_msg("nrrd_write is presently unable to save 4D or 5D images");
-            return false;
-        }
+        // nb no way to check for 5d data at present
+        size_t nsize[NRRD_DIM_MAX] = {sz[0], sz[1], sz[2], sz[3]};
+        const unsigned int ndim = sz[3]>1 ? 4 : 3;
 
-        // For now always set image dimensions to 3
-        if ( nrrdWrap_va( nrrd, data, (int) nrrdType, (unsigned int) 3,
-                         (size_t) sz[0],
-                         (size_t) sz[1],
-                         (size_t) sz[2]))
+        // wrap incoming data into nrrd struct
+        if ( nrrdWrap_nva( nrrd, data, nrrdType, ndim, nsize))
         {
             throw( biffGetDone(NRRD) );
         }
-        
+
         // For now always set space dimensions to 3
         nrrdSpaceDimensionSet( nrrd, 3 );
         double origin[NRRD_DIM_MAX] = { spaceorigin[0], spaceorigin[1], spaceorigin[2]};
@@ -205,19 +201,18 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
         }
         
         // Vaa3d Image4DSimple assumes xyzct ordering
-        // we may as well set this up already
         int kind[NRRD_DIM_MAX] = { nrrdKindSpace, nrrdKindSpace, nrrdKindSpace, nrrdKindList, nrrdKindTime};
         nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoKind, kind);
-        
         nrrdAxisInfoSet_va(nrrd, nrrdAxisInfoLabel, "x", "y", "z", "c", "t");
         
         // Set up space directions to record voxel spacings.
         double spaceDir[NRRD_DIM_MAX][NRRD_SPACE_DIM_MAX];
-        for ( int i = 0; i < 3; ++i )
+        for ( int i = 0; i < ndim; ++i )
         {
-            for ( int j = 0; j < 3; ++j )
+            for ( int j = 0; j < 4; ++j )
             {
-                if (i == j) spaceDir[i][j] = (double) pixelsz[i];
+                if (i>2 || j>2) spaceDir[i][j] = NAN;
+                else if (i == j) spaceDir[i][j] = (double) pixelsz[i];
                 else spaceDir[i][j] = 0.0; // Can't assume that memory is zeroed
             }
         }
