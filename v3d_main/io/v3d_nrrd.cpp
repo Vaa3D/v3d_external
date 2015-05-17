@@ -61,7 +61,7 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         case nrrdTypeInt:    dt = 4;  break;
         case nrrdTypeFloat:  dt = 4;  break;
         default:
-            v3d_msg("Error: unsupported type");
+            v3d_msg("nrrd error: unsupported data type");
             dt = 0;
             break;
         }
