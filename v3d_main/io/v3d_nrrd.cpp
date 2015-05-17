@@ -127,8 +127,8 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         spaceorigin[2]=isnan(nrrd->spaceOrigin[2])?0.0f:(float) nrrd->spaceOrigin[2];
         // Figure out size of non-spatial dimension (ie vector, colour etc)
         int nDataVar = 1;
-        if ( nonSpatialDimension > nrrd->spaceDim) nDataVar = sz[nonSpatialDimension];
-        else if ( nrrd->spaceDim >= 0) {
+        if ( nonSpatialDimension > (nrrd->spaceDim-1) ) nDataVar = sz[nonSpatialDimension];
+        else if ( nonSpatialDimension >= 0) {
             // At the moment we can't handle having the non-spatial dimension dimension coming first
             // that would require permuting the nrrd data block to prepare it for Vaa3d
             // See http://teem.sourceforge.net/nrrd/lib.html#overview nrrdAxesPermute
