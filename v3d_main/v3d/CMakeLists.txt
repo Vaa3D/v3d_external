@@ -185,6 +185,7 @@ if (APPLE) # TODO: same fix for linux
   set(TEEM_LIB "${CMAKE_CURRENT_BINARY_DIR}/teem/build/bin/libteem.a" )
 endif(APPLE)
 
+add_definitions(-DTEEM_STATIC) # otherwise Windows  will have link errors
 add_library(v3dbase2 ${V3D_SRCS})
 
 if (APPLE) # TO DO: same fix for linux
