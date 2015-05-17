@@ -195,9 +195,10 @@ if (APPLE) # TO DO: same fix for linux
 endif(APPLE)
 
 if (MSVC)
+  find_package(ZLIB)
   find_library( TEEM_LIB "teem" "../common_lib/winlib64")
   find_library( BZ2_LIB "bz2" "../common_lib/winlib64")
-  target_link_libraries(v3dbase2 ${TEEM_LIB} ${BZ2_LIB})
+  target_link_libraries(v3dbase2 ${TEEM_LIB} ${BZ2_LIB} ${ZLIB_LIBRARY} )
 endif(MSVC)
 
 add_dependencies(v3dbase2 v3dbase)

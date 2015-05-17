@@ -491,9 +491,7 @@ void My4DImage::loadImage(const char* filename)
 	cleanExistData();
 
 	bool b_useMylib=false;
-#if defined _WIN32
-	b_useMylib = false;
-#else
+
 
         bool lsmFlag = false;
         bool tiffFlag = false;
@@ -513,7 +511,7 @@ void My4DImage::loadImage(const char* filename)
             b_useMylib = V3dApplication::getMainWindow()->global_setting.b_UseMylibTiff;
             qDebug() << "My4DImage::loadImage() set b_useMylib to value=" << b_useMylib << " based on global settings from MainWindow";
         }
-#endif
+
 
         qDebug() << "My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib=" << b_useMylib;
 
