@@ -74,13 +74,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef GRADIENTS_H
 #define GRADIENTS_H
 
-//#include "arthurwidgets.h"
-
+#ifdef USE_Qt5
+#include <QWidget>
+#include "../v3d/painting/shared/hoverpoints.h"
+#else
 #include <QtGui>
-
-//#include "../v3d/painting/shared/hoverpoints.h"
 #include <hoverpoints.h>
-
+#endif
 
 class ShadeWidget : public QWidget
 {

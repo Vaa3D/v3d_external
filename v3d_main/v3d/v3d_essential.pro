@@ -86,6 +86,7 @@
 # 110906: By Hanchuan Peng, produce a v3d_essential.pro for better maintainance of the project codebase for additional modules
 # 150506: by PHC, add asc_to_swc
 # 150507: by PHC, add nrrd reading support
+# 150510: by PHC, Qt5 with success
 # ######################################################################
 
 TEMPLATE = app
@@ -94,7 +95,7 @@ DEPENDPATH += . v3d
 INCLUDEPATH += .
 
 
-#DEFINES += USE_Qt5
+#DEFINES += USE_Qt5  #this might be invoked from commandline like "~/Qt5.4.1/5.4/clang_64/bin/qmake DEFINES+=USE_Qt5 vaa3d64.pro", however it seems there is some bug
 
 
 # commented the -app_bundle as on Mac the not-automatically closed terminal is quite annoying!
@@ -119,8 +120,8 @@ LIBS += -L$$MINGW_DIR/lib \
 INCLUDEPATH += $$LOCAL_DIR/include #./basic_c_fun
 LIBS += -L$$LOCAL_DIR/lib
 
-use_qt5 {
-  INCLUDEPATH += $$QT_DIR/../clang_64/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
+USE_Qt5 {
+  INCLUDEPATH += $$QT_DIR/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
   #SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
   SHARED_FOLDER = ./painting/shared/ # for arthurwidgets
   include($$SHARED_FOLDER/shared.pri)
