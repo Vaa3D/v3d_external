@@ -142,6 +142,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
         {
             v3d_msg("Error happens in NRRD file reading. Stop. \n", false);
             b_error=1;
+            return;
         }
         else
         {   //copy the pixel size and origin info when the nrrd read is successful
