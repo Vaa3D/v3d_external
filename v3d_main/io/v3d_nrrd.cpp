@@ -104,46 +104,108 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
             return false;
         }
 
-        if(spaceAxisNum==0) {
-            // explicit space axes have not been set - we need to look more carefully to see which
+        unsigned int unallocatedDomainNum=0, unallocatedDomainIdx[NRRD_DIM_MAX];
+        
+        if(spaceAxisNum<domainAxisNum) {
+            // some space-like axes have not been set - we need to look more carefully to see which 
             // of the domain axes are space (and not time)
+            // start by scanning for explicit space and time axes
             unsigned int ax;
             for (unsigned int i=0; i<domainAxisNum; i++) {
                 ax=domainAxisIdx[i];
+                // first check if we already know this is a space axis and skip
+                bool knownSpaceAxis=false;
+                for(unsigned int j=0; j<spaceAxisNum; j++) {
+                    if(spaceAxisIdx[j]==ax) {
+                        knownSpaceAxis=true;
+                        break;
+                    }
+                }
+                if ( knownSpaceAxis ) continue;
+                
+                // not sure what kind of axis this is - let's investigate further
                 switch ( nrrd->axis[ax].kind )
                 {
-                    case nrrdKindUnknown:
-                    case nrrdKindDomain:
-                    case nrrdKindSpace: spaceAxisIdx[spaceAxisNum++]=ax; break;
+                    case nrrdKindSpace:
+                        // definitely space
+                        spaceAxisIdx[spaceAxisNum++]=ax;
+                        break;
                     case nrrdKindTime: 
-                        if(timeAxis>0) 
+                        // definitely time
+                        if(timeAxis>0)
                         {
                             v3d_msg("nrrds cannot have multiple time axes!");
                             return false;
                         }
                         timeAxis=ax; break;
-                    default: printf("WARNING: unknown domain axis type %d in nrrd", nrrd->axis[ax].kind);
+                    case nrrdKindUnknown:
+                    case nrrdKindDomain:
+                        // still not sure - save for later
+                        unallocatedDomainIdx[unallocatedDomainNum++]=ax;
+                        break;
+                    default: printf("WARNING: unknown domain axis type %d in nrrd\n", nrrd->axis[ax].kind);
+                }
+            }
+        }
+        // if we still have some unallocated domain axes let's decide what to do with them
+        if(unallocatedDomainNum>0) {
+            // if we have still not found any explicit space axes, then take the first 
+            // 2 or 3 of these to be our space axes
+            int used_so_far=0;
+            if (spaceAxisNum == 0) {
+                if(unallocatedDomainNum<2) {
+                    v3d_msg("nrrds must have at least two spatial dimensions!");
+                    return false;
+                }
+                int nspace_axes=unallocatedDomainNum>3 ? 3 : unallocatedDomainNum;
+                for(unsigned int i=0; i<nspace_axes; i++){
+                    spaceAxisIdx[spaceAxisNum++]=unallocatedDomainIdx[i];
+                }
+                used_so_far+=nspace_axes;
+            }
+            // anything left?
+            int still_left=unallocatedDomainNum-used_so_far;
+            if(still_left) {
+                // have to assume that these are time or possibly colour
+                if((still_left + rangeAxisNum)>2) {
+                    v3d_msg("nrrds should only have 2 non-spatial dimensions!");
+                    return false;
+                }
+                if(rangeAxisNum>0) {
+                    // must be a single time axis left
+                    if(timeAxis>0)
+                    {
+                        v3d_msg("nrrd has unidentified non-space non-time non-colour axis!");
+                        return false;
+                    }
+                    timeAxis=unallocatedDomainIdx[used_so_far];
+                } else if(still_left==2) {
+                    // 2 axes left
+                    if (timeAxis>0) {
+                        v3d_msg("nrrds can only have 2 non-spatial axes!");
+                        return false;
+                    }
+                    // otherwise just assign in the order c, then t
+                    printf("WARNING: nrrd has ambiguous non-spatial axes. Assigning in order c then t!\n");
+                    colourAxis=unallocatedDomainIdx[used_so_far];
+                    timeAxis=unallocatedDomainIdx[used_so_far+1];
+                } else {
+                    // one axis left, could be colour or space - let's assume colour unless we already have colour
+                    if (rangeAxisNum==0) {
+                        colourAxis=unallocatedDomainIdx[used_so_far];
+                        // warn if it could also have been time axis
+                        if(timeAxis<0)
+                            printf("WARNING: nrrd has ambiguous non-spatial axis - assuming colour!\n");
+                    }
+                    else if(timeAxis>0)
+                    {
+                        v3d_msg("nrrd has unidentified non-space non-time non-colour axis!");
+                        return false;
+                    } else timeAxis=unallocatedDomainIdx[used_so_far];
                 }
             }
         }
         
-        if(spaceAxisNum == 4) {
-            // assume the last space axis is a time axis
-            if(timeAxis<0) {
-                timeAxis=spaceAxisIdx[spaceAxisNum-1];
-                printf("WARNING: Found 4 space-like axes in nrrd. Assuming that last space axis is a time axis");
-            } else {
-                if(rangeAxisNum>0) {
-                    v3d_msg("Found 4 space axes in nrrd, one time and one colour axis. Should be impossible!");
-                    return false;
-                }
-                printf("WARNING: ambiguous nrrd kind field. Assuming that last unmarked axis in nrrd is colour.");
-                // FIXME should this be the smallest axis?!
-                rangeAxisIdx[0]=spaceAxisIdx[spaceAxisNum-1];
-                rangeAxisNum=1;
-            }
-            --spaceAxisNum;
-        }
         if(spaceAxisNum==2) {
             // insert an axis immediately after last spatial axis
             unsigned int last_space_axis=spaceAxisIdx[spaceAxisNum-1];
