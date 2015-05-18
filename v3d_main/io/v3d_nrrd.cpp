@@ -75,44 +75,123 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         data1d = (unsigned char *)(nrrd->data);
         datatype = dt;
         
+        // Figure out what kind of data we have
+        // Set the number of image dimensions and bail if needed
+        unsigned int domainAxisNum, domainAxisIdx[NRRD_DIM_MAX],
+        rangeAxisNum, rangeAxisIdx[NRRD_DIM_MAX]={-1},
+          spaceAxisNum, spaceAxisIdx[NRRD_DIM_MAX];
+        
+        // domain should be space-time axes
+        domainAxisNum = nrrdDomainAxesGet(nrrd, domainAxisIdx);
+        // colour only
+        rangeAxisNum = nrrdRangeAxesGet(nrrd, rangeAxisIdx);
+        // definitely space, but not always set, so may need to use domain axes
+        spaceAxisNum = nrrdSpatialAxesGet(nrrd, spaceAxisIdx);
+        
+        int timeAxis=-1;
+        
+        if(rangeAxisNum>1) {
+            v3d_msg("nrrds can only have 1 colour axis!");
+            return false;
+        }
+        int colourAxis = rangeAxisNum>=0 ? rangeAxisIdx[0] : -1;
+        
+        if(domainAxisNum>4) {
+            v3d_msg("nrrds can only have 4 domain (spatio-temporal) axes!");
+            return false;
+        } else if (domainAxisNum<2) {
+            v3d_msg("nrrds must have at least 2 domain (spatio-temporal) axes!");
+            return false;
+        }
+
+        if(spaceAxisNum==0) {
+            // explicit space axes have not been set - we need to look more carefully to see which
+            // of the domain axes are space (and not time)
+            unsigned int ax;
+            for (unsigned int i=0; i<domainAxisNum; i++) {
+                ax=domainAxisIdx[i];
+                switch ( nrrd->axis[ax].kind )
+                {
+                    case nrrdKindUnknown:
+                    case nrrdKindDomain:
+                    case nrrdKindSpace: spaceAxisIdx[spaceAxisNum++]=ax; break;
+                    case nrrdKindTime: 
+                        if(timeAxis>0) 
+                        {
+                            v3d_msg("nrrds cannot have multiple time axes!");
+                            return false;
+                        }
+                        timeAxis=ax; break;
+                    default: printf("WARNING: unknown domain axis type %d in nrrd", nrrd->axis[ax].kind);
+                }
+            }
+        }
+        
+        if(spaceAxisNum == 4) {
+            // assume the last space axis is a time axis
+            if(timeAxis<0) {
+                timeAxis=spaceAxisIdx[spaceAxisNum-1];
+                printf("WARNING: Found 4 space-like axes in nrrd. Assuming that last space axis is a time axis");
+            } else {
+                if(rangeAxisNum>0) {
+                    v3d_msg("Found 4 space axes in nrrd, one time and one colour axis. Should be impossible!");
+                    return false;
+                }
+                printf("WARNING: ambiguous nrrd kind field. Assuming that last unmarked axis in nrrd is colour.");
+                // FIXME should this be the smallest axis?!
+                rangeAxisIdx[0]=spaceAxisIdx[spaceAxisNum-1];
+                rangeAxisNum=1;
+            }
+            --spaceAxisNum;
+        }
+        if(spaceAxisNum==2) {
+            // insert an axis immediately after last spatial axis
+            unsigned int last_space_axis=spaceAxisIdx[spaceAxisNum-1];
+            // nb nrrdAxesInsert take as input the position to insert the new axis
+            nrrdAxesInsert(nrrd, nrrd, last_space_axis+1);
+            // record that extra space axis id
+            spaceAxisIdx[spaceAxisNum++]=last_space_axis+1;
+            
+            // recalculate time ...
+            if( timeAxis>=0 && timeAxis > last_space_axis) {
+                timeAxis++;
+            }
+            /// and colour axes
+            if( colourAxis>=0 && colourAxis > last_space_axis) {
+                colourAxis++;
+            }
+        } else if (spaceAxisNum !=3) {
+            v3d_msg("nrrds must have 2 or 3 spatial axes!");
+            return false;
+        }
+        
+        // FIXME
+        if(timeAxis>=0) {
+            v3d_msg("No support yet for nrrds with time information!");
+            return false;
+        }
+        
         // Fetch axis spacing
         double spacing[3] = { 1.0, 1.0, 1.0 };
-        int firstSpaceAxis = -1;
-        int numSpaceAxesSoFar = 0;
-        int nonSpatialDimension = -1;
-        for ( unsigned int ax = 0; ax < nrrd->dim; ++ax )
+        for ( unsigned int i = 0; i < spaceAxisNum; ++i )
         {
-            switch ( nrrd->axis[ax].kind )
-            {
-                case nrrdKindUnknown:
-                case nrrdKindDomain:
-                case nrrdKindSpace:
-                case nrrdKindTime: firstSpaceAxis=firstSpaceAxis<0?ax:firstSpaceAxis; break;
-                default: nonSpatialDimension = ax; continue;
-            }
-            switch ( nrrdSpacingCalculate( nrrd, ax, spacing + numSpaceAxesSoFar, nrrd->axis[ax].spaceDirection ) )
+            unsigned int ax=spaceAxisIdx[i];
+            switch ( nrrdSpacingCalculate( nrrd, ax, spacing+i, nrrd->axis[ax].spaceDirection ) )
             {
                 case nrrdSpacingStatusScalarNoSpace:
-                    break;
                 case nrrdSpacingStatusDirection:
                     break;
                 case nrrdSpacingStatusScalarWithSpace:
                     printf("WARNING: nrrdSpacingCalculate returned nrrdSpacingStatusScalarWithSpace\n");
-                    spacing[numSpaceAxesSoFar] = (float) nrrd->axis[ax].spacing;
                     break;
                 case nrrdSpacingStatusNone:
                 default:
-                    printf("WARNING: no pixel spacings in Nrrd for axis %d ; setting to 1.0\n",ax);
-                    spacing[numSpaceAxesSoFar] = 1.0f;
+                    printf("WARNING: no pixel spacings in Nrrd for spatial axis %d (absolute axis id %d); setting to 1.0\n", i, ax);
+                    spacing[i] = 1.0;
                     break;
             }
-            numSpaceAxesSoFar++;
         }
-        if ( firstSpaceAxis < 0 || firstSpaceAxis >1 )
-        {
-            v3d_msg(QString("ERROR: Unable to identify first spatial axis in nrrd. Got [%1]").arg(firstSpaceAxis));
-            return false;
-        }
+
         pixelsz[0]=(float) spacing[0];
         pixelsz[1]=(float) spacing[1];
         pixelsz[2]=(float) spacing[2];
@@ -121,21 +200,17 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         spaceorigin[1]=isnan(nrrd->spaceOrigin[1])?0.0f:(float) nrrd->spaceOrigin[1];
         spaceorigin[2]=isnan(nrrd->spaceOrigin[2])?0.0f:(float) nrrd->spaceOrigin[2];
         
-        printf("nonSpatialDimension: %d", nonSpatialDimension);
-        // Record size of non-spatial dimension (ie vector, colour etc)
-        int nDataVar = nonSpatialDimension>=0 ? 1 : nrrd->axis[nonSpatialDimension].size;
-        
-        if ( nonSpatialDimension >= 0 && nonSpatialDimension != (nrrd->dim-1) ) {
+        if ( colourAxis >= 0 && colourAxis != (nrrd->dim-1) ) {
             // colour is not last axis - permute to bump it to last
             Nrrd *ntmp = nrrdNew();
             // make a map in which the ith entry contains the *old* position of the axis
             unsigned int axmap[NRRD_DIM_MAX];
             // colour channel (formerly first) must go into last channel
             // FIXME need to handle time/5d data in due course
-            axmap[nrrd->dim-1] = nonSpatialDimension;
+            axmap[nrrd->dim-1] = colourAxis;
             for (unsigned int axi=0; axi<(nrrd->dim-1); axi++)
             {
-                axmap[axi] = axi + (axi >= nonSpatialDimension);   
+                axmap[axi] = axi + (axi >= colourAxis);
             }
             if (nrrdCopy(ntmp, nrrd)
                 || nrrdAxesPermute(nrrd, ntmp, axmap))
@@ -146,8 +221,7 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         }
 
         // store image dimensions 
-        // FIXME - what about when incoming nrrd was e.g. xyc
-        // look at nrrdAxesInsert?
+        // FIXME - still no support for time
         sz = new V3DLONG[4];
         sz[0] = ((nrrd->dim > 0) ? nrrd->axis[0].size : 1);
         sz[1] = ((nrrd->dim > 1) ? nrrd->axis[1].size : 1);
