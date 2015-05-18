@@ -73,11 +73,6 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         }
 
         data1d = (unsigned char *)(nrrd->data);
-        sz = new V3DLONG[4];
-        sz[0] = ((nrrd->dim > 0) ? nrrd->axis[0].size : 1);
-        sz[1] = ((nrrd->dim > 1) ? nrrd->axis[1].size : 1);
-        sz[2] = ((nrrd->dim > 2) ? nrrd->axis[2].size : 1);
-        sz[3] = ((nrrd->dim > 3) ? nrrd->axis[3].size : 1);
         datatype = dt;
         
         // Fetch axis spacing
@@ -125,18 +120,40 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         spaceorigin[0]=isnan(nrrd->spaceOrigin[0])?0.0f:(float) nrrd->spaceOrigin[0];
         spaceorigin[1]=isnan(nrrd->spaceOrigin[1])?0.0f:(float) nrrd->spaceOrigin[1];
         spaceorigin[2]=isnan(nrrd->spaceOrigin[2])?0.0f:(float) nrrd->spaceOrigin[2];
-        // Figure out size of non-spatial dimension (ie vector, colour etc)
-        int nDataVar = 1;
-        if ( nonSpatialDimension > (nrrd->spaceDim-1) ) nDataVar = sz[nonSpatialDimension];
-        else if ( nonSpatialDimension >= 0) {
-            // At the moment we can't handle having the non-spatial dimension dimension coming first
-            // that would require permuting the nrrd data block to prepare it for Vaa3d
-            // See http://teem.sourceforge.net/nrrd/lib.html#overview nrrdAxesPermute
-            v3d_msg(QString("ERROR: Only nrrds with vector values in the final dimension (not [%1]) are currently supported").arg(nonSpatialDimension));
-            
-            return false;
-        }
         
+        printf("nonSpatialDimension: %d", nonSpatialDimension);
+        // Record size of non-spatial dimension (ie vector, colour etc)
+        int nDataVar = nonSpatialDimension>=0 ? 1 : nrrd->axis[nonSpatialDimension].size;
+        
+        if ( nonSpatialDimension >= 0 && nonSpatialDimension != (nrrd->dim-1) ) {
+            // colour is not last axis - permute to bump it to last
+            Nrrd *ntmp = nrrdNew();
+            // make a map in which the ith entry contains the *old* position of the axis
+            unsigned int axmap[NRRD_DIM_MAX];
+            // colour channel (formerly first) must go into last channel
+            // FIXME need to handle time/5d data in due course
+            axmap[nrrd->dim-1] = nonSpatialDimension;
+            for (unsigned int axi=0; axi<(nrrd->dim-1); axi++)
+            {
+                axmap[axi] = axi + (axi >= nonSpatialDimension);   
+            }
+            if (nrrdCopy(ntmp, nrrd)
+                || nrrdAxesPermute(nrrd, ntmp, axmap))
+            {
+                throw(biffGetDone(NRRD));
+            }
+            nrrdNuke(ntmp);
+        }
+
+        // store image dimensions 
+        // FIXME - what about when incoming nrrd was e.g. xyc
+        // look at nrrdAxesInsert?
+        sz = new V3DLONG[4];
+        sz[0] = ((nrrd->dim > 0) ? nrrd->axis[0].size : 1);
+        sz[1] = ((nrrd->dim > 1) ? nrrd->axis[1].size : 1);
+        sz[2] = ((nrrd->dim > 2) ? nrrd->axis[2].size : 1);
+        sz[3] = ((nrrd->dim > 3) ? nrrd->axis[3].size : 1);
+
         nrrdNix(nrrd); //free nrrd data structure w/o the actual data it points to. Added based on Greg's suggestion.
 
         return true;
