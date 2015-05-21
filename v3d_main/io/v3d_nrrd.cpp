@@ -2,7 +2,7 @@
 
 #include "../basic_c_fun/basic_4dimage.h"
 #include "../basic_c_fun/basic_surf_objs.h"
-
+#include <limits>
 #include "v3d_nrrd.h"
 
 //isnan and isfinite is a part of the C and C++ standards, support for these has been removed
@@ -364,7 +364,7 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
         {
             for ( int j = 0; j < 4; ++j )
             {
-                if (i>2 || j>2) spaceDir[i][j] = NAN;
+                if (i>2 || j>2) spaceDir[i][j] = std::numeric_limits<double>::quiet_NaN();
                 else if (i == j) spaceDir[i][j] = (double) pixelsz[i];
                 else spaceDir[i][j] = 0.0; // Can't assume that memory is zeroed
             }
