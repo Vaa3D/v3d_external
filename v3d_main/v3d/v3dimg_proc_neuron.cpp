@@ -309,8 +309,8 @@ bool My4DImage::proj_trace_deformablepath_two_points(V3DLONG startmark_id, V3DLO
 	}
 
 
-#define TRACED_NAME "v3d_traced_neuron"
-#define TRACED_FILE "v3d_traced_neuron"
+#define TRACED_NAME "vaa3d_traced_neuron"
+#define TRACED_FILE "vaa3d_traced_neuron"
 
 
 bool My4DImage::proj_trace_deformablepath_two_points_basic(LocationSimple & p1, LocationSimple & p2, CurveTracePara & trace_para)
@@ -826,51 +826,51 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 
 bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno)
 {
-	if (mCoord.size()<=0)  return false;
+    if (mCoord.size()<=0)  return false;
 
-	//V3DLONG nexist = tracedNeuron.nnodes();
-	V3DLONG nexist = tracedNeuron.maxnoden();
+    //V3DLONG nexist = tracedNeuron.nnodes();
+    V3DLONG nexist = tracedNeuron.maxnoden();
 
-	V_NeuronSWC cur_seg;
-	set_simple_path (cur_seg, nexist, mCoord, false); //reverse link
+    V_NeuronSWC cur_seg;
+    set_simple_path(cur_seg, nexist, mCoord, false); //reverse link
 
-	QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
-	cur_seg.name = qPrintable(tmpss);
-	cur_seg.b_linegraph=true; //donot forget to do this
-	tracedNeuron.append(cur_seg);
-	tracedNeuron.name = TRACED_NAME;
-	tracedNeuron.file = TRACED_FILE;
+    QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
+    cur_seg.name = qPrintable(tmpss);
+    cur_seg.b_linegraph=true; //donot forget to do this
+    tracedNeuron.append(cur_seg);
+    tracedNeuron.name = TRACED_NAME;
+    tracedNeuron.file = TRACED_FILE;
 
-	//091115 add an automatic deform step
-	CurveTracePara trace_para;
-	{
-		trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=getCDim()) trace_para.channo=getCDim()-1;
-		trace_para.landmark_id_start = -1;
-		trace_para.landmark_id_end = -1;
-		trace_para.sp_num_end_nodes = 2;
-		trace_para.nloops = 100; //100130 change from 200 to 100
-		trace_para.b_deformcurve = true;
-		trace_para.sp_smoothing_win_sz = 2;
-	}
+    //091115 add an automatic deform step
+    CurveTracePara trace_para;
+    {
+        trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=getCDim()) trace_para.channo=getCDim()-1;
+        trace_para.landmark_id_start = -1;
+        trace_para.landmark_id_end = -1;
+        trace_para.sp_num_end_nodes = 2;
+        trace_para.nloops = 100; //100130 change from 200 to 100
+        trace_para.b_deformcurve = true;
+        trace_para.sp_smoothing_win_sz = 2;
+    }
 
-	V3DLONG cur_segid = tracedNeuron.nsegs()-1;
+    V3DLONG cur_segid = tracedNeuron.nsegs()-1;
 
-	if (chno >=0) //100115, 100130: for solveCurveViews.
-	{
-                if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autodeform)
-			proj_trace_smooth_downsample_last_traced_neuron(trace_para, cur_segid, cur_segid);
+    if (chno >=0) //100115, 100130: for solveCurveViews.
+    {
+        if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autodeform)
+            proj_trace_smooth_downsample_last_traced_neuron(trace_para, cur_segid, cur_segid);
 
-		bool b_use_shortestpath_rgnaroundcurve=true; //100130
-		if (b_use_shortestpath_rgnaroundcurve)
-			proj_trace_shortestpath_rgnaroundcurve(trace_para, cur_segid, cur_segid);
+        bool b_use_shortestpath_rgnaroundcurve=true; //100130
+        if (b_use_shortestpath_rgnaroundcurve)
+            proj_trace_shortestpath_rgnaroundcurve(trace_para, cur_segid, cur_segid);
 
-                if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
-			proj_trace_compute_radius_of_last_traced_neuron(trace_para, cur_segid, cur_segid, trace_z_thickness);
-	}
-	//
+        if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
+            proj_trace_compute_radius_of_last_traced_neuron(trace_para, cur_segid, cur_segid, trace_z_thickness);
+    }
+    //
 
-	proj_trace_history_append();
-	return true;
+    proj_trace_history_append();
+    return true;
 }
 
 

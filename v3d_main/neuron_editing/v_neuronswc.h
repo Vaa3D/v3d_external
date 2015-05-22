@@ -299,7 +299,7 @@ void set_simple_path (V_NeuronSWC & cur_seg, V3DLONG base_n, vector<T> & mUnit, 
 	for (V3DLONG i=0;i<mUnit.size();i++)
 	{
 		V_NeuronSWC_unit v;
-		set_simple_path_unit (v, base_n, mUnit, i, link_order, r);
+        set_simple_path_unit(v, base_n, mUnit, i, link_order, r);
 		cur_seg.append(v);
 		//qDebug("%d ", cur_seg.nnodes());
 	}
