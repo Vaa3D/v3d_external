@@ -247,20 +247,18 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             actMarkerCreate2->setIcon(QIcon(":/icons/click2.svg"));
             actMarkerCreate2->setVisible(true);
             actMarkerCreate2->setIconVisibleInMenu(true);
+            if (0)
+            {
             listAct.append(actMarkerCreate3 = new QAction("3-right-clicks to define a marker", w));
             actMarkerCreate3->setIcon(QIcon(":/icons/click3.svg"));
             actMarkerCreate3->setVisible(true);
             actMarkerCreate3->setIconVisibleInMenu(true);
+            }
             //listAct.append(act = new QAction("", w)); act->setSeparator(true);
 #ifdef _ALLOW_AUTOMARKER_MENU_
             listAct.append(actMarkerAutoSeed = new QAction("AutoMarker", w));
 #endif
 #ifdef _ALLOW_3D_CURVE_
-            listAct.append(act = new QAction("", w)); act->setSeparator(true);
-            listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve (Ver 1.0)", w));
-            actCurveCreate1->setIcon(QIcon(":/icons/stroke1.svg"));
-            actCurveCreate1->setVisible(true);
-            actCurveCreate1->setIconVisibleInMenu(true);
             if (0) //disable two menu items, PHC 20120813
             {
                 listAct.append(actCurveDirectionInter = new QAction("1-right-stroke to define a 3D curve by direction intersection", w));
@@ -278,6 +276,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 this->dataViewProcBox.z0 < this->dataViewProcBox.z1)
                 //disable the fast-marching based menu when one plane is used. by PHC 20140419. because the computation is still dependent on the entire volume
             {
+                listAct.append(act = new QAction("", w)); act->setSeparator(true);
+
                 listAct.append(actCurveTiltedBB_fm = new QAction("1-right-stroke to define a 3D curve (Ver 2a. adjacent-pair fast-marching - global optimal)", w));
                 actCurveTiltedBB_fm->setIcon(QIcon(":/icons/stroke1.svg"));
                 actCurveTiltedBB_fm->setVisible(true);
@@ -288,6 +288,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 actCurveTiltedBB_fm_sbbox->setVisible(true);
                 actCurveTiltedBB_fm_sbbox->setIconVisibleInMenu(true);
             }
+
+            listAct.append(act = new QAction("", w)); act->setSeparator(true);
+            listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve (Ver 1.0)", w));
+            actCurveCreate1->setIcon(QIcon(":/icons/stroke1.svg"));
+            actCurveCreate1->setVisible(true);
+            actCurveCreate1->setIconVisibleInMenu(true);
 
             if (0) //disable two not-often used functions
             {
@@ -301,6 +307,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 actCurveCreate3->setIconVisibleInMenu(true);
             }
 
+            listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve (Esc to finish)", w));
             actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.svg"));
             actCurveCreate_pointclick_fm->setVisible(true);
