@@ -2923,7 +2923,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
 
     // contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
-    bool contour_mode = w->getNumShiftHolding();
+    bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
     // contour 2 polygon
     QPolygon poly;

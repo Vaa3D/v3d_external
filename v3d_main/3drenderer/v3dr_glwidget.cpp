@@ -704,8 +704,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		case Qt::Key_8:		_holding_num[8] = true; 	break;
 		case Qt::Key_9:		_holding_num[9] = true; 	break;
 
-        // @ADDED by Alessandro on 2015-05-07. Needed for fast segment deleting.
-        case Qt::Key_Shift: _holding_shift = true; break;
+
 
 		case Qt::Key_BracketLeft:
 		    {
@@ -989,8 +988,19 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 	  		break;
 
 #ifndef test_main_cpp
-		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
-		    if (IS_CTRL_MODIFIER)
+        case Qt::Key_Z:
+
+            // @ADDED by Alessandro on 2015-05-23. Also allow redo with CTRL+SHIFT+Z
+            if (KM.testFlag(Qt::ShiftModifier) && (KM.testFlag(Qt::ControlModifier) || KM.testFlag(Qt::MetaModifier)))
+            {
+                if (v3dr_getImage4d(_idep) && renderer)
+                {
+                    v3dr_getImage4d(_idep)->proj_trace_history_redo();
+                    v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
+                }
+            }
+            //undo the last tracing step if possible. by PHC, 090120
+            else if (IS_CTRL_MODIFIER)
 		    {
 		    	if (v3dr_getImage4d(_idep) && renderer)
 		    	{
@@ -999,6 +1009,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	}
 			}
 	  		break;
+
 		case Qt::Key_X: //090924 RZC: redo
 		    if (IS_CTRL_MODIFIER)
 		    {
@@ -1009,6 +1020,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	}
 			}
 	  		break;
+
 #endif
 	  		//////////////////////////////////////////////////////////////////////////////
 		default:
@@ -1032,9 +1044,6 @@ void V3dR_GLWidget::handleKeyReleaseEvent(QKeyEvent * e)  //090428 RZC: make pub
 		case Qt::Key_7:		_holding_num[7] = false; 	break;
 		case Qt::Key_8:		_holding_num[8] = false; 	break;
 		case Qt::Key_9:		_holding_num[9] = false; 	break;
-
-        // @ADDED by Alessandro on 2015-05-07. Needed for fast segment deleting.
-        case Qt::Key_Shift: _holding_shift = false; break;
 
 		default:
 			QGLWidget::keyReleaseEvent(e);
