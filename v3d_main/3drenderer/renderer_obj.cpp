@@ -1080,7 +1080,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 				listNeuronTree.replace(i, SS); //090117 use overwrite  by PHC
 				break;
 			}
-		if (! contained) //listNeuronTree.contains(SS)) // because NeuronTree contains template, so listNeuronTree.contains() cannot work, 081115
+        if (!contained && SS.file!=QString("vaa3d_traced_neuron")) //listNeuronTree.contains(SS)) // because NeuronTree contains template, so listNeuronTree.contains() cannot work, 081115
 		{
 			SS.n = 1+listNeuronTree.size();
 			listNeuronTree.append(SS);
@@ -1109,8 +1109,10 @@ void Renderer_gl1::finishEditingNeuronTree()
 	{
 		listNeuronTree[i].editable = false; //090928
 	}
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
 	//090929
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	if (w)	w->updateTool();
 }
 #endif

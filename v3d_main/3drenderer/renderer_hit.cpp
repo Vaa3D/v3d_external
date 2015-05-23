@@ -1413,8 +1413,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (NEURON_CONDITION)
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			curImg->tracedNeuron = copyToEditableNeuron(p_tree);
-			curImg->proj_trace_history_append();
+            curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
+            //v3d_msg(QString("before editing current traceNeuron.nseg=%1 traceNeuron_old.nseg=%2").arg(curImg->tracedNeuron.nsegs()).arg(curImg->tracedNeuron_old.nsegs()));
+
+            curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+            curImg->tracedNeuron.file = qPrintable(p_tree->file); //important!!! to avoid duplicated neuron
+            //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
+            curImg->proj_trace_history_append();
 			curImg->update_3drenderer_neuron_view(w, this);
 		}
 	}
@@ -1422,6 +1427,16 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
+            //150523
+            if (w && curImg && curXWidget)
+            {
+                //need copy
+                v3d_msg(QString("listNeuronTree size = %1").arg(listNeuronTree.size()));
+                listNeuronTree.replace((names[2]-1), V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron));
+                curImg->tracedNeuron = curImg->tracedNeuron_old; //150523, by PHC
+                v3d_msg(QString("after editing current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
+            }
+
 			finishEditingNeuronTree();
 		}
 	}

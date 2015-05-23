@@ -118,7 +118,7 @@ V_NeuronSWC_list NeuronTree__2__V_NeuronSWC_list(NeuronTree * nt)           //co
 		//qDebug("%d ", cur_seg.nnodes());
 	}
 	cur_seg.name = qPrintable(QString("%1").arg(1));
-	cur_seg.b_linegraph=false; //donot forget to do this
+    cur_seg.b_linegraph=false; //do not forget to do this
 	
 	V_NeuronSWC_list editableNeuron;
 	editableNeuron.seg = cur_seg.decompose(); //////////////
