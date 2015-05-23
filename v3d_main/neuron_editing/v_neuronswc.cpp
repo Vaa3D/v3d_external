@@ -165,6 +165,9 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 	V3DLONG nsegs = in_swc_list.seg.size();
 	for (k=0;k<nsegs;k++)
     {
+        if(in_swc_list.seg.at(k).to_be_deleted)
+            continue;
+
 		vector <V_NeuronSWC_unit> &row = (in_swc_list.seg.at(k).row);
 		if (row.size()<=0) continue;
 

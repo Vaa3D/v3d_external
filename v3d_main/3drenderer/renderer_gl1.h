@@ -367,9 +367,13 @@ public:
      void solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      double solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
 
+     // @ADDED by Alessandro on 2015-05-07. Multiple neuron segments delete by one-mouse stroke.
+     void deleteMultiNeuronsByStroke();
+     // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
+     void deleteMultiNeuronsByStrokeCommit();
+
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersGD(bool b_customized_bb);
-     void deleteMultiNeuronsByStroke();
 #endif
 
      bool withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa); // check wether pa is within the line seg (p1,p1)

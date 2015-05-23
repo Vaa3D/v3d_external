@@ -2900,6 +2900,17 @@ void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, in
      test_id = myList.size() + 1;
 }
 
+// @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
+void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    curImg->tracedNeuron.deleteMultiSeg();
+    //curImg->proj_trace_history_append();          // no need to update the history
+    curImg->update_3drenderer_neuron_view(w, this);
+}
+
 // @ADDED by Alessandro on 2015-05-07.
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
@@ -2960,10 +2971,11 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                 }
             }
 
-            // generate a new neuron tree w/o the segments previously marked
-            curImg->tracedNeuron.deleteMultiSeg();  // @FIXED by Alessandro on 2015-05-11. Delete also segments from tracedNeuron.
-            curImg->proj_trace_history_append();
+            // display a new neuron tree w/o the segments previously marked
+            // @WARNING: this only changes the displayed neuron, not the underlying tracedNeuron structure!
+            //           commit on the tracedNeuron structure is made when the user presses the "Esc" key
             curImg->update_3drenderer_neuron_view(w, this);
+            curImg->proj_trace_history_append();
         }
     }
 }

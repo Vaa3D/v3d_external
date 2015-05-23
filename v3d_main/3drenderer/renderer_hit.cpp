@@ -1837,6 +1837,11 @@ void Renderer_gl1::endSelectMode()
 	}
 #endif
 
+    // @ADDED by Alessandro on 2015-05-23. Called when the operation is finalized (i.e. "Esc" key is pressed) and
+    // neuron segments have to be deleted also from the underlying tracedNeuron structure (and not only from the display)
+    if(selectMode == smDeleteMultiNeurons)
+        deleteMultiNeuronsByStrokeCommit();
+
     cntCur3DCurveMarkers = 0;
 	list_listCurvePos.clear();
 	listMarkerPos.clear();
@@ -1847,6 +1852,8 @@ void Renderer_gl1::endSelectMode()
 		selectMode = smObject;
 		if (w) { w->setCursor(oldCursor); }
 	}
+
+
 }
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
