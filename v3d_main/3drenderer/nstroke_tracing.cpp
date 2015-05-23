@@ -2908,65 +2908,63 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-    MainWindow* V3Dmainwindow = 0;
-	V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
-
     //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
     float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
 
     // contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
     bool contour_mode = w->getNumShiftHolding();
+
+    // contour 2 polygon
+    QPolygon poly;
+    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+
+    // back-project the node curve points and mark segments to be deleted
+    v3d_msg(QString("listNeuronTree.size() = ") + QString::number(listNeuronTree.size()));
+    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
     {
-        // build the polygon from the contour
-        QPolygon poly;
-        for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
-            poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
-
-        // back-project the node curve points and mark segments to be deleted
-        for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+        if (p_tree
+            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
         {
-            NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-            if (p_tree)
+            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+            if (!p_listneuron)
+                continue;
+            for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
-                QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
-                if (!p_listneuron)
-                    continue;
-                for (V3DLONG i=0;i<p_listneuron->size();i++)
+                GLdouble px, py, pz, ix, iy, iz;
+                ix = p_listneuron->at(i).x;
+                iy = p_listneuron->at(i).y;
+                iz = p_listneuron->at(i).z;
+                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
-                    GLdouble px, py, pz, ix, iy, iz;
-                    ix = p_listneuron->at(i).x;
-                    iy = p_listneuron->at(i).y;
-                    iz = p_listneuron->at(i).z;
-                    if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
-                    {
-                        py = viewport[3]-py; //the Y axis is reversed
-                        QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+                    py = viewport[3]-py; //the Y axis is reversed
+                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
 
-                        if(contour_mode)
+                    if(contour_mode)
+                    {
+                        if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+                            curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
+                    }
+                    else
+                    {
+                        for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                         {
-                            if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
-                                curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
-                        }
-                        else
-                        {
-                            for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+                            QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+                            if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
                             {
-                                QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                                if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
-                                {
-                                   curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
-                                   break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                                }
+                               curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
+                               break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
                         }
                     }
                 }
-
-                // generate a new neuron tree w/o the segments previously marked
-                curImg->tracedNeuron.deleteMultiSeg();  // @FIXED by Alessandro on 2015-05-11. Delete also segments from tracedNeuron.
-                curImg->proj_trace_history_append();
-                curImg->update_3drenderer_neuron_view(w, this);
             }
+
+            // generate a new neuron tree w/o the segments previously marked
+            curImg->tracedNeuron.deleteMultiSeg();  // @FIXED by Alessandro on 2015-05-11. Delete also segments from tracedNeuron.
+            curImg->proj_trace_history_append();
+            curImg->update_3drenderer_neuron_view(w, this);
         }
     }
 }
