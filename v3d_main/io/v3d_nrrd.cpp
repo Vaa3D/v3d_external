@@ -364,7 +364,7 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
         {
             for ( int j = 0; j < 4; ++j )
             {
-                if (i>2 || j>2) spaceDir[i][j] = std::numeric_limits<double>::quiet_NaN();
+                if (i>2 || j>2) spaceDir[i][j] = AIR_NAN;
                 else if (i == j) spaceDir[i][j] = (double) pixelsz[i];
                 else spaceDir[i][j] = 0.0; // Can't assume that memory is zeroed
             }
