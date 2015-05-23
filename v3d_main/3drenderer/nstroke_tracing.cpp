@@ -2920,7 +2920,6 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
         poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
 
     // back-project the node curve points and mark segments to be deleted
-    v3d_msg(QString("listNeuronTree.size() = ") + QString::number(listNeuronTree.size()));
     for(V3DLONG j=0; j<listNeuronTree.size(); j++)
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
