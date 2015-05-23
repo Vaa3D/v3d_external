@@ -514,6 +514,7 @@ public:
 	GLuint glistTube, glistTubeEnd;
 	BoundingBox swcBB;
 	int curEditingNeuron;
+    int realCurEditingNeuron_inNeuronTree;
 
      // dragged neuron
      // the neuron is copied from original and pos is changed

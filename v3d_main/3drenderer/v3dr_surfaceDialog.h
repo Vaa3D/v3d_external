@@ -56,7 +56,7 @@ class V3dr_surfaceDialog: public SharedToolDialog
 public:
 	V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent=0);
 	virtual ~V3dr_surfaceDialog();
-	void setCurTab(int i)  {if(i<0) i=iLastTab;  if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504, 110713
+    void setCurTab(int i)  {if(i<0) i=iLastTab;  if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504, 110713
 	int  getCurTab()       {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622
 
 protected:

@@ -36,7 +36,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "neuron_format_converter.h"
 
-NeuronTree V_NeuronSWC_list__2__NeuronTree(V_NeuronSWC_list & tracedNeuron) //convert to V3D's external neuron structure
+NeuronTree V_NeuronSWC_list__2__NeuronTree(V_NeuronSWC_list & tracedNeuron) //convert to Vaa3D's external neuron structure
 {
 	NeuronTree SS;
 	
