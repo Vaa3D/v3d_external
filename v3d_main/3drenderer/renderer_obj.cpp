@@ -961,11 +961,28 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 #ifndef test_main_cpp
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg =  v3dr_getImage4d(_idep);
-	if (w && curImg)
-	{
-		curImg->proj_trace_add_curve_segment(loc_list, chno);
-		curImg->update_3drenderer_neuron_view(w, this);
-	}
+
+//    if (realCurEditingNeuron_inNeuronTree<0 //coresponding to the case that realCurEditingNeuron_inNeuronTree has not been set yet
+//            || listNeuronTree.at(realCurEditingNeuron_inNeuronTree).name=="vaa3d_traced_neuron") //corresponding to the tracing from image directly
+    {
+        if (w && curImg)
+        {
+            curImg->proj_trace_add_curve_segment(loc_list, chno);
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+    }
+//    else //should append the curves to the being-edited neruon directly
+//    {
+//        if (w && curImg)
+//        {
+//            NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
+//            NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
+//                                          oldtree);
+//            listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
+//            curImg->update_3drenderer_neuron_view(w, this);
+//        }
+//    }
+
 #else
 	QList <NeuronSWC> listNeuron;
 	QHash <int, int>  hashNeuron;
@@ -1111,6 +1128,7 @@ void Renderer_gl1::finishEditingNeuronTree()
 	{
 		listNeuronTree[i].editable = false; //090928
 	}
+    realCurEditingNeuron_inNeuronTree = -1;//150523
 
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 

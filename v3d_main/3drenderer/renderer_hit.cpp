@@ -1433,7 +1433,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-            //150523
+            //150523. There seems to be some remaining bugs that need to be fixed later when multiple neurons are presented.
             if (w && curImg && curXWidget)
             {
                 //need copy
@@ -1448,7 +1448,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     listNeuronTree.removeLast();
 
                 curImg->tracedNeuron = curImg->tracedNeuron_old; //150523, by PHC
-                v3d_msg(QString("after editing current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
+                //v3d_msg(QString("after editing current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
             }
 
 			finishEditingNeuronTree();

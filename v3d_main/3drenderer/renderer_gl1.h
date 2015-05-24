@@ -451,6 +451,7 @@ private:
 		lastSliceType = vsSliceNone;
 		currentMarkerName = -1;
 		curEditingNeuron = -1;
+        realCurEditingNeuron_inNeuronTree = -1;
 
 		_idep=0;
 		isSimulatedData=false;

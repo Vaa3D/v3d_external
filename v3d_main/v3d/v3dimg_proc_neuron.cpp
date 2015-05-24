@@ -43,7 +43,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
 
-
 //------------------------------------------------------------------------------------------
 
 #define CATCH_TO_QString( type, msg ) \
@@ -871,6 +870,62 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno)
 
     proj_trace_history_append();
     return true;
+}
+
+NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited)
+{
+    NeuronTree newNeuronEdited;
+    if (mCoord.size()<=0)  return newNeuronEdited;
+
+    V_NeuronSWC cur_seg;
+    set_simple_path(cur_seg, 0, mCoord, false); //reverse link
+
+    QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
+    cur_seg.name = qPrintable(tmpss);
+    cur_seg.b_linegraph=true; //donot forget to do this
+
+    V_NeuronSWC_list tmpTracedNeuron = NeuronTree__2__V_NeuronSWC_list(neuronEdited);
+
+    tmpTracedNeuron.append(cur_seg);
+    tmpTracedNeuron.name = qPrintable(neuronEdited.name);
+    tmpTracedNeuron.file = qPrintable(neuronEdited.file);
+
+    //091115 add an automatic deform step
+    CurveTracePara trace_para;
+    {
+        trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=getCDim()) trace_para.channo=getCDim()-1;
+        trace_para.landmark_id_start = -1;
+        trace_para.landmark_id_end = -1;
+        trace_para.sp_num_end_nodes = 2;
+        trace_para.nloops = 100; //100130 change from 200 to 100
+        trace_para.b_deformcurve = true;
+        trace_para.sp_smoothing_win_sz = 2;
+    }
+
+    V3DLONG cur_segid = tmpTracedNeuron.nsegs()-1;
+
+    if (chno >=0) //100115, 100130: for solveCurveViews.
+    {
+        if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autodeform)
+            proj_trace_smooth_downsample_last_traced_neuron(trace_para, cur_segid, cur_segid);
+
+        bool b_use_shortestpath_rgnaroundcurve=true; //100130
+        if (b_use_shortestpath_rgnaroundcurve)
+            proj_trace_shortestpath_rgnaroundcurve(trace_para, cur_segid, cur_segid);
+
+        if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
+            proj_trace_compute_radius_of_last_traced_neuron(trace_para, cur_segid, cur_segid, trace_z_thickness);
+    }
+    //
+
+    //proj_trace_history_append();
+
+    QStringList tmpstlst;
+    writeSWC_file(QString("ttt1.swc"), neuronEdited, &tmpstlst);
+    newNeuronEdited = V_NeuronSWC_list__2__NeuronTree(tmpTracedNeuron);
+    writeSWC_file("ttt2.swc", neuronEdited, &tmpstlst);
+
+    return newNeuronEdited;
 }
 
 
