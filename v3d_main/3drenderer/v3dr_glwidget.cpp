@@ -605,6 +605,7 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
     //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
 
 	mouse_held = 0;
+    v3d_msg("before mouseReleaseEvent _appendMarkerPos ",0);
 
 	if (event->button()==Qt::RightButton && renderer) //right-drag end
     {
@@ -1305,7 +1306,7 @@ void V3dR_GLWidget::updateTool()
 	{
 		//int i = surfaceDlg->getCurTab();
 		surfaceDlg->linkTo(this);
-		surfaceDlg->setCurTab(-1);  //-1 = last tab
+        surfaceDlg->setCurTab(-1);  //-1 = last tab
 	}
 	if (colormapDlg && !(colormapDlg->isHidden()) ) //081219
 	{

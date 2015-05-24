@@ -1385,7 +1385,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (n_id>=0)
 			{
 				cur_node = p_tree->listNeuron.at(n_id);
-				qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                qDebug()<<"cur_node.x="<<cur_node.x<<" "<<"cur_node.y="<<cur_node.y<<" "<<"cur_node.z="<<cur_node.z;
 				int ii;
 				ImageMarker *p_marker=0; bool b_exist_marker=false;
 				for (ii=0;ii<listMarker.size();ii++)
@@ -3401,9 +3401,9 @@ void Renderer_gl1::solveCurveViews()
 		}
 	}
 #ifndef test_main_cpp
-	smooth_curve(loc_vec, 5);
+    smooth_curve(loc_vec, 5);
 #endif
-	addCurveSWC(loc_vec, -1); //turn off post deform
+    addCurveSWC(loc_vec, -1); //turn off post deform
 }
 void Renderer_gl1::solveCurveFromMarkers()
 {

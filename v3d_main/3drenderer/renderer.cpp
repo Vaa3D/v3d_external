@@ -253,7 +253,9 @@ int Renderer::selectObj(int x, int y, bool b_menu, char* pTip)
 	}
 	//printf("\n");
 
-	int ret = processHit((int)nameLength, hitNames, x, y, b_menu, pTip); //////////////////////
+    v3d_msg("hello before processHit",0);
+    int ret = processHit((int)nameLength, hitNames, x, y, b_menu, pTip); //////////////////////
+    v3d_msg("hello after processHit",0);
 
 	delete[] selectBuf;
 	delete[] hitNames;
@@ -1786,6 +1788,7 @@ void GLinfoDetect(std::string* pinfo)
 		*pinfo = info;
 	else
 //		cerr << (info); //cerr is unbuffered
+        v3d_msg("before fprintf(stderr, info.c_str());");
     fprintf(stderr, info.c_str());
 }
 

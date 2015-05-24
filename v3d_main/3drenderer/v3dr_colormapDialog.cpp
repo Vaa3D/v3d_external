@@ -485,7 +485,7 @@ void V3dr_colormapDialog::saveColormapFile(const QString& filename)
 			qreal x = curve[i][j].at(k).x();
 			qreal y = curve[i][j].at(k).y();
 
-			sprintf(buf, "%d %d %g %g\n", i,j, x,y);	//qDebug("%s", buf);
+            sprintf(buf, "curve %d %d %g %g\n", i,j, x,y);	//qDebug("%s", buf);
 			qf.write(buf, strlen(buf));
 
 			count++;

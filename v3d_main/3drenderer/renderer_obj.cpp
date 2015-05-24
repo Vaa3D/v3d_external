@@ -1469,7 +1469,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 	bool editable = listNeuronTree.at(index).editable;
     int cur_linemode = listNeuronTree.at(index).linemode; //added by PHC 20130926
 
-    v3d_msg(QString("%1").arg(cur_linemode), 0);
+//    v3d_msg(QString("neuron mode %1").arg(cur_linemode), 0);
 
     int cur_lineType = (cur_linemode==0 || cur_linemode==1) ? cur_linemode : lineType;
 
