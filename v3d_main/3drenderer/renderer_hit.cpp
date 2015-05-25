@@ -1412,21 +1412,27 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+            if (listNeuronTree.size()>1)
+            {
+                v3d_msg("The neuron editing mode allows ONLY ONE neuron at a time, and there is NO existing traced neuron fromthe current image.");
+            }
+            else
+            {
+                NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 
-            qDebug() << "names[2]=" << names[2] << " p_tree=" << p_tree;
+                qDebug() << "names[2]=" << names[2] << " p_tree=" << p_tree;
 
-            curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
-            //v3d_msg(QString("before editing current traceNeuron.nseg=%1 traceNeuron_old.nseg=%2").arg(curImg->tracedNeuron.nsegs()).arg(curImg->tracedNeuron_old.nsegs()));
+                curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
+                //v3d_msg(QString("before editing current traceNeuron.nseg=%1 traceNeuron_old.nseg=%2").arg(curImg->tracedNeuron.nsegs()).arg(curImg->tracedNeuron_old.nsegs()));
 
-            curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+                curImg->tracedNeuron = copyToEditableNeuron(p_tree);
 
-            //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
-            curImg->proj_trace_history_append();
-			curImg->update_3drenderer_neuron_view(w, this);
+                //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
+                curImg->proj_trace_history_append();
+                curImg->update_3drenderer_neuron_view(w, this);
 
-            realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
-
+                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+            }
 		}
 	}
 	else if (act==actNeuronFinishEditing)
@@ -1448,6 +1454,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     listNeuronTree.removeLast();
 
                 curImg->tracedNeuron = curImg->tracedNeuron_old; //150523, by PHC
+                if (curImg->tracedNeuron.nsegs()>0) //need to add to the original list in this case
+                {
+                    curImg->update_3drenderer_neuron_view(w, this);
+                }
+
                 //v3d_msg(QString("after editing current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
             }
 
