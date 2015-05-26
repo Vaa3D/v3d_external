@@ -79,10 +79,8 @@ message(STATUS "TeraFly: finished examining header files")
 # MOC
 if(NOT Qt5Core_FOUND)
   QT4_WRAP_CPP(TERAFLY_MOC_SRCS ${TERAFLY_MOC_FILES})
-  QT4_ADD_RESOURCES(TERAFLY_QRC "icons.qrc")
 else()
   QT5_WRAP_CPP(TERAFLY_MOC_SRCS ${TERAFLY_MOC_FILES})
-  QT5_ADD_RESOURCES(TERAFLY_QRC "icons.qrc")
 endif()
 
 # create TeraFly lib

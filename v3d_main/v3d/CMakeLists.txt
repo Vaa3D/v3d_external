@@ -44,6 +44,7 @@ set(ARTHUR_SRCS "")
 
 set(V3D_RCCS
     v3d.qrc
+    ../terafly/icons.qrc
     ../3drenderer/3drenderer.qrc
     ../neuron_annotator/resources.qrc)
 
@@ -216,9 +217,10 @@ if (WIN32) # Windows MSYS build
       ${V3D_RCC_SRCS}
       v3d_win.rc)
 else()
+
   add_executable( v3d
       main.cpp
-      ${V3D_RCC_SRCS} )
+      ${V3D_RCC_SRCS})
 endif()
 
 if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
