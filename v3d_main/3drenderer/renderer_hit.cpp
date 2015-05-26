@@ -1426,6 +1426,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 //v3d_msg(QString("before editing current traceNeuron.nseg=%1 traceNeuron_old.nseg=%2").arg(curImg->tracedNeuron.nsegs()).arg(curImg->tracedNeuron_old.nsegs()));
 
                 curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+                p_tree->on = false;
 
                 //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
                 curImg->proj_trace_history_append();
@@ -1449,6 +1450,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, newtree);
                 NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(realCurEditingNeuron_inNeuronTree)));
                 p_tree->name = curworkneuronname + ".edited.swc";
+                p_tree->on = true;
 
                 if (!(listNeuronTree.isEmpty()) && listNeuronTree.last().name == "vaa3d_traced_neuron")
                     listNeuronTree.removeLast();
