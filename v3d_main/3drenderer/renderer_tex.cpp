@@ -2446,25 +2446,25 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 
                 listAct.append(actViewNeuronOnly = new QAction("view only this neuron in empty space", w));
 
-                actViewNeuronOnly->setIcon(QIcon(":/icons/neuronwobg.svg"));
+                actViewNeuronOnly->setIcon(QIcon(":/icons/neuronwobg.png"));
                 actViewNeuronOnly->setVisible(true);
                 actViewNeuronOnly->setIconVisibleInMenu(true);
 
                 listAct.append(actViewNeuronWithBackground = new QAction("view only this neuron with background", w));
 
-                actViewNeuronWithBackground->setIcon(QIcon(":/icons/neuronwbg.svg"));
+                actViewNeuronWithBackground->setIcon(QIcon(":/icons/neuronwbg.png"));
                 actViewNeuronWithBackground->setVisible(true);
                 actViewNeuronWithBackground->setIconVisibleInMenu(true);
 
                 listAct.append(actViewNeuronWithReference = new QAction("view only this neuron with reference", w));
 
-                actViewNeuronWithReference->setIcon(QIcon(":/icons/neuronwref.svg"));
+                actViewNeuronWithReference->setIcon(QIcon(":/icons/neuronwref.png"));
                 actViewNeuronWithReference->setVisible(true);
                 actViewNeuronWithReference->setIconVisibleInMenu(true);
 
                 listAct.append(actViewNeuronWithBackgroundAndReference = new QAction("view only this neuron with background and reference", w));
 
-                actViewNeuronWithBackgroundAndReference->setIcon(QIcon(":/icons/neuronwbgref.svg"));
+                actViewNeuronWithBackgroundAndReference->setIcon(QIcon(":/icons/neuronwbgref.png"));
                 actViewNeuronWithBackgroundAndReference->setVisible(true);
                 actViewNeuronWithBackgroundAndReference->setIconVisibleInMenu(true);
 

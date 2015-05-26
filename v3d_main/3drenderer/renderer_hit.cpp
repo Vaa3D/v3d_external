@@ -234,23 +234,23 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #ifdef _ALLOW_ADVANCE_PROCESSING_MENU_
             listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actMarkerCreate1 = new QAction("1-right-click to define a marker (Esc to finish)", w));
-            actMarkerCreate1->setIcon(QIcon(":/icons/click1.svg"));
+            actMarkerCreate1->setIcon(QIcon(":/icons/click1.png"));
             actMarkerCreate1->setVisible(true);
             actMarkerCreate1->setIconVisibleInMenu(true);
             listAct.append(actMarkerCreate1Stroke = new QAction("1-right-stroke to define a marker (starting locus will be the output marker)", w));
 
-            actMarkerCreate1Stroke->setIcon(QIcon(":/icons/click1.svg"));
+            actMarkerCreate1Stroke->setIcon(QIcon(":/icons/click1.png"));
             actMarkerCreate1Stroke->setVisible(true);
             actMarkerCreate1Stroke->setIconVisibleInMenu(true);
             listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actMarkerCreate2 = new QAction("2-right-clicks to define a marker", w));
-            actMarkerCreate2->setIcon(QIcon(":/icons/click2.svg"));
+            actMarkerCreate2->setIcon(QIcon(":/icons/click2.png"));
             actMarkerCreate2->setVisible(true);
             actMarkerCreate2->setIconVisibleInMenu(true);
             if (0)
             {
             listAct.append(actMarkerCreate3 = new QAction("3-right-clicks to define a marker", w));
-            actMarkerCreate3->setIcon(QIcon(":/icons/click3.svg"));
+            actMarkerCreate3->setIcon(QIcon(":/icons/click3.png"));
             actMarkerCreate3->setVisible(true);
             actMarkerCreate3->setIconVisibleInMenu(true);
             }
@@ -262,11 +262,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             if (0) //disable two menu items, PHC 20120813
             {
                 listAct.append(actCurveDirectionInter = new QAction("1-right-stroke to define a 3D curve by direction intersection", w));
-                actCurveDirectionInter->setIcon(QIcon(":/icons/stroke1.svg"));
+                actCurveDirectionInter->setIcon(QIcon(":/icons/stroke1.png"));
                 actCurveDirectionInter->setVisible(true);
                 actCurveDirectionInter->setIconVisibleInMenu(true);
                 listAct.append(actCurveMarkerLists_fm = new QAction("1-right-stroke to define a 3D curve (adjacent-pair fast-marching)", w));
-                actCurveMarkerLists_fm->setIcon(QIcon(":/icons/stroke1.svg"));
+                actCurveMarkerLists_fm->setIcon(QIcon(":/icons/stroke1.png"));
                 actCurveMarkerLists_fm->setVisible(true);
                 actCurveMarkerLists_fm->setIconVisibleInMenu(true);
             }
@@ -279,52 +279,52 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listAct.append(act = new QAction("", w)); act->setSeparator(true);
 
                 listAct.append(actCurveTiltedBB_fm = new QAction("1-right-stroke to define a 3D curve (Ver 2a. adjacent-pair fast-marching - global optimal)", w));
-                actCurveTiltedBB_fm->setIcon(QIcon(":/icons/stroke1.svg"));
+                actCurveTiltedBB_fm->setIcon(QIcon(":/icons/stroke1.png"));
                 actCurveTiltedBB_fm->setVisible(true);
                 actCurveTiltedBB_fm->setIconVisibleInMenu(true);
 
                 listAct.append(actCurveTiltedBB_fm_sbbox = new QAction("1-right-stroke to define a 3D curve (Ver 2b. adjacent-pair fast-marching - serial BBoxes)", w));
-                actCurveTiltedBB_fm_sbbox->setIcon(QIcon(":/icons/stroke1.svg"));
+                actCurveTiltedBB_fm_sbbox->setIcon(QIcon(":/icons/stroke1.png"));
                 actCurveTiltedBB_fm_sbbox->setVisible(true);
                 actCurveTiltedBB_fm_sbbox->setIconVisibleInMenu(true);
             }
 
             listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve (Ver 1.0)", w));
-            actCurveCreate1->setIcon(QIcon(":/icons/stroke1.svg"));
+            actCurveCreate1->setIcon(QIcon(":/icons/stroke1.png"));
             actCurveCreate1->setVisible(true);
             actCurveCreate1->setIconVisibleInMenu(true);
 
             if (0) //disable two not-often used functions
             {
                 listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
-                actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
+                actCurveCreate2->setIcon(QIcon(":/icons/stroke2.png"));
                 actCurveCreate2->setVisible(true);
                 actCurveCreate2->setIconVisibleInMenu(true);
                 listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
-                actCurveCreate3->setIcon(QIcon(":/icons/stroke3.svg"));
+                actCurveCreate3->setIcon(QIcon(":/icons/stroke3.png"));
                 actCurveCreate3->setVisible(true);
                 actCurveCreate3->setIconVisibleInMenu(true);
             }
 
             listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve (Esc to finish)", w));
-            actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+            actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.png"));
             actCurveCreate_pointclick_fm->setVisible(true);
             actCurveCreate_pointclick_fm->setIconVisibleInMenu(true);
             listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
-            actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.svg"));
+            actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.png"));
             actCurveCreate_pointclick->setVisible(true);
             actCurveCreate_pointclick->setIconVisibleInMenu(true);
 
             if(listCurveMarkerPool.size()>=2)
             {
                 listAct.append(actCurveMarkerPool_fm = new QAction("Using marker pool to define a 3D curve by FM", w));
-                actCurveMarkerPool_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+                actCurveMarkerPool_fm->setIcon(QIcon(":/icons/strokeN.png"));
                 actCurveMarkerPool_fm->setVisible(true);
                 actCurveMarkerPool_fm->setIconVisibleInMenu(true);
                 listAct.append(actCurveCreateMarkerGD = new QAction("Using marker pool to define a 3D curve by GD", w));
-                actCurveCreateMarkerGD->setIcon(QIcon(":/icons/strokeN.svg"));
+                actCurveCreateMarkerGD->setIcon(QIcon(":/icons/strokeN.png"));
                 actCurveCreateMarkerGD->setVisible(true);
                 actCurveCreateMarkerGD->setIconVisibleInMenu(true);
                 // clear listCurveMarkerPool
@@ -335,17 +335,17 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             if (0) //disabled by PHC, 2012-08-13.
             {
                 listAct.append(actCurveCreateTest = new QAction("Test multiple curve creation methods", w));
-                actCurveCreateTest->setIcon(QIcon(":/icons/strokeN.svg"));
+                actCurveCreateTest->setIcon(QIcon(":/icons/strokeN.png"));
                 actCurveCreateTest->setVisible(true);
                 actCurveCreateTest->setIconVisibleInMenu(true);
                 // For curve refinement, ZJL 110831
                 listAct.append(act = new QAction("", w)); act->setSeparator(true);
                 listAct.append(actCurveRefine = new QAction("n-right-strokes to define a 3D curve by mean shift (refine)", w));
-                actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+                actCurveRefine->setIcon(QIcon(":/icons/strokeN.png"));
                 actCurveRefine->setVisible(true);
                 actCurveRefine->setIconVisibleInMenu(true);
                 listAct.append(actCurveRefine_fm = new QAction("n-right-strokes to define a 3D curve by adjacent-pair fast marching (refine)", w));
-                actCurveRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+                actCurveRefine_fm->setIcon(QIcon(":/icons/strokeN.png"));
                 actCurveRefine_fm->setVisible(true);
                 actCurveRefine_fm->setIconVisibleInMenu(true);
             }
@@ -495,14 +495,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				if (listMarker.size()>=2)
 				{
 					listAct.append(actMarkerTraceFromOnePosToOtherMarkers = new QAction("trace from 1 start pos to all other markers", w));
-					actMarkerTraceFromOnePosToOtherMarkers->setIcon(QIcon(":/icons/trace.svg"));
+					actMarkerTraceFromOnePosToOtherMarkers->setIcon(QIcon(":/icons/trace.png"));
 					actMarkerTraceFromOnePosToOtherMarkers->setVisible(true);
 					actMarkerTraceFromOnePosToOtherMarkers->setIconVisibleInMenu(true);
 				}
 #endif
 #ifdef _ALLOW_NEURONTREE_ONE2ENTIREIMG_MENU_
 				listAct.append(actMarkerTraceFromOnePos = new QAction("trace from 1 start pos through entire image", w));
-				actMarkerTraceFromOnePos->setIcon(QIcon(":/icons/trace.svg"));
+				actMarkerTraceFromOnePos->setIcon(QIcon(":/icons/trace.png"));
 				actMarkerTraceFromOnePos->setVisible(true);
 				actMarkerTraceFromOnePos->setIconVisibleInMenu(true);
 #endif
@@ -522,7 +522,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #ifdef _ALLOW_NEURONSEG_MENU_
 					listAct.append(act = new QAction("", w)); act->setSeparator(true);
 					listAct.append(actMarkerLabelAsStartPos = new QAction("label as starting pos for tracing/measuring", w)); //by PHC, 090119
-					actMarkerLabelAsStartPos->setIcon(QIcon(":/icons/start.svg"));
+					actMarkerLabelAsStartPos->setIcon(QIcon(":/icons/start.png"));
 					actMarkerLabelAsStartPos->setVisible(true);
 					actMarkerLabelAsStartPos->setIconVisibleInMenu(true);
 					if (curImg->last_hit_landmark >= 0 && curImg->last_hit_landmark!=currentMarkerName-1)
@@ -544,7 +544,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #endif
 				}
                     listAct.append(actCurveFrom1Marker_fm = new QAction("Start from this marker to define a 3D curve by adjacent-pair fast-marching", w));
-                    actCurveFrom1Marker_fm->setIcon(QIcon(":/icons/stroke1.svg"));
+                    actCurveFrom1Marker_fm->setIcon(QIcon(":/icons/stroke1.png"));
                     actCurveFrom1Marker_fm->setVisible(true);
                     actCurveFrom1Marker_fm->setIconVisibleInMenu(true);
 #endif //test_main_cpp
@@ -595,18 +595,18 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				// ZJL 110913:
 				// Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
 				listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment by mean shift", w));
-				actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+				actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.png"));
 				actCurveEditRefine->setVisible(true);
 				actCurveEditRefine->setIconVisibleInMenu(true);
 				//listAct.append(act = new QAction("", w));
 				listAct.append(actCurveEditRefine_fm = new QAction("extend/refine nearest neuron-segment by adjacent-pair fast marching", w));
-				actCurveEditRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+				actCurveEditRefine_fm->setIcon(QIcon(":/icons/strokeN.png"));
 				actCurveEditRefine_fm->setVisible(true);
 				actCurveEditRefine_fm->setIconVisibleInMenu(true);
 				//listAct.append(act = new QAction("", w));
 				// Drag a curve to refine it by using rubber-band line like method
 				listAct.append(actCurveRubberDrag = new QAction("drag nearest neuron-segment", w));
-				actCurveRubberDrag->setIcon(QIcon(":/icons/click3.svg"));
+				actCurveRubberDrag->setIcon(QIcon(":/icons/click3.png"));
 				actCurveRubberDrag->setVisible(true);
 				actCurveRubberDrag->setIconVisibleInMenu(true);
 				listAct.append(act = new QAction("", w));

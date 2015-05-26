@@ -17,22 +17,22 @@ NeuronContextMenu::NeuronContextMenu(QWidget *parent) :
     showOnlyThisNeuronAction = new NeuronQAction(
             "View only this neuron in empty space",
             this);
-    showOnlyThisNeuronAction->setIcon(QIcon(":/icons/neuronwobg.svg"));
+    showOnlyThisNeuronAction->setIcon(QIcon(":/icons/neuronwobg.png"));
 
     showOnlyThisNeuronWithBackgroundAction = new NeuronQAction(
             "View only this neuron with background",
             this);
-    showOnlyThisNeuronWithBackgroundAction->setIcon(QIcon(":/icons/neuronwbg.svg"));
+    showOnlyThisNeuronWithBackgroundAction->setIcon(QIcon(":/icons/neuronwbg.png"));
 
     showOnlyThisNeuronWithReferenceAction = new NeuronQAction(
             "View only this neuron with reference",
             this);
-    showOnlyThisNeuronWithReferenceAction->setIcon(QIcon(":/icons/neuronwref.svg"));
+    showOnlyThisNeuronWithReferenceAction->setIcon(QIcon(":/icons/neuronwref.png"));
 
     showOnlyThisNeuronWithBackgroundAndReferenceAction = new NeuronQAction(
             "View only this neuron with background and reference",
             this);
-    showOnlyThisNeuronWithBackgroundAndReferenceAction->setIcon(QIcon(":/icons/neuronwbgref.svg"));
+    showOnlyThisNeuronWithBackgroundAndReferenceAction->setIcon(QIcon(":/icons/neuronwbgref.png"));
 
     addAction(neuronTitleAction);
     addAction(hideThisNeuronAction);

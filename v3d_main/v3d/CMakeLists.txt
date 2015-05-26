@@ -44,8 +44,8 @@ set(ARTHUR_SRCS "")
 
 set(V3D_RCCS
     v3d.qrc
-    ../terafly/icons.qrc
     ../3drenderer/3drenderer.qrc
+    ../terafly/icons.qrc
     ../neuron_annotator/resources.qrc)
 
 set(V3D_UI_SRCS
