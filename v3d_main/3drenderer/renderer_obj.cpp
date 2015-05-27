@@ -962,28 +962,29 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg =  v3dr_getImage4d(_idep);
 
-//    if (realCurEditingNeuron_inNeuronTree<0 //coresponding to the case that realCurEditingNeuron_inNeuronTree has not been set yet
-//            || listNeuronTree.at(realCurEditingNeuron_inNeuronTree).name=="vaa3d_traced_neuron") //corresponding to the tracing from image directly
+    if (w && curImg)
     {
-        if (w && curImg)
+        if (0)  //should append the curves to the being-edited neuron directly
+        {
+            v3d_msg("NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);");
+
+            NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
+            NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
+                                                                                          oldtree);
+            listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+        else
         {
             curImg->proj_trace_add_curve_segment(loc_list, chno);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
-//    else //should append the curves to the being-edited neruon directly
-//    {
-//        if (w && curImg)
-//        {
-//            NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
-//            NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
-//                                          oldtree);
-//            listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
-//            curImg->update_3drenderer_neuron_view(w, this);
-//        }
-//    }
+
 
 #else
+    v3d_msg("testmain addCurveSWC(vector<XYZ> &loc_list, int chno)");
+
 	QList <NeuronSWC> listNeuron;
 	QHash <int, int>  hashNeuron;
 	listNeuron.clear();
@@ -1112,6 +1113,12 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			listNeuronTree[i].editable = (1+i==SS.n); //090923
 		}
 		curEditingNeuron = SS.n;
+
+        if (listNeuronTree.size()==1 && listNeuronTree[0].file=="vaa3d_traced_neuron" && listNeuronTree[0].name=="vaa3d_traced_neuron")
+        {
+            listNeuronTree[0].editable = true;
+            curEditingNeuron = 1;
+        }
 	} CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
     updateNeuronBoundingBox();
     updateBoundingBox(); // all of loaded bounding-box are updated here

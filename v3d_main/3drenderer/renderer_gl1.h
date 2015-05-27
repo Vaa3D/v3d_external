@@ -490,6 +490,8 @@ private:
           bInitDragPoints = false;
           // for curve testing
           bTestCurveBegin=false;
+
+          b_editDroppedNeuron = false; //20150527, PHC
      }
 
 
@@ -512,7 +514,10 @@ public:
 
 	// neuron swc
 	QList <NeuronTree>         listNeuronTree;
-	GLuint glistTube, glistTubeEnd;
+    QList <NeuronTree>         listNeuronTree_old;
+    bool b_editDroppedNeuron;
+
+    GLuint glistTube, glistTubeEnd;
 	BoundingBox swcBB;
 	int curEditingNeuron;
     int realCurEditingNeuron_inNeuronTree;

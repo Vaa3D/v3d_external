@@ -384,6 +384,7 @@ public:
 	bool b_proj_worm_mst_diameter_set;
 
     V_NeuronSWC_list tracedNeuron, tracedNeuron_old;//add tracedNeuron_old by PHC, 20150523
+
 	V3DLONG last_hit_landmark, cur_hit_landmark;
 	BoundingBox trace_bounding_box;
 	float trace_z_thickness;

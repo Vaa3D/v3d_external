@@ -1412,27 +1412,39 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-            if (listNeuronTree.size()>1)
+            if (listNeuronTree.size()>1 && 0)
             {
                 v3d_msg("The neuron editing mode allows ONLY ONE neuron at a time, and there is NO existing traced neuron fromthe current image.");
             }
             else
             {
-                NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+                listNeuronTree_old = listNeuronTree;
+
+                NeuronTree *p_tree = 0;
+
+                p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+                curEditingNeuron = names[2];
+                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
 
                 qDebug() << "names[2]=" << names[2] << " p_tree=" << p_tree;
 
                 curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
                 //v3d_msg(QString("before editing current traceNeuron.nseg=%1 traceNeuron_old.nseg=%2").arg(curImg->tracedNeuron.nsegs()).arg(curImg->tracedNeuron_old.nsegs()));
 
+                if (listNeuronTree[realCurEditingNeuron_inNeuronTree].name!="vaa3d_traced_neuron" ||
+                        listNeuronTree[realCurEditingNeuron_inNeuronTree].file!="vaa3d_traced_neuron")
+                {
+                    b_editDroppedNeuron = true;
+                }
+
                 curImg->tracedNeuron = copyToEditableNeuron(p_tree);
-                p_tree->on = false;
+                curImg->tracedNeuron.name = "vaa3d_traced_neuron";
+                curImg->tracedNeuron.file = "vaa3d_traced_neuron";
+                listNeuronTree.clear();
 
                 //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
                 curImg->proj_trace_history_append();
                 curImg->update_3drenderer_neuron_view(w, this);
-
-                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
             }
 		}
 	}
@@ -1443,25 +1455,32 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             //150523. There seems to be some remaining bugs that need to be fixed later when multiple neurons are presented.
             if (w && curImg && curXWidget)
             {
-                //need copy
-                //v3d_msg(QString("listNeuronTree size = %1").arg(listNeuronTree.size()));
-                QString curworkneuronname = listNeuronTree.at(realCurEditingNeuron_inNeuronTree).name;
-                NeuronTree newtree = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
-                listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, newtree);
-                NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(realCurEditingNeuron_inNeuronTree)));
-                p_tree->name = curworkneuronname + ".edited.swc";
-                p_tree->on = true;
-
-                if (!(listNeuronTree.isEmpty()) && listNeuronTree.last().name == "vaa3d_traced_neuron")
-                    listNeuronTree.removeLast();
-
-                curImg->tracedNeuron = curImg->tracedNeuron_old; //150523, by PHC
-                if (curImg->tracedNeuron.nsegs()>0) //need to add to the original list in this case
+                if (listNeuronTree.size()==1 && listNeuronTree[0].name=="vaa3d_traced_neuron" && listNeuronTree[0].file=="vaa3d_traced_neuron")
                 {
-                    curImg->update_3drenderer_neuron_view(w, this);
+                    //do nothing
                 }
 
-                //v3d_msg(QString("after editing current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
+                if (b_editDroppedNeuron || listNeuronTree_old.size()>=2)
+                {
+                    if (realCurEditingNeuron_inNeuronTree>=0 && realCurEditingNeuron_inNeuronTree<listNeuronTree_old.size())
+                    {
+                        NeuronTree newtree = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
+                        listNeuronTree = listNeuronTree_old;
+                        listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, newtree);
+
+                        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(realCurEditingNeuron_inNeuronTree)));
+                        p_tree->name = listNeuronTree_old.at(realCurEditingNeuron_inNeuronTree).name;
+                        p_tree->file = listNeuronTree_old.at(realCurEditingNeuron_inNeuronTree).file;
+                    }
+
+                    curImg->tracedNeuron = curImg->tracedNeuron_old; //150523, by PHC
+                    if (curImg->tracedNeuron.nsegs()>0) //need to add to the original list in this case
+                    {
+                        curImg->update_3drenderer_neuron_view(w, this);
+                    }
+
+                    b_editDroppedNeuron = false;
+                }
             }
 
 			finishEditingNeuronTree();
