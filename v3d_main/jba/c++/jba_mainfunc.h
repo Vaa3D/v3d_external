@@ -452,7 +452,7 @@ Vol3DSimple<DisplaceFieldF3D> *  get_DF_of_affine_warp(Vol3DSimple<MYFLOAT_JBA> 
 Vol3DSimple<DisplaceFieldF3D> *  get_DF_of_affine_warp(V3DLONG tsz0, V3DLONG tsz1, V3DLONG tsz2, WarpParameterAffine3D * p);
 
 
-bool eba3d(WarpParameterAffine3D *wp, Image2DSimple<MYFLOAT_JBA> * & dTable, 
+bool eba3d(WarpParameterAffine3D *wp, Image2DSimple<MYFLOAT_JBA> * & dTable,
 						Vol3DSimple<MYFLOAT_JBA> * dfx, Vol3DSimple<MYFLOAT_JBA> * dfy, Vol3DSimple<MYFLOAT_JBA> * dfz, Vol3DSimple<MYFLOAT_JBA> * dft, Vol3DSimple<MYFLOAT_JBA> * subject,
 						V3DLONG xs, V3DLONG xe, V3DLONG ys, V3DLONG ye, V3DLONG zs, V3DLONG ze, 
 						bool b_returnDTable);
