@@ -2980,7 +2980,94 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     }
 }
 
+void Renderer_gl1::retypeMultiNeuronsByStroke()
+{
+    int node_type = 0;
+    bool ok;
+    bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
+#ifdef USE_Qt5
+    node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+                              QObject::tr("SWC type: "
+                                        "\n 0 -- undefined (white)"
+                                        "\n 1 -- soma (black)"
+                                        "\n 2 -- axon (red)"
+                                        "\n 3 -- dendrite (blue)"
+                                        "\n 4 -- apical dendrite (purple)"
+                                        "\n else -- custom \n"),
+                                      node_type, 0, 100, 1, &ok);
+#else
+    node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+                              QObject::tr("SWC type: "
+                                        "\n 0 -- undefined (white)"
+                                        "\n 1 -- soma (black)"
+                                        "\n 2 -- axon (red)"
+                                        "\n 3 -- dendrite (blue)"
+                                        "\n 4 -- apical dendrite (purple)"
+                                        "\n else -- custom \n"),
+                                      node_type, 0, 100, 1, &ok);
+#endif
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
+    float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+
+    // contour 2 polygon
+    QPolygon poly;
+    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+
+    // back-project the node curve points and mark segments to be deleted
+    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+    {
+        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+        if (p_tree
+            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+        {
+            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+            if (!p_listneuron)
+                continue;
+            for (V3DLONG i=0;i<p_listneuron->size();i++)
+            {
+                GLdouble px, py, pz, ix, iy, iz;
+                ix = p_listneuron->at(i).x;
+                iy = p_listneuron->at(i).y;
+                iz = p_listneuron->at(i).z;
+                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+                {
+                    py = viewport[3]-py; //the Y axis is reversed
+                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+                    if(contour_mode)
+                    {
+                        if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+                        {
+                            change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                        }
+                    }
+                    else
+                    {
+                        for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+                        {
+                            QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+                            if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
+                            {
+                               change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                               break;   // found intersection with neuron segment: no more need to continue on this inner loop
+                            }
+                        }
+                    }
+                }
+            }
+            curImg->update_3drenderer_neuron_view(w, this);
+            curImg->proj_trace_history_append();
+        }
+    }
+
+}
 // func of converting kernel
 template <class Tpre, class Tpost>
 void converting_to_8bit(void *pre1d, Tpost *pPost, V3DLONG imsz)

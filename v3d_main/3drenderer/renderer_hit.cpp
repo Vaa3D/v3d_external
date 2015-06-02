@@ -207,6 +207,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actDispRecNeuronSegInfo=0, *actDeleteNeuronSeg=0, *actBreakNeuronSegNearestNeuronNode=0, *actBreakNeuronSeg_markclick=0,
 			*actJoinNeuronSegs_nearby_markclick=0, *actJoinNeuronSegs_nearby_pathclick=0, *actJoinNeuronSegs_all=0,
 			*actNeuronSegDeform=0, *actNeuronSegProfile=0,
+                *actChangeMultiNeuronSegType=0, //Zhi Zhou
 			*actNeuronOneSegMergeToCloseby=0, *actNeuronAllSegMergeToCloseby=0,
                *actDeleteMultiNeuronSeg=0, // ZJL, 20120806
 			*actDispNeuronNodeInfo=0,	*actAveDistTwoNeurons=0, *actDispNeuronMorphoInfo=0,
@@ -614,7 +615,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				// End of ZJL
 				listAct.append(actDispRecNeuronSegInfo = new QAction("display nearest neuron-segment info", w));
 				listAct.append(actChangeNeuronSegType = new QAction("change nearest neuron-segment type", w));
-				listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
+                //By Zhi Zhou
+                listAct.append(actChangeMultiNeuronSegType = new QAction("change multiple neuron-segments type by a stroke", w));
+                listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
 				listAct.append(actReverseNeuronSeg = new QAction("reverse nearest neuron-segment link order", w));
 				listAct.append(actDeleteNeuronSeg = new QAction("delete the nearest neuron-segment", w));
 
@@ -1519,6 +1522,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
+    else if (act==actChangeMultiNeuronSegType) // Zhi Zhou
+   {
+       if (NEURON_CONDITION)
+       {
+              selectMode = smRetypeMultiNeurons;
+              b_addthiscurve = false;
+              if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+       }
+   }
 	else if (act==actChangeNeuronSegRadius)
 	{
 		if (NEURON_CONDITION)
@@ -1898,8 +1910,6 @@ void Renderer_gl1::endSelectMode()
 		selectMode = smObject;
 		if (w) { w->setCursor(oldCursor); }
 	}
-
-
 }
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
@@ -1923,7 +1933,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons)
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -1937,7 +1947,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-		int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons ||selectMode == smRetypeMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -1956,6 +1966,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             {
                 deleteMultiNeuronsByStroke();
             }
+            else if (selectMode == smRetypeMultiNeurons)
+            {
+                retypeMultiNeuronsByStroke();
+            }
+
 
 			list_listCurvePos.clear();
 			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode
@@ -2556,7 +2571,7 @@ int Renderer_gl1::hitPen(int x, int y)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons ||
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons ||
 			// for curve refinement, 110831 ZJL
 			selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)

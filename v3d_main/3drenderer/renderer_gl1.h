@@ -372,6 +372,9 @@ public:
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
 
+     void retypeMultiNeuronsByStroke();
+
+
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersGD(bool b_customized_bb);
 #endif
