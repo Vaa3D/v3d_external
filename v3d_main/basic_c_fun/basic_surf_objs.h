@@ -133,13 +133,13 @@ struct NeuronSWC : public BasicSurfObj
     };
     
     V3DLONG level; //20120217, by PHC. for ESWC format
-    float fea_val; //20120217, by PHC. for ESWC format
+    QList<float> fea_val; //20120217, by PHC. for ESWC format
 
 	V3DLONG seg_id; //this is reused for ESWC format, 20120217, by PHC
     V3DLONG nodeinseg_id; //090925, 091027: for segment editing
 
 	operator XYZ() const { return XYZ(x, y, z); }
-	NeuronSWC () {n=type=pn=0; x=y=z=r=0; seg_id=-1; nodeinseg_id=0; fea_val=0; level=-1;}
+	NeuronSWC () {n=type=pn=0; x=y=z=r=0; seg_id=-1; nodeinseg_id=0; fea_val=QList<float>(); level=-1;}
 };
 
 // .v3ds label surfaces
