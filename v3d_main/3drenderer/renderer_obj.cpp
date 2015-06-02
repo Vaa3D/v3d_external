@@ -30,7 +30,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "freeglut_geometry_r.c"
 
 #include "../io/asc_to_swc.h"
-#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
+//#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
 
 
 #define CALL_glutSolidTorus glutSolidTorus
@@ -927,19 +927,19 @@ void Renderer_gl1::loadNeuronTree(const QString& filename)
     if (filename.endsWith(".swc", Qt::CaseInsensitive) || filename.endsWith(".eswc", Qt::CaseInsensitive))
     {
         SS = readSWC_file(filename);
-        if(SS.listNeuron.size()> 10000)
-        {
-            bool ok;
-            double ratio = QInputDialog::getDouble(0, "Large SWC File","Downsample by:            ",1,0,2147483647,0.1,&ok);
-            if(ok)
-            {
-                SS = resample_ratio(SS,ratio);
-                SS.color.r = 0;
-                SS.color.g = 0;
-                SS.color.b = 0;
-                SS.color.a = 0;
-            }
-        }
+//        if(SS.listNeuron.size()> 10000)
+//        {
+//            bool ok;
+//            double ratio = QInputDialog::getDouble(0, "Large SWC File","Downsample by:            ",1,0,2147483647,0.1,&ok);
+//            if(ok)
+//            {
+//                SS = resample_ratio(SS,ratio);
+//                SS.color.r = 0;
+//                SS.color.g = 0;
+//                SS.color.b = 0;
+//                SS.color.a = 0;
+//            }
+//        }
     }
     else if (filename.endsWith(".asc", Qt::CaseInsensitive))
         asc_to_swc::readASC_file(SS, (char *)(qPrintable(filename)));
