@@ -3008,6 +3008,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                       node_type, 0, 100, 1, &ok);
 #endif
 
+    if(!ok) return;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
