@@ -145,7 +145,7 @@ target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIB
 # NRRD IO support
 include (ExternalProject)
 
-if (APPLE) # TODO: same fix for linux
+if (UNIX)
   ExternalProject_Add (
     LibBz2
     URL "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/src_packages/bzip2-1.0.6.tar.gz"
@@ -184,16 +184,16 @@ if (APPLE) # TODO: same fix for linux
 
   include_directories("${CMAKE_CURRENT_BINARY_DIR}/teem/build/include")
   set(TEEM_LIB "${CMAKE_CURRENT_BINARY_DIR}/teem/build/bin/libteem.a" )
-endif(APPLE)
+endif(UNIX)
 
 add_definitions(-DTEEM_STATIC) # otherwise Windows  will have link errors
 add_library(v3dbase2 ${V3D_SRCS})
 
-if (APPLE) # TO DO: same fix for linux
+if (UNIX)
   target_link_libraries(v3dbase2 ${TEEM_LIB}  ${BZ2_LIB})
   add_dependencies(v3dbase2 LibBz2)
   add_dependencies(v3dbase2 LibTeem)
-endif(APPLE)
+endif(UNIX)
 
 if (MSVC)
   find_package(ZLIB)
