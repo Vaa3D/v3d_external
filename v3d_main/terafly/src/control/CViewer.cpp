@@ -1719,6 +1719,11 @@ void CViewer::loadAnnotations() throw (RuntimeException)
         vaa3dCurves.listNeuron[i].z = getLocalDCoord(vaa3dCurves.listNeuron[i].z);
         /* @debug */ //printf("(%.0f,%.0f,%.0f)]  ", vaa3dCurves.listNeuron[i].x, vaa3dCurves.listNeuron[i].y, vaa3dCurves.listNeuron[i].z);
     }
+    vaa3dCurves.color.r = 0;
+    vaa3dCurves.color.g = 0;
+    vaa3dCurves.color.b = 0;
+    vaa3dCurves.color.a = 0;
+
     PLog::instance()->appendOperation(new AnnotationOperation(QString("load annotations: convert coordinates, view ").append(title.c_str()).toStdString(), itm::CPU, timer.elapsed()));
     /* @debug */ //printf("\n\n");
 
