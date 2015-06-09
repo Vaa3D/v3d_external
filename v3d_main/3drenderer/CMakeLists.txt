@@ -52,9 +52,10 @@ add_library( 3drenderer
     ${3DRenderer_SRCS})
 
 target_link_libraries( 3drenderer ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES} )
-target_link_libraries( 3drenderer imaging )
+target_link_libraries( 3drenderer imaging V3DInterface)
 
 add_dependencies(3drenderer v3dbase)
+add_dependencies(3drenderer V3DInterface)
 
 # Avoid link error on Mac Snow Leopard
 if(APPLE)
