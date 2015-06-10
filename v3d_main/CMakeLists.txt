@@ -98,8 +98,8 @@ if(APPLE)
     if(NOT V3D_INITIALIZED_MAX_OSX_TO_DEFAULT) # Only force it the first time.
         set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING
             "Build architectures for OSX" FORCE)
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING
-            "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value." FORCE)
+          #set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING
+          #  "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value." FORCE)
         set(V3D_INITIALIZED_MAX_OSX_TO_DEFAULT TRUE CACHE INTERNAL "Whether default v3d values of Mac compatibility has been set.")
     endif()
 endif()
