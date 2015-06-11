@@ -208,6 +208,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actJoinNeuronSegs_nearby_markclick=0, *actJoinNeuronSegs_nearby_pathclick=0, *actJoinNeuronSegs_all=0,
 			*actNeuronSegDeform=0, *actNeuronSegProfile=0,
                 *actChangeMultiNeuronSegType=0, //Zhi Zhou
+                *actBreakMultiNeuronSeg=0, //Zhi Zhou
 			*actNeuronOneSegMergeToCloseby=0, *actNeuronAllSegMergeToCloseby=0,
                *actDeleteMultiNeuronSeg=0, // ZJL, 20120806
 			*actDispNeuronNodeInfo=0,	*actAveDistTwoNeurons=0, *actDispNeuronMorphoInfo=0,
@@ -629,7 +630,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				if (curImg->tracedNeuron.isJointed()==false)
 				{
 					listAct.append(actBreakNeuronSegNearestNeuronNode = new QAction("break the segment using nearest neuron-node", w));
-					//listAct.append(actJoinNeuronSegs_nearby_pathclick = new QAction("join nearby (direct-connected) neuron segments", w));
+                    listAct.append(actBreakMultiNeuronSeg = new QAction("break multiple segments by a stroke", w));
+
+                    //listAct.append(actJoinNeuronSegs_nearby_pathclick = new QAction("join nearby (direct-connected) neuron segments", w));
 					listAct.append(actJoinNeuronSegs_all = new QAction("join *all* neuron-segments (and remove all duplicated nodes)", w));
 				}
 				if (curImg->tracedNeuron.isJointed())
@@ -1531,6 +1534,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
        }
    }
+    else if (act==actBreakMultiNeuronSeg) // Zhi Zhou
+   {
+       if (NEURON_CONDITION)
+       {
+              selectMode = smBreakMultiNeurons;
+              b_addthiscurve = false;
+              if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+       }
+   }
 	else if (act==actChangeNeuronSegRadius)
 	{
 		if (NEURON_CONDITION)
@@ -1900,6 +1912,9 @@ void Renderer_gl1::endSelectMode()
     if(selectMode == smDeleteMultiNeurons)
         deleteMultiNeuronsByStrokeCommit();
 
+    if(selectMode == smBreakMultiNeurons)
+        breakMultiNeuronsByStrokeCommit();
+
     cntCur3DCurveMarkers = 0;
 	list_listCurvePos.clear();
 	listMarkerPos.clear();
@@ -1933,7 +1948,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons)
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -1947,7 +1962,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons ||selectMode == smRetypeMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -1969,6 +1984,10 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             else if (selectMode == smRetypeMultiNeurons)
             {
                 retypeMultiNeuronsByStroke();
+            }
+            else if (selectMode == smBreakMultiNeurons)
+            {
+                breakMultiNeuronsByStroke();
             }
 
 

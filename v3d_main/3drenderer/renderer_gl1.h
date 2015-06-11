@@ -374,6 +374,8 @@ public:
 
      void retypeMultiNeuronsByStroke();
 
+     void breakMultiNeuronsByStroke();
+     void breakMultiNeuronsByStrokeCommit();
 
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersGD(bool b_customized_bb);

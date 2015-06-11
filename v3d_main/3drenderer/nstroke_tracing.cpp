@@ -3069,6 +3069,71 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     }
 
 }
+
+void Renderer_gl1::breakMultiNeuronsByStrokeCommit()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    curImg->tracedNeuron.decompose();
+    curImg->update_3drenderer_neuron_view(w, this);
+}
+
+
+void Renderer_gl1::breakMultiNeuronsByStroke()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+
+    // contour 2 polygon
+    QPolygon poly;
+    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+
+    // back-project the node curve points and mark segments to be deleted
+    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+    {
+        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+        if (p_tree
+            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+        {
+            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+            if (!p_listneuron)
+                continue;
+            for (V3DLONG i=0;i<p_listneuron->size();i++)
+            {
+                GLdouble px, py, pz, ix, iy, iz;
+                ix = p_listneuron->at(i).x;
+                iy = p_listneuron->at(i).y;
+                iz = p_listneuron->at(i).z;
+                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+                {
+                    py = viewport[3]-py; //the Y axis is reversed
+                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+                    for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+                    {
+                        QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+                        if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance
+                            && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
+                        {
+                            curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
+                            curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+                            break;   // found intersection with neuron segment: no more need to continue on this inner loop
+                        }
+                    }
+
+                }
+            }
+            curImg->update_3drenderer_neuron_view(w, this);
+            curImg->proj_trace_history_append();
+        }
+    }
+
+}
 // func of converting kernel
 template <class Tpre, class Tpost>
 void converting_to_8bit(void *pre1d, Tpost *pPost, V3DLONG imsz)

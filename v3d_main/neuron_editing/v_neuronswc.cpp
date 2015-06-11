@@ -709,7 +709,7 @@ bool change_type_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG
 	vector <V_NeuronSWC_unit> & row = (swc_list.seg[seg_id].row);
 	for (V3DLONG j=0;j<row.size();j++)
 	{
-		row[j].type = type;
+        row[j].type = type;
 	}
 	return true;
 }
