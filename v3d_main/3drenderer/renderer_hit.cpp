@@ -1912,8 +1912,8 @@ void Renderer_gl1::endSelectMode()
     if(selectMode == smDeleteMultiNeurons)
         deleteMultiNeuronsByStrokeCommit();
 
-    if(selectMode == smBreakMultiNeurons)
-        breakMultiNeuronsByStrokeCommit();
+//    if(selectMode == smBreakMultiNeurons)
+//        breakMultiNeuronsByStrokeCommit();
 
     cntCur3DCurveMarkers = 0;
 	list_listCurvePos.clear();

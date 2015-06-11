@@ -3117,18 +3117,20 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                     for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                     {
                         QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                        if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance
-                            && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
+                        if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance)
+                       //     && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
                         {
-                            curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
-                            curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
+                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+                            curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
+                            curImg->update_3drenderer_neuron_view(w, this);
+
                             break;   // found intersection with neuron segment: no more need to continue on this inner loop
                         }
                     }
 
                 }
             }
-            curImg->update_3drenderer_neuron_view(w, this);
             curImg->proj_trace_history_append();
         }
     }
