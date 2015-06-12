@@ -85,18 +85,14 @@ if (UNIX)
 endif(UNIX)
 
 if (MSVC)
-  find_package(ZLIB)
-  if (NOT ZLIB_LIBRARY)
-      find_library( ZLIB_LIBRARY "zlib" "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib")
-  endif()
-  if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES ".*64")  # AMD64 is returned, not x86_64
       find_library( TEEM_LIB "teem" "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64")
       find_library( BZ2_LIB "libbz2" "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64")
    else()
        find_library( TEEM_LIB "teem" "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib")
        find_library( BZ2_LIB "libbz2" "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib")
    endif()
-  target_link_libraries(V3DInterface ${TEEM_LIB} ${BZ2_LIB} ${ZLIB_LIBRARY} )
+  target_link_libraries(V3DInterface ${TEEM_LIB} ${BZ2_LIB})
 endif(MSVC)
 
 
