@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 # Use install name tool to correct local library references in v3d plugins
 
@@ -11,6 +11,7 @@ my $app_name = shift;
 die $usage unless $app_name;
 die "Application $app_name does not exist" unless -e $app_name;
 
+
 process_all_plugins($app_name);
 process_one_library( "$app_name/Contents/MacOS/vaa3d",$app_name);
 
@@ -18,7 +19,9 @@ sub process_all_plugins
 {
     my $app_name = shift;
     my $dir = "$app_name/Contents/MacOS/plugins";
-    my @plugins = glob("$dir/*.dylib $dir/*/*.dylib $dir/*/*/*.dylib  $dir/*/*/*/*.dylib");
+    #print "$dir in!\n\n\n";
+    my @plugins = glob("$dir/*/*/*/*.dylib");
+
     foreach my $plugin (@plugins) {
         process_one_library($plugin, $app_name);
     }
@@ -28,7 +31,6 @@ sub process_one_library
 {
     my $lib_file = shift;
     my $app_name = shift;
-    print $lib_file,"\n";
     open FH, "otool -L $lib_file |";
     my $line_num = 0;
     my $cmd = "install_name_tool";
