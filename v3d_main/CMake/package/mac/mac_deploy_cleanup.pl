@@ -19,10 +19,10 @@ sub process_all_plugins
 {
     my $app_name = shift;
     my $dir = "$app_name/Contents/MacOS/plugins";
-    #print "$dir in!\n\n\n";
-    my @plugins = glob("$dir/*/*/*/*.dylib");
+    my @plugins = glob("$dir/*/*.dylib $dir/*/*/*.dylib $dir/*/*/*/*.dylib $dir/*/*/*/*/*.dylib");
 
     foreach my $plugin (@plugins) {
+        print "deploy $plugin \n";
         process_one_library($plugin, $app_name);
     }
 }
