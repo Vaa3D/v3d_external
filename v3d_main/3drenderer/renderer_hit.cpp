@@ -387,6 +387,77 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     }
 
                 }
+
+//150616. Add neuron menu when there is only one neuron
+                if (listNeuronTree.size()==1 && w && curImg)
+                    //by PHC. only enable the following pop-up menu when there is the image data, only one neuron (presumably the one being reconstructed
+                    //this may be revised later so that the raw image can contain multiple neurons. But as of now (090206), I only allow one neuron being reconstructed at a time
+                {
+                    listAct.append(actMarkerCreateNearestNeuronNode = new QAction("create marker from the nearest neuron-node", w));
+                    if (listNeuronTree.at(0).editable==false)
+                    {
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                        listAct.append(actNeuronToEditable = new QAction("edit this neuron (*only 1 editable neuron at one time*)", w));
+                    }
+                    if (listNeuronTree.at(0).editable==true) //this requires V_NeuronSWC
+                    {
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                        // ZJL 110913:
+                        // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
+                        listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment by mean shift", w));
+                        actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.png"));
+                        actCurveEditRefine->setVisible(true);
+                        actCurveEditRefine->setIconVisibleInMenu(true);
+                        //listAct.append(act = new QAction("", w));
+                        listAct.append(actCurveEditRefine_fm = new QAction("extend/refine nearest neuron-segment by adjacent-pair fast marching", w));
+                        actCurveEditRefine_fm->setIcon(QIcon(":/icons/strokeN.png"));
+                        actCurveEditRefine_fm->setVisible(true);
+                        actCurveEditRefine_fm->setIconVisibleInMenu(true);
+                        //listAct.append(act = new QAction("", w));
+                        // Drag a curve to refine it by using rubber-band line like method
+                        listAct.append(actCurveRubberDrag = new QAction("drag nearest neuron-segment", w));
+                        actCurveRubberDrag->setIcon(QIcon(":/icons/click3.png"));
+                        actCurveRubberDrag->setVisible(true);
+                        actCurveRubberDrag->setIconVisibleInMenu(true);
+                        listAct.append(act = new QAction("", w));
+                        act->setSeparator(true);
+                        // End of ZJL
+                        listAct.append(actDispRecNeuronSegInfo = new QAction("display nearest neuron-segment info", w));
+                        listAct.append(actChangeNeuronSegType = new QAction("change nearest neuron-segment type", w));
+                        //By Zhi Zhou
+                        listAct.append(actChangeMultiNeuronSegType = new QAction("change multiple neuron-segments type by a stroke", w));
+                        listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
+                        listAct.append(actReverseNeuronSeg = new QAction("reverse nearest neuron-segment link order", w));
+                        listAct.append(actDeleteNeuronSeg = new QAction("delete the nearest neuron-segment", w));
+
+                        // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
+                        listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
+
+                        //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
+                        //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
+                        if (curImg->tracedNeuron.isJointed()==false)
+                        {
+                            listAct.append(actBreakNeuronSegNearestNeuronNode = new QAction("break the segment using nearest neuron-node", w));
+                            listAct.append(actBreakMultiNeuronSeg = new QAction("break multiple segments by a stroke", w));
+
+                            //listAct.append(actJoinNeuronSegs_nearby_pathclick = new QAction("join nearby (direct-connected) neuron segments", w));
+                            listAct.append(actJoinNeuronSegs_all = new QAction("join *all* neuron-segments (and remove all duplicated nodes)", w));
+                        }
+                        if (curImg->tracedNeuron.isJointed())
+                        {
+                            listAct.append(actDecomposeNeuron = new QAction("decompose to *simple* neuron-segments", w));
+                        }
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                        listAct.append(actNeuronFinishEditing = new QAction("finish editing this neuron", w));
+                        if (curImg->valid())
+                        {
+                            listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                            listAct.append(actNeuronSegDeform = new QAction("deform the neuron-segment", w));
+                            listAct.append(actNeuronSegProfile = new QAction("neuron-segment intensity profile", w));
+                        }
+                    }
+                }
+
                 //101008
                 //#ifdef _WIN32 && _MSC_VER
 #ifdef _IMAGING_MENU_
@@ -1428,11 +1499,19 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 NeuronTree *p_tree = 0;
 
-                p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-                curEditingNeuron = names[2];
-                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
-
-                qDebug() << "names[2]=" << names[2] << " p_tree=" << p_tree;
+                if (listNeuronTree.size()==1)
+                {
+                    p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
+                    curEditingNeuron = 1;
+                    realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+                }
+                else
+                {
+                    p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+                    curEditingNeuron = names[2];
+                    realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+                    qDebug() << "names[2]=" << names[2] << " p_tree=" << p_tree;
+                }
 
                 curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
                 //v3d_msg(QString("before editing current traceNeuron.nseg=%1 traceNeuron_old.nseg=%2").arg(curImg->tracedNeuron.nsegs()).arg(curImg->tracedNeuron_old.nsegs()));
