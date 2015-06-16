@@ -92,6 +92,7 @@ if (MSVC)
        find_library( TEEM_LIB "teem" "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib")
        find_library( BZ2_LIB "libbz2" "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib")
    endif()
+  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include")
   target_link_libraries(V3DInterface ${TEEM_LIB} ${BZ2_LIB})
 endif(MSVC)
 
