@@ -47,7 +47,7 @@ shopt -s expand_aliases;
 
 V3D_PRO_FILE="vaa3d.pro"    # default project file for qmake
 
-SYSTEMBITS="32"             # default use 32bit libtiff
+SYSTEMBITS="64"             # default use 64bit libtiff
 TIFFCOMPILE="NO"            # default do not compile libtiff
 FFTWCOMPILE="NO"            # default do not compile libfftw
 V3DPLUGINSCOMPILE="NO"      # default do not compile v3d plugins
