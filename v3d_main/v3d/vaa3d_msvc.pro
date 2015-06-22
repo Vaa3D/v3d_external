@@ -49,6 +49,8 @@ win32 {
 				-llibjba \    #libjba.lib also works
 				-llibFL_cellseg \
 				-llibFL_brainseg 
+        DEFINES *= TEEM_STATIC
+        QMAKE_CXXFLAGS += -DTEEMSTATIC
 	
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
 		               $$LOCAL_DIR\\common_lib\\include
