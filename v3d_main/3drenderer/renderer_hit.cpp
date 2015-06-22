@@ -1452,12 +1452,16 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	}
 	else if (act==actMarkerCreateNearestNeuronNode)
 	{
-		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-		if (p_tree)
+        NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                    (NeuronTree *)(&(listNeuronTree.at(0))) :
+                    (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+        if (p_tree)
 		{
 			double best_dist;
 			V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
-			qDebug("detect nearest neuron node [%d] for the [%d] neuron", n_id, names[2]-1);
+            if (listNeuronTree.size()>1)
+                qDebug("detect nearest neuron node [%d] for the [%d] neuron", n_id, names[2]-1);
 			NeuronSWC cur_node;
 			if (n_id>=0)
 			{
@@ -1575,8 +1579,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			double best_dist;
 			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
@@ -1594,8 +1601,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1626,8 +1636,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1641,8 +1654,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1663,8 +1679,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1688,8 +1707,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1702,8 +1724,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			if (p_tree)
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            if (p_tree)
 			{
 				double best_dist;
 				V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
@@ -1742,7 +1767,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	else if (act==actBreakNeuronSeg_markclick)
 	{
 		if (NEURON_CONDITION)
-		{
+        {  //is the following code correct. Noted BY PHC, 150621.
 			ImageMarker *c_pos = (ImageMarker *)(&listMarker.at(names[2]-1));
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
 			V3DLONG n_id=-1;
@@ -1765,8 +1790,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1779,8 +1807,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1793,8 +1824,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1808,8 +1842,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1822,8 +1859,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1836,8 +1876,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			V3DLONG n_id;
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            V3DLONG n_id;
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1850,15 +1893,21 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		if (NEURON_CONDITION)
 		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-			curImg->proj_trace_mergeAllClosebyNeuronNodes(p_tree);
+            NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                        (NeuronTree *)(&(listNeuronTree.at(0))) :
+                        (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+            curImg->proj_trace_mergeAllClosebyNeuronNodes(p_tree);
 			curImg->update_3drenderer_neuron_view(w, this);
 		}
 	}
 	else if (act==actDispNeuronNodeInfo)
 	{
-		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-		double best_dist;
+        NeuronTree *p_tree = (listNeuronTree.size()==1) ?
+                    (NeuronTree *)(&(listNeuronTree.at(0))) :
+                    (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+
+        double best_dist;
 		V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 		QString tmpstr, tmpstr1;
 		tmpstr.setNum(n_id); tmpstr.prepend("The neuron node has row index ");
@@ -1867,51 +1916,61 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		QMessageBox::information(0, "neuron node info", tmpstr);
 	}
 	else if (act==actAveDistTwoNeurons)
-	{
-		if (listNeuronTree.size()<2)
-			QMessageBox::information(0, "only one neuron", "only one neuron, nothing is computed");
-		QString tmpstr, ts2;
-		float ave_sd=0, ave_ssd=0, ave_ssd_percent=0;
-		for (int ci=0;ci<listNeuronTree.size();ci++)
-		{
-			if (ci!=(names[2]-1))
-			{
-				ts2.setNum(names[2]); ts2.prepend("dists between "); tmpstr += ts2;
-				ts2.setNum(ci+1); ts2.prepend(" and "); tmpstr += ts2;
-                NeuronDistSimple tmp_score = neuron_score_rounding_nearest_neighbor(&(listNeuronTree.at(names[2]-1)), &(listNeuronTree.at(ci)),1);
-				ts2.setNum(tmp_score.dist_allnodes); ts2.prepend(" are <br> entire-structure-average = "); tmpstr += ts2 + "<br>";
-				ts2.setNum(tmp_score.dist_apartnodes); ts2.prepend(" different-structure-average = "); tmpstr += ts2 + "<br>";
-                ts2.setNum(tmp_score.percent_apartnodes); ts2.prepend(" percent of different-structure = "); tmpstr += ts2 + "<br>";
-                ts2.setNum(tmp_score.dist_max); ts2.prepend(" max distance of neurons' nodes = "); tmpstr += ts2 + "<br><br>";
-                qDebug() << "score between "<<names[2]
-                         << " and "<<ci+1<< "="
-                         << tmp_score.dist_allnodes << " "
-                         << tmp_score.dist_apartnodes << " "
-                         << tmp_score.percent_apartnodes << " "
-                         << tmp_score.dist_max;
-				ave_sd += tmp_score.dist_allnodes;
-				ave_ssd += tmp_score.dist_apartnodes;
-				ave_ssd_percent += tmp_score.percent_apartnodes;
-			}
-		}
-		if (listNeuronTree.size()>=2)
-		{
-			ave_sd /= float(listNeuronTree.size()-1);
-			ave_ssd /= float(listNeuronTree.size()-1);
-			ave_ssd_percent /= float(listNeuronTree.size()-1);
-			ts2.setNum(names[2]); ts2.prepend("Average scores between "); tmpstr += ts2;
-			tmpstr += " and the remaining neurons are <br>";
-			ts2.setNum(ave_sd); ts2.prepend(" entire-structure-average = "); tmpstr += ts2 + "<br>";
-			ts2.setNum(ave_ssd); ts2.prepend(" different-structure-average = "); tmpstr += ts2 + "<br>";
-			ts2.setNum(ave_ssd_percent); ts2.prepend(" percent of different-structure = "); tmpstr += ts2 + "<br><br>";
-			qDebug() << "score between "<<names[2]<< " and remaining neurons =" << ave_sd << " " << ave_ssd << " " << ave_ssd_percent;
-		}
-		QMessageBox::information(0, "neuron distance scores", tmpstr);
+    {
+        if (listNeuronTree.size()<2)
+            v3d_msg("only one neuron, nothing is computed");
+        else
+        {
+            QString tmpstr, ts2;
+            float ave_sd=0, ave_ssd=0, ave_ssd_percent=0;
+            for (int ci=0;ci<listNeuronTree.size();ci++)
+            {
+                if (ci!=(names[2]-1))
+                {
+                    ts2.setNum(names[2]); ts2.prepend("dists between "); tmpstr += ts2;
+                    ts2.setNum(ci+1); ts2.prepend(" and "); tmpstr += ts2;
+                    NeuronDistSimple tmp_score = neuron_score_rounding_nearest_neighbor(&(listNeuronTree.at(names[2]-1)), &(listNeuronTree.at(ci)),1);
+                    ts2.setNum(tmp_score.dist_allnodes); ts2.prepend(" are <br> entire-structure-average = "); tmpstr += ts2 + "<br>";
+                    ts2.setNum(tmp_score.dist_apartnodes); ts2.prepend(" different-structure-average = "); tmpstr += ts2 + "<br>";
+                    ts2.setNum(tmp_score.percent_apartnodes); ts2.prepend(" percent of different-structure = "); tmpstr += ts2 + "<br>";
+                    ts2.setNum(tmp_score.dist_max); ts2.prepend(" max distance of neurons' nodes = "); tmpstr += ts2 + "<br><br>";
+                    qDebug() << "score between "<<names[2]
+                             << " and "<<ci+1<< "="
+                             << tmp_score.dist_allnodes << " "
+                             << tmp_score.dist_apartnodes << " "
+                             << tmp_score.percent_apartnodes << " "
+                             << tmp_score.dist_max;
+                    ave_sd += tmp_score.dist_allnodes;
+                    ave_ssd += tmp_score.dist_apartnodes;
+                    ave_ssd_percent += tmp_score.percent_apartnodes;
+                }
+            }
+
+            if (listNeuronTree.size()>=2)
+            {
+                ave_sd /= float(listNeuronTree.size()-1);
+                ave_ssd /= float(listNeuronTree.size()-1);
+                ave_ssd_percent /= float(listNeuronTree.size()-1);
+                ts2.setNum(names[2]); ts2.prepend("Average scores between "); tmpstr += ts2;
+                tmpstr += " and the remaining neurons are <br>";
+                ts2.setNum(ave_sd); ts2.prepend(" entire-structure-average = "); tmpstr += ts2 + "<br>";
+                ts2.setNum(ave_ssd); ts2.prepend(" different-structure-average = "); tmpstr += ts2 + "<br>";
+                ts2.setNum(ave_ssd_percent); ts2.prepend(" percent of different-structure = "); tmpstr += ts2 + "<br><br>";
+                qDebug() << "score between "<<names[2]<< " and remaining neurons =" << ave_sd << " " << ave_ssd << " " << ave_ssd_percent;
+            }
+            QMessageBox::information(0, "neuron distance scores", tmpstr);
+        }
 	}
 	else if (act==actDispNeuronMorphoInfo)
 	{
 		QString tmpstr = "Neuron ", ts2;
-		ts2.setNum(names[2]); tmpstr += ts2 + "<br>" + get_neuron_morpho_features_str(&(listNeuronTree.at(names[2]-1)));
+        ts2.setNum(names[2]);
+
+        if (listNeuronTree.size()==1)
+            tmpstr += ts2 + "<br>" + get_neuron_morpho_features_str(&(listNeuronTree.at(0)));
+        else
+            tmpstr += ts2 + "<br>" + get_neuron_morpho_features_str(&(listNeuronTree.at(names[2]-1)));
+
 		QMessageBox::information(0, "neuron info", tmpstr);
 		qDebug() << tmpstr;
 	}
@@ -1919,7 +1978,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		vaa3d_neurontoolbox_paras* np = new vaa3d_neurontoolbox_paras;
 		np->OPS = "Neuron Toolbox";
-		np->nt = listNeuronTree.at(names[2]-1);
+        np->nt = (listNeuronTree.size()==1) ? listNeuronTree.at(0) : listNeuronTree.at(names[2]-1);
 		double best_dist;
 		np->n_id = findNearestNeuronNode_WinXY(cx, cy, &np->nt, best_dist);
 		np->win = (V3dR_MainWindow *)w->getMainWindow();
