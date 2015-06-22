@@ -464,7 +464,7 @@ bool writeESWC_file(const QString& filename, const NeuronTree& nt)
 		fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld %ld %ld",
 				p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn, p_pt->seg_id, p_pt->level);
 		for (int j=0;j<p_pt->fea_val.size();j++)
-			fprintf(fp, " %.5f");
+            fprintf(fp, " %.5f", p_pt->fea_val.at(j));
 		fprintf(fp, "\n");
 	}
 	fclose(fp);
