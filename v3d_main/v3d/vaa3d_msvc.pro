@@ -44,6 +44,7 @@ win32 {
 		
 		LIBS += \ #-lm
 				-llibtiff \
+        -lteem \
 				-llibnewmat \ #libnewmat.lib also works, 2010-05-21. PHC
 				-llibjba \    #libjba.lib also works
 				-llibFL_cellseg \
