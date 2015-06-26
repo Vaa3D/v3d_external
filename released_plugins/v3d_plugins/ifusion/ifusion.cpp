@@ -1221,7 +1221,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 V3DLONG fx=sz_f[0], fy=sz_f[1], fz=sz_f[2], fc=sz_f[3];
 
                 // load image g
-                V3DLONG *sz_g = 0;
+                V3DLONG sz_g[4];
                 int datatype_g = 0;
                 unsigned char* g1d = 0;
 
