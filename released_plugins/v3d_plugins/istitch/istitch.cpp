@@ -1399,7 +1399,7 @@ int pairwise_stitching(char *fn_target, V3DLONG ch_tar, char *fn_subject, V3DLON
 {
     // load images
     unsigned char *subject1d=NULL, *target1d=NULL;
-    V3DLONG *sz_subject=NULL, *sz_target=NULL;
+    V3DLONG sz_subject[4], sz_target[4];
     int datatype_subject, datatype_target;
 
     V3DLONG sx, sy, sz, sc, tx, ty, tz, tc;
@@ -1728,8 +1728,6 @@ int pairwise_stitching(char *fn_target, V3DLONG ch_tar, char *fn_subject, V3DLON
     // de-alloc
     if(subject1d) {delete []subject1d; subject1d=NULL;}
     if(target1d) {delete []target1d; target1d=NULL;}
-    if(sz_subject) {delete []sz_subject; sz_subject=NULL;}
-    if(sz_target) {delete []sz_target; sz_target=NULL;}
     if(scale) {delete []scale; scale=0;}
 
     //
@@ -9080,7 +9078,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
             cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
 
             // loading relative image files
-            V3DLONG *sz_relative = 0;
+            V3DLONG sz_relative[4];
             int datatype_relative = 0;
             unsigned char* relative1d = 0;
 
@@ -9222,7 +9220,6 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
             //de-alloc
             if(relative1d) {delete []relative1d; relative1d=0;}
-            if(sz_relative) {delete []sz_relative; sz_relative=0;}
         }
     }
 
@@ -9403,7 +9400,7 @@ int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
                     cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
 
                     // loading relative image files
-                    V3DLONG *sz_relative = 0;
+                    V3DLONG sz_relative[4];
                     int datatype_relative = 0;
                     unsigned char* relative1d = 0;
 
@@ -9545,7 +9542,6 @@ int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
                     //de-alloc
                     if(relative1d) {delete []relative1d; relative1d=0;}
-                    if(sz_relative) {delete []sz_relative; sz_relative=0;}
                 }
 
             }
@@ -9872,7 +9868,7 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
                 cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
 
                 // loading relative imagg files
-                V3DLONG *sz_relative = 0;
+                V3DLONG sz_relative[4];
                 int datatype_relative = 0;
                 unsigned char* relative1d = 0;
 
@@ -9944,7 +9940,6 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
                 //de-alloc
                 if(relative1d) {delete []relative1d; relative1d=0;}
-                if(sz_relative) {delete []sz_relative; sz_relative=0;}
             }
 
         }
@@ -10284,13 +10279,12 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
         // first step: rough estimation in a coarse scale
         V3DLONG offsets[3];
-        V3DLONG *sz_target = 0;
+        V3DLONG sz_target[4];
         int datatype_target = 0;
         unsigned char* target1d = 0;
         for(int i=0; i<NTILES_I; i++) // record all the sz_image information
         {
             //loading target files
-            sz_target = 0;
             datatype_target = 0;
             target1d = 0;
 
@@ -10350,14 +10344,13 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             V3DLONG offsets_tar = channel1*tx*ty*tz;
 
             // try rest of tiles
-            V3DLONG *sz_subject = 0;
+            V3DLONG sz_subject[4];
             int datatype_subject = 0;
             unsigned char* subject1d = 0;
             bool b_init = true;
             for(int j=i+1; j<NTILES; j++)
             {
                 //loading subject files
-                sz_subject = 0;
                 datatype_subject = 0;
                 subject1d = 0;
 
@@ -10455,11 +10448,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
                 //de-alloc
                 y_del<unsigned char>(subject1d);
-                y_del<V3DLONG>(sz_subject);
             }
             //de-alloc
             y_del<unsigned char>(target1d);
-            y_del<V3DLONG>(sz_target);
         }
         // find mst of whole tiled images
         for(int i=0; i<NTILES; i++)
@@ -10547,7 +10538,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 if(vim.tilesList.at(i).hasedge)
                 {
                     //loading subject files
-                    V3DLONG *sz_subject = 0;
+                    V3DLONG sz_subject[4];
                     int datatype_subject = 0;
                     unsigned char* subject1d = 0;
 
@@ -10563,7 +10554,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         V3DLONG previous = vim.tilesList[i].preList[j];
 
                         //loading target files
-                        V3DLONG *sz_target = 0;
+                        V3DLONG sz_target[4];
                         int datatype_target = 0;
                         unsigned char* target1d = 0;
 
@@ -10613,11 +10604,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
                         //de-alloc
                         if(target1d) {delete []target1d; target1d=0;}
-                        if(sz_target) {delete []sz_target; sz_target=0;}
                     }
                     //de-alloc
                     if(subject1d) {delete []subject1d; subject1d=0;}
-                    if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
                 }
             }
@@ -10990,7 +10979,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
         {
             // load tile
-            V3DLONG *sz_relative = 0;
+            V3DLONG sz_relative[4];
             unsigned char* relative1d = 0;
 
             if(QFile(QString(vim.tilesList.at(ii).fn_image.c_str())).exists())
@@ -11354,7 +11343,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         for(int i=0; i<NTILES_I; i++) // record all the sz_image information
         {
             //loading target files
-            V3DLONG *sz_target = 0;
+            V3DLONG sz_target[4];
             int datatype_target = 0;
             unsigned char* target1d = 0;
 
@@ -11394,7 +11383,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             for(int j=i+1; j<NTILES; j++)
             {
                 //loading subject files
-                V3DLONG *sz_subject = 0;
+                V3DLONG sz_subject[4];
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
 
@@ -11458,12 +11447,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
                 //de-alloc
                 if(subject1d) {delete []subject1d; subject1d=0;}
-                if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
             }
             //de-alloc
             if(target1d) {delete []target1d; target1d=0;}
-            if(sz_target) {delete []sz_target; sz_target=0;}
 
         }
 
@@ -11540,7 +11527,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 rPEAKS pos;
 
                 //loading target files
-                V3DLONG *sz_target = 0;
+                V3DLONG sz_target[4];
                 int datatype_target = 0;
                 unsigned char* target1d = 0;
 
@@ -11558,7 +11545,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 for(int i=j+1; i<NTILES; i++)  // traverse all tiled images except the reference
                 {
                     //loading subject files
-                    V3DLONG *sz_subject = 0;
+                    V3DLONG sz_subject[4];
                     int datatype_subject = 0;
                     unsigned char* subject1d = 0;
 
@@ -11644,13 +11631,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     }
 
                     // delloc
-                    y_del<V3DLONG>(sz_subject);
                     y_del<unsigned char>(subject1d);
 
                 }
 
                 // delloc
-                y_del<V3DLONG>(sz_target);
                 y_del<unsigned char>(target1d);
 
             }
@@ -12058,7 +12043,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         for(int i=0; i<NTILES_I; i++) // record all the sz_image information
         {
             //loading target files
-            V3DLONG *sz_target = 0;
+            V3DLONG sz_target[4];
             int datatype_target = 0;
             unsigned char* target1d = 0;
 
@@ -12105,7 +12090,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             for(int j=i+1; j<NTILES; j++)
             {
                 //loading subject files
-                V3DLONG *sz_subject = 0;
+                V3DLONG sz_subject[4];
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
 
@@ -12176,12 +12161,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
                 //de-alloc
                 if(subject1d) {delete []subject1d; subject1d=0;}
-                if(sz_subject) {delete []sz_subject; sz_subject=0;}
 
             }
             //de-alloc
             if(target1d) {delete []target1d; target1d=0;}
-            if(sz_target) {delete []sz_target; sz_target=0;}
 
         }
 
