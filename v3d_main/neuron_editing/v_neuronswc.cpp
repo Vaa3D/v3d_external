@@ -799,7 +799,7 @@ V_NeuronSWC join_segs_in_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG s
 	{
 		if (k==0) out_swc = swc_list.seg.at(k);
 		else
-		{
+        {
 			if(!join_two_V_NeuronSWC(out_swc, swc_list.seg.at(k)))
 			{
 				qDebug("some error happened in join_segs_in_V_NeuronSWC_list() for seg [%d]",k);
@@ -1001,7 +1001,7 @@ bool join_two_V_NeuronSWC_old(V_NeuronSWC & destination_swc, V_NeuronSWC & subje
 				fprintf(fp, "%ld %ld %5.3f %5.3f %5.3f %5.3f %ld\n", V3DLONG(v.data[0]), V3DLONG(v.data[1]), v.data[2], v.data[3], v.data[4], v.data[5], V3DLONG(v.data[6]));
 			}
 
-			fclose(fp);
+            fclose(fp);
 		}
 
 		if(ipos) {delete []ipos; ipos=0;}
@@ -1024,19 +1024,19 @@ bool join_two_V_NeuronSWC(V_NeuronSWC & destination_swc, V_NeuronSWC & subject_s
 		return false; //some error happens
 	}
 
-	//first just concatenate records
+    //first just concatenate records
 	V_NeuronSWC_unit v, vp;
 	V3DLONG i=0, j=0;
 
 	V3DLONG nr_des = destination_swc.nrows();
 	for (i=0;i<subject_swc.nrows();i++)
 	{
-		v = subject_swc.row.at(i);
+        v = subject_swc.row.at(i);
 		v.n += nr_des;
 		if (v.parent>=0) v.parent += nr_des;
 		destination_swc.append(v);
 	}
-	nr_des = destination_swc.nrows();
+    nr_des = destination_swc.nrows();
 
 	//then produce the adjacency matrix
 	vector<V_NeuronSWC_coord> unpos = destination_swc.unique_ncoord();
@@ -1066,14 +1066,14 @@ bool join_two_V_NeuronSWC(V_NeuronSWC & destination_swc, V_NeuronSWC & subject_s
 	vector <float> tmpr;
 	for (i=0; i<N; i++) adjm_radius.push_back(tmpr); //initialize as empty
 
-	vector < vector <char> > adjm_type;
-	vector <char> tmpt;
+    vector < vector <float> > adjm_type;
+    vector <float> tmpt;
 	for (i=0; i<N; i++) adjm_type.push_back(tmpt); //initialize as empty
 
 	for (i=0; i<nr_des; i++)
 	{
-		v = destination_swc.row.at(i);
-		V3DLONG iv = row_unid_lut[i];
+        v = destination_swc.row.at(i);
+        V3DLONG iv = row_unid_lut[i];
 
 		if (v.parent>=0)
 		{
@@ -1081,7 +1081,7 @@ bool join_two_V_NeuronSWC(V_NeuronSWC & destination_swc, V_NeuronSWC & subject_s
 			V3DLONG ip =  row_unid_lut[nid_row_lut[v.parent]];
 			adjm.at(iv).push_back(ip); //add it anyway, will find unique one later. Indeed even unnecessary to find the unique ones, because the repeated record will merge automatically
 			adjm_radius.at(iv).push_back(float(v.r));
-			adjm_type.at(iv).push_back(char(v.type));
+            adjm_type.at(iv).push_back(float(v.type));
 			//need to record neuron edge type and radius as well later
 		}
 		else
@@ -1089,8 +1089,8 @@ bool join_two_V_NeuronSWC(V_NeuronSWC & destination_swc, V_NeuronSWC & subject_s
 			//do nothing about the parent, i.e. this is a root for this record, and thus do not add to the parent list at all
 			//but still update type and radius
 			adjm_radius.at(iv).push_back(float(v.r));
-			adjm_type.at(iv).push_back(float(v.type));
-		}
+            adjm_type.at(iv).push_back(float(v.type));
+        }
 	}
 
 	//no need to find unique ones
@@ -1101,13 +1101,13 @@ bool join_two_V_NeuronSWC(V_NeuronSWC & destination_swc, V_NeuronSWC & subject_s
 	{
 		vector <V3DLONG> & cur_pa = adjm.at(i);
 		vector <float> & cur_r = adjm_radius.at(i);
-		vector <char> & cur_t = adjm_type.at(i);
+        vector <float> & cur_t = adjm_type.at(i);
 		V_NeuronSWC_coord & cur_coord = unpos.at(i);
 
 		if (cur_pa.size()<=0) //a root
 		{
 			v.n = i;
-			v.type = double(cur_t.back()); //direct use the last one, which means the later one overwrite the first one
+            v.type = double(cur_t.back()); //direct use the last one, which means the later one overwrite the first one
 			v.x = cur_coord.x;
 			v.y = cur_coord.y;
 			v.z = cur_coord.z;
@@ -1120,7 +1120,7 @@ bool join_two_V_NeuronSWC(V_NeuronSWC & destination_swc, V_NeuronSWC & subject_s
 			for (j=0;j<cur_pa.size();j++)
 			{
 				v.n = i;
-				v.type = double(cur_t.at(j)); //allow he later one overwrite the earlier one(s) if there are redundant records
+                v.type = double(cur_t.at(j)); //allow he later one overwrite the earlier one(s) if there are redundant records
 				v.x = cur_coord.x;
 				v.y = cur_coord.y;
 				v.z = cur_coord.z;
@@ -1128,13 +1128,13 @@ bool join_two_V_NeuronSWC(V_NeuronSWC & destination_swc, V_NeuronSWC & subject_s
 				v.parent = cur_pa.at(j);
 				newswc.append(v);
 			}
-		}
+        }
 	}
 
 
 	//copy the results
 	destination_swc = newswc;
-	destination_swc.b_jointed = true;
+    destination_swc.b_jointed = true;
 	return true;
 }
 
