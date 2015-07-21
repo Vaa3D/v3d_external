@@ -800,7 +800,15 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                         child_rawimg = createMdiChild();
                         if (child_rawimg->loadFile(cc.raw_image_file_list.at(i))) {
                             statusBar()->showMessage(tr("File loaded [%1]").arg(cc.raw_image_file_list.at(i)), 2000);
+                            if (global_setting.b_yaxis_up)
+                            {
+                                child_rawimg->getImageData()->flip(axis_y);
+                            }
                             child_rawimg->show();
+                            if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
+                            {
+                                child_rawimg->doImage3DView();
+                            }
 #ifdef USE_Qt5
                             workspace->cascadeSubWindows();
 #else
