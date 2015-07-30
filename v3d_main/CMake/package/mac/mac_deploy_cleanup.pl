@@ -6,7 +6,6 @@ use strict;
 use File::Copy;
 
 my $usage = "Usage:\n  $0 <foo>.app\n" ;
-
 my $app_name = shift;
 die $usage unless $app_name;
 die "Application $app_name does not exist" unless -e $app_name;
@@ -19,9 +18,15 @@ sub process_all_plugins
 {
     my $app_name = shift;
     my $dir = "$app_name/Contents/MacOS/plugins";
-    my @plugins = glob("$dir/*/*.dylib $dir/*/*/*.dylib $dir/*/*/*/*.dylib $dir/*/*/*/*/*.dylib");
+    my @plugins = glob("$dir/*/*.dylib $dir/*/*/*.dylib");
+    my @plugins2 = glob("$dir/*/*/*/*.dylib $dir/*/*/*/*/*.dylib");
 
+    print "plugins=",@plugins,"\n";
     foreach my $plugin (@plugins) {
+        print "deploy $plugin \n";
+        process_one_library($plugin, $app_name);
+    }
+    foreach my $plugin (@plugins2) {
         print "deploy $plugin \n";
         process_one_library($plugin, $app_name);
     }
@@ -48,7 +53,7 @@ sub process_one_library
         # Skip system entries
         next if $lib_name =~ m!^/usr/lib/!;
     
-        #print "\n lib name :  ", $lib_name,"\n";
+        print "\n lib name :  ", $lib_name,"\n";
         # Handle Qt entries
         if ( $lib_name =~ m!(Qt\w+\.framework.*Qt\w+$)! ) {
             my $old = $1;
