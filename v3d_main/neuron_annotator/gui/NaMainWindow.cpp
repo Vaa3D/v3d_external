@@ -30,9 +30,11 @@
 #include "PreferencesDialog.h"
 #include "../utility/FooDebug.h"
 #include "../utility/url_tools.h"
+#include <cstdlib> // getenv
 
 using namespace std;
 using namespace jfrc;
+
 
 //////////////////
 // NutateThread //
@@ -70,6 +72,14 @@ void NutateThread::unpause() {paused = false;}
 // NaMainWindow //
 //////////////////
 
+inline const char * getConsolePort()
+{
+    const char *port;
+    port = getenv("WORKSTATION_SERVICE_PORT");
+    if(NULL == port) port = "30001";
+    return port;
+}
+
 NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
     , ui(new Ui::NaMainWindow)
@@ -89,6 +99,15 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     , viewMode(VIEW_SINGLE_STACK)
     , cutPlanner(NULL)
 {
+    const char* port = getConsolePort();
+    qDebug() << "Using console port: " << port;
+    QString qport(port);
+    QString url = QString("http://localhost:%1/axis2/services/cds").arg(port);
+    consoleUrl = new char[url.length() + 1];
+    QByteArray ba = url.toUtf8();
+    strcpy(consoleUrl, ba.data());
+    qDebug() << "Using console URL: " << consoleUrl;
+
     // Set up potential 3D stereo modes before creating QGLWidget.
 #ifdef ENABLE_STEREO
     QGLFormat glFormat = QGLFormat::defaultFormat();
@@ -2518,6 +2537,11 @@ void NaMainWindow::set3DProgressMessage(QString msg)
     }
     else
         setProgressMessage(msg);
+}
+
+char* NaMainWindow::getConsoleURL()
+{
+    return consoleUrl;
 }
 
 // NutateThread

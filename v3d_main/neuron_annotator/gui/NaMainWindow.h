@@ -98,6 +98,7 @@ public:
     QString getStackPathWithDialog();
     QString getDataDirectoryPathWithDialog();
     Na3DWidget* get3DWidget() {return ui->v3dr_glwidget;}
+    char* getConsoleURL();
 
 signals:
     void channelVisibilityChanged(int, bool);
@@ -255,6 +256,8 @@ private:
 
     Movie currentMovie;
     QList<ImageMarker> viewerLandmarks3D;
+
+    char* consoleUrl;
 };
 
 #endif // NAMAINWINDOW_H

@@ -8,9 +8,9 @@
 #include "../../webservice/impl/EntityAdapter.h"
 #include "../../webservice/console/cdsConsoleDataServiceProxy.h"
 
-ConsoleObserver::ConsoleObserver(NaMainWindow *naMainWindow, QObject *parent) :
+ConsoleObserver::ConsoleObserver(NaMainWindow *mainWindow, QObject *parent) :
     QObject(parent),
-    mainWindow(naMainWindow),
+    mainWindow(mainWindow),
     loadOntologyThread(0),
     entityViewRequestedThread(0),
     annotatedBranchViewRequestedThread(0),
@@ -39,7 +39,7 @@ void ConsoleObserver::loadOntology(qint64 rootId)
         loadOntologyThread->disregard();
     }
 
-    loadOntologyThread = new GetOntologyThread(rootId);
+    loadOntologyThread = new GetOntologyThread(mainWindow->getConsoleURL(), rootId);
     connect(loadOntologyThread, SIGNAL(gotResults(const void *)),
             this, SLOT(loadOntologyResults(const void *)));
     connect(loadOntologyThread, SIGNAL(gotError(const QString &)),
@@ -125,7 +125,7 @@ void ConsoleObserver::entityViewRequested(qint64 entityId)
         entityViewRequestedThread->disregard();
     }
 
-    entityViewRequestedThread = new GetEntityThread(entityId);
+    entityViewRequestedThread = new GetEntityThread(mainWindow->getConsoleURL(), entityId);
     connect(entityViewRequestedThread, SIGNAL(gotResults(const void *)),
             this, SLOT(entityViewRequestedResults(const void *)));
     connect(entityViewRequestedThread, SIGNAL(gotError(const QString &)),
@@ -196,7 +196,7 @@ void ConsoleObserver::annotatedBranchViewRequested(qint64 entityId)
         annotatedBranchViewRequestedThread->disregard();
     }
 
-    annotatedBranchViewRequestedThread = new GetAnnotatedBranchThread(entityId);
+    annotatedBranchViewRequestedThread = new GetAnnotatedBranchThread(mainWindow->getConsoleURL(), entityId);
     connect(annotatedBranchViewRequestedThread, SIGNAL(gotResults(const void *)),
             this, SLOT(annotatedBranchViewRequestedResults(const void *)));
     connect(annotatedBranchViewRequestedThread, SIGNAL(gotError(const QString &)),
@@ -217,7 +217,7 @@ void ConsoleObserver::annotatedBranchViewRequestedResults(const void *results)
     if (!filepath.isEmpty()) {
         emit openAnnotatedBranch(annotatedBranch);
 
-        annotatedBranchViewRequested2Thread = new GetAncestorThread(*annotatedBranch->entity()->id, "Sample");
+        annotatedBranchViewRequested2Thread = new GetAncestorThread(mainWindow->getConsoleURL(), *annotatedBranch->entity()->id, "Sample");
         connect(annotatedBranchViewRequested2Thread, SIGNAL(gotResults(const void *)),
                 this, SLOT(annotatedBranchViewRequested2Results(const void *)));
         connect(annotatedBranchViewRequested2Thread, SIGNAL(gotError(const QString &)),
@@ -271,7 +271,7 @@ void ConsoleObserver::annotationsChanged(qint64 entityId)
         annotationsChangedThread->disregard();
     }
 
-    annotationsChangedThread = new GetEntityAnnotationsThread(entityId);
+    annotationsChangedThread = new GetEntityAnnotationsThread(mainWindow->getConsoleURL(), entityId);
     connect(annotationsChangedThread, SIGNAL(gotResults(const void *)),
             this, SLOT(annotationsChangedResults(const void *)));
     connect(annotationsChangedThread, SIGNAL(gotError(const QString &)),
@@ -309,7 +309,7 @@ void ConsoleObserver::sessionSelected(qint64 sessionId)
         loadAnnotationSessionThread->disregard();
     }
 
-    loadAnnotationSessionThread = new GetAnnotationSessionThread(sessionId);
+    loadAnnotationSessionThread = new GetAnnotationSessionThread(mainWindow->getConsoleURL(), sessionId);
     connect(loadAnnotationSessionThread, SIGNAL(gotResults(const void *)),
             this, SLOT(loadAnnotationSessionResults(const void *)));
     connect(loadAnnotationSessionThread, SIGNAL(gotError(const QString &)),

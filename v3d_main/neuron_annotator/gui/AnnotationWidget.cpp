@@ -368,7 +368,7 @@ void AnnotationWidget::consoleConnect() {
     connect(consoleObserver, SIGNAL(updateCurrentSample(Entity*)), this, SLOT(updateCurrentSample(Entity*)));
     connect(consoleObserver, SIGNAL(openStackWithVaa3d(QString)), naMainWindow, SLOT(loadSingleStack(QString)));
 
-    consoleObserverService = new obs::ConsoleObserverServiceImpl();
+    consoleObserverService = new obs::ConsoleObserverServiceImpl(naMainWindow->getConsoleURL());
 
     if (consoleObserverService->errorMessage()!=0)
     {
@@ -607,7 +607,7 @@ void AnnotationWidget::annotateSelectedEntityWithOntologyTerm(const Entity *term
     }
 
     if (createAnnotationThread != NULL) createAnnotationThread->disregard();
-    createAnnotationThread = new CreateAnnotationThread(annotation);
+    createAnnotationThread = new CreateAnnotationThread(naMainWindow->getConsoleURL(), annotation);
 
     connect(createAnnotationThread, SIGNAL(gotResults(const void *)),
             this, SLOT(createAnnotationResults(const void *)));
@@ -644,7 +644,7 @@ void AnnotationWidget::removeAnnotation(const Entity *annotation)
     // qDebug() << "Removing Annotation"<<*annotation->name;
 
     if (removeAnnotationThread != NULL) removeAnnotationThread->disregard();
-    removeAnnotationThread = new RemoveAnnotationThread(*annotation->id);
+    removeAnnotationThread = new RemoveAnnotationThread(naMainWindow->getConsoleURL(), *annotation->id);
 
     connect(removeAnnotationThread, SIGNAL(gotResults(const void *)),
             this, SLOT(removeAnnotationResults(const void *)));

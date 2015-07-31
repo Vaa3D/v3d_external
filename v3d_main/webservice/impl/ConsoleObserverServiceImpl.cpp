@@ -8,16 +8,16 @@
 
 namespace obs {
 
-ConsoleObserverServiceImpl::ConsoleObserverServiceImpl(QObject *parent) :
+ConsoleObserverServiceImpl::ConsoleObserverServiceImpl(char* endpoint_url, QObject *parent) :
     QThread(parent),
     _port(-1),
     _errorMessage(NULL),
-    _running(false)
+    _running(false),
+    _proxy(new cds::ConsoleDataServiceProxy(endpoint_url))
 {
-    cds::ConsoleDataServiceProxy proxy;
     cds::fw__reservePortResponse reservePortResponse;
-    if (proxy.reservePort(NULL, NULL, CLIENT_NAME, reservePortResponse) != SOAP_OK) {
-        _errorMessage = new QString(proxy.soap_fault_string());
+    if (_proxy->reservePort(CLIENT_NAME, reservePortResponse) != SOAP_OK) {
+        _errorMessage = new QString(_proxy->soap_fault_string());
     }
     else {
         _port = reservePortResponse.return_;
@@ -29,6 +29,7 @@ ConsoleObserverServiceImpl::ConsoleObserverServiceImpl(QObject *parent) :
 ConsoleObserverServiceImpl::~ConsoleObserverServiceImpl() {
     qDebug() << "delete ConsoleObserverServiceImpl on port"<<_port;
     if (_errorMessage!=0) delete _errorMessage;
+    if (_proxy!=0) delete _proxy;
 }
 
 // Reimplemented run(port) to support stopping the thread
@@ -79,10 +80,9 @@ void ConsoleObserverServiceImpl::registerWithConsole()
     ss << "http://localhost:" << _port;
     ss >> endpointUrl;
 
-    cds::ConsoleDataServiceProxy proxy;
     cds::fw__registerClientResponse registerClientResponse;
-    if (proxy.registerClient(NULL, NULL, _port, endpointUrl, registerClientResponse) != SOAP_OK) {
-        _errorMessage = new QString(proxy.soap_fault_string());
+    if (_proxy->registerClient(_port, endpointUrl, registerClientResponse) != SOAP_OK) {
+        _errorMessage = new QString(_proxy->soap_fault_string());
     }
 }
 

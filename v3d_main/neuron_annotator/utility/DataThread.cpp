@@ -10,17 +10,17 @@
 // Utility Functions
 // ===========================================================
 
-QString fetchUserColor(cds::ConsoleDataServiceProxy & proxy, const QString & username)
+QString fetchUserColor(cds::ConsoleDataServiceProxy* proxy, const QString & username)
 {
     cds::fw__getUserAnnotationColorResponse response;
-    if (proxy.getUserAnnotationColor(username.toStdString(), response) == SOAP_OK)
+    if (proxy->getUserAnnotationColor(username.toStdString(), response) == SOAP_OK)
     {
          return QString(response.return_.c_str());
     }
     return QString();
 }
 
-void fetchUserColors(cds::ConsoleDataServiceProxy & proxy, AnnotationList *alist, QHash<QString, QColor> *userColorMap)
+void fetchUserColors(cds::ConsoleDataServiceProxy* proxy, AnnotationList *alist, QHash<QString, QColor> *userColorMap)
 {
     QListIterator<Entity *> i(*alist);
     while (i.hasNext())
@@ -44,10 +44,11 @@ void fetchUserColors(cds::ConsoleDataServiceProxy & proxy, AnnotationList *alist
 // Data Thread Base Class
 // ===========================================================
 
-DataThread::DataThread(QObject *parent) :
+DataThread::DataThread(char* endpoint_url, QObject *parent) :
     QThread(parent),
     results(0),
-    errorMessage(0)
+    errorMessage(0),
+    proxy(new cds::ConsoleDataServiceProxy(endpoint_url))
 {
     // Deletes itself when done
     connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
@@ -55,7 +56,10 @@ DataThread::DataThread(QObject *parent) :
 
 DataThread::~DataThread()
 {
-    proxy.destroy();
+    if (proxy!=0) {
+        proxy->destroy();
+        delete proxy;
+    }
     if (errorMessage != 0) delete errorMessage;
 }
 
@@ -81,8 +85,8 @@ void DataThread::disregard()
 // Get Ontology Tree
 // ===========================================================
 
-GetOntologyThread::GetOntologyThread(qint64 entityId, QObject *parent) :
-    DataThread(parent),
+GetOntologyThread::GetOntologyThread(char* endpoint_url, qint64 entityId, QObject *parent) :
+    DataThread(endpoint_url, parent),
     entityId(entityId)
 {
 }
@@ -94,27 +98,27 @@ void GetOntologyThread::fetchData()
 
     qDebug() << "Getting ontology..." << entityId;
     cds::fw__getOntologyResponse response;
-    if (proxy.getOntology(entityId, response) == SOAP_OK)
+    if (proxy->getOntology(entityId, response) == SOAP_OK)
     {
         root = EntityAdapter::convert(response.return_);
 
         qDebug() << "Getting current ontology keybindings...";
         cds::fw__getKeybindingsResponse keybindingsResponse;
-        if (proxy.getKeybindings(*root->id, keybindingsResponse) == SOAP_OK)
+        if (proxy->getKeybindings(*root->id, keybindingsResponse) == SOAP_OK)
         {
             cds::fw__ontologyKeyBindings *keyBindings = keybindingsResponse.return_;
             keyBindMap = EntityAdapter::convert(keyBindings);
         }
         else
         {
-            errorMessage = new QString(proxy.soap_fault_string());
+            errorMessage = new QString(proxy->soap_fault_string());
             delete root;
             return;
         }
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
         return;
     }
 
@@ -125,8 +129,8 @@ void GetOntologyThread::fetchData()
 // Get AnnotatedBranch
 // ===========================================================
 
-GetAnnotatedBranchThread::GetAnnotatedBranchThread(qint64 entityId, QObject *parent) :
-    DataThread(parent),
+GetAnnotatedBranchThread::GetAnnotatedBranchThread(char* endpoint_url, qint64 entityId, QObject *parent) :
+    DataThread(endpoint_url, parent),
     entityId(entityId)
 {
 }
@@ -141,7 +145,7 @@ void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity, QHash<QString, Q
     }
 
     cds::fw__getAnnotationsForEntityResponse response;
-    if (proxy.getAnnotationsForEntity(*entity->id, response) == SOAP_OK)
+    if (proxy->getAnnotationsForEntity(*entity->id, response) == SOAP_OK)
     {
         AnnotationList *alist = EntityAdapter::convert(response.return_);
         annotationMap->insert(*entity->id, alist);
@@ -150,7 +154,7 @@ void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity, QHash<QString, Q
     else
     {
         // This overrides the last error message, but the user doesn't need all of them, and they've already been logged.
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 
     QSetIterator<EntityData *> i(entity->entityDataSet);
@@ -166,7 +170,7 @@ void GetAnnotatedBranchThread::fetchData()
     QHash<QString, QColor> *userColorMap = new QHash<QString, QColor>();
     Entity *entity;
     cds::fw__getEntityTreeResponse response;
-    if (proxy.getEntityTree(entityId, response) == SOAP_OK)
+    if (proxy->getEntityTree(entityId, response) == SOAP_OK)
     {
         // Convert the results into the Entity model
         entity = EntityAdapter::convert(response.return_);
@@ -176,7 +180,7 @@ void GetAnnotatedBranchThread::fetchData()
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
         return;
     }
 
@@ -187,8 +191,8 @@ void GetAnnotatedBranchThread::fetchData()
 // Get Entity
 // ===========================================================
 
-GetEntityThread::GetEntityThread(qint64 entityId, QObject *parent) :
-    DataThread(parent),
+GetEntityThread::GetEntityThread(char* endpoint_url, qint64 entityId, QObject *parent) :
+    DataThread(endpoint_url, parent),
     entityId(entityId)
 {
 }
@@ -196,13 +200,13 @@ GetEntityThread::GetEntityThread(qint64 entityId, QObject *parent) :
 void GetEntityThread::fetchData()
 {
     cds::fw__getEntityByIdResponse response;
-    if (proxy.getEntityById(entityId, response) == SOAP_OK)
+    if (proxy->getEntityById(entityId, response) == SOAP_OK)
     {
         results = EntityAdapter::convert(response.return_);        
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 }
 
@@ -210,8 +214,8 @@ void GetEntityThread::fetchData()
 // Get Parents
 // ===========================================================
 
-GetParentsThread::GetParentsThread(qint64 entityId, QObject *parent) :
-    DataThread(parent),
+GetParentsThread::GetParentsThread(char* endpoint_url, qint64 entityId, QObject *parent) :
+    DataThread(endpoint_url, parent),
     entityId(entityId)
 {
 }
@@ -219,13 +223,13 @@ GetParentsThread::GetParentsThread(qint64 entityId, QObject *parent) :
 void GetParentsThread::fetchData()
 {
     cds::fw__getParentEntityArrayResponse response;
-    if (proxy.getParentEntityArray(entityId, response) == SOAP_OK)
+    if (proxy->getParentEntityArray(entityId, response) == SOAP_OK)
     {
         results = EntityAdapter::convert(response.return_);
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 }
 
@@ -233,8 +237,8 @@ void GetParentsThread::fetchData()
 // Get Ancestor With Type
 // ===========================================================
 
-GetAncestorThread::GetAncestorThread(qint64 entityId, const QString & type, QObject *parent) :
-    DataThread(parent),
+GetAncestorThread::GetAncestorThread(char* endpoint_url, qint64 entityId, const QString & type, QObject *parent) :
+    DataThread(endpoint_url, parent),
     entityId(entityId),
     type(type)
 {
@@ -243,13 +247,13 @@ GetAncestorThread::GetAncestorThread(qint64 entityId, const QString & type, QObj
 void GetAncestorThread::fetchData()
 {
     cds::fw__getAncestorWithTypeResponse response;
-    if (proxy.getAncestorWithType(entityId, type.toStdString(), response) == SOAP_OK)
+    if (proxy->getAncestorWithType(entityId, type.toStdString(), response) == SOAP_OK)
     {
         results = EntityAdapter::convert(response._return_);
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 }
 
@@ -258,8 +262,8 @@ void GetAncestorThread::fetchData()
 // Get Entity Annotations
 // ===========================================================
 
-GetEntityAnnotationsThread::GetEntityAnnotationsThread(qint64 entityId, QObject *parent) :
-    DataThread(parent),
+GetEntityAnnotationsThread::GetEntityAnnotationsThread(char* endpoint_url, qint64 entityId, QObject *parent) :
+    DataThread(endpoint_url, parent),
     entityId(entityId)
 {
 }
@@ -268,14 +272,14 @@ void GetEntityAnnotationsThread::fetchData()
 {
     userColorMap = new QHash<QString, QColor>();
     cds::fw__getAnnotationsForEntityResponse response;
-    if (proxy.getAnnotationsForEntity(entityId, response) == SOAP_OK)
+    if (proxy->getAnnotationsForEntity(entityId, response) == SOAP_OK)
     {
         results = EntityAdapter::convert(response.return_);
         fetchUserColors(proxy, (AnnotationList *)results, userColorMap);
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 }
 
@@ -283,8 +287,9 @@ void GetEntityAnnotationsThread::fetchData()
 // Create Annotation
 // ===========================================================
 
-CreateAnnotationThread::CreateAnnotationThread(OntologyAnnotation *annotation, QObject *parent) :
-    DataThread(parent), annotation(annotation)
+CreateAnnotationThread::CreateAnnotationThread(char* endpoint_url, OntologyAnnotation *annotation, QObject *parent) :
+    DataThread(endpoint_url, parent),
+    annotation(annotation)
 {
 }
 
@@ -297,13 +302,13 @@ void CreateAnnotationThread::fetchData()
 {
     cds::fw__ontologyAnnotation *fwAnnotation = EntityAdapter::convert(annotation);
     cds::fw__createAnnotationResponse response;
-    if (proxy.createAnnotation(fwAnnotation, response) == SOAP_OK)
+    if (proxy->createAnnotation(fwAnnotation, response) == SOAP_OK)
     {
         // Assume success
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 
     delete fwAnnotation;
@@ -318,21 +323,22 @@ qint64* CreateAnnotationThread::getTargetEntityId() const
 // Remove Annotation
 // ===========================================================
 
-RemoveAnnotationThread::RemoveAnnotationThread(qint64 annotationId, QObject *parent) :
-    DataThread(parent), annotationId(annotationId)
+RemoveAnnotationThread::RemoveAnnotationThread(char* endpoint_url, qint64 annotationId, QObject *parent) :
+    DataThread(endpoint_url, parent), 
+    annotationId(annotationId)
 {
 }
 
 void RemoveAnnotationThread::fetchData()
 {
     cds::fw__removeAnnotationResponse response;
-    if (proxy.removeAnnotation(annotationId, response) == SOAP_OK)
+    if (proxy->removeAnnotation(annotationId, response) == SOAP_OK)
     {
         // Assume success
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 }
 
@@ -341,21 +347,22 @@ void RemoveAnnotationThread::fetchData()
 // Get Annotation Session
 // ===========================================================
 
-GetAnnotationSessionThread::GetAnnotationSessionThread(qint64 sessionId, QObject *parent) :
-    DataThread(parent), sessionId(sessionId)
+GetAnnotationSessionThread::GetAnnotationSessionThread(char* endpoint_url, qint64 sessionId, QObject *parent) :
+    DataThread(endpoint_url, parent), 
+    sessionId(sessionId)
 {
 }
 
 void GetAnnotationSessionThread::fetchData()
 {
     cds::fw__getAnnotationSessionResponse response;
-    if (proxy.getAnnotationSession(sessionId, response) == SOAP_OK)
+    if (proxy->getAnnotationSession(sessionId, response) == SOAP_OK)
     {
         results = EntityAdapter::convert(response.return_);
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 }
 
@@ -364,20 +371,21 @@ void GetAnnotationSessionThread::fetchData()
 // Select Entity
 // ===========================================================
 
-SelectEntityThread::SelectEntityThread(qint64 entityId, QObject *parent) :
-    DataThread(parent), entityId(entityId)
+SelectEntityThread::SelectEntityThread(char* endpoint_url, qint64 entityId, QObject *parent) :
+    DataThread(endpoint_url, parent), 
+    entityId(entityId)
 {
 }
 
 void SelectEntityThread::fetchData()
 {
     cds::fw__selectEntityResponse response;
-    if (proxy.selectEntity(entityId, true, response) == SOAP_OK)
+    if (proxy->selectEntity(entityId, true, response) == SOAP_OK)
     {
         // Success
     }
     else
     {
-        errorMessage = new QString(proxy.soap_fault_string());
+        errorMessage = new QString(proxy->soap_fault_string());
     }
 }

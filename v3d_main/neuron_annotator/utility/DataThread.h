@@ -14,7 +14,7 @@ class DataThread : public QThread
     Q_OBJECT
 
 public:
-    explicit DataThread(QObject *parent = 0);
+    explicit DataThread(char* endpoint_url, QObject *parent = 0);
     ~DataThread();
     void run();
     // Let the thread continue running (since we have no way to interrupt it)
@@ -33,7 +33,7 @@ signals:
 protected:
     void *results;
     QString *errorMessage;
-    cds::ConsoleDataServiceProxy proxy;
+    cds::ConsoleDataServiceProxy *proxy;
     virtual void fetchData() = 0;
 };
 
@@ -46,7 +46,7 @@ class GetOntologyThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetOntologyThread(qint64 entityId, QObject *parent = 0);
+    explicit GetOntologyThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
     void fetchData();
 private:
     qint64 entityId;
@@ -61,7 +61,7 @@ class GetAnnotatedBranchThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetAnnotatedBranchThread(qint64 entityId, QObject *parent = 0);
+    explicit GetAnnotatedBranchThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
     void fetchData();
 private:
     void fetchAnnotations(Entity *entity, QHash<QString, QColor> *userColorMap);
@@ -78,7 +78,7 @@ class GetEntityThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetEntityThread(qint64 entityId, QObject *parent = 0);
+    explicit GetEntityThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
     void fetchData();
 private:
     qint64 entityId;
@@ -93,7 +93,7 @@ class GetParentsThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetParentsThread(qint64 entityId, QObject *parent = 0);
+    explicit GetParentsThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
     void fetchData();
 private:
     qint64 entityId;
@@ -108,7 +108,7 @@ class GetAncestorThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetAncestorThread(qint64 entityId, const QString & type, QObject *parent = 0);
+    explicit GetAncestorThread(char* endpoint_url, qint64 entityId, const QString & type, QObject *parent = 0);
     void fetchData();
 private:
     qint64 entityId;
@@ -124,7 +124,7 @@ class GetEntityAnnotationsThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetEntityAnnotationsThread(qint64 entityId, QObject *parent = 0);
+    explicit GetEntityAnnotationsThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
     void fetchData();
     inline qint64 getEntityId() const { return entityId; }
     QHash<QString, QColor> * getUserColorMap() const { return userColorMap; }
@@ -142,7 +142,7 @@ class CreateAnnotationThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit CreateAnnotationThread(OntologyAnnotation *annotation, QObject *parent = 0);
+    explicit CreateAnnotationThread(char* endpoint_url, OntologyAnnotation *annotation, QObject *parent = 0);
     ~CreateAnnotationThread();
     void fetchData();
     qint64* getTargetEntityId() const;
@@ -160,7 +160,7 @@ class RemoveAnnotationThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit RemoveAnnotationThread(qint64 annotationId, QObject *parent = 0);
+    explicit RemoveAnnotationThread(char* endpoint_url, qint64 annotationId, QObject *parent = 0);
     void fetchData();
 
 private:
@@ -176,7 +176,7 @@ class GetAnnotationSessionThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetAnnotationSessionThread(qint64 sessionId, QObject *parent = 0);
+    explicit GetAnnotationSessionThread(char* endpoint_url, qint64 sessionId, QObject *parent = 0);
     void fetchData();
 
 private:
@@ -193,7 +193,7 @@ class SelectEntityThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit SelectEntityThread(qint64 entityId, QObject *parent = 0);
+    explicit SelectEntityThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
     void fetchData();
 
 private:

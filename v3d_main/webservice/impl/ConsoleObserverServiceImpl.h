@@ -2,6 +2,7 @@
 #define CONSOLEOBSERVERSERVICEIMPL_H
 
 #include <QThread>
+#include "../console/cdsConsoleDataServiceProxy.h"
 #include "../console/obsConsoleObserverService.h"
 
 #define CONSOLE_OBSERVER_ACCEPT_TIMEOUT 30
@@ -13,7 +14,7 @@ class ConsoleObserverServiceImpl : public QThread, public ConsoleObserverService
     Q_OBJECT
 
 public:
-    explicit ConsoleObserverServiceImpl(QObject *parent = 0);
+    explicit ConsoleObserverServiceImpl(char* endpoint_url, QObject *parent = 0);
     ~ConsoleObserverServiceImpl();
     void run();
     void startServer();
@@ -47,7 +48,7 @@ private:
     bool _running;
     int _port;
     QString *_errorMessage;
-
+    cds::ConsoleDataServiceProxy *_proxy;
 };
 
 }
