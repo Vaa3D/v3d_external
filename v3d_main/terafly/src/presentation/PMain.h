@@ -134,6 +134,8 @@ class teramanager::PMain : public QWidget
         QAction* convertVtk2APO;
         QAction* diffAPO;
         QAction* displayAnoOctree;      // display annotation Octree
+        QAction* trimAPO;
+        QAction* mergeImageJCellCounterXMLs;
 
         // "Help" menu widgets
         QMenu* helpMenu;                //"Help" menu
@@ -517,6 +519,8 @@ class teramanager::PMain : public QWidget
 
         void showDialogVtk2APO();
         void showDialogDiffAPO();
+        void showDialogTrimAPO();
+        void showDialogMergeImageJCellCounterXMLs();
         void showAnoOctree();
 
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <tinyxml.h>
 #include "CAnnotations.h"
 #include "CSettings.h"
 #include "COperation.h"
@@ -1252,7 +1253,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         dir.cdUp();
         if(tokens[0].compare("APOFILE") == 0)
         {
-            QList <CellAPO> cells = readAPO_file(dir.absolutePath().append("/").append(tokens[1].c_str()));
+            QList <CellAPO> cells = readAPO_file(dir.absolutePath().append("/").append(itm::clcr(tokens[1]).c_str()));
             for(QList <CellAPO>::iterator i = cells.begin(); i!= cells.end(); i++)
             {
                 annotation* ann = new annotation();
@@ -1270,7 +1271,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         }
         else if(tokens[0].compare("SWCFILE") == 0)
         {
-            NeuronTree nt = readSWC_file(dir.absolutePath().append("/").append(tokens[1].c_str()));
+            NeuronTree nt = readSWC_file(dir.absolutePath().append("/").append(itm::clcr(tokens[1]).c_str()));
 
             std::map<int, annotation*> annotationsMap;
             std::map<int, NeuronSWC*> swcMap;
@@ -1504,6 +1505,101 @@ throw (itm::RuntimeException)
                                             (TPs+0.1f)/(TPs+FNs),
                                             (FPs+0.1f)/(cell2count));
     QMessageBox::information(0, "Result", message.c_str());
+}
+
+
+/*********************************************************************************
+* Trim APO files
+**********************************************************************************/
+void CAnnotations::trimAPO( std::string inputPath,  // input apo file path
+                            std::string outputPath,                   // where output apo file is saved
+                            int x0 /*=0*/, int x1 /*=-1*/,    // VOI [x0, x1) in the global reference sys
+                            int y0 /*=0*/, int y1 /*=-1*/,    // VOI [y0, y1) in the global reference sys
+                            int z0 /*=0*/, int z1 /*=-1*/)    // VOI [z0, z1) in the global reference sys
+throw (itm::RuntimeException)
+{
+    // parse default parameters
+    x1 = x1 > 0 ? x1 : std::numeric_limits<int>::max();
+    y1 = y1 > 0 ? y1 : std::numeric_limits<int>::max();
+    z1 = z1 > 0 ? z1 : std::numeric_limits<int>::max();
+
+    // read cells
+    QList<CellAPO> cells = readAPO_file(inputPath.c_str());
+
+    // select only cells within VOI
+    QList<CellAPO> cells_VOI;
+    for(auto & i : cells)
+        if(i.x >= x0 && i.x < x1 && i.y >= y0 && i.y < y1 && i.z >= z0 && i.z < z1)
+            cells_VOI.push_back(i);
+
+    // save output apo
+    writeAPO_file(outputPath.c_str(), cells_VOI);
+}
+
+
+/*********************************************************************************
+* Merge .xml ImageJ Cell Counter markers files into .APO
+**********************************************************************************/
+void CAnnotations::mergeImageJCellCounterXMLs(QStringList xmls,  // inputs
+                    std::string outputPath, // where output apo file is saved
+                    int xS, int yS, int zS, // blocks size
+                    int overlap /*=0*/,     // blocks overlap
+                    int x0 /*=0*/,          // (0,0,0) block X-coordinate
+                    int y0 /*=0*/,          // (0,0,0) block Y-coordinate
+                    int z0 /*=0*/)          // (0,0,0) block Z-coordinate
+throw (itm::RuntimeException)
+{
+    // parse xmls
+    QList<CellAPO> cells;
+    for(auto & f : xmls)
+    {
+        // get unique block ID
+        std::string fname = itm::getFileName(f.toStdString(), true);
+        fname.erase(fname.find_first_of("."));
+        fname = fname.substr(fname.size()-3);
+        if(fname.size() != 3)
+            throw itm::RuntimeException(itm::strprintf("\"%s\" does not end with 3 digits xyz", f.toStdString().c_str()));
+        int ix = fname[0] - '0';
+        int iy = fname[1] - '0';
+        int iz = fname[2] - '0';
+
+        // lot of checks
+        TiXmlDocument xml(f.toStdString().c_str());
+        if(!xml.LoadFile())
+            throw itm::RuntimeException(itm::strprintf("unable to load xml file at \"%s\"", f.toStdString().c_str()));
+        TiXmlElement *pElem = xml.FirstChildElement("CellCounter_Marker_File");
+        if(!pElem)
+            throw itm::RuntimeException(itm::strprintf("cannot find node <CellCounter_Marker_File> in xml file at \"%s\"", f.toStdString().c_str()));
+        pElem = pElem->FirstChildElement("Image_Properties");
+        if(!pElem)
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Properties> in xml file at \"%s\"", f.toStdString().c_str()));
+        pElem = pElem->FirstChildElement("Image_Filename");
+        if(!pElem)
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Filename> in xml file at \"%s\"", f.toStdString().c_str()));
+        if(fname.compare(pElem->GetText()) != 0)
+            throw itm::RuntimeException(itm::strprintf("<Image_Filename> mismatch (found \"%s\", expected \"%s\") in xml file at \"%s\"", pElem->GetText(), fname.c_str(), f.toStdString().c_str()));
+
+        pElem = xml.FirstChildElement("CellCounter_Marker_File");
+        pElem = pElem->FirstChildElement("Marker_Data");
+        if(!pElem)
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Data> in xml file at \"%s\"", f.toStdString().c_str()));
+        pElem = pElem->FirstChildElement("Marker_Type");
+        if(!pElem)
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Type> in xml file at \"%s\"", f.toStdString().c_str()));
+        pElem = pElem->FirstChildElement("Marker");
+        while(pElem)
+        {
+            CellAPO c;
+            c.x = x0 + ix*xS - ix*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerX")->GetText());
+            c.y = y0 + iy*yS - iy*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerY")->GetText());
+            c.z = z0 + iz*zS - iz*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerZ")->GetText());
+            cells.push_back(c);
+            pElem = pElem->NextSiblingElement("Marker");
+        }
+    }
+
+    // save output apo
+    writeAPO_file(outputPath.c_str(), cells);
 }
 
 /*********************************************************************************

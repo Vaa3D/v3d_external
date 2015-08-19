@@ -11,6 +11,16 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.2
+August 19th, 2015
+--------------------------------------------------------------------------------------------
+- Fix: fixed bug that prevented TeraFly from correctly reading .ano files with Windows-style
+       newline on Mac/Linux platforms.
+- New: added utility ".xml (ImageJ Cell Counter marker file) -> .apo"
+- New: added utility ".apo trim" to save .apo cells within an inputted VOI
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.1
 May 6th, 2015
 --------------------------------------------------------------------------------------------

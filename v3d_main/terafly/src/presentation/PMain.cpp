@@ -408,13 +408,19 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 //    debugMenu->addMenu(debugTimeSeriesMenu);
 
     // "Utility" Menu
-    utilityMenu = menuBar->addMenu("Utility");
-    convertVtk2APO = new QAction("Convert .vtk to .apo (cells only)", this);
-    connect(convertVtk2APO, SIGNAL(triggered()), this, SLOT(showDialogVtk2APO()));
-    utilityMenu->addAction(convertVtk2APO);
-    diffAPO = new QAction("Diff .apo", this);
+    utilityMenu = menuBar->addMenu("Utilities");
+    diffAPO = new QAction(".apo diff", this);
     connect(diffAPO, SIGNAL(triggered()), this, SLOT(showDialogDiffAPO()));
     utilityMenu->addAction(diffAPO);
+    trimAPO = new QAction(".apo trim", this);
+    connect(trimAPO, SIGNAL(triggered()), this, SLOT(showDialogTrimAPO()));
+    utilityMenu->addAction(trimAPO);
+    convertVtk2APO = new QAction(".vtk -> .apo (cells only)", this);
+    connect(convertVtk2APO, SIGNAL(triggered()), this, SLOT(showDialogVtk2APO()));
+    utilityMenu->addAction(convertVtk2APO);
+    mergeImageJCellCounterXMLs = new QAction(".xml (ImageJ Cell Counter markers) -> .apo", this);
+    connect(mergeImageJCellCounterXMLs, SIGNAL(triggered()), this, SLOT(showDialogMergeImageJCellCounterXMLs()));
+    utilityMenu->addAction(mergeImageJCellCounterXMLs);
     displayAnoOctree = new QAction("Display annotations octree", this);
     connect(displayAnoOctree, SIGNAL(triggered()), this, SLOT(showAnoOctree()));
     utilityMenu->addAction(displayAnoOctree);
@@ -2742,7 +2748,6 @@ void PMain::showDialogDiffAPO()
                 itm::CAnnotations::diffAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), H0_sbox->value(), H1_sbox->value(),
                                            V0_sbox->value(), V1_sbox->value(), D0_sbox->value(), D1_sbox->value());
             }
-
         }
     }
     catch(itm::RuntimeException &ex)
@@ -2750,6 +2755,65 @@ void PMain::showDialogDiffAPO()
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
 }
+
+void PMain::showDialogTrimAPO()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Open input APO file"), 0,tr("APO files (*.apo)"));
+        if(!apo1FilePath.isEmpty())
+        {
+            QString apo2FilePath = QFileDialog::getSaveFileName(this, tr("Select output APO file"), 0,tr("APO files (*.apo)"));
+            if(!apo2FilePath.isEmpty())
+            {
+                int x0 = QInputDialog::getInt(this, "Select VOI", "[x0");
+                int x1 = QInputDialog::getInt(this, "Select VOI", "x1)");
+                int y0 = QInputDialog::getInt(this, "Select VOI", "[y0");
+                int y1 = QInputDialog::getInt(this, "Select VOI", "y1)");
+                int z0 = QInputDialog::getInt(this, "Select VOI", "[z0");
+                int z1 = QInputDialog::getInt(this, "Select VOI", "z1)");
+                itm::CAnnotations::trimAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), x0, x1, y0, y1, z0, z1);
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void PMain::showDialogMergeImageJCellCounterXMLs()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QMessageBox::warning(this, ".xml (ImageJ Cell Counter markers) -> .apo", "<html>Before selecting the file(s), be aware that<ul>"
+            "<li>filenames should end with xyz (e.g. example142.xml), where (x,y,z) are the block indices along the X,Y,Z axes</li>"
+            "<li>(x,y,z) indices must be in the range [0,9]</li>"
+            "<li>after file(s) selection, you will be asked to provide blocks size, overlap and top-left corner coordinate of block (0,0,0)</li></ul></html>");
+        QStringList xmls = QFileDialog::getOpenFileNames(this, "Select one (or more) file(s)", 0, tr("ImageJ Cell Counter markers (*.xml)"));
+        QString apoPath = QFileDialog::getSaveFileName(this, tr("Select output APO file"), 0,tr("APO files (*.apo)"));
+        if(!xmls.isEmpty())
+        {
+            int blocks_overlap = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert blocks overlap:", 0, 0);
+            int xS = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert blocks size along X axis:", 0, 0);
+            int yS = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert blocks size along Y axis:", 0, 0);
+            int zS = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert blocks size along Z axis:", 0, 0);
+            int x0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner X coordinate:", 0, 0);
+            int y0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Y coordinate:", 0, 0);
+            int z0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Z coordinate:", 0, 0);
+            itm::CAnnotations::mergeImageJCellCounterXMLs(xmls, apoPath.toStdString(), xS, yS, zS, blocks_overlap, x0, y0, z0);
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
 
 void PMain::showAnoOctree()
 {

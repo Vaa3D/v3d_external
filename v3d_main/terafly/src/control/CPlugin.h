@@ -31,6 +31,7 @@
 
 #include <QtGui>
 #include <limits>
+#include <sstream>
 
 class V3DPluginCallback2;
 
@@ -206,6 +207,88 @@ namespace teramanager
             start = (   ( end > (std::string::npos - delim.size()) )
                 ?  std::string::npos  :  end + delim.size());
         }
+    }
+
+    //returns true if the given string <fullString> ends with <ending>
+    inline bool hasEnding (std::string const &fullString, std::string const &ending){
+        if (fullString.length() >= ending.length()) {
+            return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+        } else {
+            return false;
+        }
+    }
+
+    //returns file extension, if any (otherwise returns "")
+    inline std::string getFileExtension(const std::string& FileName){
+        if(FileName.find_last_of(".") != std::string::npos)
+            return FileName.substr(FileName.find_last_of(".")+1);
+        return "";
+    }
+
+    // removes all tab, space and newline characters from the given string (in-place version and copy-based version)
+    inline std::string clsi(std::string& string){
+        string.erase(std::remove(string.begin(), string.end(), '\t'), string.end());
+        string.erase(std::remove(string.begin(), string.end(), ' '),  string.end());
+        string.erase(std::remove(string.begin(), string.end(), '\n'), string.end());
+        string.erase(std::remove(string.begin(), string.end(), '\r'), string.end());
+        return string;
+    }
+    inline std::string cls(std::string string){
+        string.erase(std::remove(string.begin(), string.end(), '\t'), string.end());
+        string.erase(std::remove(string.begin(), string.end(), ' '),  string.end());
+        string.erase(std::remove(string.begin(), string.end(), '\n'), string.end());
+        string.erase(std::remove(string.begin(), string.end(), '\r'), string.end());
+        return string;
+    }
+
+
+    //extracts the filename from the given path and stores it into <filename>
+    inline std::string getFileName(std::string const & path, bool save_ext = true){
+
+        std::string filename = path;
+
+        // Remove directory if present.
+        // Do this before extension removal in case directory has a period character.
+        const size_t last_slash_idx = filename.find_last_of("\\/");
+        if (std::string::npos != last_slash_idx)
+            filename.erase(0, last_slash_idx + 1);
+
+        // Remove extension if present.
+        if(!save_ext)
+        {
+            const size_t period_idx = filename.rfind('.');
+            if (std::string::npos != period_idx)
+                filename.erase(period_idx);
+        }
+
+        return filename;
+    }
+
+    // changes directory by moving one directory up from the current directory
+    inline std::string cdUp(std::string const & path){
+        return path.substr(0, path.find_last_of("/\\"));
+    }
+
+    // removes carriage return characters
+    inline std::string clcr(const std::string & _str){
+        std::string str = _str;
+        str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+        str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
+        return str;
+    }
+
+    //number to string conversion function and vice versa
+    template <typename T>
+    std::string num2str ( T Number ){
+        std::stringstream ss;
+        ss << Number;
+        return ss.str();
+    }
+    template <typename T>
+    T str2num ( const std::string &Text ){
+        std::stringstream ss(Text);
+        T result;
+        return ss >> result ? result : 0;
     }
 
     // emulate initializer list for STL vector

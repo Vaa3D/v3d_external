@@ -298,6 +298,30 @@ class teramanager::CAnnotations
         throw (itm::RuntimeException);
 
 
+        /*********************************************************************************
+        * Trim APO files
+        **********************************************************************************/
+        static void trimAPO(std::string inputPath,  // input apo file path
+                            std::string outputPath, // where output apo file is saved
+                            int x0=0, int x1=-1,    // VOI [x0, x1) in the global reference sys
+                            int y0=0, int y1=-1,    // VOI [y0, y1) in the global reference sys
+                            int z0=0, int z1=-1)    // VOI [z0, z1) in the global reference sys
+        throw (itm::RuntimeException);
+
+
+        /*********************************************************************************
+        * Merge .xml ImageJ Cell Counter markers files into .APO
+        **********************************************************************************/
+        static void mergeImageJCellCounterXMLs(QStringList xmls,  // inputs
+                            std::string outputPath, // where output apo file is saved
+                            int xS, int yS, int zS, // blocks size
+                            int overlap=0,          // blocks overlap
+                            int x0=0,               // (0,0,0) block X-coordinate
+                            int y0=0,               // (0,0,0) block Y-coordinate
+                            int z0=0)               // (0,0,0) block Z-coordinate
+        throw (itm::RuntimeException);
+
+
         static inline bool isMarkerOutOfRendererBounds(const LocationSimple& marker){
             return marker.x < 0 || marker.y < 0 || marker.z < 0 ;
         }
