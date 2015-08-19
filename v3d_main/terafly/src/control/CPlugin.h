@@ -32,6 +32,7 @@
 #include <QtGui>
 #include <limits>
 #include <sstream>
+#include <algorithm>
 
 class V3DPluginCallback2;
 

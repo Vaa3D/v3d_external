@@ -1528,9 +1528,9 @@ throw (itm::RuntimeException)
 
     // select only cells within VOI
     QList<CellAPO> cells_VOI;
-    for(auto & i : cells)
-        if(i.x >= x0 && i.x < x1 && i.y >= y0 && i.y < y1 && i.z >= z0 && i.z < z1)
-            cells_VOI.push_back(i);
+    for(int i=0; i<cells_VOI.size(); i++)
+        if(cells_VOI[i].x >= x0 && cells_VOI[i].x < x1 && cells_VOI[i].y >= y0 && cells_VOI[i].y < y1 && cells_VOI[i].z >= z0 && cells_VOI[i].z < z1)
+            cells_VOI.push_back(cells_VOI[i]);
 
     // save output apo
     writeAPO_file(outputPath.c_str(), cells_VOI);
@@ -1551,41 +1551,41 @@ throw (itm::RuntimeException)
 {
     // parse xmls
     QList<CellAPO> cells;
-    for(auto & f : xmls)
+    for(int f=0; f<xmls.size(); f++)
     {
         // get unique block ID
-        std::string fname = itm::getFileName(f.toStdString(), true);
+        std::string fname = itm::getFileName(xmls[f].toStdString(), true);
         fname.erase(fname.find_first_of("."));
         fname = fname.substr(fname.size()-3);
         if(fname.size() != 3)
-            throw itm::RuntimeException(itm::strprintf("\"%s\" does not end with 3 digits xyz", f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("\"%s\" does not end with 3 digits xyz", xmls[f].toStdString().c_str()));
         int ix = fname[0] - '0';
         int iy = fname[1] - '0';
         int iz = fname[2] - '0';
 
         // lot of checks
-        TiXmlDocument xml(f.toStdString().c_str());
+        TiXmlDocument xml(xmls[f].toStdString().c_str());
         if(!xml.LoadFile())
-            throw itm::RuntimeException(itm::strprintf("unable to load xml file at \"%s\"", f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("unable to load xml file at \"%s\"", xmls[f].toStdString().c_str()));
         TiXmlElement *pElem = xml.FirstChildElement("CellCounter_Marker_File");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <CellCounter_Marker_File> in xml file at \"%s\"", f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("cannot find node <CellCounter_Marker_File> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Image_Properties");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Properties> in xml file at \"%s\"", f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Properties> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Image_Filename");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Filename> in xml file at \"%s\"", f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Filename> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         if(fname.compare(pElem->GetText()) != 0)
-            throw itm::RuntimeException(itm::strprintf("<Image_Filename> mismatch (found \"%s\", expected \"%s\") in xml file at \"%s\"", pElem->GetText(), fname.c_str(), f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("<Image_Filename> mismatch (found \"%s\", expected \"%s\") in xml file at \"%s\"", pElem->GetText(), fname.c_str(), xmls[f].toStdString().c_str()));
 
         pElem = xml.FirstChildElement("CellCounter_Marker_File");
         pElem = pElem->FirstChildElement("Marker_Data");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Data> in xml file at \"%s\"", f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Data> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Marker_Type");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Type> in xml file at \"%s\"", f.toStdString().c_str()));
+            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Type> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Marker");
         while(pElem)
         {
