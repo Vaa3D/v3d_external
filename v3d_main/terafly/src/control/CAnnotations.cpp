@@ -1396,8 +1396,55 @@ throw (itm::RuntimeException)
     QList<CellAPO> cells1 = readAPO_file(apo1Path.c_str());
     QList<CellAPO> cells2 = readAPO_file(apo2Path.c_str());
 
+    // detect false negatives (in BLUE)
+    QList<CellAPO> diff_cells;
+    for(int i=0; i<cells1.size(); i++)
+    {
+        bool found = false;
+        for(int j=0; j<cells2.size() && !found; j++)
+        {
+            if(cells1[i].x == cells2[j].x && cells1[i].y == cells2[j].y && cells1[i].z == cells2[j].z)
+                found = true;
+        }
+        if(!found)
+        {
+            CellAPO cell;
+            cell.x = cells1[i].x;
+            cell.y = cells1[i].y;
+            cell.z = cells1[i].z;
+            cell.color.b = 255;
+            cell.color.r = cell.color.g = 0;
+            diff_cells.push_back(cell);
+        }
+    }
+
+    // detect false positives (in RED)
+    for(int j=0; j<cells2.size(); j++)
+    {
+        bool found = false;
+        for(int i=0; i<cells1.size() && !found; i++)
+        {
+            if(cells1[i].x == cells2[j].x && cells1[i].y == cells2[j].y && cells1[i].z == cells2[j].z)
+                found = true;
+        }
+        if(!found)
+        {
+            CellAPO cell;
+            cell.x = cells2[j].x;
+            cell.y = cells2[j].y;
+            cell.z = cells2[j].z;
+            cell.color.r = 255;
+            cell.color.b = cell.color.g = 0;
+            diff_cells.push_back(cell);
+        }
+    }
+
+    // write output
+    if(!diffPath.empty())
+        writeAPO_file(diffPath.c_str(), diff_cells);
+
     // insert cells into the same octree. In this way, it is much faster to compute TPs, FPs and FNs
-    Octree* diff_octree = new Octree(std::numeric_limits<uint32>::max(), std::numeric_limits<uint32>::max(), std::numeric_limits<uint32>::max());
+    /*Octree* diff_octree = new Octree(std::numeric_limits<uint32>::max(), std::numeric_limits<uint32>::max(), std::numeric_limits<uint32>::max());
     std::vector<annotation*> ano1, ano2;
     itm::uint64 cell1count = 0;
     for(int i=0; i<cells1.size(); i++)
@@ -1504,7 +1551,7 @@ throw (itm::RuntimeException)
                                             FNs,
                                             (TPs+0.1f)/(TPs+FNs),
                                             (FPs+0.1f)/(cell2count));
-    QMessageBox::information(0, "Result", message.c_str());
+    QMessageBox::information(0, "Result", message.c_str());*/
 }
 
 
@@ -1536,6 +1583,28 @@ throw (itm::RuntimeException)
     writeAPO_file(outputPath.c_str(), cells_VOI);
 }
 
+/*********************************************************************************
+* Counts markers having distance <= d from each other
+**********************************************************************************/
+itm::uint32 CAnnotations::countDuplicateMarkers(int d) throw (itm::RuntimeException)
+{
+    std::list<annotation*> nodes;
+    octree->find(itm::interval_t(0, std::numeric_limits<int>::max()),
+                 itm::interval_t(0, std::numeric_limits<int>::max()),
+                 itm::interval_t(0, std::numeric_limits<int>::max()), nodes);
+
+    itm::uint32 count = 0;
+    for(std::list<annotation*>::iterator i = nodes.begin(); i != nodes.end(); i++)
+        for(std::list<annotation*>::iterator j = nodes.begin(); j != nodes.end(); j++)
+            if(i!=j && distance(*i, *j) <= ((float)d))
+            {
+                (*i)->color.r = 255;
+                (*i)->color.b = (*i)->color.g = 0;
+                count++;
+                break;
+            }
+    return count;
+}
 
 /*********************************************************************************
 * Merge .xml ImageJ Cell Counter markers files into .APO
@@ -1551,6 +1620,7 @@ throw (itm::RuntimeException)
 {
     // parse xmls
     QList<CellAPO> cells;
+    int count = 0;
     for(int f=0; f<xmls.size(); f++)
     {
         // get unique block ID
@@ -1593,13 +1663,19 @@ throw (itm::RuntimeException)
             c.x = x0 + ix*xS - ix*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerX")->GetText());
             c.y = y0 + iy*yS - iy*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerY")->GetText());
             c.z = z0 + iz*zS - iz*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerZ")->GetText());
-            cells.push_back(c);
+            c.color.r = c.color.g = 0;
+            c.color.b = 255;
+            if(cells.indexOf(c) == -1)
+                cells.push_back(c);
             pElem = pElem->NextSiblingElement("Marker");
+            count++;
         }
     }
 
     // save output apo
     writeAPO_file(outputPath.c_str(), cells);
+
+    QMessageBox::information(0, "Info", itm::strprintf("Successfully written %d markers from %d entries", cells.size(), count).c_str());
 }
 
 /*********************************************************************************

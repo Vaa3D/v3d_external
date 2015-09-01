@@ -319,6 +319,16 @@ namespace teramanager
     template<class T>
     inline static const T saturate_trim(T value, T limit){return value <= limit ? value : limit;}
 
+    // linear interpolation
+    template <typename T>
+    inline static T linear(T a, T b, float t){
+        return a * (1 - t) + b * t;
+    }
+    template <typename T>
+    inline static T linear(T a, T b, int step_index, int steps_number){
+        return (b - a) * step_index / static_cast<float>(steps_number) + a;
+    }
+
     //cross-platform current function macro
     #if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600))
     # define __itm__current__function__ __PRETTY_FUNCTION__

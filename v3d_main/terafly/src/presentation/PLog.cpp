@@ -212,7 +212,7 @@ void PLog::update()
                 }
 
                 // and display the result
-                opText += it->first + "(" + compName + "): " + QString::number((sum/gids.size())/1000.0, 'f', 3).toStdString() + "s " + QString(QChar(0x00B1)).toStdString() + " " + QString::number( std::sqrt( sumsq/gids.size() - (sum/gids.size())*(sum/gids.size()) )/1000.0, 'f', 3).toStdString() + " (x" + QString::number(gids.size()).toStdString() + ", sum = " + QString::number(sum/1000.0, 'f', 1).toStdString() + " s)"+ "\n";
+                opText += it->first + "(" + compName + "): " + QString::number((sum/gids.size())/1000.0, 'f', 4).toStdString() + "s " + QString(QChar(0x00B1)).toStdString() + " " + QString::number( std::sqrt( sumsq/gids.size() - (sum/gids.size())*(sum/gids.size()) )/1000.0, 'f', 4).toStdString() + " (x" + QString::number(gids.size()).toStdString() + ", sum = " + QString::number(sum/1000.0, 'f', 1).toStdString() + " s)"+ "\n";
             }
         }
         opText += "\n";

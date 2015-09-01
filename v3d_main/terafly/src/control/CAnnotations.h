@@ -273,6 +273,12 @@ class teramanager::CAnnotations
         }
 
         /*********************************************************************************
+        * Counts markers having distance <= d from each other
+        **********************************************************************************/
+        itm::uint32 countDuplicateMarkers(int d=0) throw (itm::RuntimeException);
+
+
+        /*********************************************************************************
         * Prunes the octree by removing duplicate nodes w/o altering the branching structure
         **********************************************************************************/
         void prune() throw (itm::RuntimeException)
@@ -280,6 +286,8 @@ class teramanager::CAnnotations
             if(octree)
                 octree->prune();
         }
+
+
 
         /*********************************************************************************
         * Conversion from VTK to APO files
@@ -324,6 +332,14 @@ class teramanager::CAnnotations
 
         static inline bool isMarkerOutOfRendererBounds(const LocationSimple& marker){
             return marker.x < 0 || marker.y < 0 || marker.z < 0 ;
+        }
+
+        static inline float distance(const LocationSimple& m1, const LocationSimple& m2){
+            return sqrt((m1.x-m2.x)*(m1.x-m2.x) + (m1.y-m2.y)*(m1.y-m2.y) + (m1.z-m2.z)*(m1.z-m2.z));
+        }
+
+        static inline float distance(itm::annotation* m1, itm::annotation* m2){
+            return sqrt((m1->x-m2->x)*(m1->x-m2->x) + (m1->y-m2->y)*(m1->y-m2->y) + (m1->z-m2->z)*(m1->z-m2->z));
         }
 
         friend class annotation;

@@ -136,6 +136,10 @@ class teramanager::PMain : public QWidget
         QAction* displayAnoOctree;      // display annotation Octree
         QAction* trimAPO;
         QAction* mergeImageJCellCounterXMLs;
+        QAction* countMarkersDuplicates;
+        QMenu* generateTimeSeries;
+        QAction* generateTimeSeriesInterpolation;
+        QAction* generateTimeSeriesDataReplication;
 
         // "Help" menu widgets
         QMenu* helpMenu;                //"Help" menu
@@ -521,6 +525,9 @@ class teramanager::PMain : public QWidget
         void showDialogDiffAPO();
         void showDialogTrimAPO();
         void showDialogMergeImageJCellCounterXMLs();
+        void showDialogCountDuplicateMarkers();
+        void showDialogGenerateTimeSeriesInterpolation();
+        void showDialogGenerateTimeSeriesReplication();
         void showAnoOctree();
 
 

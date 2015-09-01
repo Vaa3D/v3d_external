@@ -347,3 +347,106 @@ void CImageUtils::changeGamma(QImage& image, int gamma )
     if( gamma == 100 ) // no change
         changeImage< changeGamma >( image, gamma );
 }
+
+
+
+/**********************************************************************************
+* Returns a new, interpolated image from the two given images
+***********************************************************************************/
+Image4DSimple* CImageUtils::interpolateLinear(
+    Image4DSimple* im1,         // first image
+    Image4DSimple* im2,         // second image
+    int i,                      // step  index
+    int N)                      // steps number
+throw (itm::RuntimeException)
+{
+    // checks
+    if(!im1 || !im1->getRawData())
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): invalid 1st image data");
+    if(!im2 || !im2->getRawData())
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): invalid 2nd image data");
+    if(im1->getXDim() != im2->getXDim())
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in X dimensions");
+    if(im1->getYDim() != im2->getYDim())
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in Y dimensions");
+    if(im1->getZDim() != im2->getZDim())
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in Z dimensions");
+    if(im1->getCDim() != im2->getCDim())
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in channel dimensions");
+    if(im1->getTDim() > 1)
+        throw itm::RuntimeException(itm::strprintf("in CImageUtils::interpolate_linear(): 1st image has TDim = %d (5D not supported)", im1->getTDim()));
+    if(im2->getTDim() > 1)
+        throw itm::RuntimeException(itm::strprintf("in CImageUtils::interpolate_linear(): 2nd image has TDim = %d (5D not supported)", im2->getTDim()));
+    if(im1->getDatatype() != V3D_UINT8)
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): 1st image is not UINT8 (not supported)");
+    if(im2->getDatatype() != V3D_UINT8)
+        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): 2nd image is not UINT8 (not supported)");
+
+    // allocate new image
+    Image4DSimple* imout = new Image4DSimple();
+    imout->setXDim(im1->getXDim());
+    imout->setYDim(im1->getYDim());
+    imout->setZDim(im1->getZDim());
+    imout->setCDim(im1->getCDim());
+    imout->setTDim(im1->getTDim());
+    imout->setDatatype(V3D_UINT8);
+    V3DLONG data_size = imout->getXDim()*imout->getYDim()*imout->getZDim()*imout->getCDim();
+    unsigned char* data = new unsigned char[data_size];
+    imout->setRawDataPointer(data);
+
+
+    // interpolation channel-by-channel (it would be way better in the HSV space...)
+    unsigned char* data1 = im1->getRawData();
+    unsigned char* data2 = im2->getRawData();
+    for(V3DLONG k=0; k<data_size; k++)
+        data[k] = itm::linear<unsigned char>(data1[k], data2[k], i, N);
+
+    return imout;
+}
+
+/**********************************************************************************
+* Returns a new, gaussian-noise corrupted image from the given image
+***********************************************************************************/
+Image4DSimple* CImageUtils::addGaussianNoise(
+        Image4DSimple* im,      // input image
+        float w)                // gaussian noise weight (1 = only noise, 0 = no noise)
+throw (itm::RuntimeException)
+{
+    // checks
+    if(!im || !im->getRawData())
+        throw itm::RuntimeException("in CImageUtils::addGaussianNoise(): invalid image data");
+    if(im->getTDim() > 1)
+        throw itm::RuntimeException(itm::strprintf("in CImageUtils::addGaussianNoise(): image has TDim = %d (5D not supported)", im->getTDim()));
+
+    // allocate new image
+    Image4DSimple* imout = new Image4DSimple();
+    imout->setXDim(im->getXDim());
+    imout->setYDim(im->getYDim());
+    imout->setZDim(im->getZDim());
+    imout->setCDim(im->getCDim());
+    imout->setTDim(im->getTDim());
+    imout->setDatatype(im->getDatatype());
+    V3DLONG data_size = imout->getTotalBytes();
+    unsigned char* data = new unsigned char[data_size];
+    imout->setRawDataPointer(data);
+
+    // data corruption
+    if(imout->getDatatype() == V3D_UINT8)
+    {
+        unsigned char* data_in = im->getRawData();
+        for(V3DLONG k=0; k<data_size; k++)
+            data[k] = static_cast<itm::uint8>((1-w)*data_in[k] + w*(rand()%256) +0.5f);
+    }
+    else if(imout->getDatatype() == V3D_UINT16)
+    {
+        unsigned short* data_in = (unsigned short*)(im->getRawData());
+        for(V3DLONG k=0; k<data_size/2; k++)
+            data[k] = static_cast<itm::uint16>((1-w)*data_in[k] + w*(rand()%65535) +0.5f);
+    }
+    else
+        throw itm::RuntimeException("in CImageUtils::addGaussianNoise(): image is neither UINT8 nor UINT16 (not supported)");
+
+    return imout;
+}
+
+

@@ -421,6 +421,17 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     mergeImageJCellCounterXMLs = new QAction(".xml (ImageJ Cell Counter markers) -> .apo", this);
     connect(mergeImageJCellCounterXMLs, SIGNAL(triggered()), this, SLOT(showDialogMergeImageJCellCounterXMLs()));
     utilityMenu->addAction(mergeImageJCellCounterXMLs);
+    countMarkersDuplicates = new QAction("Count duplicate markers", this);
+    connect(countMarkersDuplicates, SIGNAL(triggered()), this, SLOT(showDialogCountDuplicateMarkers()));
+    utilityMenu->addAction(countMarkersDuplicates);
+    generateTimeSeries = new QMenu("Generate time series by");
+    generateTimeSeriesDataReplication = new QAction("single-frame replication with increasing gaussian noise", this);
+    connect(generateTimeSeriesDataReplication, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesReplication()));
+    generateTimeSeriesInterpolation = new QAction("interpolation from frames A to B", this);
+    connect(generateTimeSeriesInterpolation, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesInterpolation()));
+    generateTimeSeries->addAction(generateTimeSeriesDataReplication);
+    generateTimeSeries->addAction(generateTimeSeriesInterpolation);
+    utilityMenu->addMenu(generateTimeSeries);
     displayAnoOctree = new QAction("Display annotations octree", this);
     connect(displayAnoOctree, SIGNAL(triggered()), this, SLOT(showAnoOctree()));
     utilityMenu->addAction(displayAnoOctree);
@@ -718,6 +729,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     frameCoord = new QLineEdit();
     frameCoord->setReadOnly(true);
     frameCoord->setAlignment(Qt::AlignCenter);
+    QFont veryTinyFont = QApplication::font();
+    veryTinyFont.setPointSize(8);
+    frameCoord->setFont(veryTinyFont);
 
     /* ------- global coord panel widgets ------- */
     PR_panel = new QGroupBox("Proofreading");
@@ -1325,7 +1339,8 @@ void PMain::openVolume(string path /* = "" */)
                                                              QFileDialog::ShowDirsOnly
                                                         //     | QFileDialog::DontResolveSymlinks   //maybe I should allow symbolic links as well, by PHC, 20130823
                                                                     );
-            #endif
+
+#endif
 
             /**/itm::debug(itm::LEV3, strprintf("import_path = %s", qPrintable(import_path)).c_str(), __itm__current__function__);
 
@@ -1759,9 +1774,9 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 //        T0_sbox->setMaximum(CImport::instance()->getVMapTDim()-1);
         if(volume->getDIM_T() > 1)
         {
-            T0_sbox->setText("0");
-            T1_sbox->setText(QString::number(CImport::instance()->getVMapTDim()-1));
-            frameCoord->setText(strprintf("t = %d/%d", 0, volume->getDIM_T()-1).c_str());
+            T0_sbox->setText("1");
+            T1_sbox->setText(QString::number(CImport::instance()->getVMapTDim()));
+            frameCoord->setText(strprintf("t = %d/%d", 1, volume->getDIM_T()).c_str());
         }
 //        T1_sbox->setMinimum(0);
 //        T1_sbox->setMaximum(CImport::instance()->getVMapTDim()-1);
@@ -2293,11 +2308,130 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
-//    printf("PMain is: %s\n", PMain::getInstance() ? "not null" : "NULL");
+    int n_points = QInputDialog::getInt(this, "",  "Number of points:");
+    int n_samples = QInputDialog::getInt(this, "", "Number of samples:");
 
-    QMessageBox::information(0, "The number of annotations is...", QString::number(CAnnotations::getInstance()->count()));
+    int dimX = 10000;
+    int dimY = 10000;
+    int dimZ = 10000;
+    CAnnotations::instance(dimY, dimX, dimZ);
+    CAnnotations* cano = CAnnotations::getInstance();
+    LandmarkList input_markers;
+    for(int k=0; k<n_points; k++)
+        input_markers.push_back(LocationSimple(rand()%dimX, rand()%dimY, rand()%dimZ));
+    cano->addLandmarks(itm::interval_t(0, dimX), itm::interval_t(0, dimY), itm::interval_t(0, dimZ),input_markers);
+
+    float t_lin_sum = 0, t_lin_sum_sq = 0, t_oct_sum = 0, t_oct_sum_sq = 0;
+    for(int n=0; n<n_samples; n++)
+    {
+        int x0 = rand() % (dimX-256);
+        int y0 = rand() % (dimY-256);
+        int z0 = rand() % (dimZ-256);
+        int x1 = x0 + 256;
+        int y1 = y0 + 256;
+        int z1 = z0 + 256;
+        QList<LocationSimple> markers_VOI_lin, markers_VOI;
+
+        QElapsedTimer timer_ano;
+        timer_ano.start();
+        for(int k=0; k<input_markers.size(); k++)
+            if( input_markers[k].x >= x0 && input_markers[k].x <= x1 &&
+                input_markers[k].y >= y0 && input_markers[k].y <= y1 &&
+                input_markers[k].z >= z0 && input_markers[k].z <= z1)
+                markers_VOI_lin.push_back(input_markers[k]);
+        t_lin_sum += timer_ano.elapsed();
+        t_lin_sum_sq += pow(timer_ano.elapsed(), 2.0f);
+
+        timer_ano.restart();
+        cano->findLandmarks(itm::interval_t(x0, x1),
+                            itm::interval_t(y0, y1),
+                            itm::interval_t(z0, z1), markers_VOI);
+        t_oct_sum += timer_ano.elapsed();
+        t_oct_sum_sq += pow(timer_ano.elapsed(), 2.0f);
+    }
+
+    QMessageBox::information(this, "Results", itm::strprintf("SCAN_LIN -> %.0f stdev %.0f\nSCAN_OCT -> %.0f stdev %.0f",
+                                                             t_lin_sum/n_samples, sqrt(t_lin_sum_sq/n_samples - pow(t_lin_sum/n_samples, 2.0f)),
+                                                             t_oct_sum/n_samples, sqrt(t_oct_sum_sq/n_samples - pow(t_oct_sum/n_samples, 2.0f))).c_str());
+    CAnnotations::uninstance();
 
 
+
+    //    printf("PMain is: %s\n", PMain::getInstance() ? "not null" : "NULL");
+
+//    QMessageBox::information(0, "The number of annotations is...", QString::number(CAnnotations::getInstance()->count()));
+
+/*QList<CellAPO> cellsT0 = readAPO_file(QFileDialog::getOpenFileName(this, tr("Open APO file (proofreading I)"), 0,tr("APO files (*.apo)")));
+QList<CellAPO> cellsT1 = readAPO_file(QFileDialog::getOpenFileName(this, tr("Open APO file (proofreading II)"), 0,tr("APO files (*.apo)")));
+QList<CellAPO> cells_output;
+
+// FNb = blue cells in T1 --> display as BLUE
+int FNb = 0;
+for(int i=0; i<cellsT1.size(); i++)
+    if(cellsT1[i].color.b == 255)
+    {
+        cells_output.push_back(cellsT1[i]);
+        FNb++;
+    }
+
+// FNa = red cells in T1 ---> display as PURPLE
+int FNa = 0;
+for(int i=0; i<cellsT1.size(); i++)
+    if(cellsT1[i].color.r == 255)
+    {
+        CellAPO cell = cellsT1[i];
+        cell.color.r = cell.color.g = 151;
+        cell.color.b = 255;
+        cells_output.push_back(cell);
+        FNa++;
+    }
+
+// FPb = red cells in T0 but not in T1 --> display as RED
+int FPb = 0;
+for(int i=0; i<cellsT0.size(); i++)
+{
+    if(cellsT0[i].color.r == 255)
+    {
+        bool found = false;
+        for(int j=0; j<cellsT1.size() && !found; j++)
+            if(cellsT1[j].color.r == 255 &&
+               cellsT0[i].x == cellsT1[j].x &&  cellsT0[i].y == cellsT1[j].y && cellsT0[i].z == cellsT1[j].z     )
+                found = true;
+        if(!found)
+        {
+            cells_output.push_back(cellsT0[i]);
+            FPb++;
+        }
+    }
+}
+
+
+// FPa = blue cells in T0 but not in T1 --> display as ORANGE
+int FPa = 0;
+for(int i=0; i<cellsT0.size(); i++)
+{
+    if(cellsT0[i].color.b == 255)
+    {
+        bool found = false;
+        for(int j=0; j<cellsT1.size() && !found; j++)
+            if(cellsT1[j].color.b == 255 &&
+               cellsT0[i].x == cellsT1[j].x &&  cellsT0[i].y == cellsT1[j].y && cellsT0[i].z == cellsT1[j].z     )
+                found = true;
+        if(!found)
+        {
+            CellAPO cell = cellsT0[i];
+            cell.color.r = 255;
+            cell.color.g = 128;
+            cell.color.b = 0;
+            cells_output.push_back(cell);
+            FPa++;
+        }
+    }
+}
+
+QMessageBox::information(this, "result", itm::strprintf("FPa = %d\nFNa = %d\nFPb = %d\nFNb = %d", FPa, FNa, FPb, FNb).c_str());
+
+writeAPO_file(QFileDialog::getSaveFileName(this, "save result to", 0, tr("APO files (*.apo)")), cells_output);*/
 
 //    CAnnotations::getInstance()->prune();
 
@@ -2745,8 +2879,10 @@ void PMain::showDialogDiffAPO()
             QString apo2FilePath = QFileDialog::getOpenFileName(this, tr("Select second APO file"), 0,tr("APO files (*.apo)"));
             if(!apo2FilePath.isEmpty())
             {
-                itm::CAnnotations::diffAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), H0_sbox->value(), H1_sbox->value(),
-                                           V0_sbox->value(), V1_sbox->value(), D0_sbox->value(), D1_sbox->value());
+                QString savePath = QFileDialog::getSaveFileName(this, tr("Output file"), 0,tr("APO files (*.apo)"));
+                if(!savePath.isEmpty())
+                    itm::CAnnotations::diffAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), H0_sbox->value(), H1_sbox->value(),
+                                           V0_sbox->value(), V1_sbox->value(), D0_sbox->value(), D1_sbox->value(), savePath.toStdString());
             }
         }
     }
@@ -2814,6 +2950,105 @@ void PMain::showDialogMergeImageJCellCounterXMLs()
     }
 }
 
+void PMain::showDialogCountDuplicateMarkers()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    int d = QInputDialog::getInt(this, "Input required", "Tolerance distance:");
+    int count = itm::CAnnotations::getInstance()->countDuplicateMarkers(d);
+    QMessageBox::information(this, "Result", itm::strprintf("Found %d markers", count).c_str());
+    itm::CViewer::current->clearAnnotations();
+    itm::CViewer::current->loadAnnotations();
+}
+
+void PMain::showDialogGenerateTimeSeriesInterpolation()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        std::string im1Path = QFileDialog::getOpenFileName(this, tr("Select frame A image")).toStdString();
+        if(!im1Path.empty())
+        {
+            std::string im2Path = QFileDialog::getOpenFileName(this, tr("Select frame B image"), itm::cdUp(im1Path).c_str()).toStdString();
+            if(!im2Path.empty())
+            {
+                std::string dirPath = QFileDialog::getExistingDirectory(this, tr("Select output directory"), 0, QFileDialog::ShowDirsOnly).toStdString();
+                if(!dirPath.empty())
+                {
+                    int nSteps = QInputDialog::getInt(this, "Insert", "Number of output frames:", 100, 2);
+                    progressBar->setEnabled(true);
+                    progressBar->setMinimum(0);
+                    progressBar->setMaximum(nSteps);
+                    progressBar->setValue(0);
+                    statusBar->showMessage("Loading frame A...");
+                    Image4DSimple* im1 =  V3D_env->loadImage(const_cast<char*>(im1Path.c_str()));
+                    statusBar->showMessage("Loading frame B...");
+                    Image4DSimple* im2 =  V3D_env->loadImage(const_cast<char*>(im2Path.c_str()));
+                    for(int k=0; k<=nSteps; k++)
+                    {
+                        statusBar->showMessage(itm::strprintf("Processing frame %d/%d...", k+1, nSteps+1).c_str());
+                        QTime dieTime= QTime::currentTime().addSecs(1);
+                            while (QTime::currentTime() < dieTime)
+                                QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+                        Image4DSimple* out = itm::CImageUtils::interpolateLinear(im1, im2, k, nSteps);
+                        out->saveImage(itm::strprintf("%s/frame%07d.v3draw", dirPath.c_str(), k).c_str());
+                        delete out;
+                        progressBar->setValue(k);
+                    }
+                    this->resetGUI();
+                }
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        this->resetGUI();
+    }
+}
+
+void PMain::showDialogGenerateTimeSeriesReplication()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        std::string im1Path = QFileDialog::getOpenFileName(this, tr("Select single-frame image")).toStdString();
+        if(!im1Path.empty())
+        {
+            std::string dirPath = QFileDialog::getExistingDirectory(this, tr("Select output directory"), 0, QFileDialog::ShowDirsOnly).toStdString();
+            if(!dirPath.empty())
+            {
+                int nSteps = QInputDialog::getInt(this, "Insert", "Number of output frames:", 100, 2);
+                progressBar->setEnabled(true);
+                progressBar->setMinimum(0);
+                progressBar->setMaximum(nSteps);
+                progressBar->setValue(0);
+                statusBar->showMessage("Loading frame...");
+                Image4DSimple* im1 =  V3D_env->loadImage(const_cast<char*>(im1Path.c_str()));
+                for(int k=0; k<nSteps; k++)
+                {
+                    statusBar->showMessage(itm::strprintf("Processing frame %d/%d...", k+1, nSteps).c_str());
+                    QTime dieTime= QTime::currentTime().addSecs(1);
+                        while (QTime::currentTime() < dieTime)
+                            QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+
+                    Image4DSimple* out = itm::CImageUtils::addGaussianNoise(im1,static_cast<float>(k)/(nSteps-1));
+                    out->saveImage(itm::strprintf("%s/frame%07d.v3draw", dirPath.c_str(), k).c_str());
+                    delete out;
+                    progressBar->setValue(k);
+                }
+                this->resetGUI();
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        this->resetGUI();
+    }
+}
 
 void PMain::showAnoOctree()
 {

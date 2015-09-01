@@ -227,8 +227,8 @@ void CViewer::show()
 
         if(pMain->frameCoord->isEnabled())
         {
-            pMain->T0_sbox->setText(QString::number(volT0));
-            pMain->T1_sbox->setText(QString::number(volT1));
+            pMain->T0_sbox->setText(QString::number(volT0+1));
+            pMain->T1_sbox->setText(QString::number(volT1+1));
         }
 
         //signal connections
@@ -739,7 +739,7 @@ void CViewer::receiveData(
             // if 5D data, update selected time frame
             if(CImport::instance()->is5D())
                 view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-volT0);
-            PMain::getInstance()->frameCoord->setText(strprintf("t = %d/%d", window3D->timeSlider->value(), CImport::instance()->getTDim()-1).c_str());
+            PMain::getInstance()->frameCoord->setText(strprintf("t = %d/%d", window3D->timeSlider->value()+1, CImport::instance()->getTDim()).c_str());
 
             // PREVIEW+STREAMING mode only: update image data
             if(cVolume->getStreamingSteps() != 0)
@@ -1358,8 +1358,8 @@ void CViewer::saveSubvolSpinboxState()
     D1_sbox_val = pMain.D1_sbox->value();
     if(pMain.frameCoord->isEnabled())
     {
-        T0_sbox_val = pMain.T0_sbox->text().toInt();
-        T1_sbox_val = pMain.T1_sbox->text().toInt();
+        T0_sbox_val = pMain.T0_sbox->text().toInt()-1;
+        T1_sbox_val = pMain.T1_sbox->text().toInt()-1;
     }
 }
 
@@ -1384,8 +1384,8 @@ void CViewer::restoreSubvolSpinboxState()
     pMain.D1_sbox->setValue(D1_sbox_val);
     if(pMain.frameCoord->isEnabled())
     {
-        pMain.T0_sbox->setText(QString::number(T0_sbox_val));
-        pMain.T1_sbox->setText(QString::number(T1_sbox_val));
+        pMain.T0_sbox->setText(QString::number(T0_sbox_val+1));
+        pMain.T1_sbox->setText(QString::number(T1_sbox_val+1));
     }
 }
 
@@ -2223,7 +2223,7 @@ void CViewer::Vaa3D_changeTSlider(int s, bool editingFinished /* = false */)
        CImport::instance()->is5D()) // data is 5D type
     {
         // change current frame coordinate
-        PMain::getInstance()->frameCoord->setText(strprintf("t = %d/%d", s, CImport::instance()->getTDim()-1).c_str());
+        PMain::getInstance()->frameCoord->setText(strprintf("t = %d/%d", s+1, CImport::instance()->getTDim()).c_str());
 
         // if frame is out of the displayed range
         if(s < volT0 || s > volT1)

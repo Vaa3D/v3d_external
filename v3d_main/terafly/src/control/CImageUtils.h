@@ -75,6 +75,25 @@ class teramanager::CImageUtils
             color.b = b;
             return color;
         }
+
+        /**********************************************************************************
+        * Returns a new, interpolated image from the two given images
+        ***********************************************************************************/
+        static Image4DSimple* interpolateLinear(
+            Image4DSimple* im1,         // first image
+            Image4DSimple* im2,         // second image
+            int i,                      // step  index
+            int N)                      // steps number
+        throw (itm::RuntimeException);
+
+
+        /**********************************************************************************
+        * Returns a new, gaussian-noise corrupted image from the given image
+        ***********************************************************************************/
+        static Image4DSimple* addGaussianNoise(
+                Image4DSimple* im,      // input image
+                float w)                // gaussian noise weight (1 = only noise, 0 = no noise)
+        throw (itm::RuntimeException);
 };
 
 #endif // CIMAGEUTILS_H
