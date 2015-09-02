@@ -2350,7 +2350,7 @@ void PMain::debugAction1Triggered()
         t_oct_sum_sq += pow(timer_ano.elapsed(), 2.0f);
     }
 
-    QMessageBox::information(this, "Results", itm::strprintf("SCAN_LIN -> %.0f stdev %.0f\nSCAN_OCT -> %.0f stdev %.0f",
+    QMessageBox::information(this, "Results", itm::strprintf("SCAN_LIN -> %.5f stdev %.5f\nSCAN_OCT -> %.5f stdev %.5f",
                                                              t_lin_sum/n_samples, sqrt(t_lin_sum_sq/n_samples - pow(t_lin_sum/n_samples, 2.0f)),
                                                              t_oct_sum/n_samples, sqrt(t_oct_sum_sq/n_samples - pow(t_oct_sum/n_samples, 2.0f))).c_str());
     CAnnotations::uninstance();
