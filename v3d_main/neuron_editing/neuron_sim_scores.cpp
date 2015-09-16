@@ -141,7 +141,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 		XYZ ptdiff;
 		if (N<=1)
 		{
-			qDebug() << "detect one very short segment, len=" << len;
+            //qDebug() << "detect one very short segment, len=" << len;
 			ptdiff = XYZ(0,0,0);
 		}
 		else
@@ -149,7 +149,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 			double N1=1.0/(N-1);
 			ptdiff = XYZ(N1,N1,N1) * XYZ(tp2->x-tp1->x, tp2->y-tp1->y, tp2->z-tp1->z);
 		}
-		qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
+        //qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
 		for (j=0;j<N;j++)
 		{
 			XYZ curpt(tp1->x + ptdiff.x*j, tp1->y + ptdiff.y*j, tp1->z + ptdiff.z*j);
@@ -169,12 +169,12 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 			{
 				sum1big += cur_d;
 				nseg1big++;
-                qDebug() << "(" << cur_d << ", " << nseg1big << ")";
+                //qDebug() << "(" << cur_d << ", " << nseg1big << ")";
 			}
 
 		}
 	}
-	qDebug() << "end directional neuronal distance computing";
+    //qDebug() << "end directional neuronal distance computing";
 
 	return sum1;
 }
