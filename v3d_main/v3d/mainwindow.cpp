@@ -804,6 +804,11 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             {
                                 child_rawimg->getImageData()->flip(axis_y);
                             }
+                            if ((b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))&& cc.pointcloud_file_list.size()<=00 && cc.swc_file_list.size()<=0 && cc.surface_file_list.size()<=0)
+                            {
+                                child_rawimg->doImage3DView();
+                            }
+
                             child_rawimg->show();
 #ifdef USE_Qt5
                             workspace->cascadeSubWindows();
