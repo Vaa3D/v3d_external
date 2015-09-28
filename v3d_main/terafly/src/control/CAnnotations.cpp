@@ -641,12 +641,12 @@ void CAnnotations::Octree::_rec_search(const Poctant& p_octant, const interval_t
         }
         else
         {
-            uint32 V_dim_halved = static_cast<int>(round((float)p_octant->V_dim/2));
-            uint32 V_halved		= p_octant->V_start+V_dim_halved;
-            uint32 H_dim_halved = static_cast<int>(round((float)p_octant->H_dim/2));
-            uint32 H_halved		= p_octant->H_start+H_dim_halved;
-            uint32 D_dim_halved = static_cast<int>(round((float)p_octant->D_dim/2));
-            uint32 D_halved		= p_octant->D_start+D_dim_halved;
+            int V_dim_halved	= static_cast<int>(round((float)p_octant->V_dim/2));
+            int V_halved		= p_octant->V_start+V_dim_halved;
+            int H_dim_halved	= static_cast<int>(round((float)p_octant->H_dim/2));
+            int H_halved		= p_octant->H_start+H_dim_halved;
+            int D_dim_halved	= static_cast<int>(round((float)p_octant->D_dim/2));
+            int D_halved		= p_octant->D_start+D_dim_halved;
 
             if(intersects(V_int, H_int, D_int, p_octant->V_start, V_dim_halved, p_octant->H_start, H_dim_halved, p_octant->D_start,	D_dim_halved))
                 _rec_search(p_octant->child1, V_int, H_int, D_int, neurons);
@@ -691,12 +691,12 @@ CAnnotations::Octree::Poctant CAnnotations::Octree::_rec_find(const Poctant& p_o
         else
         {
             //printf("_rec_find(): smisting...\n");
-            uint32 V_dim_halved = static_cast<int>(round((float)p_octant->V_dim/2));
-            uint32 V_halved	= p_octant->V_start+V_dim_halved;
-            uint32 H_dim_halved = static_cast<int>(round((float)p_octant->H_dim/2));
-            uint32 H_halved	= p_octant->H_start+H_dim_halved;
-            uint32 D_dim_halved = static_cast<int>(round((float)p_octant->D_dim/2));
-            uint32 D_halved	= p_octant->D_start+D_dim_halved;
+            int V_dim_halved = static_cast<int>(round((float)p_octant->V_dim/2));
+            int V_halved	= p_octant->V_start+V_dim_halved;
+            int H_dim_halved = static_cast<int>(round((float)p_octant->H_dim/2));
+            int H_halved	= p_octant->H_start+H_dim_halved;
+            int D_dim_halved = static_cast<int>(round((float)p_octant->D_dim/2));
+            int D_halved	= p_octant->D_start+D_dim_halved;
 
             //printf("V[%d-%d),H[%d-%d),D[%d-%d) intersects V[%d-%d),H[%d-%d),D[%d-%d)?...", V_int.start, V_int.end, H_int.start, H_int.end, D_int.start, D_int.end, p_octant->V_start, p_octant->V_start+V_dim_halved,   p_octant->H_start,  p_octant->H_start+H_dim_halved, p_octant->D_start,	p_octant->D_start+D_dim_halved);
             if(intersects(V_int, H_int, D_int, p_octant->V_start, V_dim_halved, p_octant->H_start,  H_dim_halved, p_octant->D_start,	D_dim_halved))
@@ -755,12 +755,12 @@ itm::uint32 CAnnotations::Octree::_rec_count(const Poctant& p_octant, const inte
         else
         {
             uint32 neuron_count = 0;
-            uint32 V_dim_halved = static_cast<int>(round((float)p_octant->V_dim/2));
-            uint32 V_halved		= p_octant->V_start+V_dim_halved;
-            uint32 H_dim_halved = static_cast<int>(round((float)p_octant->H_dim/2));
-            uint32 H_halved		= p_octant->H_start+H_dim_halved;
-            uint32 D_dim_halved = static_cast<int>(round((float)p_octant->D_dim/2));
-            uint32 D_halved		= p_octant->D_start+D_dim_halved;
+            int V_dim_halved = static_cast<int>(round((float)p_octant->V_dim/2));
+            int V_halved		= p_octant->V_start+V_dim_halved;
+            int H_dim_halved = static_cast<int>(round((float)p_octant->H_dim/2));
+            int H_halved		= p_octant->H_start+H_dim_halved;
+            int D_dim_halved = static_cast<int>(round((float)p_octant->D_dim/2));
+            int D_halved		= p_octant->D_start+D_dim_halved;
 
             if(intersects(V_int, H_int, D_int, p_octant->V_start, V_dim_halved, p_octant->H_start, H_dim_halved, p_octant->D_start,	D_dim_halved))
                  neuron_count+= _rec_count(p_octant->child1, V_int, H_int, D_int);
@@ -794,7 +794,7 @@ itm::uint32 CAnnotations::Octree::_rec_count(const Poctant& p_octant, const inte
 
 //returns true if two given volumes intersect each other
 bool inline CAnnotations::Octree::intersects(const interval_t& V1_int,		 const interval_t& H1_int,		   const interval_t& D1_int,
-                                                           itm::uint32& V2_start, itm::uint32& V2_dim, itm::uint32& H2_start, itm::uint32& H2_dim, itm::uint32& D2_start, itm::uint32& D2_dim) throw(RuntimeException)
+                                                           int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim) throw(RuntimeException)
 {
     return 	( V1_int.start  < (V2_start + V2_dim)	&&
               V1_int.end    >  V2_start             &&
@@ -806,7 +806,7 @@ bool inline CAnnotations::Octree::intersects(const interval_t& V1_int,		 const i
 
 //returns true if first volume contains second volume
 bool inline CAnnotations::Octree::contains  (const interval_t& V1_int,		 const interval_t& H1_int,		   const interval_t& D1_int,
-                                             itm::uint32& V2_start, itm::uint32& V2_dim, itm::uint32& H2_start, itm::uint32& H2_dim, itm::uint32& D2_start, itm::uint32& D2_dim) throw(RuntimeException)
+                                             int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim) throw(RuntimeException)
 {
     return (  V1_int.start  <=  V2_start            &&
               V1_int.end    >=  (V2_start+V2_dim)	&&

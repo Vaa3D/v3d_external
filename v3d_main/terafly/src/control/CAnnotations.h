@@ -56,9 +56,9 @@ class teramanager::CAnnotations
                 struct octant
                 {
                     //VHD intervals that delimit the octant
-                    itm::uint32 V_start, V_dim;
-                    itm::uint32 H_start, H_dim;
-                    itm::uint32 D_start, D_dim;
+                    int V_start, V_dim;
+                    int H_start, H_dim;
+                    int D_start, D_dim;
 
                     //number of neurons in the octant
                     itm::uint32 n_annotations;
@@ -115,11 +115,11 @@ class teramanager::CAnnotations
 
                 //returns true if two given volumes intersect each other
                 bool inline intersects(const interval_t& V1_int,const interval_t& H1_int,const interval_t& D1_int,
-                                       itm::uint32& V2_start, itm::uint32& V2_dim, itm::uint32& H2_start, itm::uint32& H2_dim, itm::uint32& D2_start, itm::uint32& D2_dim)  throw(itm::RuntimeException);
+                                       int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)  throw(itm::RuntimeException);
 
                 //returns true if first volume contains second volume
                 bool inline contains  (const interval_t& V1_int, const interval_t& H1_int, const interval_t& D1_int,
-                                       itm::uint32& V2_start, itm::uint32& V2_dim, itm::uint32& H2_start, itm::uint32& H2_dim, itm::uint32& D2_start, itm::uint32& D2_dim)  throw(itm::RuntimeException);
+                                       int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)  throw(itm::RuntimeException);
 
             public:
 
@@ -163,7 +163,7 @@ class teramanager::CAnnotations
                 NeuronTree toNeuronTree() throw (itm::RuntimeException);
 
                 friend class CAnnotations;
-                friend class annotation;
+                friend struct annotation;
 
                 static inline double round(double val){
                     return floor(val + 0.5);
@@ -342,7 +342,7 @@ class teramanager::CAnnotations
             return sqrt((m1->x-m2->x)*(m1->x-m2->x) + (m1->y-m2->y)*(m1->y-m2->y) + (m1->z-m2->z)*(m1->z-m2->z));
         }
 
-        friend class annotation;
+        friend struct annotation;
 };
 
 #endif // CANNOTATIONS_H

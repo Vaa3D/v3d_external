@@ -1154,7 +1154,7 @@ throw (RuntimeException)
 
     // allocate image data and initializing to zero (black)
     /**/itm::debug(itm::LEV3, "Allocate image data", __itm__current__function__);
-    size_t img_dim = static_cast<size_t>(xDimInterp) * yDimInterp * zDimInterp * nchannels * (t1-t0+1);
+	itm::sint64 img_dim = static_cast<size_t>(xDimInterp) * yDimInterp * zDimInterp * nchannels * (t1-t0+1);
     uint8* img = new uint8[img_dim];
     for(uint8* img_p = img; img_p-img < img_dim; img_p++)
         *img_p=0;

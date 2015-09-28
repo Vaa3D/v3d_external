@@ -45,7 +45,7 @@ namespace teramanager
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.0.3";          //software version
+    std::string version = "2.0.4";          //software version
     int DEBUG = LEV_MAX;                    //debug level
     bool DEBUG_TO_FILE = false;             //whether debug messages should be printed on the screen or to a file (default: screen)
     std::string DEBUG_FILE_PATH = "/home/alex/Scrivania/terafly_debug.log";   //filepath where to save debug information

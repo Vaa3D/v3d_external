@@ -205,7 +205,7 @@ void myV3dR_GLWidget::zoomIn(const char* method)
 
             points = points_shifted;
         }
-        std:map<point, int> votes;
+		std::map<point, int> votes;
         for(int i=0; i<n; i++)
             votes[point(points[i])]++;
 

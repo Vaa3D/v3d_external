@@ -110,7 +110,7 @@ class teramanager::CImport : public QThread
         itm::uint32 getVMapZDim(){return vmapZDim;}
         itm::uint32 getVMapCDim(){return vmapCDim;}
         itm::uint32 getVMapTDim(){return vmapTDim;}
-        itm::uint32 getTDim(){
+        int getTDim(){
             if(!volumes.empty())
                 return volumes[0]->getDIM_T();
             else
@@ -121,7 +121,7 @@ class teramanager::CImport : public QThread
         {
             for(size_t k=0; k<volumes.size(); k++)
                 if(volumes[k]->getDIM_D() == vmapZDim)
-                    return k;
+                    return static_cast<int>(k);
             return -1;
         }
         bool isEmpty(){return volumes.size() == 0;}
@@ -131,7 +131,7 @@ class teramanager::CImport : public QThread
             if(resolutionIdx < static_cast<int>(volumes.size())) return volumes[resolutionIdx];
             else return 0;
         }
-        int getResolutions(){return volumes.size();}
+        int getResolutions(){return static_cast<int>(volumes.size());}
         float getResRatio(int resIndex)
         {
             if(!volumes.empty() && resIndex < volumes.size())

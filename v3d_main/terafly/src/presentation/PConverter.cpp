@@ -821,7 +821,7 @@ void PConverter::addResolution()
     {
         VolumeConverter *vc = CConverter::instance()->getVolumeConverter(); //throws an exception if volume has not been imported yet!
 
-        int i = resolutionsCboxs.size();
+        int i = static_cast<int>(resolutionsCboxs.size());
         int height = (vc->getV1()-vc->getV0())/pow(2.0f, i);
         int width = (vc->getH1()-vc->getH0())/pow(2.0f, i);
         int depth = (vc->getD1()-vc->getD0())/pow(2.0f, i);
