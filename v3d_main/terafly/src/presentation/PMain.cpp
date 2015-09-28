@@ -47,6 +47,7 @@
 #include <typeinfo>
 #include "TimeSeries.h"
 #include <QtGlobal>
+#include <cmath>
 
 using namespace teramanager;
 using namespace iim;
@@ -2340,14 +2341,14 @@ void PMain::debugAction1Triggered()
                 input_markers[k].z >= z0 && input_markers[k].z <= z1)
                 markers_VOI_lin.push_back(input_markers[k]);
         t_lin_sum += timer_ano.elapsed();
-		t_lin_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
+        t_lin_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
 
         timer_ano.restart();
         cano->findLandmarks(itm::interval_t(x0, x1),
                             itm::interval_t(y0, y1),
                             itm::interval_t(z0, z1), markers_VOI);
         t_oct_sum += timer_ano.elapsed();
-		t_oct_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
+        t_oct_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
     }
 
     QMessageBox::information(this, "Results", itm::strprintf("SCAN_LIN -> %.5f stdev %.5f\nSCAN_OCT -> %.5f stdev %.5f",
