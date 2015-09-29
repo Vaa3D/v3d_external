@@ -4920,7 +4920,7 @@ void XFormWidget::doImage3DLocalBBoxView()  //do not have arguments so that can 
 	doImage3DView(true, 3, bbx0, bbx1, bby0, bby1, bbz0, bbz1); //3 for bbox
 }
 
-void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG bbx0, V3DLONG bbx1, V3DLONG bby0, V3DLONG bby1, V3DLONG bbz0, V3DLONG bbz1)
+void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG bbx0, V3DLONG bbx1, V3DLONG bby0, V3DLONG bby1, V3DLONG bbz0, V3DLONG bbz1, bool show)
 	//b_local==0, use entire image
 	//b_local==1, use marker;
 	//b_local==2, use roi;
@@ -5073,7 +5073,10 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 				mypara_3Dview.window3D = my3dwin;
 			}
 			my3dwin->setParent(0);
-			my3dwin->show();
+
+            // @ADDED by Alessandro on 2015-09-29. Postpone show() if required.
+            if(show)
+                my3dwin->show();
 		}
 		catch (...)
 		{

@@ -14,7 +14,8 @@ ties names are:
 Vaa3D-TeraFly version 2.0.5
 September 29th, 2015
 --------------------------------------------------------------------------------------------
-- Fix: qwe 
+- New: 3D viewer size maximized by default.
+- New: better/faster syncronization among 3D viewers.
 --------------------------------------------------------------------------------------------
 
 

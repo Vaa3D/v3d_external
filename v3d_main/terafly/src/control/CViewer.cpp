@@ -50,6 +50,7 @@
 #include "QUndoMarkerCreate.h"
 #include "QUndoMarkerDelete.h"
 #include "QUndoMarkerDeleteROI.h"
+#include "v3d_application.h"
 
 using namespace itm;
 
@@ -81,12 +82,29 @@ void CViewer::show()
         image->setTimePackType(TIME_PACK_C);
         V3D_env->setImage(window, image);
 
-        // open 3D view window
-        V3D_env->open3DWindow(window);
+        // create 3D view window with postponed show()
+        XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
+        w->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
         view3DWidget = (V3dR_GLWidget*)(V3D_env->getView3DControl(window));
         if(!view3DWidget->getiDrawExternalParameter())
             QMessageBox::critical(pMain,QObject::tr("Error"), QObject::tr("Unable to get iDrawExternalParameter from Vaa3D's V3dR_GLWidget"),QObject::tr("Ok"));
         window3D = view3DWidget->getiDrawExternalParameter()->window3D;
+
+
+        // set fixed size = fullscreen
+        window3D->setFixedWidth(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width());
+        window3D->setFixedHeight(qApp->desktop()->availableGeometry().height());
+
+
+        // start 3D visualization with Vaa3D display controls hidden (or inherit from previous viewer)
+        if(!prev || prev->window3D->displayControlsHidden)
+            window3D->hideDisplayControls();
+
+
+        // show 3D viewer
+        window3D->show();
+
+
 
         // install the event filter on the 3D renderer and on the 3D window
         view3DWidget->installEventFilter(this);
@@ -98,6 +116,8 @@ void CViewer::show()
         disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), view3DWidget, SLOT(setVolumeTimePoint(int)));
         window3D->timeSlider->setMinimum(0);
         window3D->timeSlider->setMaximum(CImport::instance()->getTDim()-1);
+
+
 
         // if the previous explorer window exists
         if(prev)
@@ -163,8 +183,8 @@ void CViewer::show()
             CViewer::first = this;
 
             //increasing height if lower than the plugin one's
-            if(window3D->height() < pMain->height())
-                window3D->setMinimumHeight(pMain->height());
+            //if(window3D->height() < pMain->height())
+                //window3D->setMinimumHeight(pMain->height());
 
             //centering the current 3D window and the plugin's window
             int screen_height = qApp->desktop()->availableGeometry().height();
@@ -172,9 +192,6 @@ void CViewer::show()
             int window_x = (screen_width - (window3D->width() + pMain->width()))/2;
             int window_y = (screen_height - window3D->height()) / 2;
             window3D->move(window_x, window_y);
-
-            // by default, hiding Vaa3D display controls
-            window3D->hideDisplayControls();
         }
 
         //registrating the current window as the last and current window of the multiresolution explorer windows chain
