@@ -1255,16 +1255,6 @@ void PMain::reset()
     statusBar->clearMessage();
     statusBar->showMessage("Ready.");
     helpBox->setText(HTwelcome);
-
-    #ifdef terafly_enable_debug_annotations
-    debugVerbosityCBox->setCurrentIndex(4);
-    itm::DEBUG = itm::LEV_MAX;
-    itm::DEBUG_TO_FILE = true;
-    std::string debugFilePath = "C:/log.txt";
-    FILE *ff = fopen(debugFilePath.c_str(), "w");
-    fclose(ff);
-    itm::DEBUG_FILE_PATH = debugFilePath;
-    #endif
 }
 
 

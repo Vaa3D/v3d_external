@@ -172,6 +172,9 @@ void CViewer::show()
             int window_x = (screen_width - (window3D->width() + pMain->width()))/2;
             int window_y = (screen_height - window3D->height()) / 2;
             window3D->move(window_x, window_y);
+
+            // by default, hiding Vaa3D display controls
+            window3D->hideDisplayControls();
         }
 
         //registrating the current window as the last and current window of the multiresolution explorer windows chain
@@ -2335,7 +2338,7 @@ void CViewer::alignToLeft(QWidget* widget)
 {
     /**/itm::debug(itm::LEV3, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-    int widget_new_x = window3D->x() + window3D->width() -30;
+    int widget_new_x = window3D->x() + window3D->width();
     int widget_new_y = window3D->y();
     int widget_new_height = window3D->height();
 
@@ -2351,7 +2354,7 @@ void CViewer::alignToRight(QWidget* widget)
 {
     /**/itm::debug(itm::LEV3, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-    int widget_new_x = window3D->x() - widget->width() - 3;
+    int widget_new_x = window3D->x() - widget->width();
     int widget_new_y = window3D->y();
     int widget_new_height = window3D->height();
 
@@ -2439,6 +2442,8 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->comboBox_channel->setCurrentIndex(src->comboBox_channel->currentIndex());
     dst->transparentSlider->setValue(src->transparentSlider->value());
     dst->fcutSlider->setValue(src->fcutSlider->value());
+    if(dst->displayControlsHidden != src->displayControlsHidden)
+        dst->hideDisplayControls();
 
     //syncronizing other controls
     dst->checkBox_displayAxes->setChecked(src->checkBox_displayAxes->isChecked());

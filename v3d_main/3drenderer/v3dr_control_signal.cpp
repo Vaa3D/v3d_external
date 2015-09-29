@@ -683,15 +683,17 @@ void V3dR_MainWindow::createControlWidgets()
 // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
 void V3dR_MainWindow::hideDisplayControls()
 {
-    if(controlGroup->isVisible())
+    if(!displayControlsHidden)
     {
         controlGroup->setVisible(false);
         hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_left.png"));
+        displayControlsHidden = true;
     }
     else
     {
         controlGroup->setVisible(true);
         hideDisplayControlsButton->setIcon(QIcon(":/pic/arrow_right.png"));
+        displayControlsHidden = false;
     }
 }
 

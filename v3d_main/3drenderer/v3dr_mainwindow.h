@@ -211,6 +211,7 @@ public:
     // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
     QGroupBox *controlGroup;
     QPushButton *hideDisplayControlsButton;
+    bool displayControlsHidden;
 
     QTabWidget *tabOptions;
 
@@ -270,6 +271,7 @@ public:
         // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
         controlGroup = 0;
         hideDisplayControlsButton = 0;
+        displayControlsHidden = 0;
 
 		xRotSlider=yRotSlider=zRotSlider=0;
 		zoomSlider=xShiftSlider=yShiftSlider=0;
