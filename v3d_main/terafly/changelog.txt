@@ -11,11 +11,20 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.6
+September 30th, 2015
+--------------------------------------------------------------------------------------------
+- Opt: slightly faster zoom-in by disabling progress bar on 3D viewer update.
+- Opt: eliminated zoom-in method "WYSIWYG (5 markers)"  and renamed  methods  "Foreground (1
+       marker) to "Virtual Finger" and "Foreground (20 markers + mean shift)" to "MSMS".
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.5
 September 29th, 2015
 --------------------------------------------------------------------------------------------
 - New: 3D viewer size maximized by default.
-- New: better/faster syncronization among 3D viewers.
+- Opt: better/faster syncronization among 3D viewers.
 --------------------------------------------------------------------------------------------
 
 

@@ -111,6 +111,7 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 	this->mainwindow = mainWindow;
 	this->data_title = title;
 	this->renderer = 0;
+    this->show_progress_bar = true;
 
 	///////////////////////////////////////////////////////////////
 	init_members();
@@ -259,10 +260,15 @@ void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 ex
 
 	//=============================================================================
 	PROGRESS_DIALOG( tr("Preparing 3D View"), NULL);
-	PROGRESS_PERCENT(10);
+    if(this->show_progress_bar)
+    {
+        PROGRESS_PERCENT(10);
+    }
 	{
-
-		PROGRESS_PERCENT(30);
+        if(this->show_progress_bar)
+        {
+            PROGRESS_PERCENT(30);
+        }
 		if (renderer)
 		{
             renderer->setupData(this->_idep);
@@ -270,14 +276,20 @@ void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 ex
 			renderer->getLimitedDataSize(_data_size); //for update slider size
 		}
 
-		PROGRESS_PERCENT(70);
+        if(this->show_progress_bar)
+        {
+            PROGRESS_PERCENT(70);
+        }
 		if (renderer)
 		{
 			renderer->initialize(renderer->class_version()); //090705 RZC
 			if (renderer->hasError())	POST_CLOSE(this);
 		}
 	}
-	PROGRESS_PERCENT(100);
+    if(this->show_progress_bar)
+    {
+        PROGRESS_PERCENT(100);
+    }
 	//=============================================================================
 
 	// when initialize done, update status of control widgets
@@ -2730,24 +2742,37 @@ void V3dR_GLWidget::updateImageData()
 {
 	qDebug("V3dR_GLWidget::updateImageData -----------------------------------------");
 
-	PROGRESS_DIALOG( QObject::tr("Updating image"), this);
-	PROGRESS_PERCENT(10);
+
+    PROGRESS_DIALOG( QObject::tr("Updating image"), this);
+    if(this->show_progress_bar)
+    {
+        PROGRESS_PERCENT(10);
+    }
 	{
 		{
-			PROGRESS_PERCENT(30);
+            if(this->show_progress_bar)
+            {
+                PROGRESS_PERCENT(30);
+            }
 
 			renderer->setupData(this->_idep);
 			if (renderer->hasError())	POST_CLOSE(this);
 			renderer->getLimitedDataSize(_data_size); //for update slider size
 		}
 
-		PROGRESS_PERCENT(70);
+        if(this->show_progress_bar)
+        {
+            PROGRESS_PERCENT(70);
+        }
 		{
 			renderer->reinitializeVol(renderer->class_version()); //100720
 			if (renderer->hasError())	POST_CLOSE(this);
 		}
 	}
-	PROGRESS_PERCENT(100);
+    if(this->show_progress_bar)
+    {
+        PROGRESS_PERCENT(100);
+    }
 	//=============================================================================
 
 	// when initialize done, update status of control widgets
@@ -2780,11 +2805,17 @@ void V3dR_GLWidget::reloadData()
 	//makeCurrent(); //ensure right context when concurrent animation, 081025 //090705 delete
 
 	PROGRESS_DIALOG( QObject::tr("Reloading"), this);
-	PROGRESS_PERCENT(10);
+    if(this->show_progress_bar)
+    {
+        PROGRESS_PERCENT(10);
+    }
 	{
         //if (renderer)	renderer->cleanData(); //090705 delete this line
 
-		PROGRESS_PERCENT(30);
+        if(this->show_progress_bar)
+        {
+            PROGRESS_PERCENT(30);
+        }
 		//=============================================================================
 		if (renderer)
 		{
@@ -2793,7 +2824,10 @@ void V3dR_GLWidget::reloadData()
 			renderer->getLimitedDataSize(_data_size); //for update slider size
 		}
 
-		PROGRESS_PERCENT(70);
+        if(this->show_progress_bar)
+        {
+            PROGRESS_PERCENT(70);
+        }
 		if (renderer)
 		{
 			renderer->initialize(1); //090705 RZC: only treat as class Renderer_gl1
@@ -2801,7 +2835,10 @@ void V3dR_GLWidget::reloadData()
 		}
 		//=============================================================================
 	}
-	PROGRESS_PERCENT(100);
+    if(this->show_progress_bar)
+    {
+        PROGRESS_PERCENT(100);
+    }
 
 	emit signalVolumeCutRange(); //100809
 

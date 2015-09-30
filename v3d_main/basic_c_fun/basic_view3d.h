@@ -211,7 +211,7 @@ public:
 
 	virtual void updateWithTriView() =0;
     virtual void updateLandmark() = 0;
-	virtual void updateImageData() =0;
+        virtual void updateImageData() =0;
 	virtual void reloadData() =0;
 	virtual void cancelSelect() =0;
 

@@ -91,6 +91,10 @@ void CViewer::show()
         window3D = view3DWidget->getiDrawExternalParameter()->window3D;
 
 
+        // disable progress bar (for 3D viewer updates faster)
+        view3DWidget->setShowProgressBar(false);
+
+
         // set fixed size = fullscreen
         window3D->setFixedWidth(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width());
         window3D->setFixedHeight(qApp->desktop()->availableGeometry().height());

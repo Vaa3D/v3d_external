@@ -662,9 +662,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsResetButton = new QPushButton(this);
     controlsResetButton->setIcon(QIcon(":/icons/reset.png"));
     zoomInMethod = new QComboBox();
-    zoomInMethod->addItem("WYSIWYG (5 markers)");
-    zoomInMethod->addItem("Foreground (20 markers + mean-shift)");
-    zoomInMethod->addItem("Foreground (1 marker)");
+    zoomInMethod->addItem("Virtual Finger (bVF)");
+    zoomInMethod->addItem("Mean-shift of mean-shift (MSMS)");
     zoomInMethod->installEventFilter(this);
     zoomInMethod->setCurrentIndex(1);
 

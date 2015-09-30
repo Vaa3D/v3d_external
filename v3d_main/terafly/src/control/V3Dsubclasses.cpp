@@ -116,12 +116,7 @@ void myV3dR_GLWidget::zoomIn(const char* method)
     ZoominRoiOperation::newGroup();
     QElapsedTimer timer;
     timer.start();
-    if(strcmp(method, "WYSIWYG (5 markers)") == 0)
-    {
-        this->renderer->zoomview_wheel_event();
-        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: WYSIWYG (5 markers)", itm::ALL_COMPS, timer.elapsed()));
-    }
-    else if(strcmp(method, "Foreground (1 marker)") == 0)
+    if(strcmp(method, "Virtual Finger (bVF)") == 0)
     {
         XYZ centralPoint = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(this->getRenderer()))->get3DPoint(this->viewW/2, this->viewH/2);
         v3d_imaging_paras* roi = new v3d_imaging_paras;
@@ -132,12 +127,12 @@ void myV3dR_GLWidget::zoomIn(const char* method)
         roi->ye = centralPoint.y + PMain::getInstance()->Vdim_sbox->value()/2;
         roi->zs = centralPoint.z - PMain::getInstance()->Ddim_sbox->value()/2;
         roi->ze = centralPoint.z + PMain::getInstance()->Ddim_sbox->value()/2;
-        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: Foreground (1 marker)", itm::ALL_COMPS, timer.elapsed()));
+        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: Virtual Finger (bVF)", itm::ALL_COMPS, timer.elapsed()));
         if(CViewer::getCurrent())
             CViewer::getCurrent()->invokedFromVaa3D(roi);
 
     }
-    else if(strcmp(method, "Foreground (20 markers + mean-shift)") == 0)
+    else if(strcmp(method, "Mean-shift of mean-shift (MSMS)") == 0)
     {
         // parameters
         float dperc = 0.1f;             // distance to center of the viewport, expressed in terms of fraction of the viewport diagonal
@@ -230,7 +225,7 @@ void myV3dR_GLWidget::zoomIn(const char* method)
         roi->ye = thepoint.y + PMain::getInstance()->Vdim_sbox->value()/2;
         roi->zs = thepoint.z - PMain::getInstance()->Ddim_sbox->value()/2;
         roi->ze = thepoint.z + PMain::getInstance()->Ddim_sbox->value()/2;
-        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: Foreground (20 markers + mean-shift)", itm::ALL_COMPS, timer.elapsed()));
+        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: MSMS", itm::ALL_COMPS, timer.elapsed()));
         if(CViewer::getCurrent())
             CViewer::getCurrent()->invokedFromVaa3D(roi);
     }

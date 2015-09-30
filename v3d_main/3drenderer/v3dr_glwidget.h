@@ -127,6 +127,12 @@ public:
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
     int neuronIndex;
 
+    // @ADDED by Alessandro on 2015-09-30.
+    // Used to enable / disable the progress bar when the 3D viewer image data are loading.
+    // No progress bar --> faster update (maybe due to processEvents() used to handle progress bar events).
+    // Be sure to set to 'true' by default when you subclass (or, simplier, just call the base-constructor).
+    bool show_progress_bar;
+
 	int currentPluginState;                              // May 29, 2012 by Hang
 	map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
 
@@ -196,6 +202,10 @@ public:
 	virtual void showTool();
 	virtual void updateTool();
 	virtual void updateControl();
+
+    // @ADDED by Alessandro on 2015-09-30. See 'show_progress_bar'.
+    bool         getShowProgressBar(){return show_progress_bar;}
+    void         setShowProgressBar(bool val){show_progress_bar = val;}
 
 public slots:
 // most of format: set***(type) related to a change***(type)
@@ -336,7 +346,7 @@ public slots:
 
 	virtual void updateWithTriView();
     virtual void updateLandmark();
-	virtual void updateImageData();
+    virtual void updateImageData();
 	virtual void reloadData();
 	virtual void cancelSelect();
 
