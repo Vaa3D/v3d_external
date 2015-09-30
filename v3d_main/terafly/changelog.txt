@@ -11,6 +11,17 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.7
+September 30th, 2015
+--------------------------------------------------------------------------------------------
+- Opt: TeraFly's toolbar is now integrated in the Vaa3D's viewer instead of being a floating
+       (and sometimes flickering) window.
+- New: re-enabled  right-click menu  options "Zoom-in HighRezImage: 1-right-stroke ROI"  and
+       "Zoom-in HighRezImage: 1-right-click ROI"-
+- Opt: minor improvement of GUI's directional shifts.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.6
 September 30th, 2015
 --------------------------------------------------------------------------------------------

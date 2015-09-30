@@ -95,19 +95,35 @@ void CViewer::show()
         view3DWidget->setShowProgressBar(false);
 
 
-        // set fixed size = fullscreen
-        window3D->setFixedWidth(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width());
-        window3D->setFixedHeight(qApp->desktop()->availableGeometry().height());
-
 
         // start 3D visualization with Vaa3D display controls hidden (or inherit from previous viewer)
         if(!prev || prev->window3D->displayControlsHidden)
             window3D->hideDisplayControls();
 
+        // remove TeraFly's toolbar from previous viewer (if any) and add to this viewer
+        if(prev)
+        {
+            prev->window3D->centralLayout->takeAt(0);
+            PAnoToolBar::instance()->setParent(0);
+        }
+        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+
+
+        // re-arrange viewer's layout
+        window3D->centralLayout->setSpacing(0);
+        window3D->centralLayout->insertSpacing(2, 10);
+        window3D->centralLayout->insertSpacing(4, 10);
+        window3D->centralLayout->setContentsMargins(10,5,5,10);
+
+
+        // resize available screen space
+        window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), qApp->desktop()->availableGeometry().height());
 
         // show 3D viewer
         window3D->show();
 
+        // after show(), we can fix the size (on MacOS, show() also adjusts the window size, thus it safer to fix it now)
+        window3D->setFixedSize(window3D->width(), window3D->height());
 
 
         // install the event filter on the 3D renderer and on the 3D window
@@ -424,6 +440,10 @@ CViewer::~CViewer()
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
+    // decouple TeraFly's toolbar from Vaa3D 3D viewer
+    window3D->centralLayout->takeAt(0);
+    PAnoToolBar::instance()->setParent(0);
+
     // remove the event filter from the 3D renderer and from the 3D window
     isActive = false;
     view3DWidget->removeEventFilter(this);
@@ -431,8 +451,10 @@ CViewer::~CViewer()
     window3D->timeSlider->removeEventFilter(this);
 
     // CLOSE 3D window (solution #1)
-//    if(!CImport::instance()->is5D())
-//        V3D_env->close3DWindow(window); //this causes crash on 5D data when scrolling time slider, but is OK in all the other cases
+    //QMessageBox::information(0, "info", strprintf("calling close3Dwindow").c_str());
+    //if(!CImport::instance()->is5D())
+        //V3D_env->close3DWindow(window); //this causes crash on 5D data when scrolling time slider, but is OK in all the other cases
+
 
     // CLOSE 3D window (solution #2)
     // view3DWidget->close();          //this causes crash when makeLastView is called on a very long chain of opened windows
@@ -442,14 +464,14 @@ CViewer::~CViewer()
     // @fixed  by Alessandro on 2014-04-11: this seems the only way to close the 3D window w/o (randomly) causing TeraFly to crash
     // @update by Alessandro on 2014-07-15: this causes random crash in "Proofreading" mode, but is ok on 5D data (even in "Proofediting mode"!)
     // @update by Alessandro on 2014-07-21: this ALWAYS works on Windows. Still has to be tested on other platforms.
-//    else
-        POST_EVENT(window3D, QEvent::Close); // this OK
+    POST_EVENT(window3D, QEvent::Close); // this OK
 
     //close 2D window
     triViewWidget->close();
 
     //decreasing the number of instantiated objects
     nInstances--;
+
 
     /**/itm::debug(itm::LEV1, strprintf("title = %s, nInstances--, nInstances = %d", titleShort.c_str(), nInstances).c_str(), __itm__current__function__);
 
@@ -677,7 +699,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         else if(object == window3D && (event->type() == QEvent::Move || event->type() == QEvent::Resize))
         {
            alignToLeft(PMain::getInstance());
-           PAnoToolBar::instance()->alignToLeft(window3D->glWidgetArea);
            return true;
         }
 
@@ -688,7 +709,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         else if(object == window3D && event->type() == QEvent::WindowStateChange)
         {
             alignToLeft(PMain::getInstance());
-            PAnoToolBar::instance()->alignToLeft(window3D->glWidgetArea);
             return true;
         }
 
@@ -1953,6 +1973,11 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         //sync widgets
         syncWindows(source->window3D, window3D);
 
+        // remove TeraFly's toolbar from source viewer and add to this viewer
+        source->window3D->centralLayout->takeAt(0);
+        PAnoToolBar::instance()->setParent(0);
+        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+
         //showing window
         this->window3D->raise();
         this->window3D->activateWindow();
@@ -2367,8 +2392,11 @@ void CViewer::alignToLeft(QWidget* widget)
         widget->move(widget_new_x, widget_new_y);
     if(widget->height() != widget_new_height)
     {
-        widget->setMaximumHeight(std::max(widget_new_height,widget->height()));
+        //widget->setMaximumHeight(std::max(widget_new_height,widget->height()));
+        //QMessageBox::information(widget, "info", itm::strprintf("Resizing PMain at %d", widget_new_height).c_str());
         widget->resize(widget->width(), widget_new_height);
+       // widget->setFixedSize(widget->width(), widget_new_height);
+        //QMessageBox::information(widget, "info", itm::strprintf("PMain height is now %d", widget->height()).c_str());
     }
 }
 void CViewer::alignToRight(QWidget* widget)
@@ -2525,8 +2553,7 @@ void CViewer::setCursor(const QCursor& cur, bool renderer_only /* = false */)
 
     if(CViewer::current)
     {
-        if(!renderer_only)
-            CViewer::current->window3D->setCursor(cur);
+        CViewer::current->window3D->setCursor(cur);
         CViewer::current->view3DWidget->setCursor(cur);
     }
 }

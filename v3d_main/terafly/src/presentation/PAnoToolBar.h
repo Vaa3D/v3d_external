@@ -51,7 +51,9 @@ class teramanager::PAnoToolBar : public QWidget
                 uniqueInstance = 0;
             }
         }
+        static bool isInstantiated(){return uninstance != 0;}
         PAnoToolBar(QWidget *parent = 0);
+        ~PAnoToolBar();
 
         /**********************************************************************************
         * Intercepts global key pressed events
@@ -68,34 +70,12 @@ class teramanager::PAnoToolBar : public QWidget
         ***********************************************************************************/
         void refreshTools();
 
-        /**********************************************************************************
-        * Align the current widget to the left of the given widget
-        ***********************************************************************************/
-        void alignToLeft(QWidget* widget);
-
         friend class PMain;
         friend class CViewer;
         friend class QUndoMarkerCreate;
         friend class QUndoMarkerDelete;
         friend class QUndoMarkerDeleteROI;
 
-    protected:
-
-        void mousePressEvent(QMouseEvent *event)
-        {
-            if (event->button() == Qt::LeftButton) {
-                dragPosition = event->globalPos() - frameGeometry().topLeft();
-                event->accept();
-            }
-        }
-
-        void mouseMoveEvent(QMouseEvent *event)
-        {
-            if (event->buttons() & Qt::LeftButton) {
-                move(event->globalPos() - dragPosition);
-                event->accept();
-            }
-        }
     
     signals:
     

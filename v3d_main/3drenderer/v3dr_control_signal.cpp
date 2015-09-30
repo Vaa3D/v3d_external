@@ -624,7 +624,7 @@ void V3dR_MainWindow::createControlWidgets()
     connect(hideDisplayControlsButton, SIGNAL(clicked()), this, SLOT(hideDisplayControls()));
     //hideDisplayControlsButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    QHBoxLayout *centralLayout = new QHBoxLayout(this);
+    centralLayout = new QHBoxLayout(this);
     centralLayout->addWidget(viewGroup, 1);
     centralLayout->addWidget(hideDisplayControlsButton, 0);
     centralLayout->addWidget(controlGroup);

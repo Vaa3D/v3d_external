@@ -234,6 +234,9 @@ public:
 
     QTabWidget *tabCutPlane;
 
+    // @ADDED by Alessandro on 2015-09-30: giving access to layout allows later changes (e.g. addition of new elements)
+    QHBoxLayout *centralLayout;
+
 	void init_members() // more clear putting them here, by RZC 080828
 	{
 		default_animate_para();

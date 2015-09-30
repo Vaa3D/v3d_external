@@ -6,6 +6,11 @@ using namespace teramanager;
 
 PAnoToolBar* PAnoToolBar::uniqueInstance = 0;
 
+PAnoToolBar::~PAnoToolBar()
+{
+    //QMessageBox::information(0, "info", "Destroying PAnoToolbar!");
+}
+
 PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
@@ -94,21 +99,22 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
 
     // make it appear as a true toolbar
     this->setContentsMargins(0,0,0,0);
-    this->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    setAttribute(Qt::WA_TranslucentBackground);
+    //this->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    //setAttribute(Qt::WA_TranslucentBackground);
     toolBar->setStyleSheet("QToolBar{background:qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,"
                            "stop: 0 rgb(180,180,180), stop: 1 rgb(220,220,220));"
-                           "border-style: outset;"
+                           "border-style: solid;"
+                           //"border-style: outset;"
                            "border-width: 1px;"
-                           "border-radius: 5px;"
-                           "border-color: rgb(50,50,50);} ");
+                           "border-radius: 3px;"
+                           "border-color: rgb(140,140,140);} ");
                            //"QToolBar::separator::horizontal{width: 5px; height: 10px;}");
 
     // install event filter
     QCoreApplication::instance()->installEventFilter(this);
 
     // show tooltips also when has no focus on it
-    setAttribute(Qt::WA_AlwaysShowToolTips, true);
+    //setAttribute(Qt::WA_AlwaysShowToolTips, true);
 }
 
 
@@ -416,20 +422,6 @@ void PAnoToolBar::refreshTools()
         buttonMarkerDeleteChecked(true);
     if(buttonMarkerRoiDelete->isChecked())
         buttonMarkerRoiDeleteChecked(true);
-    update();
-}
-
-/**********************************************************************************
-* Align the current widget to the left of the given widget
-***********************************************************************************/
-void PAnoToolBar::alignToLeft(QWidget* widget)
-{
-    /**/itm::debug(itm::LEV_MAX, 0, __itm__current__function__);
-
-    int new_x = widget->mapToGlobal(QPoint(0,0)).x();
-    int new_y = widget->mapToGlobal(QPoint(0,0)).y();
-    move(new_x, new_y);
-    setFixedHeight(widget->height());
     update();
 }
 

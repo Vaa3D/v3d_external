@@ -432,6 +432,7 @@ class teramanager::CPlugin : public QObject
 
         //V3D plugin attributes and methods
         static void domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
+        static void domenu(const QString &menu_name);
 
         // returns true if version >= min_required_version, where version format is version.major.minor
         static bool checkPluginVersion(std::string version, std::string min_required_version);

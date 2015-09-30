@@ -841,7 +841,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     /* ------------ fix central block elements size -------------- */
     QHBoxLayout *xShiftLayout = new QHBoxLayout();
     xShiftLayout->setContentsMargins(0,0,0,0);
-    int fixedArrowWidth = 25;
+    int fixedArrowWidth = 20;
     traslXneg->setFixedWidth(fixedArrowWidth);
     traslXpos->setFixedWidth(fixedArrowWidth);
     xShiftLayout->addStretch();
@@ -1116,13 +1116,14 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
 
     //set always on top
-    setWindowFlags(Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
     //setMaximumSize(this->minimumWidth(), this->minimumHeight());
     show();
     move(QApplication::desktop()->screen()->rect().center() - rect().center());
 
     //
     setFixedWidth(380);
+
 
     // register this as event filter
     installEventFilter(this);
@@ -1194,13 +1195,13 @@ void PMain::reset()
         resolution_cbox->removeItem(0);
     traslXlabel->setAlignment(Qt::AlignCenter);
 //    traslXlabel->setTextFormat(Qt::RichText);
-    traslXlabel->setText("<font size=\"3\">X</font>");
+    traslXlabel->setText("<font size=\"3\">x</font>");
     traslYlabel->setAlignment(Qt::AlignCenter);
 //    traslYlabel->setTextFormat(Qt::RichText);
-    traslYlabel->setText("<font size=\"3\">Y</font>");
+    traslYlabel->setText("<font size=\"3\">y</font>");
     traslZlabel->setAlignment(Qt::AlignCenter);
 //    traslZlabel->setTextFormat(Qt::RichText);
-    traslZlabel->setText("<font size=\"3\">Z</font>");
+    traslZlabel->setText("<font size=\"3\">z</font>");
     traslTlabel->setAlignment(Qt::AlignCenter);
 //    traslTlabel->setTextFormat(Qt::RichText);
     traslTlabel->setText("<font size=\"3\">t</font>");
@@ -1433,7 +1434,8 @@ void PMain::closeVolume()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
-    PAnoToolBar::instance()->releaseTools();
+    if(PAnoToolBar::isInstantiated())
+        PAnoToolBar::instance()->releaseTools();
 
     CImport::instance()->reset();
     CVolume::instance()->reset();
@@ -1487,7 +1489,8 @@ void PMain::loadAnnotations()
 
                 // save current cursor and set wait cursor
                 QCursor cursor = cur_win->view3DWidget->cursor();
-                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+                if(PAnoToolBar::isInstantiated())
+                    PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
                 CViewer::setCursor(Qt::WaitCursor);
 
                 // load
@@ -1497,7 +1500,8 @@ void PMain::loadAnnotations()
 
                 // reset saved cursor
                 CViewer::setCursor(cursor);
-                PAnoToolBar::instance()->setCursor(cursor);
+                if(PAnoToolBar::isInstantiated())
+                    PAnoToolBar::instance()->setCursor(cursor);
             }
             else
                 return;
@@ -1532,7 +1536,8 @@ void PMain::saveAnnotations()
 
             // save current cursor and set wait cursor
             QCursor cursor = cur_win->view3DWidget->cursor();
-            PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
             CViewer::setCursor(Qt::WaitCursor);
 
             // save
@@ -1541,7 +1546,8 @@ void PMain::saveAnnotations()
 
             // reset saved cursor
             CViewer::setCursor(cursor);
-            PAnoToolBar::instance()->setCursor(cursor);
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(cursor);
         }
     }
     catch(RuntimeException &ex)
@@ -1589,7 +1595,8 @@ void PMain::saveAnnotationsAs()
 
                 // save current cursor and set wait cursor
                 QCursor cursor = cur_win->view3DWidget->cursor();
-                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+                if(PAnoToolBar::isInstantiated())
+                    PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
                 CViewer::setCursor(Qt::WaitCursor);
 
                 // save
@@ -1599,7 +1606,8 @@ void PMain::saveAnnotationsAs()
 
                 // reset saved cursor
                 CViewer::setCursor(cursor);
-                PAnoToolBar::instance()->setCursor(cursor);
+                if(PAnoToolBar::isInstantiated())
+                    PAnoToolBar::instance()->setCursor(cursor);
             }
             else
                 return;
@@ -1626,8 +1634,11 @@ void PMain::clearAnnotations()
             CAnnotations::getInstance()->clear();
             cur_win->undoStack.clear();
             cur_win->loadAnnotations();
-            PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-            PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+            if(PAnoToolBar::isInstantiated())
+            {
+                PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+                PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+            }
         }
         virtualSpaceSizeMenu->setEnabled(true);
     }
@@ -1782,7 +1793,6 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         closeVolumeAction->setEnabled(true);
         clearAnnotationsAction->setEnabled(true);
         showToolbarButton->setEnabled(true);
-        PAnoToolBar::instance()->setEnabled(true);
 
         //enabling multiresolution panel and hiding volume map options        
         gradientBar->setEnabled(true);
@@ -1815,9 +1825,9 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         resolution_cbox->setEnabled(true);
 
         //updating traslation widgets
-        traslXlabel->setText("<font size=\"3\" color=\"red\"><b>X</b></font>");
-        traslYlabel->setText("<font size=\"3\" color=\"green\"><b>Y</b></font>");
-        traslZlabel->setText("<font size=\"3\" color=\"blue\"><b>Z</b></font>");
+        traslXlabel->setText("<font size=\"3\" color=\"red\"><b>x</b></font>");
+        traslYlabel->setText("<font size=\"3\" color=\"green\"><b>y</b></font>");
+        traslZlabel->setText("<font size=\"3\" color=\"blue\"><b>z</b></font>");
         traslTlabel->setText("<font size=\"3\" color=\"gray\"><b>t</b></font>");
 
         //disabling useless time-related widgets if data is < 5D
@@ -2298,52 +2308,63 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
-    int n_points = QInputDialog::getInt(this, "",  "Number of points:");
-    int n_samples = QInputDialog::getInt(this, "", "Number of samples:");
+//    QPalette Pal(palette());
+//    Pal.setColor(QPalette::Background, Qt::red);
+//    QWidget *emptyPanel = new QWidget();
+//    emptyPanel->setAutoFillBackground(true);
+//    emptyPanel->setPalette(Pal);
+//    emptyPanel->setFixedWidth(50);
+//    CViewer::getCurrent()->window3D->centralLayout->insertWidget(0, emptyPanel);
+    CViewer::getCurrent()->window3D->centralLayout->takeAt(0);
+    PAnoToolBar::instance()->setParent(0);
 
-    int dimX = 10000;
-    int dimY = 10000;
-    int dimZ = 10000;
-    CAnnotations::instance(dimY, dimX, dimZ);
-    CAnnotations* cano = CAnnotations::getInstance();
-    LandmarkList input_markers;
-    for(int k=0; k<n_points; k++)
-        input_markers.push_back(LocationSimple(rand()%dimX, rand()%dimY, rand()%dimZ));
-    cano->addLandmarks(itm::interval_t(0, dimX), itm::interval_t(0, dimY), itm::interval_t(0, dimZ),input_markers);
 
-    float t_lin_sum = 0, t_lin_sum_sq = 0, t_oct_sum = 0, t_oct_sum_sq = 0;
-    for(int n=0; n<n_samples; n++)
-    {
-        int x0 = rand() % (dimX-256);
-        int y0 = rand() % (dimY-256);
-        int z0 = rand() % (dimZ-256);
-        int x1 = x0 + 256;
-        int y1 = y0 + 256;
-        int z1 = z0 + 256;
-        QList<LocationSimple> markers_VOI_lin, markers_VOI;
+//    int n_points = QInputDialog::getInt(this, "",  "Number of points:");
+//    int n_samples = QInputDialog::getInt(this, "", "Number of samples:");
 
-        QElapsedTimer timer_ano;
-        timer_ano.start();
-        for(int k=0; k<input_markers.size(); k++)
-            if( input_markers[k].x >= x0 && input_markers[k].x <= x1 &&
-                input_markers[k].y >= y0 && input_markers[k].y <= y1 &&
-                input_markers[k].z >= z0 && input_markers[k].z <= z1)
-                markers_VOI_lin.push_back(input_markers[k]);
-        t_lin_sum += timer_ano.elapsed();
-        t_lin_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
+//    int dimX = 10000;
+//    int dimY = 10000;
+//    int dimZ = 10000;
+//    CAnnotations::instance(dimY, dimX, dimZ);
+//    CAnnotations* cano = CAnnotations::getInstance();
+//    LandmarkList input_markers;
+//    for(int k=0; k<n_points; k++)
+//        input_markers.push_back(LocationSimple(rand()%dimX, rand()%dimY, rand()%dimZ));
+//    cano->addLandmarks(itm::interval_t(0, dimX), itm::interval_t(0, dimY), itm::interval_t(0, dimZ),input_markers);
 
-        timer_ano.restart();
-        cano->findLandmarks(itm::interval_t(x0, x1),
-                            itm::interval_t(y0, y1),
-                            itm::interval_t(z0, z1), markers_VOI);
-        t_oct_sum += timer_ano.elapsed();
-        t_oct_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
-    }
+//    float t_lin_sum = 0, t_lin_sum_sq = 0, t_oct_sum = 0, t_oct_sum_sq = 0;
+//    for(int n=0; n<n_samples; n++)
+//    {
+//        int x0 = rand() % (dimX-256);
+//        int y0 = rand() % (dimY-256);
+//        int z0 = rand() % (dimZ-256);
+//        int x1 = x0 + 256;
+//        int y1 = y0 + 256;
+//        int z1 = z0 + 256;
+//        QList<LocationSimple> markers_VOI_lin, markers_VOI;
 
-    QMessageBox::information(this, "Results", itm::strprintf("SCAN_LIN -> %.5f stdev %.5f\nSCAN_OCT -> %.5f stdev %.5f",
-                                                             t_lin_sum/n_samples, sqrt(t_lin_sum_sq/n_samples - pow(t_lin_sum/n_samples, 2.0f)),
-                                                             t_oct_sum/n_samples, sqrt(t_oct_sum_sq/n_samples - pow(t_oct_sum/n_samples, 2.0f))).c_str());
-    CAnnotations::uninstance();
+//        QElapsedTimer timer_ano;
+//        timer_ano.start();
+//        for(int k=0; k<input_markers.size(); k++)
+//            if( input_markers[k].x >= x0 && input_markers[k].x <= x1 &&
+//                input_markers[k].y >= y0 && input_markers[k].y <= y1 &&
+//                input_markers[k].z >= z0 && input_markers[k].z <= z1)
+//                markers_VOI_lin.push_back(input_markers[k]);
+//        t_lin_sum += timer_ano.elapsed();
+//        t_lin_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
+
+//        timer_ano.restart();
+//        cano->findLandmarks(itm::interval_t(x0, x1),
+//                            itm::interval_t(y0, y1),
+//                            itm::interval_t(z0, z1), markers_VOI);
+//        t_oct_sum += timer_ano.elapsed();
+//        t_oct_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
+//    }
+
+//    QMessageBox::information(this, "Results", itm::strprintf("SCAN_LIN -> %.5f stdev %.5f\nSCAN_OCT -> %.5f stdev %.5f",
+//                                                             t_lin_sum/n_samples, sqrt(t_lin_sum_sq/n_samples - pow(t_lin_sum/n_samples, 2.0f)),
+//                                                             t_oct_sum/n_samples, sqrt(t_oct_sum_sq/n_samples - pow(t_oct_sum/n_samples, 2.0f))).c_str());
+//    CAnnotations::uninstance();
 
 
 
@@ -2559,9 +2580,9 @@ void PMain::PRsetActive(bool active)
         T1_sbox->setEnabled(!active);
         to_label_4->setEnabled(!active);
     }
-    traslXlabel->setText(active ? "<font size=\"3\" color=\"gray\">X</font>" : "<font size=\"3\" color=\"red\"><b>X</b></font>");
-    traslYlabel->setText(active ? "<font size=\"3\" color=\"gray\">Y</font>" : "<font size=\"3\" color=\"green\"><b>Y</b></font>");
-    traslZlabel->setText(active ? "<font size=\"3\" color=\"gray\">Z</font>" : "<font size=\"3\" color=\"blue\"><b>Z</b></font>");
+    traslXlabel->setText(active ? "<font size=\"3\" color=\"gray\">x</font>" : "<font size=\"3\" color=\"red\"><b>x</b></font>");
+    traslYlabel->setText(active ? "<font size=\"3\" color=\"gray\">y</font>" : "<font size=\"3\" color=\"green\"><b>y</b></font>");
+    traslZlabel->setText(active ? "<font size=\"3\" color=\"gray\">z</font>" : "<font size=\"3\" color=\"blue\"><b>z</b></font>");
     traslTlabel->setText(active ? "<font size=\"3\" color=\"gray\">t</font>" : "<font size=\"3\" color=\"gray\"><b>t</b></font>");
     traslYneg->setEnabled(!active && curWin->volV0 > 0);
     traslYpos->setEnabled(!active && curWin->volV1 < CImport::instance()->getVolume(curWin->volResIndex)->getDIM_V());
@@ -2786,14 +2807,8 @@ void PMain::showToolbarButtonChanged(bool changed)
 {
     /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
 
-    if(changed)
-    {
-        PAnoToolBar::instance(this)->show();
-        if(CViewer::current)
-            PAnoToolBar::instance()->alignToLeft(CViewer::current->window3D->glWidgetArea);
-    }
-    else
-        PAnoToolBar::instance(this)->hide();
+    if(PAnoToolBar::isInstantiated())
+        PAnoToolBar::instance()->setVisible(changed);
 }
 
 /**********************************************************************************
@@ -2816,7 +2831,8 @@ void PMain::markersShowROIMarginSpinBoxChanged(int value)
 
     CSettings::instance()->setAnnotationVirtualMargin(value);
     CSettings::instance()->writeSettings();
-    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+    if(PAnoToolBar::isInstantiated())
+        PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
 /**********************************************************************************

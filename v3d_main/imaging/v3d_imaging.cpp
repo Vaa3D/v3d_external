@@ -18,6 +18,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/v3d_message.h"
 #include "../plugin_loader/v3d_plugin_loader.h"
 #include "../v3d/mainwindow.h"
+#include "../terafly/src/control/CPlugin.h"
 //#include "../3drenderer/v3dr_mainwindow.h"
 //#include "../v3d/v3d_core.h"
 #ifdef __WIN32 
@@ -81,11 +82,11 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
         }
         else if (p.OPS == "Fetch Highrez Image Data from File")
         {
-            if (pluginsDir.cd("plugins/teramanager")==false) 
-            {
-                v3d_msg("Cannot find ./plugins/teramanager directory!");
-                return false;
-            }
+            // @FIXED by Alessandro on 2015-09-30.
+            // Since TeraFly is part of Vaa3D, here we can directly call TeraFly's domenu function w/o using QPluginLoader.
+            curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
+            itm::CPlugin::domenu(p.OPS);
+            return true;
         }
         else if (p.OPS == "Load file using Vaa3D data IO manager")
         {

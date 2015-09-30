@@ -372,7 +372,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #endif
 
                     QDir pluginsDir1 = pluginsDir;
-                    if (pluginsDir1.cd("plugins/teramanager")==true)
+                    // @FIXED by Alessandro on 2015-09-30.
+                    // Re-enabled after migration of TeraFly from plugin to Vaa3D.
                     {
                         listAct.append(act = new QAction("", w)); act->setSeparator(true);
                         listAct.append(actCurveCreate_zoom_grabhighrezdata = new QAction("Zoom-in HighRezImage: 1-right-stroke ROI", w));
