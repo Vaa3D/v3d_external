@@ -11,6 +11,16 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.8
+September 30th, 2015
+--------------------------------------------------------------------------------------------
+- New: added multiple marker selection with one-mouse stroke. This will be used for multiple
+       marker deletion with one-mouse stroke in the next release (in progress).
+- Fix: fixed a bug (caused by Qt)  which caused  file dialogs  on MacOS to appear behind the 
+       currently displayed window even if the "WindowStaysOnTopHint" property was set.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.7
 September 30th, 2015
 --------------------------------------------------------------------------------------------

@@ -372,6 +372,15 @@ namespace teramanager
         }
     }
 
+    inline void setWidgetOnTop(QWidget* widget, bool val)
+    {
+        if (val == true)
+            widget->setWindowFlags(widget->windowFlags() | Qt::WindowStaysOnTopHint);
+        else
+            widget->setWindowFlags(widget->windowFlags() & ~Qt::WindowStaysOnTopHint);
+        widget->show();
+    }
+
     inline void debug(debug_level dbg_level, const char* message=0, const char* source=0, bool short_print = false){
         if(DEBUG >= dbg_level){
             if(DEBUG_TO_FILE)
@@ -422,7 +431,6 @@ namespace teramanager
     /*-------------------------------------------------------------------------------------------------------------------------*/
 }
 namespace itm = teramanager;	//a short alias for the current namespace: Icon Tera Manager (itm)
-
 
 class teramanager::CPlugin : public QObject
 {

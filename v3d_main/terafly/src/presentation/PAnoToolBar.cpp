@@ -280,10 +280,11 @@ void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
         // switch to Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
         if(expl)
         {
-            expl->view3DWidget->getRenderer()->selectMode = Renderer::smCurveCreate1;
+            //expl->view3DWidget->getRenderer()->selectMode = Renderer::smCurveCreate1;
+            expl->view3DWidget->getRenderer()->selectMode = Renderer::smSelectMultiMarkers;
             static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_addthiscurve = false;
-            static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_imaging = false;
-            static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = true;
+            //static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_imaging = false;
+            //static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = true;
         }
     }
     else
@@ -386,6 +387,11 @@ bool PAnoToolBar::eventFilter(QObject *object, QEvent *event)
         QKeyEvent *KeyEvent = (QKeyEvent*)event;
         if(KeyEvent->key() == Qt::Key_Escape)
             releaseTools();
+        else if(KeyEvent->key() == Qt::Key_Backspace && buttonMarkerRoiDelete->isChecked())
+        {
+            CViewer::getCurrent()->deleteMarkerROI();
+            releaseTools();
+        }
     }
     return false;
 }

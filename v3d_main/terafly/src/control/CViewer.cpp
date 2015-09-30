@@ -125,6 +125,8 @@ void CViewer::show()
         // after show(), we can fix the size (on MacOS, show() also adjusts the window size, thus it safer to fix it now)
         window3D->setFixedSize(window3D->width(), window3D->height());
 
+        window3D->setWindowFlags(Qt::WindowStaysOnTopHint);
+
 
         // install the event filter on the 3D renderer and on the 3D window
         view3DWidget->installEventFilter(this);
@@ -1570,6 +1572,59 @@ void CViewer::deleteMarkerROI(QVector<QPoint> ROI_contour) throw (RuntimeExcepti
 
     // reset saved cursor
     CViewer::setCursor(cursor);
+
+    //update visible markers
+    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+}
+
+void CViewer::deleteMarkerROI() throw (RuntimeException)
+{
+    /**/itm::debug(itm::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+
+
+    // delete selected markers
+    QList<LocationSimple> deletedMarkers;
+    vector<int> vaa3dMarkers_tbd;
+    QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
+    QList <ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+    for(int i=0; i<imageMarkers.size(); i++)
+    {
+        if(imageMarkers[i].selected)
+        {
+            for(int j=0; j<vaa3dMarkers.size(); j++)
+                if(vaa3dMarkers[j].x == imageMarkers[i].x &&
+                   vaa3dMarkers[j].y == imageMarkers[i].y &&
+                   vaa3dMarkers[j].z == imageMarkers[i].z &&
+                   !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j]))
+                    vaa3dMarkers_tbd.push_back(j);
+        }
+    }
+
+    // remove selected markers
+    for(int i=0; i<vaa3dMarkers_tbd.size(); i++)
+    {
+        LocationSimple tbd = vaa3dMarkers[vaa3dMarkers_tbd[i]];
+        deletedMarkers.push_back(tbd);
+        vaa3dMarkers.removeOne(tbd);
+    }
+
+    // set new markers
+    V3D_env->setLandmark(window, vaa3dMarkers);
+    V3D_env->pushObjectIn3DWindow(window);
+
+    // end select mode
+    view3DWidget->getRenderer()->endSelectMode();
+
+    //update visible markers
+    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+
+    undoStack.beginMacro("delete markers");
+    undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
+    undoStack.endMacro();
+    PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+
+    // reset saved cursor
+    //CViewer::setCursor(cursor);
 
     //update visible markers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());

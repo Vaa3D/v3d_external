@@ -2911,6 +2911,58 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     curImg->update_3drenderer_neuron_view(w, this);
 }
 
+// @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
+void Renderer_gl1::selectMultiMarkersByStroke()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    // contour 2 polygon
+    QPolygon poly;
+    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+
+    // contour mode := Qt::Key_Shift pressed := delete markers intersecting the line, otherwise delete all markers within the contour
+    bool contour_mode = !QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+
+    float tolerance = 10; // tolerance distance from the backprojected marker to the curve point
+
+    // back-project the 3D points and label hitted markers
+    for(QList<ImageMarker>::iterator i=listMarker.begin(); i!=listMarker.end(); i++)
+    {
+        GLdouble px, py, pz, ix, iy, iz;
+        ix = i->x;
+        iy = i->y;
+        iz = i->z;
+        if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+        {
+            py = viewport[3]-py; //the Y axis is reversed
+            QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+            {
+                if(contour_mode)
+                {
+                    if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+                        i->selected = true;
+                }
+                else
+                {
+                    for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+                    {
+                        QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+                        if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
+                        {
+                           i->selected = true;
+                           break;   // found intersection with marker: no more need to continue on this inner loop
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // @ADDED by Alessandro on 2015-05-07.
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
