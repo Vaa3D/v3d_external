@@ -78,6 +78,8 @@
 
 #include "line_box_intersection_check.h"
 
+#include "../terafly/src/control/CPlugin.h"
+
 #define EPS 0.01
 #define PI 3.14159265
 #define MAX_DOUBLE 1.79769e+308
@@ -2961,6 +2963,10 @@ void Renderer_gl1::selectMultiMarkersByStroke()
             }
         }
     }
+
+    // inform TeraFly (SAFE)
+    // this does nothing except when TeraFly is active
+    itm::TeraFly::doaction("marker multiselect");
 }
 
 // @ADDED by Alessandro on 2015-05-07.

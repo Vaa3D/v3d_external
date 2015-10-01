@@ -361,7 +361,7 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
 
 
     // check version
-    if(!CPlugin::checkPluginVersion(ver, min_required_version))
+    if(!TeraFly::checkVersion(ver, min_required_version))
     {
         itm::warning(itm::strprintf("volume map needs to be (re-)generated: check version failed from vmap.bin (current = \"%s\", required = \"%s\"", ver, min_required_version.c_str()).c_str(), __itm__current__function__);
         return true;

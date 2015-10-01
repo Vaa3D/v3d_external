@@ -333,6 +333,9 @@ class teramanager::CAnnotations
         static inline bool isMarkerOutOfRendererBounds(const LocationSimple& marker){
             return marker.x < 0 || marker.y < 0 || marker.z < 0 ;
         }
+        static inline bool isMarkerOutOfRendererBounds(const ImageMarker& marker){
+            return marker.x < 0 || marker.y < 0 || marker.z < 0 ;
+        }
 
         static inline float distance(const LocationSimple& m1, const LocationSimple& m2){
             return sqrt((m1.x-m2.x)*(m1.x-m2.x) + (m1.y-m2.y)*(m1.y-m2.y) + (m1.z-m2.z)*(m1.z-m2.z));

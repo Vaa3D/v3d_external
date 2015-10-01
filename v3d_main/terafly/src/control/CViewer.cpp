@@ -1543,9 +1543,8 @@ void CViewer::clearAnnotations() throw (RuntimeException)
     view3DWidget->getRenderer()->endSelectMode();
 }
 
-void CViewer::deleteMarkerROI(QVector<QPoint> ROI_contour) throw (RuntimeException)
+/*void CViewer::deleteSelectedMarkers(QVector<QPoint> ROI_contour) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("title = %s, ROI.size() = %d", titleShort.c_str(), ROI_contour.size()).c_str(), __itm__current__function__);
 
     // compute polygon from the given contour
     QPolygon ROI_poly(ROI_contour);
@@ -1575,59 +1574,56 @@ void CViewer::deleteMarkerROI(QVector<QPoint> ROI_contour) throw (RuntimeExcepti
 
     //update visible markers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
-}
+}*/
 
-void CViewer::deleteMarkerROI() throw (RuntimeException)
+void CViewer::deleteSelectedMarkers() throw (RuntimeException)
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-
-    // delete selected markers
-    QList<LocationSimple> deletedMarkers;
-    vector<int> vaa3dMarkers_tbd;
-    QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
-    QList <ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
-    for(int i=0; i<imageMarkers.size(); i++)
+    if(PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
     {
-        if(imageMarkers[i].selected)
+        // associate selected image markers to vaa3d markers and delete
+        QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
+        QList<LocationSimple> deletedMarkers;
+        QList<ImageMarker> &listMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+        for (QList<ImageMarker>::iterator it = listMarker.begin(); it!= listMarker.end(); it++)
         {
-            for(int j=0; j<vaa3dMarkers.size(); j++)
-                if(vaa3dMarkers[j].x == imageMarkers[i].x &&
-                   vaa3dMarkers[j].y == imageMarkers[i].y &&
-                   vaa3dMarkers[j].z == imageMarkers[i].z &&
-                   !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j]))
-                    vaa3dMarkers_tbd.push_back(j);
+            if (it->selected && !CAnnotations::isMarkerOutOfRendererBounds(*it))
+            {
+                for(QList<LocationSimple>::iterator jt = vaa3dMarkers.begin(); jt != vaa3dMarkers.end();)
+                {
+                    if(jt->x == it->x && jt->y == it->y && jt->z == it->z)
+                    {
+                        deletedMarkers.push_back(*jt);
+                        jt = vaa3dMarkers.erase(jt);
+                        break;
+                    }
+                    else
+                        ++jt;
+                }
+                it->selected = false;
+            }
         }
+
+        // set new markers
+        V3D_env->setLandmark(window, vaa3dMarkers);
+        V3D_env->pushObjectIn3DWindow(window);
+
+
+        // update visible markers
+        PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+
+
+        // add Undo action
+        undoStack.beginMacro("delete markers");
+        undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
+        undoStack.endMacro();
+        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+
+
+        // need to refresh annotation tools as this Vaa3D's action resets the Vaa3D annotation mode
+        PAnoToolBar::instance()->refreshTools();
     }
-
-    // remove selected markers
-    for(int i=0; i<vaa3dMarkers_tbd.size(); i++)
-    {
-        LocationSimple tbd = vaa3dMarkers[vaa3dMarkers_tbd[i]];
-        deletedMarkers.push_back(tbd);
-        vaa3dMarkers.removeOne(tbd);
-    }
-
-    // set new markers
-    V3D_env->setLandmark(window, vaa3dMarkers);
-    V3D_env->pushObjectIn3DWindow(window);
-
-    // end select mode
-    view3DWidget->getRenderer()->endSelectMode();
-
-    //update visible markers
-    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
-
-    undoStack.beginMacro("delete markers");
-    undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
-    undoStack.endMacro();
-    PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-
-    // reset saved cursor
-    //CViewer::setCursor(cursor);
-
-    //update visible markers
-    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
 
@@ -2123,16 +2119,16 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     int roiCenterZ = roi->ze-(roi->ze-roi->zs)/2;
 
     // Vaa3D's ROI mode triggers deleteAnnotationsROI when TeraFly's "buttonMarkerRoiDelete" mode is active
-    if(roi->ops_type == 1 && PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
+    /*if(roi->ops_type == 1 && PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
     {
-        deleteMarkerROI(scribbling_points);
+        deleteSelectedMarkers(scribbling_points);
 
         // need to refresh annotation tools as this Vaa3D's action resets the Vaa3D annotation mode
         PAnoToolBar::instance()->refreshTools();
-    }
+    }*/
 
     // otherwise before continue, check "Proofreading" mode is not active
-    else if(PMain::getInstance()->isPRactive())
+    if(PMain::getInstance()->isPRactive())
     {
         QMessageBox::information(this->window3D, "Warning", "TeraFly is running in \"Proofreading\" mode. All TeraFly's' navigation features are disabled. "
                                  "Please terminate the \"Proofreading\" mode and try again.");

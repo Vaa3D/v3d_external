@@ -53,7 +53,7 @@ namespace teramanager
     *    INTERFACES    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    class CPlugin;              //the class defined in this header and derived from V3DPluginInterface2_1
+    class TeraFly;              //the class defined in this header and derived from V3DPluginInterface2_1
     class PMain;                //main presentation class: it contains the main frame
     class PDialogImport;        //presentation class for the import dialog
     class PConverter;           //presentation class for the volume converter dialog
@@ -432,18 +432,18 @@ namespace teramanager
 }
 namespace itm = teramanager;	//a short alias for the current namespace: Icon Tera Manager (itm)
 
-class teramanager::CPlugin : public QObject
+class teramanager::TeraFly : public QObject
 {
     Q_OBJECT
 
     public:
 
-        //V3D plugin attributes and methods
+        // access points
         static void domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
-        static void domenu(const QString &menu_name);
+        static void doaction(const QString &action_name);
 
         // returns true if version >= min_required_version, where version format is version.major.minor
-        static bool checkPluginVersion(std::string version, std::string min_required_version);
+        static bool checkVersion(std::string version, std::string min_required_version);
 };
 
 #endif

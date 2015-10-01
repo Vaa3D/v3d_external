@@ -2878,12 +2878,12 @@ void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 void MainWindow::func_open_terafly()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    teramanager::CPlugin::domenu("TeraFly", *pl, this);
+    teramanager::TeraFly::domenu("TeraFly", *pl, this);
 }
 void MainWindow::func_open_teraconverter()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    teramanager::CPlugin::domenu("TeraConverter", *pl, this);
+    teramanager::TeraFly::domenu("TeraConverter", *pl, this);
 }
 #endif
 

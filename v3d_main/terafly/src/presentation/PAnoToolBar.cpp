@@ -389,7 +389,7 @@ bool PAnoToolBar::eventFilter(QObject *object, QEvent *event)
             releaseTools();
         else if(KeyEvent->key() == Qt::Key_Backspace && buttonMarkerRoiDelete->isChecked())
         {
-            CViewer::getCurrent()->deleteMarkerROI();
+            CViewer::getCurrent()->deleteSelectedMarkers();
             releaseTools();
         }
     }

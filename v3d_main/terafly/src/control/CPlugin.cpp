@@ -45,7 +45,7 @@ namespace teramanager
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.0.8";          //software version
+    std::string version = "2.0.9";          //software version
     int DEBUG = LEV_MAX;                    //debug level
     bool DEBUG_TO_FILE = false;             //whether debug messages should be printed on the screen or to a file (default: screen)
     std::string DEBUG_FILE_PATH = "/home/alex/Scrivania/terafly_debug.log";   //filepath where to save debug information
@@ -60,7 +60,7 @@ namespace teramanager
 }
 
 // 4 - Call the functions corresponding to the domenu items. 
-void CPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
+void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
     /**/itm::debug(itm::LEV1, strprintf("menu_name = %s", menu_name.toStdString().c_str()).c_str(), __itm__current__function__);
 
@@ -102,9 +102,9 @@ void CPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
     /**/itm::debug(itm::LEV1, "EOF", __itm__current__function__);
 }
 
-void CPlugin::domenu(const QString &menu_name)
+void TeraFly::doaction(const QString &action_name)
 {
-    if(menu_name == tr("Fetch Highrez Image Data from File"))
+    if(action_name == tr("Fetch Highrez Image Data from File"))
     {
         if(CViewer::getCurrent())
             CViewer::getCurrent()->invokedFromVaa3D();
@@ -112,10 +112,17 @@ void CPlugin::domenu(const QString &menu_name)
             QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
                                      "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
     }
+    else if(action_name == tr("marker multiselect"))
+    {
+        if(CViewer::getCurrent())
+            CViewer::getCurrent()->deleteSelectedMarkers();
+    }
+    else
+        QMessageBox::information(0, "Information", itm::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());
 }
 
 // returns true if version >= min_required_version, where version format is version.major.minor
-bool CPlugin::checkPluginVersion(std::string version, std::string min_required_version)
+bool TeraFly::checkVersion(std::string version, std::string min_required_version)
 {
     vector<string> tokens_A, tokens_B;
     itm::split(version, ".", tokens_A);
