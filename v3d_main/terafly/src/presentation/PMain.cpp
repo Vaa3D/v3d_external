@@ -1241,7 +1241,6 @@ void PMain::reset()
     frameCoord->setPalette(globalCoord_panel->palette());
 
     //reset PR panel widgets
-    //PR_button->setIcon(QIcon(":/icons/start.png"));
     PR_button->setText("Start");
     PR_spbox->setSuffix(" of 0");
     PR_spbox->setMaximum(0);
@@ -2608,7 +2607,7 @@ void PMain::PRsetActive(bool active)
     }
     /* ------------------- "Proofreading" panel ---------------------- */
     PR_button->setText(active ? "Stop" : "Start");
-    PR_button->setIcon(active ? QIcon(":/icons/stop.png") : QIcon(":/icons/start.png"));
+    //PR_button->setIcon(active ? QIcon(":/icons/stop.png") : QIcon(":/icons/start.png"));
     PR_spbox->setEnabled(active);
     PR_spbox->setSuffix(active ? " of " + QString::number(blocks.size()) : " of 0");
     PR_spbox->setMaximum(active ? static_cast<int>(blocks.size()): 0);

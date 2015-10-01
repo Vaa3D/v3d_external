@@ -968,18 +968,18 @@ void My4DImage::proj_trace_history_undo(V_NeuronSWC_list & tNeuron)
 //	qDebug()<<"***************************************************************";
 //	qDebug()<<"UNDO  historylist last ="<<tracedNeuron_historylist.size()-1<<"  cur_history ="<<cur_history;
 
-	cur_history--;
+    cur_history--;
 	if (tracedNeuron_historylist.size()<1 ||  //090924 RZC: fixed from <2 to <1
 		cur_history<0 )
-	{
-		if (tNeuron.b_traced) tNeuron.seg.clear();
+    {
+        if (tNeuron.b_traced) tNeuron.seg.clear();
 		cur_history = -1;
-		v3d_msg("Reach the earliest of saved history!");
+        v3d_msg("Reach the earliest of saved history!");
 	}
 	else if (cur_history>=0 && cur_history<tracedNeuron_historylist.size())
 	{
 		tNeuron = tracedNeuron_historylist.at(cur_history);
-	}
+    }
 
 //	qDebug()<<"      historylist last ="<<tracedNeuron_historylist.size()-1<<"  cur_history ="<<cur_history;
 //	qDebug()<<"***************************************************************";

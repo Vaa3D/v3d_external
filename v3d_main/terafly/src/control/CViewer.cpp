@@ -107,6 +107,9 @@ void CViewer::show()
             PAnoToolBar::instance()->setParent(0);
         }
         window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+        // also reset undo/redo (which are referred to this viewer)
+        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
 
 
         // re-arrange viewer's layout
@@ -1970,6 +1973,12 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         source->window3D->centralLayout->takeAt(0);
         PAnoToolBar::instance()->setParent(0);
         window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+        // also reset undo/redo (which are referred to the source viewer)
+        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+        source->undoStack.clear();
+        this->undoStack.clear();
+
 
         //showing window
         this->window3D->raise();

@@ -61,7 +61,7 @@ itm::PDialogProofreading::PDialogProofreading(itm::PMain *_parent) : QWidget(0)
 
     overlap_sbox = new QSpinBox();
     overlap_sbox->setAlignment(Qt::AlignCenter);
-    overlap_sbox->setSuffix("%%");
+    overlap_sbox->setSuffix("\%");
     overlap_sbox->setPrefix("overlap ");
     overlap_sbox->setValue(20);
     overlap_sbox->setMinimum(1);
@@ -118,13 +118,13 @@ itm::PDialogProofreading::PDialogProofreading(itm::PMain *_parent) : QWidget(0)
     blocks_text->setText("Click here to update");
 
     start_button = new QPushButton(" Start");
-    start_button->setIcon(QIcon(":/icons/start.png"));
+    //start_button->setIcon(QIcon(":/icons/start.png"));
     start_button->setIconSize(QSize(25,25));
     start_button->setFixedHeight(35);
     start_button->setFont(bigFont);
 
     cancel_button = new QPushButton(" Cancel");
-    cancel_button->setIcon(QIcon(":/icons/stop.png"));
+    //cancel_button->setIcon(QIcon(":/icons/stop.png"));
     cancel_button->setIconSize(QSize(25,25));
     cancel_button->setFixedHeight(35);
     cancel_button->setFont(bigFont);
@@ -341,7 +341,7 @@ void itm::PDialogProofreading::updateBlocks(int)
                                    CImport::instance()->getVolume(resolution_cbox->currentIndex())->getDIM_H() *
                                    CImport::instance()->getVolume(resolution_cbox->currentIndex())->getDIM_D();
         itm::uint64 cur_sel_size = (uint64)1 * dimX * dimY * dimZ;
-        coverage_field->setText( (itm::strprintf("%.3f", (cur_sel_size*100.0/cur_res_size)) + "%%").c_str());
+        coverage_field->setText( (itm::strprintf("%.3f", (cur_sel_size*100.0/cur_res_size)) + "\%").c_str());
         if(blocks.size() < 2)
         {
             start_button->setEnabled(false);

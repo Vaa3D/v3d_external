@@ -79,7 +79,7 @@ void itm::QUndoVaa3DNeuron::undo()
         v3dr_getImage4d(source->view3DWidget->_idep)->proj_trace_history_undo();
         v3dr_getImage4d(source->view3DWidget->_idep)->update_3drenderer_neuron_view(source->view3DWidget, (Renderer_gl1*)source->view3DWidget->renderer);//090924
 
-        source->V3D_env->pushObjectIn3DWindow(source->window);
+        source->view3DWidget->update();
     }
 }
 
@@ -95,7 +95,7 @@ void itm::QUndoVaa3DNeuron::redo()
             v3dr_getImage4d(source->view3DWidget->_idep)->proj_trace_history_redo();
             v3dr_getImage4d(source->view3DWidget->_idep)->update_3drenderer_neuron_view(source->view3DWidget, (Renderer_gl1*)source->view3DWidget->renderer);//090924
 
-            source->V3D_env->pushObjectIn3DWindow(source->window);
+            source->view3DWidget->update();
         }
     }
     else
