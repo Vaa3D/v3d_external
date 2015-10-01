@@ -125,7 +125,7 @@ void CViewer::show()
         // after show(), we can fix the size (on MacOS, show() also adjusts the window size, thus it safer to fix it now)
         window3D->setFixedSize(window3D->width(), window3D->height());
 
-        window3D->setWindowFlags(Qt::WindowStaysOnTopHint);
+        //window3D->setWindowFlags(Qt::WindowStaysOnTopHint);
 
 
         // install the event filter on the 3D renderer and on the 3D window
@@ -376,7 +376,6 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgDa
     this->isReady = false;
     this->waitingFor5D = false;
     this->has_double_clicked = false;
-    this->scribbling = false;
     char ctitle[1024];
     sprintf(ctitle, "ID(%d), Res(%d x %d x %d),Volume X=[%d,%d], Y=[%d,%d], Z=[%d,%d], T=[%d,%d], %d channels", ID, CImport::instance()->getVolume(volResIndex)->getDIM_H(),
             CImport::instance()->getVolume(volResIndex)->getDIM_V(), CImport::instance()->getVolume(volResIndex)->getDIM_D(),
@@ -572,11 +571,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 createMarker2At(mouseEvt->x(), mouseEvt->y());
                 return true;
             }
-            else if(mouseEvt->button() == Qt::RightButton && PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
-            {
-                scribbling = true;
-                scribbling_points.clear();
-            }
 
             // ignore Vaa3D-right-click-popup marker create operations
             else if(mouseEvt->button() == Qt::RightButton)
@@ -605,34 +599,14 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             return false;
         }
 
-        /******************* INTERCEPTING MOUSE MOVE EVENTS ***********************
-        Mouse move events are intercepted for handling annotation tools
-        ***************************************************************************/
-        if (scribbling &&                                                               // scribbling is active
-            object == view3DWidget &&                                                   // event emitted by 3D renderer
-            event->type() == QEvent::MouseMove &&                                       // MouseMove event
-            PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())                // annotation tool "Marker ROI delete" enabled
-        {
-
-            QMouseEvent* mouseEvt = (QMouseEvent*)event;
-            scribbling_points.push_back(mouseEvt->pos());
-
-            return false;
-        }
-
 
         /****************** INTERCEPTING MOUSE RELEASE EVENTS **********************
         Mouse release events are intercepted for...
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonRelease)
         {
-            // ...handling annotation tools...
-            if(scribbling &&
-               PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
-                scribbling = false;
             // ...and emitting a Vaa3D rotation changed event
-            else
-                this->Vaa3D_rotationchanged(0);
+            this->Vaa3D_rotationchanged(0);
             return false;
         }
 
@@ -1543,38 +1517,6 @@ void CViewer::clearAnnotations() throw (RuntimeException)
     view3DWidget->getRenderer()->endSelectMode();
 }
 
-/*void CViewer::deleteSelectedMarkers(QVector<QPoint> ROI_contour) throw (RuntimeException)
-{
-
-    // compute polygon from the given contour
-    QPolygon ROI_poly(ROI_contour);
-
-    // save current cursor and set wait cursor
-    QCursor cursor = view3DWidget->cursor();
-    CViewer::setCursor(Qt::WaitCursor);
-
-    // pixel sampling step
-    int sampling = CSettings::instance()->getAnnotationMarkersDeleteROISampling();
-
-    // delete marker (if any) at each location inside the polygon
-    QList<LocationSimple> deletedMarkers;
-    QRect bbox = ROI_poly.boundingRect();
-    for(int i=bbox.top(); i<bbox.bottom(); i=i+sampling)
-        for(int j=bbox.left(); j<bbox.right(); j=j+sampling)
-            if(ROI_poly.containsPoint(QPoint(j,i), Qt::OddEvenFill))    // Ray-crossing algorithm
-                deleteMarkerAt(j,i, &deletedMarkers);
-
-    undoStack.beginMacro("delete markers");
-    undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
-    undoStack.endMacro();
-    PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-
-    // reset saved cursor
-    CViewer::setCursor(cursor);
-
-    //update visible markers
-    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
-}*/
 
 void CViewer::deleteSelectedMarkers() throw (RuntimeException)
 {
@@ -2118,14 +2060,6 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     int roiCenterY = roi->ye-(roi->ye-roi->ys)/2;
     int roiCenterZ = roi->ze-(roi->ze-roi->zs)/2;
 
-    // Vaa3D's ROI mode triggers deleteAnnotationsROI when TeraFly's "buttonMarkerRoiDelete" mode is active
-    /*if(roi->ops_type == 1 && PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
-    {
-        deleteSelectedMarkers(scribbling_points);
-
-        // need to refresh annotation tools as this Vaa3D's action resets the Vaa3D annotation mode
-        PAnoToolBar::instance()->refreshTools();
-    }*/
 
     // otherwise before continue, check "Proofreading" mode is not active
     if(PMain::getInstance()->isPRactive())

@@ -1325,13 +1325,13 @@ void PMain::openVolume(string path /* = "" */)
 
             #else
             //added by PHC 20130823
-            itm::setWidgetOnTop(this, false);
+            //itm::setWidgetOnTop(this, false);
             import_path = QFileDialog::getExistingDirectory(this, tr("Select a folder for a resolution of the volume image you want to visualize"),
                                                             CSettings::instance()->getVolumePathLRU().c_str(),
                                                              QFileDialog::ShowDirsOnly
                                                         //     | QFileDialog::DontResolveSymlinks   //maybe I should allow symbolic links as well, by PHC, 20130823
                                                                     );
-            itm::setWidgetOnTop(this, true);
+            //itm::setWidgetOnTop(this, true);
 
 #endif
 
@@ -1481,9 +1481,9 @@ void PMain::loadAnnotations()
                    path = dialog.selectedFiles().front();
 
             #else
-            itm::setWidgetOnTop(cur_win->window3D, false);
+            //itm::setWidgetOnTop(cur_win->window3D, false);
             QString path = QFileDialog::getOpenFileName(cur_win->window3D, "Open annotation file", dir.absolutePath(), tr("annotation files (*.ano)"));
-            itm::setWidgetOnTop(cur_win->window3D, true);
+            //itm::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
             if(!path.isEmpty())
@@ -1588,9 +1588,9 @@ void PMain::saveAnnotationsAs()
                    path = dialog.selectedFiles().front();
 
             #else
-            itm::setWidgetOnTop(cur_win->window3D, false);
+            //itm::setWidgetOnTop(cur_win->window3D, false);
             QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath(), tr("annotation files (*.ano)"));
-            itm::setWidgetOnTop(cur_win->window3D, true);
+            //itm::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
             if(!path.isEmpty())

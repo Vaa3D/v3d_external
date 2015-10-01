@@ -33,6 +33,8 @@
 #include "v3d_message.h"
 #include "CPlugin.h"
 #include "CViewer.h"
+#include "QUndoMarkerCreate.h"
+#include "PAnoToolBar.h"
 
 using namespace teramanager;
 
@@ -45,7 +47,7 @@ namespace teramanager
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.0.9";          //software version
+    std::string version = "2.0.10";         //software version
     int DEBUG = LEV_MAX;                    //debug level
     bool DEBUG_TO_FILE = false;             //whether debug messages should be printed on the screen or to a file (default: screen)
     std::string DEBUG_FILE_PATH = "/home/alex/Scrivania/terafly_debug.log";   //filepath where to save debug information
@@ -116,6 +118,16 @@ void TeraFly::doaction(const QString &action_name)
     {
         if(CViewer::getCurrent())
             CViewer::getCurrent()->deleteSelectedMarkers();
+    }
+    else if(action_name == tr("neuron edit"))
+    {
+        if(CViewer::getCurrent())
+        {
+            CViewer::getCurrent()->undoStack.beginMacro("vaa3d action");
+            CViewer::getCurrent()->undoStack.push(new QUndoVaa3DNeuron(CViewer::getCurrent()));
+            CViewer::getCurrent()->undoStack.endMacro();
+            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+        }
     }
     else
         QMessageBox::information(0, "Information", itm::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());

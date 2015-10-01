@@ -78,6 +78,7 @@ namespace teramanager
     class QUndoMarkerCreate;    //QUndoCommand for marker creation
     class QUndoMarkerDelete;    //QUndoCommand for marker deletion
     class QUndoMarkerDeleteROI; //QUndoCommand for marker in ROI deletion
+    class QUndoVaa3DNeuron;     //QUndoCommand for Vaa3D neuron editing
     struct annotation;          //base class for annotations
 
     class myRenderer_gl1;       //Vaa3D-customized class

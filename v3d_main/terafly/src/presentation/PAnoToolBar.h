@@ -75,6 +75,7 @@ class teramanager::PAnoToolBar : public QWidget
         friend class QUndoMarkerCreate;
         friend class QUndoMarkerDelete;
         friend class QUndoMarkerDeleteROI;
+        friend class TeraFly;
 
     
     signals:

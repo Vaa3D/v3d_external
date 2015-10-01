@@ -78,8 +78,6 @@ class teramanager::CViewer : public QWidget
         int T1_sbox_max, T1_sbox_val;   //to save the state of subvolume spinboxes when the current window is hidden
         int ID;
         bool waitingFor5D;              //"waiting for 5D data" state flag
-        bool scribbling;                //"scribbling on the 3D renderer with right-button mouse" state flag
-        QVector<QPoint> scribbling_points;
         QUndoStack undoStack;           //stack containing undo command actions
         int slidingViewerBlockID;
         bool forceZoomIn;
@@ -354,9 +352,11 @@ class teramanager::CViewer : public QWidget
         friend class PMain;
         friend class PAnoToolBar;
         friend class CVolume;
+        friend class TeraFly;
         friend class QUndoMarkerCreate;
         friend class QUndoMarkerDelete;
         friend class QUndoMarkerDeleteROI;
+        friend class QUndoVaa3DNeuron;
 
 
     public slots:

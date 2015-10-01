@@ -23,4 +23,21 @@ class teramanager::QUndoMarkerCreate : public QUndoCommand
     
 };
 
+class teramanager::QUndoVaa3DNeuron : public QUndoCommand
+{
+    private:
+
+        itm::CViewer* source;       //where the command has been applied
+        bool redoFirstTime;         //to disable redo's first call
+
+    public:
+
+        QUndoVaa3DNeuron(itm::CViewer* _source);
+
+        // undo and redo methods
+        virtual void undo();
+        virtual void redo();
+
+};
+
 #endif // QUNDOMARKERCREATE_H
