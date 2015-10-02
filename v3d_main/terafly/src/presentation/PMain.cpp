@@ -48,34 +48,31 @@
 #include "TimeSeries.h"
 #include <QtGlobal>
 #include <cmath>
+#include "../core/imagemanager/TiledMCVolume.h"
 
 using namespace teramanager;
 using namespace iim;
 
-string PMain::HTwelcome = "Go to <i>File->Open volume</i> and select the directory of any resolution. To change volume import options, go to <i>Options->Import</i>.";
-//string PMain::HTbase =    "<u>Navigate through different resolutions by</u>:<br><br>"
-//                          "<b>zoom-in</b>: right-click-><i>Zoom-in HighRezImage</i> on image/marker;<br>"
-//                          "<b>zoom-out</b>: mouse scroll down;<br>"
-//                          "<b>jump to res</b>: select VOI with volume cut scrollbars/spinboxes and choose resolution from pull-down menu.<br><br>";
+string PMain::HTwelcome = "Go to <i>File > Open volume</i> and select From the file dialog, select any of volume resolutions starting with \"RES\". To change volume import options, go to <i>Options > Import</i>.";
 string PMain::HTbase =    "<b>What's this?</b><br><i>Move the mouse over an object and its description will be displayed here.</i>";
-string PMain::HTvoiDim =  "Set the <b>dimensions</b> (in voxels) of the volume of interest (<b>VOI</b>) to be loaded when zoomin-in. "
-                          "Please be careful not to set a too big region or you will soon use up your <b>graphic card's memory</b>. ";
-string PMain::HTjumpToRes = "Choose from pull-down menu the <b>resolution</b> you want to jump to and the displayed image will be loaded at the resolution selected. "
-                            "To load only a volume of interest (<b>VOI</b>) at the selected resolution, you may use the Vaa3D <i>Volume Cut</i> scrollbars "
-                            "or the <i>VOI's coordinates</i> spinboxes embedded in this plugin.";
-string PMain::HTzoomOutThres = "Select the <b>zoom</b> factor threshold to restore the lower resolution when zooming-out with <i>mouse scroll down</i>. The default is set to 0. "
+string PMain::HTvoiDim =  "Set the 3D viewer <b>dimensions</b> (voxels). The larger, the more graphic card memory is used and the slower is the visualization. Suggested range: [100,300] for x-y-z, [1-10] for t.";
+string PMain::HTjumpToRes = "Choose from pull-down menu the <b>resolution</b> at which you want to visualize the current volume of interest (VOI). "
+                            "You can change the VOI using the Vaa3D <i>Volume Cut</i> scrollbars or the <i>VOI's coordinates</i> spinboxes of TeraFly.";
+string PMain::HTzoomOutThres = "Select the <b>zoom</b> factor threshold to change the image resolution when zooming-out with mouse scroll. The default is 0. "
                            "Set it to -100 to disable this feature.";
-string PMain::HTzoomInThres = "Select the <b>zoom</b> factor threshold to trigger the higher resolution when zooming-in with <i>mouse scroll up</i>. The default is set to 50. "
+string PMain::HTzoomInThres = "Select the <b>zoom</b> factor threshold to change the image resolution when zooming-in with mouse scroll. The default is 50. "
                              "Set it to 100 to disable this feature.";
-string PMain::HTzoomInMethod = "Choose from pull-down menu the method to be used for the computation of the zoom-in volume of interest (<b>VOI</b>)";
-string PMain::HTcacheSens = "Adjust data caching sensitivity when zooming-in with <i>mouse scroll up</i>. This controls the minimum amount of overlap between the requested VOI "
-                            " and the <b>cached VOI</b> that is required to restore the cached VOI instead of loading a new VOI. If you always want to zoom-in to the cached VOI, please set this to 0%%.";
+string PMain::HTzoomInMethod = "Choose from pull-down menu the method used to generate the volume of interest (VOI) when zooming-in with the mouse scroll";
+string PMain::HTcacheSens = "Adjust data caching sensitivity when zooming-in. This controls the minimum amount of overlap between the requested VOI "
+                            " and the <b>cached VOI</b> that is required to restore the cached VOI instead of loading a new VOI from the storage. If you always want to zoom-in to the cached VOI, please set this to 0\%.";
 string PMain::HTtraslatePos = "Translate the view along this axis in its <i>natural</i> direction.";
 string PMain::HTtraslateNeg = "Translate the view along this axis in its <i>opposite</i> direction.";
 string PMain::HTvolcuts = "Define a volume of interest (<b>VOI</b>) using <b>absolute spatial coordinates</b> (i.e. referred to the highest resolution). "
-                          "You may then choose the resolution you want to display it from the <i>Jump to res</i> pull-down menu.";
+                          "You may then choose the resolution you want to display the VOI from the <i>Resolution</i> pull-down menu.";
 string PMain::HTrefsys = "Rotate the reference system";
-string PMain::HTresolution = "A heat map like bar that indicates the currently displayed resolution (the \"hotter\", the higher)";
+string PMain::HTresolution = "A heat map like bar that indicates the currently displayed image resolution (the \"hotter\", the higher)";
+string PMain::HTproofreading = "Start a stoppable/resumable block-by-block scan of the entire volume (or a VOI) to proofread automatic cell counts or neuron reconstructions.";
+string PMain::HTquickscan = "<i>QuickScan</i>: a scrollable maximum-intensity-projection-based preview to roughly check hundreds of blocks per minute and load only the nonempty ones.";
 
 PMain* PMain::uniqueInstance = 0;
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
@@ -477,7 +474,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     showToolbarButton = new QToolButton();
     showToolbarButton->setCheckable(true);
     showToolbarButton->setIcon(QIcon(":/icons/toolbar.png"));
-    showToolbarButton->setToolTip("Display annotation toolbar");
+    showToolbarButton->setToolTip("Display/hide TeraFly's toolbar within the Vaa3D 3D viewer");
     connect(showToolbarButton, SIGNAL(toggled(bool)), this, SLOT(showToolbarButtonChanged(bool)));
     toolBar->insertWidget(0, showToolbarButton);
     toolBar->addAction(aboutAction);
@@ -489,115 +486,43 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //Page "Volume's info": contains informations of the loaded volume
     /**/itm::debug(itm::LEV3, "Page \"Volume's info\"", __itm__current__function__);
     info_page = new QWidget();
-    vol_size_voxel_label = new QLabel();
-    vol_size_voxel_field = new QLabel();
-    vol_size_voxel_field->setAlignment(Qt::AlignCenter);
-    vol_size_voxel_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_size_voxel_field->setFont(tinyFont);
-    vol_size_files_label = new QLabel();
-    vol_size_files_field = new QLabel();
-    vol_size_files_field->setAlignment(Qt::AlignCenter);
-    vol_size_files_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_size_files_field->setFont(tinyFont);
-    vol_size_bytes_label = new QLabel();
-    vol_size_bytes_field = new QLabel();
-    vol_size_bytes_field->setAlignment(Qt::AlignCenter);
-    vol_size_bytes_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_size_bytes_field->setFont(tinyFont);
-    volume_dims_label = new QLabel("Dims (vxl):");
-    direction_V_label_0 = new QLabel("(Y)");
-    direction_H_label_0 = new QLabel("(X)");
-    direction_D_label_0 = new QLabel("(Z)");
-    by_label_01 = new QLabel(QChar(0x00D7));
-    by_label_02 = new QLabel(QChar(0x00D7));
-    vol_height_field = new QLabel();
-    vol_height_field->setAlignment(Qt::AlignCenter);
-    vol_height_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_height_field->setFont(tinyFont);
-    vol_width_field = new QLabel();
-    vol_width_field->setAlignment(Qt::AlignCenter);
-    vol_width_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_width_field->setFont(tinyFont);
-    vol_depth_field = new QLabel();
-    vol_depth_field->setAlignment(Qt::AlignCenter);
-    vol_depth_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_depth_field->setFont(tinyFont);
-    vol_height_mm_field = new QLabel();
-    vol_height_mm_field->setAlignment(Qt::AlignCenter);
-    vol_height_mm_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_height_mm_field->setFont(tinyFont);
-    vol_width_mm_field = new QLabel();
-    vol_width_mm_field->setAlignment(Qt::AlignCenter);
-    vol_width_mm_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_width_mm_field->setFont(tinyFont);
-    vol_depth_mm_field = new QLabel();
-    vol_depth_mm_field->setAlignment(Qt::AlignCenter);
-    vol_depth_mm_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vol_depth_mm_field->setFont(tinyFont);
-    volume_stacks_label = new QLabel("Number of stacks:");
-    direction_V_label_1 = new QLabel("(Y)");
-    direction_H_label_1 = new QLabel("(X)");
-    by_label_1 = new QLabel(QChar(0x00D7));
-    nrows_field = new QLabel();
-    nrows_field->setAlignment(Qt::AlignCenter);
-    nrows_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    nrows_field->setFont(tinyFont);
-    ncols_field = new QLabel();
-    ncols_field->setAlignment(Qt::AlignCenter);
-    ncols_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    ncols_field->setFont(tinyFont);
-    stacks_dims_label = new QLabel("Stacks' dims (vxl):");
-    direction_V_label_2 = new QLabel("(Y)");
-    direction_H_label_2 = new QLabel("(X)");
-    direction_D_label_2 = new QLabel("(Z)");
-    by_label_2 = new QLabel(QChar(0x00D7));
-    by_label_3 = new QLabel(QChar(0x00D7));
-    stack_height_field = new QLabel();
-    stack_height_field->setAlignment(Qt::AlignCenter);
-    stack_height_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    stack_height_field->setFont(tinyFont);
-    stack_width_field = new QLabel();
-    stack_width_field->setAlignment(Qt::AlignCenter);
-    stack_width_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    stack_width_field->setFont(tinyFont);
-    stack_depth_field = new QLabel();
-    stack_depth_field->setAlignment(Qt::AlignCenter);
-    stack_depth_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    stack_depth_field->setFont(tinyFont);
+    vol_size_field = new QLineEdit();
+    vol_size_field->setAlignment(Qt::AlignLeft);
+    vol_size_field->setReadOnly(true);
+    vol_size_field->setFont(tinyFont);
+
+    vol_dims_vxl_field = new QLineEdit();
+    vol_dims_vxl_field->setAlignment(Qt::AlignLeft);
+    vol_dims_vxl_field->setReadOnly(true);
+    vol_dims_vxl_field->setFont(tinyFont);
+
+    vol_dims_mm_field = new QLineEdit();
+    vol_dims_mm_field->setAlignment(Qt::AlignLeft);
+    vol_dims_mm_field->setReadOnly(true);
+    vol_dims_mm_field->setFont(tinyFont);
+
+
+    tiles_grid_field = new QLineEdit();
+    tiles_grid_field->setAlignment(Qt::AlignLeft);
+    tiles_grid_field->setReadOnly(true);
+    tiles_grid_field->setFont(tinyFont);
+
+
+    tile_dim_field = new QLineEdit();
+    tile_dim_field->setAlignment(Qt::AlignLeft);
+    tile_dim_field->setReadOnly(true);
+    tile_dim_field->setFont(tinyFont);
+
     voxel_dims_label = new QLabel(QString("Voxel's dims (").append(QChar(0x03BC)).append("m):"));
-    direction_V_label_3 = new QLabel("(Y)");
-    direction_H_label_3 = new QLabel("(X)");
-    direction_D_label_3 = new QLabel("(Z)");
-    by_label_4 = new QLabel(QChar(0x00D7));
-    by_label_5 = new QLabel(QChar(0x00D7));
-    vxl_V_field = new QLabel();
-    vxl_V_field->setAlignment(Qt::AlignCenter);
-    vxl_V_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vxl_V_field->setFont(tinyFont);
-    vxl_H_field = new QLabel();
-    vxl_H_field->setAlignment(Qt::AlignCenter);
-    vxl_H_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vxl_H_field->setFont(tinyFont);
-    vxl_D_field = new QLabel();
-    vxl_D_field->setAlignment(Qt::AlignCenter);
-    vxl_D_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    vxl_D_field->setFont(tinyFont);
-    origin_label = new QLabel("Origin (mm):");
-    direction_V_label_4 = new QLabel("(Y)");
-    direction_H_label_4 = new QLabel("(X)");
-    direction_D_label_4 = new QLabel("(Z)");
-    org_V_field = new QLabel();
-    org_V_field->setAlignment(Qt::AlignCenter);
-    org_V_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    org_V_field->setFont(tinyFont);
-    org_H_field = new QLabel();
-    org_H_field->setAlignment(Qt::AlignCenter);
-    org_H_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    org_H_field->setFont(tinyFont);
-    org_D_field = new QLabel();
-    org_D_field->setAlignment(Qt::AlignCenter);
-    org_D_field->setStyleSheet("border: 1px solid; border-color: gray; background-color: rgb(245,245,245); padding-left:5px; padding-right:5px");
-    org_D_field->setFont(tinyFont);
+    vxl_field = new QLineEdit();
+    vxl_field->setAlignment(Qt::AlignLeft);
+    vxl_field->setReadOnly(true);
+    vxl_field->setFont(tinyFont);
+
+    org_field = new QLineEdit();
+    org_field->setAlignment(Qt::AlignLeft);
+    org_field->setReadOnly(true);
+    org_field->setFont(tinyFont);
 
     //Page "Controls": contains navigation controls
     /**/itm::debug(itm::LEV3, "Page \"Controls\"", __itm__current__function__);
@@ -736,6 +661,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     /* ------- global coord panel widgets ------- */
     PR_panel = new QGroupBox("Proofreading");
     PR_button = new QPushButton("Start");
+    PR_button->installEventFilter(this);
     PR_spbox = new QSpinBox();
     PR_spbox->setAlignment(Qt::AlignCenter);
     PR_spbox->installEventFilter(this);
@@ -752,71 +678,22 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //Page "Volume's info": contains informations of the loaded volume
     QGridLayout* info_panel_layout = new QGridLayout();
 
-    info_panel_layout->addWidget(new QLabel("Size (in files):"), 0,0,1,1);
-    info_panel_layout->addWidget(vol_size_files_field,           0,2,1,2);
-    info_panel_layout->addWidget(vol_size_files_label,           0,4,1,2);
-    info_panel_layout->addWidget(vol_size_voxel_field,           0,6,1,2);
-    info_panel_layout->addWidget(vol_size_voxel_label,           0,8,1,2);
-
-//    info_panel_layout->addWidget(new QLabel("Size (in memory):"),1,0,1,1);
-//    info_panel_layout->addWidget(vol_size_bytes_field,           1,2,1,2);
-//    info_panel_layout->addWidget(vol_size_bytes_label,           1,4,1,2);
-
+    QLabel* size_label = new QLabel("Size (in files):");
+    size_label->setFixedWidth(100);
+    info_panel_layout->addWidget(size_label,                    0,0,1,1);
+    info_panel_layout->addWidget(vol_size_field,                0,2,1,1);
     info_panel_layout->addWidget(new QLabel("Dims (mm):"),      1,0,1,1);
-    info_panel_layout->addWidget(vol_width_mm_field,            1,2,1,2);
-    info_panel_layout->addWidget(new QLabel("(X)"),             1,4,1,1);
-    info_panel_layout->addWidget(new QLabel(QChar(0x00D7)),     1,5,1,1);
-    info_panel_layout->addWidget(vol_height_mm_field,           1,6,1,2);
-    info_panel_layout->addWidget(new QLabel("(Y)"),             1,8,1,1);
-    info_panel_layout->addWidget(new QLabel(QChar(0x00D7)),     1,9,1,1);
-    info_panel_layout->addWidget(vol_depth_mm_field,            1,10,1,2);
-    info_panel_layout->addWidget(new QLabel("(Z)"),             1,12,1,1);
-
-    volume_dims_label->setFixedWidth(marginLeft);
-    info_panel_layout->addWidget(volume_dims_label,     2,0,1,1);
-    info_panel_layout->addWidget(vol_width_field,       2,2,1,2);
-    info_panel_layout->addWidget(direction_H_label_0,   2,4,1,1);
-    info_panel_layout->addWidget(by_label_01,           2,5,1,1);
-    info_panel_layout->addWidget(vol_height_field,      2,6,1,2);
-    info_panel_layout->addWidget(direction_V_label_0,   2,8,1,1);
-    info_panel_layout->addWidget(by_label_02,           2,9,1,1);
-    info_panel_layout->addWidget(vol_depth_field,       2,10,1,2);
-    info_panel_layout->addWidget(direction_D_label_0,   2,12,1,1);
-
-    info_panel_layout->addWidget(volume_stacks_label,   3,0,1,1);
-    info_panel_layout->addWidget(ncols_field,           3,2,1,2);
-    info_panel_layout->addWidget(direction_H_label_1,   3,4,1,1);
-    info_panel_layout->addWidget(by_label_1,            3,5,1,1);
-    info_panel_layout->addWidget(nrows_field,           3,6,1,2);
-    info_panel_layout->addWidget(direction_V_label_1,   3,8,1,1);
-
-    info_panel_layout->addWidget(stacks_dims_label,     4,0,1,1);
-    info_panel_layout->addWidget(stack_width_field,     4,2,1,2);
-    info_panel_layout->addWidget(direction_H_label_2,   4,4,1,1);
-    info_panel_layout->addWidget(by_label_2,            4,5,1,1);
-    info_panel_layout->addWidget(stack_height_field,    4,6,1,2);
-    info_panel_layout->addWidget(direction_V_label_2,   4,8,1,1);
-    info_panel_layout->addWidget(by_label_3,            4,9,1,1);
-    info_panel_layout->addWidget(stack_depth_field,     4,10,1,2);
-    info_panel_layout->addWidget(direction_D_label_2,   4,12,1,1);
-
-    info_panel_layout->addWidget(voxel_dims_label,      5,0,1,1);
-    info_panel_layout->addWidget(vxl_H_field,           5,2,1,2);
-    info_panel_layout->addWidget(direction_H_label_3,   5,4,1,1);
-    info_panel_layout->addWidget(by_label_4,            5,5,1,1);
-    info_panel_layout->addWidget(vxl_V_field,           5,6,1,2);
-    info_panel_layout->addWidget(direction_V_label_3,   5,8,1,1);
-    info_panel_layout->addWidget(by_label_5,            5,9,1,1);
-    info_panel_layout->addWidget(vxl_D_field,           5,10,1,2);
-    info_panel_layout->addWidget(direction_D_label_3,   5,12,1,1);
-
-    info_panel_layout->addWidget(origin_label,          6,0,1,1);
-    info_panel_layout->addWidget(org_H_field,           6,2,1,2);
-    info_panel_layout->addWidget(direction_H_label_4,   6,4,1,1);
-    info_panel_layout->addWidget(org_V_field,           6,6,1,2);
-    info_panel_layout->addWidget(direction_V_label_4,   6,8,1,1);
-    info_panel_layout->addWidget(org_D_field,           6,10,1,2);
-    info_panel_layout->addWidget(direction_D_label_4,   6,12,1,1);
+    info_panel_layout->addWidget(vol_dims_mm_field,             1,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Dims (vxl)"),      2,0,1,1);
+    info_panel_layout->addWidget(vol_dims_vxl_field,            2,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Tiles grid"),      3,0,1,1);
+    info_panel_layout->addWidget(tiles_grid_field,              3,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Tiles dims"),      4,0,1,1);
+    info_panel_layout->addWidget(tile_dim_field,                4,2,1,1);
+    info_panel_layout->addWidget(voxel_dims_label,              5,0,1,1);
+    info_panel_layout->addWidget(vxl_field,                     5,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Origin (mm)"),     6,0,1,1);
+    info_panel_layout->addWidget(org_field,                     6,2,1,1);
 
     QVBoxLayout* info_page_layout = new QVBoxLayout(info_page);
     info_page_layout->addLayout(info_panel_layout, 0);
@@ -1115,14 +992,23 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
 
-    //set always on top
-    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
-    //setMaximumSize(this->minimumWidth(), this->minimumHeight());
-    show();
-    move(QApplication::desktop()->screen()->rect().center() - rect().center());
 
-    //
-    setFixedWidth(380);
+    // first resize to the desired size
+    resize(380, qApp->desktop()->availableGeometry().height());
+
+
+    //set always on top and show
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
+    show();
+
+
+    // fix current window size
+    setFixedSize(width(), height());
+
+    // move to center(vertical)-right(horizontal)
+    move(qApp->desktop()->availableGeometry().width() - width(), 0);
+
+
 
 
     // register this as event filter
@@ -1158,29 +1044,13 @@ void PMain::reset()
 
     //reseting info panel widgets
     info_page->setEnabled(false);
-    vol_size_files_label->setText("");
-    vol_size_files_field->setText("n.a.");
-    vol_size_voxel_label->setText("");
-    vol_size_voxel_field->setText("n.a.");
-    vol_size_bytes_label->setText("");
-    vol_size_bytes_field->setText("n.a.");
-    vol_height_mm_field->setText("n.a.");
-    vol_width_mm_field->setText("n.a.");
-    vol_depth_mm_field->setText("n.a.");
-    vol_height_field->setText("n.a.");
-    vol_width_field->setText("n.a.");
-    vol_depth_field->setText("n.a.");
-    nrows_field->setText("n.a.");
-    ncols_field->setText("n.a.");
-    stack_height_field->setText("n.a.");
-    stack_width_field->setText("n.a.");
-    stack_depth_field->setText("n.a.");
-    vxl_V_field->setText("n.a.");
-    vxl_H_field->setText("n.a.");
-    vxl_D_field->setText("n.a.");
-    org_V_field->setText("n.a.");
-    org_H_field->setText("n.a.");
-    org_D_field->setText("n.a.");
+    vol_size_field->setText("");
+    vol_dims_mm_field->setText("");
+    vol_dims_vxl_field->setText("");
+    tiles_grid_field->setText("");
+    tile_dim_field->setText("");
+    vxl_field->setText("");
+    org_field->setText("");
 
     //resetting multiresolution mode widgets
     gradientBar->setEnabled(false);
@@ -1710,51 +1580,47 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         if(TVoxels < 0.1)
         {
             double GBytes = GVoxels*CImport::instance()->getVMapCDim();
-            vol_size_files_field->setText(QString("<b>").append(QString::number(GBytes, 'f', 1).append("</b>")));
-            vol_size_bytes_field->setText(QString::number(GBytes, 'f', 1));
-            vol_size_voxel_field->setText(QString::number(GVoxels, 'f', 1));
-            vol_size_files_label->setText("GBytes");
-            vol_size_bytes_label->setText("GBytes");
-            vol_size_voxel_label->setText("GVoxels");
+            vol_size_field->setText(itm::strprintf("  %.1f Gigavoxels (%.1f Gigabytes)", GVoxels, GBytes).c_str());
         }
         else
         {
             double TBytes = TVoxels*CImport::instance()->getVMapCDim();
-            vol_size_files_field->setText(QString("<b>").append(QString::number(TBytes, 'f', 1).append("</b>")));
-            vol_size_bytes_field->setText(QString::number(TBytes, 'f', 1));
-            vol_size_voxel_field->setText(QString::number(TVoxels, 'f', 1));
-            vol_size_files_label->setText("TBytes");
-            vol_size_bytes_label->setText("TBytes");
-            vol_size_voxel_label->setText("TVoxels");
+            vol_size_field->setText(itm::strprintf("  %.1f Teravoxels (%.1f Terabytes)", TVoxels, TBytes).c_str());
         }
 
-        vol_height_mm_field->setText(QString::number(fabs(volume->getDIM_V()*volume->getVXL_V()/1000.0f), 'f', 2));
-        vol_width_mm_field->setText(QString::number(fabs(volume->getDIM_H()*volume->getVXL_H()/1000.0f), 'f', 2));
-        vol_depth_mm_field->setText(QString::number(fabs(volume->getDIM_D()*volume->getVXL_D()/1000.0f), 'f', 2));
-        vol_height_field->setText(QString::number(volume->getDIM_V()));
-        vol_width_field->setText(QString::number(volume->getDIM_H()));
-        vol_depth_field->setText(QString::number(volume->getDIM_D()));
-        if(dynamic_cast<StackedVolume*>(volume))
+        vol_dims_mm_field->setText(
+                    itm::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)",
+                                   fabs(volume->getDIM_H()*volume->getVXL_H()/1000.0f),
+                                   fabs(volume->getDIM_V()*volume->getVXL_V()/1000.0f),
+                                   fabs(volume->getDIM_D()*volume->getVXL_D()/1000.0f)).c_str());
+
+
+        vol_dims_vxl_field->setText(
+                    itm::strprintf("  %d(x) x %d(y) x %d(z) x %d(c) x %d(t)",
+                                   volume->getDIM_H(),
+                                   volume->getDIM_V(),
+                                   volume->getDIM_D(), volume->getDIM_C(), volume->getDIM_T()).c_str());
+        VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
+        if(dynamic_cast<StackedVolume*>(volume_ith))
         {
-            nrows_field->setText(QString::number(dynamic_cast<StackedVolume*>(volume)->getN_ROWS()));
-            ncols_field->setText(QString::number(dynamic_cast<StackedVolume*>(volume)->getN_COLS()));
-            stack_height_field->setText(QString::number(dynamic_cast<StackedVolume*>(volume)->getStacksHeight()));
-            stack_width_field->setText(QString::number(dynamic_cast<StackedVolume*>(volume)->getStacksWidth()));
+            StackedVolume* vol = dynamic_cast<StackedVolume*>(volume_ith);
+            tiles_grid_field->setText(itm::strprintf("  %d(x) x %d(y) x 1(z)", vol->getN_COLS(), vol->getN_ROWS()).c_str());
+            tile_dim_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getDIM_D()).c_str());
         }
-        else if(dynamic_cast<TiledVolume*>(volume))
+        else if(dynamic_cast<TiledVolume*>(volume_ith) || dynamic_cast<TiledMCVolume*>(volume_ith))
         {
-            nrows_field->setText(QString::number(dynamic_cast<TiledVolume*>(volume)->getN_ROWS()));
-            ncols_field->setText(QString::number(dynamic_cast<TiledVolume*>(volume)->getN_COLS()));
-            stack_height_field->setText(QString::number(dynamic_cast<TiledVolume*>(volume)->getStacksHeight()));
-            stack_width_field->setText(QString::number(dynamic_cast<TiledVolume*>(volume)->getStacksWidth()));
+            TiledVolume* vol = dynamic_cast<TiledVolume*>(volume_ith) ? dynamic_cast<TiledVolume*>(volume_ith) : dynamic_cast<TiledMCVolume*>(volume_ith)->getVolumes()[0];
+            tiles_grid_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getN_COLS(), vol->getN_ROWS(), vol->getBLOCKS()[0][0]->getN_BLOCKS()).c_str());
+            tile_dim_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getBLOCKS()[0][0]->getBLOCK_SIZE()[0]).c_str());
+
         }
-        stack_depth_field->setText(QString::number(volume->getDIM_D()));
-        vxl_V_field->setText(QString::number(volume->getVXL_V(), 'f', 2));
-        vxl_H_field->setText(QString::number(volume->getVXL_H(), 'f', 2));
-        vxl_D_field->setText(QString::number(volume->getVXL_D(), 'f', 2));
-        org_V_field->setText(QString::number(volume->getORG_V(), 'f', 2));
-        org_H_field->setText(QString::number(volume->getORG_H(), 'f', 2));
-        org_D_field->setText(QString::number(volume->getORG_D(), 'f', 2));
+        else
+        {
+            tiles_grid_field->setText(itm::strprintf("unrecognized volume \"%s\"", typeid(volume).name()).c_str());
+            tile_dim_field->setText(itm::strprintf("unrecognized volume \"%s\"", typeid(volume).name()).c_str());
+        }
+        vxl_field->setText(itm::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
+        org_field->setText(itm::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
 
         //and setting subvol widgets limits
         /**/itm::debug(itm::LEV3, "setting subvol widgets limits", __itm__current__function__);
@@ -2208,6 +2074,13 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
         else if(event->type() == QEvent::Leave)
             helpBox->setText(HTbase);
     }
+    else if(object == PR_button && PR_button->isEnabled() && PR_button->text().compare("Start") == 0)
+    {
+        if(event->type() == QEvent::Enter)
+            helpBox->setText(HTproofreading);
+        else if(event->type() == QEvent::Leave)
+            helpBox->setText(HTbase);
+    }
     else if((object == PR_spbox || object == QPixmapToolTip::getInstance()) && PR_spbox->isEnabled())
     {
         if(event->type() == QEvent::Enter)
@@ -2220,15 +2093,19 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
             PRblockSpinboxChanged(PR_spbox->value());
             pixmapToolTip->show();
             pixmapToolTip->raise();
+            helpBox->setText(HTquickscan);
 
             //PR_spbox->setAttribute(Qt::WA_Hover); // this control the QEvent::ToolTip and QEvent::HoverMove
             QPoint gpos = PR_spbox->mapToGlobal(QPoint(0,10));
-            QToolTip::showText(gpos, "Press Enter to load", PR_spbox);
+            QToolTip::showText(gpos, "Click and press Enter to load", PR_spbox);
             //PR_spbox->setFocus(Qt::MouseFocusReason);
 
         }
         else if(event->type() == QEvent::Leave)
-            QPixmapToolTip::instance()->hide();
+        {
+            QPixmapToolTip::instance()->hide();        
+            helpBox->setText(HTbase);
+        }
         else if(event->type() == 6)
         {
             QKeyEvent* key_evt = (QKeyEvent*)event;
@@ -2320,8 +2197,9 @@ void PMain::debugAction1Triggered()
 //    emptyPanel->setPalette(Pal);
 //    emptyPanel->setFixedWidth(50);
 //    CViewer::getCurrent()->window3D->centralLayout->insertWidget(0, emptyPanel);
-    CViewer::getCurrent()->window3D->centralLayout->takeAt(0);
-    PAnoToolBar::instance()->setParent(0);
+    //CViewer::getCurrent()->window3D->centralLayout->takeAt(0);
+    v3d_msg(itm::strprintf("parent window3D matches ? %s", PAnoToolBar::instance()->parent() == CViewer::getCurrent()->window3D ? "yes" : "no").c_str());
+    v3d_msg(itm::strprintf("parent centralLayout matches ? %s", PAnoToolBar::instance()->parent() == CViewer::getCurrent()->window3D->centralLayout ? "yes" : "no").c_str());
 
 
 //    int n_points = QInputDialog::getInt(this, "",  "Number of points:");

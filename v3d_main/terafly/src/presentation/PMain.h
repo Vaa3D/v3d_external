@@ -171,55 +171,14 @@ class teramanager::PMain : public QWidget
         QTabWidget *tabs;               //tab widget
         //Page "Volume's info": contains informations of the loaded volume
         QWidget* info_page;
-        QLabel* vol_size_files_field;
-        QLabel* vol_size_files_label;
-        QLabel* vol_size_voxel_field;
-        QLabel* vol_size_voxel_label;
-        QLabel* vol_size_bytes_field;
-        QLabel* vol_size_bytes_label;
-        QLabel* vol_height_mm_field;
-        QLabel* vol_width_mm_field;
-        QLabel* vol_depth_mm_field;
-        QLabel* volume_dims_label;
-        QLabel* direction_V_label_0;
-        QLabel* direction_H_label_0;
-        QLabel* direction_D_label_0;
-        QLabel* by_label_01;
-        QLabel* by_label_02;
-        QLabel* vol_height_field;
-        QLabel* vol_width_field;
-        QLabel* vol_depth_field;
-        QLabel* volume_stacks_label;
-        QLabel* direction_V_label_1;
-        QLabel* direction_H_label_1;
-        QLabel* by_label_1;
-        QLabel* nrows_field;
-        QLabel* ncols_field;
-        QLabel* stacks_dims_label;
-        QLabel* direction_V_label_2;
-        QLabel* direction_H_label_2;
-        QLabel* direction_D_label_2;
-        QLabel* by_label_2;
-        QLabel* by_label_3;
-        QLabel* stack_height_field;
-        QLabel* stack_width_field;
-        QLabel* stack_depth_field;
+        QLineEdit* vol_size_field;
+        QLineEdit* vol_dims_mm_field;
+        QLineEdit* vol_dims_vxl_field;
+        QLineEdit* tiles_grid_field;
+        QLineEdit* tile_dim_field;
         QLabel* voxel_dims_label;
-        QLabel* direction_V_label_3;
-        QLabel* direction_H_label_3;
-        QLabel* direction_D_label_3;
-        QLabel* by_label_4;
-        QLabel* by_label_5;
-        QLabel* vxl_V_field;
-        QLabel* vxl_H_field;
-        QLabel* vxl_D_field;
-        QLabel* origin_label;
-        QLabel* direction_V_label_4;
-        QLabel* direction_H_label_4;
-        QLabel* direction_D_label_4;
-        QLabel* org_V_field;
-        QLabel* org_H_field;
-        QLabel* org_D_field;
+        QLineEdit* vxl_field;
+        QLineEdit* org_field;
 
         //Page "Controls": contains navigation controls
         QWidget* controls_page;
@@ -349,6 +308,8 @@ class teramanager::PMain : public QWidget
         static string HTzoomInMethod;
         static string HTrefsys;
         static string HTresolution;
+        static string HTproofreading;
+        static string HTquickscan;
 
 
     public slots:

@@ -43,12 +43,12 @@ itm::PDialogProofreading::PDialogProofreading(itm::PMain *_parent) : QWidget(0)
         resolution_cbox->setItemData(i, Qt::AlignHCenter, Qt::TextAlignmentRole);
 
     scan_method_cbox = new QComboBox();
-    scan_method_cbox->addItem("X -> Y -> Z");
-    scan_method_cbox->addItem("Y -> X -> Z");
-    scan_method_cbox->addItem("X -> Z -> Y");
-    scan_method_cbox->addItem("Y -> Z -> X");
-    scan_method_cbox->addItem("Z -> Y -> X");
-    scan_method_cbox->addItem("Z -> X -> Y");
+    scan_method_cbox->addItem("X > Y > Z");
+    scan_method_cbox->addItem("Y > X > Z");
+    scan_method_cbox->addItem("X > Z > Y");
+    scan_method_cbox->addItem("Y > Z > X");
+    scan_method_cbox->addItem("Z > Y > X");
+    scan_method_cbox->addItem("Z > X > Y");
     PMain::setEnabledComboBoxItem(scan_method_cbox, 1, false);
     PMain::setEnabledComboBoxItem(scan_method_cbox, 2, false);
     PMain::setEnabledComboBoxItem(scan_method_cbox, 3, false);
@@ -168,7 +168,9 @@ itm::PDialogProofreading::PDialogProofreading(itm::PMain *_parent) : QWidget(0)
     buttons_layout->addWidget(start_button);
     buttons_layout->addWidget(cancel_button);
     // GLOBAL layout
-    QLabel *instructionsLabel = new QLabel("TeraFly will guide you through a complete semi-automated scan of the selected volume of interest (VOI). Use the settings below to tailor the trade-off between image resolution and scan duration.");
+    QLabel *instructionsLabel = new QLabel("TeraFly will guide you through a stoppable/resumable block-by-block scan of the entire """
+                                           "volume (or a VOI) to proofread automatic cell counts or neuron reconstructions.\n\n\n"
+                                           "Use the settings below and the Vaa3D and TeraFly controls (e.g. Vaa3D volume cut scrollbars, TeraFly's 3D viewer max dims) to set up your proofreading session.");
     instructionsLabel->setWordWrap(true);
     //instructionsLabel->setFont(QApplication::font());
     layout->addWidget(instructionsLabel);
@@ -177,12 +179,12 @@ itm::PDialogProofreading::PDialogProofreading(itm::PMain *_parent) : QWidget(0)
     layout->addSpacing(20);
     layout->addLayout(buttons_layout);
     layout->setContentsMargins(10,10,10,10);
-    layout->setSizeConstraint( QLayout::SetFixedSize );
+    //layout->setSizeConstraint( QLayout::SetFixedSize );
     setLayout(layout);
 
     setWindowTitle("Proofreading mode");
     this->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint);
-    setMinimumWidth(600);
+    setFixedWidth(500);
     move(QApplication::desktop()->screen()->rect().center() - rect().center());
 
     updateBlocks(0);

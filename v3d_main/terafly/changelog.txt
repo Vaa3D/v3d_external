@@ -11,6 +11,17 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.11
+October 2nd, 2015
+--------------------------------------------------------------------------------------------
+- New: re-designed volume's info dialog.
+- Opt: improved 3D viewer size & position syncronization with TeraFly.
+- Fix: fixed a bug which caused TeraFly's toolbar not to be displayed when using directional
+       shifts or in proofreading mode.
+- Opt: minor changes to GUI's component descriptions.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.10
 October 1st, 2015
 --------------------------------------------------------------------------------------------

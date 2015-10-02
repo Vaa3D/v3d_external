@@ -91,9 +91,8 @@ void CViewer::show()
         window3D = view3DWidget->getiDrawExternalParameter()->window3D;
 
 
-        // disable progress bar (for 3D viewer updates faster)
+        // disable progress bar (for faster 3D viewer updates)
         view3DWidget->setShowProgressBar(false);
-
 
 
         // start 3D visualization with Vaa3D display controls hidden (or inherit from previous viewer)
@@ -119,16 +118,12 @@ void CViewer::show()
         window3D->centralLayout->setContentsMargins(10,5,5,10);
 
 
-        // resize available screen space
-        window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), qApp->desktop()->availableGeometry().height());
+        // set fixed size that fills available screen space
+        window3D->setFixedSize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
+
 
         // show 3D viewer
         window3D->show();
-
-        // after show(), we can fix the size (on MacOS, show() also adjusts the window size, thus it safer to fix it now)
-        window3D->setFixedSize(window3D->width(), window3D->height());
-
-        //window3D->setWindowFlags(Qt::WindowStaysOnTopHint);
 
 
         // install the event filter on the 3D renderer and on the 3D window
@@ -307,6 +302,7 @@ void CViewer::show()
         this->window3D->activateWindow();
         this->window3D->show();
 
+
         // updating reference system
         if(!pMain->isPRactive())
             pMain->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
@@ -444,9 +440,12 @@ CViewer::~CViewer()
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-    // decouple TeraFly's toolbar from Vaa3D 3D viewer
-    window3D->centralLayout->takeAt(0);
-    PAnoToolBar::instance()->setParent(0);
+    // decouple TeraFly's toolbar from Vaa3D 3D viewer (only if required)
+    if(PAnoToolBar::instance()->parent() == window3D)
+    {
+        window3D->centralLayout->takeAt(0);
+        PAnoToolBar::instance()->setParent(0);
+    }
 
     // remove the event filter from the 3D renderer and from the 3D window
     isActive = false;
