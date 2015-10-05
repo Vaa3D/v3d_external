@@ -212,6 +212,7 @@ public:
     QGroupBox *controlGroup;
     QPushButton *hideDisplayControlsButton;
     bool displayControlsHidden;
+    QWidget *toolBtnGroup;
 
     QTabWidget *tabOptions;
 

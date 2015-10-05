@@ -273,7 +273,7 @@ class teramanager::CViewer : public QWidget
         /**********************************************************************************
         * Alignes the given widget to the left(right) of the current window
         ***********************************************************************************/
-        void alignToLeft(QWidget* widget);
+        void alignToLeft(QWidget* widget, QEvent* evt);
         void alignToRight(QWidget* widget);
 
         /**********************************************************************************

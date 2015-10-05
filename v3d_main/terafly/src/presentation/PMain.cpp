@@ -92,7 +92,7 @@ PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
             CViewer::getCurrent()->window3D->raise();
             CViewer::getCurrent()->window3D->activateWindow();
             CViewer::getCurrent()->window3D->show();
-            CViewer::getCurrent()->alignToLeft(uniqueInstance);
+            CViewer::getCurrent()->alignToLeft(uniqueInstance, 0);
         }
     }
 	return uniqueInstance;
@@ -935,7 +935,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controls_page->setLayout(controlsLayout);
 
     //pages
-    tabs->addTab(controls_page, "Controls");
+    tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Volume's info");
 
     //overall
@@ -991,19 +991,19 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
-
+    connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
     // first resize to the desired size
     resize(380, qApp->desktop()->availableGeometry().height());
 
 
     //set always on top and show
-    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
+    //setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
     show();
 
 
     // fix current window size
-    setFixedSize(width(), height());
+    //setFixedSize(width(), height());
 
     // move to center(vertical)-right(horizontal)
     move(qApp->desktop()->availableGeometry().width() - width(), 0);
@@ -1124,6 +1124,14 @@ void PMain::reset()
     statusBar->clearMessage();
     statusBar->showMessage("Ready.");
     helpBox->setText(HTwelcome);
+
+    // @ADDED Vaa3D-controls-within-TeraFly feature.
+    if(tabs->count() == 3)
+    {
+        int tab_selected = tabs->currentIndex();
+        tabs->removeTab(1);
+        tabs->setCurrentIndex(tab_selected);
+    }
 }
 
 
@@ -2198,9 +2206,7 @@ void PMain::debugAction1Triggered()
 //    emptyPanel->setFixedWidth(50);
 //    CViewer::getCurrent()->window3D->centralLayout->insertWidget(0, emptyPanel);
     //CViewer::getCurrent()->window3D->centralLayout->takeAt(0);
-    v3d_msg(itm::strprintf("parent window3D matches ? %s", PAnoToolBar::instance()->parent() == CViewer::getCurrent()->window3D ? "yes" : "no").c_str());
-    v3d_msg(itm::strprintf("parent centralLayout matches ? %s", PAnoToolBar::instance()->parent() == CViewer::getCurrent()->window3D->centralLayout ? "yes" : "no").c_str());
-
+    //QMessageBox::information(this, "position", itm::strprintf("x = %d, y = %d", this->mapToGlobal(pos()).x(), this->mapToGlobal(pos()).y()).c_str());
 
 //    int n_points = QInputDialog::getInt(this, "",  "Number of points:");
 //    int n_samples = QInputDialog::getInt(this, "", "Number of samples:");
@@ -2977,4 +2983,9 @@ void PMain::showAnoOctree()
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
+}
+
+void PMain::tabIndexChanged(int value)
+{
+    helpBox->setVisible(value == 0);
 }

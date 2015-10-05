@@ -100,12 +100,29 @@ void CViewer::show()
             window3D->hideDisplayControls();
 
         // remove TeraFly's toolbar from previous viewer (if any) and add to this viewer
+        int tab_selected = PMain::getInstance()->tabs->currentIndex();
         if(prev)
         {
             prev->window3D->centralLayout->takeAt(0);
             PAnoToolBar::instance()->setParent(0);
+            PMain::getInstance()->tabs->removeTab(1);
         }
         window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+
+
+        // @ADDED Vaa3D-controls-within-TeraFly feature.
+        window3D->hideDisplayControlsButton->setVisible(false);
+        window3D->centralLayout->takeAt(3);
+        QWidget* vaa3d_controls = new QWidget();
+        QVBoxLayout* vaa3d_controls_layout = new QVBoxLayout();
+        vaa3d_controls_layout->addWidget(window3D->tabOptions);
+        vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
+        vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
+        vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
+        vaa3d_controls->setLayout(vaa3d_controls_layout);
+        PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
+        PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
+
         // also reset undo/redo (which are referred to this viewer)
         PAnoToolBar::instance()->buttonUndo->setEnabled(false);
         PAnoToolBar::instance()->buttonRedo->setEnabled(false);
@@ -119,7 +136,7 @@ void CViewer::show()
 
 
         // set fixed size that fills available screen space
-        window3D->setFixedSize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
+        window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
 
 
         // show 3D viewer
@@ -676,7 +693,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         else if(object == window3D && (event->type() == QEvent::Move || event->type() == QEvent::Resize))
         {
-           alignToLeft(PMain::getInstance());
+           alignToLeft(PMain::getInstance(), event);
            return true;
         }
 
@@ -686,7 +703,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         else if(object == window3D && event->type() == QEvent::WindowStateChange)
         {
-            alignToLeft(PMain::getInstance());
+            alignToLeft(PMain::getInstance(), event);
             return true;
         }
 
@@ -1978,6 +1995,19 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         source->undoStack.clear();
         this->undoStack.clear();
 
+        // @ADDED Vaa3D-controls-within-TeraFly feature.
+        int tab_selected = PMain::getInstance()->tabs->currentIndex();
+        PMain::getInstance()->tabs->removeTab(1);
+        QWidget* vaa3d_controls = new QWidget();
+        QVBoxLayout* vaa3d_controls_layout = new QVBoxLayout();
+        vaa3d_controls_layout->addWidget(window3D->tabOptions);
+        vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
+        vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
+        vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
+        vaa3d_controls->setLayout(vaa3d_controls_layout);
+        PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
+        PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
+
 
         //showing window
         this->window3D->raise();
@@ -2373,24 +2403,28 @@ void CViewer::PMain_changeD1sbox(int s)
 /**********************************************************************************
 * Alignes the given widget to the left (or to the right) of the current window
 ***********************************************************************************/
-void CViewer::alignToLeft(QWidget* widget)
+void CViewer::alignToLeft(QWidget* widget, QEvent *evt)
 {
     /**/itm::debug(itm::LEV3, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-    int widget_new_x = window3D->x() + window3D->width();
-    int widget_new_y = window3D->y();
-    int widget_new_height = window3D->height();
+    // update height
+    widget->setFixedSize(widget->width(), window3D->height());
 
-    if(widget->x() != widget_new_x || widget->y() != widget_new_y)
-        widget->move(widget_new_x, widget_new_y);
-    if(widget->height() != widget_new_height)
-    {
-        //widget->setMaximumHeight(std::max(widget_new_height,widget->height()));
-        //QMessageBox::information(widget, "info", itm::strprintf("Resizing PMain at %d", widget_new_height).c_str());
-        widget->resize(widget->width(), widget_new_height);
-       // widget->setFixedSize(widget->width(), widget_new_height);
-        //QMessageBox::information(widget, "info", itm::strprintf("PMain height is now %d", widget->height()).c_str());
-    }
+
+    // update position using global reference system (needed due to a bug on MacOS/Qt4.*)
+    /*QPoint widget_pos = widget->mapToGlobal(widget->pos());
+    QPoint window3D_pos = window3D->mapToGlobal(window3D->pos());
+
+    int dy = window3D_pos.y() - widget_pos.y();
+    int dx = window3D_pos.x() - widget_pos.x() - window3D->width();
+
+
+    cerr << itm::strprintf("PMain @ %d,%d\nwindow3D @ %d,%d\ndy = %d\n\n", widget_pos.x(), widget_pos.y(), window3D_pos.x(), window3D_pos.y(), dy).c_str();
+    widget->move(widget->x(), widget->y() + dy/2);
+    //QMessageBox::information(0, "asd", "asd");
+    cerr << itm::strprintf("PMain @ %d,%d\n\n", widget->mapToGlobal(widget->pos()).x(), widget->mapToGlobal(widget->pos()).y()).c_str();
+*/
+    widget->move(window3D->x()+window3D->width(), window3D->y());
 }
 void CViewer::alignToRight(QWidget* widget)
 {

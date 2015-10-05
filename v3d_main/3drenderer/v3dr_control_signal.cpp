@@ -79,7 +79,7 @@ void V3dR_MainWindow::createControlWidgets()
 	//qDebug("V3dR_MainWindow::createControlWigdets");
 	int i;
 
-    QWidget *toolBtnGroup = new QWidget;
+    toolBtnGroup = new QWidget;
     QHBoxLayout *layout_toolBtnGroup = new QHBoxLayout(toolBtnGroup);
 
     volumeColormapButton = new QPushButton("Vol Colormap");

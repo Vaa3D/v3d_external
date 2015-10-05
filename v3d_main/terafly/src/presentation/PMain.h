@@ -482,6 +482,8 @@ class teramanager::PMain : public QWidget
         ***********************************************************************************/
         void markersSizeSpinBoxChanged(int value);
 
+        void tabIndexChanged(int value);
+
         void showDialogVtk2APO();
         void showDialogDiffAPO();
         void showDialogTrimAPO();
