@@ -9,14 +9,24 @@
 V3D="../bin/vaa3d"
 plugin_path="../bin/plugins"
 
+TESTING_PACKAGE=1
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
   V3D=../bin/vaa3d64.app/Contents/MacOS/vaa3d64
   plugin_path=../bin/plugins
+  if [[ $TESTING_PACKAGE>0 ]]; then
+    V3D=../Vaa3d.app/Contents/MacOS/vaa3d
+    plugin_path=../plugins
+  fi
 fi
 
 if [[ "$OSTYPE" == "cygwin" ]]; then
   V3D=./bin/vaa3d.exe
   plugin_path=./bin/plugins
+  if [[ TESTING_PACKAGE>0 ]]; then
+    V3D=../bin/vaa3d.exe
+    plugin_path=../bin/plugins
+  fi
 fi
 
 if ! [ -e "$plugin_path" ];then
