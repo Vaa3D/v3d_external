@@ -79,8 +79,6 @@ EnsembleNeuronTracerV2s
 NeuroGPSTree
 mostVesselTracer
 neurontracing_mst
-nctuTW_debug
-nctuTW_GD
 NeuronChaser
 NeuroStalker
 neutu_autotrace
