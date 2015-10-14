@@ -1,0 +1,241 @@
+
+                                 MY-TIFF PACKAGE
+                                   Gene Myers
+                                October 26, 2009
+
+1. OVERVIEW:
+
+     This is a basic C-code library for reading and writing Tiff 6.0 image files.
+   It consists of two source modules, tiff.io.[ph] and tiff.image.[ph].
+   
+     Simply saying "make" at the command line will build mytiff.o that you can then link
+   into any code you compile that includes tiff.io.h and/or tiff.image.h.  The package
+   consists of a total of 6,265 lines of code, 40 routines, and 7 structures.  This is
+   6 times less code then the TiffLib6.0 library and functionality is nearly equivalent.
+   
+   A. I/O MODULE
+   
+     The .io-module realizes a basic reader and writer that understands only that a .tif
+   file consists of a header that starts a linked lists of image file descriptors (ifd's)
+   that contain a collection of tags, one of which is a vector of pointers to blocks of
+   image data (TIFF_TILE_OFFSETS or TIFF_STRIP_OFFSETS) and another of which is a
+   vector of byte counts for each block (TIFF_TILE_BYTE_COUNTS or TIFF_STRIP_BYTE_COUNTS,
+   respectively).  The module does understand and handle all the issues around endian
+   orders, etc.
+   
+     There are routines that allow you to add, delete, and modify tags from each ifd as
+   you wish.  A complete listing of all tags and tag-values as defined constants is in
+   tiff.io.h
+   
+     In addition, we have "Tiff_Annotator" routines that allow one to efficiently write a
+   custom TIFF_JF_ANO_BLOCK tag that points at a block of bytes.  One can initially format a
+   .tif so that this block is at the end of the .tif file, and our library always ensures
+   that this block is at the end of any .tif that it writes.  In this way one can access
+   and modify this block (in which one presumably puts customized data) with three disk
+   seeks and a single write of this block (as opposed to being forced to write the
+   entire file if this string is not the last block of the .tif).  This allows applications
+   that just want to store and retrieve "meta-data" from a large image file to be very
+   efficient, spending time proportional to the size of the meta-data and not the image file.
+   
+     The routines can also read and write .lsm files produced by Zeiss microscope software.
+   The intention was clearly that a .lsm was supposed to be a .tif with some custom tags,
+   but the software guys at Zeiss blew it and violated the standard in some quirky ways.
+   We transform their .lsm files into proper tifs when read and can write them back out as
+   proper .tif's that still have all the Zeiss meta-data in them.  Moreover, if you want to
+   write a file as a .lsm, so that Zeiss's software can still read it, then we reintroduce
+   the essential "quirks" that their software applications expect.
+   
+     While any dimension of an image in an ifd is exceedingly unlikely to be greater than
+   2 billion, some data files contain of an image series or even individual images that
+   can be.  We introduce an extension of the tiff standard to permit files that have 64-bit
+   offset fields internally.  The extended files are signalled by using the magic number
+   '64' as opposed to '42' in their header.  With this option, the width and height of an
+   ifd must still be less than 2Gb, but the image (including its offsets and byte counts)
+   are no longer so restricted.  A new tiff type, TIFF_LONG64 (= 13) is added to indicate
+   the 64-bit unsigned integer type of the offset and/or byte count tags required for such
+   an ifd or image.  Our package reads and writes both 32-bit and our enhanced 64-bit files
+   transparently.
+   
+   B. IMAGE MODULE
+   
+     The .io module will read and write and provide access to all tags in *any* .tif file --
+   it is completely general.  The hard part about tiff is interpreting an ifd record as
+   an image and converting it into an appropriate array of pixel values.  Actually if
+   SAMPLES_PER_PIXEL > 1 then we produce SAMPLES_PER_PIXELS arrays, one for each sample
+   that we call a "channel".  The things we handle are:
+   
+     * All photometric interpretations save CMYK, YcBCr, and CieLab
+     * Compression schemes pack-bits and lzw, including prediction
+     * Any kind of tiling or striping
+     * Any number of bits per sample up to 32 (Tifflib6.0 doesn't support this)
+     * Either chunky or planar sample layouts
+     * Any image orientation
+   
+   and the things we don't currently handle are:
+   
+     * Photometric interpretations CMYK, YcBcR, and CieLab (Tifflib6.0 supports these, I think)
+     * Compression schemes: jpeg, ccitt, group 3 & 4 fax (Tifflib6.0 supports these)
+     * High to low bit fill order (required primarily for group 3 & 4 fax)
+
+   Great care was taken to arrange the image interpretor so that only a fixed amount of
+   working storage is required to read an image from a file and deposit its decoded and
+   unpacked pixel array into an area of memory designated by the user.  Similarly, only
+   a fixed amoutn of working storage is required to write an image from a location in
+   memory to a file, packing and encoding it as it is written.  This is especially
+   important for very large images where there is only sufficient memory for one copy of
+   the image.
+   
+2. OBJECT CLASS CONVENTIONS
+   
+     We support an object-oriented style, indeed the package can be thought of as realizing
+   7 classes: Tiff_Reader, Tiff_Writer, Tiff_IFD, Tiff_Annotator, Tiff_Image, Tiff_Channel,
+   and Tiff_Histogram.  Every class has routines that copy, free, destroy, and pack objects
+   of the class, and class routines that reset the class and report on the number of ojbects
+   in use.  To document this we list the 6 standard routines for the class Tiff_Writer and
+   comment what each does:
+   
+     Tiff_Writer *Copy_Tiff_Writer(Tiff_Writer *tif);
+       A new copy of tif is created and a pointer to it is returned.
+
+     Tiff_Writer *Inc_Tiff_Writer(Tiff_Writer *tif);
+       An additional reference to the tif writer is created by incrementing its
+       internal reference count.  Initially an object has a reference count of 1.
+   
+     void Kill_Tiff_Writer(Tiff_Writer *tif);
+       The reference count of the tif is decremented by 1 and if zero then the
+       tif is returned to the system heap, effectively destroying it.
+   
+     void Free_Tiff_Writer(Tiff_Writer *tif);
+       The reference count of the tif is decremented by 1 and if zero then the
+       tif is placed on a recycle list so that its memory can be reused to build another
+       Tiff_Writer object.  In effect the same as Kill_Tiff_Writer, save that the recycling
+       saves calls to allocate and free memory blocks from the system heap.
+   
+     Tiff_Writer *Pack_Tiff_Writer(Tiff_Writer *tif);
+       Because of the recycling, it can become the case over time that the memory allocated
+       for a tif is actually more than required to hold its value.  Packing the tif requests
+       that any such padding be removed.  As a convenience the routine returns a pointer to
+       the packed object.
+   
+     void Reset_Tiff_Writer();
+       This resets the class by emptying the recycle list, reseting buffer sizes, and reclaiming
+       any working storage used by the class routines.  Any objects you are still using are not
+       affected.
+   
+     int Tiff_Writer_Usage();
+       Returns the number of objects currently in use by you.
+   
+   Most of the code for these standard class routines is produced by an awk-program that translates
+   a "MANAGER" line in the source .p files and produces .c files with the standard routines.
+   See our simple makefile for how this is done.
+   
+3. UTILITY PROGRAMS
+
+     We wrote a few simple utilities using the library that get built when you make the module.
+   They are as follows:
+
+   tiffconvert [-x] [-64] [-r<int>,<int>] <in:file> <out:file>
+
+     This program reads a tiff or lsm file and writes out either a tiff or an lsm, of the
+   same image.  A file is considered an lsm image file if it ends in ".lsm" and otherwise
+   it is considered to be a tiff file.  Thus the program converts between tiff and lsm formats.
+   If the -x option is set then all thumbnail images are removed during the conversion.  If
+   the -64 option is set then the output file uses our customized 64-bit offset format.
+   Finally, if the -r option is set, then only the IFD's whose ordinal count is between the
+   two integers (inclusive) are transferred.
+
+   tiffshow <in:file>
+
+     Gives a listing of the IFD's in the tif file "in".
+
+   tifftagger -f <tif:file>
+   tifftagger -g [-o] <tif:file>
+   tifftagger -s <tif:file> (<anno:string> | -i <afile:file>)
+
+     Tifftagger reads a tiff (or lsm file) and formats it for efficient annotation if called
+   with the -f option set.  This basically consists of reordering the blocks of the tiff (lsm)
+   so that the special tag containing annotation is at the end of the file.
+     Tifftagger displays the annotation in a previously formatted file if called with the -g
+   option set.  If the -o option is set the annotation is sent to the standard output, otherwise
+   it is written to the screen surrounded by quotes and followed by its length in parenthesis.
+     Finally, tifftagger sets the annotation to the second argument on the command line if called
+   with the -s option.  If the -i option is set then the annotation is taken from the contents of
+   the file following the -i.
+
+   tiffRGB [-m<int(0)>to<int(1)>] <in:file> <out:file>
+
+     Some programs like Image_J can only read monochrome or RGB tiffs.  At JFRC many of our
+   lsm image files have 2 channels.  So tiffRGB is a utility that duplicates one of the two
+   channels to produce an RGB tiff that limited readers like Image_J can handle.  When the
+   -m<source>to<target> option is set, channel source is mapped to channel target, and the
+   other of the two channels, 1-source, is mapped to the two non-target channels.  If not
+   specified then the default for tiffs is -m0to1 which maps the first channel to green, and
+   the second channel to magenta.  The default for lsm files, where the meta-data gives a color
+   for each of the two channels, is that the channel containing green is mapped to green, and
+   the other channel to magenta.
+
+   mrc2tiff <in:file> ...
+
+      Reads .mrc files that contain non-complex values and produces .tif files.  If the
+    .mrc contains real values then these are scaled to 16-bit unsigned integers and a .tif
+    of these values is produced.
+   
+4. COPYRIGHT
+     
+     This code was developed by Gene Myers and completed in October of 2009 while at the
+   Janelia Farm Research Campus of the Howard Hughes Medical Institute.  It is released
+   under the following copyright notice that applies to all the files:
+
+/*****************************************************************************************\
+*                                                                                         *
+*  Copyright (c) June 19, '09 Dr. Gene Myers and Howard Hughes Medical Institute ("HHMI") *
+*                                                                                         *
+*  This software is provided and licensed on the following terms.  By downloading,        *
+*  using and/or copying the software, you agree that you have read, understood, and       *
+*  will comply with these terms.                                                          *
+*                                                                                         *
+*  Redistribution and use in source and binary forms, with or without modification,       *
+*  are permitted provided that the following conditions are met:                          *
+*     1. Redistributions of source code must retain the above copyright notice, this      *
+*          list of conditions and the following disclaimer.                               *
+*     2. Redistributions in binary form must reproduce the above copyright notice, this   *
+*          list of conditions and the following disclaimer in the documentation and/or    *
+*          other materials provided with the distribution.                                *
+*     3. Neither the name of the Howard Hughes Medical Institute nor the names of its     *
+*          contributors may be used to endorse or promote products derived from this      *
+*          software without specific prior written permission.                            *
+*                                                                                         *
+*  For use of this software and documentation for purposes other than those listed above, *
+*  contact Dr. Gene Myers at:                                                             *
+*                                                                                         *
+*    Janelia Farms Research Campus                                                        *
+*    19700 Helix Drive                                                                    *
+*    Ashburn, VA  20147-2408                                                              *
+*    Tel:   571.209.4153                                                                  *
+*    Fax:   571.209.4083                                                                  *
+*    Email: myersg@janelia.hhmi.org                                                       *
+*                                                                                         *
+*  For any issues regarding HHMI or use of its name, contact:                             *
+*                                                                                         *
+*    Howard Hughes Medical Institute                                                      *
+*    4000 Jones Bridge Road                                                               *
+*    Chevy Chase, MD 20815-6789                                                           *
+*    (301) 215-8500                                                                       *
+*    Email: webmaster@hhmi.org                                                            *
+*                                                                                         *
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY    *
+*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, ANY IMPLIED WARRANTIES   *
+*  OF MERCHANTABILITY, NON-INFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE ARE          *
+*  DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY   *
+*  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, *
+*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR *
+*  PROFITS; REASONABLE ROYALTIES; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY     *
+*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING         *
+*  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF   *
+*  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                                             *
+*                                                                                         *
+*  The names of the authors and copyright holders may not be used in advertising or       *
+*  publicity pertaining to the software without specific, written prior permission.       *
+*  Title to copyright in this software will remain with copyright holders.                *
+*                                                                                         *
+\*****************************************************************************************/

@@ -1,0 +1,13 @@
+================ README file for the JBA project =========================
+
+JBA/BrainAligner project is for brain (and general 3D) image registration.
+
+This project was started in Dec 2006 and Jan 2007, first in Matlab and from
+Feb 2007 in C/C++. 
+
+The program was written by Hanchuan Peng. All rights reserved.
+
+To build the executable, simply go into jba sub-folder and type "make".
+
+This folder also contains  a copy of the NEWMAT11 library, which is licensed
+with its own terms. (http://www.robertnz.net/nm11x.htm)

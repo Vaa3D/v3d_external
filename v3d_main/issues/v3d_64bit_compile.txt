@@ -1,0 +1,77 @@
+V3D_2.0 x86_64 on mac OS X 10.5
+//(Yang Yu 06272009)
+//last update by Hanchuan, 090714
+
+Why use 64-bit version? For 32-bit programs, you can only access up to about 3.5Gb of RAM before the program runs out of memory.
+
+1.	common_lib
+
+1)	libtiff
+
+./configure CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+
+make
+
+sudo make install
+
+2)	QT
+
+./configure -arch x86_64
+
+make
+
+sudo make install
+
+3)	libfftw
+
+./configure --enable-float --enable-threads --enable-shared CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+
+make
+
+sudo make install
+
+./configure  --enable-shared CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+make
+sudo make install
+
+4)	boost (this should be unnecessary??)
+
+./configure --with-libraries=date_time,filesystem,iostreams,program_options,serialization,system,thread
+
+sudo ./tools/jam/src/bin.macosxx86/bjam  architecture=x86 address-model=64  --user-config=user-config.jam --prefix=/usr/local --exec-prefix=/usr/local --libdir=/usr/local/lib --includedir=/usr/local/include --with-date_time --with-filesystem --with-iostreams --with-program_options --with-serialization --with-system --with-thread install 
+5)	libgsl
+
+./configure CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+
+make
+
+sudo make install
+
+
+6)	libnewmat
+
+Add
+
+CXXFLAGS += -arch x86_64
+LDFLAGS += -arch x86_64
+
+into nm_gnu.mak
+
+make -f nm_gnu.mak libnewmat.a
+
+
+2.	v3d_2.0
+
+Add “CC_FLAGS += -arch x86_64” into Makefile of 
+
+./jba/c++
+./lobeseg
+./cellseg
+./neurolabi
+
+Add 
+ 	LIBS += "-arch x86_64"
+	
+into v3d.pro
+
+

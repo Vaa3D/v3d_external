@@ -1,0 +1,108 @@
+#!/bin/bash
+#@echo off
+#echo -----------------------------------------------------------------
+#echo This is a shell program to build the v3d program for ubuntu
+#echo Based on Mac version by Hanchuan Peng
+#echo 2008-11-08, by Hanchuan Peng
+#echo -----------------------------------------------------------------
+#echo on
+
+#LOCAL_PATH=/usr/local
+#ARGS="$* CPATH=$LOCAL_PATH/include LIBRARY_PATH=$LOCAL_PATH/lib"
+
+QARGS="CONFIG+=$1"
+
+echo make $ARGS
+echo ==========================================================
+
+#cd v3d
+#echo qmake v3d.pro \"$QARGS\"
+#echo =========================================================
+#qmake -unix v3d.pro $QARGS
+## qmake -unix v3d_test.pro $QARGS 
+#make $ARGS
+#cd ../
+
+TIFFCOMPILE="NO"
+for arg in $*; do
+   if [ $arg == "clean" -o $arg == "all" ]; then
+      ARGS+=" $arg"
+      continue
+   fi
+
+   if [ $arg == "-B" ]; then
+      TIFFCOMPILE="YES"
+   fi
+done;  
+
+
+#build the libtiff library
+
+DOIT="YES"
+
+if [ $TIFFCOMPILE == "YES" ]; then
+  cd common_lib
+  TIFFPATH=`pwd`
+  cd build
+  ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  
+  make clean
+  make 
+  make install
+  cd ../../
+fi
+
+#build the libnewmat library
+
+if [ $DOIT == "YES" ]; then
+  cd jba/c++ 
+  make -f jba_linux.makefile $ARGS
+  cd ../../
+fi
+
+#build the v3d main program
+
+if [ $DOIT == "YES" ]; then
+  cd v3d
+  echo =========================================================
+  echo qmake $V3D_PRO_FILE \"$QARGS\"
+  echo make $ARGS
+  echo =========================================================
+  qmake -unix  $V3D_PRO_FILE $QARGS $QMAKE_CONFIG
+  touch v3d_version_info.cpp
+
+  rm -fr v3d
+
+  make $ARGS
+  
+  cd ../
+fi
+
+#copy some of the v3d programs to the released_plugin folders
+
+if [ $DOIT == "YES" ]; then
+  cp -r ./v3d/v3d ../v3d/.   #copy to the executable folder
+  cp -r ./v3d/v3d ../released_plugins/v3d/.
+fi
+
+
+#build the v3d plugins
+
+if [ $DOIT == "YES" ]; then
+  cd ../released_plugins
+  echo =========================================================
+  echo "Now build v3d plugins"
+  echo =========================================================
+  sh build_plugindemo.sh $ARGS
+  cp -r v3d/plugins ../v3d/.     #copy to the executable folder
+  cd ../v3d_main
+fi
+
+#now automatically execute v3d
+
+if [ $DOIT == "YES" ]; then
+  cd ../v3d
+  export LD_LIBRARY_PATH=../v3d_main/common_lib/lib
+  ./v3d &
+  cd ../v3d_main
+fi
+

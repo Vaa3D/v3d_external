@@ -1,0 +1,23 @@
+#!/bin/bash
+# 2010-08-07 by Hanchuan Peng
+# a convenience script for building the system on Mac
+#
+# examples: 
+#    sh build.macx
+#    sh build.macx debug
+#    sh build.macx release
+#    sh build.macx clean
+#    sh build.macx all
+#    sh build.macx -B            #force to rebuild files listed in makefile
+#    sh build.macx -m            #make for 64-bit 
+#    sh build.macx -B -m -j4     #rebuild for 64-bit (not depend on order)
+#    sh build.macx -B -n -j4     #rebuild for 32-bit (not depend on order)
+
+shopt -s expand_aliases;
+cd v3d_main
+
+sh ./build.macx $*
+
+cd ../
+
+

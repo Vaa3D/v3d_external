@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$structCellAPO.html" title="CellAPO" alt="" coords="5,83,80,112"/>
+<area shape="rect" id="node5" href="$structImageMarker.html" title="ImageMarker" alt="" coords="104,83,213,112"/>
+<area shape="rect" id="node7" href="$structLabelSurf.html" title="LabelSurf" alt="" coords="237,83,320,112"/>
+<area shape="rect" id="node9" href="$structNeuronSWC.html" title="NeuronSWC" alt="" coords="344,83,445,112"/>
+<area shape="rect" id="node11" href="$structNeuronTree.html" title="NeuronTree" alt="" coords="469,83,568,112"/>
+</map>

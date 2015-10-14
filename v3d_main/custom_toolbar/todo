@@ -1,0 +1,4 @@
+1. add plugin_path member variable
+2. unload the plugin and loader when load plugin text
+3. reload the plugin from the plugin path, when run it
+4. don't pass parent in the plugin

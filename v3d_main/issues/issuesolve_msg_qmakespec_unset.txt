@@ -1,0 +1,8 @@
+Windows 7, QT 4.6 32/64bit compiling.
+
+If you see the problem "QMAKESPEC has not been set, so configuration cannot be deduced", this may be solved by
+checking the file under qt directory "qt.conf" (e.g. under the folder C:\Qt\4.6.2_x64\bin). You need to check the
+variable "Prefix"'s value, and ensure such a value is the same of the Qt program folder's name, and also
+such a name is in Windows system path.
+
+by Hanchuan Peng, 2010-06-27.

@@ -1,0 +1,125 @@
+Checklist for creating a release of V3D:
+
+Mac:
+
+There are three possible releases of V3D for Mac:
+1 - 32-bit build using qmake
+2 - 64-bit build using qmake
+3 - Fat 32/64 build using cmake
+
+
+###############################
+# 1) 32-bit build using qmake #
+###############################
+
+Check out a fresh copy of v3d source code on your Mac
+ % mkdir -p v3d_release_<date>
+ % cd v3d_release_<date>/Mac/
+ % svn checkout https://svn.janelia.org/penglab/projects/v3d/trunk v3d_32
+ % cd v3d_32
+
+Make sure version number is what you want
+ % vi v3d_main/v3d/v3d_version_info.cpp
+   [look for "thisVersionOfV3D"]
+ % svn commit 
+   [if you made a change]
+
+Build 32-bit binary:
+ % ./build.macx -n -B -T -j4
+ [test V3D when it launches]
+
+Copy v3d/v3d.app to release area
+ % cp v3d/v3d.app <release_area>/Mac/v3d.app
+ [make sure all desired release plugins are installed]
+ % open <release_area>/Mac/v3d.app
+ Create version xml file:
+ Click "Help"->"Check for updates..."->"Options..."->"Save new version xml file..."
+
+
+###############################
+# 2) 64-bit build using qmake #
+###############################
+
+Check out a fresh copy of v3d source code on your Mac
+ % cd v3d_release_<date>
+ % svn checkout https://svn.janelia.org/penglab/projects/v3d/trunk v3d_64
+ % cd v3d_64
+
+Make sure version number is what you want
+ % vi v3d_main/v3d/v3d_version_info.cpp
+   [look for "thisVersionOfV3D"]
+ % svn commit 
+   [if you made a change]
+
+Build 64-bit binary:
+ % ./build.macx -m -B -T -j4
+ [test V3D when it launches]
+ 
+Copy v3d/v3d.app to release area
+ % cp v3d/v3d.app <release_area>/Mac/v3d.app
+ [make sure all desired release plugins are installed]
+ % open <release_area>/Mac/v3d.app
+ Create version xml file:
+ Click "Help"->"Check for updates..."->"Options..."->"Save new version xml file..."
+
+
+############################
+# 3) Fat build using cmake #
+############################
+
+Make sure you have a fat libtiff binary.
+ [use libraries created during qmake builds...]
+ % lipo -create lib_mac32/libv3dtiff.a lib_mac64/libv3dtiff.a -output lib_macfat/libv3dtiff.a
+ % lipo -info lib_macfat/libv3dtiff.a
+ % sudo cp lib_macfat/libv3dtiff.a /usr/local/lib/
+
+Check out a fresh copy of v3d source code on your Mac
+ % mkdir v3d_release_<date>
+ % cd v3d_release_<date>
+ % svn checkout https://svn.janelia.org/penglab/projects/v3d/trunk v3d_cmake
+ % cd v3d_cmake
+
+Make sure version number is what you want
+ % vi v3d_main/v3d/v3d_version_info.cpp
+   [look for "thisVersionOfV3D"]
+ % svn commit 
+
+Run cmake
+ [if needed, install cmake from http://www.cmake.org/cmake/resources/software.html]
+ Run cmake GUI
+ Select source directory (browse to v3d_cmake)
+ Select a build directory (e.g. v3d_cmake/build_cmake)
+ 
+ Click "configure".
+ Select the "Unix Makefiles" generator.
+   [read the entries to see what else might need to be installed]
+ Keep clicking "configure" and troubleshooting until the "generate" button is activated.
+ Click "generate"
+ % cd build_cmake
+ % make
+ % open v3d/v3d.app
+ [test v3d]
+
+ Copy v3d/v3d.app to release area
+ % cp v3d/v3d.app <release_area>/Mac/v3d.app
+ [make sure all desired release plugins are installed]
+ % open <release_area>/Mac/v3d.app
+ Create version xml file:
+ Click "Help"->"Check for updates..."->"Options..."->"Save new version xml file..."
+
+Create installer
+ % make package
+ [test InstallV3d-<version>.dmg]
+ [if the background image does not show, you may need to update the DSStore file:
+    % ../v3d_main/CMake/package/mac/update_dmg_view.sh InstallV3d-<version>.dmg 
+    % cp DS_Store_v3d_<version> ../v3d_main/CMake/package/dmg_DS_Store 
+    % cd ..
+    % svn commit v3d_main/CMake/package/dmg_DS_Store
+    % cd build_cmake
+    % make package
+
+ % cp InstallV3d-<version>.dmg <release area>
+
+NOTE: After copying files to the web server, make sure all files have read/execute permission.
+ % chmod -R +rx stable_version/
+ 

@@ -1,0 +1,589 @@
+<ui version="4.0" >
+ <class>LandmarkPropertyDialog</class>
+ <widget class="QDialog" name="LandmarkPropertyDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>950</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize" >
+   <size>
+    <width>950</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="maximumSize" >
+   <size>
+    <width>1000</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="font" >
+   <font>
+    <family>Courier</family>
+    <pointsize>13</pointsize>
+    <weight>50</weight>
+    <italic>false</italic>
+    <bold>false</bold>
+    <underline>false</underline>
+    <strikeout>false</strikeout>
+   </font>
+  </property>
+  <property name="cursor" >
+   <cursorShape>PointingHandCursor</cursorShape>
+  </property>
+  <property name="windowTitle" >
+   <string>Landmark Properties and Image Region Measures/Statistics</string>
+  </property>
+  <property name="sizeGripEnabled" >
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="layoutWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>17</x>
+     <y>13</y>
+     <width>913</width>
+     <height>452</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout" >
+    <item>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>Landmark No./label</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLineEdit" name="order" >
+        <property name="inputMask" >
+         <string/>
+        </property>
+        <property name="text" >
+         <string/>
+        </property>
+        <property name="maxLength" >
+         <number>200</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>Name</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QLineEdit" name="name" >
+        <property name="maxLength" >
+         <number>200</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>Comments</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QLineEdit" name="comment" >
+        <property name="maxLength" >
+         <number>500</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line" >
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" >
+      <item>
+       <spacer>
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_6" >
+        <property name="text" >
+         <string>Other Information</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer>
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="gridLayout_4" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_4" >
+        <property name="text" >
+         <string>Geometry: center &amp; others</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLabel" name="label_7" >
+        <property name="text" >
+         <string>Voxel values</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QLabel" name="label_8" >
+        <property name="text" >
+         <string>Statistics of Channel</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" >
+       <widget class="QSpinBox" name="statistics_channel" />
+      </item>
+      <item row="1" column="0" >
+       <layout class="QGridLayout" name="gridLayout" >
+        <item row="0" column="0" >
+         <widget class="QLabel" name="label_13" >
+          <property name="text" >
+           <string>Z (page)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" >
+         <widget class="QLineEdit" name="coord_z" >
+          <property name="font" >
+           <font>
+            <pointsize>13</pointsize>
+           </font>
+          </property>
+          <property name="maxLength" >
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="label_16" >
+          <property name="text" >
+           <string>X</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QLineEdit" name="coord_x" >
+          <property name="maxLength" >
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" >
+         <widget class="QLabel" name="label_15" >
+          <property name="text" >
+           <string>Y</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" >
+         <widget class="QLineEdit" name="coord_y" >
+          <property name="maxLength" >
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" >
+         <widget class="QLabel" name="label_19" >
+          <property name="text" >
+           <string>radius</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" >
+         <widget class="QLineEdit" name="radius" >
+          <property name="maxLength" >
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" >
+         <widget class="QLabel" name="label_21" >
+          <property name="text" >
+           <string>shape</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1" >
+         <widget class="QComboBox" name="landmark_shape" >
+          <item>
+           <property name="text" >
+            <string>Unset</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>sphere</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>cube</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>circle (XY plane)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>circle (YZ plane)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>circle (ZX plane)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>square (XY plane)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>square (YZ plane)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>square (ZX plane)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>line (hori, x-axis)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>line (vert, y-axis)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text" >
+            <string>line (in-out, z-axis)</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1" >
+       <layout class="QGridLayout" name="gridLayout_2" >
+        <item row="0" column="0" >
+         <widget class="QLabel" name="label_14" >
+          <property name="text" >
+           <string>Red/Ch1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" >
+         <widget class="QLineEdit" name="pix_val_red" />
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="label_18" >
+          <property name="text" >
+           <string>Green/Ch2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QLineEdit" name="pix_val_green" />
+        </item>
+        <item row="2" column="0" >
+         <widget class="QLabel" name="label_20" >
+          <property name="text" >
+           <string>Blue/Ch3</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" >
+         <widget class="QLineEdit" name="pix_val_blue" />
+        </item>
+        <item row="3" column="0" >
+         <widget class="QLabel" name="label_22" >
+          <property name="text" >
+           <string>Channel 4</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" >
+         <widget class="QLabel" name="label_23" >
+          <property name="text" >
+           <string>Channel 5</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" >
+         <widget class="QLineEdit" name="pix_val_ch4" />
+        </item>
+        <item row="4" column="1" >
+         <widget class="QLineEdit" name="pix_val_ch5" />
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="2" colspan="2" >
+       <layout class="QGridLayout" name="gridLayout_3" >
+        <item row="0" column="0" >
+         <widget class="QLabel" name="label_9" >
+          <property name="text" >
+           <string>Peak</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" >
+         <widget class="QLineEdit" name="val_peak" />
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="label_11" >
+          <property name="text" >
+           <string>Mean</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QLineEdit" name="val_mean" />
+        </item>
+        <item row="2" column="0" >
+         <widget class="QLabel" name="label_10" >
+          <property name="text" >
+           <string>Std Dev</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" >
+         <widget class="QLineEdit" name="val_stddev" />
+        </item>
+        <item row="3" column="0" >
+         <widget class="QLabel" name="label_17" >
+          <property name="text" >
+           <string>Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" >
+         <widget class="QLineEdit" name="val_size" />
+        </item>
+        <item row="4" column="0" >
+         <widget class="QLabel" name="label_12" >
+          <property name="text" >
+           <string>Mass</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1" >
+         <widget class="QLineEdit" name="val_mass" />
+        </item>
+        <item row="3" column="3" >
+         <widget class="QLineEdit" name="val_pc3_d" />
+        </item>
+        <item row="3" column="2" >
+         <widget class="QLabel" name="label_26" >
+          <property name="text" >
+           <string>sigma3</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3" >
+         <widget class="QLineEdit" name="val_pc2_d" />
+        </item>
+        <item row="2" column="2" >
+         <widget class="QLabel" name="label_25" >
+          <property name="text" >
+           <string>sigma2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3" >
+         <widget class="QLineEdit" name="val_pc1_d" />
+        </item>
+        <item row="1" column="2" >
+         <widget class="QLabel" name="label_24" >
+          <property name="text" >
+           <string>sigma1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3" >
+         <widget class="QLabel" name="label_27" >
+          <property name="text" >
+           <string>Spatial anisotropy</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_2" >
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout" >
+      <item>
+       <widget class="QLabel" name="label_5" >
+        <property name="text" >
+         <string>Qualitative 
+description 
+of signal of
+interest</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QGridLayout" >
+        <item row="0" column="0" >
+         <widget class="QLabel" name="QualityAno1_text" >
+          <property name="text" >
+           <string>Intensity</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" >
+         <widget class="QComboBox" name="QualityAno1" >
+          <property name="currentIndex" >
+           <number>-1</number>
+          </property>
+          <property name="maxVisibleItems" >
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="QualityAno2_text" >
+          <property name="text" >
+           <string>Distribution</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QComboBox" name="QualityAno2" >
+          <property name="currentIndex" >
+           <number>-1</number>
+          </property>
+          <property name="maxVisibleItems" >
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" >
+         <widget class="QLabel" name="QualityAno3_text" >
+          <property name="text" >
+           <string>Shape</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" >
+         <widget class="QComboBox" name="QualityAno3" >
+          <property name="currentIndex" >
+           <number>-1</number>
+          </property>
+          <property name="maxVisibleItems" >
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer>
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0" >
+         <size>
+          <width>148</width>
+          <height>83</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" >
+        <item>
+         <widget class="QPushButton" name="cancelButton" >
+          <property name="text" >
+           <string>Cancel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="okButton" >
+          <property name="text" >
+           <string>OK</string>
+          </property>
+          <property name="default" >
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

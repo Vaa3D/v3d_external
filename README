@@ -1,0 +1,69 @@
+This folder contains the source code of the V3D project.
+
+There are a few sub-folders:
+
+* bin:                     the folder where the final executable and plugins will be copied to 
+* v3d_main:                the main V3D program. 
+* matlab_io_basicdatatype: matlab toolbox for file IO of some basic V3D data formats,
+                           including image file, surface files, neuron, markers, etc.
+* imagej_io:               imagej plugin toolboxes for file IO of some basic V3D data formats. 
+* released_plugins:        the "standard" V3D plugins, including both examples and some 
+                           real utilities.
+* 2010_hackathon:          the source code of various projects developed in the 2010
+                           V3D hackathons. The V3D ITK plugins are also included there.
+
+
+*** Note that different sub-folders contain different software LICENSES. You MUST agree to
+these license terms before you access any parts of these source code.
+
+
+
+* How to build the V3D program
+
+(step 1) You need to ensure that you have QT installed on your machine, and thus "qmake" is visible
+in your system's path. 
+
+(step 2) You should also have c++ compiler, such as gcc 4.0 and above.
+
+(step 3) You will need to enter v3d_main/common_lib/src_packages folder, unzip the two packages:
+
+	tiff-3.8.2.1.tar.gz: run "tar zxvf tiff-3.8.2.1.tar.gz"
+	boost_1_38_0.tar.gz: run "tar zxvf boost_1_38_0.tar.gz" and 
+                             then run "mv boost_1_38_0/boost ../include/."
+
+	If you have a Windows system, you will need to unzip and put these packages into the respective
+	folders as well.
+ 
+(step 4) To build V3D is very simple, just find a command line terminal and type one of the following 
+commands:
+
+	Mac, gcc compiler, 32bit build:  "sh ./build.macx -n -B -j4"
+	Mac, gcc compiler, 64bit build:  "sh ./build.macx -m -B -j4"
+	Linux, gcc compiler (32- or 64-bit will depend on your OS automatically):  "sh ./build.linux -B -j4"
+	Windows, MinGW compiler, 32bit build:  "build.bat -B -j4"
+	Windows, MSVC compiler, 32bit build:  "build_msvc32.bat -B -j4"
+	Windows, MSVC compiler, 64bit build:  "build_msvc64.bat -B -j4"
+
+The successful, the V3D program will launch after the build. The actual program will be put
+under the ./v3d folder. You can directly run it next time, without a rebuild.
+
+Trouble-shooting: If after you have successfully built the V3D application, but cannot run it, it is
+                  likely to be a dynamic library dependency issue. This means that your QT library
+                  or something else has a dependency on a missing library. For example, on Ubuntu,
+                  sometimes the system lacks a libtiff library, which QT often needs it. Although
+                  V3D builds libtiff automatically and renames it as libv3dtiff, QT still needs 
+                  the library called libtiff.so. Thus you can copy the libtiff.so to a folder where
+                  searchable (e.g. by setting LD_LIBRARY_PATH environment variable).
+
+If you write/use additional plugins for V3D, be sure to put these plugins into a subfolder
+called "plugins", which should be in the same folder where the execitable of v3d program resides. 
+You can then use V3D programs to rescan the plugins, without the need to restart V3D. Of course,
+these plugins should be produced using the same version of QT (of compatable versions), the same 
+operating system, the same compiler, and the same release type ("Release" or "Debug") of the 
+build.
+
+If you have a question, see the V3D website http://penglab.janelia.org/proj/v3d .
+
+<Aug 10, 2011>
+
+
