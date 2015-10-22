@@ -67,6 +67,9 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #ifdef _ALLOW_TERAFLY_MENU_
 #include "../terafly/src/control/CPlugin.h"
 #endif
+#include "CgsSettings.h"
+
+#include "../neuron_game/NeuronGameUI.h";
 
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
@@ -2886,7 +2889,14 @@ void MainWindow::func_open_teraconverter()
     teramanager::TeraFly::domenu("TeraConverter", *pl, this);
 }
 #endif
-
+#ifdef CGS_AUTOLAUNCH
+void MainWindow::func_open_neuron_game()
+{
+	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+    qRegisterMetaType<itm::integer_array>("itm::integer_array");
+	neurongame::NeuronGameUI::init(pl);
+}
+#endif
 //class V3D_PlugIn_Interface
 //{
 //public:

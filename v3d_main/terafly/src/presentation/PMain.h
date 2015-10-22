@@ -45,7 +45,7 @@ class teramanager::PMain : public QWidget
 {
     Q_OBJECT
 
-    private:
+    protected:
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be
@@ -259,7 +259,7 @@ class teramanager::PMain : public QWidget
         void resetGUI();
 
         //reset everything
-        void reset();
+        virtual void reset();
 
         //overrides closeEvent method of QWidget
         void closeEvent(QCloseEvent *evt);

@@ -58,6 +58,7 @@ Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsist
 #include <vector>
 
 #include "mainwindow.h"
+#include "CgsSettings.h"
 #include "v3d_application.h"
 
 #include <string>
@@ -156,8 +157,9 @@ int main(int argc, char **argv)
 
                 if(!parser.i_v3d.hideV3D)
                 {
+#ifndef CGS_AUTOLAUNCH
                     mainWin->show();
-
+#endif
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
 #ifdef _ALLOW_WORKMODE_MENU_
@@ -275,7 +277,9 @@ int main(int argc, char **argv)
                 //}
             }
 #endif
-
+#ifdef CGS_AUTOLAUNCH
+			mainWin->func_open_neuron_game();
+#endif
 			// launch v3d
 			try
 			{
