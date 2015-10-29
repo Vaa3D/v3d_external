@@ -207,6 +207,7 @@ HEADERS += \
     ../neuron_annotator/analysis/AnalysisTools.h \
     ../neuron_annotator/analysis/MaskChan.h \
     ../neuron_annotator/analysis/DilationErosion.h \
+    ../neuron_game/NeuronGameUI.h \
     ../webservice/gsoap2/stdsoap2.h \
     ../webservice/console/envH.h \
     ../webservice/console/envStub.h \
@@ -323,6 +324,7 @@ SOURCES += \
     ../neuron_annotator/analysis/AnalysisTools.cpp \
     ../neuron_annotator/analysis/MaskChan.cpp \
     ../neuron_annotator/analysis/DilationErosion.cpp \
+    ../neuron_game/NeuronGameUI.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \
     ../webservice/console/cdsC.cpp \
