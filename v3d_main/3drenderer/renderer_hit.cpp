@@ -44,6 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
+#include "../v3d/CgsSettings.h"
 
 #include "v3d_application.h"
 
@@ -753,9 +754,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		// do menu
 		//###############################################################
 		QMenu menu;
+#ifndef RENDERER_RIGHT_CLICK_MENU_DISABLED
 		foreach (QAction* a, listAct) {  menu.addAction(a); }
 		//menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
 		act = menu.exec(QCursor::pos());
+#endif
 	}
 	// have selected a menu action, then make highlight off
 	LIST_SELECTED(listMarker, names[2]-1, false);

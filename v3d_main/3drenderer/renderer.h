@@ -313,7 +313,11 @@ private:
 	    xClip1 = yClip1 = zClip1 = 1000000;  // no clip
 	    viewClip = 1000000;  // no clip
 	    renderMode = rmMaxIntensityProjection;
+#ifdef FORCE_BBOX_MODE
+	    selectMode = smCurveTiltedBB_fm_sbbox;
+#else
 	    selectMode = smObject;
+#endif
 
          refineMode = smCurveRefine_fm;
 

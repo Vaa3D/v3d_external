@@ -376,6 +376,12 @@ class teramanager::PMain : public QWidget
         * in the GUI by the <StackedVolume> handle of <CImport>.
         ***********************************************************************************/
         void importDone(itm::RuntimeException *ex, qint64 elapsed_time = 0);
+		
+		/*********************************************************************************
+		* Separate initialization to allow inherited classes to define their own viewer
+		**********************************************************************************/
+		virtual CViewer * initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
+			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer* _prev);
 
         /**********************************************************************************
         * Called when the GUI widgets that control application settings change.

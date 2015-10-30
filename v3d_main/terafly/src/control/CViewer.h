@@ -45,7 +45,7 @@ class teramanager::CViewer : public QWidget
 {
     Q_OBJECT
 
-    private:
+    protected:
 
         //OBJECT members
         V3DPluginCallback2* V3D_env;    //handle of V3D environment
@@ -163,7 +163,7 @@ class teramanager::CViewer : public QWidget
         }
 
         //performs all the operations needed to show 3D data (such as creating Vaa3D widgets)
-        void show();
+        virtual void show();
 
         //safely close this viewer
         void close();
