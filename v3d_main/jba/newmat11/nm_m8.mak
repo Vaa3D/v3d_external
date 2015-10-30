@@ -7,7 +7,7 @@ PRE =
 .SUFFIXES: .cpp
 
 .cpp.obj:
-		cl -c -W3 -Ox  -EHsc $*.cpp
+		cl -c -W3 -Ox -MD -EHsc $*.cpp
 
 everything:    	tmt.exe example.exe nm_ex1.exe nm_ex2.exe test_exc.exe nl_ex.exe sl_ex.exe garch.exe 
 

@@ -1,15 +1,14 @@
-
 ******** How to build V3D (32bit) on Windows 7 (64bit) using MSVC Express (32bit) using command line tool: *************
+(last updated 10/29/2015 by Colin)
 
 (-1) Ensure you have checked out V3D source code, installed QT (e.g. QT 4.6.2 from googlecode site: the correct project should be "qt-msvc-installer", which has a web site http://code.google.com/p/qt-msvc-installer/), and installed MSVC on your machine!
 
-(0) Click Windows 7 "Start" Button to enter the "All Programs" and then go to
-    "Microsoft Visual C++ 2008 Express Edition" and then "Visual Studio Tools" 
-    and then click "Visual Studio 2008 Command Prompt" to open a command line window.
+(0) VS 2008: launch the "Visual Studio 2008 Command Prompt".
+    VS 2010: launch the "Visual Studio Command Prompt (2010)".
 
 (1) Check out V3D src
 
-(2) Enter v3d_main\v3d folder, run "qmake v3d_msvc.pro"
+(2) Enter v3d_main\v3d folder, run "qmake vaa3d_msvc.pro"
 
 (3) Enter v3d_main\common_lib\src_package folder, unzip tiff.3.8.2.1.tar.gz, and extract the four files:
         tiff.h
@@ -21,14 +20,21 @@
 
 (4) Enter v3d_main\common_lib\src_package folder, unzip the boost_1_46_0.tar.gz and then move its sub-folder "boost" to "v3d_main\common_lib\include\boost".
 
-(5) Enter v3d_main\v3d folder and run "nmake /f Makefile.Release"
+(5) Enter v3d_main\common_lib\winlib folder.
+    VS 2008: rename "libnewmat.vs2008.lib" to "libnewmat.lib".
+    VS 2010: rename "libnewmat.vs2010.lib" to "libnewmat.lib".
 
-(6) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\v3d_msvc.exe".
+(6) Enter v3d_main\v3d folder and run "nmake /f Makefile.Release"
+
+(7) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\vaa3d_msvc.exe".
 
 
 Additional Note 1: If you have built V3D using similar ways before and already have "libtiff" and "boost" header files, you can skip steps (3) and (4).
+
 Additional Note 2: If you want to build 64bit V3D using MSVC, you will need a 64bit MSVC compiler, plus using a similar command line window for the 64bit MSVC as 
                    explained in Step 0.
+                   (note 10/29/2015: 64-bit builds appear not to work, at least under VS 2010, because vaa3d takes a dependency on a 32-bit library in the Qt demos.)
+
 Additional Note 3: So far the V3D plugins have not been built yet. They can be built in similar ways.
 
 
