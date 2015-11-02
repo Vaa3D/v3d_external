@@ -3011,6 +3011,17 @@ QString Renderer_gl1::info_NeuronNode(int n_id, NeuronTree *p_tree)
 		tmpstr1.setNum(p_tree->listNeuron.at(n_id).r);    tmpstr1.prepend("\n 6) radius	= "); tmpstr.append(tmpstr1);
 		tmpstr1.setNum(p_tree->listNeuron.at(n_id).pn);   tmpstr1.prepend("\n 7) parent	= "); tmpstr.append(tmpstr1);
 		tmpstr += QString("\n segment (index) = %1 (%2)").arg(p_tree->listNeuron.at(n_id).seg_id).arg(p_tree->listNeuron.at(n_id).nodeinseg_id);
+
+                QList<float> features = p_tree->listNeuron.at(n_id).fea_val;
+		if (features.size()>0) {
+			tmpstr1=QString("");
+			for (int j = 0 ; j< features.size(); j++){
+				tmpstr1 += QString::number (features[j]);
+				tmpstr1 += " ";
+			}
+			tmpstr1.prepend("\n features = "); 
+			tmpstr.append(tmpstr1);
+		}
 	}
 	return tmpstr;
 }
