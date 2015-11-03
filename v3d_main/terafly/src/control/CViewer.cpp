@@ -51,6 +51,9 @@
 #include "QUndoMarkerDelete.h"
 #include "QUndoMarkerDeleteROI.h"
 #include "v3d_application.h"
+#ifndef __CGS_SETTINGS__
+#include "CgsSettings.h"
+#endif
 
 using namespace itm;
 
@@ -103,12 +106,15 @@ void CViewer::show()
         int tab_selected = PMain::getInstance()->tabs->currentIndex();
         if(prev)
         {
+#ifndef HIDE_ANO_TOOLBAR
             prev->window3D->centralLayout->takeAt(0);
             PAnoToolBar::instance()->setParent(0);
+#endif
             PMain::getInstance()->tabs->removeTab(1);
         }
+#ifndef HIDE_ANO_TOOLBAR
         window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
-
+#endif
 
         // @ADDED Vaa3D-controls-within-TeraFly feature.
         window3D->hideDisplayControlsButton->setVisible(false);
@@ -460,8 +466,10 @@ CViewer::~CViewer()
     // decouple TeraFly's toolbar from Vaa3D 3D viewer (only if required)
     if(PAnoToolBar::instance()->parent() == window3D)
     {
+#ifndef HIDE_ANO_TOOLBAR
         window3D->centralLayout->takeAt(0);
         PAnoToolBar::instance()->setParent(0);
+#endif
     }
 
     // remove the event filter from the 3D renderer and from the 3D window
@@ -853,6 +861,14 @@ void CViewer::receiveData(
     /**/itm::debug(itm::LEV3, "method terminated", __itm__current__function__);
 }
 
+CViewer* CViewer::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID)
+{
+	CViewer* newView = new CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
+		_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID);
+	return newView;
+}
+
 /**********************************************************************************
 * Generates a new view using the given coordinates.
 * Called by the current <CViewer> when the user zooms in and the higher res-
@@ -1080,7 +1096,7 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             PLog::instance()->appendOperation(new NewViewerOperation(message, itm::CPU, timer.elapsed()));
 
             // create new window
-            this->next = new CViewer(V3D_env, resolution, lowresData,
+            this->next = makeView(V3D_env, resolution, lowresData,
                                              cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
@@ -1128,7 +1144,7 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             cVolume->setStreamingSteps(0);
 
             // load data and instance new viewer
-            this->next = new CViewer(V3D_env, resolution, CVolume::instance()->loadData(),
+            this->next = makeView(V3D_env, resolution, CVolume::instance()->loadData(),
                                              cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
@@ -1986,9 +2002,11 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         syncWindows(source->window3D, window3D);
 
         // remove TeraFly's toolbar from source viewer and add to this viewer
-        source->window3D->centralLayout->takeAt(0);
+#ifndef HIDE_ANO_TOOLBAR
+		source->window3D->centralLayout->takeAt(0);
         PAnoToolBar::instance()->setParent(0);
-        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+#endif
+        //window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
         // also reset undo/redo (which are referred to the source viewer)
         PAnoToolBar::instance()->buttonUndo->setEnabled(false);
         PAnoToolBar::instance()->buttonRedo->setEnabled(false);

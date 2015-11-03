@@ -9,7 +9,9 @@
 #include <QApplication>
 #include <QMainWindow>
 #include "mainwindow.h"
+#ifndef __CGS_SETTINGS__
 #include "CgsSettings.h"
+#endif
 
 #ifdef _ALLOW_WORKMODE_MENU_
 #include "../neuron_annotator/gui/NaMainWindow.h"

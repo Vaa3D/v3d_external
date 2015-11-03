@@ -1,22 +1,31 @@
 #include "NeuronGame3DView.h"
 #include <math.h>
 #include "v3dr_glwidget.h"
-#include "../terafly/src/presentation/PAnoToolBar.h"
+
+#include "../../terafly/src/control/CVolume.h"
+#include "../../terafly/src/presentation/PMain.h"
 
 using namespace neurongame;
+
+int NeuronGame3DView::contrastValue = 0;
 
 NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID)
 		: teramanager::CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
 {
-	string t = "";
+	contrastSlider = new QScrollBar(Qt::Orientation::Vertical);
+	contrastSlider->setRange(-50, 50);
+	contrastSlider->setSingleStep(1);
+	contrastSlider->setPageStep(10);
+	contrastSlider->setValue(contrastValue);
+	
+	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
-teramanager::CViewer* NeuronGame3DView::getView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+teramanager::CViewer* NeuronGame3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID)
 {
-	//if (neuronView) return neuronView;
 	NeuronGame3DView* neuronView = new NeuronGame3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 		_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID);
 	return neuronView;
@@ -29,23 +38,17 @@ void NeuronGame3DView::show()
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	// Change mode to fast moving bbox
 	curr_renderer->selectMode = Renderer::SelectMode::smCurveTiltedBB_fm_sbbox;
-	
-	QScrollBar *contrastSlider = new QScrollBar(Qt::Orientation::Vertical);
-	contrastSlider->setRange(-200, 200);
-	contrastSlider->setSingleStep(1);
-	contrastSlider->setPageStep(10);
-	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 
-	window3D->centralLayout->insertWidget(0, contrastSlider);
-	// TODO: Why won't these work?
-	//teramanager::PAnoToolBar::instance()->hide();
-	//window3D->centralLayout->removeWidget(teramanager::PAnoToolBar::instance());
+	window3D->centralLayout->addWidget(contrastSlider, 1);
 }
+
+
 
 void NeuronGame3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 (dark) */
 {
 	// This performs the same functionality as colormap Red->Gray and then
 	// adjusting the alpha, but with only one parameter to adjust
+	contrastValue = con;
 	float exp_val = pow(10.0f, con/50.0f); // map from -100->100 to 100->0.01
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	for(int j=0; j<255; j++)

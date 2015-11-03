@@ -141,7 +141,11 @@ class teramanager::CViewer : public QWidget
         * Syncronizes widgets from <src> to <dst>
         ***********************************************************************************/
         void syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst);
-
+		/************************************************
+        * Allow method for overriding new view creation
+        *************************************************/
+		virtual CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID);
 
     public:
 
@@ -194,7 +198,7 @@ class teramanager::CViewer : public QWidget
         * Called by the current <CExplorerWindow> when the user zooms in and the higher res-
         * lution has to be loaded.
         ***********************************************************************************/
-        void
+        virtual void
         newViewer(
             int x, int y, int z,                //can be either the VOI's center (default)
                                                 //or the VOI's ending point (see x0,y0,z0)

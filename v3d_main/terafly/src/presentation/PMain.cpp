@@ -49,6 +49,9 @@
 #include <QtGlobal>
 #include <cmath>
 #include "../core/imagemanager/TiledMCVolume.h"
+#ifndef __CGS_SETTINGS__
+#include "CgsSettings.h"
+#endif
 
 using namespace teramanager;
 using namespace iim;
@@ -2704,9 +2707,10 @@ void PMain::progressBarChanged(int val, int minutes, int seconds, const char* me
 void PMain::showToolbarButtonChanged(bool changed)
 {
     /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
-
+#ifndef HIDE_ANO_TOOLBAR
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->setVisible(changed);
+#endif
 }
 
 /**********************************************************************************

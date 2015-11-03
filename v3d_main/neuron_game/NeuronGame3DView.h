@@ -21,7 +21,10 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 		***************************************************************************************/
 		NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
-		
+		virtual teramanager::CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
+		static int contrastValue;
+
 	public:
 
 		// helping functions copied from renderer_gl2.h
@@ -38,12 +41,12 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 			curve << QPointF(x, y);
 		}
 
-		static teramanager::CViewer* getView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
-			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
-
 		virtual void show();
+
 		friend class NeuronGameUI;
 		
+		QScrollBar *contrastSlider;
+
 	public slots:
 		void updateContrast(int con);
 };
