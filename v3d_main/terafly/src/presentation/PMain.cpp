@@ -1011,7 +1011,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     // move to center(vertical)-right(horizontal)
     move(qApp->desktop()->availableGeometry().width() - width(), 0);
 
-
+	PMain::virtualSpaceSizeChanged();
 
 
     // register this as event filter
@@ -2414,7 +2414,7 @@ void PMain::virtualSpaceSizeChanged()
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
 
-    CSettings::instance()->setAnnotationSpaceUnlimited(spaceSizeUnlimited->isChecked());
+    CSettings::instance()->setAnnotationSpaceUnlimited(false);// workaround spaceSizeUnlimited->isChecked());
 }
 
 

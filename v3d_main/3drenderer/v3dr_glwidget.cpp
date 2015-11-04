@@ -50,7 +50,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer.h"
 #include "renderer_gl1.h"
 #include "renderer_gl2.h"
-
+#ifndef __CGS_SETTINGS__
+#include "CgsSettings.h"
+#endif
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
 V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
@@ -217,7 +219,9 @@ void V3dR_GLWidget::choiceRenderer()
 	{
 		renderer = new Renderer(this);
 	}
-
+#ifdef FORCE_BBOX_MODE
+	if (renderer) renderer->selectMode = Renderer::SelectMode::smCurveTiltedBB_fm_sbbox;
+#endif
 	//if (renderer) renderer->widget = (void*)this; //081025 //100827 move to constructor parameter
 }
 

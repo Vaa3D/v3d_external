@@ -1,6 +1,6 @@
 #include "NeuronGame3DView.h"
 #include <math.h>
-#include "v3dr_glwidget.h"
+#include "renderer_gl2.h"
 
 #include "../../terafly/src/control/CVolume.h"
 #include "../../terafly/src/presentation/PMain.h"
@@ -26,8 +26,13 @@ NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, 
 teramanager::CViewer* NeuronGame3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID)
 {
+	//Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	//curr_renderer->finishEditingNeuronTree();
 	NeuronGame3DView* neuronView = new NeuronGame3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 		_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID);
+	if (teramanager::PMain::getInstance()->annotationsPathLRU == "")
+		teramanager::PMain::getInstance()->annotationsPathLRU = "./temp.ano";
+	teramanager::PMain::getInstance()->saveAnnotations();
 	return neuronView;
 }
 
@@ -35,13 +40,8 @@ void NeuronGame3DView::show()
 {
 	this->title = "Neuron Game 3D View";
 	teramanager::CViewer::show();
-	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-	// Change mode to fast moving bbox
-	curr_renderer->selectMode = Renderer::SelectMode::smCurveTiltedBB_fm_sbbox;
-
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 }
-
 
 
 void NeuronGame3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 (dark) */

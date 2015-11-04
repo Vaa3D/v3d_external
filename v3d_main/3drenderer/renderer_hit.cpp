@@ -44,7 +44,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
-#include "../v3d/CgsSettings.h"
+#ifndef __CGS_SETTINGS__
+#include "CgsSettings.h"
+#endif
 
 #include "v3d_application.h"
 
@@ -96,6 +98,7 @@ double total_etime; //added by PHC, 20120412, as a convenient way to know the to
 //}
 int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
+
 	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
@@ -2062,11 +2065,13 @@ void Renderer_gl1::endSelectMode()
 	listMarkerPos.clear();
 	b_ablation = false; //by Jianlong Zhou, 20120726
 	b_lineAblation = false; //by Jianlong Zhou, 20120801
+#ifndef FORCE_BBOX_MODE
 	if (selectMode != smObject)
 	{
 		selectMode = smObject;
 		if (w) { w->setCursor(oldCursor); }
 	}
+#endif
 }
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {

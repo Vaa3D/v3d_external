@@ -1,7 +1,9 @@
 #include "PAnoToolBar.h"
 #include "PMain.h"
 #include "../control/CViewer.h"
-
+#ifndef __CGS_SETTINGS__
+#include "CgsSettings.h"
+#endif
 using namespace teramanager;
 
 PAnoToolBar* PAnoToolBar::uniqueInstance = 0;
@@ -140,13 +142,14 @@ void PAnoToolBar::buttonMarkerCreateChecked(bool checked)
         cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setCursor(QCursor(cur_img, 0, 0));
         CViewer::setCursor(QCursor(cur_img, 0, 0), true);
-
+#ifndef FORCE_BBOX_MODE
         // switch to Vaa3D's 1-right-click marker create mode
         if(expl)
         {
             expl->view3DWidget->getRenderer()->selectMode = Renderer::smMarkerCreate1;
             static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_addthismarker = true;
         }
+#endif
     }
     else
     {
@@ -182,13 +185,14 @@ void PAnoToolBar::buttonMarkerCreate2Checked(bool checked)
         cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setCursor(QCursor(cur_img, 0, 0));
         CViewer::setCursor(QCursor(cur_img, 0, 0), true);
-
+#ifndef FORCE_BBOX_MODE
         // switch to Vaa3D's 2-right-clicks marker create mode
         if(expl)
         {
             expl->view3DWidget->getRenderer()->selectMode = Renderer::smMarkerCreate2;
             static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_addthismarker = true;
         }
+#endif
     }
     else
     {
@@ -276,7 +280,7 @@ void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
         cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setCursor(QCursor(cur_img, 0,0));
         CViewer::setCursor(QCursor(cur_img, 0, 0), true);
-
+#ifndef FORCE_BBOX_MODE
         // switch to Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
         if(expl)
         {
@@ -286,19 +290,21 @@ void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
             //static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_imaging = false;
             //static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = true;
         }
+#endif
     }
     else
     {
         // set default cursor
         setCursor(Qt::ArrowCursor);
         CViewer::setCursor(Qt::ArrowCursor, true);
-
+#ifndef FORCE_BBOX_MODE
         // end Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
         if(expl)
         {
             expl->view3DWidget->getRenderer()->selectMode = Renderer::smObject;
             static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = false;
         }
+#endif
     }
 }
 

@@ -58,7 +58,6 @@ class teramanager::PMain : public QWidget
         //members
         V3DPluginCallback2* V3D_env;    //handle of V3D environment
         QWidget *parentWidget;          //handle of parent widget
-        string annotationsPathLRU;      //last recently used (LRU) annotations filepath
 
         // menu bar
         QMenuBar* menuBar;              //Menu bar
@@ -293,6 +292,8 @@ class teramanager::PMain : public QWidget
         friend class PAnoToolBar;
         friend class PDialogProofreading;
         friend class myV3dR_GLWidget;
+		
+		string annotationsPathLRU;      //last recently used (LRU) annotations filepath
 
         //help texts
         static string HTwelcome;

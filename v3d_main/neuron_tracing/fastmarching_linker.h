@@ -425,6 +425,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                         //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
                         outswc.push_back(new_marker);
                         par_marker = new_marker;
+						// TODO: clicking outside of ROI causes crash due to bad ind here
                         ind = parent[ind];
                 }
                 // add sub_marker

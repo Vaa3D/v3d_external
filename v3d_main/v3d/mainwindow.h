@@ -52,6 +52,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
 #include "v3d_commandlineparser.h"
 #include "pluginfunchandler.h"
+#ifndef __CGS_SETTINGS__
+#include "CgsSettings.h"
+#endif
 #ifdef __V3DWSDEVELOP__
 #include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY
@@ -101,7 +104,9 @@ public slots:
 	void func_open_terafly();
     void func_open_teraconverter();
 #endif
+#ifdef CGS_AUTOLAUNCH
 	void func_open_neuron_game(); // By T Pavlik 20151020
+#endif
 #ifdef __v3d_custom_toolbar__
 	void addCustomToolbar(); // By Hang 06-Aug-2011
 #endif
