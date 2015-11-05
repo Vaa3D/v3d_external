@@ -7,7 +7,7 @@ using namespace neurongame;
 
 void NeuronGameUI::init(V3d_PluginLoader *pl)
 {
-	NeuronGameUI::createInstance(pl, 0);
+	createInstance(pl, 0);
 }
 
 void NeuronGameUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)

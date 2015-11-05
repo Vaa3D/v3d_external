@@ -14,7 +14,7 @@ NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, 
 		: teramanager::CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
 {
-	contrastSlider = new QScrollBar(Qt::Orientation::Vertical);
+	contrastSlider = new QScrollBar(2); // Qt::Orientation::Vertical
 	contrastSlider->setRange(-50, 50);
 	contrastSlider->setSingleStep(1);
 	contrastSlider->setPageStep(10);
