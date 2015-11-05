@@ -22,7 +22,7 @@
 
 (5) Enter v3d_main\common_lib\winlib folder.
     VS 2008: rename "libnewmat.vs2008.lib" to "libnewmat.lib".
-    VS 2010: rename "libnewmat.vs2010.lib" to "libnewmat.lib".
+    VS 2010: rename "libnewmat.vs2010.release.lib" to "libnewmat.lib".
 
 (6) Enter v3d_main\v3d folder and run "nmake /f Makefile.Release"
 
@@ -36,8 +36,6 @@ Additional Note 2: If you want to build 64bit V3D using MSVC, you will need a 64
                    (note 10/29/2015: 64-bit builds appear not to work, at least under VS 2010, because vaa3d takes a dependency on a 32-bit library in the Qt demos.)
 
 Additional Note 3: So far the V3D plugins have not been built yet. They can be built in similar ways.
-
-
 
 ************How to build V3D (32bit and 64bit) on Windows 7 (64bit) Using MS Visual Studio 2008***************
 (1) Check out V3D src
@@ -62,3 +60,34 @@ Additional Note 3: So far the V3D plugins have not been built yet. They can be b
 (9) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\v3d_msvc.exe".
 
 The building method works for both 32bit and 64bit buildings.
+
+******** How to build 32-bit debug builds for Visual Studio 2010 ********
+
+By following the above steps under Visual Studio 2010, you'll wind up with a broken debug build when the compile process hits mismatched values of
+_ITERATOR_DEBUG_LEVEL between different libraries in the project.  There are two ways to fix this: switch the core project to debug level 0, or
+switch the other libraries to debug level 2.  The former seems to cause a lot of broken debugger behavior and a crash at startup, so do the
+latter:
+
+(1) rebuild the Qt demo_shared library for debugging:
+    (a) open a VS command prompt in [your Qt path]\demos\shared.
+    (b) run "qmake shared.pro".
+    (c) run "nmake /f Makefile.Debug".
+
+(2) Enter v3d_main\common_lib\winlib folder.  Rename "libnewmat.vs2010.debug.lib" to "libnewmat.lib".
+
+(3) For console builds:
+    (a) Enter v3d_main\v3d and run "qmake vaa3d_msvc.pro" as usual.
+    (b) Open v3d_main\v3d\Makefile.Debug, and change references to "[your Qt path]\demos\shared\release" to "[your Qt path]\demos\shared\debug" 
+        in LFLAGS and LIBS.
+    (c) Run "nmake /f Makefile.Debug"
+
+(4) For Visual Studio builds:
+    (a) Enter v3d_main\v3d and run "qmake -tp vc vaa3d_msvc.pro".
+    (b) Open Visual Studio and load vaa3d_msvc.msproj.  Change it to the "Debug" release configuration.
+    (c) Open the project properties and make the following changes:
+        (i) In Configuration Properties -> Linker -> General, change references to "[your Qt path]\demos\shared\release" in Additional Library Directories to 
+            "[your Qt path]\demos\shared\debug".
+        (ii) In Configuration Properties -> Linker -> Input, change references to "[your Qt path]\demos\shared\release\demo_shared.lib" in Additional 
+            Dependencies to "[your Qt path]\demos\shared\debug\demo_shared.lib".
+
+There should be some way to automate steps 3 and 4, but I haven't looked into it yet.  -- Colin, 11/4/2015

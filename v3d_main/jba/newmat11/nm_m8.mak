@@ -4,10 +4,15 @@ conlibs = kernel32.lib
 DIFF = sdiff
 PRE =
 
+# debug
+CXXFLAGS = -nologo -Zm200 -Zc:wchar_t- -DTEEM_STATIC -DWITH_NONAMESPACES -DWITH_PURE_VIRTUAL -DTEEMSTATIC -Zi -MDd -W0 -GR -EHsc
+# release
+#CXXFLAGS = -W3 -Ox -MD -EHsc
+
 .SUFFIXES: .cpp
 
 .cpp.obj:
-		cl -c -W3 -Ox -MD -EHsc $*.cpp
+		cl -c $(CXXFLAGS) $*.cpp
 
 everything:    	tmt.exe example.exe nm_ex1.exe nm_ex2.exe test_exc.exe nl_ex.exe sl_ex.exe garch.exe 
 
