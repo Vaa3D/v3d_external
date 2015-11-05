@@ -84,8 +84,10 @@ class teramanager::CViewer : public QWidget
         int anoV0, anoV1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along V (annotation VOI != VOI)
         int anoH0, anoH1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along H (annotation VOI != VOI)
         int anoD0, anoD1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along D (annotation VOI != VOI)
-
-        //CLASS members
+		XYZ lastWheelFocus;             // @ADDED by T Pavlik on 2015-11-05 Saving mouse wheel point to create new view focusing on moused over area rather than center of ROI
+		bool useLastWheelFocus;         // @ADDED by T Pavlik on 2015-11-05 True to use mousewheel point for new viewer creation
+        
+		//CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
         static CViewer *last;   //pointer to the last window of the multiresolution explorer windows chain
         static CViewer *current;//pointer to the current window of the multiresolution explorer windows chain

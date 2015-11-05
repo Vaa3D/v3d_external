@@ -378,7 +378,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgDa
     //initializations
     ID = nTotalInstances++;
     resetZoomHistory();
-    isActive = isReady = false;
+    isActive = isReady = useLastWheelFocus = false;
     this->V3D_env = _V3D_env;
     this->prev = _prev;
     this->next = 0;
@@ -573,6 +573,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         if ((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
         {
             QWheelEvent* wheelEvt = (QWheelEvent*)event;
+			lastWheelFocus = getRenderer3DPoint(wheelEvt->x(), wheelEvt->y());
+			useLastWheelFocus = true;
             myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
             return true;
         }
@@ -2115,8 +2117,18 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     int roiCenterX = roi->xe-(roi->xe-roi->xs)/2;
     int roiCenterY = roi->ye-(roi->ye-roi->ys)/2;
     int roiCenterZ = roi->ze-(roi->ze-roi->zs)/2;
+	
+	int newViewX = roiCenterX;
+	int newViewY = roiCenterY;
+	int newViewZ = roiCenterZ;
 
-
+	if (useLastWheelFocus)
+	{
+		newViewX = lastWheelFocus.x;
+		newViewY = lastWheelFocus.y;
+		newViewZ = lastWheelFocus.z;
+	}
+	
     // otherwise before continue, check "Proofreading" mode is not active
     if(PMain::getInstance()->isPRactive())
     {
@@ -2217,10 +2229,10 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
                 //otherwise invoking a new view
                 else
-                    newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
+                    newViewer(newViewX, newViewY, newViewZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
             }
             else
-                newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
+                newViewer(newViewX, newViewY, newViewZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
         }
         else
             /**/itm::debug(itm::LEV3, strprintf("title = %s, ignoring Vaa3D mouse scroll up zoom-in", titleShort.c_str()).c_str(), __itm__current__function__);
