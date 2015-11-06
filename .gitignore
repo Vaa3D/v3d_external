@@ -16,3 +16,21 @@ v3d_main/v3d/debug
 # Windows output files
 *.obj
 *.exe
+
+#For OSX: Generated Library Files
+/v3d_main/common_lib/*
+
+#Generated Makefile
+/v3d/Makefile
+
+#Qt Creator File
+/v3d.creator.user
+
+#Links
+/released_plugins_more
+
+#Generated plugins
+/released_plugins/*
+
+#All binaries
+/bin/*
