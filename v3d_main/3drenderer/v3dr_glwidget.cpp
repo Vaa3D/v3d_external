@@ -220,7 +220,7 @@ void V3dR_GLWidget::choiceRenderer()
 		renderer = new Renderer(this);
 	}
 #ifdef FORCE_BBOX_MODE
-	if (renderer) renderer->selectMode = Renderer::SelectMode::smCurveTiltedBB_fm_sbbox;
+	if (renderer) renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
 #endif
 	//if (renderer) renderer->widget = (void*)this; //081025 //100827 move to constructor parameter
 }

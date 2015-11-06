@@ -186,7 +186,7 @@ class teramanager::CViewer : public QWidget
         * We're interested to intercept these events to provide many useful ways to explore
         * the 3D volume at different resolutions without changing Vaa3D code.
         ***********************************************************************************/
-        bool eventFilter(QObject *object, QEvent *event);
+        virtual bool eventFilter(QObject *object, QEvent *event);
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.

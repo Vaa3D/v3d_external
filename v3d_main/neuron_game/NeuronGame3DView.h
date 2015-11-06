@@ -42,6 +42,7 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 		}
 
 		virtual void show();
+		virtual bool eventFilter(QObject *object, QEvent *event);
 
 		friend class NeuronGameUI;
 		

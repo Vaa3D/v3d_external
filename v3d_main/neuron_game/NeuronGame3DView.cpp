@@ -36,6 +36,56 @@ teramanager::CViewer* NeuronGame3DView::makeView(V3DPluginCallback2 *_V3D_env, i
 	return neuronView;
 }
 
+bool NeuronGame3DView::eventFilter(QObject *object, QEvent *event)
+{
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	QKeyEvent* key_evt;
+	if (event->type() == QEvent::KeyPress) // intercept keypress events
+	{
+		key_evt = (QKeyEvent*)event;
+		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
+		// Implement custom key events
+		int keyPressed = key_evt->key();
+		Renderer::SelectMode currentMode = curr_renderer->selectMode;
+		Renderer::SelectMode newMode;
+		switch (keyPressed)
+		{
+			case Qt::Key_D:
+				newMode = Renderer::smDeleteMultiNeurons;
+				break;
+			case Qt::Key_S:
+				newMode = Renderer::smBreakMultiNeurons;
+				break;
+			default:
+#ifdef FORCE_BBOX_MODE
+				newMode = Renderer::smCurveTiltedBB_fm_sbbox;
+#endif
+				break;
+		}
+		if (newMode != currentMode)
+		{
+			curr_renderer->endSelectMode();
+			curr_renderer->selectMode = newMode;
+		}
+	}
+	else if (event->type() == QEvent::KeyRelease) // intercept keypress events
+	{
+		key_evt = (QKeyEvent*)event;
+		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
+#ifdef FORCE_BBOX_MODE
+		if (curr_renderer->selectMode != Renderer::smCurveTiltedBB_fm_sbbox)
+		{
+			curr_renderer->endSelectMode();
+			curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
+		}
+#endif
+	}
+	else
+	{
+		return teramanager::CViewer::eventFilter(object, event);
+	}
+}
+
 void NeuronGame3DView::show()
 {
 	this->title = "Neuron Game 3D View";
