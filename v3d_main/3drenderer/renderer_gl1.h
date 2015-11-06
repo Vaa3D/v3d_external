@@ -326,6 +326,7 @@ public:
 
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      void solveCurveRefineLast();
+     void solveCurveExtendGlobal(); //extends the closest seg. By ZMS for neuron game 20151106
      void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower);
      void blendRubberNeuron();
      void solveCurveRubberDrag();
