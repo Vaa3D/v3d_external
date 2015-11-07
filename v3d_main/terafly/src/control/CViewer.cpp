@@ -210,8 +210,8 @@ void CViewer::show()
 
             //storing annotations done in the previous view and loading annotations of the current view
             prev->storeAnnotations();
-            prev->clearAnnotations();
-            this->loadAnnotations();
+			prev->clearAnnotations();
+			this->loadAnnotations();
         }
         //otherwise this is the lowest resolution window
         else
@@ -219,9 +219,8 @@ void CViewer::show()
             //registrating the current window as the first window of the multiresolution explorer windows chain
             CViewer::first = this;
 
-            //increasing height if lower than the plugin one's
-            //if(window3D->height() < pMain->height())
-                //window3D->setMinimumHeight(pMain->height());
+			// update annotation space
+			updateAnnotationSpace();
 
             //centering the current 3D window and the plugin's window
             int screen_height = qApp->desktop()->availableGeometry().height();
@@ -229,7 +228,7 @@ void CViewer::show()
             int window_x = (screen_width - (window3D->width() + pMain->width()))/2;
             int window_y = (screen_height - window3D->height()) / 2;
             window3D->move(window_x, window_y);
-        }
+		}
 
         //registrating the current window as the last and current window of the multiresolution explorer windows chain
         CViewer::last = this;
@@ -343,7 +342,7 @@ void CViewer::show()
     }
     catch(RuntimeException &ex)
     {
-        QMessageBox::critical(pMain,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+		QMessageBox::critical(pMain,QObject::tr("Error"), (std::string(ex.what())+"\nsource: " + ex.getSource()).c_str(),QObject::tr("Ok"));
         pMain->closeVolume();
     }
     catch(const char* error)
@@ -1686,12 +1685,63 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
+void CViewer::updateAnnotationSpace() throw (itm::RuntimeException)
+{
+	 /**/itm::debug(itm::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+
+	 //computing the current volume range in the highest resolution image space
+	 /**/itm::debug(itm::LEV3, strprintf("computing the current volume range in the highest resolution image space").c_str(), __itm__current__function__);
+	 int highestResIndex = CImport::instance()->getResolutions()-1;
+	 int voiV0 = CVolume::scaleVCoord(volV0, volResIndex, highestResIndex);
+	 int voiV1 = CVolume::scaleVCoord(volV1, volResIndex, highestResIndex);
+	 int voiH0 = CVolume::scaleHCoord(volH0, volResIndex, highestResIndex);
+	 int voiH1 = CVolume::scaleHCoord(volH1, volResIndex, highestResIndex);
+	 int voiD0 = CVolume::scaleDCoord(volD0, volResIndex, highestResIndex);
+	 int voiD1 = CVolume::scaleDCoord(volD1, volResIndex, highestResIndex);
+	 interval_t x_range(voiH0, voiH1);
+	 interval_t y_range(voiV0, voiV1);
+	 interval_t z_range(voiD0, voiD1);
+
+	 // set volume range to infinite if unlimited space annotation option is active
+	 if(PMain::getInstance()->spaceSizeUnlimited->isChecked() && this == CViewer::first)
+	 {
+		 // unlimited annotation VOI is used only in the first view (whole image) so as to include out-of-bounds annotation objects
+		 x_range.start = y_range.start = z_range.start = 0;
+		 x_range.end = y_range.end = z_range.end = std::numeric_limits<int>::max();
+	 }
+	 else if(this != CViewer::first)
+	 {
+		 // for subsequent views (i.e., higher resolutions at certain VOIs), the actual annotation VOI is enlarged by 100%
+		 // to enable the "Show/hide markers around the displayed ROI" function in the annotation toolbar
+		 int vmPerc = 100;
+		 int vmX = (x_range.end - x_range.start)*(vmPerc/100.0f)/2;
+		 int vmY = (y_range.end - y_range.start)*(vmPerc/100.0f)/2;
+		 int vmZ = (z_range.end - z_range.start)*(vmPerc/100.0f)/2;
+		 x_range.start  = std::max(0, x_range.start - vmX);
+		 x_range.end   += vmX;
+		 y_range.start  = std::max(0, y_range.start - vmY);
+		 y_range.end   += vmY;
+		 z_range.start  = std::max(0, z_range.start - vmZ);
+		 z_range.end   += vmZ;
+	 }
+
+	 // @FIXED "duplicated annotations" bug by Alessandro on 2014-17-11. Annotation VOI +100% enlargment is the source of "duplicated annotations" bug because
+	 // this creates an asymmetry between loading annotations in the displayed VOI (which is done with +100% enlargment) and saving annotations
+	 // from the displayed VOI (which is done w/o +100% enlargment !!!)
+	 // Then, we save the actual annotation VOI in object members and use those at saving time.
+	 anoV0 = y_range.start;
+	 anoV1 = y_range.end;
+	 anoH0 = x_range.start;
+	 anoH1 = x_range.end;
+	 anoD0 = z_range.start;
+	 anoD1 = z_range.end;
+	 /**/itm::debug(itm::LEV3, strprintf("store annotation VOI X[%d,%d), Y[%d,%d), Z[%d,%d)", anoH0, anoH1, anoV0, anoV1, anoD0, anoD1).c_str(), __itm__current__function__);
+
+}
+
 void CViewer::loadAnnotations() throw (RuntimeException)
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
-
-    // begin new macro group of AnnotationOperation
-    //itm::AnnotationOperation::newGroup();
 
     // where to put vaa3d annotations
     QList<LocationSimple> vaa3dMarkers;
@@ -1700,59 +1750,16 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     // to measure elapsed time
     QElapsedTimer timer;
 
-    //clearing previous annotations (useful when this view has been already visited)
+    // clearing previous annotations (useful when this view has been already visited)
     /**/itm::debug(itm::LEV3, strprintf("clearing previous annotations").c_str(), __itm__current__function__);
     V3D_env->getHandleNeuronTrees_Any3DViewer(window3D)->clear();
 
-    //computing the current volume range in the highest resolution image space
-    /**/itm::debug(itm::LEV3, strprintf("computing the current volume range in the highest resolution image space").c_str(), __itm__current__function__);
-    int highestResIndex = CImport::instance()->getResolutions()-1;
-    int voiV0 = CVolume::scaleVCoord(volV0, volResIndex, highestResIndex);
-    int voiV1 = CVolume::scaleVCoord(volV1, volResIndex, highestResIndex);
-    int voiH0 = CVolume::scaleHCoord(volH0, volResIndex, highestResIndex);
-    int voiH1 = CVolume::scaleHCoord(volH1, volResIndex, highestResIndex);
-    int voiD0 = CVolume::scaleDCoord(volD0, volResIndex, highestResIndex);
-    int voiD1 = CVolume::scaleDCoord(volD1, volResIndex, highestResIndex);
-    interval_t x_range(voiH0, voiH1);
-    interval_t y_range(voiV0, voiV1);
-    interval_t z_range(voiD0, voiD1);
-
-    // set volume range to infinite if unlimited space annotation option is active
-    if(PMain::getInstance()->spaceSizeUnlimited->isChecked() && this == CViewer::first)
-    {
-        // unlimited annotation VOI is used only in the first view (whole image) so as to include out-of-bounds annotation objects
-        x_range.start = y_range.start = z_range.start = 0;
-        x_range.end = y_range.end = z_range.end = std::numeric_limits<itm::uint32>::max();
-    }
-    else if(this != CViewer::first)
-    {
-        // for subsequent views (i.e., higher resolutions at certain VOIs), the actual annotation VOI is enlarged by 100%
-        // to enable the "Show/hide markers around the displayed ROI" function in the annotation toolbar
-        int vmPerc = 100;
-        int vmX = (x_range.end - x_range.start)*(vmPerc/100.0f)/2;
-        int vmY = (y_range.end - y_range.start)*(vmPerc/100.0f)/2;
-        int vmZ = (z_range.end - z_range.start)*(vmPerc/100.0f)/2;
-        x_range.start  = std::max(0, x_range.start - vmX);
-        x_range.end   += vmX;
-        y_range.start  = std::max(0, y_range.start - vmY);
-        y_range.end   += vmY;
-        z_range.start  = std::max(0, z_range.start - vmZ);
-        z_range.end   += vmZ;
-    }
-
-    // @FIXED "duplicated annotations" bug by Alessandro on 2014-17-11. Annotation VOI +100% enlargment is the source of "duplicated annotations" bug because
-    // this creates an asymmetry between loading annotations in the displayed VOI (which is done with +100% enlargment) and saving annotations
-    // from the displayed VOI (which is done w/o +100% enlargment !!!)
-    // Then, we save the actual annotation VOI in object members and use those at saving time.
-    anoV0 = y_range.start;
-    anoV1 = y_range.end;
-    anoH0 = x_range.start;
-    anoH1 = x_range.end;
-    anoD0 = z_range.start;
-    anoD1 = z_range.end;
-    /**/itm::debug(itm::LEV3, strprintf("store annotation VOI X[%d,%d), Y[%d,%d), Z[%d,%d)", anoH0, anoH1, anoV0, anoV1, anoD0, anoD1).c_str(), __itm__current__function__);
-
+  
     //obtaining the annotations within the current window
+	updateAnnotationSpace();
+	interval_t x_range(anoH0, anoH1);
+	interval_t y_range(anoV0, anoV1);
+	interval_t z_range(anoD0, anoD1);
     /**/itm::debug(itm::LEV3, strprintf("obtaining the annotations within the current window").c_str(), __itm__current__function__);
     CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, vaa3dMarkers);
     CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, vaa3dCurves.listNeuron);

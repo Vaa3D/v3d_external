@@ -2198,6 +2198,8 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
+	CViewer *viewer = CViewer::getCurrent();
+	v3d_msg(itm::strprintf("X=[%d,%d], Y=[%d,%d], Z[%d,%d]", viewer->anoH0, viewer->anoH1, viewer->anoV0, viewer->anoV1, viewer->anoD0, viewer->anoD1).c_str());
 //    QPalette Pal(palette());
 //    Pal.setColor(QPalette::Background, Qt::red);
 //    QWidget *emptyPanel = new QWidget();

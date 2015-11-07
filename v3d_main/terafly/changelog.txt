@@ -11,6 +11,14 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.13
+November 7th, 2015
+--------------------------------------------------------------------------------------------
+- Fix: Fixed bug which caused annotated 3D objects to disappear when zoomin-in and out if 
+       'Options' > 'Annotations' > 'Virtual Space Size' was set to 'Unlimited'.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.12
 October 5th, 2015
 --------------------------------------------------------------------------------------------

@@ -822,9 +822,9 @@ CAnnotations::Octree::Octree(itm::uint32 _DIM_V, itm::uint32 _DIM_H, itm::uint32
 
     if(CSettings::instance()->getAnnotationSpaceUnlimited())
     {
-        DIM_V = std::numeric_limits<uint32>::max();
-        DIM_H = std::numeric_limits<uint32>::max();
-        DIM_D = std::numeric_limits<uint32>::max();
+        DIM_V = std::numeric_limits<int>::max();
+        DIM_H = std::numeric_limits<int>::max();
+        DIM_D = std::numeric_limits<int>::max();
 
         /**/itm::debug(itm::LEV1, strprintf("unbounded annotation space activated", _DIM_V, _DIM_H, _DIM_D).c_str(), __itm__current__function__);
     }
@@ -924,6 +924,14 @@ void CAnnotations::Octree::print()
 //search for neurons in the given 3D volume and puts found neurons into 'neurons'
 void CAnnotations::Octree::find(interval_t V_int, interval_t H_int, interval_t D_int, std::list<annotation*>& neurons) throw(RuntimeException)
 {
+	// check interval validity
+	if( H_int.start < 0 || H_int.end < 0 || (H_int.end-H_int.start < 0) || 
+		V_int.start < 0 || V_int.end < 0 || (V_int.end-V_int.start < 0) || 
+		D_int.start < 0 || D_int.end < 0 || (D_int.end-D_int.start < 0))
+		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		H_int.start, H_int.end, V_int.start, V_int.end, D_int.start, D_int.end), itm::shortFuncName(__itm__current__function__));
+
+
     /**/itm::debug(itm::LEV2, strprintf("interval = [%d,%d](V) x [%d,%d](H) x [%d,%d](D)", V_int.start, V_int.end, H_int.start, H_int.end, D_int.start, D_int.end).c_str(), __itm__current__function__);
     _rec_search(root, V_int, H_int, D_int, neurons);
     /**/itm::debug(itm::LEV2, strprintf("found %d neurons", neurons.size()).c_str(), __itm__current__function__);
@@ -952,9 +960,18 @@ void CAnnotations::addLandmarks(itm::interval_t X_range, itm::interval_t Y_range
     /**/itm::debug(itm::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d), markers.size = %d",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end, markers.size()).c_str(), __itm__current__function__);
 
+	// check interval validity
+	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
+		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
+		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+
+
     /**/itm::debug(itm::LEV3, strprintf("%d markers before clearLandmarks", count()).c_str(), __itm__current__function__);
     clearLandmarks(X_range, Y_range, Z_range);
     /**/itm::debug(itm::LEV3, strprintf("%d markers after clearLandmarks", count()).c_str(), __itm__current__function__);
+
 
     QElapsedTimer timer;
     timer.start();
@@ -981,6 +998,14 @@ void CAnnotations::addLandmarks(itm::interval_t X_range, itm::interval_t Y_range
 void CAnnotations::clearCurves(itm::interval_t X_range, itm::interval_t Y_range, itm::interval_t Z_range) throw (itm::RuntimeException)
 {
     /**/itm::debug(itm::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
+
+	// check interval validity
+	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
+		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
+		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+
 
     QElapsedTimer timer;
     timer.start();
@@ -1015,6 +1040,14 @@ void CAnnotations::clearLandmarks(itm::interval_t X_range, itm::interval_t Y_ran
 {
     /**/itm::debug(itm::LEV3, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
+	// check interval validity
+	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
+		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
+		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+
+
     QElapsedTimer timer;
     timer.start();
     std::list<annotation*> nodes;
@@ -1032,6 +1065,14 @@ void CAnnotations::clearLandmarks(itm::interval_t X_range, itm::interval_t Y_ran
 void CAnnotations::addCurves(itm::interval_t X_range, itm::interval_t Y_range, itm::interval_t Z_range, NeuronTree& nt) throw (itm::RuntimeException)
 {
     /**/itm::debug(itm::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
+
+	// check interval validity
+	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
+		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
+		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+
 
     // first clear curves in the given range
     itm::uint64 deletions = annotation::destroyed;
@@ -1096,6 +1137,14 @@ void CAnnotations::findLandmarks(interval_t X_range, interval_t Y_range, interva
     /**/itm::debug(itm::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
+	// check interval validity
+	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
+		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
+		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+
+
     std::list<annotation*> nodes;
     QElapsedTimer timer;
     timer.start();
@@ -1130,6 +1179,14 @@ void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t
 {
     /**/itm::debug(itm::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
+
+	// check interval validity
+	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
+		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
+		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+
 
     std::list<annotation*> nodes;
     QElapsedTimer timer;
@@ -1686,7 +1743,7 @@ NeuronTree CAnnotations::Octree::toNeuronTree() throw (itm::RuntimeException)
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
     // unlimited octrees are not supported
-    if(DIM_V == std::numeric_limits<uint32>::max() || DIM_H == std::numeric_limits<uint32>::max() || DIM_D == std::numeric_limits<uint32>::max())
+    if(DIM_V == std::numeric_limits<int>::max() || DIM_H == std::numeric_limits<int>::max() || DIM_D == std::numeric_limits<int>::max())
         throw itm::RuntimeException("Cannot draw unbounded octree. Please deactivate the \"Unlimited\" option for the annotation space size and re-open the image");
 
     NeuronTree nt;

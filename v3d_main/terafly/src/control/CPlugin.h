@@ -194,7 +194,7 @@ namespace teramanager
     }
 
     // split
-    inline void	split(std::string& theString, std::string delim, std::vector<std::string>& tokens)
+    inline void	split(const std::string& theString, std::string delim, std::vector<std::string>& tokens)
     {
         size_t  start = 0, end = 0;
         while ( end != std::string::npos)
@@ -352,13 +352,30 @@ namespace teramanager
     *    DEBUG, WARNING and EXCEPTION FUNCTIONS    *
     ************************************************
     ---------------------------------------------------------------------------------------------------------------------------*/
+	inline std::string shortFuncName(const std::string & longname){
+		std::vector <std::string> tokens;
+		split(longname, "::", tokens);
+		tokens[0] = tokens[0].substr(tokens[0].rfind(" ")+1);
+		int k=1; bool found =false;
+		for(;k<tokens.size() && !found; k++)
+			if(tokens[k].find("(") != std::string::npos)
+			{
+				found = true;
+				tokens[k] = tokens[k].substr(0,tokens[k].find("("));
+			}
+		std::string result=tokens[0];
+		for(int i=1; i<k; i++)
+			result = result + "::" +  tokens[i];
+		return result;
+
+	}
     inline void warning(const char* message, const char* source = 0){
         if(DEBUG_TO_FILE)
         {
             FILE* f = fopen(DEBUG_FILE_PATH.c_str(), "a");
             if(source)
                 fprintf(f, "\n**** WARNING (source: \"%s\") ****\n"
-                "    |=> \"%s\"\n\n", source, message);
+                "    |=> \"%s\"\n\n", shortFuncName(source).c_str(), message);
             else
                 fprintf(f, "\n**** WARNING ****: %s\n", message);
             fclose(f);
@@ -367,7 +384,7 @@ namespace teramanager
         {
             if(source)
                 printf("\n**** WARNING (source: \"%s\") ****\n"
-                "    |=> \"%s\"\n\n", source, message);
+                "    |=> \"%s\"\n\n", shortFuncName(source).c_str(), message);
             else
                 printf("\n**** WARNING ****: %s\n", message);
         }
@@ -387,28 +404,28 @@ namespace teramanager
             if(DEBUG_TO_FILE)
             {
                 FILE* f = fopen(DEBUG_FILE_PATH.c_str(), "a");
-                if(message && source && !short_print)
-                    fprintf(f, "\n--------------------- teramanager plugin: DEBUG (level %d) ----: in \"%s\") ----\n"
-                             "                      message: %s\n\n", dbg_level, source, message);
-                else if(message && !short_print)
-                    fprintf(f, "\n--------------------- teramanager plugin: DEBUG (level %d) ----: %s\n", dbg_level, message);
-                else if(source && !short_print)
-                    fprintf(f, "\n--------------------- teramanager plugin: DEBUG (level %d) ----: in \"%s\"\n", dbg_level, source);
-                else if(short_print && message)
-                    fprintf(f, "\n                      %s\n", message);
+				if(message && source && !short_print)
+					fprintf(f,"\n---(debug level %d)--- in \"%s\"\n"
+					            "                             message: %s\n\n", dbg_level, shortFuncName(source).c_str(), message);
+				else if(message && !short_print)
+					fprintf(f,"\n---(debug level %d)---       message: %s\"\n\n", dbg_level, message);
+				else if(source && !short_print)
+					fprintf(f,"\n---(debug level %d)--- in \"%s\"\n", dbg_level, shortFuncName(source).c_str());
+				else if(short_print && message)
+					fprintf(f,"\n                             message: %s\n", message);
                 fclose(f);
             }
             else
             {
                 if(message && source && !short_print)
-                    printf("\n--------------------- teramanager plugin: DEBUG (level %d) ----: in \"%s\") ----\n"
-                             "                      message: %s\n\n", dbg_level, source, message);
+                    printf("\n---(debug level %d)--- in \"%s\"\n"
+                             "                             message: %s\n\n", dbg_level, shortFuncName(source).c_str(), message);
                 else if(message && !short_print)
-                    printf("\n--------------------- teramanager plugin: DEBUG (level %d) ----: %s\n", dbg_level, message);
+					printf("\n---(debug level %d)---       message: %s\"\n\n", dbg_level, message);
                 else if(source && !short_print)
-                    printf("\n--------------------- teramanager plugin: DEBUG (level %d) ----: in \"%s\"\n", dbg_level, source);
+                    printf("\n---(debug level %d)--- in \"%s\"\n", dbg_level, shortFuncName(source).c_str());
                 else if(short_print && message)
-                    printf("\n                      %s\n", message);
+					printf("\n                             message: %s\n", message);
             }
         }
     }
