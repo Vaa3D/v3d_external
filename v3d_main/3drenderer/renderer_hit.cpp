@@ -2155,7 +2155,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
 			selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
 			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest ||
-             selectMode == smMarkerCreate1Curve) //by PHC 20121011
+             selectMode == smMarkerCreate1Curve || selectMode == smCurveEditExtend) //by PHC 20121011
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2205,6 +2205,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				refineMode = smCurveRefine_fm;
 				solveCurveRefineLast();
 			}
+            else if (selectMode == smCurveEditExtend ) // edit with fm
+            {
+                refineMode = smCurveRefine_fm;
+                solveCurveExtendGlobal();
+            }
 			else if(selectMode == smCurveDirectionInter)
 			{
 				vector <XYZ> loc_vec_input;

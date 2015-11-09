@@ -56,6 +56,9 @@ bool NeuronGame3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_S:
 				newMode = Renderer::smBreakMultiNeurons;
 				break;
+            case Qt::Key_E:
+                newMode = Renderer::smCurveEditExtend;
+                break;
 			default:
 #ifdef FORCE_BBOX_MODE
 				newMode = Renderer::smCurveTiltedBB_fm_sbbox;

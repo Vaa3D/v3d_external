@@ -19,7 +19,7 @@ class neurongame::NeuronGameUI : public teramanager::PMain
 		friend class NeuronGame3DView;
 		static void init(V3d_PluginLoader *pl);
 		virtual void reset(); // override
-		virtual teramanager::CViewer* neurongame::NeuronGameUI::initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
+        virtual teramanager::CViewer* initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer* _prev);
 };
 
