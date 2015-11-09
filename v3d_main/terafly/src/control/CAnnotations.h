@@ -238,6 +238,11 @@ class teramanager::CAnnotations
         **********************************************************************************/
         void save(const char* filepath) throw (itm::RuntimeException);
         void load(const char* filepath) throw (itm::RuntimeException);
+		
+		/****************************************************************
+		* Helper function recursively writes annotation parents to file
+		*****************************************************************/
+		void write_annotations_helper(FILE* f, teramanager::annotation* anoToAdd, std::map<long long, bool>& anosAdded, std::map<long long, long long>& old2new, long long &nextID);
 
         /*********************************************************************************
         * Removes all the annotations from the octree

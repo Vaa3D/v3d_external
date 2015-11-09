@@ -1205,7 +1205,13 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
             points.push_back(cell);
         }
     writeAPO_file(QString(filepath).append(".apo"), points);
-
+	// Establish new IDs while writing to file recursively, such
+	// that IDs are ordered as they are written and parents always
+	// occur in file before children
+	long long nextID = 1;
+	std::map<long long, bool> anosAdded;
+	std::map<long long, long long> old2new;
+	
     //saving SWC file
     f = fopen(QString(filepath).append(".swc").toStdString().c_str(), "w");
     fprintf(f, "#name undefined\n");
@@ -1213,7 +1219,8 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     fprintf(f, "#n type x y z radius parent\n");
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1);
+                write_annotations_helper(f, (*i), anosAdded, old2new, nextID);
+				//fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1);
 
     //file closing
     fclose(f);
@@ -1221,6 +1228,46 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
 
     PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", itm::IO, timer.elapsed()));
 }
+
+/**********************************************************************
+* Helper function recursively writes annotation parents to file
+* so that parents will always occur before children while updating
+* IDs to occur in order written to file (guarrantee that no child will 
+* have an ID lower than its parent)
+***********************************************************************/
+void CAnnotations::write_annotations_helper(FILE* f, teramanager::annotation* anoToAdd, std::map<long long, bool>& anosAdded, std::map<long long, long long>& old2new, long long &nextID)
+{
+	// If this ano has already been written then stop recursion
+	map<long long, bool>::iterator anoAdded = anosAdded.find(anoToAdd->ID);
+	if (anoAdded != anosAdded.end())
+		return;
+	if (anoToAdd->parent)
+	{
+		map<long long, bool>::iterator parentFound = anosAdded.find(anoToAdd->parent->ID);
+		// If parent hasn't been written, write it first (writing any unwritten parents first, recursively) then write this ano
+		if (parentFound == anosAdded.end())
+			write_annotations_helper(f, anoToAdd->parent, anosAdded, old2new, nextID);
+	}
+	// Ready to write annotation, store new ID first
+	old2new[anoToAdd->ID] = nextID;
+	long long parentID = -1;
+	if (anoToAdd->parent)
+	{
+		map<long long, long long>::iterator newParentId = old2new.find(anoToAdd->parent->ID);
+		if (newParentId != old2new.end())
+		{
+			parentID = newParentId->second;
+		}
+		else
+		{
+			throw RuntimeException("CAnnotations::write_annotations_helper Parent ID not found");
+		}
+	}
+	fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n", nextID, anoToAdd->subtype, anoToAdd->x, anoToAdd->y, anoToAdd->z, anoToAdd->r, parentID);
+	nextID++;
+	anosAdded[anoToAdd->ID] = true; // mark ano as added using old ID which will remain unchanged
+}
+
 void CAnnotations::load(const char* filepath) throw (RuntimeException)
 {
     /**/itm::debug(itm::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
