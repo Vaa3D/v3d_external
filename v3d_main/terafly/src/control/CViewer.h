@@ -370,7 +370,7 @@ class teramanager::CViewer : public QWidget
         /*********************************************************************************
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/
-        void receiveData(
+        virtual void receiveData(
                 itm::uint8* data,                   // data (any dimension)
                 itm::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
                 itm::integer_array data_c,          // data count along X, Y, Z, C, t
