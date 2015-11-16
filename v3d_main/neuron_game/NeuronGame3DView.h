@@ -24,7 +24,13 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 		virtual teramanager::CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
 		static int contrastValue;
-
+		Image4DSimple* nextImg;
+		/*int nextImgVolResIndex;
+		int nextImgVolV0, nextImgVolV1;
+		int nextImgVolH0, nextImgVolH1;
+		int nextImgVolD0, nextImgVolD1;
+		int nextImgVolT0, nextImgVolT1;*/
+		bool loadingNextImg;
 
 	public:
 

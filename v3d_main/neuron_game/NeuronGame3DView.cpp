@@ -5,7 +5,8 @@
 #include "../../terafly/src/control/CVolume.h"
 #include "../../terafly/src/presentation/PMain.h"
 
-//
+// newViewer implementation
+#include "v3d_application.h"
 #include "../../terafly/src/control/CImageUtils.h"
 #include "./../terafly/src/control/COperation.h"
 #include "../../terafly/src/presentation/PAnoToolBar.h"
@@ -18,6 +19,17 @@ NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, 
 		: teramanager::CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
 {
+	nextImg = 0;
+	/*nextImgVolV0 = 0;
+	nextImgVolV1 = 0;
+	nextImgVolH0 = 0;
+	nextImgVolH1 = 0;
+	nextImgVolD0 = 0;
+	nextImgVolD1 = 0;
+	nextImgVolT0 = 0;
+	nextImgVolT1 = 0;*/
+	loadingNextImg = false;
+
 	contrastSlider = new QScrollBar(Qt::Vertical);
 	contrastSlider->setRange(-50, 50);
 	contrastSlider->setSingleStep(1);
@@ -177,6 +189,15 @@ void NeuronGame3DView::receiveData(
 
     char message[1000];
     itm::CVolume* cVolume = itm::CVolume::instance();
+	
+	int nextImgVolV0 = cVolume->getVoiV0();
+	int nextImgVolV1 = cVolume->getVoiV1();
+	int nextImgVolH0 = cVolume->getVoiH0();
+	int nextImgVolH1 = cVolume->getVoiH1();
+	int nextImgVolD0 = cVolume->getVoiD0();
+	int nextImgVolD1 = cVolume->getVoiD1();
+	int nextImgVolT0 = cVolume->getVoiT0();
+	int nextImgVolT1 = cVolume->getVoiT1();
 
     //if an exception has occurred, showing a message error
     if(ex)
@@ -195,52 +216,64 @@ void NeuronGame3DView::receiveData(
 
                 // copy loaded data into Vaa3D viewer
                 timer.start();
-                uint32 img_dims[5]       = {volH1-volH0,        volV1-volV0,        volD1-volD0,        nchannels,  volT1-volT0+1};
-                uint32 img_offset[5]     = {data_s[0]-volH0,    data_s[1]-volV0,    data_s[2]-volD0,    0,          data_s[4]-volT0 };
-                uint32 new_img_dims[5]   = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
-                uint32 new_img_offset[5] = {0,                  0,                  0,                  0,          0               };
-                uint32 new_img_count[5]  = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
+				itm::uint32 img_dims[5]       = {std::max(0,nextImgVolH1-nextImgVolH0), std::max(0,nextImgVolV1-nextImgVolV0), std::max(0,nextImgVolD1-nextImgVolD0), nchannels, std::max(0,nextImgVolT1-nextImgVolT0+1)};
+				// TODO: why is img_offset[0] coming out negative sometimes? There is no >0 check in the original CViewer code
+				itm::uint32 img_offset[5]     = {std::max(0,data_s[0]-nextImgVolH0),    std::max(0,data_s[1]-nextImgVolV0),    std::max(0,data_s[2]-nextImgVolD0),    0,         std::max(0,data_s[4]-nextImgVolT0)     };
+                itm::uint32 new_img_dims[5]   = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
+                itm::uint32 new_img_offset[5] = {0,                                     0,                                     0,                                     0,         0                                      };
+                itm::uint32 new_img_count[5]  = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
 				itm::CImageUtils::copyVOI(data, new_img_dims, new_img_offset, new_img_count,
-                        view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset);
+                        nextImg->getRawData(), img_dims, img_offset);
                 qint64 elapsedTime = timer.elapsed();
 
                 // release memory
                 delete[] data;
 
                 // update log
-                sprintf(message, "Streaming %d/%d: Copied block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T=[%d, %d]  to resolution %d",
-                                  step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiV0(), cVolume->getVoiV1(),
-                                  cVolume->getVoiD0(), cVolume->getVoiD1(), cVolume->getVoiT0(), cVolume->getVoiT1(), cVolume->getVoiResIndex());
+                //sprintf(message, "Streaming %d/%d: Copied block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T=[%d, %d]  to resolution %d",
+                //                  step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiV0(), cVolume->getVoiV1(),
+                //                  cVolume->getVoiD0(), cVolume->getVoiD1(), cVolume->getVoiT0(), cVolume->getVoiT1(), cVolume->getVoiResIndex());
                 //itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::CPU, elapsedTime));
             }
 
             // if 5D data, update selected time frame
             if(itm::CImport::instance()->is5D())
-                view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-volT0);
-			itm::PMain::getInstance()->frameCoord->setText(itm::strprintf("t = %d/%d", window3D->timeSlider->value()+1, itm::CImport::instance()->getTDim()).c_str());
+                view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-nextImgVolT0);
+			//itm::PMain::getInstance()->frameCoord->setText(itm::strprintf("t = %d/%d", window3D->timeSlider->value()+1, itm::CImport::instance()->getTDim()).c_str());
 
             // PREVIEW+STREAMING mode only: update image data
-            if(cVolume->getStreamingSteps() != 0)
-            {
-                ///**/itm::debug(itm::LEV1, strprintf("title = %s: update image data", titleShort.c_str()).c_str(), __itm__current__function__);
-                timer.restart();
-                view3DWidget->updateImageData();
-                sprintf(message, "Streaming %d/%d: Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T=[%d, %d] rendered into view %s",
-                        step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(),
-                        cVolume->getVoiV0(), cVolume->getVoiV1(),
-                        cVolume->getVoiD0(), cVolume->getVoiD1(),
-                        cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str());
-                //itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::GPU, timer.elapsed()));
-            }
+            ///**/itm::debug(itm::LEV1, strprintf("title = %s: update image data", titleShort.c_str()).c_str(), __itm__current__function__);
+            //timer.restart();
+            //view3DWidget->updateImageData();
+            sprintf(message, "Streaming %d/%d: Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T=[%d, %d] rendered into view %s",
+                    step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(),
+                    cVolume->getVoiV0(), cVolume->getVoiV1(),
+                    cVolume->getVoiD0(), cVolume->getVoiD1(),
+                    cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str());
+            //itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::GPU, timer.elapsed()));
+			
 
             // operations to be performed when all image data have been loaded
             if(finished)
             {
                 // disconnect from data producer
-                disconnect(itm::CVolume::instance(), SIGNAL(sendData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)));
+                disconnect(cVolume, SIGNAL(sendData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)));
+				
+				// Update viewer's data now that new res is loaded
+				volH0 = nextImgVolH0;
+				volH1 = nextImgVolH1;
+				volV0 = nextImgVolV0;
+				volV1 = nextImgVolV1;
+				volD0 = nextImgVolD0;
+				volD1 = nextImgVolD1;
+				volT0 = nextImgVolT0;
+				volT1 = nextImgVolT1;
+				int prevRes = volResIndex;
+				volResIndex = cVolume->getVoiResIndex();
+				imgData = nextImg->getRawData();
 
                 // reset TeraFly's GUI
-                itm::PMain::getInstance()->resetGUI();
+                //itm::PMain::getInstance()->resetGUI();
 
                 // exit from "waiting for 5D data" state, if previously set
                 if(this->waitingFor5D)
@@ -249,36 +282,71 @@ void NeuronGame3DView::receiveData(
                 // reset the cursor
                 window3D->setCursor(Qt::ArrowCursor);
                 view3DWidget->setCursor(Qt::ArrowCursor);
+				
+				
+				//Image4DSimple* image = new Image4DSimple();
+				//image->setFileName(title.c_str());
+				//image->setData(imgData, volH1-volH0, volV1-volV0, volD1-volD0, nchannels*(volT1-volT0+1), V3D_UINT8);
+				//image->setTDim(volT1-volT0+1);
+				//image->setData(nextImgData, nextImgVolH1-nextImgVolH0, nextImgVolV1-nextImgVolV0, nextImgVolD1-nextImgVolD0, nchannels*(nextImgVolT1-nextImgVolT0+1), V3D_UINT8);
+				//image->setTDim(nextImgVolT1-nextImgVolT0+1);
+				//image->setTimePackType(TIME_PACK_C);
+				unsigned char* dataPtr = nextImg->getRawData();
+				V3D_env->setImage(window, nextImg); // this clears the rawDataPointer for nextImg
+				// TODO: delete nextImg?
+				//nextImg->setRawDataPointer(dataPtr); // restore the data pointer
+				
+				// create 3D view window with postponed show()
+				XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
+				view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
+				//w->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
+				//view3DWidget = (V3dR_GLWidget*)(V3D_env->getView3DControl(window));
+				//if(!view3DWidget->getiDrawExternalParameter())
+				//	QMessageBox::critical(itm::PMain::getInstance(),QObject::tr("Error"), QObject::tr("Unable to get iDrawExternalParameter from Vaa3D's V3dR_GLWidget"),QObject::tr("Ok"));
+				//window3D = view3DWidget->getiDrawExternalParameter()->window3D;
+				
+				// set fixed size that fills available screen space
+				//window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
 
+				// show 3D viewer
+				//window3D->show();
+				
+				// install the event filter on the 3D renderer and on the 3D window
+				//view3DWidget->installEventFilter(this);
+				//window3D->installEventFilter(this);
+				//window3D->timeSlider->installEventFilter(this);
 
-                //---- Alessandro 2013-09-28 fixed: processing pending events related trasl* buttons (previously deactivated) prevents the user from
-                //                                  triggering multiple traslations at the same time.
-                //---- Alessandro 2014-01-26 fixed: processEvents() is no longer needed, since the trasl* button slots have been made safer and do not
-                //                                  trigger any action when the the current window is not active (or has to be closed)
-                //QApplication::processEvents();
-                ///**/itm::debug(itm::LEV3, strprintf("title = %s: reactivating directional shifts", titleShort.c_str()).c_str(), __itm__current__function__);
-                itm::PMain::getInstance()->traslXneg->setActive(true);
-                itm::PMain::getInstance()->traslXpos->setActive(true);
-                itm::PMain::getInstance()->traslYneg->setActive(true);
-                itm::PMain::getInstance()->traslYpos->setActive(true);
-                itm::PMain::getInstance()->traslZneg->setActive(true);
-                itm::PMain::getInstance()->traslZpos->setActive(true);
-                itm::PMain::getInstance()->traslTneg->setActive(true);
-                itm::PMain::getInstance()->traslTpos->setActive(true);
-                ///**/itm::debug(itm::LEV3, strprintf("title = %s: directional shifts successfully reactivated", titleShort.c_str()).c_str(), __itm__current__function__);
+				// time slider: disconnect Vaa3D event handlers and set the complete (virtual) time range
+				//disconnect(view3DWidget, SIGNAL(changeVolumeTimePoint(int)), window3D->timeSlider, SLOT(setValue(int)));
+				//disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), view3DWidget, SLOT(setVolumeTimePoint(int)));
+				//window3D->timeSlider->setMinimum(0);
+				//window3D->timeSlider->setMaximum(CImport::instance()->getTDim()-1);
+
+				float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
+				float curZoom = (float)view3DWidget->zoom();
+				view3DWidget->setZoom(curZoom/ratio);
+				
+				//this->window3D->raise();
+				//this->window3D->activateWindow();
+				this->window3D->show();
+
+				itm::PMain* pMain = itm::PMain::getInstance();
+
+				// updating reference system
+				if(!pMain->isPRactive())
+					pMain->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+				this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+				Vaa3D_rotationchanged(0);
+
+				// update curve aspect
+				pMain->curveAspectChanged();
+
+				
+				// TODO: store nextImgData and imgData somehow along with volH1, etc
 
                 //current window is now ready for user input
                 isReady = true;
-
-                //saving elapsed time to log
-                if(prev)
-                {
-                    ///**/itm::debug(itm::LEV3, strprintf("title = %s: saving elapsed time to log", titleShort.c_str()).c_str(), __itm__current__function__);
-					//itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(itm::strprintf("Successfully generated view %s", title.c_str()), itm::ALL_COMPS, prev->newViewerTimer.elapsed()));
-                }
-
-                // refresh annotation toolbar
-				itm::PAnoToolBar::instance()->refreshTools();
+				loadingNextImg = false;
             }
         }
 		catch(itm::RuntimeException &ex)
@@ -286,6 +354,7 @@ void NeuronGame3DView::receiveData(
 			QMessageBox::critical(itm::PMain::getInstance(),QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
 			itm::PMain::getInstance()->resetGUI();
             isReady = true;
+			loadingNextImg = false;
         }
     }
 //    QMessageBox::information(0, "Stop", "Wait...");
@@ -314,37 +383,40 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
 
     // check precondition #1: active window
-    if(!isActive || toBeClosed)
-    {
-        QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
-        return;
-    }
+    //if(!isActive || toBeClosed)
+    //{
+    //    QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
+    //    return;
+    //}
 
     // check precondition #2: valid resolution
     if(resolution >= itm::CImport::instance()->getResolutions())
         resolution = volResIndex;
 
     // check precondition #3: window ready for "newView" events
-    if( !isReady )
-    {
-        itm::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
-        return;
-    }
+    //if( !isReady )
+    //{
+    //    itm::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
+    //    return;
+    //}
 
 
     // deactivate current window and processing all pending events
-    setActive(false);
-    QApplication::processEvents();
+	// TODO: Keep this?
+    //QApplication::processEvents();
 
     // after processEvents(), it might be that this windows is no longer valid, then terminating
-    if(toBeClosed)
+	if(toBeClosed || loadingNextImg)
         return;
+	
+	loadingNextImg = true;
 
     // restart timer (measures the time needed to switch to a new view)
     newViewerTimer.restart();
 
     // create new macro-group for NewViewerOperation
-	itm::NewViewerOperation::newGroup();
+	// TODO: Keep this?
+	//itm::NewViewerOperation::newGroup();
 
 
     try
@@ -367,7 +439,8 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
             float ratioX = static_cast<float>(itm::CImport::instance()->getVolume(resolution)->getDIM_H())/itm::CImport::instance()->getVolume(volResIndex)->getDIM_H();
             float ratioY = static_cast<float>(itm::CImport::instance()->getVolume(resolution)->getDIM_V())/itm::CImport::instance()->getVolume(volResIndex)->getDIM_V();
             float ratioZ = static_cast<float>(itm::CImport::instance()->getVolume(resolution)->getDIM_D())/itm::CImport::instance()->getVolume(volResIndex)->getDIM_D();
-            x = getGlobalHCoord(x, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+            // NOTE! The following functions use the current values for volResIndex and volH0, volV0, volD0, etc
+			x = getGlobalHCoord(x, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             y = getGlobalVCoord(y, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             z = getGlobalDCoord(z, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             if(x0 != -1)
@@ -466,126 +539,102 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
             view3DWidget->setCursor(Qt::ArrowCursor);
             window3D->setCursor(Qt::ArrowCursor);
             itm::PMain::getInstance()->resetGUI();
+			loadingNextImg = false;
             return;
         }
 
-
-        // save the state of PMain GUI VOI's widgets
-        saveSubvolSpinboxState();
-
-
-        // disconnect current window from GUI's listeners and event filters
-        disconnect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
-        disconnect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
-        disconnect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
-        disconnect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
-        disconnect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
-        disconnect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
-        disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
-        //disconnect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-        //disconnect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-        //disconnect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-        disconnect(itm::PMain::getInstance()->refSys,  SIGNAL(mouseReleased()),   this, SLOT(PMain_rotationchanged()));
-        disconnect(itm::PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
-        disconnect(itm::PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
-        disconnect(itm::PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
-        disconnect(itm::PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
-        disconnect(itm::PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
-        disconnect(itm::PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
-        view3DWidget->removeEventFilter(this);
-        window3D->removeEventFilter(this);
-        window3D->timeSlider->removeEventFilter(this);
-
         // PREVIEW+STREAMING mode - obtain low res data from current window to be displayed in a new window while the user waits for the new high res data
-        if(itm::CSettings::instance()->getPreviewMode())
-        {
-            // get low res data
-            timer.restart();
-            int voiH0m=0, voiH1m=0, voiV0m=0, voiV1m=0,voiD0m=0, voiD1m=0, voiT0m=0, voiT1m=0;
-            int rVoiH0 = itm::CVolume::scaleHCoord(cVolume->getVoiH0(), resolution, volResIndex);
-            int rVoiH1 = itm::CVolume::scaleHCoord(cVolume->getVoiH1(), resolution, volResIndex);
-            int rVoiV0 = itm::CVolume::scaleVCoord(cVolume->getVoiV0(), resolution, volResIndex);
-            int rVoiV1 = itm::CVolume::scaleVCoord(cVolume->getVoiV1(), resolution, volResIndex);
-            int rVoiD0 = itm::CVolume::scaleDCoord(cVolume->getVoiD0(), resolution, volResIndex);
-            int rVoiD1 = itm::CVolume::scaleDCoord(cVolume->getVoiD1(), resolution, volResIndex);
-            uint8* lowresData = getVOI(rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(),
-                                       cVolume->getVoiH1()-cVolume->getVoiH0(),
-                                       cVolume->getVoiV1()-cVolume->getVoiV0(),
-                                       cVolume->getVoiD1()-cVolume->getVoiD0(),
-                                       voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
-            std::string message = itm::strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d] loaded from view %s, black-filled region is "
-                                   "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
-                    rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
-                    voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
-			//itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::CPU, timer.elapsed()));
+    
+        // get low res data
+        //timer.restart();
+        //int voiH0m=0, voiH1m=0, voiV0m=0, voiV1m=0,voiD0m=0, voiD1m=0, voiT0m=0, voiT1m=0;
+        //int rVoiH0 = itm::CVolume::scaleHCoord(cVolume->getVoiH0(), resolution, volResIndex);
+        //int rVoiH1 = itm::CVolume::scaleHCoord(cVolume->getVoiH1(), resolution, volResIndex);
+        //int rVoiV0 = itm::CVolume::scaleVCoord(cVolume->getVoiV0(), resolution, volResIndex);
+        //int rVoiV1 = itm::CVolume::scaleVCoord(cVolume->getVoiV1(), resolution, volResIndex);
+        //int rVoiD0 = itm::CVolume::scaleDCoord(cVolume->getVoiD0(), resolution, volResIndex);
+        //int rVoiD1 = itm::CVolume::scaleDCoord(cVolume->getVoiD1(), resolution, volResIndex);
+        //itm::uint8* lowresData = getVOI(rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(),
+        //                           cVolume->getVoiH1()-cVolume->getVoiH0(),
+        //                           cVolume->getVoiV1()-cVolume->getVoiV0(),
+        //                           cVolume->getVoiD1()-cVolume->getVoiD0(),
+        //                           voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
+        //std::string message = itm::strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d] loaded from view %s, black-filled region is "
+        //                       "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
+        //        rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
+        //        voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
+		//itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::CPU, timer.elapsed()));
 
-            // create new window
-            this->next = makeView(V3D_env, resolution, lowresData,
-                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
-                                             cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+        // create new window
+        //this->next = makeView(V3D_env, resolution, lowresData,
+        //                                 cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+        //                                 cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
-            // update CVolume with the request of the actual missing VOI along t and the current selected frame
-            cVolume->setVoiT(voiT0m, voiT1m, window3D->timeSlider->value());
+        // update CVolume with the request of the actual missing VOI along t and the current selected frame
+        //cVolume->setVoiT(voiT0m, voiT1m, window3D->timeSlider->value());
 
-            // set the number of streaming steps
-            cVolume->setStreamingSteps(itm::PMain::getInstance()->debugStreamingStepsSBox->value());
+        // set the number of streaming steps
+        cVolume->setStreamingSteps(1);//itm::PMain::getInstance()->debugStreamingStepsSBox->value());
+		
+		if (nextImg)
+			delete nextImg;
+		
+		int nextImgVolV0 = cVolume->getVoiV0();
+		int nextImgVolV1 = cVolume->getVoiV1();
+		int nextImgVolH0 = cVolume->getVoiH0();
+		int nextImgVolH1 = cVolume->getVoiH1();
+		int nextImgVolD0 = cVolume->getVoiD0();
+		int nextImgVolD1 = cVolume->getVoiD1();
+		int nextImgVolT0 = cVolume->getVoiT0();
+		int nextImgVolT1 = cVolume->getVoiT1();
 
-            // connect new window to data producer
-            cVolume->setSource(next);
-            connect(itm::CVolume::instance(), SIGNAL(sendData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), next, SLOT(receiveData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
+		try {
+			// Allocate memory for data to be loaded
+			int imgSize = (nextImgVolH1-nextImgVolH0)*(nextImgVolV1-nextImgVolV0)*(nextImgVolD1-nextImgVolD0)*nchannels*(nextImgVolT1-nextImgVolT0+1);
+			itm::uint8* nextImgData = new itm::uint8 [imgSize];
+			nextImg = new Image4DSimple();
+			nextImg->setFileName(title.c_str());
+			nextImg->setData(nextImgData, nextImgVolH1-nextImgVolH0, nextImgVolV1-nextImgVolV0, nextImgVolD1-nextImgVolD0, nchannels*(nextImgVolT1-nextImgVolT0+1), V3D_UINT8);
+			nextImg->setTDim(nextImgVolT1-nextImgVolT0+1);
+			nextImg->setTimePackType(TIME_PACK_C);
+		} catch (...) {
+			v3d_msg("Fail to allocate memory for nextImg in NeuronGame3DView::newViewer();\n");
+			loadingNextImg = false;
+			return;
+		}
+		// connect new window to data producer
+		cVolume->setSource(this);
+        connect(cVolume, SIGNAL(sendData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
 
 // lock updateGraphicsInProgress mutex on this thread (i.e. the GUI thread or main queue event thread)
 /**/itm::debug(itm::LEV3, itm::strprintf("Waiting for updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
 /**/ itm::updateGraphicsInProgress.lock();
 /**/itm::debug(itm::LEV3, itm::strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
 
-            // update status bar message
-            pMain.statusBar->showMessage("Loading image data...");
+        // update status bar message
+        pMain.statusBar->showMessage("Loading image data...");
 
-            // load new data in a separate thread. When done, the "receiveData" method of the new window will be called
-            cVolume->start();
+        // load new data in a separate thread. When done, the "receiveData" method of the new window will be called
+        cVolume->start();
 
-            // meanwhile, show the new window with preview data
-            next->show();
+        // meanwhile, show the new window with preview data
+        //next->show();
 
-            // enter "waiting for 5D data" state, if possible
-            next->setWaitingFor5D(true);
+        // enter "waiting for 5D data" state, if possible
+        //next->setWaitingFor5D(true);
 
-            //if the resolution of the loaded voi is the same of the current one, this window will be closed
-            if(resolution == volResIndex)
-                this->close();
+        //if the resolution of the loaded voi is the same of the current one, this window will be closed
+        //if(resolution == volResIndex)
+        //    this->close();
 
 // unlock updateGraphicsInProgress mutex
 /**/itm::debug(itm::LEV3, itm::strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
 /**/ itm::updateGraphicsInProgress.unlock();
-
-
-        }
-        // DIRECT mode - just wait for image data to be loaded and THEN create the new window
-        else
-        {
-            // set the number of streaming steps to 0
-            cVolume->setStreamingSteps(0);
-
-            // load data and instance new viewer
-            this->next = makeView(V3D_env, resolution, itm::CVolume::instance()->loadData(),
-                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
-                                             cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
-
-            // show new viewer
-            next->show();
-
-            // update new viewer as all data have been received
-            next->receiveData(0,itm::integer_array(),itm::integer_array(), next, true);
-
-            // if new viewer has the same resolution, this window has to be closed
-            if(resolution == volResIndex)
-                this->close();
-        }
-    }
+	}
 	catch(itm::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
 		itm::PMain::getInstance()->resetGUI();
+		loadingNextImg = false;
     }
 }
