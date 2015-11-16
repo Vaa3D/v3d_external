@@ -198,7 +198,8 @@ public:
     virtual V3dR_MainWindow * open3DViewerForLinkerFile(QString fileName);
     virtual V3dR_MainWindow * createEmpty3DViewer(); //create a 3D viewer with no content
     virtual void setWindowDataTitle(V3dR_MainWindow *w, QString title);
-
+    virtual void moveWindow(V3dR_MainWindow *w, int x, int y);
+    virtual void resizeWindow(V3dR_MainWindow *w, int x, int y);
 };
 
 #endif
