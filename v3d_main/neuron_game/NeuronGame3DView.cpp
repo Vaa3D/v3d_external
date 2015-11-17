@@ -20,14 +20,6 @@ NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, 
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
 {
 	nextImg = 0;
-	/*nextImgVolV0 = 0;
-	nextImgVolV1 = 0;
-	nextImgVolH0 = 0;
-	nextImgVolH1 = 0;
-	nextImgVolD0 = 0;
-	nextImgVolD1 = 0;
-	nextImgVolT0 = 0;
-	nextImgVolT1 = 0;*/
 	loadingNextImg = false;
 
 	contrastSlider = new QScrollBar(Qt::Vertical);
@@ -158,15 +150,6 @@ void NeuronGame3DView::updateContrast(int con) /* contrast from -100 (bright) to
 }
 
 
-
-
-
-
-
-
-
-
-
 /*********************************************************************************
 * Receive data (and metadata) from <CVolume> throughout the loading process
 **********************************************************************************/
@@ -208,52 +191,25 @@ void NeuronGame3DView::receiveData(
         {
             QElapsedTimer timer;
 
-            // PREVIEW+STREAMING mode only: copy loaded data
-            if(cVolume->getStreamingSteps() != 0)
-            {
-                // update IO time
-                //itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(op_dsc.toStdString(), itm::IO, elapsed_time));
-
-                // copy loaded data into Vaa3D viewer
-                timer.start();
-				itm::uint32 img_dims[5]       = {std::max(0,nextImgVolH1-nextImgVolH0), std::max(0,nextImgVolV1-nextImgVolV0), std::max(0,nextImgVolD1-nextImgVolD0), nchannels, std::max(0,nextImgVolT1-nextImgVolT0+1)};
-				// TODO: why is img_offset[0] coming out negative sometimes? There is no >0 check in the original CViewer code
-				itm::uint32 img_offset[5]     = {std::max(0,data_s[0]-nextImgVolH0),    std::max(0,data_s[1]-nextImgVolV0),    std::max(0,data_s[2]-nextImgVolD0),    0,         std::max(0,data_s[4]-nextImgVolT0)     };
-                itm::uint32 new_img_dims[5]   = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
-                itm::uint32 new_img_offset[5] = {0,                                     0,                                     0,                                     0,         0                                      };
-                itm::uint32 new_img_count[5]  = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
-				itm::CImageUtils::copyVOI(data, new_img_dims, new_img_offset, new_img_count,
-                        nextImg->getRawData(), img_dims, img_offset);
-                qint64 elapsedTime = timer.elapsed();
-
-                // release memory
-                delete[] data;
-
-                // update log
-                //sprintf(message, "Streaming %d/%d: Copied block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T=[%d, %d]  to resolution %d",
-                //                  step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiV0(), cVolume->getVoiV1(),
-                //                  cVolume->getVoiD0(), cVolume->getVoiD1(), cVolume->getVoiT0(), cVolume->getVoiT1(), cVolume->getVoiResIndex());
-                //itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::CPU, elapsedTime));
-            }
+            // copy loaded data into Vaa3D viewer
+            timer.start();
+			itm::uint32 img_dims[5]       = {std::max(0,nextImgVolH1-nextImgVolH0), std::max(0,nextImgVolV1-nextImgVolV0), std::max(0,nextImgVolD1-nextImgVolD0), nchannels, std::max(0,nextImgVolT1-nextImgVolT0+1)};
+			// TODO: why is img_offset[0] coming out negative sometimes? There is no >0 check in the original CViewer code
+			itm::uint32 img_offset[5]     = {std::max(0,data_s[0]-nextImgVolH0),    std::max(0,data_s[1]-nextImgVolV0),    std::max(0,data_s[2]-nextImgVolD0),    0,         std::max(0,data_s[4]-nextImgVolT0)     };
+            itm::uint32 new_img_dims[5]   = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
+            itm::uint32 new_img_offset[5] = {0,                                     0,                                     0,                                     0,         0                                      };
+            itm::uint32 new_img_count[5]  = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
+			itm::CImageUtils::copyVOI(data, new_img_dims, new_img_offset, new_img_count,
+                    nextImg->getRawData(), img_dims, img_offset);
+            
+            // release memory
+            delete[] data;
 
             // if 5D data, update selected time frame
             if(itm::CImport::instance()->is5D())
                 view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-nextImgVolT0);
-			//itm::PMain::getInstance()->frameCoord->setText(itm::strprintf("t = %d/%d", window3D->timeSlider->value()+1, itm::CImport::instance()->getTDim()).c_str());
-
-            // PREVIEW+STREAMING mode only: update image data
-            ///**/itm::debug(itm::LEV1, strprintf("title = %s: update image data", titleShort.c_str()).c_str(), __itm__current__function__);
-            //timer.restart();
-            //view3DWidget->updateImageData();
-            sprintf(message, "Streaming %d/%d: Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T=[%d, %d] rendered into view %s",
-                    step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(),
-                    cVolume->getVoiV0(), cVolume->getVoiV1(),
-                    cVolume->getVoiD0(), cVolume->getVoiD1(),
-                    cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str());
-            //itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::GPU, timer.elapsed()));
 			
-
-            // operations to be performed when all image data have been loaded
+			// operations to be performed when all image data have been loaded
             if(finished)
             {
                 // disconnect from data producer
@@ -270,10 +226,8 @@ void NeuronGame3DView::receiveData(
 				volT1 = nextImgVolT1;
 				int prevRes = volResIndex;
 				volResIndex = cVolume->getVoiResIndex();
+				// TODO: store imgData to be used when we zoom back out?
 				imgData = nextImg->getRawData();
-
-                // reset TeraFly's GUI
-                //itm::PMain::getInstance()->resetGUI();
 
                 // exit from "waiting for 5D data" state, if previously set
                 if(this->waitingFor5D)
@@ -282,53 +236,21 @@ void NeuronGame3DView::receiveData(
                 // reset the cursor
                 window3D->setCursor(Qt::ArrowCursor);
                 view3DWidget->setCursor(Qt::ArrowCursor);
-				
-				
-				//Image4DSimple* image = new Image4DSimple();
-				//image->setFileName(title.c_str());
-				//image->setData(imgData, volH1-volH0, volV1-volV0, volD1-volD0, nchannels*(volT1-volT0+1), V3D_UINT8);
-				//image->setTDim(volT1-volT0+1);
-				//image->setData(nextImgData, nextImgVolH1-nextImgVolH0, nextImgVolV1-nextImgVolV0, nextImgVolD1-nextImgVolD0, nchannels*(nextImgVolT1-nextImgVolT0+1), V3D_UINT8);
-				//image->setTDim(nextImgVolT1-nextImgVolT0+1);
-				//image->setTimePackType(TIME_PACK_C);
+
 				unsigned char* dataPtr = nextImg->getRawData();
 				V3D_env->setImage(window, nextImg); // this clears the rawDataPointer for nextImg
-				// TODO: delete nextImg?
-				//nextImg->setRawDataPointer(dataPtr); // restore the data pointer
+				delete nextImg; // TODO: ?
 				
 				// create 3D view window with postponed show()
 				XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
 				view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
-				//w->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
-				//view3DWidget = (V3dR_GLWidget*)(V3D_env->getView3DControl(window));
-				//if(!view3DWidget->getiDrawExternalParameter())
-				//	QMessageBox::critical(itm::PMain::getInstance(),QObject::tr("Error"), QObject::tr("Unable to get iDrawExternalParameter from Vaa3D's V3dR_GLWidget"),QObject::tr("Ok"));
-				//window3D = view3DWidget->getiDrawExternalParameter()->window3D;
+				// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
+				// set above as this is the data being updated.
+				view3DWidget->updateImageData();
 				
-				// set fixed size that fills available screen space
-				//window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
-
-				// show 3D viewer
-				//window3D->show();
-				
-				// install the event filter on the 3D renderer and on the 3D window
-				//view3DWidget->installEventFilter(this);
-				//window3D->installEventFilter(this);
-				//window3D->timeSlider->installEventFilter(this);
-
-				// time slider: disconnect Vaa3D event handlers and set the complete (virtual) time range
-				//disconnect(view3DWidget, SIGNAL(changeVolumeTimePoint(int)), window3D->timeSlider, SLOT(setValue(int)));
-				//disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), view3DWidget, SLOT(setVolumeTimePoint(int)));
-				//window3D->timeSlider->setMinimum(0);
-				//window3D->timeSlider->setMaximum(CImport::instance()->getTDim()-1);
-
 				float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
 				float curZoom = (float)view3DWidget->zoom();
 				view3DWidget->setZoom(curZoom/ratio);
-				
-				//this->window3D->raise();
-				//this->window3D->activateWindow();
-				this->window3D->show();
 
 				itm::PMain* pMain = itm::PMain::getInstance();
 
@@ -341,9 +263,6 @@ void NeuronGame3DView::receiveData(
 				// update curve aspect
 				pMain->curveAspectChanged();
 
-				
-				// TODO: store nextImgData and imgData somehow along with volH1, etc
-
                 //current window is now ready for user input
                 isReady = true;
 				loadingNextImg = false;
@@ -352,12 +271,10 @@ void NeuronGame3DView::receiveData(
 		catch(itm::RuntimeException &ex)
         {
 			QMessageBox::critical(itm::PMain::getInstance(),QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-			itm::PMain::getInstance()->resetGUI();
-            isReady = true;
+			isReady = true;
 			loadingNextImg = false;
         }
     }
-//    QMessageBox::information(0, "Stop", "Wait...");
     /**/itm::debug(itm::LEV3, "method terminated", __itm__current__function__);
 }
 
@@ -379,56 +296,26 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
     int sliding_viewer_block_ID /* = -1 */)         //block ID in "Sliding viewer" mode
 
 {
-	/**/itm::debug(itm::LEV1, itm::strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
-                                        titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
-
-    // check precondition #1: active window
-    //if(!isActive || toBeClosed)
-    //{
-    //    QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
-    //    return;
-    //}
-
+	//qDebug() << itm::strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+	//							titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str();
     // check precondition #2: valid resolution
     if(resolution >= itm::CImport::instance()->getResolutions())
         resolution = volResIndex;
 
-    // check precondition #3: window ready for "newView" events
-    //if( !isReady )
-    //{
-    //    itm::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
-    //    return;
-    //}
-
-
-    // deactivate current window and processing all pending events
-	// TODO: Keep this?
-    //QApplication::processEvents();
-
-    // after processEvents(), it might be that this windows is no longer valid, then terminating
-	if(toBeClosed || loadingNextImg)
+    if(toBeClosed || loadingNextImg)
         return;
 	
 	loadingNextImg = true;
-
-    // restart timer (measures the time needed to switch to a new view)
-    newViewerTimer.restart();
-
-    // create new macro-group for NewViewerOperation
-	// TODO: Keep this?
-	//itm::NewViewerOperation::newGroup();
-
 
     try
     {
         // set GUI to waiting state
         QElapsedTimer timer;
-        timer.start();
         itm::PMain& pMain = *(itm::PMain::getInstance());
         pMain.progressBar->setEnabled(true);
         pMain.progressBar->setMinimum(0);
         pMain.progressBar->setMaximum(0);
-        pMain.statusBar->showMessage("Switching view...");
+        pMain.statusBar->showMessage("Switching resolution...");
         view3DWidget->setCursor(Qt::BusyCursor);
         window3D->setCursor(Qt::BusyCursor);
         pMain.setCursor(Qt::BusyCursor);
@@ -456,7 +343,8 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
             else
                 dz = dz == -1 ? itm::int_inf : static_cast<int>(dz*ratioZ+0.5f);
         }
-
+		qDebug() << itm::strprintf("\n  After scaling:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+									titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str();
 
         // adjust time size so as to use all the available frames set by the user
         if(itm::CImport::instance()->is5D() && ((t1 - t0 +1) != pMain.Tdim_sbox->value()))
@@ -518,9 +406,9 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
                     t1 = pMain.Tdim_sbox->value()-1;
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, ...to [%d,%d) [%d,%d) [%d,%d) [%d,%d]", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
             }
+			qDebug() << itm::strprintf("\n  After auto_crop:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+															titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str();
         }
-
-
 
         // ask CVolume to check (and correct) for a valid VOI
         itm::CVolume* cVolume = itm::CVolume::instance();
@@ -534,50 +422,17 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
         catch(itm::RuntimeException &ex)
         {
             /**/itm::warning(itm::strprintf("Exception thrown when setting VOI: \"%s\". Aborting newView", ex.what()).c_str(), __itm__current__function__);
-
-            setActive(true);
             view3DWidget->setCursor(Qt::ArrowCursor);
             window3D->setCursor(Qt::ArrowCursor);
-            itm::PMain::getInstance()->resetGUI();
-			loadingNextImg = false;
+            loadingNextImg = false;
             return;
         }
 
-        // PREVIEW+STREAMING mode - obtain low res data from current window to be displayed in a new window while the user waits for the new high res data
-    
-        // get low res data
-        //timer.restart();
-        //int voiH0m=0, voiH1m=0, voiV0m=0, voiV1m=0,voiD0m=0, voiD1m=0, voiT0m=0, voiT1m=0;
-        //int rVoiH0 = itm::CVolume::scaleHCoord(cVolume->getVoiH0(), resolution, volResIndex);
-        //int rVoiH1 = itm::CVolume::scaleHCoord(cVolume->getVoiH1(), resolution, volResIndex);
-        //int rVoiV0 = itm::CVolume::scaleVCoord(cVolume->getVoiV0(), resolution, volResIndex);
-        //int rVoiV1 = itm::CVolume::scaleVCoord(cVolume->getVoiV1(), resolution, volResIndex);
-        //int rVoiD0 = itm::CVolume::scaleDCoord(cVolume->getVoiD0(), resolution, volResIndex);
-        //int rVoiD1 = itm::CVolume::scaleDCoord(cVolume->getVoiD1(), resolution, volResIndex);
-        //itm::uint8* lowresData = getVOI(rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(),
-        //                           cVolume->getVoiH1()-cVolume->getVoiH0(),
-        //                           cVolume->getVoiV1()-cVolume->getVoiV0(),
-        //                           cVolume->getVoiD1()-cVolume->getVoiD0(),
-        //                           voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
-        //std::string message = itm::strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d] loaded from view %s, black-filled region is "
-        //                       "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
-        //        rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
-        //        voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
-		//itm::PLog::instance()->appendOperation(new itm::NewViewerOperation(message, itm::CPU, timer.elapsed()));
-
-        // create new window
-        //this->next = makeView(V3D_env, resolution, lowresData,
-        //                                 cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
-        //                                 cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
-
-        // update CVolume with the request of the actual missing VOI along t and the current selected frame
-        //cVolume->setVoiT(voiT0m, voiT1m, window3D->timeSlider->value());
-
         // set the number of streaming steps
-        cVolume->setStreamingSteps(1);//itm::PMain::getInstance()->debugStreamingStepsSBox->value());
+        cVolume->setStreamingSteps(1);
 		
-		if (nextImg)
-			delete nextImg;
+		//if (nextImg)
+		//	delete nextImg;
 		
 		int nextImgVolV0 = cVolume->getVoiV0();
 		int nextImgVolV1 = cVolume->getVoiV1();
@@ -587,7 +442,9 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
 		int nextImgVolD1 = cVolume->getVoiD1();
 		int nextImgVolT0 = cVolume->getVoiT0();
 		int nextImgVolT1 = cVolume->getVoiT1();
-
+		
+		qDebug() << itm::strprintf("\n  Allocating nextImg with nextImgVolV0=%d nextImgVolV1=%d nextImgVolH0=%d nextImgVolH1=%d nextImgVolD0=%d nextImgVolD1=%d", nextImgVolV0, nextImgVolV1, nextImgVolH0, nextImgVolH1, nextImgVolD0, nextImgVolD1).c_str();
+		
 		try {
 			// Allocate memory for data to be loaded
 			int imgSize = (nextImgVolH1-nextImgVolH0)*(nextImgVolV1-nextImgVolV0)*(nextImgVolD1-nextImgVolD0)*nchannels*(nextImgVolT1-nextImgVolT0+1);
@@ -617,16 +474,6 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
         // load new data in a separate thread. When done, the "receiveData" method of the new window will be called
         cVolume->start();
 
-        // meanwhile, show the new window with preview data
-        //next->show();
-
-        // enter "waiting for 5D data" state, if possible
-        //next->setWaitingFor5D(true);
-
-        //if the resolution of the loaded voi is the same of the current one, this window will be closed
-        //if(resolution == volResIndex)
-        //    this->close();
-
 // unlock updateGraphicsInProgress mutex
 /**/itm::debug(itm::LEV3, itm::strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
 /**/ itm::updateGraphicsInProgress.unlock();
@@ -634,7 +481,6 @@ NeuronGame3DView::newViewer(int x, int y, int z,                            //ca
 	catch(itm::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-		itm::PMain::getInstance()->resetGUI();
 		loadingNextImg = false;
     }
 }
