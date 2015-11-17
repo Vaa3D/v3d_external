@@ -233,6 +233,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listAct.append(actVolColormap = new QAction("volume colormap", w));
             }
 
+            if (curImg)
+            {
+
 #ifdef _ALLOW_ADVANCE_PROCESSING_MENU_
             listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actMarkerCreate1 = new QAction("1-right-click to define a marker (Esc to finish)", w));
@@ -478,6 +481,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
 #endif
 #endif
+            }
         }
         //##############################################################################
 		// surface data
