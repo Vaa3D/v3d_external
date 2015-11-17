@@ -176,7 +176,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #endif //test_main_cpp
 	// right click popup menu
 	QList<QAction*> listAct;
-	QAction *act=0,
+    QAction *act=0, *actShowFullPath=0,
 			*actProperty=0, *actVolColormap=0, *actObjectManager=0, *actOff=0, *actColor=0, *actEditNameComment=0,
 			*actSaveSurfaceObj=0,
 			*actLockSceneEditObjGeometry=0, *actAddtoMarkerPool=0, *actClearMarkerPool=0,//ZJL
@@ -489,7 +489,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (IS_SURFACE())
 		{
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
-			listAct.append(actObjectManager = new QAction("object manager", w));
+            listAct.append(actShowFullPath = new QAction("Show full path", w));
+            listAct.append(actObjectManager = new QAction("object manager", w));
 			listAct.append(actOff   = new QAction("off", w));
 			listAct.append(actColor = new QAction("color", w));
 			//listAct.append(actEditNameComment = new QAction("name/comment", w));
@@ -775,6 +776,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//if (w)  w->annotationDialog(names[0], names[1], names[2]);
 		editSurfaceObjAnnotation(names[0], names[1], names[2]); // directly call
 	}
+    else if (act == actShowFullPath)
+    {
+        v3d_msg(QString("The full path=[").append(w->data_title).append("]"));
+    }
 	else if (act == actVolColormap)
 	{
 		if (w)  w->volumeColormapDialog();
