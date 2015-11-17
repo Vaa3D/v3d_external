@@ -86,7 +86,6 @@ public:
     void setV3DDefaultModeCheck(bool checkState);
     void setNeuronAnnotatorModeCheck(bool checkState);
 #endif
-    void handleCoordinatedCloseEvent(QCloseEvent *event);
 protected:
     void closeEvent(QCloseEvent *event);
 	void dragEnterEvent(QDragEnterEvent *event);
@@ -243,6 +242,11 @@ public slots:
 	void updateTriview();
 	void updateTriviewWindow(); // trigger a signal triviewUpdateTriggered
 	void updateRunPlugin();
+
+    void handleCoordinatedCloseEvent_real(); //move down here, PHC 20151117
+    void handleCoordinatedCloseEvent(QCloseEvent *event); //move down here, PHC 20151117
+
+
 // April-26-2011 YuY
 public:
 	void setBooleanCLplugin(bool cl_plugininput);

@@ -482,16 +482,27 @@ void MainWindow::triggerRunPlugin()
 {
     emit imageLoaded2Plugin();
 }
-void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
+void MainWindow::handleCoordinatedCloseEvent_real() {
     // qDebug("***vaa3d: MainWindow::closeEvent");
     writeSettings(); //added on 090501 to save setting (default preferences)
-    foreach (V3dR_MainWindow* p3DView, list_3Dview_win) p3DView->close(); //090812 RZC
+    foreach (V3dR_MainWindow* p3DView, list_3Dview_win)
+    {
+        if (p3DView)
+        {
+            p3DView->postClose(); //151117. PHC
+//        v3d_msg("haha");
+        }
+    }
     //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
 #ifdef USE_Qt5
     workspace->closeAllSubWindows();
 #else
     workspace->closeAllWindows();
 #endif
+}
+void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event)
+{
+    handleCoordinatedCloseEvent_real();
     if (activeMdiChild())
     {
         event->ignore();
@@ -2267,8 +2278,12 @@ void MainWindow::createActions()
             workspace, SLOT(closeActiveWindow()));
     closeAllAct = new QAction(tr("Close &All"), this);
     closeAllAct->setStatusTip(tr("Close all the windows"));
-    connect(closeAllAct, SIGNAL(triggered()),
-            workspace, SLOT(closeAllWindows()));
+
+
+//    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
+    connect(closeAllAct, SIGNAL(triggered()), this, SLOT(handleCoordinatedCloseEvent_real()));
+
+
     tileAct = new QAction(tr("&Tile"), this);
     tileAct->setStatusTip(tr("Tile the windows"));
     connect(tileAct, SIGNAL(triggered()), workspace, SLOT(tile()));
