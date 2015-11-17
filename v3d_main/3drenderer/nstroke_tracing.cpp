@@ -1328,7 +1328,15 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;
-     if (w) curImg = v3dr_getImage4d(_idep);
+     if (w)
+     {
+         curImg = v3dr_getImage4d(_idep);
+         if (!curImg)
+         {
+             v3d_msg("The original tri-view data has been removed. Thus this function is disabled.");
+             return -1;
+         }
+     }
 
 #ifndef test_main_cpp
 	MainWindow* V3Dmainwindow = 0;
