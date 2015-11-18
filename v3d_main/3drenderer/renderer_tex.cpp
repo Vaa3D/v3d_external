@@ -553,6 +553,28 @@ void Renderer_gl1::paint()
 		blendTrack();
 	}
 
+    //always draw some background text by PHC 20151117
+
+    if (1)
+    {
+        //draw in the center of the display, - disabled for now as it might be disturbing for viewing. PHC 20151117
+//        float D = (BB.Dmax());
+//        XYZ A0 = BB.Vabsmin();
+//        glColor3f(0.7, 0.7, 0.7);
+        //drawString(A0.x+BB.Dx()/2, A0.y+BB.Dy()/2, A0.z+BB.Dz()/2, "vaa3d.org", 0, 50);
+
+        //draw at the corner
+        glPushMatrix(); //============================================== {
+
+        drawVaa3DInfo(16);
+
+        glPopMatrix(); //========================================================= }
+    }
+
+
+
+
+
 	return;
 }
 

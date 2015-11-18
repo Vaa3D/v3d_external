@@ -96,7 +96,7 @@ public:
 
 	bool hasError() {return b_error;}
 	void makeCurrent(); //ensure right-GL-context when resize-view, animate, mouse-drop, delete-object, select-object etc. across multiple views, 081105
-        void drawString(float x, float y, float z, const char* text, int shadow=0);
+        void drawString(float x, float y, float z, const char* text, int shadow=0, int fontsize=0);
 	bool beStill();
 
 public:
@@ -149,7 +149,8 @@ public:
 	virtual void setBoundingBoxSpace(BoundingBox BB);
 	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
 
-	virtual void drawScaleBar(float AlineWidth=3);
+    virtual void drawVaa3DInfo(int fontsize=30);
+    virtual void drawScaleBar(float AlineWidth=3);
 
 	virtual void updateVolCutRange();
 	virtual void updateSurfClipRange();
