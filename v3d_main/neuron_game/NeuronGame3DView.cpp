@@ -21,7 +21,7 @@ NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, 
 {
 	nextImg = 0;
 	loadingNextImg = false;
-
+	
 	contrastSlider = new QScrollBar(Qt::Vertical);
 	contrastSlider->setRange(-50, 50);
 	contrastSlider->setSingleStep(1);
@@ -38,6 +38,7 @@ teramanager::CViewer* NeuronGame3DView::makeView(V3DPluginCallback2 *_V3D_env, i
 	//curr_renderer->finishEditingNeuronTree();
 	NeuronGame3DView* neuronView = new NeuronGame3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 		_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID);
+	// TODO: move this to somewhere useful
 	if (teramanager::PMain::getInstance()->annotationsPathLRU == "")
 		teramanager::PMain::getInstance()->annotationsPathLRU = "./temp.ano";
 	teramanager::PMain::getInstance()->saveAnnotations();
@@ -48,7 +49,28 @@ bool NeuronGame3DView::eventFilter(QObject *object, QEvent *event)
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	QKeyEvent* key_evt;
-	if (event->type() == QEvent::KeyPress) // intercept keypress events
+	//updating zoom factor history
+	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
+	{
+		//zoomHistoryPushBack(view3DWidget->zoom());
+		bool res = teramanager::CViewer::eventFilter(object, event);
+		if (!loadingNextImg &&
+			isZoomDerivativeNeg() &&                                                //zoom derivative is negative
+			view3DWidget->zoom() < itm::PMain::getInstance()->zoomOutSens->value()) //zoom-out threshold reached
+		{
+			qDebug() << itm::strprintf("zooming out").c_str();
+			CViewInfo* nextResolutionLevelDown = 0;
+			while (lowerResViews.length() > 0 && !nextResolutionLevelDown)
+				nextResolutionLevelDown = lowerResViews.takeLast();
+			if (nextResolutionLevelDown)
+			{
+				loadingNextImg = true;
+				// xxxx
+			}
+		}
+		return res;
+	}
+	else if (event->type() == QEvent::KeyPress) // intercept keypress events
 	{
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
@@ -214,56 +236,47 @@ void NeuronGame3DView::receiveData(
             {
                 // disconnect from data producer
                 disconnect(cVolume, SIGNAL(sendData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)));
+
+				// store the previous image4D data
+				Image4DSimple* prevImg = new Image4DSimple();
+				// TODO: We're only loading the imgData, we need to update the other params when new data is loaded?
+				prevImg->setData(imgData,
+								 view3DWidget->getiDrawExternalParameter()->image4d->getXDim(),
+								 view3DWidget->getiDrawExternalParameter()->image4d->getYDim(),
+								 view3DWidget->getiDrawExternalParameter()->image4d->getCDim(),
+								 view3DWidget->getiDrawExternalParameter()->image4d->getZDim(),
+								 view3DWidget->getiDrawExternalParameter()->image4d->getDatatype());
+				prevImg->setTDim(view3DWidget->getiDrawExternalParameter()->image4d->getTDim());
+				prevImg->setTimePackType(view3DWidget->getiDrawExternalParameter()->image4d->getTimePackType());
+				prevImg->setRezX(view3DWidget->getiDrawExternalParameter()->image4d->getRezX());
+				prevImg->setRezY(view3DWidget->getiDrawExternalParameter()->image4d->getRezY());
+				prevImg->setRezZ(view3DWidget->getiDrawExternalParameter()->image4d->getRezZ());
+				prevImg->setOriginX(view3DWidget->getiDrawExternalParameter()->image4d->getOriginX());
+				prevImg->setOriginY(view3DWidget->getiDrawExternalParameter()->image4d->getOriginY());
+				prevImg->setOriginZ(view3DWidget->getiDrawExternalParameter()->image4d->getOriginZ());
+				prevImg->setValidZSliceNum(view3DWidget->getiDrawExternalParameter()->image4d->getValidZSliceNum());
+				CViewInfo* prevView = new CViewInfo(volResIndex, prevImg, volV0, volV1, volH0, volH1, volD0, volD1, volT0, volT1, nchannels, slidingViewerBlockID, view3DWidget->zoom());
 				
-				// Update viewer's data now that new res is loaded
-				volH0 = nextImgVolH0;
-				volH1 = nextImgVolH1;
-				volV0 = nextImgVolV0;
-				volV1 = nextImgVolV1;
-				volD0 = nextImgVolD0;
-				volD1 = nextImgVolD1;
-				volT0 = nextImgVolT0;
-				volT1 = nextImgVolT1;
-				int prevRes = volResIndex;
-				volResIndex = cVolume->getVoiResIndex();
-				// TODO: store imgData to be used when we zoom back out?
-				imgData = nextImg->getRawData();
-
-                // exit from "waiting for 5D data" state, if previously set
-                if(this->waitingFor5D)
-                    this->setWaitingFor5D(false);
-
-                // reset the cursor
+				// If there are higher res images, discard them here
+				while(lowerResViews.length() > volResIndex)
+				{
+					CViewInfo* viewToDispose = lowerResViews.takeLast();
+					delete viewToDispose;
+				}
+				// If we skipped one/more resolutions, store as blank pointers
+				while(lowerResViews.length() < volResIndex) lowerResViews.append(0);
+				// Store prev view such that lowerResViews[volResIndex] = prev view info
+				lowerResViews.append(prevView);
+				
+				// Load the new data and view parameters into this window (this used to be done in separate windows)
+				loadNewResolutionData(cVolume->getVoiResIndex(), nextImg, nextImgVolV0, nextImgVolV1, nextImgVolH0, nextImgVolH1, nextImgVolD0, nextImgVolD1, nextImgVolT0, nextImgVolT1);
+				
+				// reset the cursor
                 window3D->setCursor(Qt::ArrowCursor);
                 view3DWidget->setCursor(Qt::ArrowCursor);
 
-				unsigned char* dataPtr = nextImg->getRawData();
-				V3D_env->setImage(window, nextImg); // this clears the rawDataPointer for nextImg
-				delete nextImg; // TODO: ?
 				
-				// create 3D view window with postponed show()
-				XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
-				view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
-				// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
-				// set above as this is the data being updated.
-				view3DWidget->updateImageData();
-				
-				float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
-				float curZoom = (float)view3DWidget->zoom();
-				view3DWidget->setZoom(curZoom/ratio);
-
-				itm::PMain* pMain = itm::PMain::getInstance();
-
-				// updating reference system
-				if(!pMain->isPRactive())
-					pMain->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
-				this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
-				Vaa3D_rotationchanged(0);
-
-				// update curve aspect
-				pMain->curveAspectChanged();
-
-                //current window is now ready for user input
+				//current window is now ready for user input
                 isReady = true;
 				loadingNextImg = false;
             }
@@ -278,22 +291,76 @@ void NeuronGame3DView::receiveData(
     /**/itm::debug(itm::LEV3, "method terminated", __itm__current__function__);
 }
 
+/**********************************************************************************
+* Loads the new resolution data into this window, this used to be done with 
+* separate CViewer windows
+***********************************************************************************/
+void NeuronGame3DView::loadNewResolutionData(	int _resIndex,
+												Image4DSimple *_img,
+												int _volV0, int _volV1,
+												int _volH0, int _volH1,
+												int _volD0, int _volD1,
+												int _volT0, int _volT1	) {
+	// Update viewer's data now that new res is loaded
+	volV0 = _volV0;
+	volV1 = _volV1;				
+	volH0 = _volH0;
+	volH1 = _volH1;
+	volD0 = _volD0;
+	volD1 = _volD1;
+	volT0 = _volT0;
+	volT1 = _volT1;
+
+	// Now update renderer's current image to reflect the newly loaded data
+	int prevRes = volResIndex;
+	volResIndex = _resIndex;
+	imgData = _img->getRawData();
+
+	// exit from "waiting for 5D data" state, if previously set
+	if(this->waitingFor5D)
+		this->setWaitingFor5D(false);
+
+	unsigned char* dataPtr = nextImg->getRawData();
+	V3D_env->setImage(window, nextImg); // this clears the rawDataPointer for nextImg
+	delete nextImg;
+
+	// create 3D view window with postponed show()
+	XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
+	view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
+	// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
+	// set above as this is the data being updated.
+	view3DWidget->updateImageData();
+
+	float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
+	float curZoom = (float)view3DWidget->zoom();
+	view3DWidget->setZoom(curZoom/ratio);
+
+	itm::PMain* pMain = itm::PMain::getInstance();
+
+	// updating reference system
+	if(!pMain->isPRactive())
+		pMain->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+	this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+	Vaa3D_rotationchanged(0);
+
+	// update curve aspect
+	pMain->curveAspectChanged();
+}
 
 /**********************************************************************************
 * Generates a new view using the given coordinates.
 * Called by the current <CViewer> when the user zooms in and the higher res-
 * lution has to be loaded.
 ***********************************************************************************/
-void
-NeuronGame3DView::newViewer(int x, int y, int z,                            //can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
-    int resolution,                                 //resolution index of the view requested
-    int t0, int t1,                                 //time frames selection
-    bool fromVaa3Dcoordinates /*= false*/,          //if coordinates were obtained from Vaa3D
-    int dx/*=-1*/, int dy/*=-1*/, int dz/*=-1*/,    //VOI [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
-    int x0/*=-1*/, int y0/*=-1*/, int z0/*=-1*/,    //VOI [x0, x), [y0, y), [z0, z), [t0, t1]
-    bool auto_crop /* = true */,                    //whether to crop the VOI to the max dims
-    bool scale_coords /* = true */,                 //whether to scale VOI coords to the target res
-    int sliding_viewer_block_ID /* = -1 */)         //block ID in "Sliding viewer" mode
+void NeuronGame3DView::newViewer(int x, int y, int z,//can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
+    int resolution,                                  //resolution index of the view requested
+    int t0, int t1,                                  //time frames selection
+    bool fromVaa3Dcoordinates /*= false*/,           //if coordinates were obtained from Vaa3D
+    int dx/*=-1*/, int dy/*=-1*/, int dz/*=-1*/,     //VOI [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
+    int x0/*=-1*/, int y0/*=-1*/, int z0/*=-1*/,     //VOI [x0, x), [y0, y), [z0, z), [t0, t1]
+    bool auto_crop /* = true */,                     //whether to crop the VOI to the max dims
+    bool scale_coords /* = true */,                  //whether to scale VOI coords to the target res
+    int sliding_viewer_block_ID /* = -1 */)          //block ID in "Sliding viewer" mode
 
 {
 	//qDebug() << itm::strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",

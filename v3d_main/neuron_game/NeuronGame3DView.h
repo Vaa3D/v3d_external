@@ -8,7 +8,49 @@ namespace neurongame
 {
 	class NeuronGameUI;
 	class NeuronGame3DView;
+	struct CViewInfo;
 }
+
+struct neurongame::CViewInfo
+{
+	int resIndex;
+	Image4DSimple *img;
+	int volV0, volV1;
+	int volH0, volH1;
+	int volD0, volD1;
+	int volT0, volT1;
+	int nchannels;
+	int slidingViewerBlockID;
+	int zoomThreshold;
+
+	CViewInfo(	int _resIndex,
+				Image4DSimple *_img,
+				int _volV0, int _volV1,
+				int _volH0, int _volH1,
+				int _volD0, int _volD1,
+				int _volT0, int _volT1,
+				int _nchannels,
+				int _slidingViewerBlockID,
+				int _zoomThreshold	) {
+		resIndex = _resIndex;
+		img = _img;
+		volV0 = _volV0;
+		volV1 = _volV1;
+		volH0 = _volH0;
+		volH1 = _volH1;
+		volD0 = _volD0;
+		volD1 = _volD1;
+		volT0 = _volT0;
+		volT1 = _volT1;
+		nchannels = _nchannels;
+		slidingViewerBlockID = _slidingViewerBlockID;
+		zoomThreshold = _zoomThreshold;
+	}
+	~CViewInfo() {
+		if (img) img->deleteRawDataAndSetPointerToNull();
+		delete img;
+	}
+};
 
 class neurongame::NeuronGame3DView : protected teramanager::CViewer
 {
@@ -23,8 +65,15 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
 		virtual teramanager::CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
+		void loadNewResolutionData(	int _resIndex,
+									Image4DSimple *_img,
+									int _volV0, int _volV1,
+									int _volH0, int _volH1,
+									int _volD0, int _volD1,
+									int _volT0, int _volT1	);
 		static int contrastValue;
 		Image4DSimple* nextImg;
+		QList<CViewInfo*> lowerResViews;
 		bool loadingNextImg;
 
 	public:
