@@ -138,7 +138,7 @@ class teramanager::CViewer : public QWidget
         * This is based on the Vaa3D 3D point selection with one mouse click.
         ***********************************************************************************/
         XYZ getRenderer3DPoint(int x, int y) throw (itm::RuntimeException);
-
+		
         /**********************************************************************************
         * Syncronizes widgets from <src> to <dst>
         ***********************************************************************************/
@@ -348,6 +348,8 @@ class teramanager::CViewer : public QWidget
                    y < 0  || y >= volV1-volV0 ||
                    z < 0  || z >= volD1-volD0;
         }
+		
+		void processWheelEvt(QWheelEvent* wheelEvt);
 
         /**********************************************************************************
         * Change current Vaa3D's rendered cursor

@@ -575,7 +575,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             QWheelEvent* wheelEvt = (QWheelEvent*)event;
 			lastWheelFocus = getRenderer3DPoint(wheelEvt->x(), wheelEvt->y());
 			useLastWheelFocus = true;
-            myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
+            processWheelEvt(wheelEvt);
             return true;
         }
 
@@ -724,6 +724,11 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         QMessageBox::critical(PMain::getInstance(),QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         return false;
     }
+}
+
+void CViewer::processWheelEvt(QWheelEvent* wheelEvt)
+{
+	myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
 }
 
 /*********************************************************************************

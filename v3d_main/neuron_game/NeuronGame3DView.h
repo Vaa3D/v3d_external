@@ -47,7 +47,7 @@ struct neurongame::CViewInfo
 		zoomThreshold = _zoomThreshold;
 	}
 	~CViewInfo() {
-		if (img) img->deleteRawDataAndSetPointerToNull();
+		if (img) img->setRawDataPointerToNull(); // don't clean underlying image data
 		delete img;
 	}
 };
