@@ -12,6 +12,12 @@ v3d_main/v3d/Makefile*
 v3d_main/v3d/ipch
 v3d_main/v3d/release
 v3d_main/v3d/debug
+v3d_main/v3d/released_plugins/v3d_plugins/
+released_plugins_more/v3d_plugins/
+v3d_main/common_lib/include/
+v3d_main/v3d/released_plugins/special_v3d_plugins/
+released_plugins_more/
+v3d_main/v3d/x64/
 
 # Windows output files
 *.obj
