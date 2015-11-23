@@ -57,7 +57,6 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 	Q_OBJECT
 
 	protected:
-		//static NeuronGame3DView* neuronView;
 		/**************************************************************************************
 		* Constructor needs to be protected because inherits from protected CViewer constructor
 		***************************************************************************************/
@@ -65,6 +64,7 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
 		virtual teramanager::CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
+		virtual void onNeuronEdit();
 		void loadNewResolutionData(	int _resIndex,
 									Image4DSimple *_img,
 									int _volV0, int _volV1,
@@ -94,7 +94,7 @@ class neurongame::NeuronGame3DView : protected teramanager::CViewer
 
 		virtual void show();
 		virtual bool eventFilter(QObject *object, QEvent *event);
-
+		
 		friend class NeuronGameUI;
 		
 		QScrollBar *contrastSlider;

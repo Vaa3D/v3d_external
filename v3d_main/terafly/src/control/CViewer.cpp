@@ -2533,6 +2533,16 @@ void CViewer::setZoom(int z)
 }
 
 /**********************************************************************************
+* When neuron tree is edited, add to undo stack
+***********************************************************************************/
+void CViewer::onNeuronEdit()
+{
+	undoStack.beginMacro("vaa3d action");
+    undoStack.push(new QUndoVaa3DNeuron(this));
+    undoStack.endMacro();
+}
+
+/**********************************************************************************
 * Syncronizes widgets from <src> to <dst>
 ***********************************************************************************/
 void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
