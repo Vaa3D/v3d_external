@@ -1217,11 +1217,18 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
     fprintf(f, "#n type x y z radius parent\n");
-        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
-            if((*i)->type == 1) //selecting NeuronSWC
-                write_annotations_helper(f, (*i), anosAdded, old2new, nextID);
-				//fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1);
-
+	//first pass: gather any root nodes that are subtype 1 (soma) before any others
+	for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+		if(	((*i)->subtype == 1) && //soma
+			!(*i)->parent &&		//root node
+			((*i)->type == 1)	)	//NeuronSWC
+            write_annotations_helper(f, (*i), anosAdded, old2new, nextID);
+	//second pass: output rest of nodes recursively, putting parents ahead
+	//of children and incrementing the node id as we go
+    for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+        if((*i)->type == 1) //selecting NeuronSWC
+            write_annotations_helper(f, (*i), anosAdded, old2new, nextID);
+	
     //file closing
     fclose(f);
 
