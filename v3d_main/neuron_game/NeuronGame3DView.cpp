@@ -326,6 +326,8 @@ void NeuronGame3DView::loadNewResolutionData(	int _resIndex,
 												int _volT0, int _volT1	) {
 	qDebug() << itm::strprintf("\n  Loading new resolution data resolution=%d volV0=%d volV1=%d volH0=%d volH1=%d volD0=%d volD1=%d", _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1).c_str();
 	
+	itm::CViewer::storeAnnotations();
+
 	// Update viewer's data now that new res is loaded
 	volV0 = _volV0;
 	volV1 = _volV1;				
@@ -353,6 +355,8 @@ void NeuronGame3DView::loadNewResolutionData(	int _resIndex,
 	// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
 	// set above as this is the data being updated.
 	view3DWidget->updateImageData();
+	
+	itm::CViewer::loadAnnotations();
 
 	float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
 	float curZoom = (float)view3DWidget->zoom();
