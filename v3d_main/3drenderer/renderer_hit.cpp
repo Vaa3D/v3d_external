@@ -2065,13 +2065,12 @@ void Renderer_gl1::endSelectMode()
 	listMarkerPos.clear();
 	b_ablation = false; //by Jianlong Zhou, 20120726
 	b_lineAblation = false; //by Jianlong Zhou, 20120801
-#ifndef FORCE_BBOX_MODE
+
 	if (selectMode != smObject)
 	{
 		selectMode = smObject;
 		if (w) { w->setCursor(oldCursor); }
 	}
-#endif
 }
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
