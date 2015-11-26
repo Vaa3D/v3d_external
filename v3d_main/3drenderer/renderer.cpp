@@ -497,7 +497,8 @@ void Renderer::drawVaa3DInfo(int fontsize)
         XYZ A1 = BB.V1();
 
         char str[100];
-        sprintf(str, "%s", "BigNeuron.org");
+        //sprintf(str, "%s", "BigNeuron.org");
+        sprintf(str, "%s", "vaa3d.org");
 
         drawString(A0.x + td, A0.y, A0.z, str, 0, fontsize);
 //        drawString(A0.x + td, A0.y + td, A0.z, "bigneuron.org", 0, fontsize);
