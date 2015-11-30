@@ -40,7 +40,6 @@
 #include "QHelpBox.h"
 #include "QGradientBar.h"
 #include "QGLRefSys.h"
-#include "../../hackathon/Mozak/Mozak3DView.h"
 
 class teramanager::PMain : public QWidget
 {
@@ -293,8 +292,7 @@ class teramanager::PMain : public QWidget
         friend class PAnoToolBar;
         friend class PDialogProofreading;
         friend class myV3dR_GLWidget;
-		friend class mozak::Mozak3DView;
-
+		
 		string annotationsPathLRU;      //last recently used (LRU) annotations filepath
 
         //help texts

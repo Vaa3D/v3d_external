@@ -8,12 +8,13 @@
 
 class mozak::MozakUI : public teramanager::PMain
 {
-	protected:
+	public:
 		MozakUI(){}
 		~MozakUI(){}
 		MozakUI(V3DPluginCallback2 *callback, QWidget *parent);
 		static void createInstance(V3DPluginCallback2 *callback, QWidget *parent);
-	public:
+		static MozakUI* getMozakInstance();
+	//public:
 		friend class Mozak3DView;
 		static void init(V3d_PluginLoader *pl);
 		virtual void reset(); // override

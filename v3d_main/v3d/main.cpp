@@ -156,9 +156,7 @@ int main(int argc, char **argv)
 
                 if(!parser.i_v3d.hideV3D)
                 {
-#ifndef CGS_AUTOLAUNCH
                     mainWin->show();
-#endif
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
 #ifdef _ALLOW_WORKMODE_MENU_

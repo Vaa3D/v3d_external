@@ -48,10 +48,8 @@ private:
 
     static void activateMainWindowHelper(QMainWindow* qMainWindow) {
         if (qMainWindow!=0) {
-#ifdef CGS_AUTOLAUNCH
 			qMainWindow->resize(QSize(0, 0));
 			qMainWindow->hide();
-#else
 			theApp->installEventFilter(qMainWindow);
 			QSettings settings("HHMI", "Vaa3D");
             QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
@@ -59,7 +57,6 @@ private:
             qMainWindow->move(windowPosition);
             qMainWindow->resize(windowSize);
             qMainWindow->show();
-#endif
         }
     }
 

@@ -1,7 +1,7 @@
 #include "MozakUI.h"
 #include "Mozak3DView.h"
+#include "v3d_application.h"
 #include "../terafly/src/control/CViewer.h"
-#include "../terafly/src/control/CPlugin.h"
 
 using namespace mozak;
 
@@ -21,6 +21,12 @@ void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
 		path = ""; // this will prompt for user to find path
 	uniqueInstance->openVolume(path);
 	uniqueInstance->hide();
+	V3dApplication::deactivateMainWindow();
+}
+
+MozakUI* MozakUI::getMozakInstance()
+{
+	return static_cast<MozakUI*>(uniqueInstance);
 }
 
 MozakUI::MozakUI(V3DPluginCallback2 *callback, QWidget *parent) : teramanager::PMain(callback, parent)

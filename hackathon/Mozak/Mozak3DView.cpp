@@ -1,15 +1,10 @@
 #include "Mozak3DView.h"
+#include "MozakUI.h"
 #include <math.h>
 #include "renderer_gl2.h"
-
-#include "../../terafly/src/control/CVolume.h"
-#include "../../terafly/src/presentation/PMain.h"
-
 #include "v3d_application.h"
-#include "../../terafly/src/control/CImageUtils.h"
-#include "./../terafly/src/control/COperation.h"
-#include "../../terafly/src/presentation/PAnoToolBar.h"
-#include "./../terafly/src/control/CAnnotations.h"
+#include "../terafly/src/control/CVolume.h"
+#include "../terafly/src/control/CImageUtils.h"
 
 using namespace mozak;
 
@@ -43,9 +38,10 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 void Mozak3DView::onNeuronEdit()
 {
 	teramanager::CViewer::onNeuronEdit();
-	if (teramanager::PMain::getInstance()->annotationsPathLRU == "")
-		teramanager::PMain::getInstance()->annotationsPathLRU = "./mozak.ano";
-	teramanager::PMain::getInstance()->saveAnnotations();
+	MozakUI* moz = MozakUI::getMozakInstance();
+	if (moz->annotationsPathLRU == "")
+		moz->annotationsPathLRU = "./mozak.ano";
+	moz->saveAnnotations();
 	makeTracedNeuronsEditable();
 }
 
@@ -362,7 +358,7 @@ void Mozak3DView::receiveData(
         }
 		catch(itm::RuntimeException &ex)
         {
-			QMessageBox::critical(itm::PMain::getInstance(),QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+			QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
 			isReady = true;
 			loadingNextImg = false;
         }
@@ -418,16 +414,15 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	if (ratio > 0.0f)
 		view3DWidget->setZoom(curZoom/ratio);
 
-	itm::PMain* pMain = itm::PMain::getInstance();
-	
+	MozakUI* moz = MozakUI::getMozakInstance();
 	// updating reference system
-	if(!pMain->isPRactive())
-		pMain->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+	if(!moz->isPRactive())
+		moz->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
 	this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
 	Vaa3D_rotationchanged(0);
 
 	// update curve aspect
-	pMain->curveAspectChanged();
+	moz->curveAspectChanged();
 }
 
 /**********************************************************************************
@@ -460,14 +455,14 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
     try
     {
         // set GUI to waiting state
-        itm::PMain& pMain = *(itm::PMain::getInstance());
-        pMain.progressBar->setEnabled(true);
-        pMain.progressBar->setMinimum(0);
-        pMain.progressBar->setMaximum(0);
-        pMain.statusBar->showMessage("Switching resolution...");
+        MozakUI* moz = MozakUI::getMozakInstance();
+        moz->progressBar->setEnabled(true);
+        moz->progressBar->setMinimum(0);
+        moz->progressBar->setMaximum(0);
+        moz->statusBar->showMessage("Switching resolution...");
         view3DWidget->setCursor(Qt::BusyCursor);
         window3D->setCursor(Qt::BusyCursor);
-        pMain.setCursor(Qt::BusyCursor);
+        moz->setCursor(Qt::BusyCursor);
 
         // scale VOI coordinates to the reference system of the target resolution
         if(scale_coords)
@@ -496,10 +491,10 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 		//							titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str();
 
         // adjust time size so as to use all the available frames set by the user
-        if(itm::CImport::instance()->is5D() && ((t1 - t0 +1) != pMain.Tdim_sbox->value()))
+        if(itm::CImport::instance()->is5D() && ((t1 - t0 +1) != moz->Tdim_sbox->value()))
         {
-            t1 = t0 + (pMain.Tdim_sbox->value()-1);
-            /**/itm::debug(itm::LEV1, itm::strprintf("mismatch between |[t0,t1]| (%d) and max T dims (%d), adjusting it to [%d,%d]", t1-t0+1, pMain.Tdim_sbox->value(), t0, t1).c_str(), __itm__current__function__);
+            t1 = t0 + (moz->Tdim_sbox->value()-1);
+            /**/itm::debug(itm::LEV1, itm::strprintf("mismatch between |[t0,t1]| (%d) and max T dims (%d), adjusting it to [%d,%d]", t1-t0+1, moz->Tdim_sbox->value(), t0, t1).c_str(), __itm__current__function__);
         }
 
 
@@ -510,49 +505,49 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
             if(dx != -1 && dy != -1 && dz != -1)
 			{
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, cropping bbox dims from (%d,%d,%d) t[%d,%d] to...", titleShort.c_str(),  dx, dy, dz, t0, t1).c_str(), __itm__current__function__);
-				dx = std::min(dx, itm::round(pMain.Hdim_sbox->value()/2.0f));
-                dy = std::min(dy, itm::round(pMain.Vdim_sbox->value()/2.0f));
-                dz = std::min(dz, itm::round(pMain.Ddim_sbox->value()/2.0f));
+				dx = std::min(dx, itm::round(moz->Hdim_sbox->value()/2.0f));
+                dy = std::min(dy, itm::round(moz->Vdim_sbox->value()/2.0f));
+                dz = std::min(dz, itm::round(moz->Ddim_sbox->value()/2.0f));
                 t0 = std::max(0, std::min(t0,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
-                if(itm::CImport::instance()->is5D() && (t1-t0+1 > pMain.Tdim_sbox->value()))
-                    t1 = t0 + pMain.Tdim_sbox->value();
+                if(itm::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
+                    t1 = t0 + moz->Tdim_sbox->value();
                 if(itm::CImport::instance()->is5D() && (t1 >= itm::CImport::instance()->getTDim()-1))
-                    t0 = t1 - (pMain.Tdim_sbox->value()-1);
+                    t0 = t1 - (moz->Tdim_sbox->value()-1);
                 if(itm::CImport::instance()->is5D() && (t0 == 0))
-                    t1 = pMain.Tdim_sbox->value()-1;
+                    t1 = moz->Tdim_sbox->value()-1;
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, ...to (%d,%d,%d)", titleShort.c_str(),  dx, dy, dz).c_str(), __itm__current__function__);
             }
             // modality #2: VOI = [x0, x), [y0, y), [z0, z), [t0, t1]
             else
             {
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, cropping bbox dims from [%d,%d) [%d,%d) [%d,%d) [%d,%d] to...", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
-                if(x - x0 > pMain.Hdim_sbox->value())
+                if(x - x0 > moz->Hdim_sbox->value())
                 {
-                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
+                    float margin = ( (x - x0) - moz->Hdim_sbox->value() )/2.0f ;
                     x  = round(x  - margin);
                     x0 = round(x0 + margin);
                 }
-                if(y - y0 > pMain.Vdim_sbox->value())
+                if(y - y0 > moz->Vdim_sbox->value())
                 {
-                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
+                    float margin = ( (y - y0) - moz->Vdim_sbox->value() )/2.0f ;
                     y  = round(y  - margin);
                     y0 = round(y0 + margin);
                 }
-                if(z - z0 > pMain.Ddim_sbox->value())
+                if(z - z0 > moz->Ddim_sbox->value())
                 {
-                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
+                    float margin = ( (z - z0) - moz->Ddim_sbox->value() )/2.0f ;
                     z  = round(z  - margin);
                     z0 = round(z0 + margin);
                 }
                 t0 = std::max(0, std::min(t0,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
-                if(itm::CImport::instance()->is5D() && (t1-t0+1 > pMain.Tdim_sbox->value()))
-                    t1 = t0 + pMain.Tdim_sbox->value();
+                if(itm::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
+                    t1 = t0 + moz->Tdim_sbox->value();
                 if(itm::CImport::instance()->is5D() && (t1 >= itm::CImport::instance()->getTDim()-1))
-                    t0 = t1 - (pMain.Tdim_sbox->value()-1);
+                    t0 = t1 - (moz->Tdim_sbox->value()-1);
                 if(itm::CImport::instance()->is5D() && (t0 == 0))
-                    t1 = pMain.Tdim_sbox->value()-1;
+                    t1 = moz->Tdim_sbox->value()-1;
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, ...to [%d,%d) [%d,%d) [%d,%d) [%d,%d]", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
             }
 			//qDebug() << itm::strprintf("\n  After auto_crop:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
@@ -615,7 +610,7 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 /**/itm::debug(itm::LEV3, itm::strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
 
         // update status bar message
-        pMain.statusBar->showMessage("Loading image data...");
+        moz->statusBar->showMessage("Loading image data...");
 
         // load new data in a separate thread. When done, the "receiveData" method of the new window will be called
         cVolume->start();
