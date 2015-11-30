@@ -46,6 +46,18 @@ void Mozak3DView::onNeuronEdit()
 	if (teramanager::PMain::getInstance()->annotationsPathLRU == "")
 		teramanager::PMain::getInstance()->annotationsPathLRU = "./mozak.ano";
 	teramanager::PMain::getInstance()->saveAnnotations();
+	makeTracedNeuronsEditable();
+}
+
+void Mozak3DView::makeTracedNeuronsEditable()
+{
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	int sz = curr_renderer->listNeuronTree.size();
+	for (int i=0; i<sz; i++)
+	{
+		curr_renderer->listNeuronTree[i].editable = true;
+	}
+	curr_renderer->paint();
 }
 
 bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
@@ -117,9 +129,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				newMode = Renderer::smBreakMultiNeurons;
                 bAddCurve = false;
 				break;
+			/* This is still crashing, disable for now:
             case Qt::Key_E:
                 newMode = Renderer::smCurveEditExtend;
                 break;
+			*/
 			default:
 #ifdef FORCE_BBOX_MODE
 				newMode = Renderer::smCurveTiltedBB_fm_sbbox;
@@ -184,7 +198,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 
 void Mozak3DView::show()
 {
-	this->title = "Neuron Game 3D View";
+	this->title = "Mozak";
 	teramanager::CViewer::show();
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 }
@@ -195,7 +209,7 @@ void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 
 	// This performs the same functionality as colormap Red->Gray and then
 	// adjusting the alpha, but with only one parameter to adjust
 	contrastValue = con;
-	float exp_val = pow(10.0f, con/50.0f); // map from -100->100 to 100->0.01
+	float exp_val = pow(10.0f, con/25.0f); // map from -100->100 to 1000->0.001
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	for(int j=0; j<255; j++)
 	{
@@ -397,6 +411,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// set above as this is the data being updated.
 	view3DWidget->updateImageData();
 	itm::CViewer::loadAnnotations();
+	makeTracedNeuronsEditable();
 
 	float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
 	float curZoom = (float)view3DWidget->zoom();
