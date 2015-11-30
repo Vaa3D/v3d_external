@@ -1,9 +1,7 @@
 #include "PAnoToolBar.h"
 #include "PMain.h"
 #include "../control/CViewer.h"
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
+
 using namespace teramanager;
 
 PAnoToolBar* PAnoToolBar::uniqueInstance = 0;

@@ -67,9 +67,6 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #ifdef _ALLOW_TERAFLY_MENU_
 #include "../terafly/src/control/CPlugin.h"
 #endif
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
 
 #include "../neuron_game/NeuronGameUI.h";
 

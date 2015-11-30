@@ -47,9 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <GL/glu.h>
 #endif
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Renderer
 // to create:

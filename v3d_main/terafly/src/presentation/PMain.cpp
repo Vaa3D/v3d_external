@@ -49,9 +49,6 @@
 #include <QtGlobal>
 #include <cmath>
 #include "../core/imagemanager/TiledMCVolume.h"
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
 
 using namespace teramanager;
 using namespace iim;

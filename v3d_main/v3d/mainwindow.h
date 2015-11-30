@@ -52,9 +52,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
 #include "v3d_commandlineparser.h"
 #include "pluginfunchandler.h"
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
 #ifdef __V3DWSDEVELOP__
 #include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY

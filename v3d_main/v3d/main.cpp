@@ -58,9 +58,6 @@ Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsist
 #include <vector>
 
 #include "mainwindow.h"
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
 #include "v3d_application.h"
 
 #include <string>

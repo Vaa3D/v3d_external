@@ -51,9 +51,6 @@
 #include "QUndoMarkerDelete.h"
 #include "QUndoMarkerDeleteROI.h"
 #include "v3d_application.h"
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
 
 using namespace itm;
 

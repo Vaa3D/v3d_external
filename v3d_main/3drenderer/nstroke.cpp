@@ -35,9 +35,6 @@
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"
 #include "v3d_application.h"
-#ifndef __CGS_SETTINGS__
-#include "CgsSettings.h"
-#endif
 
 #ifndef test_main_cpp
 
