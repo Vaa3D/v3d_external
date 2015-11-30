@@ -1,4 +1,4 @@
-#include "NeuronGame3DView.h"
+#include "Mozak3DView.h"
 #include <math.h>
 #include "renderer_gl2.h"
 
@@ -10,11 +10,12 @@
 #include "../../terafly/src/control/CImageUtils.h"
 #include "./../terafly/src/control/COperation.h"
 #include "../../terafly/src/presentation/PAnoToolBar.h"
-using namespace neurongame;
 
-int NeuronGame3DView::contrastValue = 0;
+using namespace mozak;
 
-NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+int Mozak3DView::contrastValue = 0;
+
+Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID)
 		: teramanager::CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
@@ -31,15 +32,15 @@ NeuronGame3DView::NeuronGame3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, 
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
-teramanager::CViewer* NeuronGame3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
 	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID)
 {
-	NeuronGame3DView* neuronView = new NeuronGame3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
+	Mozak3DView* neuronView = new Mozak3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 		_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID);
 	return neuronView;
 }
 
-void NeuronGame3DView::onNeuronEdit()
+void Mozak3DView::onNeuronEdit()
 {
 	teramanager::CViewer::onNeuronEdit();
 	if (teramanager::PMain::getInstance()->annotationsPathLRU == "")
@@ -47,7 +48,7 @@ void NeuronGame3DView::onNeuronEdit()
 	teramanager::PMain::getInstance()->saveAnnotations();
 }
 
-bool NeuronGame3DView::eventFilter(QObject *object, QEvent *event)
+bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 {
 	if(!isReady)
 		return false;
@@ -141,7 +142,7 @@ bool NeuronGame3DView::eventFilter(QObject *object, QEvent *event)
 	return false;
 }
 
-void NeuronGame3DView::show()
+void Mozak3DView::show()
 {
 	this->title = "Neuron Game 3D View";
 	teramanager::CViewer::show();
@@ -149,7 +150,7 @@ void NeuronGame3DView::show()
 }
 
 
-void NeuronGame3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 (dark) */
+void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 (dark) */
 {
 	// This performs the same functionality as colormap Red->Gray and then
 	// adjusting the alpha, but with only one parameter to adjust
@@ -197,7 +198,7 @@ void NeuronGame3DView::updateContrast(int con) /* contrast from -100 (bright) to
 /*********************************************************************************
 * Receive data (and metadata) from <CVolume> throughout the loading process
 **********************************************************************************/
-void NeuronGame3DView::receiveData(
+void Mozak3DView::receiveData(
         itm::uint8* data,                               // data (any dimension)
         itm::integer_array data_s,                           // data start coordinates along X, Y, Z, C, t
         itm::integer_array data_c,                           // data count along X, Y, Z, C, t
@@ -318,7 +319,7 @@ void NeuronGame3DView::receiveData(
 * Loads the new resolution data into this window, this used to be done with 
 * separate CViewer windows
 ***********************************************************************************/
-void NeuronGame3DView::loadNewResolutionData(	int _resIndex,
+void Mozak3DView::loadNewResolutionData(	int _resIndex,
 												Image4DSimple *_img,
 												int _volV0, int _volV1,
 												int _volH0, int _volH1,
@@ -380,7 +381,7 @@ void NeuronGame3DView::loadNewResolutionData(	int _resIndex,
 * Called by the current <CViewer> when the user zooms in and the higher res-
 * lution has to be loaded.
 ***********************************************************************************/
-void NeuronGame3DView::newViewer(int x, int y, int z,//can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
+void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
     int resolution,                                  //resolution index of the view requested
     int t0, int t1,                                  //time frames selection
     bool fromVaa3Dcoordinates /*= false*/,           //if coordinates were obtained from Vaa3D
@@ -546,7 +547,7 @@ void NeuronGame3DView::newViewer(int x, int y, int z,//can be either the VOI's c
 			nextImg->setTDim(nextImgVolT1-nextImgVolT0+1);
 			nextImg->setTimePackType(TIME_PACK_C);
 		} catch (...) {
-			v3d_msg("Fail to allocate memory for nextImg in NeuronGame3DView::newViewer();\n");
+			v3d_msg("Fail to allocate memory for nextImg in Mozak3DView::newViewer();\n");
 			loadingNextImg = false;
 			return;
 		}

@@ -1,0 +1,5 @@
+To build Visual Studio project:
+
+In the Visual Studio x64 command prompt, navigate to the v3d_main/v3d directory, then run: qmake -tp vc ../../hackathon/Mozak/Mozak.pro
+
+Open the generated v3d_main/v3d/Mozak.vcproj file, if necessary open the Configuration Manager and create a new Solution Platform and project platforms for x64 by copying the settings from Win32.

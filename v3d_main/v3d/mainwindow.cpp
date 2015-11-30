@@ -68,7 +68,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "../terafly/src/control/CPlugin.h"
 #endif
 
-#include "../neuron_game/NeuronGameUI.h";
+#include "../../hackathon/Mozak/MozakUI.h";
 
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
@@ -2893,7 +2893,7 @@ void MainWindow::func_open_neuron_game()
 {
 	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
     qRegisterMetaType<itm::integer_array>("itm::integer_array");
-	neurongame::NeuronGameUI::init(pl);
+	mozak::MozakUI::init(pl);
 }
 #endif
 //class V3D_PlugIn_Interface

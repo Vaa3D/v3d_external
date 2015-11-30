@@ -3,7 +3,7 @@ TEMPLATE	= lib
 CONFIG	+= qt plugin warn_off
 #CONFIG	+= x86_64
 
-#DEFINES += MOZAK_STANDALONE
+CONFIG += MOZAK_STANDALONE
 
 MOZAK_STANDALONE {
 	# For the auto-launching standalone version in CGS git repo: ./hackathon/mozak
@@ -18,13 +18,14 @@ MOZAK_STANDALONE {
 } else {
 	# Mozak as a Vaa3D plugin in Vaa3D tools SVN: vaa3d_tools/hackathon/mozak
 	VAA3DPATH = ../../../v3d_external
+	
 	SOURCES	+= $$VAA3DPATH/v3d_main/basic_c_fun/v3d_message.cpp
+	INCLUDEPATH	+= $$VAA3DPATH/v3d_main/basic_c_fun
 
 	TARGET	= $$qtLibraryTarget(Mozak)
 	DESTDIR	= $$VAA3DPATH/bin/plugins/Mozak/
 }
 
-INCLUDEPATH	+= $$VAA3DPATH/v3d_main/basic_c_fun
 HEADERS	+= 	MozakPlugin.h \
 			MozakUI.h \
 			Mozak3DView.h
