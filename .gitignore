@@ -40,3 +40,4 @@ v3d_main/v3d/x64/
 
 #All binaries
 /bin/*
+ - Copy.gitignore

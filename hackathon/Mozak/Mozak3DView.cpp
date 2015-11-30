@@ -5,11 +5,11 @@
 #include "../../terafly/src/control/CVolume.h"
 #include "../../terafly/src/presentation/PMain.h"
 
-// newViewer implementation
 #include "v3d_application.h"
 #include "../../terafly/src/control/CImageUtils.h"
 #include "./../terafly/src/control/COperation.h"
 #include "../../terafly/src/presentation/PAnoToolBar.h"
+#include "./../terafly/src/control/CAnnotations.h"
 
 using namespace mozak;
 
@@ -54,6 +54,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		return false;
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	QKeyEvent* key_evt;
+	QMouseEvent* mouseEvt;
+	bool neuronTreeChanged = false;
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
 	{
 
@@ -62,6 +64,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		QWheelEvent* wheelEvt = (QWheelEvent*)event;
 		lastWheelFocus = getRenderer3DPoint(wheelEvt->x(), wheelEvt->y());
 		useLastWheelFocus = true;
+		
+		// TODO: Zoom while centering mouse pos: (stolen from nstroke_tracing.cpp)
+		//gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
+		//py = viewport[3]-py; //the Y axis is reversed
+		
 		processWheelEvt(wheelEvt);
 		int newZoom = view3DWidget->zoom();
 		//qDebug() << itm::strprintf("zooming out from %d to %d", prevZoom, newZoom).c_str();
@@ -100,6 +107,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		int keyPressed = key_evt->key();
 		Renderer::SelectMode currentMode = curr_renderer->selectMode;
 		Renderer::SelectMode newMode;
+        bool bAddCurve = true;
 		switch (keyPressed)
 		{
 			case Qt::Key_D:
@@ -107,6 +115,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				break;
 			case Qt::Key_S:
 				newMode = Renderer::smBreakMultiNeurons;
+                bAddCurve = false;
 				break;
             case Qt::Key_E:
                 newMode = Renderer::smCurveEditExtend;
@@ -120,6 +129,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		if (newMode != currentMode)
 		{
 			curr_renderer->endSelectMode();
+            curr_renderer->b_addthiscurve = bAddCurve;
 			curr_renderer->selectMode = newMode;
 		}
 	}
@@ -132,12 +142,42 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		{
 			curr_renderer->endSelectMode();
 			curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
+			curr_renderer->b_addthiscurve = true;
 		}
 #endif
 	}
 	else
 	{
-		return teramanager::CViewer::eventFilter(object, event);
+#ifdef FORCE_BBOX_MODE
+		// If beginning right click drag, ensure that default mode is chosen before beginning
+		if (object == view3DWidget && event->type() == QEvent::MouseButtonPress)
+		{
+			QMouseEvent* mouseEvt = (QMouseEvent*)event;
+			if (curr_renderer->selectMode == Renderer::smObject)
+			{
+				curr_renderer->endSelectMode();
+				curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
+				curr_renderer->b_addthiscurve = true;
+			}
+		}
+		else
+#endif
+		if (object == view3DWidget && event->type() == QEvent::MouseButtonRelease)
+		{
+			QMouseEvent* mouseEvt = (QMouseEvent*)event;
+			if (mouseEvt->button() == Qt::RightButton)
+			{
+				//qDebug() << itm::strprintf("Right click ended, current render selectMode mode: %d", curr_renderer->selectMode).c_str();
+				if (curr_renderer->selectMode == Renderer::smDeleteMultiNeurons)
+					curr_renderer->deleteMultiNeuronsByStrokeCommit();
+				// Regardless of function performed, when right mouse button is released save the annotaions file
+				neuronTreeChanged = true;
+			}
+		}
+		bool res = teramanager::CViewer::eventFilter(object, event);
+		if (neuronTreeChanged)
+			onNeuronEdit();
+		return res;
 	}
 	return false;
 }
@@ -356,7 +396,6 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
 	// set above as this is the data being updated.
 	view3DWidget->updateImageData();
-	
 	itm::CViewer::loadAnnotations();
 
 	float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
