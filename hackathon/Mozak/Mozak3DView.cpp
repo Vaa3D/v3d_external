@@ -38,6 +38,7 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 void Mozak3DView::onNeuronEdit()
 {
 	teramanager::CViewer::onNeuronEdit();
+	teramanager::CViewer::storeAnnotations();
 	MozakUI* moz = MozakUI::getMozakInstance();
 	if (moz->annotationsPathLRU == "")
 		moz->annotationsPathLRU = "./mozak.ano";
