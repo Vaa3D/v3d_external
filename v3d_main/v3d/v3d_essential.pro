@@ -380,6 +380,21 @@ FORMS += landmark_property.ui \
     dialog_update_downloading.ui \
     dialog_update_checking.ui
 
+DEFINES += CGS_AUTOLAUNCH
+DEFINES += V3D_SKIP_AUTO_VERSION_CHECK
+DEFINES += RENDERER_RIGHT_CLICK_MENU_DISABLED
+DEFINES += HIDE_ANO_TOOLBAR
+DEFINES += UNREVERSE_MOUSE_WHEEL_ZOOM # not working yet
+DEFINES += FORCE_BBOX_MODE
+HEADERS +=  ../../hackathon/Mozak/MozakPlugin.h \
+            ../../hackathon/Mozak/MozakUI.h \
+            ../../hackathon/Mozak/Mozak3DView.h
+SOURCES +=  ../../hackathon/Mozak/MozakPlugin.cpp \
+            ../../hackathon/Mozak/MozakUI.cpp \
+            ../../hackathon/Mozak/Mozak3DView.cpp
+
+
+
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl

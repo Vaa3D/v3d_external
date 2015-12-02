@@ -2072,3 +2072,7 @@ v3d_main/3drenderer/marchingcubes.h
 v3d_main/3drenderer/nstroke.cpp
 v3d_main/3drenderer/nstroke_tracing.cpp
 v3d_main/3drenderer/marchingcubes.cpp
+hackathon/Mozak/Mozak3DView.cpp
+hackathon/Mozak/Mozak3DView.h
+hackathon/Mozak/MozakUI.cpp
+hackathon/Mozak/MozakUI.h
