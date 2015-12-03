@@ -397,6 +397,10 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                 v3d_msg(QString("ERROR open the specified Vaa3D plugin [%1]").arg(v3dpluginFind), 1);
                 return;
             }
+
+            QElapsedTimer timer_plugin;
+            timer_plugin.start();
+
             // run plugin
             V3d_PluginLoader mypluginloader(this);
             // help info
@@ -442,6 +446,22 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                 PLUGINFH pluginFuncHandler;
                 pluginFuncHandler.doPluginFunc(v3dclp, mypluginloader, v3dpluginFind, (void *)this);
             }
+            qint64 etime_plugin = timer_plugin.elapsed();
+            qDebug() << " **** the plugin preprocessing takes [" << etime_plugin <<" milliseconds]";
+            //uncommented version is only used for bench testing by Zhi Z, 20151103
+//            if(v3dclp.fileList.size()>0)
+//            {
+//                QString timer_log = QString(v3dclp.fileList.at(0)) + "_" + QFileInfo(pluginname).baseName() + "_" + pluginfunc +"_time.log";
+//                QFile file(timer_log);
+//                if (!file.open(QFile::WriteOnly|QFile::Truncate))
+//                {
+//                    cout <<"Error opening the log file "<<timer_log.toStdString().c_str() << endl;
+//                }
+
+//                QTextStream stream (&file);
+//                stream << "the plugin preprocessing takes\t"<< etime_plugin <<" milliseconds"<<"\n";
+//                file.close();
+//            }
         }
         else
         {
