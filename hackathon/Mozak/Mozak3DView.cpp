@@ -39,10 +39,12 @@ void Mozak3DView::onNeuronEdit()
 {
 	teramanager::CViewer::onNeuronEdit();
 	teramanager::CViewer::storeAnnotations();
+#ifdef MOZAK_AUTOSAVE
 	MozakUI* moz = MozakUI::getMozakInstance();
 	if (moz->annotationsPathLRU == "")
 		moz->annotationsPathLRU = "./mozak.ano";
 	moz->saveAnnotations();
+#endif
 	makeTracedNeuronsEditable();
 }
 
@@ -54,6 +56,7 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
 	}
+	curr_renderer->nodeSize = 5;
 	curr_renderer->paint();
 }
 
@@ -91,7 +94,6 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     Renderer::SelectMode currentMode = curr_renderer->selectMode;
     view3DWidget->setMouseTracking(true);
-    curr_renderer->nodeSize = 5;
 
     if (event->type() == QEvent::MouseMove)
     {

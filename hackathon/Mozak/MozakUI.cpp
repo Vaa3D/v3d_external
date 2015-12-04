@@ -15,10 +15,7 @@ void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
     if (uniqueInstance == 0)
         uniqueInstance = new MozakUI(callback, parent);
     uniqueInstance->reset();
-	string path = "..\\..\\..\\datasets\\checked6_mouse_ugoettingen\\DONE_Confocal_retimestampedforconsistentfilenames\\tera_converted\\RES(2993x8108x224)";
-	QString import_path = path.c_str();
-	if(import_path.isEmpty() || !QFile::exists(import_path))
-		path = ""; // this will prompt for user to find path
+	string path = ""; // this will prompt for user to find path
 	uniqueInstance->openVolume(path);
 	uniqueInstance->hide();
 	V3dApplication::deactivateMainWindow();
