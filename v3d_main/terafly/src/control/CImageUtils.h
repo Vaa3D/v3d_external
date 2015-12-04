@@ -76,6 +76,12 @@ class teramanager::CImageUtils
             return color;
         }
 
+        // convert HSL to RGB. H, S, and L should be in [0.0,1.0]
+        static RGBA8 hsl2rgb(float h, float s, float l);
+
+        // get n distinct colors
+        static std::vector<RGBA8> distinctColors(int n);
+
         /**********************************************************************************
         * Returns a new, interpolated image from the two given images
         ***********************************************************************************/

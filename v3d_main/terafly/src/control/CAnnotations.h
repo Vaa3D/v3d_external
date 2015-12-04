@@ -5,6 +5,7 @@
 #include "v3d_interface.h"
 #include "CPlugin.h"
 #include "math.h"
+#include "CViewer.h"
 
 //annotation structure
 struct teramanager::annotation
@@ -25,6 +26,19 @@ struct teramanager::annotation
 
     // constructor and deconstructor
     annotation() throw (itm::RuntimeException);
+    annotation(const CellAPO & c)
+    {
+        x = c.x;
+        y = c.y;
+        z = c.z;
+        color = c.color;
+        name = c.name.toStdString();
+        comment = c.comment.toStdString();
+        r = pow(c.volsize*(3.0/4), 1.0/3);
+        type = 0;
+        subtype = 0;
+    }
+
     ~annotation();
 
     inline bool operator==(const annotation& r) const{
@@ -33,6 +47,19 @@ struct teramanager::annotation
                 z       == r.z &&
                 type    == r.type &&
                 subtype == r.subtype;
+    }
+
+    inline CellAPO toCellAPO() const{
+        CellAPO c;
+        c.x = x;
+        c.y = y;
+        c.z = z;
+        c.color = color;
+        c.name = name.c_str();
+        c.comment = comment.c_str();
+        c.n = ID;
+        c.volsize = (4.0/3)*itm::pi*r*r*r;
+        return c;
     }
 
     void ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree);
@@ -295,6 +322,11 @@ class teramanager::CAnnotations
         static void convertVtk2APO(std::string vtkPath, std::string apoPath) throw (itm::RuntimeException);
 
         /*********************************************************************************
+        * Conversion from MaMuT to APO files
+        **********************************************************************************/
+        static void convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) throw (itm::RuntimeException);
+
+        /*********************************************************************************
         * Diff between two APO files
         **********************************************************************************/
         static void diffAPO(std::string apo1Path,   // first apo file path
@@ -303,6 +335,18 @@ class teramanager::CAnnotations
                             int y0=0, int y1=-1,    // VOI [y0, y1) in the global reference sys
                             int z0=0, int z1=-1,    // VOI [z0, z1) in the global reference sys
                             std::string diffPath="")// path where the difference apo file (containing only FPs and FNs) has to be stored (optional)
+        throw (itm::RuntimeException);
+
+
+        /*********************************************************************************
+        * Compute type I and type II errors between two APO files
+        **********************************************************************************/
+        static std::pair<int, int>                  // return pair<false positives, false negatives>
+            typeIandIIerrorAPO(std::string apo1Path,// first apo file path (assumed as TRUTH)
+                               std::string apo2Path,// second apo file to be compared
+                               int d,               // maximum distance between a finding that matches with a truth
+                               std::string filter,  // filter cells in apo2 by name
+                               const std::string & outputPath = "")
         throw (itm::RuntimeException);
 
 
@@ -318,6 +362,16 @@ class teramanager::CAnnotations
 
 
         /*********************************************************************************
+        * Label duplicates in APO files
+        **********************************************************************************/
+        static void labelDuplicates(std::string inputPath,  // input apo file path
+                                    std::string outputPath, // where output apo file is saved
+                                    int d,                  // maximum distance between 2 duplicates
+                                    RGBA8 color)            // VOI [y0, y1) in the global reference sys
+        throw (itm::RuntimeException);
+
+
+        /*********************************************************************************
         * Merge .xml ImageJ Cell Counter markers files into .APO
         **********************************************************************************/
         static void mergeImageJCellCounterXMLs(QStringList xmls,  // inputs
@@ -329,15 +383,28 @@ class teramanager::CAnnotations
                             int z0=0)               // (0,0,0) block Z-coordinate
         throw (itm::RuntimeException);
 
+        /*********************************************************************************
+        * Merge .xml ImageJ Cell Counter markers files into .APO
+        **********************************************************************************/
+        static void diffnAPO(QStringList apos,        // inputs
+                            std::string outputPath) // where output apo file is saved
+        throw (itm::RuntimeException);
 
-        static inline bool isMarkerOutOfRendererBounds(const LocationSimple& marker){
-            return marker.x < 0 || marker.y < 0 || marker.z < 0 ;
+
+        static inline bool isMarkerOutOfRendererBounds(const LocationSimple& marker, itm::CViewer &w){
+            return marker.x < 0 || marker.y < 0 || marker.z < 0 ||
+                   marker.x  >= (w.volH1-w.volH0) || marker.y  >= (w.volV1-w.volV0) || marker.z >= (w.volD1-w.volD0);
         }
-        static inline bool isMarkerOutOfRendererBounds(const ImageMarker& marker){
-            return marker.x < 0 || marker.y < 0 || marker.z < 0 ;
+        static inline bool isMarkerOutOfRendererBounds(const ImageMarker& marker, itm::CViewer &w){
+            return marker.x < 0 || marker.y < 0 || marker.z < 0 ||
+                    marker.x  >= (w.volH1-w.volH0) || marker.y  >= (w.volV1-w.volV0) || marker.z >= (w.volD1-w.volD0);
         }
 
         static inline float distance(const LocationSimple& m1, const LocationSimple& m2){
+            return sqrt((m1.x-m2.x)*(m1.x-m2.x) + (m1.y-m2.y)*(m1.y-m2.y) + (m1.z-m2.z)*(m1.z-m2.z));
+        }
+
+        static inline float distance(const CellAPO& m1, const CellAPO& m2){
             return sqrt((m1.x-m2.x)*(m1.x-m2.x) + (m1.y-m2.y)*(m1.y-m2.y) + (m1.z-m2.z)*(m1.z-m2.z));
         }
 

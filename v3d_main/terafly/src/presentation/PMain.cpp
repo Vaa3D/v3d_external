@@ -205,7 +205,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     regenVMap_cAction->setCheckable(true);
     importOptionsMenu-> addAction(regenVMap_cAction);
     /* ------------------------- "Options" menu: Annotation ---------------------- */
-    annotationMenu = optionsMenu->addMenu("Annotation");
+    annotationMenu = optionsMenu->addMenu("Annotations");
     markersMenu = annotationMenu->addMenu("Markers");
     curvesMenu = annotationMenu->addMenu("Curves");
     curveAspectMenu = curvesMenu->addMenu("Aspect");
@@ -260,20 +260,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     markersSizeMenu->addAction(markersSizeWidget);
     connect(markersSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markersSizeSpinBoxChanged(int)));
     /**/
-    markersDeleteROIMenu = markersMenu->addMenu("Action: \"1-right-stroke to delete a group of markers\"");
-    markersDeleteROISamplingMenu = markersDeleteROIMenu->addMenu("Sample every");
-    markersDeleteROISamplingWidget = new QWidgetAction(this);
-    markersDeleteROISamplingSpinBox = new QSpinBox();
-    markersDeleteROISamplingSpinBox->setMinimum(1);
-    markersDeleteROISamplingSpinBox->setMaximum(20);
-    markersDeleteROISamplingSpinBox->setSuffix(" (pixels)");
-    markersDeleteROISamplingWidget->setDefaultWidget(markersDeleteROISamplingSpinBox);
-    markersDeleteROISamplingMenu->addAction(markersDeleteROISamplingWidget);
-    markersDeleteROISamplingSpinBox->setValue(CSettings::instance()->getAnnotationMarkersDeleteROISampling());
-    connect(markersDeleteROISamplingSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markersDeleteROISamplingSpinBoxChanged(int)));
-    /**/
-    markersShowROIMenu = markersMenu->addMenu("Action: \"Show/hide markers around the displayed ROI\"");
-    markersShowROIMarginMenu = markersShowROIMenu->addMenu("Virtual margin size");
+    markersShowROIMarginMenu = markersMenu->addMenu("VOI extra margin");
     markersShowROIMarginWidget = new QWidgetAction(this);
     markersShowROIMarginSpinBox = new QSpinBox();
     markersShowROIMarginSpinBox->setSuffix(" %");
@@ -348,6 +335,58 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fdDirectAction->setChecked(!fdPreviewAction->isChecked());
     connect(fdPreviewAction, SIGNAL(changed()), this, SLOT(fetchAndDisplayChanged()));
 
+
+
+    // "Utility" Menu
+    utilityMenu = menuBar->addMenu("Utilities");
+    QMenu* utilsAnno = utilityMenu->addMenu("Annotations");
+    QMenu* utilsMarkers = utilsAnno->addMenu("Markers");
+    QMenu* utilsConvert = utilsMarkers->addMenu("Convert");
+    QMenu* utilsAnalyze = utilsMarkers->addMenu("Analyze");
+    QMenu* timeseriesMenu = utilityMenu->addMenu("Time-series");
+
+
+    countMarkersDuplicates = new QAction("count duplicates in the whole image", this);
+    connect(countMarkersDuplicates, SIGNAL(triggered()), this, SLOT(showDialogCountDuplicateMarkers()));
+    utilsAnalyze->addAction(countMarkersDuplicates);
+    typeIandTypeIIerrorsAPO = new QAction("count type I/II errors from two .apo files", this);
+    connect(typeIandTypeIIerrorsAPO, SIGNAL(triggered()), this, SLOT(showDialogTypeIandTypeIIerrors()));
+    utilsAnalyze->addAction(typeIandTypeIIerrorsAPO);
+    diffAPO = new QAction("diff of two .apo files", this);
+    connect(diffAPO, SIGNAL(triggered()), this, SLOT(showDialogDiffAPO()));
+    utilsAnalyze->addAction(diffAPO);
+    diffnAPO = new QAction("diff of multiple .apo files", this);
+    connect(diffnAPO, SIGNAL(triggered()), this, SLOT(showDialogDiffnAPO()));
+    utilsAnalyze->addAction(diffnAPO);
+    labelDuplicateAPO = new QAction("label duplicates in .apo file", this);
+    connect(labelDuplicateAPO, SIGNAL(triggered()), this, SLOT(showDialogLabelDuplicateAPO()));
+    utilsAnalyze->addAction(labelDuplicateAPO);
+    trimAPO = new QAction("trim .apo with VOI selection", this);
+    connect(trimAPO, SIGNAL(triggered()), this, SLOT(showDialogTrimAPO()));
+    utilsAnalyze->addAction(trimAPO);
+    convertVtk2APO = new QAction(".vtk  (VTK) -> .apo", this);
+    connect(convertVtk2APO, SIGNAL(triggered()), this, SLOT(showDialogVtk2APO()));
+    utilsConvert->addAction(convertVtk2APO);
+    convertMaMuT2APO = new QAction(".xml (MaMuT/BigDataViewer) -> .apo", this);
+    connect(convertMaMuT2APO, SIGNAL(triggered()), this, SLOT(showDialogMaMut2APO()));
+    utilsConvert->addAction(convertMaMuT2APO);
+    mergeImageJCellCounterXMLs = new QAction(".xml (ImageJ Cell Counter) -> .apo", this);
+    connect(mergeImageJCellCounterXMLs, SIGNAL(triggered()), this, SLOT(showDialogMergeImageJCellCounterXMLs()));
+    utilsConvert->addAction(mergeImageJCellCounterXMLs);
+
+    generateTimeSeries = new QMenu("Generate time series by");
+    generateTimeSeriesDataReplication = new QAction("single-frame replication with increasing gaussian noise", this);
+    connect(generateTimeSeriesDataReplication, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesReplication()));
+    generateTimeSeriesInterpolation = new QAction("interpolation from frames A to B", this);
+    connect(generateTimeSeriesInterpolation, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesInterpolation()));
+    generateTimeSeries->addAction(generateTimeSeriesDataReplication);
+    generateTimeSeries->addAction(generateTimeSeriesInterpolation);
+    timeseriesMenu->addMenu(generateTimeSeries);
+    displayAnoOctree = new QAction("Display annotations octree", this);
+    connect(displayAnoOctree, SIGNAL(triggered()), this, SLOT(showAnoOctree()));
+    utilsAnno->addAction(displayAnoOctree);
+
+
     // "Debug" menu
     debugMenu = menuBar->addMenu("Debug");
     /* --------------------------------- show log --------------------------------- */
@@ -394,49 +433,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     addGaussianNoiseToTimeSeries->setCheckable(true);
     connect(addGaussianNoiseToTimeSeries, SIGNAL(triggered()), this, SLOT(addGaussianNoiseTriggered()));
     debugMenu->addAction(addGaussianNoiseToTimeSeries);
-    /* -------------------------------- time series ------------------------------- */
-//    debugTimeSeriesMenu = new QMenu("Time series size");
-//    debugTimeSeriesWidget = new QWidgetAction(this);
-//    debugTimeSeriesSBox = new QSpinBox();
-//    debugTimeSeriesSBox->setMinimum(1);
-//    debugTimeSeriesSBox->setMaximum(500);
-//    debugTimeSeriesSBox->setValue(100);
-//    debugTimeSeriesWidget->setDefaultWidget(debugTimeSeriesSBox);
-//    debugTimeSeriesMenu->addAction(debugTimeSeriesWidget);
-//    debugMenu->addMenu(debugTimeSeriesMenu);
-
-    // "Utility" Menu
-    utilityMenu = menuBar->addMenu("Utilities");
-    diffAPO = new QAction(".apo diff", this);
-    connect(diffAPO, SIGNAL(triggered()), this, SLOT(showDialogDiffAPO()));
-    utilityMenu->addAction(diffAPO);
-    trimAPO = new QAction(".apo trim", this);
-    connect(trimAPO, SIGNAL(triggered()), this, SLOT(showDialogTrimAPO()));
-    utilityMenu->addAction(trimAPO);
-    convertVtk2APO = new QAction(".vtk -> .apo (cells only)", this);
-    connect(convertVtk2APO, SIGNAL(triggered()), this, SLOT(showDialogVtk2APO()));
-    utilityMenu->addAction(convertVtk2APO);
-    mergeImageJCellCounterXMLs = new QAction(".xml (ImageJ Cell Counter markers) -> .apo", this);
-    connect(mergeImageJCellCounterXMLs, SIGNAL(triggered()), this, SLOT(showDialogMergeImageJCellCounterXMLs()));
-    utilityMenu->addAction(mergeImageJCellCounterXMLs);
-    countMarkersDuplicates = new QAction("Count duplicate markers", this);
-    connect(countMarkersDuplicates, SIGNAL(triggered()), this, SLOT(showDialogCountDuplicateMarkers()));
-    utilityMenu->addAction(countMarkersDuplicates);
-    generateTimeSeries = new QMenu("Generate time series by");
-    generateTimeSeriesDataReplication = new QAction("single-frame replication with increasing gaussian noise", this);
-    connect(generateTimeSeriesDataReplication, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesReplication()));
-    generateTimeSeriesInterpolation = new QAction("interpolation from frames A to B", this);
-    connect(generateTimeSeriesInterpolation, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesInterpolation()));
-    generateTimeSeries->addAction(generateTimeSeriesDataReplication);
-    generateTimeSeries->addAction(generateTimeSeriesInterpolation);
-    utilityMenu->addMenu(generateTimeSeries);
-    displayAnoOctree = new QAction("Display annotations octree", this);
-    connect(displayAnoOctree, SIGNAL(triggered()), this, SLOT(showAnoOctree()));
-    utilityMenu->addAction(displayAnoOctree);
 
 
+    // "Help" menu
     helpMenu = menuBar->addMenu("Help");
-    aboutAction = new QAction("About", this);
+    aboutAction = new QAction("Info about TeraFly", helpMenu);
     aboutAction->setIcon(QIcon(":/icons/about.png"));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
     helpMenu->addAction(aboutAction);
@@ -1032,7 +1033,6 @@ void PMain::reset()
     recentVolumesMenu->setEnabled(true);
     closeVolumeAction->setEnabled(false);
     importOptionsMenu->setEnabled(true);
-    aboutAction->setEnabled(true);
     loadAnnotationsAction->setEnabled(false);
     saveAnnotationsAction->setEnabled(false);
     saveAnnotationsAsAction->setEnabled(false);
@@ -2198,8 +2198,18 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
-	CViewer *viewer = CViewer::getCurrent();
-	v3d_msg(itm::strprintf("X=[%d,%d], Y=[%d,%d], Z[%d,%d]", viewer->anoH0, viewer->anoH1, viewer->anoV0, viewer->anoV1, viewer->anoD0, viewer->anoD1).c_str());
+    QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
+    if(!apo1FilePath.isEmpty())
+    {
+
+        QList<CellAPO> cells = readAPO_file(apo1FilePath);
+        for(int k=0; k<cells.size(); k++)
+            v3d_msg(itm::strprintf("n = %d\nname = \"%s\"\ncomment = \"%s\"\nz = %f\nx = %f\ny = %d",
+                                   cells[k].n, cells[k].name.toStdString().c_str(),
+                                   cells[k].comment.toStdString().c_str(), cells[k].z, cells[k].x, cells[k].y).c_str());
+    }
+    //CViewer *viewer = CViewer::getCurrent();
+    //v3d_msg(itm::strprintf("X=[%d,%d], Y=[%d,%d], Z[%d,%d]", viewer->anoH0, viewer->anoH1, viewer->anoV0, viewer->anoV1, viewer->anoD0, viewer->anoD1).c_str());
 //    QPalette Pal(palette());
 //    Pal.setColor(QPalette::Background, Qt::red);
 //    QWidget *emptyPanel = new QWidget();
@@ -2702,16 +2712,6 @@ void PMain::showToolbarButtonChanged(bool changed)
         PAnoToolBar::instance()->setVisible(changed);
 }
 
-/**********************************************************************************
-* Called when markersDeleteROISamplingSpinBox state has changed
-***********************************************************************************/
-void PMain::markersDeleteROISamplingSpinBoxChanged(int value)
-{
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
-
-    CSettings::instance()->setAnnotationMarkersDeleteROISampling(value);
-    CSettings::instance()->writeSettings();
-}
 
 /**********************************************************************************
 * Called when markersShowROIMarginSpinBox state has changed
@@ -2755,7 +2755,63 @@ void PMain::showDialogVtk2APO()
         {
             QString apoFilePath = QFileDialog::getSaveFileName(this, tr("Save to"), 0,tr("APO files (*.apo)"));
             if(!apoFilePath.isEmpty())
+            {
                 itm::CAnnotations::convertVtk2APO(vtkFilePath.toStdString(), apoFilePath.toStdString());
+                v3d_msg("DONE!");
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void PMain::showDialogMaMut2APO()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QString xmlFilePath = QFileDialog::getOpenFileName(this, tr("Select input file"), 0,tr("MaMuT input files (*.xml)"));
+        if(!xmlFilePath.isEmpty())
+        {
+            QString apoFilePath = QFileDialog::getSaveFileName(this, tr("Save to"), 0,tr("APO files (*.apo)"));
+            if(!apoFilePath.isEmpty())
+            {
+                itm::CAnnotations::convertMaMuT2APO(xmlFilePath.toStdString(), apoFilePath.toStdString());
+                v3d_msg("DONE!");
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void PMain::showDialogTypeIandTypeIIerrors()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
+        if(!apo1FilePath.isEmpty())
+        {
+            QString apo2FilePath = QFileDialog::getOpenFileName(this, tr("Select second APO file"), 0,tr("APO files (*.apo)"));
+            if(!apo2FilePath.isEmpty())
+            {
+                QString outputPath = QFileDialog::getSaveFileName(this, tr("Save output to"), 0,tr("APO files (*.apo)"));
+                if(!outputPath.isEmpty())
+                {
+                    int d = QInputDialog::getInt(this, "Input 1/2", "Tolerance distance:", 5, 0);
+                    std::string ID = QInputDialog::getText(this, "Input 2/2", "Filter cells by name (no ',' or '.' characters):", QLineEdit::Normal, "none").toStdString();
+                    std::pair<int,int> errors = itm::CAnnotations::typeIandIIerrorAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, ID, outputPath.toStdString());
+                    v3d_msg(itm::strprintf("Type I  errors (false positives): %d\n"
+                            "Type II errors (false negatives): %d", errors.first, errors.second).c_str());
+                }
+            }
         }
     }
     catch(itm::RuntimeException &ex)
@@ -2778,8 +2834,12 @@ void PMain::showDialogDiffAPO()
             {
                 QString savePath = QFileDialog::getSaveFileName(this, tr("Output file"), 0,tr("APO files (*.apo)"));
                 if(!savePath.isEmpty())
+                {
                     itm::CAnnotations::diffAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), H0_sbox->value(), H1_sbox->value(),
                                            V0_sbox->value(), V1_sbox->value(), D0_sbox->value(), D1_sbox->value(), savePath.toStdString());
+
+                    v3d_msg("DONE!");
+                }
             }
         }
     }
@@ -2808,7 +2868,64 @@ void PMain::showDialogTrimAPO()
                 int z0 = QInputDialog::getInt(this, "Select VOI", "[z0");
                 int z1 = QInputDialog::getInt(this, "Select VOI", "z1)");
                 itm::CAnnotations::trimAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), x0, x1, y0, y1, z0, z1);
+
+                v3d_msg("DONE!");
             }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void itm::PMain::showDialogLabelDuplicateAPO()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Open input APO file"), 0,tr("APO files (*.apo)"));
+        if(!apo1FilePath.isEmpty())
+        {
+            QString apo2FilePath = QFileDialog::getSaveFileName(this, tr("Select output APO file"), 0,tr("APO files (*.apo)"));
+            if(!apo2FilePath.isEmpty())
+            {
+                int d = QInputDialog::getInt(this, "Input 1/4", "Tolerance distance:", 5, 0);
+                int r = QInputDialog::getInt(this, "Input 2/4", "Label color (R): ",255,0,255);
+                int g = QInputDialog::getInt(this, "Input 3/4", "Label color (G): ",255,0,255);
+                int b = QInputDialog::getInt(this, "Input 4/4", "Label color (B): ",255,0,255);
+                RGBA8 color;
+                color.r = r;
+                color.g = g;
+                color.b = b;
+                itm::CAnnotations::labelDuplicates(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, color);
+
+                v3d_msg("DONE!");
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void itm::PMain::showDialogDiffnAPO()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QStringList apos = QFileDialog::getOpenFileNames(this, "Select two (or more) input files", 0, tr("APO files (*.apo)"));
+        if(apos.size() < 2)
+            throw itm::RuntimeException("At least two .apo files should be selected");
+
+        QString apoPath = QFileDialog::getSaveFileName(this, tr("Select output APO file"), 0,tr("APO files (*.apo)"));
+        if(apoPath.size())
+        {
+            itm::CAnnotations::diffnAPO(apos, apoPath.toStdString());
+            v3d_msg("DONE!");
         }
     }
     catch(itm::RuntimeException &ex)
@@ -2839,6 +2956,8 @@ void PMain::showDialogMergeImageJCellCounterXMLs()
             int y0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Y coordinate:", 0, 0);
             int z0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Z coordinate:", 0, 0);
             itm::CAnnotations::mergeImageJCellCounterXMLs(xmls, apoPath.toStdString(), xS, yS, zS, blocks_overlap, x0, y0, z0);
+
+            v3d_msg("DONE!");
         }
     }
     catch(itm::RuntimeException &ex)
@@ -2850,6 +2969,12 @@ void PMain::showDialogMergeImageJCellCounterXMLs()
 void PMain::showDialogCountDuplicateMarkers()
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    if(!itm::CViewer::current)
+    {
+        v3d_msg("No image opened");
+        return;
+    }
 
     int d = QInputDialog::getInt(this, "Input required", "Tolerance distance:");
     int count = itm::CAnnotations::getInstance()->countDuplicateMarkers(d);

@@ -11,6 +11,22 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.14
+December 4rd, 2015
+--------------------------------------------------------------------------------------------
+- New: added "label duplicates in .apo file" utility (Utilities > Annotations > Analyze).
+- New: added "diff of multiple .apo files" utility (Utilities > Annotations > Analyze).
+- New: added "count type I/II errors from two .apo files" utility (Utilities > Annotations > 
+       Analyze).
+- New: added ".xml (MaMuT/BigDataViewer) > .apo" conversion utility (Utilities > Annotations
+       > Convert).
+- New: rearranged Utility menu.
+- Fix: fixed missing "Help" menu on MacOS.
+- Fix: Fixed bug which caused 'delete markers in a 3D VOI' also to delete protected markers,
+       i.e. read-only markers highlighted with gray color that lie outside the displayed VOI
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.13
 November 7th, 2015
 --------------------------------------------------------------------------------------------

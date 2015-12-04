@@ -11,6 +11,7 @@
 #include "CAnnotations.h"
 #include "CSettings.h"
 #include "COperation.h"
+#include "CImageUtils.h"
 #include "../presentation/PLog.h"
 
 using namespace teramanager;
@@ -1296,7 +1297,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
     // open ANO file
     std::ifstream f(filepath);
     if(!f.is_open())
-        throw RuntimeException(strprintf("in CAnnotations::save(): cannot load file \"%s\"", filepath));
+        throw RuntimeException(strprintf("in CAnnotations::load(): cannot load file \"%s\"", filepath));
 
     // read line by line
     for (std::string line; std::getline(f, line); )
@@ -1428,6 +1429,181 @@ void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath) thro
 
     // save to APO file
     writeAPO_file(apoPath.c_str(), cells);
+
+    // save output ano
+    std::string anoPath = itm::cdUp(apoPath) + "/" + itm::getFileName(apoPath, false) + ".ano";
+    f = fopen(anoPath.c_str(), "w");
+    if(!f)
+        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",itm::getFileName(apoPath).c_str());
+    fclose(f);
+}
+
+/*********************************************************************************
+* Conversion from VTK to APO files
+**********************************************************************************/
+void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) throw (itm::RuntimeException)
+{
+    QList<CellAPO> cells;
+    int count = 0;
+
+    // check xml
+    TiXmlDocument xml(MaMuTPath.c_str());
+    if(!xml.LoadFile())
+        throw itm::RuntimeException(itm::strprintf("unable to open MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+    TiXmlElement *pElem = xml.FirstChildElement("TrackMate");
+    if(!pElem)
+        throw itm::RuntimeException(itm::strprintf("cannot find node <TrackMate> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+    pElem = pElem->FirstChildElement("Model");
+    if(!pElem)
+        throw itm::RuntimeException(itm::strprintf("cannot find node <Model> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+    pElem = pElem->FirstChildElement("AllSpots");
+    if(!pElem)
+        throw itm::RuntimeException(itm::strprintf("cannot find node <AllSpots> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+    int nspots = 0;
+    pElem->QueryIntAttribute("nspots", &nspots);
+    if(nspots == 0)
+        throw itm::RuntimeException(itm::strprintf("no spots found in <AllSpots> node in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+
+    // parse spots
+    TiXmlElement *frameElem = pElem->FirstChildElement("SpotsInFrame");
+    while(frameElem)
+    {
+        int frame_id = 0;
+        if(frameElem->QueryIntAttribute("frame", &frame_id) != TIXML_SUCCESS)
+            throw itm::RuntimeException(itm::strprintf("failed to query node <SpotsInFrame> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+        if(frame_id != 0)
+        {
+            static bool first_time = true;
+            if(first_time)
+            {
+                v3d_msg("Spots within frame != 0 will be ignored");
+                first_time = false;
+            }
+            continue;
+        }
+
+        pElem = frameElem->FirstChildElement("Spot");
+        if(!pElem)
+            throw itm::RuntimeException(itm::strprintf("failed to find first node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+
+        while(pElem)
+        {
+            CellAPO c;
+            if(pElem->QueryFloatAttribute("POSITION_X", &c.x) != TIXML_SUCCESS)
+                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"POSITION_X\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+            if(pElem->QueryFloatAttribute("POSITION_Y", &c.y) != TIXML_SUCCESS)
+                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"POSITION_Y\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+            if(pElem->QueryFloatAttribute("POSITION_Z", &c.z) != TIXML_SUCCESS)
+                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"POSITION_Z\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+            if(pElem->QueryFloatAttribute("RADIUS", &c.volsize) != TIXML_SUCCESS)
+                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"RADIUS\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+            c.volsize = (4.0/3.0)*itm::pi*c.volsize*c.volsize*c.volsize;
+            c.color.r = c.color.g = 0;
+            c.color.b = 255;
+            cells.push_back(c);
+            pElem = pElem->NextSiblingElement("Spot");
+            count++;
+        }
+        frameElem = frameElem->NextSiblingElement("SpotsInFrame");
+    }
+
+    // save output apo
+    writeAPO_file(apoPath.c_str(), cells);
+
+    // save output ano
+    std::string anoPath = itm::cdUp(apoPath) + "/" + itm::getFileName(apoPath, false) + ".ano";
+    FILE* f = fopen(anoPath.c_str(), "w");
+    if(!f)
+        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",itm::getFileName(apoPath).c_str());
+    fclose(f);
+
+    QMessageBox::information(0, "Info", itm::strprintf("Successfully written %d markers from %d entries", cells.size(), count).c_str());
+}
+
+/*********************************************************************************
+* Compute type I and type II errors between two APO files
+**********************************************************************************/
+std::pair<int, int>                                             // return pair<false positives, false negatives>
+    itm::CAnnotations::typeIandIIerrorAPO(std::string apo1Path, // first apo file path (assumed as TRUTH)
+                                          std::string apo2Path, // second apo file to be compared
+                                          int d,                // maximum distance between a finding that matches with a truth
+                                          std::string filter,   // filter cells in apo2 by name
+                                          const std::string & outputPath /*=*/)
+throw (itm::RuntimeException)
+{
+    // read cells
+    QList<CellAPO> truth = readAPO_file(apo1Path.c_str());
+    QList<CellAPO> findings = readAPO_file(apo2Path.c_str());
+
+    QList<CellAPO> errors;
+
+    // false positives: cells in 'findings' but not in 'truth'
+    std::pair<int, int> out;
+    out.first = out.second = 0;
+    for(int j=0; j<findings.size(); j++)
+    {
+        //QMessageBox::information(0, "Title", itm::strprintf("findings[j].name = \"%s\", filter = \"%s\"", itm::cls(findings[j].name.toStdString()).c_str(), filter.c_str()).c_str());
+        if(filter.compare("none") != 0 && itm::cls(findings[j].name.toStdString()).compare(filter) != 0)
+            continue;
+
+        bool found = false;
+        for(int i=0; i<truth.size() && !found; i++)
+        {
+            if(distance(truth[i], findings[j]) <= static_cast<float>(d))
+                found = true;
+        }
+        if(!found)
+        {
+            out.first++;
+            findings[j].color.r = 255;
+            findings[j].color.g = 0;
+            findings[j].color.b = 0;
+            findings[j].comment = "false_positive";
+            errors.push_back(findings[j]);
+        }
+    }
+
+    // false negatives: cells in 'truth' whose distance from all cells in 'findings' is higher than d
+    for(int i=0; i<truth.size(); i++)
+    {
+        bool found = false;
+        for(int j=0; j<findings.size() && !found; j++)
+        {
+            if(filter.compare("none") != 0 && itm::cls(findings[j].name.toStdString()).compare(filter) != 0)
+                continue;
+
+            if(distance(truth[i], findings[j]) <= static_cast<float>(d))
+                found = true;
+        }
+        if(!found)
+        {
+            out.second++;
+
+            truth[i].color.r = 0;
+            truth[i].color.g = 0;
+            truth[i].color.b = 255;
+            truth[i].comment = "false_negative";
+            errors.push_back(truth[i]);
+        }
+    }
+
+    // save output apo
+    if(outputPath.size())
+    {
+        writeAPO_file(outputPath.c_str(), errors);
+
+        // save output ano
+        std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+        FILE* f = fopen(anoPath.c_str(), "w");
+        if(!f)
+            throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+        fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+        fclose(f);
+    }
+
+    return out;
 }
 
 /*********************************************************************************
@@ -1638,6 +1814,45 @@ throw (itm::RuntimeException)
 
     // save output apo
     writeAPO_file(outputPath.c_str(), cells_VOI);
+
+    // save output ano
+    std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+    FILE* f = fopen(anoPath.c_str(), "w");
+    if(!f)
+        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+    fclose(f);
+}
+
+/*********************************************************************************
+* Label duplicates in APO files
+**********************************************************************************/
+void itm::CAnnotations::labelDuplicates(
+                            std::string inputPath,  // input apo file path
+                            std::string outputPath, // where output apo file is saved
+                            int d,                  // maximum distance between 2 duplicates
+                            RGBA8 color)            // VOI [y0, y1) in the global reference sys
+throw (itm::RuntimeException)
+{
+    // read cells
+    QList<CellAPO> cells = readAPO_file(inputPath.c_str());
+
+    // label duplicates with the given color
+    for(int i=0; i<cells.size(); i++)
+        for(int j=0; j<cells.size(); j++)
+            if(i != j && distance(cells[i], cells[j]) <= d)
+                cells[i].color = cells[j].color = color;
+
+    // write cells
+    writeAPO_file(outputPath.c_str(), cells);
+
+    // save output ano
+    std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+    FILE* f = fopen(anoPath.c_str(), "w");
+    if(!f)
+        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+    fclose(f);
 }
 
 /*********************************************************************************
@@ -1666,8 +1881,56 @@ itm::uint32 CAnnotations::countDuplicateMarkers(int d) throw (itm::RuntimeExcept
 /*********************************************************************************
 * Merge .xml ImageJ Cell Counter markers files into .APO
 **********************************************************************************/
+void CAnnotations::diffnAPO(QStringList apos,         // inputs
+                    std::string outputPath)         // where output apo file is saved
+throw (itm::RuntimeException)
+{
+    // get distinct colors
+    std::vector<RGBA8> colors = itm::CImageUtils::distinctColors(apos.size());
+
+    // insert cells into the same octree. In this way, it is much faster to compute the XOR
+    Octree* xor_octree = new Octree(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+    for(int f=0; f<apos.size(); f++)
+    {
+        QList<CellAPO> cells = readAPO_file(apos[f]);
+        for(int i=0; i<cells.size(); i++)
+        {
+            annotation* cell = new annotation(cells[i]);
+            cell->name = itm::getFileName(apos[f].toStdString(), false);
+            cell->color = colors[f];
+            xor_octree->insert(*cell);
+        }
+    }
+
+    // retrieve all nodes
+    std::list<annotation*> nodes;
+    xor_octree->find(itm::interval_t(0, std::numeric_limits<int>::max()),
+                 itm::interval_t(0, std::numeric_limits<int>::max()),
+                 itm::interval_t(0, std::numeric_limits<int>::max()), nodes);
+
+    // only take cells from singleton nodes (i.e. nodes containing only 1 cell)
+    QList<CellAPO> output_cells;
+    for(std::list<annotation*>::iterator i = nodes.begin(); i != nodes.end(); i++)
+        if( static_cast<CAnnotations::Octree::octant*>((*i)->container)->annotations.size() != apos.size())
+            output_cells.push_back((*i)->toCellAPO());
+
+    // save output apo
+    writeAPO_file(outputPath.c_str(), output_cells);
+
+    // save output ano
+    std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+    FILE* f = fopen(anoPath.c_str(), "w");
+    if(!f)
+        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+    fclose(f);
+}
+
+/*********************************************************************************
+* Merge .xml ImageJ Cell Counter markers files into .APO
+**********************************************************************************/
 void CAnnotations::mergeImageJCellCounterXMLs(QStringList xmls,  // inputs
-                    std::string outputPath, // where output apo file is saved
+                    std::string apoPath, // where output apo file is saved
                     int xS, int yS, int zS, // blocks size
                     int overlap /*=0*/,     // blocks overlap
                     int x0 /*=0*/,          // (0,0,0) block X-coordinate
@@ -1730,7 +1993,15 @@ throw (itm::RuntimeException)
     }
 
     // save output apo
-    writeAPO_file(outputPath.c_str(), cells);
+    writeAPO_file(apoPath.c_str(), cells);
+
+    // save output ano
+    std::string anoPath = itm::cdUp(apoPath) + "/" + itm::getFileName(apoPath, false) + ".ano";
+    FILE* f = fopen(anoPath.c_str(), "w");
+    if(!f)
+        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",itm::getFileName(apoPath).c_str());
+    fclose(f);
 
     QMessageBox::information(0, "Info", itm::strprintf("Successfully written %d markers from %d entries", cells.size(), count).c_str());
 }

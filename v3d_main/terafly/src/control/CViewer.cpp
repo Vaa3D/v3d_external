@@ -1548,7 +1548,7 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
         QList<ImageMarker> &listMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
         for (QList<ImageMarker>::iterator it = listMarker.begin(); it!= listMarker.end(); it++)
         {
-            if (it->selected && !CAnnotations::isMarkerOutOfRendererBounds(*it))
+            if (it->selected && !CAnnotations::isMarkerOutOfRendererBounds(*it, *this))
             {
                 for(QList<LocationSimple>::iterator jt = vaa3dMarkers.begin(); jt != vaa3dMarkers.end();)
                 {
@@ -1653,7 +1653,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                 if(vaa3dMarkers[j].x == imageMarkers[i].x &&
                    vaa3dMarkers[j].y == imageMarkers[i].y &&
                    vaa3dMarkers[j].z == imageMarkers[i].z &&
-                   !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j]))
+                   !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this))
                     vaa3dMarkers_tbd.push_back(j);
         }
     }

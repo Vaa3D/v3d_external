@@ -449,4 +449,108 @@ throw (itm::RuntimeException)
     return imout;
 }
 
+namespace
+{
+    float hue2rgb(float p, float q, float t)
+    {
+        if(t < 0) t += 1;
+        if(t > 1) t -= 1;
+        if(t < 1/6) return p + (q - p) * 6 * t;
+        if(t < 1/2) return q;
+        if(t < 2/3) return p + (q - p) * (2.0/3 - t) * 6;
+        return p;
+    }
+}
 
+// convert HSL to RGB. H, S, and L should be in [0.0,1.0]
+RGBA8 itm::CImageUtils::hsl2rgb(float h, float s, float l)
+{
+    float r=0, g=0, b=0;
+
+    if(s == 0)
+        r = g = b = l; // achromatic
+    else
+    {
+        float q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        float p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1.0/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1.0/3);
+    }
+
+    RGBA8 out;
+    out.r = static_cast<unsigned char>(r * 255 + 0.5);
+    out.g = static_cast<unsigned char>(r * 255 + 0.5);
+    out.b = static_cast<unsigned char>(r * 255 + 0.5);
+    return out;
+}
+
+namespace
+{
+    RGB32f getColor(float x)
+    {
+        RGB32f c;
+        c.r = 0.0f;
+        c.g = 0.0f;
+        c.b = 1.0f;
+        if (x >= 0.0f && x < 0.2f)
+        {
+            x = x / 0.2f;
+            c.r = 0.0f;
+            c.g = x;
+            c.b = 1.0f;
+        }
+        else if (x >= 0.2f && x < 0.4f)
+        {
+            x = (x - 0.2f) / 0.2f;
+            c.r = 0.0f;
+            c.g = 1.0f;
+            c.b = 1.0f - x;
+        }
+        else if (x >= 0.4f && x < 0.6f)
+        {
+            x = (x - 0.4f) / 0.2f;
+            c.r = x;
+            c.g = 1.0f;
+            c.b = 0.0f;
+        }
+        else if (x >= 0.6f && x < 0.8f)
+        {
+            x = (x - 0.6f) / 0.2f;
+            c.r = 1.0f;
+            c.g = 1.0f - x;
+            c.b = 0.0f;
+        }
+        else if (x >= 0.8f && x <= 1.0f)
+        {
+            x = (x - 0.8f) / 0.2f;
+            c.r = 1.0f;
+            c.g = 0.0f;
+            c.b = x;
+        }
+        return c;
+    }
+}
+// get n distinct colors
+std::vector<RGBA8> itm::CImageUtils::distinctColors(int n)
+{
+    std::vector<RGBA8> colors;
+    if (n < 2)
+    {
+        RGBA8 w;
+        w.r = w.g = w.b = 255;
+        colors.push_back(w);
+        return colors;
+    }
+    float dx = 1.0f / static_cast<float>(n - 1);
+    for (int i = 0; i < n; i++)
+    {
+        RGB32f cf = getColor(i * dx);
+        RGBA8 c;
+        c.g = cf.g * 255;
+        c.r = cf.r * 255;
+        c.b = cf.b * 255;
+        colors.push_back(c);
+    }
+    return colors;
+}

@@ -352,6 +352,7 @@ class teramanager::CViewer : public QWidget
         //PMain instance is allowed to access class private members
         friend class PMain;
         friend class PAnoToolBar;
+        friend class CAnnotations;
         friend class CVolume;
         friend class TeraFly;
         friend class QUndoMarkerCreate;

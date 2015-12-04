@@ -91,16 +91,11 @@ class teramanager::PMain : public QWidget
         QAction* curveAspectSkeleton;   //"Skeleton" action
         // ---- markers menu level ------------------ 3
         QMenu* markersMenu;                             //"Markers" menu level 3
-        QMenu* markersDeleteROIMenu;                    //"1-right-stroke to delete a group of markers" menu level 4
-        QMenu* markersDeleteROISamplingMenu;            //"Sample every" menu level 5
-        QWidgetAction* markersDeleteROISamplingWidget;  //"Sample every" menu action widget
-        QSpinBox* markersDeleteROISamplingSpinBox;      //"Sample every" spinbox
         // ---- markers size menu level ------------- 4
         QMenu* markersSizeMenu;                         //"Size" menu level 4
         QWidgetAction* markersSizeWidget;               //"Size" menu action widget
         QSpinBox* markersSizeSpinBox;                   //"Size" spinbox
         // ---- markers show menu level ------------- 4
-        QMenu* markersShowROIMenu;                      //"Show/hide markers around the displayed ROI" menu level 4
         QMenu* markersShowROIMarginMenu;                //"Virtual margin size" menu level 5
         QWidgetAction* markersShowROIMarginWidget;      //"Virtual margin size" menu action widget
         QSpinBox* markersShowROIMarginSpinBox;          //"Virtual margin size" spinbox
@@ -132,11 +127,15 @@ class teramanager::PMain : public QWidget
         // "Utility" menu widgets
         QMenu* utilityMenu;
         QAction* convertVtk2APO;
+        QAction* convertMaMuT2APO;
         QAction* diffAPO;
         QAction* displayAnoOctree;      // display annotation Octree
         QAction* trimAPO;
+        QAction* diffnAPO;
+        QAction* typeIandTypeIIerrorsAPO;
         QAction* mergeImageJCellCounterXMLs;
         QAction* countMarkersDuplicates;
+        QAction* labelDuplicateAPO;
         QMenu* generateTimeSeries;
         QAction* generateTimeSeriesInterpolation;
         QAction* generateTimeSeriesDataReplication;
@@ -179,6 +178,7 @@ class teramanager::PMain : public QWidget
         QLabel* voxel_dims_label;
         QLineEdit* vxl_field;
         QLineEdit* org_field;
+
 
         //Page "Controls": contains navigation controls
         QWidget* controls_page;
@@ -467,10 +467,6 @@ class teramanager::PMain : public QWidget
         ***********************************************************************************/
         void showToolbarButtonChanged(bool changed);
 
-        /**********************************************************************************
-        * Called when markersDeleteROISamplingSpinBox state has changed
-        ***********************************************************************************/
-        void markersDeleteROISamplingSpinBoxChanged(int value);
 
         /**********************************************************************************
         * Called when markersShowROIMarginSpinBox state has changed
@@ -485,9 +481,13 @@ class teramanager::PMain : public QWidget
         void tabIndexChanged(int value);
 
         void showDialogVtk2APO();
+        void showDialogMaMut2APO();
         void showDialogDiffAPO();
         void showDialogTrimAPO();
+        void showDialogDiffnAPO();
+        void showDialogTypeIandTypeIIerrors();
         void showDialogMergeImageJCellCounterXMLs();
+        void showDialogLabelDuplicateAPO();
         void showDialogCountDuplicateMarkers();
         void showDialogGenerateTimeSeriesInterpolation();
         void showDialogGenerateTimeSeriesReplication();
