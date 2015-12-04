@@ -1627,7 +1627,7 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 
         switch(mb.exec()) {
             case QMessageBox::Yes:
-				//move the location: 080101
+                //move the location: 080101
 				setMouseTracking(false); //"false" should be the default, but I set it again here to assure the mouseMove event is captured only when one mouse button is pressed
 				b_moveCurrentLandmark=true;
 				ind_landmarkToBeChanged=ind_min;

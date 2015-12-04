@@ -23,7 +23,7 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	contrastSlider->setSingleStep(1);
 	contrastSlider->setPageStep(10);
 	contrastSlider->setValue(contrastValue);
-	
+
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
@@ -57,12 +57,70 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	curr_renderer->paint();
 }
 
+//find the nearest node in a neuron in XY project of the display window
+int Mozak3DView::findNearestNeuronNode(int cx, int cy)
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    int best_ind=-1;
+    int best_dist=-1;
+
+    QList<NeuronTree>::iterator i;
+    for (i = (curr_renderer->listNeuronTree).begin(); i != (curr_renderer->listNeuronTree.end()); ++i){
+        QList <NeuronSWC> p_listneuron = i->listNeuron;
+
+        GLdouble px, py, pz, ix, iy, iz;
+        for (int i=0; i<p_listneuron.size(); i++)
+        {
+            ix = p_listneuron.at(i).x, iy = p_listneuron.at(i).y, iz = p_listneuron.at(i).z;
+            GLint res = gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
+            py = curr_renderer->viewport[3]-py; //the Y axis is reversed
+            if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
+            double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
+            if (i==0) {	best_dist = cur_dist; best_ind=0; }
+            else {	if (cur_dist < best_dist) {best_dist=cur_dist; best_ind = i;}}
+        }
+    }
+
+    return best_ind; //by PHC, 090209. return the index in the SWC file
+}
+
 bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 {
 	if(!isReady)
 		return false;
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-	QKeyEvent* key_evt;
+    Renderer::SelectMode currentMode = curr_renderer->selectMode;
+    view3DWidget->setMouseTracking(true);
+    curr_renderer->nodeSize = 5;
+
+    if (event->type() == QEvent::MouseMove)
+    {
+        //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
+        QMouseEvent *k = (QMouseEvent *)event;
+        int isRightMouseDown = k->buttons() & Qt::RightButton; //
+        if( (currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode)){
+            if(!isRightMouseDown){
+                //Highlight start node
+                curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y());
+            }else if(currentMode == Renderer::smCurveEditExtendTwoNode){
+                //Highlight end node
+                curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
+            }
+
+            curr_renderer->drawNeuronTreeList();
+            curr_renderer->drawObj();
+            ((QWidget *)(curr_renderer->widget))->repaint (); //Update the screen position of highlighted nodes
+        }
+    }
+
+    if (event->type() == QEvent::MouseButtonRelease)
+    {
+        //This is a very unfortunate workaround to solve an issue where the cursor move calls
+        //stop happening at times even when setMouseTracking is enabled.
+        view3DWidget->setMouseTracking(false);
+    }
+
+    QKeyEvent* key_evt;
 	QMouseEvent* mouseEvt;
 	bool neuronTreeChanged = false;
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
@@ -113,10 +171,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
 		// Implement custom key events
-		int keyPressed = key_evt->key();
-		Renderer::SelectMode currentMode = curr_renderer->selectMode;
+        int keyPressed = key_evt->key();
 		Renderer::SelectMode newMode;
         bool bAddCurve = true;
+
 		switch (keyPressed)
 		{
 			case Qt::Key_D:
@@ -125,12 +183,19 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_S:
 				newMode = Renderer::smBreakMultiNeurons;
                 bAddCurve = false;
-				break;
-			/* This is still crashing, disable for now:
-            case Qt::Key_E:
-                newMode = Renderer::smCurveEditExtend;
                 break;
-			*/
+            case Qt::Key_E:
+                //This is a very unfortunate workaround to solve an issue where the cursor move calls
+                //stop happening at times even when setMouseTracking is enabled.
+                view3DWidget->setMouseTracking(false);
+                newMode = Renderer::smCurveEditExtendOneNode;
+                break;
+            case Qt::Key_C:
+                //This is a very unfortunate workaround to solve an issue where the cursor move calls
+                //stop happening at times even when setMouseTracking is enabled.
+                view3DWidget->setMouseTracking(false);
+                newMode = Renderer::smCurveEditExtendTwoNode;
+                break;
 			default:
 #ifdef FORCE_BBOX_MODE
 				newMode = Renderer::smCurveTiltedBB_fm_sbbox;

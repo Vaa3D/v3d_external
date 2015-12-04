@@ -166,9 +166,9 @@
                locj.x=outswc.at(j)->x + sub_orig.x; \
                locj.y=outswc.at(j)->y + sub_orig.y; \
                locj.z=outswc.at(j)->z + sub_orig.z; \
-			{    cout<<"before push j="<<j<< " "<< locj.x << " "<<locj.y << " " << locj.z <<endl;}\
+            {    ;}\
                if (loc_vec.size()<=0 || loc_vec.back().x != locj.x || loc_vec.back().y != locj.y || loc_vec.back().z != locj.z)  \
-               {   loc_vec.push_back(locj); cout<<"push j="<<j<< " "<< locj.x << " "<<locj.y << " " << locj.z <<endl;}\
+               {   loc_vec.push_back(locj); ;}\
             } \
           }\
      } \
@@ -1401,13 +1401,14 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
      }
 
      if(selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox 
-        || selectMode==smMarkerCreate1Curve) //by PHC 20121012
+        || selectMode==smMarkerCreate1Curve //by PHC 20121012
+        || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
      {
           b_useTiltedBB = true;
           b_useStrokeBB = false;
           b_use2PointsBB = false;
 
-         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox || selectMode==smMarkerCreate1Curve)? //PHC 20121012
+         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox || selectMode==smMarkerCreate1Curve || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode)? //PHC 20121012
             true : false;
      }
 
@@ -1731,7 +1732,8 @@ if (0)
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
 	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false &&
           (selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
-               selectMode == smCurveUseStrokeBB_fm || selectMode == smCurveTiltedBB_fm || selectMode==smCurveTiltedBB_fm_sbbox) )
+               selectMode == smCurveUseStrokeBB_fm || selectMode == smCurveTiltedBB_fm || selectMode==smCurveTiltedBB_fm_sbbox
+           || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) ) //ZMS 20151203
 	{
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
@@ -1746,31 +1748,69 @@ if (0)
 				double th_merge = 5;
 
 				bool b_start_merged=false, b_end_merged=false;
-				NeuronSWC cur_node;
+                NeuronSWC cur_node;
 				if (n_id_start>=0)
 				{
-					cur_node = p_tree->listNeuron.at(n_id_start);
-					qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-					XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-					if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
-					{
-						loc_vec.at(0) = cur_node_xyz;
-						b_start_merged = true;
-						qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-					}
+                    if(selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode){
+                        QList<NeuronTree>::iterator i;
+                        for (i = listNeuronTree.begin(); i != listNeuronTree.end(); ++i){
+                            QList <NeuronSWC> p_listneuron = i->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
+
+                            for (int i=0; i<p_listneuron.size(); i++)
+                            {
+                                if(i == highlightedNode){
+                                    cur_node = p_listneuron.at(i);
+                                    XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                                    loc_vec.at(0) = cur_node_xyz;
+                                    b_start_merged = true;
+                                    qDebug()<<"force set the first point of this curve to the above neuron node due to extend mode.";
+                                }
+                            }
+                        }
+                    }else{
+                        cur_node = p_tree->listNeuron.at(n_id_start);
+                        qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                        XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                        if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge) //Last two conditions ZMS 20151203
+                        {
+                            loc_vec.at(0) = cur_node_xyz;
+                            b_start_merged = true;
+                            qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                        }
+                    }
 				}
+
 				if (n_id_end>=0)
 				{
-					cur_node = p_tree->listNeuron.at(n_id_end);
-					qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-					XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-					if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
-					{
-						loc_vec.at(N-1) = cur_node_xyz;
-						b_end_merged = true;
-						qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+                    if(selectMode == smCurveEditExtendTwoNode){
+                        QList<NeuronTree>::iterator i;
+                        for (i = listNeuronTree.begin(); i != listNeuronTree.end(); ++i){
+                            QList <NeuronSWC> p_listneuron = i->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
 
-					}
+                            for (int i=0; i<p_listneuron.size(); i++)
+                            {
+                                if(i == highlightedEndNode){
+                                    cur_node = p_listneuron.at(i);
+                                    XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                                    loc_vec.at(N-1) = cur_node_xyz;
+                                    b_start_merged = true;
+                                    highlightedEndNode = -1; //Prevent this node from being highlighted
+                                    qDebug()<<"force set the first point of this curve to the above neuron node due to extend mode.";
+                                }
+                            }
+                        }
+                    }else{
+                        cur_node = p_tree->listNeuron.at(n_id_end);
+                        qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                        XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                        if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge) //Last condition ZMS20151203
+                        {
+                            loc_vec.at(N-1) = cur_node_xyz;
+                            b_end_merged = true;
+                            qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+
+                        }
+                    }
 				}
 
 				//a special operation is that if the end point is merged, but the start point is not merged,
@@ -1800,7 +1840,8 @@ if (0)
 	//Need to use a better and more evenly spaced method. by PHC, 20120330.
 
      if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
-          selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveUseStrokeBB_fm)
+          selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveUseStrokeBB_fm
+             || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
      {
           if (b_addthiscurve)
           {

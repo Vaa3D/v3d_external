@@ -1631,6 +1631,15 @@ void Renderer_gl1::drawNeuronTree(int index)
 					if (nodeSize)
 					{
 						glPointSize(nodeSize);
+                        //20151203 ZMS: Highlight selected nodes
+                        if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){
+                            glColor3ub(255, 0, 0);
+                            glPointSize(nodeSize + 6);
+                        }
+                        if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
+                            glColor3ub(0, 0, 255);
+                            glPointSize(nodeSize + 6);
+                        }
 						glBegin(GL_POINTS);
 							glVertex3f(S1.x, S1.y, S1.z);
 						glEnd();
@@ -1639,6 +1648,15 @@ void Renderer_gl1::drawNeuronTree(int index)
 				else if (rootSize)// root point
 				{
 					glPointSize(rootSize);
+                    //20151203 ZMS: Highlight selected nodes
+                    if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){
+                        glColor3ub(255, 0, 0);
+                        glPointSize(nodeSize + 6);
+                    }
+                    if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
+                        glColor3ub(0, 0, 255);
+                        glPointSize(nodeSize + 6);
+                    }
 					glBegin(GL_POINTS);
 						glVertex3f(S1.x, S1.y, S1.z);
 					glEnd();

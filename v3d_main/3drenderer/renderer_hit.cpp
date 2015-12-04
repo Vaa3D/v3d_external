@@ -2151,7 +2151,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
 			selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
 			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest ||
-             selectMode == smMarkerCreate1Curve || selectMode == smCurveEditExtend) //by PHC 20121011
+             selectMode == smMarkerCreate1Curve || selectMode == smCurveEditExtend || //by PHC 20121011
+            selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2214,7 +2215,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
 			}
 			else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox ||
-                    selectMode == smMarkerCreate1Curve) //by PHC 20121011
+                    selectMode == smMarkerCreate1Curve || //by PHC 20121011
+                    selectMode == smCurveEditExtendTwoNode || selectMode == smCurveEditExtendOneNode) //by ZMS 20151203
 			{
 				// using two marker lists for fast marching to get a curve
 				vector <XYZ> loc_vec_input;

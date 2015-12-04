@@ -560,6 +560,8 @@ public:
 	void updateNeuronBoundingBox();
 	virtual void drawNeuronTree(int i);
 	virtual void drawNeuronTreeList();
+    int highlightedNode = -1; //Added by ZMS 20151203 highlight initial node we are going to extend.
+    int highlightedEndNode = -1; //Added by ZMS 20151203 highlight final node we are going to extend.
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
 	void constructLabelfieldSurf(int mesh_method, int mesh_density);
