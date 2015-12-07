@@ -93,6 +93,8 @@ class teramanager::PConverter : public QWidget
         QLabel* memoryField;            //field for memory usage estimation
         QComboBox* downsamplingCbox;    //downsampling method
 
+        QElapsedTimer timer;            //timer
+
         bool operationInProgress;
 
         //friend class declarations

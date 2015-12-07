@@ -64,20 +64,20 @@ PDialogImport::PDialogImport(QWidget* parent) : QDialog(parent)
     import_form_desc_1->setWordWrap(true);
     import_form_desc_1->setFont(tinyFont);
 
+
     inFormatCBox = new QComboBox();
     inFormatCBox->insertItem(0, iim::STACKED_FORMAT.c_str());
-    inFormatCBox->insertItem(1, iim::SIMPLE_FORMAT.c_str());
+    inFormatCBox->insertItem(1, iim::SIMPLE_FORMAT.c_str());        // disabled
     inFormatCBox->insertItem(2, iim::TILED_TIF3D_FORMAT.c_str());
-    inFormatCBox->insertItem(3, iim::TIF3D_FORMAT.c_str());
-    inFormatCBox->insertItem(4, iim::RAW_FORMAT.c_str());
-    inFormatCBox->insertItem(5, iim::TILED_FORMAT.c_str());
-    inFormatCBox->insertItem(6, iim::TILED_MC_FORMAT.c_str());
-    inFormatCBox->insertItem(7, iim::SIMPLE_RAW_FORMAT.c_str());
+    inFormatCBox->insertItem(3, iim::TILED_MC_TIF3D_FORMAT.c_str());
+    inFormatCBox->insertItem(4, iim::TIF3D_FORMAT.c_str());
+    inFormatCBox->insertItem(5, iim::RAW_FORMAT.c_str());           // disabled
+    inFormatCBox->insertItem(6, iim::TILED_FORMAT.c_str());
+    inFormatCBox->insertItem(7, iim::TILED_MC_FORMAT.c_str());
+    inFormatCBox->insertItem(8, iim::SIMPLE_RAW_FORMAT.c_str());    // disabled
     PMain::setEnabledComboBoxItem(inFormatCBox, 1, false);
-    PMain::setEnabledComboBoxItem(inFormatCBox, 2, false);
-    PMain::setEnabledComboBoxItem(inFormatCBox, 3, false);
-    PMain::setEnabledComboBoxItem(inFormatCBox, 4, false);
-    PMain::setEnabledComboBoxItem(inFormatCBox, 7, false);
+    PMain::setEnabledComboBoxItem(inFormatCBox, 5, false);
+    PMain::setEnabledComboBoxItem(inFormatCBox, 8, false);
     inFormatCBox->setEditable(true);
     inFormatCBox->lineEdit()->setReadOnly(true);
     inFormatCBox->lineEdit()->setAlignment(Qt::AlignCenter);

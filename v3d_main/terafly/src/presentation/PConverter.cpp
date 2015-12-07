@@ -95,16 +95,16 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
 
     //import form widget
     inFormatCBox = new QComboBox();
-    inFormatCBox->insertItem(0, iim::STACKED_FORMAT.c_str());
-    inFormatCBox->insertItem(1, iim::SIMPLE_FORMAT.c_str());
-    inFormatCBox->insertItem(2, iim::TIF3D_FORMAT.c_str());
+    inFormatCBox->insertItem(0, iim::SIMPLE_FORMAT.c_str());
+    inFormatCBox->insertItem(1, iim::TIF3D_FORMAT.c_str());
+    inFormatCBox->insertItem(2, iim::STACKED_FORMAT.c_str());
     inFormatCBox->insertItem(3, iim::TILED_TIF3D_FORMAT.c_str());
     inFormatCBox->insertItem(4, iim::TILED_MC_TIF3D_FORMAT.c_str());
     inFormatCBox->insertItem(5, iim::RAW_FORMAT.c_str());
-    inFormatCBox->insertItem(6, iim::TILED_FORMAT.c_str());
-    inFormatCBox->insertItem(7, iim::TILED_MC_FORMAT.c_str());
-    inFormatCBox->insertItem(8, iim::SIMPLE_RAW_FORMAT.c_str());
-    PMain::setEnabledComboBoxItem(inFormatCBox, 2, false);
+    inFormatCBox->insertItem(6, iim::SIMPLE_RAW_FORMAT.c_str());
+    inFormatCBox->insertItem(7, iim::TILED_FORMAT.c_str());
+    inFormatCBox->insertItem(8, iim::TILED_MC_FORMAT.c_str());
+    PMain::setEnabledComboBoxItem(inFormatCBox, 1, false);
     inFormatCBox->setEditable(true);
     inFormatCBox->lineEdit()->setReadOnly(true);
     inFormatCBox->lineEdit()->setAlignment(Qt::AlignCenter);
@@ -139,19 +139,32 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
 
     //conversion form widget
     outFormatCBox = new QComboBox();
+
+//    const std::string TILED_MC_FORMAT       = "Vaa3D raw (tiled, 4D)";     // unique ID for the TiledMCVolume class
+//    const std::string TILED_FORMAT          = "Vaa3D raw (tiled, 3D)";    // unique ID for the TiledVolume class
+//    const std::string STACKED_FORMAT        = "2D TIFF (tiled, 3D)";      // unique ID for the StackedVolume class
+//    const std::string SIMPLE_FORMAT         = "2D TIFF (series)";              // unique ID for the SimpleVolume class
+//    const std::string SIMPLE_RAW_FORMAT     = "Vaa3D raw (series)";        // unique ID for the SimpleVolumeRaw class
+//    const std::string RAW_FORMAT            = "Vaa3D raw";                 // unique ID for the RawVolume class
+//    const std::string TIF3D_FORMAT          = "TIFF multipage (series)";   // unique ID for multipage TIFF format (nontiled)
+//    const std::string TILED_TIF3D_FORMAT    = "TIFF multipage (tiled, 3D)";// unique ID for multipage TIFF format (tiled)
+//    const std::string TILED_MC_TIF3D_FORMAT = "TIFF multipage (tiled, 4D)";// unique ID for multipage TIFF format (nontiled, 4D)
+//    const std::string UNST_TIF3D_FORMAT     = "TIFF multipage (unstitched, RGB)";// unique ID for multipage TIFF format (nontiled, 4D)
+//    const std::string TIME_SERIES           = "Time series";               // unique ID for the TimeSeries class
+
     outFormatCBox->insertItem(0, iim::STACKED_FORMAT.c_str());
-    outFormatCBox->insertItem(1, iim::SIMPLE_FORMAT.c_str());
-    outFormatCBox->insertItem(2, iim::TIF3D_FORMAT.c_str());
-    outFormatCBox->insertItem(3, iim::TILED_TIF3D_FORMAT.c_str());
-    outFormatCBox->insertItem(4, iim::TILED_MC_TIF3D_FORMAT.c_str());
-    outFormatCBox->insertItem(5, iim::RAW_FORMAT.c_str());
-    outFormatCBox->insertItem(6, iim::TILED_FORMAT.c_str());
-    outFormatCBox->insertItem(7, iim::TILED_MC_FORMAT.c_str());
-    outFormatCBox->insertItem(8, iim::SIMPLE_RAW_FORMAT.c_str());
-    PMain::setEnabledComboBoxItem(outFormatCBox, 1, false);
+    //outFormatCBox->insertItem(1, iim::SIMPLE_FORMAT.c_str());
+    //outFormatCBox->insertItem(2, iim::TIF3D_FORMAT.c_str());
+    outFormatCBox->insertItem(1, iim::TILED_TIF3D_FORMAT.c_str());
+    outFormatCBox->insertItem(2, iim::TILED_MC_TIF3D_FORMAT.c_str());
+    //outFormatCBox->insertItem(5, iim::RAW_FORMAT.c_str());
+    outFormatCBox->insertItem(3, iim::TILED_FORMAT.c_str());
+    outFormatCBox->insertItem(4, iim::TILED_MC_FORMAT.c_str());
+    //outFormatCBox->insertItem(8, iim::SIMPLE_RAW_FORMAT.c_str());
+    /*PMain::setEnabledComboBoxItem(outFormatCBox, 1, false);
     PMain::setEnabledComboBoxItem(outFormatCBox, 2, false);
     PMain::setEnabledComboBoxItem(outFormatCBox, 5, false);
-    PMain::setEnabledComboBoxItem(outFormatCBox, 8, false);
+    PMain::setEnabledComboBoxItem(outFormatCBox, 8, false);*/
     outFormatCBox->setEditable(true);
     outFormatCBox->lineEdit()->setReadOnly(true);
     outFormatCBox->lineEdit()->setAlignment(Qt::AlignCenter);
@@ -245,7 +258,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     conversionFormLayout->addSpacing(20);
 
     QHBoxLayout* stacksDimLayout = new QHBoxLayout();
-    QLabel* stacksDimLabel = new QLabel("Block dims:");
+    QLabel* stacksDimLabel = new QLabel("Tile dims:");
     stacksDimLabel->setFixedWidth(220);
     stacksDimLayout->addWidget(stacksDimLabel);
     stacksDimLayout->addWidget(blockWidthField, 1);
@@ -416,6 +429,7 @@ void PConverter::startButtonClicked()
             progressBar->setMaximum(100);
         }
         //PLog::instance()->show();
+        timer.restart();
         CConverter::instance()->start();
     }
     catch(RuntimeException &ex) {QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));}
@@ -568,8 +582,7 @@ void PConverter::volformatChanged (int )
 
     if(sender->currentText().compare(iim::STACKED_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("Two-leveled folder structure (see <a href=\"http://code.google.com/p/terastitcher/wiki/SupportedFormats\">here</a>) with each tile composed "
-                                  "by a series of 2D images.");
+        helpBox->setText("Three-leveled (y,x,z) hierarchy of tiles with each tile composed by a series of 2D TIFF files.");
         buttonLayout->setCurrentWidget(dirButton);
 
         if(sender == outFormatCBox)
@@ -577,8 +590,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::SIMPLE_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("A folder containing a series of 2D images. Supported formats for single "
-                                  "2D images are BMP, DIB, JPEG, JPG, JPE, PNG, PBM, PGM, PPM, SR, RAS, TIFF, TIF.");
+        helpBox->setText("A folder containing a series (1+) of 2D TIFF files");
         buttonLayout->setCurrentWidget(dirButton);
 
         if(sender == outFormatCBox)
@@ -586,8 +598,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::TILED_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("Two-leveled folder structure (see <a href=\"http://code.google.com/p/terastitcher/wiki/SupportedFormats\">here</a>) with each tile composed "
-                                  "by a series of 3D blocks stored into Vaa3D raw files containing up to 3 channels (RGB).");
+        helpBox->setText("Three-leveled (y,x,z) hierarchy of tiles with each tile composed by a series of Vaa3D 3D raw files.");
         buttonLayout->setCurrentWidget(dirButton);
 
         if(sender == outFormatCBox)
@@ -595,8 +606,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::TILED_MC_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("Three-leveled folder structure (first level for channels, other two levels for tiling X vs Y) with each tile composed "
-                                  "by a series of 3D blocks stored into Vaa3D raw files containing a single channel.");
+        helpBox->setText("Four-leveled (c,y,x,z) hierarchy of tiles with each tile composed by a series of Vaa3D 3D raw files.");
         buttonLayout->setCurrentWidget(dirButton);
 
         if(sender == outFormatCBox)
@@ -604,7 +614,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::RAW_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("Vaa3D raw 4D format (single file). Supported suffixes are: .raw, .RAW, .v3draw, .V3DRAW");
+        helpBox->setText("Single Vaa3D 3D raw file");
         if(timeSeriesCheckBox->isChecked())
             buttonLayout->setCurrentWidget(dirButton);
         else
@@ -615,7 +625,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::SIMPLE_RAW_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("A folder containing a series of Vaa3D raw files. Supported suffixes are: .raw, .RAW, .v3draw, .V3DRAW");
+        helpBox->setText("A folder containing a series (1+) of Vaa3D 2D raw files.");
         buttonLayout->setCurrentWidget(dirButton);
 
         if(sender == outFormatCBox)
@@ -623,8 +633,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::TILED_TIF3D_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("Two-leveled folder structure (see <a href=\"http://code.google.com/p/terastitcher/wiki/SupportedFormats\">here</a>) with each tile composed "
-                                  "by a series of 3D blocks stored into multipage TIFF files containing up to 3 channels (RGB).");
+        helpBox->setText("Three-leveled (y,x,z) hierarchy of tiles with each tile composed by a series of multipage (3D) TIFF files.");
         buttonLayout->setCurrentWidget(dirButton);
 
         if(sender == outFormatCBox)
@@ -632,8 +641,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::TILED_MC_TIF3D_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("Three-leveled folder structure (first level for channels, other two levels for tiling X vs Y) with each tile composed "
-                                  "by a series of 3D blocks stored into multipage TIFF files containing a single channel.");
+        helpBox->setText("Four-leveled (c,y,x,z) hierarchy of tiles with each tile composed by a series of multipage (3D) TIFF files.");
         buttonLayout->setCurrentWidget(dirButton);
 
         if(sender == outFormatCBox)
@@ -641,7 +649,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::TIF3D_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("Multipage TIFF format (single file)");
+        helpBox->setText("A folder containing a series (1+) of multipage (3D) TIFF files.");
         buttonLayout->setCurrentWidget(fileButton);
 
         if(sender == outFormatCBox)
@@ -716,14 +724,24 @@ void PConverter::operationDone(RuntimeException *ex)
     }
     else if(CConverter::instance()->isConversionModeEnabled())
     {
+//        statusBar->clearMessage();
+//        statusBar->showMessage("Conversion successfully performed!");
+//        progressBar->setEnabled(false);
+//        progressBar->setMaximum(1);         //needed to stop animation on some operating systems
+//        startButton->setEnabled(false);
+//        stopButton->setEnabled(false);
+        double elapsed_mm = timer.elapsed()/(1000*60.0);
+        QMessageBox::information(this, "Success!", itm::strprintf("Conversion successfully done in %.1f minutes!", elapsed_mm).c_str());
+        //close();
+
         statusBar->clearMessage();
-        statusBar->showMessage("Conversion successfully performed!");
+        statusBar->showMessage("Ready to convert volume.");
         progressBar->setEnabled(false);
         progressBar->setMaximum(1);         //needed to stop animation on some operating systems
-        startButton->setEnabled(false);
+        startButton->setEnabled(true);
         stopButton->setEnabled(false);
-        QMessageBox::information(this, "Success!", "Conversion successful!");
-        close();
+        import_panel->setEnabled(false);
+        conversion_panel->setEnabled(true);
     }
     else
     {
@@ -750,6 +768,8 @@ void PConverter::operationDone(RuntimeException *ex)
                 add_a_resolution = height > CSettings::instance()->getVOIdimV() ||
                                    width  > CSettings::instance()->getVOIdimH() ||
                                    depth  > CSettings::instance()->getVOIdimD();
+
+                add_a_resolution =  add_a_resolution && height > 10 && width > 10 && depth > 10;
 
                 if(add_a_resolution)
                     res++;

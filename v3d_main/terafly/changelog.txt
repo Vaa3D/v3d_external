@@ -11,6 +11,18 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.0.15
+December 7th, 2015
+--------------------------------------------------------------------------------------------
+- New: TeraConverter now shows the overall elapsed time at the end of the conversion process
+- Fix: fixed a bug which  caused TeraConverter  to close automatically w/o being recoverable
+       when the conversion process finished.
+- Opt: changed the image format names in TeraConverter.
+- Fix: fixed outdated description displayed in the help box when selecting an image format
+       in TeraConverter.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.14
 December 4rd, 2015
 --------------------------------------------------------------------------------------------
