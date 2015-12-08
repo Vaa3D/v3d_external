@@ -155,8 +155,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     menuBar = new QMenuBar(0);
     /* --------------------------- "File" menu --------------------------- */
     fileMenu = menuBar->addMenu("File");
-    openVolumeAction = new QAction("Open volume", this);
-    openVolumeAction->setIcon(QIcon(":/icons/open_volume.png"));
+    openTeraFlyVolumeAction = new QAction("Open TeraFly volume", this);
+    openTeraFlyVolumeAction->setIcon(QIcon(":/icons/open_volume.png"));
+    openHDF5VolumeAction = new QAction("Open HDF5 volume", this);
+    openHDF5VolumeAction->setIcon(QIcon(":/icons/import.png"));
     closeVolumeAction = new QAction("Close volume", this);
     closeVolumeAction->setIcon(QIcon(":/icons/close.png"));
     loadAnnotationsAction = new QAction("Load annotations", this);
@@ -168,21 +170,24 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     clearAnnotationsAction = new QAction("Clear annotations", this);
     clearAnnotationsAction->setIcon(QIcon(":/icons/clear.png"));
     exitAction = new QAction("Quit", this);
-    openVolumeAction->setShortcut(QKeySequence("Ctrl+O"));
+    openTeraFlyVolumeAction->setShortcut(QKeySequence("Ctrl+O"));
+    openHDF5VolumeAction->setShortcut(QKeySequence("Ctrl+H"));
     closeVolumeAction->setShortcut(QKeySequence("Ctrl+C"));
     loadAnnotationsAction->setShortcut(QKeySequence("Ctrl+L"));
     saveAnnotationsAction->setShortcut(QKeySequence("Ctrl+S"));
     saveAnnotationsAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     clearAnnotationsAction->setShortcut(QKeySequence("Ctrl+Shift+C"));
     exitAction->setShortcut(QKeySequence("Ctrl+Q"));
-    connect(openVolumeAction, SIGNAL(triggered()), this, SLOT(openVolume()));
+    connect(openTeraFlyVolumeAction, SIGNAL(triggered()), this, SLOT(openTeraFlyVolume()));
+    connect(openHDF5VolumeAction, SIGNAL(triggered()), this, SLOT(openHDF5Volume()));
     connect(closeVolumeAction, SIGNAL(triggered()), this, SLOT(closeVolume()));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
     connect(loadAnnotationsAction, SIGNAL(triggered()), this, SLOT(loadAnnotations()));
     connect(saveAnnotationsAction, SIGNAL(triggered()), this, SLOT(saveAnnotations()));
     connect(saveAnnotationsAsAction, SIGNAL(triggered()), this, SLOT(saveAnnotationsAs()));
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
-    fileMenu->addAction(openVolumeAction);
+    fileMenu->addAction(openTeraFlyVolumeAction);
+    fileMenu->addAction(openHDF5VolumeAction);
     recentVolumesMenu = new QMenu("Recent volumes");
     recentVolumesMenu->setIcon(QIcon(":/icons/open_volume_recent.png"));
     fileMenu->addMenu(recentVolumesMenu);
@@ -464,7 +469,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     recentVolumesMenu->addSeparator();
     recentVolumesMenu->addAction(clearRecentVolumesAction);
 
-    openMenu->addAction(openVolumeAction);
+    openMenu->addAction(openTeraFlyVolumeAction);
+    openMenu->addAction(openHDF5VolumeAction);
     openMenu->addMenu(recentVolumesMenu);
     openVolumeToolButton = new QToolButton();
     openVolumeToolButton->setMenu(openMenu);
@@ -1028,7 +1034,8 @@ void PMain::reset()
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
     //resetting menu options and widgets
-    openVolumeAction->setEnabled(true);
+    openTeraFlyVolumeAction->setEnabled(true);
+    openHDF5VolumeAction->setEnabled(true);
     openVolumeToolButton->setEnabled(true);
     recentVolumesMenu->setEnabled(true);
     closeVolumeAction->setEnabled(false);
@@ -1155,7 +1162,14 @@ void PMain::openVolumeActionTriggered()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
-    this->openVolume(qobject_cast<QAction*>(sender())->text().toStdString());
+    std::string recentpath = qobject_cast<QAction*>(sender())->text().toStdString();
+    QFileInfo pathinfo(recentpath.c_str());
+    if(pathinfo.isDir())
+        openTeraFlyVolume(qobject_cast<QAction*>(sender())->text().toStdString());
+    else if(pathinfo.isFile())
+        openTeraFlyVolume(qobject_cast<QAction*>(sender())->text().toStdString());
+    else
+        QMessageBox::critical(this,QObject::tr("Error"), "Cannot find the file",QObject::tr("Ok"));
 }
 
 /**********************************************************************************
@@ -1175,10 +1189,104 @@ void PMain::clearRecentVolumesTriggered()
 }
 
 /**********************************************************************************
-* Called when "Open volume" menu action is triggered.
+* Called when "Open HDF5 volume" menu action is triggered.
 * If path is not provided, opens a QFileDialog to select volume's path.
 ***********************************************************************************/
-void PMain::openVolume(string path /* = "" */)
+void PMain::openHDF5Volume(string path)
+{
+    try
+    {
+        QString import_path = path.c_str();
+
+        if(import_path.isEmpty())
+        {
+            /**/itm::debug(itm::LEV2, "import_path is empty, launch file dialog", __itm__current__function__);
+
+            #ifdef _USE_QT_DIALOGS
+            QFileDialog dialog(0);
+            dialog.setFileMode(QFileDialog::ExistingFile);
+            dialog.setNameFilter(tr("BigDataViewer HDF5 files (*.h5)"));
+            dialog.setViewMode(QFileDialog::Detail);
+            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+            dialog.setWindowTitle("Select volume's file");
+            dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
+            if(dialog.exec())
+                import_path = dialog.directory().absolutePath().toStdString().c_str();
+
+            #else
+             QString import_path = QFileDialog::getOpenFileName(this, "Open HDF5 volume's file", QString(), tr("HDF5 files (*.h5)"));
+            #endif
+            /**/itm::debug(itm::LEV3, strprintf("import_path = %s", qPrintable(import_path)).c_str(), __itm__current__function__);
+
+
+            if (import_path.isEmpty())
+                return;
+        }
+        else
+        {
+            /**/itm::debug(itm::LEV2, strprintf("import_path is not empty (= \"%s\")", import_path.toStdString().c_str()).c_str(), __itm__current__function__);
+
+            if(!QFile::exists(import_path))
+                throw RuntimeException(strprintf("Path \"%s\" does not exist", import_path.toStdString().c_str()).c_str());
+        }
+
+
+        //then checking that no volume has imported yet
+        if(!CImport::instance()->isEmpty())
+            throw RuntimeException("A volume has been already imported! Please close the current volume first.");
+
+
+        //storing the path into CSettings
+        CSettings::instance()->setVolumePathLRU(qPrintable(import_path));
+        CSettings::instance()->addVolumePathToHistory(qPrintable(import_path));
+        CSettings::instance()->writeSettings();
+
+        //updating recent volumes menu
+        QList<QAction*> actions = recentVolumesMenu->actions();
+        qDeleteAll(actions.begin(), actions.end());
+        std::list<string> recentVolumes = CSettings::instance()->getVolumePathHistory();
+        for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
+        {
+            QAction *action = new QAction(it->c_str(), this);
+            connect(action, SIGNAL(triggered()), this, SLOT(openVolumeActionTriggered()));
+            recentVolumesMenu->addAction(action);
+        }
+        clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
+        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumesTriggered()));
+        recentVolumesMenu->addSeparator();
+        recentVolumesMenu->addAction(clearRecentVolumesAction);
+
+
+        //disabling import form and enabling progress bar animation
+        progressBar->setEnabled(true);
+        progressBar->setMinimum(0);
+        progressBar->setMaximum(0);
+        statusBar->showMessage("Importing volume...");
+
+        //starting import
+        throw itm::RuntimeException("HDF5 not yet implemented");
+        //CImport::instance()->updateMaxDims();
+        //CImport::instance()->start();
+    }
+    catch(iim::IOException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        PMain::getInstance()->resetGUI();
+        CImport::instance()->reset();
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        PMain::getInstance()->resetGUI();
+        CImport::instance()->reset();
+    }
+}
+
+/**********************************************************************************
+* Called when "Open TeraFly volume" menu action is triggered.
+* If path is not provided, opens a QFileDialog to select volume's path.
+***********************************************************************************/
+void PMain::openTeraFlyVolume(string path /* = "" */)
 {
     /**/itm::debug(itm::LEV1, strprintf("path = \"%s\"", path.c_str()).c_str(), __itm__current__function__);
 
@@ -1225,17 +1333,6 @@ void PMain::openVolume(string path /* = "" */)
                 throw RuntimeException(strprintf("Path \"%s\" does not exist", import_path.toStdString().c_str()).c_str());
         }
 
-        /* ---- temporary code ---- */
-//        TimeSeries* ts = new TimeSeries(import_path.toStdString().c_str(), iim::RAW_FORMAT);
-//        printf("FOUND %d x %d x %d x %d x %d\n", ts->getDIM_H(), ts->getDIM_V(), ts->getDIM_D(), ts->getDIM_C(), ts->getDIM_T());
-//        return;
-//        VirtualVolume* vol = VirtualVolume::instance(import_path.toStdString().c_str());
-//        if(vol)
-//            printf("VOLUME FOUND! Type = \"%s\"\n", typeid(*vol).name());
-//        else
-//            printf("VOLUME not found :-(\n");
-//        return;
-        /* ------------------------ */
 
         //then checking that no volume has imported yet
         if(!CImport::instance()->isEmpty())
@@ -1665,7 +1762,8 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 
         //updating menu items
         /**/itm::debug(itm::LEV3, "updating menu items", __itm__current__function__);
-        openVolumeAction->setEnabled(false);
+        openTeraFlyVolumeAction->setEnabled(false);
+        openHDF5VolumeAction->setEnabled(false);
         recentVolumesMenu->setEnabled(false);
         openVolumeToolButton->setEnabled(false);
         importOptionsMenu->setEnabled(false);

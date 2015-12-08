@@ -113,6 +113,7 @@ class teramanager::CSettings
 
         void setVolumePathLRU(std::string _volumePathLRU){volumePathLRU = _volumePathLRU;}
         void addVolumePathToHistory(std::string _volumePath){
+
             if(volumePathHistory.size() > 10)
                 volumePathHistory.pop_front();
             volumePathHistory.push_back(_volumePath);

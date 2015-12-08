@@ -64,8 +64,9 @@ class teramanager::PMain : public QWidget
         QMenuBar* menuBar;              //Menu bar
 
         // "File" menu widgets
-        QMenu* fileMenu;                //"File" menu
-        QAction* openVolumeAction;      //"Open volume" menu action
+        QMenu* fileMenu;                    //"File" menu
+        QAction* openTeraFlyVolumeAction;   //"Open TeraFly volume" menu action
+        QAction* openHDF5VolumeAction;      //"Open HDF5 volume" menu action
         QAction* closeVolumeAction;     //"Close volume" menu action
         QAction* loadAnnotationsAction; //"Load annotations" menu action
         QAction* saveAnnotationsAction; //"Save annotations" menu action
@@ -315,10 +316,16 @@ class teramanager::PMain : public QWidget
     public slots:
 
         /**********************************************************************************
-        * Called when "Open volume" menu action is triggered.
+        * Called when "Open TeraFly volume" menu action is triggered.
         * If path is not provided, opens a QFileDialog to select volume's path.
         ***********************************************************************************/
-        void openVolume(string path = "");
+        void openTeraFlyVolume(string path = "");
+
+        /**********************************************************************************
+        * Called when "Open HDF5 volume" menu action is triggered.
+        * If path is not provided, opens a QFileDialog to select volume's path.
+        ***********************************************************************************/
+        void openHDF5Volume(string path = "");
 
         /**********************************************************************************
         * Called when a path in the "Recent volumes" menu is selected.
