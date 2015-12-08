@@ -384,7 +384,6 @@ DEFINES += CGS_AUTOLAUNCH
 DEFINES += V3D_SKIP_AUTO_VERSION_CHECK
 DEFINES += RENDERER_RIGHT_CLICK_MENU_DISABLED
 #DEFINES += HIDE_ANO_TOOLBAR # show this for now, rather than re-implementing load/save annotation buttons
-DEFINES += UNREVERSE_MOUSE_WHEEL_ZOOM # not working yet
 DEFINES += FORCE_BBOX_MODE
 HEADERS +=  ../../hackathon/Mozak/MozakPlugin.h \
             ../../hackathon/Mozak/MozakUI.h \

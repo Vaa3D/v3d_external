@@ -17,7 +17,7 @@ void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
     uniqueInstance->reset();
 	string path = ""; // this will prompt for user to find path
 	uniqueInstance->openVolume(path);
-	uniqueInstance->hide();
+	//uniqueInstance->hide();
 	V3dApplication::deactivateMainWindow();
 }
 
@@ -32,16 +32,12 @@ MozakUI::MozakUI(V3DPluginCallback2 *callback, QWidget *parent) : teramanager::P
 	// so that constructor will be called before the following code:
     
 	// Adjust Terafly UI
-	setWindowTitle(QString("Neuron Game"));
+	//setWindowTitle(QString("Neuron Game UI"));
 }
 
 void MozakUI::reset()
 {
-	// Hide menus
-	menuBar->hide();
-	// Hide tabs
-	controls_page->hide();
-	info_page->hide();
+
 }
 
 teramanager::CViewer * MozakUI::initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,

@@ -111,7 +111,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 
             curr_renderer->drawNeuronTreeList();
             curr_renderer->drawObj();
-            ((QWidget *)(curr_renderer->widget))->repaint (); //Update the screen position of highlighted nodes
+            ((QWidget *)(curr_renderer->widget))->repaint(); //Update the screen position of highlighted nodes
         }
     }
 
@@ -134,15 +134,62 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		lastWheelFocus = getRenderer3DPoint(wheelEvt->x(), wheelEvt->y());
 		useLastWheelFocus = true;
 		
-		// TODO: Zoom while centering mouse pos: (stolen from nstroke_tracing.cpp)
-		//gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
-		//py = viewport[3]-py; //the Y axis is reversed
+		// Calculate amount that the point being mouse over moves on the sceen
+		// in order to offset this and keep that point centered after zoom
+		GLdouble p0x, p0y, p0z, p1x, p1y, p1z, ix, iy, iz;
 		
-		processWheelEvt(wheelEvt);
-		int newZoom = view3DWidget->zoom();
-		//qDebug() << itm::strprintf("zooming out from %d to %d", prevZoom, newZoom).c_str();
+		ix = lastWheelFocus.x;
+        iy = lastWheelFocus.y;
+        iz = lastWheelFocus.z;
 		
+		// Project the moused-over 3D point to the screen coordinates
+		gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p0x, &p0y, &p0z);
+		p0y = curr_renderer->viewport[3]-p0y; //the Y axis is reversed
+		
+		// Handle this ourselves rather than passing to Terafly (which would change resolutions)
+		//processWheelEvt(wheelEvt);
+
+		float d = (wheelEvt->delta())/100;  // ~480
+		#define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
+		#define MOUSE_ZROT(dz)    (int(dz*8* MOUSE_SENSITIVE));
+
+		int zoomStep = MOUSE_ZOOM(d);
+		int newZoom = zoomStep + prevZoom; // wheeling up should zoom IN, not out
+		int wheelX = wheelEvt->x();
+		int wheelY = wheelEvt->y();
+		float prevZoomRatio = curr_renderer->zoomRatio;
+		
+		// Change zoom
+		view3DWidget->setZoom(newZoom);
+		curr_renderer->paint(); // updates the projection matrix
+
+		// Project the previously moused-over 3D point to its new screen coordinates (after zoom)
+		gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p1x, &p1y, &p1z);
+		p1y = curr_renderer->viewport[3]-p1y; //the Y axis is reversed
+		
+		float newZoomRatio = curr_renderer->zoomRatio;
+		float viewW = float(view3DWidget->viewW);
+		float viewH = float(view3DWidget->viewH);;
+		float dxPctOfScreen = float(p0x-p1x) / viewW;
+		float dyPctOfScreen = float(p1y-p0y) / viewH;
+		
+		float screenWidthInXShifts  = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
+		float screenHeightInYShifts = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
+		
+		//view3DWidget->setXShift(view3DWidget->xShift() + dxPctOfScreen*screenWidthInXShifts);
+		//view3DWidget->setYShift(view3DWidget->yShift() + dyPctOfScreen*screenHeightInYShifts);
+
 		if (!loadingNextImg && (newZoom < prevZoom) && (newZoom <= 0)) // zooming out
+		{
+			// Previously, we were lowering the resolution on zoomout, now just perform zoom
+		}
+		return true;
+	}
+	else if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick) //
+	{
+		QMouseEvent* mouseEvt = (QMouseEvent*)event;
+		// Right mouse double click reduces resolution
+		if (mouseEvt->button() == Qt::RightButton)
 		{
 			// Determine whether we need to go to a previous (lower) resolution when zooming out
 			CViewInfo* prevView = 0;
@@ -153,20 +200,26 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				isReady = false;
 				loadingNextImg = true;
 				window3D->setCursor(Qt::BusyCursor);
-                view3DWidget->setCursor(Qt::BusyCursor);
+				view3DWidget->setCursor(Qt::BusyCursor);
 				loadNewResolutionData(prevView->resIndex, prevView->img,
 					prevView->volV0, prevView->volV1,prevView->volH0, prevView->volH1, 
 					prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
 				prevView->img->setRawDataPointerToNull(); // this image is in use now, so remove pointer before deletion
 				delete prevView;
 				
-                window3D->setCursor(Qt::ArrowCursor);
-                view3DWidget->setCursor(Qt::ArrowCursor);
+				window3D->setCursor(Qt::ArrowCursor);
+				view3DWidget->setCursor(Qt::ArrowCursor);
 				loadingNextImg = false;
 				isReady = true;
+				return true;
 			}
+			return false;
 		}
-		return true;
+		else
+		{
+			// Left double clicks (zoom in resolution) handled by CViewer 
+			return teramanager::CViewer::eventFilter(object, event);
+		}
 	}
 	else if (event->type() == QEvent::KeyPress) // intercept keypress events
 	{
