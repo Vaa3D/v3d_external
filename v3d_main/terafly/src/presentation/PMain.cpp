@@ -1469,7 +1469,7 @@ void PMain::loadAnnotations()
                 QCursor cursor = cur_win->view3DWidget->cursor();
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                CViewer::setCursor(Qt::WaitCursor);
+                //CViewer::setCursor(Qt::WaitCursor);
 
                 // load
                 cur_win->loadAnnotations();
@@ -1516,7 +1516,7 @@ void PMain::saveAnnotations()
             QCursor cursor = cur_win->view3DWidget->cursor();
             if(PAnoToolBar::isInstantiated())
                 PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-            CViewer::setCursor(Qt::WaitCursor);
+            //CViewer::setCursor(Qt::WaitCursor);
 
             // save
             cur_win->storeAnnotations();
@@ -1577,7 +1577,7 @@ void PMain::saveAnnotationsAs()
                 QCursor cursor = cur_win->view3DWidget->cursor();
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                CViewer::setCursor(Qt::WaitCursor);
+                //CViewer::setCursor(Qt::WaitCursor);
 
                 // save
                 cur_win->storeAnnotations();
@@ -2300,13 +2300,13 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
-    try
-    {
-        VolumeConverter *vc = new VolumeConverter();
-        iim::DEBUG = iim::LEV_MAX;
-        vc->setSrcVolume("/Volumes/Volumes/test.purkinje.big.tiff.3D.oneblock/RES(2122x1951x608)/000000/000000_000000/000000_000000_000000.tif", iim::TIF3D_FORMAT.c_str());
-    }
-    catch(...){QMessageBox::warning(this, "error", "error");}
+//    try
+//    {
+//        VolumeConverter *vc = new VolumeConverter();
+//        iim::DEBUG = iim::LEV_MAX;
+//        vc->setSrcVolume("/Volumes/Volumes/test.purkinje.big.tiff.3D.oneblock/RES(2122x1951x608)/000000/000000_000000/000000_000000_000000.tif", iim::TIF3D_FORMAT.c_str());
+//    }
+//    catch(...){QMessageBox::warning(this, "error", "error");}
 //    QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
 //    if(!apo1FilePath.isEmpty())
 //    {
