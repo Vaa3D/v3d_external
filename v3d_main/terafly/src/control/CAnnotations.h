@@ -384,7 +384,7 @@ class teramanager::CAnnotations
         throw (itm::RuntimeException);
 
         /*********************************************************************************
-        * Merge .xml ImageJ Cell Counter markers files into .APO
+        *
         **********************************************************************************/
         static void diffnAPO(QStringList apos,        // inputs
                             std::string outputPath) // where output apo file is saved

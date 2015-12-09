@@ -1879,7 +1879,7 @@ itm::uint32 CAnnotations::countDuplicateMarkers(int d) throw (itm::RuntimeExcept
 }
 
 /*********************************************************************************
-* Merge .xml ImageJ Cell Counter markers files into .APO
+*
 **********************************************************************************/
 void CAnnotations::diffnAPO(QStringList apos,         // inputs
                     std::string outputPath)         // where output apo file is saved
@@ -1908,7 +1908,7 @@ throw (itm::RuntimeException)
                  itm::interval_t(0, std::numeric_limits<int>::max()),
                  itm::interval_t(0, std::numeric_limits<int>::max()), nodes);
 
-    // only take cells from singleton nodes (i.e. nodes containing only 1 cell)
+    // only take cells from nodes where at least one .apo disagrees, i.e. nodes that do not contain apos.size() cells
     QList<CellAPO> output_cells;
     for(std::list<annotation*>::iterator i = nodes.begin(); i != nodes.end(); i++)
         if( static_cast<CAnnotations::Octree::octant*>((*i)->container)->annotations.size() != apos.size())
