@@ -46,7 +46,7 @@ class teramanager::CConverter : public QThread
         * instantiated by calling the static method "istance(...)"
         **********************************************************************************/
         static CConverter* uniqueInstance;
-        CConverter() : QThread(), inVolPath(undefined_str), inVolFormat(undefined_str), fileMode(false), conversionMode(false), resolutions(0),
+        CConverter() : QThread(), inVolPath(undefined_str), inVolFormat(undefined_str), inFileMode(false), conversionMode(false), resolutions(0),
             resolutionsSize(0), stacksWidth(undefined_int32), stacksHeight(undefined_int32), outVolPath(undefined_str), outVolFormat(undefined_str), vc(0)
         {
             /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
@@ -58,7 +58,8 @@ class teramanager::CConverter : public QThread
         //members
         string inVolPath;           //absolute path of the folder or file containing the volume to be converted
         string inVolFormat;         //the unique ID of the volume's input format
-        bool fileMode;              //whether the volume to be imported is stored into a file (fileMode=true) or a folder (fileMode=false)
+        bool inFileMode;            //whether the volume to be imported is stored into a file (fileMode=true) or a folder (fileMode=false)
+        bool outFileMode;           //whether the output volume has to be saved into a file or a directory
         bool time_series;           //whether the volume to be imported is a time series (default = false)
         bool conversionMode;        //whether the conversion mode is active or not (as it is initially, when the import mode is activated)
         bool *resolutions;          //array of resolutions activation flags
@@ -112,9 +113,10 @@ class teramanager::CConverter : public QThread
             stacksDepth = undefined_int32;
             outVolPath = undefined_str;
             outVolFormat = undefined_str;
-            fileMode = false;
+            inFileMode = false;
             downsamplingMethod = 0;
             time_series = false;
+            outFileMode = false;
         }
 
     signals:

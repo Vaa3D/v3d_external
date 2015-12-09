@@ -22,62 +22,79 @@
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
 
-# ifndef _RAW_VOLUME_H
-# define _RAW_VOLUME_H
+/******************
+*    CHANGELOG    *
+*******************
+* 2015-11-30. Giulio.     @CREATED
+*/
 
-# include "VirtualVolume.h" 
-# include "RawFmtMngr.h"
+#ifndef _BDV_VOLUME_H
+#define _BDV_VOLUME_H
 
-typedef char BIT8_UNIT;
-typedef short int BIT16_UNIT;
-typedef int BIT32_UNIT;
-typedef V3DLONG BIT64_UNIT;
+#include "VirtualVolume.h"
+#include <list>
+#include <string>
 
-
-class RawVolume : public iim::VirtualVolume
+//every object of this class has the default (1,2,3) reference system
+class BDVVolume : public iim::VirtualVolume
 {
-    private:
+	private:	
+		//******OBJECT ATTRIBUTES******
+		void *HDF5_descr;
+		void *BDV_descr;
+        float  VXL_1, VXL_2, VXL_3;         //voxel dimensions of the stored volume
 
-        char *file_name;
-        unsigned char *img;
-        iim::sint64 *sz;
-        int datatype;
-        int b_swap;
-        int header_len;
+		//***OBJECT PRIVATE METHODS****
+		BDVVolume(void);
 
-		std::string ffmt;
-		iim::VirtualFmtMngr *fmtMngr;
+		//Given the reference system, initializes all object's members using stack's directories hierarchy
+        //void init() throw (iim::IOException);
 
-        void *fhandle;
+		//rotate stacks matrix around D axis (accepted values are theta=0,90,180,270)
+		//void rotate(int theta);
 
-        void init ( ) throw (iim::IOException);
+		//mirror stacks matrix along mrr_axis (accepted values are mrr_axis=1,2,3)
+        //void mirror(iim::axis mrr_axis);
 
-        // iannello returns the number of channels of images composing the volume
-        void initChannels ( ) throw (iim::IOException);
+		// iannello returns the number of channels of images composing the volume
+		void initChannels ( ) throw (iim::IOException)  { } 
 
-    public:
+	public:
+		//CONSTRUCTORS-DECONSTRUCTOR
+        BDVVolume(const char* _root_dir, int res = 0, int tp = 0, void *BDV_descr = 0 )  throw (iim::IOException);
 
-        RawVolume(const char* _file_name)  throw (iim::IOException);
+		~BDVVolume(void);
 
-        ~RawVolume(void);
+		//GET methods
+        float  getVXL_1(){return VXL_1;}
+        float  getVXL_2(){return VXL_2;}
+        float  getVXL_3(){return VXL_3;}		
+		iim::axis getAXS_1() {return iim::axis(1);};
+		iim::axis getAXS_2() {return iim::axis(2);};
+		iim::axis getAXS_3() {return iim::axis(3);};
 
         // returns a unique ID that identifies the volume format
-        std::string getPrintableFormat(){return iim::RAW_FORMAT;}
+        std::string getPrintableFormat(){return iim::BDV_HDF5_FORMAT;}
 
-        // added by Alessandro on 2014-02-18: additional info on the reference system (where available)
-        float getVXL_1() {return VXL_H;}
-        float getVXL_2() {return VXL_V;}
-        float getVXL_3() {return VXL_D;}
-        iim::axis getAXS_1() {return iim::horizontal;}
-        iim::axis getAXS_2() {return iim::vertical;}
-        iim::axis getAXS_3() {return iim::depth;}
 
-		std::string getFFMT(){return ffmt;}
-        iim::VirtualFmtMngr *getFMT_MNGR(){return fmtMngr;}
+		//PRINT method
+		//void print(  bool print_stacks = false );
 
-        iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1)  throw (iim::IOException);
+        //loads given subvolume in a 1-D array of iim::real32 while releasing stacks slices memory when they are no longer needed
+        inline iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1)  throw (iim::IOException) {
+			return loadSubvolume(V0,V1,H0,H1,D0,D1,0,true);
+		}
 
+        //loads given subvolume in a 1-D array and puts used Stacks into 'involved_stacks' iff not null
+        iim::real32 *loadSubvolume(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1,
+                                                                  std::list<iim::Block*> *involved_blocks = 0, bool release_blocks = false)  throw (iim::IOException);
+
+        //loads given subvolume in a 1-D array of iim::uint8 while releasing stacks slices memory when they are no longer needed
         iim::uint8 *loadSubvolume_to_UINT8(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1,
                                                    int *channels=0, int ret_type=iim::DEF_IMG_DEPTH) throw (iim::IOException);
+
+         friend class iim::VirtualVolume;
+
 };
-# endif
+
+#endif //_BDV_VOLUME_H

@@ -123,11 +123,12 @@ namespace IconImageManager
     const std::string SIMPLE_FORMAT         = "TIFF (series, 2D)";          // unique ID for the SimpleVolume class
     const std::string SIMPLE_RAW_FORMAT     = "Vaa3D raw (series, 2D)";     // unique ID for the SimpleVolumeRaw class
     const std::string RAW_FORMAT            = "Vaa3D raw";                  // unique ID for the RawVolume class
-    const std::string TIF3D_FORMAT          = "TIFF (series, 3D)";          // unique ID for multipage TIFF format (nontiled)
+    const std::string TIF3D_FORMAT          = "TIFF (3D)";                  // unique ID for multipage TIFF format (nontiled)
     const std::string TILED_TIF3D_FORMAT    = "TIFF (tiled, 3D)";           // unique ID for multipage TIFF format (tiled)
     const std::string TILED_MC_TIF3D_FORMAT = "TIFF (tiled, 4D)";           // unique ID for multipage TIFF format (nontiled, 4D)
     const std::string UNST_TIF3D_FORMAT     = "TIFF (unstitched, 3D)";      // unique ID for multipage TIFF format (nontiled, 4D)
-    const std::string TIME_SERIES           = "Time series";                // unique ID for the TimeSeries class
+    const std::string BDV_HDF5_FORMAT       = "HDF5 (BigDataViewer)";       // unique ID for BDV HDF5
+    const std::string TIME_SERIES           = "Time series";               // unique ID for the TimeSeries class
 
     const double      PI = 3.14159265;                          // pi
     const int         TMITREE_MAX_HEIGHT  = 10;                 // maximum depth of the TMITREE

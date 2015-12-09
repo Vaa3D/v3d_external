@@ -46,8 +46,10 @@
 #include "v3dr_mainwindow.h"
 #include <typeinfo>
 #include "TimeSeries.h"
+#include "BDVVolume.h"
 #include <QtGlobal>
 #include <cmath>
+#include "VolumeConverter.h"
 #include "../core/imagemanager/TiledMCVolume.h"
 
 using namespace teramanager;
@@ -1167,7 +1169,7 @@ void PMain::openVolumeActionTriggered()
     if(pathinfo.isDir())
         openTeraFlyVolume(qobject_cast<QAction*>(sender())->text().toStdString());
     else if(pathinfo.isFile())
-        openTeraFlyVolume(qobject_cast<QAction*>(sender())->text().toStdString());
+        openHDF5Volume(qobject_cast<QAction*>(sender())->text().toStdString());
     else
         QMessageBox::critical(this,QObject::tr("Error"), "Cannot find the file",QObject::tr("Ok"));
 }
@@ -1196,12 +1198,9 @@ void PMain::openHDF5Volume(string path)
 {
     try
     {
-        QString import_path = path.c_str();
-
-        if(import_path.isEmpty())
+        if(path.empty())
         {
             /**/itm::debug(itm::LEV2, "import_path is empty, launch file dialog", __itm__current__function__);
-
             #ifdef _USE_QT_DIALOGS
             QFileDialog dialog(0);
             dialog.setFileMode(QFileDialog::ExistingFile);
@@ -1211,23 +1210,23 @@ void PMain::openHDF5Volume(string path)
             dialog.setWindowTitle("Select volume's file");
             dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
             if(dialog.exec())
-                import_path = dialog.directory().absolutePath().toStdString().c_str();
+                path = dialog.directory().absolutePath().toStdString();
 
             #else
-             QString import_path = QFileDialog::getOpenFileName(this, "Open HDF5 volume's file", QString(), tr("HDF5 files (*.h5)"));
+            path = QFileDialog::getOpenFileName(this, "Open HDF5 volume's file", QString(), tr("HDF5 files (*.h5)")).toStdString();
             #endif
-            /**/itm::debug(itm::LEV3, strprintf("import_path = %s", qPrintable(import_path)).c_str(), __itm__current__function__);
+            /**/itm::debug(itm::LEV3, strprintf("path = %s", path.c_str()).c_str(), __itm__current__function__);
 
 
-            if (import_path.isEmpty())
+            if (path.empty())
                 return;
         }
         else
         {
-            /**/itm::debug(itm::LEV2, strprintf("import_path is not empty (= \"%s\")", import_path.toStdString().c_str()).c_str(), __itm__current__function__);
+            /**/itm::debug(itm::LEV2, strprintf("path is not empty (= \"%s\")", path.c_str()).c_str(), __itm__current__function__);
 
-            if(!QFile::exists(import_path))
-                throw RuntimeException(strprintf("Path \"%s\" does not exist", import_path.toStdString().c_str()).c_str());
+            if(!QFile::exists(path.c_str()))
+                throw RuntimeException(strprintf("Path \"%s\" does not exist", path.c_str()).c_str());
         }
 
 
@@ -1237,8 +1236,8 @@ void PMain::openHDF5Volume(string path)
 
 
         //storing the path into CSettings
-        CSettings::instance()->setVolumePathLRU(qPrintable(import_path));
-        CSettings::instance()->addVolumePathToHistory(qPrintable(import_path));
+        CSettings::instance()->setVolumePathLRU(path);
+        CSettings::instance()->addVolumePathToHistory(path);
         CSettings::instance()->writeSettings();
 
         //updating recent volumes menu
@@ -1264,9 +1263,10 @@ void PMain::openHDF5Volume(string path)
         statusBar->showMessage("Importing volume...");
 
         //starting import
-        throw itm::RuntimeException("HDF5 not yet implemented");
-        //CImport::instance()->updateMaxDims();
-        //CImport::instance()->start();
+        //throw itm::RuntimeException("HDF5 not yet implemented");
+        CImport::instance()->setPath(path);
+        CImport::instance()->updateMaxDims();
+        CImport::instance()->start();
     }
     catch(iim::IOException &ex)
     {
@@ -1717,7 +1717,11 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
             TiledVolume* vol = dynamic_cast<TiledVolume*>(volume_ith) ? dynamic_cast<TiledVolume*>(volume_ith) : dynamic_cast<TiledMCVolume*>(volume_ith)->getVolumes()[0];
             tiles_grid_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getN_COLS(), vol->getN_ROWS(), vol->getBLOCKS()[0][0]->getN_BLOCKS()).c_str());
             tile_dim_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getBLOCKS()[0][0]->getBLOCK_SIZE()[0]).c_str());
-
+        }
+        else if(dynamic_cast<BDVVolume*>(volume_ith))
+        {
+            tiles_grid_field->setText("BDV-HDF5 custom grid");
+            tile_dim_field->setText("BDV-HDF5 custom tile dim");
         }
         else
         {
@@ -2296,16 +2300,23 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
-    QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
-    if(!apo1FilePath.isEmpty())
+    try
     {
-
-        QList<CellAPO> cells = readAPO_file(apo1FilePath);
-        for(int k=0; k<cells.size(); k++)
-            v3d_msg(itm::strprintf("n = %d\nname = \"%s\"\ncomment = \"%s\"\nz = %f\nx = %f\ny = %d",
-                                   cells[k].n, cells[k].name.toStdString().c_str(),
-                                   cells[k].comment.toStdString().c_str(), cells[k].z, cells[k].x, cells[k].y).c_str());
+        VolumeConverter *vc = new VolumeConverter();
+        iim::DEBUG = iim::LEV_MAX;
+        vc->setSrcVolume("/Volumes/Volumes/test.purkinje.big.tiff.3D.oneblock/RES(2122x1951x608)/000000/000000_000000/000000_000000_000000.tif", iim::TIF3D_FORMAT.c_str());
     }
+    catch(...){QMessageBox::warning(this, "error", "error");}
+//    QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
+//    if(!apo1FilePath.isEmpty())
+//    {
+
+//        QList<CellAPO> cells = readAPO_file(apo1FilePath);
+//        for(int k=0; k<cells.size(); k++)
+//            v3d_msg(itm::strprintf("n = %d\nname = \"%s\"\ncomment = \"%s\"\nz = %f\nx = %f\ny = %d",
+//                                   cells[k].n, cells[k].name.toStdString().c_str(),
+//                                   cells[k].comment.toStdString().c_str(), cells[k].z, cells[k].x, cells[k].y).c_str());
+//    }
     //CViewer *viewer = CViewer::getCurrent();
     //v3d_msg(itm::strprintf("X=[%d,%d], Y=[%d,%d], Z[%d,%d]", viewer->anoH0, viewer->anoH1, viewer->anoV0, viewer->anoV1, viewer->anoD0, viewer->anoD1).c_str());
 //    QPalette Pal(palette());

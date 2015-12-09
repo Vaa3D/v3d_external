@@ -111,8 +111,14 @@ class teramanager::CSettings
         int getAnnotationMarkerSize(){return annotationMarkerSize;}
         bool getPreviewMode(){return previewMode;}
 
-        void setVolumePathLRU(std::string _volumePathLRU){volumePathLRU = _volumePathLRU;}
-        void addVolumePathToHistory(std::string _volumePath){
+        void setVolumePathLRU(std::string _volumePathLRU)
+        {
+            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePathLRU = \"%s\"", _volumePathLRU.c_str()).c_str(), __itm__current__function__);
+            volumePathLRU = _volumePathLRU;
+        }
+        void addVolumePathToHistory(std::string _volumePath)
+        {
+            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePath = \"%s\"", _volumePath.c_str()).c_str(), __itm__current__function__);
 
             if(volumePathHistory.size() > 10)
                 volumePathHistory.pop_front();

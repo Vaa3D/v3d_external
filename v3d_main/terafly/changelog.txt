@@ -11,6 +11,18 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D-TeraFly version 2.1.0
+December 9th, 2015
+--------------------------------------------------------------------------------------------
+- Dev: imagemanager, iomanager and volumemanager modules synced with the GitHub repository
+- New: added support to BigDataViewer HDF5 files! TeraFly can now open a BDV-HDF5 file from
+       "File > Open HDF5 Volume".
+- New: added output format "HDF5 (BigDataViewer)" in TeraConverter.
+- New: smarter volume map generation method that automatically  chooses the highest possible
+       resolution scale given the current 3D viewer size limits.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D-TeraFly version 2.0.15
 December 7th, 2015
 --------------------------------------------------------------------------------------------

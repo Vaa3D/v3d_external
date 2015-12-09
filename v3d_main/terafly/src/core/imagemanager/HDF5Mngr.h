@@ -22,62 +22,97 @@
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
 
-# ifndef _RAW_VOLUME_H
-# define _RAW_VOLUME_H
+/******************
+*    CHANGELOG    *
+*******************
+*******************
+* 2015-11-17. Giulio. @CREATED 
+*/
 
-# include "VirtualVolume.h" 
-# include "RawFmtMngr.h"
+#ifndef HDF5_MNGR_H
+#define HDF5_MNGR_H
 
-typedef char BIT8_UNIT;
-typedef short int BIT16_UNIT;
-typedef int BIT32_UNIT;
-typedef V3DLONG BIT64_UNIT;
+#include "IM_config.h"
+#include <string>
+
+/* Hyperslab conventions
+ *
+ * for N-dimensional datasets are 4 x N matrices
+ * first row is START (offset)
+ * second row is STRIDE
+ * third row is COUNT (how many elements)
+ * fourth row is BLOCK (how many blocks)
+ *
+ * For N=3, for each row:
+ * first element is D dimension
+ * second element is V dimension
+ * third element is H dimension
+ */
 
 
-class RawVolume : public iim::VirtualVolume
-{
-    private:
+void BDV_HDF5init ( std::string fname, void *&descr, int vxl_nbytes = 1 ) throw (iim::IOException);
+/* opens or creates xHDF5 file fname according to the BigDataViewer format and returns an opaque descriptor
+ *
+ * fname:      HDF5 filename
+ * vxl_nbytes: number of bytes per voxel of datasets to be stored in the file; it is ignored if the file already exists
+ * descr:      pointer to the returned opaque descriptor
+ */
+ 
+ int BDV_HDF5n_resolutions ( void *descr );
+ /* returns how many resolutions there are in the HDF5 file handled by descr
+  * It is assumed that all resolutions from 0 to the interger returned minus 1 are available
+  */
 
-        char *file_name;
-        unsigned char *img;
-        iim::sint64 *sz;
-        int datatype;
-        int b_swap;
-        int header_len;
+void BDV_HDF5close ( void *descr );
+/* close the HDF5 file represented by descr and deallocates the descriptor
+ *
+ * descr: opaque descriptor of the HDF5 file
+ */
 
-		std::string ffmt;
-		iim::VirtualFmtMngr *fmtMngr;
+void BDV_HDF5addSetups ( void *file_descr, iim::sint64 height, iim::sint64 width, iim::sint64 depth, 
+				 float vxlszV, float vxlszH, float vxlszD, bool *res, int res_size, int chans, int block_height = -1, int block_width = -1, int block_depth = -1 ); 
+/* creates setup descriptors with resolution and subdivisions datasets
+ *
+ * file_descr:
+ * height:
+ * width:
+ * depth:
+ * vxlszV:
+ * vxlszH*
+ * vxlszD:
+ * res:
+ * res_size:
+ * chans: 
+ * block_height:
+ * block_width:
+ * block_depth:  
+ */
 
-        void *fhandle;
 
-        void init ( ) throw (iim::IOException);
+void BDV_HDF5addTimepoint ( void *file_descr, int tp = 0 ); 
+/* add time point at time tp (first time point is the default)
+ */
 
-        // iannello returns the number of channels of images composing the volume
-        void initChannels ( ) throw (iim::IOException);
 
-    public:
+void BDV_HDF5writeHyperslab ( void *file_descr, iim::uint8 *buf, iim::sint64 *dims, iim::sint64 *hl, int r, int s, int tp = 0 );
+/* write one hiperslab to file  
+ */
 
-        RawVolume(const char* _file_name)  throw (iim::IOException);
 
-        ~RawVolume(void);
+void BDV_HDF5getVolumeInfo ( void *descr, int tp, int res, void *&volume_descr, 
+								float &VXL_1, float &VXL_2, float &VXL_3, 
+								float &ORG_V, float &ORG_H, float &ORG_D, 
+								iim::uint32 &DIM_V, iim::uint32 &DIM_H, iim::uint32 &DIM_D,
+							    int &DIM_C, int &BYTESxCHAN, int &DIM_T, int &t0, int &t1 );
 
-        // returns a unique ID that identifies the volume format
-        std::string getPrintableFormat(){return iim::RAW_FORMAT;}
 
-        // added by Alessandro on 2014-02-18: additional info on the reference system (where available)
-        float getVXL_1() {return VXL_H;}
-        float getVXL_2() {return VXL_V;}
-        float getVXL_3() {return VXL_D;}
-        iim::axis getAXS_1() {return iim::horizontal;}
-        iim::axis getAXS_2() {return iim::vertical;}
-        iim::axis getAXS_3() {return iim::depth;}
+void BDV_HDF5getSubVolume ( void *descr, int V0, int V1, int H0, int H1, int D0, int D1, int setup, iim::uint8 *buf );
+/* must copy a subvolume into buffer buf; voxels have to be converted to 8-bit if needed
+ */
 
-		std::string getFFMT(){return ffmt;}
-        iim::VirtualFmtMngr *getFMT_MNGR(){return fmtMngr;}
 
-        iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1)  throw (iim::IOException);
+void BDV_HDF5closeVolume ( void *descr );
 
-        iim::uint8 *loadSubvolume_to_UINT8(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1,
-                                                   int *channels=0, int ret_type=iim::DEF_IMG_DEPTH) throw (iim::IOException);
-};
-# endif
+
+ #endif
+ 

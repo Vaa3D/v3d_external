@@ -28,6 +28,13 @@
 /******************
 *    CHANGELOG    *
 *******************
+* 2015-08-28. Giulio.     @FIXED reference system of the generated image has always V as a first axis and H as a second axis
+* 2015-08-26. Giulio.     @ADDED stop and resume facility in par mode
+* 2015-08-16. Giulio.     @ADDED the 'isotropi' parameter (flag) to all methods and the halve_pow2 array to control the halving at different resolutions
+* 2015.08.14. Giulio.     @FIXED a a bug on the depth used to create directories in the casethe  --parallel option is used
+* 2015.08.14. Giulio.     @ADDED a check on block_depth when the --makedirs and --parallel options are used
+* 2015-07-12. Giulio.     @ADDED a halving method parameter to MergeTilesVaa3DRaw
+* 2015-07-12. Giulio.     @FIXED a bug on an int index in MergeTilesVaa3DRaw that should have been sint64
 * 2015-02-26. Giulio.     @ADDED release of space allocated to stripesCoords and stripesCorners in mergeTiles
 * 2015-02-13. Giulio.     @CHANGED 3D ioplugin is called instead of Tiff3DMngr functions
 * 2014-12-06. Giulio    . @ADDED par_mode parameter in method mergeTilesVaa3DRaw controlling the execution when multiple instances of the function are launched.
@@ -80,7 +87,7 @@ bool compareCorners (stripe_corner first, stripe_corner second);
 void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height, int block_width, int block_depth, bool* resolutions, 
 							   bool exclude_nonstitchable_stacks, int _ROW_START, int _ROW_END, int _COL_START,
 							   int _COL_END, int _D0, int _D1, bool restoreSPIM, int restore_direction,
-							   int blending_algo, bool test_mode, bool show_progress_bar, 
+							   int blending_algo, int method, bool isotropic, bool test_mode, bool show_progress_bar, 
                                const char* saved_img_format, int saved_img_depth, bool par_mode)			throw (iom::exception)
 {
 #if S_VERBOSE > 2
@@ -94,7 +101,8 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 #endif
 
 	//LOCAL VARIABLES
-	sint64 height, width, depth;                                            //height, width and depth of the whole volume that covers all stacks
+	sint64 height, width, depth; //height, width and depth of the whole volume that covers all stacks
+	sint64 whole_depth; // 2015-08-14. Giulio. to be used only if par_mode is set to store the depth of the whole volume
 	iom::real_t* buffer;								//buffer temporary image data are stored
 	iom::real_t* stripe_up=NULL, *stripe_down;                                   //will contain up-stripe and down-stripe computed by calling 'getStripe' method
 	double angle;								//angle between 0 and PI used to sample overlapping zone in [0,PI]
@@ -119,6 +127,8 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 	iom::real_t *buffer_ptr, *ustripe_ptr, *dstripe_ptr;	
 	iom::real_t (*blending)(double& angle, iom::real_t& pixel1, iom::real_t& pixel2);
 
+	std::stringstream output_path_par; // used if parallel option is set
+	int halve_pow2[S_MAX_MULTIRES];
 	std::stringstream file_path[S_MAX_MULTIRES];
 
 				/* DEFINITIONS OF VARIABILES THAT MANAGE TILES (BLOCKS) ALONG D-direction
@@ -180,10 +190,33 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 	}
 
 	//computing dimensions of volume to be stitched
-	this->computeVolumeDims(exclude_nonstitchable_stacks, _ROW_START, _ROW_END, _COL_START, _COL_END, _D0, _D1);
+	if ( par_mode ) {
+		// 2015-08-14. Giulio. the depth of the whole volume is computed in any case
+		this->computeVolumeDims(exclude_nonstitchable_stacks, _ROW_START, _ROW_END, _COL_START, _COL_END, -1, -1);
+		// 2015-08-14. Giulio. whole_depth is the depth of the whole volume
+		whole_depth = this->D1-this->D0;
+		// set a subvolume along D axis, if optional parameters _D0 and _D1 have been used
+		if(_D0 != -1 && _D0 >= this->D0)
+			this->D0 = _D0;
+		if(_D1 != -1 && _D1 <= this->D1)
+			this->D1 = _D1;
+	}
+	else {
+		this->computeVolumeDims(exclude_nonstitchable_stacks, _ROW_START, _ROW_END, _COL_START, _COL_END, _D0, _D1);
+		// 2015-08-14. Giulio. whole_depth should not be used
+		whole_depth = -1;
+	}
+	// depth is now the depth of the subvolume to be generated
 	width = this->H1-this->H0;
 	height = this->V1-this->V0;
 	depth = this->D1-this->D0;
+
+    if(par_mode && block_depth == -1) // 2015-08-14. Giulio. if step 6 is parallelized, option --slicedepth must be used to set block_depth
+    {
+        char err_msg[5000];
+        sprintf(err_msg,"in StackStitcher::mergeTilesVaa3DRaw(...): block_depth is not set in parallel mode");
+        throw iom::exception(err_msg);
+    }
 
 	//activating resolutions
     block_height = (block_height == -1 ? (int)height : block_height);
@@ -206,12 +239,35 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
             if(resolutions[i])
                 resolutions_size = ISR_MAX(resolutions_size, i+1);
 
+	//2015-08-16. Giulio. set the halving rules 
+	if ( isotropic ) {
+		// an isotropic image must be generated
+		float vxlsz_Vx2 = 2*(volume->getVXL_V() > 0 ? volume->getVXL_V() : -volume->getVXL_V());
+		float vxlsz_Hx2 = 2*(volume->getVXL_H() > 0 ? volume->getVXL_H() : -volume->getVXL_H());
+		float vxlsz_D = volume->getVXL_D();
+		halve_pow2[0] = 0;
+		for ( int i=1; i<resolutions_size; i++ ) {
+			halve_pow2[i] = halve_pow2[i-1];
+			if ( vxlsz_D < ISR_MAX(vxlsz_Vx2,vxlsz_Hx2) ) {
+				halve_pow2[i]++;
+				vxlsz_D   *= 2;
+			}
+			vxlsz_Vx2 *= 2;
+			vxlsz_Hx2 *= 2;
+		}
+	}
+	else {
+		// halving along D dimension must be always performed
+		for ( int i=0; i<resolutions_size; i++ )
+			halve_pow2[i] = i;
+	}
+
 	//computing tiles dimensions at each resolution and initializing volume directories
 	for(int res_i=0; res_i< resolutions_size; res_i++)
 	{
         n_stacks_V[res_i] = static_cast<int>(ceil ( (height/POW_INT(2,res_i)) / (float) block_height ));
         n_stacks_H[res_i] = static_cast<int>(ceil ( (width/POW_INT(2,res_i))  / (float) block_width  ));
-        n_stacks_D[res_i] = static_cast<int>(ceil ( (depth/POW_INT(2,res_i))  / (float) block_depth  ));
+		n_stacks_D[res_i] = static_cast<int>(ceil ( (depth/POW_INT(2,halve_pow2[res_i]))  / (float) block_depth  ));
         stacks_height[res_i] = new int **[n_stacks_V[res_i]];
         stacks_width[res_i]  = new int **[n_stacks_V[res_i]];
         stacks_depth[res_i]  = new int **[n_stacks_V[res_i]];
@@ -232,19 +288,19 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
                 	stacks_width [res_i][stack_row][stack_col][stack_sli] = 
                 		((int)(width/POW_INT(2,res_i)))  / n_stacks_H[res_i] + (stack_col < ((int)(width/POW_INT(2,res_i)))  % n_stacks_H[res_i] ? 1:0);
 					stacks_depth[res_i][stack_row][stack_col][stack_sli] = 
-                		((int)(depth/POW_INT(2,res_i)))  / n_stacks_D[res_i] + (stack_sli < ((int)(depth/POW_INT(2,res_i)))  % n_stacks_D[res_i] ? 1:0);
+                		((int)(depth/POW_INT(2,halve_pow2[res_i])))  / n_stacks_D[res_i] + (stack_sli < ((int)(depth/POW_INT(2,halve_pow2[res_i]))) % n_stacks_D[res_i] ? 1 : 0); 
 				}
             }
         }
         //creating volume directory iff current resolution is selected and test mode is disabled
         if(resolutions[res_i] == true && !test_mode)
         {
-			if ( par_mode ) { // uses all slices to generate the directory name
-				file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<(volume->getN_SLICES())/POW_INT(2,res_i)<<")";
+			if ( par_mode ) { // 2015-08-14. Giulio. uses the depth of the whole volume to generate the directory name
+				file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<(volume->getN_SLICES())/POW_INT(2,halve_pow2[res_i])<<")"; 
 			}
 			else { 
 				//creating directory that will contain image data at current resolution
-				file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<depth/POW_INT(2,res_i)<<")";
+				file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<depth/POW_INT(2,halve_pow2[res_i])<<")"; 
 				if(!make_dir(file_path[res_i].str().c_str()))
 				{
 					char err_msg[S_STATIC_STRINGS_SIZE];
@@ -330,7 +386,7 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 		stripesCorners[row_index-1].merged.merge(stripesCorners[row_index  ].ups,       compareCorners);
 	}
 
-	z_max_res = POW_INT(2,resolutions_size-1);
+	z_max_res = POW_INT(2,halve_pow2[resolutions_size-1]); 
 	z_ratio= static_cast<int>(depth/z_max_res);
 	buffer = new iom::real_t[height*width*z_max_res];
 
@@ -349,22 +405,42 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 	sint64 z_parts;
 
 	// 2014-11-03. Giulio. @FIXED stop and resume facility should inactive in test mode
+	// 2015-08-26. Giulio. @ADDED stop and resume facility in par mode
 	if ( !test_mode ) {
 		// WARNING: uses saved_img_format to check that the operation has been resumed withe the sae parameters
-		// resume option not used in parallel mode
-		if ( !par_mode && initResumer(saved_img_format,output_path.c_str(),resolutions_size,resolutions,block_height,block_width,block_depth,HALVE_BY_MEAN,saved_img_format,saved_img_depth,fhandle) ) {
-			readResumerState(fhandle,output_path.c_str(),resolutions_size,stack_block,slice_start,slice_end,z,z_parts);
-		}
-		else {
-			//slice_start and slice_end of current block depend on the resolution
-			for(int res_i=0; res_i< resolutions_size; res_i++) {
-				stack_block[res_i] = 0;
-				slice_start[res_i] = 0; // indices must start from 0 because they should have relative meaning 
-				slice_end[res_i] = slice_start[res_i] + stacks_depth[res_i][0][0][0] - 1;
+		if ( par_mode ) {
+			output_path_par << output_path << "/" << "D_" << _D0 << "_" << _D1;
+			make_dir(output_path_par.str().c_str());  // the directory has been created
+			if ( initResumer(saved_img_format,output_path_par.str().c_str(),resolutions_size,resolutions,block_height,block_width,block_depth,method,saved_img_format,saved_img_depth,fhandle) ) { // halve_pow2 is not saved
+					readResumerState(fhandle,output_path_par.str().c_str(),resolutions_size,stack_block,slice_start,slice_end,z,z_parts); // halve_pow2 is not saved
 			}
-			// z must begin from D0 (absolute index into the volume) since it is used to compute tha file names (containing the absolute position along D)
-			z = this->D0;
-			z_parts = 1;
+			else { // halve_pow2 is not saved: start form the firs slice
+				//slice_start and slice_end of current block depend on the resolution
+				for(int res_i=0; res_i< resolutions_size; res_i++) {
+					stack_block[res_i] = 0;
+					slice_start[res_i] = 0; // indices must start from 0 because they should have relative meaning 
+					slice_end[res_i] = slice_start[res_i] + stacks_depth[res_i][0][0][0] - 1;
+				}
+				// z must begin from D0 (absolute index into the volume) since it is used to compute tha file names (containing the absolute position along D)
+				z = this->D0;
+				z_parts = 1;
+			}
+		}
+		else { // not in parallel mode: use output_path to maintain resume status
+			if ( initResumer(saved_img_format,output_path.c_str(),resolutions_size,resolutions,block_height,block_width,block_depth,method,saved_img_format,saved_img_depth,fhandle) ) { // halve_pow2 is not saved
+				readResumerState(fhandle,output_path.c_str(),resolutions_size,stack_block,slice_start,slice_end,z,z_parts); // halve_pow2 is not saved
+			}
+			else { // halve_pow2 is not saved: start from first slice
+				//slice_start and slice_end of current block depend on the resolution
+				for(int res_i=0; res_i< resolutions_size; res_i++) {
+					stack_block[res_i] = 0;
+					slice_start[res_i] = 0; // indices must start from 0 because they should have relative meaning 
+					slice_end[res_i] = slice_start[res_i] + stacks_depth[res_i][0][0][0] - 1;
+				}
+				// z must begin from D0 (absolute index into the volume) since it is used to compute tha file names (containing the absolute position along D)
+				z = this->D0;
+				z_parts = 1;
+			}
 		}
 	}
 	else { // test mode
@@ -380,7 +456,7 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 	for( /* 2014-10-29. Giulio. @DELETED (sint64 z = this->D0, z_parts = 1) */; z < this->D1; z += z_max_res, z_parts++)
 	{
 		// 2014-09-09. Alessandro. @FIXED missing buffer initialization and reset in 'mergeTiles()' method.
-		for(int i=0; i<height*width*z_max_res; i++)
+		for(sint64 i=0; i<height*width*z_max_res; i++)
 			buffer[i]=0;
 
 		for(sint64 k = 0; k < ( z_parts <= z_ratio ? z_max_res : depth%z_max_res ); k++)
@@ -510,7 +586,7 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 
 			// check if current block is changed
 			// D0 must be subtracted because z is an absolute index in volume while slice index should be computed on a relative basis (i.e. starting form 0)
-            if ( ((z - this->D0) / POW_INT(2,i)) > slice_end[i] ) {
+            if ( ((z - this->D0) / POW_INT(2,halve_pow2[i])) > slice_end[i] ) {
 				stack_block[i]++;
 				slice_start[i] = slice_end[i] + 1;
 				slice_end[i] += stacks_depth[i][0][0][stack_block[i]];
@@ -522,21 +598,34 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 			abs_pos_z.fill('0');
 			abs_pos_z << (int)(this->getMultiresABS_D(i,0) + // all stacks start at the same D position
 								//- D0 * volume->getVXL_D() * 10 + // WARNING: D0 is counted twice,both in getMultiresABS_D and in slice_start
-                                (POW_INT(2,i)*slice_start[i]) * volume->getVXL_D() * 10);
+                                (POW_INT(2,halve_pow2[i])*slice_start[i]) * volume->getVXL_D() * 10);
 
 			//compute the number of slice of previous groups at resolution i
 			//note that z_parts in the number and not an index (starts from 1)
-            n_slices_pred  = (z_parts - 1) * z_max_res / POW_INT(2,i);
+            n_slices_pred  = (z_parts - 1) * z_max_res / POW_INT(2,halve_pow2[i]);
 
 			//buffer size along D is different when the remainder of the subdivision by z_max_res is considered
 			sint64 z_size = (z_parts<=z_ratio) ? z_max_res : (depth%z_max_res);
 
 			//halvesampling resolution if current resolution is not the deepest one
-			if(i!=0)	
-				StackStitcher::halveSample(buffer,(int)(height/(POW_INT(2,i-1))),(int)(width/(POW_INT(2,i-1))),(int)(z_size/(POW_INT(2,i-1))));
+			if(i!=0) {
+				if ( halve_pow2[i] == (halve_pow2[i-1]+1) ) { // *modified*
+					// also D dimension has to be halvesampled
+					StackStitcher::halveSample(buffer,(int)(height/(POW_INT(2,i-1))),(int)(width/(POW_INT(2,i-1))),(int)(z_size/(POW_INT(2,halve_pow2[i-1]))),method);
+				}
+				else if ( halve_pow2[i] == halve_pow2[i-1] ) {// *modified*
+					// D dimension must not be halvesampled
+					StackStitcher::halveSample2D(buffer,(int)(height/(POW_INT(2,i-1))),(int)(width/(POW_INT(2,i-1))),(int)(z_size/(POW_INT(2,halve_pow2[i-1]))),method); 
+				}
+				else {
+					char err_msg[S_STATIC_STRINGS_SIZE];
+					sprintf(err_msg, "in StackStitcher::mergeTilesVaa3DRaw(...): halve sampling level %d not supported at resolution %d\n", halve_pow2[i], i);
+					throw iom::exception(err_msg);
+				}
+			}
 
 			//saving at current resolution if it has been selected and iff buffer is at least 1 voxel (Z) deep
-			if(resolutions[i] && (z_size/(POW_INT(2,i))) > 0)
+			if(resolutions[i] && (z_size/(POW_INT(2,halve_pow2[i]))) > 0)
 			{
 				if(show_progress_bar)
 				{
@@ -547,12 +636,12 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 
 				//storing in 'base_path' the absolute path of the directory that will contain all stacks
 				std::stringstream base_path;
-				if ( par_mode ) // directory name depends on the total number of slices in the volume
+				if ( par_mode ) // 2015-08-14. Giulio. directory name depends on the depth of the whole volume
 					base_path << output_path << "/RES(" << (int)(height/POW_INT(2,i)) << "x" << 
-						(int)(width/POW_INT(2,i)) << "x" << (int)(volume->getN_SLICES()/POW_INT(2,i)) << ")/";
+						(int)(width/POW_INT(2,i)) << "x" << (int)(whole_depth/POW_INT(2,halve_pow2[i])) << ")/";
 				else 
 					base_path << output_path << "/RES(" << (int)(height/POW_INT(2,i)) << "x" << 
-						(int)(width/POW_INT(2,i)) << "x" << (int)(depth/POW_INT(2,i)) << ")/";
+						(int)(width/POW_INT(2,i)) << "x" << (int)(depth/POW_INT(2,halve_pow2[i])) << ")/";
 
 				//looping on new stacks
 				for(int stack_row = 0, start_height = 0, end_height = 0; stack_row < n_stacks_V[i]; stack_row++)
@@ -612,7 +701,7 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 									abs_pos_z_temp.width(6);
 									abs_pos_z_temp.fill('0');
 									abs_pos_z_temp << (int)(this->getMultiresABS_D(i,0) + // all stacks start at the same D position
-                                       (POW_INT(2,i)*(slice_start_temp)) * volume->getVXL_D() * 10);
+                                       (POW_INT(2,halve_pow2[i])*(slice_start_temp)) * volume->getVXL_D() * 10);
 
 									std::stringstream img_path_temp;
 									img_path_temp << H_DIR_path.str() << "/" 
@@ -639,32 +728,32 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 						}
 
 						//saving HERE
-						for(int buffer_z=0; buffer_z<z_size/(POW_INT(2,i)); buffer_z++)
+						for(int buffer_z=0; buffer_z<z_size/(POW_INT(2,halve_pow2[i])); buffer_z++)
 						{
 							int slice_ind; 
 							std::stringstream img_path;
  							std::stringstream abs_pos_z_next;
 
-							int rel_pos_z = (int)(POW_INT(2,i)*buffer_z+z-D0);		// Alessandro, 23/03/2013 - see below. This is the relative Z pixel coordinate in the 
-																					// highest resolution image space. '-D0' is necessary to make it relative, since
-																					// getMultiresABS_D_string(...) accepts relative coordinates only.
+							int rel_pos_z = (int)(POW_INT(2,halve_pow2[i])*buffer_z+z-D0);		// Alessandro, 23/03/2013 - see below. This is the relative Z pixel coordinate in the 
+																								// highest resolution image space. '-D0' is necessary to make it relative, since
+																								// getMultiresABS_D_string(...) accepts relative coordinates only.
 
 							/*std::stringstream abs_pos_z;
 							abs_pos_z.width(6);
 							abs_pos_z.fill('0');
-							abs_pos_z << (int)(POW_INT(2,i)*buffer_z+z);*/	// Alessandro, 23/03/2013 - bug found: we are saving the image space coordinate (in pixels) 
+							abs_pos_z << (int)(POW_INT(2,halve_pow2[i])*buffer_z+z);*/	// Alessandro, 23/03/2013 - bug found: we are saving the image space coordinate (in pixels) 
 																			// instead of the volume space coordinate (in tenths of microns)
 							img_path << H_DIR_path.str() << "/" 
 										<< this->getMultiresABS_V_string(i,start_height) << "_" 
 										<< this->getMultiresABS_H_string(i,start_width)  << "_";
 										
 							// D0 must be subtracted because z is an absolute index in volume while slice index should be computed on a relative basis (i.e. starting form 0)
-		                    if ( ((z - this->D0) / POW_INT(2,i)+buffer_z) > slice_end[i] ) { // start a new block along z !!! GI_140427 THIS HAS NOT BE CHECKED YET
+		                    if ( ((z - this->D0) / POW_INT(2,halve_pow2[i])+buffer_z) > slice_end[i] ) { // start a new block along z !!! GI_140427 THIS HAS NOT BE CHECKED YET
 								abs_pos_z_next.width(6);
 								abs_pos_z_next.fill('0');
 								//abs_pos_z_next << (int)(this->getMultiresABS_D(i) + // all stacks start at the same D position
 								abs_pos_z_next << (int)(this->getMultiresABS_D(i,0) + // all stacks start at the same D position
-                                        (POW_INT(2,i)*(slice_end[i]+1)) * volume->getVXL_D() * 10);
+                                        (POW_INT(2,halve_pow2[i])*(slice_end[i]+1)) * volume->getVXL_D() * 10);
 								img_path << abs_pos_z_next.str();
 								slice_ind = (int)(n_slices_pred - (slice_end[i]+1)) + buffer_z;
 							}
@@ -722,7 +811,8 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 		}
 
 		// 2014-10-29. Giulio. @ADDED save next group data
-		if ( !test_mode && !par_mode )
+		if ( !test_mode )
+			// fhandle is correctly set both in non parallel and in parallel mode
 			saveResumerState(fhandle,resolutions_size,stack_block,slice_start,slice_end,z+z_max_res,z_parts+1);
 	}
 
@@ -735,19 +825,25 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 		// reloads created volumes to generate .bin file descriptors at all resolutions
 		ref_sys temp = volume->getREF_SYS();  // required by clang compiler
 		iim::ref_sys reference = *((iim::ref_sys *) &temp); // the cast is needed because there are two ref_sys in different name spaces
+		// 2015-08-28. Giulio. the generated volume has always V coordinates at the first directory level and H coordinates at the second directory level
+		if ( reference.first == iim::horizontal || reference.first == iim::inv_horizontal ) {
+			iim::axis temp = reference.first;
+			reference.first = reference.second;
+			reference.second = reference.first;
+		}
 		for(int res_i=0; res_i< resolutions_size; res_i++)
 		{
 			if(resolutions[res_i])
 			{
 				//---- Alessandro 2013-04-22 partial fix: wrong voxel size computation. In addition, the predefined reference system {1,2,3} may not be the right
-				//one when dealing with CLSM data. The right reference system is stored in the <StackedVolume> object. A possible solution to implement
-				//is to check whether <volume> is a pointer to a <StackedVolume> object, then specialize it to <StackedVolume*> and get its reference
+				//one when dealing with CLSM data. The right reference system is stored in the <BlockVolume> object. A possible solution to implement
+				//is to check whether <volume> is a pointer to a <BlockVolume> object, then specialize it to <BlockVolume*> and get its reference
 				//system.
 				try 
 				{
 					iim::DEBUG = iim::NO_DEBUG;
 					TiledVolume temp_vol(file_path[res_i].str().c_str(),reference,
-							volume->getVXL_V()*pow(2.0f,res_i), volume->getVXL_H()*pow(2.0f,res_i),volume->getVXL_D()*pow(2.0f,res_i));
+							volume->getVXL_V()*pow(2.0f,res_i), volume->getVXL_H()*pow(2.0f,res_i),volume->getVXL_D()*pow(2.0f,halve_pow2[res_i])); 
 				}
 				catch (iim::IOException & ex)
 				{
@@ -761,6 +857,12 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 				}
 			}
 		}
+	}
+	else if ( par_mode ) {
+		// 2015-08-26. Giulio. @ADDED close resume in par mode
+		closeResumer(fhandle,output_path_par.str().c_str());
+		// WARNINIG --- the directory should be removed
+		bool res = remove_dir(output_path_par.str().c_str());
 	}
 
 	// deallocate memory
@@ -806,7 +908,7 @@ void StackStitcher::mergeTilesVaa3DRaw(std::string output_path, int block_height
 void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_height, int block_width, int block_depth, bool* resolutions, 
 							   bool exclude_nonstitchable_stacks, int _ROW_START, int _ROW_END, int _COL_START,
 							   int _COL_END, int _D0, int _D1, bool restoreSPIM, int restore_direction,
-							   int blending_algo, bool test_mode, bool show_progress_bar, 
+							   int blending_algo, int method, bool isotropic, bool test_mode, bool show_progress_bar, 
                                const char* saved_img_format, int saved_img_depth, bool par_mode)			throw (iom::exception)
 {
 #if S_VERBOSE > 2
@@ -827,6 +929,7 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
 	int resolutions_size = 0;
 	StackRestorer *stk_rst = NULL;
 
+	int halve_pow2[S_MAX_MULTIRES];
 	std::stringstream file_path[S_MAX_MULTIRES];
 
 	/* DEFINITIONS OF VARIABILES THAT MANAGE TILES (BLOCKS) ALONG D-direction
@@ -851,6 +954,13 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
 	height = this->V1-this->V0;
 	depth = this->D1-this->D0;
 
+    if(block_depth == -1) // 2015-08-14. Giulio. if step 6 is parallelized, option --slicedepth must be used to set block_depth
+    {
+        char err_msg[5000];
+        sprintf(err_msg,"in StackStitcher::mergeTilesVaa3DRaw(...): block_depth is not set in makedirs mode");
+        throw iom::exception(err_msg);
+    }
+
 	//activating resolutions
     block_height = (block_height == -1 ? (int)height : block_height);
     block_width  = (block_width  == -1 ? (int)width  : block_width);
@@ -872,25 +982,48 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
             if(resolutions[i])
                 resolutions_size = ISR_MAX(resolutions_size, i+1);
 
-	//computing tiles dimensions at each resolution and initializing volume directories
+	//2015-08-16. Giulio. set the halving rules 
+	if ( isotropic ) {
+		// an isotropic image must be generated
+		float vxlsz_Vx2 = 2*(volume->getVXL_V() > 0 ? volume->getVXL_V() : -volume->getVXL_V());
+		float vxlsz_Hx2 = 2*(volume->getVXL_H() > 0 ? volume->getVXL_H() : -volume->getVXL_H());
+		float vxlsz_D = volume->getVXL_D();
+		halve_pow2[0] = 0;
+		for ( int i=1; i<resolutions_size; i++ ) {
+			halve_pow2[i] = halve_pow2[i-1];
+			if ( vxlsz_D < ISR_MAX(vxlsz_Vx2,vxlsz_Hx2) ) {
+				halve_pow2[i]++;
+				vxlsz_D   *= 2;
+			}
+			vxlsz_Vx2 *= 2;
+			vxlsz_Hx2 *= 2;
+		}
+	}
+	else {
+		// halving along D dimension must be always performed
+		for ( int i=0; i<resolutions_size; i++ )
+			halve_pow2[i] = i;
+	}
+
+//computing tiles dimensions at each resolution and initializing volume directories
 	for(int res_i=0; res_i< resolutions_size; res_i++)
 	{
         n_stacks_V[res_i] = static_cast<int>(ceil ( (height/POW_INT(2,res_i)) / (float) block_height ));
         n_stacks_H[res_i] = static_cast<int>(ceil ( (width/POW_INT(2,res_i))  / (float) block_width  ));
-        n_stacks_D[res_i] = static_cast<int>(ceil ( (depth/POW_INT(2,res_i))  / (float) block_depth  ));
+        n_stacks_D[res_i] = static_cast<int>(ceil ( (depth/POW_INT(2,halve_pow2[res_i]))  / (float) block_depth  ));  
         stacks_height[res_i] = new int **[n_stacks_V[res_i]];
         stacks_width[res_i]  = new int **[n_stacks_V[res_i]];
-        stacks_depth[res_i]  = new int **[n_stacks_V[res_i]];
+        stacks_depth[res_i]  = new int **[n_stacks_V[res_i]]; 
         for(int stack_row = 0; stack_row < n_stacks_V[res_i]; stack_row++)
         {
             stacks_height[res_i][stack_row] = new int *[n_stacks_H[res_i]];
             stacks_width [res_i][stack_row] = new int *[n_stacks_H[res_i]];
-            stacks_depth [res_i][stack_row] = new int *[n_stacks_H[res_i]];
+            stacks_depth [res_i][stack_row] = new int *[n_stacks_H[res_i]]; 
             for(int stack_col = 0; stack_col < n_stacks_H[res_i]; stack_col++)
             {
 				stacks_height[res_i][stack_row][stack_col] = new int[n_stacks_D[res_i]];
 				stacks_width [res_i][stack_row][stack_col] = new int[n_stacks_D[res_i]];
-				stacks_depth [res_i][stack_row][stack_col] = new int[n_stacks_D[res_i]];
+				stacks_depth [res_i][stack_row][stack_col] = new int[n_stacks_D[res_i]];  
 				for(int stack_sli = 0; stack_sli < n_stacks_D[res_i]; stack_sli++)
 				{
                 	stacks_height[res_i][stack_row][stack_col][stack_sli] = 
@@ -898,7 +1031,7 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
                 	stacks_width [res_i][stack_row][stack_col][stack_sli] = 
                 		((int)(width/POW_INT(2,res_i)))  / n_stacks_H[res_i] + (stack_col < ((int)(width/POW_INT(2,res_i)))  % n_stacks_H[res_i] ? 1:0);
 					stacks_depth[res_i][stack_row][stack_col][stack_sli] = 
-                		((int)(depth/POW_INT(2,res_i)))  / n_stacks_D[res_i] + (stack_sli < ((int)(depth/POW_INT(2,res_i)))  % n_stacks_D[res_i] ? 1:0);
+						((int)(depth/POW_INT(2,halve_pow2[res_i])))  / n_stacks_D[res_i] + (stack_sli < ((int)(depth/POW_INT(2,halve_pow2[res_i])))  % n_stacks_D[res_i] ? 1:0);  
 				}
             }
         }
@@ -906,8 +1039,8 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
         if(resolutions[res_i] == true && !test_mode)
         {
             //creating directory that will contain image data at current resolution
-            file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<depth/POW_INT(2,res_i)<<")";
-            if(!make_dir(file_path[res_i].str().c_str()))
+			file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<depth/POW_INT(2,halve_pow2[res_i])<<")";
+			if(!make_dir(file_path[res_i].str().c_str()))
             {
                 char err_msg[S_STATIC_STRINGS_SIZE];
                 sprintf(err_msg, "in StackStitcher::createDirectoryHierarchy(...): unable to create DIR = \"%s\"\n", file_path[res_i].str().c_str());
@@ -931,7 +1064,7 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
 		abs_pos_z.fill('0');
 		abs_pos_z << (int)(this->getMultiresABS_D(i,0) + // all stacks start at the same D position
 							//- D0 * volume->getVXL_D() * 10 + // WARNING: D0 is counted twice,both in getMultiresABS_D and in slice_start
-                            (POW_INT(2,i)*slice_start[i]) * volume->getVXL_D() * 10);
+                            (POW_INT(2,halve_pow2[i])*slice_start[i]) * volume->getVXL_D() * 10);
 
 		//saving at current resolution if it has been selected and iff buffer is at least 1 voxel (Z) deep
 		if(resolutions[i])
@@ -939,7 +1072,7 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
 			//storing in 'base_path' the absolute path of the directory that will contain all stacks
 			std::stringstream base_path;
             base_path << output_path << "/RES(" << (int)(height/POW_INT(2,i)) << "x" << 
-                (int)(width/POW_INT(2,i)) << "x" << (int)(depth/POW_INT(2,i)) << ")/";
+                (int)(width/POW_INT(2,i)) << "x" << (int)(depth/POW_INT(2,halve_pow2[i])) << ")/";
 
 			//looping on new stacks
 			for(int stack_row = 0, start_height = 0, end_height = 0; stack_row < n_stacks_V[i]; stack_row++)
@@ -983,7 +1116,7 @@ void StackStitcher::createDirectoryHierarchy(std::string output_path, int block_
 void StackStitcher::mdataGenerator (std::string output_path, int block_height, int block_width, int block_depth, bool* resolutions, 
 							   bool exclude_nonstitchable_stacks, int _ROW_START, int _ROW_END, int _COL_START,
 							   int _COL_END, int _D0, int _D1, bool restoreSPIM, int restore_direction,
-							   int blending_algo, bool test_mode, bool show_progress_bar, 
+							   int blending_algo, int method, bool isotropic, bool test_mode, bool show_progress_bar, 
                                const char* saved_img_format, int saved_img_depth, bool par_mode)			throw (iom::exception) 
 {
 #if S_VERBOSE > 2
@@ -1000,6 +1133,7 @@ void StackStitcher::mdataGenerator (std::string output_path, int block_height, i
 	sint64 height, width, depth;                                            //height, width and depth of the whole volume that covers all stacks
 	int resolutions_size = 0;
 
+	int halve_pow2[S_MAX_MULTIRES];
 	std::stringstream file_path[S_MAX_MULTIRES];
 
 	//computing dimensions of volume to be stitched
@@ -1019,6 +1153,29 @@ void StackStitcher::mdataGenerator (std::string output_path, int block_height, i
             if(resolutions[i])
                 resolutions_size = ISR_MAX(resolutions_size, i+1);
 
+	//2015-08-16. Giulio. set the halving rules 
+	if ( isotropic ) {
+		// an isotropic image must be generated
+		float vxlsz_Vx2 = 2*(volume->getVXL_V() > 0 ? volume->getVXL_V() : -volume->getVXL_V());
+		float vxlsz_Hx2 = 2*(volume->getVXL_H() > 0 ? volume->getVXL_H() : -volume->getVXL_H());
+		float vxlsz_D = volume->getVXL_D();
+		halve_pow2[0] = 0;
+		for ( int i=1; i<resolutions_size; i++ ) {
+			halve_pow2[i] = halve_pow2[i-1];
+			if ( vxlsz_D < ISR_MAX(vxlsz_Vx2,vxlsz_Hx2) ) {
+				halve_pow2[i]++;
+				vxlsz_D   *= 2;
+			}
+			vxlsz_Vx2 *= 2;
+			vxlsz_Hx2 *= 2;
+		}
+	}
+	else {
+		// halving along D dimension must be always performed
+		for ( int i=0; i<resolutions_size; i++ )
+			halve_pow2[i] = i;
+	}
+
 	//computing tiles dimensions at each resolution and initializing volume directories
 	for(int res_i=0; res_i< resolutions_size; res_i++)
 	{
@@ -1026,7 +1183,7 @@ void StackStitcher::mdataGenerator (std::string output_path, int block_height, i
         if(resolutions[res_i] == true && !test_mode)
         {
 			//creating directory that will contain image data at current resolution
-			file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<depth/POW_INT(2,res_i)<<")";
+			file_path[res_i]<<output_path<<"/RES("<<height/POW_INT(2,res_i)<<"x"<<width/POW_INT(2,res_i)<<"x"<<depth/POW_INT(2,halve_pow2[res_i])<<")"; 
         }
 	}
 
@@ -1036,19 +1193,25 @@ void StackStitcher::mdataGenerator (std::string output_path, int block_height, i
 		// reloads created volumes to generate .bin file descriptors at all resolutions
 		ref_sys temp = volume->getREF_SYS();  // required by clang compiler
 		iim::ref_sys reference = *((iim::ref_sys *) &temp); // the cast is needed because there are two ref_sys in different name spaces
+		// 2015-08-28. Giulio. the generated volume has always V coordinates at the first directory level and H coordinates at the second directory level
+		if ( reference.first == iim::horizontal || reference.first == iim::inv_horizontal ) {
+			iim::axis temp = reference.first;
+			reference.first = reference.second;
+			reference.second = reference.first;
+		}
 		for(int res_i=0; res_i< resolutions_size; res_i++)
 		{
 			if(resolutions[res_i])
 			{
 				//---- Alessandro 2013-04-22 partial fix: wrong voxel size computation. In addition, the predefined reference system {1,2,3} may not be the right
-				//one when dealing with CLSM data. The right reference system is stored in the <StackedVolume> object. A possible solution to implement
-				//is to check whether <volume> is a pointer to a <StackedVolume> object, then specialize it to <StackedVolume*> and get its reference
+				//one when dealing with CLSM data. The right reference system is stored in the <BlockVolume> object. A possible solution to implement
+				//is to check whether <volume> is a pointer to a <BlockVolume> object, then specialize it to <BlockVolume*> and get its reference
 				//system.
 				try 
 				{
 					iim::DEBUG = iim::NO_DEBUG;
 					TiledVolume temp_vol(file_path[res_i].str().c_str(),reference,
-							volume->getVXL_V()*pow(2.0f,res_i), volume->getVXL_H()*pow(2.0f,res_i),volume->getVXL_D()*pow(2.0f,res_i));
+							volume->getVXL_V()*pow(2.0f,res_i), volume->getVXL_H()*pow(2.0f,res_i),volume->getVXL_D()*pow(2.0f,halve_pow2[res_i]));
 				}
 				catch (iim::IOException & ex)
 				{

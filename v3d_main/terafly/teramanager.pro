@@ -31,6 +31,9 @@ CONFIG += use_experimental_features
 V3DMAINPATH =  ../
 QT_PATH = $$dirname(QMAKE_QMAKE)/..
 
+#HDF5 headers and precompiled library and dependencies (libz and libszip)
+INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
+LIBS += -L$$V3DMAINPATH/common_lib/lib -lhdf5 -lszip -lz
 
 #Vaa3D headers and sources needed by the plugin
 INCLUDEPATH+= $$QT_PATH/demos/shared
@@ -40,7 +43,6 @@ INCLUDEPATH += $$V3DMAINPATH/common_lib/include
 INCLUDEPATH += $$V3DMAINPATH/basic_c_fun/customary_structs
 INCLUDEPATH += $$V3DMAINPATH
 INCLUDEPATH += $$V3DMAINPATH/v3d
-
 #enable experimental features
 DEFINES += USE_EXPERIMENTAL_FEATURES
 
@@ -63,6 +65,8 @@ SOURCES += ../terafly/src/core/iomanager/plugins/tiff3D/tiff3D.cpp
 
 #setup imagemanager
 INCLUDEPATH += ../terafly/src/core/imagemanager
+HEADERS += ../terafly/src/core/imagemanager/BDVVolume.h
+HEADERS += ../terafly/src/core/imagemanager/HDF5Mngr.h
 HEADERS += ../terafly/src/core/imagemanager/imBlock.h
 HEADERS += ../terafly/src/core/imagemanager/dirent_win.h
 HEADERS += ../terafly/src/core/imagemanager/IM_config.h
@@ -81,6 +85,8 @@ HEADERS += ../terafly/src/core/imagemanager/TimeSeries.h
 HEADERS += ../terafly/src/core/imagemanager/VirtualFmtMngr.h
 HEADERS += ../terafly/src/core/imagemanager/VirtualVolume.h
 HEADERS += ../terafly/src/core/imagemanager/UnstitchedVolume.h
+SOURCES += ../terafly/src/core/imagemanager/BDVVolume.cpp
+SOURCES += ../terafly/src/core/imagemanager/HDF5Mngr.cpp
 SOURCES += ../terafly/src/core/imagemanager/imBlock.cpp
 SOURCES += ../terafly/src/core/imagemanager/IM_config.cpp
 SOURCES += ../terafly/src/core/imagemanager/imProgressBar.cpp

@@ -37,6 +37,7 @@
 #include "StackedVolume.h"
 #include "TiledVolume.h"
 #include "TiledMCVolume.h"
+#include "HDF5Mngr.h" 
 #include "iomanager.config.h"
 
 using namespace teramanager;
@@ -63,6 +64,9 @@ CImport::~CImport()
     for(int k=0; k<volumes.size(); k++)
         if(volumes[k])
             delete volumes[k];
+    
+    if ( HDF5_descr )
+    	BDV_HDF5close(HDF5_descr); // HDF5 file is closed after the volumes are released
 
     /**/itm::debug(itm::LEV1, "object successfully DESTROYED", __itm__current__function__);
 }
@@ -129,121 +133,162 @@ void CImport::run()
     {
         timerIO.start();
 
-        /********************* 1) IMPORTING CURRENT VOLUME ***********************
-        PRECONDITIONS:
-        reimport = true  ==> the volume cannot be directly imported (i.e., w/o the
-        additional info provided by the user) or the user explicitly asked for re-
-        importing the volume.
-        reimport = false ==> the volume is directly importable
-        *************************************************************************/
         /**/itm::debug(itm::LEV_MAX, strprintf("importing current volume at \"%s\"", path.c_str()).c_str(), __itm__current__function__);
 
-        // skip nonmatching entries
-        QDir dir(path.c_str());
-        if( dir.dirName().toStdString().substr(0,3).compare(itm::RESOLUTION_PREFIX) != 0)
-            throw RuntimeException(strprintf("\"%s\" is not a valid resolution: the name of the folder does not start with \"%s\"",
-                                             path.c_str(), itm::RESOLUTION_PREFIX.c_str() ).c_str());
-
-        if(reimport)
-            volumes.push_back(VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3));
-        else
-            volumes.push_back(VirtualVolume::instance(path.c_str()));
-
-
-
-
-        /********************* 2) IMPORTING OTHER VOLUMES ***********************
-        Importing all the available resolutions within the current volume's
-        parent directory.
-        *************************************************************************/
-        /**/itm::debug(itm::LEV_MAX, "Importing other volumes of the multiresolution octree", __itm__current__function__);
-        /* -------------------- detect candidate volumes -----------------------*/
-        /**/itm::debug(itm::LEV_MAX, "Detecting volumes that CAN be loaded (let us call them CANDIDATE volumes: the correspondent structures will be destroyed after this step)", __itm__current__function__);
-        vector<VirtualVolume*> candidateVols;
-        QDir curParentDir(path.c_str());
-        curParentDir.cdUp();
-        QStringList otherDirs = curParentDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
-        for(int k=0; k<otherDirs.size(); k++)
+/*********************** MODIFIED BY GIULIO ***************************************************/
+        QDir curParentDir(path.c_str()); // is needed after the following selection (if)
+		
+        //
+        bool pathIsFile = false;
+        if ( iim::isFile(path) )
         {
-            string path_i = curParentDir.absolutePath().append("/").append(otherDirs.at(k).toLocal8Bit().constData()).toStdString();            
-            QDir dir_i(path_i.c_str());
-
-            // skip volumes[0]
-            if(dir.dirName() == dir_i.dirName())
-                continue;
+            pathIsFile = true;
+            // HDF5 file: this must be generalized
+            //path = "/Users/Administrator/Desktop/RES(2000x2500x2000)/test.h5";
+            //path = "/Users/Administrator/Desktop/cervelletto.bdvhdf5.default/export.h5";
+            //path = "/Users/Administrator/Desktop/test.purkinje.proofreading.BDV/export.h5";
+           // path = "/Users/Administrator/Desktop/test.purkinje.proofreading.BDV.nodeflate/export.h5";
+			fprintf(stderr,"------------->>> path = %s \n",path.c_str()); fflush(stderr);
+			BDV_HDF5init(path.c_str(), HDF5_descr);
+			int n_res = BDV_HDF5n_resolutions(HDF5_descr);
+			fprintf(stderr,"------------->>> resolutions = %d \n",n_res); fflush(stderr);
+			for ( int i=0; i<n_res; i++ ) {
+				/* the HDF5 descriptor is passed instead of the file name: 
+				 * the file will be closed after volumes will be released
+				 * (see the CImport destructor) 
+				 */
+				volumes.push_back(VirtualVolume::instance((const char *)0, (n_res - 1 - i), HDF5_descr));
+			fprintf(stderr,"------------->>> created volume %d at resolution %d\n",i,(n_res - 1 - i)); fflush(stderr);
+			}
+		}
+        else // is a Directory
+        {
+		
+            /********************* 1) IMPORTING CURRENT VOLUME ***********************
+            PRECONDITIONS:
+            reimport = true  ==> the volume cannot be directly imported (i.e., w/o the
+            additional info provided by the user) or the user explicitly asked for re-
+            importing the volume.
+            reimport = false ==> the volume is directly importable
+            *************************************************************************/
 
             // skip nonmatching entries
-            if(dir_i.dirName().toStdString().substr(0,3).compare(itm::RESOLUTION_PREFIX) != 0)
-                continue;
+            QDir dir(path.c_str());
+            if( dir.dirName().toStdString().substr(0,3).compare(itm::RESOLUTION_PREFIX) != 0)
+                throw RuntimeException(strprintf("\"%s\" is not a valid resolution: the name of the folder does not start with \"%s\"",
+                                                 path.c_str(), itm::RESOLUTION_PREFIX.c_str() ).c_str());
 
-            /**/itm::debug(itm::LEV_MAX, strprintf("Checking for loadable volume at \"%s\"", path_i.c_str()).c_str(), __itm__current__function__);
-            if( !reimport && VirtualVolume::isDirectlyImportable( path_i.c_str()) )
-                candidateVols.push_back(VirtualVolume::instance(path_i.c_str()));
+            if(reimport)
+                volumes.push_back(VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3));
             else
-                volumes.push_back(VirtualVolume::instance(path_i.c_str(), volumes[0]->getPrintableFormat(),
-                                  volumes[0]->getAXS_1(), volumes[0]->getAXS_2(), volumes[0]->getAXS_3(),
-                                  volumes[0]->getVXL_1(), volumes[0]->getVXL_2(), volumes[0]->getVXL_3()));
-        }
-        /* -------------------- import candidate volumes ------------------------*/
-        /**/itm::debug(itm::LEV_MAX, "Importing loadable volumes (previously checked)", __itm__current__function__);
-        for(int k=0; k<candidateVols.size(); k++)
-        {
-            int ratio = iim::round(  pow((volumes[0]->getMVoxels() / candidateVols[k]->getMVoxels()),(1/3.0f))  );
+                volumes.push_back(VirtualVolume::instance(path.c_str()));
 
-             /**/itm::debug(itm::LEV_MAX, strprintf("Importing loadable volume at \"%s\"", candidateVols[k]->getROOT_DIR()).c_str(), __itm__current__function__);
-            if( !reimport && VirtualVolume::isDirectlyImportable( candidateVols[k]->getROOT_DIR()) )
-                volumes.push_back(VirtualVolume::instance(candidateVols[k]->getROOT_DIR()));
-            else
-                volumes.push_back(VirtualVolume::instance(candidateVols[k]->getROOT_DIR(),    candidateVols[k]->getPrintableFormat(),
-                              volumes[0]->getAXS_1(),       volumes[0]->getAXS_2(),       volumes[0]->getAXS_3(),
-                              volumes[0]->getVXL_1()*ratio, volumes[0]->getVXL_2()*ratio, volumes[0]->getVXL_3()*ratio));
-        }
-        /* -------------------- destroy candidate volumes -----------------------*/
-        /**/itm::debug(itm::LEV_MAX, "Destroying candidate volumes", __itm__current__function__);
-        for(int k=0; k<candidateVols.size(); k++)
-            delete candidateVols[k];
-        /* ------------- sort imported volumes by ascending size ---------------*/
-        /**/itm::debug(itm::LEV_MAX, "Sorting volumes by ascending size", __itm__current__function__);
-        std::sort(volumes.begin(), volumes.end(), sortVolumesAscendingSize);
-        /* ---------------------- check imported volumes -----------------------*/
-        if(volumes.size() < 2)
-            throw RuntimeException(strprintf("%d resolution found at %s: at least two resolutions are needed for the multiresolution mode",
-                                             volumes.size(), qPrintable(curParentDir.path()) ).c_str());
-        for(int k=0; k<volumes.size()-1; k++)
-        {
-            if(volumes[k]->getPrintableFormat().compare( volumes[k+1]->getPrintableFormat() ) != 0)
-                throw RuntimeException(strprintf("Volumes have different formats at \"%s\"", qPrintable(curParentDir.absolutePath())).c_str());
-            if(volumes[k]->getDIM_T() != volumes[k+1]->getDIM_T())
-                throw RuntimeException(strprintf("Volumes have different time frames at \"%s\"", qPrintable(curParentDir.absolutePath())).c_str());
-        }
 
+
+
+            /********************* 2) IMPORTING OTHER VOLUMES ***********************
+            Importing all the available resolutions within the current volume's
+            parent directory.
+            *************************************************************************/
+            /**/itm::debug(itm::LEV_MAX, "Importing other volumes of the multiresolution octree", __itm__current__function__);
+            /* -------------------- detect candidate volumes -----------------------*/
+            /**/itm::debug(itm::LEV_MAX, "Detecting volumes that CAN be loaded (let us call them CANDIDATE volumes: the correspondent structures will be destroyed after this step)", __itm__current__function__);
+            vector<VirtualVolume*> candidateVols;
+            curParentDir.cdUp();
+            QStringList otherDirs = curParentDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
+            for(int k=0; k<otherDirs.size(); k++)
+            {
+                string path_i = curParentDir.absolutePath().append("/").append(otherDirs.at(k).toLocal8Bit().constData()).toStdString();
+                QDir dir_i(path_i.c_str());
+
+                // skip volumes[0]
+                if(dir.dirName() == dir_i.dirName())
+                    continue;
+
+                // skip nonmatching entries
+                if(dir_i.dirName().toStdString().substr(0,3).compare(itm::RESOLUTION_PREFIX) != 0)
+                    continue;
+
+                /**/itm::debug(itm::LEV_MAX, strprintf("Checking for loadable volume at \"%s\"", path_i.c_str()).c_str(), __itm__current__function__);
+                if( !reimport && VirtualVolume::isDirectlyImportable( path_i.c_str()) )
+                    candidateVols.push_back(VirtualVolume::instance(path_i.c_str()));
+                else
+                    volumes.push_back(VirtualVolume::instance(path_i.c_str(), volumes[0]->getPrintableFormat(),
+                                      volumes[0]->getAXS_1(), volumes[0]->getAXS_2(), volumes[0]->getAXS_3(),
+                                      volumes[0]->getVXL_1(), volumes[0]->getVXL_2(), volumes[0]->getVXL_3()));
+            }
+            /* -------------------- import candidate volumes ------------------------*/
+            /**/itm::debug(itm::LEV_MAX, "Importing loadable volumes (previously checked)", __itm__current__function__);
+            for(int k=0; k<candidateVols.size(); k++)
+            {
+                int ratio = iim::round(  pow((volumes[0]->getMVoxels() / candidateVols[k]->getMVoxels()),(1/3.0f))  );
+
+                 /**/itm::debug(itm::LEV_MAX, strprintf("Importing loadable volume at \"%s\"", candidateVols[k]->getROOT_DIR()).c_str(), __itm__current__function__);
+                if( !reimport && VirtualVolume::isDirectlyImportable( candidateVols[k]->getROOT_DIR()) )
+                    volumes.push_back(VirtualVolume::instance(candidateVols[k]->getROOT_DIR()));
+                else
+                    volumes.push_back(VirtualVolume::instance(candidateVols[k]->getROOT_DIR(),    candidateVols[k]->getPrintableFormat(),
+                                  volumes[0]->getAXS_1(),       volumes[0]->getAXS_2(),       volumes[0]->getAXS_3(),
+                                  volumes[0]->getVXL_1()*ratio, volumes[0]->getVXL_2()*ratio, volumes[0]->getVXL_3()*ratio));
+            }
+            /* -------------------- destroy candidate volumes -----------------------*/
+            /**/itm::debug(itm::LEV_MAX, "Destroying candidate volumes", __itm__current__function__);
+            for(int k=0; k<candidateVols.size(); k++)
+                delete candidateVols[k];
+            /* ------------- sort imported volumes by ascending size ---------------*/
+            /**/itm::debug(itm::LEV_MAX, "Sorting volumes by ascending size", __itm__current__function__);
+            std::sort(volumes.begin(), volumes.end(), sortVolumesAscendingSize);
+            /* ---------------------- check imported volumes -----------------------*/
+            if(volumes.size() < 2)
+                throw RuntimeException(strprintf("%d resolution found at %s: at least two resolutions are needed for the multiresolution mode",
+                                                 volumes.size(), qPrintable(curParentDir.path()) ).c_str());
+            for(int k=0; k<volumes.size()-1; k++)
+            {
+                if(volumes[k]->getPrintableFormat().compare( volumes[k+1]->getPrintableFormat() ) != 0)
+                    throw RuntimeException(strprintf("Volumes have different formats at \"%s\"", qPrintable(curParentDir.absolutePath())).c_str());
+                if(volumes[k]->getDIM_T() != volumes[k+1]->getDIM_T())
+                    throw RuntimeException(strprintf("Volumes have different time frames at \"%s\"", qPrintable(curParentDir.absolutePath())).c_str());
+            }
+
+		} // end if ( ) //******************************** MODIFIED BY GIULIO *******************************
 
 
         /**************** 3) GENERATING / LOADING VOLUME 3D MAP *****************
         We generate once for all a volume map from lowest-resolution volume.
         *************************************************************************/
-        string volMapPath = curParentDir.path().toStdString() + "/" + VMAP_BIN_FILE_NAME;
-        if(hasVolumeMapToBeRegenerated(volMapPath.c_str(), "0.9.42", vmapTDimMax, volumes[0]->getDIM_T()) || reimport || regenerateVMap)
+        string volMapPath;
+        if(pathIsFile)
+            volMapPath = itm::cdUp(path) + "/" + VMAP_BIN_FILE_NAME;
+        else
+            volMapPath = curParentDir.path().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        if(hasVolumeMapToBeRegenerated(volMapPath.c_str(), "0.9.42") || reimport || regenerateVMap)
         {
             /**/itm::debug(itm::LEV_MAX, "Entering volume's map generation section", __itm__current__function__);
 
-            // check that the lowest resolution does not exceed the maximum allowed size for the volume map
-            VirtualVolume* lowestResVol = volumes[0];
-            if(lowestResVol->getDIM_H() > vmapXDimMax ||
-               lowestResVol->getDIM_V() > vmapYDimMax ||
-               lowestResVol->getDIM_D() > vmapZDimMax)
+            // select the highest possible resolution that fits into the 3D viewer
+            VirtualVolume* selectedResolution = volumes[0];
+            for(int l=0; l<volumes.size(); l++)
+                if(volumes[l]->getDIM_V() <= vmapYDimMax  &&  // l resolution can fit into the 3D viewer (along y)
+                   volumes[l]->getDIM_H() <= vmapXDimMax  &&  // l resolution can fit into the 3D viewer (along x)
+                   volumes[l]->getDIM_D() <= vmapZDimMax)     // l resolution can fit into the 3D viewer (along z)
+                    selectedResolution = volumes[l];
+
+            // check for resampling (not yet supported)
+            if(selectedResolution->getDIM_H() > vmapXDimMax ||
+               selectedResolution->getDIM_V() > vmapYDimMax ||
+               selectedResolution->getDIM_D() > vmapZDimMax)
                 itm::warning("@TODO: resample along XYZ so as to match the volume map maximum size", __itm__current__function__);
 
-            vmapXDim = lowestResVol->getDIM_H();
-            vmapYDim = lowestResVol->getDIM_V();
-            vmapZDim = lowestResVol->getDIM_D();
-            vmapCDim = lowestResVol->getDIM_C();
+            vmapXDim = selectedResolution->getDIM_H();
+            vmapYDim = selectedResolution->getDIM_V();
+            vmapZDim = selectedResolution->getDIM_D();
+            vmapCDim = selectedResolution->getDIM_C();
             // if the number of time frames exceeds the maximum, we put only the first vmapTDimMax in the volume map
-            vmapTDim = std::min(vmapTDimMax, lowestResVol->getDIM_T());
+            vmapTDim = std::min(vmapTDimMax, selectedResolution->getDIM_T());
 
             // generate volume map
-            lowestResVol->setActiveFrames(0, vmapTDimMax -1);
-            vmapData = lowestResVol->loadSubvolume_to_UINT8();
+            selectedResolution->setActiveFrames(0, vmapTDimMax -1);
+            vmapData = selectedResolution->loadSubvolume_to_UINT8();
             FILE *volMapBin = fopen(volMapPath.c_str(), "wb");
             if(!volMapBin)
                 throw RuntimeException(strprintf("Cannot write volume map at \"%s\". Please check your write permissions.", volMapPath.c_str()).c_str());
@@ -319,13 +364,12 @@ void CImport::run()
 // returns true if
 // 1) the volume map does not exist OR
 // 2) it is not compatible with the current version OR
-// 3) contains a number of 'T' frames with T < maxDim && T < TDim
+// 3) contains a number of 'T' frames with T < vmapTDimMax
 bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
-                                          std::string min_required_version,
-                                          int maxTDim, int TDim) throw (RuntimeException)
+                                          std::string min_required_version) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("vmapFilepath = \"%s\", min_required_version = \"%s\", maxTDim = %d, TDim = %d",
-                                        vmapFilepath.c_str(), min_required_version.c_str(), maxTDim, TDim).c_str(), __itm__current__function__);
+    /**/itm::debug(itm::LEV1, strprintf("vmapFilepath = \"%s\", min_required_version = \"%s\"",
+                                        vmapFilepath.c_str(), min_required_version.c_str()).c_str(), __itm__current__function__);
 
     // open volume map
     FILE* vmapFile = fopen(vmapFilepath.c_str(), "rb");
@@ -350,11 +394,37 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
         itm::warning("volume map needs to be (re-)generated: cannot read version from vmap.bin", __itm__current__function__);
         return true;
     }
-    int T = 0;
+
+    // read t-c-y-x-z dimensions
+    int T = 0, C = 0, Y = 0, X = 0, Z = 0;
     if(!fread(&T, sizeof(int), 1, vmapFile))
     {
         fclose(vmapFile);
         itm::warning("volume map needs to be (re-)generated: cannot read T dim from vmap.bin", __itm__current__function__);
+        return true;
+    }
+    if(!fread(&C, sizeof(int), 1, vmapFile))
+    {
+        fclose(vmapFile);
+        itm::warning("volume map needs to be (re-)generated: cannot read C dim from vmap.bin", __itm__current__function__);
+        return true;
+    }
+    if(!fread(&Y, sizeof(int), 1, vmapFile))
+    {
+        fclose(vmapFile);
+        itm::warning("volume map needs to be (re-)generated: cannot read Y dim from vmap.bin", __itm__current__function__);
+        return true;
+    }
+    if(!fread(&X, sizeof(int), 1, vmapFile))
+    {
+        fclose(vmapFile);
+        itm::warning("volume map needs to be (re-)generated: cannot read X dim from vmap.bin", __itm__current__function__);
+        return true;
+    }
+    if(!fread(&Z, sizeof(int), 1, vmapFile))
+    {
+        fclose(vmapFile);
+        itm::warning("volume map needs to be (re-)generated: cannot read Z dim from vmap.bin", __itm__current__function__);
         return true;
     }
     fclose(vmapFile);
@@ -368,18 +438,42 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
     }
 
     // check time size: can we load more frames?
-    if(T < maxTDim &&  // we can load more frames
-       T < TDim)       // there are more frames that can be loaded
+    if(T < vmapTDimMax &&           // we can load more frames
+       T < volumes[0]->getDIM_T())  // there are more frames that can be loaded
     {
         itm::warning("volume map needs to be (re-)generated: check time size failed from vmap.bin", __itm__current__function__);
         return true;
     }
 
     // check time size: should we load less frames?
-    if(T > maxTDim)
+    if(T > vmapTDimMax)
     {
         itm::warning("volume map needs to be (re-)generated: mismatch between T from vmap.bin and maxTDim from GUI", __itm__current__function__);
         return true;
+    }
+
+    // check y-x-z size: can we load a larger image?
+    for(int l=0; l<volumes.size(); l++)
+    {
+        // search for the currently stored image resolution
+        if(volumes[l]->getDIM_V() == Y && volumes[l]->getDIM_H() == X && volumes[l]->getDIM_D() == Z)
+        {
+            // can we load a larger map?
+            if(volumes.size() > l                       &&  // l+1 resolution exists
+               volumes[l+1]->getDIM_V() <= vmapYDimMax  &&  // l+1 resolution can fit into the 3D viewer (along y)
+               volumes[l+1]->getDIM_H() <= vmapXDimMax  &&  // l+1 resolution can fit into the 3D viewer (along x)
+               volumes[l+1]->getDIM_D() <= vmapZDimMax)     // l+1 resolution can fit into the 3D viewer (along z)
+            {
+                itm::warning("volume map needs to be (re-)generated: a higher resolution scale should be displayed", __itm__current__function__);
+                return true;
+            }
+            // should we load a smaller map?
+            else if(Y > vmapYDimMax || X > vmapXDimMax || Z > vmapZDimMax)
+            {
+                itm::warning("volume map needs to be (re-)generated: a lower resolution scale should be displayed", __itm__current__function__);
+                return true;
+            }
+        }
     }
 
     // all checks passed: no need to regenerate volume map

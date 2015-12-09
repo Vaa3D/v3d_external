@@ -95,8 +95,8 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
 
     //import form widget
     inFormatCBox = new QComboBox();
-    inFormatCBox->insertItem(0, iim::SIMPLE_FORMAT.c_str());
-    inFormatCBox->insertItem(1, iim::TIF3D_FORMAT.c_str());
+    inFormatCBox->insertItem(0, iim::TIF3D_FORMAT.c_str());
+    inFormatCBox->insertItem(1, iim::SIMPLE_FORMAT.c_str());
     inFormatCBox->insertItem(2, iim::STACKED_FORMAT.c_str());
     inFormatCBox->insertItem(3, iim::TILED_TIF3D_FORMAT.c_str());
     inFormatCBox->insertItem(4, iim::TILED_MC_TIF3D_FORMAT.c_str());
@@ -104,7 +104,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     inFormatCBox->insertItem(6, iim::SIMPLE_RAW_FORMAT.c_str());
     inFormatCBox->insertItem(7, iim::TILED_FORMAT.c_str());
     inFormatCBox->insertItem(8, iim::TILED_MC_FORMAT.c_str());
-    PMain::setEnabledComboBoxItem(inFormatCBox, 1, false);
+    PMain::setEnabledComboBoxItem(inFormatCBox, 0, false);
     inFormatCBox->setEditable(true);
     inFormatCBox->lineEdit()->setReadOnly(true);
     inFormatCBox->lineEdit()->setAlignment(Qt::AlignCenter);
@@ -139,19 +139,6 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
 
     //conversion form widget
     outFormatCBox = new QComboBox();
-
-//    const std::string TILED_MC_FORMAT       = "Vaa3D raw (tiled, 4D)";     // unique ID for the TiledMCVolume class
-//    const std::string TILED_FORMAT          = "Vaa3D raw (tiled, 3D)";    // unique ID for the TiledVolume class
-//    const std::string STACKED_FORMAT        = "2D TIFF (tiled, 3D)";      // unique ID for the StackedVolume class
-//    const std::string SIMPLE_FORMAT         = "2D TIFF (series)";              // unique ID for the SimpleVolume class
-//    const std::string SIMPLE_RAW_FORMAT     = "Vaa3D raw (series)";        // unique ID for the SimpleVolumeRaw class
-//    const std::string RAW_FORMAT            = "Vaa3D raw";                 // unique ID for the RawVolume class
-//    const std::string TIF3D_FORMAT          = "TIFF multipage (series)";   // unique ID for multipage TIFF format (nontiled)
-//    const std::string TILED_TIF3D_FORMAT    = "TIFF multipage (tiled, 3D)";// unique ID for multipage TIFF format (tiled)
-//    const std::string TILED_MC_TIF3D_FORMAT = "TIFF multipage (tiled, 4D)";// unique ID for multipage TIFF format (nontiled, 4D)
-//    const std::string UNST_TIF3D_FORMAT     = "TIFF multipage (unstitched, RGB)";// unique ID for multipage TIFF format (nontiled, 4D)
-//    const std::string TIME_SERIES           = "Time series";               // unique ID for the TimeSeries class
-
     outFormatCBox->insertItem(0, iim::STACKED_FORMAT.c_str());
     //outFormatCBox->insertItem(1, iim::SIMPLE_FORMAT.c_str());
     //outFormatCBox->insertItem(2, iim::TIF3D_FORMAT.c_str());
@@ -160,6 +147,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     //outFormatCBox->insertItem(5, iim::RAW_FORMAT.c_str());
     outFormatCBox->insertItem(3, iim::TILED_FORMAT.c_str());
     outFormatCBox->insertItem(4, iim::TILED_MC_FORMAT.c_str());
+    outFormatCBox->insertItem(5, iim::BDV_HDF5_FORMAT.c_str());
     //outFormatCBox->insertItem(8, iim::SIMPLE_RAW_FORMAT.c_str());
     /*PMain::setEnabledComboBoxItem(outFormatCBox, 1, false);
     PMain::setEnabledComboBoxItem(outFormatCBox, 2, false);
@@ -324,6 +312,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     connect(CConverter::instance(), SIGNAL(sendOperationOutcome(itm::RuntimeException*)), this, SLOT(operationDone(itm::RuntimeException*)), Qt::QueuedConnection);
     connect(inDirButton, SIGNAL(clicked()), this, SLOT(inDirButtonClicked()));
     connect(inFileButton, SIGNAL(clicked()), this, SLOT(inFileButtonClicked()));
+    connect(outFileButton, SIGNAL(clicked()), this, SLOT(outFileButtonClicked()));
     connect(outDirButton, SIGNAL(clicked()), this, SLOT(outDirButtonClicked()));
     connect(inPathField, SIGNAL(textChanged(QString)), this, SLOT(settingsChanged()));
     connect(inPathField, SIGNAL(editingFinished()), this, SLOT(startButtonClicked()));
@@ -389,8 +378,10 @@ void PConverter::startButtonClicked()
         }
         else
         {
+            bool filemode = outButtonLayout->currentWidget() == outFileButton;
+
             //if destination dir does not exist, asking for creation
-            if(!QFile::exists(outPathField->text()))
+            if(!filemode && !QFile::exists(outPathField->text()))
             {
                 if(!QMessageBox::information(this, "Create dir?", "The directory you selected does not exist. Create it?", "Yes", "Cancel"))
                     QDir().mkdir(outPathField->text());
@@ -410,20 +401,23 @@ void PConverter::startButtonClicked()
 
 
             //checking destination dir is empty
-            QDir directory(outPathField->text());
-            QStringList dir_entries = directory.entryList();
-            if(dir_entries.size() > 2 && QMessageBox::information(this, "Warning", "The directory you selected is NOT empty. \n\nIf you continue, the conversion "
-                                                   "process could fail if the directories to be created already exist in the given path.", "Continue", "Cancel"))
+            if(!filemode)
             {
-                statusBar->clearMessage();
-                statusBar->showMessage("Ready to convert volume.");
-                progressBar->setEnabled(false);
-                progressBar->setMaximum(1);         //needed to stop animation on some operating systems
-                startButton->setEnabled(true);
-                stopButton->setEnabled(false);
-                import_panel->setEnabled(false);
-                conversion_panel->setEnabled(true);
-                return;
+                QDir directory(outPathField->text());
+                QStringList dir_entries = directory.entryList();
+                if(dir_entries.size() > 2 && QMessageBox::information(this, "Warning", "The directory you selected is NOT empty. \n\nIf you continue, the conversion "
+                                                       "process could fail if the directories to be created already exist in the given path.", "Continue", "Cancel"))
+                {
+                    statusBar->clearMessage();
+                    statusBar->showMessage("Ready to convert volume.");
+                    progressBar->setEnabled(false);
+                    progressBar->setMaximum(1);         //needed to stop animation on some operating systems
+                    startButton->setEnabled(true);
+                    stopButton->setEnabled(false);
+                    import_panel->setEnabled(false);
+                    conversion_panel->setEnabled(true);
+                    return;
+                }
             }
             progressBar->setMinimum(0);
             progressBar->setMaximum(100);
@@ -495,6 +489,14 @@ void PConverter::inFileButtonClicked()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
+    std::string namefilter;
+    if(inFormatCBox->currentText().compare(iim::TIF3D_FORMAT.c_str()) == 0)
+        namefilter = "TIFF files (*.tif *.TIF *.tiff *.TIFF)";
+    else if(inFormatCBox->currentText().compare(iim::RAW_FORMAT.c_str()) == 0)
+        namefilter = "V3D raw files (*.raw *.RAW *.v3draw *.V3DRAW)";
+    else if(inFormatCBox->currentText().compare(iim::BDV_HDF5_FORMAT.c_str()) == 0)
+        namefilter = "HDF5 files (*.h5)";
+
     #ifdef _USE_QT_DIALOGS
     QString path = "";
     QFileDialog dialog(0);
@@ -502,14 +504,14 @@ void PConverter::inFileButtonClicked()
     dialog.setViewMode(QFileDialog::Detail);
     dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
     dialog.setWindowTitle("Select volume's file");
-    dialog.setNameFilter(tr("V3D raw files (*.raw *.RAW *.v3draw *.V3DRAW)"));
+    dialog.setNameFilter(namefilter.c_str());
     dialog.setDirectory(CSettings::instance()->getVCInputPath().c_str());
     if(dialog.exec())
        if(!dialog.selectedFiles().empty())
            path = dialog.selectedFiles().front();
 
     #else
-    QString path = QFileDialog::getOpenFileName(this, "Select volume's file", CSettings::instance()->getVCInputPath().c_str(), tr("V3D raw files (*.raw *.RAW *.v3draw *.V3DRAW)"));
+    QString path = QFileDialog::getOpenFileName(this, "Select volume's file", CSettings::instance()->getVCInputPath().c_str(), namefilter.c_str());
     #endif
 
     if(!path.isEmpty())
@@ -519,6 +521,31 @@ void PConverter::inFileButtonClicked()
         //launching import
         startButtonClicked();
     }
+}
+
+void PConverter::outFileButtonClicked()
+{
+    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+
+    #ifdef _USE_QT_DIALOGS
+    QString path;
+    QFileDialog dialog(0);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setViewMode(QFileDialog::Detail);
+    dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+    dialog.setNameFilter(tr("HDF5 file (*.h5)"));
+    dialog.setWindowTitle("Select the output file");
+    dialog.setDirectory(CSettings::instance()->getVCOutputPath().c_str());
+    if(dialog.exec())
+        path = dialog.directory().absolutePath();
+
+    #else
+    QString path = QFileDialog::getSaveFileName(this, "Select output file", itm::cdUp(CSettings::instance()->getVCOutputPath()).c_str(), tr("HDF5 file (*.h5)"));
+    //QString path = QFileDialog::getExistingDirectory(this, "Select the directory where the converted volume has to be stored", CSettings::instance()->getVCOutputPath().c_str(), QFileDialog::ShowDirsOnly);
+    #endif
+
+    if(!path.isEmpty())
+        outPathField->setText(path);
 }
 
 void PConverter::outDirButtonClicked()
@@ -655,6 +682,14 @@ void PConverter::volformatChanged (int )
         if(sender == outFormatCBox)
             blockDepthField->setVisible(false);
     }
+    else if(sender->currentText().compare(iim::BDV_HDF5_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
+    {
+        helpBox->setText("BigDataViewer HDF5 format (see <a href=\"http://fiji.sc/BigDataViewer#About_the_BigDataViewer_data_format\">this</a> link)");
+        buttonLayout->setCurrentWidget(fileButton);
+
+        if(sender == outFormatCBox)
+            blockDepthField->setVisible(true);
+    }
     else
         helpBox->setText("<html><p style=\"text-align:justify;\"> Format not yet supported. </p></html>");
 }
@@ -752,6 +787,11 @@ void PConverter::operationDone(RuntimeException *ex)
         startButton->setEnabled(true);
         stopButton->setEnabled(false);
         conversion_panel->setEnabled(true);
+
+        // refresh outFormatCBox
+        int idx = outFormatCBox->currentIndex();
+        outFormatCBox->setCurrentIndex(0);
+        outFormatCBox->setCurrentIndex(idx);
 
         try
         {

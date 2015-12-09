@@ -55,6 +55,7 @@ class teramanager::CImport : public QThread
         {
             /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
             vmapData = 0;
+            HDF5_descr = (void *) 0;
             reset();
         }
 
@@ -80,6 +81,9 @@ class teramanager::CImport : public QThread
         vector<iim::VirtualVolume*> volumes;        // stores the volumes at the different resolutions
         itm::uint8* vmapData;                       //volume map data
         itm::uint32 vmapYDim, vmapXDim, vmapZDim, vmapCDim, vmapTDim; //volume map actualdimensions
+
+		// should be released only when the multi resolution image is closed
+		void *HDF5_descr;   
 
         // other members
         QElapsedTimer timerIO;                      //for time measuring
@@ -181,10 +185,8 @@ class teramanager::CImport : public QThread
         // returns true if
         // 1) the volume map does not exist OR
         // 2) it is not compatible with the current version OR
-        // 3) contains a number of 'T' frames with T < maxDim && T < TDim
-        static bool hasVolumeMapToBeRegenerated(std::string vmapFilepath,
-                                                std::string min_required_version,
-                                                int maxTDim, int TDim) throw (itm::RuntimeException);
+        // 3) contains a number of 'T' frames with T < vmapTDimMax
+        bool hasVolumeMapToBeRegenerated(std::string vmapFilepath, std::string min_required_version) throw (itm::RuntimeException);
 
 
     signals:

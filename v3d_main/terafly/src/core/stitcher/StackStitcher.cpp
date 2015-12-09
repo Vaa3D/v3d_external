@@ -28,6 +28,11 @@
 /******************
 *    CHANGELOG    *
 *******************
+* 2015-08-28. Giulio.     @FIXED reference system of the generated image has always V as a first axis and H as a second axis
+* 2015-08-16. Giulio.     @ADDED method for halvesampling only V and H dimensions
+* 2015-07-12. Giulio.     @ADDED a halving method parameter to MergeTilesVaa3DRaw
+* 2015-07-12. Giulio.     @FIXED a bug on an int index in MergeTiles that should have been sint64
+* 2015-07-12. Giulio.     @FIXED a bug on int indices in halveSample that should have been sint64
 * 2015-02-26. Giulio.     @ADDED release of space allocated to stripesCoords and stripesCorners in mergeTiles
 * 2015-02-26. Giulio.     @ADDED an empty destructor to class StackStitcher
 * 2015-02-14. Giulio.     @CHANGED saveImage is called again since it now calls the plugin
@@ -751,7 +756,7 @@ iom::real_t* StackStitcher::getStripe(int row_index, int d_index, int restore_di
 void StackStitcher::mergeTiles(std::string output_path, int slice_height, int slice_width, bool* resolutions, 
 							   bool exclude_nonstitchable_stacks, int _ROW_START, int _ROW_END, int _COL_START,
 							   int _COL_END, int _D0, int _D1, bool restoreSPIM, int restore_direction,
-							   int blending_algo, bool test_mode, bool show_progress_bar, 
+							   int blending_algo, int method, bool test_mode, bool show_progress_bar, 
 							   const char* saved_img_format, int saved_img_depth)			throw (iom::exception)
 {
         #if S_VERBOSE > 2
@@ -998,7 +1003,7 @@ void StackStitcher::mergeTiles(std::string output_path, int slice_height, int sl
 	for(/* 2014-10-31. Giulio. @DELETED (sint64 z = this->D0, z_parts = 1) */; z < this->D1; z += z_max_res, z_parts++)
 	{
 		// 2014-09-09. Alessandro. @FIXED missing buffer initialization and reset in 'mergeTiles()' method.
-		for(int i=0; i<height*width*z_max_res; i++)
+		for(sint64 i=0; i<height*width*z_max_res; i++)
 			buffer[i]=0;
 
 		for(sint64 k = 0; k < ( z_parts <= z_ratio ? z_max_res : depth%z_max_res ); k++)
@@ -1131,7 +1136,7 @@ void StackStitcher::mergeTiles(std::string output_path, int slice_height, int sl
 
 			//halvesampling resolution if current resolution is not the deepest one
 			if(i!=0)	
-				StackStitcher::halveSample(buffer,(int)(height/(POW_INT(2,i-1))),(int)(width/(POW_INT(2,i-1))),(int)(z_size/(POW_INT(2,i-1))));
+				StackStitcher::halveSample(buffer,(int)(height/(POW_INT(2,i-1))),(int)(width/(POW_INT(2,i-1))),(int)(z_size/(POW_INT(2,i-1))),method);
 
 			//saving at current resolution if it has been selected and iff buffer is at least 1 voxel (Z) deep
 			if(resolutions[i] && (z_size/(POW_INT(2,i))) > 0)
@@ -1250,6 +1255,12 @@ void StackStitcher::mergeTiles(std::string output_path, int slice_height, int sl
 		// reloads created volumes to generate .bin file descriptors at all resolutions
 		ref_sys temp = volume->getREF_SYS();  // required by clang compiler
 		iim::ref_sys reference = *((iim::ref_sys *) &temp); // the cast is needed because there are two ref_sys in different name spaces
+		// 2015-08-28. Giulio. the generated volume has always V coordinates at the first directory level and H coordinates at the second directory level
+		if ( reference.first == iim::horizontal || reference.first == iim::inv_horizontal ) {
+			iim::axis temp = reference.first;
+			reference.first = reference.second;
+			reference.second = reference.first;
+		}
 		for(int res_i=0; res_i< resolutions_size; res_i++) {
 			if(resolutions[res_i])
         	{
@@ -1303,35 +1314,149 @@ void StackStitcher::mergeTiles(std::string output_path, int slice_height, int sl
 * Performs downsampling at a halved frequency on the given 3D image.  The given image is overwritten in order
 * to store its halvesampled version without allocating any additional resources.
 **************************************************************************************************************/
-void StackStitcher::halveSample(iom::real_t* img, int height, int width, int depth)
+void StackStitcher::halveSample(iom::real_t* img, int height, int width, int depth, int method)
 {
 	#ifdef S_TIME_CALC
 	double proc_time = -TIME(0);
 	#endif
 
 	float A,B,C,D,E,F,G,H;
-	for(int z=0; z<depth/2; z++)
-	{
-		for(int i=0; i<height/2; i++)
-		{
-			for(int j=0; j<width/2; j++)
-			{
-				//computing 8-neighbours
-				A = img[2*z*width*height +2*i*width + 2*j];
-				B = img[2*z*width*height +2*i*width + (2*j+1)];
-				C = img[2*z*width*height +(2*i+1)*width + 2*j];
-				D = img[2*z*width*height +(2*i+1)*width + (2*j+1)];
-				E = img[(2*z+1)*width*height +2*i*width + 2*j];
-				F = img[(2*z+1)*width*height +2*i*width + (2*j+1)];
-				G = img[(2*z+1)*width*height +(2*i+1)*width + 2*j];
-				H = img[(2*z+1)*width*height +(2*i+1)*width + (2*j+1)];
 
-				//computing mean
-				img[z*(width/2)*(height/2)+i*(width/2)+j] = (A+B+C+D+E+F+G+H)/(float)8;
+	// indices are sint64 because offsets can be larger that 2^31 - 1
+
+	if ( method == HALVE_BY_MEAN ) {
+
+		for(sint64 z=0; z<depth/2; z++)
+		{
+			for(sint64 i=0; i<height/2; i++)
+			{
+				for(sint64 j=0; j<width/2; j++)
+				{
+					//computing 8-neighbours
+					A = img[2*z*width*height +2*i*width + 2*j];
+					B = img[2*z*width*height +2*i*width + (2*j+1)];
+					C = img[2*z*width*height +(2*i+1)*width + 2*j];
+					D = img[2*z*width*height +(2*i+1)*width + (2*j+1)];
+					E = img[(2*z+1)*width*height +2*i*width + 2*j];
+					F = img[(2*z+1)*width*height +2*i*width + (2*j+1)];
+					G = img[(2*z+1)*width*height +(2*i+1)*width + 2*j];
+					H = img[(2*z+1)*width*height +(2*i+1)*width + (2*j+1)];
+
+					//computing mean
+					img[z*(width/2)*(height/2)+i*(width/2)+j] = (A+B+C+D+E+F+G+H)/(float)8;
+				}
 			}
 		}
-	}
 
+	}
+	else if ( method == HALVE_BY_MAX ) {
+
+		for(sint64 z=0; z<depth/2; z++)
+		{
+			for(sint64 i=0; i<height/2; i++)
+			{
+				for(sint64 j=0; j<width/2; j++)
+				{
+					//computing max of 8-neighbours
+					A = img[2*z*width*height + 2*i*width + 2*j];
+					B = img[2*z*width*height + 2*i*width + (2*j+1)];
+					if ( B > A ) A = B;
+					B = img[2*z*width*height + (2*i+1)*width + 2*j];
+					if ( B > A ) A = B;
+					B = img[2*z*width*height + (2*i+1)*width + (2*j+1)];
+					if ( B > A ) A = B;
+					B = img[(2*z+1)*width*height + 2*i*width + 2*j];
+					if ( B > A ) A = B;
+					B = img[(2*z+1)*width*height + 2*i*width + (2*j+1)];
+					if ( B > A ) A = B;
+					B = img[(2*z+1)*width*height + (2*i+1)*width + 2*j];
+					if ( B > A ) A = B;
+					B = img[(2*z+1)*width*height + (2*i+1)*width + (2*j+1)];
+					if ( B > A ) A = B;
+
+					//computing mean
+					img[z*(width/2)*(height/2) + i*(width/2) + j] = A;
+				}
+			}
+		}
+
+	}
+	else {
+		char buffer[S_STATIC_STRINGS_SIZE];
+		sprintf(buffer,"in halveSample(...): invalid halving method\n");
+        throw iom::exception(buffer);
+	}
+	#ifdef S_TIME_CALC
+	proc_time += TIME(0);
+	StackStitcher::time_multiresolution+=proc_time;
+	#endif
+	
+}
+
+/*************************************************************************************************************
+* Performs downsampling at a halved frequency on the given 3D image along V and H dimensions only.  The given 
+* image is overwritten in order to store its halvesampled version without allocating any additional resources.
+**************************************************************************************************************/
+void StackStitcher::halveSample2D(iom::real_t* img, int height, int width, int depth, int method)
+{
+	#ifdef S_TIME_CALC
+	double proc_time = -TIME(0);
+	#endif
+
+	float A,B,C,D;
+
+	// indices are sint64 because offsets can be larger that 2^31 - 1
+
+	if ( method == HALVE_BY_MEAN ) {
+
+		for(sint64 z=0; z<depth; z++)
+		{
+			for(sint64 i=0; i<height/2; i++)
+			{
+				for(sint64 j=0; j<width/2; j++)
+				{
+					//computing 8-neighbours
+					A = img[z*width*height +2*i*width + 2*j];
+					B = img[z*width*height +2*i*width + (2*j+1)];
+					C = img[z*width*height +(2*i+1)*width + 2*j];
+					D = img[z*width*height +(2*i+1)*width + (2*j+1)];
+
+					//computing mean
+					img[z*(width/2)*(height/2)+i*(width/2)+j] = (A+B+C+D)/(float)4;
+				}
+			}
+		}
+
+	}
+	else if ( method == HALVE_BY_MAX ) {
+
+		for(sint64 z=0; z<depth; z++)
+		{
+			for(sint64 i=0; i<height/2; i++)
+			{
+				for(sint64 j=0; j<width/2; j++)
+				{
+					//computing max of 8-neighbours
+					A = img[z*width*height + 2*i*width + 2*j];
+					B = img[z*width*height + 2*i*width + (2*j+1)];
+					if ( B > A ) A = B;
+					B = img[z*width*height + (2*i+1)*width + 2*j];
+					if ( B > A ) A = B;
+					B = img[z*width*height + (2*i+1)*width + (2*j+1)];
+					if ( B > A ) A = B;
+
+					//computing max
+					img[z*(width/2)*(height/2) + i*(width/2) + j] = A;
+				}
+			}
+		}
+
+	}
+	else {
+		char buffer[S_STATIC_STRINGS_SIZE];
+		sprintf(buffer,"in halveSample(...): invalid halving method\n");
+        throw iom::exception(buffer);
+	}
 	#ifdef S_TIME_CALC
 	proc_time += TIME(0);
 	StackStitcher::time_multiresolution+=proc_time;

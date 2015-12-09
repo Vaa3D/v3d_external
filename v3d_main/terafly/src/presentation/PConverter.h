@@ -137,6 +137,7 @@ class teramanager::PConverter : public QWidget
         void stopButtonClicked();
         void inDirButtonClicked();
         void inFileButtonClicked();
+        void outFileButtonClicked();
         void outDirButtonClicked();
         void volformatChanged ( int );
         void addResolution();

@@ -28,6 +28,7 @@
 /******************
 *    CHANGELOG    *
 *******************
+* 2015-08-24. Giulio.     @FIXED memory leak in loadImageStack
 * 2015-02-28. Giulio.     @ADDED saving of fields N_CHANS and N_BYTESxCHAN in the xml files
 * 2015-02-26. Giulio.     @ADDED initialization of fields N_CHANS and N_BYTESxCHAN in constructor; this information is NOT saved in mdata.bin and xml files
 * 2015-01-17. Alessandro. @ADDED constructor for initialization from XML.
@@ -124,6 +125,30 @@ Stack::Stack(StackedVolume* _CONTAINER, int _ROW_INDEX, int _COL_INDEX, FILE* bi
 	unBinarizeFrom(bin_file);
 }
 
+Stack::~Stack()
+{
+	#if VM_VERBOSE > 3
+	printf("\t\t\t\tin Stack[%d,%d]::~Stack()\n",ROW_INDEX, COL_INDEX);
+	#endif
+
+	NORTH.clear();
+	EAST.clear();
+	SOUTH.clear();
+	WEST.clear();
+
+    if(FILENAMES)
+    {
+		for(int z=0; z<DEPTH; z++)
+			if(FILENAMES[z])
+				delete[] FILENAMES[z];
+		delete[] FILENAMES;
+	}
+	if(STACKED_IMAGE)
+		delete[] STACKED_IMAGE;
+	if(DIR_NAME)
+		delete[] DIR_NAME;
+}
+
 void Stack::init() throw (iom::exception)
 {
 	#if VM_VERBOSE > 3
@@ -208,30 +233,6 @@ void Stack::init() throw (iom::exception)
 	// add to 'z_ranges' the full range
 	z_ranges.clear();
 	z_ranges.push_back(vm::interval<int>(0, DEPTH));
-}
-
-Stack::~Stack()
-{
-	#if VM_VERBOSE > 3
-	printf("\t\t\t\tin Stack[%d,%d]::~Stack()\n",ROW_INDEX, COL_INDEX);
-	#endif
-
-	NORTH.clear();
-	EAST.clear();
-	SOUTH.clear();
-	WEST.clear();
-
-    if(FILENAMES)
-    {
-		for(int z=0; z<DEPTH; z++)
-			if(FILENAMES[z])
-				delete[] FILENAMES[z];
-		delete[] FILENAMES;
-	}
-	if(STACKED_IMAGE)
-		delete[] STACKED_IMAGE;
-	if(DIR_NAME)
-		delete[] DIR_NAME;
 }
 
 //binarizing-unbinarizing methods
@@ -686,6 +687,9 @@ iom::real_t* Stack::loadImageStack(int first_file, int last_file) throw (iom::ex
 			}
 		}
 	}
+
+	// 2015-08-24. Giulio. data must be released
+	delete [] data;
 
 	return STACKED_IMAGE;
 }
