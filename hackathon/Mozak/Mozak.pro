@@ -1,6 +1,4 @@
 
-TEMPLATE	= lib
-CONFIG	+= qt plugin warn_off
 #CONFIG	+= x86_64
 
 CONFIG += MOZAK_STANDALONE
@@ -11,11 +9,12 @@ MOZAK_STANDALONE {
 	DEFINES += CGS_AUTOLAUNCH
 	DEFINES += V3D_SKIP_AUTO_VERSION_CHECK
 	DEFINES += RENDERER_RIGHT_CLICK_MENU_DISABLED
-	DEFINES += HIDE_ANO_TOOLBAR
-	DEFINES += UNREVERSE_MOUSE_WHEEL_ZOOM # not working yet
+	#DEFINES += HIDE_ANO_TOOLBAR
 	DEFINES += FORCE_BBOX_MODE
 	VAA3DPATH = ../..
-} else {
+} else {	
+	TEMPLATE	= lib
+	CONFIG	+= qt plugin warn_off
 	# Mozak as a Vaa3D plugin in Vaa3D tools SVN: vaa3d_tools/hackathon/mozak
 	VAA3DPATH = ../../../v3d_external
 	
@@ -24,12 +23,14 @@ MOZAK_STANDALONE {
 
 	TARGET	= $$qtLibraryTarget(Mozak)
 	DESTDIR	= $$VAA3DPATH/bin/plugins/Mozak/
+	HEADERS	+= 	MozakPlugin.h
+	SOURCES	+= 	MozakPlugin.cpp
 }
 
-HEADERS	+= 	MozakPlugin.h \
-			MozakUI.h \
+RESOURCES += icons.qrc
+
+HEADERS	+= 	MozakUI.h \
 			Mozak3DView.h
-SOURCES	+= 	MozakPlugin.cpp \
-			MozakUI.cpp \
+SOURCES	+= 	MozakUI.cpp \
 			Mozak3DView.cpp
 

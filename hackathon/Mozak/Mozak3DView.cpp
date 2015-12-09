@@ -5,6 +5,7 @@
 #include "v3d_application.h"
 #include "../terafly/src/control/CVolume.h"
 #include "../terafly/src/control/CImageUtils.h"
+#include "../terafly/src/presentation/PAnoToolBar.h"
 
 using namespace mozak;
 
@@ -23,7 +24,7 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	contrastSlider->setSingleStep(1);
 	contrastSlider->setPageStep(10);
 	contrastSlider->setValue(contrastValue);
-
+	
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
@@ -318,6 +319,17 @@ void Mozak3DView::show()
 	this->title = "Mozak";
 	teramanager::CViewer::show();
 	window3D->centralLayout->addWidget(contrastSlider, 1);
+
+	polyLineButton = new QToolButton();
+	polyLineButton->setIcon(QIcon(":/icons/polyline.png"));
+    polyLineButton->setToolTip("Series of right-clicks to define a 3D curve (Esc to finish)");
+    polyLineButton->setCheckable(true);
+    //polyLineButton->setShortcut(QKeySequence("Ctrl+P"));
+    connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->refreshTools();
 }
 
 
@@ -363,6 +375,35 @@ void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 
 		}
 	}
 	view3DWidget->update();
+}
+
+void Mozak3DView::polyLineButtonToggled(bool checked)
+{
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	curr_renderer->endSelectMode();
+	if (checked)
+	{
+		// Uncheck others
+		if(itm::PAnoToolBar::instance()->buttonMarkerCreate->isChecked())
+            itm::PAnoToolBar::instance()->buttonMarkerCreate->setChecked(false);
+		if(itm::PAnoToolBar::instance()->buttonMarkerCreate2->isChecked())
+            itm::PAnoToolBar::instance()->buttonMarkerCreate2->setChecked(false);
+        if(itm::PAnoToolBar::instance()->buttonMarkerDelete->isChecked())
+            itm::PAnoToolBar::instance()->buttonMarkerDelete->setChecked(false);
+        if(itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
+            itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setChecked(false);
+		
+		curr_renderer->selectMode = Renderer::smCurveCreate_pointclick;
+		curr_renderer->b_addthiscurve = true;
+	}
+	else
+	{
+		onNeuronEdit();
+#ifdef FORCE_BBOX_MODE
+		curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
+		curr_renderer->b_addthiscurve = true;
+#endif
+	}
 }
 
 

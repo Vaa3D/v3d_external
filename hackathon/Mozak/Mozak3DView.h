@@ -77,6 +77,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		Image4DSimple* nextImg;
 		QList<CViewInfo*> lowerResViews;
 		bool loadingNextImg;
+		QToolButton* polyLineButton;
 
 	public:
 
@@ -126,7 +127,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 
 	public slots:
 		void updateContrast(int con);
-
+		void polyLineButtonToggled(bool checked);
 
 
 
