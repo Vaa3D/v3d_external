@@ -73,11 +73,16 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 									int _volH0, int _volH1,
 									int _volD0, int _volD1,
 									int _volT0, int _volT1	);
+		void changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn);
 		static int contrastValue;
 		Image4DSimple* nextImg;
 		QList<CViewInfo*> lowerResViews;
 		bool loadingNextImg;
+		QToolButton* connectButton;
+		QToolButton* extendButton;
 		QToolButton* polyLineButton;
+		QToolButton* splitSegmentButton;
+		QToolButton* deleteSegmentsButton;
 
 	public:
 
@@ -127,8 +132,11 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 
 	public slots:
 		void updateContrast(int con);
+		void connectButtonToggled(bool checked);
+		void extendButtonToggled(bool checked);
 		void polyLineButtonToggled(bool checked);
-
+		void splitSegmentButtonToggled(bool checked);
+		void deleteSegmentsButtonToggled(bool checked);
 
 
 		/*********************************************************************************

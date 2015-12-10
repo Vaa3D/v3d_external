@@ -234,35 +234,41 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		switch (keyPressed)
 		{
 			case Qt::Key_D:
-				newMode = Renderer::smDeleteMultiNeurons;
+				if (!deleteSegmentsButton->isChecked())
+					deleteSegmentsButton->setChecked(true);
+				changeMode(Renderer::smDeleteMultiNeurons, true, true);
 				break;
 			case Qt::Key_S:
-				newMode = Renderer::smBreakMultiNeurons;
-                bAddCurve = false;
+				if (!splitSegmentButton->isChecked())
+					splitSegmentButton->setChecked(true);
+				changeMode(Renderer::smBreakMultiNeurons, false, true);
+                break;
+			case Qt::Key_P:
+				if (!polyLineButton->isChecked())
+					polyLineButton->setChecked(true);
+				changeMode(Renderer::smCurveCreate_pointclick, true, true);
                 break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
                 //stop happening at times even when setMouseTracking is enabled.
                 view3DWidget->setMouseTracking(false);
-                newMode = Renderer::smCurveEditExtendOneNode;
+                if (!extendButton->isChecked())
+					extendButton->setChecked(true);
+				changeMode(Renderer::smCurveEditExtendOneNode, true, true);
                 break;
             case Qt::Key_C:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
                 //stop happening at times even when setMouseTracking is enabled.
                 view3DWidget->setMouseTracking(false);
-                newMode = Renderer::smCurveEditExtendTwoNode;
+				if (!connectButton->isChecked())
+					connectButton->setChecked(true);
+				changeMode(Renderer::smCurveEditExtendTwoNode, true, true);
                 break;
 			default:
 #ifdef FORCE_BBOX_MODE
-				newMode = Renderer::smCurveTiltedBB_fm_sbbox;
+				changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
 #endif
 				break;
-		}
-		if (newMode != currentMode)
-		{
-			curr_renderer->endSelectMode();
-            curr_renderer->b_addthiscurve = bAddCurve;
-			curr_renderer->selectMode = newMode;
 		}
 	}
 	else if (event->type() == QEvent::KeyRelease) // intercept keypress events
@@ -272,9 +278,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 #ifdef FORCE_BBOX_MODE
 		if (curr_renderer->selectMode != Renderer::smCurveTiltedBB_fm_sbbox)
 		{
-			curr_renderer->endSelectMode();
-			curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
-			curr_renderer->b_addthiscurve = true;
+			changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
 		}
 #endif
 	}
@@ -287,9 +291,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			if (curr_renderer->selectMode == Renderer::smObject)
 			{
-				curr_renderer->endSelectMode();
-				curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
-				curr_renderer->b_addthiscurve = true;
+				changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
 			}
 		}
 		else
@@ -318,16 +320,64 @@ void Mozak3DView::show()
 {
 	this->title = "Mozak";
 	teramanager::CViewer::show();
+
+	// Hide unwanted buttons
+	itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
+	itm::PAnoToolBar::instance()->buttonMarkerCreate2->setParent(0);
+    itm::PAnoToolBar::instance()->buttonMarkerDelete->setParent(0);
+    itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setParent(0);
+	itm::PAnoToolBar::instance()->buttonMarkerRoiView->setParent(0);
+
 	window3D->centralLayout->addWidget(contrastSlider, 1);
+	
+	void connectButtonToggled(bool checked);
+		void extendButtonToggled(bool checked);
+		void polyLineButtonToggled(bool checked);
+		void splitSegmentButtonToggled(bool checked);
+		void eraseSegmentsButtonToggled(bool checked);
+
+
+	connectButton = new QToolButton();
+	connectButton->setIcon(QIcon(":/mozak/icons/connect.png"));
+    connectButton->setToolTip("Connect nodes using right click stroke");
+    connectButton->setCheckable(true);
+    connect(connectButton, SIGNAL(toggled(bool)), this, SLOT(connectButtonToggled(bool)));
+
+	extendButton = new QToolButton();
+	extendButton->setIcon(QIcon(":/mozak/icons/extend.png"));
+    extendButton->setToolTip("Extend from existing node using right click stroke");
+    extendButton->setCheckable(true);
+    connect(extendButton, SIGNAL(toggled(bool)), this, SLOT(extendButtonToggled(bool)));
 
 	polyLineButton = new QToolButton();
-	polyLineButton->setIcon(QIcon(":/icons/polyline.png"));
+	polyLineButton->setIcon(QIcon(":/mozak/icons/polyline.png"));
     polyLineButton->setToolTip("Series of right-clicks to define a 3D curve (Esc to finish)");
     polyLineButton->setCheckable(true);
     //polyLineButton->setShortcut(QKeySequence("Ctrl+P"));
     connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
+
+	splitSegmentButton = new QToolButton();
+	splitSegmentButton->setIcon(QIcon(":/mozak/icons/split.png"));
+    splitSegmentButton->setToolTip("Split segment into two using right click stroke");
+    splitSegmentButton->setCheckable(true);
+    connect(splitSegmentButton, SIGNAL(toggled(bool)), this, SLOT(splitSegmentButtonToggled(bool)));
+
+	deleteSegmentsButton = new QToolButton();
+	deleteSegmentsButton->setIcon(QIcon(":/mozak/icons/delete-segments.png"));
+    deleteSegmentsButton->setToolTip("Delete multiple segments with right click stroke");
+    deleteSegmentsButton->setCheckable(true);
+    connect(deleteSegmentsButton, SIGNAL(toggled(bool)), this, SLOT(deleteSegmentsButtonToggled(bool)));
+
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, extendButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, splitSegmentButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->refreshTools();
 }
@@ -377,24 +427,50 @@ void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 
 	view3DWidget->update();
 }
 
+void Mozak3DView::connectButtonToggled(bool checked)
+{
+	changeMode(Renderer::smCurveEditExtendTwoNode, true, checked);
+}
+
+void Mozak3DView::extendButtonToggled(bool checked)
+{
+	changeMode(Renderer::smCurveEditExtendOneNode, true, checked);
+}
+
 void Mozak3DView::polyLineButtonToggled(bool checked)
+{
+	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
+}
+
+void Mozak3DView::splitSegmentButtonToggled(bool checked)
+{
+	changeMode(Renderer::smBreakMultiNeurons, false, checked);
+}
+
+void Mozak3DView::deleteSegmentsButtonToggled(bool checked)
+{
+	changeMode(Renderer::smDeleteMultiNeurons, true, checked);
+}
+
+void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn)
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	curr_renderer->endSelectMode();
-	if (checked)
+	if (turnOn)
 	{
-		// Uncheck others
-		if(itm::PAnoToolBar::instance()->buttonMarkerCreate->isChecked())
-            itm::PAnoToolBar::instance()->buttonMarkerCreate->setChecked(false);
-		if(itm::PAnoToolBar::instance()->buttonMarkerCreate2->isChecked())
-            itm::PAnoToolBar::instance()->buttonMarkerCreate2->setChecked(false);
-        if(itm::PAnoToolBar::instance()->buttonMarkerDelete->isChecked())
-            itm::PAnoToolBar::instance()->buttonMarkerDelete->setChecked(false);
-        if(itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
-            itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setChecked(false);
-		
-		curr_renderer->selectMode = Renderer::smCurveCreate_pointclick;
-		curr_renderer->b_addthiscurve = true;
+		curr_renderer->selectMode = mode;
+		curr_renderer->b_addthiscurve = addThisCurve;
+		// Uncheck any other currently checked modes
+		if (mode != Renderer::smCurveEditExtendOneNode && extendButton->isChecked())
+			extendButton->setChecked(false);
+		if (mode != Renderer::smCurveEditExtendTwoNode && connectButton->isChecked())
+			connectButton->setChecked(false);
+		if (mode != Renderer::smCurveCreate_pointclick && polyLineButton->isChecked())
+			polyLineButton->setChecked(false);
+		if (mode != Renderer::smBreakMultiNeurons && splitSegmentButton->isChecked())
+			splitSegmentButton->setChecked(false);
+		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
+			deleteSegmentsButton->setChecked(false);
 	}
 	else
 	{
@@ -405,7 +481,6 @@ void Mozak3DView::polyLineButtonToggled(bool checked)
 #endif
 	}
 }
-
 
 /*********************************************************************************
 * Receive data (and metadata) from <CVolume> throughout the loading process
