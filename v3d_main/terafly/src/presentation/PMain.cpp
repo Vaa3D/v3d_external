@@ -1469,7 +1469,7 @@ void PMain::loadAnnotations()
                 QCursor cursor = cur_win->view3DWidget->cursor();
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                //CViewer::setCursor(Qt::WaitCursor);
+                CViewer::setCursor(Qt::WaitCursor);
 
                 // load
                 cur_win->loadAnnotations();
@@ -1516,7 +1516,7 @@ void PMain::saveAnnotations()
             QCursor cursor = cur_win->view3DWidget->cursor();
             if(PAnoToolBar::isInstantiated())
                 PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-            //CViewer::setCursor(Qt::WaitCursor);
+            CViewer::setCursor(Qt::WaitCursor);
 
             // save
             cur_win->storeAnnotations();
@@ -1577,7 +1577,7 @@ void PMain::saveAnnotationsAs()
                 QCursor cursor = cur_win->view3DWidget->cursor();
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                //CViewer::setCursor(Qt::WaitCursor);
+                CViewer::setCursor(Qt::WaitCursor);
 
                 // save
                 cur_win->storeAnnotations();
