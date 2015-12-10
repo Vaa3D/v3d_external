@@ -35,7 +35,7 @@ QT_PATH = $$dirname(QMAKE_QMAKE)/..
 INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 
 macx {
-  LIBS += -L$$V3DMAINPATH/common_lib/libmac64 -lhdf5 -lszip -lz
+  LIBS += -L$$V3DMAINPATH/common_lib/lib_mac64 -lhdf5 -lszip -lz
   }
 
 #Vaa3D headers and sources needed by the plugin
