@@ -72,8 +72,6 @@ TiledVolume::TiledVolume(void) : VirtualVolume()
     reference_system.first = reference_system.second = reference_system.third = iim::axis_invalid;
     VXL_1 = VXL_2 = VXL_3 = 0.0f;
     fmtMngr = 0;
-
-    iom::IMIN_PLUGIN = "tiff3D";
 }
 
 TiledVolume::TiledVolume(const char* _root_dir)  throw (IOException)
@@ -82,7 +80,7 @@ TiledVolume::TiledVolume(const char* _root_dir)  throw (IOException)
     /**/iim::debug(iim::LEV3, strprintf("_root_dir=%s", _root_dir).c_str(), __iim__current__function__);
 
 	// 2015-03-03. Giulio. @ADDED selection of IO plugin if not provided.
-    iom::IMIN_PLUGIN = "tiff3D";
+	iom::IMIN_PLUGIN = "tiff3D";
 
 	//DIM_V = DIM_H = DIM_D = 0;
 	VXL_1 = VXL_2 = VXL_3 = 0;
@@ -116,7 +114,7 @@ TiledVolume::TiledVolume(const char* _root_dir, ref_sys _reference_system, float
                                         _root_dir, _reference_system.first, _reference_system.second, _reference_system.third, _VXL_1, _VXL_2, _VXL_3).c_str(), __iim__current__function__);
 
 	// 2015-03-03. Giulio. @ADDED selection of IO plugin if not provided.
-    iom::IMIN_PLUGIN = "tiff3D";
+	iom::IMIN_PLUGIN = "tiff3D";
 
 	//DIM_V = DIM_H = DIM_D = 0;
 	VXL_1 = VXL_2 = VXL_3 = 0;

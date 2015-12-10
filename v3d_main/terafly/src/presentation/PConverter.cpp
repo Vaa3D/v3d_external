@@ -104,7 +104,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     inFormatCBox->insertItem(6, iim::SIMPLE_RAW_FORMAT.c_str());
     inFormatCBox->insertItem(7, iim::TILED_FORMAT.c_str());
     inFormatCBox->insertItem(8, iim::TILED_MC_FORMAT.c_str());
-    PMain::setEnabledComboBoxItem(inFormatCBox, 0, false);
+   // PMain::setEnabledComboBoxItem(inFormatCBox, 0, false);
     inFormatCBox->setEditable(true);
     inFormatCBox->lineEdit()->setReadOnly(true);
     inFormatCBox->lineEdit()->setAlignment(Qt::AlignCenter);
@@ -320,6 +320,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     connect(inFormatCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
     connect(blockWidthField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
     connect(blockHeightField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
+    connect(blockDepthField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
     connect(addResolutionButton, SIGNAL(clicked()), this, SLOT(addResolution()));
     resetGUI();
 
@@ -676,7 +677,7 @@ void PConverter::volformatChanged (int )
     }
     else if(sender->currentText().compare(iim::TIF3D_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
-        helpBox->setText("A folder containing a series (1+) of multipage (3D) TIFF files.");
+        helpBox->setText("A single multipage (3D) TIFF file.");
         buttonLayout->setCurrentWidget(fileButton);
 
         if(sender == outFormatCBox)
