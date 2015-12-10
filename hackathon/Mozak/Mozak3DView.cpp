@@ -320,7 +320,7 @@ void Mozak3DView::show()
 {
 	this->title = "Mozak";
 	teramanager::CViewer::show();
-
+	
 	// Hide unwanted buttons
 	itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
 	itm::PAnoToolBar::instance()->buttonMarkerCreate2->setParent(0);
@@ -330,12 +330,6 @@ void Mozak3DView::show()
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
-	void connectButtonToggled(bool checked);
-		void extendButtonToggled(bool checked);
-		void polyLineButtonToggled(bool checked);
-		void splitSegmentButtonToggled(bool checked);
-		void eraseSegmentsButtonToggled(bool checked);
-
 
 	connectButton = new QToolButton();
 	connectButton->setIcon(QIcon(":/mozak/icons/connect.png"));
@@ -652,6 +646,46 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 		view3DWidget->setZoom(curZoom/ratio);
 
 	MozakUI* moz = MozakUI::getMozakInstance();
+
+	//selecting the current resolution in the PMain GUI and disabling previous resolutions
+    moz->resolution_cbox->setCurrentIndex(volResIndex);
+    for(int i=0; i<moz->resolution_cbox->count(); i++)
+    {
+        // Get the index of the value to disable
+        QModelIndex index = moz->resolution_cbox->model()->index(i,0);
+		// These are the effective 'disable/enable' flags
+        QVariant v1(Qt::NoItemFlags);
+        QVariant v2(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+        //the magic
+        if(i<volResIndex)
+            moz->resolution_cbox->model()->setData(index, v1, Qt::UserRole -1);
+        else
+            moz->resolution_cbox->model()->setData(index, v2, Qt::UserRole -1);
+    }
+    moz->gradientBar->setStep(volResIndex);
+    moz->gradientBar->update();
+
+	//setting min, max and value of PMain GUI VOI's widgets
+    moz->V0_sbox->setMinimum(getGlobalVCoord(view3DWidget->yCut0(), -1, true, false, __itm__current__function__)+1);
+    moz->V0_sbox->setValue(moz->V0_sbox->minimum());
+    moz->V1_sbox->setMaximum(getGlobalVCoord(view3DWidget->yCut1(), -1, true, false, __itm__current__function__)+1);
+    moz->V1_sbox->setValue(moz->V1_sbox->maximum());
+    moz->H0_sbox->setMinimum(getGlobalHCoord(view3DWidget->xCut0(), -1, true, false, __itm__current__function__)+1);
+    moz->H0_sbox->setValue(moz->H0_sbox->minimum());
+    moz->H1_sbox->setMaximum(getGlobalHCoord(view3DWidget->xCut1(), -1, true, false, __itm__current__function__)+1);
+    moz->H1_sbox->setValue(moz->H1_sbox->maximum());
+    moz->D0_sbox->setMinimum(getGlobalDCoord(view3DWidget->zCut0(), -1, true, false, __itm__current__function__)+1);
+    moz->D0_sbox->setValue(moz->D0_sbox->minimum());
+    moz->D1_sbox->setMaximum(getGlobalDCoord(view3DWidget->zCut1(), -1, true, false, __itm__current__function__)+1);
+    moz->D1_sbox->setValue(moz->D1_sbox->maximum());
+
+    if(moz->frameCoord->isEnabled())
+    {
+        moz->T0_sbox->setText(QString::number(volT0+1));
+        moz->T1_sbox->setText(QString::number(volT1+1));
+    }
+
 	// updating reference system
 	if(!moz->isPRactive())
 		moz->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
