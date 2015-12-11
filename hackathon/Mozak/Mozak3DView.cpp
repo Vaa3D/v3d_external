@@ -374,8 +374,18 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->refreshTools();
+
+	updateRendererTextureParams();
 }
 
+void Mozak3DView::updateRendererTextureParams()
+{
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	curr_renderer->tryTexCompress = false;
+	curr_renderer->tryTexStream = -1;
+	curr_renderer->tryTexNPT = true;
+	//view3DWidget->changeVolShadingOption();
+}
 
 void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 (dark) */
 {
@@ -694,6 +704,8 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 
 	// update curve aspect
 	moz->curveAspectChanged();
+
+	updateRendererTextureParams();
 }
 
 /**********************************************************************************

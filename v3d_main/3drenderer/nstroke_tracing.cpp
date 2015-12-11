@@ -1833,8 +1833,8 @@ if (0)
      vector <XYZ> loc_vec_resampled;
      int stepsize = 7; // sampling stepsize 5
      loc_vec_resampled.clear();
-     adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
-	//	loc_vec_resampled = loc_vec;
+     //adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
+     loc_vec_resampled = loc_vec;
 
 	//the intensity-based resampled method could lead to totally wrong path (especially for binary image).
 	//Need to use a better and more evenly spaced method. by PHC, 20120330.
