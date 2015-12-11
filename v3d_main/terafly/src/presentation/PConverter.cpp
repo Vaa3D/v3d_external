@@ -299,7 +299,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     layout->setSpacing(0);
     layout->setContentsMargins(10,5,10,0);
     setLayout(layout);
-    setWindowTitle(tr("TeraConverter"));
+    setWindowTitle(QString("TeraConverter v").append(teramanager::version.c_str()));
     this->setFixedWidth(800);
 
     //signals and slots

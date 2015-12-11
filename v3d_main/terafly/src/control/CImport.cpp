@@ -483,7 +483,7 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
     // is this the volume from which the volume map was generated?
     if(!volume_found)
     {
-        itm::warning("volume map needs to be (re-)generated: volume map does not correspond to the urrently opened volume", __itm__current__function__);
+        itm::warning("volume map needs to be (re-)generated: volume map does not correspond to the currently opened volume", __itm__current__function__);
         return true;
     }
 

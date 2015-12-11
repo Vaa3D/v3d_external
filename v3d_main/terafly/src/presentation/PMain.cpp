@@ -972,7 +972,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     layout->setSpacing(0);
     setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    setWindowTitle(QString("Vaa3D-TeraFly v").append(teramanager::version.c_str()));
+    setWindowTitle(QString("TeraFly v").append(teramanager::version.c_str()));
     this->setFont(tinyFont);
 
 
