@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/mozak">
+        <file>icons/invert.png</file>
         <file>icons/connect.png</file>
         <file>icons/delete-segments.png</file>
         <file>icons/extend.png</file>

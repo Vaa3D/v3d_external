@@ -321,8 +321,7 @@ void Mozak3DView::show()
 	this->title = "Mozak";
 	teramanager::CViewer::show();
 	
-	// Hide unwanted buttons
-	
+	// Hide unwanted buttons - TODO: This seems to crash in Mac builds, hiding in Terafly code for now
 	//itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
 	//itm::PAnoToolBar::instance()->buttonMarkerCreate2->setParent(0);
     //itm::PAnoToolBar::instance()->buttonMarkerDelete->setParent(0);
@@ -331,6 +330,11 @@ void Mozak3DView::show()
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
+	invertImageButton = new QToolButton();
+	invertImageButton->setIcon(QIcon(":/mozak/icons/invert.png"));
+    invertImageButton->setToolTip("Invert image between brightfield/darkfield");
+    invertImageButton->setCheckable(true);
+    connect(invertImageButton, SIGNAL(toggled(bool)), this, SLOT(invertImageButtonToggled(bool)));
 
 	connectButton = new QToolButton();
 	connectButton->setIcon(QIcon(":/mozak/icons/connect.png"));
@@ -362,7 +366,10 @@ void Mozak3DView::show()
     deleteSegmentsButton->setToolTip("Delete multiple segments with right click stroke");
     deleteSegmentsButton->setCheckable(true);
     connect(deleteSegmentsButton, SIGNAL(toggled(bool)), this, SLOT(deleteSegmentsButtonToggled(bool)));
-
+	
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, extendButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -385,7 +392,13 @@ void Mozak3DView::updateRendererTextureParams()
 	curr_renderer->tryTexCompress = false;
 	curr_renderer->tryTexStream = -1;
 	curr_renderer->tryTexNPT = true;
-	//view3DWidget->changeVolShadingOption();
+}
+
+void Mozak3DView::invertImageButtonToggled(bool checked)
+{
+	window3D->dispType_maxip->setChecked(!checked);
+	window3D->dispType_minip->setChecked(checked);
+	updateContrast(contrastValue);
 }
 
 void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 (dark) */
@@ -401,7 +414,11 @@ void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 
 		(curr_renderer->colormap[0][j]).g = (unsigned char)255;
 		(curr_renderer->colormap[0][j]).b = (unsigned char)255;
 		// This is the value being manipulated
-		int val = (int)(pow(j/255.0f, exp_val) * 255.0f);
+		int val;
+		if (invertImageButton->isChecked())
+			val = (int)(pow((255-j)/255.0f, exp_val) * 255.0f);
+		else
+			val = (int)(pow(j/255.0f, exp_val) * 255.0f);
 		(curr_renderer->colormap[0][j]).a = (unsigned char)val;
 		
 		(curr_renderer->colormap[1][j]).r = (unsigned char)0;
