@@ -452,12 +452,16 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
         return true;
     }
 
+
     // check y-x-z size: can we load a larger image?
-    for(int l=0; l<volumes.size(); l++)
+    bool volume_found = false;
+    for(int l=0; l<volumes.size() && !volume_found; l++)
     {
         // search for the currently stored image resolution
         if(volumes[l]->getDIM_V() == Y && volumes[l]->getDIM_H() == X && volumes[l]->getDIM_D() == Z)
         {
+            volume_found = true;
+
             // can we load a larger map?
             if(volumes.size() > l                       &&  // l+1 resolution exists
                volumes[l+1]->getDIM_V() <= vmapYDimMax  &&  // l+1 resolution can fit into the 3D viewer (along y)
@@ -474,6 +478,13 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
                 return true;
             }
         }
+    }
+
+    // is this the volume from which the volume map was generated?
+    if(!volume_found)
+    {
+        itm::warning("volume map needs to be (re-)generated: volume map does not correspond to the urrently opened volume", __itm__current__function__);
+        return true;
     }
 
     // all checks passed: no need to regenerate volume map
