@@ -322,11 +322,12 @@ void Mozak3DView::show()
 	teramanager::CViewer::show();
 	
 	// Hide unwanted buttons
-	itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
-	itm::PAnoToolBar::instance()->buttonMarkerCreate2->setParent(0);
-    itm::PAnoToolBar::instance()->buttonMarkerDelete->setParent(0);
-    itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setParent(0);
-	itm::PAnoToolBar::instance()->buttonMarkerRoiView->setParent(0);
+	
+	//itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
+	//itm::PAnoToolBar::instance()->buttonMarkerCreate2->setParent(0);
+    //itm::PAnoToolBar::instance()->buttonMarkerDelete->setParent(0);
+    //itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setParent(0);
+	//itm::PAnoToolBar::instance()->buttonMarkerRoiView->setParent(0);
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
