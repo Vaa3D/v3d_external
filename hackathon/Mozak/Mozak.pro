@@ -27,7 +27,7 @@ MOZAK_STANDALONE {
 	SOURCES	+= 	MozakPlugin.cpp
 }
 
-RESOURCES += icons.qrc
+RESOURCES += mozak.qrc
 
 HEADERS	+= 	MozakUI.h \
 			Mozak3DView.h
