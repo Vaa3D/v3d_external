@@ -128,61 +128,73 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	bool neuronTreeChanged = false;
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
 	{
-
-		int prevZoom = view3DWidget->zoom();
-		
 		QWheelEvent* wheelEvt = (QWheelEvent*)event;
-		lastWheelFocus = getRenderer3DPoint(wheelEvt->x(), wheelEvt->y());
-		useLastWheelFocus = true;
-		
-		// Calculate amount that the point being mouse over moves on the sceen
-		// in order to offset this and keep that point centered after zoom
-		GLdouble p0x, p0y, p0z, p1x, p1y, p1z, ix, iy, iz;
-		
-		ix = lastWheelFocus.x;
-        iy = lastWheelFocus.y;
-        iz = lastWheelFocus.z;
-		
-		// Project the moused-over 3D point to the screen coordinates
-		gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p0x, &p0y, &p0z);
-		p0y = curr_renderer->viewport[3]-p0y; //the Y axis is reversed
-		
-		// Handle this ourselves rather than passing to Terafly (which would change resolutions)
-		//processWheelEvt(wheelEvt);
-
-		float d = (wheelEvt->delta())/100;  // ~480
-		#define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
-		#define MOUSE_ZROT(dz)    (int(dz*8* MOUSE_SENSITIVE));
-
-		int zoomStep = MOUSE_ZOOM(d);
-		int newZoom = zoomStep + prevZoom; // wheeling up should zoom IN, not out
-		int wheelX = wheelEvt->x();
-		int wheelY = wheelEvt->y();
-		float prevZoomRatio = curr_renderer->zoomRatio;
-		
-		// Change zoom
-		view3DWidget->setZoom(newZoom);
-		curr_renderer->paint(); // updates the projection matrix
-
-		// Project the previously moused-over 3D point to its new screen coordinates (after zoom)
-		gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p1x, &p1y, &p1z);
-		p1y = curr_renderer->viewport[3]-p1y; //the Y axis is reversed
-		
-		float newZoomRatio = curr_renderer->zoomRatio;
-		float viewW = float(view3DWidget->viewW);
-		float viewH = float(view3DWidget->viewH);;
-		float dxPctOfScreen = float(p0x-p1x) / viewW;
-		float dyPctOfScreen = float(p1y-p0y) / viewH;
-		
-		float screenWidthInXShifts  = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
-		float screenHeightInYShifts = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
-		
-		//view3DWidget->setXShift(view3DWidget->xShift() + dxPctOfScreen*screenWidthInXShifts);
-		//view3DWidget->setYShift(view3DWidget->yShift() + dyPctOfScreen*screenHeightInYShifts);
-
-		if (!loadingNextImg && (newZoom < prevZoom) && (newZoom <= 0)) // zooming out
+		if (currentMode == Renderer::smCurveCreate_pointclick)
 		{
-			// Previously, we were lowering the resolution on zoomout, now just perform zoom
+			// If polyline mode, use mouse wheel to change the current z-slice (and restrict to one)
+			int prevVal = window3D->zcminSlider->value();
+			if (wheelEvt->delta() > 0)
+			{
+				window3D->zcminSlider->setValue(prevVal + 1);
+				window3D->zcmaxSlider->setValue(prevVal + 1);
+			}
+			else
+			{
+				window3D->zcminSlider->setValue(prevVal - 1);
+				window3D->zcmaxSlider->setValue(prevVal - 1);
+			}
+		}
+		else
+		{
+			int prevZoom = view3DWidget->zoom();
+			
+			lastWheelFocus = getRenderer3DPoint(wheelEvt->x(), wheelEvt->y());
+			useLastWheelFocus = true;
+			
+			// Calculate amount that the point being mouse over moves on the sceen
+			// in order to offset this and keep that point centered after zoom
+			GLdouble p0x, p0y, p0z, p1x, p1y, p1z, ix, iy, iz;
+			
+			ix = lastWheelFocus.x;
+			iy = lastWheelFocus.y;
+			iz = lastWheelFocus.z;
+			
+			// Project the moused-over 3D point to the screen coordinates
+			gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p0x, &p0y, &p0z);
+			p0y = curr_renderer->viewport[3]-p0y; //the Y axis is reversed
+			
+			// Handle this ourselves rather than passing to Terafly (which would change resolutions)
+			//processWheelEvt(wheelEvt);
+
+			float d = (wheelEvt->delta())/100;  // ~480
+			#define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
+			#define MOUSE_ZROT(dz)    (int(dz*8* MOUSE_SENSITIVE));
+
+			int zoomStep = MOUSE_ZOOM(d);
+			int newZoom = zoomStep + prevZoom; // wheeling up should zoom IN, not out
+			int wheelX = wheelEvt->x();
+			int wheelY = wheelEvt->y();
+			float prevZoomRatio = curr_renderer->zoomRatio;
+			
+			// Change zoom
+			view3DWidget->setZoom(newZoom);
+			curr_renderer->paint(); // updates the projection matrix
+
+			// Project the previously moused-over 3D point to its new screen coordinates (after zoom)
+			gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p1x, &p1y, &p1z);
+			p1y = curr_renderer->viewport[3]-p1y; //the Y axis is reversed
+			
+			float newZoomRatio = curr_renderer->zoomRatio;
+			float viewW = float(view3DWidget->viewW);
+			float viewH = float(view3DWidget->viewH);;
+			float dxPctOfScreen = float(p0x-p1x) / viewW;
+			float dyPctOfScreen = float(p1y-p0y) / viewH;
+			
+			float screenWidthInXShifts  = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
+			float screenHeightInYShifts = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
+			
+			//view3DWidget->setXShift(view3DWidget->xShift() + dxPctOfScreen*screenWidthInXShifts);
+			//view3DWidget->setYShift(view3DWidget->yShift() + dyPctOfScreen*screenHeightInYShifts);
 		}
 		return true;
 	}
@@ -318,9 +330,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 
 void Mozak3DView::show()
 {
-	this->title = "Mozak";
 	teramanager::CViewer::show();
-	
+	window3D->setWindowTitle("Mozak");
+
 	// Hide unwanted buttons - TODO: This seems to crash in Mac builds, hiding in Terafly code for now
 	//itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
 	//itm::PAnoToolBar::instance()->buttonMarkerCreate2->setParent(0);
@@ -350,9 +362,8 @@ void Mozak3DView::show()
 
 	polyLineButton = new QToolButton();
 	polyLineButton->setIcon(QIcon(":/mozak/icons/polyline.png"));
-    polyLineButton->setToolTip("Series of right-clicks to define a 3D curve (Esc to finish)");
+    polyLineButton->setToolTip("Series of right-clicks to define a 3D polyline (Esc to finish)");
     polyLineButton->setCheckable(true);
-    //polyLineButton->setShortcut(QKeySequence("Ctrl+P"));
     connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
 
 	splitSegmentButton = new QToolButton();
@@ -398,7 +409,8 @@ void Mozak3DView::invertImageButtonToggled(bool checked)
 {
 	window3D->dispType_maxip->setChecked(!checked);
 	window3D->dispType_minip->setChecked(checked);
-	updateContrast(contrastValue);
+	contrastSlider->setValue(-contrastValue);
+	if (contrastValue == 0) updateContrast(0); // won't trigger automatically because value was not changed
 }
 
 void Mozak3DView::updateContrast(int con) /* contrast from -100 (bright) to 100 (dark) */
@@ -477,6 +489,7 @@ void Mozak3DView::deleteSegmentsButtonToggled(bool checked)
 void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn)
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	Renderer::SelectMode prevMode = curr_renderer->selectMode;
 	curr_renderer->endSelectMode();
 	if (turnOn)
 	{
@@ -493,6 +506,13 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);
+		if (mode == Renderer::smCurveCreate_pointclick)
+		{
+			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
+			int midVal = (window3D->zcminSlider->maximum() - window3D->zcminSlider->minimum()) / 2;
+			window3D->zcminSlider->setValue(midVal);
+			window3D->zcmaxSlider->setValue(midVal);
+		}
 	}
 	else
 	{
@@ -501,6 +521,12 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
 		curr_renderer->b_addthiscurve = true;
 #endif
+	}
+	if (prevMode == Renderer::smCurveCreate_pointclick)
+	{
+		// When exiting poly mode, restore all z cuts
+		window3D->zcminSlider->setValue(window3D->zcminSlider->minimum());
+		window3D->zcmaxSlider->setValue(window3D->zcmaxSlider->maximum());
 	}
 }
 
