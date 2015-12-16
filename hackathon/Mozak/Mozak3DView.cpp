@@ -452,8 +452,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->refreshTools();
 	
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
-
-	updateRendererTextureParams();
+	
+	updateRendererParams();
 }
 
 void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL that this SLOT could listen to
@@ -489,14 +489,18 @@ void Mozak3DView::updateResolutionLabel()
 		currResolutionLabel->setText(itm::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
 }
 
-void Mozak3DView::updateRendererTextureParams()
+void Mozak3DView::updateRendererParams()
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-	if (curr_renderer->tryTexCompress || curr_renderer->tryTexStream != -1 || !curr_renderer->tryTexNPT)
+	if (curr_renderer->tryTexCompress || 
+		curr_renderer->tryTexStream != -1 || 
+		!curr_renderer->tryTexNPT ||
+		curr_renderer->bShowAxes)
 	{
 		curr_renderer->tryTexCompress = false;
 		curr_renderer->tryTexStream = -1;
 		curr_renderer->tryTexNPT = true;
+		curr_renderer->bShowAxes = false;
 		view3DWidget->updateImageData();
 	}
 }
@@ -845,7 +849,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// update curve aspect
 	moz->curveAspectChanged();
 
-	updateRendererTextureParams();
+	updateRendererParams();
 }
 
 /**********************************************************************************
