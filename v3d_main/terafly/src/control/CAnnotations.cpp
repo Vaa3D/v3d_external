@@ -1217,10 +1217,10 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
     fprintf(f, "#n type x y z radius parent\n");
-	//first pass: gather any root nodes that are subtype 1 (soma) before any others
+	//first pass: gather any nodes that are subtype 1 (soma) before any others
+	//(recursively, such that parents are output before children)
 	for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
 		if(	((*i)->subtype == 1) && //soma
-			!(*i)->parent &&		//root node
 			((*i)->type == 1)	)	//NeuronSWC
             write_annotations_helper(f, (*i), anosAdded, old2new, nextID);
 	//second pass: output rest of nodes recursively, putting parents ahead

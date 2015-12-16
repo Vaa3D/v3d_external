@@ -452,6 +452,7 @@ public:
 	int VOLUME_FILTER;
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
      bool b_renderTextureLast;
+	double currentTraceType;
 
 private:
 	void init_members()
@@ -503,6 +504,7 @@ private:
           bTestCurveBegin=false;
 
           b_editDroppedNeuron = false; //20150527, PHC
+		currentTraceType=3;
      }
 
 

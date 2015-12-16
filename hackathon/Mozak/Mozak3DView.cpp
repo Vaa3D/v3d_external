@@ -245,6 +245,30 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 
 		switch (keyPressed)
 		{
+			case Qt::Key_0:
+				curr_renderer->currentTraceType = 0; // undefined
+				break;
+			case Qt::Key_1:
+				curr_renderer->currentTraceType = 1; // soma
+				break;
+			case Qt::Key_2:
+				curr_renderer->currentTraceType = 2; // axon
+				break;
+			case Qt::Key_3:
+				curr_renderer->currentTraceType = 3; // dendrite
+				break;
+			case Qt::Key_4:
+				curr_renderer->currentTraceType = 4; // apical dendrite
+				break;
+			case Qt::Key_5:
+				curr_renderer->currentTraceType = 5; // fork point
+				break;
+			case Qt::Key_6:
+				curr_renderer->currentTraceType = 6; // end point
+				break;
+			case Qt::Key_7:
+				curr_renderer->currentTraceType = 7; // custom
+				break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
 					deleteSegmentsButton->setChecked(true);
@@ -509,7 +533,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		if (mode == Renderer::smCurveCreate_pointclick)
 		{
 			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
-			int midVal = (window3D->zcminSlider->maximum() - window3D->zcminSlider->minimum()) / 2;
+			int midVal = (window3D->zcmaxSlider->maximum() - window3D->zcminSlider->minimum()) / 2;
 			window3D->zcminSlider->setValue(midVal);
 			window3D->zcmaxSlider->setValue(midVal);
 		}
@@ -522,7 +546,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		curr_renderer->b_addthiscurve = true;
 #endif
 	}
-	if (prevMode == Renderer::smCurveCreate_pointclick)
+	if (prevMode == Renderer::smCurveCreate_pointclick && curr_renderer->selectMode != Renderer::smCurveCreate_pointclick)
 	{
 		// When exiting poly mode, restore all z cuts
 		window3D->zcminSlider->setValue(window3D->zcminSlider->minimum());
