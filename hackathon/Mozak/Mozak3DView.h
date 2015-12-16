@@ -75,6 +75,8 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 									int _volD0, int _volD1,
 									int _volT0, int _volT1	);
 		void changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn);
+		void updateTypeLabel();
+		void updateResolutionLabel();
 		static int contrastValue;
 		Image4DSimple* nextImg;
 		QList<CViewInfo*> lowerResViews;
@@ -85,6 +87,9 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* polyLineButton;
 		QToolButton* splitSegmentButton;
 		QToolButton* deleteSegmentsButton;
+		QLabel* currTypeLabel;
+		QLabel* currZoomLabel;
+		QLabel* currResolutionLabel;
 
 	public:
 
@@ -131,7 +136,6 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         );
 
 
-
 	public slots:
 		void updateContrast(int con);
 		void invertImageButtonToggled(bool checked);
@@ -140,7 +144,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void polyLineButtonToggled(bool checked);
 		void splitSegmentButtonToggled(bool checked);
 		void deleteSegmentsButtonToggled(bool checked);
-
+		void updateZoomLabel(int zr);
 
 		/*********************************************************************************
         * Receive data (and metadata) from <CVolume> throughout the loading process
@@ -155,10 +159,6 @@ class mozak::Mozak3DView : protected teramanager::CViewer
                 qint64 elapsed_time = 0,            // elapsed time (optional)
                 QString op_dsc="",                  // operation descriptor (optional)
                 int step=0);                        // step number (optional)
-
-
-
-
 
 };
 
