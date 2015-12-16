@@ -492,9 +492,13 @@ void Mozak3DView::updateResolutionLabel()
 void Mozak3DView::updateRendererTextureParams()
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-	curr_renderer->tryTexCompress = false;
-	curr_renderer->tryTexStream = -1;
-	curr_renderer->tryTexNPT = true;
+	if (curr_renderer->tryTexCompress || curr_renderer->tryTexStream != -1 || !curr_renderer->tryTexNPT)
+	{
+		curr_renderer->tryTexCompress = false;
+		curr_renderer->tryTexStream = -1;
+		curr_renderer->tryTexNPT = true;
+		view3DWidget->updateImageData();
+	}
 }
 
 void Mozak3DView::invertImageButtonToggled(bool checked)
