@@ -2092,7 +2092,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2106,7 +2106,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -2132,6 +2132,10 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             else if (selectMode == smBreakMultiNeurons)
             {
                 breakMultiNeuronsByStroke();
+            }
+            else if (selectMode == smBreakTwoNeurons)
+            {
+                breakMultiNeuronsByStroke(true);
             }
             // @ADDED by Alessandro on 2015-09-30. Select multiple markers with one-mouse stroke
             else if( selectMode == smSelectMultiMarkers)

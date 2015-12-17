@@ -285,7 +285,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_S:
 				if (!splitSegmentButton->isChecked())
 					splitSegmentButton->setChecked(true);
-				changeMode(Renderer::smBreakMultiNeurons, false, true);
+				changeMode(Renderer::smBreakTwoNeurons, false, true);
                 break;
 			case Qt::Key_P:
 				if (!polyLineButton->isChecked())
@@ -578,7 +578,7 @@ void Mozak3DView::polyLineButtonToggled(bool checked)
 
 void Mozak3DView::splitSegmentButtonToggled(bool checked)
 {
-	changeMode(Renderer::smBreakMultiNeurons, false, checked);
+	changeMode(Renderer::smBreakTwoNeurons, false, checked);
 }
 
 void Mozak3DView::deleteSegmentsButtonToggled(bool checked)
@@ -602,7 +602,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			connectButton->setChecked(false);
 		if (mode != Renderer::smCurveCreate_pointclick && polyLineButton->isChecked())
 			polyLineButton->setChecked(false);
-		if (mode != Renderer::smBreakMultiNeurons && splitSegmentButton->isChecked())
+		if (mode != Renderer::smBreakTwoNeurons && splitSegmentButton->isChecked())
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);

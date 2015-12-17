@@ -81,6 +81,7 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
+                      smBreakTwoNeurons,
                      smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
                      smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
                      smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
