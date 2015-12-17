@@ -247,27 +247,35 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		{
 			case Qt::Key_0:
 				curr_renderer->currentTraceType = 0; // undefined
+				updateTypeLabel();
 				break;
 			case Qt::Key_1:
 				curr_renderer->currentTraceType = 1; // soma
+				updateTypeLabel();
 				break;
 			case Qt::Key_2:
 				curr_renderer->currentTraceType = 2; // axon
+				updateTypeLabel();
 				break;
 			case Qt::Key_3:
 				curr_renderer->currentTraceType = 3; // dendrite
+				updateTypeLabel();
 				break;
 			case Qt::Key_4:
 				curr_renderer->currentTraceType = 4; // apical dendrite
+				updateTypeLabel();
 				break;
 			case Qt::Key_5:
 				curr_renderer->currentTraceType = 5; // fork point
+				updateTypeLabel();
 				break;
 			case Qt::Key_6:
 				curr_renderer->currentTraceType = 6; // end point
+				updateTypeLabel();
 				break;
 			case Qt::Key_7:
 				curr_renderer->currentTraceType = 7; // custom
+				updateTypeLabel();
 				break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
@@ -416,17 +424,85 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->refreshTools();
+	
+	currTypeLabel = new QLabel();
+	updateTypeLabel();
+	currTypeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+	currTypeLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
+	currTypeLabel->setToolTip("Press 0-7 key to change type of subsequent neuron traces");
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currTypeLabel);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	
+	currZoomLabel = new QLabel();
+	updateZoomLabel(1);
+	currZoomLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+	currZoomLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
+	currZoomLabel->setToolTip("Current zoom level (camera). Use mouse scroll wheel to zoom in/out");
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currZoomLabel);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 
-	updateRendererTextureParams();
+	currResolutionLabel = new QLabel();
+	updateResolutionLabel();
+	currResolutionLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+	currResolutionLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
+	currResolutionLabel->setToolTip("Current resolution level (Terafly). Double left click to increase, double right click to decrease.");
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currResolutionLabel);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+
+	itm::PAnoToolBar::instance()->refreshTools();
+	
+	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
+	
+	updateRendererParams();
 }
 
-void Mozak3DView::updateRendererTextureParams()
+void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL that this SLOT could listen to
+{
+	double initialTraceType = 3;
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	if (curr_renderer)
+		initialTraceType = curr_renderer->currentTraceType;
+	if (currTypeLabel)
+		currTypeLabel->setText(itm::strprintf("Type:\n%d", (int)initialTraceType).c_str());
+}
+
+void Mozak3DView::updateZoomLabel(int zr)
+{
+	// ignore value given and get directly from the renderer
+	float zoom = 100.0f;
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	if (curr_renderer)
+	{
+		if (curr_renderer->zoomRatio != 0) // div by zero
+			zoom = 100.0f * (1.0f / curr_renderer->zoomRatio);
+		else
+			zoom = 2599.0f;
+	}
+	if (currZoomLabel)
+		currZoomLabel->setText(itm::strprintf("%d%s", (int)zoom, "%").c_str());
+}
+
+void Mozak3DView::updateResolutionLabel()
+{
+	int maxRes = itm::CImport::instance()->getResolutions();
+	if (currResolutionLabel)
+		currResolutionLabel->setText(itm::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
+}
+
+void Mozak3DView::updateRendererParams()
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-	curr_renderer->tryTexCompress = false;
-	curr_renderer->tryTexStream = -1;
-	curr_renderer->tryTexNPT = true;
+	if (curr_renderer->tryTexCompress || 
+		curr_renderer->tryTexStream != -1 || 
+		!curr_renderer->tryTexNPT ||
+		curr_renderer->bShowAxes)
+	{
+		curr_renderer->tryTexCompress = false;
+		curr_renderer->tryTexStream = -1;
+		curr_renderer->tryTexNPT = true;
+		curr_renderer->bShowAxes = false;
+		view3DWidget->updateImageData();
+	}
 }
 
 void Mozak3DView::invertImageButtonToggled(bool checked)
@@ -701,6 +777,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// Now update renderer's current image to reflect the newly loaded data
 	int prevRes = volResIndex;
 	volResIndex = _resIndex;
+	updateResolutionLabel();
 	imgData = _img->getRawData();
 
 	// exit from "waiting for 5D data" state, if previously set
@@ -722,7 +799,6 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	float curZoom = (float)view3DWidget->zoom();
 	if (ratio > 0.0f)
 		view3DWidget->setZoom(curZoom/ratio);
-
 	MozakUI* moz = MozakUI::getMozakInstance();
 
 	//selecting the current resolution in the PMain GUI and disabling previous resolutions
@@ -773,7 +849,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// update curve aspect
 	moz->curveAspectChanged();
 
-	updateRendererTextureParams();
+	updateRendererParams();
 }
 
 /**********************************************************************************
