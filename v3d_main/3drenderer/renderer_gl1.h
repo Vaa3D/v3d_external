@@ -260,6 +260,7 @@ public:
 		int view[4];        // view-port
 		double P[16];		// 4x4 projection matrix
 		double MV[16];		// 4x4 model-view matrix
+		bool drawn;			// has this marker already been drawn to the screen?
 	};
 	QList <MarkerPos> listMarkerPos; //081221, screen projection position
 	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position list for curve

@@ -2074,6 +2074,7 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
 	MarkerPos pos;
 	pos.x = x;
 	pos.y = y;
+	pos.drawn = false;
 	for (int i=0; i<4; i++)
 		pos.view[i] = viewport[i];
 	for (int i=0; i<16; i++)
