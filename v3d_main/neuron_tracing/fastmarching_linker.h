@@ -1238,7 +1238,9 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	fm2 = far_markers[0];
     V3DLONG sz01 = (V3DLONG)sz0 * sz1;
 
-	vector<MyMarker> all_mask;
+    V3DLONG mx = MAX_INT, my = MAX_INT, mz = MAX_INT;
+    V3DLONG Mx = 0, My = 0, Mz = 0;
+
     for(V3DLONG m = 1; m < near_markers.size(); m++)
 	{
 		nm1 = nm2; fm1 = fm2;
@@ -1352,26 +1354,21 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
                     V3DLONG ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
                     V3DLONG jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
                     V3DLONG kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
+
 					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
 					{
-						all_mask.push_back(MyMarker(ii,jj,kk));
+						// create bounding box
+						mx = MIN(mx, ii);
+						my = MIN(my, jj);
+						mz = MIN(mz, kk);
+
+						Mx = MAX(Mx, ii);
+						My = MAX(My, jj);
+						Mz = MAX(Mz, kk);
 					}
 				}
 			}
 		}
-	}
-	// prepare boundingbox
-    V3DLONG mx = MAX_INT, my = MAX_INT, mz = MAX_INT;
-    V3DLONG Mx = 0, My = 0, Mz = 0;
-	for(vector<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
-	{
-		MyMarker marker = *it;
-		mx = MIN(mx , marker.x);
-		my = MIN(my , marker.y);
-		mz = MIN(mz , marker.z);
-		Mx = MAX(Mx, marker.x);
-		My = MAX(My, marker.y);
-		Mz = MAX(Mz, marker.z);
 	}
 
     V3DLONG msz0 = Mx - mx + 1;
@@ -1380,12 +1377,22 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
     V3DLONG msz01 = msz0 * msz1;
     V3DLONG mtol_sz = msz2 * msz01;
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
-	for(vector<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
+
+	// mask off edges of image
+	for (V3DLONG z = 0; z < msz2; z++)
 	{
-		MyMarker marker = *it;
-		MyMarker m_marker = MyMarker(marker.x - mx, marker.y - my, marker.z - mz);
-		mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
+		for (V3DLONG y = 0; y < msz1; y++)
+		{
+			for (V3DLONG x = 0; x < msz0; x++)
+			{
+				MyMarker marker = MyMarker(mx + x, my + y, mz + z);
+				MyMarker m_marker = MyMarker(x, y, z);
+
+				mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
+			}
+		}
 	}
+
 	nm1 = near_markers[0]; fm1 = far_markers[0];
 	nm2 = *near_markers.rbegin(); fm2 = *far_markers.rbegin();
 
