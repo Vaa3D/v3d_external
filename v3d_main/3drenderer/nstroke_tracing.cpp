@@ -3179,7 +3179,7 @@ void Renderer_gl1::breakMultiNeuronsByStrokeCommit()
 }
 
 
-void Renderer_gl1::breakMultiNeuronsByStroke()
+void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
@@ -3187,6 +3187,9 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
     XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
     float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+	float bestCutDist = -1.0f; // for single cut, track closest cut dist
+	V3DLONG bestCutTreeIndx = -1; // for single cut, track closest neuron tree index
+	V3DLONG bestCutNeurIndx = -1; // for single cut, track closest index within neuron tree
 
     // contour 2 polygon
     QPolygon poly;
@@ -3216,15 +3219,28 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                     for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                     {
                         QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                        if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance)
+						float dist2d = std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()));
+                        if(dist2d <= tolerance)
                        //     && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
                         {
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
-                            curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
-                            curImg->update_3drenderer_neuron_view(w, this);
-
-                            break;   // found intersection with neuron segment: no more need to continue on this inner loop
+                            if (forceSingleCut)
+                            {
+                                if (bestCutDist < 0 || dist2d < bestCutDist)
+                                {
+                                    bestCutDist = dist2d;
+                                    bestCutTreeIndx = j;
+                                    bestCutNeurIndx = i;
+                                }
+                            }
+                            else
+                            {
+                                curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
+                                curImg->update_3drenderer_neuron_view(w, this);
+                            
+                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
+                            }
                         }
                     }
 
@@ -3233,7 +3249,14 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
             curImg->proj_trace_history_append();
         }
     }
-
+    if (forceSingleCut && bestCutDist > 0)
+    {
+        NeuronTree *p_tree_to_split = (NeuronTree *)(&(listNeuronTree.at(bestCutTreeIndx)));
+        QList <NeuronSWC> *p_listneuron_to_split = &(p_tree_to_split->listNeuron);
+        curImg->tracedNeuron.split(p_listneuron_to_split->at(bestCutNeurIndx).seg_id,p_listneuron_to_split->at(bestCutNeurIndx).nodeinseg_id);
+        curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+    }
 }
 // func of converting kernel
 template <class Tpre, class Tpost>

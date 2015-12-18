@@ -378,7 +378,8 @@ public:
 
      void retypeMultiNeuronsByStroke();
 
-     void breakMultiNeuronsByStroke();
+     // forceSingleCut @ADDED T Pavlik 20151217, split was splitting more segments than desired so best cut option added
+     void breakMultiNeuronsByStroke(bool forceSingleCut=false);
      void breakMultiNeuronsByStrokeCommit();
 
 #ifndef test_main_cpp //140211
