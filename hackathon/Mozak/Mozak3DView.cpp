@@ -456,14 +456,16 @@ void Mozak3DView::show()
 	updateRendererParams();
 }
 
+const char *typeNames[] = { "BUG", "soma", "axon", "dendrite" };
+
 void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL that this SLOT could listen to
 {
-	double initialTraceType = 3;
+	int initialTraceType = 3;
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	if (curr_renderer)
 		initialTraceType = curr_renderer->currentTraceType;
 	if (currTypeLabel)
-		currTypeLabel->setText(itm::strprintf("Type:\n%d", (int)initialTraceType).c_str());
+		currTypeLabel->setText(itm::strprintf("Type:\n%s", typeNames[initialTraceType]).c_str());
 }
 
 void Mozak3DView::updateZoomLabel(int zr)
