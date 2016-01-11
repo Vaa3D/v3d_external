@@ -456,7 +456,7 @@ void Mozak3DView::show()
 	updateRendererParams();
 }
 
-const char *typeNames[] = { "BUG", "soma", "axon", "dendrite" };
+const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
 
 void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL that this SLOT could listen to
 {
