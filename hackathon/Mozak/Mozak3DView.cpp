@@ -946,49 +946,51 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 				if (newVolume->getDIM_H() * newVolume->getDIM_V() > xyArea)
 				{
 					// not enough voxels to do a full-image view; make it a square
-					float side = sqrt(xyArea);
+					float width, height;
+					width = height = sqrt(xyArea);
 
-					dx = std::min(dx, itm::round(side / 2.0f));
-					dy = std::min(dy, itm::round(side / 2.0f));
+					// clip the VOI size below by the maximum dimensions box
+					width = std::max(width, (float)moz->Hdim_sbox->value());
+					height = std::max(height, (float)moz->Vdim_sbox->value());
 
 					// adjust X coordinate
-					if ((x - side / 2.0f) < 0)
+					if ((x - width / 2.0f) < 0)
 					{
 						// square's off the left edge
 						final_x0 = 0;
-						final_x1 = itm::round(side);
+						final_x1 = itm::round(width);
 					} 
-					else if ((x + side / 2.0f) > newVolume->getDIM_H())
+					else if ((x + width / 2.0f) > newVolume->getDIM_H())
 					{
 						// square's off the right edge
 						final_x1 = newVolume->getDIM_H();
-						final_x0 = newVolume->getDIM_H() - itm::round(side);
+						final_x0 = newVolume->getDIM_H() - itm::round(width);
 					}
 					else
 					{
 						// center square at click point
-						final_x0 = x - itm::round(side / 2.0f);
-						final_x1 = x + itm::round(side / 2.0f);
+						final_x0 = x - itm::round(width / 2.0f);
+						final_x1 = x + itm::round(width / 2.0f);
 					}
 
 					// adjust Y coordinate
-					if ((y - side / 2.0f) < 0)
+					if ((y - height / 2.0f) < 0)
 					{
 						// square's off the top edge
 						final_y0 = 0;
-						final_y1 = itm::round(side);
+						final_y1 = itm::round(height);
 					} 
-					else if ((y + side / 2.0f) > newVolume->getDIM_V())
+					else if ((y + height / 2.0f) > newVolume->getDIM_V())
 					{
 						// square's off the bottom edge
 						final_y1 = newVolume->getDIM_V();
-						final_y0 = newVolume->getDIM_V() - itm::round(side);
+						final_y0 = newVolume->getDIM_V() - itm::round(height);
 					}
 					else
 					{
 						// center square at click point
-						final_y0 = y - itm::round(side / 2.0f);
-						final_y1 = y + itm::round(side / 2.0f);
+						final_y0 = y - itm::round(height / 2.0f);
+						final_y1 = y + itm::round(height / 2.0f);
 					}
 
 					final_z0 = 0;
@@ -1006,10 +1008,6 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 					final_z0 = 0;
 					final_z1 = newVolume->getDIM_D();
 				}
-				
-				/*dx = std::min(dx, itm::round(moz->Hdim_sbox->value()/2.0f));
-                dy = std::min(dy, itm::round(moz->Vdim_sbox->value()/2.0f));
-                dz = std::min(dz, itm::round(moz->Ddim_sbox->value()/2.0f));*/
 
                 t0 = std::max(0, std::min(t0,currentVolume->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,currentVolume->getDIM_T()-1));
