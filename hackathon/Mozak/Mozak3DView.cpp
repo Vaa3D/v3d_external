@@ -40,10 +40,9 @@ void Mozak3DView::onNeuronEdit()
 {
 	teramanager::CViewer::onNeuronEdit();
 	teramanager::CViewer::storeAnnotations();
-#ifdef MOZAK_AUTOSAVE
+#ifdef MOZAK_AUTOSAVE_FILE
 	MozakUI* moz = MozakUI::getMozakInstance();
-	if (moz->annotationsPathLRU == "")
-		moz->annotationsPathLRU = "./mozak.ano";
+	moz->annotationsPathLRU = MOZAK_AUTOSAVE_FILE;
 	moz->saveAnnotations();
 #endif
 	makeTracedNeuronsEditable();
