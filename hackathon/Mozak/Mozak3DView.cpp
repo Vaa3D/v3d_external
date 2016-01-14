@@ -292,6 +292,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					polyLineButton->setChecked(true);
 				changeMode(Renderer::smCurveCreate_pointclick, true, true);
                 break;
+            case Qt::Key_H:
+                //Sets segment rendermode to "Transparent" (0.05 alpha).
+                view3DWidget->renderer->polygonMode = 3;
+                break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
                 //stop happening at times even when setMouseTracking is enabled.
@@ -319,6 +323,14 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	{
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
+
+        int keyReleased = key_evt->key();
+        switch (keyReleased)
+        {
+            case Qt::Key_H:
+                view3DWidget->renderer->polygonMode = 0;
+        }
+
 #ifdef FORCE_BBOX_MODE
 		if (curr_renderer->selectMode != Renderer::smCurveTiltedBB_fm_sbbox)
 		{

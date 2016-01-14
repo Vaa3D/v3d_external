@@ -375,7 +375,7 @@ void Renderer_gl1::setObjLighting()
 		glEnable(GL_BLEND); //090429 RZC: no effect to glBlendEquationEXT(GL_MAX_EXT), must set to GL_FUNC_ADD_EXT
 		glBlendEquationEXT(GL_FUNC_ADD_EXT);
 		//glBlendColorEXT(1, 1, 1, 1-CSbeta);
-		glBlendColorEXT(1, 1, 1, 0.2);
+        glBlendColorEXT(1, 1, 1, 0.05);
 		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA); // constant Alpha
 		glDisable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_ALWAYS);//more artifacts ???
