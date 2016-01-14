@@ -291,6 +291,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					polyLineButton->setChecked(true);
 				changeMode(Renderer::smCurveCreate_pointclick, true, true);
                 break;
+            case Qt::Key_H:
+                //Sets segment rendermode to "Transparent" (0.05 alpha).
+                view3DWidget->renderer->polygonMode = 3;
+                break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
                 //stop happening at times even when setMouseTracking is enabled.
@@ -318,6 +322,14 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	{
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
+
+        int keyReleased = key_evt->key();
+        switch (keyReleased)
+        {
+            case Qt::Key_H:
+                view3DWidget->renderer->polygonMode = 0;
+        }
+
 #ifdef FORCE_BBOX_MODE
 		if (curr_renderer->selectMode != Renderer::smCurveTiltedBB_fm_sbbox)
 		{
@@ -879,7 +891,7 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
         return;
 	
 	loadingNextImg = true;
-
+	
     try
     {
         // set GUI to waiting state
@@ -892,12 +904,15 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
         window3D->setCursor(Qt::BusyCursor);
         moz->setCursor(Qt::BusyCursor);
 
+		IconImageManager::VirtualVolume *currentVolume = itm::CImport::instance()->getVolume(volResIndex), 
+			*newVolume = itm::CImport::instance()->getVolume(resolution);
+
         // scale VOI coordinates to the reference system of the target resolution
         if(scale_coords)
         {
-            float ratioX = static_cast<float>(itm::CImport::instance()->getVolume(resolution)->getDIM_H())/itm::CImport::instance()->getVolume(volResIndex)->getDIM_H();
-            float ratioY = static_cast<float>(itm::CImport::instance()->getVolume(resolution)->getDIM_V())/itm::CImport::instance()->getVolume(volResIndex)->getDIM_V();
-            float ratioZ = static_cast<float>(itm::CImport::instance()->getVolume(resolution)->getDIM_D())/itm::CImport::instance()->getVolume(volResIndex)->getDIM_D();
+            float ratioX = static_cast<float>(newVolume->getDIM_H())/currentVolume->getDIM_H();
+            float ratioY = static_cast<float>(newVolume->getDIM_V())/currentVolume->getDIM_V();
+            float ratioZ = static_cast<float>(newVolume->getDIM_D())/currentVolume->getDIM_D();
             // NOTE! The following functions use the current values for volResIndex and volH0, volV0, volD0, etc
 			x = getGlobalHCoord(x, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             y = getGlobalVCoord(y, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
@@ -925,6 +940,7 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
             /**/itm::debug(itm::LEV1, itm::strprintf("mismatch between |[t0,t1]| (%d) and max T dims (%d), adjusting it to [%d,%d]", t1-t0+1, moz->Tdim_sbox->value(), t0, t1).c_str(), __itm__current__function__);
         }
 
+		int final_x0, final_x1, final_y0, final_y1, final_z0, final_z1, final_t0, final_t1;
 
         // crop VOI if its larger than the maximum allowed
         if(auto_crop)
@@ -933,17 +949,88 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
             if(dx != -1 && dy != -1 && dz != -1)
 			{
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, cropping bbox dims from (%d,%d,%d) t[%d,%d] to...", titleShort.c_str(),  dx, dy, dz, t0, t1).c_str(), __itm__current__function__);
-				dx = std::min(dx, itm::round(moz->Hdim_sbox->value()/2.0f));
-                dy = std::min(dy, itm::round(moz->Vdim_sbox->value()/2.0f));
-                dz = std::min(dz, itm::round(moz->Ddim_sbox->value()/2.0f));
-                t0 = std::max(0, std::min(t0,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
-                t1 = std::max(0, std::min(t1,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
+				
+				// CB: adaptive VOI size, full-depth slices
+				int maxVoxels = moz->Hdim_sbox->value() * moz->Vdim_sbox->value() * moz->Ddim_sbox->value();
+				float xyArea = (float)maxVoxels / newVolume->getDIM_D();
+
+				if (newVolume->getDIM_H() * newVolume->getDIM_V() > xyArea)
+				{
+					// not enough voxels to do a full-image view; make it a square
+					float width, height;
+					width = height = sqrt(xyArea);
+
+					// clip the VOI size below by the maximum dimensions box
+					width = std::max(width, (float)moz->Hdim_sbox->value());
+					height = std::max(height, (float)moz->Vdim_sbox->value());
+
+					// adjust X coordinate
+					if ((x - width / 2.0f) < 0)
+					{
+						// square's off the left edge
+						final_x0 = 0;
+						final_x1 = itm::round(width);
+					} 
+					else if ((x + width / 2.0f) > newVolume->getDIM_H())
+					{
+						// square's off the right edge
+						final_x1 = newVolume->getDIM_H();
+						final_x0 = newVolume->getDIM_H() - itm::round(width);
+					}
+					else
+					{
+						// center square at click point
+						final_x0 = x - itm::round(width / 2.0f);
+						final_x1 = x + itm::round(width / 2.0f);
+					}
+
+					// adjust Y coordinate
+					if ((y - height / 2.0f) < 0)
+					{
+						// square's off the top edge
+						final_y0 = 0;
+						final_y1 = itm::round(height);
+					} 
+					else if ((y + height / 2.0f) > newVolume->getDIM_V())
+					{
+						// square's off the bottom edge
+						final_y1 = newVolume->getDIM_V();
+						final_y0 = newVolume->getDIM_V() - itm::round(height);
+					}
+					else
+					{
+						// center square at click point
+						final_y0 = y - itm::round(height / 2.0f);
+						final_y1 = y + itm::round(height / 2.0f);
+					}
+
+					final_z0 = 0;
+					final_z1 = newVolume->getDIM_D();
+				}
+				else
+				{
+					// enough voxels to do a full-image view
+					final_x0 = 0;
+					final_x1 = newVolume->getDIM_H();
+
+					final_y0 = 0;
+					final_y1 = newVolume->getDIM_V();
+
+					final_z0 = 0;
+					final_z1 = newVolume->getDIM_D();
+				}
+
+                t0 = std::max(0, std::min(t0,currentVolume->getDIM_T()-1));
+                t1 = std::max(0, std::min(t1,currentVolume->getDIM_T()-1));
                 if(itm::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
                     t1 = t0 + moz->Tdim_sbox->value();
                 if(itm::CImport::instance()->is5D() && (t1 >= itm::CImport::instance()->getTDim()-1))
                     t0 = t1 - (moz->Tdim_sbox->value()-1);
                 if(itm::CImport::instance()->is5D() && (t0 == 0))
                     t1 = moz->Tdim_sbox->value()-1;
+
+				final_t0 = t0; final_t1 = t1;
+
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, ...to (%d,%d,%d)", titleShort.c_str(),  dx, dy, dz).c_str(), __itm__current__function__);
             }
             // modality #2: VOI = [x0, x), [y0, y), [z0, z), [t0, t1]
@@ -953,29 +1040,32 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
                 if(x - x0 > moz->Hdim_sbox->value())
                 {
                     float margin = ( (x - x0) - moz->Hdim_sbox->value() )/2.0f ;
-                    x  = round(x  - margin);
-                    x0 = round(x0 + margin);
+                    final_x1 = round(x  - margin);
+                    final_x0 = round(x0 + margin);
                 }
                 if(y - y0 > moz->Vdim_sbox->value())
                 {
                     float margin = ( (y - y0) - moz->Vdim_sbox->value() )/2.0f ;
-                    y  = round(y  - margin);
-                    y0 = round(y0 + margin);
+                    final_y1 = round(y  - margin);
+                    final_y0 = round(y0 + margin);
                 }
                 if(z - z0 > moz->Ddim_sbox->value())
                 {
                     float margin = ( (z - z0) - moz->Ddim_sbox->value() )/2.0f ;
-                    z  = round(z  - margin);
-                    z0 = round(z0 + margin);
+                    final_z1 = round(z  - margin);
+                    final_z0 = round(z0 + margin);
                 }
-                t0 = std::max(0, std::min(t0,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
-                t1 = std::max(0, std::min(t1,itm::CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
+                t0 = std::max(0, std::min(t0,currentVolume->getDIM_T()-1));
+                t1 = std::max(0, std::min(t1,currentVolume->getDIM_T()-1));
                 if(itm::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
                     t1 = t0 + moz->Tdim_sbox->value();
                 if(itm::CImport::instance()->is5D() && (t1 >= itm::CImport::instance()->getTDim()-1))
                     t0 = t1 - (moz->Tdim_sbox->value()-1);
                 if(itm::CImport::instance()->is5D() && (t0 == 0))
                     t1 = moz->Tdim_sbox->value()-1;
+
+				final_t0 = t0; final_t1 = t1;
+
                 /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, ...to [%d,%d) [%d,%d) [%d,%d) [%d,%d]", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
             }
 			//qDebug() << itm::strprintf("\n  After auto_crop:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
@@ -986,10 +1076,7 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
         itm::CVolume* cVolume = itm::CVolume::instance();
         try
         {
-            if(dx != -1 && dy != -1 && dz != -1)
-                cVolume->setVoi(0, resolution, y-dy, y+dy, x-dx, x+dx, z-dz, z+dz, t0, t1);
-            else
-                cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
+			cVolume->setVoi(0, resolution, final_y0, final_y1, final_x0, final_x1, final_z0, final_z1, final_t0, final_t1);
         }
         catch(itm::RuntimeException &ex)
         {
