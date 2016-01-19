@@ -38,12 +38,15 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 
 void Mozak3DView::onNeuronEdit()
 {
+    qDebug() << ">>>>>> onNeuronEdit()"; 
 	teramanager::CViewer::onNeuronEdit();
 	teramanager::CViewer::storeAnnotations();
 #ifdef MOZAK_AUTOSAVE_FILE
 	MozakUI* moz = MozakUI::getMozakInstance();
+    std::string prevPath = moz->annotationsPathLRU;
 	moz->annotationsPathLRU = MOZAK_AUTOSAVE_FILE;
 	moz->saveAnnotations();
+    moz->annotationsPathLRU = prevPath;
 #endif
 	makeTracedNeuronsEditable();
 }
@@ -125,6 +128,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
     QKeyEvent* key_evt;
 	QMouseEvent* mouseEvt;
 	bool neuronTreeChanged = false;
+    bool commitDelete = false;
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
 	{
 		QWheelEvent* wheelEvt = (QWheelEvent*)event;
@@ -356,14 +360,16 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			if (mouseEvt->button() == Qt::RightButton)
 			{
-				//qDebug() << itm::strprintf("Right click ended, current render selectMode mode: %d", curr_renderer->selectMode).c_str();
-				if (curr_renderer->selectMode == Renderer::smDeleteMultiNeurons)
-					curr_renderer->deleteMultiNeuronsByStrokeCommit();
-				// Regardless of function performed, when right mouse button is released save the annotaions file
+				if (curr_renderer->selectMode == Renderer::smDeleteMultiNeurons) {
+                    commitDelete = true;
+                }
+                // Regardless of function performed, when right mouse button is released save the annotations file
 				neuronTreeChanged = true;
 			}
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
+        if (commitDelete)
+            curr_renderer->deleteMultiNeuronsByStrokeCommit();
 		if (neuronTreeChanged)
 			onNeuronEdit();
 		return res;
@@ -603,9 +609,11 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	Renderer::SelectMode prevMode = curr_renderer->selectMode;
-	curr_renderer->endSelectMode();
 	if (turnOn)
 	{
+        if (prevMode == mode) // no action needed, mode already on
+            return;
+        curr_renderer->endSelectMode();
 		curr_renderer->selectMode = mode;
 		curr_renderer->b_addthiscurve = addThisCurve;
 		// Uncheck any other currently checked modes
@@ -623,14 +631,18 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		{
 			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
 			int midVal = (window3D->zcmaxSlider->maximum() - window3D->zcminSlider->minimum()) / 2;
+            // TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
 			window3D->zcminSlider->setValue(midVal);
 			window3D->zcmaxSlider->setValue(midVal);
 		}
 	}
 	else
 	{
+        curr_renderer->endSelectMode();
 		onNeuronEdit();
 #ifdef FORCE_BBOX_MODE
+        if (prevMode == Renderer::smCurveTiltedBB_fm_sbbox)
+            return;
 		curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
 		curr_renderer->b_addthiscurve = true;
 #endif
