@@ -38,16 +38,13 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 
 void Mozak3DView::onNeuronEdit()
 {
-    qDebug() << ">>>>>> onNeuronEdit()"; 
-	teramanager::CViewer::onNeuronEdit();
+    teramanager::CViewer::onNeuronEdit();
 	teramanager::CViewer::storeAnnotations();
-#ifdef MOZAK_AUTOSAVE_FILE
 	MozakUI* moz = MozakUI::getMozakInstance();
     std::string prevPath = moz->annotationsPathLRU;
-	moz->annotationsPathLRU = MOZAK_AUTOSAVE_FILE;
+	moz->annotationsPathLRU = "./autosave.ano";
 	moz->saveAnnotations();
     moz->annotationsPathLRU = prevPath;
-#endif
 	makeTracedNeuronsEditable();
 }
 
@@ -128,7 +125,6 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
     QKeyEvent* key_evt;
 	QMouseEvent* mouseEvt;
 	bool neuronTreeChanged = false;
-    bool commitDelete = false;
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
 	{
 		QWheelEvent* wheelEvt = (QWheelEvent*)event;
@@ -360,17 +356,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			if (mouseEvt->button() == Qt::RightButton)
 			{
-				if (curr_renderer->selectMode == Renderer::smDeleteMultiNeurons) {
-                    commitDelete = true;
-                }
-                // Regardless of function performed, when right mouse button is released save the annotations file
+				// Regardless of function performed, when right mouse button is released save the annotations file
 				neuronTreeChanged = true;
 			}
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
-        if (commitDelete)
-            curr_renderer->deleteMultiNeuronsByStrokeCommit();
-		if (neuronTreeChanged)
+        if (neuronTreeChanged)
 			onNeuronEdit();
 		return res;
 	}
