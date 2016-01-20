@@ -995,7 +995,10 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
         }
         else
         {
-            curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType);
+            if (highlightedNodeType >= 0)
+                curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType);
+            else
+                curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }

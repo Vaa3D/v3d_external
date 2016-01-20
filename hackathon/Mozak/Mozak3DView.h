@@ -67,7 +67,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		virtual void onNeuronEdit();
 		void updateRendererParams();
 		void makeTracedNeuronsEditable();
-        int findNearestNeuronNode(int cx, int cy);
+        int findNearestNeuronNode(int cx, int cy, bool updateStartType=false);
 		void loadNewResolutionData(	int _resIndex,
 									Image4DSimple *_img,
 									int _volV0, int _volV1,

@@ -1474,7 +1474,7 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     ***********************************************************************************/
     //storing edited markers
     QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
-    if(!markers.empty())
+    if(true)//!markers.empty()) // TDP 20160116: changed to true to prevent case where only curve has been deleted and keeps re-appearing
     {       
         // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
         // load/store annotation VOIs are now the same (see fix of 2014-11-17).
@@ -1516,7 +1516,7 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     ***********************************************************************************/
     //storing edited curves
     NeuronTree nt = this->V3D_env->getSWC(this->window);
-    if(!nt.listNeuron.empty())
+    if(true)//!nt.listNeuron.empty()) // TDP 20160116: changed to true to prevent case where only curve has been deleted and keeps re-appearing
     {
         /* @debug */ //printf("\ngoing to store in TeraFly the curve points ");
 
