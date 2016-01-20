@@ -61,15 +61,15 @@ void Mozak3DView::makeTracedNeuronsEditable()
 }
 
 //find the nearest node in a neuron in XY project of the display window
-int Mozak3DView::findNearestNeuronNode(int cx, int cy)
+int Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=false*/)
 {
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     int best_ind=-1;
     int best_dist=-1;
-
-    QList<NeuronTree>::iterator i;
-    for (i = (curr_renderer->listNeuronTree).begin(); i != (curr_renderer->listNeuronTree.end()); ++i){
-        QList <NeuronSWC> p_listneuron = i->listNeuron;
+    int prev_type = curr_renderer->highlightedNodeType;
+    QList<NeuronTree>::iterator it;
+    for (it = (curr_renderer->listNeuronTree).begin(); it != (curr_renderer->listNeuronTree.end()); ++it){
+        QList <NeuronSWC> p_listneuron = it->listNeuron;
 
         GLdouble px, py, pz, ix, iy, iz;
         for (int i=0; i<p_listneuron.size(); i++)
@@ -82,8 +82,11 @@ int Mozak3DView::findNearestNeuronNode(int cx, int cy)
             if (i==0) {	best_dist = cur_dist; best_ind=0; }
             else {	if (cur_dist < best_dist) {best_dist=cur_dist; best_ind = i;}}
         }
+        if (updateStartType && best_ind >= 0)
+            curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
     }
-
+    if (prev_type != curr_renderer->highlightedNodeType)
+        updateTypeLabel();
     return best_ind; //by PHC, 090209. return the index in the SWC file
 }
 
@@ -103,7 +106,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         if( (currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode)){
             if(!isRightMouseDown){
                 //Highlight start node
-                curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y());
+                curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
             }else if(currentMode == Renderer::smCurveEditExtendTwoNode){
                 //Highlight end node
                 curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
@@ -470,8 +473,12 @@ void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL
 {
 	int initialTraceType = 3;
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-	if (curr_renderer)
-		initialTraceType = curr_renderer->currentTraceType;
+	if (curr_renderer) {
+        if (curr_renderer->highlightedNodeType >= 0)
+            initialTraceType = curr_renderer->highlightedNodeType;
+		else
+            initialTraceType = curr_renderer->currentTraceType;
+    }
 	if (currTypeLabel)
 		currTypeLabel->setText(itm::strprintf("Type:\n%s", typeNames[initialTraceType]).c_str());
 }
@@ -630,6 +637,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 	else
 	{
         curr_renderer->endSelectMode();
+        curr_renderer->highlightedNodeType = -1;
+        updateTypeLabel();
 		onNeuronEdit();
 #ifdef FORCE_BBOX_MODE
         if (prevMode == Renderer::smCurveTiltedBB_fm_sbbox)

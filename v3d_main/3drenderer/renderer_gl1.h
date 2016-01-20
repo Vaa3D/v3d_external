@@ -568,6 +568,7 @@ public:
 	virtual void drawNeuronTree(int i);
 	virtual void drawNeuronTreeList();
     int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
+    int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
     int highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
