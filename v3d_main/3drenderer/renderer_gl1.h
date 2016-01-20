@@ -415,6 +415,91 @@ public:
 
      // END of ZJL
 
+	// intersect helpers for nstroke_tracing
+	template <int N>
+	struct IntersectResult {
+		bool success[N];
+		XYZ hit_locs[N];
+	};
+
+	struct NearFarPoints {
+		bool valid;
+		XYZ near_pt;
+		XYZ far_pt;
+	};
+
+	IntersectResult<1> directedIntersectPoint(const XYZ &loc0, const XYZ &loc1) const
+	{
+		IntersectResult<1> result;
+		result.success[0] = false;
+
+		if (dataViewProcBox.isInner(loc0, 0))
+		{
+			result.success[0] = true;
+			result.hit_locs[0] = loc0;
+		}
+		else
+		{
+			XYZ v_1_0 = loc1 - loc0;
+			XYZ D = v_1_0; normalize(D);
+			float length = dist_L2(loc0, loc1);
+
+			for (int ii = 0; ii < length; ii++)
+			{
+				XYZ loci = loc0 + D * ii;
+				if (dataViewProcBox.isInner(loci, 0))
+				{
+					result.success[0] = true;
+					result.hit_locs[0] = loci;
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	IntersectResult<2> intersectPointsWithData(const XYZ &loc0_t, const XYZ &loc1_t) const
+	{
+		IntersectResult<2> result;
+
+		{
+			IntersectResult<1> result0 = directedIntersectPoint(loc0_t, loc1_t);
+			result.success[0] = result0.success[0];
+			result.hit_locs[0] = result0.hit_locs[0];
+		}
+
+		{
+			IntersectResult<1> result1 = directedIntersectPoint(loc1_t, loc0_t);
+			result.success[1] = result1.success[0];
+			result.hit_locs[1] = result1.hit_locs[0];
+		}
+
+		return result;
+	}
+
+	NearFarPoints markerPosToNearFarLocs(int curveIndex, int pointIndex)
+	{
+		NearFarPoints result;
+
+		const MarkerPos &pos = list_listCurvePos.at(curveIndex).at(pointIndex);
+		double clipplane[4] = { 0.0, 0.0, -1.0, viewClip };
+
+		ViewPlaneToModel(pos.MV, clipplane); // modifies clipplane
+
+		XYZ loc0_t, loc1_t;
+
+		_MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+		
+		IntersectResult<2> intersect = intersectPointsWithData(loc0_t, loc1_t);
+
+		result.valid = intersect.success[0] && intersect.success[1];
+		result.near_pt = intersect.hit_locs[0];
+		result.far_pt = intersect.hit_locs[1];
+
+		return result;
+	}
+
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
 

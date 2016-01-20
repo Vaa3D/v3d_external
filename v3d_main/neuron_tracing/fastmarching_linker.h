@@ -1237,6 +1237,12 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	cout<<"welcome to fastmarching_drawing4"<<endl;
 	assert(near_markers.size() == far_markers.size());
 
+	if (near_markers.empty())
+	{
+		// no stroke points to trace; bail out early
+		return true;
+	}
+
 	MyMarker nm1, nm2, fm1, fm2;
 	nm2 = near_markers[0];
 	fm2 = far_markers[0];

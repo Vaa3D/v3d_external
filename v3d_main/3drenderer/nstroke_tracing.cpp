@@ -92,58 +92,6 @@
 #define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
 #endif
 
-//#define INSERT_NEIGHBOR(nei) {if (dataViewProcBox.isInner(nei, 0.5)) neibs_loci.push_back(nei);}
-
-#define GET_DIRECTED_INTERSEC_POINT(loc0, loc1, hit_loc, success) \
-{ \
-/* qDebug() << dataViewProcBox.x0 << " " <<  dataViewProcBox.x1 << " " << dataViewProcBox.y0 << " " <<  dataViewProcBox.y1 << " " <<dataViewProcBox.z0 << " " <<  dataViewProcBox.z1 << " " ; */ \
-    if (dataViewProcBox.isInner(loc0, 0)) \
-    { \
-       success = true; hit_loc = loc0;\
-     } \
-    else \
-    { \
-     XYZ v_1_0 = loc1-loc0; \
-     XYZ D = v_1_0; normalize(D); \
-     XYZ loci; \
-     float length=dist_L2(loc0, loc1); \
-    success = false; \
-     for(int ii=0; ii< length; ii++) \
-     { \
-          loci = loc0 + D*ii; \
-          if (dataViewProcBox.isInner(loci, 0)) \
-          { \
-               hit_loc = loci; \
-               success = true; \
-               break; \
-          } \
-     } \
-  }\
-}
-
-#define INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1) \
-{ \
-     bool success0 = false; \
-     bool success1 = false; \
-     GET_DIRECTED_INTERSEC_POINT(loc0_t, loc1_t, loc0, success0); \
-     if(!success0) loc0=loc0_t; \
-     GET_DIRECTED_INTERSEC_POINT(loc1_t, loc0_t, loc1, success1); \
-     if(!success1) loc1=loc1_t; \
-}
-
-
-#define MARKERPOS_TO_NEAR_FAR_LOCS(i, loc0, loc1) \
-{ \
-     const MarkerPos & pos = list_listCurvePos.at(index).at(i); \
-     double clipplane[4] = { 0.0,  0.0, -1.0,  0 }; \
-     clipplane[3] = viewClip; \
-     ViewPlaneToModel(pos.MV, clipplane); \
-     XYZ loc0_t, loc1_t; \
-     _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t); \
-     INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1); \
-}
-
-
 #define PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i) \
 { \
      if(!outswc.empty()) \
@@ -647,8 +595,7 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           _MarkerPos_to_NearFarPoint(pos.at(i), loc0_t, loc1_t);
 
           // get intersection point of (loc0,loc1) with data volume
-          XYZ loc0, loc1;
-          INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
+		  IntersectResult<2> intersect = intersectPointsWithData(loc0_t, loc1_t);
 
           // XYZ loc0_t, loc1_t;
           // _MarkerPos_to_NearFarPoint(pos.at(i), loc0_t, loc1_t);
@@ -666,22 +613,25 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           //      minx=maxx=loc0.x; miny=maxy=loc0.y; minz=maxz=loc0.z;
           // }
           // else
-          {
-               if(minx>loc0.x) minx=loc0.x;
-               if(miny>loc0.y) miny=loc0.y;
-               if(minz>loc0.z) minz=loc0.z;
+          if (intersect.success[0] && intersect.success[1]) 
+		  {
+			  XYZ loc0 = intersect.hit_locs[0], loc1 = intersect.hit_locs[1];
 
-               if(maxx<loc0.x) maxx=loc0.x;
-               if(maxy<loc0.y) maxy=loc0.y;
-               if(maxz<loc0.z) maxz=loc0.z;
+              if(minx>loc0.x) minx=loc0.x;
+              if(miny>loc0.y) miny=loc0.y;
+              if(minz>loc0.z) minz=loc0.z;
+			  
+			  if(maxx<loc0.x) maxx=loc0.x;
+              if(maxy<loc0.y) maxy=loc0.y;
+              if(maxz<loc0.z) maxz=loc0.z;
 
-               if(minx>loc1.x) minx=loc1.x;
-               if(miny>loc1.y) miny=loc1.y;
-               if(minz>loc1.z) minz=loc1.z;
+              if(minx>loc1.x) minx=loc1.x;
+              if(miny>loc1.y) miny=loc1.y;
+              if(minz>loc1.z) minz=loc1.z;
 
-               if(maxx<loc1.x) maxx=loc1.x;
-               if(maxy<loc1.y) maxy=loc1.y;
-               if(maxz<loc1.z) maxz=loc1.z;
+              if(maxx<loc1.x) maxx=loc1.x;
+              if(maxy<loc1.y) maxy=loc1.y;
+              if(maxz<loc1.z) maxz=loc1.z;
           }
      }
 
@@ -731,76 +681,73 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
 // get bounding volume from two stroke points
 // chno is channel
 void Renderer_gl1::getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
-     XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz)
+    XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz)
 {
-     XYZ minloc, maxloc;
+    XYZ minloc, maxloc;
 
-     // get intersection point of (loc0,loc1) with data volume
-     XYZ hit_loc0, hit_loc1;
-     INTERSET_POINTS_WITH_DATA(loc0, loc1, hit_loc0, hit_loc1);
+    // get intersection point of (loc0,loc1) with data volume
+	IntersectResult<2> intersect = intersectPointsWithData(loc0, loc1);
+	XYZ hit_loc0 = intersect.hit_locs[0], hit_loc1 = intersect.hit_locs[1];
 
+	// find min-max of x y z in loc_veci
+    float minx, miny, minz, maxx, maxy, maxz;
 
-     // find min-max of x y z in loc_veci
-     float minx, miny, minz, maxx, maxy, maxz;
+    minx=maxx=hit_loc0.x; miny=maxy=hit_loc0.y; minz=maxz=hit_loc0.z;
 
-     minx=maxx=hit_loc0.x; miny=maxy=hit_loc0.y; minz=maxz=hit_loc0.z;
+    if(minx>hit_loc1.x) minx=hit_loc1.x;
+    if(miny>hit_loc1.y) miny=hit_loc1.y;
+    if(minz>hit_loc1.z) minz=hit_loc1.z;
 
-     if(minx>hit_loc1.x) minx=hit_loc1.x;
-     if(miny>hit_loc1.y) miny=hit_loc1.y;
-     if(minz>hit_loc1.z) minz=hit_loc1.z;
+    if(maxx<hit_loc1.x) maxx=hit_loc1.x;
+    if(maxy<hit_loc1.y) maxy=hit_loc1.y;
+    if(maxz<hit_loc1.z) maxz=hit_loc1.z;
 
-     if(maxx<hit_loc1.x) maxx=hit_loc1.x;
-     if(maxy<hit_loc1.y) maxy=hit_loc1.y;
-     if(maxz<hit_loc1.z) maxz=hit_loc1.z;
+    if(minx>loc0_last.x) minx=loc0_last.x;
+    if(miny>loc0_last.y) miny=loc0_last.y;
+    if(minz>loc0_last.z) minz=loc0_last.z;
 
-     if(minx>loc0_last.x) minx=loc0_last.x;
-     if(miny>loc0_last.y) miny=loc0_last.y;
-     if(minz>loc0_last.z) minz=loc0_last.z;
+    if(maxx<loc0_last.x) maxx=loc0_last.x;
+    if(maxy<loc0_last.y) maxy=loc0_last.y;
+    if(maxz<loc0_last.z) maxz=loc0_last.z;
+	
+    int boundary = 5;
 
-     if(maxx<loc0_last.x) maxx=loc0_last.x;
-     if(maxy<loc0_last.y) maxy=loc0_last.y;
-     if(maxz<loc0_last.z) maxz=loc0_last.z;
+    minloc.x = minx - boundary;
+    minloc.y = miny - boundary;
+    minloc.z = minz - boundary;
 
+    maxloc.x = maxx + boundary;
+    maxloc.y = maxy + boundary;
+    maxloc.z = maxz + boundary;
 
-     int boundary = 5;
+    if (!dataViewProcBox.isInner(minloc, 0.1))
+        dataViewProcBox.clamp(minloc);
+    if (!dataViewProcBox.isInner(maxloc, 0.1))
+        dataViewProcBox.clamp(maxloc);
 
-     minloc.x = minx - boundary;
-     minloc.y = miny - boundary;
-     minloc.z = minz - boundary;
+    // get data buffer
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;
+    if (w)
+        curImg = v3dr_getImage4d(_idep);
 
-     maxloc.x = maxx + boundary;
-     maxloc.y = maxy + boundary;
-     maxloc.z = maxz + boundary;
+    // The data is from minloc to maxloc
+    sub_szx=abs(maxloc.x-minloc.x)+1;
+    sub_szy=abs(maxloc.y-minloc.y)+1;
+    sub_szz=abs(maxloc.z-minloc.z)+1;
 
-     if (!dataViewProcBox.isInner(minloc, 0.1))
-          dataViewProcBox.clamp(minloc);
-     if (!dataViewProcBox.isInner(maxloc, 0.1))
-          dataViewProcBox.clamp(maxloc);
+    sub_orig = minloc;
 
-     // get data buffer
-     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-     My4DImage* curImg = 0;
-     if (w)
-          curImg = v3dr_getImage4d(_idep);
+    //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
-     // The data is from minloc to maxloc
-     sub_szx=abs(maxloc.x-minloc.x)+1;
-     sub_szy=abs(maxloc.y-minloc.y)+1;
-     sub_szz=abs(maxloc.z-minloc.z)+1;
-
-     sub_orig = minloc;
-
-     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
-
-     pSubdata = new double [sub_szx*sub_szy*sub_szz];
-     for(V3DLONG k=0; k<sub_szz; k++)
-          for(V3DLONG j=0; j<sub_szy; j++)
-               for(V3DLONG i=0; i<sub_szx; i++)
-               {
-                    V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
-                    pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
-               }
-
+    pSubdata = new double [sub_szx*sub_szy*sub_szz];
+    for(V3DLONG k=0; k<sub_szz; k++)
+        for(V3DLONG j=0; j<sub_szy; j++)
+            for(V3DLONG i=0; i<sub_szx; i++)
+            {
+                V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
+                pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
+            }
 }
 
 
@@ -1427,289 +1374,315 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 	else //then use the moving mouse location, otherwise using the preset loc_vec_input (which is set by the 3d-curve-by-point-click function)
 	{
 		N = list_listCurvePos.at(index).size(); // change from 0 to index for different curves, ZJL
+		int firstPointIndex = 0;
 
-          // resample curve strokes
-          vector<int> inds; // reserved stroke index
-          resampleCurveStrokes(0, chno, inds);
+        // resample curve strokes
+        vector<int> inds; // reserved stroke index
+        resampleCurveStrokes(0, chno, inds);
 
-          if(b_useTiltedBB)
-          {
-               XYZ loci0, loci1;
-               MARKERPOS_TO_NEAR_FAR_LOCS(0, loci0, loci1);
-               nearpos_vec.push_back(MyMarker(loci0.x, loci0.y, loci0.z));
-               farpos_vec.push_back(MyMarker(loci1.x, loci1.y, loci1.z));
-          }
+        if(b_useTiltedBB)
+        {
+			for (firstPointIndex = 0; firstPointIndex < N; firstPointIndex++)
+			{
+				NearFarPoints pts = markerPosToNearFarLocs(index, firstPointIndex);
 
-          int last_i; // used for computing 2points_bb
-          for (int i=1; i<N; i++) // 0 must be in
-          {
-               // check whether i is in inds
-               bool b_inds=false;
+				if (pts.valid)
+				{
+					// marker pos was inside the image volume, start here
+					nearpos_vec.push_back(MyMarker(pts.near_pt.x, pts.near_pt.y, 
+						pts.near_pt.z));
+					farpos_vec.push_back(MyMarker(pts.far_pt.x, pts.far_pt.y,
+						pts.far_pt.z));
 
-               if(inds.empty())
-               {
-                    b_inds=true;
-               }
-               else
-               {
-                    for(int ii=1; ii<inds.size(); ii++)
-                    {
-                         if(i == inds.at(ii))
-                         {
-                              b_inds=true;
-                              break;
-                         }
-                    }
-               }
+					break;
+				}
+				else
+				{
+					// marker pos wasn't inside the image value, skip it
+					continue;
+				}
+			}
+        }
 
-               // only process resampled strokes
-               if(i==1 || i==(N-1) || b_inds) // make sure to include the last N-1 pos
-               {
-                    const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
-                    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-                    clipplane[3] = viewClip;
-                    ViewPlaneToModel(pos.MV, clipplane);
+        int last_i; // used for computing 2points_bb
+        for (int i=firstPointIndex + 1; i<N; i++) // 0 must be in
+        {
+			// check whether i is in inds
+			bool b_inds=false;
 
-                    // this is intersection points with view volume
-                    XYZ loc0_t, loc1_t;
-                    _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+			if(inds.empty())
+			{
+				b_inds=true;
+			}
+			else
+			{
+				for(int ii=1; ii<inds.size(); ii++)
+				{
+					if(i == inds.at(ii))
+					{
+						b_inds=true;
+						break;
+					}
+				}
+			}
 
-                    //get intersection points with data volume
-                    XYZ loc0, loc1;
-                    INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
+			// only process resampled strokes
+			if(i==1 || i==(N-1) || b_inds) // make sure to include the last N-1 pos
+			{
+				const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
+				double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+				clipplane[3] = viewClip;
+				ViewPlaneToModel(pos.MV, clipplane);
 
-                    // near/far pos locs for b_useTitltedBB
-                    if(b_useTiltedBB) // still not finished
-                    {
-                         nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
-                         farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
-                    }
-                    else// beginning of non b_useTitltedBB
-                    {
-                         float length01 = dist_L2(loc0, loc1);
-                         // preparing the two-markerpos decided boundingbox
+				// this is intersection points with view volume
+				XYZ loc0_t, loc1_t;
+				_MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
 
-                         int last_j = loc_vec.size()-1;
+				//get intersection points with data volume
+				IntersectResult<2> intersect = intersectPointsWithData(loc0_t, loc1_t);
+				
+				if (!intersect.success[0] || !intersect.success[1])
+				{
+					// marker position is outside the image volume; skip this point
+					continue;
+				}
 
-                         vector<MarkerPos> pos_vec;
-                         double* pSubdata2;
-                         XYZ sub_orig2;
-                         V3DLONG sub_szx2, sub_szy2, sub_szz2;
-                         BoundingBox bb_2Points;
-                         XYZ loci0; //meanshift point for i==0
-                         if(i==1) //only do this for the first point
-                         {
-                             //the logic of this section need change. no need to use meanshift before the testing of the potential intersection point with existing curves
+				XYZ &loc0 = intersect.hit_locs[0], &loc1 = intersect.hit_locs[1];
 
-                             const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0); //get the first point, note that already check list_listCurvePos.at(index) has at least one node
-                             XYZ nearest_loc;
-                             if( pickSeedpointFromExistingCurves(pos_0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
-                             {
-                                 loci0 = nearest_loc;
-                                 v3d_msg("Use the existing curve point as starting location.\n",0);
-                             }
-                             else //use mean-shift
-                             {
-                                 XYZ loc00, loc01;
-                                 MARKERPOS_TO_NEAR_FAR_LOCS(0, loc00, loc01);
-                                 loci0 = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
-                             }
+				// near/far pos locs for b_useTitltedBB
+				if(b_useTiltedBB) // still not finished
+				{
+					nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
+					farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
+				}
+				else// beginning of non b_useTitltedBB
+				{
+					float length01 = dist_L2(loc0, loc1);
+					// preparing the two-markerpos decided boundingbox
 
-                             last_i=0; // for the first time run
-                         }
+					int last_j = loc_vec.size()-1;
 
-                         if(b_use2PointsBB)
-                         {
-                              // using 2 points on stroke to get BB
-                              pos_vec.clear();
-                              MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
-                              pos_vec.push_back(pos_last);
-                              pos_vec.push_back(pos);
+					vector<MarkerPos> pos_vec;
+					double* pSubdata2;
+					XYZ sub_orig2;
+					V3DLONG sub_szx2, sub_szy2, sub_szz2;
+					BoundingBox bb_2Points;
+					XYZ loci0; //meanshift point for i==0
+					if(i==1) //only do this for the first point
+					{
+						//the logic of this section need change. no need to use meanshift before the testing of the potential intersection point with existing curves
 
-                              XYZ max_loc2;
-                              getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
-                              bb_2Points = BoundingBox(sub_orig2, max_loc2);
+						const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0); //get the first point, note that already check list_listCurvePos.at(index) has at least one node
+						XYZ nearest_loc;
+						if( pickSeedpointFromExistingCurves(pos_0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
+						{
+							loci0 = nearest_loc;
+							v3d_msg("Use the existing curve point as starting location.\n",0);
+						}
+						else //use mean-shift
+						{
+							NearFarPoints pts = markerPosToNearFarLocs(index, 0);
 
-                              // update last_i for the next loop
-                              last_i = i;
-                         }
+							assert(pts.valid);
 
-                         XYZ lastpos;
-                         vector<MyMarker> sub_markers; sub_markers.clear();
-                         vector<MyMarker> tar_markers; tar_markers.clear();
-                         vector<MyMarker*> outswc;     outswc.clear();
+							loci0 = getCenterOfLineProfile(pts.near_pt, pts.far_pt, clipplane, chno);
+						}
 
-                         if (i==1)//
-                         {
-                              XYZ loci = loci0;
+						last_i=0; // for the first time run
+					}
 
-                              if(b_useStrokeBB)
-                                   loci = loci-sub_orig;
-                              else if(b_use2PointsBB)
-                              {
-                                   if(selectMode == smCurveFrom1Marker_fm)
-                                   {
-                                        loci.x = curveStartMarker.x-1; loci.y = curveStartMarker.y-1; loci.z = curveStartMarker.z-1;
-                                        loci = loci-sub_orig2;
-                                   }
-                                   else
-                                   {
-                                        loci = loci-sub_orig2;
-                                   }
-                              }
-                              sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+					if(b_use2PointsBB)
+					{
+						// using 2 points on stroke to get BB
+						pos_vec.clear();
+						MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
+						pos_vec.push_back(pos_last);
+						pos_vec.push_back(pos);
 
-                              // get the loc with a random middle loc
-                              //getMidRandomLoc(pos, chno, loc);
-                              //middle_vec.push_back(loc);
-                         }
-                         else
-                         {
-                              lastpos = loc_vec.at(last_j);
-                              // sub_markers is the lastpos
-                              if(b_useStrokeBB) // use stroke bounding box
-                                   lastpos = lastpos-sub_orig;
-                              else if(b_use2PointsBB)
-                                   lastpos = lastpos-sub_orig2;
+						XYZ max_loc2;
+						getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
+						bb_2Points = BoundingBox(sub_orig2, max_loc2);
 
-                              sub_markers.push_back(MyMarker(lastpos.x, lastpos.y, lastpos.z));
-                         } // end of preparing sub_markers
+						// update last_i for the next loop
+						last_i = i;
+					}
 
-                         // preparing tar_markers
-                         float length = dist_L2(loc0, loc1);
-                         if (length<1.0)
-                         {
-                              XYZ loci=(loc0+loc1)/2.0;
-                              if(b_useStrokeBB) // use stroke bounding box
-                                   loci = loci-sub_orig;
-                              else if(b_use2PointsBB)
-                                   loci = loci-sub_orig2;
+					XYZ lastpos;
+					vector<MyMarker> sub_markers; sub_markers.clear();
+					vector<MyMarker> tar_markers; tar_markers.clear();
+					vector<MyMarker*> outswc;     outswc.clear();
 
-                              tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                         }
-                         else
-                         {
-                              XYZ v_1_0 = loc1-loc0;
-                              XYZ D = v_1_0; normalize(D);
-                              for(int ii=0; ii<(int)(length+0.5); ii++)
-                              {
-                                   XYZ loci = loc0 + D*ii; // incease 1 each step
+					if (i==1)//
+					{
+						XYZ loci = loci0;
 
-                                   if(b_useStrokeBB)
-                                   {
-                                        loci = loci-sub_orig; // use stroke bounding box
-                                        tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                                   }
-                                   else if(b_use2PointsBB)
-                                   {
-                                        if(bb_2Points.isInner(loci, 0))
-                                        {
-                                             loci = loci-sub_orig2;
-                                             tar_markers.push_back( MyMarker(loci.x, loci.y, loci.z));
-                                        }
-                                   }
-                                   else
-                                   {
-                                        tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                                   }
+						if(b_useStrokeBB)
+							loci = loci-sub_orig;
+						else if(b_use2PointsBB)
+						{
+							if(selectMode == smCurveFrom1Marker_fm)
+							{
+								loci.x = curveStartMarker.x-1; loci.y = curveStartMarker.y-1; loci.z = curveStartMarker.z-1;
+								loci = loci-sub_orig2;
+							}
+							else
+							{
+								loci = loci-sub_orig2;
+							}
+						}
+						sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
 
-                              }
+						// get the loc with a random middle loc
+						//getMidRandomLoc(pos, chno, loc);
+						//middle_vec.push_back(loc);
+					}
+					else
+					{
+						lastpos = loc_vec.at(last_j);
+						// sub_markers is the lastpos
+						if(b_useStrokeBB) // use stroke bounding box
+							lastpos = lastpos-sub_orig;
+						else if(b_use2PointsBB)
+							lastpos = lastpos-sub_orig2;
 
-                         } // end of tar_markers
+						sub_markers.push_back(MyMarker(lastpos.x, lastpos.y, lastpos.z));
+					} // end of preparing sub_markers
+
+					// preparing tar_markers
+					float length = dist_L2(loc0, loc1);
+					if (length<1.0)
+					{
+						XYZ loci=(loc0+loc1)/2.0;
+						if(b_useStrokeBB) // use stroke bounding box
+							loci = loci-sub_orig;
+						else if(b_use2PointsBB)
+							loci = loci-sub_orig2;
+
+						tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+					}
+					else
+					{
+						XYZ v_1_0 = loc1-loc0;
+						XYZ D = v_1_0; normalize(D);
+						for(int ii=0; ii<(int)(length+0.5); ii++)
+						{
+							XYZ loci = loc0 + D*ii; // incease 1 each step
+
+							if(b_useStrokeBB)
+							{
+								loci = loci-sub_orig; // use stroke bounding box
+								tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+							}
+							else if(b_use2PointsBB)
+							{
+								if(bb_2Points.isInner(loci, 0))
+								{
+									loci = loci-sub_orig2;
+									tar_markers.push_back( MyMarker(loci.x, loci.y, loci.z));
+								}
+							}
+							else
+							{
+								tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+							}
+
+						}
+
+					} // end of tar_markers
 
 
-                         // call fastmarching
-                         // using time spent on each step to decide whether the tracing in this step is acceptable.
-                         // if time is over time_thresh, then break and use center method
-                         // I found that the result is not so good when using this time limit
-                         XYZ loc;
-                         if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
-                         {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
-                         }
-                         else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
-                         {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2, i);
-                         }
-                         else  // This version uses full image as the bounding box
-                         {
-                              fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
-                              XYZ sub_orig = XYZ(0,0,0);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
-                         }
+					// call fastmarching
+					// using time spent on each step to decide whether the tracing in this step is acceptable.
+					// if time is over time_thresh, then break and use center method
+					// I found that the result is not so good when using this time limit
+					XYZ loc;
+					if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
+					{
+						fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz);
+						PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
+					}
+					else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
+					{
+						fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2);
+						PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2, i);
+					}
+					else  // This version uses full image as the bounding box
+					{
+						fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
+						XYZ sub_orig = XYZ(0,0,0);
+						PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
+					}
 
-                         //always remember to free the potential-memory-problematic fastmarching_linker return value
-                         clean_fm_marker_vector(outswc);
+					//always remember to free the potential-memory-problematic fastmarching_linker return value
+					clean_fm_marker_vector(outswc);
 
-                         if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
-                    } // end of non b_useTitltedBB
-               } // end of if(i==1 || i==(N-1) || b_inds)
-          } // end of for (int i=1; i<N; i++)
-          // clean pSubdata of subvolume boundingbox
-          if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
+					if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
+				} // end of non b_useTitltedBB
+			} // end of if(i==1 || i==(N-1) || b_inds)
+        } // end of for (int i=1; i<N; i++)
+        // clean pSubdata of subvolume boundingbox
+        if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
 
-          // using titled BB for curve
-          if(b_useTiltedBB)
-          {
-               vector<MyMarker *> outswc;
-               bool b_res;
+        // using titled BB for curve
+        if(b_useTiltedBB)
+        {
+             vector<MyMarker *> outswc;
+             bool b_res;
 
-               // all pImg are unsigned char now
-               b_res = (b_useSerialBBox) ?
-                    fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
-                    : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
+             // all pImg are unsigned char now
+             b_res = (b_useSerialBBox) ?
+                  fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
+                  : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
 
-               // delete pImg created for two datatypes
-               if(datatype == V3D_UINT16 || datatype == V3D_FLOAT32)
-               {
-                    if(pImg) {delete [] pImg; pImg=0;}
-               }
+             // delete pImg created for two datatypes
+             if(datatype == V3D_UINT16 || datatype == V3D_FLOAT32)
+             {
+                  if(pImg) {delete [] pImg; pImg=0;}
+             }
 
-               // switch (datatype)
-               // {
-               //      case V3D_UINT8:
-               //           b_res = (b_useSerialBBox) ?
-               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
-               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
-               //           break;
-               //      case V3D_UINT16:
-               //           b_res = (b_useSerialBBox) ?
-               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5)
-               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5);
-               //           break;
-               //      case V3D_FLOAT32:
-               //           b_res = (b_useSerialBBox) ?
-               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5)
-               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5);
-               //           break;
-               //      default:
-               //           v3d_msg("Unsupported data type found. You should never see this.", 0);
-               //           return t.elapsed();
-               // }
+             // switch (datatype)
+             // {
+             //      case V3D_UINT8:
+             //           b_res = (b_useSerialBBox) ?
+             //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
+             //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
+             //           break;
+             //      case V3D_UINT16:
+             //           b_res = (b_useSerialBBox) ?
+             //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5)
+             //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5);
+             //           break;
+             //      case V3D_FLOAT32:
+             //           b_res = (b_useSerialBBox) ?
+             //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5)
+             //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5);
+             //           break;
+             //      default:
+             //           v3d_msg("Unsupported data type found. You should never see this.", 0);
+             //           return t.elapsed();
+             // }
 
-              //  b_res = (b_useSerialBBox) ?
-              //       fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
-              //     //fastmarching_drawing5(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
-              // : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5); // 20120405, PHC
+            //  b_res = (b_useSerialBBox) ?
+            //       fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
+            //     //fastmarching_drawing5(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
+            // : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5); // 20120405, PHC
 
-              if (!b_res)
-              {
-                    v3d_msg("Error in creating the curve", 0);
-               }
+            if (!b_res)
+            {
+                  v3d_msg("Error in creating the curve", 0);
+             }
 
-              //if fail, should not add curve? 120405, PHC?
-               XYZ sub_orig = XYZ(0,0,0);
-               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
-               //always remember to free the potential-memory-problematic fastmarching_linker return value
-               clean_fm_marker_vector(outswc);
-          }// end of b_useTitltedBB
-          //clean pSubdata of subvolume boundingbox
-          if(b_useStrokeBB) {if(pSubdata) {delete [] pSubdata; pSubdata=0;}}
-     }
+            //if fail, should not add curve? 120405, PHC?
+             XYZ sub_orig = XYZ(0,0,0);
+             PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
+             //always remember to free the potential-memory-problematic fastmarching_linker return value
+             clean_fm_marker_vector(outswc);
+        }// end of b_useTitltedBB
+        //clean pSubdata of subvolume boundingbox
+        if(b_useStrokeBB) {if(pSubdata) {delete [] pSubdata; pSubdata=0;}}
+    }
 
-     // Save near/far locs for testing:
+    // Save near/far locs for testing:
 if (0)
 {
      v3d_msg("Write near/far marker to files.");
