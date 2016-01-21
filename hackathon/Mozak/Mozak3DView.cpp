@@ -24,6 +24,9 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	contrastSlider->setSingleStep(1);
 	contrastSlider->setPageStep(10);
 	contrastSlider->setValue(contrastValue);
+
+    itm::CSettings::instance()->setTraslX(60); // (100% - this setting) = % of existing view to be translated in X
+    itm::CSettings::instance()->setTraslY(60); // (100% - this setting) = % of existing view to be translated in Y
 	
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
@@ -97,11 +100,16 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     Renderer::SelectMode currentMode = curr_renderer->selectMode;
     view3DWidget->setMouseTracking(true);
-
+    bool needRepaint = false;
     if (event->type() == QEvent::MouseMove)
     {
-        //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
         QMouseEvent *k = (QMouseEvent *)event;
+        int isLeftMouseDown = k->buttons() & Qt::LeftButton; //
+        
+        if (isLeftMouseDown == 0 && curr_renderer->bShowXYTranslateArrows)
+            checkXyArrowMouseCollision(k->x(), k->y(), curr_renderer, needRepaint);
+        
+        //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
         int isRightMouseDown = k->buttons() & Qt::RightButton; //
         if( (currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode)){
             if(!isRightMouseDown){
@@ -114,7 +122,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 
             curr_renderer->drawNeuronTreeList();
             curr_renderer->drawObj();
-            ((QWidget *)(curr_renderer->widget))->repaint(); //Update the screen position of highlighted nodes
+            needRepaint = true; //Update the screen position of highlighted nodes
         }
     }
 
@@ -124,6 +132,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         //stop happening at times even when setMouseTracking is enabled.
         view3DWidget->setMouseTracking(false);
     }
+
+    if (needRepaint)
+        ((QWidget *)(curr_renderer->widget))->repaint();
 
     QKeyEvent* key_evt;
 	QMouseEvent* mouseEvt;
@@ -216,8 +227,19 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				loadingNextImg = true;
 				window3D->setCursor(Qt::BusyCursor);
 				view3DWidget->setCursor(Qt::BusyCursor);
+                itm::CVolume* cVolume = itm::CVolume::instance();
+                try
+                {
+			        cVolume->setVoi(0, prevView->resIndex, prevView->volV0, prevView->volV1, prevView->volH0, prevView->volH1,
+                        prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
+                }
+                catch(itm::RuntimeException &ex)
+                {
+                    qDebug() << "WARNING! Exception thrown trying to call cVolume->setVoi: " << ex.what();
+                }
+
 				loadNewResolutionData(prevView->resIndex, prevView->img,
-					prevView->volV0, prevView->volV1,prevView->volH0, prevView->volH1, 
+					prevView->volV0, prevView->volV1, prevView->volH0, prevView->volH1, 
 					prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
 				prevView->img->setRawDataPointerToNull(); // this image is in use now, so remove pointer before deletion
 				delete prevView;
@@ -372,6 +394,27 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				// Regardless of function performed, when right mouse button is released save the annotations file
 				neuronTreeChanged = true;
 			}
+            // Process X/Y ROI Translate
+            if (mouseEvt->button() == Qt::LeftButton && curr_renderer->bShowXYTranslateArrows)
+            {
+                MozakUI* moz = MozakUI::getMozakInstance();
+                if (curr_renderer->iPosXTranslateArrowEnabled == 2)
+                {
+                    moz->traslXposClicked();
+                }
+                else if (curr_renderer->iNegXTranslateArrowEnabled == 2)
+                {
+                    moz->traslXnegClicked();
+                }
+                else if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                {
+                    moz->traslYposClicked();
+                }
+                else if (curr_renderer->iNegYTranslateArrowEnabled == 2)
+                {
+                    moz->traslYnegClicked();
+                }
+            }
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
         if (neuronTreeChanged)
@@ -473,7 +516,7 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->refreshTools();
 	
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
-	
+	updateTranslateXYArrows();
 	updateRendererParams();
 }
 
@@ -516,18 +559,49 @@ void Mozak3DView::updateResolutionLabel()
 		currResolutionLabel->setText(itm::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
 }
 
+void Mozak3DView::updateTranslateXYArrows()
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    itm::CVolume* cVolume = itm::CVolume::instance();
+    IconImageManager::VirtualVolume *currentVolume = itm::CImport::instance()->getVolume(volResIndex);
+    
+    if (cVolume->getVoiResIndex() == -1) // not initialized
+        return;
+
+    int currentVoiX0 = cVolume->getVoiH0();
+    int currentVoiX1 = cVolume->getVoiH1();
+    int maxX = currentVolume->getDIM_H();
+
+    int currentVoiY0 = cVolume->getVoiV0();
+    int currentVoiY1 = cVolume->getVoiV1();
+    int maxY = currentVolume->getDIM_V();
+
+    // Not used (no z-arrows to avoid interfering with views):
+    int currentVoiZ0 = cVolume->getVoiD0();
+    int currentVoiZ1 = cVolume->getVoiD1();
+    int maxZ = currentVolume->getDIM_D();
+
+    curr_renderer->iPosXTranslateArrowEnabled = (currentVoiX1 >= 0 && currentVoiX1 < maxX) ? 1 : 0;
+    curr_renderer->iNegXTranslateArrowEnabled = (currentVoiX0 > 0) ? 1 : 0;
+    curr_renderer->iPosYTranslateArrowEnabled = (currentVoiY1 >= 0 && currentVoiY1 < maxY) ? 1 : 0;
+    curr_renderer->iNegYTranslateArrowEnabled = (currentVoiY0 > 0) ? 1 : 0;
+    curr_renderer->paint();
+}
+
 void Mozak3DView::updateRendererParams()
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	if (curr_renderer->tryTexCompress || 
 		curr_renderer->tryTexStream != -1 || 
 		!curr_renderer->tryTexNPT ||
-		curr_renderer->bShowAxes)
+		curr_renderer->bShowAxes ||
+        !curr_renderer->bShowXYTranslateArrows)
 	{
 		curr_renderer->tryTexCompress = false;
 		curr_renderer->tryTexStream = -1;
 		curr_renderer->tryTexNPT = true;
 		curr_renderer->bShowAxes = false;
+        curr_renderer->bShowXYTranslateArrows = true;
 		view3DWidget->updateImageData();
 	}
 }
@@ -884,6 +958,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// update curve aspect
 	moz->curveAspectChanged();
 
+    updateTranslateXYArrows();
 	updateRendererParams();
 }
 

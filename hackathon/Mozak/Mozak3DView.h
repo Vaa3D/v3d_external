@@ -77,6 +77,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn);
 		void updateTypeLabel();
 		void updateResolutionLabel();
+		void updateTranslateXYArrows();
 		static int contrastValue;
 		Image4DSimple* nextImg;
 		QList<CViewInfo*> lowerResViews;
@@ -106,6 +107,112 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 			y = qMax(0.0, qMin(1.0,  y));
 			curve << QPointF(x, y);
 		}
+
+        // For use with determining intersection with XY translation arrows
+        // Oversimplified: just determining if within certain dist of center of bounding box
+        inline bool isMouseInBB(const BoundingBox &BB, const int mouseX, const int mouseY, const Renderer_gl2* curr_renderer)
+        {
+            GLdouble px0, py0, px1, py1, pz, dx, dy, dxm, dym;
+            gluProject(BB.x0, BB.y0, BB.z0, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &px0, &py0, &pz);
+            py0 = curr_renderer->viewport[3]-py0;
+            gluProject(BB.x1, BB.y1, BB.z1, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &px1, &py1, &pz);
+            py1 = curr_renderer->viewport[3]-py1;
+            // Calc dist between BB extremes
+            dx = px1 - px0;
+            dy = py1 - py0;
+            // Calc dist from center of BB to mouse
+            dxm = mouseX - 0.5*(px1 + px0);
+            dym = mouseY - 0.5*(py1 + py0);
+            return (dxm*dxm + dym*dym < 0.5 * (dx*dx + dy*dy));
+        }
+
+        inline void checkXyArrowMouseCollision(const int mouseX, const int mouseY, Renderer_gl2* curr_renderer, bool &needRepaint)
+        {
+            bool foundArr = false;
+            // Check for collision with XY translation arrows, as soon as one collision found, turn off all other arrows
+            // +X
+            if (curr_renderer->iPosXTranslateArrowEnabled && curr_renderer->posXTranslateBB != 0)
+            {
+                if (isMouseInBB(*curr_renderer->posXTranslateBB, mouseX, mouseY, curr_renderer))
+                {
+                    foundArr = true;
+                    if (curr_renderer->iPosXTranslateArrowEnabled != 2 || 
+                        curr_renderer->iNegXTranslateArrowEnabled == 2 || 
+                        curr_renderer->iNegYTranslateArrowEnabled == 2 || 
+                        curr_renderer->iPosYTranslateArrowEnabled == 2)
+                        needRepaint = true;
+                    curr_renderer->iPosXTranslateArrowEnabled = 2;
+                    if (curr_renderer->iNegXTranslateArrowEnabled == 2)
+                        curr_renderer->iNegXTranslateArrowEnabled = 1;
+                    if (curr_renderer->iNegYTranslateArrowEnabled == 2)
+                        curr_renderer->iNegYTranslateArrowEnabled = 1;
+                    if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                        curr_renderer->iPosYTranslateArrowEnabled = 1;
+                }
+                else if (curr_renderer->iPosXTranslateArrowEnabled == 2)
+                {
+                    curr_renderer->iPosXTranslateArrowEnabled = 1; // unhighlight
+                    needRepaint = true;
+                }
+            }
+            // -X
+            if (!foundArr && curr_renderer->iNegXTranslateArrowEnabled && curr_renderer->negXTranslateBB != 0)
+            {
+                if (isMouseInBB(*curr_renderer->negXTranslateBB, mouseX, mouseY, curr_renderer))
+                {
+                    foundArr = true;
+                    if (curr_renderer->iNegXTranslateArrowEnabled != 2 || 
+                        curr_renderer->iNegYTranslateArrowEnabled == 2 || 
+                        curr_renderer->iPosYTranslateArrowEnabled == 2)
+                        needRepaint = true;
+                    curr_renderer->iNegXTranslateArrowEnabled = 2;
+                    if (curr_renderer->iNegYTranslateArrowEnabled == 2)
+                        curr_renderer->iNegYTranslateArrowEnabled = 1;
+                    if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                        curr_renderer->iPosYTranslateArrowEnabled = 1;
+                }
+                else if (curr_renderer->iNegXTranslateArrowEnabled == 2)
+                {
+                    curr_renderer->iNegXTranslateArrowEnabled = 1; // unhighlight
+                    needRepaint = true;
+                }
+            }
+            // -Y
+            if (!foundArr && curr_renderer->iNegYTranslateArrowEnabled && curr_renderer->negYTranslateBB != 0)
+            {
+                if (isMouseInBB(*curr_renderer->negYTranslateBB, mouseX, mouseY, curr_renderer))
+                {
+                    foundArr = true;
+                    if (curr_renderer->iNegYTranslateArrowEnabled != 2 || 
+                        curr_renderer->iPosYTranslateArrowEnabled == 2)
+                        needRepaint = true;
+                    curr_renderer->iNegYTranslateArrowEnabled = 2;
+                    if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                        curr_renderer->iPosYTranslateArrowEnabled = 1;
+                }
+                else if (curr_renderer->iNegYTranslateArrowEnabled == 2)
+                {
+                    curr_renderer->iNegYTranslateArrowEnabled = 1; // unhighlight
+                    needRepaint = true;
+                }
+            }
+            // +Y
+            if (!foundArr && curr_renderer->iPosYTranslateArrowEnabled && curr_renderer->posYTranslateBB != 0)
+            {
+                if (isMouseInBB(*curr_renderer->posYTranslateBB, mouseX, mouseY, curr_renderer))
+                {
+                    foundArr = true;
+                    if (curr_renderer->iPosYTranslateArrowEnabled != 2)
+                        needRepaint = true;
+                    curr_renderer->iPosYTranslateArrowEnabled = 2;
+                }
+                else if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                {
+                    curr_renderer->iPosYTranslateArrowEnabled = 1; // unhighlight
+                    needRepaint = true;
+                }
+            }
+        }
 
 		virtual void show();
 		virtual bool eventFilter(QObject *object, QEvent *event);
