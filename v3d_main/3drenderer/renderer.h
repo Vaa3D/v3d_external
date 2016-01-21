@@ -226,6 +226,7 @@ public:
      int sShowRubberBand; // ZJL 1109221
 
 	bool bShowBoundingBox, bShowBoundingBox2, bShowAxes, bOrthoView;
+    bool bShowXYTranslateArrows, bPosXTranslateArrowEnabled, bNegXTranslateArrowEnabled, bPosYTranslateArrowEnabled, bNegYTranslateArrowEnabled;
 	bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
 	float CSbeta, alpha_threshold;
 	RGBA32f color_background, color_background2, color_line, color_proxy;
@@ -277,6 +278,12 @@ private:
 		bShowBoundingBox2 = false;
 	    bShowAxes = true;
 	    bOrthoView = false;
+
+		bShowXYTranslateArrows = false;
+		bPosXTranslateArrowEnabled = false;
+		bNegXTranslateArrowEnabled = false;
+		bPosYTranslateArrowEnabled = false;
+		bNegYTranslateArrowEnabled = false;
 
 	    bShowCSline = true;
 	    bShowFSline = true;

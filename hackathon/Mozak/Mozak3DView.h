@@ -77,6 +77,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn);
 		void updateTypeLabel();
 		void updateResolutionLabel();
+		void updateTranslateXYArrows();
 		static int contrastValue;
 		Image4DSimple* nextImg;
 		QList<CViewInfo*> lowerResViews;
