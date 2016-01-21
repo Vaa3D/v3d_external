@@ -294,6 +294,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					polyLineButton->setChecked(true);
 				changeMode(Renderer::smCurveCreate_pointclick, true, true);
                 break;
+			case Qt::Key_Z:
+				// stretch the image volume in the z-axis
+				view3DWidget->setThickness(3.0);
+				break;
             case Qt::Key_H:
                 //Sets segment rendermode to "Transparent" (0.05 alpha).
                 view3DWidget->renderer->polygonMode = 3;
@@ -331,6 +335,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         {
             case Qt::Key_H:
                 view3DWidget->renderer->polygonMode = 0;
+				break;
+			case Qt::Key_Z:
+				view3DWidget->setThickness(1.0);
+				break;
+			default:
+				break;
         }
 
 #ifdef FORCE_BBOX_MODE
