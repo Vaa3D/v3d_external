@@ -437,8 +437,12 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 
 //	glPolygonOffset(0, -1); // deal z-fighting, 081120
 //	glDepthFunc(GL_LEQUAL);
-
-	if (bShowXYTranslateArrows && (bNegXTranslateArrowEnabled || bPosXTranslateArrowEnabled || bNegYTranslateArrowEnabled || bPosYTranslateArrowEnabled))
+    if (posXTranslateBB != 0) delete posXTranslateBB;
+    if (negXTranslateBB != 0) delete negXTranslateBB;
+    if (posYTranslateBB != 0) delete posYTranslateBB;
+    if (negYTranslateBB != 0) delete negYTranslateBB;
+	posXTranslateBB=0, negXTranslateBB=0, posYTranslateBB=0, negYTranslateBB=0;
+	if (bShowXYTranslateArrows && (iNegXTranslateArrowEnabled || iPosXTranslateArrowEnabled || iNegYTranslateArrowEnabled || iPosYTranslateArrowEnabled))
 	{
 		float D = (BB.Dmax());
 		float td = D*0.015;
@@ -454,27 +458,45 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 		glLineWidth(AlineWidth); // work only before glBegin(), by RZC 080827
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		
-		glColor3f(1, 0, 0);
-		if (bNegXTranslateArrowEnabled)
+		if (iNegXTranslateArrowEnabled)
 		{
-			glBegin(GL_QUADS); box_quads( BoundingBox(X0, XYZ(X0.x-td, X0.y + 2.0f*td, X0.z+td)) ); glEnd();
+            if (iNegXTranslateArrowEnabled > 1)
+                glColor3f(1, 0.7f, 0.7f);
+            else
+                glColor3f(0.7f, 0, 0);
+			glBegin(GL_QUADS); box_quads( BoundingBox(X0, XYZ(X0.x-td, X0.y+2.0f*td, X0.z+td)) ); glEnd();
 			draw_tri(XYZ(X0.x-td, X0.y-td, X0.z), XYZ(X0.x-td, X0.y+3.0f*td, X0.z), XYZ(X0.x-3.0f*td, X0.y+td, X0.z), XYZ(0.0f, 0.0f, td));
+            negXTranslateBB = new BoundingBox(XYZ(X0.x-3.0f*td, X0.y-td, X0.z), XYZ(X0.x, X0.y+2.0f*td, X0.z+td));
 		}
-		if (bPosXTranslateArrowEnabled)
+		if (iPosXTranslateArrowEnabled)
 		{
-			glBegin(GL_QUADS); box_quads( BoundingBox(X1, XYZ(X1.x+td, X1.y + 2.0f*td, X1.z+td)) ); glEnd();
+            if (iPosXTranslateArrowEnabled > 1)
+                glColor3f(1, 0.7f, 0.7f);
+            else
+                glColor3f(0.7f, 0, 0);
+			glBegin(GL_QUADS); box_quads( BoundingBox(X1, XYZ(X1.x+td, X1.y+2.0f*td, X1.z+td)) ); glEnd();
 			draw_tri(XYZ(X1.x+td, X1.y-td, X1.z), XYZ(X1.x+td, X1.y+3.0f*td, X1.z), XYZ(X1.x+3.0f*td, X1.y+td, X1.z), XYZ(0.0f, 0.0f, td));
+            posXTranslateBB = new BoundingBox(XYZ(X1.x, X1.y-td, X1.z), XYZ(X1.x+3.0f*td, X1.y+3.0f*td, X1.z+td));
 		}
-		glColor3f(0, 1, 0);
-		if (bNegYTranslateArrowEnabled)
+		if (iNegYTranslateArrowEnabled)
 		{
-			glBegin(GL_QUADS); box_quads( BoundingBox(Y0, XYZ(Y0.x + 2.0f*td, Y0.y-td, Y0.z+td)) ); glEnd();
+            if (iNegYTranslateArrowEnabled > 1)
+                glColor3f(0.7f, 1, 0.7f);
+            else
+                glColor3f(0, 0.7f, 0);
+			glBegin(GL_QUADS); box_quads( BoundingBox(Y0, XYZ(Y0.x+2.0f*td, Y0.y-td, Y0.z+td)) ); glEnd();
 			draw_tri(XYZ(Y0.x-td, Y0.y-td, Y0.z), XYZ(Y0.x+3.0f*td, Y0.y-td, Y0.z), XYZ(Y0.x+td, Y0.y-3.0f*td, Y0.z), XYZ(0.0f, 0.0f, td));
+            negYTranslateBB = new BoundingBox(XYZ(Y0.x-td, Y0.y-3.0f*td, Y0.z), XYZ(Y0.x+3.0f*td, Y0.y-td, Y0.z+td));
 		}
-		if (bPosYTranslateArrowEnabled)
+		if (iPosYTranslateArrowEnabled)
 		{
-			glBegin(GL_QUADS); box_quads( BoundingBox(Y1, XYZ(Y1.x + 2.0f*td, Y1.y+td, Y1.z+td)) ); glEnd();
+            if (iPosYTranslateArrowEnabled > 1)
+                glColor3f(0.7f, 1, 0.7f);
+            else
+                glColor3f(0, 0.7f, 0);
+			glBegin(GL_QUADS); box_quads( BoundingBox(Y1, XYZ(Y1.x+2.0f*td, Y1.y+td, Y1.z+td)) ); glEnd();
 			draw_tri(XYZ(Y1.x-td, Y1.y+td, Y1.z), XYZ(Y1.x+3.0f*td, Y1.y+td, Y1.z), XYZ(Y1.x+td, Y1.y+3.0f*td, Y1.z), XYZ(0.0f, 0.0f, td));
+            posYTranslateBB = new BoundingBox(XYZ(Y1.x-td, Y1.y+td, Y1.z), XYZ(Y1.x+3.0f*td, Y1.y+3.0f*td, Y1.z+td));
 		}
 	}
 

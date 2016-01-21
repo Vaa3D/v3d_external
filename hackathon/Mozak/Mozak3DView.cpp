@@ -97,11 +97,16 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     Renderer::SelectMode currentMode = curr_renderer->selectMode;
     view3DWidget->setMouseTracking(true);
-
+    bool needRepaint = false;
     if (event->type() == QEvent::MouseMove)
     {
-        //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
         QMouseEvent *k = (QMouseEvent *)event;
+        int isLeftMouseDown = k->buttons() & Qt::LeftButton; //
+        
+        if (isLeftMouseDown == 0)
+            checkXyArrowMouseCollision(k->x(), k->y(), curr_renderer, needRepaint);
+        
+        //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
         int isRightMouseDown = k->buttons() & Qt::RightButton; //
         if( (currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode)){
             if(!isRightMouseDown){
@@ -114,7 +119,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 
             curr_renderer->drawNeuronTreeList();
             curr_renderer->drawObj();
-            ((QWidget *)(curr_renderer->widget))->repaint(); //Update the screen position of highlighted nodes
+            needRepaint = true; //Update the screen position of highlighted nodes
         }
     }
 
@@ -124,6 +129,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         //stop happening at times even when setMouseTracking is enabled.
         view3DWidget->setMouseTracking(false);
     }
+
+    if (needRepaint)
+        ((QWidget *)(curr_renderer->widget))->repaint();
 
     QKeyEvent* key_evt;
 	QMouseEvent* mouseEvt;
@@ -539,10 +547,10 @@ void Mozak3DView::updateTranslateXYArrows()
     int currentVoiZ1 = cVolume->getVoiD1();
     int maxZ = currentVolume->getDIM_D();
 
-    curr_renderer->bPosXTranslateArrowEnabled = (currentVoiX1 >= 0 && currentVoiX1 < maxX);
-    curr_renderer->bNegXTranslateArrowEnabled = (currentVoiX0 > 0);
-    curr_renderer->bPosYTranslateArrowEnabled = (currentVoiY1 >= 0 && currentVoiY1 < maxY);
-    curr_renderer->bNegYTranslateArrowEnabled = (currentVoiY0 > 0);
+    curr_renderer->iPosXTranslateArrowEnabled = (currentVoiX1 >= 0 && currentVoiX1 < maxX) ? 1 : 0;
+    curr_renderer->iNegXTranslateArrowEnabled = (currentVoiX0 > 0) ? 1 : 0;
+    curr_renderer->iPosYTranslateArrowEnabled = (currentVoiY1 >= 0 && currentVoiY1 < maxY) ? 1 : 0;
+    curr_renderer->iNegYTranslateArrowEnabled = (currentVoiY0 > 0) ? 1 : 0;
     curr_renderer->paint();
 }
 
