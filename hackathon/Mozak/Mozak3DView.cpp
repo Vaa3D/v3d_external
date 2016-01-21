@@ -24,6 +24,9 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	contrastSlider->setSingleStep(1);
 	contrastSlider->setPageStep(10);
 	contrastSlider->setValue(contrastValue);
+
+    itm::CSettings::instance()->setTraslX(60); // (100% - this setting) = % of existing view to be translated in X
+    itm::CSettings::instance()->setTraslY(60); // (100% - this setting) = % of existing view to be translated in Y
 	
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
@@ -103,7 +106,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         QMouseEvent *k = (QMouseEvent *)event;
         int isLeftMouseDown = k->buttons() & Qt::LeftButton; //
         
-        if (isLeftMouseDown == 0)
+        if (isLeftMouseDown == 0 && curr_renderer->bShowXYTranslateArrows)
             checkXyArrowMouseCollision(k->x(), k->y(), curr_renderer, needRepaint);
         
         //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
@@ -381,6 +384,27 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				// Regardless of function performed, when right mouse button is released save the annotations file
 				neuronTreeChanged = true;
 			}
+            // Process X/Y ROI Translate
+            if (mouseEvt->button() == Qt::LeftButton && curr_renderer->bShowXYTranslateArrows)
+            {
+                MozakUI* moz = MozakUI::getMozakInstance();
+                if (curr_renderer->iPosXTranslateArrowEnabled == 2)
+                {
+                    moz->traslXposClicked();
+                }
+                else if (curr_renderer->iNegXTranslateArrowEnabled == 2)
+                {
+                    moz->traslXnegClicked();
+                }
+                else if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                {
+                    moz->traslYposClicked();
+                }
+                else if (curr_renderer->iNegYTranslateArrowEnabled == 2)
+                {
+                    moz->traslYnegClicked();
+                }
+            }
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
         if (neuronTreeChanged)
