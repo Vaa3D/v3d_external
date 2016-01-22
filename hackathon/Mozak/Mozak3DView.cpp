@@ -106,13 +106,19 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
     if (event->type() == QEvent::MouseMove)
     {
         QMouseEvent *k = (QMouseEvent *)event;
-        int isLeftMouseDown = k->buttons() & Qt::LeftButton; //
-        
-        if (isLeftMouseDown == 0 && curr_renderer->bShowXYTranslateArrows)
+        int isLeftMouseDown = k->buttons() & Qt::LeftButton;
+        int isRightMouseDown = k->buttons() & Qt::RightButton;
+        if (isLeftMouseDown == 0 && isRightMouseDown == 0)
+        {
+            if (!curr_renderer->bShowXYTranslateArrows)
+            {
+                curr_renderer->bShowXYTranslateArrows = true;
+                needRepaint = true;
+            }
             checkXyArrowMouseCollision(k->x(), k->y(), curr_renderer, needRepaint);
+        }
         
         //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
-        int isRightMouseDown = k->buttons() & Qt::RightButton; //
         if( (currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode)){
             if(!isRightMouseDown){
                 //Highlight start node
@@ -385,6 +391,16 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			{
 				changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
 			}
+            // If pressing a mouse button with no arrows highlighted, hide the translation arrows
+            if (curr_renderer->iPosXTranslateArrowEnabled < 2 && 
+                curr_renderer->iNegXTranslateArrowEnabled < 2 &&
+                curr_renderer->iPosYTranslateArrowEnabled < 2 &&
+                curr_renderer->iNegYTranslateArrowEnabled < 2 &&
+                curr_renderer->bShowXYTranslateArrows)
+            {
+                curr_renderer->bShowXYTranslateArrows = false;
+                ((QWidget *)(curr_renderer->widget))->repaint();
+            }
 		}
 		else
 #endif
@@ -417,6 +433,29 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                     moz->traslYnegClicked();
                 }
             }
+            if ((mouseEvt->buttons() & Qt::LeftButton) == 0 && (mouseEvt->buttons() & Qt::LeftButton) == 0)
+            {
+                // If no buttons being pressed now, show translation arrows
+                if (!curr_renderer->bShowXYTranslateArrows)
+                {
+                    curr_renderer->bShowXYTranslateArrows = true;
+                    needRepaint = true;
+                }
+            }
+            else if (curr_renderer->iPosXTranslateArrowEnabled < 2 && 
+                     curr_renderer->iNegXTranslateArrowEnabled < 2 &&
+                     curr_renderer->iPosYTranslateArrowEnabled < 2 &&
+                     curr_renderer->iNegYTranslateArrowEnabled < 2)
+            {
+                // If either mouse button being pressed and no arrows are highlighted, hide arrows
+                if (curr_renderer->bShowXYTranslateArrows)
+                {
+                    curr_renderer->bShowXYTranslateArrows = false;
+                    needRepaint = true;
+                }
+            }
+            if (needRepaint)
+                ((QWidget *)(curr_renderer->widget))->repaint();
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
         if (neuronTreeChanged)
