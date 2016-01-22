@@ -92,6 +92,10 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QLabel* currZoomLabel;
 		QLabel* currResolutionLabel;
 
+        int prevZCutMin;
+        int prevZCutMax;
+        int prevPolyZCut;
+
 	public:
 
 		// helping functions copied from renderer_gl2.h

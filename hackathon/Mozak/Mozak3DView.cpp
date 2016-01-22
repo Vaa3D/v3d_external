@@ -17,6 +17,8 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
 {
 	nextImg = 0;
+    prevZCutMin = -1;
+    prevZCutMax = -1;
 	loadingNextImg = false;
 	
 	contrastSlider = new QScrollBar(Qt::Vertical);
@@ -712,10 +714,16 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		if (mode == Renderer::smCurveCreate_pointclick)
 		{
 			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
-			int midVal = (window3D->zcmaxSlider->maximum() - window3D->zcminSlider->minimum()) / 2;
+            prevZCutMin = window3D->zcminSlider->value();
+            prevZCutMax = window3D->zcmaxSlider->value();
+
+            // Use previously-scrolled polyline z-cut if within bounds, otherwise use midpoint of current bounds
+            int valToUse = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
+            if (prevPolyZCut >= prevZCutMin && prevPolyZCut <= prevZCutMax)
+                valToUse = prevPolyZCut;
             // TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
-			window3D->zcminSlider->setValue(midVal);
-			window3D->zcmaxSlider->setValue(midVal);
+			window3D->zcminSlider->setValue(valToUse);
+			window3D->zcmaxSlider->setValue(valToUse);
 		}
 	}
 	else
@@ -734,8 +742,9 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 	if (prevMode == Renderer::smCurveCreate_pointclick && curr_renderer->selectMode != Renderer::smCurveCreate_pointclick)
 	{
 		// When exiting poly mode, restore all z cuts
-		window3D->zcminSlider->setValue(window3D->zcminSlider->minimum());
-		window3D->zcmaxSlider->setValue(window3D->zcmaxSlider->maximum());
+        prevPolyZCut = window3D->zcmaxSlider->value();
+        window3D->zcminSlider->setValue((prevZCutMin > -1) ? prevZCutMin : window3D->zcminSlider->minimum());
+		window3D->zcmaxSlider->setValue((prevZCutMax > -1) ? prevZCutMax : window3D->zcmaxSlider->maximum());
 	}
 }
 
@@ -873,6 +882,10 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	
 	itm::CViewer::storeAnnotations();
 
+    // Store current z-cuts and attempt to restore them if valid
+    prevZCutMin = window3D->zcminSlider->value();
+    prevZCutMax = window3D->zcmaxSlider->value();
+
 	// Update viewer's data now that new res is loaded
 	volV0 = _volV0;
 	volV1 = _volV1;				
@@ -901,10 +914,27 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
 	// set above as this is the data being updated.
 	view3DWidget->updateImageData();
+    
+    float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
+
+    if (volResIndex != prevRes || prevZCutMax <= window3D->zcminSlider->minimum() || prevZCutMin >= window3D->zcmaxSlider->maximum())
+    {
+        // If our previous cuts are outside of the current VOI, just enable the whole volume
+        prevZCutMin = window3D->zcminSlider->minimum();
+        prevZCutMax = window3D->zcmaxSlider->maximum();
+    }
+    else
+    {
+        // Otherwise, use our previously selected z-cuts
+        prevZCutMin = min(max(prevZCutMin, window3D->zcminSlider->minimum()), window3D->zcmaxSlider->maximum());
+        prevZCutMax = min(max(prevZCutMax, window3D->zcminSlider->minimum()), window3D->zcmaxSlider->maximum());
+    }
+    window3D->zcminSlider->setValue(prevZCutMin);
+    window3D->zcmaxSlider->setValue(prevZCutMax);
+
 	itm::CViewer::loadAnnotations();
 	makeTracedNeuronsEditable();
-
-	float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
+    
 	float curZoom = (float)view3DWidget->zoom();
 	if (ratio > 0.0f)
 		view3DWidget->setZoom(curZoom/ratio);
