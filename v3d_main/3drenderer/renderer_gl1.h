@@ -337,6 +337,8 @@ public:
 #endif
 
      void adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize);
+     void adaptiveCurveResamplingRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, float epsilon);
+     void recursiveRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int start_i, int end_i, float epsilon);
      //void resampleCurveStrokes(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
      void resampleCurveStrokes2(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
 

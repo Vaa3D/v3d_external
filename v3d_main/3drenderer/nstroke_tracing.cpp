@@ -1139,7 +1139,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize)
 {
      int N = loc_vec.size();
-	if (N<=0 || stepsize<=0) return;
+     if (N<=0 || stepsize<=0) return;
 
      loc_vec_resampled.clear();
      loc_vec_resampled.push_back(loc_vec.at(0)); //should have at least one entry now
@@ -1219,6 +1219,82 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
      loc_vec_resampled.push_back(loc_vec.back());
 }
 
+void Renderer_gl1::adaptiveCurveResamplingRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, float epsilon)
+{
+     int N = loc_vec.size();
+     if (N<=0) return;
+
+     recursiveRamerDouglasPeucker(loc_vec, loc_vec_resampled, 0, N-1, epsilon);
+}
+
+void Renderer_gl1::recursiveRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int start_i, int end_i, float epsilon)
+{
+     // Recursive Ramer–Douglas–Peucker algorithm
+     loc_vec_resampled.clear();
+     XYZ & loc_start = loc_vec.at(start_i);
+     XYZ & loc_final = loc_vec.at(end_i);
+
+     if (start_i >= end_i)
+     {
+          loc_vec_resampled.push_back(loc_start);
+          return;
+     }
+     else if (end_i - start_i == 1)
+     {
+          loc_vec_resampled.push_back(loc_start);
+          loc_vec_resampled.push_back(loc_final);
+          return;
+     }
+
+     float dx = loc_final.x-loc_start.x;
+     float dy = loc_final.y-loc_start.y;
+     float dz = loc_final.z-loc_start.z;
+     // To be used in distance from point to line calculation below
+     float dd = std::sqrt(dx*dx + dy*dy + dz*dz);
+     // Find point with max distance between it and v1
+     float max_dist_squared = -1.0f;
+     int max_ind = -1;
+     for (int j=start_i+1; j<end_i; j++)
+     {
+          XYZ & loc_this = loc_vec.at(j);
+          // Compute distance from point at j to line between loc_start and loc_final
+          Vector3D v1 = Vector3D(loc_this.x-loc_start.x, loc_this.y-loc_start.y, loc_this.z-loc_start.z);
+          Vector3D v2 = Vector3D(loc_this.x-loc_final.x, loc_this.y-loc_final.y, loc_this.z-loc_final.z);
+          Vector3D v3 = v1.cross(v2);
+          float this_dist_sqaured = v3.normSquared();
+          if (this_dist_sqaured > max_dist_squared)
+          {
+               max_dist_squared = this_dist_sqaured;
+               max_ind = j;
+          }
+     }
+     // Calculate actual max distance and compare to epsilon
+     bool within_epsilon = false;
+     if (dd > 0) // avoid divide by zero
+     {
+          float max_dist = std::sqrt(max_dist_squared) / dd;
+          within_epsilon = (max_dist <= epsilon);
+     }
+     if (within_epsilon)
+     {
+          // If within epsilon, we can safely skip the points in between. Just return first and last points.
+          loc_vec_resampled.push_back(loc_start);
+          loc_vec_resampled.push_back(loc_final);
+     }
+     else
+     {
+          // If outside of epsilon, sample recursively between the two segments: start_i -> max_ind and max_indx -> end_i
+          vector <XYZ> loc_vec_resampled1, loc_vec_resampled2;
+          recursiveRamerDouglasPeucker(loc_vec, loc_vec_resampled1, start_i, max_ind, epsilon);
+          recursiveRamerDouglasPeucker(loc_vec, loc_vec_resampled2, max_ind, end_i, epsilon);
+          // Quickly join the two vectors, removing last element of vec1 (which would be duplicated)
+          loc_vec_resampled1.pop_back();
+          loc_vec_resampled.reserve(loc_vec_resampled1.size() + loc_vec_resampled2.size());
+          loc_vec_resampled.insert(loc_vec_resampled.end(), loc_vec_resampled1.begin(), loc_vec_resampled1.end());
+          loc_vec_resampled.insert(loc_vec_resampled.end(), loc_vec_resampled2.begin(), loc_vec_resampled2.end());
+     }
+     
+}
 
 /**
  * @brief This function is based on findNearestNeuronNode_WinXY(int cx, int cy,
@@ -1804,10 +1880,14 @@ if (0)
 
      // adaptive curve simpling
      vector <XYZ> loc_vec_resampled;
+#ifdef DEBUG_RESAMPLING
+     vector <XYZ> loc_vec_resampled_old;
      int stepsize = 7; // sampling stepsize 5
-     loc_vec_resampled.clear();
-     //adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
-     loc_vec_resampled = loc_vec;
+     adaptiveCurveResampling(loc_vec, loc_vec_resampled_old, stepsize); //this function should be the source of the redundant intermediate points
+#endif
+     // TODO: investigate best value for epsilon, perhaps based on current voxel size. For now, use 0.2
+     adaptiveCurveResamplingRamerDouglasPeucker(loc_vec, loc_vec_resampled, 0.2f);
+     //loc_vec_resampled = loc_vec;
 
 	//the intensity-based resampled method could lead to totally wrong path (especially for binary image).
 	//Need to use a better and more evenly spaced method. by PHC, 20120330.
@@ -1821,6 +1901,15 @@ if (0)
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
+#ifdef DEBUG_RESAMPLING
+               addCurveSWC(loc_vec_resampled_old, chno);
+               vecToNeuronTree(testNeuronTree, loc_vec_resampled_old);
+               addCurveSWC(loc_vec, chno);
+               vecToNeuronTree(testNeuronTree, loc_vec);
+               qDebug() << "Unsampled: " << loc_vec.size() << " points";
+               qDebug() << "Old sampling: " << loc_vec_resampled_old.size() << " points";
+               qDebug() << "New sampling: " << loc_vec_resampled.size() << " points";
+#endif
           }
           else
           {
