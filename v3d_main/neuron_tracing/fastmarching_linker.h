@@ -290,6 +290,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                 if(inimg1d[i] < min_int) min_int = inimg1d[i];
         }
         max_int -= min_int;
+        if (max_int == 0.0) return false; // no image data, avoid divide by zero in GI
         double li = 10;
 
         // initialization
