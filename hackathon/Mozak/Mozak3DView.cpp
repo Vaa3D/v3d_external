@@ -44,7 +44,6 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 void Mozak3DView::onNeuronEdit()
 {
     teramanager::CViewer::onNeuronEdit();
-	teramanager::CViewer::storeAnnotations();
 	MozakUI* moz = MozakUI::getMozakInstance();
     std::string prevPath = moz->annotationsPathLRU;
 	moz->annotationsPathLRU = "./autosave.ano";
@@ -473,6 +472,9 @@ void Mozak3DView::show()
 {
 	teramanager::CViewer::show();
 	window3D->setWindowTitle("Mozak");
+
+    MozakUI* moz = MozakUI::getMozakInstance();
+    moz->clearAnnotations();
 
 	// Hide unwanted buttons - TODO: This seems to crash in Mac builds, hiding in Terafly code for now
 	//itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
