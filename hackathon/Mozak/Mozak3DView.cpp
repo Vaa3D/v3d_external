@@ -60,7 +60,7 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	for (int i=0; i<sz; i++)
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
-	}
+    }
 	curr_renderer->nodeSize = 5;
 	curr_renderer->paint();
 }
@@ -87,8 +87,8 @@ int Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=fa
             if (i==0) {	best_dist = cur_dist; best_ind=0; }
             else {	if (cur_dist < best_dist) {best_dist=cur_dist; best_ind = i;}}
         }
-        if (updateStartType && best_ind >= 0)
-            curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
+        if (updateStartType && best_ind >= 0 && p_listneuron.at(best_ind).type)
+                curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
     }
     if (prev_type != curr_renderer->highlightedNodeType)
         updateTypeLabel();

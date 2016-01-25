@@ -4557,3 +4557,344 @@ LandmarkList * Renderer_gl1::getHandleLandmark() //by Hanbo Chen, 20141018
         return 0;
     }
 }
+
+QString XYZtoQString(XYZ pos){
+    return QString::number(pos.x) + QString::number(pos.y) + QString::number(pos.z);
+}
+
+//Need a list to store this <- which does it's own initialization upon insert and delete
+//The following classes are data structures used to calculate level information in the neuron tree
+class DoublyLinkedNeuronNode{
+public:
+    DoublyLinkedNeuronNode* upstream;
+    DoublyLinkedNeuronNode* downstream;
+    XYZ position;
+    V3DLONG seg_id;
+    DoublyLinkedNeuronNode(V3DLONG segId, XYZ pos):
+        seg_id(segId),
+        downstream(NULL),
+        upstream(NULL),
+        position(pos)
+        {}
+    bool isHead(){return (upstream == NULL);}
+    bool isTail(){return (downstream == NULL);}
+};
+
+class DoublyLinkedNeuronsList{
+public:
+    DoublyLinkedNeuronNode* head;
+    DoublyLinkedNeuronNode* tail;
+    DoublyLinkedNeuronsList(): head(NULL), tail(NULL){}
+    void append(V3DLONG segId, XYZ pos){
+        DoublyLinkedNeuronNode* toAdd = new DoublyLinkedNeuronNode(segId, pos);
+        if(head == NULL){
+            head = toAdd;
+            tail = toAdd;
+            toAdd->downstream = NULL;
+            toAdd->upstream = NULL;
+        }else{
+            tail->downstream = toAdd;
+            toAdd->upstream = tail;
+            toAdd->downstream = NULL;
+            tail = toAdd;
+        }
+    }
+    ~DoublyLinkedNeuronsList(){
+        //cout << "calling deleting" << endl;
+        DoublyLinkedNeuronNode* current = head;
+        while( current != NULL ) {
+            //cout << "deleting" << endl;
+            DoublyLinkedNeuronNode* next = current->downstream;
+            delete current;
+            current = next;
+        }
+    }
+};
+
+//This list stores all nodes in the same temporal location. The list should only be visited once, otherwise a loop exists.
+class SamePointList{
+public:
+    SamePointList(): visited(false){}
+    void insert(DoublyLinkedNeuronNode* dln){
+        list.push_back(dln);
+    }
+    int length(){
+        return list.length();
+    }
+    bool hasVisited(){
+        return visited;
+    }
+    QList<DoublyLinkedNeuronNode*> markAsVisitedAndGetConnections(){
+        visited = true;
+        return list;
+    }
+private:
+    QList<DoublyLinkedNeuronNode*> list;
+    bool visited;
+};
+
+class PointCloudHash{
+public:
+    QHash<QString, SamePointList*> hash;
+    PointCloudHash(){}
+    void Hash(DoublyLinkedNeuronNode* dln){
+        QHash<QString, SamePointList*>::iterator i = hash.find(XYZtoQString(dln->position));
+        if(i == hash.end()){
+            SamePointList* spl = new SamePointList;
+            hash.insert(XYZtoQString(dln->position), spl);
+            cout << "new hashed point list: " << XYZtoQString(dln->position).toStdString() << endl;
+            spl->insert(dln);
+        }else{
+            cout << "old hashed point list: " << XYZtoQString(dln->position).toStdString() << endl;
+            i.value()->insert(dln);
+        }
+    }
+    ~PointCloudHash(){
+        QHash<QString, SamePointList*>::const_iterator i = hash.constBegin();
+        while (i != hash.constEnd()) {
+            delete i.value();
+            ++i;
+        }
+    }
+};
+
+class FringeNode{
+public:
+    DoublyLinkedNeuronNode* node;
+    bool isGoingUpstream;
+    V3DLONG level;
+    V3DLONG parent;
+    FringeNode(DoublyLinkedNeuronNode*n, bool up, V3DLONG lvl, V3DLONG p): node(n), isGoingUpstream(up), level(lvl), parent(p){}
+};
+
+//Assigns each segment neuron list a level (corresponding to the segment'slevel in the neuron tree), given that a soma is present
+//The coloring effects of this function will only be availible when the ColorByLevel bool is toggled to true
+//Returns false if a loop esists, and sets color of all segments to purple. Otherwise, sets the segmentParentsList and segmentLevelList correctly
+bool Renderer_gl1::setColorAncestryInfo(){
+
+    //const QList <NeuronSWC> & listNeuron = listNeuronTree.at(index).listNeuron;
+
+    cout << "SetColorAncestryInfo" << endl;
+    segmentParentDict.clear();
+    segmentLevelDict.clear();
+
+    QList<FringeNode> f;
+    QList<NeuronSWC> soma;
+    PointCloudHash pch;
+    QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh;
+
+    cout << "neuron tree size from find" << listNeuronTree.length() << endl;
+
+    QList<NeuronTree>::iterator it;
+    //for (it = (listNeuronTree.begin()); it != (listNeuronTree.end()); ++it){
+    if(listNeuronTree.length() > 0){
+        it = listNeuronTree.end();
+        --it;
+        cout << "found a seg" << endl;
+
+        QList <NeuronSWC> p_listneuron = it->listNeuron;
+
+        cout << "neuron list size in find ancester: " << p_listneuron.length() << endl;
+
+        for (int i=0; i<p_listneuron.size(); i++)
+        {
+            NeuronSWC node = p_listneuron.at(i);
+            cout << "Type = " << node.type << endl;
+            if(node.type == 1){
+                soma.push_back(node);
+            }
+
+            QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator j = dict_dlnh.find(node.seg_id);
+            if(j == dict_dlnh.end()){
+                cout << "created new segment list " << endl;
+                DoublyLinkedNeuronsList* dln = new DoublyLinkedNeuronsList();
+                dict_dlnh.insert(node.seg_id, dln);
+                dln->append(node.seg_id, XYZ(node));
+                pch.Hash(dln->tail);
+            }else{
+                cout << "added to old segment list " << endl;
+                j.value()->append(node.seg_id, XYZ(node));
+                pch.Hash(j.value()->tail);
+            }
+
+            segmentParentDict.insert(node.seg_id, -1);
+            segmentLevelDict.insert(node.seg_id, -1);
+        }
+    }
+        //Initialize all values to -1, this is also the expected return value of the case without soma
+    //}
+
+    //If fringe not empty, then we insert all the points connected to the soma into
+    //the fringe and do depth-first traversal around the entire neuron tree, in addition marking the soma as visited
+    if(soma.length() != 0){
+        cout << "soma not empty" << endl;
+        segmentParentDict.insert(soma.at(0).seg_id, soma.at(0).seg_id); //If a segment's parent is itself, then its the soma
+        segmentLevelDict.insert(soma.at(0).seg_id, 0); //Soma has level 0
+
+        QList<NeuronSWC>::iterator soma_iter;
+
+        for(soma_iter = soma.begin(); soma_iter != soma.end(); soma_iter++){
+            QList<DoublyLinkedNeuronNode*> l = ((pch.hash.value(XYZtoQString(XYZ(*soma_iter))))->markAsVisitedAndGetConnections());
+            cout << "new soma" << endl;
+
+            QList<DoublyLinkedNeuronNode*>::iterator it;
+            for (it = (l.begin()); it != (l.end()); ++it){
+                cout << "Exist element in samePointList x:" << (*it)->position.x << endl;
+
+                if((*it)->seg_id != (*soma_iter).seg_id){
+                    cout << "Exist non-root element in samePointList" << endl;
+                    bool isHead = (*it)->upstream == NULL;
+                    bool isTail = (*it)->downstream == NULL;
+                    if(!isHead)
+                        f.push_back( FringeNode((*it)->upstream, true, 1, (*soma_iter).seg_id) );
+                    if(!isTail)
+                        f.push_back( FringeNode((*it)->downstream, false, 1, (*soma_iter).seg_id) );
+                    //Do these get automated destroyed here? Probably not.
+
+                    segmentParentDict.insert((*it)->seg_id, 0);
+                    segmentLevelDict.insert((*it)->seg_id, 1);
+                }
+            }
+        }
+    }
+
+    bool detectedLoop = false;
+    while(!f.isEmpty()){
+
+        QHash<QString, SamePointList*>::iterator s;
+        for (s = pch.hash.begin(); s != pch.hash.end(); ++s){
+            cout << (s.value())->hasVisited() << endl;
+        }
+
+        cout << "Processing fringe" << endl;
+        FringeNode tvs = f.takeFirst();
+        cout << "Taking node from seg: " << tvs.node->seg_id << "with x: " << tvs.node->position.x << " y: "
+             << tvs.node->position.y << " z: " << tvs.node->position.z << endl;
+        QList<DoublyLinkedNeuronNode*> l;
+        if(!(pch.hash.value(XYZtoQString(tvs.node->position))->hasVisited())){
+            l = ((pch.hash.value(XYZtoQString(tvs.node->position)))->markAsVisitedAndGetConnections());
+        }else{
+            detectedLoop = true;
+            break;
+        }
+
+        //
+        // Here is the truth table that decides the branching policy of each scenario
+        // etb = is this the end of the current segment?
+        // eob = is this the end of the other segment? (only applicatble when there's exactly 1 other segment)
+        // otr = number of other segments that uses this point
+        //
+        // etb|eob| otr | policy
+        //  T |N/A|  0 | do nothing
+        //  T | T |  1 | connect this branch to other branch (treat it as the same branch and give same parent #)
+        //  T | F |  1 | consider this point a branching point
+        //  T |N/A| 1+ | consider this point a branching point
+        //  F |N/A|  0 | continue along this branch
+        //  F |TvF| 0+ | Branch out for all other branches and continue along this branch
+        //
+
+        QList<DoublyLinkedNeuronNode*>::iterator it;
+
+        bool etb = (tvs.node->downstream == NULL || tvs.node->upstream == NULL);
+        V3DLONG otr = l.length() - 1;
+        if(etb){
+            for (it = (l.begin()); it != (l.end()); ++it){
+                if((*it)->seg_id != tvs.node->seg_id){
+                    bool isHead = (*it)->isHead();
+                    bool isTail = (*it)->isTail();
+                    bool eob = isHead || isTail;
+                    if(otr == 1 && eob){
+                        //connect this branch to other branch (treat it as the same branch and give same parent #)
+                        if(!isHead){
+                            f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.parent) );
+                            cout << "route 1" << endl;
+                        }
+                        else if(!isTail){
+                            f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.parent) );
+                            cout << "route 2" << endl;
+                        }
+                        segmentParentDict.insert((*it)->seg_id, tvs.parent);
+                        segmentLevelDict.insert((*it)->seg_id, tvs.level);
+                    }else{
+                        //consider this point a branching point
+                        if(!isHead){
+                            f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
+                            cout << "route 3" << endl;
+                        }
+                        if(!isTail){
+                            f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
+                            cout << "route 4" << endl;
+                        }
+                        segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                        segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
+                    }
+                }
+            }
+        }else{
+            for (it = (l.begin()); it != (l.end()); ++it){
+                bool isHead = (*it)->isHead();
+                bool isTail = (*it)->isTail();
+                if((*it)->seg_id == tvs.node->seg_id){
+                    //continue along this seg
+                    if(tvs.isGoingUpstream){
+                        f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.parent) );
+                        cout << "route 5" << endl;
+                    }
+                    else{
+                        f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.parent) );
+                        cout << "route 6" << endl;
+                    }
+                }else{
+                    //consider this point a branching point
+                    if(!isHead){
+                        f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
+                        cout << "route 7" << endl;
+                    }
+                    if(!isTail){
+                        f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
+                        cout << "route 8" << endl;
+                    }
+                    segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                    segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
+                }
+            }
+        }
+    }
+
+    if(detectedLoop){
+        //Set everything to -1 if loop detected
+        cout << "Loop detected!" << endl;
+        QList<NeuronTree>::iterator it;
+        for (it = (listNeuronTree.begin()); it != (listNeuronTree.end()); ++it){
+            QList <NeuronSWC> p_listneuron = it->listNeuron;
+            //segmentParentDict.insert(p_listneuron.at(0).seg_id, -1);
+            //segmentLevelDict.insert(p_listneuron.at(0).seg_id, -1);
+
+            for (int i=0; i<p_listneuron.size(); i++)
+            {
+                NeuronSWC node = p_listneuron.at(i);
+                segmentParentDict.insert(node.seg_id, -1);
+                segmentLevelDict.insert(node.seg_id, -1);
+            }
+        }
+        return false;
+    }
+
+    QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator dit;
+    for (dit = (dict_dlnh.begin()); dit != (dict_dlnh.end()); ++dit){
+        delete (dit.value());
+    }
+
+    QHash<V3DLONG, V3DLONG>::iterator i;
+    for (i = segmentParentDict.begin(); i != segmentParentDict.end(); ++i){
+        cout << "parent key" << i.key() << endl;
+        cout << "parent value" << i.value() << endl;
+    }
+    for (i = segmentLevelDict.begin(); i != segmentLevelDict.end(); ++i){
+        cout << "level key" << i.key() << endl;
+        cout << "level value" << i.value() << endl;
+    }
+
+    //We're done.
+    return true;
+}
