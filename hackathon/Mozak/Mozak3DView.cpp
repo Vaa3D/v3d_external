@@ -348,7 +348,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					connectButton->setChecked(true);
 				changeMode(Renderer::smCurveEditExtendTwoNode, true, true);
                 break;
-			default:
+            case Qt::Key_Space:
+                // Reset view to viewing XY plane from +z axis
+                view3DWidget->doAbsoluteRot(0, 0, 0);
+                break;
+            default:
 #ifdef FORCE_BBOX_MODE
 				changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
 #endif
