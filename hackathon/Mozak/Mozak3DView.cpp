@@ -43,6 +43,8 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 
 void Mozak3DView::onNeuronEdit()
 {
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    curr_renderer->colorByAncestry = true;
     teramanager::CViewer::onNeuronEdit();
 	teramanager::CViewer::storeAnnotations();
 	MozakUI* moz = MozakUI::getMozakInstance();
@@ -87,7 +89,7 @@ int Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=fa
             if (i==0) {	best_dist = cur_dist; best_ind=0; }
             else {	if (cur_dist < best_dist) {best_dist=cur_dist; best_ind = i;}}
         }
-        if (updateStartType && best_ind >= 0 && p_listneuron.at(best_ind).type)
+        if (updateStartType && best_ind >= 0 && p_listneuron.at(best_ind).type != 1)
                 curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
     }
     if (prev_type != curr_renderer->highlightedNodeType)
