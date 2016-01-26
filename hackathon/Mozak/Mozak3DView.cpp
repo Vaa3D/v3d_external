@@ -311,7 +311,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
 					deleteSegmentsButton->setChecked(true);
-				changeMode(Renderer::smDeleteMultiNeurons, true, true);
+				changeMode(Renderer::smDeleteMultiNeurons, false, true);
 				break;
 			case Qt::Key_S:
 				if (!splitSegmentButton->isChecked())
@@ -731,7 +731,7 @@ void Mozak3DView::splitSegmentButtonToggled(bool checked)
 
 void Mozak3DView::deleteSegmentsButtonToggled(bool checked)
 {
-	changeMode(Renderer::smDeleteMultiNeurons, true, checked);
+	changeMode(Renderer::smDeleteMultiNeurons, false, checked);
 }
 
 void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn)

@@ -1716,7 +1716,9 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     // where to put vaa3d annotations
     QList<LocationSimple> vaa3dMarkers;
     NeuronTree vaa3dCurves;
-
+    // This is necessary to avoid scenario where this nt.file="" and edited nt.file="vaa3d_traced_neuron" and they are duplicated
+    vaa3dCurves.name = "vaa3d_traced_neuron";
+    vaa3dCurves.file = "vaa3d_traced_neuron";
     // to measure elapsed time
     QElapsedTimer timer;
 

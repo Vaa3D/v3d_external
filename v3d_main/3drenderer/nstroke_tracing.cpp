@@ -3143,9 +3143,6 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
             }
         }
     }
-    const bool COMMIT_DELETED_NEURONS = true;
-    if (COMMIT_DELETED_NEURONS)
-        deleteMultiNeuronsByStrokeCommit();
     curImg->update_3drenderer_neuron_view(w, this);
     curImg->proj_trace_history_append();
 }
