@@ -4559,7 +4559,7 @@ LandmarkList * Renderer_gl1::getHandleLandmark() //by Hanbo Chen, 20141018
 }
 
 QString XYZtoQString(XYZ pos){
-    return QString::number(pos.x) + QString::number(pos.y) + QString::number(pos.z);
+    return QString::number(pos.x) + " " + QString::number(pos.y) + " " + QString::number(pos.z);
 }
 
 //Need a list to store this <- which does it's own initialization upon insert and delete
@@ -4668,42 +4668,37 @@ public:
 //Assigns each segment neuron list a level (corresponding to the segment'slevel in the neuron tree), given that a soma is present
 //The coloring effects of this function will only be availible when the ColorByLevel bool is toggled to true
 //Returns false if a loop esists, and sets color of all segments to purple. Otherwise, sets the segmentParentsList and segmentLevelList correctly
-bool Renderer_gl1::setColorAncestryInfo(){
 
-    //const QList <NeuronSWC> & listNeuron = listNeuronTree.at(index).listNeuron;
+//Level 0 Is reserved for the soma
+//-1 Indicats a segment removed from the main tree
+//-2 Indicates the prescence of a loop
+bool Renderer_gl1::setColorAncestryInfo(){
 
     cout << "SetColorAncestryInfo" << endl;
     segmentParentDict.clear();
     segmentLevelDict.clear();
 
-    QList<FringeNode> f;
-    QList<NeuronSWC> soma;
-    PointCloudHash pch;
-    QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh;
+    QList<FringeNode> f; //A list of nodes to traverse next, in a depth-first search fashion
+    QList<NeuronSWC> somas; //List of soma nodes
+    PointCloudHash pch; //Hashes the location of the nodes to a list containing all nodes occupying the same point
+    QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //A list of segments, hases seg_id  to doubly-linked segments
 
    // cout << "neuron tree size from find" << listNeuronTree.length() << endl;
 
     QList<NeuronTree>::iterator it;
-    for (it = (listNeuronTree.begin()); it != (listNeuronTree.end()); ++it){
-        cout << "found a seg" << endl;
-        QList <NeuronSWC> p_listneuron = it->listNeuron;
-        cout << "neuron list size in find ancester: " << p_listneuron.length() << endl;
-    }
     if(listNeuronTree.length() > 0){
+        //There seems to sometimes be two trees storing the exact same contents?
         it = listNeuronTree.end();
         --it;
-        //cout << "found a seg" << endl;
 
         QList <NeuronSWC> p_listneuron = it->listNeuron;
-
-        //cout << "neuron list size in find ancester: " << p_listneuron.length() << endl;
 
         for (int i=0; i<p_listneuron.size(); i++)
         {
             NeuronSWC node = p_listneuron.at(i);
-            //cout << "Type = " << node.type << endl;
-            if(node.type == 1){
-                soma.push_back(node);
+            //cout << "SegId = " << node.n << endl;
+            if(node.type == 1){ //This is a soma
+                somas.push_back(node);
             }
 
             QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator j = dict_dlnh.find(node.seg_id);
@@ -4719,6 +4714,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
                 pch.Hash(j.value()->tail);
             }
 
+            //
             segmentParentDict.insert(node.seg_id, -1);
             segmentLevelDict.insert(node.seg_id, -1);
         }
@@ -4728,16 +4724,16 @@ bool Renderer_gl1::setColorAncestryInfo(){
 
     //If fringe not empty, then we insert all the points connected to the soma into
     //the fringe and do depth-first traversal around the entire neuron tree, in addition marking the soma as visited
-    if(soma.length() != 0){
+    if(somas.length() != 0){
         //cout << "soma not empty" << endl;
-        segmentParentDict.insert(soma.at(0).seg_id, soma.at(0).seg_id); //If a segment's parent is itself, then its the soma
-        segmentLevelDict.insert(soma.at(0).seg_id, 0); //Soma has level 0
+        segmentParentDict.insert(somas.at(0).seg_id, somas.at(0).seg_id); //If a segment's parent is itself, then its the soma
+        segmentLevelDict.insert(somas.at(0).seg_id, 0); //Soma has level 0
 
         QList<NeuronSWC>::iterator soma_iter;
 
-        for(soma_iter = soma.begin(); soma_iter != soma.end(); soma_iter++){
+        for(soma_iter = somas.begin(); soma_iter != somas.end(); soma_iter++){
             QList<DoublyLinkedNeuronNode*> l = ((pch.hash.value(XYZtoQString(XYZ(*soma_iter))))->markAsVisitedAndGetConnections());
-            //cout << "new soma" << endl;
+            //Note that this particular spacial location has already been visited
 
             QList<DoublyLinkedNeuronNode*>::iterator it;
             for (it = (l.begin()); it != (l.end()); ++it){
@@ -4747,11 +4743,12 @@ bool Renderer_gl1::setColorAncestryInfo(){
                     //cout << "Exist non-root element in samePointList" << endl;
                     bool isHead = (*it)->upstream == NULL;
                     bool isTail = (*it)->downstream == NULL;
+
+                    //Propigate from all segments list either upstream or downstream from that location
                     if(!isHead)
                         f.push_back( FringeNode((*it)->upstream, true, 1, (*soma_iter).seg_id) );
                     if(!isTail)
                         f.push_back( FringeNode((*it)->downstream, false, 1, (*soma_iter).seg_id) );
-                    //Do these get automated destroyed here? Probably not.
 
                     segmentParentDict.insert((*it)->seg_id, 0);
                     segmentLevelDict.insert((*it)->seg_id, 1);
@@ -4773,6 +4770,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
         if(!(pch.hash.value(XYZtoQString(tvs.node->position))->hasVisited())){
             l = ((pch.hash.value(XYZtoQString(tvs.node->position)))->markAsVisitedAndGetConnections());
         }else{
+            //Each spacial location should only be visited once, otherwise there is a loop
             detectedLoop = true;
             break;
         }
@@ -4866,14 +4864,12 @@ bool Renderer_gl1::setColorAncestryInfo(){
         QList<NeuronTree>::iterator it;
         for (it = (listNeuronTree.begin()); it != (listNeuronTree.end()); ++it){
             QList <NeuronSWC> p_listneuron = it->listNeuron;
-            //segmentParentDict.insert(p_listneuron.at(0).seg_id, -1);
-            //segmentLevelDict.insert(p_listneuron.at(0).seg_id, -1);
 
             for (int i=0; i<p_listneuron.size(); i++)
             {
                 NeuronSWC node = p_listneuron.at(i);
-                segmentParentDict.insert(node.seg_id, -1);
-                segmentLevelDict.insert(node.seg_id, -1);
+                segmentParentDict.insert(node.seg_id, -2);
+                segmentLevelDict.insert(node.seg_id, -2);
             }
         }
         return false;
@@ -4884,6 +4880,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
         delete (dit.value());
     }
 
+    //For debugging
     /*
     QHash<V3DLONG, V3DLONG>::iterator i;
     for (i = segmentParentDict.begin(); i != segmentParentDict.end(); ++i){

@@ -43,8 +43,6 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 
 void Mozak3DView::onNeuronEdit()
 {
-    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-    curr_renderer->colorByAncestry = true;
     teramanager::CViewer::onNeuronEdit();
 	teramanager::CViewer::storeAnnotations();
 	MozakUI* moz = MozakUI::getMozakInstance();
@@ -309,7 +307,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				break;
 			case Qt::Key_7:
 				curr_renderer->currentTraceType = 7; // custom
-				updateTypeLabel();
+                updateTypeLabel();
 				break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
@@ -470,7 +468,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 void Mozak3DView::show()
 {
 	teramanager::CViewer::show();
-	window3D->setWindowTitle("Mozak");
+    window3D->setWindowTitle("Mozak");
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    curr_renderer->colorByAncestry = true;
 
 	// Hide unwanted buttons - TODO: This seems to crash in Mac builds, hiding in Terafly code for now
 	//itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
@@ -531,7 +531,9 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	
+
+    //Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    //curr_renderer->currentTraceType = 3; // dendrite
 	currTypeLabel = new QLabel();
 	updateTypeLabel();
 	currTypeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -561,6 +563,8 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
+
+    makeTracedNeuronsEditable();
 }
 
 const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
@@ -949,7 +953,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 
 	V3D_env->setImage(window, _img); // this clears the rawDataPointer for _img
 
-	// create 3D view window with postponed show()
+    // create 3D view window with postponed show()
 	XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
 	view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
 	// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is

@@ -1214,7 +1214,8 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
         glColor3ub(147, 0, 204);
     }else if(s.type == 2){ //axon
         switch(segmentLevelDict.value(s.seg_id)){
-        case -1: glColor3ub(212, 0, 180); break; //Free-ranging or in a loop
+        case -2: glColor3ub(250, 0, 180); break; //In a loop
+        case -1: glColor3ub(255, 0, 0); break; //Free-ranging or in a loop
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
         case 1: glColor3ub(103, 0, 0); break;
         case 2: glColor3ub(184, 0, 0); break;
@@ -1227,7 +1228,8 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
         }
     }else if(s.type == 3){ //dendrite
         switch(segmentLevelDict.value(s.seg_id)){
-        case -1: glColor3ub(70, 0, 145); break; //Free-ranging or in a loop
+        case -2: glColor3ub(70, 0, 145); break; //In a loop
+        case -1: glColor3ub(0, 0, 255); break; //Free-ranging
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
         case 1: glColor3ub(19, 0, 90); break;
         case 2: glColor3ub(42, 0, 136); break;
