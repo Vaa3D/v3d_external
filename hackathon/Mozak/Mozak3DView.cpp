@@ -133,7 +133,7 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	for (int i=0; i<sz; i++)
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
-	}
+    }
 	curr_renderer->nodeSize = 5;
 	curr_renderer->paint();
 }
@@ -160,8 +160,8 @@ int Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=fa
             if (i==0) {	best_dist = cur_dist; best_ind=0; }
             else {	if (cur_dist < best_dist) {best_dist=cur_dist; best_ind = i;}}
         }
-        if (updateStartType && best_ind >= 0)
-            curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
+        if (updateStartType && best_ind >= 0 && p_listneuron.at(best_ind).type != 1)
+                curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
     }
     if (prev_type != curr_renderer->highlightedNodeType)
         updateTypeLabel();
@@ -380,7 +380,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				break;
 			case Qt::Key_7:
 				curr_renderer->currentTraceType = 7; // custom
-				updateTypeLabel();
+                updateTypeLabel();
 				break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
@@ -558,7 +558,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 void Mozak3DView::show()
 {
 	teramanager::CViewer::show();
-	window3D->setWindowTitle("Mozak");
+    window3D->setWindowTitle("Mozak");
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    curr_renderer->colorByAncestry = true;
 
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->clearAnnotations();
@@ -638,7 +640,9 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	
+
+    //Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    //curr_renderer->currentTraceType = 3; // dendrite
 	currTypeLabel = new QLabel();
 	updateTypeLabel();
 	currTypeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -676,8 +680,9 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
-
+    
     appendHistory();
+    makeTracedNeuronsEditable();
 }
 
 const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
@@ -1088,7 +1093,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 
     V3D_env->setImage(window, _img); // this clears the rawDataPointer for _img
 
-	// create 3D view window with postponed show()
+    // create 3D view window with postponed show()
 	XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
 	view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
 
@@ -1098,22 +1103,30 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// set above as this is the data being updated.
 	view3DWidget->updateImageData();
     
-    float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
+	// update z-cuts for new view resolution.
+    float ratio = ((float)itm::CImport::instance()->getVolume(volResIndex)->getDIM_D())/
+		((float)itm::CImport::instance()->getVolume(prevRes)->getDIM_D());
 
-    if (volResIndex != prevRes || prevZCutMax <= window3D->zcminSlider->minimum() || prevZCutMin >= window3D->zcmaxSlider->maximum())
-    {
-        // If our previous cuts are outside of the current VOI, just enable the whole volume
-        prevZCutMin = window3D->zcminSlider->minimum();
-        prevZCutMax = window3D->zcmaxSlider->maximum();
-    }
-    else
-    {
-        // Otherwise, use our previously selected z-cuts
-        prevZCutMin = min(max(prevZCutMin, window3D->zcminSlider->minimum()), window3D->zcmaxSlider->maximum());
-        prevZCutMax = min(max(prevZCutMax, window3D->zcminSlider->minimum()), window3D->zcmaxSlider->maximum());
-    }
-    window3D->zcminSlider->setValue(prevZCutMin);
-    window3D->zcmaxSlider->setValue(prevZCutMax);
+	// scale z-cut minimum and maximum from previous-resolution voxels to new-resolution voxels... (for ratios < 1 it may not be 
+	// possible to have a z-cut which displays the same data as the previous z-cut; err on the side of too-wide cuts rather than
+	// too-narrow.)
+	float newZCutMin = floor((float)prevZCutMin * ratio),
+		newZCutMax = floor(((float)prevZCutMax + 1) * ratio) - 1;
+
+	// clamp cuts to VOI boundaries...
+	if (newZCutMin < window3D->zcminSlider->minimum())
+	{
+		newZCutMin = window3D->zcminSlider->minimum();
+	}
+
+	if (newZCutMax > window3D->zcmaxSlider->maximum())
+	{
+		newZCutMax = window3D->zcmaxSlider->maximum();
+	}
+
+	// ... and push
+    window3D->zcminSlider->setValue(newZCutMin);
+    window3D->zcmaxSlider->setValue(newZCutMax);
 
 	itm::CViewer::loadAnnotations();
 	makeTracedNeuronsEditable();
