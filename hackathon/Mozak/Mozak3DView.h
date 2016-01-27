@@ -96,6 +96,10 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         int prevZCutMax;
         int prevPolyZCut;
 
+        QList <NeuronTree> undoRedoHistory;
+        static const int MAX_history = 30;
+	    int cur_history;
+
 	public:
 
 		// helping functions copied from renderer_gl2.h
@@ -245,6 +249,10 @@ class mozak::Mozak3DView : protected teramanager::CViewer
             bool scale_coords = true,           //whether to scale VOI coords to the target res
             int sliding_viewer_block_ID = -1    //block ID in "Sliding viewer" mode
         );
+
+        void appendHistory();
+        void performUndo();
+        void performRedo();
 
 
 	public slots:

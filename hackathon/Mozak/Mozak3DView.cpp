@@ -3,6 +3,7 @@
 #include <math.h>
 #include "renderer_gl2.h"
 #include "v3d_application.h"
+#include "../terafly/src/control/CAnnotations.h"
 #include "../terafly/src/control/CVolume.h"
 #include "../terafly/src/control/CImageUtils.h"
 #include "../terafly/src/presentation/PAnoToolBar.h"
@@ -19,6 +20,7 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	nextImg = 0;
     prevZCutMin = -1;
     prevZCutMax = -1;
+    cur_history = -1;
 	loadingNextImg = false;
 	
 	contrastSlider = new QScrollBar(Qt::Vertical);
@@ -41,6 +43,54 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 	return neuronView;
 }
 
+void Mozak3DView::appendHistory()
+{
+    // Erase any redos after this point in history
+    while (cur_history > -1 && undoRedoHistory.size() > cur_history + 1) undoRedoHistory.takeLast();
+    
+    // Ensure history size <= MAX_history
+	while (undoRedoHistory.size() >= MAX_history) undoRedoHistory.pop_front();
+    
+    
+    itm::CVolume* cVolume = itm::CVolume::instance();
+    IconImageManager::VirtualVolume *entireVolume = itm::CImport::instance()->getVolume(0);
+    int maxX = entireVolume->getDIM_H();
+    int maxY = entireVolume->getDIM_V();
+    int maxZ = entireVolume->getDIM_D();
+
+    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);// maxX);
+    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);//maxY);
+    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);//maxZ);
+
+    NeuronTree nt;
+    itm::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
+    undoRedoHistory.push_back(nt);
+	cur_history = undoRedoHistory.size() - 1;
+}
+
+void Mozak3DView::performUndo()
+{
+    cur_history--;
+    if (undoRedoHistory.size() == 0 || cur_history < 0) {
+        // Annoying: v3d_msg("Reached the earliest of saved history!");
+        cur_history = -1;
+        return;
+    }
+    cur_history = min(undoRedoHistory.size() - 1, cur_history);
+    
+    // X,Y,Z intervals are used to clear annotations, which we've already done above, so input minimal intervals
+    itm::CAnnotations::getInstance()->clear();
+    NeuronTree nt = undoRedoHistory.at(cur_history);
+    itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
+    itm::CViewer::loadAnnotations();
+    makeTracedNeuronsEditable();
+}
+
+void Mozak3DView::performRedo()
+{
+
+}
+
 void Mozak3DView::onNeuronEdit()
 {
     teramanager::CViewer::onNeuronEdit();
@@ -50,6 +100,7 @@ void Mozak3DView::onNeuronEdit()
 	moz->saveAnnotations();
     moz->annotationsPathLRU = prevPath;
 	makeTracedNeuronsEditable();
+    appendHistory();
 }
 
 void Mozak3DView::makeTracedNeuronsEditable()
@@ -324,8 +375,15 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				changeMode(Renderer::smCurveCreate_pointclick, true, true);
                 break;
 			case Qt::Key_Z:
-				// stretch the image volume in the z-axis
-				view3DWidget->setThickness(3.0);
+                if (key_evt->modifiers() & Qt::ControlModifier)
+                {
+                    performUndo();
+                }
+                else
+                {
+				    // stretch the image volume in the z-axis
+				    view3DWidget->setThickness(3.0);
+                }
 				break;
             case Qt::Key_H:
                 //Sets segment rendermode to "Transparent" (0.05 alpha).
@@ -461,8 +519,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 ((QWidget *)(curr_renderer->widget))->repaint();
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
-        if (neuronTreeChanged)
-			onNeuronEdit();
+        //if (neuronTreeChanged)
+		//	onNeuronEdit();
 		return res;
 	}
 	return false;
@@ -565,6 +623,8 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
+
+    appendHistory();
 }
 
 const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
@@ -776,7 +836,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
         curr_renderer->endSelectMode();
         curr_renderer->highlightedNodeType = -1;
         updateTypeLabel();
-		onNeuronEdit();
+		//onNeuronEdit();
+        makeTracedNeuronsEditable();
 #ifdef FORCE_BBOX_MODE
         if (prevMode == Renderer::smCurveTiltedBB_fm_sbbox)
             return;
@@ -951,11 +1012,16 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	if(this->waitingFor5D)
 		this->setWaitingFor5D(false);
 
-	V3D_env->setImage(window, _img); // this clears the rawDataPointer for _img
+    QList <V_NeuronSWC_list> prevHist = view3DWidget->getiDrawExternalParameter()->image4d->tracedNeuron_historylist;
+
+    V3D_env->setImage(window, _img); // this clears the rawDataPointer for _img
 
 	// create 3D view window with postponed show()
 	XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
 	view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
+
+    QList <V_NeuronSWC_list> newHist = view3DWidget->getiDrawExternalParameter()->image4d->tracedNeuron_historylist;
+
 	// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
 	// set above as this is the data being updated.
 	view3DWidget->updateImageData();

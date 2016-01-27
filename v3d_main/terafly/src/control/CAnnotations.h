@@ -176,9 +176,7 @@ class teramanager::CAnnotations
 
         //members
         Octree* octree;         //octree associated to the 3D image space where annotations are stored
-        int octreeDimX;
-        int octreeDimY;
-        int octreeDimZ;
+        
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be
@@ -196,6 +194,10 @@ class teramanager::CAnnotations
         }
 
     public:
+
+        int octreeDimX;
+        int octreeDimY;
+        int octreeDimZ;
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be
