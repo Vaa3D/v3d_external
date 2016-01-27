@@ -1517,11 +1517,13 @@ void PMain::clearAnnotations()
             CAnnotations::getInstance()->clear();
             cur_win->undoStack.clear();
             cur_win->loadAnnotations();
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
             if(PAnoToolBar::isInstantiated())
             {
                 PAnoToolBar::instance()->buttonUndo->setEnabled(false);
                 PAnoToolBar::instance()->buttonRedo->setEnabled(false);
             }
+#endif
         }
         virtualSpaceSizeMenu->setEnabled(true);
     }

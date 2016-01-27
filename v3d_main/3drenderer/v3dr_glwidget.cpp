@@ -1008,31 +1008,37 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             // @ADDED by Alessandro on 2015-05-23. Also allow redo with CTRL+SHIFT+Z
             if (KM.testFlag(Qt::ShiftModifier) && (KM.testFlag(Qt::ControlModifier) || KM.testFlag(Qt::MetaModifier)))
             {
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
                 if (v3dr_getImage4d(_idep) && renderer)
                 {
                     v3dr_getImage4d(_idep)->proj_trace_history_redo();
                     v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
                 }
+#endif
             }
             //undo the last tracing step if possible. by PHC, 090120
             else if (IS_CTRL_MODIFIER)
 		    {
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
 		    	if (v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_undo();
 		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
 		    	}
+#endif
 			}
 	  		break;
 
 		case Qt::Key_X: //090924 RZC: redo
 		    if (IS_CTRL_MODIFIER)
 		    {
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
 		    	if (v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_redo();
 		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
 		    	}
+#endif
 			}
 	  		break;
 

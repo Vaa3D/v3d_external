@@ -28,7 +28,7 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     toolBar->addSeparator();
 
 
-    /**/
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
     buttonUndo = new QToolButton();
     buttonUndo->setIcon(QIcon(":/icons/undo.png"));
     buttonUndo->setToolTip("Undo (Ctrl+Z)");
@@ -44,7 +44,7 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
     toolBar->insertWidget(0, buttonRedo);
     toolBar->addSeparator();
-
+#endif
     // add new buttons
     buttonMarkerCreate = new QToolButton();
     buttonMarkerCreate->setIcon(QIcon(":/icons/marker_add.png"));
