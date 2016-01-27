@@ -6537,6 +6537,7 @@ void load_segment_neuron(My4DImage* curImg, Renderer_gl1* curRen) // 090622 RZC:
 }
 void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 {
+    cout << "load merged neuron " << endl;
 	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
 	merged_neuron.name = curImg->tracedNeuron.name;
 	merged_neuron.file = curImg->tracedNeuron.file;

@@ -318,6 +318,14 @@ public:
 	void solveCurveViews();
 	void solveCurveFromMarkers();
 
+    // beginning ZMS 2016125
+    QHash<V3DLONG, V3DLONG> segmentParentDict;
+    QHash<V3DLONG, V3DLONG> segmentLevelDict;
+    bool colorByAncestry;
+    bool setColorAncestryInfo();
+    void setColorByAncestry(NeuronSWC);
+    // end ZMS
+
     // beginning of ZJL
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersFastMarching(); //using fast marching method

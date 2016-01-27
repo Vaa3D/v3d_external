@@ -1143,6 +1143,8 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
         }
 	} CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
     updateNeuronBoundingBox();
+    if(colorByAncestry)
+        setColorAncestryInfo();
     updateBoundingBox(); // all of loaded bounding-box are updated here
 }
 V_NeuronSWC_list Renderer_gl1::copyToEditableNeuron(NeuronTree * ptree)
@@ -1205,6 +1207,44 @@ void Renderer_gl1::toggleLineType()
 //		list_glistNeuron[index] = glistNeuron;
 //	}
 //}
+
+void Renderer_gl1::setColorByAncestry(NeuronSWC s){
+    //Purple(255, 0, 255) is error reporting value & soma value
+    if(s.type == 1){
+        glColor3ub(147, 0, 204);
+    }else if(s.type == 2){ //axon
+        switch(segmentLevelDict.value(s.seg_id)){
+        case -2: glColor3ub(250, 0, 180); break; //In a loop
+        case -1: glColor3ub(255, 0, 0); break; //Free-ranging or in a loop
+        case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+        case 1: glColor3ub(103, 0, 0); break;
+        case 2: glColor3ub(184, 0, 0); break;
+        case 3: glColor3ub(255, 30, 0); break;
+        case 4: glColor3ub(255, 102, 0); break;
+        case 5: glColor3ub(255, 153, 0); break;
+        case 6: glColor3ub(255, 204, 0); break;
+        case 7: glColor3ub(255, 255, 0); break;
+        default: glColor3ub(255, 255, 0); break;
+        }
+    }else if(s.type == 3){ //dendrite
+        switch(segmentLevelDict.value(s.seg_id)){
+        case -2: glColor3ub(70, 0, 145); break; //In a loop
+        case -1: glColor3ub(0, 0, 255); break; //Free-ranging
+        case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+        case 1: glColor3ub(19, 0, 90); break;
+        case 2: glColor3ub(42, 0, 136); break;
+        case 3: glColor3ub(0, 64, 152); break;
+        case 4: glColor3ub(0, 121, 172); break;
+        case 5: glColor3ub(0, 160, 175); break;
+        case 6: glColor3ub(0, 243, 180); break;
+        case 7: glColor3ub(0, 255, 255); break;
+        default: glColor3ub(0, 255, 255); break;
+        }
+    }else{
+        glColor3ub(255, 255, 255); //Should be impossible, report error by using white
+    }
+}
+
 const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
 		{255, 255, 255},  // white,   0-undefined
 		{20,  20,  20 },  // black,   1-soma
@@ -1628,11 +1668,15 @@ void Renderer_gl1::drawNeuronTree(int index)
 				if (length >0)  // branch line
 				{
 					glLineWidth(lineWidth);
+                    if(colorByAncestry){
+                        glColor3ub(255, 255, 0);
+                        setColorByAncestry(S1);
+                    }
 					glBegin(GL_LINES);
 						glVertex3f(S0.x, S0.y, S0.z);	glVertex3f(S1.x, S1.y, S1.z);
 					glEnd();
 					if (nodeSize)
-					{
+                    {
 						glPointSize(nodeSize);
                         //20151203 ZMS: Highlight selected nodes
                         if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){
@@ -1650,6 +1694,10 @@ void Renderer_gl1::drawNeuronTree(int index)
 				}
 				else if (rootSize)// root point
 				{
+                    if(colorByAncestry){
+                                       glColor3ub(255, 255, 0);
+                                       setColorByAncestry(S1);
+                    }
 					glPointSize(rootSize);
                     //20151203 ZMS: Highlight selected nodes
                     if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){

@@ -59,7 +59,7 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	for (int i=0; i<sz; i++)
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
-	}
+    }
 	curr_renderer->nodeSize = 5;
 	curr_renderer->paint();
 }
@@ -86,8 +86,8 @@ int Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=fa
             if (i==0) {	best_dist = cur_dist; best_ind=0; }
             else {	if (cur_dist < best_dist) {best_dist=cur_dist; best_ind = i;}}
         }
-        if (updateStartType && best_ind >= 0)
-            curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
+        if (updateStartType && best_ind >= 0 && p_listneuron.at(best_ind).type != 1)
+                curr_renderer->highlightedNodeType = p_listneuron.at(best_ind).type;
     }
     if (prev_type != curr_renderer->highlightedNodeType)
         updateTypeLabel();
@@ -306,7 +306,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				break;
 			case Qt::Key_7:
 				curr_renderer->currentTraceType = 7; // custom
-				updateTypeLabel();
+                updateTypeLabel();
 				break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
@@ -471,7 +471,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 void Mozak3DView::show()
 {
 	teramanager::CViewer::show();
-	window3D->setWindowTitle("Mozak");
+    window3D->setWindowTitle("Mozak");
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    curr_renderer->colorByAncestry = true;
 
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->clearAnnotations();
@@ -535,7 +537,9 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	
+
+    //Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    //curr_renderer->currentTraceType = 3; // dendrite
 	currTypeLabel = new QLabel();
 	updateTypeLabel();
 	currTypeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -565,6 +569,8 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
+
+    makeTracedNeuronsEditable();
 }
 
 const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
@@ -953,7 +959,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 
 	V3D_env->setImage(window, _img); // this clears the rawDataPointer for _img
 
-	// create 3D view window with postponed show()
+    // create 3D view window with postponed show()
 	XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
 	view3DWidget->getiDrawExternalParameter()->image4d = w->getImageData();
 	// Make sure to call updateImageData AFTER getiDrawExternalParameter's image4d is
