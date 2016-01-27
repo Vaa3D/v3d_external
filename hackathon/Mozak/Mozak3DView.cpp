@@ -45,6 +45,8 @@ teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _r
 
 void Mozak3DView::appendHistory()
 {
+    qDebug() << "Adding to undoRedoHistory: (before) undoRedoHistory.size()=" << undoRedoHistory.size() << " cur_history=" << cur_history;
+
     // Erase any redos after this point in history
     while (cur_history > -1 && undoRedoHistory.size() > cur_history + 1) undoRedoHistory.takeLast();
     
@@ -66,16 +68,20 @@ void Mozak3DView::appendHistory()
     itm::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
     undoRedoHistory.push_back(nt);
 	cur_history = undoRedoHistory.size() - 1;
+    updateUndoLabel();
 }
 
 void Mozak3DView::performUndo()
 {
     cur_history--;
     if (undoRedoHistory.size() == 0 || cur_history < 0) {
+        qDebug() << "Undo aborted: undoRedoHistory.size()=" << undoRedoHistory.size() << " cur_history=" << cur_history;
+        cur_history = (undoRedoHistory.size() == 0) ? -1 : 0;
         // Annoying: v3d_msg("Reached the earliest of saved history!");
-        cur_history = -1;
+        updateUndoLabel();
         return;
     }
+    qDebug() << "Undoing...";
     cur_history = min(undoRedoHistory.size() - 1, cur_history);
     
     // X,Y,Z intervals are used to clear annotations, which we've already done above, so input minimal intervals
@@ -84,11 +90,28 @@ void Mozak3DView::performUndo()
     itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
     itm::CViewer::loadAnnotations();
     makeTracedNeuronsEditable();
+    updateUndoLabel();
 }
 
 void Mozak3DView::performRedo()
 {
-
+    cur_history++;
+	if (undoRedoHistory.size() < 1 || cur_history >= undoRedoHistory.size())
+	{
+        qDebug() << "Redo aborted: undoRedoHistory.size()=" << undoRedoHistory.size() << " cur_history=" << cur_history;
+		cur_history = undoRedoHistory.size() - 1;
+		// Annoying: v3d_msg("Reached the latest of saved history!");
+	}
+	else if (cur_history >= 0 && cur_history < undoRedoHistory.size())
+	{
+        qDebug() << "Redoing...";
+		itm::CAnnotations::getInstance()->clear();
+        NeuronTree nt = undoRedoHistory.at(cur_history);
+        itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
+        itm::CViewer::loadAnnotations();
+        makeTracedNeuronsEditable();
+	}
+    updateUndoLabel();
 }
 
 void Mozak3DView::onNeuronEdit()
@@ -374,6 +397,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					polyLineButton->setChecked(true);
 				changeMode(Renderer::smCurveCreate_pointclick, true, true);
                 break;
+            case Qt::Key_Y:
+                if (key_evt->modifiers() & Qt::ControlModifier)
+                {
+                    performRedo();
+                }
+                break;
 			case Qt::Key_Z:
                 if (key_evt->modifiers() & Qt::ControlModifier)
                 {
@@ -543,6 +572,22 @@ void Mozak3DView::show()
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
+    buttonUndo = new QToolButton();
+    buttonUndo->setIcon(QIcon(":/icons/undo.png"));
+    buttonUndo->setToolTip("Undo (Ctrl+Z)");
+    buttonUndo->setEnabled(false);
+    buttonUndo->setShortcut(QKeySequence("Ctrl+Z"));
+    connect(buttonUndo, SIGNAL(clicked()), this, SLOT(buttonUndoClicked()));
+    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonUndo);
+    buttonRedo = new QToolButton();
+    buttonRedo->setIcon(QIcon(":/icons/redo.png"));
+    buttonRedo->setToolTip("Redo (Ctrl+Shift+Z)");
+    buttonRedo->setShortcut(QKeySequence("Ctrl+Shift+Z"));
+    buttonRedo->setEnabled(false);
+    connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
+    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonRedo);
+    itm::PAnoToolBar::instance()->toolBar->addSeparator();
+
 	invertImageButton = new QToolButton();
 	invertImageButton->setIcon(QIcon(":/mozak/icons/invert.png"));
     invertImageButton->setToolTip("Invert image between brightfield/darkfield");
@@ -617,6 +662,14 @@ void Mozak3DView::show()
 	currResolutionLabel->setToolTip("Current resolution level (Terafly). Double left click to increase, double right click to decrease.");
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currResolutionLabel);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    
+    currUndoLabel = new QLabel();
+	updateUndoLabel();
+	currUndoLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+	currUndoLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
+	currUndoLabel->setToolTip("Current edit history. Press Ctrl+Z to undo and Ctrl+Y to redo to move through history.");
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currUndoLabel);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 
 	itm::PAnoToolBar::instance()->refreshTools();
 	
@@ -664,6 +717,25 @@ void Mozak3DView::updateResolutionLabel()
 	int maxRes = itm::CImport::instance()->getResolutions();
 	if (currResolutionLabel)
 		currResolutionLabel->setText(itm::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
+}
+
+
+void Mozak3DView::buttonUndoClicked()
+{
+    performUndo();
+}
+
+void Mozak3DView::buttonRedoClicked()
+{
+    performRedo();
+}
+
+void Mozak3DView::updateUndoLabel()
+{
+	if (currUndoLabel)
+		currUndoLabel->setText(itm::strprintf("Hist %d/%d", cur_history+1, undoRedoHistory.size()).c_str());
+    buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
+    buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
 }
 
 void Mozak3DView::updateTranslateXYArrows()

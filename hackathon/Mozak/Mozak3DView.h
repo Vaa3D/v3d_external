@@ -77,11 +77,14 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn);
 		void updateTypeLabel();
 		void updateResolutionLabel();
+        void updateUndoLabel();
 		void updateTranslateXYArrows();
 		static int contrastValue;
 		Image4DSimple* nextImg;
 		QList<CViewInfo*> lowerResViews;
 		bool loadingNextImg;
+        QToolButton* buttonUndo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
+        QToolButton* buttonRedo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
 		QToolButton* invertImageButton;
 		QToolButton* connectButton;
 		QToolButton* extendButton;
@@ -91,13 +94,14 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QLabel* currTypeLabel;
 		QLabel* currZoomLabel;
 		QLabel* currResolutionLabel;
+        QLabel* currUndoLabel;
 
         int prevZCutMin;
         int prevZCutMax;
         int prevPolyZCut;
 
         QList <NeuronTree> undoRedoHistory;
-        static const int MAX_history = 30;
+        static const int MAX_history = 20;
 	    int cur_history;
 
 	public:
@@ -257,6 +261,8 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 
 	public slots:
 		void updateContrast(int con);
+        void buttonUndoClicked();
+        void buttonRedoClicked();
 		void invertImageButtonToggled(bool checked);
 		void connectButtonToggled(bool checked);
 		void extendButtonToggled(bool checked);
