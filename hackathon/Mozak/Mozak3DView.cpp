@@ -960,22 +960,30 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// set above as this is the data being updated.
 	view3DWidget->updateImageData();
     
-    float ratio = itm::CImport::instance()->getVolume(volResIndex)->getDIM_D()/itm::CImport::instance()->getVolume(prevRes)->getDIM_D();
+	// update z-cuts for new view resolution.
+    float ratio = ((float)itm::CImport::instance()->getVolume(volResIndex)->getDIM_D())/
+		((float)itm::CImport::instance()->getVolume(prevRes)->getDIM_D());
 
-    if (volResIndex != prevRes || prevZCutMax <= window3D->zcminSlider->minimum() || prevZCutMin >= window3D->zcmaxSlider->maximum())
-    {
-        // If our previous cuts are outside of the current VOI, just enable the whole volume
-        prevZCutMin = window3D->zcminSlider->minimum();
-        prevZCutMax = window3D->zcmaxSlider->maximum();
-    }
-    else
-    {
-        // Otherwise, use our previously selected z-cuts
-        prevZCutMin = min(max(prevZCutMin, window3D->zcminSlider->minimum()), window3D->zcmaxSlider->maximum());
-        prevZCutMax = min(max(prevZCutMax, window3D->zcminSlider->minimum()), window3D->zcmaxSlider->maximum());
-    }
-    window3D->zcminSlider->setValue(prevZCutMin);
-    window3D->zcmaxSlider->setValue(prevZCutMax);
+	// scale z-cut minimum and maximum from previous-resolution voxels to new-resolution voxels... (for ratios < 1 it may not be 
+	// possible to have a z-cut which displays the same data as the previous z-cut; err on the side of too-wide cuts rather than
+	// too-narrow.)
+	float newZCutMin = floor((float)prevZCutMin * ratio),
+		newZCutMax = floor(((float)prevZCutMax + 1) * ratio) - 1;
+
+	// clamp cuts to VOI boundaries...
+	if (newZCutMin < window3D->zcminSlider->minimum())
+	{
+		newZCutMin = window3D->zcminSlider->minimum();
+	}
+
+	if (newZCutMax > window3D->zcmaxSlider->maximum())
+	{
+		newZCutMax = window3D->zcmaxSlider->maximum();
+	}
+
+	// ... and push
+    window3D->zcminSlider->setValue(newZCutMin);
+    window3D->zcmaxSlider->setValue(newZCutMax);
 
 	itm::CViewer::loadAnnotations();
 	makeTracedNeuronsEditable();
