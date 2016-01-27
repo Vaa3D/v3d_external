@@ -3314,7 +3314,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
 
                 }
             }
-            curImg->proj_trace_history_append();
+            //curImg->proj_trace_history_append(); // TDP 20160127: This seems to be redundant, it is adding to the undo/redo stack BEFORE splitting which isn't useful
         }
     }
     if (forceSingleCut && bestCutDist_squared > 0)
