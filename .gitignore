@@ -1,0 +1,18 @@
+#ignore binary files
+**/*.o
+**/ui_*.*
+**/moc_*.*
+**/qrc_*.*
+**/Makefile
+bin/*
+
+#ignore lib files or header files in common_lib
+v3d_main/common_lib/*
+
+#ignore symlink folder
+released_plugins_more
+
+#ingore the following binary files
+v3d_main/jba/c++/libv3dnewmat.a
+v3d_main/v3d/vaa3d64.app/
+v3d_main/v3d_main
