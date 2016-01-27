@@ -1847,6 +1847,7 @@ if (0)
                                         if (type_to_check > 0) // type is defined, retype the undefined segment
                                         {
                                             change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, cur_node.seg_id, type_to_check);
+                                            // TODO: recurse, any addional segments extending from this seg_id that have unknown type should be typed too
                                         }
                                     }
                                     XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);

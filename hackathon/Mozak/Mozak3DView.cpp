@@ -339,7 +339,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			return teramanager::CViewer::eventFilter(object, event);
 		}
 	}
-	else if (event->type() == QEvent::KeyPress) // intercept keypress events
+	else if (object == view3DWidget && event->type() == QEvent::KeyPress) // intercept keypress events
 	{
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
