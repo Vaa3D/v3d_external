@@ -1,7 +1,9 @@
-This folder contains the source code of the Vaa3D project (once called 'V3D').
+This code repository contains the source code of the Vaa3D project (once called 'V3D'),an 
+open source 3D/4D/5D image visualization and analysis software for bioimage analysis. It is
+a cross-platform (Mac, Linux, and Windows) tool for visualizing large-scale (gigabytes,
+and 64-bit data) image volumes and surface objects.
 
 There are a few sub-folders:
-
 * bin:                     the folder where the final executable and plugins will be copied to
 * v3d_main:                the main Vaa3D program.
 * matlab_io_basicdatatype: matlab toolbox for file IO of some basic Vaa3D data formats,
@@ -15,12 +17,10 @@ There are a few sub-folders:
 these license terms before you access any parts of these source code.
 
 
-
 * How to build the Vaa3D program 
 
 Please follow the build instructions here:
      https://github.com/Vaa3D/Vaa3D_Wiki/wiki/BuildVaa3d.wiki
-
 
 
 If you write/use additional plugins for Vaa3D, be sure to put these plugins into a subfolder
@@ -30,8 +30,7 @@ these plugins should be produced using the same version of QT (of compatible ver
 operating system, the same compiler, and the same release type ("Release" or "Debug") of the
 build.
 
-If you have a question, please check the Vaa3D website http://vaa3d.org , and the wiki page  https://github.com/Vaa3D/Vaa3D_Wiki/wiki/
-for more information. And you can find answers to  FAQs and submmit your questions using this help forum: https://www.nitrc.org/forum/forum.php?forum_id=1553
-
-
-2007-2016.
+If you have questions, please check the documentations on the Vaa3D website: http://vaa3d.org , 
+and the wiki pages: https://github.com/Vaa3D/Vaa3D_Wiki/wiki/.
+You could find answers of FAQs and submmit your questions using the following help forum:
+https://www.nitrc.org/forum/forum.php?forum_id=1553.
