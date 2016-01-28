@@ -1840,6 +1840,16 @@ if (0)
                             {
                                 if(i == highlightedEndNode){
                                     cur_node = p_listneuron.at(i);
+                                    // If connecting to an undefined node, give that segment this type if defined
+                                    if (cur_node.type == 0)
+                                    {
+                                        int type_to_check = (highlightedNodeType >= 0) ? highlightedNodeType : currentTraceType;
+                                        if (type_to_check > 0) // type is defined, retype the undefined segment
+                                        {
+                                            change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, cur_node.seg_id, type_to_check);
+                                            // TODO: recurse, any addional segments extending from this seg_id that have unknown type should be typed too
+                                        }
+                                    }
                                     XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
                                     loc_vec.at(N-1) = cur_node_xyz;
                                     b_start_merged = true;
