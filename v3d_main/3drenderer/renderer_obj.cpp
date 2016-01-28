@@ -1713,19 +1713,30 @@ void Renderer_gl1::drawNeuronTree(int index)
 					glEnd();
 					if (nodeSize)
                     {
+
 						glPointSize(nodeSize);
                         //20151203 ZMS: Highlight selected nodes
                         if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){
+                            if(IS_TRANSPARENT){
+                                glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                            }
                             glColor3ub(255, 0, 0);
                             glPointSize(nodeSize + 6);
                         }
                         if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
+                            if(IS_TRANSPARENT){
+                                glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                            }
                             glColor3ub(0, 0, 255);
                             glPointSize(nodeSize + 6);
                         }
 						glBegin(GL_POINTS);
 							glVertex3f(S1.x, S1.y, S1.z);
 						glEnd();
+
+                        if(IS_TRANSPARENT){
+                            glBlendColorEXT(1, 1, 1, 0.1);
+                        }
 					}
 				}
 				else if (rootSize)// root point
@@ -1737,16 +1748,26 @@ void Renderer_gl1::drawNeuronTree(int index)
 					glPointSize(rootSize);
                     //20151203 ZMS: Highlight selected nodes
                     if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){
+                        if(IS_TRANSPARENT){
+                            glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                        }
                         glColor3ub(255, 0, 0);
                         glPointSize(nodeSize + 6);
                     }
                     if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
+                        if(IS_TRANSPARENT){
+                            glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                        }
                         glColor3ub(0, 0, 255);
                         glPointSize(nodeSize + 6);
                     }
 					glBegin(GL_POINTS);
 						glVertex3f(S1.x, S1.y, S1.z);
 					glEnd();
+
+                    if(IS_TRANSPARENT){
+                        glBlendColorEXT(1, 1, 1, 0.1);
+                    }
 				}
 				glLineWidth(1);
 				glPointSize(1);

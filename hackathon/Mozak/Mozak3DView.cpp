@@ -460,7 +460,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_Z:
 				view3DWidget->setThickness(1.0);
 				break;
-			default:
+            case Qt::Key_H:
+                return true;
+                break;
+            default:
 				break;
         }
 
