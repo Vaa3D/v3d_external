@@ -16,42 +16,12 @@ these license terms before you access any parts of these source code.
 
 
 
-* How to build the Vaa3D program (see github for updated information)
+* How to build the Vaa3D program 
 
-(step 1) You need to ensure that you have QT installed on your machine, and thus "qmake" is visible
-in your system's path.
+Please follow the build instructions here:
+     https://github.com/Vaa3D/Vaa3D_Wiki/wiki/BuildVaa3d.wiki
 
-(step 2) You should also have c++ compiler, such as gcc 4.0 and above.
 
-(step 3) You will need to enter v3d_main/common_lib/src_packages folder, unzip the two packages:
-
-	tiff-3.8.2.1.tar.gz: run "tar zxvf tiff-3.8.2.1.tar.gz"
-	boost_1_38_0.tar.gz: run "tar zxvf boost_1_38_0.tar.gz" and
-                             then run "mv boost_1_38_0/boost ../include/."
-
-	If you have a Windows system, you will need to unzip and put these packages into the respective
-	folders as well.
-
-(step 4) To build Vaa3D is very simple, just find a command line terminal and type one of the following
-commands:
-
-	Mac, gcc compiler, 32bit build:  "sh ./build.macx -n -B -j4"
-	Mac, gcc compiler, 64bit build:  "sh ./build.macx -m -B -j4"
-	Linux, gcc compiler (32- or 64-bit will depend on your OS automatically):  "sh ./build.linux -B -j4"
-	Windows, MinGW compiler, 32bit build:  "build.bat -B -j4"
-	Windows, MSVC compiler, 32bit build:  "build_msvc32.bat -B -j4"
-	Windows, MSVC compiler, 64bit build:  "build_msvc64.bat -B -j4"
-
-The successful, the V3D program will launch after the build. The actual program will be put
-under the ./v3d folder. You can directly run it next time, without a rebuild.
-
-Trouble-shooting: If after you have successfully built the Vaa3D application, but cannot run it, it is
-                  likely to be a dynamic library dependency issue. This means that your QT library
-                  or something else has a dependency on a missing library. For example, on Ubuntu,
-                  sometimes the system lacks a libtiff library, which QT often needs it. Although
-                  V3D builds libtiff automatically and renames it as libv3dtiff, QT still needs
-                  the library called libtiff.so. Thus you can copy the libtiff.so to a folder where
-                  searchable (e.g. by setting LD_LIBRARY_PATH environment variable).
 
 If you write/use additional plugins for Vaa3D, be sure to put these plugins into a subfolder
 called "plugins", which should be in the same folder where the executable of v3d program resides.
@@ -60,6 +30,8 @@ these plugins should be produced using the same version of QT (of compatible ver
 operating system, the same compiler, and the same release type ("Release" or "Debug") of the
 build.
 
-If you have a question, see the Vaa3D website http://vaa3d.org .
+If you have a question, please check the Vaa3D website http://vaa3d.org , and the wiki page  https://github.com/Vaa3D/Vaa3D_Wiki/wiki/
+for more information. And you can find answers to  FAQs and submmit your questions using this help forum: https://www.nitrc.org/forum/forum.php?forum_id=1553
+
 
 2007-2016.
