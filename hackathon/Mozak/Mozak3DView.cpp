@@ -135,7 +135,7 @@ void Mozak3DView::makeTracedNeuronsEditable()
 		curr_renderer->listNeuronTree[i].editable = true;
     }
 	curr_renderer->nodeSize = 5;
-    curr_renderer->rootSize = 11;
+    curr_renderer->rootSize = 9;
 	curr_renderer->paint();
 }
 
