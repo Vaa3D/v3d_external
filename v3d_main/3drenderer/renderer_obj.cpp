@@ -1752,14 +1752,14 @@ void Renderer_gl1::drawNeuronTree(int index)
                             glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                         }
                         glColor3ub(255, 0, 0);
-                        glPointSize(nodeSize + 6);
+                        glPointSize(rootSize + 6);
                     }
                     if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
                         if(IS_TRANSPARENT){
                             glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                         }
                         glColor3ub(0, 0, 255);
-                        glPointSize(nodeSize + 6);
+                        glPointSize(rootSize + 6);
                     }
 					glBegin(GL_POINTS);
 						glVertex3f(S1.x, S1.y, S1.z);
