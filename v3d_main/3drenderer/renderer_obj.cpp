@@ -375,7 +375,7 @@ void Renderer_gl1::setObjLighting()
 		glEnable(GL_BLEND); //090429 RZC: no effect to glBlendEquationEXT(GL_MAX_EXT), must set to GL_FUNC_ADD_EXT
 		glBlendEquationEXT(GL_FUNC_ADD_EXT);
 		//glBlendColorEXT(1, 1, 1, 1-CSbeta);
-        glBlendColorEXT(1, 1, 1, 0.05);
+        glBlendColorEXT(1, 1, 1, 0.1);
 		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA); // constant Alpha
 		glDisable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_ALWAYS);//more artifacts ???
@@ -1215,7 +1215,25 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
     }else if(s.type == 2){ //axon
         switch(segmentLevelDict.value(s.seg_id)){
         case -2: glColor3ub(250, 0, 180); break; //In a loop
-        case -1: glColor3ub(255, 0, 0); break; //Free-ranging or in a loop
+        case -1: //Free-randing, try to pick a random-shade of red that does not depend on VOI
+            switch(segmentLengthDict.value(s.seg_id) % 16){
+            case 0: glColor3ub(233, 150, 122); break;
+            case 1: glColor3ub(250, 128, 114); break;
+            case 2: glColor3ub(255, 160, 122); break;
+            case 3: glColor3ub(255, 165, 0); break;
+            case 4: glColor3ub(255, 140, 0); break;
+            case 5: glColor3ub(255, 127, 80); break;
+            case 6: glColor3ub(240, 128, 128); break;
+            case 7: glColor3ub(255, 99, 71); break;
+            case 8: glColor3ub(255, 69, 0); break;
+            case 9: glColor3ub(255, 0, 0); break;
+            case 10: glColor3ub(188, 143, 143); break;
+            case 11: glColor3ub(205, 92, 92); break;
+            case 12: glColor3ub(244, 164, 96); break;
+            case 13: glColor3ub(210, 105, 30); break;
+            case 14: glColor3ub(178, 34, 34); break;
+            case 15: glColor3ub(165, 42, 42); break;
+            }break;
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
         case 1: glColor3ub(103, 0, 0); break;
         case 2: glColor3ub(184, 0, 0); break;
@@ -1229,7 +1247,25 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
     }else if(s.type == 3){ //dendrite
         switch(segmentLevelDict.value(s.seg_id)){
         case -2: glColor3ub(70, 0, 145); break; //In a loop
-        case -1: glColor3ub(0, 0, 255); break; //Free-ranging
+        case -1: //Free-randing, try to pick a random-shade of red that does not depend on VOI
+            switch(segmentLengthDict.value(s.seg_id) % 16){
+            case 0: glColor3ub(0, 0, 128); break;
+            case 1: glColor3ub(100, 149, 237); break;
+            case 2: glColor3ub(72, 61, 139); break;
+            case 3: glColor3ub(106, 90, 205); break;
+            case 4: glColor3ub(132, 112, 255); break;
+            case 5: glColor3ub(0, 0, 205); break;
+            case 6: glColor3ub(65, 105, 225); break;
+            case 7: glColor3ub(0, 0, 255); break;
+            case 8: glColor3ub(30, 144, 255); break;
+            case 9: glColor3ub(0, 191, 255); break;
+            case 10: glColor3ub(135, 206, 250); break;
+            case 11: glColor3ub(70, 130, 180); break;
+            case 12: glColor3ub(176, 196, 222); break;
+            case 13: glColor3ub(173, 216, 230); break;
+            case 14: glColor3ub(0, 206, 209); break;
+            case 15: glColor3ub(95, 158, 160); break;
+            }break;
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
         case 1: glColor3ub(19, 0, 90); break;
         case 2: glColor3ub(42, 0, 136); break;

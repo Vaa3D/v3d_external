@@ -415,8 +415,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 }
 				break;
             case Qt::Key_H:
-                //Sets segment rendermode to "Transparent" (0.05 alpha).
-                view3DWidget->renderer->polygonMode = 3;
+                //Sets segment rendermode to "Transparent" (0.1 alpha).
+                if(curr_renderer->polygonMode == 3){
+                    curr_renderer->polygonMode = 0;
+                }else{
+                    curr_renderer->polygonMode = 3;
+                }
                 break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
@@ -453,9 +457,6 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         int keyReleased = key_evt->key();
         switch (keyReleased)
         {
-            case Qt::Key_H:
-                view3DWidget->renderer->polygonMode = 0;
-				break;
 			case Qt::Key_Z:
 				view3DWidget->setThickness(1.0);
 				break;

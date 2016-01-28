@@ -319,6 +319,7 @@ public:
 	void solveCurveFromMarkers();
 
     // beginning ZMS 2016125
+    QHash<V3DLONG, V3DLONG> segmentLengthDict;
     QHash<V3DLONG, V3DLONG> segmentParentDict;
     QHash<V3DLONG, V3DLONG> segmentLevelDict;
     bool colorByAncestry;
