@@ -296,7 +296,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			CViewInfo* prevView = 0;
 			while (lowerResViews.length() > 0 && !prevView)
 				prevView = lowerResViews.takeLast();
-			if (prevView)
+            // Disable resolution change during polyline to ignore unintentional double right clicks
+			if (prevView && currentMode != Renderer::smCurveCreate_pointclick)
 			{
 				isReady = false;
 				loadingNextImg = true;
