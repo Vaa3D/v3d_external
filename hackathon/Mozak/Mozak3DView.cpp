@@ -53,22 +53,15 @@ void Mozak3DView::appendHistory()
     // Ensure history size <= MAX_history
 	while (undoRedoHistory.size() >= MAX_history) undoRedoHistory.pop_front();
     
-    
-    itm::CVolume* cVolume = itm::CVolume::instance();
-    IconImageManager::VirtualVolume *entireVolume = itm::CImport::instance()->getVolume(0);
-    int maxX = entireVolume->getDIM_H();
-    int maxY = entireVolume->getDIM_V();
-    int maxZ = entireVolume->getDIM_D();
-
-    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);// maxX);
-    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);//maxY);
-    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);//maxZ);
+    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);
+    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);
+    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);
 
     NeuronTree nt;
     itm::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
     undoRedoHistory.push_back(nt);
 	cur_history = undoRedoHistory.size() - 1;
-    updateUndoLabel();
+    //updateUndoLabel();
 }
 
 void Mozak3DView::performUndo()
@@ -685,10 +678,27 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
-    
     appendHistory();
     makeTracedNeuronsEditable();
 }
+
+void Mozak3DView::storeAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::storeAnnotations();
+}
+
+void Mozak3DView::loadAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::loadAnnotations();
+    appendHistory();
+}
+
+
+void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::clearAnnotations();
+}
+
 
 const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
 
@@ -744,8 +754,11 @@ void Mozak3DView::updateUndoLabel()
 {
 	if (currUndoLabel)
 		currUndoLabel->setText(itm::strprintf("Hist %d/%d", cur_history+1, undoRedoHistory.size()).c_str());
-    buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
-    buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
+    if (buttonUndo)
+    {
+        buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
+        buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
+    }
 }
 
 void Mozak3DView::updateTranslateXYArrows()

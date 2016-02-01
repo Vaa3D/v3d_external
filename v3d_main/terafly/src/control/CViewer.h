@@ -262,9 +262,9 @@ class teramanager::CViewer : public QWidget
         /**********************************************************************************
         * Annotations are stored/loaded to/from the <CAnnotations> object
         ***********************************************************************************/
-        void storeAnnotations() throw (itm::RuntimeException);
-        void loadAnnotations() throw (itm::RuntimeException);
-        void clearAnnotations() throw (itm::RuntimeException);
+        virtual void storeAnnotations() throw (itm::RuntimeException);
+        virtual void loadAnnotations() throw (itm::RuntimeException);
+        virtual void clearAnnotations() throw (itm::RuntimeException);
         void deleteSelectedMarkers() throw (itm::RuntimeException);
         void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (itm::RuntimeException);
         void createMarkerAt(int x, int y) throw (itm::RuntimeException);

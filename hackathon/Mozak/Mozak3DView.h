@@ -227,6 +227,9 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         }
 
 		virtual void show();
+        virtual void storeAnnotations() throw (itm::RuntimeException);
+        virtual void loadAnnotations() throw (itm::RuntimeException);
+        virtual void clearAnnotations() throw (itm::RuntimeException);
 		virtual bool eventFilter(QObject *object, QEvent *event);
 		
 		friend class MozakUI;
