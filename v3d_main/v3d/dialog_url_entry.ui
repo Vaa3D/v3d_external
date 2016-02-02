@@ -45,7 +45,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>http://penglab.janelia.org/proj/v3d/ex_Repo_hb9_eve.tif</string>
+        <string>https://github.com/Vaa3D/v3d_external/releases/download/data_v1.0/ex_Repo_hb9_eve.tif</string>
        </property>
       </widget>
      </item>
