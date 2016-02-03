@@ -5,6 +5,7 @@
         <file>icons/delete-segments.png</file>
         <file>icons/extend.png</file>
         <file>icons/polyline.png</file>
+        <file>icons/retype.png</file>
         <file>icons/split.png</file>
     </qresource>
 </RCC>

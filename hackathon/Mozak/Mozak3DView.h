@@ -89,6 +89,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* connectButton;
 		QToolButton* extendButton;
 		QToolButton* polyLineButton;
+		QToolButton* retypeSegmentsButton;
 		QToolButton* splitSegmentButton;
 		QToolButton* deleteSegmentsButton;
 		QLabel* currTypeLabel;
@@ -270,6 +271,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void connectButtonToggled(bool checked);
 		void extendButtonToggled(bool checked);
 		void polyLineButtonToggled(bool checked);
+		void retypeSegmentsButtonToggled(bool checked);
 		void splitSegmentButtonToggled(bool checked);
 		void deleteSegmentsButtonToggled(bool checked);
 		void updateZoomLabel(int zr);

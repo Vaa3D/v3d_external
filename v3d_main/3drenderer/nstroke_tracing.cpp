@@ -3163,27 +3163,34 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
+    if (useCurrentTraceTypeForRetyping)
+    {
+        node_type = currentTraceType;
+    }
+    else
+    {
 #ifdef USE_Qt5
-    node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-                              QObject::tr("SWC type: "
-                                        "\n 0 -- undefined (white)"
-                                        "\n 1 -- soma (black)"
-                                        "\n 2 -- axon (red)"
-                                        "\n 3 -- dendrite (blue)"
-                                        "\n 4 -- apical dendrite (purple)"
-                                        "\n else -- custom \n"),
-                                      node_type, 0, 100, 1, &ok);
+        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+                                  QObject::tr("SWC type: "
+                                            "\n 0 -- undefined (white)"
+                                            "\n 1 -- soma (black)"
+                                            "\n 2 -- axon (red)"
+                                            "\n 3 -- dendrite (blue)"
+                                            "\n 4 -- apical dendrite (purple)"
+                                            "\n else -- custom \n"),
+                                          node_type, 0, 100, 1, &ok);
 #else
-    node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
-                              QObject::tr("SWC type: "
-                                        "\n 0 -- undefined (white)"
-                                        "\n 1 -- soma (black)"
-                                        "\n 2 -- axon (red)"
-                                        "\n 3 -- dendrite (blue)"
-                                        "\n 4 -- apical dendrite (purple)"
-                                        "\n else -- custom \n"),
-                                      node_type, 0, 100, 1, &ok);
+        node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+                                  QObject::tr("SWC type: "
+                                            "\n 0 -- undefined (white)"
+                                            "\n 1 -- soma (black)"
+                                            "\n 2 -- axon (red)"
+                                            "\n 3 -- dendrite (blue)"
+                                            "\n 4 -- apical dendrite (purple)"
+                                            "\n else -- custom \n"),
+                                          node_type, 0, 100, 1, &ok);
 #endif
+    }
 
     if(!ok) return;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;

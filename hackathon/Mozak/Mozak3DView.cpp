@@ -387,6 +387,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					splitSegmentButton->setChecked(true);
 				changeMode(Renderer::smBreakTwoNeurons, false, true);
                 break;
+			case Qt::Key_R:
+				if (!retypeSegmentsButton->isChecked())
+					retypeSegmentsButton->setChecked(true);
+				changeMode(Renderer::smRetypeMultiNeurons, false, true);
+				break;
 			case Qt::Key_P:
 				if (!polyLineButton->isChecked())
 					polyLineButton->setChecked(true);
@@ -613,6 +618,12 @@ void Mozak3DView::show()
     polyLineButton->setCheckable(true);
     connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
 
+	retypeSegmentsButton = new QToolButton();
+	retypeSegmentsButton->setIcon(QIcon(":/mozak/icons/retype.png"));
+    retypeSegmentsButton->setToolTip("Retype neurons to current type by right click stroke");
+    retypeSegmentsButton->setCheckable(true);
+    connect(retypeSegmentsButton, SIGNAL(toggled(bool)), this, SLOT(retypeSegmentsButtonToggled(bool)));
+	
 	splitSegmentButton = new QToolButton();
 	splitSegmentButton->setIcon(QIcon(":/mozak/icons/split.png"));
     splitSegmentButton->setToolTip("Split segment into two using right click stroke");
@@ -634,6 +645,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, retypeSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, splitSegmentButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -798,13 +811,15 @@ void Mozak3DView::updateRendererParams()
 		curr_renderer->tryTexStream != -1 || 
 		!curr_renderer->tryTexNPT ||
 		curr_renderer->bShowAxes ||
-        !curr_renderer->bShowXYTranslateArrows)
+        !curr_renderer->bShowXYTranslateArrows ||
+        !curr_renderer->useCurrentTraceTypeForRetyping)
 	{
 		curr_renderer->tryTexCompress = false;
 		curr_renderer->tryTexStream = -1;
 		curr_renderer->tryTexNPT = true;
 		curr_renderer->bShowAxes = false;
         curr_renderer->bShowXYTranslateArrows = true;
+        curr_renderer->useCurrentTraceTypeForRetyping = true;
 		view3DWidget->updateImageData();
 	}
 }
@@ -880,6 +895,11 @@ void Mozak3DView::polyLineButtonToggled(bool checked)
 	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
 }
 
+void Mozak3DView::retypeSegmentsButtonToggled(bool checked)
+{
+	changeMode(Renderer::smRetypeMultiNeurons, true, checked);
+}
+
 void Mozak3DView::splitSegmentButtonToggled(bool checked)
 {
 	changeMode(Renderer::smBreakTwoNeurons, false, checked);
@@ -912,6 +932,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);
+        if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
+            retypeSegmentsButton->setChecked(false);
 		if (mode == Renderer::smCurveCreate_pointclick)
 		{
 			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
