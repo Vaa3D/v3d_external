@@ -53,22 +53,15 @@ void Mozak3DView::appendHistory()
     // Ensure history size <= MAX_history
 	while (undoRedoHistory.size() >= MAX_history) undoRedoHistory.pop_front();
     
-    
-    itm::CVolume* cVolume = itm::CVolume::instance();
-    IconImageManager::VirtualVolume *entireVolume = itm::CImport::instance()->getVolume(0);
-    int maxX = entireVolume->getDIM_H();
-    int maxY = entireVolume->getDIM_V();
-    int maxZ = entireVolume->getDIM_D();
-
-    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);// maxX);
-    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);//maxY);
-    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);//maxZ);
+    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);
+    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);
+    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);
 
     NeuronTree nt;
     itm::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
     undoRedoHistory.push_back(nt);
 	cur_history = undoRedoHistory.size() - 1;
-    updateUndoLabel();
+    //updateUndoLabel();
 }
 
 void Mozak3DView::performUndo()
@@ -306,7 +299,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			CViewInfo* prevView = 0;
 			while (lowerResViews.length() > 0 && !prevView)
 				prevView = lowerResViews.takeLast();
-			if (prevView)
+            // Disable resolution change during polyline to ignore unintentional double right clicks
+			if (prevView && currentMode != Renderer::smCurveCreate_pointclick)
 			{
 				isReady = false;
 				loadingNextImg = true;
@@ -396,6 +390,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					splitSegmentButton->setChecked(true);
 				changeMode(Renderer::smBreakTwoNeurons, false, true);
                 break;
+			case Qt::Key_R:
+				if (!retypeSegmentsButton->isChecked())
+					retypeSegmentsButton->setChecked(true);
+				changeMode(Renderer::smRetypeMultiNeurons, false, true);
+				break;
 			case Qt::Key_P:
 				if (!polyLineButton->isChecked())
 					polyLineButton->setChecked(true);
@@ -622,6 +621,12 @@ void Mozak3DView::show()
     polyLineButton->setCheckable(true);
     connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
 
+	retypeSegmentsButton = new QToolButton();
+	retypeSegmentsButton->setIcon(QIcon(":/mozak/icons/retype.png"));
+    retypeSegmentsButton->setToolTip("Retype neurons to current type by right click stroke");
+    retypeSegmentsButton->setCheckable(true);
+    connect(retypeSegmentsButton, SIGNAL(toggled(bool)), this, SLOT(retypeSegmentsButtonToggled(bool)));
+	
 	splitSegmentButton = new QToolButton();
 	splitSegmentButton->setIcon(QIcon(":/mozak/icons/split.png"));
     splitSegmentButton->setToolTip("Split segment into two using right click stroke");
@@ -643,6 +648,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, retypeSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, splitSegmentButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -688,10 +695,27 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
-    
     appendHistory();
     makeTracedNeuronsEditable();
 }
+
+void Mozak3DView::storeAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::storeAnnotations();
+}
+
+void Mozak3DView::loadAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::loadAnnotations();
+    appendHistory();
+}
+
+
+void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::clearAnnotations();
+}
+
 
 const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
 
@@ -747,8 +771,11 @@ void Mozak3DView::updateUndoLabel()
 {
 	if (currUndoLabel)
 		currUndoLabel->setText(itm::strprintf("Hist %d/%d", cur_history+1, undoRedoHistory.size()).c_str());
-    buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
-    buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
+    if (buttonUndo)
+    {
+        buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
+        buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
+    }
 }
 
 void Mozak3DView::updateTranslateXYArrows()
@@ -787,13 +814,15 @@ void Mozak3DView::updateRendererParams()
 		curr_renderer->tryTexStream != -1 || 
 		!curr_renderer->tryTexNPT ||
 		curr_renderer->bShowAxes ||
-        !curr_renderer->bShowXYTranslateArrows)
+        !curr_renderer->bShowXYTranslateArrows ||
+        !curr_renderer->useCurrentTraceTypeForRetyping)
 	{
 		curr_renderer->tryTexCompress = false;
 		curr_renderer->tryTexStream = -1;
 		curr_renderer->tryTexNPT = true;
 		curr_renderer->bShowAxes = false;
         curr_renderer->bShowXYTranslateArrows = true;
+        curr_renderer->useCurrentTraceTypeForRetyping = true;
 		view3DWidget->updateImageData();
 	}
 }
@@ -869,6 +898,11 @@ void Mozak3DView::polyLineButtonToggled(bool checked)
 	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
 }
 
+void Mozak3DView::retypeSegmentsButtonToggled(bool checked)
+{
+	changeMode(Renderer::smRetypeMultiNeurons, true, checked);
+}
+
 void Mozak3DView::splitSegmentButtonToggled(bool checked)
 {
 	changeMode(Renderer::smBreakTwoNeurons, false, checked);
@@ -901,6 +935,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);
+        if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
+            retypeSegmentsButton->setChecked(false);
 		if (mode == Renderer::smCurveCreate_pointclick)
 		{
 			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll

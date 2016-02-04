@@ -551,6 +551,7 @@ public:
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
      bool b_renderTextureLast;
 	double currentTraceType;
+	bool useCurrentTraceTypeForRetyping;
 
 private:
 	void init_members()
@@ -604,6 +605,7 @@ private:
 
           b_editDroppedNeuron = false; //20150527, PHC
 		currentTraceType=3;
+		useCurrentTraceTypeForRetyping = false;
      }
 
 
