@@ -186,18 +186,39 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         }
         
         //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
-        if( (currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode)){
+
+        bool updatedNodes = false;
+        if(currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode){
             if(!isRightMouseDown){
                 //Highlight start node
                 curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
+                updatedNodes = true;
             }else if(currentMode == Renderer::smCurveEditExtendTwoNode){
                 //Highlight end node
                 curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
+                updatedNodes = true;
             }
-
+        }
+        else if (currentMode == Renderer::smJoinTwoNodes)
+        {
+            if (curr_renderer->selectedStartNode == -1)
+            {
+                //Highlight start node
+                curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
+                updatedNodes = true;
+            }
+            else
+            {
+                //Highlight end node
+                curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
+                updatedNodes = true;
+            }
+        }
+        if (updatedNodes)
+        {
             curr_renderer->drawNeuronTreeList();
             curr_renderer->drawObj();
-            needRepaint = true; //Update the screen position of highlighted nodes
+            needRepaint = true;
         }
     }
 
@@ -382,6 +403,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					deleteSegmentsButton->setChecked(true);
 				changeMode(Renderer::smDeleteMultiNeurons, false, true);
 				break;
+            case Qt::Key_J:
+				//if (!deleteSegmentsButton->isChecked())
+				//	deleteSegmentsButton->setChecked(true);
+				changeMode(Renderer::smJoinTwoNodes, false, true);
+				break;
 			case Qt::Key_S:
 				if (!splitSegmentButton->isChecked())
 					splitSegmentButton->setChecked(true);
@@ -507,24 +533,39 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				neuronTreeChanged = true;
 			}
             // Process X/Y ROI Translate
-            if (mouseEvt->button() == Qt::LeftButton && curr_renderer->bShowXYTranslateArrows)
+            if (mouseEvt->button() == Qt::LeftButton)
             {
-                MozakUI* moz = MozakUI::getMozakInstance();
-                if (curr_renderer->iPosXTranslateArrowEnabled == 2)
+                if (currentMode == Renderer::smJoinTwoNodes)
                 {
-                    moz->traslXposClicked();
+                    if (curr_renderer->selectedStartNode > -1 && curr_renderer->highlightedEndNode > -1)
+                    {
+                        // TODO: perform connection between selectedStartNode and highlightedEndNode here
+                    }
+                    else if (curr_renderer->highlightedNode > -1)
+                    {
+                        curr_renderer->selectedStartNode = curr_renderer->highlightedNode;
+                        curr_renderer->highlightedNode = -1;
+                    }
                 }
-                else if (curr_renderer->iNegXTranslateArrowEnabled == 2)
+                else if (curr_renderer->bShowXYTranslateArrows)
                 {
-                    moz->traslXnegClicked();
-                }
-                else if (curr_renderer->iPosYTranslateArrowEnabled == 2)
-                {
-                    moz->traslYposClicked();
-                }
-                else if (curr_renderer->iNegYTranslateArrowEnabled == 2)
-                {
-                    moz->traslYnegClicked();
+                    MozakUI* moz = MozakUI::getMozakInstance();
+                    if (curr_renderer->iPosXTranslateArrowEnabled == 2)
+                    {
+                        moz->traslXposClicked();
+                    }
+                    else if (curr_renderer->iNegXTranslateArrowEnabled == 2)
+                    {
+                        moz->traslXnegClicked();
+                    }
+                    else if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                    {
+                        moz->traslYposClicked();
+                    }
+                    else if (curr_renderer->iNegYTranslateArrowEnabled == 2)
+                    {
+                        moz->traslYnegClicked();
+                    }
                 }
             }
             if ((mouseEvt->buttons() & Qt::LeftButton) == 0 && (mouseEvt->buttons() & Qt::LeftButton) == 0)
@@ -934,6 +975,11 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			deleteSegmentsButton->setChecked(false);
         if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
             retypeSegmentsButton->setChecked(false);
+        if (mode == Renderer::smJoinTwoNodes)
+        {
+            curr_renderer->selectedStartNode = -1;
+            curr_renderer->highlightedEndNode = -1;
+        }
 		if (mode == Renderer::smCurveCreate_pointclick)
 		{
 			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll

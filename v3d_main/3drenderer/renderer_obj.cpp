@@ -1716,14 +1716,18 @@ void Renderer_gl1::drawNeuronTree(int index)
 
 						glPointSize(nodeSize);
                         //20151203 ZMS: Highlight selected nodes
-                        if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){
+                        if((i == highlightedNode || i == selectedStartNode) && 
+                            (selectMode == Renderer::smCurveEditExtendOneNode || 
+                            selectMode == Renderer::smCurveEditExtendTwoNode ||
+                            selectMode == Renderer::smJoinTwoNodes)){
                             if(IS_TRANSPARENT){
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
                             glColor3ub(255, 0, 0);
                             glPointSize(nodeSize + 6);
                         }
-                        if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
+                        if(i == highlightedEndNode && (selectMode == Renderer::smCurveEditExtendTwoNode ||
+                            selectMode == Renderer::smJoinTwoNodes)){
                             if(IS_TRANSPARENT){
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
@@ -1747,14 +1751,17 @@ void Renderer_gl1::drawNeuronTree(int index)
                     }
 					glPointSize(rootSize);
                     //20151203 ZMS: Highlight selected nodes
-                    if(i == highlightedNode && (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode)){
+                    if((i == highlightedNode || i == selectedStartNode) && 
+                        (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode || 
+                        selectMode == Renderer::smJoinTwoNodes)){
                         if(IS_TRANSPARENT){
                             glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                         }
                         glColor3ub(255, 0, 0);
                         glPointSize(rootSize + 6);
                     }
-                    if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
+                    if(i == highlightedEndNode && (selectMode == Renderer::smCurveEditExtendTwoNode ||
+                            selectMode == Renderer::smJoinTwoNodes)){
                         if(IS_TRANSPARENT){
                             glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                         }
