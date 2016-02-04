@@ -675,8 +675,8 @@ void Renderer_gl1::drawMarkerList()
 	if (sShowMarkers==0) return;
 	float maxD = boundingBox.Dmax();
 				//MAX(dim1,MAX(dim2,dim3));//090726: this will be 0 when no image
-	float marker_size = //markerSize; // 090423 RZC
-					maxD * markerSize/1000.f;
+	float marker_size = float(markerSize) * zoomRatio * 0.75; // //20160203 TDP: make size independent of zoom level 090423 RZC
+					//maxD * markerSize/1000.f;
 	for (int pass=0; pass<numPassFloatDraw(sShowMarkers); pass++)
 	{
 		setFloatDrawOp(pass, sShowMarkers);
@@ -693,8 +693,8 @@ void Renderer_gl1::drawMarkerList()
 			glColor3ubv(color.c);
 			glPushMatrix();
 			glTranslated(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
-			//glScaled(marker_size, marker_size, marker_size);
-			glScaled(marker_size/thicknessX, marker_size/thicknessY, marker_size/thicknessZ); // 090421 RZC: shape adjusted with image thickness
+			glScaled(marker_size, marker_size, marker_size);
+			//glScaled(marker_size/thicknessX, marker_size/thicknessY, marker_size/thicknessZ); // 090421 RZC: shape adjusted with image thickness
 			glPushName(1+i);
 				glCallList(glistMarker[type]);
 			glPopName();
