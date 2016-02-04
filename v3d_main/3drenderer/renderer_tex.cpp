@@ -428,8 +428,8 @@ void Renderer_gl1::paint()
 	// significantly because this paint routine spends most of its time redrawing the volume.
 	// since the volume can't change while the user is drawing a curve, we skip all of the rendering
 	// steps except drawing the track while the track is being displayed.
-	if (!sShowTrack)
-	{
+    if (!sShowTrack || highlightedEndNodeChanged)
+    {
 		glClearStencil(0);
 		glClearDepth(1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -462,7 +462,7 @@ void Renderer_gl1::paint()
 
 	prepareVol();
 
-	if (!sShowTrack)
+    if (!sShowTrack  || highlightedEndNodeChanged)
 	{
 		if (!b_renderTextureLast) {
 			renderVol();
@@ -566,7 +566,7 @@ void Renderer_gl1::paint()
 		}
 	} // !sShowTrack
 
-	if (! b_selecting && sShowTrack)
+    if (! b_selecting && sShowTrack)
 	{
 		blendTrack();
 	}
@@ -2023,7 +2023,7 @@ void Renderer_gl1::blendTrack()
 		const MarkerPos & pos = listMarkerPos.at(i);
 
 		// only draw in markers that haven't already been rendered since the last framebuffer clear
-		if (!pos.drawn)
+        if (!pos.drawn)
 		{
 			double x = (pos.x   - pos.view[0])/pos.view[2];
 			double y = (pos.y   - pos.view[1])/pos.view[3];

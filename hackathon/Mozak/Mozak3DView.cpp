@@ -140,11 +140,11 @@ void Mozak3DView::makeTracedNeuronsEditable()
 }
 
 //find the nearest node in a neuron in XY project of the display window
-int Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=false*/)
+V3DLONG Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=false*/)
 {
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-    int best_ind=-1;
-    int best_dist=-1;
+    V3DLONG best_ind=-1;
+    V3DLONG best_dist=-1;
     int prev_type = curr_renderer->highlightedNodeType;
     QList<NeuronTree>::iterator it;
     for (it = (curr_renderer->listNeuronTree).begin(); it != (curr_renderer->listNeuronTree.end()); ++it){
@@ -199,7 +199,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
             }else if(currentMode == Renderer::smCurveEditExtendTwoNode){
                 //Highlight end node
+                V3DLONG highlightedEndNodePrev =  curr_renderer->highlightedEndNode;
                 curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
+
+                 curr_renderer->highlightedEndNodeChanged = (highlightedEndNodePrev == curr_renderer->highlightedEndNode);
             }
 
             curr_renderer->drawNeuronTreeList();
