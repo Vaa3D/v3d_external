@@ -40,12 +40,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_surf_objs.h"
 
 struct NeuronDistSimple
-{
-	double dist_allnodes; //the average distance of all interpolated points
+{       double dist_12_allnodes; // the average distance of all interpolated points: from neuron 1 to neuron  2
+        double dist_21_allnodes; // the average distance of all interpolated points: from neuron 1 to neuron  2
+        double dist_allnodes; //the average distance of all interpolated points: the average of dist_12_allnodes and dist_21_allnodes
 	double dist_apartnodes; //the average distance of interpolated points that have significant distance (>= 2 pixels)
 	double percent_apartnodes; //the percentage of interpolated points that have significant distance (>= 2 pixels)
     double dist_max; //the maximal distance between two neurons, which is defined the smaller one of the two one-directional max distances
-    NeuronDistSimple() {dist_allnodes = dist_apartnodes = percent_apartnodes = dist_max = -1; }
+    NeuronDistSimple() {dist_12_allnodes=dist_21_allnodes=dist_allnodes = dist_apartnodes = percent_apartnodes = dist_max = -1; }
 };
 
 //round all neuronal node coordinates, and compute the average min distance matches for all places the neurons go through

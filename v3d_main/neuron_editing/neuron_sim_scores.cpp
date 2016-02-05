@@ -51,23 +51,23 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 {
 	NeuronDistSimple ss;
 
-    //===
-    if(bmenu)
-    {
-        bool ok1;
+	//===
+	if(bmenu)
+	{
+		bool ok1;
 #ifndef USE_Qt5
-        V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
-                                                       "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
+		V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
+				"The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
 #else
-        V3DLONG d_thres_new = QInputDialog::getInt(0, "change the default distance threshold",
-                                                       "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
+		V3DLONG d_thres_new = QInputDialog::getInt(0, "change the default distance threshold",
+				"The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
 #endif
-        if (ok1)
-        {
-            d_thres = d_thres_new;
-        }
-    }
-    //===
+		if (ok1)
+		{
+			d_thres = d_thres_new;
+		}
+	}
+	//===
 
 
 	if (!p1 || !p2) return ss;
@@ -77,15 +77,24 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 	double sum12, sum21;
 	V3DLONG nseg1, nseg2;
 	double sum12big, sum21big;
-    double maxdist12 = -1, maxdist21 = -1; //set as some big numbers
+	double maxdist12 = -1, maxdist21 = -1; //set as some big numbers
 	V3DLONG nseg1big, nseg2big;
-    sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12);
-    sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21);
-
-	qDebug() << "sum12="<<sum12 << "npoints1="<< nseg1 << "sum21="<< sum21 << "npoint2="<< nseg2;
-	qDebug() << "sum12big="<<sum12big << "npoints1big="<< nseg1big << "sum21big="<< sum21big << "npoint2big="<< nseg2big;
-    qDebug() << "maxdist12="<<maxdist12 << "maxdist21="<< maxdist21;
-
+	sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12);
+	sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21);
+	if (sum12 < 0)
+	{
+		qDebug() <<"Error: one of the input neuron has less than 2 SWC nodes, cannot computing.";
+		ss.dist_max = -1;
+		ss.dist_apartnodes = -1;
+		ss.dist_allnodes = -1 ;
+		ss.percent_apartnodes = -1;
+		return ss;
+	}
+//	qDebug() << "sum12="<<sum12 << "npoints1="<< nseg1 << "sum21="<< sum21 << "npoint2="<< nseg2;
+//	qDebug() << "sum12big="<<sum12big << "npoints1big="<< nseg1big << "sum21big="<< sum21big << "npoint2big="<< nseg2big;
+//	qDebug() << "maxdist12="<<maxdist12 << "maxdist21="<< maxdist21;
+    ss.dist_12_allnodes = sum12/nseg1;
+    ss.dist_21_allnodes = sum21/nseg2;
 	ss.dist_allnodes = (sum12/nseg1 + sum21/nseg2)/2.0;
 	if (nseg1big>0)
 	{
@@ -103,11 +112,11 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 	}
 	ss.percent_apartnodes = (double(nseg1big)/nseg1 + double(nseg2big)/nseg2)/2.0;
 
-    ss.dist_max = (maxdist12<maxdist21) ? maxdist12 : maxdist21; //this max distance should refelect the meaningful measure.
-                                                                 // Becasue the two neurons (tracts) can have different starting and ending locations,
-                                                                 // the bigger one of  maxdist12 and maxdist21 could simply reflect the big difference of
-                                                                 // of the starting locations of the two tracts. Thus I use the smaller one, which
-                                                                // should correspond better to the max distance at the truck part of two tracts. PHC 20140318.
+	ss.dist_max = (maxdist12<maxdist21) ? maxdist12 : maxdist21; //this max distance should refelect the meaningful measure.
+	// Becasue the two neurons (tracts) can have different starting and ending locations,
+	// the bigger one of  maxdist12 and maxdist21 could simply reflect the big difference of
+	// of the starting locations of the two tracts. Thus I use the smaller one, which
+	// should correspond better to the max distance at the truck part of two tracts. PHC 20140318.
 	return ss;
 }
 
@@ -141,7 +150,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 		XYZ ptdiff;
 		if (N<=1)
 		{
-            //qDebug() << "detect one very short segment, len=" << len;
+			//qDebug() << "detect one very short segment, len=" << len;
 			ptdiff = XYZ(0,0,0);
 		}
 		else
@@ -149,7 +158,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 			double N1=1.0/(N-1);
 			ptdiff = XYZ(N1,N1,N1) * XYZ(tp2->x-tp1->x, tp2->y-tp1->y, tp2->z-tp1->z);
 		}
-        //qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
+		//qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
 		for (j=0;j<N;j++)
 		{
 			XYZ curpt(tp1->x + ptdiff.x*j, tp1->y + ptdiff.y*j, tp1->z + ptdiff.z*j);
@@ -157,24 +166,24 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 			sum1 += cur_d;
 			nseg1++;
 
-            if (maxdist<0) //use <0 as a condition to check if maxdist has been set
-                maxdist = cur_d;
-            else
-            {
-                if (maxdist<cur_d)
-                    maxdist = cur_d;
-            }
+			if (maxdist<0) //use <0 as a condition to check if maxdist has been set
+				maxdist = cur_d;
+			else
+			{
+				if (maxdist<cur_d)
+					maxdist = cur_d;
+			}
 
-            if (cur_d>=d_thres)
+			if (cur_d>=d_thres)
 			{
 				sum1big += cur_d;
 				nseg1big++;
-                //qDebug() << "(" << cur_d << ", " << nseg1big << ")";
+				//qDebug() << "(" << cur_d << ", " << nseg1big << ")";
 			}
 
 		}
 	}
-    //qDebug() << "end directional neuronal distance computing";
+	//qDebug() << "end directional neuronal distance computing";
 
 	return sum1;
 }
@@ -329,31 +338,31 @@ NeuronMorphoInfo neuron_morpho_features(const NeuronTree *p) //collect the morph
 			if (bbox_zmin>tp1->z) bbox_zmin = tp1->z; if (bbox_zmax<tp1->z) bbox_zmax = tp1->z;
 		}
 
-//		//now produce a series of points for the line seg
-//		int N = int(1+len+0.5);
-//		XYZ ptdiff;
-//		if (N<=1)
-//		{
-//			qDebug() << "detect one very short segment, len=" << len;
-//			ptdiff = XYZ(0,0,0);
-//		}
-//		else
-//		{
-//			double N1=1.0/(N-1);
-//			ptdiff = XYZ(N1,N1,N1) * XYZ(tp2->x-tp1->x, tp2->y-tp1->y, tp2->z-tp1->z);
-//		}
-//		qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
-//		for (j=0;j<N;j++)
-//		{
-//			XYZ curpt(tp1->x + ptdiff.x*j, tp1->y + ptdiff.y*j, tp1->z + ptdiff.z*j);
-//			double cur_d = dist_pt_to_swc(curpt, p2);
-//			sum1 += cur_d;
-//			nseg1++;
-//		}
+		//		//now produce a series of points for the line seg
+		//		int N = int(1+len+0.5);
+		//		XYZ ptdiff;
+		//		if (N<=1)
+		//		{
+		//			qDebug() << "detect one very short segment, len=" << len;
+		//			ptdiff = XYZ(0,0,0);
+		//		}
+		//		else
+		//		{
+		//			double N1=1.0/(N-1);
+		//			ptdiff = XYZ(N1,N1,N1) * XYZ(tp2->x-tp1->x, tp2->y-tp1->y, tp2->z-tp1->z);
+		//		}
+		//		qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
+		//		for (j=0;j<N;j++)
+		//		{
+		//			XYZ curpt(tp1->x + ptdiff.x*j, tp1->y + ptdiff.y*j, tp1->z + ptdiff.z*j);
+		//			double cur_d = dist_pt_to_swc(curpt, p2);
+		//			sum1 += cur_d;
+		//			nseg1++;
+		//		}
 	}
 
-//	for (i=0, n_branch=0;i<n_node;i++) //find the n_branches
-//		if (nchildren[i]>1) n_branch++;
+	//	for (i=0, n_branch=0;i<n_node;i++) //find the n_branches
+	//		if (nchildren[i]>1) n_branch++;
 
 	if (nchildren) {delete nchildren; nchildren=0;}
 
@@ -367,30 +376,30 @@ NeuronMorphoInfo neuron_morpho_features(const NeuronTree *p) //collect the morph
 	//neuron_branch_tip_count(n_branch, n_tip, seg_vec);
 
 	// 091212 RZC: count changed using link_map
-    V_NeuronSWC v_neuron = join_V_NeuronSWC_vec(seg_vec);
-    //V_NeuronSWC v_neuron = get_v_neuron_swc(p);
-    neuron_branch_tip_count(n_branch, n_tip, v_neuron);
+	V_NeuronSWC v_neuron = join_V_NeuronSWC_vec(seg_vec);
+	//V_NeuronSWC v_neuron = get_v_neuron_swc(p);
+	neuron_branch_tip_count(n_branch, n_tip, v_neuron);
 
-    //141006 CHB: above may cause error when there is overlapping point in the file, corrrected:
-    vector<int> num_child (p->listNeuron.size(),0);
-    for(int i=0; i<p->listNeuron.size(); i++){
-        V3DLONG pn=p->listNeuron.at(i).pn, pid=-1;
-        if(p->hashNeuron.contains(pn))
-            pid=p->hashNeuron[pn];
-        else
-            continue;
-        num_child[pid]++;
-    }
-    n_branch=0;
-    n_tip=0;
-    for(int i=0; i<num_child.size(); i++){
-        if(p->listNeuron.at(i).pn<0) //skip root
-            continue;
-        if(num_child[i]==0) //tips
-            n_tip++;
-        if(num_child[i]>1) //branch points
-            n_branch++;
-    }
+	//141006 CHB: above may cause error when there is overlapping point in the file, corrrected:
+	vector<int> num_child (p->listNeuron.size(),0);
+	for(int i=0; i<p->listNeuron.size(); i++){
+		V3DLONG pn=p->listNeuron.at(i).pn, pid=-1;
+		if(p->hashNeuron.contains(pn))
+			pid=p->hashNeuron[pn];
+		else
+			continue;
+		num_child[pid]++;
+	}
+	n_branch=0;
+	n_tip=0;
+	for(int i=0; i<num_child.size(); i++){
+		if(p->listNeuron.at(i).pn<0) //skip root
+			continue;
+		if(num_child[i]==0) //tips
+			n_tip++;
+		if(num_child[i]>1) //branch points
+			n_branch++;
+	}
 
 	return m;
 }
@@ -402,7 +411,7 @@ QString get_neuron_morpho_features_str(const NeuronTree *p)
 	tmpstr += "total length = "; ts2.setNum(tmp_info.total_length); tmpstr += ts2 + "<br>";
 	tmpstr += "total nodes = "; ts2.setNum(tmp_info.n_node); tmpstr += ts2 + "<br>";
 	tmpstr += "total segments = "; ts2.setNum(tmp_info.n_segment); tmpstr += ts2 + "<br>";
-    tmpstr += "total branch points = "; ts2.setNum(tmp_info.n_branch); tmpstr += ts2 + "<br>";
+	tmpstr += "total branch points = "; ts2.setNum(tmp_info.n_branch); tmpstr += ts2 + "<br>";
 	tmpstr += "total tips = "; ts2.setNum(tmp_info.n_tip); tmpstr += ts2 + "<br>";
 	return tmpstr;
 }
@@ -483,21 +492,21 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 	n_branch = 0;
 	n_tip = 0;
 
-    V3DLONG n_path=0, n_single=0; //for test
+	V3DLONG n_path=0, n_single=0; //for test
 
 	Link_Map_Iter it;
 	for (it=link_map.begin(); it!=link_map.end(); it++)
 	{
-//		const V_NeuronSWC_unit & cur_node = in_swc.row.at(i);
-//		Node_Link & nodelink = link_map[V3DLONG(cur_node.n)];
+		//		const V_NeuronSWC_unit & cur_node = in_swc.row.at(i);
+		//		Node_Link & nodelink = link_map[V3DLONG(cur_node.n)];
 		Node_Link & nodelink = (*it).second;
 
-        if(nodelink.nlink == 0) n_single++;
+		if(nodelink.nlink == 0) n_single++;
 
 		if (nodelink.nlink == 1)
 			n_tip ++;
 
-        if (nodelink.nlink == 2) n_path++;// path point
+		if (nodelink.nlink == 2) n_path++;// path point
 
 		if (nodelink.nlink >= 3)
 		{
@@ -506,5 +515,5 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 		}
 	}
 
-    qDebug("cojoc: all:%d/link:%d/0:%d/1:%d/2:%d/3+:%d",in_swc.row.size(),link_map.size(),n_single,n_tip,n_path,n_branch);
+	qDebug("cojoc: all:%d/link:%d/0:%d/1:%d/2:%d/3+:%d",in_swc.row.size(),link_map.size(),n_single,n_tip,n_path,n_branch);
 }
