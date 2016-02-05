@@ -319,6 +319,7 @@ public:
 	void solveCurveFromMarkers();
 
     // beginning ZMS 2016125
+    QHash<V3DLONG, V3DLONG> segmentLengthDict;
     QHash<V3DLONG, V3DLONG> segmentParentDict;
     QHash<V3DLONG, V3DLONG> segmentLevelDict;
     bool colorByAncestry;
@@ -550,6 +551,7 @@ public:
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
      bool b_renderTextureLast;
 	double currentTraceType;
+	bool useCurrentTraceTypeForRetyping;
 
 private:
 	void init_members()
@@ -561,6 +563,7 @@ private:
 		
 		highlightedNode = -1; //Added by ZMS 20151203 highlight initial node we are going to extend.
 		highlightedEndNode = -1; //Added by ZMS 20151203 highlight final node we are going to extend.
+        highlightedEndNodeChanged = false;
 
 		_idep=0;
 		isSimulatedData=false;
@@ -602,6 +605,7 @@ private:
 
           b_editDroppedNeuron = false; //20150527, PHC
 		currentTraceType=3;
+		useCurrentTraceTypeForRetyping = false;
      }
 
 
@@ -664,7 +668,8 @@ public:
 	virtual void drawNeuronTreeList();
     int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
     int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
-    int highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
+    V3DLONG highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
+    bool highlightedEndNodeChanged;
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
 	void constructLabelfieldSurf(int mesh_method, int mesh_density);

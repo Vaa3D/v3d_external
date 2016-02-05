@@ -67,7 +67,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		virtual void onNeuronEdit();
 		void updateRendererParams();
 		void makeTracedNeuronsEditable();
-        int findNearestNeuronNode(int cx, int cy, bool updateStartType=false);
+        V3DLONG findNearestNeuronNode(int cx, int cy, bool updateStartType=false);
 		void loadNewResolutionData(	int _resIndex,
 									Image4DSimple *_img,
 									int _volV0, int _volV1,
@@ -89,6 +89,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* connectButton;
 		QToolButton* extendButton;
 		QToolButton* polyLineButton;
+		QToolButton* retypeSegmentsButton;
 		QToolButton* splitSegmentButton;
 		QToolButton* deleteSegmentsButton;
 		QLabel* currTypeLabel;
@@ -227,6 +228,9 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         }
 
 		virtual void show();
+        virtual void storeAnnotations() throw (itm::RuntimeException);
+        virtual void loadAnnotations() throw (itm::RuntimeException);
+        virtual void clearAnnotations() throw (itm::RuntimeException);
 		virtual bool eventFilter(QObject *object, QEvent *event);
 		
 		friend class MozakUI;
@@ -267,6 +271,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void connectButtonToggled(bool checked);
 		void extendButtonToggled(bool checked);
 		void polyLineButtonToggled(bool checked);
+		void retypeSegmentsButtonToggled(bool checked);
 		void splitSegmentButtonToggled(bool checked);
 		void deleteSegmentsButtonToggled(bool checked);
 		void updateZoomLabel(int zr);

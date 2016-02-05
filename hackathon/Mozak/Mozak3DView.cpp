@@ -53,22 +53,15 @@ void Mozak3DView::appendHistory()
     // Ensure history size <= MAX_history
 	while (undoRedoHistory.size() >= MAX_history) undoRedoHistory.pop_front();
     
-    
-    itm::CVolume* cVolume = itm::CVolume::instance();
-    IconImageManager::VirtualVolume *entireVolume = itm::CImport::instance()->getVolume(0);
-    int maxX = entireVolume->getDIM_H();
-    int maxY = entireVolume->getDIM_V();
-    int maxZ = entireVolume->getDIM_D();
-
-    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);// maxX);
-    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);//maxY);
-    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);//maxZ);
+    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);
+    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);
+    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);
 
     NeuronTree nt;
     itm::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
     undoRedoHistory.push_back(nt);
 	cur_history = undoRedoHistory.size() - 1;
-    updateUndoLabel();
+    //updateUndoLabel();
 }
 
 void Mozak3DView::performUndo()
@@ -135,15 +128,16 @@ void Mozak3DView::makeTracedNeuronsEditable()
 		curr_renderer->listNeuronTree[i].editable = true;
     }
 	curr_renderer->nodeSize = 5;
+    curr_renderer->rootSize = 9;
 	curr_renderer->paint();
 }
 
 //find the nearest node in a neuron in XY project of the display window
-int Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=false*/)
+V3DLONG Mozak3DView::findNearestNeuronNode(int cx, int cy, bool updateStartType/*=false*/)
 {
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-    int best_ind=-1;
-    int best_dist=-1;
+    V3DLONG best_ind=-1;
+    V3DLONG best_dist=-1;
     int prev_type = curr_renderer->highlightedNodeType;
     QList<NeuronTree>::iterator it;
     for (it = (curr_renderer->listNeuronTree).begin(); it != (curr_renderer->listNeuronTree.end()); ++it){
@@ -198,7 +192,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
             }else if(currentMode == Renderer::smCurveEditExtendTwoNode){
                 //Highlight end node
+                V3DLONG highlightedEndNodePrev =  curr_renderer->highlightedEndNode;
                 curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
+
+                 curr_renderer->highlightedEndNodeChanged = (highlightedEndNodePrev == curr_renderer->highlightedEndNode);
             }
 
             curr_renderer->drawNeuronTreeList();
@@ -298,6 +295,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		// Right mouse double click reduces resolution
 		if (mouseEvt->button() == Qt::RightButton)
 		{
+            // Disable resolution change during polyline to ignore unintentional double right clicks
+			if (currentMode == Renderer::smCurveCreate_pointclick) return false;
+
 			// Determine whether we need to go to a previous (lower) resolution when zooming out
 			while (lowerResViews.length() > 0)
 			{
@@ -348,7 +348,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			return teramanager::CViewer::eventFilter(object, event);
 		}
 	}
-	else if (event->type() == QEvent::KeyPress) // intercept keypress events
+	else if (object == view3DWidget && event->type() == QEvent::KeyPress) // intercept keypress events
 	{
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
@@ -401,6 +401,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					splitSegmentButton->setChecked(true);
 				changeMode(Renderer::smBreakTwoNeurons, false, true);
                 break;
+			case Qt::Key_R:
+				if (!retypeSegmentsButton->isChecked())
+					retypeSegmentsButton->setChecked(true);
+				changeMode(Renderer::smRetypeMultiNeurons, false, true);
+				break;
 			case Qt::Key_P:
 				if (!polyLineButton->isChecked())
 					polyLineButton->setChecked(true);
@@ -424,8 +429,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 }
 				break;
             case Qt::Key_H:
-                //Sets segment rendermode to "Transparent" (0.05 alpha).
-                view3DWidget->renderer->polygonMode = 3;
+                //Sets segment rendermode to "Transparent" (0.1 alpha).
+                if(curr_renderer->polygonMode == 3){
+                    curr_renderer->polygonMode = 0;
+                }else{
+                    curr_renderer->polygonMode = 3;
+                }
                 break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
@@ -462,13 +471,13 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         int keyReleased = key_evt->key();
         switch (keyReleased)
         {
-            case Qt::Key_H:
-                view3DWidget->renderer->polygonMode = 0;
-				break;
 			case Qt::Key_Z:
 				view3DWidget->setThickness(1.0);
 				break;
-			default:
+            case Qt::Key_H:
+                return true;
+                break;
+            default:
 				break;
         }
 
@@ -623,6 +632,12 @@ void Mozak3DView::show()
     polyLineButton->setCheckable(true);
     connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
 
+	retypeSegmentsButton = new QToolButton();
+	retypeSegmentsButton->setIcon(QIcon(":/mozak/icons/retype.png"));
+    retypeSegmentsButton->setToolTip("Retype neurons to current type by right click stroke");
+    retypeSegmentsButton->setCheckable(true);
+    connect(retypeSegmentsButton, SIGNAL(toggled(bool)), this, SLOT(retypeSegmentsButtonToggled(bool)));
+	
 	splitSegmentButton = new QToolButton();
 	splitSegmentButton->setIcon(QIcon(":/mozak/icons/split.png"));
     splitSegmentButton->setToolTip("Split segment into two using right click stroke");
@@ -644,6 +659,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, retypeSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, splitSegmentButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -689,10 +706,27 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
-    
     appendHistory();
     makeTracedNeuronsEditable();
 }
+
+void Mozak3DView::storeAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::storeAnnotations();
+}
+
+void Mozak3DView::loadAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::loadAnnotations();
+    appendHistory();
+}
+
+
+void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
+{
+    teramanager::CViewer::clearAnnotations();
+}
+
 
 const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
 
@@ -748,8 +782,11 @@ void Mozak3DView::updateUndoLabel()
 {
 	if (currUndoLabel)
 		currUndoLabel->setText(itm::strprintf("Hist %d/%d", cur_history+1, undoRedoHistory.size()).c_str());
-    buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
-    buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
+    if (buttonUndo)
+    {
+        buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
+        buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
+    }
 }
 
 void Mozak3DView::updateTranslateXYArrows()
@@ -788,13 +825,15 @@ void Mozak3DView::updateRendererParams()
 		curr_renderer->tryTexStream != -1 || 
 		!curr_renderer->tryTexNPT ||
 		curr_renderer->bShowAxes ||
-        !curr_renderer->bShowXYTranslateArrows)
+        !curr_renderer->bShowXYTranslateArrows ||
+        !curr_renderer->useCurrentTraceTypeForRetyping)
 	{
 		curr_renderer->tryTexCompress = false;
 		curr_renderer->tryTexStream = -1;
 		curr_renderer->tryTexNPT = true;
 		curr_renderer->bShowAxes = false;
         curr_renderer->bShowXYTranslateArrows = true;
+        curr_renderer->useCurrentTraceTypeForRetyping = true;
 		view3DWidget->updateImageData();
 	}
 }
@@ -870,6 +909,11 @@ void Mozak3DView::polyLineButtonToggled(bool checked)
 	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
 }
 
+void Mozak3DView::retypeSegmentsButtonToggled(bool checked)
+{
+	changeMode(Renderer::smRetypeMultiNeurons, true, checked);
+}
+
 void Mozak3DView::splitSegmentButtonToggled(bool checked)
 {
 	changeMode(Renderer::smBreakTwoNeurons, false, checked);
@@ -902,6 +946,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);
+        if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
+            retypeSegmentsButton->setChecked(false);
 		if (mode == Renderer::smCurveCreate_pointclick)
 		{
 			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll

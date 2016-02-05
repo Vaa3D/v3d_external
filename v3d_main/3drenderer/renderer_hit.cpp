@@ -4582,10 +4582,12 @@ public:
 
 class DoublyLinkedNeuronsList{
 public:
+    int length;
     DoublyLinkedNeuronNode* head;
     DoublyLinkedNeuronNode* tail;
-    DoublyLinkedNeuronsList(): head(NULL), tail(NULL){}
+    DoublyLinkedNeuronsList(): head(NULL), tail(NULL), length(0){}
     void append(V3DLONG segId, XYZ pos){
+        length++;
         DoublyLinkedNeuronNode* toAdd = new DoublyLinkedNeuronNode(segId, pos);
         if(head == NULL){
             head = toAdd;
@@ -4677,6 +4679,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
     cout << "SetColorAncestryInfo" << endl;
     segmentParentDict.clear();
     segmentLevelDict.clear();
+    segmentLengthDict.clear();
 
     QList<FringeNode> f; //A list of nodes to traverse next, in a depth-first search fashion
     QList<NeuronSWC> somas; //List of soma nodes
@@ -4708,13 +4711,14 @@ bool Renderer_gl1::setColorAncestryInfo(){
                 dict_dlnh.insert(node.seg_id, dln);
                 dln->append(node.seg_id, XYZ(node));
                 pch.Hash(dln->tail);
+                segmentLengthDict.insert(node.seg_id, 1);
             }else{
                 //cout << "added to old segment list " << endl;
                 j.value()->append(node.seg_id, XYZ(node));
                 pch.Hash(j.value()->tail);
+                segmentLengthDict.insert(node.seg_id, j.value()->length);
             }
 
-            //
             segmentParentDict.insert(node.seg_id, -1);
             segmentLevelDict.insert(node.seg_id, -1);
         }

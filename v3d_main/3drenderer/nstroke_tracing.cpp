@@ -1840,6 +1840,16 @@ if (0)
                             {
                                 if(i == highlightedEndNode){
                                     cur_node = p_listneuron.at(i);
+                                    // If connecting to an undefined node, give that segment this type if defined
+                                    if (cur_node.type == 0)
+                                    {
+                                        int type_to_check = (highlightedNodeType >= 0) ? highlightedNodeType : currentTraceType;
+                                        if (type_to_check > 0) // type is defined, retype the undefined segment
+                                        {
+                                            change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, cur_node.seg_id, type_to_check);
+                                            // TODO: recurse, any addional segments extending from this seg_id that have unknown type should be typed too
+                                        }
+                                    }
                                     XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
                                     loc_vec.at(N-1) = cur_node_xyz;
                                     b_start_merged = true;
@@ -3153,27 +3163,34 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
+    if (useCurrentTraceTypeForRetyping)
+    {
+        node_type = currentTraceType;
+    }
+    else
+    {
 #ifdef USE_Qt5
-    node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-                              QObject::tr("SWC type: "
-                                        "\n 0 -- undefined (white)"
-                                        "\n 1 -- soma (black)"
-                                        "\n 2 -- axon (red)"
-                                        "\n 3 -- dendrite (blue)"
-                                        "\n 4 -- apical dendrite (purple)"
-                                        "\n else -- custom \n"),
-                                      node_type, 0, 100, 1, &ok);
+        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+                                  QObject::tr("SWC type: "
+                                            "\n 0 -- undefined (white)"
+                                            "\n 1 -- soma (black)"
+                                            "\n 2 -- axon (red)"
+                                            "\n 3 -- dendrite (blue)"
+                                            "\n 4 -- apical dendrite (purple)"
+                                            "\n else -- custom \n"),
+                                          node_type, 0, 100, 1, &ok);
 #else
-    node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
-                              QObject::tr("SWC type: "
-                                        "\n 0 -- undefined (white)"
-                                        "\n 1 -- soma (black)"
-                                        "\n 2 -- axon (red)"
-                                        "\n 3 -- dendrite (blue)"
-                                        "\n 4 -- apical dendrite (purple)"
-                                        "\n else -- custom \n"),
-                                      node_type, 0, 100, 1, &ok);
+        node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+                                  QObject::tr("SWC type: "
+                                            "\n 0 -- undefined (white)"
+                                            "\n 1 -- soma (black)"
+                                            "\n 2 -- axon (red)"
+                                            "\n 3 -- dendrite (blue)"
+                                            "\n 4 -- apical dendrite (purple)"
+                                            "\n else -- custom \n"),
+                                          node_type, 0, 100, 1, &ok);
 #endif
+    }
 
     if(!ok) return;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
