@@ -295,40 +295,51 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		// Right mouse double click reduces resolution
 		if (mouseEvt->button() == Qt::RightButton)
 		{
-			// Determine whether we need to go to a previous (lower) resolution when zooming out
-			CViewInfo* prevView = 0;
-			while (lowerResViews.length() > 0 && !prevView)
-				prevView = lowerResViews.takeLast();
             // Disable resolution change during polyline to ignore unintentional double right clicks
-			if (prevView && currentMode != Renderer::smCurveCreate_pointclick)
-			{
-				isReady = false;
-				loadingNextImg = true;
-				window3D->setCursor(Qt::BusyCursor);
-				view3DWidget->setCursor(Qt::BusyCursor);
-                itm::CVolume* cVolume = itm::CVolume::instance();
-                try
-                {
-			        cVolume->setVoi(0, prevView->resIndex, prevView->volV0, prevView->volV1, prevView->volH0, prevView->volH1,
-                        prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
-                }
-                catch(itm::RuntimeException &ex)
-                {
-                    qDebug() << "WARNING! Exception thrown trying to call cVolume->setVoi: " << ex.what();
-                }
+			if (currentMode == Renderer::smCurveCreate_pointclick) return false;
 
-				loadNewResolutionData(prevView->resIndex, prevView->img,
-					prevView->volV0, prevView->volV1, prevView->volH0, prevView->volH1, 
-					prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
-				prevView->img->setRawDataPointerToNull(); // this image is in use now, so remove pointer before deletion
-				delete prevView;
+			// Determine whether we need to go to a previous (lower) resolution when zooming out
+			while (lowerResViews.length() > 0)
+			{
+				CViewInfo *prevView = lowerResViews.takeLast();
+
+				if (prevView && (prevView->resIndex != volResIndex))
+				{
+					isReady = false;
+					loadingNextImg = true;
+					window3D->setCursor(Qt::BusyCursor);
+					view3DWidget->setCursor(Qt::BusyCursor);
+					itm::CVolume* cVolume = itm::CVolume::instance();
+					try
+					{
+						cVolume->setVoi(0, prevView->resIndex, prevView->volV0, prevView->volV1, prevView->volH0, prevView->volH1,
+							prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
+					}
+					catch(itm::RuntimeException &ex)
+					{
+						qDebug() << "WARNING! Exception thrown trying to call cVolume->setVoi: " << ex.what();
+					}
+
+					loadNewResolutionData(prevView->resIndex, prevView->img,
+						prevView->volV0, prevView->volV1, prevView->volH0, prevView->volH1, 
+						prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
+					prevView->img->setRawDataPointerToNull(); // this image is in use now, so remove pointer before deletion
+					delete prevView;
 				
-				window3D->setCursor(Qt::ArrowCursor);
-				view3DWidget->setCursor(Qt::ArrowCursor);
-				loadingNextImg = false;
-				isReady = true;
-				return true;
+					window3D->setCursor(Qt::ArrowCursor);
+					view3DWidget->setCursor(Qt::ArrowCursor);
+					loadingNextImg = false;
+					isReady = true;
+					return true;
+				} 
+				else if (prevView)
+				{
+					// the last view was at the same resolution; skip over it when going to lower resolutions
+					prevView->img->setRawDataPointerToNull();
+					delete prevView;
+				}
 			}
+			
 			return false;
 		}
 		else
