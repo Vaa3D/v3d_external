@@ -17,3 +17,7 @@ v3d_main/jba/c++/libv3dnewmat.a
 v3d_main/v3d/vaa3d64.app/
 v3d_main/v3d/vaa3d
 
+#ignore cmake build directories
+build_linux-x86_64/
+build_macosx-x86_64/
+build_windows-x86_64/
