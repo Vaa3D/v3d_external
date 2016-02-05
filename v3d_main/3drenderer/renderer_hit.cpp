@@ -4798,10 +4798,7 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
         //Update this second list until we coincide with the first list
     } while (segmentParentDict[secondVisitSegId] != secondVisitSegId && it == segsInFirstVisitNode.end());
 
-    if(it != segsInFirstVisitNode.end()){
-        //Push the final segment. This ensures that the last segment in the loop- the soma or any other seg- will get highlighted
-        segsInRepeatVisitNode.push_back(secondVisitSegId);
-    }
+    segsInRepeatVisitNode.push_back(secondVisitSegId);
 
     segsInFirstVisitNode.erase(it, segsInFirstVisitNode.end());
     for(it = segsInFirstVisitNode.begin(); it != segsInFirstVisitNode.end(); it++){
@@ -4967,7 +4964,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
                                     //cout << "route 2" << endl;
                                 }
                                 //cout << "Added pair p: " << tvs.parent << " c: " << (*it)->seg_id;
-                                segmentParentDict.insert((*it)->seg_id, tvs.parent);
+                                segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
                                 segmentLevelDict.insert((*it)->seg_id, tvs.level);
                         }else{
                             //consider this point a branching point
@@ -5014,7 +5011,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
                                 f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
                                 //cout << "route 8" << endl;
                             }
-                            cout << "Added pair p: " << tvs.node->seg_id << " c: " << (*it)->seg_id << endl;
+                            //cout << "Added pair p: " << tvs.node->seg_id << " c: " << (*it)->seg_id << endl;
                             segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
                             segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
                         }else{
