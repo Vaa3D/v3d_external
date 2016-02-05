@@ -322,8 +322,11 @@ public:
     QHash<V3DLONG, V3DLONG> segmentLengthDict;
     QHash<V3DLONG, V3DLONG> segmentParentDict;
     QHash<V3DLONG, V3DLONG> segmentLevelDict;
+    QList<V3DLONG> loopSegs; // a list of segments involved in a loop
+
     bool colorByAncestry;
     bool setColorAncestryInfo();
+    void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
     void setColorByAncestry(NeuronSWC);
     // end ZMS
 
