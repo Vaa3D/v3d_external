@@ -71,6 +71,7 @@ public:
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
                          smMarkerRefineT, smMarkerRefineC,
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
+					smCurveCreate_pointclickAutoZ,
                       smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveEditRefine_fm, smCurveRubberDrag,
