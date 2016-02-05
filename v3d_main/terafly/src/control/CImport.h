@@ -29,6 +29,9 @@
 #ifndef CIMPORT_H
 #define CIMPORT_H
 
+#ifdef USE_Qt5
+#include <QtCore>
+#endif
 #include <QThread>
 #include <string>
 #include <vector>
