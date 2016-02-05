@@ -390,7 +390,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 updateTypeLabel();
 				break;
             case Qt::Key_A:
-                // TODO: smCurveCreate_pointclickAutoZ button
+                if (!polyLineAutoZButton->isChecked())
+					polyLineAutoZButton->setChecked(true);
                 // For this mode, we're only looking across z, so force view to top down
                 view3DWidget->doAbsoluteRot(0, 0, 0);
                 changeMode(Renderer::smCurveCreate_pointclickAutoZ, true, true);
@@ -665,6 +666,12 @@ void Mozak3DView::show()
     polyLineButton->setCheckable(true);
     connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
 
+	polyLineAutoZButton = new QToolButton();
+	polyLineAutoZButton->setIcon(QIcon(":/mozak/icons/polyline-autoz.png"));
+    polyLineAutoZButton->setToolTip("Series of right-clicks to define a 3D polyline - Auto Z select (Esc to finish)");
+    polyLineAutoZButton->setCheckable(true);
+    connect(polyLineAutoZButton, SIGNAL(toggled(bool)), this, SLOT(polyLineAutoZButtonToggled(bool)));
+
 	retypeSegmentsButton = new QToolButton();
 	retypeSegmentsButton->setIcon(QIcon(":/mozak/icons/retype.png"));
     retypeSegmentsButton->setToolTip("Retype neurons to current type by right click stroke");
@@ -692,6 +699,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineAutoZButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, retypeSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -942,6 +951,11 @@ void Mozak3DView::polyLineButtonToggled(bool checked)
 	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
 }
 
+void Mozak3DView::polyLineAutoZButtonToggled(bool checked)
+{
+	changeMode(Renderer::smCurveCreate_pointclickAutoZ, true, checked);
+}
+
 void Mozak3DView::retypeSegmentsButtonToggled(bool checked)
 {
 	changeMode(Renderer::smRetypeMultiNeurons, true, checked);
@@ -976,6 +990,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			connectButton->setChecked(false);
 		if (mode != Renderer::smCurveCreate_pointclick && polyLineButton->isChecked())
 			polyLineButton->setChecked(false);
+        if (mode != Renderer::smCurveCreate_pointclickAutoZ && polyLineAutoZButton->isChecked())
+			polyLineAutoZButton->setChecked(false);
 		if (mode != Renderer::smBreakTwoNeurons && splitSegmentButton->isChecked())
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
