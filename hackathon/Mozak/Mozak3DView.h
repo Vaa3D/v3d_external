@@ -89,6 +89,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* connectButton;
 		QToolButton* extendButton;
 		QToolButton* polyLineButton;
+		QToolButton* polyLineAutoZButton;
 		QToolButton* retypeSegmentsButton;
 		QToolButton* splitSegmentButton;
 		QToolButton* deleteSegmentsButton;
@@ -236,7 +237,8 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		friend class MozakUI;
 		
 		QScrollBar *contrastSlider;
-		
+        // Number of z planes shown at a time for auto z polylining
+		static const V3DLONG NUM_POLY_AUTO_Z_PLANES = 13;
 
 
 		/**********************************************************************************
@@ -271,6 +273,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void connectButtonToggled(bool checked);
 		void extendButtonToggled(bool checked);
 		void polyLineButtonToggled(bool checked);
+        void polyLineAutoZButtonToggled(bool checked);
 		void retypeSegmentsButtonToggled(bool checked);
 		void splitSegmentButtonToggled(bool checked);
 		void deleteSegmentsButtonToggled(bool checked);
