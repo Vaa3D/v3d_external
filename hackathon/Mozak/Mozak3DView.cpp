@@ -220,19 +220,28 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
 	{
 		QWheelEvent* wheelEvt = (QWheelEvent*)event;
-		if (currentMode == Renderer::smCurveCreate_pointclick)
+		if (currentMode == Renderer::smCurveCreate_pointclick || currentMode == Renderer::smCurveCreate_pointclickAutoZ)
 		{
-			// If polyline mode, use mouse wheel to change the current z-slice (and restrict to one)
-			int prevVal = window3D->zcminSlider->value();
-			if (wheelEvt->delta() > 0)
+			// If polyline mode(s), use mouse wheel to change the current z-slice (and restrict to one or NUM_POLY_AUTO_Z_PLANES)
+			int prevVal = (window3D->zcminSlider->value() + window3D->zcmaxSlider->value()) / 2;
+            int zoff = (currentMode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
+            if (wheelEvt->delta() > 0)
 			{
-				window3D->zcminSlider->setValue(prevVal + 1);
-				window3D->zcmaxSlider->setValue(prevVal + 1);
+                if (prevVal - zoff + 1 >= window3D->zcminSlider->minimum() && 
+                    prevVal + zoff + 1 <= window3D->zcmaxSlider->maximum())
+                {
+				    window3D->zcminSlider->setValue(prevVal - zoff + 1);
+				    window3D->zcmaxSlider->setValue(prevVal + zoff + 1);
+                }
 			}
 			else
 			{
-				window3D->zcminSlider->setValue(prevVal - 1);
-				window3D->zcmaxSlider->setValue(prevVal - 1);
+                if (prevVal - zoff - 1 >= window3D->zcminSlider->minimum() && 
+                    prevVal + zoff - 1 <= window3D->zcmaxSlider->maximum())
+                {
+				    window3D->zcminSlider->setValue(prevVal - zoff - 1);
+				    window3D->zcmaxSlider->setValue(prevVal + zoff - 1);
+                }
 			}
 		}
 		else
@@ -380,6 +389,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				curr_renderer->currentTraceType = 7; // custom
                 updateTypeLabel();
 				break;
+            case Qt::Key_A:
+                // TODO: smCurveCreate_pointclickAutoZ button
+                // For this mode, we're only looking across z, so force view to top down
+                view3DWidget->doAbsoluteRot(0, 0, 0);
+                changeMode(Renderer::smCurveCreate_pointclickAutoZ, true, true);
+                break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
 					deleteSegmentsButton->setChecked(true);
@@ -508,6 +523,35 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			{
 				// Regardless of function performed, when right mouse button is released save the annotations file
 				neuronTreeChanged = true;
+                QList <LocationSimple> listLoc = view3DWidget->getiDrawExternalParameter()->image4d->listLandmarks;
+                if (currentMode == Renderer::smCurveCreate_pointclickAutoZ && listLoc.length() > 0)
+                {
+                    // set Z based on latest placed point such that it is in the center
+                    int newZ = round(listLoc.at(listLoc.length() - 1).z);
+                    qDebug() << "newZ = " << newZ;
+                    int zoff = (NUM_POLY_AUTO_Z_PLANES - 1) / 2;
+                    if (newZ - zoff < window3D->zcminSlider->minimum() &&
+                        newZ + zoff > window3D->zcmaxSlider->maximum())
+                    {
+                        window3D->zcminSlider->setValue(window3D->zcminSlider->minimum());
+				        window3D->zcmaxSlider->setValue(window3D->zcmaxSlider->maximum());
+                    }
+                    else if (newZ - zoff < window3D->zcminSlider->minimum())
+                    {
+				        window3D->zcminSlider->setValue(window3D->zcminSlider->minimum());
+				        window3D->zcmaxSlider->setValue(window3D->zcminSlider->minimum() + NUM_POLY_AUTO_Z_PLANES - 1);
+                    }
+                    else if (newZ + zoff > window3D->zcmaxSlider->maximum())
+                    {
+				        window3D->zcminSlider->setValue(window3D->zcmaxSlider->maximum() - NUM_POLY_AUTO_Z_PLANES + 1);
+				        window3D->zcmaxSlider->setValue(window3D->zcmaxSlider->maximum());
+                    }
+                    else
+                    {
+				        window3D->zcminSlider->setValue(newZ - zoff);
+				        window3D->zcmaxSlider->setValue(newZ + zoff);
+                    }
+                }
 			}
             // Process X/Y ROI Translate
             if (mouseEvt->button() == Qt::LeftButton && curr_renderer->bShowXYTranslateArrows)
@@ -917,6 +961,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	Renderer::SelectMode prevMode = curr_renderer->selectMode;
+    int zoff = (mode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
 	if (turnOn)
 	{
         if (prevMode == mode) // no action needed, mode already on
@@ -935,21 +980,32 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);
-        if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
-            retypeSegmentsButton->setChecked(false);
-		if (mode == Renderer::smCurveCreate_pointclick)
+		if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
+			retypeSegmentsButton->setChecked(false);
+		switch (mode)
 		{
-			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
-            prevZCutMin = window3D->zcminSlider->value();
-            prevZCutMax = window3D->zcmaxSlider->value();
-
-            // Use previously-scrolled polyline z-cut if within bounds, otherwise use midpoint of current bounds
-            int valToUse = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
-            if (prevPolyZCut >= prevZCutMin && prevPolyZCut <= prevZCutMax)
-                valToUse = prevPolyZCut;
-            // TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
-			window3D->zcminSlider->setValue(valToUse);
-			window3D->zcmaxSlider->setValue(valToUse);
+			case Renderer::smCurveCreate_pointclick:
+            case Renderer::smCurveCreate_pointclickAutoZ:
+			{
+				curr_renderer->cntCur3DCurveMarkers=0; //reset
+				curr_renderer->oldCursor = view3DWidget->cursor();
+				view3DWidget->setCursor(QCursor(Qt::CrossCursor));
+				
+				// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
+				prevZCutMin = window3D->zcminSlider->value();
+				prevZCutMax = window3D->zcmaxSlider->value();
+				
+				// Use previously-scrolled polyline z-cut if within bounds, otherwise use midpoint of current bounds
+				int centZ = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
+                if (prevPolyZCut - zoff >= prevZCutMin && prevPolyZCut + zoff <= prevZCutMax)
+					centZ = prevPolyZCut;
+				// TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
+				window3D->zcminSlider->setValue(centZ - zoff);
+				window3D->zcmaxSlider->setValue(centZ + zoff);
+			}
+			break;
+			default:
+				break;
 		}
 	}
 	else
@@ -966,10 +1022,11 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		curr_renderer->b_addthiscurve = true;
 #endif
 	}
-	if (prevMode == Renderer::smCurveCreate_pointclick && curr_renderer->selectMode != Renderer::smCurveCreate_pointclick)
+	if ((prevMode == Renderer::smCurveCreate_pointclick || prevMode == Renderer::smCurveCreate_pointclickAutoZ) && 
+        curr_renderer->selectMode != prevMode)
 	{
 		// When exiting poly mode, restore all z cuts
-        prevPolyZCut = window3D->zcmaxSlider->value();
+        prevPolyZCut = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
         window3D->zcminSlider->setValue((prevZCutMin > -1) ? prevZCutMin : window3D->zcminSlider->minimum());
 		window3D->zcmaxSlider->setValue((prevZCutMax > -1) ? prevZCutMax : window3D->zcmaxSlider->maximum());
 	}

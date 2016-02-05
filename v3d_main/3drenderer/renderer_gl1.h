@@ -298,6 +298,7 @@ public:
 	int currentMarkerName;
     XYZ getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno=-1);
 	double solveMarkerCenter();
+    double solveMarkerCenterMaxIntensity();
 	void solveMarkerViews();
 	void refineMarkerTranslate();
 	void refineMarkerCenter();

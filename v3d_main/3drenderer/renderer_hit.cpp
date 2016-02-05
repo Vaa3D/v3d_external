@@ -2029,7 +2029,7 @@ void Renderer_gl1::endSelectMode()
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (selectMode == smCurveCreate_pointclick)
+	if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -2766,7 +2766,7 @@ int Renderer_gl1::hitPen(int x, int y)
 		_appendMarkerPos(x, y);
 		return 1;
 	}
-	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm) //091226
+	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm || selectMode == smCurveCreate_pointclickAutoZ) //091226
 	{
 		_appendMarkerPos(x,y);
 		int N = 1;
@@ -2774,7 +2774,14 @@ int Renderer_gl1::hitPen(int x, int y)
 		{
 			qDebug("\t click ( %i, %i ) for Markers to Curve", x,y);
 			b_addthismarker = true; // by ZJL 20120203 for prohibitting displaying a 3d local view window
-			solveMarkerCenter();
+			if (selectMode == smCurveCreate_pointclickAutoZ) // TDP 20160204
+			{
+				solveMarkerCenterMaxIntensity();
+			}
+			else
+			{
+				solveMarkerCenter();
+			}
 			cntCur3DCurveMarkers++;
 			listMarkerPos.clear();
 			//			if (selectMode != smCurveCreate_pointclick) // make 1-click continue selected mode
@@ -3748,6 +3755,76 @@ double Renderer_gl1::solveMarkerCenter()
         produceZoomViewOf3DRoi(loc_vec,
                                1  //one means from non-wheel event
                                );
+    }
+    return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
+}
+//unsigned char value = curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
+double Renderer_gl1::solveMarkerCenterMaxIntensity()
+{
+    int chno = 0;
+    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+	clipplane[3] = viewClip;
+    QTime t;
+    t.start();
+	if (listMarkerPos.size()<1)  return t.elapsed();
+	const MarkerPos & pos = listMarkerPos.at(0);
+	XYZ loc = getCenterOfMarkerPos(pos);
+	vector <XYZ> loc_vec;
+	if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
+		dataViewProcBox.clamp(loc); //100722 RZC
+	// Find max intensity along z (dataViewProcBox.z0 -> dataViewProcBox.z1)
+    
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = v3dr_getImage4d(_idep);
+    float max_val = 0.0f;
+    XYZ max_loc;
+	if (curImg && data4dp)
+	{
+        unsigned char* vp = 0;
+        switch (curImg->getDatatype())
+        {
+            case V3D_UINT8:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+                break;
+            case V3D_UINT16:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+                break;
+            case V3D_FLOAT32:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+                break;
+            default:
+                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                return 0;
+        }
+        for (V3DLONG z=dataViewProcBox.z0; z <= dataViewProcBox.z1; z++)
+        {
+            XYZ P = XYZ(loc.x, loc.y, z);
+            float value;
+            switch (curImg->getDatatype())
+            {
+                case V3D_UINT8:
+                    value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                    break;
+                case V3D_UINT16:
+                    value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                    break;
+                case V3D_FLOAT32:
+                    value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                    break;
+                default:
+                    v3d_msg("Unsupported data type found. You should never see this.", 0);
+                    return 0;
+            }
+            if (value > max_val)
+            {
+                max_val = value;
+                max_loc = P;
+            }
+        }
+        if (max_val > 0.0f)
+        {
+            addMarker(max_loc);
+        }
     }
     return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
 }
