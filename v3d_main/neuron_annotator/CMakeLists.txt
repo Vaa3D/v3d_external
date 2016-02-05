@@ -121,7 +121,7 @@ endif()
 # Permit loading 3D volumes from movie files
 
 if(USE_FFMPEG)
-    add_dependencies(NeuronAnnotatorLib FFMPEG-2.5.1)
+    add_dependencies(NeuronAnnotatorLib FFMPEG-2.8)
     target_link_libraries(NeuronAnnotatorLib
         ${SWSCALE_LIBRARY}
         ${SWRESAMPLE_LIBRARY}
@@ -136,8 +136,8 @@ if(USE_FFMPEG)
     )
 
     if(USE_HDF5)
-        SET(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.46.0" "1.44" "1.44.0")
-        find_package(Boost 1.44.0 )
+        SET(Boost_ADDITIONAL_VERSIONS "1.56.1" "1.56.0" "1.54" "1.54.0")
+        find_package(Boost 1.54.0 COMPONENTS system regex)
         if(Boost_FOUND)
             include_directories(${Boost_INCLUDE_DIR})
             link_directories(${Boost_LIBRARY_DIRS})
@@ -146,6 +146,7 @@ if(USE_FFMPEG)
             ${HDF5_CPP_LIBRARY}
             ${HDF5_LIBRARY}
 	    ${CMAKE_DL_LIBS}
+            ${Boost_LIBRARIES}
         )
     endif()
 

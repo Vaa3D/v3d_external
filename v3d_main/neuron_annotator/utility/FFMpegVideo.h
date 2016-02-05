@@ -112,7 +112,8 @@ class FFMpegEncoder
 public:
     typedef FFMpegVideo::Channel Channel;
 
-    FFMpegEncoder(const char * file_name, int width, int height, enum AVCodecID codec_id = AV_CODEC_ID_MPEG4);
+    FFMpegEncoder(const char * file_name, int width, int height,
+        enum AVCodecID codec_id = AV_CODEC_ID_MPEG4, std::string options = "" );
     virtual ~FFMpegEncoder();
     void setPixelIntensity(int x, int y, int c, uint8_t value);
     void write_frame();

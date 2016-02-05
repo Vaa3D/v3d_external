@@ -7,6 +7,8 @@ extern "C"
 #include <libswscale/swscale.h>
 }
 
+#include <boost/regex.hpp>
+
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QEventLoop>
@@ -68,20 +70,24 @@ int64_t seekFunction(void* opaque, int64_t offset, int whence)
         return -1; // "size of my handle in bytes"
     else if (stream->isSequential())
         return -1; // cannot seek a sequential stream
-    else if (whence == SEEK_CUR) { // relative to start of file
+        else if ( whence == SEEK_CUR ) // relative to start of file
+        {
         if (! stream->seek(stream->pos() + offset) )
             return -1;
     }
-    else if (whence == SEEK_END) { // relative to end of file
+        else if ( whence == SEEK_END ) // relative to end of file
+        {
         assert(offset < 0);
         if (! stream->seek(stream->size() + offset) )
             return -1;
     }
-    else if (whence == SEEK_SET) { // relative to start of file
+        else if ( whence == SEEK_SET ) // relative to start of file
+        {
         if (! stream->seek(offset) )
             return -1;
     }
-    else {
+        else
+        {
         assert(false);
     }
     return stream->pos();
@@ -158,31 +164,38 @@ FFMpegVideo::FFMpegVideo(QByteArray* buffer, PixelFormat pixelFormat)
 FFMpegVideo::~FFMpegVideo()
 {
     QMutexLocker lock(&FFMpegVideo::mutex);
-    if (NULL != Sctx) {
+    if ( NULL != Sctx )
+    {
         sws_freeContext(Sctx);
         Sctx = NULL;
     }
-    if (NULL != pRaw) {
+    if ( NULL != pRaw )
+    {
         av_free(pRaw);
         pRaw = NULL;
     }
-    if (NULL != pFrameRGB) {
+    if ( NULL != pFrameRGB )
+    {
         av_free(pFrameRGB);
         pFrameRGB = NULL;
     }
-    if (NULL != pCtx) {
+    if ( NULL != pCtx )
+    {
         avcodec_close(pCtx);
         pCtx = NULL;
     }
-    if (NULL != container) {
+    if ( NULL != container )
+    {
         avformat_close_input(&container);
         container = NULL;
     }
-    if (NULL != buffer) {
+    if ( NULL != buffer )
+    {
         av_free(buffer);
         buffer = NULL;
     }
-    if (NULL != blank) {
+    if ( NULL != blank )
+    {
         av_free(blank);
         blank = NULL;
     }
@@ -192,7 +205,8 @@ FFMpegVideo::~FFMpegVideo()
         avioContext = NULL;
     }
     */
-    if (reply != NULL) {
+    if ( reply != NULL )
+    {
         reply->deleteLater();
         reply = NULL;
     }
@@ -235,7 +249,8 @@ bool FFMpegVideo::open(QUrl url, enum PixelFormat formatParam)
     // qDebug() << "networkManager" << __FILE__ << __LINE__;
     reply = networkManager.get(request);
     loop.exec();
-    if (reply->error() != QNetworkReply::NoError) {
+    if ( reply->error() != QNetworkReply::NoError )
+    {
         // qDebug() << reply->error();
         reply->deleteLater();
         reply = NULL;
@@ -243,7 +258,8 @@ bool FFMpegVideo::open(QUrl url, enum PixelFormat formatParam)
     }
     QIODevice * stream = reply;
     // Mpeg needs seekable device, so create in-memory buffer if necessary
-    if (stream->isSequential()) {
+    if ( stream->isSequential() )
+    {
         byteArray = stream->readAll();
         fileBuffer.setBuffer(&byteArray);
         fileBuffer.open(QIODevice::ReadOnly);
@@ -315,14 +331,16 @@ bool FFMpegVideo::openUsingInitializedContainer(enum PixelFormat formatParam)
         throw std::runtime_error("");
 
     /* Create data buffer */
-    if (format == PIX_FMT_NONE) {
+    if ( format == PIX_FMT_NONE )
+    {
         numBytes = 0;
         buffer = NULL;
         blank = NULL;
         pFrameRGB = NULL;
         Sctx = NULL;
     }
-    else {
+    else
+    {
         numBytes = avpicture_get_size( format, pCtx->width, pCtx->height ); // RGB24 format
         if (! (buffer   = (uint8_t*)av_malloc(numBytes + FF_INPUT_BUFFER_PADDING_SIZE)) ) // RGB24 format
             throw std::runtime_error("");
@@ -357,12 +375,12 @@ bool FFMpegVideo::fetchFrame(int targetFrameIndex)
 {
     if ((targetFrameIndex < 0) || (targetFrameIndex > numFrames))
         return false;
-    if (targetFrameIndex == (previousFrameIndex + 1)) {
+    if ( targetFrameIndex == ( previousFrameIndex + 1 ) )
+    {
         if (! readNextFrame(targetFrameIndex))
             return false;
     }
-    else
-        if (seekToFrame(targetFrameIndex) < 0)
+    else if ( seekToFrame( targetFrameIndex ) < 0 )
             return false;
     previousFrameIndex = targetFrameIndex;
     return true;
@@ -374,7 +392,8 @@ int FFMpegVideo::seekToFrame(int targetFrameIndex)
     int64_t duration = container->streams[videoStream]->duration;
     int64_t ts = av_rescale(duration,targetFrameIndex,numFrames);
     int64_t tol = av_rescale(duration,1,2*numFrames);
-    if ( (targetFrameIndex < 0) || (targetFrameIndex >= numFrames) ) {
+    if ( ( targetFrameIndex < 0 ) || ( targetFrameIndex >= numFrames ) )
+    {
         return -1;
     }
     int result = avformat_seek_file( container, //format context
@@ -406,7 +425,8 @@ bool FFMpegVideo::readNextFrame(int targetFrameIndex)
 bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet, AVFrame* pYuv)
 {
     int finished = 0;
-    do {
+    do
+    {
         finished = 0;
         av_free_packet(&packet);
         int result;
@@ -435,17 +455,20 @@ bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet
                packet.flags,finished,
                (int)pYuv->pts,(int)pYuv->best_effort_timestamp); */
 #endif
-        if(!finished) {
+        if ( !finished )
+        {
             if (packet.pts == AV_NOPTS_VALUE)
                 throw std::runtime_error("");
             if (packet.size == 0) // packet.size==0 usually means EOF
                 break;
         }
-    } while ( (!finished) || (pYuv->best_effort_timestamp < targetFrameIndex));
+    }
+    while ( ( !finished ) || ( pYuv->best_effort_timestamp < targetFrameIndex ) );
 
     av_free_packet(&packet);
 
-    if (format != PIX_FMT_NONE) {
+    if ( format != PIX_FMT_NONE )
+    {
         sws_scale(Sctx,              // sws context
                   pYuv->data,        // src slice
                   pYuv->linesize,    // src stride
@@ -518,8 +541,10 @@ void FFMpegVideo::maybeInitFFMpegLib()
     FFMpegVideo::b_is_one_time_inited = true;
 }
 
-bool FFMpegVideo::avtry(int result, const std::string& msg) {
-    if ((result < 0) && (result != AVERROR_EOF)) {
+bool FFMpegVideo::avtry( int result, const std::string& msg )
+{
+    if ( ( result < 0 ) && ( result != AVERROR_EOF ) )
+    {
         char buf[1024];
         av_strerror(result, buf, sizeof(buf));
         std::string message = std::string("FFMpeg Error: ") + msg + buf;
@@ -538,7 +563,8 @@ bool FFMpegVideo::b_is_one_time_inited = false;
 ///////////////////////////
 
 
-FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum AVCodecID codec_id)
+FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
+                              enum AVCodecID codec_id, std::string options )
     : picture_yuv(NULL)
     , picture_rgb(NULL)
     , container(NULL)
@@ -562,6 +588,9 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
 
     AVOutputFormat* fmt = NULL;
     if ( file_name == NULL )
+        if ( codec_id == AV_CODEC_ID_FFV1 )
+            fmt = av_guess_format( "mov", NULL, NULL );
+        else
         fmt = av_guess_format("mp4", NULL, NULL);
     else
     {
@@ -622,13 +651,14 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
 	// pCtx->time_base = (AVRational){1, 10};
     pCtx->gop_size = 12; // emit one intra frame every twelve frames
     // pCtx->max_b_frames = 0;
-    pCtx->pix_fmt = AV_PIX_FMT_YUV420P;
     if (fmt->flags & AVFMT_GLOBALHEADER)
         pCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     AVDictionary* codec_options( 0 );
-    if (pCtx->codec_id == AV_CODEC_ID_H264)
+    switch ( pCtx->codec_id )
     {
+        case AV_CODEC_ID_H264:
+        {
         // http://stackoverflow.com/questions/3553003/encoding-h-264-with-libavcodec-x264
         pCtx->coder_type = 1;  // coder = 1
         pCtx->flags|=CODEC_FLAG_LOOP_FILTER;   // flags=+loop
@@ -655,16 +685,31 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
         // libx264-main.ffpreset preset
         // pCtx->flags2|=CODEC_FLAG2_8X8DCT;
         // pCtx->flags2^=CODEC_FLAG2_8X8DCT;    // flags2=-dct8x8
+            pCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+            break;
     }
-    else if ( pCtx->codec_id == AV_CODEC_ID_HEVC )
+        case AV_CODEC_ID_HEVC:
     {
         av_dict_set( &codec_options, "preset", "medium", 0 );
-        av_dict_set( &codec_options, "x265-params", "crf=15:psy-rd=1.0", 0 );
-//        av_dict_set( &codec_options, "psy-rd", "1.0", 0 );
+            av_dict_set( &codec_options, "x265-params", options.c_str(), 0 );
         pCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
         pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
-        if (fmt->flags & AVFMT_GLOBALHEADER)
-            pCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+            break;
+    }
+        case AV_CODEC_ID_FFV1:
+        {
+            boost::regex re2( "\\:" );
+            boost::sregex_token_iterator ii( options.begin(), options.end(), re2, -1 );
+            boost::sregex_token_iterator it_end;
+            while ( ii != it_end )
+            {
+                std::string param( *ii++ );
+                std::string value( *ii++ );
+                av_dict_set( &codec_options, param.c_str(), value.c_str(), 0 );
+            }
+            pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
+            break;
+        }
     }
 
     AVCodec * codec = avcodec_find_encoder(pCtx->codec_id);
@@ -679,9 +724,9 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
     }
 
     /* Get framebuffers */
-    if (! (picture_yuv = avcodec_alloc_frame()) ) // final frame format
+    if ( ! ( picture_yuv = av_frame_alloc() ) ) // final frame format
         throw std::runtime_error("");
-    if (! (picture_rgb = avcodec_alloc_frame()) ) // rgb version I can understand easily
+    if ( ! ( picture_rgb = av_frame_alloc() ) ) // rgb version I can understand easily
         throw std::runtime_error("");
     /* the image can be allocated by any means and av_image_alloc() is
          * just the most convenient way if av_malloc() is to be used */
@@ -692,6 +737,11 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
                    pCtx->width, pCtx->height, PIX_FMT_RGB24, 1) < 0 )
         throw std::runtime_error("Error allocating RGB frame buffer");
 
+    // Fill in frame parameters
+    picture_yuv->format = pCtx->pix_fmt;
+    picture_yuv->width = pCtx->width;
+    picture_yuv->height = pCtx->height;
+
     /* Init scale & convert */
     if (! (Sctx=sws_getContext(
             width,
@@ -701,7 +751,7 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
             pCtx->height,
             pCtx->pix_fmt,
             SWS_BICUBIC,NULL,NULL,NULL)) )
-        throw std::runtime_error("");
+        throw std::runtime_error( "Error in scaling" );
 
     /* open the output file */
     if (!(fmt->flags & AVFMT_NOFILE))
@@ -713,8 +763,7 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
             if ( avio_open_dyn_buf( &container->pb ) != 0 )
                  throw std::runtime_error("Error opening memory buffer for encoding");
         }
-        else
-            if (avio_open(&container->pb, file_name, AVIO_FLAG_WRITE) < 0)
+        else if ( avio_open( &container->pb, file_name, AVIO_FLAG_WRITE ) < 0 )
                  throw std::runtime_error("Error opening output video file");
     }
     avformat_write_header(container, NULL);

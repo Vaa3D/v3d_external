@@ -19,19 +19,17 @@ public:
     ImageLoader();
     ~ImageLoader();
 
-    static const int MODE_UNDEFINED;
-    static const int MODE_LOAD_TEST;
-    static const int MODE_CONVERT;
-    static const int MODE_CONVERT8;
-    static const int MODE_MIP;
-    static const int MODE_MAP_CHANNELS;
-    static const int MODE_CONVERT3;
+    enum Mode { MODE_UNDEFINED, MODE_LOAD_TEST, MODE_CONVERT, MODE_CONVERT8,
+                MODE_MIP, MODE_MAP_CHANNELS, MODE_CONVERT3, MODE_CODECS
+              };
 
-    static string getCommandLineDescription() {
+    static string getCommandLineDescription()
+    {
         return "image-loader";
     }
 
-    static string getUsage() {
+    static string getUsage()
+    {
         string usage;
         usage.append("  Image Loader Utility                                                                                  \n");
         usage.append("                                                                                                        \n");
@@ -41,6 +39,12 @@ public:
 	usage.append("   -convert3 <source file>    <target file>                                                             \n");
         usage.append("   -mip <stack input filepath>  <2D mip tif output filepath> [-flipy]                                   \n");
         usage.append("   -mapchannels <sourcestack> <targetstack> <csv map string, eg, \"0,1,2,0\" maps s0 to t1 and s2 to t0>\n");
+        usage.append( "   -codecs <source file> <target file> <channels:CODEC:[\"codec options\"] repeat for each channel(s)., eg, \n" );
+        usage.append( "           1,2:HEVC:\"crf=12:psy-rd=1.0\" 3:OPENJPEG \n" );
+        usage.append( "               unspecified channels will be encoded as HEVC. \n" );
+        usage.append( "               channel indexing is 1-based (i.e., first channel is 1). \n" );
+        usage.append( "           Current supported codecs are: \n" );
+        usage.append( "                HEVC \n" );
         return usage;
     }
 
@@ -58,7 +62,8 @@ public:
     int loadRaw2StackPBDFromStream(QIODevice& fileStream, V3DLONG fileSize, Image4DSimple * image, bool useThreading);
 
     bool saveImage(My4DImage *stackp, const char* filepath, bool saveTo8bit=false);
-    bool saveImage(My4DImage * stackp, const QString& filepath, bool saveTo8bit=false) {
+    bool saveImage( My4DImage* stackp, const QString& filepath, bool saveTo8bit = false )
+    {
         return saveImage(stackp, filepath.toStdString().c_str(), saveTo8bit);
     }
 
@@ -69,6 +74,7 @@ public:
     My4DImage* create2DMIPFromStack(My4DImage * image);
 
     bool mapChannels();
+    bool assignCodecs();
 
     virtual void run();
     // Set numeric index to help track which file is being loaded, for use in progress computation.
@@ -78,7 +84,8 @@ public:
     void convertType2Type1InPlace(My4DImage *image);
 
 public slots:
-    void cancel() {
+    void cancel()
+    {
         if (bIsCanceled) return;
         bIsCanceled = true;
         emit canceled();
@@ -92,13 +99,16 @@ signals:
     void canceled();
 
 protected:
-    virtual int exitWithError(QString errorMessage) {
+    virtual int exitWithError( QString errorMessage )
+    {
         return exitWithError(errorMessage.toStdString());
     }
-    virtual int exitWithError(std::string errorMessage) {
+    virtual int exitWithError( std::string errorMessage )
+    {
         return exitWithError(errorMessage.c_str());
     }
-    virtual int exitWithError(const char* errorMessage) {
+    virtual int exitWithError( const char* errorMessage )
+    {
         int berror = ImageLoaderBasic::exitWithError(errorMessage);
         emit progressAborted(progressIndex);
         return berror;
@@ -107,10 +117,11 @@ protected:
     bool saveImageByMode(My4DImage *stackp, const char* filepath, int saveMode);
 
 private:
-    int mode;
+    Mode mode;
     QString inputFilepath;
     QString targetFilepath;
     QString mapChannelString;
+    QString codecString;
     My4DImage * image;
     bool flipy;
     int progressIndex;
