@@ -52,7 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "renderer.h"
 #include "marchingcubes.h"
-
+#include <time.h>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -328,7 +328,7 @@ public:
     bool colorByAncestry;
     bool setColorAncestryInfo();
     void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
-    void setColorByAncestry(NeuronSWC);
+    void setColorByAncestry(NeuronSWC s, time_t seconds);
     // end ZMS
 
     // beginning of ZJL
