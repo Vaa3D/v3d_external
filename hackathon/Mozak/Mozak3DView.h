@@ -238,7 +238,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		
 		QScrollBar *contrastSlider;
         // Number of z planes shown at a time for auto z polylining
-		static const V3DLONG NUM_POLY_AUTO_Z_PLANES = 9;
+		static const V3DLONG NUM_POLY_AUTO_Z_PLANES = 13;
 
 
 		/**********************************************************************************

@@ -3796,29 +3796,39 @@ double Renderer_gl1::solveMarkerCenterMaxIntensity()
                 v3d_msg("Unsupported data type found. You should never see this.", 0);
                 return 0;
         }
-        for (V3DLONG z=dataViewProcBox.z0; z <= dataViewProcBox.z1; z++)
+        const V3DLONG RAD = 3;
+        float value;
+        for (V3DLONG zz=dataViewProcBox.z0; zz <= dataViewProcBox.z1; zz++)
         {
-            XYZ P = XYZ(loc.x, loc.y, z);
-            float value;
-            switch (curImg->getDatatype())
+            for (V3DLONG dy=-RAD; dy<=RAD; dy++)
             {
-                case V3D_UINT8:
-                    value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
-                    break;
-                case V3D_UINT16:
-                    value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
-                    break;
-                case V3D_FLOAT32:
-                    value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
-                    break;
-                default:
-                    v3d_msg("Unsupported data type found. You should never see this.", 0);
-                    return 0;
-            }
-            if (value > max_val)
-            {
-                max_val = value;
-                max_loc = P;
+                for (V3DLONG dx=-RAD; dx<=RAD; dx++)
+                {
+                    // Only process points within the desired radius
+                    if (dx*dx + dy*dy > RAD*RAD)
+                        continue;
+                    XYZ P = XYZ(loc.x + dx, loc.y + dy, zz);
+                    switch (curImg->getDatatype())
+                    {
+                        case V3D_UINT8:
+                            value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        case V3D_UINT16:
+                            value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        case V3D_FLOAT32:
+                            value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        default:
+                            v3d_msg("Unsupported data type found. You should never see this.", 0);
+                            return 0;
+                    }
+                    if (value > max_val)
+                    {
+                        max_val = value;
+                        max_loc = P;
+                    }
+                }
             }
         }
         if (max_val > 0.0f)
