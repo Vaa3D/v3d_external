@@ -31,7 +31,10 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 
     itm::CSettings::instance()->setTraslX(60); // (100% - this setting) = % of existing view to be translated in X
     itm::CSettings::instance()->setTraslY(60); // (100% - this setting) = % of existing view to be translated in Y
-	
+	paint_timer = new QTimer(this);
+    QObject::connect(paint_timer, SIGNAL(timeout()), this, SLOT(paintTimerCall()));
+    paint_timer->setInterval(500);
+    paint_timer->setSingleShot(false);
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
@@ -105,6 +108,17 @@ void Mozak3DView::performRedo()
         makeTracedNeuronsEditable();
 	}
     updateUndoLabel();
+}
+
+void Mozak3DView::paintTimerCall()
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    if (!curr_renderer) return;
+    if (curr_renderer->loopSegs.length() == 0) return;
+    // Draw blinking effect if loop detection has found loops in current reconstruction
+    curr_renderer->drawNeuronTreeList();
+    curr_renderer->drawObj();
+    ((QWidget *)(curr_renderer->widget))->repaint();
 }
 
 void Mozak3DView::onNeuronEdit()
@@ -761,6 +775,7 @@ void Mozak3DView::show()
 	updateRendererParams();
     appendHistory();
     makeTracedNeuronsEditable();
+    paint_timer->start();
 }
 
 void Mozak3DView::storeAnnotations() throw (itm::RuntimeException)
