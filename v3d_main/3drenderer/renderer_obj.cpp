@@ -1235,13 +1235,13 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
             case 15: glColor3ub(165, 42, 42); break;
             }break;
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
-        case 1: glColor3ub(103, 0, 0); break;
-        case 2: glColor3ub(184, 0, 0); break;
-        case 3: glColor3ub(255, 30, 0); break;
+        case 7: glColor3ub(103, 0, 0); break;
+        case 6: glColor3ub(184, 0, 0); break;
+        case 5: glColor3ub(255, 30, 0); break;
         case 4: glColor3ub(255, 102, 0); break;
-        case 5: glColor3ub(255, 153, 0); break;
-        case 6: glColor3ub(255, 204, 0); break;
-        case 7: glColor3ub(255, 255, 0); break;
+        case 3: glColor3ub(255, 153, 0); break;
+        case 2: glColor3ub(255, 204, 0); break;
+        case 1: glColor3ub(255, 255, 0); break;
         default: glColor3ub(255, 255, 0); break;
         }
     }else if(s.type == 3){ //dendrite
@@ -1267,13 +1267,13 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
             case 15: glColor3ub(95, 158, 160); break;
             }break;
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
-        case 1: glColor3ub(19, 0, 90); break;
-        case 2: glColor3ub(42, 0, 136); break;
-        case 3: glColor3ub(0, 64, 152); break;
+        case 7: glColor3ub(19, 0, 90); break;
+        case 6: glColor3ub(42, 0, 136); break;
+        case 5: glColor3ub(0, 64, 152); break;
         case 4: glColor3ub(0, 121, 172); break;
-        case 5: glColor3ub(0, 160, 175); break;
-        case 6: glColor3ub(0, 243, 180); break;
-        case 7: glColor3ub(0, 255, 255); break;
+        case 3: glColor3ub(0, 160, 175); break;
+        case 2: glColor3ub(0, 243, 180); break;
+        case 1: glColor3ub(0, 255, 255); break;
         default: glColor3ub(0, 255, 255); break;
         }
     }else{
