@@ -15,7 +15,9 @@
 
 #include "../../v3d/v3d_core.h"
 #include "../../basic_c_fun/v3d_basicdatatype.h"
+#ifdef USE_FFMPEG
 #include "loadV3dFFMpeg.h"
+#endif
 #include "ImageLoader.h"
 
 using namespace std;
@@ -185,6 +187,7 @@ int ImageLoader::processArgs( vector<char*>* argList )
             }
             i+=3;
         }
+#ifdef USE_FFMPEG
         else if ( arg == "-codecs" )
         {
             mode = MODE_CODECS;
@@ -199,8 +202,9 @@ int ImageLoader::processArgs( vector<char*>* argList )
             {
                 codecString += ( *argList )[ind];
                 codecString += " ";
-    }
+            }
         }
+#endif
 
         if ( inputFilepath.length() < 1 )
         {
@@ -273,6 +277,7 @@ bool ImageLoader::execute()
         }
         return true;
     }
+#ifdef USE_FFMPEG
     else if ( mode == MODE_CODECS )
     {
         if ( !assignCodecs() )
@@ -282,6 +287,7 @@ bool ImageLoader::execute()
         }
         return true;
     }
+#endif
     return false; // should not get here
 }
 
@@ -437,6 +443,7 @@ bool ImageLoader::mapChannels()
     return saveStatus;
 }
 
+#ifdef USE_FFMPEG
 bool ImageLoader::assignCodecs()
 {
     if ( inputFilepath.compare( targetFilepath ) == 0 )
@@ -482,7 +489,8 @@ bool ImageLoader::assignCodecs()
             boost::sregex_token_iterator dit( digits.begin(), digits.end(), comma_re, -1 );
             while ( dit != it_end )
             {
-                int index = std::stoi( *dit++ );
+                std::string str = *dit++;
+                int index = atoi( str.c_str() );
                 if ( index > 0 && index <= image->getCDim() + 1 )
                 {
                     AVCodecID id;
@@ -527,6 +535,7 @@ bool ImageLoader::assignCodecs()
     }
     return true;
 }
+#endif
 
 void ImageLoader::create2DMIPFromStack( My4DImage* image, QString mipFilepath )
 {

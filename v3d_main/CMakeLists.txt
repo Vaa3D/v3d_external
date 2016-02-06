@@ -342,7 +342,6 @@ execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
 message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
 message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
 
-if (FALSE)
 # message("QTVERSION = ${QTVERSION}")
 find_path(QT_DEMOS_INCLUDE_DIR
   arthurwidgets.h
@@ -395,7 +394,6 @@ if(NOT QT_DEMOS_INCLUDE_DIR)
   message(FATAL "You need to install the Qt demo files")
 else()
   include_directories(${QT_DEMOS_INCLUDE_DIR} ${QT_DEMO_PREFIX})
-endif()
 endif()
 
 # Define __NAWEBSERVICE__ symbol -D__NAWEBSERVICE__
