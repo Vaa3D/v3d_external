@@ -52,7 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "renderer.h"
 #include "marchingcubes.h"
-
+#include <time.h>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -298,6 +298,7 @@ public:
 	int currentMarkerName;
     XYZ getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno=-1);
 	double solveMarkerCenter();
+    double solveMarkerCenterMaxIntensity();
 	void solveMarkerViews();
 	void refineMarkerTranslate();
 	void refineMarkerCenter();
@@ -322,9 +323,12 @@ public:
     QHash<V3DLONG, V3DLONG> segmentLengthDict;
     QHash<V3DLONG, V3DLONG> segmentParentDict;
     QHash<V3DLONG, V3DLONG> segmentLevelDict;
+    QList<V3DLONG> loopSegs; // a list of segments involved in a loop
+
     bool colorByAncestry;
     bool setColorAncestryInfo();
-    void setColorByAncestry(NeuronSWC);
+    void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
+    void setColorByAncestry(NeuronSWC s, time_t seconds);
     // end ZMS
 
     // beginning of ZJL
@@ -564,6 +568,7 @@ private:
 		highlightedNode = -1; //Added by ZMS 20151203 highlight initial node we are going to extend.
 		highlightedEndNode = -1; //Added by ZMS 20151203 highlight final node we are going to extend.
 		selectedStartNode = -1;
+        highlightedEndNodeChanged = false;
 
 		_idep=0;
 		isSimulatedData=false;
@@ -669,7 +674,8 @@ public:
     int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
     int selectedStartNode; // TDP 20160203 for selecting start node for joining two nodes
     int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
-    int highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
+    V3DLONG highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
+    bool highlightedEndNodeChanged;
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
 	void constructLabelfieldSurf(int mesh_method, int mesh_density);

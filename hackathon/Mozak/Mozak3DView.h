@@ -67,7 +67,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		virtual void onNeuronEdit();
 		void updateRendererParams();
 		void makeTracedNeuronsEditable();
-        int findNearestNeuronNode(int cx, int cy, bool updateStartType=false);
+        V3DLONG findNearestNeuronNode(int cx, int cy, bool updateStartType=false);
 		void loadNewResolutionData(	int _resIndex,
 									Image4DSimple *_img,
 									int _volV0, int _volV1,
@@ -89,6 +89,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* connectButton;
 		QToolButton* extendButton;
 		QToolButton* polyLineButton;
+		QToolButton* polyLineAutoZButton;
 		QToolButton* retypeSegmentsButton;
 		QToolButton* splitSegmentButton;
 		QToolButton* deleteSegmentsButton;
@@ -234,9 +235,12 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		virtual bool eventFilter(QObject *object, QEvent *event);
 		
 		friend class MozakUI;
-		
+
+        QTimer* paint_timer;
+        
 		QScrollBar *contrastSlider;
-		
+        // Number of z planes shown at a time for auto z polylining
+		static const V3DLONG NUM_POLY_AUTO_Z_PLANES = 13;
 
 
 		/**********************************************************************************
@@ -271,11 +275,12 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void connectButtonToggled(bool checked);
 		void extendButtonToggled(bool checked);
 		void polyLineButtonToggled(bool checked);
+        void polyLineAutoZButtonToggled(bool checked);
 		void retypeSegmentsButtonToggled(bool checked);
 		void splitSegmentButtonToggled(bool checked);
 		void deleteSegmentsButtonToggled(bool checked);
 		void updateZoomLabel(int zr);
-
+        void paintTimerCall();
 		/*********************************************************************************
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/

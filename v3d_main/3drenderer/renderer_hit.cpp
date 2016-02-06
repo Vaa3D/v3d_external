@@ -2029,7 +2029,7 @@ void Renderer_gl1::endSelectMode()
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (selectMode == smCurveCreate_pointclick)
+	if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -2766,7 +2766,7 @@ int Renderer_gl1::hitPen(int x, int y)
 		_appendMarkerPos(x, y);
 		return 1;
 	}
-	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm) //091226
+	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm || selectMode == smCurveCreate_pointclickAutoZ) //091226
 	{
 		_appendMarkerPos(x,y);
 		int N = 1;
@@ -2774,7 +2774,14 @@ int Renderer_gl1::hitPen(int x, int y)
 		{
 			qDebug("\t click ( %i, %i ) for Markers to Curve", x,y);
 			b_addthismarker = true; // by ZJL 20120203 for prohibitting displaying a 3d local view window
-			solveMarkerCenter();
+			if (selectMode == smCurveCreate_pointclickAutoZ) // TDP 20160204
+			{
+				solveMarkerCenterMaxIntensity();
+			}
+			else
+			{
+				solveMarkerCenter();
+			}
 			cntCur3DCurveMarkers++;
 			listMarkerPos.clear();
 			//			if (selectMode != smCurveCreate_pointclick) // make 1-click continue selected mode
@@ -3751,6 +3758,86 @@ double Renderer_gl1::solveMarkerCenter()
     }
     return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
 }
+//unsigned char value = curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
+double Renderer_gl1::solveMarkerCenterMaxIntensity()
+{
+    int chno = 0;
+    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+	clipplane[3] = viewClip;
+    QTime t;
+    t.start();
+	if (listMarkerPos.size()<1)  return t.elapsed();
+	const MarkerPos & pos = listMarkerPos.at(0);
+	XYZ loc = getCenterOfMarkerPos(pos);
+	vector <XYZ> loc_vec;
+	if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
+		dataViewProcBox.clamp(loc); //100722 RZC
+	// Find max intensity along z (dataViewProcBox.z0 -> dataViewProcBox.z1)
+    
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = v3dr_getImage4d(_idep);
+    float max_val = 0.0f;
+    XYZ max_loc;
+	if (curImg && data4dp)
+	{
+        unsigned char* vp = 0;
+        switch (curImg->getDatatype())
+        {
+            case V3D_UINT8:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+                break;
+            case V3D_UINT16:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+                break;
+            case V3D_FLOAT32:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+                break;
+            default:
+                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                return 0;
+        }
+        const V3DLONG RAD = 3;
+        float value;
+        for (V3DLONG zz=dataViewProcBox.z0; zz <= dataViewProcBox.z1; zz++)
+        {
+            for (V3DLONG dy=-RAD; dy<=RAD; dy++)
+            {
+                for (V3DLONG dx=-RAD; dx<=RAD; dx++)
+                {
+                    // Only process points within the desired radius
+                    if (dx*dx + dy*dy > RAD*RAD)
+                        continue;
+                    XYZ P = XYZ(loc.x + dx, loc.y + dy, zz);
+                    switch (curImg->getDatatype())
+                    {
+                        case V3D_UINT8:
+                            value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        case V3D_UINT16:
+                            value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        case V3D_FLOAT32:
+                            value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        default:
+                            v3d_msg("Unsupported data type found. You should never see this.", 0);
+                            return 0;
+                    }
+                    if (value > max_val)
+                    {
+                        max_val = value;
+                        max_loc = P;
+                    }
+                }
+            }
+        }
+        if (max_val > 0.0f)
+        {
+            addMarker(max_loc);
+        }
+    }
+    return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
+}
 void Renderer_gl1::solveMarkerViews()
 {
 	if (listMarkerPos.size()<2)  return;
@@ -4616,7 +4703,7 @@ public:
 //This list stores all nodes in the same temporal location. The list should only be visited once, otherwise a loop exists.
 class SamePointList{
 public:
-    SamePointList(): visited(false){}
+    SamePointList(): visited(false), firstVisitSegId(-1){}
     void insert(DoublyLinkedNeuronNode* dln){
         list.push_back(dln);
     }
@@ -4626,13 +4713,18 @@ public:
     bool hasVisited(){
         return visited;
     }
-    QList<DoublyLinkedNeuronNode*> markAsVisitedAndGetConnections(){
+    QList<DoublyLinkedNeuronNode*> markAsVisitedAndGetConnections(V3DLONG id){
         visited = true;
+        firstVisitSegId = id;
         return list;
+    }
+    int getFirstVisitSegId(){
+        return firstVisitSegId;
     }
 private:
     QList<DoublyLinkedNeuronNode*> list;
     bool visited;
+    int firstVisitSegId;
 };
 
 class PointCloudHash{
@@ -4667,6 +4759,61 @@ public:
     FringeNode(DoublyLinkedNeuronNode*n, bool up, V3DLONG lvl, V3DLONG p): node(n), isGoingUpstream(up), level(lvl), parent(p){}
 };
 
+void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secondVisitSegId, V3DLONG violatingSegId){
+
+    QList<V3DLONG> segsInFirstVisitNode;
+    QList<V3DLONG> segsInRepeatVisitNode;
+
+    /*
+    V3DLONG firstVisitSegId = (pch.hash.value(XYZtoQString(tvs.node->position)))->getFirstVisitSegId();
+    V3DLONG secondVisitSegId = tvs.node->seg_id;
+    */
+
+    /*
+    if(segmentLevelDict[firstVisitSegId] == 1){
+        do {
+            cout << "Pushed second " << firstVisitSegId << endl;
+            segsInFirstVisitNode.push_back(firstVisitSegId);
+            firstVisitSegId = segmentParentDict[firstVisitSegId];
+        } while (segmentParentDict[firstVisitSegId] != firstVisitSegId);
+
+    }else{
+        cout << "error: coincident point not at root " << endl;
+    }
+    */
+
+    segsInFirstVisitNode.push_back(violatingSegId); // The violating segment will always be highlighted
+    do {
+        //cout << "Pushed first " << firstVisitSegId << endl;
+        segsInFirstVisitNode.push_back(firstVisitSegId);
+        firstVisitSegId = segmentParentDict[firstVisitSegId];
+    } while (segmentParentDict[firstVisitSegId] != firstVisitSegId);
+
+    QList<V3DLONG>::iterator it;
+    do {
+        //cout << "Pushed second " << secondVisitSegId << endl;
+        segsInRepeatVisitNode.push_back(secondVisitSegId);
+        secondVisitSegId = segmentParentDict[secondVisitSegId];
+        it = std::find(segsInFirstVisitNode.begin(), segsInFirstVisitNode.end(), secondVisitSegId);
+        //Update this second list until we coincide with the first list
+    } while (segmentParentDict[secondVisitSegId] != secondVisitSegId && it == segsInFirstVisitNode.end());
+
+    segsInRepeatVisitNode.push_back(secondVisitSegId);
+
+    segsInFirstVisitNode.erase(it, segsInFirstVisitNode.end());
+    for(it = segsInFirstVisitNode.begin(); it != segsInFirstVisitNode.end(); it++){
+        loopSegs.push_back(*it);
+    }
+    for(it = segsInRepeatVisitNode.begin(); it != segsInRepeatVisitNode.end(); it++){
+        loopSegs.push_back(*it);
+    }
+        /*
+    }else{
+        cout << "error: loop in second segment not found in first segment " << endl;
+    }*/
+
+}
+
 //Assigns each segment neuron list a level (corresponding to the segment'slevel in the neuron tree), given that a soma is present
 //The coloring effects of this function will only be availible when the ColorByLevel bool is toggled to true
 //Returns false if a loop esists, and sets color of all segments to purple. Otherwise, sets the segmentParentsList and segmentLevelList correctly
@@ -4680,6 +4827,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
     segmentParentDict.clear();
     segmentLevelDict.clear();
     segmentLengthDict.clear();
+    loopSegs.clear();
 
     QList<FringeNode> f; //A list of nodes to traverse next, in a depth-first search fashion
     QList<NeuronSWC> somas; //List of soma nodes
@@ -4736,7 +4884,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
         QList<NeuronSWC>::iterator soma_iter;
 
         for(soma_iter = somas.begin(); soma_iter != somas.end(); soma_iter++){
-            QList<DoublyLinkedNeuronNode*> l = ((pch.hash.value(XYZtoQString(XYZ(*soma_iter))))->markAsVisitedAndGetConnections());
+            QList<DoublyLinkedNeuronNode*> l = ((pch.hash.value(XYZtoQString(XYZ(*soma_iter))))->markAsVisitedAndGetConnections( soma_iter->seg_id ));
             //Note that this particular spacial location has already been visited
 
             QList<DoublyLinkedNeuronNode*>::iterator it;
@@ -4754,17 +4902,16 @@ bool Renderer_gl1::setColorAncestryInfo(){
                     if(!isTail)
                         f.push_back( FringeNode((*it)->downstream, false, 1, (*soma_iter).seg_id) );
 
-                    segmentParentDict.insert((*it)->seg_id, 0);
+                    segmentParentDict.insert((*it)->seg_id, (*soma_iter).seg_id);
                     segmentLevelDict.insert((*it)->seg_id, 1);
                 }
             }
         }
     }
 
-    bool detectedLoop = false;
     while(!f.isEmpty()){
 
-        QHash<QString, SamePointList*>::iterator s;
+        //QHash<QString, SamePointList*>::iterator s;
 
         //cout << "Processing fringe" << endl;
         FringeNode tvs = f.takeFirst();
@@ -4772,11 +4919,12 @@ bool Renderer_gl1::setColorAncestryInfo(){
         //     << tvs.node->position.y << " z: " << tvs.node->position.z << endl;
         QList<DoublyLinkedNeuronNode*> l;
         if(!(pch.hash.value(XYZtoQString(tvs.node->position))->hasVisited())){
-            l = ((pch.hash.value(XYZtoQString(tvs.node->position)))->markAsVisitedAndGetConnections());
+            l = ((pch.hash.value(XYZtoQString(tvs.node->position)))->markAsVisitedAndGetConnections(tvs.node->seg_id));
         }else{
             //Each spacial location should only be visited once, otherwise there is a loop
-            detectedLoop = true;
-            break;
+            //This means a loop exists, so we choose not to expand
+
+            continue; //abandon attempts to continue this loop
         }
 
         //
@@ -4795,7 +4943,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
         //
 
         QList<DoublyLinkedNeuronNode*>::iterator it;
-
+        bool loopExists = false;
         bool etb = (tvs.node->downstream == NULL || tvs.node->upstream == NULL);
         V3DLONG otr = l.length() - 1;
         if(etb){
@@ -4804,30 +4952,37 @@ bool Renderer_gl1::setColorAncestryInfo(){
                     bool isHead = (*it)->isHead();
                     bool isTail = (*it)->isTail();
                     bool eob = isHead || isTail;
-                    if(otr == 1 && eob){
-                        //connect this branch to other branch (treat it as the same branch and give same parent #)
-                        if(!isHead){
-                            f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.parent) );
-                            //cout << "route 1" << endl;
-                        }
-                        else if(!isTail){
-                            f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.parent) );
-                            //cout << "route 2" << endl;
-                        }
-                        segmentParentDict.insert((*it)->seg_id, tvs.parent);
-                        segmentLevelDict.insert((*it)->seg_id, tvs.level);
+                    if(segmentParentDict[(*it)->seg_id] == -1){
+                        if(otr == 1 && eob){
+                                //connect this branch to other branch (treat it as the same branch and give same parent #)
+                                if(!isHead){
+                                    f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.node->seg_id) );
+                                    //cout << "route 1" << endl;
+                                }
+                                else if(!isTail){
+                                    f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.node->seg_id) );
+                                    //cout << "route 2" << endl;
+                                }
+                                //cout << "Added pair p: " << tvs.parent << " c: " << (*it)->seg_id;
+                                segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                                segmentLevelDict.insert((*it)->seg_id, tvs.level);
+                        }else{
+                            //consider this point a branching point
+                            if(!isHead){
+                                f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 3" << endl;
+                            }
+                            if(!isTail){
+                                f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 4" << endl;
+                            }
+                            //cout << "Added pair p: " << tvs.node->seg_id << " c: " << (*it)->seg_id << endl;
+                            segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                            segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
+                       }
                     }else{
-                        //consider this point a branching point
-                        if(!isHead){
-                            f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
-                            //cout << "route 3" << endl;
-                        }
-                        if(!isTail){
-                            f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
-                            //cout << "route 4" << endl;
-                        }
-                        segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
-                        segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
+                          //Someone else has visited this segment already! Do not expand.
+                          addToListOfLoopingSegs(segmentParentDict[(*it)->seg_id], tvs.node->seg_id, (*it)->seg_id);
                     }
                 }
             }
@@ -4835,48 +4990,46 @@ bool Renderer_gl1::setColorAncestryInfo(){
             for (it = (l.begin()); it != (l.end()); ++it){
                 bool isHead = (*it)->isHead();
                 bool isTail = (*it)->isTail();
-                if((*it)->seg_id == tvs.node->seg_id){
-                    //continue along this seg
-                    if(tvs.isGoingUpstream){
-                        f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.parent) );
-                        //cout << "route 5" << endl;
+                    if((*it)->seg_id == tvs.node->seg_id){
+                        //continue along this seg
+                        if(tvs.isGoingUpstream){
+                            f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.parent) );
+                            //cout << "route 5" << endl;
+                        }
+                        else{
+                            f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.parent) );
+                            //cout << "route 6" << endl;
+                        }
+                    }else{
+                        if(segmentParentDict[(*it)->seg_id] == -1){
+                        //consider this point a branching point
+                            if(!isHead){
+                                f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 7" << endl;
+                            }
+                            if(!isTail){
+                                f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 8" << endl;
+                            }
+                            //cout << "Added pair p: " << tvs.node->seg_id << " c: " << (*it)->seg_id << endl;
+                            segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                            segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
+                        }else{
+                              //Someone else has visited this segment already! Do not expand.
+                              addToListOfLoopingSegs(segmentParentDict[(*it)->seg_id], tvs.node->seg_id, (*it)->seg_id);
+                        }
                     }
-                    else{
-                        f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.parent) );
-                        //cout << "route 6" << endl;
-                    }
-                }else{
-                    //consider this point a branching point
-                    if(!isHead){
-                        f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
-                        //cout << "route 7" << endl;
-                    }
-                    if(!isTail){
-                        f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
-                        //cout << "route 8" << endl;
-                    }
-                    segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
-                    segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
-                }
             }
         }
+
+
     }
 
-    if(detectedLoop){
-        //Set everything to -1 if loop detected
-        cout << "Loop detected!" << endl;
-        QList<NeuronTree>::iterator it;
-        for (it = (listNeuronTree.begin()); it != (listNeuronTree.end()); ++it){
-            QList <NeuronSWC> p_listneuron = it->listNeuron;
-
-            for (int i=0; i<p_listneuron.size(); i++)
-            {
-                NeuronSWC node = p_listneuron.at(i);
-                segmentParentDict.insert(node.seg_id, -2);
-                segmentLevelDict.insert(node.seg_id, -2);
-            }
-        }
-        return false;
+    QList<V3DLONG>::iterator iter;
+    for (iter = (loopSegs.begin()); iter != (loopSegs.end()); ++iter){
+        //cout << "digging from loopsegs and get " << *iter << endl;
+        segmentParentDict.insert(*iter, -2);
+        segmentLevelDict.insert(*iter, -2);
     }
 
     QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator dit;
@@ -4885,17 +5038,19 @@ bool Renderer_gl1::setColorAncestryInfo(){
     }
 
     //For debugging
+
     /*
     QHash<V3DLONG, V3DLONG>::iterator i;
     for (i = segmentParentDict.begin(); i != segmentParentDict.end(); ++i){
         cout << "parent key" << i.key() << endl;
         cout << "parent value" << i.value() << endl;
     }
+
     for (i = segmentLevelDict.begin(); i != segmentLevelDict.end(); ++i){
         cout << "level key" << i.key() << endl;
         cout << "level value" << i.value() << endl;
-    }*/
-
+    }
+    */
     //We're done.
     return true;
 }
