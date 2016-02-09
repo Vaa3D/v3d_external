@@ -271,6 +271,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void updateContrast(int con);
         void buttonUndoClicked();
         void buttonRedoClicked();
+        void buttonOptionsClicked();
 		void invertImageButtonToggled(bool checked);
 		void connectButtonToggled(bool checked);
 		void extendButtonToggled(bool checked);
