@@ -141,8 +141,6 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
     }
-	curr_renderer->nodeSize = 5;
-    curr_renderer->rootSize = 9;
 	curr_renderer->paint();
 }
 
@@ -638,7 +636,9 @@ void Mozak3DView::show()
     window3D->setWindowTitle("Mozak");
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     curr_renderer->colorByAncestry = true;
-
+    curr_renderer->nodeSize = 5;
+    curr_renderer->rootSize = 9;
+	
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->clearAnnotations();
 
@@ -648,6 +648,8 @@ void Mozak3DView::show()
     //itm::PAnoToolBar::instance()->buttonMarkerDelete->setParent(0);
     //itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setParent(0);
 	//itm::PAnoToolBar::instance()->buttonMarkerRoiView->setParent(0);
+    itm::PAnoToolBar::instance()->buttonOptions->setMenu(0); // disconnect existing menu
+    connect(itm::PAnoToolBar::instance()->buttonOptions, SIGNAL(clicked()), this, SLOT(buttonOptionsClicked()));
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
@@ -835,6 +837,11 @@ void Mozak3DView::updateResolutionLabel()
 		currResolutionLabel->setText(itm::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
 }
 
+void Mozak3DView::buttonOptionsClicked()
+{
+    if (view3DWidget)
+        view3DWidget->changeLineOption();
+}
 
 void Mozak3DView::buttonUndoClicked()
 {
@@ -1207,6 +1214,9 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	qDebug() << itm::strprintf("\n  Loading new resolution data resolution=%d volV0=%d volV1=%d volH0=%d volH1=%d volD0=%d volD1=%d", _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1).c_str();
 	
 	itm::CViewer::storeAnnotations();
+    int prev_line_width = ((Renderer_gl2*)(view3DWidget->getRenderer()))->lineWidth;
+	int prev_node_size = ((Renderer_gl2*)(view3DWidget->getRenderer()))->nodeSize;
+	int prev_root_size = ((Renderer_gl2*)(view3DWidget->getRenderer()))->rootSize;
 
     // Store current z-cuts and attempt to restore them if valid
     prevZCutMin = window3D->zcminSlider->value();
@@ -1326,6 +1336,10 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 
 	// update curve aspect
 	moz->curveAspectChanged();
+
+    ((Renderer_gl2*)(view3DWidget->getRenderer()))->lineWidth = prev_line_width;
+	((Renderer_gl2*)(view3DWidget->getRenderer()))->nodeSize = prev_node_size;
+	((Renderer_gl2*)(view3DWidget->getRenderer()))->rootSize = prev_root_size;
 
     updateTranslateXYArrows();
 	updateRendererParams();

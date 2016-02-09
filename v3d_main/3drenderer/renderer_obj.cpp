@@ -1285,7 +1285,7 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
         default: glColor3ub(0, 255, 255); break;
         }
     }else{
-        glColor3ub(255, 255, 255); //Should be impossible, report error by using white
+        glColor3ub(255, 30, 125); // label all other types as hot pink
     }
 }
 
@@ -1730,14 +1730,14 @@ void Renderer_gl1::drawNeuronTree(int index)
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
                             glColor3ub(255, 0, 0);
-                            glPointSize(nodeSize + 6);
+                            glPointSize(max(nodeSize, rootSize) + 2);
                         }
                         if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
                             if(IS_TRANSPARENT){
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
                             glColor3ub(0, 0, 255);
-                            glPointSize(nodeSize + 6);
+                            glPointSize(max(nodeSize, rootSize) + 2);
                         }
 						glBegin(GL_POINTS);
 							glVertex3f(S1.x, S1.y, S1.z);
