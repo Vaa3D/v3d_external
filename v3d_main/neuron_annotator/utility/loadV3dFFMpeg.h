@@ -28,7 +28,7 @@ bool loadIndexedStackFFMpeg( QByteArray* buffer, Image4DSimple& img, int channel
 bool loadStackFFMpegAsGray( QUrl url, Image4DSimple& img );
 
 bool saveStackFFMpeg( const char* fileName, const My4DImage& img, AVCodecID codec_id = AV_CODEC_ID_MPEG4 );
-bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* mapping = nullptr );
+bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* mapping = NULL );
 
 #endif // USE_FFMPEG
 

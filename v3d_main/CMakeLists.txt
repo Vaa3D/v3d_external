@@ -339,10 +339,13 @@ find_program(QT_QMAKE_EXECUTABLE qmake)
 execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
                  OUTPUT_VARIABLE QT_DEMO_PREFIX
                  OUTPUT_STRIP_TRAILING_WHITESPACE )
-message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
+if (Qt5Core_FOUND)
+  message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
+else()
+  message("QTVERSION = ${QTVERSION}")
+endif()
 message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
 
-# message("QTVERSION = ${QTVERSION}")
 find_path(QT_DEMOS_INCLUDE_DIR
   arthurwidgets.h
   PATHS
