@@ -141,8 +141,8 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
     }
-	curr_renderer->nodeSize = 15;
-    curr_renderer->rootSize = 19;
+	curr_renderer->nodeSize = 5;
+    curr_renderer->rootSize = 9;
 	curr_renderer->paint();
 }
 
@@ -613,9 +613,60 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
             {
                 if (currentMode == Renderer::smJoinTwoNodes)
                 {
-                    if (curr_renderer->selectedStartNode > -1 && curr_renderer->highlightedEndNode > -1)
+                    if (curr_renderer->selectedStartNode > -1 && curr_renderer->highlightedEndNode > -1 &&
+                        curr_renderer->listNeuronTree.size() > 0 &&
+                        curr_renderer->selectedStartNode < curr_renderer->listNeuronTree.at(0).listNeuron.size() &&
+                        curr_renderer->highlightedEndNode < curr_renderer->listNeuronTree.at(0).listNeuron.size() &&
+                        curr_renderer->selectedStartNode != curr_renderer->highlightedEndNode)
                     {
-                        // TODO: perform connection between selectedStartNode and highlightedEndNode here
+                        // Perform connection between selectedStartNode and highlightedEndNode here
+                        QList <NeuronSWC> listNeuron;
+	                    QHash <int, int>  hashNeuron;
+	                    listNeuron.clear();
+	                    hashNeuron.clear();
+
+                        NeuronTree* this_tree = &curr_renderer->listNeuronTree[0];
+                        V3DLONG max_n = -1;
+                        int len = this_tree->listNeuron.size();
+                        for (int i=0; i<len; i++)
+                        {
+                            listNeuron.append(this_tree->listNeuron[i]);
+                            hashNeuron.insert(this_tree->listNeuron[i].n, i);
+                            max_n = max(max_n, this_tree->listNeuron[i].n);
+                        }
+
+                        NeuronSWC start_pt;
+                        NeuronSWC end_pt;
+                        NeuronSWC start_pt_existing = curr_renderer->listNeuronTree.at(0).listNeuron.at(curr_renderer->selectedStartNode);
+                        NeuronSWC end_pt_existing = curr_renderer->listNeuronTree.at(0).listNeuron.at(curr_renderer->highlightedEndNode);
+                        
+                        start_pt.n = max_n + 1;
+                        start_pt.x = start_pt_existing.x;
+                        start_pt.y = start_pt_existing.y;
+                        start_pt.z = start_pt_existing.z;
+                        start_pt.r = start_pt_existing.r;
+                        start_pt.pn = start_pt_existing.pn;
+                        start_pt.seg_id = start_pt_existing.seg_id;
+                        start_pt.nodeinseg_id = start_pt_existing.nodeinseg_id;
+                        listNeuron.append(start_pt);
+                        hashNeuron.insert(start_pt.n, this_tree->listNeuron.size() - 1);
+
+                        end_pt.n = max_n + 2;
+                        end_pt.x = end_pt_existing.x;
+                        end_pt.y = end_pt_existing.y;
+                        end_pt.z = end_pt_existing.z;
+                        end_pt.r = end_pt_existing.r;
+                        end_pt.pn = start_pt.n;
+                        end_pt.seg_id = end_pt_existing.seg_id;
+                        end_pt.nodeinseg_id = end_pt_existing.nodeinseg_id;
+                        listNeuron.append(end_pt);
+                        hashNeuron.insert(end_pt.n, this_tree->listNeuron.size() - 1);
+
+                        this_tree->listNeuron = listNeuron;
+                        this_tree->hashNeuron = hashNeuron;
+
+                        V3D_env->setSWC(window, *this_tree);
+                        onNeuronEdit();
                     }
                     else if (curr_renderer->highlightedNode > -1)
                     {
