@@ -31,7 +31,10 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 
     itm::CSettings::instance()->setTraslX(60); // (100% - this setting) = % of existing view to be translated in X
     itm::CSettings::instance()->setTraslY(60); // (100% - this setting) = % of existing view to be translated in Y
-	
+	paint_timer = new QTimer(this);
+    QObject::connect(paint_timer, SIGNAL(timeout()), this, SLOT(paintTimerCall()));
+    paint_timer->setInterval(500);
+    paint_timer->setSingleShot(false);
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
@@ -107,6 +110,17 @@ void Mozak3DView::performRedo()
     updateUndoLabel();
 }
 
+void Mozak3DView::paintTimerCall()
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    if (!curr_renderer) return;
+    if (curr_renderer->loopSegs.length() == 0) return;
+    // Draw blinking effect if loop detection has found loops in current reconstruction
+    curr_renderer->drawNeuronTreeList();
+    curr_renderer->drawObj();
+    ((QWidget *)(curr_renderer->widget))->repaint();
+}
+
 void Mozak3DView::onNeuronEdit()
 {
     teramanager::CViewer::onNeuronEdit();
@@ -127,8 +141,6 @@ void Mozak3DView::makeTracedNeuronsEditable()
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
     }
-	curr_renderer->nodeSize = 5;
-    curr_renderer->rootSize = 9;
 	curr_renderer->paint();
 }
 
@@ -220,19 +232,28 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
 	{
 		QWheelEvent* wheelEvt = (QWheelEvent*)event;
-		if (currentMode == Renderer::smCurveCreate_pointclick)
+		if (currentMode == Renderer::smCurveCreate_pointclick || currentMode == Renderer::smCurveCreate_pointclickAutoZ)
 		{
-			// If polyline mode, use mouse wheel to change the current z-slice (and restrict to one)
-			int prevVal = window3D->zcminSlider->value();
-			if (wheelEvt->delta() > 0)
+			// If polyline mode(s), use mouse wheel to change the current z-slice (and restrict to one or NUM_POLY_AUTO_Z_PLANES)
+			int prevVal = (window3D->zcminSlider->value() + window3D->zcmaxSlider->value()) / 2;
+            int zoff = (currentMode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
+            if (wheelEvt->delta() > 0)
 			{
-				window3D->zcminSlider->setValue(prevVal + 1);
-				window3D->zcmaxSlider->setValue(prevVal + 1);
+                if (prevVal - zoff + 1 >= window3D->zcminSlider->minimum() && 
+                    prevVal + zoff + 1 <= window3D->zcmaxSlider->maximum())
+                {
+				    window3D->zcminSlider->setValue(prevVal - zoff + 1);
+				    window3D->zcmaxSlider->setValue(prevVal + zoff + 1);
+                }
 			}
 			else
 			{
-				window3D->zcminSlider->setValue(prevVal - 1);
-				window3D->zcmaxSlider->setValue(prevVal - 1);
+                if (prevVal - zoff - 1 >= window3D->zcminSlider->minimum() && 
+                    prevVal + zoff - 1 <= window3D->zcmaxSlider->maximum())
+                {
+				    window3D->zcminSlider->setValue(prevVal - zoff - 1);
+				    window3D->zcmaxSlider->setValue(prevVal + zoff - 1);
+                }
 			}
 		}
 		else
@@ -391,6 +412,13 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				curr_renderer->currentTraceType = 7; // custom
                 updateTypeLabel();
 				break;
+            case Qt::Key_A:
+                if (!polyLineAutoZButton->isChecked())
+					polyLineAutoZButton->setChecked(true);
+                // For this mode, we're only looking across z, so force view to top down
+                view3DWidget->doAbsoluteRot(0, 0, 0);
+                changeMode(Renderer::smCurveCreate_pointclickAutoZ, true, true);
+                break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
 					deleteSegmentsButton->setChecked(true);
@@ -519,6 +547,35 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			{
 				// Regardless of function performed, when right mouse button is released save the annotations file
 				neuronTreeChanged = true;
+                QList <LocationSimple> listLoc = view3DWidget->getiDrawExternalParameter()->image4d->listLandmarks;
+                if (currentMode == Renderer::smCurveCreate_pointclickAutoZ && listLoc.length() > 0)
+                {
+                    // set Z based on latest placed point such that it is in the center
+                    int newZ = round(listLoc.at(listLoc.length() - 1).z);
+                    qDebug() << "newZ = " << newZ;
+                    int zoff = (NUM_POLY_AUTO_Z_PLANES - 1) / 2;
+                    if (newZ - zoff < window3D->zcminSlider->minimum() &&
+                        newZ + zoff > window3D->zcmaxSlider->maximum())
+                    {
+                        window3D->zcminSlider->setValue(window3D->zcminSlider->minimum());
+				        window3D->zcmaxSlider->setValue(window3D->zcmaxSlider->maximum());
+                    }
+                    else if (newZ - zoff < window3D->zcminSlider->minimum())
+                    {
+				        window3D->zcminSlider->setValue(window3D->zcminSlider->minimum());
+				        window3D->zcmaxSlider->setValue(window3D->zcminSlider->minimum() + NUM_POLY_AUTO_Z_PLANES - 1);
+                    }
+                    else if (newZ + zoff > window3D->zcmaxSlider->maximum())
+                    {
+				        window3D->zcminSlider->setValue(window3D->zcmaxSlider->maximum() - NUM_POLY_AUTO_Z_PLANES + 1);
+				        window3D->zcmaxSlider->setValue(window3D->zcmaxSlider->maximum());
+                    }
+                    else
+                    {
+				        window3D->zcminSlider->setValue(newZ - zoff);
+				        window3D->zcmaxSlider->setValue(newZ + zoff);
+                    }
+                }
 			}
             // Process X/Y ROI Translate
             if (mouseEvt->button() == Qt::LeftButton && curr_renderer->bShowXYTranslateArrows)
@@ -579,7 +636,9 @@ void Mozak3DView::show()
     window3D->setWindowTitle("Mozak");
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     curr_renderer->colorByAncestry = true;
-
+    curr_renderer->nodeSize = 5;
+    curr_renderer->rootSize = 9;
+	
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->clearAnnotations();
 
@@ -589,6 +648,8 @@ void Mozak3DView::show()
     //itm::PAnoToolBar::instance()->buttonMarkerDelete->setParent(0);
     //itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setParent(0);
 	//itm::PAnoToolBar::instance()->buttonMarkerRoiView->setParent(0);
+    itm::PAnoToolBar::instance()->buttonOptions->setMenu(0); // disconnect existing menu
+    connect(itm::PAnoToolBar::instance()->buttonOptions, SIGNAL(clicked()), this, SLOT(buttonOptionsClicked()));
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
@@ -632,6 +693,12 @@ void Mozak3DView::show()
     polyLineButton->setCheckable(true);
     connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
 
+	polyLineAutoZButton = new QToolButton();
+	polyLineAutoZButton->setIcon(QIcon(":/mozak/icons/polyline-autoz.png"));
+    polyLineAutoZButton->setToolTip("Series of right-clicks to define a 3D polyline - Auto Z select (Esc to finish)");
+    polyLineAutoZButton->setCheckable(true);
+    connect(polyLineAutoZButton, SIGNAL(toggled(bool)), this, SLOT(polyLineAutoZButtonToggled(bool)));
+
 	retypeSegmentsButton = new QToolButton();
 	retypeSegmentsButton->setIcon(QIcon(":/mozak/icons/retype.png"));
     retypeSegmentsButton->setToolTip("Retype neurons to current type by right click stroke");
@@ -659,6 +726,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineAutoZButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, retypeSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -708,6 +777,7 @@ void Mozak3DView::show()
 	updateRendererParams();
     appendHistory();
     makeTracedNeuronsEditable();
+    paint_timer->start();
 }
 
 void Mozak3DView::storeAnnotations() throw (itm::RuntimeException)
@@ -767,6 +837,11 @@ void Mozak3DView::updateResolutionLabel()
 		currResolutionLabel->setText(itm::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
 }
 
+void Mozak3DView::buttonOptionsClicked()
+{
+    if (view3DWidget)
+        view3DWidget->changeLineOption();
+}
 
 void Mozak3DView::buttonUndoClicked()
 {
@@ -909,6 +984,11 @@ void Mozak3DView::polyLineButtonToggled(bool checked)
 	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
 }
 
+void Mozak3DView::polyLineAutoZButtonToggled(bool checked)
+{
+	changeMode(Renderer::smCurveCreate_pointclickAutoZ, true, checked);
+}
+
 void Mozak3DView::retypeSegmentsButtonToggled(bool checked)
 {
 	changeMode(Renderer::smRetypeMultiNeurons, true, checked);
@@ -928,6 +1008,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	Renderer::SelectMode prevMode = curr_renderer->selectMode;
+    int zoff = (mode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
 	if (turnOn)
 	{
         if (prevMode == mode) // no action needed, mode already on
@@ -942,25 +1023,38 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			connectButton->setChecked(false);
 		if (mode != Renderer::smCurveCreate_pointclick && polyLineButton->isChecked())
 			polyLineButton->setChecked(false);
+        if (mode != Renderer::smCurveCreate_pointclickAutoZ && polyLineAutoZButton->isChecked())
+			polyLineAutoZButton->setChecked(false);
 		if (mode != Renderer::smBreakTwoNeurons && splitSegmentButton->isChecked())
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);
-        if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
-            retypeSegmentsButton->setChecked(false);
-		if (mode == Renderer::smCurveCreate_pointclick)
+		if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
+			retypeSegmentsButton->setChecked(false);
+		switch (mode)
 		{
-			// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
-            prevZCutMin = window3D->zcminSlider->value();
-            prevZCutMax = window3D->zcmaxSlider->value();
-
-            // Use previously-scrolled polyline z-cut if within bounds, otherwise use midpoint of current bounds
-            int valToUse = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
-            if (prevPolyZCut >= prevZCutMin && prevPolyZCut <= prevZCutMax)
-                valToUse = prevPolyZCut;
-            // TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
-			window3D->zcminSlider->setValue(valToUse);
-			window3D->zcmaxSlider->setValue(valToUse);
+			case Renderer::smCurveCreate_pointclick:
+            case Renderer::smCurveCreate_pointclickAutoZ:
+			{
+				curr_renderer->cntCur3DCurveMarkers=0; //reset
+				curr_renderer->oldCursor = view3DWidget->cursor();
+				view3DWidget->setCursor(QCursor(Qt::CrossCursor));
+				
+				// When entering polyline mode, start restriction to single z-plane and allow mouse wheel z-scroll
+				prevZCutMin = window3D->zcminSlider->value();
+				prevZCutMax = window3D->zcmaxSlider->value();
+				
+				// Use previously-scrolled polyline z-cut if within bounds, otherwise use midpoint of current bounds
+				int centZ = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
+                if (prevPolyZCut - zoff >= prevZCutMin && prevPolyZCut + zoff <= prevZCutMax)
+					centZ = prevPolyZCut;
+				// TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
+				window3D->zcminSlider->setValue(centZ - zoff);
+				window3D->zcmaxSlider->setValue(centZ + zoff);
+			}
+			break;
+			default:
+				break;
 		}
 	}
 	else
@@ -977,10 +1071,11 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		curr_renderer->b_addthiscurve = true;
 #endif
 	}
-	if (prevMode == Renderer::smCurveCreate_pointclick && curr_renderer->selectMode != Renderer::smCurveCreate_pointclick)
+	if ((prevMode == Renderer::smCurveCreate_pointclick || prevMode == Renderer::smCurveCreate_pointclickAutoZ) && 
+        curr_renderer->selectMode != prevMode)
 	{
 		// When exiting poly mode, restore all z cuts
-        prevPolyZCut = window3D->zcmaxSlider->value();
+        prevPolyZCut = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
         window3D->zcminSlider->setValue((prevZCutMin > -1) ? prevZCutMin : window3D->zcminSlider->minimum());
 		window3D->zcmaxSlider->setValue((prevZCutMax > -1) ? prevZCutMax : window3D->zcmaxSlider->maximum());
 	}
@@ -1119,6 +1214,9 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	qDebug() << itm::strprintf("\n  Loading new resolution data resolution=%d volV0=%d volV1=%d volH0=%d volH1=%d volD0=%d volD1=%d", _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1).c_str();
 	
 	itm::CViewer::storeAnnotations();
+    int prev_line_width = ((Renderer_gl2*)(view3DWidget->getRenderer()))->lineWidth;
+	int prev_node_size = ((Renderer_gl2*)(view3DWidget->getRenderer()))->nodeSize;
+	int prev_root_size = ((Renderer_gl2*)(view3DWidget->getRenderer()))->rootSize;
 
     // Store current z-cuts and attempt to restore them if valid
     prevZCutMin = window3D->zcminSlider->value();
@@ -1235,6 +1333,10 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 
 	// update curve aspect
 	moz->curveAspectChanged();
+
+    ((Renderer_gl2*)(view3DWidget->getRenderer()))->lineWidth = prev_line_width;
+	((Renderer_gl2*)(view3DWidget->getRenderer()))->nodeSize = prev_node_size;
+	((Renderer_gl2*)(view3DWidget->getRenderer()))->rootSize = prev_root_size;
 
     updateTranslateXYArrows();
 	updateRendererParams();

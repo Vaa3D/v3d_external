@@ -32,7 +32,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../io/asc_to_swc.h"
 //#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
 
-
 #define CALL_glutSolidTorus glutSolidTorus
 #define CALL_glutSolidDode  glutSolidDodecahedron
 // if error then just warning
@@ -1208,13 +1207,17 @@ void Renderer_gl1::toggleLineType()
 //	}
 //}
 
-void Renderer_gl1::setColorByAncestry(NeuronSWC s){
-    //Purple(255, 0, 255) is error reporting value & soma value
+void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
     if(s.type == 1){
         glColor3ub(147, 0, 204);
     }else if(s.type == 2){ //axon
         switch(segmentLevelDict.value(s.seg_id)){
-        case -2: glColor3ub(250, 0, 180); break; //In a loop
+        case -2: //In a loop
+            if (seconds % 2 == 0)
+                glColor3ub(255, 120, 120);
+            else
+                glColor3ub(127, 0, 0);
+            break;
         case -1: //Free-randing, try to pick a random-shade of red that does not depend on VOI
             switch(segmentLengthDict.value(s.seg_id) % 16){
             case 0: glColor3ub(233, 150, 122); break;
@@ -1235,18 +1238,23 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
             case 15: glColor3ub(165, 42, 42); break;
             }break;
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
-        case 1: glColor3ub(103, 0, 0); break;
-        case 2: glColor3ub(184, 0, 0); break;
-        case 3: glColor3ub(255, 30, 0); break;
+        case 7: glColor3ub(103, 0, 0); break;
+        case 6: glColor3ub(184, 0, 0); break;
+        case 5: glColor3ub(255, 30, 0); break;
         case 4: glColor3ub(255, 102, 0); break;
-        case 5: glColor3ub(255, 153, 0); break;
-        case 6: glColor3ub(255, 204, 0); break;
-        case 7: glColor3ub(255, 255, 0); break;
+        case 3: glColor3ub(255, 153, 0); break;
+        case 2: glColor3ub(255, 204, 0); break;
+        case 1: glColor3ub(255, 255, 0); break;
         default: glColor3ub(255, 255, 0); break;
         }
     }else if(s.type == 3){ //dendrite
         switch(segmentLevelDict.value(s.seg_id)){
-        case -2: glColor3ub(70, 0, 145); break; //In a loop
+        case -2: //In a loop
+            if (seconds % 2 == 0)
+                glColor3ub(120, 120, 255);
+            else
+                glColor3ub(0, 0, 127);
+            break;
         case -1: //Free-randing, try to pick a random-shade of red that does not depend on VOI
             switch(segmentLengthDict.value(s.seg_id) % 16){
             case 0: glColor3ub(0, 0, 128); break;
@@ -1267,17 +1275,17 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s){
             case 15: glColor3ub(95, 158, 160); break;
             }break;
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
-        case 1: glColor3ub(19, 0, 90); break;
-        case 2: glColor3ub(42, 0, 136); break;
-        case 3: glColor3ub(0, 64, 152); break;
+        case 7: glColor3ub(19, 0, 90); break;
+        case 6: glColor3ub(42, 0, 136); break;
+        case 5: glColor3ub(0, 64, 152); break;
         case 4: glColor3ub(0, 121, 172); break;
-        case 5: glColor3ub(0, 160, 175); break;
-        case 6: glColor3ub(0, 243, 180); break;
-        case 7: glColor3ub(0, 255, 255); break;
+        case 3: glColor3ub(0, 160, 175); break;
+        case 2: glColor3ub(0, 243, 180); break;
+        case 1: glColor3ub(0, 255, 255); break;
         default: glColor3ub(0, 255, 255); break;
         }
     }else{
-        glColor3ub(255, 255, 255); //Should be impossible, report error by using white
+        glColor3ub(255, 30, 125); // label all other types as hot pink
     }
 }
 
@@ -1582,6 +1590,7 @@ void Renderer_gl1::drawNeuronTree(int index)
      // for neuron color: same as neuron label color (ZJL)
      GLubyte neuronColor[3];
 	if (! on) return;
+    time_t seconds = time(NULL);
 //  for debug ////////////////////////////
 //	if (listNeuron.size()<=0) return;
 //	S1 = listNeuron.last();
@@ -1706,7 +1715,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 					glLineWidth(lineWidth);
                     if(colorByAncestry){
                         glColor3ub(255, 255, 0);
-                        setColorByAncestry(S1);
+                        setColorByAncestry(S1, seconds);
                     }
 					glBegin(GL_LINES);
 						glVertex3f(S0.x, S0.y, S0.z);	glVertex3f(S1.x, S1.y, S1.z);
@@ -1721,14 +1730,14 @@ void Renderer_gl1::drawNeuronTree(int index)
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
                             glColor3ub(255, 0, 0);
-                            glPointSize(nodeSize + 6);
+                            glPointSize(max(nodeSize, rootSize) + 2);
                         }
                         if(i == highlightedEndNode && selectMode == Renderer::smCurveEditExtendTwoNode){
                             if(IS_TRANSPARENT){
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
                             glColor3ub(0, 0, 255);
-                            glPointSize(nodeSize + 6);
+                            glPointSize(max(nodeSize, rootSize) + 2);
                         }
 						glBegin(GL_POINTS);
 							glVertex3f(S1.x, S1.y, S1.z);
@@ -1743,7 +1752,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				{
                     if(colorByAncestry){
                                        glColor3ub(255, 255, 0);
-                                       setColorByAncestry(S1);
+                                       setColorByAncestry(S1, seconds);
                     }
 					glPointSize(rootSize);
                     //20151203 ZMS: Highlight selected nodes

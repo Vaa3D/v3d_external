@@ -1705,6 +1705,42 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
              vector<MyMarker *> outswc;
              bool b_res;
 
+             //ZMS 20160208 fake a vector to insert to the beginning and the end of the fastmarcher for extend/connect
+             QList<NeuronTree>::iterator j;
+             NeuronSWC cur_node;
+
+             if(selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode){
+                 for ( j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                     QList <NeuronSWC> p_listneuron = j->listNeuron;
+
+                     for (int i=0; i<p_listneuron.size(); i++)
+                     {
+                         if(i == highlightedNode){
+                             cur_node = p_listneuron.at(i);
+                             XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                             nearpos_vec.insert(nearpos_vec.begin(), MyMarker(cur_node.x, cur_node.y, cur_node.z + 1));
+                             farpos_vec.insert(farpos_vec.begin(), MyMarker(cur_node.x, cur_node.y, cur_node.z - 1));
+                         }
+                     }
+                 }
+             }
+
+             if(selectMode == smCurveEditExtendTwoNode){
+                 for ( j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                     QList <NeuronSWC> p_listneuron = j->listNeuron;
+
+                     for (int i=0; i<p_listneuron.size(); i++)
+                     {
+                         if(i == highlightedEndNode){
+                             cur_node = p_listneuron.at(i);
+                             XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                             nearpos_vec.push_back(MyMarker(cur_node.x, cur_node.y, cur_node.z + 1));
+                             farpos_vec.push_back(MyMarker(cur_node.x, cur_node.y, cur_node.z - 1));
+                         }
+                     }
+                 }
+             }
+
              // all pImg are unsigned char now
              b_res = (b_useSerialBBox) ?
                   fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
@@ -1801,9 +1837,9 @@ if (0)
 				if (n_id_start>=0)
 				{
                     if(selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode){
-                        QList<NeuronTree>::iterator i;
-                        for (i = listNeuronTree.begin(); i != listNeuronTree.end(); ++i){
-                            QList <NeuronSWC> p_listneuron = i->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
+                        QList<NeuronTree>::iterator j;
+                        for (j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                            QList <NeuronSWC> p_listneuron = j->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
 
                             for (int i=0; i<p_listneuron.size(); i++)
                             {
@@ -1832,9 +1868,9 @@ if (0)
 				if (n_id_end>=0)
 				{
                     if(selectMode == smCurveEditExtendTwoNode){
-                        QList<NeuronTree>::iterator i;
-                        for (i = listNeuronTree.begin(); i != listNeuronTree.end(); ++i){
-                            QList <NeuronSWC> p_listneuron = i->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
+                        QList<NeuronTree>::iterator j;
+                        for (j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                            QList <NeuronSWC> p_listneuron = j->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
 
                             for (int i=0; i<p_listneuron.size(); i++)
                             {

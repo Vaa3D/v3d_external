@@ -52,7 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "renderer.h"
 #include "marchingcubes.h"
-
+#include <time.h>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -298,6 +298,7 @@ public:
 	int currentMarkerName;
     XYZ getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno=-1);
 	double solveMarkerCenter();
+    double solveMarkerCenterMaxIntensity();
 	void solveMarkerViews();
 	void refineMarkerTranslate();
 	void refineMarkerCenter();
@@ -322,9 +323,12 @@ public:
     QHash<V3DLONG, V3DLONG> segmentLengthDict;
     QHash<V3DLONG, V3DLONG> segmentParentDict;
     QHash<V3DLONG, V3DLONG> segmentLevelDict;
+    QList<V3DLONG> loopSegs; // a list of segments involved in a loop
+
     bool colorByAncestry;
     bool setColorAncestryInfo();
-    void setColorByAncestry(NeuronSWC);
+    void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
+    void setColorByAncestry(NeuronSWC s, time_t seconds);
     // end ZMS
 
     // beginning of ZJL
