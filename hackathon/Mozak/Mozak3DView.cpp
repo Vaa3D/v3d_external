@@ -502,31 +502,37 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_Z:
 				view3DWidget->setThickness(1.0);
 				break;
-            case Qt::Key_H:
-                return true;
+			case Qt::Key_A:
+			case Qt::Key_C:
+			case Qt::Key_D:
+			case Qt::Key_E:
+			case Qt::Key_P:
+			case Qt::Key_R:
+			case Qt::Key_S:
+                // If exiting a mode, change back to default mode
+#ifdef FORCE_BBOX_MODE
+				if (curr_renderer->selectMode != Renderer::smCurveTiltedBB_fm_sbbox)
+				{
+					changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
+				}
+#endif
                 break;
             default:
 				break;
         }
-
-#ifdef FORCE_BBOX_MODE
-		if (curr_renderer->selectMode != Renderer::smCurveTiltedBB_fm_sbbox)
-		{
-			changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
-		}
-#endif
 	}
 	else
 	{
-#ifdef FORCE_BBOX_MODE
 		// If beginning right click drag, ensure that default mode is chosen before beginning
 		if (object == view3DWidget && event->type() == QEvent::MouseButtonPress)
 		{
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
+#ifdef FORCE_BBOX_MODE
 			if (curr_renderer->selectMode == Renderer::smObject)
 			{
 				changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
 			}
+#endif
             // If pressing a mouse button with no arrows highlighted, hide the translation arrows
             if (curr_renderer->iPosXTranslateArrowEnabled < 2 && 
                 curr_renderer->iNegXTranslateArrowEnabled < 2 &&
@@ -538,9 +544,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 ((QWidget *)(curr_renderer->widget))->repaint();
             }
 		}
-		else
-#endif
-		if (object == view3DWidget && event->type() == QEvent::MouseButtonRelease)
+		else if (object == view3DWidget && event->type() == QEvent::MouseButtonRelease)
 		{
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			if (mouseEvt->button() == Qt::RightButton)
@@ -552,7 +556,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 {
                     // set Z based on latest placed point such that it is in the center
                     int newZ = round(listLoc.at(listLoc.length() - 1).z);
-                    qDebug() << "newZ = " << newZ;
+                    //qDebug() << "newZ = " << newZ;
                     int zoff = (NUM_POLY_AUTO_Z_PLANES - 1) / 2;
                     if (newZ - zoff < window3D->zcminSlider->minimum() &&
                         newZ + zoff > window3D->zcmaxSlider->maximum())
