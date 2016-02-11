@@ -1287,10 +1287,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 
 	itm::CViewer::loadAnnotations();
 	makeTracedNeuronsEditable();
-    
-	float curZoom = (float)view3DWidget->zoom();
-	if (ratio > 0.0f)
-		view3DWidget->setZoom(curZoom/ratio);
+
 	MozakUI* moz = MozakUI::getMozakInstance();
 
 	//selecting the current resolution in the PMain GUI and disabling previous resolutions
