@@ -39,7 +39,7 @@ macx {
   }
 
 unix {
-  LIBS += -L$$V3DMAINPATH/common_lib/lib_unix64 -lhdf5 -lszip -lz
+  LIBS += -L$$V3DMAINPATH/common_lib/lib_unix64 -lhdf5 -lszip -lz -ldl
   }
 #Vaa3D headers and sources needed by the plugin
 INCLUDEPATH+= $$QT_PATH/demos/shared
