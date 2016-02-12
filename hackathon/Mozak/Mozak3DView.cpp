@@ -198,21 +198,45 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
         }
         
         //On mouse move, if one of the extend mode is enabled, then update nodes to be highlighted
-        if( (currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode)){
+
+        bool updatedNodes = false;
+        if(currentMode == Renderer::smCurveEditExtendOneNode || currentMode == Renderer::smCurveEditExtendTwoNode){
             if(!isRightMouseDown){
                 //Highlight start node
                 curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
+                updatedNodes = true;
             }else if(currentMode == Renderer::smCurveEditExtendTwoNode){
                 //Highlight end node
-                V3DLONG highlightedEndNodePrev =  curr_renderer->highlightedEndNode;
+                V3DLONG highlightedEndNodePrev = curr_renderer->highlightedEndNode;
                 curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
-
-                 curr_renderer->highlightedEndNodeChanged = (highlightedEndNodePrev == curr_renderer->highlightedEndNode);
+                curr_renderer->highlightedEndNodeChanged = (highlightedEndNodePrev == curr_renderer->highlightedEndNode);
+                if (curr_renderer->highlightedEndNodeChanged)
+                    updatedNodes = true;
             }
-
+        }
+        else if (currentMode == Renderer::smJoinTwoNodes)
+        {
+            if (curr_renderer->selectedStartNode == -1)
+            {
+                //Highlight start node
+                curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
+                updatedNodes = true;
+            }
+            else
+            {
+                //Highlight end node
+                V3DLONG highlightedEndNodePrev = curr_renderer->highlightedEndNode;
+                curr_renderer->highlightedEndNode = findNearestNeuronNode(k->x(), k->y());
+                curr_renderer->highlightedEndNodeChanged = (highlightedEndNodePrev == curr_renderer->highlightedEndNode);
+                if (curr_renderer->highlightedEndNodeChanged)
+                    updatedNodes = true;
+            }
+        }
+        if (updatedNodes)
+        {
             curr_renderer->drawNeuronTreeList();
             curr_renderer->drawObj();
-            needRepaint = true; //Update the screen position of highlighted nodes
+            needRepaint = true;
         }
     }
 
@@ -424,6 +448,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					deleteSegmentsButton->setChecked(true);
 				changeMode(Renderer::smDeleteMultiNeurons, false, true);
 				break;
+            case Qt::Key_J:
+				if (!joinButton->isChecked())
+					joinButton->setChecked(true);
+				changeMode(Renderer::smJoinTwoNodes, false, true);
+				break;
 			case Qt::Key_S:
 				if (!splitSegmentButton->isChecked())
 					splitSegmentButton->setChecked(true);
@@ -580,26 +609,75 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				        window3D->zcmaxSlider->setValue(newZ + zoff);
                     }
                 }
+                else if (currentMode == Renderer::smJoinTwoNodes)
+                {
+                    if (curr_renderer->selectedStartNode > -1 && curr_renderer->highlightedEndNode > -1 &&
+                        curr_renderer->listNeuronTree.size() > 0 &&
+                        curr_renderer->selectedStartNode < curr_renderer->listNeuronTree.at(0).listNeuron.size() &&
+                        curr_renderer->highlightedEndNode < curr_renderer->listNeuronTree.at(0).listNeuron.size() &&
+                        curr_renderer->selectedStartNode != curr_renderer->highlightedEndNode)
+                    {
+                        // Perform connection between selectedStartNode and highlightedEndNode here
+                        NeuronSWC start_pt_existing = curr_renderer->listNeuronTree.at(0).listNeuron.at(curr_renderer->selectedStartNode);
+                        NeuronSWC end_pt_existing = curr_renderer->listNeuronTree.at(0).listNeuron.at(curr_renderer->highlightedEndNode);
+                        
+                        vector <XYZ> new_pts;
+                        new_pts.push_back(XYZ(start_pt_existing.x, start_pt_existing.y, start_pt_existing.z));
+                        new_pts.push_back(XYZ(end_pt_existing.x, end_pt_existing.y, end_pt_existing.z));
+
+                        // Determine type of new segment
+                        int new_type = start_pt_existing.type;
+                        if (start_pt_existing.type != end_pt_existing.type &&
+                            end_pt_existing.type != 0 /*unknown*/)
+                        {
+                            // For certain conditions, match this segment to end point:
+                            // 1) When connecting TO an axon branch
+                            // 2) When connecting FROM a soma
+                            if (end_pt_existing.type == 2 /*axon*/ ||
+                                start_pt_existing.type == 1 /*soma*/)
+                            {
+                                new_type = end_pt_existing.type;
+                            }
+                        }
+
+                        int prev_type = curr_renderer->highlightedNodeType;
+                        curr_renderer->highlightedNodeType = new_type;
+                        curr_renderer->addCurveSWC(new_pts, 0);
+                        curr_renderer->vecToNeuronTree(curr_renderer->testNeuronTree, new_pts);
+                        curr_renderer->highlightedNodeType = prev_type;
+#ifdef FORCE_BBOX_MODE
+				        changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
+#endif
+                    }
+                    else if (curr_renderer->highlightedNode > -1)
+                    {
+                        curr_renderer->selectedStartNode = curr_renderer->highlightedNode;
+                        curr_renderer->highlightedNode = -1;
+                    }
+                }
 			}
-            // Process X/Y ROI Translate
-            if (mouseEvt->button() == Qt::LeftButton && curr_renderer->bShowXYTranslateArrows)
+            if (mouseEvt->button() == Qt::LeftButton)
             {
-                MozakUI* moz = MozakUI::getMozakInstance();
-                if (curr_renderer->iPosXTranslateArrowEnabled == 2)
+                if (curr_renderer->bShowXYTranslateArrows)
                 {
-                    moz->traslXposClicked();
-                }
-                else if (curr_renderer->iNegXTranslateArrowEnabled == 2)
-                {
-                    moz->traslXnegClicked();
-                }
-                else if (curr_renderer->iPosYTranslateArrowEnabled == 2)
-                {
-                    moz->traslYposClicked();
-                }
-                else if (curr_renderer->iNegYTranslateArrowEnabled == 2)
-                {
-                    moz->traslYnegClicked();
+                    // Process X/Y ROI Translate
+                    MozakUI* moz = MozakUI::getMozakInstance();
+                    if (curr_renderer->iPosXTranslateArrowEnabled == 2)
+                    {
+                        moz->traslXposClicked();
+                    }
+                    else if (curr_renderer->iNegXTranslateArrowEnabled == 2)
+                    {
+                        moz->traslXnegClicked();
+                    }
+                    else if (curr_renderer->iPosYTranslateArrowEnabled == 2)
+                    {
+                        moz->traslYposClicked();
+                    }
+                    else if (curr_renderer->iNegYTranslateArrowEnabled == 2)
+                    {
+                        moz->traslYnegClicked();
+                    }
                 }
             }
             if ((mouseEvt->buttons() & Qt::LeftButton) == 0 && (mouseEvt->buttons() & Qt::LeftButton) == 0)
@@ -691,6 +769,12 @@ void Mozak3DView::show()
     extendButton->setCheckable(true);
     connect(extendButton, SIGNAL(toggled(bool)), this, SLOT(extendButtonToggled(bool)));
 
+    joinButton = new QToolButton();
+	joinButton->setIcon(QIcon(":/mozak/icons/join.png"));
+    joinButton->setToolTip("Join two nodes by right clicking once to choose the start node and once more to connect to the end node.");
+    joinButton->setCheckable(true);
+    connect(joinButton, SIGNAL(toggled(bool)), this, SLOT(joinButtonToggled(bool)));
+
 	polyLineButton = new QToolButton();
 	polyLineButton->setIcon(QIcon(":/mozak/icons/polyline.png"));
     polyLineButton->setToolTip("Series of right-clicks to define a 3D polyline (Esc to finish)");
@@ -728,6 +812,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, extendButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, joinButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -983,6 +1069,11 @@ void Mozak3DView::extendButtonToggled(bool checked)
 	changeMode(Renderer::smCurveEditExtendOneNode, true, checked);
 }
 
+void Mozak3DView::joinButtonToggled(bool checked)
+{
+    changeMode(Renderer::smJoinTwoNodes, true, checked);
+}
+
 void Mozak3DView::polyLineButtonToggled(bool checked)
 {
 	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
@@ -1025,6 +1116,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			extendButton->setChecked(false);
 		if (mode != Renderer::smCurveEditExtendTwoNode && connectButton->isChecked())
 			connectButton->setChecked(false);
+        if (mode != Renderer::smJoinTwoNodes && joinButton->isChecked())
+			joinButton->setChecked(false);
 		if (mode != Renderer::smCurveCreate_pointclick && polyLineButton->isChecked())
 			polyLineButton->setChecked(false);
         if (mode != Renderer::smCurveCreate_pointclickAutoZ && polyLineAutoZButton->isChecked())
@@ -1033,9 +1126,9 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			splitSegmentButton->setChecked(false);
 		if (mode != Renderer::smDeleteMultiNeurons && deleteSegmentsButton->isChecked())
 			deleteSegmentsButton->setChecked(false);
-		if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
-			retypeSegmentsButton->setChecked(false);
-		switch (mode)
+        if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
+            retypeSegmentsButton->setChecked(false);
+        switch (mode)
 		{
 			case Renderer::smCurveCreate_pointclick:
             case Renderer::smCurveCreate_pointclickAutoZ:
@@ -1057,6 +1150,12 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 				window3D->zcmaxSlider->setValue(centZ + zoff);
 			}
 			break;
+            case Renderer::smJoinTwoNodes:
+            {
+                curr_renderer->selectedStartNode = -1;
+                curr_renderer->highlightedEndNode = -1;
+            }
+            break;
 			default:
 				break;
 		}

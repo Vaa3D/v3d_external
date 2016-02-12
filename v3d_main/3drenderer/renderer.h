@@ -83,6 +83,7 @@ public:
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
                       smBreakTwoNeurons,
+                      smJoinTwoNodes,
                      smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
                      smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
                      smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106

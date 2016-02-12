@@ -88,6 +88,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* invertImageButton;
 		QToolButton* connectButton;
 		QToolButton* extendButton;
+        QToolButton* joinButton;
 		QToolButton* polyLineButton;
 		QToolButton* polyLineAutoZButton;
 		QToolButton* retypeSegmentsButton;
@@ -275,6 +276,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void invertImageButtonToggled(bool checked);
 		void connectButtonToggled(bool checked);
 		void extendButtonToggled(bool checked);
+        void joinButtonToggled(bool checked);
 		void polyLineButtonToggled(bool checked);
         void polyLineAutoZButtonToggled(bool checked);
 		void retypeSegmentsButtonToggled(bool checked);

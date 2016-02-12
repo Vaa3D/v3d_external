@@ -567,6 +567,7 @@ private:
 		
 		highlightedNode = -1; //Added by ZMS 20151203 highlight initial node we are going to extend.
 		highlightedEndNode = -1; //Added by ZMS 20151203 highlight final node we are going to extend.
+		selectedStartNode = -1;
         highlightedEndNodeChanged = false;
 
 		_idep=0;
@@ -671,6 +672,7 @@ public:
 	virtual void drawNeuronTree(int i);
 	virtual void drawNeuronTreeList();
     int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
+    int selectedStartNode; // TDP 20160203 for selecting start node for joining two nodes
     int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
     V3DLONG highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
     bool highlightedEndNodeChanged;
