@@ -608,7 +608,6 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                     }
                 }
 			}
-            // Process X/Y ROI Translate
             if (mouseEvt->button() == Qt::LeftButton)
             {
                 if (currentMode == Renderer::smJoinTwoNodes)
@@ -620,53 +619,33 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                         curr_renderer->selectedStartNode != curr_renderer->highlightedEndNode)
                     {
                         // Perform connection between selectedStartNode and highlightedEndNode here
-                        QList <NeuronSWC> listNeuron;
-	                    QHash <int, int>  hashNeuron;
-	                    listNeuron.clear();
-	                    hashNeuron.clear();
-
-                        NeuronTree* this_tree = &curr_renderer->listNeuronTree[0];
-                        V3DLONG max_n = -1;
-                        int len = this_tree->listNeuron.size();
-                        for (int i=0; i<len; i++)
-                        {
-                            listNeuron.append(this_tree->listNeuron[i]);
-                            hashNeuron.insert(this_tree->listNeuron[i].n, i);
-                            max_n = max(max_n, this_tree->listNeuron[i].n);
-                        }
-
-                        NeuronSWC start_pt;
-                        NeuronSWC end_pt;
                         NeuronSWC start_pt_existing = curr_renderer->listNeuronTree.at(0).listNeuron.at(curr_renderer->selectedStartNode);
                         NeuronSWC end_pt_existing = curr_renderer->listNeuronTree.at(0).listNeuron.at(curr_renderer->highlightedEndNode);
                         
-                        start_pt.n = max_n + 1;
-                        start_pt.x = start_pt_existing.x;
-                        start_pt.y = start_pt_existing.y;
-                        start_pt.z = start_pt_existing.z;
-                        start_pt.r = start_pt_existing.r;
-                        start_pt.pn = start_pt_existing.pn;
-                        start_pt.seg_id = start_pt_existing.seg_id;
-                        start_pt.nodeinseg_id = start_pt_existing.nodeinseg_id;
-                        listNeuron.append(start_pt);
-                        hashNeuron.insert(start_pt.n, this_tree->listNeuron.size() - 1);
+                        vector <XYZ> new_pts;
+                        new_pts.push_back(XYZ(start_pt_existing.x, start_pt_existing.y, start_pt_existing.z));
+                        new_pts.push_back(XYZ(end_pt_existing.x, end_pt_existing.y, end_pt_existing.z));
 
-                        end_pt.n = max_n + 2;
-                        end_pt.x = end_pt_existing.x;
-                        end_pt.y = end_pt_existing.y;
-                        end_pt.z = end_pt_existing.z;
-                        end_pt.r = end_pt_existing.r;
-                        end_pt.pn = start_pt.n;
-                        end_pt.seg_id = end_pt_existing.seg_id;
-                        end_pt.nodeinseg_id = end_pt_existing.nodeinseg_id;
-                        listNeuron.append(end_pt);
-                        hashNeuron.insert(end_pt.n, this_tree->listNeuron.size() - 1);
+                        // Determine type of new segment
+                        int new_type = start_pt_existing.type;
+                        if (start_pt_existing.type != end_pt_existing.type &&
+                            end_pt_existing.type != 0 /*unknown*/)
+                        {
+                            // For certain conditions, match this segment to end point:
+                            // 1) When connecting TO an axon branch
+                            // 2) When connecting FROM a soma
+                            if (end_pt_existing.type == 2 /*axon*/ ||
+                                start_pt_existing.type == 1 /*soma*/)
+                            {
+                                new_type = end_pt_existing.type;
+                            }
+                        }
 
-                        this_tree->listNeuron = listNeuron;
-                        this_tree->hashNeuron = hashNeuron;
-
-                        V3D_env->setSWC(window, *this_tree);
-                        onNeuronEdit();
+                        int prev_type = curr_renderer->highlightedNodeType;
+                        curr_renderer->highlightedNodeType = new_type;
+                        curr_renderer->addCurveSWC(new_pts, 0);
+                        curr_renderer->vecToNeuronTree(curr_renderer->testNeuronTree, new_pts);
+                        curr_renderer->highlightedNodeType = prev_type;
                     }
                     else if (curr_renderer->highlightedNode > -1)
                     {
@@ -676,6 +655,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 }
                 else if (curr_renderer->bShowXYTranslateArrows)
                 {
+                    // Process X/Y ROI Translate
                     MozakUI* moz = MozakUI::getMozakInstance();
                     if (curr_renderer->iPosXTranslateArrowEnabled == 2)
                     {
