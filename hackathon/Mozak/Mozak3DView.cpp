@@ -451,8 +451,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				changeMode(Renderer::smDeleteMultiNeurons, false, true);
 				break;
             case Qt::Key_J:
-				//if (!deleteSegmentsButton->isChecked())
-				//	deleteSegmentsButton->setChecked(true);
+				if (!joinButton->isChecked())
+					joinButton->setChecked(true);
 				changeMode(Renderer::smJoinTwoNodes, false, true);
 				break;
 			case Qt::Key_S:
@@ -607,10 +607,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				        window3D->zcmaxSlider->setValue(newZ + zoff);
                     }
                 }
-			}
-            if (mouseEvt->button() == Qt::LeftButton)
-            {
-                if (currentMode == Renderer::smJoinTwoNodes)
+                else if (currentMode == Renderer::smJoinTwoNodes)
                 {
                     if (curr_renderer->selectedStartNode > -1 && curr_renderer->highlightedEndNode > -1 &&
                         curr_renderer->listNeuronTree.size() > 0 &&
@@ -646,6 +643,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                         curr_renderer->addCurveSWC(new_pts, 0);
                         curr_renderer->vecToNeuronTree(curr_renderer->testNeuronTree, new_pts);
                         curr_renderer->highlightedNodeType = prev_type;
+#ifdef FORCE_BBOX_MODE
+				        changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
+#endif
                     }
                     else if (curr_renderer->highlightedNode > -1)
                     {
@@ -653,7 +653,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                         curr_renderer->highlightedNode = -1;
                     }
                 }
-                else if (curr_renderer->bShowXYTranslateArrows)
+			}
+            if (mouseEvt->button() == Qt::LeftButton)
+            {
+                if (curr_renderer->bShowXYTranslateArrows)
                 {
                     // Process X/Y ROI Translate
                     MozakUI* moz = MozakUI::getMozakInstance();
@@ -760,6 +763,12 @@ void Mozak3DView::show()
     extendButton->setCheckable(true);
     connect(extendButton, SIGNAL(toggled(bool)), this, SLOT(extendButtonToggled(bool)));
 
+    joinButton = new QToolButton();
+	joinButton->setIcon(QIcon(":/mozak/icons/join.png"));
+    joinButton->setToolTip("Join two nodes by right clicking once to choose the start node and once more to connect to the end node.");
+    joinButton->setCheckable(true);
+    connect(joinButton, SIGNAL(toggled(bool)), this, SLOT(joinButtonToggled(bool)));
+
 	polyLineButton = new QToolButton();
 	polyLineButton->setIcon(QIcon(":/mozak/icons/polyline.png"));
     polyLineButton->setToolTip("Series of right-clicks to define a 3D polyline (Esc to finish)");
@@ -797,6 +806,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, extendButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, joinButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -1047,6 +1058,11 @@ void Mozak3DView::extendButtonToggled(bool checked)
 	changeMode(Renderer::smCurveEditExtendOneNode, true, checked);
 }
 
+void Mozak3DView::joinButtonToggled(bool checked)
+{
+    changeMode(Renderer::smJoinTwoNodes, true, checked);
+}
+
 void Mozak3DView::polyLineButtonToggled(bool checked)
 {
 	changeMode(Renderer::smCurveCreate_pointclick, true, checked);
@@ -1089,6 +1105,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			extendButton->setChecked(false);
 		if (mode != Renderer::smCurveEditExtendTwoNode && connectButton->isChecked())
 			connectButton->setChecked(false);
+        if (mode != Renderer::smJoinTwoNodes && joinButton->isChecked())
+			joinButton->setChecked(false);
 		if (mode != Renderer::smCurveCreate_pointclick && polyLineButton->isChecked())
 			polyLineButton->setChecked(false);
         if (mode != Renderer::smCurveCreate_pointclickAutoZ && polyLineAutoZButton->isChecked())
