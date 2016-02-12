@@ -4781,22 +4781,32 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
         cout << "error: coincident point not at root " << endl;
     }
     */
-
+    
+    QHash<V3DLONG, bool> loopVisitDict;
+    // loopVisitDict is needed to avoid a case where segmentParentDict points from
+    // seg A -> seg B -> seg A, etc
+    loopVisitDict.clear();
     segsInFirstVisitNode.push_back(violatingSegId); // The violating segment will always be highlighted
     do {
-        //cout << "Pushed first " << firstVisitSegId << endl;
+        qDebug() << "Pushed first " << firstVisitSegId;
         segsInFirstVisitNode.push_back(firstVisitSegId);
+        loopVisitDict.insert(firstVisitSegId, true);
         firstVisitSegId = segmentParentDict[firstVisitSegId];
-    } while (segmentParentDict[firstVisitSegId] != firstVisitSegId);
+        qDebug() << "New firstVisitSegId: " << firstVisitSegId;
+    } while (segmentParentDict[firstVisitSegId] != firstVisitSegId &&
+             !loopVisitDict.contains(firstVisitSegId));
 
     QList<V3DLONG>::iterator it;
+    loopVisitDict.clear();
     do {
         //cout << "Pushed second " << secondVisitSegId << endl;
         segsInRepeatVisitNode.push_back(secondVisitSegId);
+        loopVisitDict.insert(secondVisitSegId, true);
         secondVisitSegId = segmentParentDict[secondVisitSegId];
         it = std::find(segsInFirstVisitNode.begin(), segsInFirstVisitNode.end(), secondVisitSegId);
         //Update this second list until we coincide with the first list
-    } while (segmentParentDict[secondVisitSegId] != secondVisitSegId && it == segsInFirstVisitNode.end());
+    } while (segmentParentDict[secondVisitSegId] != secondVisitSegId && it == segsInFirstVisitNode.end() &&
+             !loopVisitDict.contains(secondVisitSegId));
 
     segsInRepeatVisitNode.push_back(secondVisitSegId);
 
