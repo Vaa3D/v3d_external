@@ -535,6 +535,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_C:
 			case Qt::Key_D:
 			case Qt::Key_E:
+            case Qt::Key_J:
 			case Qt::Key_P:
 			case Qt::Key_R:
 			case Qt::Key_S:
