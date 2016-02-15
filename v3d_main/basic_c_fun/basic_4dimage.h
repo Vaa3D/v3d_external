@@ -202,7 +202,21 @@ public:
 	void setRawDataPointerToNull() { this->data1d = 0; }
 	void deleteRawDataAndSetPointerToNull() { if (data1d) {delete []data1d; data1d = 0;} }
 	void setRawDataPointer(unsigned char *p) { this->data1d = p; }
-	bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
+
+        void setIntensity(V3DLONG  x,  V3DLONG  y,  V3DLONG z, V3DLONG chanel, unsigned char val)
+        {
+            V3DLONG total_sz = sz0*sz1*sz2;
+            V3DLONG idx = chanel * (total_sz) + z*(sz0*sz1) + y*sz0 + x;
+            this->data1d[idx] = val;
+        }
+        unsigned char getIntensity(V3DLONG  x,  V3DLONG  y,  V3DLONG z,V3DLONG chanel ){
+
+            V3DLONG total_sz = sz0*sz1*sz2;  
+            V3DLONG idx = chanel * (total_sz) + z*(sz0*sz1) + y*sz0 + x;
+            return this->data1d[idx];
+        }
+
+        bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
 	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
 	void setOriginX(double a) { origin_x = a;}
