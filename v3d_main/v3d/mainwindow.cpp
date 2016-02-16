@@ -68,7 +68,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "../terafly/src/control/CPlugin.h"
 #endif
 
-#include "../../hackathon/Mozak/MozakUI.h";
+#include "../mozak/MozakUI.h";
 
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"

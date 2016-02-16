@@ -120,7 +120,7 @@ v3d_main/neuron_tracing
 v3d_main/plugin_loader
 v3d_main/v3d
 v3d_main/worm_straighten_c
-hackathon/Mozak
+v3d_main/mozak
 v3d_main/common_lib/include/boost/geometry/geometries/adapted/boost_polygon
 v3d_main/common_lib/include/boost/context/detail
 v3d_main/common_lib/src_packages/boost_1_57_0/libs/locale/src/std
