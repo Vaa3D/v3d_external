@@ -67,7 +67,6 @@ void CSettings::loadDefaultSettings()
     traslX = traslY = traslZ = 50;  //percentage value
     traslT = 0;
     annotationSpaceUnlimited = false;
-    annotationMarkersDeleteROISampling = 10;
     annotationCurvesDims = 2;
     annotationCurvesAspectTube = false;
     annotationVirtualMargin = 20;
@@ -112,7 +111,6 @@ void CSettings::writeSettings()
     settings.setValue("traslZ", traslZ);
     settings.setValue("traslT", traslT);
     settings.setValue("annotationSpaceUnlimited", annotationSpaceUnlimited);
-    settings.setValue("annotationMarkersDeleteROISampling", annotationMarkersDeleteROISampling);
     settings.setValue("annotationCurvesDims", annotationCurvesDims);
     settings.setValue("annotationCurvesAspectTube", annotationCurvesAspectTube);
     settings.setValue("annotationVirtualMargin", annotationVirtualMargin);
@@ -162,8 +160,6 @@ void CSettings::readSettings()
         traslT = settings.value("traslT").toInt();
     if(settings.contains("annotationSpaceUnlimited"))
         annotationSpaceUnlimited = settings.value("annotationSpaceUnlimited").toBool();
-    if(settings.contains("annotationMarkersDeleteROISampling"))
-        annotationMarkersDeleteROISampling = settings.value("annotationMarkersDeleteROISampling").toInt();
     if(settings.contains("annotationCurvesDims"))
         annotationCurvesDims = settings.value("annotationCurvesDims").toInt();
     if(settings.contains("annotationCurvesAspectTube"))

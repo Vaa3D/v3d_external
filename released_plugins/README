@@ -1,6 +1,6 @@
  
-This folder contains several V3D plugin demo programs and source codes v0.96.
-The license and user agreement can be found at http://penglab.janelia.org/proj/v3d .
+This folder contains several Vaa3D plugin demo programs and source codes v0.96.
+The license and user agreement can be found at http://vaa3d.org .
 
 Assume you are using a Mac or Linux machine, you can generate the plugin demos
 by running the command on a bash:
@@ -32,10 +32,10 @@ specifies where the generated dynamic library plugin files will be copied to. Fo
 V3D be able to find a plugin, it should exist in a parallel folder to the V3D executable
 program. 
 
-If you have question, contact the head of the V3D project developing team, Hanchuan Peng
-(pengh@janelia.hhmi.org).
+If you have question, contact the head of the Vaa3D project developing team, Hanchuan Peng
+(hanchuan.peng@gmail.com).
 
->>> 2010-Jun-26; 2010-May-30; 2010-May-22; 2010-May-15; 2009-Dec-5; 2009-Aug-21 <<<
+>>> 2010-2016 <<<
 
 
 

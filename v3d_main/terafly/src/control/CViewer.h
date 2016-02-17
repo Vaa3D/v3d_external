@@ -257,7 +257,8 @@ class teramanager::CViewer : public QWidget
         void deleteSelectedMarkers() throw (itm::RuntimeException);
         void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (itm::RuntimeException);
         void createMarkerAt(int x, int y) throw (itm::RuntimeException);
-        void createMarker2At(int x, int y) throw (itm::RuntimeException);
+		void createMarker2At(int x, int y) throw (itm::RuntimeException);
+		void updateAnnotationSpace() throw (itm::RuntimeException);
 
         /**********************************************************************************
         * Saves/restores the state of PMain spinboxes for subvolume selection
@@ -351,6 +352,7 @@ class teramanager::CViewer : public QWidget
         //PMain instance is allowed to access class private members
         friend class PMain;
         friend class PAnoToolBar;
+        friend class CAnnotations;
         friend class CVolume;
         friend class TeraFly;
         friend class QUndoMarkerCreate;

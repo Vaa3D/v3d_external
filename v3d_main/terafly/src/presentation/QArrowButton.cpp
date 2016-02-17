@@ -1,3 +1,7 @@
+#include <cmath>
+#ifdef USE_Qt5
+#include <QPainter>
+#endif
 #include "QArrowButton.h"
 
 using namespace teramanager;

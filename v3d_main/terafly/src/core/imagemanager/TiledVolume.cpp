@@ -80,10 +80,7 @@ TiledVolume::TiledVolume(const char* _root_dir)  throw (IOException)
     /**/iim::debug(iim::LEV3, strprintf("_root_dir=%s", _root_dir).c_str(), __iim__current__function__);
 
 	// 2015-03-03. Giulio. @ADDED selection of IO plugin if not provided.
-	if(iom::IMIN_PLUGIN.compare("empty") == 0)
-	{
-		iom::IMIN_PLUGIN = "tiff3D";
-	}
+	iom::IMIN_PLUGIN = "tiff3D";
 
 	//DIM_V = DIM_H = DIM_D = 0;
 	VXL_1 = VXL_2 = VXL_3 = 0;
@@ -117,10 +114,7 @@ TiledVolume::TiledVolume(const char* _root_dir, ref_sys _reference_system, float
                                         _root_dir, _reference_system.first, _reference_system.second, _reference_system.third, _VXL_1, _VXL_2, _VXL_3).c_str(), __iim__current__function__);
 
 	// 2015-03-03. Giulio. @ADDED selection of IO plugin if not provided.
-	if(iom::IMIN_PLUGIN.compare("empty") == 0)
-	{
-		iom::IMIN_PLUGIN = "tiff3D";
-	}
+	iom::IMIN_PLUGIN = "tiff3D";
 
 	//DIM_V = DIM_H = DIM_D = 0;
 	VXL_1 = VXL_2 = VXL_3 = 0;
@@ -1155,7 +1149,7 @@ iim::uint8* TiledVolume::loadSubvolume_to_UINT8(int V0,int V1, int H0, int H1, i
 
 	if ( red_factor > 1 ) { // the buffer has to be reduced
 
-		if ( (err_rawfmt = convert2depth8bits(red_factor,(sbv_height*sbv_width*sbv_depth),sbv_channels,subvol)) ) {
+		if ( (err_rawfmt = convert2depth8bits(red_factor,(sbv_height*sbv_width*sbv_depth),sbv_channels,subvol)) != 0  ) {
             char err_msg[STATIC_STRINGS_SIZE];
 			sprintf(err_msg,"TiledVolume::loadSubvolume_to_UINT8: %s", err_rawfmt);
             throw IOException(err_msg);

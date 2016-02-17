@@ -1,3 +1,7 @@
+#ifdef USE_Qt5
+#include <QtCore>
+#include <QtGui>
+#endif
 #include "QGLRefSys.h"
 
 #ifndef GL_MULTISAMPLE

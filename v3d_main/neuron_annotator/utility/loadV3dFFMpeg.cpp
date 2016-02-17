@@ -15,7 +15,38 @@
 
 using namespace std;
 
-bool saveStackFFMpeg( const char* file_name, const My4DImage& img, enum AVCodecID codec_id )
+bool
+codec_lookup( std::string codec_name, AVCodecID* codec, std::string* defaults )
+{
+    bool result = true;
+
+    if ( codec_name == "HEVC" )
+    {
+        *codec = AV_CODEC_ID_HEVC;
+        *defaults = "crf=15:psy-rd=1.0";
+    }
+    else if ( codec_name == "FFV1" )
+    {
+        *codec = AV_CODEC_ID_FFV1;
+        *defaults = "level=3:coder=1:context=1:g=1:slices=4:slicecrc=1";
+    }
+    else
+        result = false;
+
+    return result;
+}
+
+void
+generate_codec_mapping( Codec_Mapping& mapping, int num_channels )
+{
+    mapping.clear();
+    for ( int i = 0; i <= num_channels; ++i )
+    {
+        mapping.push_back( std::make_pair( AV_CODEC_ID_HEVC, "crf=15:psy-rd=1.0" ) );
+    }
+}
+
+bool saveStackFFMpeg( const char* file_name, const My4DImage& img, AVCodecID codec_id )
 {
     try
     {
@@ -78,7 +109,7 @@ int nearestPowerOfEight( int val )
     return ( lb == val ) ? lb : ub;
 }
 
-bool saveStackHDF5( const char* fileName, const My4DImage& img )
+bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* mapping )
 {
     try
     {
@@ -109,6 +140,13 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img )
         attr = group->createAttribute( "pad_bottom", H5::PredType::STD_I64LE, attr_ds );
         attr.write( H5::PredType::NATIVE_INT, &( pad_bottom ) );
 
+        Codec_Mapping* imap = mapping;
+        if ( !mapping )
+        {
+            imap = new Codec_Mapping();
+            generate_codec_mapping( *imap, proxy.sc );
+        }
+
         for ( int c = 0; c < proxy.sc; ++c )
         {
             double default_irange = 1.0; // assumes data range is 0-255.0
@@ -130,7 +168,8 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img )
                 }
             }
 
-            FFMpegEncoder encoder( NULL, scaledWidth, scaledHeight, AV_CODEC_ID_HEVC );
+            FFMpegEncoder encoder( NULL, scaledWidth, scaledHeight,
+                                   ( *imap )[c].first, ( *imap )[c].second );
             // If the image needs padding, fill the expanded border regions with black
             for ( int z = 0; z < proxy.sz; ++z )
             {
@@ -171,15 +210,10 @@ std: stringstream name;
 
             std::cout << "Encoded channel is " << encoder.buffer_size() << " bytes." << std::endl;
             // Uncomment this if you want to dump the individual movies to a temp file
-#if 0
-            name.str( std::string() );
-            name << "/tmp/foo_" << c << ".mp4";
-            std::ofstream myFile ( name.str(), ios::out | ios::binary );
-            myFile.write( ( const char* )encoder.buffer(), encoder.buffer_size() );
-            myFile.close();
-#endif
         }
 #endif
+        if ( !mapping )
+            delete imap;
 
         file.close();
 

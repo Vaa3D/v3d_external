@@ -22,6 +22,13 @@
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
 
+/******************
+*    CHANGELOG    *
+*******************
+*******************
+* 2015-12-10. Giulio.     @ADDED support for single Tiff 3D volumes 
+*/
+
 # ifndef _RAW_VOLUME_H
 # define _RAW_VOLUME_H
 
@@ -40,10 +47,13 @@ class RawVolume : public iim::VirtualVolume
 
         char *file_name;
         unsigned char *img;
-        V3DLONG *sz;
+        iim::sint64 *sz;
         int datatype;
         int b_swap;
         int header_len;
+
+		std::string ffmt;
+		iim::VirtualFmtMngr *fmtMngr;
 
         void *fhandle;
 
@@ -68,6 +78,9 @@ class RawVolume : public iim::VirtualVolume
         iim::axis getAXS_1() {return iim::horizontal;}
         iim::axis getAXS_2() {return iim::vertical;}
         iim::axis getAXS_3() {return iim::depth;}
+
+		std::string getFFMT(){return ffmt;}
+        iim::VirtualFmtMngr *getFMT_MNGR(){return fmtMngr;}
 
         iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1)  throw (iim::IOException);
 

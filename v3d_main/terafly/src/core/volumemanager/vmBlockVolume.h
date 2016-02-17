@@ -25,6 +25,7 @@
 /******************
 *    CHANGELOG    *
 *******************
+* 2015-06-12. Giulio      @ADDED 'check' method to check completeness and coherence of a volume
 * 2015-02-26. Giulio.     @ADDED initChannels private method to initialize fields DIM_C and BYTESxCHAN
 * 2015-01-17. Alessandro. @FIXED missing throw(iom::exception) declaration in loadXML and initFromXML methods.
 * 2014-09-20. Alessandro. @ADDED overwrite_mdata flag to the XML-based constructor.
@@ -103,6 +104,10 @@ class vm::BlockVolume : public vm::VirtualVolume
         /**********************************************************************************
         * UTILITY methods
         ***********************************************************************************/
+
+        //check if volume is complete and coherent; return true if the volume is ok, false otherwise
+		//if a file name is passed and the volume is not ok an error log file is generated
+		bool check(const char *errlogFileName = 0) throw (iom::exception);
 
         //counts the total number of displacements and the number of displacements per pair of adjacent stacks
         void countDisplacements(int& total, float& per_stack_pair);

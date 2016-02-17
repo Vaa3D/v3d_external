@@ -202,7 +202,40 @@ public:
 	void setRawDataPointerToNull() { this->data1d = 0; }
 	void deleteRawDataAndSetPointerToNull() { if (data1d) {delete []data1d; data1d = 0;} }
 	void setRawDataPointer(unsigned char *p) { this->data1d = p; }
-	bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
+
+        bool setIntensityUnit8(V3DLONG  x,  V3DLONG  y,  V3DLONG z, V3DLONG chanel, unsigned char val)
+        {//for unit8 data only
+            V3DLONG im_total_sz = sz0*sz1*sz2;
+            V3DLONG idx = chanel * (im_total_sz) + z*(sz0*sz1) + y*sz0 + x;
+            if (idx < sz0*sz1*sz2*sz3)
+            {
+                  this->data1d[idx] = val;
+                  return true;
+            }
+            else
+            {
+                printf("Image4DSimple::getIntensity() error: index exceeds the image size");
+                return false;
+            }
+
+        }
+
+        unsigned char getIntensityUnit8(V3DLONG  x,  V3DLONG  y,  V3DLONG z,V3DLONG chanel ){
+          //for unit8 data only
+            V3DLONG im_total_sz = sz0*sz1*sz2;
+            V3DLONG idx = chanel * (im_total_sz) + z*(sz0*sz1) + y*sz0 + x;
+            if (idx < sz0*sz1*sz2*sz3)
+            {
+                return this->data1d[idx];
+            }
+            else
+            {
+                printf("Image4DSimple::getIntensity() error: index exceeds the image size");
+                return 0;
+            }
+        }
+
+        bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
 	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
 	void setOriginX(double a) { origin_x = a;}

@@ -68,7 +68,7 @@ void Renderer::makeCurrent()
 		w->makeCurrent();
 }
 
-void Renderer::drawString(float x, float y, float z, const char* text, int shadow)
+void Renderer::drawString(float x, float y, float z, const char* text, int shadow, int fontsize)
 {
     if (! widget)  return;
 
@@ -87,7 +87,12 @@ void Renderer::drawString(float x, float y, float z, const char* text, int shado
 		glDepthFunc(GL_LEQUAL);
 	}
 
-	((QGLWidget*)widget)->renderText(x,y,z, QString(text));
+    QFont f1;  f1.setPointSize((fontsize>0)?fontsize:30); f1.setWeight(99);
+    if (fontsize>0)
+        ((QGLWidget*)widget)->renderText(x,y,z, QString(text), f1);
+    else
+        ((QGLWidget*)widget)->renderText(x,y,z, QString(text));
+
 
 	if (shadow)
 	{
@@ -410,7 +415,7 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 //	glPolygonOffset(0, -1); // deal z-fighting, 081120
 //	glDepthFunc(GL_LEQUAL);
 
-	// a indicator of coordinate direction
+    // an indicator of coordinate direction
 	if (bShowAxes && AlineWidth>0)
 	{
 		float D = (BB.Dmax());
@@ -431,9 +436,9 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 		}
 		glEnd();
 
-		glColor3f(1, 0, 0);		drawString(A1.x+td, A0.y, A0.z, "X", 1);
-		glColor3f(0, 1, 0);		drawString(A0.x, A1.y+td, A0.z, "Y", 1);
-		glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z+td, "Z", 1);
+        glColor3f(1, 0, 0);		drawString(A1.x+td, A0.y, A0.z, "X", 1, 0);
+        glColor3f(0, 1, 0);		drawString(A0.x, A1.y+td, A0.z, "Y", 1, 0);
+        glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z+td, "Z", 1, 0);
 	}
 
 	if (bShowBoundingBox && BlineWidth>0)
@@ -451,6 +456,63 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 
 	glPopAttrib();
 }
+
+
+void Renderer::drawVaa3DInfo(int fontsize)
+{
+    // no scale here
+    GLdouble mRot[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
+    for (int i=0; i<3; i++) mRot[i*4 +3]=mRot[3*4 +i]=0; mRot[3*4 +3]=1; // only reserve rotation, remove translation in mRot
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    double aspect = double(screenW)/MAX(screenH,1);
+    double halfw = 1.3*aspect;
+    double halfh = 1.3;
+    glOrtho(-halfw, halfw, -halfh, halfh, -1, 1000); // 1000 makes 0 at most front depth in z-buffer
+    glTranslated(+0.8, -1.15, 0); // put at right-bottom corner
+
+    double sbar = 0.1; // scale bar display size
+    glScaled(sbar*2, sbar*2, sbar*2); //[0,1]-->[-1,+1]
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glMultMatrixd(mRot); // last rotation pose
+
+    glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_POLYGON_OFFSET_LINE);
+
+    glColor3fv(color_line.c);
+
+    if (fontsize > 0)
+    {
+        BoundingBox BB = UNIT_BoundingBox;
+        float D = (BB.Dmax());
+        float ld = D*0.0001; //1e-4 is best
+        float td = 0.02;
+        XYZ A0 = BB.Vabsmin();
+        XYZ A1 = BB.V1();
+
+        char str[100];
+        //sprintf(str, "%s", "BigNeuron.org");
+        sprintf(str, "%s", "vaa3d.org");
+
+        drawString(A0.x + td, A0.y, A0.z, str, 0, fontsize);
+//        drawString(A0.x + td, A0.y + td, A0.z, "bigneuron.org", 0, fontsize);
+        //glColor3f(1, 0, 0);		drawString(A1.x + td, A0.y, A0.z, "X");
+        //glColor3f(0, 1, 0);		drawString(A0.x, A1.y + td, A0.z, "Y");
+        //glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z + td, "Z");
+    }
+
+    glPopAttrib();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
 
 void Renderer::drawScaleBar(float AlineWidth)
 {
@@ -510,7 +572,7 @@ void Renderer::drawScaleBar(float AlineWidth)
         sprintf(str, "%g", sizeXunit * sbar * zoomRatio);
         //qDebug("sizeX=%g unitXscale=%g sizeXunit=%g", sizeX, unitXscale, sizeXunit);
 
-	    drawString(A1.x + td, A0.y, A0.z, str);
+        drawString(A1.x + td, A0.y, A0.z, str, 0, 0);
 		//glColor3f(1, 0, 0);		drawString(A1.x + td, A0.y, A0.z, "X");
 		//glColor3f(0, 1, 0);		drawString(A0.x, A1.y + td, A0.z, "Y");
 		//glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z + td, "Z");

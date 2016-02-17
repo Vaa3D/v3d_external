@@ -3296,6 +3296,16 @@ void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is spec
 {
 	qDebug("***v3d: XFormWidget::closeEvent");
 
+    //clean up the potential 3D viewer links so to avoid potential later crash. PHC 20151116
+        mypara_3Dlocalview.image4d = NULL;
+        mypara_3Dlocalview.xwidget = NULL;
+
+        mypara_3Dview.image4d = NULL;
+        mypara_3Dview.xwidget = NULL;
+
+    //
+
+
     if(mvControlWin) mvControlWin->close();
 
 	printf("Now going to free memory for this image or data of this window. .... ");

@@ -62,7 +62,6 @@ class teramanager::CSettings
         int traslZ;             //traslation percentage with respect to the actual VOI along Z axis
         int traslT;             //traslation percentage with respect to the actual VOI along T axis
         bool annotationSpaceUnlimited;
-        int annotationMarkersDeleteROISampling;
         int annotationCurvesDims;
         bool annotationCurvesAspectTube;
         int annotationVirtualMargin;
@@ -106,15 +105,21 @@ class teramanager::CSettings
         int getTraslZ(){return traslZ;}
         int getTraslT(){return traslT;}
         bool getAnnotationSpaceUnlimited(){return annotationSpaceUnlimited;}
-        int getAnnotationMarkersDeleteROISampling(){return annotationMarkersDeleteROISampling;}
         int getAnnotationCurvesDims(){return annotationCurvesDims;}
         bool getAnnotationCurvesAspectTube(){return annotationCurvesAspectTube;}
         int getAnnotationVirtualMargin(){return annotationVirtualMargin;}
         int getAnnotationMarkerSize(){return annotationMarkerSize;}
         bool getPreviewMode(){return previewMode;}
 
-        void setVolumePathLRU(std::string _volumePathLRU){volumePathLRU = _volumePathLRU;}
-        void addVolumePathToHistory(std::string _volumePath){
+        void setVolumePathLRU(std::string _volumePathLRU)
+        {
+            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePathLRU = \"%s\"", _volumePathLRU.c_str()).c_str(), __itm__current__function__);
+            volumePathLRU = _volumePathLRU;
+        }
+        void addVolumePathToHistory(std::string _volumePath)
+        {
+            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePath = \"%s\"", _volumePath.c_str()).c_str(), __itm__current__function__);
+
             if(volumePathHistory.size() > 10)
                 volumePathHistory.pop_front();
             volumePathHistory.push_back(_volumePath);
@@ -135,7 +140,6 @@ class teramanager::CSettings
         void setTraslZ(int _traslZ){traslZ = _traslZ;}
         void setTraslT(int _traslT){traslT = _traslT;}
         void setAnnotationSpaceUnlimited(bool _unl){annotationSpaceUnlimited = _unl;}
-        void setAnnotationMarkersDeleteROISampling(int newval){annotationMarkersDeleteROISampling = newval;}
         void setAnnotationCurvesDims(int newval){annotationCurvesDims = newval;}
         void setAnnotationCurvesAspectTube(bool newval){annotationCurvesAspectTube = newval;}
         void setAnnotationVirtualMargin(int newval){annotationVirtualMargin = newval;}

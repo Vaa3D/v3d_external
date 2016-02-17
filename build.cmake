@@ -100,7 +100,7 @@ if [[ -z ${OPERATION:-} ]]; then
     exit 1
 fi
 
-CMAKE_PLATFORM_ARGS="-DBoost_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
+CMAKE_PLATFORM_ARGS="-DBOOST_ROOT:PATH=$ROOT_DIR/v3d_main/common_lib "
 if [ $PLATFORM = "windows-x86_64" ]; then
     CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
     CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/winlib64/libtiff.lib "
@@ -151,8 +151,11 @@ case $OPERATION in
             cd v3d_main/common_lib
             tar xzf src_packages/boost_1_57_0.tar.gz
             echo "Copying Boost headers"
-            cp -r boost_1_57_0/boost include
-            cd ../../
+            boost_prefix=`pwd`
+            cd boost_1_57_0
+            ./bootstrap.sh --prefix=$boost_prefix
+            ./b2 install
+            cd ../../../
         fi
 
         if [ $PLATFORM = "windows-x86_64" ]; then

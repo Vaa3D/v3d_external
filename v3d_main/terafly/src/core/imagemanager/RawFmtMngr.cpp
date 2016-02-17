@@ -32,7 +32,7 @@
  * stackutil-11.cpp of the V3D project. See the following licence notice for more details.
  *
  * modified by Giulio Iannello, Centro Integrato di Ricerca, Universita' Campus Bio-Medico di Roma
- * December 2012
+ * December 2012 
  */
 
 
@@ -1145,11 +1145,8 @@ char *copyRawFileBlock2Buffer ( char *filename, int sV0, int sV1, int sH0, int s
 
 	/* swap the data bytes if necessary */
 	
-	if (b_swap==1)
+	if (b_swap==1 && unitSize>1 ) // endianess is different and pixels are longer than 1 byte
 	{
-		if ( sz ) delete[] sz;
-		return ((char *)"Byte swap not supported.\n");
-
 		for (c=0, buftmp_c=(buf + (offs*unitSize)); c<sz[3]; c++, buftmp_c+=(stridexyz*unitSize))
 		{
 			for (k = startz, buftmp_k=buftmp_c; k < endz; k++, buftmp_k+=(stridexy*unitSize)) 
@@ -1161,7 +1158,7 @@ char *copyRawFileBlock2Buffer ( char *filename, int sV0, int sV1, int sH0, int s
 					int dummy = (int)ftell(fid);	
 					dummy = (int)fread(buftmp_j,unitSize,tmpw,fid);
 
-					// swap the bytes: this code has not be checked yey
+					// swap the bytes: this code has not be checked yet
 					if (unitSize==2)
 					{
 						for (i=0;i<tmpw; i++)
@@ -1461,7 +1458,7 @@ char *Streamer_Descr_t::addSubBlock ( char *filename, sint64 boffs, int sV0, int
 
 /********* SUPPORT TO VISUALIZATION OF 16/32 BITS PER CHANNEL ***********/
 
-char *convert2depth8bits ( int red_factor, sint64 totalBlockSize, sint64 sbv_channels, uint8 *&subvol ) {
+char *convert2depth8bits ( int red_factor, sint64 totalBlockSize, sint64 sbv_channels, uint8 *&subvol, iim::uint8 *dstbuf ) {
 	int c, i, j, p;
 	sint64 totalUnits = totalBlockSize * sbv_channels;
 
@@ -1492,10 +1489,10 @@ char *convert2depth8bits ( int red_factor, sint64 totalBlockSize, sint64 sbv_cha
 				count++;
             temp[i] <<= p;
 		}
-		printf("\t\t\t\tin RawFmtMngr - convert2depth8bits: c=%d, maxVal=%d, p=%d, count=%lld\n\n",c,maxVal,p,count);
+		//printf("\t\t\t\tin RawFmtMngr - convert2depth8bits: c=%d, maxVal=%d, p=%d, count=%lld\n\n",c,maxVal,p,count);
 	}
 	
-	uint8 *temp_buf = new uint8[totalUnits];
+	uint8 *temp_buf = dstbuf ? dstbuf : new uint8[totalUnits];
 	memset(temp_buf,0,totalUnits);
 	for ( i=0; i<totalUnits; i++, j+=red_factor )
 		temp_buf[i] = subvol[j];

@@ -11,7 +11,7 @@ include_directories( ${CMAKE_BINARY_DIR}/v3d_main/v3d )
 set (V3D_MAIN "${CMAKE_SOURCE_DIR}/v3d_main")
 
 # Switch Qt versions
-set(FORCE_QT4 ON CACHE BOOL "Build HDF5 loader")
+set(FORCE_QT4 ON CACHE BOOL "Build with Qt4")
 
 # Sidestep compile trouble with boost 1.46 with MSVC11/2012
 if(WIN32)

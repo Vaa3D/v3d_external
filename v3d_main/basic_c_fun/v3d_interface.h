@@ -221,6 +221,9 @@ public:
     virtual V3dR_MainWindow * open3DViewerForLinkerFile(QString fileName) = 0;
     virtual V3dR_MainWindow * createEmpty3DViewer() = 0; //create a 3D viewer with no content
     virtual void setWindowDataTitle(V3dR_MainWindow *w, QString title) = 0 ;
+    virtual void moveWindow(V3dR_MainWindow *w, int x, int y) = 0 ;
+    virtual void resizeWindow(V3dR_MainWindow *w, int x, int y) = 0 ;
+
 };
 
 class V3DPluginInterface2

@@ -46,8 +46,10 @@
 #include "v3dr_mainwindow.h"
 #include <typeinfo>
 #include "TimeSeries.h"
+#include "BDVVolume.h"
 #include <QtGlobal>
 #include <cmath>
+#include "VolumeConverter.h"
 #include "../core/imagemanager/TiledMCVolume.h"
 
 using namespace teramanager;
@@ -155,8 +157,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     menuBar = new QMenuBar(0);
     /* --------------------------- "File" menu --------------------------- */
     fileMenu = menuBar->addMenu("File");
-    openVolumeAction = new QAction("Open volume", this);
-    openVolumeAction->setIcon(QIcon(":/icons/open_volume.png"));
+    openTeraFlyVolumeAction = new QAction("Open TeraFly volume", this);
+    openTeraFlyVolumeAction->setIcon(QIcon(":/icons/open_volume.png"));
+    openHDF5VolumeAction = new QAction("Open HDF5 volume", this);
+    openHDF5VolumeAction->setIcon(QIcon(":/icons/import.png"));
     closeVolumeAction = new QAction("Close volume", this);
     closeVolumeAction->setIcon(QIcon(":/icons/close.png"));
     loadAnnotationsAction = new QAction("Load annotations", this);
@@ -168,21 +172,24 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     clearAnnotationsAction = new QAction("Clear annotations", this);
     clearAnnotationsAction->setIcon(QIcon(":/icons/clear.png"));
     exitAction = new QAction("Quit", this);
-    openVolumeAction->setShortcut(QKeySequence("Ctrl+O"));
+    openTeraFlyVolumeAction->setShortcut(QKeySequence("Ctrl+O"));
+    openHDF5VolumeAction->setShortcut(QKeySequence("Ctrl+H"));
     closeVolumeAction->setShortcut(QKeySequence("Ctrl+C"));
     loadAnnotationsAction->setShortcut(QKeySequence("Ctrl+L"));
     saveAnnotationsAction->setShortcut(QKeySequence("Ctrl+S"));
     saveAnnotationsAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     clearAnnotationsAction->setShortcut(QKeySequence("Ctrl+Shift+C"));
     exitAction->setShortcut(QKeySequence("Ctrl+Q"));
-    connect(openVolumeAction, SIGNAL(triggered()), this, SLOT(openVolume()));
+    connect(openTeraFlyVolumeAction, SIGNAL(triggered()), this, SLOT(openTeraFlyVolume()));
+    connect(openHDF5VolumeAction, SIGNAL(triggered()), this, SLOT(openHDF5Volume()));
     connect(closeVolumeAction, SIGNAL(triggered()), this, SLOT(closeVolume()));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
     connect(loadAnnotationsAction, SIGNAL(triggered()), this, SLOT(loadAnnotations()));
     connect(saveAnnotationsAction, SIGNAL(triggered()), this, SLOT(saveAnnotations()));
     connect(saveAnnotationsAsAction, SIGNAL(triggered()), this, SLOT(saveAnnotationsAs()));
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
-    fileMenu->addAction(openVolumeAction);
+    fileMenu->addAction(openTeraFlyVolumeAction);
+    fileMenu->addAction(openHDF5VolumeAction);
     recentVolumesMenu = new QMenu("Recent volumes");
     recentVolumesMenu->setIcon(QIcon(":/icons/open_volume_recent.png"));
     fileMenu->addMenu(recentVolumesMenu);
@@ -205,7 +212,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     regenVMap_cAction->setCheckable(true);
     importOptionsMenu-> addAction(regenVMap_cAction);
     /* ------------------------- "Options" menu: Annotation ---------------------- */
-    annotationMenu = optionsMenu->addMenu("Annotation");
+    annotationMenu = optionsMenu->addMenu("Annotations");
     markersMenu = annotationMenu->addMenu("Markers");
     curvesMenu = annotationMenu->addMenu("Curves");
     curveAspectMenu = curvesMenu->addMenu("Aspect");
@@ -260,20 +267,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     markersSizeMenu->addAction(markersSizeWidget);
     connect(markersSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markersSizeSpinBoxChanged(int)));
     /**/
-    markersDeleteROIMenu = markersMenu->addMenu("Action: \"1-right-stroke to delete a group of markers\"");
-    markersDeleteROISamplingMenu = markersDeleteROIMenu->addMenu("Sample every");
-    markersDeleteROISamplingWidget = new QWidgetAction(this);
-    markersDeleteROISamplingSpinBox = new QSpinBox();
-    markersDeleteROISamplingSpinBox->setMinimum(1);
-    markersDeleteROISamplingSpinBox->setMaximum(20);
-    markersDeleteROISamplingSpinBox->setSuffix(" (pixels)");
-    markersDeleteROISamplingWidget->setDefaultWidget(markersDeleteROISamplingSpinBox);
-    markersDeleteROISamplingMenu->addAction(markersDeleteROISamplingWidget);
-    markersDeleteROISamplingSpinBox->setValue(CSettings::instance()->getAnnotationMarkersDeleteROISampling());
-    connect(markersDeleteROISamplingSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markersDeleteROISamplingSpinBoxChanged(int)));
-    /**/
-    markersShowROIMenu = markersMenu->addMenu("Action: \"Show/hide markers around the displayed ROI\"");
-    markersShowROIMarginMenu = markersShowROIMenu->addMenu("Virtual margin size");
+    markersShowROIMarginMenu = markersMenu->addMenu("VOI extra margin");
     markersShowROIMarginWidget = new QWidgetAction(this);
     markersShowROIMarginSpinBox = new QSpinBox();
     markersShowROIMarginSpinBox->setSuffix(" %");
@@ -348,6 +342,58 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fdDirectAction->setChecked(!fdPreviewAction->isChecked());
     connect(fdPreviewAction, SIGNAL(changed()), this, SLOT(fetchAndDisplayChanged()));
 
+
+
+    // "Utility" Menu
+    utilityMenu = menuBar->addMenu("Utilities");
+    QMenu* utilsAnno = utilityMenu->addMenu("Annotations");
+    QMenu* utilsMarkers = utilsAnno->addMenu("Markers");
+    QMenu* utilsConvert = utilsMarkers->addMenu("Convert");
+    QMenu* utilsAnalyze = utilsMarkers->addMenu("Analyze");
+    QMenu* timeseriesMenu = utilityMenu->addMenu("Time-series");
+
+
+    countMarkersDuplicates = new QAction("count duplicates in the whole image", this);
+    connect(countMarkersDuplicates, SIGNAL(triggered()), this, SLOT(showDialogCountDuplicateMarkers()));
+    utilsAnalyze->addAction(countMarkersDuplicates);
+    typeIandTypeIIerrorsAPO = new QAction("count type I/II errors from two .apo files", this);
+    connect(typeIandTypeIIerrorsAPO, SIGNAL(triggered()), this, SLOT(showDialogTypeIandTypeIIerrors()));
+    utilsAnalyze->addAction(typeIandTypeIIerrorsAPO);
+    diffAPO = new QAction("diff of two .apo files", this);
+    connect(diffAPO, SIGNAL(triggered()), this, SLOT(showDialogDiffAPO()));
+    utilsAnalyze->addAction(diffAPO);
+    diffnAPO = new QAction("diff of multiple .apo files", this);
+    connect(diffnAPO, SIGNAL(triggered()), this, SLOT(showDialogDiffnAPO()));
+    utilsAnalyze->addAction(diffnAPO);
+    labelDuplicateAPO = new QAction("label duplicates in .apo file", this);
+    connect(labelDuplicateAPO, SIGNAL(triggered()), this, SLOT(showDialogLabelDuplicateAPO()));
+    utilsAnalyze->addAction(labelDuplicateAPO);
+    trimAPO = new QAction("trim .apo with VOI selection", this);
+    connect(trimAPO, SIGNAL(triggered()), this, SLOT(showDialogTrimAPO()));
+    utilsAnalyze->addAction(trimAPO);
+    convertVtk2APO = new QAction(".vtk  (VTK) -> .apo", this);
+    connect(convertVtk2APO, SIGNAL(triggered()), this, SLOT(showDialogVtk2APO()));
+    utilsConvert->addAction(convertVtk2APO);
+    convertMaMuT2APO = new QAction(".xml (MaMuT/BigDataViewer) -> .apo", this);
+    connect(convertMaMuT2APO, SIGNAL(triggered()), this, SLOT(showDialogMaMut2APO()));
+    utilsConvert->addAction(convertMaMuT2APO);
+    mergeImageJCellCounterXMLs = new QAction(".xml (ImageJ Cell Counter) -> .apo", this);
+    connect(mergeImageJCellCounterXMLs, SIGNAL(triggered()), this, SLOT(showDialogMergeImageJCellCounterXMLs()));
+    utilsConvert->addAction(mergeImageJCellCounterXMLs);
+
+    generateTimeSeries = new QMenu("Generate time series by");
+    generateTimeSeriesDataReplication = new QAction("single-frame replication with increasing gaussian noise", this);
+    connect(generateTimeSeriesDataReplication, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesReplication()));
+    generateTimeSeriesInterpolation = new QAction("interpolation from frames A to B", this);
+    connect(generateTimeSeriesInterpolation, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesInterpolation()));
+    generateTimeSeries->addAction(generateTimeSeriesDataReplication);
+    generateTimeSeries->addAction(generateTimeSeriesInterpolation);
+    timeseriesMenu->addMenu(generateTimeSeries);
+    displayAnoOctree = new QAction("Display annotations octree", this);
+    connect(displayAnoOctree, SIGNAL(triggered()), this, SLOT(showAnoOctree()));
+    utilsAnno->addAction(displayAnoOctree);
+
+
     // "Debug" menu
     debugMenu = menuBar->addMenu("Debug");
     /* --------------------------------- show log --------------------------------- */
@@ -394,49 +440,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     addGaussianNoiseToTimeSeries->setCheckable(true);
     connect(addGaussianNoiseToTimeSeries, SIGNAL(triggered()), this, SLOT(addGaussianNoiseTriggered()));
     debugMenu->addAction(addGaussianNoiseToTimeSeries);
-    /* -------------------------------- time series ------------------------------- */
-//    debugTimeSeriesMenu = new QMenu("Time series size");
-//    debugTimeSeriesWidget = new QWidgetAction(this);
-//    debugTimeSeriesSBox = new QSpinBox();
-//    debugTimeSeriesSBox->setMinimum(1);
-//    debugTimeSeriesSBox->setMaximum(500);
-//    debugTimeSeriesSBox->setValue(100);
-//    debugTimeSeriesWidget->setDefaultWidget(debugTimeSeriesSBox);
-//    debugTimeSeriesMenu->addAction(debugTimeSeriesWidget);
-//    debugMenu->addMenu(debugTimeSeriesMenu);
-
-    // "Utility" Menu
-    utilityMenu = menuBar->addMenu("Utilities");
-    diffAPO = new QAction(".apo diff", this);
-    connect(diffAPO, SIGNAL(triggered()), this, SLOT(showDialogDiffAPO()));
-    utilityMenu->addAction(diffAPO);
-    trimAPO = new QAction(".apo trim", this);
-    connect(trimAPO, SIGNAL(triggered()), this, SLOT(showDialogTrimAPO()));
-    utilityMenu->addAction(trimAPO);
-    convertVtk2APO = new QAction(".vtk -> .apo (cells only)", this);
-    connect(convertVtk2APO, SIGNAL(triggered()), this, SLOT(showDialogVtk2APO()));
-    utilityMenu->addAction(convertVtk2APO);
-    mergeImageJCellCounterXMLs = new QAction(".xml (ImageJ Cell Counter markers) -> .apo", this);
-    connect(mergeImageJCellCounterXMLs, SIGNAL(triggered()), this, SLOT(showDialogMergeImageJCellCounterXMLs()));
-    utilityMenu->addAction(mergeImageJCellCounterXMLs);
-    countMarkersDuplicates = new QAction("Count duplicate markers", this);
-    connect(countMarkersDuplicates, SIGNAL(triggered()), this, SLOT(showDialogCountDuplicateMarkers()));
-    utilityMenu->addAction(countMarkersDuplicates);
-    generateTimeSeries = new QMenu("Generate time series by");
-    generateTimeSeriesDataReplication = new QAction("single-frame replication with increasing gaussian noise", this);
-    connect(generateTimeSeriesDataReplication, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesReplication()));
-    generateTimeSeriesInterpolation = new QAction("interpolation from frames A to B", this);
-    connect(generateTimeSeriesInterpolation, SIGNAL(triggered()), this, SLOT(showDialogGenerateTimeSeriesInterpolation()));
-    generateTimeSeries->addAction(generateTimeSeriesDataReplication);
-    generateTimeSeries->addAction(generateTimeSeriesInterpolation);
-    utilityMenu->addMenu(generateTimeSeries);
-    displayAnoOctree = new QAction("Display annotations octree", this);
-    connect(displayAnoOctree, SIGNAL(triggered()), this, SLOT(showAnoOctree()));
-    utilityMenu->addAction(displayAnoOctree);
 
 
+    // "Help" menu
     helpMenu = menuBar->addMenu("Help");
-    aboutAction = new QAction("About", this);
+    aboutAction = new QAction("Info about TeraFly", helpMenu);
     aboutAction->setIcon(QIcon(":/icons/about.png"));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
     helpMenu->addAction(aboutAction);
@@ -463,7 +471,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     recentVolumesMenu->addSeparator();
     recentVolumesMenu->addAction(clearRecentVolumesAction);
 
-    openMenu->addAction(openVolumeAction);
+    openMenu->addAction(openTeraFlyVolumeAction);
+    openMenu->addAction(openHDF5VolumeAction);
     openMenu->addMenu(recentVolumesMenu);
     openVolumeToolButton = new QToolButton();
     openVolumeToolButton->setMenu(openMenu);
@@ -963,7 +972,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     layout->setSpacing(0);
     setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    setWindowTitle(QString("Vaa3D-TeraFly v").append(teramanager::version.c_str()));
+    setWindowTitle(QString("TeraFly v").append(teramanager::version.c_str()));
     this->setFont(tinyFont);
 
 
@@ -1027,12 +1036,12 @@ void PMain::reset()
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
     //resetting menu options and widgets
-    openVolumeAction->setEnabled(true);
+    openTeraFlyVolumeAction->setEnabled(true);
+    openHDF5VolumeAction->setEnabled(true);
     openVolumeToolButton->setEnabled(true);
     recentVolumesMenu->setEnabled(true);
     closeVolumeAction->setEnabled(false);
     importOptionsMenu->setEnabled(true);
-    aboutAction->setEnabled(true);
     loadAnnotationsAction->setEnabled(false);
     saveAnnotationsAction->setEnabled(false);
     saveAnnotationsAsAction->setEnabled(false);
@@ -1155,7 +1164,14 @@ void PMain::openVolumeActionTriggered()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
-    this->openVolume(qobject_cast<QAction*>(sender())->text().toStdString());
+    std::string recentpath = qobject_cast<QAction*>(sender())->text().toStdString();
+    QFileInfo pathinfo(recentpath.c_str());
+    if(pathinfo.isDir())
+        openTeraFlyVolume(qobject_cast<QAction*>(sender())->text().toStdString());
+    else if(pathinfo.isFile())
+        openHDF5Volume(qobject_cast<QAction*>(sender())->text().toStdString());
+    else
+        QMessageBox::critical(this,QObject::tr("Error"), "Cannot find the file",QObject::tr("Ok"));
 }
 
 /**********************************************************************************
@@ -1175,10 +1191,102 @@ void PMain::clearRecentVolumesTriggered()
 }
 
 /**********************************************************************************
-* Called when "Open volume" menu action is triggered.
+* Called when "Open HDF5 volume" menu action is triggered.
 * If path is not provided, opens a QFileDialog to select volume's path.
 ***********************************************************************************/
-void PMain::openVolume(string path /* = "" */)
+void PMain::openHDF5Volume(string path)
+{
+    try
+    {
+        if(path.empty())
+        {
+            /**/itm::debug(itm::LEV2, "import_path is empty, launch file dialog", __itm__current__function__);
+            #ifdef _USE_QT_DIALOGS
+            QFileDialog dialog(0);
+            dialog.setFileMode(QFileDialog::ExistingFile);
+            dialog.setNameFilter(tr("BigDataViewer HDF5 files (*.h5)"));
+            dialog.setViewMode(QFileDialog::Detail);
+            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+            dialog.setWindowTitle("Select volume's file");
+            dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
+            if(dialog.exec())
+                path = dialog.directory().absolutePath().toStdString();
+
+            #else
+            path = QFileDialog::getOpenFileName(this, "Open HDF5 volume's file", QString(), tr("HDF5 files (*.h5)")).toStdString();
+            #endif
+            /**/itm::debug(itm::LEV3, strprintf("path = %s", path.c_str()).c_str(), __itm__current__function__);
+
+
+            if (path.empty())
+                return;
+        }
+        else
+        {
+            /**/itm::debug(itm::LEV2, strprintf("path is not empty (= \"%s\")", path.c_str()).c_str(), __itm__current__function__);
+
+            if(!QFile::exists(path.c_str()))
+                throw RuntimeException(strprintf("Path \"%s\" does not exist", path.c_str()).c_str());
+        }
+
+
+        //then checking that no volume has imported yet
+        if(!CImport::instance()->isEmpty())
+            throw RuntimeException("A volume has been already imported! Please close the current volume first.");
+
+
+        //storing the path into CSettings
+        CSettings::instance()->setVolumePathLRU(path);
+        CSettings::instance()->addVolumePathToHistory(path);
+        CSettings::instance()->writeSettings();
+
+        //updating recent volumes menu
+        QList<QAction*> actions = recentVolumesMenu->actions();
+        qDeleteAll(actions.begin(), actions.end());
+        std::list<string> recentVolumes = CSettings::instance()->getVolumePathHistory();
+        for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
+        {
+            QAction *action = new QAction(it->c_str(), this);
+            connect(action, SIGNAL(triggered()), this, SLOT(openVolumeActionTriggered()));
+            recentVolumesMenu->addAction(action);
+        }
+        clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
+        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumesTriggered()));
+        recentVolumesMenu->addSeparator();
+        recentVolumesMenu->addAction(clearRecentVolumesAction);
+
+
+        //disabling import form and enabling progress bar animation
+        progressBar->setEnabled(true);
+        progressBar->setMinimum(0);
+        progressBar->setMaximum(0);
+        statusBar->showMessage("Importing volume...");
+
+        //starting import
+        //throw itm::RuntimeException("HDF5 not yet implemented");
+        CImport::instance()->setPath(path);
+        CImport::instance()->updateMaxDims();
+        CImport::instance()->start();
+    }
+    catch(iim::IOException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        PMain::getInstance()->resetGUI();
+        CImport::instance()->reset();
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        PMain::getInstance()->resetGUI();
+        CImport::instance()->reset();
+    }
+}
+
+/**********************************************************************************
+* Called when "Open TeraFly volume" menu action is triggered.
+* If path is not provided, opens a QFileDialog to select volume's path.
+***********************************************************************************/
+void PMain::openTeraFlyVolume(string path /* = "" */)
 {
     /**/itm::debug(itm::LEV1, strprintf("path = \"%s\"", path.c_str()).c_str(), __itm__current__function__);
 
@@ -1225,17 +1333,6 @@ void PMain::openVolume(string path /* = "" */)
                 throw RuntimeException(strprintf("Path \"%s\" does not exist", import_path.toStdString().c_str()).c_str());
         }
 
-        /* ---- temporary code ---- */
-//        TimeSeries* ts = new TimeSeries(import_path.toStdString().c_str(), iim::RAW_FORMAT);
-//        printf("FOUND %d x %d x %d x %d x %d\n", ts->getDIM_H(), ts->getDIM_V(), ts->getDIM_D(), ts->getDIM_C(), ts->getDIM_T());
-//        return;
-//        VirtualVolume* vol = VirtualVolume::instance(import_path.toStdString().c_str());
-//        if(vol)
-//            printf("VOLUME FOUND! Type = \"%s\"\n", typeid(*vol).name());
-//        else
-//            printf("VOLUME not found :-(\n");
-//        return;
-        /* ------------------------ */
 
         //then checking that no volume has imported yet
         if(!CImport::instance()->isEmpty())
@@ -1620,7 +1717,11 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
             TiledVolume* vol = dynamic_cast<TiledVolume*>(volume_ith) ? dynamic_cast<TiledVolume*>(volume_ith) : dynamic_cast<TiledMCVolume*>(volume_ith)->getVolumes()[0];
             tiles_grid_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getN_COLS(), vol->getN_ROWS(), vol->getBLOCKS()[0][0]->getN_BLOCKS()).c_str());
             tile_dim_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getBLOCKS()[0][0]->getBLOCK_SIZE()[0]).c_str());
-
+        }
+        else if(dynamic_cast<BDVVolume*>(volume_ith))
+        {
+            tiles_grid_field->setText("BDV-HDF5 custom grid");
+            tile_dim_field->setText("BDV-HDF5 custom tile dim");
         }
         else
         {
@@ -1665,7 +1766,8 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 
         //updating menu items
         /**/itm::debug(itm::LEV3, "updating menu items", __itm__current__function__);
-        openVolumeAction->setEnabled(false);
+        openTeraFlyVolumeAction->setEnabled(false);
+        openHDF5VolumeAction->setEnabled(false);
         recentVolumesMenu->setEnabled(false);
         openVolumeToolButton->setEnabled(false);
         importOptionsMenu->setEnabled(false);
@@ -2198,6 +2300,25 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
+//    try
+//    {
+//        VolumeConverter *vc = new VolumeConverter();
+//        iim::DEBUG = iim::LEV_MAX;
+//        vc->setSrcVolume("/Volumes/Volumes/test.purkinje.big.tiff.3D.oneblock/RES(2122x1951x608)/000000/000000_000000/000000_000000_000000.tif", iim::TIF3D_FORMAT.c_str());
+//    }
+//    catch(...){QMessageBox::warning(this, "error", "error");}
+//    QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
+//    if(!apo1FilePath.isEmpty())
+//    {
+
+//        QList<CellAPO> cells = readAPO_file(apo1FilePath);
+//        for(int k=0; k<cells.size(); k++)
+//            v3d_msg(itm::strprintf("n = %d\nname = \"%s\"\ncomment = \"%s\"\nz = %f\nx = %f\ny = %d",
+//                                   cells[k].n, cells[k].name.toStdString().c_str(),
+//                                   cells[k].comment.toStdString().c_str(), cells[k].z, cells[k].x, cells[k].y).c_str());
+//    }
+    //CViewer *viewer = CViewer::getCurrent();
+    //v3d_msg(itm::strprintf("X=[%d,%d], Y=[%d,%d], Z[%d,%d]", viewer->anoH0, viewer->anoH1, viewer->anoV0, viewer->anoV1, viewer->anoD0, viewer->anoD1).c_str());
 //    QPalette Pal(palette());
 //    Pal.setColor(QPalette::Background, Qt::red);
 //    QWidget *emptyPanel = new QWidget();
@@ -2700,16 +2821,6 @@ void PMain::showToolbarButtonChanged(bool changed)
         PAnoToolBar::instance()->setVisible(changed);
 }
 
-/**********************************************************************************
-* Called when markersDeleteROISamplingSpinBox state has changed
-***********************************************************************************/
-void PMain::markersDeleteROISamplingSpinBoxChanged(int value)
-{
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
-
-    CSettings::instance()->setAnnotationMarkersDeleteROISampling(value);
-    CSettings::instance()->writeSettings();
-}
 
 /**********************************************************************************
 * Called when markersShowROIMarginSpinBox state has changed
@@ -2753,7 +2864,63 @@ void PMain::showDialogVtk2APO()
         {
             QString apoFilePath = QFileDialog::getSaveFileName(this, tr("Save to"), 0,tr("APO files (*.apo)"));
             if(!apoFilePath.isEmpty())
+            {
                 itm::CAnnotations::convertVtk2APO(vtkFilePath.toStdString(), apoFilePath.toStdString());
+                v3d_msg("DONE!");
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void PMain::showDialogMaMut2APO()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QString xmlFilePath = QFileDialog::getOpenFileName(this, tr("Select input file"), 0,tr("MaMuT input files (*.xml)"));
+        if(!xmlFilePath.isEmpty())
+        {
+            QString apoFilePath = QFileDialog::getSaveFileName(this, tr("Save to"), 0,tr("APO files (*.apo)"));
+            if(!apoFilePath.isEmpty())
+            {
+                itm::CAnnotations::convertMaMuT2APO(xmlFilePath.toStdString(), apoFilePath.toStdString());
+                v3d_msg("DONE!");
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void PMain::showDialogTypeIandTypeIIerrors()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
+        if(!apo1FilePath.isEmpty())
+        {
+            QString apo2FilePath = QFileDialog::getOpenFileName(this, tr("Select second APO file"), 0,tr("APO files (*.apo)"));
+            if(!apo2FilePath.isEmpty())
+            {
+                QString outputPath = QFileDialog::getSaveFileName(this, tr("Save output to"), 0,tr("APO files (*.apo)"));
+                if(!outputPath.isEmpty())
+                {
+                    int d = QInputDialog::getInt(this, "Input 1/2", "Tolerance distance:", 5, 0);
+                    std::string ID = QInputDialog::getText(this, "Input 2/2", "Filter cells by name (no ',' or '.' characters):", QLineEdit::Normal, "none").toStdString();
+                    std::pair<int,int> errors = itm::CAnnotations::typeIandIIerrorAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, ID, outputPath.toStdString());
+                    v3d_msg(itm::strprintf("Type I  errors (false positives): %d\n"
+                            "Type II errors (false negatives): %d", errors.first, errors.second).c_str());
+                }
+            }
         }
     }
     catch(itm::RuntimeException &ex)
@@ -2776,8 +2943,12 @@ void PMain::showDialogDiffAPO()
             {
                 QString savePath = QFileDialog::getSaveFileName(this, tr("Output file"), 0,tr("APO files (*.apo)"));
                 if(!savePath.isEmpty())
+                {
                     itm::CAnnotations::diffAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), H0_sbox->value(), H1_sbox->value(),
                                            V0_sbox->value(), V1_sbox->value(), D0_sbox->value(), D1_sbox->value(), savePath.toStdString());
+
+                    v3d_msg("DONE!");
+                }
             }
         }
     }
@@ -2806,7 +2977,64 @@ void PMain::showDialogTrimAPO()
                 int z0 = QInputDialog::getInt(this, "Select VOI", "[z0");
                 int z1 = QInputDialog::getInt(this, "Select VOI", "z1)");
                 itm::CAnnotations::trimAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), x0, x1, y0, y1, z0, z1);
+
+                v3d_msg("DONE!");
             }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void itm::PMain::showDialogLabelDuplicateAPO()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Open input APO file"), 0,tr("APO files (*.apo)"));
+        if(!apo1FilePath.isEmpty())
+        {
+            QString apo2FilePath = QFileDialog::getSaveFileName(this, tr("Select output APO file"), 0,tr("APO files (*.apo)"));
+            if(!apo2FilePath.isEmpty())
+            {
+                int d = QInputDialog::getInt(this, "Input 1/4", "Tolerance distance:", 5, 0);
+                int r = QInputDialog::getInt(this, "Input 2/4", "Label color (R): ",255,0,255);
+                int g = QInputDialog::getInt(this, "Input 3/4", "Label color (G): ",255,0,255);
+                int b = QInputDialog::getInt(this, "Input 4/4", "Label color (B): ",255,0,255);
+                RGBA8 color;
+                color.r = r;
+                color.g = g;
+                color.b = b;
+                itm::CAnnotations::labelDuplicates(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, color);
+
+                v3d_msg("DONE!");
+            }
+        }
+    }
+    catch(itm::RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void itm::PMain::showDialogDiffnAPO()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    try
+    {
+        QStringList apos = QFileDialog::getOpenFileNames(this, "Select two (or more) input files", 0, tr("APO files (*.apo)"));
+        if(apos.size() < 2)
+            throw itm::RuntimeException("At least two .apo files should be selected");
+
+        QString apoPath = QFileDialog::getSaveFileName(this, tr("Select output APO file"), 0,tr("APO files (*.apo)"));
+        if(apoPath.size())
+        {
+            itm::CAnnotations::diffnAPO(apos, apoPath.toStdString());
+            v3d_msg("DONE!");
         }
     }
     catch(itm::RuntimeException &ex)
@@ -2837,6 +3065,8 @@ void PMain::showDialogMergeImageJCellCounterXMLs()
             int y0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Y coordinate:", 0, 0);
             int z0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Z coordinate:", 0, 0);
             itm::CAnnotations::mergeImageJCellCounterXMLs(xmls, apoPath.toStdString(), xS, yS, zS, blocks_overlap, x0, y0, z0);
+
+            v3d_msg("DONE!");
         }
     }
     catch(itm::RuntimeException &ex)
@@ -2848,6 +3078,12 @@ void PMain::showDialogMergeImageJCellCounterXMLs()
 void PMain::showDialogCountDuplicateMarkers()
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    if(!itm::CViewer::current)
+    {
+        v3d_msg("No image opened");
+        return;
+    }
 
     int d = QInputDialog::getInt(this, "Input required", "Tolerance distance:");
     int count = itm::CAnnotations::getInstance()->countDuplicateMarkers(d);

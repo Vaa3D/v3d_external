@@ -1215,6 +1215,22 @@ V3dR_MainWindow * V3d_PluginLoader::createEmpty3DViewer() //By PHC 20150210
     return 0;
 }
 
+void V3d_PluginLoader::moveWindow(V3dR_MainWindow *w, int x, int y)
+{
+    if (v3d_mainwindow )
+    {
+      w->move(x,y);
+    }
+}
+
+void V3d_PluginLoader::resizeWindow(V3dR_MainWindow *w, int x, int y)
+{
+    if (v3d_mainwindow )
+    {
+      w->resize(x,y);
+    }
+}
+
 void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
 {
     if (v3d_mainwindow )

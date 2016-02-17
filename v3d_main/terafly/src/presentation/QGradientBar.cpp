@@ -1,3 +1,7 @@
+#ifdef USE_Qt5
+#include <QPainter>
+#endif
+
 #include "QGradientBar.h"
 
 using namespace teramanager;

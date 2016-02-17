@@ -25,6 +25,7 @@
 /******************
 *    CHANGELOG    *
 *******************
+* 2015-12-10. Giluio.     @FIXED added several volume creation alternatives in "instance" methods to include new formats 
 * 2015-04-15. Alessandro. @ADDED 'instance_format' method with inputs = {path, format}.
 * 2015-04-15. Alessandro. @ADDED definition for default constructor.
 * 2015-04-14. Alessandro. @FIXED detection of volume format from .iim.format file
@@ -48,6 +49,8 @@
 #include "TiledVolume.h"
 #include "TiledMCVolume.h"
 #include "StackedVolume.h"
+#include "UnstitchedVolume.h"
+#include "BDVVolume.h"
 #include "RawFmtMngr.h"
 #include "Tiff3DMngr.h"
 #include "TimeSeries.h"
@@ -910,7 +913,7 @@ VirtualVolume* VirtualVolume::instance_format(const char* path, std::string form
     // directory formats
     if(isDirectory(path))
     {
-        if(format.compare(TILED_MC_FORMAT) == 0)
+        if((format.compare(TILED_MC_FORMAT) == 0) || (format.compare(TILED_MC_TIF3D_FORMAT) == 0))
             volume = new TiledMCVolume(path);
         else if(format.compare(STACKED_FORMAT) == 0)
             volume = new StackedVolume(path);
@@ -928,8 +931,12 @@ VirtualVolume* VirtualVolume::instance_format(const char* path, std::string form
     // file formats
     else if(isFile(path))
     {
-        if(format.compare(RAW_FORMAT) == 0)
+        if(format.compare(RAW_FORMAT) == 0 || (format.compare(TIF3D_FORMAT) == 0))
             volume = new RawVolume(path);
+		else if(format.compare(UNST_TIF3D_FORMAT) == 0)
+            volume = new UnstitchedVolume(path);
+		else if(format.compare(BDV_HDF5_FORMAT) == 0)
+            throw IOException(strprintf("in VirtualVolume::instance(): volumes in format \"%s\" should be created with another \"instance\" method", format.c_str(), path), __iim__current__function__);
         else
             throw IOException(strprintf("in VirtualVolume::instance(): Unsupported format \"%s\" for path \"%s\" which is a file", format.c_str(), path), __iim__current__function__);
     }
@@ -1063,6 +1070,15 @@ VirtualVolume* VirtualVolume::instance(const char* path) throw (IOException)
         catch(IOException &ex)
         {
             debug(LEV3, strprintf("Cannot import <RawVolume> at \"%s\": %s", path, ex.what()).c_str(),__iim__current__function__);
+			try 
+			{
+				volume = new UnstitchedVolume(path);
+			}
+			catch(IOException &ex) 
+			{
+				debug(LEV3, strprintf("Cannot import <UnstitchedVolume> at \"%s\": %s", path, ex.what()).c_str(),__iim__current__function__);
+				// does not try BVDVolume because this volume should be created using the next "instance" method
+			}
         }
         catch(...)
         {
@@ -1074,6 +1090,15 @@ VirtualVolume* VirtualVolume::instance(const char* path) throw (IOException)
 
     return volume;
 }
+
+
+// this version if "instance" methods should be used to create a BDVVolume since at least the 'res' parameter is needed
+VirtualVolume* VirtualVolume::instance(const char* fname, int res, void *descr) throw (iim::IOException) {
+    /**/iim::debug(iim::LEV3, strprintf("fname = \"%s\", res = %d, descr = %p", fname, res, descr).c_str(), __iim__current__function__);
+
+	return new BDVVolume(fname,res,0,descr); // assumes there is only time point 0
+}
+
 
 // returns the imported volume if succeeds (otherwise returns 0)
 // WARNING: no assumption is made on metadata files, which are possibly (re-)generated using the additional informations provided.
@@ -1090,7 +1115,7 @@ VirtualVolume* VirtualVolume::instance(const char* path, std::string format,
     // directory formats
     if(isDirectory(path))
     {
-        if(format.compare(TILED_MC_FORMAT) == 0)
+        if((format.compare(TILED_MC_FORMAT) == 0) || (format.compare(TILED_MC_TIF3D_FORMAT) == 0))
         {
             if(AXS_1 != axis_invalid && AXS_2 != axis_invalid && AXS_3 != axis_invalid && VXL_1 != 0 && VXL_2 != 0 && VXL_3 != 0)
                 volume = new TiledMCVolume(path, ref_sys(AXS_1,AXS_2,AXS_3), VXL_1, VXL_2, VXL_3, true, true);
@@ -1124,9 +1149,13 @@ VirtualVolume* VirtualVolume::instance(const char* path, std::string format,
     // file formats
     else if(isFile(path))
     {
-        if(format.compare(RAW_FORMAT) == 0)
+        if(format.compare(RAW_FORMAT) == 0  || (format.compare(TIF3D_FORMAT) == 0))
             volume = new RawVolume(path);
-        else
+		else if(format.compare(UNST_TIF3D_FORMAT) == 0)
+            volume = new UnstitchedVolume(path);
+		else if(format.compare(BDV_HDF5_FORMAT) == 0)
+            throw IOException(strprintf("in VirtualVolume::instance(): volumes in format \"%s\" should be created with another \"instance\" method", format.c_str(), path), __iim__current__function__);
+		else
             throw IOException(strprintf("in VirtualVolume::instance(): Unsupported format \"%s\" for path \"%s\" which is a file", format.c_str(), path), __iim__current__function__);
     }
     else
@@ -1156,7 +1185,9 @@ bool VirtualVolume::isHierarchical(std::string format) throw (iim::IOException)
         return true;
     else if(format.compare(TILED_MC_FORMAT) == 0)
         return true;
-    else if(format.compare(STACKED_FORMAT) == 0)
+     else if(format.compare(TILED_MC_TIF3D_FORMAT) == 0)
+        return true;
+   else if(format.compare(STACKED_FORMAT) == 0)
         return true;
     else if(format.compare(TIME_SERIES) == 0)
         return true;
@@ -1170,7 +1201,11 @@ bool VirtualVolume::isHierarchical(std::string format) throw (iim::IOException)
         return false;
     else if(format.compare(TIF3D_FORMAT) == 0)
         return false;
-    else
+     else if(format.compare(UNST_TIF3D_FORMAT) == 0)
+        return false;
+    else if(format.compare(BDV_HDF5_FORMAT) == 0)
+        return false;
+   else
         throw IOException(strprintf("Unsupported format %s", format.c_str()), __iim__current__function__);
 
 }

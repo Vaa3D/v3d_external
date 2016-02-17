@@ -131,6 +131,7 @@ if(USE_FFMPEG)
         BUILD_IN_SOURCE 1
     )
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
+    set(x265_dir "${CMAKE_CURRENT_BINARY_DIR}/X265")
     set(extra_cflags "")
     set(extra_ldflags "")
     if(USE_X265)
@@ -141,11 +142,27 @@ if(USE_FFMPEG)
       endif()
       message("bit_depth_flag = ${bit_depth_flag}")
       ExternalProject_Add(
-          X265-1.5
+          X265-1.7-extract
           DEPENDS Yasm-1-2-0
-          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.5.tar.gz
+          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.7.tar.gz
+          SOURCE_DIR ${x265_dir}/src
+          BINARY_DIR ${x265_dir}/build
+          INSTALL_DIR ${x265_dir}/install
+          UPDATE_COMMAND ""
+          BUILD_COMMAND ""
+          CONFIGURE_COMMAND ""
+          INSTALL_COMMAND ""
+      )
+      ExternalProject_Add(
+          X265-1.7
+          DEPENDS X265-1.7-extract
+          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.7.tar.gz
+          SOURCE_DIR ${x265_dir}/src/source
+          BINARY_DIR ${x265_dir}/build
+          INSTALL_DIR ${x265_dir}/install
           CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF ${bit_depth_flag} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR} -DYASM_EXECUTABLE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm${CMAKE_EXECUTABLE_SUFFIX}
           UPDATE_COMMAND ""
+          DOWNLOAD_COMMAND ""
       )
     endif()
     if(APPLE)
@@ -164,12 +181,12 @@ if(USE_FFMPEG)
     endif()
 
     ExternalProject_Add(
-        FFMPEG-2.5.1
-        DEPENDS Yasm-1-2-0 X265-1.5 PKG-CONFIG-0-28
+        FFMPEG-2.8
+        DEPENDS Yasm-1-2-0 X265-1.7 PKG-CONFIG-0-28
         # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
         # Use the exact distribution I developed against
         #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-2.5.1.tgz
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-2.8.tgz
         SOURCE_DIR ${av_dir}/src
         BINARY_DIR ${av_dir}/build
         INSTALL_DIR ${av_dir}/install
@@ -268,7 +285,7 @@ if (NOT FORCE_QT4)
    if (Qt5Core_FOUND)
        message(STATUS "Using qt5")
        # go on with other packages
-       find_package(Qt5 COMPONENTS Widgets Xml Network OpenGL Concurrent)
+       find_package(Qt5 CONFIG REQUIRED Widgets Xml Network OpenGL Concurrent)
 
        macro(qt_use_modules)
             qt5_use_modules(${ARGN})
@@ -322,10 +339,13 @@ find_program(QT_QMAKE_EXECUTABLE qmake)
 execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
                  OUTPUT_VARIABLE QT_DEMO_PREFIX
                  OUTPUT_STRIP_TRAILING_WHITESPACE )
-message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
+if (Qt5Core_FOUND)
+  message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
+else()
+  message("QTVERSION = ${QTVERSION}")
+endif()
 message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
 
-# message("QTVERSION = ${QTVERSION}")
 find_path(QT_DEMOS_INCLUDE_DIR
   arthurwidgets.h
   PATHS
@@ -376,7 +396,7 @@ message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
 if(NOT QT_DEMOS_INCLUDE_DIR)
   message(FATAL "You need to install the Qt demo files")
 else()
-  include_directories(${QT_DEMOS_INCLUDE_DIR})
+  include_directories(${QT_DEMOS_INCLUDE_DIR} ${QT_DEMO_PREFIX})
 endif()
 
 # Define __NAWEBSERVICE__ symbol -D__NAWEBSERVICE__

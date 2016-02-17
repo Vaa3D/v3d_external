@@ -176,7 +176,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #endif //test_main_cpp
 	// right click popup menu
 	QList<QAction*> listAct;
-	QAction *act=0,
+    QAction *act=0, *actShowFullPath=0,
 			*actProperty=0, *actVolColormap=0, *actObjectManager=0, *actOff=0, *actColor=0, *actEditNameComment=0,
 			*actSaveSurfaceObj=0,
 			*actLockSceneEditObjGeometry=0, *actAddtoMarkerPool=0, *actClearMarkerPool=0,//ZJL
@@ -232,6 +232,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listAct.append(act = new QAction("", w)); act->setSeparator(true);
                 listAct.append(actVolColormap = new QAction("volume colormap", w));
             }
+
+            if (curImg)
+            {
 
 #ifdef _ALLOW_ADVANCE_PROCESSING_MENU_
             listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -478,6 +481,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
 #endif
 #endif
+            }
         }
         //##############################################################################
 		// surface data
@@ -485,7 +489,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (IS_SURFACE())
 		{
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
-			listAct.append(actObjectManager = new QAction("object manager", w));
+            listAct.append(actShowFullPath = new QAction("Show full path", w));
+            listAct.append(actObjectManager = new QAction("object manager", w));
 			listAct.append(actOff   = new QAction("off", w));
 			listAct.append(actColor = new QAction("color", w));
 			//listAct.append(actEditNameComment = new QAction("name/comment", w));
@@ -771,6 +776,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//if (w)  w->annotationDialog(names[0], names[1], names[2]);
 		editSurfaceObjAnnotation(names[0], names[1], names[2]); // directly call
 	}
+    else if (act == actShowFullPath)
+    {
+        v3d_msg(QString("The full path=[").append(w->data_title).append("]"));
+    }
 	else if (act == actVolColormap)
 	{
 		if (w)  w->volumeColormapDialog();
@@ -3011,6 +3020,17 @@ QString Renderer_gl1::info_NeuronNode(int n_id, NeuronTree *p_tree)
 		tmpstr1.setNum(p_tree->listNeuron.at(n_id).r);    tmpstr1.prepend("\n 6) radius	= "); tmpstr.append(tmpstr1);
 		tmpstr1.setNum(p_tree->listNeuron.at(n_id).pn);   tmpstr1.prepend("\n 7) parent	= "); tmpstr.append(tmpstr1);
 		tmpstr += QString("\n segment (index) = %1 (%2)").arg(p_tree->listNeuron.at(n_id).seg_id).arg(p_tree->listNeuron.at(n_id).nodeinseg_id);
+
+                QList<float> features = p_tree->listNeuron.at(n_id).fea_val;
+		if (features.size()>0) {
+			tmpstr1=QString("");
+			for (int j = 0 ; j< features.size(); j++){
+				tmpstr1 += QString::number (features[j]);
+				tmpstr1 += " ";
+			}
+			tmpstr1.prepend("\n features = "); 
+			tmpstr.append(tmpstr1);
+		}
 	}
 	return tmpstr;
 }

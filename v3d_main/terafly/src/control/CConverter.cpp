@@ -33,6 +33,7 @@
 #include "SimpleVolumeRaw.h"
 #include "TiledVolume.h"
 #include "TiledMCVolume.h"
+#include "BDVVolume.h"
 #include "VolumeConverter.h"
 #include "iomanager.config.h"
 
@@ -77,7 +78,7 @@ void CConverter::setMembers(PConverter* pConverter) throw (RuntimeException)
         inVolFormat = pConverter->inFormatCBox->currentText().toStdString();
         try
         {
-            fileMode = !VirtualVolume::isHierarchical(inVolFormat) && !pConverter->timeSeriesCheckBox->isChecked();
+            inFileMode = !VirtualVolume::isHierarchical(inVolFormat) && !pConverter->timeSeriesCheckBox->isChecked();
         }
         catch( iim::IOException& exception)  {throw RuntimeException(exception.what());}
         time_series = pConverter->timeSeriesCheckBox->isChecked();
@@ -90,6 +91,7 @@ void CConverter::setMembers(PConverter* pConverter) throw (RuntimeException)
            outVolFormat.compare(iim::TILED_FORMAT)          != 0 &&
            outVolFormat.compare(iim::TILED_MC_FORMAT)       != 0 &&
            outVolFormat.compare(iim::TILED_TIF3D_FORMAT)    != 0 &&
+            outVolFormat.compare(iim::BDV_HDF5_FORMAT)      != 0 &&
            outVolFormat.compare(iim::TILED_MC_TIF3D_FORMAT) != 0)
         {
             sprintf(errMsg, "Output format \"%s\" not yet supported", outVolFormat.c_str());
@@ -122,6 +124,7 @@ void CConverter::setMembers(PConverter* pConverter) throw (RuntimeException)
             downsamplingMethod = HALVE_BY_MAX;
         else
             throw RuntimeException(strprintf("Unsupported downsampling method").c_str());
+        outFileMode = pConverter->outButtonLayout->currentWidget() == pConverter->outFileButton;
     }
 }
 
@@ -144,10 +147,10 @@ void CConverter::run()
         else
         {
             //first checking that the given folder exists
-            if(!fileMode && !QDir(outVolPath.c_str()).exists())
+            if(!outFileMode && !QDir(outVolPath.c_str()).exists())
                 throw RuntimeException(QString("Unable to find the directory \"").append(outVolPath.c_str()).append("\"").toStdString().c_str());
 
-            vc->convertTo(outVolPath, outVolFormat, iim::NUL_IMG_DEPTH, time_series, resolutions, stacksHeight, stacksWidth, stacksDepth, downsamplingMethod);
+            vc->convertTo(outVolPath, outVolFormat, vc->getVolume()->getBYTESxCHAN()*8, time_series, resolutions, stacksHeight, stacksWidth, stacksDepth, downsamplingMethod);
         }
 
         //everything went OK

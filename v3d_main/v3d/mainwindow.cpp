@@ -397,6 +397,10 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                 v3d_msg(QString("ERROR open the specified Vaa3D plugin [%1]").arg(v3dpluginFind), 1);
                 return;
             }
+
+            QElapsedTimer timer_plugin;
+            timer_plugin.start();
+
             // run plugin
             V3d_PluginLoader mypluginloader(this);
             // help info
@@ -442,6 +446,22 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                 PLUGINFH pluginFuncHandler;
                 pluginFuncHandler.doPluginFunc(v3dclp, mypluginloader, v3dpluginFind, (void *)this);
             }
+            qint64 etime_plugin = timer_plugin.elapsed();
+            qDebug() << " **** the plugin preprocessing takes [" << etime_plugin <<" milliseconds]";
+            //uncommented version is only used for bench testing by Zhi Z, 20151103
+//            if(v3dclp.fileList.size()>0)
+//            {
+//                QString timer_log = QString(v3dclp.fileList.at(0)) + "_" + QFileInfo(pluginname).baseName() + "_" + pluginfunc +"_time.log";
+//                QFile file(timer_log);
+//                if (!file.open(QFile::WriteOnly|QFile::Truncate))
+//                {
+//                    cout <<"Error opening the log file "<<timer_log.toStdString().c_str() << endl;
+//                }
+
+//                QTextStream stream (&file);
+//                stream << "the plugin preprocessing takes\t"<< etime_plugin <<" milliseconds"<<"\n";
+//                file.close();
+//            }
         }
         else
         {
@@ -482,16 +502,27 @@ void MainWindow::triggerRunPlugin()
 {
     emit imageLoaded2Plugin();
 }
-void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
+void MainWindow::handleCoordinatedCloseEvent_real() {
     // qDebug("***vaa3d: MainWindow::closeEvent");
     writeSettings(); //added on 090501 to save setting (default preferences)
-    foreach (V3dR_MainWindow* p3DView, list_3Dview_win) p3DView->close(); //090812 RZC
+    foreach (V3dR_MainWindow* p3DView, list_3Dview_win)
+    {
+        if (p3DView)
+        {
+            p3DView->postClose(); //151117. PHC
+//        v3d_msg("haha");
+        }
+    }
     //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
 #ifdef USE_Qt5
     workspace->closeAllSubWindows();
 #else
     workspace->closeAllWindows();
 #endif
+}
+void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event)
+{
+    handleCoordinatedCloseEvent_real();
     if (activeMdiChild())
     {
         event->ignore();
@@ -2267,8 +2298,12 @@ void MainWindow::createActions()
             workspace, SLOT(closeActiveWindow()));
     closeAllAct = new QAction(tr("Close &All"), this);
     closeAllAct->setStatusTip(tr("Close all the windows"));
-    connect(closeAllAct, SIGNAL(triggered()),
-            workspace, SLOT(closeAllWindows()));
+
+
+//    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
+    connect(closeAllAct, SIGNAL(triggered()), this, SLOT(handleCoordinatedCloseEvent_real()));
+
+
     tileAct = new QAction(tr("&Tile"), this);
     tileAct->setStatusTip(tr("Tile the windows"));
     connect(tileAct, SIGNAL(triggered()), workspace, SLOT(tile()));

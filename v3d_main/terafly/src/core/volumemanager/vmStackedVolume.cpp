@@ -28,6 +28,7 @@
 /******************
 *    CHANGELOG    *
 *******************
+* 2015-06-12. Giulio      @ADDED 'check' method to check completeness and coherence of a volume
 * 2015-02-26. Giulio.     @ADDED implementation of initChannels private method to initialize fields DIM_C and BYTESxCHAN
 * 2015-01-17. Alessandro. @ADDED support for all-in-one-folder data (import from xml only).
 * 2014-11-06. Giulio.     @ADDED saved reference system into XML file
@@ -48,21 +49,21 @@
 */
 
 
-#include <iostream>
-#include <typeinfo>
-#include "vmStackedVolume.h"
-#include "S_config.h"
-#include "tinyxml.h"
-#include <fstream>
-#include <sstream>
 #ifdef _WIN32
 #include "dirent_win.h"
 #else
 #include <dirent.h>
 #endif
+#include <iostream>
+#include <typeinfo>
 #include <limits>
 #include <list>
 #include <set>
+#include <fstream>
+#include <sstream>
+#include "vmStackedVolume.h"
+#include "S_config.h"
+#include "tinyxml.h"
 #include "vmStack.h"
 #include "Displacement.h"
 
@@ -1122,6 +1123,45 @@ void StackedVolume::mirror(vm::axis mrr_axis) throw (iom::exception)
 
 	STACKS = new_STACK_2D_ARRAY;
 }
+
+
+//check if volume is complete and coherent
+bool StackedVolume::check(const char *errlogFileName) throw (iom::exception)
+{
+	bool ok = true;
+	FILE *errlogf;
+
+	int depth = STACKS[0][0]->getDEPTH();
+
+	for ( int i=0; i<N_ROWS; i++ ) {
+		for ( int j=0; j<N_COLS; j++ ) {
+			if ( depth != STACKS[i][j]->getDEPTH() ) {
+				if ( ok ) { // first anomaly: open and initialize the errlog file
+					if ( errlogFileName ) {
+						if ( (errlogf = fopen(errlogFileName,"w")) == 0 ) {
+							char errMsg[2000];
+							sprintf(errMsg,"in StackedVolume::check(errlogFileName = \"%s\") : unable to open log file", errlogFileName);
+							throw iom::exception(errMsg);
+						}
+
+						fprintf(errlogf,"errlog file of volume (BlockVolume): \"%s\"\n",stacks_dir);
+						fprintf(errlogf,"\tdepth: %d\n",depth);
+					}
+
+					ok = false;
+				}
+				if ( errlogFileName ) 
+					fprintf(errlogf,"\trow=%d, col=%d, depth=%d\n",i,j,STACKS[i][j]->getDEPTH());
+			}
+		}
+	}
+
+	if ( errlogFileName && !ok ) // there are anomalies: close the errlog file
+		fclose(errlogf);
+
+	return ok;
+}
+
 
 //counts the total number of displacements and the number of displacements per stack
 void StackedVolume::countDisplacements(int& total, float& per_stack_pair)
