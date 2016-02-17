@@ -103,12 +103,15 @@ void CViewer::show()
         int tab_selected = PMain::getInstance()->tabs->currentIndex();
         if(prev)
         {
+#ifndef HIDE_ANO_TOOLBAR
             prev->window3D->centralLayout->takeAt(0);
             PAnoToolBar::instance()->setParent(0);
+#endif
             PMain::getInstance()->tabs->removeTab(1);
         }
+#ifndef HIDE_ANO_TOOLBAR
         window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
-
+#endif
 
         // @ADDED Vaa3D-controls-within-TeraFly feature.
         window3D->hideDisplayControlsButton->setVisible(false);
@@ -122,11 +125,11 @@ void CViewer::show()
         vaa3d_controls->setLayout(vaa3d_controls_layout);
         PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
-
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
         // also reset undo/redo (which are referred to this viewer)
         PAnoToolBar::instance()->buttonUndo->setEnabled(false);
         PAnoToolBar::instance()->buttonRedo->setEnabled(false);
-
+#endif
 
         // re-arrange viewer's layout
         window3D->centralLayout->setSpacing(0);
@@ -371,7 +374,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgDa
     //initializations
     ID = nTotalInstances++;
     resetZoomHistory();
-    isActive = isReady = false;
+    isActive = isReady = useLastWheelFocus = false;
     this->V3D_env = _V3D_env;
     this->prev = _prev;
     this->next = 0;
@@ -459,8 +462,10 @@ CViewer::~CViewer()
     // decouple TeraFly's toolbar from Vaa3D 3D viewer (only if required)
     if(PAnoToolBar::instance()->parent() == window3D)
     {
+#ifndef HIDE_ANO_TOOLBAR
         window3D->centralLayout->takeAt(0);
         PAnoToolBar::instance()->setParent(0);
+#endif
     }
 
     // remove the event filter from the 3D renderer and from the 3D window
@@ -564,7 +569,9 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         if ((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
         {
             QWheelEvent* wheelEvt = (QWheelEvent*)event;
-            myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
+			lastWheelFocus = getRenderer3DPoint(wheelEvt->x(), wheelEvt->y());
+			useLastWheelFocus = true;
+            processWheelEvt(wheelEvt);
             return true;
         }
 
@@ -715,6 +722,11 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
     }
 }
 
+void CViewer::processWheelEvt(QWheelEvent* wheelEvt)
+{
+	myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
+}
+
 /*********************************************************************************
 * Receive data (and metadata) from <CVolume> throughout the loading process
 **********************************************************************************/
@@ -850,6 +862,14 @@ void CViewer::receiveData(
     }
 //    QMessageBox::information(0, "Stop", "Wait...");
     /**/itm::debug(itm::LEV3, "method terminated", __itm__current__function__);
+}
+
+CViewer* CViewer::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID)
+{
+	CViewer* newView = new CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
+		_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID);
+	return newView;
 }
 
 /**********************************************************************************
@@ -1079,7 +1099,7 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             PLog::instance()->appendOperation(new NewViewerOperation(message, itm::CPU, timer.elapsed()));
 
             // create new window
-            this->next = new CViewer(V3D_env, resolution, lowresData,
+            this->next = makeView(V3D_env, resolution, lowresData,
                                              cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
@@ -1127,7 +1147,7 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             cVolume->setStreamingSteps(0);
 
             // load data and instance new viewer
-            this->next = new CViewer(V3D_env, resolution, CVolume::instance()->loadData(),
+            this->next = makeView(V3D_env, resolution, CVolume::instance()->loadData(),
                                              cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
@@ -1453,7 +1473,7 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     ***********************************************************************************/
     //storing edited markers
     QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
-    if(!markers.empty())
+    if(true)//!markers.empty()) // TDP 20160116: changed to true to prevent case where only curve has been deleted and keeps re-appearing
     {       
         // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
         // load/store annotation VOIs are now the same (see fix of 2014-11-17).
@@ -1495,7 +1515,7 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     ***********************************************************************************/
     //storing edited curves
     NeuronTree nt = this->V3D_env->getSWC(this->window);
-    if(!nt.listNeuron.empty())
+    if(true)//!nt.listNeuron.empty()) // TDP 20160116: changed to true to prevent case where only curve has been deleted and keeps re-appearing
     {
         /* @debug */ //printf("\ngoing to store in TeraFly the curve points ");
 
@@ -1578,8 +1598,9 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
         undoStack.beginMacro("delete markers");
         undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
         undoStack.endMacro();
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
         PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-
+#endif
 
         // need to refresh annotation tools as this Vaa3D's action resets the Vaa3D annotation mode
         PAnoToolBar::instance()->refreshTools();
@@ -1595,8 +1616,9 @@ void CViewer::createMarkerAt(int x, int y) throw (itm::RuntimeException)
     undoStack.beginMacro("create marker");
     undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
     undoStack.endMacro();
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
     PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-
+#endif
     // all markers have the same color when they are created
     vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
     V3D_env->setLandmark(window, vaa3dMarkers);
@@ -1619,8 +1641,9 @@ void CViewer::createMarker2At(int x, int y) throw (itm::RuntimeException)
         undoStack.beginMacro("create marker");
         undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
         undoStack.endMacro();
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
         PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-
+#endif
         // all markers have the same color when they are created
         vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
         V3D_env->setLandmark(window, vaa3dMarkers);
@@ -1668,7 +1691,9 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
             undoStack.beginMacro("delete marker");
             undoStack.push(new QUndoMarkerDelete(this, vaa3dMarkers[vaa3dMarkers_tbd[i]]));
             undoStack.endMacro();
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
             PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+#endif
         }
 
         vaa3dMarkers.removeAt(vaa3dMarkers_tbd[i]);
@@ -1746,7 +1771,9 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     // where to put vaa3d annotations
     QList<LocationSimple> vaa3dMarkers;
     NeuronTree vaa3dCurves;
-
+    // This is necessary to avoid scenario where this nt.file="" and edited nt.file="vaa3d_traced_neuron" and they are duplicated
+    vaa3dCurves.name = "vaa3d_traced_neuron";
+    vaa3dCurves.file = "vaa3d_traced_neuron";
     // to measure elapsed time
     QElapsedTimer timer;
 
@@ -1993,12 +2020,16 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         syncWindows(source->window3D, window3D);
 
         // remove TeraFly's toolbar from source viewer and add to this viewer
-        source->window3D->centralLayout->takeAt(0);
+#ifndef HIDE_ANO_TOOLBAR
+		source->window3D->centralLayout->takeAt(0);
         PAnoToolBar::instance()->setParent(0);
-        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+        //window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
         // also reset undo/redo (which are referred to the source viewer)
+#endif
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
         PAnoToolBar::instance()->buttonUndo->setEnabled(false);
         PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+#endif
         source->undoStack.clear();
         this->undoStack.clear();
 
@@ -2104,8 +2135,18 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     int roiCenterX = roi->xe-(roi->xe-roi->xs)/2;
     int roiCenterY = roi->ye-(roi->ye-roi->ys)/2;
     int roiCenterZ = roi->ze-(roi->ze-roi->zs)/2;
+	
+	int newViewX = roiCenterX;
+	int newViewY = roiCenterY;
+	int newViewZ = roiCenterZ;
 
-
+	if (useLastWheelFocus)
+	{
+		newViewX = lastWheelFocus.x;
+		newViewY = lastWheelFocus.y;
+		newViewZ = lastWheelFocus.z;
+	}
+	
     // otherwise before continue, check "Proofreading" mode is not active
     if(PMain::getInstance()->isPRactive())
     {
@@ -2206,10 +2247,10 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
                 //otherwise invoking a new view
                 else
-                    newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
+                    newViewer(newViewX, newViewY, newViewZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
             }
             else
-                newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
+                newViewer(newViewX, newViewY, newViewZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
         }
         else
             /**/itm::debug(itm::LEV3, strprintf("title = %s, ignoring Vaa3D mouse scroll up zoom-in", titleShort.c_str()).c_str(), __itm__current__function__);
@@ -2502,6 +2543,16 @@ void CViewer::setZoom(int z)
 
     //QMessageBox::information(this, "asd", QString("zoom ") + QString::number(z));
     myV3dR_GLWidget::cast(view3DWidget)->setZoomO(z);
+}
+
+/**********************************************************************************
+* When neuron tree is edited, add to undo stack
+***********************************************************************************/
+void CViewer::onNeuronEdit()
+{
+	undoStack.beginMacro("vaa3d action");
+    undoStack.push(new QUndoVaa3DNeuron(this));
+    undoStack.endMacro();
 }
 
 /**********************************************************************************

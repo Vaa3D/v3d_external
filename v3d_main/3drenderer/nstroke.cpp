@@ -49,6 +49,293 @@
 
 #endif //test_main_cpp
 
+//ZMS 20151106: For neuron game
+void Renderer_gl1::solveCurveExtendGlobal(){
+    qDebug("Renderer_gl1::solveCurveRefineLast");
+
+    int NC = list_listCurvePos.size();
+    int N = list_listCurvePos.at(0).size();
+
+    if (NC<1 || N <3)  return; //data is not enough
+
+     vector <XYZ> secondary_vec; // ith curve center
+     vector <XYZ> loc_vec_input;
+
+     secondary_vec.clear();
+     loc_vec_input.clear();
+
+     // get the ith curve center
+     if(refineMode==smCurveRefine_fm)
+     {
+          solveCurveMarkerLists_fm(loc_vec_input, secondary_vec, 0);
+     }else
+     {
+          solveCurveCenterV2(loc_vec_input, secondary_vec, 0);
+     }
+
+     int NI=secondary_vec.size();
+
+     // Because we use 5-neighbour of a point to process the refinement, we need to
+     // make sure that NI is large enough to perform actions on loc_veci in this function.
+     if(NI<6) return;
+
+     // get the control points of the primary curve
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
+
+     int last_seg_id;
+     // for editing the nearest curve
+     if(selectMode == smCurveEditRefine)
+     {
+          if(edit_seg_id<0) return;
+          last_seg_id = edit_seg_id;
+     }else
+          last_seg_id = curImg->tracedNeuron.seg.size()-1; // last seg
+
+     // two end points of ith curve
+     XYZ secondary_a = secondary_vec.at(0);
+     XYZ secondary_b = secondary_vec.at(NI-1);
+
+     int minIndex = -1;
+     double lowestDist = 100000000;
+     XYZ primraryConnector, secondaryConnector;
+     for(int i = 0; i < curImg->tracedNeuron.seg.size(); i++){
+         V_NeuronSWC& possible_primary_seg = curImg->tracedNeuron.seg[i];
+
+         // loc_vec0 is the primary (first) curve control point vector
+         vector <XYZ> primrary_vec;
+         primrary_vec.clear();
+
+         int N0 = possible_primary_seg.row.size();
+         for (int k=0; k<N0; k++)
+         {
+              XYZ cpt;
+              cpt.x = possible_primary_seg.row.at(k).data[2];
+              cpt.y = possible_primary_seg.row.at(k).data[3];
+              cpt.z = possible_primary_seg.row.at(k).data[4];
+              primrary_vec.push_back(cpt);
+         }
+
+         XYZ possible_primrary_a = primrary_vec.at(0);
+         XYZ possible_primrary_b = primrary_vec.at(N0-1);
+
+         float d;
+
+         d = dist_L2(possible_primrary_a, secondary_a);
+         if(d < lowestDist){
+             lowestDist = d;
+             primraryConnector = possible_primrary_a;
+             secondaryConnector = secondary_a;
+             minIndex = i;
+         }
+
+         d = dist_L2(possible_primrary_a, secondary_b);
+         if(d < lowestDist){
+             lowestDist = d;
+             primraryConnector = possible_primrary_a;
+             secondaryConnector = secondary_b;
+             minIndex = i;
+         }
+
+         d = dist_L2(possible_primrary_b, secondary_a);
+         if(d < lowestDist){
+             lowestDist = d;
+             primraryConnector = possible_primrary_b;
+             secondaryConnector = secondary_a;
+             minIndex = i;
+         }
+
+         d = dist_L2(possible_primrary_b, secondary_b);
+         if(d < lowestDist){
+             lowestDist = d;
+             primraryConnector = possible_primrary_b;
+             secondaryConnector = secondary_b;
+             minIndex = i;
+         }
+     }
+
+     if(minIndex < 0){return;} //Empty set of previous segments
+
+     V_NeuronSWC& primary_seg = curImg->tracedNeuron.seg[minIndex];
+
+     // loc_vec0 is the primary (first) curve control point vector
+     vector <XYZ> primrary_vec;
+     primrary_vec.clear();
+
+     int N0 = primary_seg.row.size();
+     for (int k=0; k<N0; k++)
+     {
+          XYZ cpt;
+          cpt.x = primary_seg.row.at(k).data[2];
+          cpt.y = primary_seg.row.at(k).data[3];
+          cpt.z = primary_seg.row.at(k).data[4];
+          primrary_vec.push_back(cpt);
+     }
+
+     XYZ primrary_a = primrary_vec.at(0);
+     XYZ primrary_b = primrary_vec.at(N0-1);
+
+     //Hack! Not sure if this is completely safe.
+    last_seg_id = minIndex;
+
+     if(true) //ZS:11052015 always join in this gamified mode for intuition.
+     {
+          // update primary_seg.row
+          V_NeuronSWC_unit nu;
+          V3DLONG last_n =curImg->tracedNeuron.maxnoden();
+
+          qDebug("Extend curve!");
+
+          // there are four cases of joins
+          // 1. insert loc_veci after the last point of loc_vec0
+          if ( (primraryConnector==primrary_b)&&(secondaryConnector==secondary_a) )
+          {
+               double type = primary_seg.row.at(N0-1).type;
+               double nnp = primary_seg.row.at(N0-1).n;
+
+               for(int j=0; j<NI; j++)
+               {
+                    nu.x = secondary_vec.at(j).x;
+                    nu.y = secondary_vec.at(j).y;
+                    nu.z = secondary_vec.at(j).z;
+                    nu.n = last_n+1+j;
+                    nu.type = type;
+                    nu.r = 1;
+                    nu.parent = (j==0)? (nnp) : (nu.n-1);
+                    nu.seg_id = last_seg_id;
+                    // nu.nodeinseg_id = N0+j;
+                    // if(j==NI-1) nu.nchild = 0;
+                    // else nu.nchild = 1;
+
+                    primary_seg.append(nu);
+               }
+
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber(last_seg_id, NI, false);
+          }
+          // 2. insert inversed loc_veci after the last point of loc_vec0
+          else if ( (primraryConnector==primrary_b)&&(secondaryConnector==secondary_b) )
+          {
+               double type = primary_seg.row.at(N0-1).type;
+               double nnp = primary_seg.row.at(N0-1).n;
+               for(int j=0; j<NI; j++)
+               {
+                    nu.x = secondary_vec.at(NI-1-j).x;
+                    nu.y = secondary_vec.at(NI-1-j).y;
+                    nu.z = secondary_vec.at(NI-1-j).z;
+                    nu.n = last_n+1+j;
+                    nu.type = type;
+                    nu.r = 1;
+                    nu.parent = (j==0)? (nnp) : (nu.n-1);
+                    nu.seg_id = last_seg_id;
+                    // nu.nodeinseg_id = N0+j;
+                    // nu.nchild = (j==NI-1)?  0 : 1;
+
+                    primary_seg.append(nu);
+               }
+
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber(last_seg_id, NI, false);
+          }
+          // 3. insert inversed loc_veci before the first point of loc_vec0
+          else if ( (primraryConnector==primrary_a)&&(secondaryConnector==secondary_a) )
+          {
+               double type = primary_seg.row.at(0).type;
+
+               for(int j=0; j<NI; j++)
+               {
+                    nu.x = secondary_vec.at(NI-1-j).x;
+                    nu.y = secondary_vec.at(NI-1-j).y;
+                    nu.z = secondary_vec.at(NI-1-j).z;
+                    nu.n = last_n + 1+j;
+                    nu.type = type;
+                    nu.r = 1;
+                    nu.parent = (j==0)? -1 : (nu.n-1);
+                    nu.seg_id = last_seg_id;
+                    // nu.nodeinseg_id = j;
+                    // nu.nchild = 1;
+
+                    primary_seg.row.insert(primary_seg.row.begin()+j, nu);
+               }
+               // update original primary_seg's info, e.g. parent
+               primary_seg.row.at(NI).parent = last_n+NI; // the first node in the primary curvew
+
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber(last_seg_id, NI, true);
+          }
+          // 4. insert loc_veci before the first point of loc_vec0
+          else if ( (primraryConnector==primrary_a)&&(secondaryConnector==secondary_b) )
+          {
+               double type = primary_seg.row.at(0).type;
+
+               for(int j=0; j<NI; j++)
+               {
+                    nu.x = secondary_vec.at(j).x;
+                    nu.y = secondary_vec.at(j).y;
+                    nu.z = secondary_vec.at(j).z;
+                    nu.n = last_n+1+j;
+                    nu.type = type;
+                    nu.r = 1;
+                    nu.parent = (j==0)? -1 : (nu.n-1);
+                    nu.seg_id = last_seg_id;
+                    // nu.nodeinseg_id = j;
+                    // nu.nchild = 1;
+
+                    primary_seg.row.insert(primary_seg.row.begin()+j, nu);
+               }
+               // update original primary_seg's info, e.g. parent
+               primary_seg.row.at(NI).parent = last_n+NI; // the first node in the primary curve
+
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber(last_seg_id, NI, true);
+          }
+          // for curve connection: if end points of last_seg_id are close
+          // enough to a seg, connect them to their closest points.
+          V3DLONG nums=curImg->tracedNeuron.seg.size();
+
+          MainWindow* V3Dmainwindow = 0;
+          V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+          bool bConnectCurve = (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips);
+          if(bConnectCurve && nums>1)
+          {
+               V3DLONG cursegid = last_seg_id;
+               connectCurve(cursegid);
+               bConnectCurve = false;
+          }
+
+          // decide radius of each point
+          if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
+          {
+               int chno = checkCurChannel();
+               if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+               CurveTracePara trace_para;
+               {
+                    trace_para.channo = (chno<0)?0:chno;
+                    if (trace_para.channo>=curImg->getCDim())
+                         trace_para.channo=curImg->getCDim()-1;
+                    trace_para.landmark_id_start = -1;
+                    trace_para.landmark_id_end = -1;
+                    trace_para.sp_num_end_nodes = 2;
+                    trace_para.nloops = 100; //100130 change from 200 to 100
+                    trace_para.b_deformcurve = true;
+                    trace_para.sp_smoothing_win_sz = 2;
+               }
+
+               if (chno >=0)
+               {
+                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para,
+                         last_seg_id, last_seg_id, curImg->trace_z_thickness);
+               }
+          }// end update radius
+     }// end of extend curve
+
+     curImg->proj_trace_history_append();
+     // update the neuron display
+     curImg->update_3drenderer_neuron_view(w, this);
+}
+
 void Renderer_gl1::solveCurveRefineLast()
 {
 	qDebug("Renderer_gl1::solveCurveRefineLast");
@@ -983,6 +1270,9 @@ void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool 
 */
 void Renderer_gl1::toggleNStrokeCurveDrawing()
 {
+#ifdef FORCE_BBOX_MODE
+     return;
+#endif
      selectMode = smCurveRefineInit;
      b_addthiscurve = true;
      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;

@@ -380,6 +380,19 @@ FORMS += landmark_property.ui \
     dialog_update_downloading.ui \
     dialog_update_checking.ui
 
+DEFINES += CGS_AUTOLAUNCH
+DEFINES += V3D_SKIP_AUTO_VERSION_CHECK
+DEFINES += RENDERER_RIGHT_CLICK_MENU_DISABLED
+#DEFINES += HIDE_ANO_TOOLBAR # show this for now, rather than re-implementing load/save annotation buttons
+DEFINES += FORCE_BBOX_MODE
+RESOURCES += ../mozak/mozak.qrc
+HEADERS +=  ../mozak/MozakUI.h \
+            ../mozak/Mozak3DView.h
+SOURCES +=  ../mozak/MozakUI.cpp \
+            ../mozak/Mozak3DView.cpp
+
+
+
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl

@@ -47,6 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <GL/glu.h>
 #endif
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Renderer
 // to create:
@@ -70,6 +71,7 @@ public:
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
                          smMarkerRefineT, smMarkerRefineC,
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
+					smCurveCreate_pointclickAutoZ,
                       smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveEditRefine_fm, smCurveRubberDrag,
@@ -80,6 +82,11 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
+                      smBreakTwoNeurons,
+                      smJoinTwoNodes,
+                     smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
+                     smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
+                     smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 
@@ -222,7 +229,13 @@ public:
      int sShowRubberBand; // ZJL 1109221
 
 	bool bShowBoundingBox, bShowBoundingBox2, bShowAxes, bOrthoView;
-	bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
+    bool bShowXYTranslateArrows;
+	int iPosXTranslateArrowEnabled, iNegXTranslateArrowEnabled, iPosYTranslateArrowEnabled, iNegYTranslateArrowEnabled;
+	BoundingBox* posXTranslateBB;
+	BoundingBox* negXTranslateBB;
+	BoundingBox* posYTranslateBB;
+	BoundingBox* negYTranslateBB;
+    bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
 	float CSbeta, alpha_threshold;
 	RGBA32f color_background, color_background2, color_line, color_proxy;
 
@@ -274,6 +287,16 @@ private:
 	    bShowAxes = true;
 	    bOrthoView = false;
 
+		bShowXYTranslateArrows = 0;
+		iPosXTranslateArrowEnabled = 0;
+		iNegXTranslateArrowEnabled = 0;
+		iPosYTranslateArrowEnabled = 0;
+		iNegYTranslateArrowEnabled = 0;
+        posXTranslateBB = 0;
+        negXTranslateBB = 0;
+        posYTranslateBB = 0;
+        negYTranslateBB = 0;
+
 	    bShowCSline = true;
 	    bShowFSline = true;
 	    bXSlice = bYSlice = bZSlice = true;
@@ -314,7 +337,11 @@ private:
 	    xClip1 = yClip1 = zClip1 = 1000000;  // no clip
 	    viewClip = 1000000;  // no clip
 	    renderMode = rmMaxIntensityProjection;
+#ifdef FORCE_BBOX_MODE
+	    selectMode = smCurveTiltedBB_fm_sbbox;
+#else
 	    selectMode = smObject;
+#endif
 
          refineMode = smCurveRefine_fm;
 

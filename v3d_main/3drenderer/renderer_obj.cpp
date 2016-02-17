@@ -32,7 +32,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../io/asc_to_swc.h"
 //#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
 
-
 #define CALL_glutSolidTorus glutSolidTorus
 #define CALL_glutSolidDode  glutSolidDodecahedron
 // if error then just warning
@@ -375,7 +374,7 @@ void Renderer_gl1::setObjLighting()
 		glEnable(GL_BLEND); //090429 RZC: no effect to glBlendEquationEXT(GL_MAX_EXT), must set to GL_FUNC_ADD_EXT
 		glBlendEquationEXT(GL_FUNC_ADD_EXT);
 		//glBlendColorEXT(1, 1, 1, 1-CSbeta);
-		glBlendColorEXT(1, 1, 1, 0.2);
+        glBlendColorEXT(1, 1, 1, 0.1);
 		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA); // constant Alpha
 		glDisable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_ALWAYS);//more artifacts ???
@@ -675,8 +674,8 @@ void Renderer_gl1::drawMarkerList()
 	if (sShowMarkers==0) return;
 	float maxD = boundingBox.Dmax();
 				//MAX(dim1,MAX(dim2,dim3));//090726: this will be 0 when no image
-	float marker_size = //markerSize; // 090423 RZC
-					maxD * markerSize/1000.f;
+	float marker_size = float(markerSize) * zoomRatio * 0.75; // //20160203 TDP: make size independent of zoom level 090423 RZC
+					//maxD * markerSize/1000.f;
 	for (int pass=0; pass<numPassFloatDraw(sShowMarkers); pass++)
 	{
 		setFloatDrawOp(pass, sShowMarkers);
@@ -693,8 +692,8 @@ void Renderer_gl1::drawMarkerList()
 			glColor3ubv(color.c);
 			glPushMatrix();
 			glTranslated(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
-			//glScaled(marker_size, marker_size, marker_size);
-			glScaled(marker_size/thicknessX, marker_size/thicknessY, marker_size/thicknessZ); // 090421 RZC: shape adjusted with image thickness
+			glScaled(marker_size, marker_size, marker_size);
+			//glScaled(marker_size/thicknessX, marker_size/thicknessY, marker_size/thicknessZ); // 090421 RZC: shape adjusted with image thickness
 			glPushName(1+i);
 				glCallList(glistMarker[type]);
 			glPopName();
@@ -989,13 +988,16 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 
             NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
             NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
-                                                                                          oldtree);
+                                                                                          oldtree, currentTraceType);
             listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
             curImg->update_3drenderer_neuron_view(w, this);
         }
         else
         {
-            curImg->proj_trace_add_curve_segment(loc_list, chno);
+            if (highlightedNodeType >= 0)
+                curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType);
+            else
+                curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
@@ -1140,6 +1142,8 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
         }
 	} CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
     updateNeuronBoundingBox();
+    if(colorByAncestry)
+        setColorAncestryInfo();
     updateBoundingBox(); // all of loaded bounding-box are updated here
 }
 V_NeuronSWC_list Renderer_gl1::copyToEditableNeuron(NeuronTree * ptree)
@@ -1461,6 +1465,90 @@ const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----
 { 13.2331852339 , 0.0 , 0.0 },
 { 10.608 , 0.0 , 0.0 } // black
 };
+
+void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
+    if(s.type == 1){
+        glColor3ub(147, 0, 204);
+    }else if(s.type == 2){ //axon
+        switch(segmentLevelDict.value(s.seg_id)){
+        case -2: //In a loop
+            if (seconds % 2 == 0)
+                glColor3ub(255, 120, 120);
+            else
+                glColor3ub(127, 0, 0);
+            break;
+        case -1: //Free-randing, try to pick a random-shade of red that does not depend on VOI
+            switch(segmentLengthDict.value(s.seg_id) % 16){
+            case 0: glColor3ub(233, 150, 122); break;
+            case 1: glColor3ub(250, 128, 114); break;
+            case 2: glColor3ub(255, 160, 122); break;
+            case 3: glColor3ub(255, 165, 0); break;
+            case 4: glColor3ub(255, 140, 0); break;
+            case 5: glColor3ub(255, 127, 80); break;
+            case 6: glColor3ub(240, 128, 128); break;
+            case 7: glColor3ub(255, 99, 71); break;
+            case 8: glColor3ub(255, 69, 0); break;
+            case 9: glColor3ub(255, 0, 0); break;
+            case 10: glColor3ub(188, 143, 143); break;
+            case 11: glColor3ub(205, 92, 92); break;
+            case 12: glColor3ub(244, 164, 96); break;
+            case 13: glColor3ub(210, 105, 30); break;
+            case 14: glColor3ub(178, 34, 34); break;
+            case 15: glColor3ub(165, 42, 42); break;
+            }break;
+        case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+        case 7: glColor3ub(103, 0, 0); break;
+        case 6: glColor3ub(184, 0, 0); break;
+        case 5: glColor3ub(255, 30, 0); break;
+        case 4: glColor3ub(255, 102, 0); break;
+        case 3: glColor3ub(255, 153, 0); break;
+        case 2: glColor3ub(255, 204, 0); break;
+        case 1: glColor3ub(255, 255, 0); break;
+        default: glColor3ub(255, 255, 0); break;
+        }
+    }else if(s.type == 3){ //dendrite
+        switch(segmentLevelDict.value(s.seg_id)){
+        case -2: //In a loop
+            if (seconds % 2 == 0)
+                glColor3ub(120, 120, 255);
+            else
+                glColor3ub(0, 0, 127);
+            break;
+        case -1: //Free-randing, try to pick a random-shade of red that does not depend on VOI
+            switch(segmentLengthDict.value(s.seg_id) % 16){
+            case 0: glColor3ub(0, 0, 128); break;
+            case 1: glColor3ub(100, 149, 237); break;
+            case 2: glColor3ub(72, 61, 139); break;
+            case 3: glColor3ub(106, 90, 205); break;
+            case 4: glColor3ub(132, 112, 255); break;
+            case 5: glColor3ub(0, 0, 205); break;
+            case 6: glColor3ub(65, 105, 225); break;
+            case 7: glColor3ub(0, 0, 255); break;
+            case 8: glColor3ub(30, 144, 255); break;
+            case 9: glColor3ub(0, 191, 255); break;
+            case 10: glColor3ub(135, 206, 250); break;
+            case 11: glColor3ub(70, 130, 180); break;
+            case 12: glColor3ub(176, 196, 222); break;
+            case 13: glColor3ub(173, 216, 230); break;
+            case 14: glColor3ub(0, 206, 209); break;
+            case 15: glColor3ub(95, 158, 160); break;
+            }break;
+        case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+        case 7: glColor3ub(19, 0, 90); break;
+        case 6: glColor3ub(42, 0, 136); break;
+        case 5: glColor3ub(0, 64, 152); break;
+        case 4: glColor3ub(0, 121, 172); break;
+        case 3: glColor3ub(0, 160, 175); break;
+        case 2: glColor3ub(0, 243, 180); break;
+        case 1: glColor3ub(0, 255, 255); break;
+        default: glColor3ub(0, 255, 255); break;
+        }
+    }else{
+        glColor3ub(255, 30, 125); // label all other types as hot pink
+    }
+}
+
+
 const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
 		{255, 255, 255},  // white,   0-undefined
 		{20,  20,  20 },  // black,   1-soma
@@ -1762,6 +1850,7 @@ void Renderer_gl1::drawNeuronTree(int index)
      // for neuron color: same as neuron label color (ZJL)
      GLubyte neuronColor[3];
 	if (! on) return;
+    time_t seconds = time(NULL);
 //  for debug ////////////////////////////
 //	if (listNeuron.size()<=0) return;
 //	S1 = listNeuron.last();
@@ -1893,23 +1982,77 @@ void Renderer_gl1::drawNeuronTree(int index)
 				if (length >0)  // branch line
 				{
 					glLineWidth(lineWidth);
+                    if(colorByAncestry){
+                        glColor3ub(255, 255, 0);
+                        setColorByAncestry(S1, seconds);
+                    }
 					glBegin(GL_LINES);
 					glVertex3f(S0.x, S0.y, S0.z);	glVertex3f(S1.x, S1.y, S1.z);
 					glEnd();
 					if (nodeSize)
-					{
+                    {
+
 						glPointSize(nodeSize);
+                        //20151203 ZMS: Highlight selected nodes
+                        if((i == highlightedNode || i == selectedStartNode) && 
+                            (selectMode == Renderer::smCurveEditExtendOneNode || 
+                            selectMode == Renderer::smCurveEditExtendTwoNode ||
+                            selectMode == Renderer::smJoinTwoNodes)){
+                            if(IS_TRANSPARENT){
+                                glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                            }
+                            glColor3ub(255, 0, 0);
+                            glPointSize(max(nodeSize, rootSize) + 2);
+                        }
+                        if(i == highlightedEndNode && (selectMode == Renderer::smCurveEditExtendTwoNode ||
+                            selectMode == Renderer::smJoinTwoNodes)){
+                            if(IS_TRANSPARENT){
+                                glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                            }
+                            glColor3ub(0, 0, 255);
+                            glPointSize(max(nodeSize, rootSize) + 2);
+                        }
 						glBegin(GL_POINTS);
 						glVertex3f(S1.x, S1.y, S1.z);
 						glEnd();
+
+                        if(IS_TRANSPARENT){
+                            glBlendColorEXT(1, 1, 1, 0.1);
+                        }
 					}
 				}
 				else if (rootSize)// root point
 				{
+                    if(colorByAncestry){
+                                       glColor3ub(255, 255, 0);
+                                       setColorByAncestry(S1, seconds);
+                    }
 					glPointSize(rootSize);
+                    //20151203 ZMS: Highlight selected nodes
+                    if((i == highlightedNode || i == selectedStartNode) && 
+                        (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode || 
+                        selectMode == Renderer::smJoinTwoNodes)){
+                        if(IS_TRANSPARENT){
+                            glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                        }
+                        glColor3ub(255, 0, 0);
+                        glPointSize(rootSize + 6);
+                    }
+                    if(i == highlightedEndNode && (selectMode == Renderer::smCurveEditExtendTwoNode ||
+                            selectMode == Renderer::smJoinTwoNodes)){
+                        if(IS_TRANSPARENT){
+                            glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
+                        }
+                        glColor3ub(0, 0, 255);
+                        glPointSize(rootSize + 6);
+                    }
 					glBegin(GL_POINTS);
 					glVertex3f(S1.x, S1.y, S1.z);
 					glEnd();
+
+                    if(IS_TRANSPARENT){
+                        glBlendColorEXT(1, 1, 1, 0.1);
+                    }
 				}
 				glLineWidth(1);
 				glPointSize(1);

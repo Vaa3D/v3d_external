@@ -52,7 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "renderer.h"
 #include "marchingcubes.h"
-
+#include <time.h>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -260,6 +260,7 @@ public:
 		int view[4];        // view-port
 		double P[16];		// 4x4 projection matrix
 		double MV[16];		// 4x4 model-view matrix
+		bool drawn;			// has this marker already been drawn to the screen?
 	};
 	QList <MarkerPos> listMarkerPos; //081221, screen projection position
 	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position list for curve
@@ -297,6 +298,7 @@ public:
 	int currentMarkerName;
     XYZ getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno=-1);
 	double solveMarkerCenter();
+    double solveMarkerCenterMaxIntensity();
 	void solveMarkerViews();
 	void refineMarkerTranslate();
 	void refineMarkerCenter();
@@ -317,6 +319,18 @@ public:
 	void solveCurveViews();
 	void solveCurveFromMarkers();
 
+    // beginning ZMS 2016125
+    QHash<V3DLONG, V3DLONG> segmentLengthDict;
+    QHash<V3DLONG, V3DLONG> segmentParentDict;
+    QHash<V3DLONG, V3DLONG> segmentLevelDict;
+    QList<V3DLONG> loopSegs; // a list of segments involved in a loop
+
+    bool colorByAncestry;
+    bool setColorAncestryInfo();
+    void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
+    void setColorByAncestry(NeuronSWC s, time_t seconds);
+    // end ZMS
+
     // beginning of ZJL
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersFastMarching(); //using fast marching method
@@ -326,6 +340,7 @@ public:
 
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      void solveCurveRefineLast();
+     void solveCurveExtendGlobal(); //extends the closest seg. By ZMS for neuron game 20151106
      void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower);
      void blendRubberNeuron();
      void solveCurveRubberDrag();
@@ -335,6 +350,8 @@ public:
 #endif
 
      void adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize);
+     void adaptiveCurveResamplingRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, float epsilon);
+     void recursiveRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int start_i, int end_i, float epsilon);
      //void resampleCurveStrokes(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
      void resampleCurveStrokes2(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
 
@@ -376,7 +393,8 @@ public:
 
      void retypeMultiNeuronsByStroke();
 
-     void breakMultiNeuronsByStroke();
+     // forceSingleCut @ADDED T Pavlik 20151217, split was splitting more segments than desired so best cut option added
+     void breakMultiNeuronsByStroke(bool forceSingleCut=false);
      void breakMultiNeuronsByStrokeCommit();
 
 #ifndef test_main_cpp //140211
@@ -411,6 +429,91 @@ public:
      NeuronTree testNeuronTree;
 
      // END of ZJL
+
+	// intersect helpers for nstroke_tracing
+	template <int N>
+	struct IntersectResult {
+		bool success[N];
+		XYZ hit_locs[N];
+	};
+
+	struct NearFarPoints {
+		bool valid;
+		XYZ near_pt;
+		XYZ far_pt;
+	};
+
+	IntersectResult<1> directedIntersectPoint(const XYZ &loc0, const XYZ &loc1) const
+	{
+		IntersectResult<1> result;
+		result.success[0] = false;
+
+		if (dataViewProcBox.isInner(loc0, 0))
+		{
+			result.success[0] = true;
+			result.hit_locs[0] = loc0;
+		}
+		else
+		{
+			XYZ v_1_0 = loc1 - loc0;
+			XYZ D = v_1_0; normalize(D);
+			float length = dist_L2(loc0, loc1);
+
+			for (int ii = 0; ii < length; ii++)
+			{
+				XYZ loci = loc0 + D * ii;
+				if (dataViewProcBox.isInner(loci, 0))
+				{
+					result.success[0] = true;
+					result.hit_locs[0] = loci;
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	IntersectResult<2> intersectPointsWithData(const XYZ &loc0_t, const XYZ &loc1_t) const
+	{
+		IntersectResult<2> result;
+
+		{
+			IntersectResult<1> result0 = directedIntersectPoint(loc0_t, loc1_t);
+			result.success[0] = result0.success[0];
+			result.hit_locs[0] = result0.hit_locs[0];
+		}
+
+		{
+			IntersectResult<1> result1 = directedIntersectPoint(loc1_t, loc0_t);
+			result.success[1] = result1.success[0];
+			result.hit_locs[1] = result1.hit_locs[0];
+		}
+
+		return result;
+	}
+
+	NearFarPoints markerPosToNearFarLocs(int curveIndex, int pointIndex)
+	{
+		NearFarPoints result;
+
+		const MarkerPos &pos = list_listCurvePos.at(curveIndex).at(pointIndex);
+		double clipplane[4] = { 0.0, 0.0, -1.0, viewClip };
+
+		ViewPlaneToModel(pos.MV, clipplane); // modifies clipplane
+
+		XYZ loc0_t, loc1_t;
+
+		_MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+		
+		IntersectResult<2> intersect = intersectPointsWithData(loc0_t, loc1_t);
+
+		result.valid = intersect.success[0] && intersect.success[1];
+		result.near_pt = intersect.hit_locs[0];
+		result.far_pt = intersect.hit_locs[1];
+
+		return result;
+	}
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
@@ -451,6 +554,8 @@ public:
 	int VOLUME_FILTER;
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
      bool b_renderTextureLast;
+	double currentTraceType;
+	bool useCurrentTraceTypeForRetyping;
 
 private:
 	void init_members()
@@ -459,6 +564,11 @@ private:
 		currentMarkerName = -1;
 		curEditingNeuron = -1;
         realCurEditingNeuron_inNeuronTree = -1;
+		
+		highlightedNode = -1; //Added by ZMS 20151203 highlight initial node we are going to extend.
+		highlightedEndNode = -1; //Added by ZMS 20151203 highlight final node we are going to extend.
+		selectedStartNode = -1;
+        highlightedEndNodeChanged = false;
 
 		_idep=0;
 		isSimulatedData=false;
@@ -499,6 +609,8 @@ private:
           bTestCurveBegin=false;
 
           b_editDroppedNeuron = false; //20150527, PHC
+		currentTraceType=3;
+		useCurrentTraceTypeForRetyping = false;
      }
 
 
@@ -559,6 +671,11 @@ public:
 	void updateNeuronBoundingBox();
 	virtual void drawNeuronTree(int i);
 	virtual void drawNeuronTreeList();
+    int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
+    int selectedStartNode; // TDP 20160203 for selecting start node for joining two nodes
+    int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
+    V3DLONG highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
+    bool highlightedEndNodeChanged;
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
 	void constructLabelfieldSurf(int mesh_method, int mesh_density);

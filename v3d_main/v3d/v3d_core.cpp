@@ -1627,7 +1627,7 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 
         switch(mb.exec()) {
             case QMessageBox::Yes:
-				//move the location: 080101
+                //move the location: 080101
 				setMouseTracking(false); //"false" should be the default, but I set it again here to assure the mouseMove event is captured only when one mouse button is pressed
 				b_moveCurrentLandmark=true;
 				ind_landmarkToBeChanged=ind_min;
@@ -6547,6 +6547,7 @@ void load_segment_neuron(My4DImage* curImg, Renderer_gl1* curRen) // 090622 RZC:
 }
 void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 {
+    cout << "load merged neuron " << endl;
 	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
 	merged_neuron.name = curImg->tracedNeuron.name;
 	merged_neuron.file = curImg->tracedNeuron.file;

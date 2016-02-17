@@ -157,7 +157,6 @@ int main(int argc, char **argv)
                 if(!parser.i_v3d.hideV3D)
                 {
                     mainWin->show();
-
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
 #ifdef _ALLOW_WORKMODE_MENU_
@@ -275,7 +274,9 @@ int main(int argc, char **argv)
                 //}
             }
 #endif
-
+#ifdef CGS_AUTOLAUNCH
+			mainWin->func_open_neuron_game();
+#endif
 			// launch v3d
 			try
 			{

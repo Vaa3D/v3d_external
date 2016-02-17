@@ -28,7 +28,7 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     toolBar->addSeparator();
 
 
-    /**/
+#ifdef USE_PANO_TOOLBAR_UNDO_REDO
     buttonUndo = new QToolButton();
     buttonUndo->setIcon(QIcon(":/icons/undo.png"));
     buttonUndo->setToolTip("Undo (Ctrl+Z)");
@@ -44,42 +44,42 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
     toolBar->insertWidget(0, buttonRedo);
     toolBar->addSeparator();
-
+#endif
     // add new buttons
     buttonMarkerCreate = new QToolButton();
     buttonMarkerCreate->setIcon(QIcon(":/icons/marker_add.png"));
     buttonMarkerCreate->setCheckable(true);
     buttonMarkerCreate->setToolTip("1-right-click to define a marker");
     connect(buttonMarkerCreate, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerCreateChecked(bool)));
-    toolBar->insertWidget(0, buttonMarkerCreate);
+    //toolBar->insertWidget(0, buttonMarkerCreate);
     /**/
     buttonMarkerCreate2 = new QToolButton();
     buttonMarkerCreate2->setIcon(QIcon(":/icons/marker_add_2.png"));
     buttonMarkerCreate2->setCheckable(true);
     buttonMarkerCreate2->setToolTip("2-right-clicks to define a marker");
     connect(buttonMarkerCreate2, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerCreate2Checked(bool)));
-    toolBar->insertWidget(0, buttonMarkerCreate2);
+    //toolBar->insertWidget(0, buttonMarkerCreate2);
     /**/
     buttonMarkerDelete = new QToolButton();
     buttonMarkerDelete->setIcon(QIcon(":/icons/marker_delete.png"));
     buttonMarkerDelete->setCheckable(true);
     buttonMarkerDelete->setToolTip("1-right-click to delete a marker");
     connect(buttonMarkerDelete, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerDeleteChecked(bool)));
-    toolBar->insertWidget(0, buttonMarkerDelete);
+    //toolBar->insertWidget(0, buttonMarkerDelete);
     /**/
     buttonMarkerRoiDelete = new QToolButton();
     buttonMarkerRoiDelete->setIcon(QIcon(":/icons/marker_delete_roi.png"));
     buttonMarkerRoiDelete->setCheckable(true);
     buttonMarkerRoiDelete->setToolTip("1-right-stroke to delete a group of markers");
     connect(buttonMarkerRoiDelete, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerRoiDeleteChecked(bool)));
-    toolBar->insertWidget(0, buttonMarkerRoiDelete);
+    //toolBar->insertWidget(0, buttonMarkerRoiDelete);
     /**/
     buttonMarkerRoiView = new QToolButton();
     buttonMarkerRoiView->setIcon(QIcon(":/icons/marker_roi_view.png"));
     buttonMarkerRoiView->setCheckable(true);
     buttonMarkerRoiView->setToolTip("Show/hide markers around the displayed ROI");
     connect(buttonMarkerRoiView, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerRoiViewChecked(bool)));
-    toolBar->insertWidget(0, buttonMarkerRoiView);
+    //toolBar->insertWidget(0, buttonMarkerRoiView);
 
     /**/
     buttonOptions = new QToolButton();
@@ -140,7 +140,6 @@ void PAnoToolBar::buttonMarkerCreateChecked(bool checked)
         cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setCursor(QCursor(cur_img, 0, 0));
         CViewer::setCursor(QCursor(cur_img, 0, 0), true);
-
         // switch to Vaa3D's 1-right-click marker create mode
         if(expl)
         {
@@ -182,7 +181,6 @@ void PAnoToolBar::buttonMarkerCreate2Checked(bool checked)
         cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setCursor(QCursor(cur_img, 0, 0));
         CViewer::setCursor(QCursor(cur_img, 0, 0), true);
-
         // switch to Vaa3D's 2-right-clicks marker create mode
         if(expl)
         {
@@ -276,7 +274,6 @@ void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
         cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
         setCursor(QCursor(cur_img, 0,0));
         CViewer::setCursor(QCursor(cur_img, 0, 0), true);
-
         // switch to Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
         if(expl)
         {
@@ -292,13 +289,14 @@ void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
         // set default cursor
         setCursor(Qt::ArrowCursor);
         CViewer::setCursor(Qt::ArrowCursor, true);
-
+#ifndef FORCE_BBOX_MODE
         // end Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
         if(expl)
         {
             expl->view3DWidget->getRenderer()->selectMode = Renderer::smObject;
             static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = false;
         }
+#endif
     }
 }
 

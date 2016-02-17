@@ -100,6 +100,9 @@ public slots:
 	void func_open_terafly();
     void func_open_teraconverter();
 #endif
+#ifdef CGS_AUTOLAUNCH
+	void func_open_neuron_game(); // By T Pavlik 20151020
+#endif
 #ifdef __v3d_custom_toolbar__
 	void addCustomToolbar(); // By Hang 06-Aug-2011
 #endif

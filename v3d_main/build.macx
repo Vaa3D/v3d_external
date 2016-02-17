@@ -409,13 +409,13 @@ done;
 
 #now automatically execute v3d
 
-if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
-  if [ $SYSTEMBITS == "32" ]; then
-    open bin/vaa3d.app &
-  fi
-  if [ $SYSTEMBITS == "64" ]; then
-    open bin/vaa3d64.app &
-  fi
-fi
+# if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
+#   if [ $SYSTEMBITS == "32" ]; then
+#     open bin/vaa3d.app &
+#   fi
+#   if [ $SYSTEMBITS == "64" ]; then
+#     open bin/vaa3d64.app &
+#   fi
+# fi
 
 
