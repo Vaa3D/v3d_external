@@ -59,6 +59,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <vector>
 #include "v3d_basicdatatype.h"
 #include "v3d_message.h"
+#include <stdio.h>
 
 /*!
  * Volume image with dimensions X, Y, Z, and time.

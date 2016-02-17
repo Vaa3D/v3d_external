@@ -82,11 +82,15 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
     sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12);
     sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21);
 
-	qDebug() << "sum12="<<sum12 << "npoints1="<< nseg1 << "sum21="<< sum21 << "npoint2="<< nseg2;
-	qDebug() << "sum12big="<<sum12big << "npoints1big="<< nseg1big << "sum21big="<< sum21big << "npoint2big="<< nseg2big;
-    qDebug() << "maxdist12="<<maxdist12 << "maxdist21="<< maxdist21;
+    //qDebug() << "sum12="<<sum12 << "npoints1="<< nseg1 << "sum21="<< sum21 << "npoint2="<< nseg2;
+    //qDebug() << "sum12big="<<sum12big << "npoints1big="<< nseg1big << "sum21big="<< sum21big << "npoint2big="<< nseg2big;
+    //qDebug() << "maxdist12="<<maxdist12 << "maxdist21="<< maxdist21;
 
-	ss.dist_allnodes = (sum12/nseg1 + sum21/nseg2)/2.0;
+
+    ss.dist_12_allnodes = sum12/nseg1;
+    ss.dist_21_allnodes = sum21/nseg2;
+
+    ss.dist_allnodes = (sum12/nseg1 + sum21/nseg2)/2.0;
 	if (nseg1big>0)
 	{
 		if (nseg2big>0)
