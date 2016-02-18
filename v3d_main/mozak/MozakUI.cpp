@@ -16,14 +16,19 @@ void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
         uniqueInstance = new MozakUI(callback, parent);
     uniqueInstance->reset();
 
-	string path = ""; // this will prompt for user to find path
 #ifdef MOZAK_AUTOLOAD_VOLUME_PATH
-		path = MOZAK_AUTOLOAD_VOLUME_PATH;
-		QString import_path = path.c_str();
-		if(import_path.isEmpty() || !QFile::exists(import_path))
-			path = ""; // this will prompt for user to find path
+	string path = MOZAK_AUTOLOAD_VOLUME_PATH;
+    QFileInfo pathinfo(path.c_str());
+    if(path.c_str().isEmpty() || !QFile::exists(path.c_str()))
+	    uniqueInstance->openTeraFlyVolume(""); // this will prompt for user to find path
+    else if(pathinfo.isDir())
+        uniqueInstance->openTeraFlyVolume(path);
+    else if(pathinfo.isFile())
+        uniqueInstance->openHDF5Volume(path);
+    }
+#else
+	uniqueInstance->openTeraFlyVolume(""); // this will prompt for user to find path
 #endif
-	uniqueInstance->openVolume(path);
 #ifdef MOZAK_HIDE_VAA3D_CONTROLS
 	uniqueInstance->hide();
 #endif

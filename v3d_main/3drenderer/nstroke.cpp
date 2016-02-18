@@ -1270,9 +1270,6 @@ void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool 
 */
 void Renderer_gl1::toggleNStrokeCurveDrawing()
 {
-#ifdef FORCE_BBOX_MODE
-     return;
-#endif
      selectMode = smCurveRefineInit;
      b_addthiscurve = true;
      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;

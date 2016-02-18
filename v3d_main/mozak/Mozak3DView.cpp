@@ -514,9 +514,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 view3DWidget->doAbsoluteRot(0, 0, 0);
                 break;
             default:
-#ifdef FORCE_BBOX_MODE
-				changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
-#endif
+                changeMode(Renderer::defaultSelectMode, true, true);
 				break;
 		}
 	}
@@ -540,12 +538,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_R:
 			case Qt::Key_S:
                 // If exiting a mode, change back to default mode
-#ifdef FORCE_BBOX_MODE
-				if (curr_renderer->selectMode != Renderer::smCurveTiltedBB_fm_sbbox)
+				if (curr_renderer->selectMode != Renderer::defaultSelectMode)
 				{
-					changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
+					changeMode(Renderer::defaultSelectMode, true, true);
 				}
-#endif
                 break;
             default:
 				break;
@@ -557,12 +553,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		if (object == view3DWidget && event->type() == QEvent::MouseButtonPress)
 		{
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
-#ifdef FORCE_BBOX_MODE
 			if (curr_renderer->selectMode == Renderer::smObject)
 			{
-				changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
+				changeMode(Renderer::defaultSelectMode, true, true);
 			}
-#endif
             // If pressing a mouse button with no arrows highlighted, hide the translation arrows
             if (curr_renderer->iPosXTranslateArrowEnabled < 2 && 
                 curr_renderer->iNegXTranslateArrowEnabled < 2 &&
@@ -651,9 +645,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                         curr_renderer->addCurveSWC(new_pts, 0);
                         curr_renderer->vecToNeuronTree(curr_renderer->testNeuronTree, new_pts);
                         curr_renderer->highlightedNodeType = prev_type;
-#ifdef FORCE_BBOX_MODE
-				        changeMode(Renderer::smCurveTiltedBB_fm_sbbox, true, true);
-#endif
+				        changeMode(Renderer::defaultSelectMode, true, true);
                     }
                     else if (curr_renderer->highlightedNode > -1)
                     {
@@ -723,6 +715,7 @@ void Mozak3DView::show()
 	teramanager::CViewer::show();
     window3D->setWindowTitle("Mozak");
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    Renderer::defaultSelectMode = Renderer::smCurveTiltedBB_fm_sbbox;
     curr_renderer->colorByAncestry = true;
     curr_renderer->nodeSize = 5;
     curr_renderer->rootSize = 9;
@@ -1171,14 +1164,11 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
         curr_renderer->endSelectMode();
         curr_renderer->highlightedNodeType = -1;
         updateTypeLabel();
-		//onNeuronEdit();
-        makeTracedNeuronsEditable();
-#ifdef FORCE_BBOX_MODE
-        if (prevMode == Renderer::smCurveTiltedBB_fm_sbbox)
+		makeTracedNeuronsEditable();
+        if (prevMode == Renderer::defaultSelectMode)
             return;
-		curr_renderer->selectMode = Renderer::smCurveTiltedBB_fm_sbbox;
+		curr_renderer->selectMode = Renderer::defaultSelectMode;
 		curr_renderer->b_addthiscurve = true;
-#endif
 	}
 	if ((prevMode == Renderer::smCurveCreate_pointclick || prevMode == Renderer::smCurveCreate_pointclickAutoZ) && 
         curr_renderer->selectMode != prevMode)

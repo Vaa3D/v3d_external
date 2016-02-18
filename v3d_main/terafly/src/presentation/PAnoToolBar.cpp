@@ -289,14 +289,12 @@ void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
         // set default cursor
         setCursor(Qt::ArrowCursor);
         CViewer::setCursor(Qt::ArrowCursor, true);
-#ifndef FORCE_BBOX_MODE
         // end Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
         if(expl)
         {
-            expl->view3DWidget->getRenderer()->selectMode = Renderer::smObject;
+            expl->view3DWidget->getRenderer()->selectMode = Renderer::defaultSelectMode;
             static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = false;
         }
-#endif
     }
 }
 
