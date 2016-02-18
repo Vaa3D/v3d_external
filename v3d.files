@@ -25199,7 +25199,7 @@ v3d_main/terafly/src/control/QUndoMarkerDeleteROI.cpp
 v3d_main/terafly/src/control/QUndoMarkerDeleteROI.h
 v3d_main/terafly/src/control/V3Dsubclasses.cpp
 v3d_main/terafly/src/control/V3Dsubclasses.h
-v3d_main/terafly/src/core/crossmips/compute_funcs.cpp
+v3d_main/terafly/src/core/crossmips/compute_funcs.cpp 
 v3d_main/terafly/src/core/crossmips/compute_funcs.h
 v3d_main/terafly/src/core/crossmips/CrossMIPs.h
 v3d_main/terafly/src/core/crossmips/libcrossmips.cpp

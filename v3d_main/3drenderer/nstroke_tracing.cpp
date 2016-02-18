@@ -1139,7 +1139,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize)
 {
      int N = loc_vec.size();
-     if (N<=0 || stepsize<=0) return;
+	if (N<=0 || stepsize<=0) return;
 
      loc_vec_resampled.clear();
      loc_vec_resampled.push_back(loc_vec.at(0)); //should have at least one entry now

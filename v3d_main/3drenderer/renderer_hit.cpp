@@ -2071,7 +2071,6 @@ void Renderer_gl1::endSelectMode()
 	listMarkerPos.clear();
 	b_ablation = false; //by Jianlong Zhou, 20120726
 	b_lineAblation = false; //by Jianlong Zhou, 20120801
-
 	if (selectMode != smObject)
 	{
 		selectMode = smObject;

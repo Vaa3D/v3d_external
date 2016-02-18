@@ -32,6 +32,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../io/asc_to_swc.h"
 //#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
 
+
 #define CALL_glutSolidTorus glutSolidTorus
 #define CALL_glutSolidDode  glutSolidDodecahedron
 // if error then just warning
@@ -988,7 +989,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 
             NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
             NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
-                                                                                          oldtree, currentTraceType);
+                                                                                          oldtree, 3);
             listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
             curImg->update_3drenderer_neuron_view(w, this);
         }
