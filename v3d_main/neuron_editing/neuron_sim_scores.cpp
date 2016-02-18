@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "neuron_sim_scores.h"
 #include "v_neuronswc.h"
+#include <iostream>
 
 V_NeuronSWC get_v_neuron_swc(const NeuronTree *p);
 vector<V_NeuronSWC> get_neuron_segments(const NeuronTree *p);
@@ -72,7 +73,10 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 
 	if (!p1 || !p2) return ss;
 	V3DLONG p1sz = p1->listNeuron.size(), p2sz = p2->listNeuron.size();
-	if (p1sz<1 || p2sz<1) return ss;
+    if (p1sz<2 || p2sz<2) {
+        cout<<"Input neurons has too few nodes, distance calculation requires at least two nodes." <<endl;
+        return ss; //requires two nodes at least
+     }
 
 	double sum12, sum21;
 	V3DLONG nseg1, nseg2;
