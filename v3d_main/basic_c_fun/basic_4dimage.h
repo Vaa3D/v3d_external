@@ -204,8 +204,12 @@ public:
 	void deleteRawDataAndSetPointerToNull() { if (data1d) {delete []data1d; data1d = 0;} }
 	void setRawDataPointer(unsigned char *p) { this->data1d = p; }
 
-        bool setIntensityUnit8(V3DLONG  x,  V3DLONG  y,  V3DLONG z, V3DLONG chanel, unsigned char val)
-        {//for unit8 data only
+        bool  setValueUINT8(V3DLONG  x,  V3DLONG  y,  V3DLONG z, V3DLONG chanel, v3d_uint8 val)
+        {
+            if(datatype != 1){
+                printf("Warning: This image is not stored in 8bit.");
+                return false;
+            }
             V3DLONG im_total_sz = sz0*sz1*sz2;
             V3DLONG idx = chanel * (im_total_sz) + z*(sz0*sz1) + y*sz0 + x;
             if (idx < sz0*sz1*sz2*sz3)
@@ -221,8 +225,13 @@ public:
 
         }
 
-        unsigned char getIntensityUnit8(V3DLONG  x,  V3DLONG  y,  V3DLONG z,V3DLONG chanel ){
-          //for unit8 data only
+        v3d_uint8  getValueUINT8(V3DLONG  x,  V3DLONG  y,  V3DLONG z,V3DLONG chanel )
+        {
+            if(datatype!=1){
+                printf("Warning: This image is not stored in 8bit.");
+                return 0;
+            }
+
             V3DLONG im_total_sz = sz0*sz1*sz2;
             V3DLONG idx = chanel * (im_total_sz) + z*(sz0*sz1) + y*sz0 + x;
             if (idx < sz0*sz1*sz2*sz3)
@@ -235,6 +244,90 @@ public:
                 return 0;
             }
         }
+
+
+        bool convert_to_UINT8(){
+
+
+            if (this->datatype!=2 && this->datatype!=4)
+            {
+                    fprintf(stderr, "This function convert_type2uint8_3dimg_1dpt() is designed to convert 16 bit and single-precision-float only [%s][%d].\n", __FILE__, __LINE__);
+                    return false;
+            }
+
+            if (sz0<1 || sz1<1 || sz2<1 || sz3<1)
+            {
+                    fprintf(stderr, "Input image size is not valid [%s][%d].\n", __FILE__, __LINE__);
+                    return false;
+            }
+
+            V3DLONG totalunits = sz0*sz1*sz2*sz3;
+            v3d_uint8 * outimg = new v3d_uint8 [totalunits];
+            if (!outimg)
+            {
+                    fprintf(stderr, "Fail to allocate memory. [%s][%d].\n", __FILE__, __LINE__);
+                    return false;
+            }
+
+            if (datatype==2)
+            {
+                    v3d_uint16 * tmpimg = (v3d_uint16 *)this->getRawData();
+                    V3DLONG i; double maxvv=tmpimg[0];
+                    for (i=0;i<totalunits;i++)
+                    {
+                            maxvv = (maxvv<tmpimg[i]) ? tmpimg[i] : maxvv;
+                    }
+                    if (maxvv>255.0)
+                    {
+                            maxvv = 255.0/maxvv;
+                for (/*V3DLONG*/ i=0;i<totalunits;i++)
+                            {
+                                    outimg[i] = (v3d_uint8)(double(tmpimg[i])*maxvv);
+                            }
+                    }
+                    else
+                    {
+                for (/*V3DLONG*/ i=0;i<totalunits;i++)
+                            {
+                                    outimg[i] = (v3d_uint8)(tmpimg[i]); //then no need to rescale
+                            }
+                    }
+            }
+            else
+            {
+                    v3d_float32 * tmpimg = (v3d_float32 *)this->getRawData();
+                    V3DLONG i; double maxvv=tmpimg[0], minvv=tmpimg[0];
+                    for (i=0;i<totalunits;i++)
+                    {
+                            if (tmpimg[i]>maxvv) maxvv = tmpimg[i];
+                            else if (tmpimg[i]<minvv) minvv = tmpimg[i];
+                    }
+                    if (maxvv!=minvv)
+                    {
+                            double w = 255.0/(maxvv-minvv);
+                for (/*V3DLONG*/ i=0;i<totalunits;i++)
+                            {
+                                    outimg[i] = (v3d_uint8)(double(tmpimg[i]-minvv)*w);
+                            }
+                    }
+                    else
+                    {
+                for (/*V3DLONG*/ i=0;i<totalunits;i++)
+                            {
+                                    outimg[i] = (v3d_uint8)(tmpimg[i]); //then no need to rescale. If the original value is small than 0 or bigger than 255, then let it be during the type-conversion
+                            }
+                    }
+            }
+
+            //delete [] (this->getRawData());
+            this->setNewRawDataPointer(outimg);
+            this->setDatatype(V3D_UINT8);
+            return true;
+
+
+        }
+
+
 
         bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
