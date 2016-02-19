@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #endif //test_main_cpp
 
-
+bool Renderer_gl1::rightClickMenuDisabled = false; //added by TDP 201602 - way of using buttons/keystrokes rather than right click menu to select render modes
 double total_etime; //added by PHC, 20120412, as a convenient way to know the total elipsed time for a lengthy operation
 //#define _IMAGING_MENU_
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -759,11 +759,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		// do menu
 		//###############################################################
 		QMenu menu;
-#ifndef RENDERER_RIGHT_CLICK_MENU_DISABLED
-		foreach (QAction* a, listAct) {  menu.addAction(a); }
-		//menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
-		act = menu.exec(QCursor::pos());
-#endif
+		if (!Renderer_gl1::rightClickMenuDisabled)
+		{
+			foreach (QAction* a, listAct) {  menu.addAction(a); }
+			//menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
+			act = menu.exec(QCursor::pos());
+		}
 	}
 	// have selected a menu action, then make highlight off
 	LIST_SELECTED(listMarker, names[2]-1, false);
@@ -3777,7 +3778,6 @@ double Renderer_gl1::solveMarkerCenter()
     }
     return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
 }
-//unsigned char value = curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
 double Renderer_gl1::solveMarkerCenterMaxIntensity()
 {
     int chno = 0;

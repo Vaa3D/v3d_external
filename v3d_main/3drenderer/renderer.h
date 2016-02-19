@@ -82,8 +82,8 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
-                      smBreakTwoNeurons,
-                      smJoinTwoNodes,
+                      smBreakTwoNeurons, // Same function as smBreakMultiNeurons, but only one break is created TDP 201512
+                      smJoinTwoNodes, // Straight line connect, joining two nodes without tracing TDP 201601
                      smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
                      smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
                      smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
@@ -230,6 +230,7 @@ public:
      int sShowRubberBand; // ZJL 1109221
 
 	bool bShowBoundingBox, bShowBoundingBox2, bShowAxes, bOrthoView;
+    // TDP 201601 - provide optional XY translation arrows directly in 3D view to navigate to adjacent/overlapping ROI
     bool bShowXYTranslateArrows;
 	int iPosXTranslateArrowEnabled, iNegXTranslateArrowEnabled, iPosYTranslateArrowEnabled, iNegYTranslateArrowEnabled;
 	BoundingBox* posXTranslateBB;

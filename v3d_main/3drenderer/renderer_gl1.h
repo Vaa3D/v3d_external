@@ -221,6 +221,7 @@ public:
 
 #endif
 
+    static bool rightClickMenuDisabled;
 	QString info_Marker(int marker_i);
 	QString info_NeuronNode(int node_i, NeuronTree * ptree);
 	QString info_SurfVertex(int vertex_i, Triangle * triangle, int label);

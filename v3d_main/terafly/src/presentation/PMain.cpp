@@ -1614,13 +1614,13 @@ void PMain::clearAnnotations()
             CAnnotations::getInstance()->clear();
             cur_win->undoStack.clear();
             cur_win->loadAnnotations();
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
             if(PAnoToolBar::isInstantiated())
             {
-                PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-                PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+                if (PAnoToolBar::instance()->buttonUndo != 0)
+                    PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+                if (PAnoToolBar::instance()->buttonRedo != 0)
+                    PAnoToolBar::instance()->buttonRedo->setEnabled(false);
             }
-#endif
         }
         virtualSpaceSizeMenu->setEnabled(true);
     }
@@ -2534,7 +2534,7 @@ void PMain::virtualSpaceSizeChanged()
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
 
-    CSettings::instance()->setAnnotationSpaceUnlimited(false);// workaround spaceSizeUnlimited->isChecked());
+    CSettings::instance()->setAnnotationSpaceUnlimited(spaceSizeUnlimited->isChecked());
 }
 
 

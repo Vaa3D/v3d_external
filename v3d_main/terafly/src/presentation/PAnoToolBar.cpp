@@ -4,6 +4,7 @@
 
 using namespace teramanager;
 
+bool PAnoToolBar::disableNonMozakButtons = false;
 PAnoToolBar* PAnoToolBar::uniqueInstance = 0;
 
 PAnoToolBar::~PAnoToolBar()
@@ -28,58 +29,69 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     toolBar->addSeparator();
 
 
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
-    buttonUndo = new QToolButton();
-    buttonUndo->setIcon(QIcon(":/icons/undo.png"));
-    buttonUndo->setToolTip("Undo (Ctrl+Z)");
-    buttonUndo->setEnabled(false);
-    buttonUndo->setShortcut(QKeySequence("Ctrl+Z"));
-    connect(buttonUndo, SIGNAL(clicked()), this, SLOT(buttonUndoClicked()));
-    toolBar->insertWidget(0, buttonUndo);
-    buttonRedo = new QToolButton();
-    buttonRedo->setIcon(QIcon(":/icons/redo.png"));
-    buttonRedo->setToolTip("Redo (Ctrl+Shift+Z)");
-    buttonRedo->setShortcut(QKeySequence("Ctrl+Shift+Z"));
-    buttonRedo->setEnabled(false);
-    connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
-    toolBar->insertWidget(0, buttonRedo);
-    toolBar->addSeparator();
-#endif
+    if (!PAnoToolBar::disableNonMozakButtons)
+    {
+        buttonUndo = new QToolButton();
+        buttonUndo->setIcon(QIcon(":/icons/undo.png"));
+        buttonUndo->setToolTip("Undo (Ctrl+Z)");
+        buttonUndo->setEnabled(false);
+        buttonUndo->setShortcut(QKeySequence("Ctrl+Z"));
+        connect(buttonUndo, SIGNAL(clicked()), this, SLOT(buttonUndoClicked()));
+        toolBar->insertWidget(0, buttonUndo);
+        buttonRedo = new QToolButton();
+        buttonRedo->setIcon(QIcon(":/icons/redo.png"));
+        buttonRedo->setToolTip("Redo (Ctrl+Shift+Z)");
+        buttonRedo->setShortcut(QKeySequence("Ctrl+Shift+Z"));
+        buttonRedo->setEnabled(false);
+        connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
+        toolBar->insertWidget(0, buttonRedo);
+        toolBar->addSeparator();
+    }
+    else
+    {
+        buttonUndo = 0;
+        buttonRedo = 0;
+    }
     // add new buttons
     buttonMarkerCreate = new QToolButton();
     buttonMarkerCreate->setIcon(QIcon(":/icons/marker_add.png"));
     buttonMarkerCreate->setCheckable(true);
     buttonMarkerCreate->setToolTip("1-right-click to define a marker");
     connect(buttonMarkerCreate, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerCreateChecked(bool)));
-    //toolBar->insertWidget(0, buttonMarkerCreate);
+    if (!PAnoToolBar::disableNonMozakButtons)
+        toolBar->insertWidget(0, buttonMarkerCreate);
     /**/
     buttonMarkerCreate2 = new QToolButton();
     buttonMarkerCreate2->setIcon(QIcon(":/icons/marker_add_2.png"));
     buttonMarkerCreate2->setCheckable(true);
     buttonMarkerCreate2->setToolTip("2-right-clicks to define a marker");
     connect(buttonMarkerCreate2, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerCreate2Checked(bool)));
-    //toolBar->insertWidget(0, buttonMarkerCreate2);
+    if (!PAnoToolBar::disableNonMozakButtons)
+        toolBar->insertWidget(0, buttonMarkerCreate2);
     /**/
     buttonMarkerDelete = new QToolButton();
     buttonMarkerDelete->setIcon(QIcon(":/icons/marker_delete.png"));
     buttonMarkerDelete->setCheckable(true);
     buttonMarkerDelete->setToolTip("1-right-click to delete a marker");
     connect(buttonMarkerDelete, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerDeleteChecked(bool)));
-    //toolBar->insertWidget(0, buttonMarkerDelete);
+    if (!PAnoToolBar::disableNonMozakButtons)
+        toolBar->insertWidget(0, buttonMarkerDelete);
     /**/
     buttonMarkerRoiDelete = new QToolButton();
     buttonMarkerRoiDelete->setIcon(QIcon(":/icons/marker_delete_roi.png"));
     buttonMarkerRoiDelete->setCheckable(true);
     buttonMarkerRoiDelete->setToolTip("1-right-stroke to delete a group of markers");
     connect(buttonMarkerRoiDelete, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerRoiDeleteChecked(bool)));
-    //toolBar->insertWidget(0, buttonMarkerRoiDelete);
+    if (!PAnoToolBar::disableNonMozakButtons)
+        toolBar->insertWidget(0, buttonMarkerRoiDelete);
     /**/
     buttonMarkerRoiView = new QToolButton();
     buttonMarkerRoiView->setIcon(QIcon(":/icons/marker_roi_view.png"));
     buttonMarkerRoiView->setCheckable(true);
     buttonMarkerRoiView->setToolTip("Show/hide markers around the displayed ROI");
     connect(buttonMarkerRoiView, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerRoiViewChecked(bool)));
-    //toolBar->insertWidget(0, buttonMarkerRoiView);
+    if (!PAnoToolBar::disableNonMozakButtons)
+        toolBar->insertWidget(0, buttonMarkerRoiView);
 
     /**/
     buttonOptions = new QToolButton();

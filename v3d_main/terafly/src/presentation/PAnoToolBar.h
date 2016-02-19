@@ -30,6 +30,7 @@ class teramanager::PAnoToolBar : public QWidget
         * instantiated by calling static method "istance(...)"
         **********************************************************************************/
         static PAnoToolBar* uniqueInstance;
+        static bool disableNonMozakButtons; // TDP 201602 - way to avoid adding undesired buttons to toolbar
 
     //public:
 

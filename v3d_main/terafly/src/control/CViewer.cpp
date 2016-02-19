@@ -103,15 +103,11 @@ void CViewer::show()
         int tab_selected = PMain::getInstance()->tabs->currentIndex();
         if(prev)
         {
-#ifndef HIDE_ANO_TOOLBAR
             prev->window3D->centralLayout->takeAt(0);
             PAnoToolBar::instance()->setParent(0);
-#endif
             PMain::getInstance()->tabs->removeTab(1);
         }
-#ifndef HIDE_ANO_TOOLBAR
         window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
-#endif
 
         // @ADDED Vaa3D-controls-within-TeraFly feature.
         window3D->hideDisplayControlsButton->setVisible(false);
@@ -125,11 +121,13 @@ void CViewer::show()
         vaa3d_controls->setLayout(vaa3d_controls_layout);
         PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
+
         // also reset undo/redo (which are referred to this viewer)
-        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
-#endif
+        if (PAnoToolBar::instance()->buttonUndo != 0)
+			PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+        if (PAnoToolBar::instance()->buttonRedo != 0)
+			PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+
 
         // re-arrange viewer's layout
         window3D->centralLayout->setSpacing(0);
@@ -462,10 +460,8 @@ CViewer::~CViewer()
     // decouple TeraFly's toolbar from Vaa3D 3D viewer (only if required)
     if(PAnoToolBar::instance()->parent() == window3D)
     {
-#ifndef HIDE_ANO_TOOLBAR
         window3D->centralLayout->takeAt(0);
         PAnoToolBar::instance()->setParent(0);
-#endif
     }
 
     // remove the event filter from the 3D renderer and from the 3D window
@@ -1598,9 +1594,8 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
         undoStack.beginMacro("delete markers");
         undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
         undoStack.endMacro();
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
-        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-#endif
+        if (PAnoToolBar::instance()->buttonUndo != 0)
+            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
 
         // need to refresh annotation tools as this Vaa3D's action resets the Vaa3D annotation mode
         PAnoToolBar::instance()->refreshTools();
@@ -1616,9 +1611,8 @@ void CViewer::createMarkerAt(int x, int y) throw (itm::RuntimeException)
     undoStack.beginMacro("create marker");
     undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
     undoStack.endMacro();
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
-    PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-#endif
+    if (PAnoToolBar::instance()->buttonUndo != 0)
+        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
     // all markers have the same color when they are created
     vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
     V3D_env->setLandmark(window, vaa3dMarkers);
@@ -1641,9 +1635,8 @@ void CViewer::createMarker2At(int x, int y) throw (itm::RuntimeException)
         undoStack.beginMacro("create marker");
         undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
         undoStack.endMacro();
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
-        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-#endif
+        if (PAnoToolBar::instance()->buttonUndo != 0)
+            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         // all markers have the same color when they are created
         vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
         V3D_env->setLandmark(window, vaa3dMarkers);
@@ -1691,9 +1684,8 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
             undoStack.beginMacro("delete marker");
             undoStack.push(new QUndoMarkerDelete(this, vaa3dMarkers[vaa3dMarkers_tbd[i]]));
             undoStack.endMacro();
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
-            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-#endif
+            if (PAnoToolBar::instance()->buttonUndo != 0)
+                PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
 
         vaa3dMarkers.removeAt(vaa3dMarkers_tbd[i]);
@@ -2020,16 +2012,15 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         syncWindows(source->window3D, window3D);
 
         // remove TeraFly's toolbar from source viewer and add to this viewer
-#ifndef HIDE_ANO_TOOLBAR
 		source->window3D->centralLayout->takeAt(0);
         PAnoToolBar::instance()->setParent(0);
         //window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
         // also reset undo/redo (which are referred to the source viewer)
-#endif
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
-        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
-#endif
+        if (PAnoToolBar::instance()->buttonUndo != 0)
+            PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+        if (PAnoToolBar::instance()->buttonRedo != 0)
+            PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+
         source->undoStack.clear();
         this->undoStack.clear();
 

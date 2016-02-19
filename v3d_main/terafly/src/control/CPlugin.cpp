@@ -124,9 +124,8 @@ void TeraFly::doaction(const QString &action_name)
         if(CViewer::getCurrent())
         {
 			CViewer::getCurrent()->onNeuronEdit();
-#ifdef USE_PANO_TOOLBAR_UNDO_REDO
-            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-#endif
+			if (PAnoToolBar::instance()->buttonUndo != 0)
+				PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
     }
     else

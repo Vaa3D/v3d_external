@@ -2117,6 +2117,9 @@ void MainWindow::updateProcessingMenu()
     QAction* open_teraconverter_action = new QAction(tr("TeraConverter"), this);
     proc_terafly_menu->addAction(open_teraconverter_action);
     connect(open_teraconverter_action, SIGNAL(triggered()), this, SLOT(func_open_teraconverter()));
+    QAction* open_mozak_action = new QAction(tr("Mozak"), this);
+    proc_terafly_menu->addAction(open_mozak_action);
+    connect(open_mozak_action, SIGNAL(triggered()), this, SLOT(func_open_neuron_game()));
 #endif
     //
 #ifdef _ALLOW_IMGSTD_MENU_
@@ -2922,8 +2925,7 @@ void MainWindow::func_open_teraconverter()
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
     teramanager::TeraFly::domenu("TeraConverter", *pl, this);
 }
-#endif
-#ifdef CGS_AUTOLAUNCH
+
 void MainWindow::func_open_neuron_game()
 {
 	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
@@ -2931,6 +2933,7 @@ void MainWindow::func_open_neuron_game()
 	mozak::MozakUI::init(pl);
 }
 #endif
+
 //class V3D_PlugIn_Interface
 //{
 //public:

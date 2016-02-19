@@ -66,6 +66,7 @@ public:
 
 	void handleKeyPressEvent(QKeyEvent * event); //for hook to MainWindow
 	void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
+    static bool disableUndoRedo;
 	QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset); //tool tip function for real dimension of image
 
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
