@@ -10,7 +10,7 @@ class mozak::MozakUI : public teramanager::PMain
 {
 	public:
 		MozakUI(){}
-		~MozakUI(){}
+		~MozakUI();
 		MozakUI(V3DPluginCallback2 *callback, QWidget *parent);
 		static void createInstance(V3DPluginCallback2 *callback, QWidget *parent);
 		static MozakUI* getMozakInstance();

@@ -713,13 +713,14 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 void Mozak3DView::show()
 {
     teramanager::PAnoToolBar::disableNonMozakButtons = true;
+    V3dR_GLWidget::disableUndoRedo = true;
+    V3dR_GLWidget::skipFormat = true;
 	teramanager::CViewer::show();
     window3D->setWindowTitle("Mozak");
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     Renderer::defaultSelectMode = Renderer::smCurveTiltedBB_fm_sbbox;
     Renderer_gl1::rightClickMenuDisabled = true;
     curr_renderer->colorByAncestry = true;
-    V3dR_GLWidget::disableUndoRedo = true;
     curr_renderer->nodeSize = 5;
     curr_renderer->rootSize = 9;
 	
@@ -874,16 +875,18 @@ void Mozak3DView::show()
 
 Mozak3DView::~Mozak3DView()
 {
-    teramanager::CViewer::~CViewer();
     window3D->setWindowTitle("");
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     Renderer::defaultSelectMode = Renderer::smObject;
     Renderer_gl1::rightClickMenuDisabled = false;
     curr_renderer->colorByAncestry = false;
     V3dR_GLWidget::disableUndoRedo = false;
+    V3dR_GLWidget::skipFormat = false;
     teramanager::PAnoToolBar::disableNonMozakButtons = false;
     curr_renderer->nodeSize = 5; // TODO: keep track of prev values
     curr_renderer->rootSize = 9; // TODO: keep track of prev values
+    MozakUI* moz = MozakUI::getMozakInstance();
+    moz->close();
 }
 
 void Mozak3DView::storeAnnotations() throw (itm::RuntimeException)

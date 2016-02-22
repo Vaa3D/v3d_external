@@ -52,6 +52,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer_gl2.h"
 
 bool V3dR_GLWidget::disableUndoRedo = false;
+bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
+
 
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
@@ -154,7 +156,8 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 		//f.setAccumBufferSize(16);
 		//f.setStereo(true);    // 081126, for glDrawBuffers, QGLFormat do NOT support AUX_BUFFER !!!, will cause system DEAD
 	}
-	setFormat(f);
+    if (!skipFormat)
+	    setFormat(f);
 
 	///////////////////////////////////////////////////////////////
 	//makeCurrent(); //090729: this make sure created GL context

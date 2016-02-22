@@ -10,6 +10,11 @@ void MozakUI::init(V3d_PluginLoader *pl)
 	createInstance(pl, 0);
 }
 
+MozakUI::~MozakUI()
+{
+    V3dApplication::activateMainWindow();
+}
+
 void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
 {
     if (uniqueInstance == 0)
