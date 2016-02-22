@@ -1433,6 +1433,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
     moz->D0_sbox->setValue(moz->D0_sbox->minimum());
     moz->D1_sbox->setMaximum(getGlobalDCoord(view3DWidget->zCut1(), -1, true, false, __itm__current__function__)+1);
     moz->D1_sbox->setValue(moz->D1_sbox->maximum());
+    moz->statusBar->showMessage("Ready.");
 
     if(moz->frameCoord->isEnabled())
     {
