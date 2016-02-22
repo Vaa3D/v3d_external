@@ -22,11 +22,11 @@ endif()
 # A better solution would be to use ExternalProjectAdd  to build HDF5 from source.
 if (APPLE)
   # tmp solution
-  include_directories(/Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/include/hdf5)
-  link_directories(/Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64)
-  set (HDF5_LIBRARY /Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64/libhdf5.a)
-  set (szip_LIBRARY /Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64/libszip.a)
-  set (z_LIBRARY /Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64/libz.a)
+  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include/hdf5")
+  link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64")
+  set (HDF5_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64/libhdf5.a")
+  set (szip_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64/libszip.a")
+  set (z_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64/libz.a")
 endif()
 
 
