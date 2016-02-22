@@ -721,18 +721,14 @@ void Mozak3DView::show()
     Renderer::defaultSelectMode = Renderer::smCurveTiltedBB_fm_sbbox;
     Renderer_gl1::rightClickMenuDisabled = true;
     curr_renderer->colorByAncestry = true;
+    prevNodeSize = curr_renderer->nodeSize;
+    prevRootSize = curr_renderer->rootSize;
     curr_renderer->nodeSize = 5;
     curr_renderer->rootSize = 9;
 	
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->clearAnnotations();
 
-	// Hide unwanted buttons - TODO: This seems to crash in Mac builds, hiding in Terafly code for now
-	//itm::PAnoToolBar::instance()->buttonMarkerCreate->setParent(0);
-	//itm::PAnoToolBar::instance()->buttonMarkerCreate2->setParent(0);
-    //itm::PAnoToolBar::instance()->buttonMarkerDelete->setParent(0);
-    //itm::PAnoToolBar::instance()->buttonMarkerRoiDelete->setParent(0);
-	//itm::PAnoToolBar::instance()->buttonMarkerRoiView->setParent(0);
     itm::PAnoToolBar::instance()->buttonOptions->setMenu(0); // disconnect existing menu
     connect(itm::PAnoToolBar::instance()->buttonOptions, SIGNAL(clicked()), this, SLOT(buttonOptionsClicked()));
 
@@ -883,8 +879,8 @@ Mozak3DView::~Mozak3DView()
     V3dR_GLWidget::disableUndoRedo = false;
     V3dR_GLWidget::skipFormat = false;
     teramanager::PAnoToolBar::disableNonMozakButtons = false;
-    curr_renderer->nodeSize = 5; // TODO: keep track of prev values
-    curr_renderer->rootSize = 9; // TODO: keep track of prev values
+    curr_renderer->nodeSize = prevNodeSize;
+    curr_renderer->rootSize = prevRootSize;
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->close();
 }

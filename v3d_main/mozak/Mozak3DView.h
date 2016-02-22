@@ -103,6 +103,8 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         int prevZCutMin;
         int prevZCutMax;
         int prevPolyZCut;
+        int prevNodeSize;
+        int prevRootSize;
 
         QList <NeuronTree> undoRedoHistory;
         static const int MAX_history = 20;
