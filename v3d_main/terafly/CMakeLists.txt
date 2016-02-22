@@ -14,6 +14,23 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	warnings_disable(CMAKE_CXX_FLAGS /wd4996) # vs2012: complains about unsafe standard C++ functions
 endif()
 
+
+
+# add hdf5 support for terafly
+# HDF5
+# temp solution to be consistent with the qmake builds, using the specific version of HDF5 lib.
+# A better solution would be to use ExternalProjectAdd  to build HDF5 from source.
+if (APPLE)
+  # tmp solution
+  include_directories(/Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/include/hdf5)
+  link_directories(/Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64)
+  set (HDF5_LIBRARY /Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64/libhdf5.a)
+  set (szip_LIBRARY /Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64/libszip.a)
+  set (z_LIBRARY /Users/xiaoxiaoliu/work/v3d/v3d_external/v3d_main/common_lib/lib_mac64/libz.a)
+endif()
+
+
+
 # add external include directories
 include_directories(../v3d)
 include_directories(../3drenderer)
@@ -110,4 +127,5 @@ add_library(terafly STATIC
 	${tinyxml_h}
 )
 
+target_link_libraries(terafly ${HDF5_LIBRARY} ${z_LIBRARY} ${szip_LIBRARY})
 
