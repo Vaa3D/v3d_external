@@ -14,11 +14,15 @@ function download {
 }
 
 shopt -s expand_aliases;
+BUILD_HDF5=0
+BOOST_MAJOR_VERSION=1_58
+BOOST_VERSION=${BOOST_MAJOR_VERSION}_0
 CMAKE_VERSION=3.1.3
 CMAKE_ARGS=""
 CMAKE_PLATFORM_ARGS=
 CMAKE_BUILD="Release"
 CMAKE_EXE=""
+BUILD_DIR=`pwd`
 ROOT_DIR=`pwd`
 
 set -eu
@@ -61,6 +65,7 @@ while [[ $# > 0 ]]; do
             ;;
         -h5j)
             CMAKE_ARGS+="-DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON"
+            BUILD_HDF5=1
             ;;
         -qt5)
             CMAKE_ARGS+=" -DFORCE_QT4:BOOL=OFF"
@@ -81,7 +86,7 @@ while [[ $# > 0 ]]; do
             OPERATION=clobber
             ;;
         *)
-            PROJECTS+=("$1")
+            BUILD_DIR="$1"
             ;;
     esac
     shift
@@ -100,7 +105,8 @@ if [[ -z ${OPERATION:-} ]]; then
     exit 1
 fi
 
-CMAKE_PLATFORM_ARGS="-DBOOST_ROOT:PATH=$ROOT_DIR/v3d_main/common_lib "
+boost_prefix=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
+CMAKE_PLATFORM_ARGS="-DBOOST_ROOT:PATH=$boost_prefix "
 if [ $PLATFORM = "windows-x86_64" ]; then
     CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
     CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/winlib64/libtiff.lib "
@@ -142,26 +148,35 @@ case $OPERATION in
 
         echo "Using $CMAKE_EXE"
 
-		if [[ ! -e build_$PLATFORM ]]; then
-			mkdir build_$PLATFORM
+		if [[ ! -e $BUILD_DIR/build_$PLATFORM ]]; then
+			mkdir -p $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
 		fi
 
-        if [[ ! -e v3d_main/common_lib/include/boost ]]; then
+        echo $boost_prefix
+        if [[ ! -e $boost_prefix/include ]]; then
             echo "Unpacking Boost"
-            cd v3d_main/common_lib
-            tar xzf src_packages/boost_1_57_0.tar.gz
-            echo "Copying Boost headers"
-            boost_prefix=`pwd`
-            cd boost_1_57_0
-            ./bootstrap.sh --prefix=$boost_prefix
-            ./b2 install
-            cd ../../../
+            cd $boost_prefix
+            if [ $PLATFORM = "windows-x86_64" ]; then
+                if [[ ! -e boost_$BOOST_VERSION ]]; then
+                    /c/Program\ Files/7-Zip/7z x -y $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
+                    /c/Program\ Files/7-Zip/7z x -y boost_$BOOST_VERSION.tar
+                fi
+                cd boost_$BOOST_VERSION
+                cmd //c .\\bootstrap.bat
+                cmd //c .\\b2.exe --toolset=msvc-12.0 address-model=64 --prefix=$boost_prefix install
+            else
+                tar xzf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
+                cd boost_$BOOST_VERSION
+                ./bootstrap.sh --prefix=$boost_prefix
+                ./b2 install
+            fi
+            cd ../../../../
         fi
 
         if [ $PLATFORM = "windows-x86_64" ]; then
-          if [[ ! -e v3d_main/common_lib/include/tiff.h ]]; then
+          if [[ ! -e $ROOT_DIR/v3d_main/common_lib/include/tiff.h ]]; then
               echo "Configuring TIFF headers"
-              cd v3d_main/common_lib/build
+              cd $ROOT_DIR/v3d_main/common_lib/build
               tar xzf ../src_packages/tiff-4.0.2.tar.gz
               cd tiff-4.0.2
               nmake Makefile.vc
@@ -176,7 +191,7 @@ case $OPERATION in
 
             echo "Unpacking FFTW"
             CMAKE_EXE+=" -G \"Visual Studio 12 2013 Win64\""
-            cd v3d_main/common_lib
+            cd $ROOT_DIR/v3d_main/common_lib
             if [[ ! -e fftw-3.3.4-dll64 ]]; then
                 tar xzf fftw-3.3.4-dll64.tgz
             fi
@@ -186,13 +201,15 @@ case $OPERATION in
             cd ../../
         fi
 
-        cd build_$PLATFORM
-        echo $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS ..
-		eval $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS ..
+        cd $BUILD_DIR/build_$PLATFORM
+        echo $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS $ROOT_DIR
+		eval $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS $ROOT_DIR
 
         if [ $PLATFORM = "windows-x86_64" ]; then
-            echo "Building HDF5"
-            devenv Vaa3D.sln -project HDF5 -build $CMAKE_BUILD -out hdf5.txt
+            if [ $BUILD_HDF5 = 1 ]; then
+                echo "Building HDF5"
+                devenv Vaa3D.sln -project HDF5 -build $CMAKE_BUILD -out hdf5.txt
+            fi
             echo "Building Vaa3D"
             devenv Vaa3D.sln -build $CMAKE_BUILD -out all_build.txt
             echo "Installing"
@@ -204,8 +221,8 @@ case $OPERATION in
         ;;
     clean)
         echo "Cleaning build_$PLATFORM directories"
-		if [[ -e build_$PLATFORM ]]; then
-			rm -rf build_$PLATFORM
+		if [[ -e $BUILD_DIR/build_$PLATFORM ]]; then
+			rm -rf $BUILD_DIR/build_$PLATFORM
 		fi
         ;;
     clobber)
@@ -213,8 +230,8 @@ case $OPERATION in
 		if [[ -e cmake-$CMAKE_VERSION ]]; then
 			rm -rf cmake-$CMAKE_VERSION
 		fi
-		if [[ -e build_$PLATFORM  ]]; then
-			rm -rf build_$PLATFORM
+		if [[ -e $BUILD_DIR/build_$PLATFORM  ]]; then
+			rm -rf $BUILD_DIR/build_$PLATFORM
 		fi
         ;;
 esac

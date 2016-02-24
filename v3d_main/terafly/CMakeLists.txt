@@ -2,7 +2,7 @@
 include(cmake/utils.cmake)
 
 # enable TeraFly code in Vaa3D
-# add_definitions(-D_ALLOW_TERAFLY_MENU_) # does not work since v3d CMakeLists is at the same level of the current CMakeLists 
+# add_definitions(-D_ALLOW_TERAFLY_MENU_) # does not work since v3d CMakeLists is at the same level of the current CMakeLists
 
 # enable TeraFly code in iomanager TeraFly's module
 add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
@@ -21,19 +21,23 @@ endif()
 # temp solution to be consistent with the qmake builds, using the specific version of HDF5 lib.
 # A better solution would be to use ExternalProjectAdd  to build HDF5 from source.
 if (APPLE)
-  # tmp solution
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include/hdf5")
-  link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64")
-  set (HDF5_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64/libhdf5.a")
+  # tmp solution. Note: as part of h5j we build HDF5, so skip these directories
+  if(NOT USE_HDF5)
+	  set (HDF5_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64/libhdf5.a")
+	  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include/hdf5")
+	  link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64")
+  endif()
   set (szip_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64/libszip.a")
   set (z_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/lib_mac64/libz.a")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include/hdf5-win64")
-  link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64")
-  set (HDF5_LIBRARY
-      "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libhdf5.lib")
+  if(NOT USE_HDF5)
+	  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include/hdf5-win64")
+	  link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64")
+	  set (HDF5_LIBRARY
+	      "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libhdf5.lib")
+  endif()
   set (szip_LIBRARY
       "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libszip.lib")
   set (z_LIBRARY
@@ -113,28 +117,28 @@ endif()
 
 # create TeraFly lib
 add_library(terafly STATIC
-    ${TERAFLY_MOC_SRCS} 
-	${presentation_src} 
-	${control_src} 
-	${imagemanager_src} 
-	${volumeconverter_src} 
-	${volumemanager_src} 
-	${iomanager_src} 
-	${plugin_tiff2D_src} 
-	${plugin_tiff3D_src} 
-	${stitcher_src} 
-	${crossmips_src} 
+    ${TERAFLY_MOC_SRCS}
+	${presentation_src}
+	${control_src}
+	${imagemanager_src}
+	${volumeconverter_src}
+	${volumemanager_src}
+	${iomanager_src}
+	${plugin_tiff2D_src}
+	${plugin_tiff3D_src}
+	${stitcher_src}
+	${crossmips_src}
 	${tinyxml_src}
-	${presentation_h} 
-	${control_h} 
-	${imagemanager_h} 
-	${volumeconverter_h} 
-	${volumemanager_h} 
-	${iomanager_h} 
-	${plugin_tiff2D_h} 
-	${plugin_tiff3D_h} 
-	${stitcher_h} 
-	${crossmips_h} 
+	${presentation_h}
+	${control_h}
+	${imagemanager_h}
+	${volumeconverter_h}
+	${volumemanager_h}
+	${iomanager_h}
+	${plugin_tiff2D_h}
+	${plugin_tiff3D_h}
+	${stitcher_h}
+	${crossmips_h}
 	${tinyxml_h}
 )
 

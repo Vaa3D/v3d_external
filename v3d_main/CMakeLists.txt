@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(V3D)
 
+SET(Boost_USE_STATIC_LIBS ON)
 # Parse version number from source file
 file(STRINGS
     "${CMAKE_CURRENT_SOURCE_DIR}/v3d/v3d_version_info.cpp"
@@ -256,7 +257,7 @@ if(USE_HDF5)
     set(hdf_dir "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(
         HDF5
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.8.14.tar.gz
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.8.16.tar.gz
         CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=OFF
                    -DCMAKE_INSTALL_PREFIX:PATH=${hdf_dir}/install -DHDF5_BUILD_CPP_LIB:BOOL=ON
                    -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_BUILD_TOOLS:BOOL=ON
@@ -310,8 +311,8 @@ if (NOT FORCE_QT4)
   endif()
 endif()
 
-if(NOT Qt5Core_FOUND)
-  find_package(Qt4 4.7.0 REQUIRED)
+if(FORCE_QT4 OR NOT Qt5Core_FOUND)
+  find_package(Qt4 REQUIRED)
   set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
   set(QT_USE_XML TRUE) # Oct-22-2010 CMB
 
