@@ -288,6 +288,7 @@ bool writeMarker_file(const QString & filename, const QList <ImageMarker> & list
 NeuronTree readSWC_file(const QString& filename)
 {
 	NeuronTree nt;
+    nt.file = QFileInfo(filename).absoluteFilePath();
 	QFile qf(filename);
 	if (! qf.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -363,7 +364,6 @@ NeuronTree readSWC_file(const QString& filename)
 	//now update other NeuronTree members
 
     nt.n = 1; //only one neuron if read from a file
-    nt.file = QFileInfo(filename).absoluteFilePath();
     nt.listNeuron = listNeuron;
     nt.hashNeuron = hashNeuron;
     nt.color = XYZW(0,0,0,0); /// alpha==0 means using default neuron color, 081115

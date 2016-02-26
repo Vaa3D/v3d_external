@@ -248,6 +248,10 @@ public:
 
         bool convert_to_UINT8(){
 
+            if (this->datatype ==1 )
+            {
+                return true;
+            }
 
             if (this->datatype!=2 && this->datatype!=4)
             {
