@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(3.12);
+    VersionInfo thisVersionOfV3D(3.13);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -70,7 +70,7 @@ void v3d_aboutinfo()
         "<br>"
         "<span style=\"color:#0000FF\">Peng, H., et al. (2014) \"Virtual finger boosts three-dimensional imaging and microsurgery as well as terabyte volume image visualization and analysis,\" Nature Communications, Vol. 5, No. 4342, DOI: 10.1038/ncomms5342. </span><br> "
         "<br>"
-        "<span style=\"color:#0000FF\">Bria, A., et al. (2016) \"TeraFly: real-time 3D visualization and 3D annotation of terabytes of multidimensional volumetric images,\" Nature Methods. (In press)</span><br> "
+        "<span style=\"color:#0000FF\">Bria, A., et al. (2016) \"TeraFly: real-time 3D visualization and 3D annotation of terabytes of multidimensional volumetric images,\" Nature Methods, Vol. 13, pp. 192-194, DOI: 10.1038/nmeth.3767.</span><br> "
         "<br>"
 
         "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://vaa3d.org\">http://vaa3d.org</a><br>"
