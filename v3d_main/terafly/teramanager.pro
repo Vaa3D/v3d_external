@@ -28,7 +28,7 @@ CONFIG += use_experimental_features
 
 
 #set up Vaa3D and Qt source path
-V3DMAINPATH =  ../
+V3DMAINPATH =  ..
 QT_PATH = $$dirname(QMAKE_QMAKE)/..
 
 #HDF5 headers and precompiled library and dependencies (libz and libszip)

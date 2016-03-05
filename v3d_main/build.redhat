@@ -91,20 +91,24 @@ cd ../
 
 echo `pwd`
 
-if [ -e ../released_plugins_more ]; then
+if [ -d ../released_plugins_more ]; then
   cd ../released_plugins_more
   rm -fr v3d
-  sh build_plugindemo.sh $ARGS
+  bash build_plugindemo.sh $ARGS
   mkdir -p ../bin/plugins
-  cp -r v3d/plugins/* ../bin/plugins/.
+  # cp -r v3d/plugins/* ../bin/plugins/.
+else
+  echo "fail to find ../released_plugins_more"
 fi
 
 if [ -d ../released_plugins ]; then
   cd ../released_plugins
   rm -fr v3d
-  sh build_plugindemo.sh $ARGS
+  bash build_plugindemo.sh $ARGS
   mkdir -p ../bin/plugins
-  cp -r v3d/plugins/* ../bin/plugins/.
+  # cp -r v3d/plugins/* ../bin/plugins/.
+else
+  echo "fail to find ../released_plugins_more"
 fi
 
 cd ../v3d_main
