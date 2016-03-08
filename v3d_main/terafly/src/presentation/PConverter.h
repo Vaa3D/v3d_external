@@ -124,13 +124,6 @@ class teramanager::PConverter : public QWidget
         //overrides closeEvent method of QWidget
         void closeEvent(QCloseEvent *evt);
 
-        /**********************************************************************************
-        * Called by algorithms running from different threads.
-        * Emits <sendProgressBarChanged> signal
-        ***********************************************************************************/
-        void emitProgressBarChanged(int val, int minutes, int seconds, const char* message = 0)
-        {emit sendProgressBarChanged(val, minutes, seconds, message);}
-
     public slots:
 
         void startButtonClicked();
@@ -145,7 +138,7 @@ class teramanager::PConverter : public QWidget
         /**********************************************************************************
         * <sendProgressBarChanged> event handler
         ***********************************************************************************/
-        void progressBarChanged(int val, int minutes, int seconds, const char* message);
+        void progressBarChanged(int val, int minutes, int seconds, std::string message);
 
         /**********************************************************************************
         * Called by <CConverter> when the associated operation has been performed.
@@ -168,10 +161,6 @@ class teramanager::PConverter : public QWidget
 
     signals:
 
-        /*********************************************************************************
-        * Carries progress bar informations (progress percentage and remaining minutes).
-        **********************************************************************************/
-        void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 };
 
 #endif // PCONVETER_GUI_H

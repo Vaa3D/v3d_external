@@ -50,7 +50,7 @@
 #include <QtGlobal>
 #include <cmath>
 #include "VolumeConverter.h"
-#include "../core/imagemanager/TiledMCVolume.h"
+#include "TiledMCVolume.h"
 
 using namespace teramanager;
 using namespace iim;
@@ -2300,164 +2300,13 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
-//    try
-//    {
-//        VolumeConverter *vc = new VolumeConverter();
-//        iim::DEBUG = iim::LEV_MAX;
-//        vc->setSrcVolume("/Volumes/Volumes/test.purkinje.big.tiff.3D.oneblock/RES(2122x1951x608)/000000/000000_000000/000000_000000_000000.tif", iim::TIF3D_FORMAT.c_str());
-//    }
-//    catch(...){QMessageBox::warning(this, "error", "error");}
-//    QString apo1FilePath = QFileDialog::getOpenFileName(this, tr("Select first APO file (assumed as TRUTH)"), 0,tr("APO files (*.apo)"));
-//    if(!apo1FilePath.isEmpty())
-//    {
-
-//        QList<CellAPO> cells = readAPO_file(apo1FilePath);
-//        for(int k=0; k<cells.size(); k++)
-//            v3d_msg(itm::strprintf("n = %d\nname = \"%s\"\ncomment = \"%s\"\nz = %f\nx = %f\ny = %d",
-//                                   cells[k].n, cells[k].name.toStdString().c_str(),
-//                                   cells[k].comment.toStdString().c_str(), cells[k].z, cells[k].x, cells[k].y).c_str());
-//    }
-    //CViewer *viewer = CViewer::getCurrent();
-    //v3d_msg(itm::strprintf("X=[%d,%d], Y=[%d,%d], Z[%d,%d]", viewer->anoH0, viewer->anoH1, viewer->anoV0, viewer->anoV1, viewer->anoD0, viewer->anoD1).c_str());
-//    QPalette Pal(palette());
-//    Pal.setColor(QPalette::Background, Qt::red);
-//    QWidget *emptyPanel = new QWidget();
-//    emptyPanel->setAutoFillBackground(true);
-//    emptyPanel->setPalette(Pal);
-//    emptyPanel->setFixedWidth(50);
-//    CViewer::getCurrent()->window3D->centralLayout->insertWidget(0, emptyPanel);
-    //CViewer::getCurrent()->window3D->centralLayout->takeAt(0);
-    //QMessageBox::information(this, "position", itm::strprintf("x = %d, y = %d", this->mapToGlobal(pos()).x(), this->mapToGlobal(pos()).y()).c_str());
-
-//    int n_points = QInputDialog::getInt(this, "",  "Number of points:");
-//    int n_samples = QInputDialog::getInt(this, "", "Number of samples:");
-
-//    int dimX = 10000;
-//    int dimY = 10000;
-//    int dimZ = 10000;
-//    CAnnotations::instance(dimY, dimX, dimZ);
-//    CAnnotations* cano = CAnnotations::getInstance();
-//    LandmarkList input_markers;
-//    for(int k=0; k<n_points; k++)
-//        input_markers.push_back(LocationSimple(rand()%dimX, rand()%dimY, rand()%dimZ));
-//    cano->addLandmarks(itm::interval_t(0, dimX), itm::interval_t(0, dimY), itm::interval_t(0, dimZ),input_markers);
-
-//    float t_lin_sum = 0, t_lin_sum_sq = 0, t_oct_sum = 0, t_oct_sum_sq = 0;
-//    for(int n=0; n<n_samples; n++)
-//    {
-//        int x0 = rand() % (dimX-256);
-//        int y0 = rand() % (dimY-256);
-//        int z0 = rand() % (dimZ-256);
-//        int x1 = x0 + 256;
-//        int y1 = y0 + 256;
-//        int z1 = z0 + 256;
-//        QList<LocationSimple> markers_VOI_lin, markers_VOI;
-
-//        QElapsedTimer timer_ano;
-//        timer_ano.start();
-//        for(int k=0; k<input_markers.size(); k++)
-//            if( input_markers[k].x >= x0 && input_markers[k].x <= x1 &&
-//                input_markers[k].y >= y0 && input_markers[k].y <= y1 &&
-//                input_markers[k].z >= z0 && input_markers[k].z <= z1)
-//                markers_VOI_lin.push_back(input_markers[k]);
-//        t_lin_sum += timer_ano.elapsed();
-//        t_lin_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
-
-//        timer_ano.restart();
-//        cano->findLandmarks(itm::interval_t(x0, x1),
-//                            itm::interval_t(y0, y1),
-//                            itm::interval_t(z0, z1), markers_VOI);
-//        t_oct_sum += timer_ano.elapsed();
-//        t_oct_sum_sq += std::pow(timer_ano.elapsed(), 2.0f);
-//    }
-
-//    QMessageBox::information(this, "Results", itm::strprintf("SCAN_LIN -> %.5f stdev %.5f\nSCAN_OCT -> %.5f stdev %.5f",
-//                                                             t_lin_sum/n_samples, sqrt(t_lin_sum_sq/n_samples - pow(t_lin_sum/n_samples, 2.0f)),
-//                                                             t_oct_sum/n_samples, sqrt(t_oct_sum_sq/n_samples - pow(t_oct_sum/n_samples, 2.0f))).c_str());
-//    CAnnotations::uninstance();
-
-
-
-    //    printf("PMain is: %s\n", PMain::getInstance() ? "not null" : "NULL");
-
-//    QMessageBox::information(0, "The number of annotations is...", QString::number(CAnnotations::getInstance()->count()));
-
-/*QList<CellAPO> cellsT0 = readAPO_file(QFileDialog::getOpenFileName(this, tr("Open APO file (proofreading I)"), 0,tr("APO files (*.apo)")));
-QList<CellAPO> cellsT1 = readAPO_file(QFileDialog::getOpenFileName(this, tr("Open APO file (proofreading II)"), 0,tr("APO files (*.apo)")));
-QList<CellAPO> cells_output;
-
-// FNb = blue cells in T1 --> display as BLUE
-int FNb = 0;
-for(int i=0; i<cellsT1.size(); i++)
-    if(cellsT1[i].color.b == 255)
+    int count = 0;
+    while(1)
     {
-        cells_output.push_back(cellsT1[i]);
-        FNb++;
+        itm::Sleeper::msleep(100);
+        statusBar->showMessage(QString::number(count++));
+        //QApplication::processEvents();
     }
-
-// FNa = red cells in T1 ---> display as PURPLE
-int FNa = 0;
-for(int i=0; i<cellsT1.size(); i++)
-    if(cellsT1[i].color.r == 255)
-    {
-        CellAPO cell = cellsT1[i];
-        cell.color.r = cell.color.g = 151;
-        cell.color.b = 255;
-        cells_output.push_back(cell);
-        FNa++;
-    }
-
-// FPb = red cells in T0 but not in T1 --> display as RED
-int FPb = 0;
-for(int i=0; i<cellsT0.size(); i++)
-{
-    if(cellsT0[i].color.r == 255)
-    {
-        bool found = false;
-        for(int j=0; j<cellsT1.size() && !found; j++)
-            if(cellsT1[j].color.r == 255 &&
-               cellsT0[i].x == cellsT1[j].x &&  cellsT0[i].y == cellsT1[j].y && cellsT0[i].z == cellsT1[j].z     )
-                found = true;
-        if(!found)
-        {
-            cells_output.push_back(cellsT0[i]);
-            FPb++;
-        }
-    }
-}
-
-
-// FPa = blue cells in T0 but not in T1 --> display as ORANGE
-int FPa = 0;
-for(int i=0; i<cellsT0.size(); i++)
-{
-    if(cellsT0[i].color.b == 255)
-    {
-        bool found = false;
-        for(int j=0; j<cellsT1.size() && !found; j++)
-            if(cellsT1[j].color.b == 255 &&
-               cellsT0[i].x == cellsT1[j].x &&  cellsT0[i].y == cellsT1[j].y && cellsT0[i].z == cellsT1[j].z     )
-                found = true;
-        if(!found)
-        {
-            CellAPO cell = cellsT0[i];
-            cell.color.r = 255;
-            cell.color.g = 128;
-            cell.color.b = 0;
-            cells_output.push_back(cell);
-            FPa++;
-        }
-    }
-}
-
-QMessageBox::information(this, "result", itm::strprintf("FPa = %d\nFNa = %d\nFPb = %d\nFNb = %d", FPa, FNa, FPb, FNb).c_str());
-
-writeAPO_file(QFileDialog::getSaveFileName(this, "save result to", 0, tr("APO files (*.apo)")), cells_output);*/
-
-//    CAnnotations::getInstance()->prune();
-
-//    QMessageBox::information(0, "after pruning, the number of annotations is...", QString::number(CAnnotations::getInstance()->count()));
-
 }
 
 void PMain::showLogTriggered()

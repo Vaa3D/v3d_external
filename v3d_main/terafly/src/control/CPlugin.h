@@ -37,6 +37,7 @@
 #include <limits>
 #include <sstream>
 #include <algorithm>
+#include <QThread>
 
 class V3DPluginCallback2;
 
@@ -333,6 +334,14 @@ namespace teramanager
     inline static T linear(T a, T b, int step_index, int steps_number){
         return (b - a) * step_index / static_cast<float>(steps_number) + a;
     }
+
+    class Sleeper : public QThread
+    {
+        public:
+            static void usleep(unsigned long usecs){QThread::usleep(usecs);}
+            static void msleep(unsigned long msecs){QThread::msleep(msecs);}
+            static void sleep(unsigned long secs){QThread::sleep(secs);}
+    };
 
     //cross-platform current function macro
     #if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600))

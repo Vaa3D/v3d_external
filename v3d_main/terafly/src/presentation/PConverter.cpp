@@ -32,6 +32,7 @@
 #include "PLog.h"
 #include "../control/CConverter.h"
 #include "../control/CSettings.h"
+#include "QProgressSender.h"
 
 using namespace teramanager;
 
@@ -305,7 +306,8 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     //signals and slots
     connect(startButton, SIGNAL(clicked()), this, SLOT(startButtonClicked()));
     connect(stopButton, SIGNAL(clicked()), this, SLOT(stopButtonClicked()));
-    connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
+    qRegisterMetaType<std::string>("std::string");
+    connect(ts::QProgressSender::instance(), SIGNAL(sendProgressBarChanged(int, int, int, std::string)), this, SLOT(progressBarChanged(int, int, int, std::string)), Qt::QueuedConnection);
     connect(inFormatCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(volformatChanged(int)));
     connect(outFormatCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(volformatChanged(int)));
     connect(timeSeriesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(volformatChanged(int)));
@@ -322,6 +324,9 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     connect(blockHeightField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
     connect(blockDepthField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
     connect(addResolutionButton, SIGNAL(clicked()), this, SLOT(addResolution()));
+
+    terastitcher::ProgressBar::instance()->setToGUI(true);
+
     resetGUI();
 
     //set always on top
@@ -715,17 +720,15 @@ void PConverter::closeEvent(QCloseEvent *evt)
 /**********************************************************************************
 * <sendProgressBarChanged> event handler
 ***********************************************************************************/
-void PConverter::progressBarChanged(int val, int minutes, int seconds, const char* message)
+void PConverter::progressBarChanged(int val, int minutes, int seconds, std::string message)
 {
     progressBar->setValue(val);
     QString remaining_time = QString::number(minutes);
     remaining_time.append(" minutes and ");
     remaining_time.append(QString::number(seconds));
     remaining_time.append(" seconds remaining");
-    if(message && strlen(message) != 0)
-    {
-        statusBar->showMessage(message + QString(": ") + remaining_time);
-    }
+    if(message.size())
+        statusBar->showMessage(message.c_str() + QString(": ") + remaining_time);
     else
         statusBar->showMessage(remaining_time);
 }

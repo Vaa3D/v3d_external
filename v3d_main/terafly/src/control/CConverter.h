@@ -33,7 +33,7 @@
 #include <string>
 #include "CPlugin.h"
 #include "../presentation/PConverter.h"
-#include "../core/volumeconverter/VolumeConverter.h"
+#include "VolumeConverter.h"
 
 class teramanager::CConverter : public QThread
 {

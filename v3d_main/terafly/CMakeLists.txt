@@ -58,41 +58,43 @@ include_directories(${Boost_INCLUDE_DIR})
 # add internal include directories
 include_directories(./src/presentation)
 include_directories(./src/control)
-include_directories(./src/core/imagemanager)
-include_directories(./src/core/volumeconverter)
-include_directories(./src/core/volumemanager)
-include_directories(./src/core/stitcher)
-include_directories(./src/core/crossmips)
-include_directories(./src/core/tinyxml)
-include_directories(./src/core/iomanager)
-include_directories(./src/core/iomanager/plugins/tiff2D)
-include_directories(./src/core/iomanager/plugins/tiff3D)
+include_directories(./src/terarepo/imagemanager)
+include_directories(./src/terarepo/utils/volumeconverter)
+include_directories(./src/terarepo/volumemanager)
+include_directories(./src/terarepo/stitcher)
+include_directories(./src/terarepo/crossmips)
+include_directories(./src/terarepo/tinyxml)
+include_directories(./src/terarepo/iomanager)
+include_directories(./src/terarepo/iomanager/plugins/tiff2D)
+include_directories(./src/terarepo/iomanager/plugins/tiff3D)
 
 # add internal header files
 file(GLOB presentation_h 		./src/presentation/*.h)
 file(GLOB control_h 			./src/control/*.h)
-file(GLOB imagemanager_h 		./src/core/imagemanager/*.h)
-file(GLOB volumeconverter_h 	./src/core/volumeconverter/*.h)
-file(GLOB volumemanager_h 		./src/core/volumemanager/*.h)
-file(GLOB stitcher_h 			./src/core/stitcher/*.h)
-file(GLOB crossmips_h 			./src/core/crossmips/*.h)
-file(GLOB tinyxml_h 			./src/core/tinyxml/*.h)
-file(GLOB iomanager_h 			./src/core/iomanager/*.h)
-file(GLOB plugin_tiff2D_h 		./src/core/iomanager/plugins/tiff2D/*.h)
-file(GLOB plugin_tiff3D_h 		./src/core/iomanager/plugins/tiff3D/*.h)
+file(GLOB imagemanager_h 		./src/terarepo/imagemanager/*.h)
+file(GLOB volumeconverter_h 	./src/terarepo/utils/volumeconverter/*.h)
+file(GLOB volumemanager_h 		./src/terarepo/volumemanager/*.h)
+file(GLOB stitcher_h 			./src/terarepo/stitcher/*.h)
+file(GLOB crossmips_h 			./src/terarepo/crossmips/*.h)
+file(GLOB tinyxml_h 			./src/terarepo/tinyxml/*.h)
+file(GLOB iomanager_h 			./src/terarepo/iomanager/*.h)
+file(GLOB plugin_tiff2D_h 		./src/terarepo/iomanager/plugins/tiff2D/*.h)
+file(GLOB plugin_tiff3D_h 		./src/terarepo/iomanager/plugins/tiff3D/*.h)
+file(GLOB common_h 				./src/terarepo/common/*.h)
 
 # add internal source files
 file(GLOB presentation_src 		./src/presentation/*.cpp)
 file(GLOB control_src 			./src/control/*.cpp)
-file(GLOB imagemanager_src 		./src/core/imagemanager/*.cpp)
-file(GLOB volumeconverter_src 	./src/core/volumeconverter/*.cpp)
-file(GLOB volumemanager_src 	./src/core/volumemanager/*.cpp)
-file(GLOB stitcher_src 			./src/core/stitcher/*.cpp)
-file(GLOB crossmips_src 		./src/core/crossmips/*.cpp)
-file(GLOB tinyxml_src 			./src/core/tinyxml/*.cpp)
-file(GLOB iomanager_src 		./src/core/iomanager/*.cpp)
-file(GLOB plugin_tiff2D_src 	./src/core/iomanager/plugins/tiff2D/*.cpp)
-file(GLOB plugin_tiff3D_src 	./src/core/iomanager/plugins/tiff3D/*.cpp)
+file(GLOB imagemanager_src 		./src/terarepo/imagemanager/*.cpp)
+file(GLOB volumeconverter_src 	./src/terarepo/utils/volumeconverter/*.cpp)
+file(GLOB volumemanager_src 	./src/terarepo/volumemanager/*.cpp)
+file(GLOB stitcher_src 			./src/terarepo/stitcher/*.cpp)
+file(GLOB crossmips_src 		./src/terarepo/crossmips/*.cpp)
+file(GLOB tinyxml_src 			./src/terarepo/tinyxml/*.cpp)
+file(GLOB iomanager_src 		./src/terarepo/iomanager/*.cpp)
+file(GLOB plugin_tiff2D_src 	./src/terarepo/iomanager/plugins/tiff2D/*.cpp)
+file(GLOB plugin_tiff3D_src 	./src/terarepo/iomanager/plugins/tiff3D/*.cpp)
+file(GLOB common_src 			./src/terarepo/common/*.cpp)
 
 # look for "Q_OBJECT" in headers to determine which ones to MOC
 message(STATUS "TeraFly: finding header files containing 'Q_OBJECT' macro...")
@@ -129,6 +131,7 @@ add_library(terafly STATIC
 	${stitcher_src}
 	${crossmips_src}
 	${tinyxml_src}
+	${common_src}
 	${presentation_h}
 	${control_h}
 	${imagemanager_h}
@@ -140,6 +143,7 @@ add_library(terafly STATIC
 	${stitcher_h}
 	${crossmips_h}
 	${tinyxml_h}
+	${common_h}
 )
 
 target_link_libraries(terafly ${HDF5_LIBRARY} ${z_LIBRARY} ${szip_LIBRARY})
