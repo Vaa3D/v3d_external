@@ -49,8 +49,15 @@ INCLUDEPATH += $$V3DMAINPATH/common_lib/include
 INCLUDEPATH += $$V3DMAINPATH/basic_c_fun/customary_structs
 INCLUDEPATH += $$V3DMAINPATH
 INCLUDEPATH += $$V3DMAINPATH/v3d
+
 #enable experimental features
 DEFINES += USE_EXPERIMENTAL_FEATURES
+
+#enable gui progress bar
+DEFINES += WITH_QT
+
+#enable HDF5
+DEFINES += ENABLE_BDV_HDF5
 
 #setup iomanager
 INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
@@ -179,7 +186,7 @@ HEADERS += ../terafly/src/terarepo/src/common/QProgressSender.h
 SOURCES += ../terafly/src/terarepo/src/common/config.cpp
 SOURCES += ../terafly/src/terarepo/src/common/ProgressBar.cpp
 SOURCES += ../terafly/src/terarepo/src/common/QProgressSender.cpp
-DEFINES += WITH_QT
+
 
 #set up TeraFly plugin (control and presentation classes)
 RESOURCES += ../terafly/icons.qrc

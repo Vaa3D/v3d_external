@@ -4,8 +4,10 @@ include(cmake/utils.cmake)
 # enable TeraFly code in Vaa3D
 # add_definitions(-D_ALLOW_TERAFLY_MENU_) # does not work since v3d CMakeLists is at the same level of the current CMakeLists
 
-# enable TeraFly code in iomanager TeraFly's module
+# enable TeraFly code in Terarepo
 add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
+add_definitions(-DWITH_QTGIN_MODE)
+add_definitions(-DENABLE_BDV_HDF5)
 
 
 # disable annoying warnings on MSVC compilers

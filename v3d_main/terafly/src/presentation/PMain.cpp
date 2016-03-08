@@ -51,6 +51,7 @@
 #include <cmath>
 #include "VolumeConverter.h"
 #include "TiledMCVolume.h"
+#include "RawVolume.h"
 
 using namespace teramanager;
 using namespace iim;
@@ -2301,12 +2302,30 @@ void PMain::debugAction1Triggered()
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
     int count = 0;
-    while(1)
-    {
-        itm::Sleeper::msleep(100);
-        statusBar->showMessage(QString::number(count++));
-        //QApplication::processEvents();
-    }
+    double acc = 0;
+    double GV = 0;
+    iim::VirtualVolume *vol = //new RawVolume("/Volumes/Volumes/bigbrain.allen.neuron.raw");
+            itm::CImport::instance()->getHighestResVolume();
+    size_t xdim = 500, ydim = 500, zdim = 100;
+    for(size_t d0=0; d0 < vol->getDIM_D(); d0 += zdim)
+        for(size_t v0=0; v0 < vol->getDIM_V(); v0 += ydim)
+            for(size_t h0=0; h0 < vol->getDIM_H(); h0 += xdim)
+            {
+                size_t v1 = std::min(v0+ydim, (size_t)(vol->getDIM_V()));
+                size_t h1 = std::min(h0+xdim, (size_t)(vol->getDIM_H()));
+                size_t d1 = std::min(d0+zdim, (size_t)(vol->getDIM_D()));
+                GV += ((v1-v0)*(h1-h0)*(d1-d0)*vol->getDIM_C())*1.0e-9;
+                QElapsedTimer timer;
+                timer.start();
+                itm::uint8 *data = vol->loadSubvolume_to_UINT8(v0, v1, h0, h1, d0, d1);
+                acc += timer.elapsed()/1000.0;
+                count++;
+                delete data;
+                statusBar->showMessage(itm::strprintf("%.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());
+                QApplication::processEvents();
+            }
+    statusBar->showMessage(itm::strprintf("FINISHED: %.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());
+
 }
 
 void PMain::showLogTriggered()
