@@ -15,11 +15,11 @@ MYDIR=
 
 for arg in $*; do
   #echo $arg		
-  if [ $arg == "-m" ]; then
+  if [ "$arg" == "-m" ]; then
   	QMAKE_CONFIG="CONFIG+=x86_64"
-  elif [ $arg == "-n" ]; then
+  elif [ "$arg" == "-n" ]; then
   	QMAKE_CONFIG="CONFIG+=x86"
-  elif [ ${arg:0:2} == "-d" ]; then
+  elif [ "${arg:0:2}" == "-d" ]; then
   	MYDIR="${arg:2}"
   else
   	MAKE_ARGS+=" $arg"
@@ -36,7 +36,7 @@ fi
 # Need to define QMAKESPEC on Mac
 # because recent Qt installs default to creating xcode project files.
 # We want Makefiles for this script.
-if [[ `uname` == 'Darwin' ]]; then
+if [ `uname` = 'Darwin' ]; then
    QMAKE_ARGS='-spec macx-g++'
 else
    QMAKE_ARGS=''
