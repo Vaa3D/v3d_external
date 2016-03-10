@@ -9231,17 +9231,17 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 
     if(datatype == V3D_UINT8)
     {
-        simple_saveimage_wrapper(callback, "test1.v3draw", pVImg_UINT8, dtmp, datatype);
+      //  simple_saveimage_wrapper(callback, "test1.v3draw", pVImg_UINT8, dtmp, datatype);
         p4DImage.setData((unsigned char*)pVImg_UINT8, vx, vy, vz, vc, datatype);
     }
     else if(datatype == V3D_UINT16)
     {
-        simple_saveimage_wrapper(callback, "test1.v3draw", (unsigned char*)pVImg_UINT16, dtmp, datatype);
+      //  simple_saveimage_wrapper(callback, "test1.v3draw", (unsigned char*)pVImg_UINT16, dtmp, datatype);
         p4DImage.setData((unsigned char*)pVImg_UINT16, vx, vy, vz, vc, datatype);
     }
     else if(datatype == V3D_FLOAT32)
     {
-        simple_saveimage_wrapper(callback, "test1.v3draw", (unsigned char*)pVImg_FLOAT32, dtmp, datatype);
+      //  simple_saveimage_wrapper(callback, "test1.v3draw", (unsigned char*)pVImg_FLOAT32, dtmp, datatype);
         p4DImage.setData((unsigned char*)pVImg_FLOAT32, vx, vy, vz, vc, datatype);
     }
     else
