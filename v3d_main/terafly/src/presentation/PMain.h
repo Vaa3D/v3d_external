@@ -319,18 +319,6 @@ class teramanager::PMain : public QWidget
     public slots:
 
         /**********************************************************************************
-        * Called when "Open TeraFly volume" menu action is triggered.
-        * If path is not provided, opens a QFileDialog to select volume's path.
-        ***********************************************************************************/
-        void openTeraFlyVolume(string path = "");
-
-        /**********************************************************************************
-        * Called when "Open HDF5 volume" menu action is triggered.
-        * If path is not provided, opens a QFileDialog to select volume's path.
-        ***********************************************************************************/
-        void openHDF5Volume(string path = "");
-
-        /**********************************************************************************
         * Unified method for all "Open ..." UI actions
         ***********************************************************************************/
         void openImage(std::string path = "");

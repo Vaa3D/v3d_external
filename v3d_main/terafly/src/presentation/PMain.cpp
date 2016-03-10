@@ -52,6 +52,7 @@
 #include "VolumeConverter.h"
 #include "TiledMCVolume.h"
 #include "RawVolume.h"
+#include "iomanager.config.h"
 
 using namespace teramanager;
 using namespace iim;
@@ -419,7 +420,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     debugVerbosityCBox->addItem("Level 2");
     debugVerbosityCBox->addItem("Level 3");
     debugVerbosityCBox->addItem("Verbose");
-    CSettings::instance()->readSettings();
     debugVerbosityActionWidget->setDefaultWidget(debugVerbosityCBox);
     debugVerbosityMenu->addAction(debugVerbosityActionWidget);
     connect(debugVerbosityCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(verbosityChanged(int)));
@@ -460,10 +460,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
                            "stop: 0 rgb(180,180,180), stop: 1 rgb(220,220,220)); border-left: none; border-right: none; border-bottom: 1px solid rgb(150,150,150);}");
 
     QMenu *openMenu = new QMenu();
-    std::list<string> recentVolumes = CSettings::instance()->getVolumePathHistory();
-    for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
+    for(auto & it : CSettings::instance()->getRecentImages())
     {
-        QAction *action = new QAction(it->c_str(), this);
+        QAction *action = new QAction(it.first.c_str(), this);
         connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
         recentVolumesMenu->addAction(action);
     }
@@ -1184,105 +1183,13 @@ void PMain::clearRecentVolumes()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
-    CSettings::instance()->clearVolumePathHistory();
+    CSettings::instance()->clearRecentImages();
     QList<QAction*> actions = recentVolumesMenu->actions();
     qDeleteAll(actions.begin(), actions.end());
     clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
     connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
     recentVolumesMenu->addSeparator();
     recentVolumesMenu->addAction(clearRecentVolumesAction);
-}
-
-/**********************************************************************************
-* Called when "Open HDF5 volume" menu action is triggered.
-* If path is not provided, opens a QFileDialog to select volume's path.
-***********************************************************************************/
-void PMain::openHDF5Volume(string path)
-{
-    try
-    {
-        if(path.empty())
-        {
-            /**/itm::debug(itm::LEV2, "import_path is empty, launch file dialog", __itm__current__function__);
-            #ifdef _USE_QT_DIALOGS
-            QFileDialog dialog(0);
-            dialog.setFileMode(QFileDialog::ExistingFile);
-            dialog.setNameFilter(tr("BigDataViewer HDF5 files (*.h5)"));
-            dialog.setViewMode(QFileDialog::Detail);
-            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
-            dialog.setWindowTitle("Select volume's file");
-            dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
-            if(dialog.exec())
-                path = dialog.directory().absolutePath().toStdString();
-
-            #else
-            path = QFileDialog::getOpenFileName(this, "Open HDF5 volume's file", QString(), tr("HDF5 files (*.h5)")).toStdString();
-            #endif
-            /**/itm::debug(itm::LEV3, strprintf("path = %s", path.c_str()).c_str(), __itm__current__function__);
-
-
-            if (path.empty())
-                return;
-        }
-        else
-        {
-            /**/itm::debug(itm::LEV2, strprintf("path is not empty (= \"%s\")", path.c_str()).c_str(), __itm__current__function__);
-
-            if(!QFile::exists(path.c_str()))
-                throw RuntimeException(strprintf("Path \"%s\" does not exist", path.c_str()).c_str());
-        }
-
-
-        //then checking that no volume has imported yet
-        if(!CImport::instance()->isEmpty())
-            throw RuntimeException("A volume has been already imported! Please close the current volume first.");
-
-
-        //storing the path into CSettings
-        CSettings::instance()->setVolumePathLRU(path);
-        CSettings::instance()->addVolumePathToHistory(path);
-        CSettings::instance()->writeSettings();
-
-        //updating recent volumes menu
-        QList<QAction*> actions = recentVolumesMenu->actions();
-        qDeleteAll(actions.begin(), actions.end());
-        std::list<string> recentVolumes = CSettings::instance()->getVolumePathHistory();
-        for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
-        {
-            QAction *action = new QAction(it->c_str(), this);
-           // action->setData(QVariant());
-            connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
-            recentVolumesMenu->addAction(action);
-        }
-        clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
-        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
-        recentVolumesMenu->addSeparator();
-        recentVolumesMenu->addAction(clearRecentVolumesAction);
-
-
-        //disabling import form and enabling progress bar animation
-        progressBar->setEnabled(true);
-        progressBar->setMinimum(0);
-        progressBar->setMaximum(0);
-        statusBar->showMessage("Importing volume...");
-
-        //starting import
-        CImport::instance()->setPath(path);
-        CImport::instance()->updateMaxDims();
-        CImport::instance()->start();
-    }
-    catch(iim::IOException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-        PMain::getInstance()->resetGUI();
-        CImport::instance()->reset();
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-        PMain::getInstance()->resetGUI();
-        CImport::instance()->reset();
-    }
 }
 
 /**********************************************************************************
@@ -1295,7 +1202,6 @@ void PMain::openImage(std::string path /*= ""*/)
         // PRECONDITION CHECK: no image is currently open
         if(!CImport::instance()->isEmpty())
             throw RuntimeException("An image has been already imported! Please close the current image first.");
-
 
         // these senders require a folder selection dialog
         if(sender() == openTeraFlyVolumeAction || sender() == openUnconvertedVolumeFolderAction)
@@ -1367,6 +1273,28 @@ void PMain::openImage(std::string path /*= ""*/)
             throw RuntimeException(strprintf("Path \"%s\" does not exist", path.c_str()).c_str());
 
 
+        // infer image format
+        itm::volume_format image_format(itm::volume_format::UNKNOWN);
+        if(sender() == openTeraFlyVolumeAction)
+            image_format.id = itm::volume_format::TERAFLY;
+        else if(sender() == openHDF5VolumeAction)
+            image_format.id = itm::volume_format::BDVHDF5;
+        else if(sender() == openUnconvertedVolumeFileAction || sender() == openUnconvertedVolumeFolderAction)
+            image_format.id = itm::volume_format::UNCONVERTED;
+        else
+        {
+            for(auto & it: CSettings::instance()->getRecentImages())
+                if(it.first.compare(path) == 0)
+                {
+                    image_format = itm::volume_format(it.second);
+                    break;
+                }
+        }
+        if(image_format.id == itm::volume_format::UNKNOWN)
+            throw RuntimeException("Unrecognized image super-format. You should never see this.");        
+        CImport::instance()->setFormat(image_format.toString());
+
+
         // check if additional informations are required for folder-based formats (which might come w/o metadata)
         if(iim::isDirectory(path) &&
                 (!VirtualVolume::isDirectlyImportable(path.c_str())  || regenMData_cAction->isChecked()) )
@@ -1380,17 +1308,16 @@ void PMain::openImage(std::string path /*= ""*/)
 
         // store the path permanently into the system
         CSettings::instance()->setVolumePathLRU(path);
-        CSettings::instance()->addVolumePathToHistory(path);
+        CSettings::instance()->addRecentImage(path, image_format.toString());
         CSettings::instance()->writeSettings();
 
 
         // update recent volumes menu
         QList<QAction*> actions = recentVolumesMenu->actions();
         qDeleteAll(actions.begin(), actions.end());
-        std::list<string> recentVolumes = CSettings::instance()->getVolumePathHistory();
-        for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
+        for(auto & it: CSettings::instance()->getRecentImages())
         {
-            QAction *action = new QAction(it->c_str(), this);
+            QAction *action = new QAction(it.first.c_str(), this);
             connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
             recentVolumesMenu->addAction(action);
         }
@@ -1408,14 +1335,18 @@ void PMain::openImage(std::string path /*= ""*/)
 
 
         // start import
-        if(sender() == openUnconvertedVolumeFileAction || sender() == openUnconvertedVolumeFolderAction)
-            CImport::instance()->setFormat("unconverted");
         CImport::instance()->setRegenerateVolumeMap(regenVMap_cAction->isChecked());
         CImport::instance()->setPath(path);
         CImport::instance()->updateMaxDims();
         CImport::instance()->start();
     }
     catch(iim::IOException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        PMain::getInstance()->resetGUI();
+        CImport::instance()->reset();
+    }
+    catch(iomanager::exception &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         PMain::getInstance()->resetGUI();
@@ -1429,125 +1360,6 @@ void PMain::openImage(std::string path /*= ""*/)
     }
 }
 
-/**********************************************************************************
-* Called when "Open TeraFly volume" menu action is triggered.
-* If path is not provided, opens a QFileDialog to select volume's path.
-***********************************************************************************/
-void PMain::openTeraFlyVolume(string path /* = "" */)
-{
-    /**/itm::debug(itm::LEV1, strprintf("path = \"%s\"", path.c_str()).c_str(), __itm__current__function__);
-
-    try
-    {
-        QString import_path = path.c_str();
-
-        if(import_path.isEmpty())
-        {
-            /**/itm::debug(itm::LEV2, "import_path is empty, launching file dialog", __itm__current__function__);
-
-            #ifdef _USE_QT_DIALOGS
-            QFileDialog dialog(0);
-            dialog.setFileMode(QFileDialog::Directory);
-            dialog.setViewMode(QFileDialog::Detail);
-            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
-            dialog.setWindowTitle("Select volume's directory");
-            dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
-            if(dialog.exec())
-                import_path = dialog.directory().absolutePath().toStdString().c_str();
-
-            #else
-            //added by PHC 20130823
-            //itm::setWidgetOnTop(this, false);
-            import_path = QFileDialog::getExistingDirectory(this, tr("Select a folder for a resolution of the volume image you want to visualize"),
-                                                            CSettings::instance()->getVolumePathLRU().c_str(),
-                                                             QFileDialog::ShowDirsOnly
-                                                        //     | QFileDialog::DontResolveSymlinks   //maybe I should allow symbolic links as well, by PHC, 20130823
-                                                                    );
-            //itm::setWidgetOnTop(this, true);
-
-#endif
-
-            /**/itm::debug(itm::LEV3, strprintf("import_path = %s", qPrintable(import_path)).c_str(), __itm__current__function__);
-
-            if (import_path.isEmpty())
-                return;
-        }
-        else
-        {
-            /**/itm::debug(itm::LEV2, strprintf("import_path is not empty (= \"%s\")", import_path.toStdString().c_str()).c_str(), __itm__current__function__);
-
-            if(!QFile::exists(import_path))
-                throw RuntimeException(strprintf("Path \"%s\" does not exist", import_path.toStdString().c_str()).c_str());
-        }
-
-
-        //then checking that no volume has imported yet
-        if(!CImport::instance()->isEmpty())
-            throw RuntimeException("A volume has been already imported! Please close the current volume first.");
-
-
-        // check that folder name matches with the used convention
-        QDir dir(import_path);
-        if( dir.dirName().toStdString().substr(0,3).compare(itm::RESOLUTION_PREFIX) != 0)
-            throw RuntimeException(strprintf("\"%s\" is not a valid resolution: the name of the folder does not start with \"%s\"",
-                                             qPrintable(import_path), itm::RESOLUTION_PREFIX.c_str() ).c_str());
-
-
-        //storing the path into CSettings
-        CSettings::instance()->setVolumePathLRU(qPrintable(import_path));
-        CSettings::instance()->addVolumePathToHistory(qPrintable(import_path));
-        CSettings::instance()->writeSettings();
-
-        //updating recent volumes menu
-        QList<QAction*> actions = recentVolumesMenu->actions();
-        qDeleteAll(actions.begin(), actions.end());
-        std::list<string> recentVolumes = CSettings::instance()->getVolumePathHistory();
-        for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
-        {
-            QAction *action = new QAction(it->c_str(), this);
-            connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
-            recentVolumesMenu->addAction(action);
-        }
-        clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
-        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
-        recentVolumesMenu->addSeparator();
-        recentVolumesMenu->addAction(clearRecentVolumesAction);
-
-        //check if additional informations are required
-        if(!VirtualVolume::isDirectlyImportable(qPrintable(import_path))  || regenMData_cAction->isChecked())
-        {
-           if(PDialogImport::instance(this)->exec() == QDialog::Rejected)
-                return;
-           CImport::instance()->setReimport(true);
-           CImport::instance()->setRegenerateVolumeMap(true);
-        }
-        else
-            CImport::instance()->setRegenerateVolumeMap(regenVMap_cAction->isChecked());
-        CImport::instance()->setPath(qPrintable(import_path));
-
-        //disabling import form and enabling progress bar animation
-        progressBar->setEnabled(true);
-        progressBar->setMinimum(0);
-        progressBar->setMaximum(0);
-        statusBar->showMessage("Importing volume...");
-
-        //starting import
-        CImport::instance()->updateMaxDims();
-        CImport::instance()->start();
-    }
-    catch(iim::IOException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-        PMain::getInstance()->resetGUI();
-        CImport::instance()->reset();
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-        PMain::getInstance()->resetGUI();
-        CImport::instance()->reset();
-    }
-}
 
 /**********************************************************************************
 * Called when "Close volume" menu action is triggered.

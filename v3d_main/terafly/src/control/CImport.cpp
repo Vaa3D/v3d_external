@@ -136,11 +136,17 @@ void CImport::run()
         /**/itm::debug(itm::LEV_MAX, strprintf("importing current volume at \"%s\"", path.c_str()).c_str(), __itm__current__function__);
 
         // @ADDED by Alessandro on 2016-03-10. Unconverted volume requires ad hoc import procedure
-        if(format.compare("unconverted") == 0)
-            throw itm::RuntimeException("Unconverted image not yet supported");
+        if( format.compare(itm::volume_format(itm::volume_format::UNCONVERTED).toString()) == 0)
+        {
+            if(reimport)
+                volumes.push_back(VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3));
+            else
+                volumes.push_back(VirtualVolume::instance(path.c_str()));
+            throw itm::RuntimeException("Unconverted image correctly imported, but visualization has not been activated yet");
+        }
 
         // HDF5 BigDataViewer pyramid image (one single file)
-        if ( iim::isFile(path) )
+        if ( iim::isFile(path) && itm::hasEnding(path, ".h5"))
         {
 			fprintf(stderr,"------------->>> path = %s \n",path.c_str()); fflush(stderr);
 			BDV_HDF5init(path.c_str(), HDF5_descr);
@@ -157,7 +163,7 @@ void CImport::run()
 			}
 		}
         // TeraFly pyramid image (a hierarchy of nested folders)
-        else
+        else if (iim::isDirectory(path) )
         {
 		
             /********************* 1) IMPORTING CURRENT VOLUME ***********************
@@ -247,6 +253,8 @@ void CImport::run()
                     throw RuntimeException(strprintf("Volumes have different time frames at \"%s\"", qPrintable(curParentDir.absolutePath())).c_str());
             }
         }
+        else
+            throw itm::RuntimeException(itm::strprintf("Cannot recognize format of image at \"%s\" [stored format is \"%s\"].", path.c_str(), format.c_str()));
 
 
         /**************** 3) GENERATING / LOADING VOLUME 3D MAP *****************

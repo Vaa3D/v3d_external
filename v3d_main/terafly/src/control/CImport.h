@@ -200,4 +200,30 @@ class teramanager::CImport : public QThread
         void sendOperationOutcome(itm::RuntimeException* ex, qint64 elapsed_time = 0);
 };
 
+struct teramanager::volume_format
+{
+    enum kind{TERAFLY, BDVHDF5, UNCONVERTED, UNKNOWN} id;
+    volume_format() : id(UNKNOWN){}
+    volume_format(kind _id) : id(_id){}
+    std::string toString(){
+        if(id == TERAFLY)
+            return "TERAFLY";
+        else if(id == BDVHDF5)
+            return "BDVHDF5";
+        else if(id == UNCONVERTED)
+            return "UNCONVERTED";
+        else
+            return "UNKNOWN";
+    }
+    volume_format(std::string string_id)
+    {
+        for(int i=0; i<4; i++)
+            if(volume_format(kind(i)).toString().compare(string_id) == 0)
+            {
+                id = kind(i);
+                break;
+            }
+    }
+};
+
 #endif // CIMPORT_H

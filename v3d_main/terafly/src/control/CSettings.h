@@ -32,6 +32,7 @@
 #include "CPlugin.h"
 #include <vector>
 #include <algorithm>
+#include <map>
 
 class teramanager::CSettings
 {
@@ -50,8 +51,8 @@ class teramanager::CSettings
         }
 
         //TeraFly members
-		std::string volumePathLRU;
-        std::list<std::string> volumePathHistory;
+        std::string volumePathLRU;
+        std::list< std::pair<std::string, std::string> > recentImages;    // <path, format> pairs
 		std::string annotationPathLRU;
         int VOIdimV;
         int VOIdimH;
@@ -94,7 +95,7 @@ class teramanager::CSettings
 
         //GET and SET methods for TeraFly
         std::string getVolumePathLRU(){return volumePathLRU;}
-        std::list<std::string>& getVolumePathHistory(){return volumePathHistory;}
+        std::list< std::pair<std::string, std::string> >& getRecentImages(){return recentImages;}
         std::string getAnnotationPathLRU(){return annotationPathLRU;}
         int getVOIdimV(){return VOIdimV;}
         int getVOIdimH(){return VOIdimH;}
@@ -116,17 +117,18 @@ class teramanager::CSettings
             /**/itm::debug(itm::LEV_MAX, strprintf("_volumePathLRU = \"%s\"", _volumePathLRU.c_str()).c_str(), __itm__current__function__);
             volumePathLRU = _volumePathLRU;
         }
-        void addVolumePathToHistory(std::string _volumePath)
+        void addRecentImage(std::string path, std::string format)
         {
-            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePath = \"%s\"", _volumePath.c_str()).c_str(), __itm__current__function__);
-
-            if(volumePathHistory.size() > 10)
-                volumePathHistory.pop_front();
-            volumePathHistory.push_back(_volumePath);
-            volumePathHistory.erase(unique(volumePathHistory.begin(), volumePathHistory.end()), volumePathHistory.end());
+            /**/itm::debug(itm::LEV_MAX, strprintf("path = \"%s\", format = \"%s\"", path.c_str(), format.c_str()).c_str(), __itm__current__function__);
+            std::pair<std::string, std::string> newval = std::pair<std::string, std::string>(path, format);
+            if(std::find(recentImages.begin(), recentImages.end(), newval) != recentImages.end())
+                recentImages.erase(std::find(recentImages.begin(), recentImages.end(), newval));
+            if(recentImages.size() > 15)
+                recentImages.pop_back();
+            recentImages.push_front(newval);
         }
-        void clearVolumePathHistory(){
-            volumePathHistory.clear();
+        void clearRecentImages(){
+            recentImages.clear();
             writeSettings();
         }
 

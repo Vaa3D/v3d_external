@@ -93,12 +93,15 @@ void CSettings::writeSettings()
     settings.setValue("annotationPathLRU", annotationPathLRU_qstring);
     settings.setValue("volumePathLRU", volumePathLRU_qstring);
 
-    settings.beginWriteArray("volumePathHistory");
-    std::list<string>::iterator it = volumePathHistory.begin();
-    for (size_t i = 0; i < volumePathHistory.size(); ++i, it++) {
-        settings.setArrayIndex(i);
-        QString path(it->c_str());
+    settings.beginWriteArray("recentImages");
+    size_t i = 0;
+    for (auto & it : recentImages)
+    {
+        settings.setArrayIndex(i++);
+        QString path(it.first.c_str());
+        QString format(it.second.c_str());
         settings.setValue("path", path);
+        settings.setValue("format", format);
     }
     settings.endArray();
 
@@ -171,12 +174,13 @@ void CSettings::readSettings()
     if(settings.contains("previewMode"))
         previewMode = settings.value("previewMode").toBool();
 
-    int size = settings.beginReadArray("volumePathHistory");
-    volumePathHistory.clear();
+    int size = settings.beginReadArray("recentImages");
+    recentImages.clear();
     for (int i = 0; i < size; ++i)
     {
         settings.setArrayIndex(i);
-        volumePathHistory.push_back(settings.value("path").toString().toStdString());
+        recentImages.push_back(std::pair<std::string, std::string>(settings.value("path").toString().toStdString(), settings.value("format").toString().toStdString()));
+        //v3d_msg(itm::strprintf("\"%s\", format \"%s\"", recentImages.back().first.c_str(), recentImages.back().second.c_str()).c_str());
     }
     settings.endArray();
 

@@ -11,6 +11,15 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.134 / TeraFly version 2.1.44
+March 10th, 2016
+--------------------------------------------------------------------------------------------
+- Dev: new, more robust import code
+- Fix: fixed automated format discovery for file-based formats, now based on file extension
+- Fix: fixed compilation issue on Linux (ambiguous uint8/uint32)
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.133 / TeraFly version 2.1.43
 March 10th, 2016
 --------------------------------------------------------------------------------------------
