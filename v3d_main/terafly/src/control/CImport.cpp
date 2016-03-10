@@ -135,33 +135,29 @@ void CImport::run()
 
         /**/itm::debug(itm::LEV_MAX, strprintf("importing current volume at \"%s\"", path.c_str()).c_str(), __itm__current__function__);
 
-/*********************** MODIFIED BY GIULIO ***************************************************/
-        QDir curParentDir(path.c_str()); // is needed after the following selection (if)
-		
-        //
-        bool pathIsFile = false;
+        // @ADDED by Alessandro on 2016-03-10. Unconverted volume requires ad hoc import procedure
+        if(format.compare("unconverted") == 0)
+            throw itm::RuntimeException("Unconverted image not yet supported");
+
+        // HDF5 BigDataViewer pyramid image (one single file)
         if ( iim::isFile(path) )
         {
-            pathIsFile = true;
-            // HDF5 file: this must be generalized
-            //path = "/Users/Administrator/Desktop/RES(2000x2500x2000)/test.h5";
-            //path = "/Users/Administrator/Desktop/cervelletto.bdvhdf5.default/export.h5";
-            //path = "/Users/Administrator/Desktop/test.purkinje.proofreading.BDV/export.h5";
-           // path = "/Users/Administrator/Desktop/test.purkinje.proofreading.BDV.nodeflate/export.h5";
 			fprintf(stderr,"------------->>> path = %s \n",path.c_str()); fflush(stderr);
 			BDV_HDF5init(path.c_str(), HDF5_descr);
 			int n_res = BDV_HDF5n_resolutions(HDF5_descr);
 			fprintf(stderr,"------------->>> resolutions = %d \n",n_res); fflush(stderr);
-			for ( int i=0; i<n_res; i++ ) {
+            for ( int i=0; i<n_res; i++ )
+            {
 				/* the HDF5 descriptor is passed instead of the file name: 
 				 * the file will be closed after volumes will be released
 				 * (see the CImport destructor) 
 				 */
 				volumes.push_back(VirtualVolume::instance((const char *)0, (n_res - 1 - i), HDF5_descr));
-			fprintf(stderr,"------------->>> created volume %d at resolution %d\n",i,(n_res - 1 - i)); fflush(stderr);
+                fprintf(stderr,"------------->>> created volume %d at resolution %d\n",i,(n_res - 1 - i)); fflush(stderr);
 			}
 		}
-        else // is a Directory
+        // TeraFly pyramid image (a hierarchy of nested folders)
+        else
         {
 		
             /********************* 1) IMPORTING CURRENT VOLUME ***********************
@@ -194,6 +190,7 @@ void CImport::run()
             /* -------------------- detect candidate volumes -----------------------*/
             /**/itm::debug(itm::LEV_MAX, "Detecting volumes that CAN be loaded (let us call them CANDIDATE volumes: the correspondent structures will be destroyed after this step)", __itm__current__function__);
             vector<VirtualVolume*> candidateVols;
+            QDir curParentDir(path.c_str());
             curParentDir.cdUp();
             QStringList otherDirs = curParentDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
             for(int k=0; k<otherDirs.size(); k++)
@@ -249,18 +246,13 @@ void CImport::run()
                 if(volumes[k]->getDIM_T() != volumes[k+1]->getDIM_T())
                     throw RuntimeException(strprintf("Volumes have different time frames at \"%s\"", qPrintable(curParentDir.absolutePath())).c_str());
             }
-
-		} // end if ( ) //******************************** MODIFIED BY GIULIO *******************************
+        }
 
 
         /**************** 3) GENERATING / LOADING VOLUME 3D MAP *****************
         We generate once for all a volume map from lowest-resolution volume.
         *************************************************************************/
-        string volMapPath;
-        if(pathIsFile)
-            volMapPath = itm::cdUp(path) + "/" + VMAP_BIN_FILE_NAME;
-        else
-            volMapPath = curParentDir.path().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        string volMapPath = itm::cdUp(path) + "/" + VMAP_BIN_FILE_NAME;
         if(hasVolumeMapToBeRegenerated(volMapPath.c_str(), "0.9.42") || reimport || regenerateVMap)
         {
             /**/itm::debug(itm::LEV_MAX, "Entering volume's map generation section", __itm__current__function__);
@@ -333,20 +325,6 @@ void CImport::run()
             if(fread(vmapData, vmapSize, 1, volMapBin) != 1)
                 throw RuntimeException("Unable to read volume map file (<vmapData> field). Please delete the volume map and re-open the volume.");
             fclose(volMapBin);
-
-
-            //--- Alessandro 29/09/2013: checking that the loaded vmap corresponds to one of the loaded volumes
-//            /**/itm::debug(itm::LEV_MAX, "checking that the loaded vmap corresponds to one of the loaded volumes", __itm__current__function__);
-//            bool check_passed = false;
-//            for(int i=0; i<volumes.size() && !check_passed; i++)
-//                if(volumes[i]->getDIM_V() == vmapYDim  &&
-//                   volumes[i]->getDIM_H() == vmapXDim  &&
-//                   volumes[i]->getDIM_D() == vmapZDim  &&
-//                   volumes[i]->getDIM_C() == vmapCDim)
-//                    check_passed = true;
-//            if(!check_passed)
-//                throw RuntimeException(QString("Volume map stored at \"").append(volMapPath.c_str()).append("\" does not correspond to any of the loaded resolutions. Please delete or regenerate the volume map.").toStdString().c_str());
-
         }
 
         //everything went OK

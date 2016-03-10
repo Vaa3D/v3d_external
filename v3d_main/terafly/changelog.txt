@@ -11,6 +11,15 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.133 / TeraFly version 2.1.43
+March 10th, 2016
+--------------------------------------------------------------------------------------------
+- GUI: added "Open unconverted image" menu action (still to be implemented)
+- GUI: new icons for "Open ..." menu actions
+- Fix: fixed compilation issue caused by duplicated "swap2bytes" and "swap4bytes" functions
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.132 / TeraFly version 2.1.42
 March 8th, 2016
 --------------------------------------------------------------------------------------------

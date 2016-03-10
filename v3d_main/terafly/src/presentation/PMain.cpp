@@ -158,20 +158,15 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     menuBar = new QMenuBar(0);
     /* --------------------------- "File" menu --------------------------- */
     fileMenu = menuBar->addMenu("File");
-    openTeraFlyVolumeAction = new QAction("Open TeraFly volume", this);
-    openTeraFlyVolumeAction->setIcon(QIcon(":/icons/open_volume.png"));
-    openHDF5VolumeAction = new QAction("Open HDF5 volume", this);
-    openHDF5VolumeAction->setIcon(QIcon(":/icons/import.png"));
-    closeVolumeAction = new QAction("Close volume", this);
-    closeVolumeAction->setIcon(QIcon(":/icons/close.png"));
-    loadAnnotationsAction = new QAction("Load annotations", this);
-    loadAnnotationsAction->setIcon(QIcon(":/icons/open_ano.png"));
-    saveAnnotationsAction = new QAction("Save annotations", this);
-    saveAnnotationsAction->setIcon(QIcon(":/icons/save.png"));
-    saveAnnotationsAsAction = new QAction("Save annotations as", this);
-    saveAnnotationsAsAction->setIcon(QIcon(":/icons/saveas.png"));
-    clearAnnotationsAction = new QAction("Clear annotations", this);
-    clearAnnotationsAction->setIcon(QIcon(":/icons/clear.png"));
+    openTeraFlyVolumeAction = new QAction(QIcon(":/icons/open_image_terafly.png"), "Open TeraFly Image (3-5D)", this);
+    openHDF5VolumeAction = new QAction(QIcon(":/icons/open_image_hdf5.png"),    "Open HDF5 Image (3-4D)", this);
+    openUnconvertedVolumeFileAction = new QAction(QIcon(":/icons/open_image_file.png"), "Browse For File", this);
+    openUnconvertedVolumeFolderAction = new QAction(QIcon(":/icons/open_image_folder.png"), "Browse For Folder", this);
+    closeVolumeAction = new QAction(QIcon(":/icons/close.png"), "Close image", this);
+    loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
+    saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
+    saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
+    clearAnnotationsAction = new QAction(QIcon(":/icons/clear.png"), "Clear annotations", this);
     exitAction = new QAction("Quit", this);
     openTeraFlyVolumeAction->setShortcut(QKeySequence("Ctrl+O"));
     openHDF5VolumeAction->setShortcut(QKeySequence("Ctrl+H"));
@@ -181,8 +176,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     saveAnnotationsAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     clearAnnotationsAction->setShortcut(QKeySequence("Ctrl+Shift+C"));
     exitAction->setShortcut(QKeySequence("Ctrl+Q"));
-    connect(openTeraFlyVolumeAction, SIGNAL(triggered()), this, SLOT(openTeraFlyVolume()));
-    connect(openHDF5VolumeAction, SIGNAL(triggered()), this, SLOT(openHDF5Volume()));
+    connect(openTeraFlyVolumeAction, SIGNAL(triggered()), this, SLOT(openImage()));
+    connect(openHDF5VolumeAction, SIGNAL(triggered()), this, SLOT(openImage()));
+    connect(openUnconvertedVolumeFolderAction, SIGNAL(triggered()), this, SLOT(openImage()));
+    connect(openUnconvertedVolumeFileAction, SIGNAL(triggered()), this, SLOT(openImage()));
     connect(closeVolumeAction, SIGNAL(triggered()), this, SLOT(closeVolume()));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
     connect(loadAnnotationsAction, SIGNAL(triggered()), this, SLOT(loadAnnotations()));
@@ -191,7 +188,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
     fileMenu->addAction(openTeraFlyVolumeAction);
     fileMenu->addAction(openHDF5VolumeAction);
-    recentVolumesMenu = new QMenu("Recent volumes");
+    openUnconvertedVolumeMenu = fileMenu->addMenu(QIcon(":/icons/open_image_unconverted.png"), "Open Unconverted Image (3-4D)");
+    openUnconvertedVolumeMenu->addAction(openUnconvertedVolumeFolderAction);
+    openUnconvertedVolumeMenu->addAction(openUnconvertedVolumeFileAction);
+    recentVolumesMenu = new QMenu("Open Recent Image");
     recentVolumesMenu->setIcon(QIcon(":/icons/open_volume_recent.png"));
     fileMenu->addMenu(recentVolumesMenu);
     fileMenu->addAction(closeVolumeAction);
@@ -464,16 +464,17 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
     {
         QAction *action = new QAction(it->c_str(), this);
-        connect(action, SIGNAL(triggered()), this, SLOT(openVolumeActionTriggered()));
+        connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
         recentVolumesMenu->addAction(action);
     }
     clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
-    connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumesTriggered()));
+    connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
     recentVolumesMenu->addSeparator();
     recentVolumesMenu->addAction(clearRecentVolumesAction);
 
     openMenu->addAction(openTeraFlyVolumeAction);
     openMenu->addAction(openHDF5VolumeAction);
+    openMenu->addMenu(openUnconvertedVolumeMenu);
     openMenu->addMenu(recentVolumesMenu);
     openVolumeToolButton = new QToolButton();
     openVolumeToolButton->setMenu(openMenu);
@@ -1161,24 +1162,25 @@ void PMain::resetGUI()
 /**********************************************************************************
 * Called when a path in the "Recent volumes" menu is selected.
 ***********************************************************************************/
-void PMain::openVolumeActionTriggered()
+void PMain::openRecentVolume()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
     std::string recentpath = qobject_cast<QAction*>(sender())->text().toStdString();
-    QFileInfo pathinfo(recentpath.c_str());
+    openImage(recentpath);
+    /*QFileInfo pathinfo(recentpath.c_str());
     if(pathinfo.isDir())
         openTeraFlyVolume(qobject_cast<QAction*>(sender())->text().toStdString());
     else if(pathinfo.isFile())
         openHDF5Volume(qobject_cast<QAction*>(sender())->text().toStdString());
     else
-        QMessageBox::critical(this,QObject::tr("Error"), "Cannot find the file",QObject::tr("Ok"));
+        QMessageBox::critical(this,QObject::tr("Error"), "Cannot find the file",QObject::tr("Ok"));*/
 }
 
 /**********************************************************************************
 * Called when "Clear menu" action in "Recent volumes" menu is triggered.
 ***********************************************************************************/
-void PMain::clearRecentVolumesTriggered()
+void PMain::clearRecentVolumes()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
@@ -1186,7 +1188,7 @@ void PMain::clearRecentVolumesTriggered()
     QList<QAction*> actions = recentVolumesMenu->actions();
     qDeleteAll(actions.begin(), actions.end());
     clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
-    connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumesTriggered()));
+    connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
     recentVolumesMenu->addSeparator();
     recentVolumesMenu->addAction(clearRecentVolumesAction);
 }
@@ -1248,11 +1250,12 @@ void PMain::openHDF5Volume(string path)
         for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
         {
             QAction *action = new QAction(it->c_str(), this);
-            connect(action, SIGNAL(triggered()), this, SLOT(openVolumeActionTriggered()));
+           // action->setData(QVariant());
+            connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
             recentVolumesMenu->addAction(action);
         }
         clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
-        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumesTriggered()));
+        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
         recentVolumesMenu->addSeparator();
         recentVolumesMenu->addAction(clearRecentVolumesAction);
 
@@ -1264,7 +1267,6 @@ void PMain::openHDF5Volume(string path)
         statusBar->showMessage("Importing volume...");
 
         //starting import
-        //throw itm::RuntimeException("HDF5 not yet implemented");
         CImport::instance()->setPath(path);
         CImport::instance()->updateMaxDims();
         CImport::instance()->start();
@@ -1276,6 +1278,150 @@ void PMain::openHDF5Volume(string path)
         CImport::instance()->reset();
     }
     catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        PMain::getInstance()->resetGUI();
+        CImport::instance()->reset();
+    }
+}
+
+/**********************************************************************************
+* Unified method for all "Open ..." UI actions
+***********************************************************************************/
+void PMain::openImage(std::string path /*= ""*/)
+{
+    try
+    {
+        // PRECONDITION CHECK: no image is currently open
+        if(!CImport::instance()->isEmpty())
+            throw RuntimeException("An image has been already imported! Please close the current image first.");
+
+
+        // these senders require a folder selection dialog
+        if(sender() == openTeraFlyVolumeAction || sender() == openUnconvertedVolumeFolderAction)
+        {
+            /**/itm::debug(itm::LEV2, "launch folder dialog", __itm__current__function__);
+
+            std::string title = sender() == openTeraFlyVolumeAction ?
+                        "Select any folder with prefix \"RES\"" :
+                        "Select the folder containing all image files";
+            #ifdef _USE_QT_DIALOGS
+            QFileDialog dialog(0);
+            dialog.setFileMode(QFileDialog::Directory);
+            dialog.setViewMode(QFileDialog::Detail);
+            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+            dialog.setWindowTitle(title.c_str());
+            dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
+            if(dialog.exec())
+                path = dialog.directory().absolutePath().toStdString().c_str();
+            #else
+            path = QFileDialog::getExistingDirectory(this, title.c_str(),
+                                                     CSettings::instance()->getVolumePathLRU().c_str(),
+                                                     QFileDialog::ShowDirsOnly).toStdString();
+            #endif
+
+            /**/itm::debug(itm::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
+
+            if (path.empty())
+                return;
+
+            // for TeraFly format, check folder name matches with the used convention
+            if(sender() == openTeraFlyVolumeAction)
+            {
+                QDir dir(path.c_str());
+                if( dir.dirName().toStdString().substr(0,3).compare(itm::RESOLUTION_PREFIX) != 0)
+                    throw RuntimeException(strprintf("\"%s\" is not a valid resolution: the name of the folder does not start with \"%s\"",
+                                           path.c_str(), itm::RESOLUTION_PREFIX.c_str() ).c_str());
+            }
+        }
+        // these senders require a file selection dialog
+        else if(sender() == openHDF5VolumeAction || sender() == openUnconvertedVolumeFileAction)
+        {
+            /**/itm::debug(itm::LEV2, "launch file dialog", __itm__current__function__);
+
+            std::string filter = sender() == openHDF5VolumeAction ? "HDF5 files (*.h5)" : "Vaa3D files (*.raw *.v3draw * *.RAW *.V3DRAW);; TIFF files (*.tif *.TIFF)";
+            #ifdef _USE_QT_DIALOGS
+            QFileDialog dialog(0);
+            dialog.setFileMode(QFileDialog::ExistingFile);
+            dialog.setNameFilter(tr(filter.c_str()));
+            dialog.setViewMode(QFileDialog::Detail);
+            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+            dialog.setWindowTitle("Select image file");
+            dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
+            if(dialog.exec())
+                path = dialog.directory().absolutePath().toStdString();
+
+            #else
+            path = QFileDialog::getOpenFileName(this, "Select image file", QString(), tr(filter.c_str())).toStdString();
+            #endif
+            /**/itm::debug(itm::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
+
+            if (path.empty())
+                return;
+        }
+
+
+        // from now on, "path" comes either from a file/folder selection dialog, or from the "Open Recent Image" menu
+        // check if path exists
+        if(!QFile::exists(path.c_str()))
+            throw RuntimeException(strprintf("Path \"%s\" does not exist", path.c_str()).c_str());
+
+
+        // check if additional informations are required for folder-based formats (which might come w/o metadata)
+        if(iim::isDirectory(path) &&
+                (!VirtualVolume::isDirectlyImportable(path.c_str())  || regenMData_cAction->isChecked()) )
+        {
+           if(PDialogImport::instance(this)->exec() == QDialog::Rejected)
+                return;
+           CImport::instance()->setReimport(true);
+           CImport::instance()->setRegenerateVolumeMap(true);
+        }
+
+
+        // store the path permanently into the system
+        CSettings::instance()->setVolumePathLRU(path);
+        CSettings::instance()->addVolumePathToHistory(path);
+        CSettings::instance()->writeSettings();
+
+
+        // update recent volumes menu
+        QList<QAction*> actions = recentVolumesMenu->actions();
+        qDeleteAll(actions.begin(), actions.end());
+        std::list<string> recentVolumes = CSettings::instance()->getVolumePathHistory();
+        for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
+        {
+            QAction *action = new QAction(it->c_str(), this);
+            connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
+            recentVolumesMenu->addAction(action);
+        }
+        clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
+        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
+        recentVolumesMenu->addSeparator();
+        recentVolumesMenu->addAction(clearRecentVolumesAction);
+
+
+        // disable import form and enable progress bar animation
+        progressBar->setEnabled(true);
+        progressBar->setMinimum(0);
+        progressBar->setMaximum(0);
+        statusBar->showMessage("Import volume...");
+
+
+        // start import
+        if(sender() == openUnconvertedVolumeFileAction || sender() == openUnconvertedVolumeFolderAction)
+            CImport::instance()->setFormat("unconverted");
+        CImport::instance()->setRegenerateVolumeMap(regenVMap_cAction->isChecked());
+        CImport::instance()->setPath(path);
+        CImport::instance()->updateMaxDims();
+        CImport::instance()->start();
+    }
+    catch(iim::IOException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        PMain::getInstance()->resetGUI();
+        CImport::instance()->reset();
+    }
+    catch(itm::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         PMain::getInstance()->resetGUI();
@@ -1359,11 +1505,11 @@ void PMain::openTeraFlyVolume(string path /* = "" */)
         for(std::list<string>::reverse_iterator it = recentVolumes.rbegin(); it != recentVolumes.rend(); it++)
         {
             QAction *action = new QAction(it->c_str(), this);
-            connect(action, SIGNAL(triggered()), this, SLOT(openVolumeActionTriggered()));
+            connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
             recentVolumesMenu->addAction(action);
         }
         clearRecentVolumesAction = new QAction("Clear menu",recentVolumesMenu);
-        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumesTriggered()));
+        connect(clearRecentVolumesAction, SIGNAL(triggered()), this, SLOT(clearRecentVolumes()));
         recentVolumesMenu->addSeparator();
         recentVolumesMenu->addAction(clearRecentVolumesAction);
 
@@ -2643,12 +2789,12 @@ void PMain::debugRedirectSTDoutPathEdited(QString s)
 {
     if(s.isEmpty())
     {
-        itm::DEBUG_TO_FILE = false;
+        itm::DEBUG_DEST = itm::TO_STDOUT;
         iim::DEBUG_TO_FILE = false;
     }
     else
     {
-        itm::DEBUG_TO_FILE = true;
+        itm::DEBUG_DEST = itm::TO_FILE;
         itm::DEBUG_FILE_PATH = s.toStdString();
         iim::DEBUG_TO_FILE = true;
         iim::DEBUG_FILE_PATH = s.toStdString();

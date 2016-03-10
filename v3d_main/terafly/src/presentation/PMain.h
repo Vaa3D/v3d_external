@@ -64,9 +64,12 @@ class teramanager::PMain : public QWidget
         QMenuBar* menuBar;              //Menu bar
 
         // "File" menu widgets
-        QMenu* fileMenu;                    //"File" menu
-        QAction* openTeraFlyVolumeAction;   //"Open TeraFly volume" menu action
-        QAction* openHDF5VolumeAction;      //"Open HDF5 volume" menu action
+        QMenu* fileMenu;                        //"File" menu
+        QAction* openTeraFlyVolumeAction;       //"Open TeraFly image" menu action
+        QAction* openHDF5VolumeAction;          //"Open HDF5 image" menu action
+        QMenu*   openUnconvertedVolumeMenu;     //"Open unconverted image" menu
+        QAction* openUnconvertedVolumeFileAction;     //"Browse for file..." action
+        QAction* openUnconvertedVolumeFolderAction;     //"Browse for dir..." action
         QAction* closeVolumeAction;     //"Close volume" menu action
         QAction* loadAnnotationsAction; //"Load annotations" menu action
         QAction* saveAnnotationsAction; //"Save annotations" menu action
@@ -328,14 +331,19 @@ class teramanager::PMain : public QWidget
         void openHDF5Volume(string path = "");
 
         /**********************************************************************************
+        * Unified method for all "Open ..." UI actions
+        ***********************************************************************************/
+        void openImage(std::string path = "");
+
+        /**********************************************************************************
         * Called when a path in the "Recent volumes" menu is selected.
         ***********************************************************************************/
-        void openVolumeActionTriggered();
+        void openRecentVolume();
 
         /**********************************************************************************
         * Called when "Clear menu" action in "Recent volumes" menu is triggered.
         ***********************************************************************************/
-        void clearRecentVolumesTriggered();
+        void clearRecentVolumes();
 
         /**********************************************************************************
         * Called when "Close volume" menu action is triggered.

@@ -3,6 +3,11 @@
         <file>icons/load.png</file>
         <file>icons/wait.gif</file>
         <file>icons/import.png</file>
+        <file>icons/open_image_terafly.png</file>
+        <file>icons/open_image_hdf5.png</file>
+        <file>icons/open_image_unconverted.png</file>
+        <file>icons/open_image_file.png</file>
+        <file>icons/open_image_folder.png</file>
         <file>icons/open_volume.png</file>
         <file>icons/open_volume_recent.png</file>
         <file>icons/open_ano.png</file>

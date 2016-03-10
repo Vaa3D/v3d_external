@@ -38,6 +38,7 @@
 #include <sstream>
 #include <algorithm>
 #include <QThread>
+#include "v3d_core.h"
 
 class V3DPluginCallback2;
 
@@ -92,7 +93,8 @@ namespace teramanager
     class myImage4DSimple;      //Vaa3D-customized class    
     struct point;
 
-    enum  debug_level { NO_DEBUG, LEV1, LEV2, LEV3, LEV_MAX };  //debug levels
+    enum  debug_level { NO_DEBUG, LEV1, LEV2, LEV3, LEV_MAX };  // debug levels
+    enum  debug_output { TO_STDOUT, TO_GUI, TO_FILE};           // where debug messages should be printed
     enum  direction {x, y, z};
     class RuntimeException;		//exception thrown by functions in the current module
     /*-------------------------------------------------------------------------------------------------------------------------*/
@@ -121,7 +123,7 @@ namespace teramanager
     ---------------------------------------------------------------------------------------------------------------------------*/
     extern std::string version;                 //version number of current module
     extern int DEBUG;							//debug level of current module
-    extern bool DEBUG_TO_FILE;                  //whether debug messages should be printed on the screen or to a file (default: screen)
+    extern debug_output DEBUG_DEST;             // where debug messages should be print (default: stdout)
     extern std::string DEBUG_FILE_PATH;         //filepath where to save debug information
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
@@ -383,7 +385,7 @@ namespace teramanager
 
 	}
     inline void warning(const char* message, const char* source = 0){
-        if(DEBUG_TO_FILE)
+        if(DEBUG_DEST == TO_FILE)
         {
             FILE* f = fopen(DEBUG_FILE_PATH.c_str(), "a");
             if(source)
@@ -393,13 +395,21 @@ namespace teramanager
                 fprintf(f, "\n**** WARNING ****: %s\n", message);
             fclose(f);
         }
-        else
+        else if(DEBUG_DEST == TO_STDOUT)
         {
             if(source)
                 printf("\n**** WARNING (source: \"%s\") ****\n"
                 "    |=> \"%s\"\n\n", shortFuncName(source).c_str(), message);
             else
                 printf("\n**** WARNING ****: %s\n", message);
+        }
+        else if(DEBUG_DEST == TO_GUI)
+        {
+            if(source)
+                v3d_msg(strprintf("\n**** WARNING (source: \"%s\") ****\n"
+                "    |=> \"%s\"\n\n", shortFuncName(source).c_str(), message).c_str());
+            else
+                v3d_msg(strprintf("\n**** WARNING ****: %s\n", message).c_str());
         }
     }
 
@@ -414,7 +424,7 @@ namespace teramanager
 
     inline void debug(debug_level dbg_level, const char* message=0, const char* source=0, bool short_print = false){
         if(DEBUG >= dbg_level){
-            if(DEBUG_TO_FILE)
+            if(DEBUG_DEST == TO_FILE)
             {
                 FILE* f = fopen(DEBUG_FILE_PATH.c_str(), "a");
 				if(message && source && !short_print)
@@ -428,7 +438,7 @@ namespace teramanager
 					fprintf(f,"\n                             message: %s\n", message);
                 fclose(f);
             }
-            else
+            else if (DEBUG_DEST == TO_STDOUT)
             {
                 if(message && source && !short_print)
                     printf("\n---(debug level %d)--- in \"%s\"\n"
@@ -439,6 +449,18 @@ namespace teramanager
                     printf("\n---(debug level %d)--- in \"%s\"\n", dbg_level, shortFuncName(source).c_str());
                 else if(short_print && message)
 					printf("\n                             message: %s\n", message);
+            }
+            else if (DEBUG_DEST == TO_GUI)
+            {
+                if(message && source && !short_print)
+                    v3d_msg(strprintf("\n---(debug level %d)--- in \"%s\"\n"
+                             "                             message: %s\n\n", dbg_level, shortFuncName(source).c_str(), message).c_str());
+                else if(message && !short_print)
+                    v3d_msg(strprintf("\n---(debug level %d)---       message: %s\"\n\n", dbg_level, message).c_str());
+                else if(source && !short_print)
+                    v3d_msg(strprintf("\n---(debug level %d)--- in \"%s\"\n", dbg_level, shortFuncName(source).c_str()).c_str());
+                else if(short_print && message)
+                    v3d_msg(strprintf("\n                             message: %s\n", message).c_str());
             }
         }
     }
