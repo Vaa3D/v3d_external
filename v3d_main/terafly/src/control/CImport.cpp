@@ -39,6 +39,7 @@
 #include "TiledMCVolume.h"
 #include "HDF5Mngr.h" 
 #include "iomanager.config.h"
+#include "VirtualPyramid.h"
 
 using namespace teramanager;
 using namespace iim;
@@ -124,6 +125,29 @@ void CImport::setVoxels(float vxl1, float vxl2, float vxl3)
     VXL_3 = vxl3;
 }
 
+// reset method
+void itm::CImport::reset()
+{
+    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+
+    path="";
+    reimport=false;
+    regenerateVMap = false;
+    AXS_1=AXS_2=AXS_3=iim::axis_invalid;
+    VXL_1=VXL_2=VXL_3=0.0f;
+    format = "";
+    isTimeSeries = false;
+    if(itm::VirtualPyramid::isInstantiated())
+        itm::VirtualPyramid::uninstance();
+    else
+        for(size_t i=0; i<volumes.size(); i++)
+            delete volumes[i];
+    volumes.clear();
+    vmapData = 0;
+    vmapXDim = vmapYDim = vmapZDim = vmapTDim = vmapCDim = -1;
+    updateMaxDims();
+}
+
 //automatically called when current thread is started
 void CImport::run()
 {
@@ -138,11 +162,29 @@ void CImport::run()
         // @ADDED by Alessandro on 2016-03-10. Unconverted volume requires ad hoc import procedure
         if( format.compare(itm::volume_format(itm::volume_format::UNCONVERTED).toString()) == 0)
         {
+            // get lower bound and resampling factor of the virtual pyramid image to be generated
+            float lower_bound = (static_cast<float>(vmapXDimMax)*vmapYDimMax*vmapZDimMax)/1000000.0f;
+            int resampling_factor = CSettings::instance()->getPyramidResamplingFactor();
+
+            // generate virtual pyramid image from high-res unconverted image
             if(reimport)
-                volumes.push_back(VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3));
+                volumes = itm::VirtualPyramid::instance(VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3), path, resampling_factor, lower_bound)->getLayers();
             else
-                volumes.push_back(VirtualVolume::instance(path.c_str()));
-            throw itm::RuntimeException("Unconverted image correctly imported, but visualization has not been activated yet");
+                volumes = itm::VirtualPyramid::instance(VirtualVolume::instance(path.c_str()), path, resampling_factor, lower_bound)->getLayers();
+
+            // load image data from lowest-res pyramid layer
+            vmapXDim = volumes[0]->getDIM_H();
+            vmapYDim = volumes[0]->getDIM_V();
+            vmapZDim = volumes[0]->getDIM_D();
+            vmapCDim = volumes[0]->getDIM_C();
+            vmapTDim = volumes[0]->getDIM_T();
+            vmapData = volumes[0]->loadSubvolume_to_UINT8();
+
+            // emit "import successful" signal
+            emit sendOperationOutcome(0, timerIO.elapsed());
+
+            // unconverted image import ends here (no volume map file generation)
+            return;
         }
 
         // HDF5 BigDataViewer pyramid image (one single file)

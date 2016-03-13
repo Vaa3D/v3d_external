@@ -68,6 +68,7 @@ class teramanager::CSettings
         int annotationVirtualMargin;
         int annotationMarkerSize;
         bool previewMode;
+        int pyramidResamplingFactor;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -111,6 +112,7 @@ class teramanager::CSettings
         int getAnnotationVirtualMargin(){return annotationVirtualMargin;}
         int getAnnotationMarkerSize(){return annotationMarkerSize;}
         bool getPreviewMode(){return previewMode;}
+        int getPyramidResamplingFactor(){return pyramidResamplingFactor;}
 
         void setVolumePathLRU(std::string _volumePathLRU)
         {
@@ -147,6 +149,7 @@ class teramanager::CSettings
         void setAnnotationVirtualMargin(int newval){annotationVirtualMargin = newval;}
         void setAnnotationMarkerSize(int newval){annotationMarkerSize = newval;}
         void setPreviewMode(bool newval){previewMode = newval;}
+        void setPyramidResamplingFactor(int newval){pyramidResamplingFactor = newval;}
 
         //GET and SET methods for TeraConverter
         std::string getVCInputPath(){return volumeConverterInputPathLRU;}

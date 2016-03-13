@@ -11,6 +11,18 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.14 / TeraFly version 2.1.5
+March 13th, 2016
+--------------------------------------------------------------------------------------------
+- New: "Open unconverted image" feature 100% supported. A virtual pyramid image is generated
+       according to the user-selectable resampling factor (menu Options > Import > Unconver-
+       ted Image > Pyramid Resampling Factor).
+       To see image data, one should zoom-in to the highest resolution. 
+       @TODO: already viewed data will be cached and back-propagated throughout the pyramid
+- New: GUI changes color (currently, to yellow) while waiting for image data to be loaded
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.134 / TeraFly version 2.1.44
 March 10th, 2016
 --------------------------------------------------------------------------------------------

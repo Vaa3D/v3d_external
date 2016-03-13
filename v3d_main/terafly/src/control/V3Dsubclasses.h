@@ -83,20 +83,4 @@ class teramanager::myImage4DSimple : Image4DSimple
         static myImage4DSimple* cast(Image4DSimple* instance){return static_cast<myImage4DSimple*>(instance);}
 };
 
-
-struct teramanager::point
-{
-    float x,y,z;
-    point(void) : x(0.0f), y(0.0f), z(0.0f){}
-    point(XYZ &p) : x(p.x), y(p.y), z(p.z){}
-
-    bool operator == (const point &p) const{
-        return p.x == x && p.y == y && p.z == z;
-    }
-
-    bool operator <  (const point &p) const{
-        return p.x < x && p.y < y && p.z < z;
-    }
-};
-
 #endif // V3DSUBCLASSES_H

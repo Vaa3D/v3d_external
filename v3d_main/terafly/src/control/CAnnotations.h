@@ -211,7 +211,7 @@ class teramanager::CAnnotations
         * Singleton design pattern: this class can have one instance only,  which must be
         * instantiated by calling static method "istance(...)"
         **********************************************************************************/
-        CAnnotations() : octree(0), octreeDimX(undefined_int32), octreeDimY(undefined_int32), octreeDimZ(undefined_int32){}
+        CAnnotations() : octree(0), octreeDimX(-1), octreeDimY(-1), octreeDimZ(-1){}
         static CAnnotations* uniqueInstance;
         CAnnotations(itm::uint32 volHeight, itm::uint32 volWidth, itm::uint32 volDepth) : octreeDimX(volWidth), octreeDimY(volHeight), octreeDimZ(volDepth)
         {

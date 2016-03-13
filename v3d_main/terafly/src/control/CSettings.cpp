@@ -72,6 +72,7 @@ void CSettings::loadDefaultSettings()
     annotationVirtualMargin = 20;
     annotationMarkerSize = 20;
     previewMode = true;
+    pyramidResamplingFactor = 2;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -119,6 +120,7 @@ void CSettings::writeSettings()
     settings.setValue("annotationVirtualMargin", annotationVirtualMargin);
     settings.setValue("annotationMarkerSize", annotationMarkerSize);
     settings.setValue("previewMode", previewMode);
+    settings.setValue("pyramidResamplingFactor", pyramidResamplingFactor);
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
     settings.setValue("volumeConverterOutputPathLRU", QString(volumeConverterOutputPathLRU.c_str()));
@@ -173,6 +175,8 @@ void CSettings::readSettings()
         annotationMarkerSize = settings.value("annotationMarkerSize").toInt();
     if(settings.contains("previewMode"))
         previewMode = settings.value("previewMode").toBool();
+    if(settings.contains("pyramidResamplingFactor"))
+        pyramidResamplingFactor = settings.value("pyramidResamplingFactor").toInt();
 
     int size = settings.beginReadArray("recentImages");
     recentImages.clear();

@@ -53,6 +53,7 @@
 #include "TiledMCVolume.h"
 #include "RawVolume.h"
 #include "iomanager.config.h"
+#include "VirtualPyramid.h"
 
 using namespace teramanager;
 using namespace iim;
@@ -213,6 +214,28 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     regenVMap_cAction = new QAction("Regenerate volume map", this);
     regenVMap_cAction->setCheckable(true);
     importOptionsMenu-> addAction(regenVMap_cAction);
+    UnconvertedImageMenu = importOptionsMenu->addMenu("Unconverted Image");
+    PyramidResamplingFactorMenu = UnconvertedImageMenu->addMenu("Pyramid resampling factor");
+    PyramidResamplingFactorAction2 = new QAction("2", this);
+    PyramidResamplingFactorAction2->setCheckable(true);
+    PyramidResamplingFactorAction3 = new QAction("3", this);
+    PyramidResamplingFactorAction3->setCheckable(true);
+    PyramidResamplingFactorAction4 = new QAction("4", this);
+    PyramidResamplingFactorAction4->setCheckable(true);
+    QActionGroup* PyramidResamplingFactorMutex = new QActionGroup(this);
+    PyramidResamplingFactorMutex->addAction(PyramidResamplingFactorAction2);
+    PyramidResamplingFactorMutex->addAction(PyramidResamplingFactorAction3);
+    PyramidResamplingFactorMutex->addAction(PyramidResamplingFactorAction4);
+    PyramidResamplingFactorMutex->setExclusive(true);
+    PyramidResamplingFactorMenu->addAction(PyramidResamplingFactorAction2);
+    PyramidResamplingFactorMenu->addAction(PyramidResamplingFactorAction3);
+    PyramidResamplingFactorMenu->addAction(PyramidResamplingFactorAction4);
+    PyramidResamplingFactorAction2->setChecked(CSettings::instance()->getPyramidResamplingFactor() == 2);
+    PyramidResamplingFactorAction3->setChecked(CSettings::instance()->getPyramidResamplingFactor() == 3);
+    PyramidResamplingFactorAction4->setChecked(CSettings::instance()->getPyramidResamplingFactor() == 4);
+    connect(PyramidResamplingFactorAction2, SIGNAL(changed()), this, SLOT(pyramidResamplingFactorChanged()));
+    connect(PyramidResamplingFactorAction3, SIGNAL(changed()), this, SLOT(pyramidResamplingFactorChanged()));
+    connect(PyramidResamplingFactorAction4, SIGNAL(changed()), this, SLOT(pyramidResamplingFactorChanged()));
     /* ------------------------- "Options" menu: Annotation ---------------------- */
     annotationMenu = optionsMenu->addMenu("Annotations");
     markersMenu = annotationMenu->addMenu("Markers");
@@ -460,9 +483,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
                            "stop: 0 rgb(180,180,180), stop: 1 rgb(220,220,220)); border-left: none; border-right: none; border-bottom: 1px solid rgb(150,150,150);}");
 
     QMenu *openMenu = new QMenu();
-    for(auto & it : CSettings::instance()->getRecentImages())
+    for(auto it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
     {
-        QAction *action = new QAction(it.first.c_str(), this);
+        QAction *action = new QAction(it->first.c_str(), this);
         connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
         recentVolumesMenu->addAction(action);
     }
@@ -496,6 +519,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //Page "Volume's info": contains informations of the loaded volume
     /**/itm::debug(itm::LEV3, "Page \"Volume's info\"", __itm__current__function__);
     info_page = new QWidget();
+
+    vol_format_field = new QLineEdit();
+    vol_format_field->setAlignment(Qt::AlignLeft);
+    vol_format_field->setReadOnly(true);
+    vol_format_field->setFont(tinyFont);
+
     vol_size_field = new QLineEdit();
     vol_size_field->setAlignment(Qt::AlignLeft);
     vol_size_field->setReadOnly(true);
@@ -696,14 +725,16 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     info_panel_layout->addWidget(vol_dims_mm_field,             1,2,1,1);
     info_panel_layout->addWidget(new QLabel("Dims (vxl)"),      2,0,1,1);
     info_panel_layout->addWidget(vol_dims_vxl_field,            2,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Tiles grid"),      3,0,1,1);
-    info_panel_layout->addWidget(tiles_grid_field,              3,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Tiles dims"),      4,0,1,1);
-    info_panel_layout->addWidget(tile_dim_field,                4,2,1,1);
-    info_panel_layout->addWidget(voxel_dims_label,              5,0,1,1);
-    info_panel_layout->addWidget(vxl_field,                     5,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Origin (mm)"),     6,0,1,1);
-    info_panel_layout->addWidget(org_field,                     6,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Format"),          3,0,1,1);
+    info_panel_layout->addWidget(vol_format_field,              3,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Tiles grid"),      4,0,1,1);
+    info_panel_layout->addWidget(tiles_grid_field,              4,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Tiles dims"),      5,0,1,1);
+    info_panel_layout->addWidget(tile_dim_field,                5,2,1,1);
+    info_panel_layout->addWidget(voxel_dims_label,              6,0,1,1);
+    info_panel_layout->addWidget(vxl_field,                     6,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Origin (mm)"),     7,0,1,1);
+    info_panel_layout->addWidget(org_field,                     7,2,1,1);
 
     QVBoxLayout* info_page_layout = new QVBoxLayout(info_page);
     info_page_layout->addLayout(info_panel_layout, 0);
@@ -1054,6 +1085,7 @@ void PMain::reset()
 
     //reseting info panel widgets
     info_page->setEnabled(false);
+    vol_format_field->setText("");
     vol_size_field->setText("");
     vol_dims_mm_field->setText("");
     vol_dims_vxl_field->setText("");
@@ -1283,10 +1315,10 @@ void PMain::openImage(std::string path /*= ""*/)
             image_format.id = itm::volume_format::UNCONVERTED;
         else
         {
-            for(auto & it: CSettings::instance()->getRecentImages())
-                if(it.first.compare(path) == 0)
+            for(auto it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
+                if(it->first.compare(path) == 0)
                 {
-                    image_format = itm::volume_format(it.second);
+                    image_format = itm::volume_format(it->second);
                     break;
                 }
         }
@@ -1315,9 +1347,9 @@ void PMain::openImage(std::string path /*= ""*/)
         // update recent volumes menu
         QList<QAction*> actions = recentVolumesMenu->actions();
         qDeleteAll(actions.begin(), actions.end());
-        for(auto & it: CSettings::instance()->getRecentImages())
+        for(auto it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
         {
-            QAction *action = new QAction(it.first.c_str(), this);
+            QAction *action = new QAction(it->first.c_str(), this);
             connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
             recentVolumesMenu->addAction(action);
         }
@@ -1665,6 +1697,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
                                    volume->getDIM_V(),
                                    volume->getDIM_D(), volume->getDIM_C(), volume->getDIM_T()).c_str());
         VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
+        vol_format_field->setText(volume_ith->getPrintableFormat().c_str());
         if(dynamic_cast<StackedVolume*>(volume_ith))
         {
             StackedVolume* vol = dynamic_cast<StackedVolume*>(volume_ith);
@@ -1679,13 +1712,13 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         }
         else if(dynamic_cast<BDVVolume*>(volume_ith))
         {
-            tiles_grid_field->setText("BDV-HDF5 custom grid");
-            tile_dim_field->setText("BDV-HDF5 custom tile dim");
+            tiles_grid_field->setText("custom grid");
+            tile_dim_field->setText("custom tile dim");
         }
-        else
+        else if(dynamic_cast<VirtualPyramidLayer*>(volume_ith))
         {
-            tiles_grid_field->setText(itm::strprintf("unrecognized volume \"%s\"", typeid(volume).name()).c_str());
-            tile_dim_field->setText(itm::strprintf("unrecognized volume \"%s\"", typeid(volume).name()).c_str());
+            tiles_grid_field->setText("custom grid");
+            tile_dim_field->setText("custom tile dim");
         }
         vxl_field->setText(itm::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
         org_field->setText(itm::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
@@ -2329,6 +2362,21 @@ void PMain::curveAspectChanged()
         cur_win->view3DWidget->updateTool();
         cur_win->view3DWidget->update();
     }
+}
+
+/**********************************************************************************
+* Called when the corresponding Options->Import->Unconverted Image->Pyramid resampling factor changed
+***********************************************************************************/
+void PMain::pyramidResamplingFactorChanged()
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    if(sender() == PyramidResamplingFactorAction2)
+        CSettings::instance()->setPyramidResamplingFactor(2);
+    else if(sender() == PyramidResamplingFactorAction3)
+        CSettings::instance()->setPyramidResamplingFactor(3);
+    else if(sender() == PyramidResamplingFactorAction4)
+        CSettings::instance()->setPyramidResamplingFactor(4);
 }
 
 /**********************************************************************************

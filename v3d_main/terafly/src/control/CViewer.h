@@ -77,7 +77,7 @@ class teramanager::CViewer : public QWidget
         int T0_sbox_min, T0_sbox_val;   //to save the state of subvolume spinboxes when the current window is hidden
         int T1_sbox_max, T1_sbox_val;   //to save the state of subvolume spinboxes when the current window is hidden
         int ID;
-        bool waitingFor5D;              //"waiting for 5D data" state flag
+        bool waitingForData;              //"waiting for 5D data" state flag
         QUndoStack undoStack;           //stack containing undo command actions
         int slidingViewerBlockID;
         bool forceZoomIn;
@@ -306,26 +306,26 @@ class teramanager::CViewer : public QWidget
         }
 
         /**********************************************************************************
-        * Change to "waiting for 5D" state (i.e., when 5D data are to be loaded or are loading)
+        * Change to "waiting" state (i.e., when image data are to be loaded or are loading)
         ***********************************************************************************/
-        void setWaitingFor5D(bool wait, bool pre_wait=false);
+        void setWaitingForData(bool wait, bool pre_wait=false);
 
         /**********************************************************************************
         * Zoom history methods (inline because the are called frequently)
         ***********************************************************************************/
         inline void resetZoomHistory(){
             for(int i=0; i<ZOOM_HISTORY_SIZE; i++)
-                zoomHistory[i] = int_inf;
+                zoomHistory[i] = std::numeric_limits<int>::max();
         }
         inline bool isZoomDerivativePos(){
             for(int i=1; i<ZOOM_HISTORY_SIZE; i++)
-                if(zoomHistory[i-1] == int_inf || zoomHistory[i] <= zoomHistory[i-1])
+                if(zoomHistory[i-1] == std::numeric_limits<int>::max() || zoomHistory[i] <= zoomHistory[i-1])
                     return false;
             return true;
         }
         inline bool isZoomDerivativeNeg(){
             for(int i=1; i<ZOOM_HISTORY_SIZE; i++)
-                if(zoomHistory[i-1] == int_inf || zoomHistory[i] >= zoomHistory[i-1])
+                if(zoomHistory[i-1] == std::numeric_limits<int>::max() || zoomHistory[i] >= zoomHistory[i-1])
                     return false;
             return true;
         }

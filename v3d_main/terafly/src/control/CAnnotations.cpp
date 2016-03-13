@@ -25,8 +25,8 @@ itm::uint64 annotation::destroyed = 0;
 bool isMarker (annotation* ano) { return ano->type == 0;}
 
 annotation::annotation() throw (itm::RuntimeException){
-    type = subtype  = itm::undefined_int32;
-    r = x = y = z = itm::undefined_real32;
+    type = subtype  = -1;
+    r = x = y = z = -1;
     parent = 0;
     vaa3d_n = -1;
     name = comment = "";

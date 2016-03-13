@@ -389,7 +389,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgDa
     this->toBeClosed = false;
     this->imgData = _imgData;
     this->isReady = false;
-    this->waitingFor5D = false;
+    this->waitingForData = false;
     this->has_double_clicked = false;
     char ctitle[1024];
     sprintf(ctitle, "ID(%d), Res(%d x %d x %d),Volume X=[%d,%d], Y=[%d,%d], Z=[%d,%d], T=[%d,%d], %d channels", ID, CImport::instance()->getVolume(volResIndex)->getDIM_H(),
@@ -803,8 +803,8 @@ void CViewer::receiveData(
                 PMain::getInstance()->resetGUI();
 
                 // exit from "waiting for 5D data" state, if previously set
-                if(this->waitingFor5D)
-                    this->setWaitingFor5D(false);
+                if(this->waitingForData)
+                    this->setWaitingForData(false);
 
                 // reset the cursor
                 window3D->setCursor(Qt::ArrowCursor);
@@ -932,15 +932,15 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             if(x0 != -1)
                 x0 = getGlobalHCoord(x0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             else
-                dx = dx == -1 ? int_inf : static_cast<int>(dx*ratioX+0.5f);
+                dx = dx == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dx*ratioX+0.5f);
             if(y0 != -1)
                 y0 = getGlobalVCoord(y0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             else
-                dy = dy == -1 ? int_inf : static_cast<int>(dy*ratioY+0.5f);
+                dy = dy == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dy*ratioY+0.5f);
             if(z0 != -1)
                 z0 = getGlobalDCoord(z0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             else
-                dz = dz == -1 ? int_inf : static_cast<int>(dz*ratioZ+0.5f);
+                dz = dz == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dz*ratioZ+0.5f);
         }
 
 
@@ -1108,7 +1108,7 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             next->show();
 
             // enter "waiting for 5D data" state, if possible
-            next->setWaitingFor5D(true);
+            next->setWaitingForData(true);
 
             //if the resolution of the loaded voi is the same of the current one, this window will be closed
             if(resolution == volResIndex)
@@ -1315,7 +1315,7 @@ throw (RuntimeException)
 
     //interpolation
     else
-        QMessageBox::critical(this, "Error", "Interpolation of the pre-buffered image not yet implemented",QObject::tr("Ok"));
+        itm::warning("Interpolation of the pre-buffered image not yet implemented");
 
 
     return img;
@@ -2311,7 +2311,7 @@ void CViewer::Vaa3D_changeTSlider(int s, bool editingFinished /* = false */)
             if(CSettings::instance()->getPreviewMode())
             {
                 // enter "waiting for 5D data" state
-                setWaitingFor5D(true, true);
+                setWaitingForData(true, true);
 
                 // display message informing the user that something will happen if he/she confirms the operation
                 PMain::getInstance()->statusBar->showMessage(strprintf("Ready to jump at time frame %d/%d", s, CImport::instance()->getTDim()-1).c_str());
@@ -2325,7 +2325,7 @@ void CViewer::Vaa3D_changeTSlider(int s, bool editingFinished /* = false */)
         else
         {
             // exit from "waiting for 5D data" state (if previously set)
-            setWaitingFor5D(false, true);
+            setWaitingForData(false, true);
 
             // display default message
             PMain::getInstance()->statusBar->showMessage("Ready.");
@@ -2539,18 +2539,18 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
 }
 
 /**********************************************************************************
-* Change to "waiting for 5D" state (i.e., when 5D data are to be loaded or are loading)
+* Change to "waiting" state (i.e., when image data are to be loaded or are loading)
 ***********************************************************************************/
-void CViewer::setWaitingFor5D(bool wait, bool pre_wait /* = false */)
+void CViewer::setWaitingForData(bool wait, bool pre_wait /* = false */)
 {
-    /**/itm::debug(itm::LEV3, strprintf("title = %s, wait = %s, pre_wait = %s, this->waitingFor5D = %s",
-                                           title.c_str(), wait ? "true" : "false", pre_wait ? "true" : "false", waitingFor5D ? "true" : "false").c_str(), __itm__current__function__);
+    /**/itm::debug(itm::LEV3, strprintf("title = %s, wait = %s, pre_wait = %s, this->waitingForData = %s",
+                                           title.c_str(), wait ? "true" : "false", pre_wait ? "true" : "false", waitingForData ? "true" : "false").c_str(), __itm__current__function__);
 
-    if(CImport::instance()->getTDim() > 1 && wait != this->waitingFor5D)
+    if(wait != this->waitingForData)
     {
         PMain& pMain = *(PMain::getInstance());
-        this->waitingFor5D = wait;
-        if(waitingFor5D)
+        this->waitingForData = wait;
+        if(waitingForData)
         {
             // change GUI appearance
             QPalette palette = pMain.frameCoord->palette();

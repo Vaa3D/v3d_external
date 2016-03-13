@@ -40,6 +40,7 @@
 #include "TiledVolume.h"
 #include "CPlugin.h"
 #include "CSettings.h"
+#include "VirtualPyramid.h"
 
 using namespace std;
 
@@ -156,26 +157,7 @@ class teramanager::CImport : public QThread
         void setTimeSeries(bool _isTimeSeries){isTimeSeries = _isTimeSeries;}
 
         // reset method
-        void reset()
-        {
-            /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
-
-            path="";
-            reimport=false;
-            regenerateVMap = false;
-            AXS_1=AXS_2=AXS_3=iim::axis_invalid;
-            VXL_1=VXL_2=VXL_3=0.0f;
-            format = "";
-            isTimeSeries = false;
-            for(size_t i=0; i<volumes.size(); i++)
-                delete volumes[i];
-            volumes.clear();
-//            if(vmapData)
-//                delete[] vmapData;        // vmap MUST NOT be deallocated from TeraFly, since it is handled directly by Vaa3D
-            vmapData = 0;
-            vmapXDim = vmapYDim = vmapZDim = vmapTDim = vmapCDim = -1;
-            updateMaxDims();
-        }
+        void reset();
 
         void updateMaxDims(){
             vmapYDimMax = CSettings::instance()->getVOIdimV();
