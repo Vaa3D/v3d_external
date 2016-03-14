@@ -483,7 +483,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
                            "stop: 0 rgb(180,180,180), stop: 1 rgb(220,220,220)); border-left: none; border-right: none; border-bottom: 1px solid rgb(150,150,150);}");
 
     QMenu *openMenu = new QMenu();
-    for(auto it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
+    for(std::list< std::pair<std::string, std::string> >::iterator it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
     {
         QAction *action = new QAction(it->first.c_str(), this);
         connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
@@ -1315,7 +1315,7 @@ void PMain::openImage(std::string path /*= ""*/)
             image_format.id = itm::volume_format::UNCONVERTED;
         else
         {
-            for(auto it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
+            for(std::list< std::pair<std::string, std::string> >::iterator it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
                 if(it->first.compare(path) == 0)
                 {
                     image_format = itm::volume_format(it->second);
@@ -1347,7 +1347,7 @@ void PMain::openImage(std::string path /*= ""*/)
         // update recent volumes menu
         QList<QAction*> actions = recentVolumesMenu->actions();
         qDeleteAll(actions.begin(), actions.end());
-        for(auto it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
+        for(std::list< std::pair<std::string, std::string> >::iterator it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
         {
             QAction *action = new QAction(it->first.c_str(), this);
             connect(action, SIGNAL(triggered()), this, SLOT(openRecentVolume()));
