@@ -87,6 +87,7 @@ namespace teramanager
     class QUndoVaa3DNeuron;     //QUndoCommand for Vaa3D neuron editing
     class VirtualPyramid;       //entity class to model virtual pyramid image where data are filled online from an unconverted highres image
     class VirtualPyramidLayer;  //entity class to model a virtual pyramid layer/volume
+    class VirtualPyramidCache;  //entity class to model a virtual pyramid cache
     class myRenderer_gl1;       //Vaa3D-inhrerited class
     class myV3dR_GLWidget;      //Vaa3D-inhrerited class
     class myV3dR_MainWindow;    //Vaa3D-inhrerited class
@@ -147,7 +148,7 @@ namespace teramanager
     {
         T x,y,z;
         xyz(void) : x(0), y(0), z(0){}
-        xyz(T _x, T _y, T _z) : x(_x), y(_y), z(_y){}
+        xyz(T _x, T _y, T _z) : x(_x), y(_y), z(_z){}
         xyz(XYZ &p) : x(p.x), y(p.y), z(p.z){}
 
         bool operator == (const xyz &p) const{
@@ -157,6 +158,22 @@ namespace teramanager
         bool operator <  (const xyz &p) const{
             return p.x < x && p.y < y && p.z < z;
         }
+    };
+
+    template<class T>
+    struct xyzct
+    {
+        T x,y,z,c,t;
+        xyzct(void) : x(0), y(0), z(0), c(0), t(0){}
+        xyzct(T _x, T _y, T _z, T _c=0, T _t=0) : x(_x), y(_y), z(_z), c(_c), t(_t){}
+    };
+
+    template<class T>
+    struct image_5D
+    {
+        T* data;
+        xyzct<size_t> size;
+        image_5D() : data(0), size(xyzct<size_t>(0,0,0,0,0)){}
     };
 
     // emulate initializer list for STL vector
@@ -189,8 +206,8 @@ namespace teramanager
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
     const double pi = 3.14159265359;
-    const std::string VMAP_BIN_FILE_NAME = "vmap.bin";   // name of volume map binary file
-    const std::string RESOLUTION_PREFIX = "RES";         // prefix identifying a folder containing data of a certain resolution
+    const std::string VMAP_BIN_FILE_NAME = "vmap.bin";      // name of volume map binary file
+    const std::string RESOLUTION_PREFIX = "RES";            // prefix identifying a folder containing data of a certain resolution
     const char   undefined_str[] = "undefined";
     const int    ZOOM_HISTORY_SIZE = 3;
     /*-------------------------------------------------------------------------------------------------------------------------*/
@@ -244,6 +261,9 @@ namespace teramanager
     // round functions
     inline int round(float  x) { return static_cast<int>(x > 0.0f ? x + 0.5f : x - 0.5f);}
     inline int round(double x) { return static_cast<int>(x > 0.0  ? x + 0.5  : x - 0.5 );}
+
+    template<typename T>
+    T inf(){return std::numeric_limits<T>::max();}
 
     //string-based sprintf function
     inline std::string strprintf(const std::string fmt, ...)
@@ -397,6 +417,18 @@ namespace teramanager
     inline static T linear(T a, T b, int step_index, int steps_number)
     {
         return (b - a) * step_index / static_cast<float>(steps_number) + a;
+    }
+
+    // partition a discrete range into subranges which differ by 1 at most
+    template <typename T>
+    inline std::vector<T> partition(T range, T desired_part_size) throw (RuntimeException)
+    {
+        if(range <= 0 || desired_part_size <=0)
+            throw RuntimeException("in partition(): either range or desired_part_size is <= 0");
+        std::vector<T> subranges(static_cast<T>(ceil(range/(float)desired_part_size )));
+        for(int i=0; i<subranges.size(); i++)
+            subranges[i] =  range/subranges.size() + (i < range % subranges.size() ? 1:0 );
+        return subranges;
     }
 
     //cross-platform current function macro

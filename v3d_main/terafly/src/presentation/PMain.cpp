@@ -2292,7 +2292,20 @@ void PMain::debugAction1Triggered()
 {
     /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
 
-    int count = 0;
+    try
+    {
+        itm::VirtualPyramidCache("asd", 1000,1000,1000, 2, 1);
+    }
+    catch(itm::RuntimeException &e)
+    {
+        v3d_msg(e.what());
+    }
+    catch(iim::IOException &e)
+    {
+        v3d_msg(e.what());
+    }
+
+   /* int count = 0;
     double acc = 0;
     double GV = 0;
     iim::VirtualVolume *vol = //new RawVolume("/Volumes/Volumes/bigbrain.allen.neuron.raw");
@@ -2315,8 +2328,7 @@ void PMain::debugAction1Triggered()
                 statusBar->showMessage(itm::strprintf("%.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());
                 QApplication::processEvents();
             }
-    statusBar->showMessage(itm::strprintf("FINISHED: %.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());
-
+    statusBar->showMessage(itm::strprintf("FINISHED: %.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());*/
 }
 
 void PMain::showLogTriggered()

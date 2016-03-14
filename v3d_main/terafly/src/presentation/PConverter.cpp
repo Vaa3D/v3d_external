@@ -182,7 +182,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     blockHeightField->setValue(CSettings::instance()->getVCStacksHeight());
     blockDepthField = new QSpinBox();
     blockDepthField->setAlignment(Qt::AlignCenter);
-    blockDepthField->setMinimum(100);
+    blockDepthField->setMinimum(1);
     blockDepthField->setMaximum(10000);
     blockDepthField->setSuffix(" (Z)");
     blockDepthField->setValue(CSettings::instance()->getVCStacksDepth());

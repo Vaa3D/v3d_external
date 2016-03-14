@@ -96,11 +96,11 @@ void CSettings::writeSettings()
 
     settings.beginWriteArray("recentImages");
     size_t i = 0;
-    for (auto & it : recentImages)
+    for (auto it = recentImages.begin(); it != recentImages.end(); it++)
     {
         settings.setArrayIndex(i++);
-        QString path(it.first.c_str());
-        QString format(it.second.c_str());
+        QString path(it->first.c_str());
+        QString format(it->second.c_str());
         settings.setValue("path", path);
         settings.setValue("format", format);
     }

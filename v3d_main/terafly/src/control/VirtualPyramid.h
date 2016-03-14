@@ -4,7 +4,9 @@
 #include "CPlugin.h"
 #include "VirtualVolume.h"
 
-
+// Virtual Pyramid class
+// - a container for virtual pyramid layers
+// - an access point for virtual pyramid layers
 class teramanager::VirtualPyramid
 {
     private:
@@ -12,7 +14,7 @@ class teramanager::VirtualPyramid
         // object members
         iim::VirtualVolume*                 highresVol;     // highest-res (unconverted) volume
         std::string                         highresPath;    // highest-res (unconverted) volume path
-        std::vector< itm::VirtualPyramidLayer* > layers;    // virtual (mostly empty) pyramid layers, from lowest-to-highest res
+        std::vector< itm::VirtualPyramidLayer* > layers;    // virtual pyramid layers, from lowest-to-highest res
 
         // disable default constructor
         VirtualPyramid(){}
@@ -57,9 +59,8 @@ class teramanager::VirtualPyramid
 
 
         // GET methods
-        std::vector<iim::VirtualVolume*> getLayers(){
-            return std::vector<iim::VirtualVolume*>(layers.begin(), layers.end());
-        }
+        std::vector<iim::VirtualVolume*> getLayers(){return std::vector<iim::VirtualVolume*>(layers.begin(), layers.end());}
+        std::string getHighestResVolumePath(){return highresPath;}
         static VirtualPyramid* getInstance() throw (itm::RuntimeException)
         {
             if(uniqueInstance)
@@ -82,13 +83,19 @@ class teramanager::VirtualPyramid
 };
 
 
+// Virtual Pyramid Layer class
+// - a wrapper built on the highest-res image to intercept its load methods
+// - inherits from VirtualVolume, which makes using a Virtual Pyramid Image transparent to the client
+// - communicates with VirtualPyramidCache
+//     - the load() methods invoked on the highest-res layer  SEND    image data TO   the cache
+//     - the load() methods invoked on the lower-res   layers RECEIVE image data FROM the cache
 class teramanager::VirtualPyramidLayer : public :: iim::VirtualVolume
 {
     private:
 
         // object members
         iim::VirtualVolume*     highresVol;         // highest-res (unconverted) volume
-        xyz<int>                reductionFactor;    // reduction factor relative to highresVol
+        int                     level;              // pyramid level (0 = highest-res, the coarser the resolution the higher)
         VirtualPyramid*         pyramid;            // container
 
         // disable default constructor
@@ -97,7 +104,12 @@ class teramanager::VirtualPyramidLayer : public :: iim::VirtualVolume
     public:
 
         // constructor
-        VirtualPyramidLayer(iim::VirtualVolume* _highresVol, xyz<int> _reduction_factor, VirtualPyramid* _pyramid);
+        VirtualPyramidLayer(
+                iim::VirtualVolume* _highresVol,    // highest-res (unconverted) image
+                int _level,                         // pyramid level (0 for the highest-res, the coarser the resolution the higher)
+                VirtualPyramid* _pyramid,           // container
+                xyz<int> reduction_factor)          // reduction factor relative to the highest-res image
+        throw (itm::RuntimeException);
 
         // deconstructor
         virtual ~VirtualPyramidLayer() throw (itm::RuntimeException);
@@ -118,6 +130,85 @@ class teramanager::VirtualPyramidLayer : public :: iim::VirtualVolume
         virtual std::string getPrintableFormat(){return std::string("VirtualPyramid on ") + highresVol->getPrintableFormat();}
 };
 
+
+// Virtual Pyramid Cache class
+// - designed to cache data during visualization
+// - send/receive image data to/from Virtual Pyramid Layers
+// - store cached data permanently on the disk
+class teramanager::VirtualPyramidCache
+{
+    public:
+
+        // constructor 1
+        VirtualPyramidCache(
+                std::string _path,                                                      // where cache files are stored / have to be stored
+                size_t _dimX, size_t _dimY, size_t _dimZ, size_t _dimC, size_t _dimT,   // image dimensions along X, Y, Z, C (channel), and T (time)
+                xyzct<size_t> block_dim = xyzct<size_t>(256,256,256,inf<size_t>(),inf<size_t>())) // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+        throw (iim::IOException, itm::RuntimeException);
+
+
+        // read data from the cache (downsampling on-the-fly supported)
+        image_5D<uint8>                                         // <image data, image data size> output
+        readData(
+                xyzct<size_t> start,                            // start coordinate in the current 5D image space
+                xyzct<size_t> end,                              // end coordinate in the current 5D image space
+                xyz<int> downsamplingFactor = xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
+        throw (iim::IOException);
+
+
+        // put data into the cache (downsampling on-the-fly supported)
+        void putData(
+                const image_5D<uint8>,                          // image data array, follows T-C-Z-Y-Z order
+                xyzct<size_t> shift,                               // shift relative to (0,0,0,0,0)
+                xyz<int> downsamplingFactor = xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
+        throw (iim::IOException);
+
+
+        // class members
+        static float maximumSizeGB;             // maximum size (in Gigabytes) for this Cache (default: 1 GB)
+
+
+    private:
+
+        // object members
+        class CacheBlock;                       // forward-declaration
+        std::string path;                       // where cache files are stored / have to be stored
+        CacheBlock *****hypergrid;              // 5D array of <CacheBlock>, follows T-C-Z-Y-Z order
+        size_t nX, nY, nZ, nC, nT;              // hypergrid dimension along X, Y, Z, C (channel), and T (time)
+        size_t dimX, dimY, dimZ, dimC, dimT;    // image space dimensions along X, Y, Z, C (channel), and T (time)
+
+
+        // object methods
+        VirtualPyramidCache(){}                 // disable default constructor
+        void load() throw (iim::IOException);   // load from disk
+        void save() throw (iim::IOException);   // save to disk
+
+
+        // Cache Block class
+        // - stores individual portions (blocks) of cached data and the corresponding visit counts
+        class CacheBlock
+        {
+            public:
+
+                // object members
+                xyzct<size_t> origin;                   // origin coordinate of the block in the image5D (xyz+channel+time) space, start at (0,0,0,0,0)
+                image_5D<uint8> imdata;                 // cached image data
+                int visits;                             // #times this block has been visited (for both loading and storing of image data)
+
+                // default constructor
+                CacheBlock() throw (iim::IOException);
+
+                // contructor 1
+                CacheBlock(
+                        xyzct<size_t> _origin,
+                        xyzct<size_t> _size)
+                throw (iim::IOException);
+
+                // load/save methods
+                void load() throw (iim::IOException);   // load from disk
+                void save() throw (iim::IOException);   // save to disk
+        };
+};
 
 
 
