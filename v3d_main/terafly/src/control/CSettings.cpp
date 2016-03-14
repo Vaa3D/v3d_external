@@ -96,7 +96,7 @@ void CSettings::writeSettings()
 
     settings.beginWriteArray("recentImages");
     size_t i = 0;
-    for (auto it = recentImages.begin(); it != recentImages.end(); it++)
+    for (std::list< std::pair<std::string, std::string> >::iterator it = recentImages.begin(); it != recentImages.end(); it++)
     {
         settings.setArrayIndex(i++);
         QString path(it->first.c_str());
