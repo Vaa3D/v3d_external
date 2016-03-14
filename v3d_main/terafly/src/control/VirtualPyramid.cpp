@@ -126,7 +126,7 @@ void itm::VirtualPyramidLayer::initChannels() throw (iim::IOException)
 }
 
 // VirtualPyramidLayer deconstructor
-itm::VirtualPyramidLayer::~VirtualPyramidLayer()
+itm::VirtualPyramidLayer::~VirtualPyramidLayer() throw (itm::RuntimeException)
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
     active = 0;
