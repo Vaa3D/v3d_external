@@ -1,4 +1,8 @@
 #include "PAbout.h"
+#include "IM_config.h"
+#include "iomanager.config.h"
+#include "volumemanager.config.h"
+#include "S_config.h"
 
 using namespace teramanager;
 
@@ -11,7 +15,12 @@ PAbout::PAbout(QWidget *parent) : QDialog(parent)
     setWindowTitle("About TeraFly");
 
     desc = new QLabel();
-    desc->setText( QString("<html><h3>Vaa3D-TeraFly v. ").append(teramanager::version.c_str()).append("</h3>"
+    desc->setText( itm::strprintf(
+                         "<html><h3>Vaa3D-TeraFly v. %s </h3>"
+                         "<p><h5>module \"imagemanager\" v. %s<br>"
+                         "module \"iomanager\" v. %s<br>"
+                         "module \"volumemanager\" v. %s<br>"
+                         "module \"stitcher\" v. %s<br></p></h5>"
                          "<p>A tool designed for Teravoxel-sized datasets 3D navigation and Vaa3D-aided analysis.</p>"
                          "<small><u>Developed by:</u><ul style=\"padding-left:5px\">"
                          "<li><b>Alessandro Bria</b> (email: a.bria@unicas.it)<br>"
@@ -19,7 +28,8 @@ PAbout::PAbout(QWidget *parent) : QDialog(parent)
                          "<li><b>Giulio Iannello</b> (email: g.iannello@unicampus.it)<br>"
                                 "University Campus Bio-Medico of Rome</li>"
                          "<li><b>Hanchuan Peng</b> (email: hanchuan.peng@gmail.com)<br>"
-                                 "Allen Institute for Brain Science and Janelia @ HHMI</li></ul></small></html>"));
+                                 "Allen Institute for Brain Science and Janelia @ HHMI</li></ul></small></html>",
+                                  teramanager::version.c_str(), iim::VERSION.c_str(), iom::VERSION.c_str(), vm::VERSION.c_str(), stitcher::version.c_str()).c_str());
     desc->setWordWrap(true);
 
     logo = new QLabel();

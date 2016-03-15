@@ -11,6 +11,22 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.142 / TeraFly version 2.1.52
+March 15th, 2016
+--------------------------------------------------------------------------------------------
+- New: added submodule version number in TeraFly > About menu.
+- Fix: fixed bug when opening a series of 2D tiffs as "Unconverted image" in TeraFly
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.141 / TeraFly version 2.1.51
+March 14th, 2016
+--------------------------------------------------------------------------------------------
+- Dev: work in progress on the caching functionality for Unconverted Image format.
+- Fix: removed C++11-based code which caused compilation issues on some gcc compilers.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.14 / TeraFly version 2.1.5
 March 13th, 2016
 --------------------------------------------------------------------------------------------
