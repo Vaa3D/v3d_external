@@ -15,7 +15,7 @@
 
 shopt -s expand_aliases;
 # to pull terafly submodule
-git submodule update --init --recursive
+#git submodule update --init --recursive
 
 cd v3d_main
 
