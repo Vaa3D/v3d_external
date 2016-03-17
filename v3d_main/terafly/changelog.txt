@@ -11,6 +11,15 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.143 / TeraFly version 2.1.53
+March 17th, 2016
+--------------------------------------------------------------------------------------------
+- New: added persistent metadata for Unconverted Volume.
+- Dev: redesigned coordinate mapping functions.
+- Fix: fixed various bugs related to coordinate mapping and resolution jumps.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.142 / TeraFly version 2.1.52
 March 15th, 2016
 --------------------------------------------------------------------------------------------

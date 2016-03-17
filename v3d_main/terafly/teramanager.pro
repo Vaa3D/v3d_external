@@ -52,6 +52,7 @@ INCLUDEPATH += $$V3DMAINPATH/v3d
 
 #enable experimental features
 DEFINES += USE_EXPERIMENTAL_FEATURES
+DEFINES += terafly_enable_debug_max_level
 
 #enable gui progress bar
 DEFINES += WITH_QT

@@ -239,12 +239,12 @@ void itm::PDialogProofreading::updateBlocks(int)
     if(curWin)
     {
         // get VOI coordinates in the selected resolution
-        int VOIxs_cr = CVolume::scaleHCoord(parent->H0_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex());
-        int VOIxe_cr = CVolume::scaleHCoord(parent->H1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex());
-        int VOIys_cr = CVolume::scaleVCoord(parent->V0_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex());
-        int VOIye_cr = CVolume::scaleVCoord(parent->V1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex());
-        int VOIzs_cr = CVolume::scaleDCoord(parent->D0_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex());
-        int VOIze_cr = CVolume::scaleDCoord(parent->D1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex());
+        int VOIxs_cr = CVolume::scaleCoord<int>(parent->H0_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::horizontal, true);
+        int VOIxe_cr = CVolume::scaleCoord<int>(parent->H1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::horizontal, true);
+        int VOIys_cr = CVolume::scaleCoord<int>(parent->V0_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::vertical, true);
+        int VOIye_cr = CVolume::scaleCoord<int>(parent->V1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::vertical, true);
+        int VOIzs_cr = CVolume::scaleCoord<int>(parent->D0_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::depth, true);
+        int VOIze_cr = CVolume::scaleCoord<int>(parent->D1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::depth, true);
 
 //        printf("VOI is X=[%d,%d], Y=[%d,%d], Z=[%d,%d]\n", VOIxs_cr, VOIxe_cr, VOIys_cr, VOIye_cr, VOIzs_cr, VOIze_cr);
         int dimX   = VOIxe_cr-VOIxs_cr+1;

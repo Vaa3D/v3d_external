@@ -1916,21 +1916,21 @@ void PMain::resolutionIndexChanged(int i)
 //            float MVoxels = ((voiV1-voiV0+1)/1024.0f)*((voiH1-voiH0+1)/1024.0f)*(voiD1-voiD0+1)*voiTDim;
 //            if(QMessageBox::Yes == QMessageBox::question(this, "Confirm", QString("The volume to be loaded is ").append(QString::number(MVoxels, 'f', 1)).append(" MVoxels big.\n\nDo you confirm?"), QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes))
             {
-                int currentRes = CViewer::getCurrent()->getResIndex();
-                int x0 = CVolume::scaleHCoord(H0_sbox->value()-1, CImport::instance()->getResolutions()-1, currentRes);
-                int x1 = CVolume::scaleHCoord(H1_sbox->value()-1, CImport::instance()->getResolutions()-1, currentRes);
-                int y0 = CVolume::scaleVCoord(V0_sbox->value()-1, CImport::instance()->getResolutions()-1, currentRes);
-                int y1 = CVolume::scaleVCoord(V1_sbox->value()-1, CImport::instance()->getResolutions()-1, currentRes);
-                int z0 = CVolume::scaleDCoord(D0_sbox->value()-1, CImport::instance()->getResolutions()-1, currentRes);
-                int z1 = CVolume::scaleDCoord(D1_sbox->value()-1, CImport::instance()->getResolutions()-1, currentRes);
+                //int currentRes = CViewer::getCurrent()->getResIndex();
+                int x0 = CVolume::scaleCoord<int>(H0_sbox->value()-1, CImport::instance()->getResolutions()-1,  i, iim::horizontal, true);
+                int x1 = CVolume::scaleCoord<int>(H1_sbox->value(), CImport::instance()->getResolutions()-1,    i, iim::horizontal, true);
+                int y0 = CVolume::scaleCoord<int>(V0_sbox->value()-1, CImport::instance()->getResolutions()-1,  i, iim::vertical, true);
+                int y1 = CVolume::scaleCoord<int>(V1_sbox->value(), CImport::instance()->getResolutions()-1,    i, iim::vertical, true);
+                int z0 = CVolume::scaleCoord<int>(D0_sbox->value()-1, CImport::instance()->getResolutions()-1,  i, iim::depth, true);
+                int z1 = CVolume::scaleCoord<int>(D1_sbox->value(), CImport::instance()->getResolutions()-1,    i, iim::depth, true);
                 int t0 = CViewer::getCurrent()->volT0;
                 int t1 = CViewer::getCurrent()->volT1;
-                /**/itm::debug(itm::LEV3, strprintf("global VOI [%d,%d) [%d,%d) [%d,%d) rescaled to [%d,%d) [%d,%d) [%d,%d) at currentRes = %d",
-                                                       H0_sbox->value()-1, H1_sbox->value()-1,
-                                                       V0_sbox->value()-1, V1_sbox->value()-1,
-                                                       D0_sbox->value()-1, D1_sbox->value()-1,
-                                                       x0, x1, y0, y1, z0, z1, currentRes).c_str(), __itm__current__function__);
-                CViewer::getCurrent()->newViewer(x1, y1, z1, i, t0, t1, false, -1, -1, -1, x0, y0, z0, true);
+                /**/itm::debug(itm::LEV3, strprintf("global VOI [%d,%d) [%d,%d) [%d,%d) rescaled to [%d,%d) [%d,%d) [%d,%d) at selected res = %d",
+                                                       H0_sbox->value()-1, H1_sbox->value(),
+                                                       V0_sbox->value()-1, V1_sbox->value(),
+                                                       D0_sbox->value()-1, D1_sbox->value(),
+                                                       x0, x1, y0, y1, z0, z1, i).c_str(), __itm__current__function__);
+                CViewer::getCurrent()->newViewer(x1, y1, z1, i, t0, t1, -1, -1, -1, x0, y0, z0, true, false);
             }
 //            else
 //                resolution_cbox->setCurrentIndex(CViewer::getCurrent()->getResIndex());
@@ -1972,7 +1972,7 @@ void PMain::traslXposClicked()
     {
         expl->newViewer((expl->volH1-expl->volH0)/2 + (expl->volH1-expl->volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
                       (expl->volV1-expl->volV0)/2,
-                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1, false);
+                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
 }
 void PMain::traslXnegClicked()
@@ -1984,7 +1984,7 @@ void PMain::traslXnegClicked()
     {
         expl->newViewer((expl->volH1-expl->volH0)/2 - (expl->volH1-expl->volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
                       (expl->volV1-expl->volV0)/2,
-                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1, false);
+                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
 }
 void PMain::traslYposClicked()
@@ -1996,7 +1996,7 @@ void PMain::traslYposClicked()
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2 + (expl->volV1-expl->volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
-                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1, false);
+                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
 }
 void PMain::traslYnegClicked()
@@ -2008,7 +2008,7 @@ void PMain::traslYnegClicked()
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2 - (expl->volV1-expl->volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
-                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1, false);
+                      (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
 }
 void PMain::traslZposClicked()
@@ -2020,7 +2020,7 @@ void PMain::traslZposClicked()
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2,
-                      (expl->volD1-expl->volD0)/2 + (expl->volD1-expl->volD0)*(100-CSettings::instance()->getTraslZ())/100.0f, expl->volResIndex, expl->volT0, expl->volT1, false);
+                      (expl->volD1-expl->volD0)/2 + (expl->volD1-expl->volD0)*(100-CSettings::instance()->getTraslZ())/100.0f, expl->volResIndex, expl->volT0, expl->volT1);
     }
 }
 void PMain::traslZnegClicked()
@@ -2032,7 +2032,7 @@ void PMain::traslZnegClicked()
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2,
-                      (expl->volD1-expl->volD0)/2 - (expl->volD1-expl->volD0)*(100-CSettings::instance()->getTraslZ())/100.0f, expl->volResIndex, expl->volT0, expl->volT1, false);
+                      (expl->volD1-expl->volD0)/2 - (expl->volD1-expl->volD0)*(100-CSettings::instance()->getTraslZ())/100.0f, expl->volResIndex, expl->volT0, expl->volT1);
     }
 }
 void PMain::traslTposClicked()
@@ -2054,7 +2054,7 @@ void PMain::traslTposClicked()
                       (expl->volD1-expl->volD0)/2,
                       expl->volResIndex,
                       newT0,
-                      newT1, false);
+                      newT1);
 //                      expl->volT0 + (expl->volT1-expl->volT0)*(100-CSettings::instance()->getTraslT())/100.0f,
 //                      expl->volT1 + (expl->volT1-expl->volT0)*(100-CSettings::instance()->getTraslT())/100.0f, false);
     }
@@ -2078,7 +2078,7 @@ void PMain::traslTnegClicked()
                       (expl->volD1-expl->volD0)/2,
                       expl->volResIndex,
                       newT0,
-                      newT1, false);
+                      newT1);
 //                      expl->volT0 - (expl->volT1-expl->volT0)*(100-CSettings::instance()->getTraslT())/100.0f,
 //                      expl->volT1 - (expl->volT1-expl->volT0)*(100-CSettings::instance()->getTraslT())/100.0f, false);
     }
@@ -2294,7 +2294,9 @@ void PMain::debugAction1Triggered()
 
     try
     {
-        itm::VirtualPyramidCache("asd", 1000,1000,1000, 2, 1);
+        //itm::VirtualPyramidCache("asd", xyzct<size_t>(10,10,10,1,1), xyzct<size_t>(3,3,3,3,3));
+        QString blah = QString(QCryptographicHash::hash(("/Users/Administrator/Projects/v3d_external/v3d_main/build-vaa3d64 -Qt_4_7_1_Qt_4_7_1-Debug"),QCryptographicHash::Md5).toHex());
+        v3d_msg(blah);
     }
     catch(itm::RuntimeException &e)
     {
@@ -2549,7 +2551,7 @@ void PMain::PRblockSpinboxEditingFinished()
 
         // invoke new view
         curWin->newViewer(blocks[b-1].xInt.end, blocks[b-1].yInt.end, blocks[b-1].zInt.end, blocks_res,
-                curWin->volT0, curWin->volT1, false, -1, -1, -1, blocks[b-1].xInt.start, blocks[b-1].yInt.start, blocks[b-1].zInt.start, true, false, b);
+                curWin->volT0, curWin->volT1, -1, -1, -1, blocks[b-1].xInt.start, blocks[b-1].yInt.start, blocks[b-1].zInt.start, true, false, b);
 
 //        expl->newView((expl->volH1-expl->volH0)/2,
 //                      (expl->volV1-expl->volV0)/2 - (expl->volV1-expl->volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
@@ -2587,20 +2589,20 @@ void PMain::PRblockSpinboxChanged(int b)
             refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
 
             // compute block coordinates in the lowest resolution image space (to be used for quickly generating a low-res mip of the block)
-            int ROIxs_lr = CVolume::scaleHCoord(ROIxS,          blocks_res, 0);
-            int ROIxe_lr = CVolume::scaleHCoord(ROIxS+ROIxDim,  blocks_res, 0);
-            int ROIys_lr = CVolume::scaleVCoord(ROIyS,          blocks_res, 0);
-            int ROIye_lr = CVolume::scaleVCoord(ROIyS+ROIyDim,  blocks_res, 0);
-            int ROIzs_lr = CVolume::scaleDCoord(ROIzS,          blocks_res, 0);
-            int ROIze_lr = CVolume::scaleDCoord(ROIzS+ROIzDim,  blocks_res, 0);
+            int ROIxs_lr = CVolume::scaleCoord<int>(ROIxS,          blocks_res, 0, iim::horizontal, true);
+            int ROIxe_lr = CVolume::scaleCoord<int>(ROIxS+ROIxDim,  blocks_res, 0, iim::horizontal, true);
+            int ROIys_lr = CVolume::scaleCoord<int>(ROIyS,          blocks_res, 0, iim::vertical, true);
+            int ROIye_lr = CVolume::scaleCoord<int>(ROIyS+ROIyDim,  blocks_res, 0, iim::vertical, true);
+            int ROIzs_lr = CVolume::scaleCoord<int>(ROIzS,          blocks_res, 0, iim::depth, true);
+            int ROIze_lr = CVolume::scaleCoord<int>(ROIzS+ROIzDim,  blocks_res, 0, iim::depth, true);
 
             // compute block coordinates in the highest resolution image space (to be used for displaying info data)
-            int ROIxs_hr = CVolume::scaleHCoord(ROIxS,          blocks_res, CImport::instance()->getResolutions()-1);
-            int ROIxe_hr = CVolume::scaleHCoord(ROIxS+ROIxDim,  blocks_res, CImport::instance()->getResolutions()-1);
-            int ROIys_hr = CVolume::scaleVCoord(ROIyS,          blocks_res, CImport::instance()->getResolutions()-1);
-            int ROIye_hr = CVolume::scaleVCoord(ROIyS+ROIyDim,  blocks_res, CImport::instance()->getResolutions()-1);
-            int ROIzs_hr = CVolume::scaleDCoord(ROIzS,          blocks_res, CImport::instance()->getResolutions()-1);
-            int ROIze_hr = CVolume::scaleDCoord(ROIzS+ROIzDim,  blocks_res, CImport::instance()->getResolutions()-1);
+            int ROIxs_hr = CVolume::scaleCoord<int>(ROIxS,          blocks_res, CImport::instance()->getResolutions()-1, iim::horizontal, true);
+            int ROIxe_hr = CVolume::scaleCoord<int>(ROIxS+ROIxDim,  blocks_res, CImport::instance()->getResolutions()-1, iim::horizontal, true);
+            int ROIys_hr = CVolume::scaleCoord<int>(ROIyS,          blocks_res, CImport::instance()->getResolutions()-1, iim::vertical, true);
+            int ROIye_hr = CVolume::scaleCoord<int>(ROIyS+ROIyDim,  blocks_res, CImport::instance()->getResolutions()-1, iim::vertical, true);
+            int ROIzs_hr = CVolume::scaleCoord<int>(ROIzS,          blocks_res, CImport::instance()->getResolutions()-1, iim::depth, true);
+            int ROIze_hr = CVolume::scaleCoord<int>(ROIzS+ROIzDim,  blocks_res, CImport::instance()->getResolutions()-1, iim::depth, true);
 
             // count number of annotations
             int ROI_ano_count = 0;

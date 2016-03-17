@@ -137,11 +137,8 @@ void itm::CImport::reset()
     VXL_1=VXL_2=VXL_3=0.0f;
     format = "";
     isTimeSeries = false;
-    if(itm::VirtualPyramid::isInstantiated())
-        itm::VirtualPyramid::uninstance();
-    else
-        for(size_t i=0; i<volumes.size(); i++)
-            delete volumes[i];
+    for(size_t i=0; i<volumes.size(); i++)
+        delete volumes[i];
     volumes.clear();
     vmapData = 0;
     vmapXDim = vmapYDim = vmapZDim = vmapTDim = vmapCDim = -1;
@@ -168,9 +165,9 @@ void CImport::run()
 
             // generate virtual pyramid image from high-res unconverted image
             if(reimport)
-                volumes = itm::VirtualPyramid::instance(VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3), path, resampling_factor, lower_bound)->getLayers();
+                volumes = (new itm::VirtualPyramid(path, resampling_factor, lower_bound, VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3)))->getPyramid();
             else
-                volumes = itm::VirtualPyramid::instance(VirtualVolume::instance(path.c_str()), path, resampling_factor, lower_bound)->getLayers();
+                volumes = (new itm::VirtualPyramid(path, resampling_factor, lower_bound))->getPyramid();
 
             // load image data from lowest-res pyramid layer
             vmapXDim = volumes[0]->getDIM_H();

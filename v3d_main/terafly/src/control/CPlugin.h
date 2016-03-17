@@ -87,7 +87,7 @@ namespace teramanager
     class QUndoVaa3DNeuron;     //QUndoCommand for Vaa3D neuron editing
     class VirtualPyramid;       //entity class to model virtual pyramid image where data are filled online from an unconverted highres image
     class VirtualPyramidLayer;  //entity class to model a virtual pyramid layer/volume
-    class VirtualPyramidCache;  //entity class to model a virtual pyramid cache
+    class HyperGridCache;  //entity class to model a virtual pyramid cache
     class myRenderer_gl1;       //Vaa3D-inhrerited class
     class myV3dR_GLWidget;      //Vaa3D-inhrerited class
     class myV3dR_MainWindow;    //Vaa3D-inhrerited class
@@ -172,8 +172,9 @@ namespace teramanager
     struct image_5D
     {
         T* data;
-        xyzct<size_t> size;
-        image_5D() : data(0), size(xyzct<size_t>(0,0,0,0,0)){}
+        xyzct<size_t> dims;
+        image_5D() : data(0), dims(xyzct<size_t>(0,0,0,0,0)){}
+        image_5D(T* _data, xyzct<size_t> _dims) : data(_data), dims(_dims){}
     };
 
     // emulate initializer list for STL vector
@@ -291,6 +292,7 @@ namespace teramanager
     // split
     inline void	split(const std::string& theString, std::string delim, std::vector<std::string>& tokens)
     {
+        tokens.clear();
         size_t  start = 0, end = 0;
         while ( end != std::string::npos)
         {
@@ -304,6 +306,25 @@ namespace teramanager
             start = (   ( end > (std::string::npos - delim.size()) )
                 ?  std::string::npos  :  end + delim.size());
         }
+    }
+
+    inline std::vector<std::string> parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename) throw (RuntimeException)
+    {
+        std::vector<std::string> tokens;
+        split(line, delim, tokens);
+        if(tokens.size() != nTokensExpected)
+            throw RuntimeException(strprintf("in file \"%s\", line \"%s\": expected %d \"%s\"-separated tokens, found %d",
+                                   filename.c_str(), line.c_str(), nTokensExpected, delim.c_str(), tokens.size()));
+        return tokens;
+    }
+
+    inline void parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename, std::vector<std::string> &tokens) throw (RuntimeException)
+    {;
+        tokens.clear();
+        split(line, delim, tokens);
+        if(tokens.size() != nTokensExpected)
+            throw RuntimeException(strprintf("in file \"%s\", line \"%s\": expected %d \'%s\'-separated tokens, found %d",
+                                   filename.c_str(), line.c_str(), nTokensExpected, delim.c_str(), tokens.size()));
     }
 
     //returns true if the given string <fullString> ends with <ending>
@@ -423,8 +444,10 @@ namespace teramanager
     template <typename T>
     inline std::vector<T> partition(T range, T desired_part_size) throw (RuntimeException)
     {
-        if(range <= 0 || desired_part_size <=0)
-            throw RuntimeException("in partition(): either range or desired_part_size is <= 0");
+        if(range <= 0)
+            throw RuntimeException(strprintf("in partition(): range is <= 0 (%s)", num2str<T>(range).c_str()));
+        if(desired_part_size <=0)
+            throw RuntimeException(strprintf("in partition(): desired_part_size is <= 0 (%s)", num2str<T>(desired_part_size).c_str()));
         std::vector<T> subranges(static_cast<T>(ceil(range/(float)desired_part_size )));
         for(int i=0; i<subranges.size(); i++)
             subranges[i] =  range/subranges.size() + (i < range % subranges.size() ? 1:0 );

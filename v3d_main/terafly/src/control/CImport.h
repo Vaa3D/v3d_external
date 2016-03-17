@@ -146,6 +146,15 @@ class teramanager::CImport : public QThread
                 return (volumes.back()->getDIM_V()-1.0f)/(volumes[resIndex]->getDIM_V()-1.0f);
             else return 1.0f;
         }
+        inline float getRescaleFactor(int res0, int res1, iim::axis dir) throw (itm::RuntimeException)
+        {
+            try{
+                return volumes[res0]->getDIM(dir)/static_cast<float>(volumes[res1]->getDIM(dir));
+            }
+            catch(iim::IOException &e){
+                throw itm::RuntimeException(e.what());
+            }
+        }
 
         // SET methods
         void setPath(string new_path){path = new_path;}

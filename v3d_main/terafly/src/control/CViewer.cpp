@@ -268,18 +268,26 @@ void CViewer::show()
         }
 
         //setting min, max and value of PMain GUI VOI's widgets
-        pMain->V0_sbox->setMinimum(getGlobalVCoord(view3DWidget->yCut0(), -1, true, false, __itm__current__function__)+1);
+        /**/itm::debug(itm::LEV2, itm::strprintf("Vaa3D cut is set to V[%d,%d], H[%d,%d], D[%d,%d]",
+                                                 view3DWidget->yCut0(), view3DWidget->yCut1(),
+                                                 view3DWidget->xCut0(), view3DWidget->xCut1(),
+                                                 view3DWidget->zCut0(), view3DWidget->zCut1()).c_str(), __itm__current__function__);
+        pMain->V0_sbox->setMinimum(coord2global<int>(view3DWidget->yCut0(),     iim::vertical,  true,   -1, true, false, __itm__current__function__) +1);
         pMain->V0_sbox->setValue(pMain->V0_sbox->minimum());
-        pMain->V1_sbox->setMaximum(getGlobalVCoord(view3DWidget->yCut1(), -1, true, false, __itm__current__function__)+1);
+        pMain->V1_sbox->setMaximum(coord2global<int>(view3DWidget->yCut1()+1,   iim::vertical,  true,   -1, true, false, __itm__current__function__));
         pMain->V1_sbox->setValue(pMain->V1_sbox->maximum());
-        pMain->H0_sbox->setMinimum(getGlobalHCoord(view3DWidget->xCut0(), -1, true, false, __itm__current__function__)+1);
+        pMain->H0_sbox->setMinimum(coord2global<int>(view3DWidget->xCut0(),     iim::horizontal,true,   -1, true, false, __itm__current__function__) +1);
         pMain->H0_sbox->setValue(pMain->H0_sbox->minimum());
-        pMain->H1_sbox->setMaximum(getGlobalHCoord(view3DWidget->xCut1(), -1, true, false, __itm__current__function__)+1);
+        pMain->H1_sbox->setMaximum(coord2global<int>(view3DWidget->xCut1()+1,   iim::horizontal,true,   -1, true, false, __itm__current__function__));
         pMain->H1_sbox->setValue(pMain->H1_sbox->maximum());
-        pMain->D0_sbox->setMinimum(getGlobalDCoord(view3DWidget->zCut0(), -1, true, false, __itm__current__function__)+1);
+        pMain->D0_sbox->setMinimum(coord2global<int>(view3DWidget->zCut0(),     iim::depth,     true,   -1, true, false, __itm__current__function__) +1);
         pMain->D0_sbox->setValue(pMain->D0_sbox->minimum());
-        pMain->D1_sbox->setMaximum(getGlobalDCoord(view3DWidget->zCut1(), -1, true, false, __itm__current__function__)+1);
+        pMain->D1_sbox->setMaximum(coord2global<int>(view3DWidget->zCut1()+1,   iim::depth,     true,   -1, true, false, __itm__current__function__));
         pMain->D1_sbox->setValue(pMain->D1_sbox->maximum());
+        /**/itm::debug(itm::LEV2, itm::strprintf("sbox set to V[%d,%d], H[%d,%d], D[%d,%d]",
+                                                 pMain->V0_sbox->minimum(), pMain->V1_sbox->maximum(),
+                                                 pMain->H0_sbox->minimum(), pMain->H1_sbox->maximum(),
+                                                 pMain->D0_sbox->minimum(), pMain->D1_sbox->maximum()).c_str(), __itm__current__function__);
 
         if(pMain->frameCoord->isEnabled())
         {
@@ -858,10 +866,9 @@ void CViewer::receiveData(
 * lution has to be loaded.
 ***********************************************************************************/
 void
-CViewer::newViewer(int x, int y, int z,                            //can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
+CViewer::newViewer(int x, int y, int z,             //can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
     int resolution,                                 //resolution index of the view requested
     int t0, int t1,                                 //time frames selection
-    bool fromVaa3Dcoordinates /*= false*/,          //if coordinates were obtained from Vaa3D
     int dx/*=-1*/, int dy/*=-1*/, int dz/*=-1*/,    //VOI [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
     int x0/*=-1*/, int y0/*=-1*/, int z0/*=-1*/,    //VOI [x0, x), [y0, y), [z0, z), [t0, t1]
     bool auto_crop /* = true */,                    //whether to crop the VOI to the max dims
@@ -871,7 +878,6 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
-
     // check precondition #1: active window
     if(!isActive || toBeClosed)
     {
@@ -926,19 +932,19 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             float ratioX = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_H())/CImport::instance()->getVolume(volResIndex)->getDIM_H();
             float ratioY = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_V())/CImport::instance()->getVolume(volResIndex)->getDIM_V();
             float ratioZ = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_D())/CImport::instance()->getVolume(volResIndex)->getDIM_D();
-            x = getGlobalHCoord(x, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
-            y = getGlobalVCoord(y, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
-            z = getGlobalDCoord(z, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+            x = coord2global<int>(x, iim::horizontal, true, resolution, false, false, __itm__current__function__);
+            y = coord2global<int>(y, iim::vertical,   true, resolution, false, false, __itm__current__function__);
+            z = coord2global<int>(z, iim::depth,      true, resolution, false, false, __itm__current__function__);
             if(x0 != -1)
-                x0 = getGlobalHCoord(x0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+                x0 = coord2global<int>(x0, iim::horizontal, true,  resolution, false, false, __itm__current__function__);
             else
                 dx = dx == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dx*ratioX+0.5f);
             if(y0 != -1)
-                y0 = getGlobalVCoord(y0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+                y0 = coord2global<int>(y0, iim::vertical,   true,  resolution, false, false, __itm__current__function__);
             else
                 dy = dy == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dy*ratioY+0.5f);
             if(z0 != -1)
-                z0 = getGlobalDCoord(z0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+                z0 = coord2global<int>(z0, iim::depth,      true,  resolution, false, false, __itm__current__function__);
             else
                 dz = dz == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dz*ratioZ+0.5f);
         }
@@ -1061,12 +1067,12 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
             // get low res data
             timer.restart();
             int voiH0m=0, voiH1m=0, voiV0m=0, voiV1m=0,voiD0m=0, voiD1m=0, voiT0m=0, voiT1m=0;
-            int rVoiH0 = CVolume::scaleHCoord(cVolume->getVoiH0(), resolution, volResIndex);
-            int rVoiH1 = CVolume::scaleHCoord(cVolume->getVoiH1(), resolution, volResIndex);
-            int rVoiV0 = CVolume::scaleVCoord(cVolume->getVoiV0(), resolution, volResIndex);
-            int rVoiV1 = CVolume::scaleVCoord(cVolume->getVoiV1(), resolution, volResIndex);
-            int rVoiD0 = CVolume::scaleDCoord(cVolume->getVoiD0(), resolution, volResIndex);
-            int rVoiD1 = CVolume::scaleDCoord(cVolume->getVoiD1(), resolution, volResIndex);
+            int rVoiH0 = CVolume::scaleCoord<int>(cVolume->getVoiH0(), resolution, volResIndex, iim::horizontal, true);
+            int rVoiH1 = CVolume::scaleCoord<int>(cVolume->getVoiH1(), resolution, volResIndex, iim::horizontal, true);
+            int rVoiV0 = CVolume::scaleCoord<int>(cVolume->getVoiV0(), resolution, volResIndex, iim::vertical, true);
+            int rVoiV1 = CVolume::scaleCoord<int>(cVolume->getVoiV1(), resolution, volResIndex, iim::vertical, true);
+            int rVoiD0 = CVolume::scaleCoord<int>(cVolume->getVoiD0(), resolution, volResIndex, iim::depth, true);
+            int rVoiD1 = CVolume::scaleCoord<int>(cVolume->getVoiD1(), resolution, volResIndex, iim::depth, true);
             uint8* lowresData = getVOI(rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(),
                                        cVolume->getVoiH1()-cVolume->getVoiH0(),
                                        cVolume->getVoiV1()-cVolume->getVoiV0(),
@@ -1478,9 +1484,9 @@ void CViewer::storeAnnotations() throw (RuntimeException)
         timer.restart();
         for(int i=0; i<markers.size(); i++)
         {
-            markers[i].x = getGlobalHCoord(markers[i].x, -1, false, false, __itm__current__function__);
-            markers[i].y = getGlobalVCoord(markers[i].y, -1, false, false, __itm__current__function__);
-            markers[i].z = getGlobalDCoord(markers[i].z, -1, false, false, __itm__current__function__);
+            markers[i].x = coord2global<float>(markers[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+            markers[i].y = coord2global<float>(markers[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+            markers[i].z = coord2global<float>(markers[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
         }
         PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert landmark coordinates, view ").append(title.c_str()).toStdString(), itm::CPU, timer.elapsed()));
 
@@ -1504,9 +1510,9 @@ void CViewer::storeAnnotations() throw (RuntimeException)
         for(int i=0; i<nt.listNeuron.size(); i++)
         {
             /* @debug */ //printf("%d(%d) [(%.0f,%.0f,%.0f) ->", nt.listNeuron[i].n, nt.listNeuron[i].pn, nt.listNeuron[i].x, nt.listNeuron[i].y, nt.listNeuron[i].z);
-            nt.listNeuron[i].x = getGlobalHCoord(nt.listNeuron[i].x, -1, false, false, __itm__current__function__);
-            nt.listNeuron[i].y = getGlobalVCoord(nt.listNeuron[i].y, -1, false, false, __itm__current__function__);
-            nt.listNeuron[i].z = getGlobalDCoord(nt.listNeuron[i].z, -1, false, false, __itm__current__function__);
+            nt.listNeuron[i].x = coord2global<float>(nt.listNeuron[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+            nt.listNeuron[i].y = coord2global<float>(nt.listNeuron[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+            nt.listNeuron[i].z = coord2global<float>(nt.listNeuron[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
             /* @debug */ //printf("(%.0f,%.0f,%.0f)]  ", nt.listNeuron[i].x, nt.listNeuron[i].y, nt.listNeuron[i].z);
         }
         PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert curve nodes coordinates, view ").append(title.c_str()).toStdString(), itm::CPU, timer.elapsed()));
@@ -1692,12 +1698,12 @@ void CViewer::updateAnnotationSpace() throw (itm::RuntimeException)
 	 //computing the current volume range in the highest resolution image space
 	 /**/itm::debug(itm::LEV3, strprintf("computing the current volume range in the highest resolution image space").c_str(), __itm__current__function__);
 	 int highestResIndex = CImport::instance()->getResolutions()-1;
-	 int voiV0 = CVolume::scaleVCoord(volV0, volResIndex, highestResIndex);
-	 int voiV1 = CVolume::scaleVCoord(volV1, volResIndex, highestResIndex);
-	 int voiH0 = CVolume::scaleHCoord(volH0, volResIndex, highestResIndex);
-	 int voiH1 = CVolume::scaleHCoord(volH1, volResIndex, highestResIndex);
-	 int voiD0 = CVolume::scaleDCoord(volD0, volResIndex, highestResIndex);
-	 int voiD1 = CVolume::scaleDCoord(volD1, volResIndex, highestResIndex);
+     int voiV0 = CVolume::scaleCoord<int>(volV0, volResIndex, highestResIndex, iim::vertical, true);
+     int voiV1 = CVolume::scaleCoord<int>(volV1, volResIndex, highestResIndex, iim::vertical, true);
+     int voiH0 = CVolume::scaleCoord<int>(volH0, volResIndex, highestResIndex, iim::horizontal, true);
+     int voiH1 = CVolume::scaleCoord<int>(volH1, volResIndex, highestResIndex, iim::horizontal, true);
+     int voiD0 = CVolume::scaleCoord<int>(volD0, volResIndex, highestResIndex, iim::depth, true);
+     int voiD1 = CVolume::scaleCoord<int>(volD1, volResIndex, highestResIndex, iim::depth, true);
 	 interval_t x_range(voiH0, voiH1);
 	 interval_t y_range(voiV0, voiV1);
 	 interval_t z_range(voiD0, voiD1);
@@ -1769,17 +1775,17 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     /**/itm::debug(itm::LEV3, strprintf("converting global coordinates to local coordinates").c_str(), __itm__current__function__);
     for(int i=0; i<vaa3dMarkers.size(); i++)
     {
-        vaa3dMarkers[i].x = getLocalHCoord(vaa3dMarkers[i].x);
-        vaa3dMarkers[i].y = getLocalVCoord(vaa3dMarkers[i].y);
-        vaa3dMarkers[i].z = getLocalDCoord(vaa3dMarkers[i].z);
+        vaa3dMarkers[i].x = coord2local<float>(vaa3dMarkers[i].x, iim::horizontal, false);
+        vaa3dMarkers[i].y = coord2local<float>(vaa3dMarkers[i].y, iim::vertical, false);
+        vaa3dMarkers[i].z = coord2local<float>(vaa3dMarkers[i].z, iim::depth, false);
     }
     /* @debug */ //printf("\n\ngoing to insert in Vaa3D the curve points ");
     for(int i=0; i<vaa3dCurves.listNeuron.size(); i++)
     {
         /* @debug */ //printf("%d(%d) [(%.0f,%.0f,%.0f) ->", vaa3dCurves.listNeuron[i].n, vaa3dCurves.listNeuron[i].pn, vaa3dCurves.listNeuron[i].x, vaa3dCurves.listNeuron[i].y, vaa3dCurves.listNeuron[i].z);
-        vaa3dCurves.listNeuron[i].x = getLocalHCoord(vaa3dCurves.listNeuron[i].x);
-        vaa3dCurves.listNeuron[i].y = getLocalVCoord(vaa3dCurves.listNeuron[i].y);
-        vaa3dCurves.listNeuron[i].z = getLocalDCoord(vaa3dCurves.listNeuron[i].z);
+        vaa3dCurves.listNeuron[i].x = coord2local<float>(vaa3dCurves.listNeuron[i].x, iim::horizontal, false);
+        vaa3dCurves.listNeuron[i].y = coord2local<float>(vaa3dCurves.listNeuron[i].y, iim::vertical, false);
+        vaa3dCurves.listNeuron[i].z = coord2local<float>(vaa3dCurves.listNeuron[i].z, iim::depth, false);
         /* @debug */ //printf("(%.0f,%.0f,%.0f)]  ", vaa3dCurves.listNeuron[i].x, vaa3dCurves.listNeuron[i].y, vaa3dCurves.listNeuron[i].z);
     }
     vaa3dCurves.color.r = 0;
@@ -2116,7 +2122,7 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
     // zoom-in around marker or ROI triggers a new window
     else if(roi->ops_type == 1 && !forceZoomIn)
-        newViewer(roi->xe, roi->ye, roi->ze, volResIndex+1, volT0, volT1, false, -1, -1, -1, roi->xs, roi->ys, roi->zs);
+        newViewer(roi->xe, roi->ye, roi->ze, volResIndex+1, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
 
     // zoom-in with mouse scroll up may trigger a new window if caching is not possible
     else if(roi->ops_type == 2 || forceZoomIn)
@@ -2135,12 +2141,12 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
             if(next)
             {
                 //converting Vaa3D VOI local coordinates to TeraFly coordinates of the next resolution
-                float gXS = getGlobalHCoord(static_cast<float>(roi->xs), next->volResIndex, false, true, __itm__current__function__);
-                float gXE = getGlobalHCoord(static_cast<float>(roi->xe), next->volResIndex, false, true, __itm__current__function__);
-                float gYS = getGlobalVCoord(static_cast<float>(roi->ys), next->volResIndex, false, true, __itm__current__function__);
-                float gYE = getGlobalVCoord(static_cast<float>(roi->ye), next->volResIndex, false, true, __itm__current__function__);
-                float gZS = getGlobalDCoord(static_cast<float>(roi->zs), next->volResIndex, false, true, __itm__current__function__);
-                float gZE = getGlobalDCoord(static_cast<float>(roi->ze), next->volResIndex, false, true, __itm__current__function__);
+                float gXS = coord2global<float>(static_cast<float>(roi->xs), iim::horizontal, false, next->volResIndex, false, true, __itm__current__function__);
+                float gXE = coord2global<float>(static_cast<float>(roi->xe), iim::horizontal, false, next->volResIndex, false, true, __itm__current__function__);
+                float gYS = coord2global<float>(static_cast<float>(roi->ys), iim::vertical,   false, next->volResIndex, false, true, __itm__current__function__);
+                float gYE = coord2global<float>(static_cast<float>(roi->ye), iim::vertical,   false, next->volResIndex, false, true, __itm__current__function__);
+                float gZS = coord2global<float>(static_cast<float>(roi->zs), iim::depth,      false, next->volResIndex, false, true, __itm__current__function__);
+                float gZE = coord2global<float>(static_cast<float>(roi->ze), iim::depth,      false, next->volResIndex, false, true, __itm__current__function__);
                 QRectF gXRect(QPointF(gXS, 0), QPointF(gXE, 1));
                 QRectF gYRect(QPointF(gYS, 0), QPointF(gYE, 1));
                 QRectF gZRect(QPointF(gZS, 0), QPointF(gZE, 1));
@@ -2206,10 +2212,10 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
                 //otherwise invoking a new view
                 else
-                    newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
+                    newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
             }
             else
-                newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, false, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
+                newViewer(roiCenterX, roiCenterY, roiCenterZ, volResIndex+1, volT0, volT1, static_cast<int>((roi->xe-roi->xs)/2.0f+0.5f), static_cast<int>((roi->ye-roi->ys)/2.0f+0.5f), static_cast<int>((roi->ze-roi->zs)/2.0f+0.5f));
         }
         else
             /**/itm::debug(itm::LEV3, strprintf("title = %s, ignoring Vaa3D mouse scroll up zoom-in", titleShort.c_str()).c_str(), __itm__current__function__);
@@ -2229,7 +2235,7 @@ void CViewer::Vaa3D_changeYCut0(int s)
     #endif
 
     disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
-    PMain::getInstance()->V0_sbox->setValue(getGlobalVCoord(s, -1, true, false, __itm__current__function__)+1);
+    PMain::getInstance()->V0_sbox->setValue(coord2global<int>(s, iim::vertical, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
 }
@@ -2240,7 +2246,7 @@ void CViewer::Vaa3D_changeYCut1(int s)
     #endif
 
     disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
-    PMain::getInstance()->V1_sbox->setValue(getGlobalVCoord(s, -1, true, false, __itm__current__function__)+1);
+    PMain::getInstance()->V1_sbox->setValue(coord2global<int>(s+1, iim::vertical, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
 }
@@ -2251,7 +2257,7 @@ void CViewer::Vaa3D_changeXCut0(int s)
     #endif
 
     disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
-    PMain::getInstance()->H0_sbox->setValue(getGlobalHCoord(s, -1, true, false, __itm__current__function__)+1);
+    PMain::getInstance()->H0_sbox->setValue(coord2global<int>(s, iim::horizontal, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
 }
@@ -2262,7 +2268,7 @@ void CViewer::Vaa3D_changeXCut1(int s)
     #endif
 
     disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
-    PMain::getInstance()->H1_sbox->setValue(getGlobalHCoord(s, -1, true, false, __itm__current__function__)+1);
+    PMain::getInstance()->H1_sbox->setValue(coord2global<int>(s+1, iim::horizontal, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
 }
@@ -2273,7 +2279,7 @@ void CViewer::Vaa3D_changeZCut0(int s)
     #endif
 
     disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
-    PMain::getInstance()->D0_sbox->setValue(getGlobalDCoord(s, -1, true, false, __itm__current__function__)+1);
+    PMain::getInstance()->D0_sbox->setValue(coord2global<int>(s, iim::depth, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
 }
@@ -2284,7 +2290,7 @@ void CViewer::Vaa3D_changeZCut1(int s)
     #endif
 
     disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
-    PMain::getInstance()->D1_sbox->setValue(getGlobalDCoord(s, -1, true, false, __itm__current__function__)+1);
+    PMain::getInstance()->D1_sbox->setValue(coord2global<int>(s+1, iim::depth, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
 }
@@ -2319,7 +2325,7 @@ void CViewer::Vaa3D_changeTSlider(int s, bool editingFinished /* = false */)
 
             // if user operation is confirmed, then switching view
             if(editingFinished)
-                newViewer( (volH1-volH0)/2, (volV1-volV0)/2, (volD1-volD0)/2, volResIndex, s-PMain::getInstance()->Tdim_sbox->value()/2, s+PMain::getInstance()->Tdim_sbox->value()/2, false);
+                newViewer( (volH1-volH0)/2, (volV1-volV0)/2, (volD1-volD0)/2, volResIndex, s-PMain::getInstance()->Tdim_sbox->value()/2, s+PMain::getInstance()->Tdim_sbox->value()/2);
         }
         // if frame is within the displayed range
         else
@@ -2347,7 +2353,7 @@ void CViewer::PMain_changeV0sbox(int s)
     #endif
 
     disconnect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
-    view3DWidget->setYCut0(getLocalVCoord(s-1, true)+1);
+    view3DWidget->setYCut0(coord2local<int>(s, iim::vertical, true, true));
     PDialogProofreading::instance()->updateBlocks(0);
     connect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
 }
@@ -2358,7 +2364,7 @@ void CViewer::PMain_changeV1sbox(int s)
     #endif
 
     disconnect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
-    view3DWidget->setYCut1(getLocalVCoord(s-1, true)+1);
+    view3DWidget->setYCut1(coord2local<int>(s+1, iim::vertical, true, true)-1);
     PDialogProofreading::instance()->updateBlocks(0);
     connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
 }
@@ -2369,7 +2375,7 @@ void CViewer::PMain_changeH0sbox(int s)
     #endif
 
     disconnect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
-    view3DWidget->setXCut0(getLocalHCoord(s-1, true)+1);
+    view3DWidget->setXCut0(coord2local<int>(s, iim::horizontal, true, true));
     PDialogProofreading::instance()->updateBlocks(0);
     connect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
 }
@@ -2380,7 +2386,7 @@ void CViewer::PMain_changeH1sbox(int s)
     #endif
 
     disconnect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
-    view3DWidget->setXCut1(getLocalHCoord(s-1, true)+1);
+    view3DWidget->setXCut1(coord2local<int>(s+1, iim::horizontal, true, true)-1);
     PDialogProofreading::instance()->updateBlocks(0);
     connect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
 }
@@ -2391,7 +2397,7 @@ void CViewer::PMain_changeD0sbox(int s)
     #endif
 
     disconnect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
-    view3DWidget->setZCut0(getLocalDCoord(s-1, true)+1);
+    view3DWidget->setZCut0(coord2local<int>(s, iim::depth, true, true));
     PDialogProofreading::instance()->updateBlocks(0);
     connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
 }
@@ -2402,7 +2408,7 @@ void CViewer::PMain_changeD1sbox(int s)
     #endif
 
     disconnect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
-    view3DWidget->setZCut1(getLocalDCoord(s-1, true)+1);
+    view3DWidget->setZCut1(coord2local<int>(s+1, iim::depth, true, true)-1);
     PDialogProofreading::instance()->updateBlocks(0);
     connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
 }
