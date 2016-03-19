@@ -161,6 +161,23 @@ namespace teramanager
     };
 
     template<class T>
+    struct xyzt
+    {
+        T x,y,z,t;
+        xyzt(void) : x(0), y(0), z(0), t(0){}
+        xyzt(T _x, T _y, T _z, T _t=0) : x(_x), y(_y), z(_z), t(_t){}
+    };
+
+    template<class T = unsigned int>
+    struct active_channels
+    {
+        T* table;
+        size_t dim;
+        active_channels() : table(0), dim(0){}
+        active_channels(T* _table, size_t _dim) : table(_table), dim(_dim){}
+    };
+
+    template<class T>
     struct xyzct
     {
         T x,y,z,c,t;
@@ -172,9 +189,11 @@ namespace teramanager
     struct image_5D
     {
         T* data;
-        xyzct<size_t> dims;
-        image_5D() : data(0), dims(xyzct<size_t>(0,0,0,0,0)){}
-        image_5D(T* _data, xyzct<size_t> _dims) : data(_data), dims(_dims){}
+        xyzt<size_t> dims;
+        active_channels<> chans;
+        image_5D() : data(0), dims(xyzt<size_t>(0,0,0,0)), chans(0,0){}
+        image_5D(T* _data, xyzt<size_t> _dims, active_channels<> _chans) : data(_data), dims(_dims), chans(_chans){}
+        xyzct<size_t> getDims(){return xyzct<size_t>(dims.x, dims.y, dims.z, static_cast<size_t>(chans.dim), dims.t);}
     };
 
     // emulate initializer list for STL vector

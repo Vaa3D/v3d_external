@@ -21,8 +21,8 @@ throw (iim::IOException, iom::exception, itm::RuntimeException)
     highresVol = _highresVol;
     highresPath = _highresPath;
 
-    // create/check persistency
-    init();
+    // instance highest-res volume
+    instanceHighresVol();
 
     // iteratively add a new layer until the lowest-res layer has size > lower_bound
     int i = 0;
@@ -35,15 +35,18 @@ throw (iim::IOException, iom::exception, itm::RuntimeException)
             break;
         else
         {
-            pyramid.push_back(new VirtualPyramidLayer(i, this, rf));
+            virtualPyramid.push_back(new VirtualPyramidLayer(i, this, rf));
             i++;
         }
     }
-    while (pyramid.back()->getMVoxels() > lower_bound);
+    while (virtualPyramid.back()->getMVoxels() > lower_bound);
 
     // at least two layers are needed
-    if(pyramid.size() < 2)
+    if(virtualPyramid.size() < 2)
         throw iim::IOException("Cannot instance Virtual Pyramid with the given settings: at least 2 layers needed. Please check resampling/reduction options or your image size.");
+
+    // create/check metadata
+    init();
 }
 
 
@@ -60,22 +63,23 @@ throw (iim::IOException, iom::exception, itm::RuntimeException)
     highresVol = _highresVol;
     highresPath = _highresPath;
 
-    // create/check persistency
-    init();
+    // instance highest-res volume
+    instanceHighresVol();
 
     // generate layers according to the given reduction factors
-    VirtualPyramidLayer* layer = 0;
     for(int i=0; i<reduction_factors.size(); i++)
     {
         // instance only nonempty layers
         if(!VirtualPyramidLayer::isEmpty(highresVol, reduction_factors[i]))
-            pyramid.push_back(new VirtualPyramidLayer(i, this, reduction_factors[i]));
+            virtualPyramid.push_back(new VirtualPyramidLayer(i, this, reduction_factors[i]));
     }
 
-
     // at least two layers are needed
-    if(pyramid.size() < 2)
+    if(virtualPyramid.size() < 2)
         throw iim::IOException("Cannot instance Virtual Pyramid with the given settings: at least 2 layers needed. Please check resampling/reduction options or your image size.");
+
+    // create/check metadata
+    init();
 }
 
 // VirtualPyramid deconstructor
@@ -83,13 +87,17 @@ itm::VirtualPyramid::~VirtualPyramid() throw(iim::IOException)
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
 
-    if(pyramid.size())
+    // virtual layers should automatically remove themselves from virtualPyramid once they are destroyed
+    if(virtualPyramid.size())
         throw iim::IOException("Cannot destroy VirtualPyramid: not all layers have been destroyed");
+
+    for(int i=0; i<pyramid.size(); i++)
+        delete pyramid[i];
 
     delete highresVol;
 }
 
-void itm::VirtualPyramid::init()  throw (iim::IOException, iom::exception, itm::RuntimeException)
+void itm::VirtualPyramid::instanceHighresVol() throw (iim::IOException, iom::exception, itm::RuntimeException)
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
 
@@ -107,8 +115,7 @@ void itm::VirtualPyramid::init()  throw (iim::IOException, iom::exception, itm::
     if(!iim::check_and_make_dir(localPath.c_str()))
         throw iim::IOException(itm::strprintf("Cannot create local folder for Virtual Pyramid at \"%s\"", localPath.c_str()));
 
-    // create persistency files
-    // if metadata do not match with this instance, throw an exception
+    // create (or check) metadata for Virtual Pyramid
     std::string image_path = MD5_path + "/.volume.txt";
     if(iim::isFile(image_path))
     {
@@ -144,6 +151,102 @@ void itm::VirtualPyramid::init()  throw (iim::IOException, iom::exception, itm::
     }
 }
 
+void itm::VirtualPyramid::init()  throw (iim::IOException, iom::exception, itm::RuntimeException)
+{
+    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
+    // create (or check) metadata for Virtual Pyramid Layers
+    for(int k=0; k<virtualPyramid.size(); k++)
+    {
+        // create subfolder
+        std::string subfolder = localPath + itm::strprintf("/.layer%02d", k);
+        if(!iim::check_and_make_dir(subfolder.c_str()))
+                throw iim::IOException(itm::strprintf("Cannot create local folder at \"%s\"", subfolder.c_str()));
+
+        // create / check reduction factor file
+        std::string reduction_factor_file = subfolder + "/.reduction_factor.txt";
+        if(iim::isFile(reduction_factor_file))
+        {
+            std::ifstream f(reduction_factor_file.c_str());
+            if(!f.is_open())
+                throw iim::IOException(itm::strprintf("Cannot open reduction factor file at \"%s\"", reduction_factor_file.c_str()));
+            std::string line;
+            std::getline(f, line);
+            std::vector<std::string> tokens = itm::parse(line, " ", 3, reduction_factor_file);
+            if(itm::str2num<int>(tokens[0]) != virtualPyramid[k]->reductionFactor.x)
+                throw iim::IOException(itm::strprintf("Virtual pyramid layer at \"%s\" was generated with a different reduction factor along X (%d) than the one currently selected (%d). "
+                                                      "You can either adjust your local settings or delete the layer so it will be re-generated automatically.",
+                                                      subfolder.c_str(), itm::str2num<int>(tokens[0]), virtualPyramid[k]->reductionFactor.x ));
+            if(itm::str2num<int>(tokens[1]) != virtualPyramid[k]->reductionFactor.y)
+                throw iim::IOException(itm::strprintf("Virtual pyramid layer at \"%s\" was generated with a different reduction factor along Y (%d) than the one currently selected (%d). "
+                                                      "You can either adjust your local settings or delete the layer so it will be re-generated automatically.",
+                                                      subfolder.c_str(), itm::str2num<int>(tokens[1]), virtualPyramid[k]->reductionFactor.y ));
+            if(itm::str2num<int>(tokens[2]) != virtualPyramid[k]->reductionFactor.z)
+                throw iim::IOException(itm::strprintf("Virtual pyramid layer at \"%s\" was generated with a different reduction factor along Z (%d) than the one currently selected (%d). "
+                                                      "You can either adjust your local settings or delete the layer so it will be re-generated automatically.",
+                                                      subfolder.c_str(), itm::str2num<int>(tokens[2]), virtualPyramid[k]->reductionFactor.z ));
+            f.close();
+        }
+        else
+        {
+            std::ofstream f(reduction_factor_file.c_str());
+            if(!f.is_open())
+                throw iim::IOException(itm::strprintf("Cannot open reduction factor file at \"%s\"", reduction_factor_file.c_str()));
+            f << virtualPyramid[k]->reductionFactor.x << " " << virtualPyramid[k]->reductionFactor.y << " " << virtualPyramid[k]->reductionFactor.z << std::endl;
+            f.close();
+        }
+
+        // instance cache
+        pyramid.push_back(new HyperGridCache(subfolder,
+                                             xyzct<size_t>(
+                                                 virtualPyramid[k]->getDIM_H(),
+                                                 virtualPyramid[k]->getDIM_V(),
+                                                 virtualPyramid[k]->getDIM_D(),
+                                                 virtualPyramid[k]->getDIM_C(),
+                                                 virtualPyramid[k]->getDIM_T())));
+    }
+}
+
+// load volume of interest from the given resolution layer
+itm::image_5D<itm::uint8>
+itm::VirtualPyramid::loadVOI(
+        itm::xyz<size_t> start,  // xyz range [start, end)
+        itm::xyz<size_t> end,    // xyz range [start, end)
+        int level)               // pyramid level (0=highest resolution, the higher the lower the resolution)
+throw (iim::IOException, iom::exception, itm::RuntimeException)
+{
+    // checks
+    if(level < 0 || level > pyramid.size())
+        throw itm::RuntimeException(itm::strprintf("Invalid pyramid level %d", level));
+
+    iim::uint8* data = 0;
+    if(level == 0)
+    {
+        // load data from highest-res image
+        data = highresVol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
+
+        // put data into CACHE
+        //parent->cache->putData(image_5D<uint8>(data, xyzct<size_t>(0,0,0,0,0)), xyzct<size_t>(0,0,0,0,0), reductionFactor);
+
+        // return data
+        return itm::image_5D<uint8>(
+                    data,
+                    xyzt<size_t>(end.x-start.x, end.y-start.y, end.z-start.z, highresVol->getNActiveFrames()),
+                    active_channels<>(highresVol->getActiveChannels(), highresVol->getNACtiveChannels()));
+    }
+    else
+    {
+        data = pyramid[level]->readData(
+                    xyzt<size_t>(start.x, start.y, start.z, highresVol->getT0()),
+                    xyzt<size_t>(end.x, end.y, end.z, highresVol->getT1()+1),
+                    active_channels<>(highresVol->getActiveChannels(), highresVol->getNACtiveChannels())).data;
+    }
+    return itm::image_5D<uint8>(
+                data,
+                xyzt<size_t>(end.x-start.x, end.y-start.y, end.z-start.z, highresVol->getNActiveFrames()),
+                active_channels<>(highresVol->getActiveChannels(), highresVol->getNACtiveChannels()));
+}
+
 /*----END VIRTUAL PYRAMID section -----------------------------------------------------------------------------------------*/
 
 
@@ -170,9 +273,10 @@ itm::VirtualPyramidLayer::VirtualPyramidLayer(
         int _level,                         // pyramid level (0 for the highest-res, the coarser the resolution the higher)
         VirtualPyramid* _parent,            // container
         xyz<int> _reduction_factor)         // reduction factor relative to the highest-res image
-throw (iim::IOException, itm::RuntimeException, itm::RuntimeException) : VirtualVolume()
+throw (iim::IOException) : VirtualVolume()
 {
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+
 
     level = _level;
     parent = _parent;
@@ -193,46 +297,6 @@ throw (iim::IOException, itm::RuntimeException, itm::RuntimeException) : Virtual
     DIM_D = itm::round(parent->highresVol->getDIM_D()/static_cast<float>(reductionFactor.z));
 
 
-    // create subfolder
-    std::string subfolder = parent->localPath + itm::strprintf("/.layer%02d", level);
-    if(!iim::check_and_make_dir(subfolder.c_str()))
-            throw iim::IOException(itm::strprintf("Cannot create local folder at \"%s\"", subfolder.c_str()));
-
-    // create / check reduction factor file
-    std::string reduction_factor_file = subfolder + "/.reduction_factor.txt";
-    if(iim::isFile(reduction_factor_file))
-    {
-        std::ifstream f(reduction_factor_file.c_str());
-        if(!f.is_open())
-            throw iim::IOException(itm::strprintf("Cannot open reduction factor file at \"%s\"", reduction_factor_file.c_str()));
-        std::string line;
-        std::getline(f, line);
-        std::vector<std::string> tokens = itm::parse(line, " ", 3, reduction_factor_file);
-        if(itm::str2num<int>(tokens[0]) != reductionFactor.x)
-            throw iim::IOException(itm::strprintf("Virtual pyramid layer at \"%s\" was generated with a different reduction factor along X (%d) than the one currently selected (%d). "
-                                                  "You can either adjust your local settings or delete the layer so it will be re-generated automatically.",
-                                                  subfolder.c_str(), itm::str2num<int>(tokens[0]), reductionFactor.x ));
-        if(itm::str2num<int>(tokens[1]) != reductionFactor.y)
-            throw iim::IOException(itm::strprintf("Virtual pyramid layer at \"%s\" was generated with a different reduction factor along Y (%d) than the one currently selected (%d). "
-                                                  "You can either adjust your local settings or delete the layer so it will be re-generated automatically.",
-                                                  subfolder.c_str(), itm::str2num<int>(tokens[1]), reductionFactor.y ));
-        if(itm::str2num<int>(tokens[2]) != reductionFactor.z)
-            throw iim::IOException(itm::strprintf("Virtual pyramid layer at \"%s\" was generated with a different reduction factor along Z (%d) than the one currently selected (%d). "
-                                                  "You can either adjust your local settings or delete the layer so it will be re-generated automatically.",
-                                                  subfolder.c_str(), itm::str2num<int>(tokens[2]), reductionFactor.z ));
-        f.close();
-    }
-    else
-    {
-        std::ofstream f(reduction_factor_file.c_str());
-        if(!f.is_open())
-            throw iim::IOException(itm::strprintf("Cannot open reduction factor file at \"%s\"", reduction_factor_file.c_str()));
-        f << reductionFactor.x << " " << reductionFactor.y << " " << reductionFactor.z << std::endl;
-        f.close();
-    }
-
-    // instance cache
-    cache = new HyperGridCache(subfolder,xyzct<size_t>(DIM_H,DIM_V,DIM_D,DIM_C,DIM_T));
 }
 
 void itm::VirtualPyramidLayer::initChannels() throw (iim::IOException)
@@ -254,16 +318,14 @@ itm::VirtualPyramidLayer::~VirtualPyramidLayer() throw (iim::IOException)
     /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
     active = 0;
     n_active = 0;
-    if(cache)
-        delete cache;
 
     // remove layer from parent, if present
-    std::vector<itm::VirtualPyramidLayer*>::iterator position = std::find(parent->pyramid.begin(), parent->pyramid.end(), this);
-    if (position != parent->pyramid.end())
-        parent->pyramid.erase(position);
+    std::vector<itm::VirtualPyramidLayer*>::iterator position = std::find(parent->virtualPyramid.begin(), parent->virtualPyramid.end(), this);
+    if (position != parent->virtualPyramid.end())
+        parent->virtualPyramid.erase(position);
 
     // if parent is empty, destroy it
-    if(parent->pyramid.empty())
+    if(parent->virtualPyramid.empty())
         delete parent;
 }
 
@@ -298,46 +360,22 @@ throw (iim::IOException)
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
-    // highest-res layer is just a wrapper for the highest-res image
-    if(level == 0)
-    {
-        // load data from highest-res image
-        iim::uint8* data = parent->highresVol->loadSubvolume_to_UINT8(V0, V1, H0, H1, D0, D1, channels, ret_type);
 
-        // put data into CACHE
-        //parent->cache->putData(image_5D<uint8>(data, xyzct<size_t>(0,0,0,0,0)), xyzct<size_t>(0,0,0,0,0), reductionFactor);
+    // check image subset coordinates
+    V0 = V0 < 0 ? 0 : V0;
+    H0 = H0 < 0 ? 0 : H0;
+    D0 = D0 < 0 ? 0 : D0;
+    V1 = (V1 < 0 || V1 > (int)DIM_V) ? DIM_V : V1; // iannello MODIFIED
+    H1 = (H1 < 0 || H1 > (int)DIM_H) ? DIM_H : H1; // iannello MODIFIED
+    D1 = (D1 < 0 || D1 > (int)DIM_D) ? DIM_D : D1; // iannello MODIFIED
+    if(V1-V0 <=0 || H1-H0 <= 0 || D1-D0 <= 0)
+        throw iim::IOException("in VirtualPyramidLayer::loadSubvolume_to_UINT8: invalid subvolume intervals");
 
-        // return data
-        return data;
-    }
-    else
-    {
-        // check image subset coordinates
-        V0 = V0 < 0 ? 0 : V0;
-        H0 = H0 < 0 ? 0 : H0;
-        D0 = D0 < 0 ? 0 : D0;
-        V1 = (V1 < 0 || V1 > (int)DIM_V) ? DIM_V : V1; // iannello MODIFIED
-        H1 = (H1 < 0 || H1 > (int)DIM_H) ? DIM_H : H1; // iannello MODIFIED
-        D1 = (D1 < 0 || D1 > (int)DIM_D) ? DIM_D : D1; // iannello MODIFIED
-        if(V1-V0 <=0 || H1-H0 <= 0 || D1-D0 <= 0)
-            throw iim::IOException("in VirtualPyramidLayer::loadSubvolume_to_UINT8: invalid subvolume intervals");
+    // return outputs
+    if(channels)
+        *channels = (int)n_active;
 
-        // allocate data
-        size_t sbv_height = V1 - V0;
-        size_t sbv_width  = H1 - H0;
-        size_t sbv_depth  = D1 - D0;
-        size_t sbv_dim    = sbv_height * sbv_width * sbv_depth * n_active;
-        itm::uint8 *data  = new itm::uint8[sbv_dim];
-
-        // fill data from cache
-        for(size_t i=0; i<sbv_dim; i++)
-            data[i] = 0;
-
-        // return outputs
-        if(channels)
-            *channels = (int)n_active;
-        return data;
-    }
+    return parent->loadVOI(xyz<size_t>(H0,V0,D0), xyz<size_t>(H1,V1,D1), level).data;
 }
 /*---- END VIRTUAL PYRAMID LAYER section ----------------------------------------------------------------------------------*/
 
@@ -474,35 +512,35 @@ void itm::HyperGridCache::load() throw (iim::IOException, itm::RuntimeException)
     {
         tokens = itm::parse(line, ":", 2, hypergridFilePath);
         if(tokens[0].compare("image.dimX") == 0 && itm::str2num<size_t>(tokens[1]) != dimX)
-            throw iim::IOException(itm::strprintf("dimX mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), dimX, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("dimX mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), dimX, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("image.dimY") == 0 && itm::str2num<size_t>(tokens[1]) != dimY)
-            throw iim::IOException(itm::strprintf("dimY mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), dimY, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("dimY mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), dimY, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("image.dimZ") == 0 && itm::str2num<size_t>(tokens[1]) != dimZ)
-            throw iim::IOException(itm::strprintf("dimZ mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), dimZ, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("dimZ mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), dimZ, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("image.dimC") == 0 && itm::str2num<size_t>(tokens[1]) != dimC)
-            throw iim::IOException(itm::strprintf("dimC mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), dimC, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("dimC mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), dimC, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("image.dimT") == 0 && itm::str2num<size_t>(tokens[1]) != dimT)
-            throw iim::IOException(itm::strprintf("dimT mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), dimT, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("dimT mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), dimT, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.nX") == 0 && itm::str2num<size_t>(tokens[1]) != nX)
-            throw iim::IOException(itm::strprintf("nX mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), nX, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("nX mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), nX, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.nY") == 0 && itm::str2num<size_t>(tokens[1]) != nY)
-            throw iim::IOException(itm::strprintf("nY mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), nY, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("nY mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), nY, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.nZ") == 0 && itm::str2num<size_t>(tokens[1]) != nZ)
-            throw iim::IOException(itm::strprintf("nZ mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), nZ, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("nZ mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), nZ, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.nC") == 0 && itm::str2num<size_t>(tokens[1]) != nC)
-            throw iim::IOException(itm::strprintf("nC mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), nC, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("nC mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), nC, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.nT") == 0 && itm::str2num<size_t>(tokens[1]) != nT)
-            throw iim::IOException(itm::strprintf("nT mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), nT, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("nT mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), nT, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.dimX") == 0 && itm::str2num<size_t>(tokens[1]) != block_dim.x)
-            throw iim::IOException(itm::strprintf("blockX mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), block_dim.x, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("blockX mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), block_dim.x, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.dimY") == 0 && itm::str2num<size_t>(tokens[1]) != block_dim.y)
-            throw iim::IOException(itm::strprintf("blockY mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), block_dim.y, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("blockY mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), block_dim.y, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.dimZ") == 0 && itm::str2num<size_t>(tokens[1]) != block_dim.z)
-            throw iim::IOException(itm::strprintf("blockZ mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), block_dim.z, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("blockZ mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), block_dim.z, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.dimC") == 0 && itm::str2num<size_t>(tokens[1]) != block_dim.c)
-            throw iim::IOException(itm::strprintf("blockC mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), block_dim.c, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("blockC mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), block_dim.c, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.dimT") == 0 && itm::str2num<size_t>(tokens[1]) != block_dim.t)
-            throw iim::IOException(itm::strprintf("blockT mismatch in .hypergrid file at \"%s\": expected %d, found %d", hypergridFilePath.c_str(), block_dim.t, itm::str2num<size_t>(tokens[1])));
+            throw iim::IOException(itm::strprintf("blockT mismatch in .hypergrid file at \"%s\": expected %llu, found %llu", hypergridFilePath.c_str(), block_dim.t, itm::str2num<size_t>(tokens[1])));
         if(tokens[0].compare("blocks.visits") == 0)
         {
             std::vector <std::string> visits;
@@ -554,6 +592,25 @@ void itm::HyperGridCache::save() throw (iim::IOException, itm::RuntimeException)
     f.close();
 }
 
+
+// read data from the cache (downsampling on-the-fly supported)
+itm::image_5D<itm::uint8>                                       // <image data, image data size> output
+itm::HyperGridCache::readData(xyzt<size_t> start,               // start coordinate in the current X,Y,Z,T image space
+        xyzt<size_t> end,                                       // end coordinate in the current X,Y,Z,T image space
+        active_channels<> channels,                             // active channels
+        itm::xyz<int> downsamplingFactor)                       // downsampling factors along X,Y and Z
+throw (iim::IOException)
+{
+    // allocate data
+    size_t sbv_dim    = (end.x-start.x) * (end.y-start.y) * (end.z-start.z) * channels.dim * (end.t-start.t);
+    uint8* data  = new itm::uint8[sbv_dim];
+
+    for(size_t i=0; i<sbv_dim; i++)
+        data[i] = 0;
+
+    return itm::image_5D<itm::uint8>(data, xyzt<size_t>(end.x-start.x, end.y-start.y, end.z-start.z, end.t-start.t), channels);
+}
+
 /*---- END HYPER GRID CACHE section ---------------------------------------------------------------------------------------*/
 
 
@@ -577,7 +634,7 @@ throw (iim::IOException)
 
     parent = _parent;
     origin = _origin;
-    imdata.dims = _dims;
+    imdata.dims.x = _dims.x;
     imdata.data = 0;
     idx = _index;
     visits = 0;
@@ -608,7 +665,7 @@ void itm::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::excep
     if(iim::isFile(path))
     {
         if(!imdata.data)
-            imdata.data = new uint8[imdata.dims.x * imdata.dims.y * imdata.dims.z * imdata.dims.c];
+            imdata.data = new uint8[imdata.dims.x * imdata.dims.y * imdata.dims.z * imdata.chans.dim];
         int dimX, dimY, dimZ, dimC, bytes;
         iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(path, dimX, dimY, dimZ, bytes, dimC, imdata.data);
     }
@@ -622,8 +679,8 @@ void itm::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::excep
     if(imdata.data)
     {
         if(!iim::isFile(path))
-            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->create3Dimage(path, imdata.dims.y, imdata.dims.x, imdata.dims.z, 1, imdata.dims.c);
-        iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(path, imdata.data, imdata.dims.y, imdata.dims.x, imdata.dims.z, 1, imdata.dims.c);
+            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->create3Dimage(path, imdata.dims.y, imdata.dims.x, imdata.dims.z, 1, imdata.chans.dim);
+        iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(path, imdata.data, imdata.dims.y, imdata.dims.x, imdata.dims.z, 1, imdata.chans.dim);
     }
 }
 /*---- END HYPER GRID CACHE BLOCK section --------------------------------------------------------------------------------*/

@@ -165,9 +165,9 @@ void CImport::run()
 
             // generate virtual pyramid image from high-res unconverted image
             if(reimport)
-                volumes = (new itm::VirtualPyramid(path, resampling_factor, lower_bound, VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3)))->getPyramid();
+                volumes = (new itm::VirtualPyramid(path, resampling_factor, lower_bound, VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3)))->getVirtualPyramid();
             else
-                volumes = (new itm::VirtualPyramid(path, resampling_factor, lower_bound))->getPyramid();
+                volumes = (new itm::VirtualPyramid(path, resampling_factor, lower_bound))->getVirtualPyramid();
 
             // load image data from lowest-res pyramid layer
             vmapXDim = volumes[0]->getDIM_H();

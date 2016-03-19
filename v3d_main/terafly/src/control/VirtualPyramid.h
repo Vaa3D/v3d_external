@@ -5,8 +5,8 @@
 #include "VirtualVolume.h"
 
 // Virtual Pyramid class
-// - a container for virtual pyramid layers
-// - a container and access point for caching
+// - a container for virtual pyramid layers (not containing any data)
+// - a container for actual  pyramid layers (do contain actual data + caching)
 class teramanager::VirtualPyramid
 {
     private:
@@ -14,14 +14,16 @@ class teramanager::VirtualPyramid
         // object members
         iim::VirtualVolume*                 highresVol;     // highest-res (unconverted) volume
         std::string                         highresPath;    // highest-res (unconverted) volume path
-        std::vector< itm::VirtualPyramidLayer* > pyramid;   // virtual pyramid layers, from highest-res to lowest-res
         std::string                         localPath;      // where local files should be stored
+        std::vector< itm::VirtualPyramidLayer* > virtualPyramid;   // virtual (=do NOT contain any data) pyramid layers, from highest-res to lowest-res
+        std::vector< itm::HyperGridCache*>  pyramid;        // actual (=do contain data) pyramid layers, use caching from/to disk and RAM, from highest-res to lowest-res
 
         // disable default constructor
         VirtualPyramid(){}
 
         // object utility methods
-        void init() throw (iim::IOException, iom::exception, itm::RuntimeException);    // init volume and metadata
+        void instanceHighresVol() throw (iim::IOException, iom::exception, itm::RuntimeException);// init highest-res volume
+        void init() throw (iim::IOException, iom::exception, itm::RuntimeException);              // init metadata
 
 
     public:
@@ -48,11 +50,21 @@ class teramanager::VirtualPyramid
 
 
         // GET methods
-        std::vector<iim::VirtualVolume*> getPyramid(){
-            std::vector<iim::VirtualVolume*> tmp(pyramid.begin(), pyramid.end());
+        std::vector<iim::VirtualVolume*> getVirtualPyramid(){
+            std::vector<iim::VirtualVolume*> tmp(virtualPyramid.begin(), virtualPyramid.end());
             std::reverse(tmp.begin(), tmp.end());
             return tmp;
         }
+
+        // load volume of interest from the given resolution layer
+        // - communicates with 'highresVol' (which contains highres data) and with 'pyramid' (which contain cached data)
+        image_5D<uint8>
+        loadVOI(
+                xyz<size_t> start,  // xyz range [start, end)
+                xyz<size_t> end,    // xyz range [start, end)
+                int level)          // pyramid layer (0=highest resolution, the higher the lower the resolution)
+        throw (iim::IOException, iom::exception, itm::RuntimeException);
+
 
         friend class VirtualPyramidLayer;
 };
@@ -61,9 +73,6 @@ class teramanager::VirtualPyramid
 // Virtual Pyramid Layer class
 // - a wrapper built on the highest-res image to intercept its load methods
 // - inherits from VirtualVolume, which makes using a Virtual Pyramid Image transparent to the client
-// - communicates with the parent (VirtualPyramid) image cache
-//     - the load() methods invoked on the highest-res layer  SEND    image data TO   the cache
-//     - the load() methods invoked on the lower-res   layers RECEIVE image data FROM the cache
 class teramanager::VirtualPyramidLayer : public iim::VirtualVolume
 {
     private:
@@ -72,7 +81,6 @@ class teramanager::VirtualPyramidLayer : public iim::VirtualVolume
         itm::VirtualPyramid*    parent;             // container
         int                     level;              // pyramid level (0 = highest-res, the coarser the resolution the higher)
         itm::xyz<int>           reductionFactor;    // pyramid reduction factor relative to the highest-res image
-        itm::HyperGridCache*    cache;              // dedicated cache for this layer
 
         // disable default constructor
         VirtualPyramidLayer(){}
@@ -84,7 +92,7 @@ class teramanager::VirtualPyramidLayer : public iim::VirtualVolume
                 int _level,                         // pyramid level (0 = highest-res, the coarser the resolution the higher)
                 VirtualPyramid* _parent,            // container
                 xyz<int> _reduction_factor)         // reduction factor relative to the highest-res image
-        throw (iim::IOException, itm::RuntimeException);
+        throw (iim::IOException);
 
         // deconstructor
         virtual ~VirtualPyramidLayer() throw (iim::IOException);
@@ -106,6 +114,8 @@ class teramanager::VirtualPyramidLayer : public iim::VirtualVolume
 
         // return true if 'highresVol' downsampled by 'reduction_factor' generates a 0-sized image
         static bool isEmpty(iim::VirtualVolume* highresVol, xyz<int> _reduction_factor);
+
+        friend class VirtualPyramid;
 };
 
 
@@ -138,7 +148,7 @@ class teramanager::HyperGridCache
         HyperGridCache(
                 std::string _path,                                                      // where cache files are stored / have to be stored
                 xyzct<size_t> image_dim,                                                // image dimensions along X, Y, Z, C (channel), and T (time)
-                xyzct<size_t> _block_dim = xyzct<size_t>(256,256,256,inf<size_t>(),inf<size_t>())) // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+                xyzct<size_t> _block_dim = xyzct<size_t>(256,256,256,inf<size_t>(),inf<size_t>()))  // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
         throw (iim::IOException, itm::RuntimeException);
 
         // destructor
@@ -148,8 +158,9 @@ class teramanager::HyperGridCache
         // read data from the cache (downsampling on-the-fly supported)
         image_5D<uint8>                                         // <image data, image data size> output
         readData(
-                xyzct<size_t> start,                            // start coordinate in the current 5D image space
-                xyzct<size_t> end,                              // end coordinate in the current 5D image space
+                xyzt<size_t> start,                             // start coordinate in the current X,Y,Z,T image space
+                xyzt<size_t> end,                               // end coordinate in the current X,Y,Z,T image space
+                active_channels<> channels,                     // active channels
                 xyz<int> downsamplingFactor = xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
         throw (iim::IOException);
 
@@ -157,7 +168,8 @@ class teramanager::HyperGridCache
         // put data into the cache (downsampling on-the-fly supported)
         void putData(
                 const image_5D<uint8>,                          // image data array, follows T-C-Z-Y-Z order
-                xyzct<size_t> shift,                            // shift relative to (0,0,0,0,0)
+                xyzt<size_t> shift,                             // shift relative to (0,0,0,0)
+                active_channels<> channels,                     // active channels
                 xyz<int> downsamplingFactor = xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
         throw (iim::IOException);
 
@@ -204,7 +216,7 @@ class teramanager::HyperGridCache
 
                 // GET and SET methods
                 xyzct<size_t> getOrigin(){return origin;}
-                xyzct<size_t> getDims(){return imdata.dims;}
+                xyzct<size_t> getDims(){return imdata.getDims();}
                 int getVisits(){return visits;}
                 void setVisits(int _visits){visits=_visits;}
                 uint8* getImageDataPtr(){return imdata.data;}
