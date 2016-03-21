@@ -5,17 +5,17 @@
 #include "../control/CPlugin.h"
 #include "v3d_interface.h"
 
-class teramanager::QUndoMarkerDeleteROI : public QUndoCommand
+class terafly::QUndoMarkerDeleteROI : public QUndoCommand
 {
     private:
 
-        itm::CViewer* source;       //where the command has been applied
+        tf::CViewer* source;       //where the command has been applied
         QList<LocationSimple> markers;      //the markers being deleted
         bool redoFirstTime;                 //to disable redo's first call
 
     public:
 
-        QUndoMarkerDeleteROI(itm::CViewer* _source, QList<LocationSimple> _markers);
+        QUndoMarkerDeleteROI(tf::CViewer* _source, QList<LocationSimple> _markers);
 
         // undo and redo methods
         virtual void undo();

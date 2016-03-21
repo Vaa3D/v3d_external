@@ -5,17 +5,17 @@
 #include "../control/CPlugin.h"
 #include "v3d_interface.h"
 
-class teramanager::QUndoMarkerCreate : public QUndoCommand
+class terafly::QUndoMarkerCreate : public QUndoCommand
 {
     private:
 
-        itm::CViewer* source;       //where the command has been applied
+        tf::CViewer* source;       //where the command has been applied
         LocationSimple marker;              //the marker being created
         bool redoFirstTime;                 //to disable redo's first call
 
     public:
 
-        QUndoMarkerCreate(itm::CViewer* _source, LocationSimple _marker);
+        QUndoMarkerCreate(tf::CViewer* _source, LocationSimple _marker);
 
         // undo and redo methods
         virtual void undo();
@@ -23,16 +23,16 @@ class teramanager::QUndoMarkerCreate : public QUndoCommand
     
 };
 
-class teramanager::QUndoVaa3DNeuron : public QUndoCommand
+class terafly::QUndoVaa3DNeuron : public QUndoCommand
 {
     private:
 
-        itm::CViewer* source;       //where the command has been applied
+        tf::CViewer* source;       //where the command has been applied
         bool redoFirstTime;         //to disable redo's first call
 
     public:
 
-        QUndoVaa3DNeuron(itm::CViewer* _source);
+        QUndoVaa3DNeuron(tf::CViewer* _source);
 
         // undo and redo methods
         virtual void undo();

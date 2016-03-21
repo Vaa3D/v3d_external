@@ -41,7 +41,7 @@
 #include "QGradientBar.h"
 #include "QGLRefSys.h"
 
-class teramanager::PMain : public QWidget
+class terafly::PMain : public QWidget
 {
     Q_OBJECT
 
@@ -52,7 +52,7 @@ class teramanager::PMain : public QWidget
         * instantiated by calling static method "istance(...)"
         **********************************************************************************/
         static PMain* uniqueInstance;
-        PMain(){    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);   }
+        PMain(){    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);   }
         PMain(V3DPluginCallback2 *callback, QWidget *parent);
 
         //members
@@ -384,7 +384,7 @@ class teramanager::PMain : public QWidget
         * aged in the current thread (ex != 0). Otherwise, volume information are imported
         * in the GUI by the <StackedVolume> handle of <CImport>.
         ***********************************************************************************/
-        void importDone(itm::RuntimeException *ex, qint64 elapsed_time = 0);
+        void importDone(tf::RuntimeException *ex, qint64 elapsed_time = 0);
 
         /**********************************************************************************
         * Called when the GUI widgets that control application settings change.

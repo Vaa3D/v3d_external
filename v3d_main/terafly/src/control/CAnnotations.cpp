@@ -14,17 +14,17 @@
 #include "CImageUtils.h"
 #include "../presentation/PLog.h"
 
-using namespace teramanager;
+using namespace terafly;
 using namespace std;
 
 CAnnotations* CAnnotations::uniqueInstance = 0;
 long long annotation::last_ID = -1;
-itm::uint64 annotation::instantiated = 0;
-itm::uint64 annotation::destroyed = 0;
+tf::uint64 annotation::instantiated = 0;
+tf::uint64 annotation::destroyed = 0;
 
 bool isMarker (annotation* ano) { return ano->type == 0;}
 
-annotation::annotation() throw (itm::RuntimeException){
+annotation::annotation() throw (tf::RuntimeException){
     type = subtype  = -1;
     r = x = y = z = -1;
     parent = 0;
@@ -36,13 +36,13 @@ annotation::annotation() throw (itm::RuntimeException){
 
     // assign first usable ID
     if(last_ID == std::numeric_limits<long long>::max())
-        throw itm::RuntimeException("Reached the maximum number of annotation instances. Please signal this issue to the developer");
+        throw tf::RuntimeException("Reached the maximum number of annotation instances. Please signal this issue to the developer");
     ID = ++last_ID;
 
     instantiated++;
 
     #ifdef terafly_enable_debug_annotations
-    itm::debug(itm::LEV_MAX, strprintf("%lld(%.0f, %.0f, %.0f) born", ID, x, y, z).c_str(), 0, true);
+    tf::debug(tf::LEV_MAX, strprintf("%lld(%.0f, %.0f, %.0f) born", ID, x, y, z).c_str(), 0, true);
     #endif
 }
 
@@ -63,7 +63,7 @@ annotation::~annotation()
     destroyed++;
 
     #ifdef terafly_enable_debug_annotations
-    itm::debug(itm::LEV_MAX, strprintf("%lld(%.0f, %.0f, %.0f) DESTROYED (smart_delete = %s)", ID, x, y, z, smart_delete ? "true" : "false").c_str(), 0, true);
+    tf::debug(tf::LEV_MAX, strprintf("%lld(%.0f, %.0f, %.0f) DESTROYED (smart_delete = %s)", ID, x, y, z, smart_delete ? "true" : "false").c_str(), 0, true);
     #endif
 }
 
@@ -81,7 +81,7 @@ void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
 
     // add node to list
     #ifdef terafly_enable_debug_annotations
-    itm::debug(itm::LEV_MAX, strprintf("Add node %lld(%.0f, %.0f, %.0f) to list", p.n, p.x, p.y, p.z).c_str(), 0, true);
+    tf::debug(tf::LEV_MAX, strprintf("Add node %lld(%.0f, %.0f, %.0f) to list", p.n, p.x, p.y, p.z).c_str(), 0, true);
     #endif
     tree.push_back(p);
 
@@ -97,7 +97,7 @@ void annotation::insertIntoTree(QList<NeuronSWC> &tree)
 
 void CAnnotations::uninstance()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(uniqueInstance)
     {
@@ -108,13 +108,13 @@ void CAnnotations::uninstance()
 
 CAnnotations::~CAnnotations()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(octree)
         delete octree;
     octree = 0;
 
-    /**/itm::debug(itm::LEV1, "object successfully destroyed", __itm__current__function__);
+    /**/tf::debug(tf::LEV1, "object successfully destroyed", __itm__current__function__);
 }
 
 //recursive support method of 'clear' method
@@ -284,7 +284,7 @@ void CAnnotations::Octree::_rec_insert(const Poctant& p_octant, annotation& neur
         p_octant->annotations.push_back(&neuron);
 
         #ifdef terafly_enable_debug_annotations
-        itm::debug(itm::LEV_MAX, strprintf("Added neuron %lld(%lld) {%.0f, %.0f, %.0f} to annotations list of octant X[%d,%d] Y[%d,%d] Z[%d,%d]",
+        tf::debug(tf::LEV_MAX, strprintf("Added neuron %lld(%lld) {%.0f, %.0f, %.0f} to annotations list of octant X[%d,%d] Y[%d,%d] Z[%d,%d]",
                                            neuron.ID, neuron.parent ? neuron.parent->ID : -1, neuron.x, neuron.y, neuron.z,
                                            p_octant->H_start, p_octant->H_start+p_octant->H_dim,
                                            p_octant->V_start, p_octant->V_start+p_octant->V_dim,
@@ -408,7 +408,7 @@ void CAnnotations::Octree::_rec_remove(const Poctant& p_octant, annotation *neur
         p_octant->annotations.remove(neuron);
 
         #ifdef terafly_enable_debug_annotations
-        itm::debug(itm::LEV_MAX, strprintf("REMOVED neuron %lld(%lld) {%.0f, %.0f, %.0f} from annotations list of octant X[%d,%d] Y[%d,%d] Z[%d,%d]",
+        tf::debug(tf::LEV_MAX, strprintf("REMOVED neuron %lld(%lld) {%.0f, %.0f, %.0f} from annotations list of octant X[%d,%d] Y[%d,%d] Z[%d,%d]",
                                            neuron->ID, neuron->parent ? neuron->parent->ID : -1, neuron->x, neuron->y, neuron->z,
                                            p_octant->H_start, p_octant->H_start+p_octant->H_dim,
                                            p_octant->V_start, p_octant->V_start+p_octant->V_dim,
@@ -418,7 +418,7 @@ void CAnnotations::Octree::_rec_remove(const Poctant& p_octant, annotation *neur
 }
 
 //recursive support method of 'deep_count' method
-itm::uint32 CAnnotations::Octree::_rec_deep_count(const Poctant& p_octant) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::_rec_deep_count(const Poctant& p_octant) throw(RuntimeException)
 {
     if(p_octant)
         if(p_octant->V_dim == 1 && p_octant->H_dim == 1 && p_octant->D_dim == 1)
@@ -431,7 +431,7 @@ itm::uint32 CAnnotations::Octree::_rec_deep_count(const Poctant& p_octant) throw
 }
 
 //recursive support method of 'toNeuronTree' method
-void CAnnotations::Octree::_rec_to_neuron_tree(const Poctant& p_octant, QList<NeuronSWC> &segments) throw(itm::RuntimeException)
+void CAnnotations::Octree::_rec_to_neuron_tree(const Poctant& p_octant, QList<NeuronSWC> &segments) throw(tf::RuntimeException)
 {
     if(p_octant && p_octant->V_dim > 1 && p_octant->H_dim > 1 && p_octant->D_dim > 1)
 //    if(p_octant)
@@ -509,9 +509,9 @@ void CAnnotations::Octree::_rec_to_neuron_tree(const Poctant& p_octant, QList<Ne
         for(int i=0; i<24; i++)
         {
             // apply trims
-            corners[i].x = itm::saturate_trim<float>(corners[i].x, DIM_H - 1);
-            corners[i].y = itm::saturate_trim<float>(corners[i].y, DIM_V - 1);
-            corners[i].z = itm::saturate_trim<float>(corners[i].z, DIM_D - 1);
+            corners[i].x = tf::saturate_trim<float>(corners[i].x, DIM_H - 1);
+            corners[i].y = tf::saturate_trim<float>(corners[i].y, DIM_V - 1);
+            corners[i].z = tf::saturate_trim<float>(corners[i].z, DIM_D - 1);
 
             segments.push_back(corners[i]);
         }
@@ -529,7 +529,7 @@ void CAnnotations::Octree::_rec_to_neuron_tree(const Poctant& p_octant, QList<Ne
 }
 
 //recursive support method of 'height' method
-itm::uint32 CAnnotations::Octree::_rec_height(const Poctant& p_octant) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::_rec_height(const Poctant& p_octant) throw(RuntimeException)
 {
     if(p_octant)
     {
@@ -554,7 +554,7 @@ void CAnnotations::Octree::_rec_print(const Poctant& p_octant)
         printf("V[%d-%d),H[%d-%d),D[%d-%d)\n",p_octant->V_start, p_octant->V_start+p_octant->V_dim,
                                                                                   p_octant->H_start, p_octant->H_start+p_octant->H_dim,
                                                                                   p_octant->D_start, p_octant->D_start+p_octant->D_dim);
-        for(std::list<teramanager::annotation*>::iterator i = p_octant->annotations.begin(); i!= p_octant->annotations.end(); i++)
+        for(std::list<terafly::annotation*>::iterator i = p_octant->annotations.begin(); i!= p_octant->annotations.end(); i++)
             printf("|===> %.2f %.2f %.2f\n", (*i)->y, (*i)->x, (*i)->z);
         _rec_print(p_octant->child1);
         _rec_print(p_octant->child2);
@@ -568,7 +568,7 @@ void CAnnotations::Octree::_rec_print(const Poctant& p_octant)
 }
 
 //recursive support method of 'prune' method
-void CAnnotations::Octree::_rec_prune(const Poctant& p_octant) throw(itm::RuntimeException)
+void CAnnotations::Octree::_rec_prune(const Poctant& p_octant) throw(tf::RuntimeException)
 {
     if(p_octant)
     {
@@ -637,7 +637,7 @@ void CAnnotations::Octree::_rec_search(const Poctant& p_octant, const interval_t
     {
         if(p_octant->V_dim == 1 && p_octant->H_dim == 1 && p_octant->D_dim == 1)
         {
-            for(std::list<teramanager::annotation*>::iterator i = p_octant->annotations.begin(); i!= p_octant->annotations.end(); i++)
+            for(std::list<terafly::annotation*>::iterator i = p_octant->annotations.begin(); i!= p_octant->annotations.end(); i++)
                 neurons.push_back((*i));
         }
         else
@@ -747,7 +747,7 @@ CAnnotations::Octree::Poctant CAnnotations::Octree::_rec_find(const Poctant& p_o
 }
 
 //recursive support method of 'count' method
-itm::uint32 CAnnotations::Octree::_rec_count(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::_rec_count(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) throw(RuntimeException)
 {
     if(p_octant)
     {
@@ -817,9 +817,9 @@ bool inline CAnnotations::Octree::contains  (const interval_t& V1_int,		 const i
               D1_int.end    >=  (D2_start+D2_dim));
 }
 
-CAnnotations::Octree::Octree(itm::uint32 _DIM_V, itm::uint32 _DIM_H, itm::uint32 _DIM_D)
+CAnnotations::Octree::Octree(tf::uint32 _DIM_V, tf::uint32 _DIM_H, tf::uint32 _DIM_D)
 {
-    /**/itm::debug(itm::LEV1, strprintf("dimV = %d, dimH = %d, dimD = %d", _DIM_V, _DIM_H, _DIM_D).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("dimV = %d, dimH = %d, dimD = %d", _DIM_V, _DIM_H, _DIM_D).c_str(), __itm__current__function__);
 
     if(CSettings::instance()->getAnnotationSpaceUnlimited())
     {
@@ -827,7 +827,7 @@ CAnnotations::Octree::Octree(itm::uint32 _DIM_V, itm::uint32 _DIM_H, itm::uint32
         DIM_H = std::numeric_limits<int>::max();
         DIM_D = std::numeric_limits<int>::max();
 
-        /**/itm::debug(itm::LEV1, strprintf("unbounded annotation space activated", _DIM_V, _DIM_H, _DIM_D).c_str(), __itm__current__function__);
+        /**/tf::debug(tf::LEV1, strprintf("unbounded annotation space activated", _DIM_V, _DIM_H, _DIM_D).c_str(), __itm__current__function__);
     }
     else
     {
@@ -840,26 +840,26 @@ CAnnotations::Octree::Octree(itm::uint32 _DIM_V, itm::uint32 _DIM_H, itm::uint32
 
 CAnnotations::Octree::~Octree(void)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     clear();
 
-    /**/itm::debug(itm::LEV1, "object successfully DESTROYED", __itm__current__function__);
+    /**/tf::debug(tf::LEV1, "object successfully DESTROYED", __itm__current__function__);
 }
 
 //clears octree content and deallocates used memory
 void CAnnotations::Octree::clear() throw(RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     _rec_clear(root);
     root = 0;
 }
 
 //prunes the octree by removing all nodes duplicates while maintaining the same branched structure
-void CAnnotations::Octree::prune() throw(itm::RuntimeException)
+void CAnnotations::Octree::prune() throw(tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     _rec_prune(root);
 }
@@ -871,7 +871,7 @@ void CAnnotations::Octree::insert(annotation& neuron)  throw(RuntimeException)
 }
 
 //remove given neuron from the octree (returns 1 if succeeds)
-bool CAnnotations::Octree::remove(annotation *neuron) throw(itm::RuntimeException)
+bool CAnnotations::Octree::remove(annotation *neuron) throw(tf::RuntimeException)
 {
     std::list<annotation*>* matching_nodes = this->find(neuron->x, neuron->y, neuron->z);
     if(std::find(matching_nodes->begin(), matching_nodes->end(), neuron) == matching_nodes->end())
@@ -903,13 +903,13 @@ std::list<annotation*>* CAnnotations::Octree::find(float x, float y, float z) th
 }
 
 //returns the number of neurons (=leafs) in the octree by exploring the entire data structure
-itm::uint32 CAnnotations::Octree::deep_count() throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::deep_count() throw(RuntimeException)
 {
     return _rec_deep_count(root);
 }
 
 //returns the octree height
-itm::uint32 CAnnotations::Octree::height() throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::height() throw(RuntimeException)
 {
     return _rec_height(root);
 }
@@ -929,17 +929,17 @@ void CAnnotations::Octree::find(interval_t V_int, interval_t H_int, interval_t D
 	if( H_int.start < 0 || H_int.end < 0 || (H_int.end-H_int.start < 0) || 
 		V_int.start < 0 || V_int.end < 0 || (V_int.end-V_int.start < 0) || 
 		D_int.start < 0 || D_int.end < 0 || (D_int.end-D_int.start < 0))
-		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		H_int.start, H_int.end, V_int.start, V_int.end, D_int.start, D_int.end), itm::shortFuncName(__itm__current__function__));
+		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		H_int.start, H_int.end, V_int.start, V_int.end, D_int.start, D_int.end), tf::shortFuncName(__itm__current__function__));
 
 
-    /**/itm::debug(itm::LEV2, strprintf("interval = [%d,%d](V) x [%d,%d](H) x [%d,%d](D)", V_int.start, V_int.end, H_int.start, H_int.end, D_int.start, D_int.end).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV2, strprintf("interval = [%d,%d](V) x [%d,%d](H) x [%d,%d](D)", V_int.start, V_int.end, H_int.start, H_int.end, D_int.start, D_int.end).c_str(), __itm__current__function__);
     _rec_search(root, V_int, H_int, D_int, neurons);
-    /**/itm::debug(itm::LEV2, strprintf("found %d neurons", neurons.size()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV2, strprintf("found %d neurons", neurons.size()).c_str(), __itm__current__function__);
 }
 
 //returns the number of neurons (=leafs) in the given volume without exploring the entire data structure
-itm::uint32 CAnnotations::Octree::count(interval_t V_int, interval_t H_int, interval_t D_int) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::count(interval_t V_int, interval_t H_int, interval_t D_int) throw(RuntimeException)
 {
     //adjusting default parameters
     V_int.start = V_int.start == -1 ? 0		: V_int.start;
@@ -956,22 +956,22 @@ itm::uint32 CAnnotations::Octree::count(interval_t V_int, interval_t H_int, inte
 /*********************************************************************************
 * Adds the given annotation(s)
 **********************************************************************************/
-void CAnnotations::addLandmarks(itm::interval_t X_range, itm::interval_t Y_range, itm::interval_t Z_range, LandmarkList &markers) throw (RuntimeException)
+void CAnnotations::addLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, LandmarkList &markers) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d), markers.size = %d",
+    /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d), markers.size = %d",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end, markers.size()).c_str(), __itm__current__function__);
 
 	// check interval validity
 	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
 		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
 		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
-    /**/itm::debug(itm::LEV3, strprintf("%d markers before clearLandmarks", count()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("%d markers before clearLandmarks", count()).c_str(), __itm__current__function__);
     clearLandmarks(X_range, Y_range, Z_range);
-    /**/itm::debug(itm::LEV3, strprintf("%d markers after clearLandmarks", count()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("%d markers after clearLandmarks", count()).c_str(), __itm__current__function__);
 
 
     QElapsedTimer timer;
@@ -991,21 +991,21 @@ void CAnnotations::addLandmarks(itm::interval_t X_range, itm::interval_t Y_range
        node->color = markers[i].color;
        octree->insert(*node);
     }
-    PLog::instance()->appendOperation(new AnnotationOperation("store annotations: add landmarks", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("store annotations: add landmarks", tf::CPU, timer.elapsed()));
 
-    /**/itm::debug(itm::LEV3, strprintf("%d markers after insertions", count()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("%d markers after insertions", count()).c_str(), __itm__current__function__);
 }
 
-void CAnnotations::clearCurves(itm::interval_t X_range, itm::interval_t Y_range, itm::interval_t Z_range) throw (itm::RuntimeException)
+void CAnnotations::clearCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) throw (tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
 	// check interval validity
 	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
 		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
 		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     QElapsedTimer timer;
@@ -1013,7 +1013,7 @@ void CAnnotations::clearCurves(itm::interval_t X_range, itm::interval_t Y_range,
     std::list<annotation*> nodes;
     std::set <annotation*> roots;
     octree->find(Y_range, X_range, Z_range, nodes);
-    PLog::instance()->appendOperation(new AnnotationOperation("clear curves: find curve nodes in the given range", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("clear curves: find curve nodes in the given range", tf::CPU, timer.elapsed()));
 
     // retrieve root nodes from the nodes founds so far
     timer.restart();
@@ -1028,58 +1028,58 @@ void CAnnotations::clearCurves(itm::interval_t X_range, itm::interval_t Y_range,
             roots.insert(p);
         }
     }
-    PLog::instance()->appendOperation(new AnnotationOperation("clear curves: retrieve root nodes from the nodes founds so far", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("clear curves: retrieve root nodes from the nodes founds so far", tf::CPU, timer.elapsed()));
 
     // clear all segments starting from the retrieved root nodes
     timer.restart();
     for(std::set<annotation*>::const_iterator it = roots.begin(); it != roots.end(); it++)
         delete *it;
-    PLog::instance()->appendOperation(new AnnotationOperation("clear curves: clear all segments starting from the retrieved root nodes", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("clear curves: clear all segments starting from the retrieved root nodes", tf::CPU, timer.elapsed()));
 }
 
-void CAnnotations::clearLandmarks(itm::interval_t X_range, itm::interval_t Y_range, itm::interval_t Z_range) throw (itm::RuntimeException)
+void CAnnotations::clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) throw (tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV3, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
 	// check interval validity
 	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
 		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
 		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     QElapsedTimer timer;
     timer.start();
     std::list<annotation*> nodes;
     octree->find(Y_range, X_range, Z_range, nodes);
-    PLog::instance()->appendOperation(new AnnotationOperation("clear landmarks: find landmarks in the given range", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("clear landmarks: find landmarks in the given range", tf::CPU, timer.elapsed()));
 
-    /**/itm::debug(itm::LEV3, strprintf("found %d nodes", nodes.size()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("found %d nodes", nodes.size()).c_str(), __itm__current__function__);
     timer.restart();
     for(std::list<annotation*>::const_iterator it = nodes.begin(); it != nodes.end(); it++)
         if((*it)->type == 0)
             delete *it;
-    PLog::instance()->appendOperation(new AnnotationOperation("clear landmarks: remove landmarks", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("clear landmarks: remove landmarks", tf::CPU, timer.elapsed()));
 }
 
-void CAnnotations::addCurves(itm::interval_t X_range, itm::interval_t Y_range, itm::interval_t Z_range, NeuronTree& nt) throw (itm::RuntimeException)
+void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, NeuronTree& nt) throw (tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
 	// check interval validity
 	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
 		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
 		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     // first clear curves in the given range
-    itm::uint64 deletions = annotation::destroyed;
+    tf::uint64 deletions = annotation::destroyed;
     clearCurves(X_range, Y_range, Z_range);
     deletions = annotation::destroyed - deletions;
-    /**/itm::debug(itm::LEV3, strprintf("nt.size() = %d, deleted = %llu", nt.listNeuron.size(), deletions).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("nt.size() = %d, deleted = %llu", nt.listNeuron.size(), deletions).c_str(), __itm__current__function__);
 
     // then allocate and initialize curve nodes
     QElapsedTimer timer;
@@ -1100,7 +1100,7 @@ void CAnnotations::addCurves(itm::interval_t X_range, itm::interval_t Y_range, i
         ann->z = nt.listNeuron[i].z;
 
         #ifdef terafly_enable_debug_annotations
-        itm::debug(itm::LEV_MAX, strprintf("inserting curve point %lld(%.1f,%.1f,%.1f), n=(%d), pn(%d)\n", ann->ID, ann->x, ann->y, ann->z, nt.listNeuron[i].n, nt.listNeuron[i].pn).c_str(), 0, true);
+        tf::debug(tf::LEV_MAX, strprintf("inserting curve point %lld(%.1f,%.1f,%.1f), n=(%d), pn(%d)\n", ann->ID, ann->x, ann->y, ann->z, nt.listNeuron[i].n, nt.listNeuron[i].pn).c_str(), 0, true);
         #endif
 
         octree->insert(*ann);
@@ -1108,7 +1108,7 @@ void CAnnotations::addCurves(itm::interval_t X_range, itm::interval_t Y_range, i
         swcMap[nt.listNeuron[i].n] = &(nt.listNeuron[i]);
     }
 
-    PLog::instance()->appendOperation(new AnnotationOperation("store annotations: allocate and initialize curve nodes", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("store annotations: allocate and initialize curve nodes", tf::CPU, timer.elapsed()));
 
     // finally linking nodes
     timer.restart();
@@ -1118,7 +1118,7 @@ void CAnnotations::addCurves(itm::interval_t X_range, itm::interval_t Y_range, i
         if(it->second->parent)
         {
             #ifdef terafly_enable_debug_annotations
-            itm::debug(itm::LEV_MAX, strprintf("Add %lld(%.0f, %.0f, %.0f) to %lld(%.0f, %.0f, %.0f)'s children list\n",
+            tf::debug(tf::LEV_MAX, strprintf("Add %lld(%.0f, %.0f, %.0f) to %lld(%.0f, %.0f, %.0f)'s children list\n",
                                                it->second->ID, it->second->x, it->second->y, it->second->z, it->second->parent->ID,
                                                it->second->parent->x, it->second->parent->y, it->second->parent->z).c_str(), 0, true);
             #endif
@@ -1126,7 +1126,7 @@ void CAnnotations::addCurves(itm::interval_t X_range, itm::interval_t Y_range, i
             it->second->parent->children.insert(it->second);
         }
     }
-    PLog::instance()->appendOperation(new AnnotationOperation("store annotations: link curve nodes", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("store annotations: link curve nodes", tf::CPU, timer.elapsed()));
 //    printf("--------------------- teramanager plugin >> inserted %d curve points\n", annotationsMap.size());
 }
 
@@ -1135,27 +1135,27 @@ void CAnnotations::addCurves(itm::interval_t X_range, itm::interval_t Y_range, i
 **********************************************************************************/
 void CAnnotations::findLandmarks(interval_t X_range, interval_t Y_range, interval_t Z_range, QList<LocationSimple> &markers) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
+    /**/tf::debug(tf::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
 	// check interval validity
 	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
 		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
 		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     std::list<annotation*> nodes;
     QElapsedTimer timer;
     timer.start();
 
-    /**/itm::debug(itm::LEV3, "find all nodes in the given range", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "find all nodes in the given range", __itm__current__function__);
     octree->find(Y_range, X_range, Z_range, nodes);
-    PLog::instance()->appendOperation(new AnnotationOperation("find landmarks: find all annotations in the given range", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("find landmarks: find all annotations in the given range", tf::CPU, timer.elapsed()));
 
 
-    /**/itm::debug(itm::LEV3, "select markers only", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "select markers only", __itm__current__function__);
     timer.restart();
     for(std::list<annotation*>::iterator i = nodes.begin(); i != nodes.end(); i++)
     {
@@ -1173,33 +1173,33 @@ void CAnnotations::findLandmarks(interval_t X_range, interval_t Y_range, interva
             markers.push_back(marker);
         }
     }
-    PLog::instance()->appendOperation(new AnnotationOperation("find landmarks: select landmarks only", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("find landmarks: select landmarks only", tf::CPU, timer.elapsed()));
 }
 
 void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t Z_range, QList<NeuronSWC> &curves) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
+    /**/tf::debug(tf::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
 	// check interval validity
 	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
 		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
 		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw itm::RuntimeException( itm::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), itm::shortFuncName(__itm__current__function__));
+		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     std::list<annotation*> nodes;
     QElapsedTimer timer;
     timer.start();
 
-    /**/itm::debug(itm::LEV3, "find all nodes in the given range", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "find all nodes in the given range", __itm__current__function__);
     octree->find(Y_range, X_range, Z_range, nodes);
-    PLog::instance()->appendOperation(new AnnotationOperation("find curves: find all annotations in the given range", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("find curves: find all annotations in the given range", tf::CPU, timer.elapsed()));
 
     // find roots
     timer.restart();
-    /**/itm::debug(itm::LEV3, "find roots", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "find roots", __itm__current__function__);
     std::set<annotation*> roots;
     for(std::list<annotation*>::iterator i = nodes.begin(); i != nodes.end(); i++)
     {
@@ -1211,14 +1211,14 @@ void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t
             roots.insert(p);
         }
     }
-    PLog::instance()->appendOperation(new AnnotationOperation("find curves: find roots", itm::CPU, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("find curves: find roots", tf::CPU, timer.elapsed()));
 
-    /**/itm::debug(itm::LEV3, strprintf("%d roots found, now inserting all nodes", roots.size()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("%d roots found, now inserting all nodes", roots.size()).c_str(), __itm__current__function__);
     timer.restart();
     for(std::set<annotation*>::const_iterator it = roots.begin(); it != roots.end(); it++)
         (*it)->insertIntoTree(curves);
-    PLog::instance()->appendOperation(new AnnotationOperation("find curves: insert all linked nodes starting from roots", itm::CPU, timer.elapsed()));
-    /**/itm::debug(itm::LEV3, strprintf("%d nodes inserted", curves.size()).c_str(), __itm__current__function__);
+    PLog::instance()->appendOperation(new AnnotationOperation("find curves: insert all linked nodes starting from roots", tf::CPU, timer.elapsed()));
+    /**/tf::debug(tf::LEV3, strprintf("%d nodes inserted", curves.size()).c_str(), __itm__current__function__);
 }
 
 /*********************************************************************************
@@ -1226,7 +1226,7 @@ void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t
 **********************************************************************************/
 void CAnnotations::save(const char* filepath) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
 
     //measure elapsed time
     QElapsedTimer timer;
@@ -1258,7 +1258,7 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
             cell.x = (*i)->x;
             cell.y = (*i)->y;
             cell.z = (*i)->z;
-            cell.volsize = (*i)->r*(*i)->r*4*teramanager::pi;
+            cell.volsize = (*i)->r*(*i)->r*4*terafly::pi;
             cell.color = (*i)->color;
             points.push_back(cell);
         }
@@ -1277,11 +1277,11 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     fclose(f);
 
 
-    PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", itm::IO, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", tf::IO, timer.elapsed()));
 }
 void CAnnotations::load(const char* filepath) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
 
     //precondition checks
     if(!octree)
@@ -1303,7 +1303,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
     for (std::string line; std::getline(f, line); )
     {
         std::vector < std::string > tokens;
-        teramanager::split(line, "=", tokens);
+        terafly::split(line, "=", tokens);
         if(tokens.size() != 2)
             throw RuntimeException(strprintf("in CAnnotations::load(const char* filepath = \"%s\"): cannot parse line \"%s\"",filepath,line.c_str()));
 
@@ -1311,7 +1311,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         dir.cdUp();
         if(tokens[0].compare("APOFILE") == 0)
         {
-            QList <CellAPO> cells = readAPO_file(dir.absolutePath().append("/").append(itm::clcr(tokens[1]).c_str()));
+            QList <CellAPO> cells = readAPO_file(dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str()));
             for(QList <CellAPO>::iterator i = cells.begin(); i!= cells.end(); i++)
             {
                 annotation* ann = new annotation();
@@ -1319,7 +1319,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 ann->name = i->name.toStdString();
                 ann->comment = i->comment.toStdString();
                 ann->color = i->color;
-                ann->r = sqrt(i->volsize / (4*teramanager::pi));
+                ann->r = sqrt(i->volsize / (4*terafly::pi));
                 ann->x = i->x;
                 ann->y = i->y;
                 ann->z = i->z;
@@ -1329,7 +1329,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         }
         else if(tokens[0].compare("SWCFILE") == 0)
         {
-            NeuronTree nt = readSWC_file(dir.absolutePath().append("/").append(itm::clcr(tokens[1]).c_str()));
+            NeuronTree nt = readSWC_file(dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str()));
 
             std::map<int, annotation*> annotationsMap;
             std::map<int, NeuronSWC*> swcMap;
@@ -1356,7 +1356,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 if(i->second->parent)
                 {
                     #ifdef terafly_enable_debug_annotations
-                    itm::debug(itm::LEV_MAX, strprintf("Add %lld(%.0f, %.0f, %.0f) to %lld(%.0f, %.0f, %.0f)'s children list\n",
+                    tf::debug(tf::LEV_MAX, strprintf("Add %lld(%.0f, %.0f, %.0f) to %lld(%.0f, %.0f, %.0f)'s children list\n",
                                                        i->second->ID, i->second->x, i->second->y, i->second->z, i->second->parent->ID,
                                                        i->second->parent->x, i->second->parent->y, i->second->parent->z).c_str(), 0, true);
                     #endif
@@ -1370,47 +1370,47 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
     }
     f.close();
 
-    PLog::instance()->appendOperation(new AnnotationOperation("load annotations: read .ano from disk", itm::IO, timer.elapsed()));
+    PLog::instance()->appendOperation(new AnnotationOperation("load annotations: read .ano from disk", tf::IO, timer.elapsed()));
 }
 
 /*********************************************************************************
 * Conversion from VTK to APO files
 **********************************************************************************/
-void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath) throw (itm::RuntimeException)
+void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath) throw (tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("vtkPath = \"%s\", apoPath = \"%s\"", vtkPath.c_str(), apoPath.c_str()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("vtkPath = \"%s\", apoPath = \"%s\"", vtkPath.c_str(), apoPath.c_str()).c_str(), __itm__current__function__);
 
     // open file and check header
     FILE* f = fopen(vtkPath.c_str(), "r");
     if(!f)
-        throw itm::RuntimeException(itm::strprintf("in CAnnotations::convertVtk2APO(): cannot open file at \"%s\"", vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("in CAnnotations::convertVtk2APO(): cannot open file at \"%s\"", vtkPath.c_str()));
     char lineBuffer[1024];
     char stringBuffer[1024];
     int points_n;
     if(!fgets(lineBuffer, 1024, f))
-        throw itm::RuntimeException(itm::strprintf("Cannot read 1st line in \"%s\"", vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("Cannot read 1st line in \"%s\"", vtkPath.c_str()));
     if(!fgets(lineBuffer, 1024, f))
-        throw itm::RuntimeException(itm::strprintf("Cannot read 2nd line in \"%s\"", vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("Cannot read 2nd line in \"%s\"", vtkPath.c_str()));
     if(!fgets(lineBuffer, 1024, f))
-        throw itm::RuntimeException(itm::strprintf("Cannot read 3rd line in \"%s\"", vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("Cannot read 3rd line in \"%s\"", vtkPath.c_str()));
     if(!fgets(lineBuffer, 1024, f))
-        throw itm::RuntimeException(itm::strprintf("Cannot read 4th line in \"%s\"", vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("Cannot read 4th line in \"%s\"", vtkPath.c_str()));
     if(!fgets(lineBuffer, 1024, f))
-        throw itm::RuntimeException(itm::strprintf("Cannot read 5th line in \"%s\"", vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("Cannot read 5th line in \"%s\"", vtkPath.c_str()));
     if(sscanf(lineBuffer, "%s %d", stringBuffer, &points_n) != 2)
-        throw itm::RuntimeException(itm::strprintf("5th line (\"%s\") is not in the format <string> <number> <string> as expected, in \"%s\"", lineBuffer, vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("5th line (\"%s\") is not in the format <string> <number> <string> as expected, in \"%s\"", lineBuffer, vtkPath.c_str()));
     if(strcmp(stringBuffer, "POINTS") != 0)
-        throw itm::RuntimeException(itm::strprintf("expected \"POINTS\" at 5th line (\"%s\"), in \"%s\"", lineBuffer, vtkPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("expected \"POINTS\" at 5th line (\"%s\"), in \"%s\"", lineBuffer, vtkPath.c_str()));
 
     // read cells
     QList<CellAPO> cells;
     for(int i=0; i<points_n; i++)
     {
         if(!fgets(lineBuffer, 1024, f))
-            throw itm::RuntimeException(itm::strprintf("Cannot read %d-th line in \"%s\"", i, vtkPath.c_str()));
+            throw tf::RuntimeException(tf::strprintf("Cannot read %d-th line in \"%s\"", i, vtkPath.c_str()));
         float x=0,y=0,z=0;
         if(sscanf(lineBuffer, "%f %f %f", &x, &y, &z) != 3)
-            throw itm::RuntimeException(itm::strprintf("%d-th line (\"%s\") is not in the format <float> <float> <float> as expected, in \"%s\"", i, lineBuffer, vtkPath.c_str()));
+            throw tf::RuntimeException(tf::strprintf("%d-th line (\"%s\") is not in the format <float> <float> <float> as expected, in \"%s\"", i, lineBuffer, vtkPath.c_str()));
 
 
         CellAPO cell;
@@ -1420,7 +1420,7 @@ void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath) thro
         cell.x = x;
         cell.y = y;
         cell.z = z;
-        cell.volsize = 4*teramanager::pi;
+        cell.volsize = 4*terafly::pi;
         cell.color.r = cell.color.g = 0;
         cell.color.b = 255;
         cells.push_back(cell);
@@ -1431,18 +1431,18 @@ void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath) thro
     writeAPO_file(apoPath.c_str(), cells);
 
     // save output ano
-    std::string anoPath = itm::cdUp(apoPath) + "/" + itm::getFileName(apoPath, false) + ".ano";
+    std::string anoPath = tf::cdUp(apoPath) + "/" + tf::getFileName(apoPath, false) + ".ano";
     f = fopen(anoPath.c_str(), "w");
     if(!f)
-        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
-    fprintf(f, "APOFILE=%s\n",itm::getFileName(apoPath).c_str());
+        throw RuntimeException(tf::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",tf::getFileName(apoPath).c_str());
     fclose(f);
 }
 
 /*********************************************************************************
 * Conversion from VTK to APO files
 **********************************************************************************/
-void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) throw (itm::RuntimeException)
+void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) throw (tf::RuntimeException)
 {
     QList<CellAPO> cells;
     int count = 0;
@@ -1450,20 +1450,20 @@ void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) 
     // check xml
     TiXmlDocument xml(MaMuTPath.c_str());
     if(!xml.LoadFile())
-        throw itm::RuntimeException(itm::strprintf("unable to open MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("unable to open MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
     TiXmlElement *pElem = xml.FirstChildElement("TrackMate");
     if(!pElem)
-        throw itm::RuntimeException(itm::strprintf("cannot find node <TrackMate> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("cannot find node <TrackMate> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
     pElem = pElem->FirstChildElement("Model");
     if(!pElem)
-        throw itm::RuntimeException(itm::strprintf("cannot find node <Model> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("cannot find node <Model> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
     pElem = pElem->FirstChildElement("AllSpots");
     if(!pElem)
-        throw itm::RuntimeException(itm::strprintf("cannot find node <AllSpots> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("cannot find node <AllSpots> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
     int nspots = 0;
     pElem->QueryIntAttribute("nspots", &nspots);
     if(nspots == 0)
-        throw itm::RuntimeException(itm::strprintf("no spots found in <AllSpots> node in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+        throw tf::RuntimeException(tf::strprintf("no spots found in <AllSpots> node in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
 
     // parse spots
     TiXmlElement *frameElem = pElem->FirstChildElement("SpotsInFrame");
@@ -1471,7 +1471,7 @@ void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) 
     {
         int frame_id = 0;
         if(frameElem->QueryIntAttribute("frame", &frame_id) != TIXML_SUCCESS)
-            throw itm::RuntimeException(itm::strprintf("failed to query node <SpotsInFrame> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+            throw tf::RuntimeException(tf::strprintf("failed to query node <SpotsInFrame> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
         if(frame_id != 0)
         {
             static bool first_time = true;
@@ -1485,20 +1485,20 @@ void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) 
 
         pElem = frameElem->FirstChildElement("Spot");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("failed to find first node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+            throw tf::RuntimeException(tf::strprintf("failed to find first node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
 
         while(pElem)
         {
             CellAPO c;
             if(pElem->QueryFloatAttribute("POSITION_X", &c.x) != TIXML_SUCCESS)
-                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"POSITION_X\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+                throw tf::RuntimeException(tf::strprintf("failed to query attribute \"POSITION_X\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
             if(pElem->QueryFloatAttribute("POSITION_Y", &c.y) != TIXML_SUCCESS)
-                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"POSITION_Y\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+                throw tf::RuntimeException(tf::strprintf("failed to query attribute \"POSITION_Y\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
             if(pElem->QueryFloatAttribute("POSITION_Z", &c.z) != TIXML_SUCCESS)
-                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"POSITION_Z\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+                throw tf::RuntimeException(tf::strprintf("failed to query attribute \"POSITION_Z\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
             if(pElem->QueryFloatAttribute("RADIUS", &c.volsize) != TIXML_SUCCESS)
-                throw itm::RuntimeException(itm::strprintf("failed to query attribute \"RADIUS\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
-            c.volsize = (4.0/3.0)*itm::pi*c.volsize*c.volsize*c.volsize;
+                throw tf::RuntimeException(tf::strprintf("failed to query attribute \"RADIUS\" from node <Spot> in MaMuT xml file at \"%s\"", MaMuTPath.c_str()));
+            c.volsize = (4.0/3.0)*tf::pi*c.volsize*c.volsize*c.volsize;
             c.color.r = c.color.g = 0;
             c.color.b = 255;
             cells.push_back(c);
@@ -1512,26 +1512,26 @@ void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) 
     writeAPO_file(apoPath.c_str(), cells);
 
     // save output ano
-    std::string anoPath = itm::cdUp(apoPath) + "/" + itm::getFileName(apoPath, false) + ".ano";
+    std::string anoPath = tf::cdUp(apoPath) + "/" + tf::getFileName(apoPath, false) + ".ano";
     FILE* f = fopen(anoPath.c_str(), "w");
     if(!f)
-        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
-    fprintf(f, "APOFILE=%s\n",itm::getFileName(apoPath).c_str());
+        throw RuntimeException(tf::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",tf::getFileName(apoPath).c_str());
     fclose(f);
 
-    QMessageBox::information(0, "Info", itm::strprintf("Successfully written %d markers from %d entries", cells.size(), count).c_str());
+    QMessageBox::information(0, "Info", tf::strprintf("Successfully written %d markers from %d entries", cells.size(), count).c_str());
 }
 
 /*********************************************************************************
 * Compute type I and type II errors between two APO files
 **********************************************************************************/
 std::pair<int, int>                                             // return pair<false positives, false negatives>
-    itm::CAnnotations::typeIandIIerrorAPO(std::string apo1Path, // first apo file path (assumed as TRUTH)
+    tf::CAnnotations::typeIandIIerrorAPO(std::string apo1Path, // first apo file path (assumed as TRUTH)
                                           std::string apo2Path, // second apo file to be compared
                                           int d,                // maximum distance between a finding that matches with a truth
                                           std::string filter,   // filter cells in apo2 by name
                                           const std::string & outputPath /*=*/)
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
     // read cells
     QList<CellAPO> truth = readAPO_file(apo1Path.c_str());
@@ -1544,8 +1544,8 @@ throw (itm::RuntimeException)
     out.first = out.second = 0;
     for(int j=0; j<findings.size(); j++)
     {
-        //QMessageBox::information(0, "Title", itm::strprintf("findings[j].name = \"%s\", filter = \"%s\"", itm::cls(findings[j].name.toStdString()).c_str(), filter.c_str()).c_str());
-        if(filter.compare("none") != 0 && itm::cls(findings[j].name.toStdString()).compare(filter) != 0)
+        //QMessageBox::information(0, "Title", tf::strprintf("findings[j].name = \"%s\", filter = \"%s\"", tf::cls(findings[j].name.toStdString()).c_str(), filter.c_str()).c_str());
+        if(filter.compare("none") != 0 && tf::cls(findings[j].name.toStdString()).compare(filter) != 0)
             continue;
 
         bool found = false;
@@ -1571,7 +1571,7 @@ throw (itm::RuntimeException)
         bool found = false;
         for(int j=0; j<findings.size() && !found; j++)
         {
-            if(filter.compare("none") != 0 && itm::cls(findings[j].name.toStdString()).compare(filter) != 0)
+            if(filter.compare("none") != 0 && tf::cls(findings[j].name.toStdString()).compare(filter) != 0)
                 continue;
 
             if(distance(truth[i], findings[j]) <= static_cast<float>(d))
@@ -1595,11 +1595,11 @@ throw (itm::RuntimeException)
         writeAPO_file(outputPath.c_str(), errors);
 
         // save output ano
-        std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+        std::string anoPath = tf::cdUp(outputPath) + "/" + tf::getFileName(outputPath, false) + ".ano";
         FILE* f = fopen(anoPath.c_str(), "w");
         if(!f)
-            throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
-        fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+            throw RuntimeException(tf::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+        fprintf(f, "APOFILE=%s\n",tf::getFileName(outputPath).c_str());
         fclose(f);
     }
 
@@ -1615,9 +1615,9 @@ void CAnnotations::diffAPO( std::string apo1Path,               // first apo fil
                             int y0 /*=0*/, int y1 /*=-1*/,      // VOI [y0, y1) in the global reference sys
                             int z0 /*=0*/, int z1 /*=-1*/,      // VOI [z0, z1) in the global reference sys
                             std::string diffPath)               // path where the difference apo file (containing only FPs and FNs) has to be stored (optional)
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("apo1Path = \"%s\", apo2Path = \"%s\", x0 = %d, x1 =%d, y0 = %d, y1 = %d, z0 = %d, z1 = %d",
+    /**/tf::debug(tf::LEV1, strprintf("apo1Path = \"%s\", apo2Path = \"%s\", x0 = %d, x1 =%d, y0 = %d, y1 = %d, z0 = %d, z1 = %d",
                                         apo1Path.c_str(), apo2Path.c_str(), x0, x1, y0, y1, z0, z1).c_str(), __itm__current__function__);
 
     // parse default parameters
@@ -1679,7 +1679,7 @@ throw (itm::RuntimeException)
     // insert cells into the same octree. In this way, it is much faster to compute TPs, FPs and FNs
     /*Octree* diff_octree = new Octree(std::numeric_limits<uint32>::max(), std::numeric_limits<uint32>::max(), std::numeric_limits<uint32>::max());
     std::vector<annotation*> ano1, ano2;
-    itm::uint64 cell1count = 0;
+    tf::uint64 cell1count = 0;
     for(int i=0; i<cells1.size(); i++)
     {
         if( cells1[i].x >= x0 && cells1[i].x < x1 &&    //
@@ -1698,7 +1698,7 @@ throw (itm::RuntimeException)
             cell1count++;
         }
     }
-    itm::uint64 cell2count = 0;
+    tf::uint64 cell2count = 0;
     for(int i=0; i<cells2.size(); i++)
     {
         if( cells2[i].x >= x0 && cells2[i].x < x1 &&    //
@@ -1719,9 +1719,9 @@ throw (itm::RuntimeException)
 
     // count false positives, true positives, and false negatives    
     QList<CellAPO> diff_cells;
-    itm::uint64 FPs = 0;
-    itm::uint64 TPs = 0;
-    itm::uint64 FNs = 0;
+    tf::uint64 FPs = 0;
+    tf::uint64 TPs = 0;
+    tf::uint64 FNs = 0;
     for(int i=0; i<ano2.size(); i++)
         if( static_cast<CAnnotations::Octree::octant*>(ano2[i]->container)->annotations.size() == 1)
         {
@@ -1768,7 +1768,7 @@ throw (itm::RuntimeException)
         writeAPO_file(diffPath.c_str(), diff_cells);
 
     // display result
-    std::string message = itm::strprintf(   "VOI = X[%d,%d), Y[%d,%d), Z[%d,%d)\n"
+    std::string message = tf::strprintf(   "VOI = X[%d,%d), Y[%d,%d), Z[%d,%d)\n"
                                             "#Cells (from truth): %d\n"
                                             "#Cells (from .apo) : %d\n"
                                             "#TPs: %lld\n"
@@ -1796,7 +1796,7 @@ void CAnnotations::trimAPO( std::string inputPath,  // input apo file path
                             int x0 /*=0*/, int x1 /*=-1*/,    // VOI [x0, x1) in the global reference sys
                             int y0 /*=0*/, int y1 /*=-1*/,    // VOI [y0, y1) in the global reference sys
                             int z0 /*=0*/, int z1 /*=-1*/)    // VOI [z0, z1) in the global reference sys
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
     // parse default parameters
     x1 = x1 > 0 ? x1 : std::numeric_limits<int>::max();
@@ -1816,23 +1816,23 @@ throw (itm::RuntimeException)
     writeAPO_file(outputPath.c_str(), cells_VOI);
 
     // save output ano
-    std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+    std::string anoPath = tf::cdUp(outputPath) + "/" + tf::getFileName(outputPath, false) + ".ano";
     FILE* f = fopen(anoPath.c_str(), "w");
     if(!f)
-        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
-    fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+        throw RuntimeException(tf::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",tf::getFileName(outputPath).c_str());
     fclose(f);
 }
 
 /*********************************************************************************
 * Label duplicates in APO files
 **********************************************************************************/
-void itm::CAnnotations::labelDuplicates(
+void tf::CAnnotations::labelDuplicates(
                             std::string inputPath,  // input apo file path
                             std::string outputPath, // where output apo file is saved
                             int d,                  // maximum distance between 2 duplicates
                             RGBA8 color)            // VOI [y0, y1) in the global reference sys
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
     // read cells
     QList<CellAPO> cells = readAPO_file(inputPath.c_str());
@@ -1847,25 +1847,25 @@ throw (itm::RuntimeException)
     writeAPO_file(outputPath.c_str(), cells);
 
     // save output ano
-    std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+    std::string anoPath = tf::cdUp(outputPath) + "/" + tf::getFileName(outputPath, false) + ".ano";
     FILE* f = fopen(anoPath.c_str(), "w");
     if(!f)
-        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
-    fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+        throw RuntimeException(tf::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",tf::getFileName(outputPath).c_str());
     fclose(f);
 }
 
 /*********************************************************************************
 * Counts markers having distance <= d from each other
 **********************************************************************************/
-itm::uint32 CAnnotations::countDuplicateMarkers(int d) throw (itm::RuntimeException)
+tf::uint32 CAnnotations::countDuplicateMarkers(int d) throw (tf::RuntimeException)
 {
     std::list<annotation*> nodes;
-    octree->find(itm::interval_t(0, std::numeric_limits<int>::max()),
-                 itm::interval_t(0, std::numeric_limits<int>::max()),
-                 itm::interval_t(0, std::numeric_limits<int>::max()), nodes);
+    octree->find(tf::interval_t(0, std::numeric_limits<int>::max()),
+                 tf::interval_t(0, std::numeric_limits<int>::max()),
+                 tf::interval_t(0, std::numeric_limits<int>::max()), nodes);
 
-    itm::uint32 count = 0;
+    tf::uint32 count = 0;
     for(std::list<annotation*>::iterator i = nodes.begin(); i != nodes.end(); i++)
         for(std::list<annotation*>::iterator j = nodes.begin(); j != nodes.end(); j++)
             if(i!=j && distance(*i, *j) <= ((float)d))
@@ -1883,10 +1883,10 @@ itm::uint32 CAnnotations::countDuplicateMarkers(int d) throw (itm::RuntimeExcept
 **********************************************************************************/
 void CAnnotations::diffnAPO(QStringList apos,         // inputs
                     std::string outputPath)         // where output apo file is saved
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
     // get distinct colors
-    std::vector<RGBA8> colors = itm::CImageUtils::distinctColors(apos.size());
+    std::vector<RGBA8> colors = tf::CImageUtils::distinctColors(apos.size());
 
     // insert cells into the same octree. In this way, it is much faster to compute the XOR
     Octree* xor_octree = new Octree(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
@@ -1896,7 +1896,7 @@ throw (itm::RuntimeException)
         for(int i=0; i<cells.size(); i++)
         {
             annotation* cell = new annotation(cells[i]);
-            cell->name = itm::getFileName(apos[f].toStdString(), false);
+            cell->name = tf::getFileName(apos[f].toStdString(), false);
             cell->color = colors[f];
             xor_octree->insert(*cell);
         }
@@ -1904,9 +1904,9 @@ throw (itm::RuntimeException)
 
     // retrieve all nodes
     std::list<annotation*> nodes;
-    xor_octree->find(itm::interval_t(0, std::numeric_limits<int>::max()),
-                 itm::interval_t(0, std::numeric_limits<int>::max()),
-                 itm::interval_t(0, std::numeric_limits<int>::max()), nodes);
+    xor_octree->find(tf::interval_t(0, std::numeric_limits<int>::max()),
+                 tf::interval_t(0, std::numeric_limits<int>::max()),
+                 tf::interval_t(0, std::numeric_limits<int>::max()), nodes);
 
     // only take cells from nodes where at least one .apo disagrees, i.e. nodes that do not contain apos.size() cells
     QList<CellAPO> output_cells;
@@ -1918,11 +1918,11 @@ throw (itm::RuntimeException)
     writeAPO_file(outputPath.c_str(), output_cells);
 
     // save output ano
-    std::string anoPath = itm::cdUp(outputPath) + "/" + itm::getFileName(outputPath, false) + ".ano";
+    std::string anoPath = tf::cdUp(outputPath) + "/" + tf::getFileName(outputPath, false) + ".ano";
     FILE* f = fopen(anoPath.c_str(), "w");
     if(!f)
-        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
-    fprintf(f, "APOFILE=%s\n",itm::getFileName(outputPath).c_str());
+        throw RuntimeException(tf::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",tf::getFileName(outputPath).c_str());
     fclose(f);
 }
 
@@ -1936,7 +1936,7 @@ void CAnnotations::mergeImageJCellCounterXMLs(QStringList xmls,  // inputs
                     int x0 /*=0*/,          // (0,0,0) block X-coordinate
                     int y0 /*=0*/,          // (0,0,0) block Y-coordinate
                     int z0 /*=0*/)          // (0,0,0) block Z-coordinate
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
     // parse xmls
     QList<CellAPO> cells;
@@ -1944,11 +1944,11 @@ throw (itm::RuntimeException)
     for(int f=0; f<xmls.size(); f++)
     {
         // get unique block ID
-        std::string fname = itm::getFileName(xmls[f].toStdString(), true);
+        std::string fname = tf::getFileName(xmls[f].toStdString(), true);
         fname.erase(fname.find_first_of("."));
         fname = fname.substr(fname.size()-3);
         if(fname.size() != 3)
-            throw itm::RuntimeException(itm::strprintf("\"%s\" does not end with 3 digits xyz", xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("\"%s\" does not end with 3 digits xyz", xmls[f].toStdString().c_str()));
         int ix = fname[0] - '0';
         int iy = fname[1] - '0';
         int iz = fname[2] - '0';
@@ -1956,33 +1956,33 @@ throw (itm::RuntimeException)
         // lot of checks
         TiXmlDocument xml(xmls[f].toStdString().c_str());
         if(!xml.LoadFile())
-            throw itm::RuntimeException(itm::strprintf("unable to load xml file at \"%s\"", xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("unable to load xml file at \"%s\"", xmls[f].toStdString().c_str()));
         TiXmlElement *pElem = xml.FirstChildElement("CellCounter_Marker_File");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <CellCounter_Marker_File> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("cannot find node <CellCounter_Marker_File> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Image_Properties");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Properties> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("cannot find node <Image_Properties> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Image_Filename");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Image_Filename> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("cannot find node <Image_Filename> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         if(fname.compare(pElem->GetText()) != 0)
-            throw itm::RuntimeException(itm::strprintf("<Image_Filename> mismatch (found \"%s\", expected \"%s\") in xml file at \"%s\"", pElem->GetText(), fname.c_str(), xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("<Image_Filename> mismatch (found \"%s\", expected \"%s\") in xml file at \"%s\"", pElem->GetText(), fname.c_str(), xmls[f].toStdString().c_str()));
 
         pElem = xml.FirstChildElement("CellCounter_Marker_File");
         pElem = pElem->FirstChildElement("Marker_Data");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Data> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("cannot find node <Marker_Data> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Marker_Type");
         if(!pElem)
-            throw itm::RuntimeException(itm::strprintf("cannot find node <Marker_Type> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
+            throw tf::RuntimeException(tf::strprintf("cannot find node <Marker_Type> in xml file at \"%s\"", xmls[f].toStdString().c_str()));
         pElem = pElem->FirstChildElement("Marker");
         while(pElem)
         {
             CellAPO c;
-            c.x = x0 + ix*xS - ix*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerX")->GetText());
-            c.y = y0 + iy*yS - iy*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerY")->GetText());
-            c.z = z0 + iz*zS - iz*overlap + itm::str2num<int>(pElem->FirstChildElement("MarkerZ")->GetText());
+            c.x = x0 + ix*xS - ix*overlap + tf::str2num<int>(pElem->FirstChildElement("MarkerX")->GetText());
+            c.y = y0 + iy*yS - iy*overlap + tf::str2num<int>(pElem->FirstChildElement("MarkerY")->GetText());
+            c.z = z0 + iz*zS - iz*overlap + tf::str2num<int>(pElem->FirstChildElement("MarkerZ")->GetText());
             c.color.r = c.color.g = 0;
             c.color.b = 255;
             if(cells.indexOf(c) == -1)
@@ -1996,33 +1996,33 @@ throw (itm::RuntimeException)
     writeAPO_file(apoPath.c_str(), cells);
 
     // save output ano
-    std::string anoPath = itm::cdUp(apoPath) + "/" + itm::getFileName(apoPath, false) + ".ano";
+    std::string anoPath = tf::cdUp(apoPath) + "/" + tf::getFileName(apoPath, false) + ".ano";
     FILE* f = fopen(anoPath.c_str(), "w");
     if(!f)
-        throw RuntimeException(itm::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
-    fprintf(f, "APOFILE=%s\n",itm::getFileName(apoPath).c_str());
+        throw RuntimeException(tf::strprintf("cannot save .ano to path \"%s\"", anoPath.c_str()));
+    fprintf(f, "APOFILE=%s\n",tf::getFileName(apoPath).c_str());
     fclose(f);
 
-    QMessageBox::information(0, "Info", itm::strprintf("Successfully written %d markers from %d entries", cells.size(), count).c_str());
+    QMessageBox::information(0, "Info", tf::strprintf("Successfully written %d markers from %d entries", cells.size(), count).c_str());
 }
 
 /*********************************************************************************
 * Converts the octree to a NeuronTree. This is actually a draw method.
 **********************************************************************************/
-NeuronTree CAnnotations::Octree::toNeuronTree() throw (itm::RuntimeException)
+NeuronTree CAnnotations::Octree::toNeuronTree() throw (tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     // unlimited octrees are not supported
     if(DIM_V == std::numeric_limits<int>::max() || DIM_H == std::numeric_limits<int>::max() || DIM_D == std::numeric_limits<int>::max())
-        throw itm::RuntimeException("Cannot draw unbounded octree. Please deactivate the \"Unlimited\" option for the annotation space size and re-open the image");
+        throw tf::RuntimeException("Cannot draw unbounded octree. Please deactivate the \"Unlimited\" option for the annotation space size and re-open the image");
 
     NeuronTree nt;
     nt.editable = false;
     nt.linemode = true;
     _rec_to_neuron_tree(root, nt.listNeuron);
 
-    /**/itm::debug(itm::LEV2, "Successfully generated the Neuron Tree", __itm__current__function__);
+    /**/tf::debug(tf::LEV2, "Successfully generated the Neuron Tree", __itm__current__function__);
 
     return nt;
 }

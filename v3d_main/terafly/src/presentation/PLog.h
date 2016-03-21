@@ -8,7 +8,7 @@
 #include "CPlugin.h"
 #include "COperation.h"
 
-class teramanager::PLog : public QDialog
+class terafly::PLog : public QDialog
 {
         Q_OBJECT
 
@@ -38,7 +38,7 @@ class teramanager::PLog : public QDialog
         QPushButton* resetButton;
 
         // other object members
-        std::map< std::string, std::vector<itm::Operation*> > loggedOperations; // grouped by name
+        std::map< std::string, std::vector<tf::Operation*> > loggedOperations; // grouped by name
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be
@@ -60,7 +60,7 @@ class teramanager::PLog : public QDialog
         **********************************************************************************/
         static PLog* instance(QWidget* parent=0)
         {
-            /**/itm::debug(itm::LEV_MAX, 0, __itm__current__function__);
+            /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
             if (uniqueInstance == 0)
                 uniqueInstance = new PLog(parent);
@@ -80,8 +80,8 @@ class teramanager::PLog : public QDialog
         /**********************************************************************************
         * append new operation to log
         ***********************************************************************************/
-        void appendOperation(itm::Operation* op, bool update_time_comps = true);
-        void appendOperationToFile(itm::Operation* op);
+        void appendOperation(tf::Operation* op, bool update_time_comps = true);
+        void appendOperationToFile(tf::Operation* op);
         void append(std::string text);
 
         /**********************************************************************************

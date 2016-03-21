@@ -36,18 +36,18 @@
 #include "QUndoMarkerCreate.h"
 #include "PAnoToolBar.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 /*******************************************************************************************************************************
  *   Interfaces, types, parameters and constants                                                                               *
  *******************************************************************************************************************************/
-namespace teramanager
+namespace terafly
 {
     /*******************
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.1.53";         //software version
+    std::string version = "2.1.55";         //software version
     int DEBUG = LEV_MAX;                    //debug level
     debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
     std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
@@ -64,13 +64,13 @@ namespace teramanager
 // 4 - Call the functions corresponding to the domenu items. 
 void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-    /**/itm::debug(itm::LEV1, strprintf("menu_name = %s", menu_name.toStdString().c_str()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("menu_name = %s", menu_name.toStdString().c_str()).c_str(), __itm__current__function__);
 
     //overriding the current locale with the standard POSIX locale
     setlocale(LC_ALL, "POSIX");
 
     //register custom types
-    qRegisterMetaType<itm::integer_array>("itm::integer_array");
+    qRegisterMetaType<tf::integer_array>("tf::integer_array");
 
     if (menu_name == tr("TeraFly"))
     {
@@ -101,7 +101,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
     {
         return;
     }
-    /**/itm::debug(itm::LEV1, "EOF", __itm__current__function__);
+    /**/tf::debug(tf::LEV1, "EOF", __itm__current__function__);
 }
 
 void TeraFly::doaction(const QString &action_name)
@@ -130,15 +130,15 @@ void TeraFly::doaction(const QString &action_name)
         }
     }
     else
-        QMessageBox::information(0, "Information", itm::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());
+        QMessageBox::information(0, "Information", tf::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());
 }
 
 // returns true if version >= min_required_version, where version format is version.major.minor
 bool TeraFly::checkVersion(std::string version, std::string min_required_version)
 {
     vector<string> tokens_A, tokens_B;
-    itm::split(version, ".", tokens_A);
-    itm::split(min_required_version, ".", tokens_B);
+    tf::split(version, ".", tokens_A);
+    tf::split(min_required_version, ".", tokens_B);
 
     int verA = tokens_A.size() > 0 ? atoi(tokens_A[0].c_str()) : 0;
     int verB = tokens_B.size() > 0 ? atoi(tokens_B[0].c_str()) : 0;

@@ -34,14 +34,14 @@
 #include "TiledMCVolume.h"
 #include "iomanager.config.h"
 
-using namespace teramanager;
+using namespace terafly;
 using namespace iim;
 
 CVolume* CVolume::uniqueInstance = 0;
 
 void CVolume::uninstance()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(uniqueInstance)
     {
@@ -52,11 +52,11 @@ void CVolume::uninstance()
 
 CVolume::~CVolume()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 }
 
 // load data using the currently set VOI
-itm::uint8* CVolume::loadData() throw (itm::RuntimeException)
+tf::uint8* CVolume::loadData() throw (tf::RuntimeException)
 {
     try
     {
@@ -66,17 +66,17 @@ itm::uint8* CVolume::loadData() throw (itm::RuntimeException)
         // set volume active time frames
         volume->setActiveFrames(voiT0, voiT1);
 
-        /**/itm::debug(itm::LEV3, "load data", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "load data", __itm__current__function__);
         QElapsedTimer timer;
         timer.start();
         uint8* imgData = volume->loadSubvolume_to_UINT8(voiV0, voiV1, voiH0, voiH1, voiD0, voiD1);
         PLog::instance()->appendOperation(new NewViewerOperation(strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d), T=[%d, %d] loaded from res %d",
-                                                                           voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, voiT0, voiT1, voiResIndex), itm::IO, timer.elapsed()));
+                                                                           voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, voiT0, voiT1, voiResIndex), tf::IO, timer.elapsed()));
         return imgData;
     }
     catch( iim::IOException& exception)
     {
-        throw itm::RuntimeException(exception.what());
+        throw tf::RuntimeException(exception.what());
     }
     catch( iom::exception& exception)
     {
@@ -95,7 +95,7 @@ itm::uint8* CVolume::loadData() throw (itm::RuntimeException)
 //automatically called when current thread is started
 void CVolume::run()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     try
     {
@@ -118,11 +118,11 @@ void CVolume::run()
                                              voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, voiT0, voiT1));
 
         // check destination
-        /**/itm::debug(itm::LEV2, "Check destination", __itm__current__function__);
+        /**/tf::debug(tf::LEV2, "Check destination", __itm__current__function__);
         CViewer* destination = dynamic_cast<CViewer*>(source);
         if(!destination)
             throw RuntimeException("Destination type not supported");
-        /**/itm::debug(itm::LEV2, strprintf("destination registered as \"%s\"", destination->title.c_str()).c_str(), __itm__current__function__);
+        /**/tf::debug(tf::LEV2, strprintf("destination registered as \"%s\"", destination->title.c_str()).c_str(), __itm__current__function__);
 
         //checking for an imported volume
         if(volume)
@@ -136,15 +136,15 @@ void CVolume::run()
                     QElapsedTimer timerIO;
                     timerIO.start();
                     volume->setActiveFrames(cur_t, cur_t);
-                    /**/itm::debug(itm::LEV3, "load selected time frame", __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, "load selected time frame", __itm__current__function__);
                     uint8* voiData = volume->loadSubvolume_to_UINT8(voiV0, voiV1, voiH0, voiH1, voiD0, voiD1);
                     qint64 elapsedTime = timerIO.elapsed();
 
 
                     // wait for GUI thread to update graphics
-                    /**/itm::debug(itm::LEV3, "Waiting for updateGraphicsInProgress mutex", __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, "Waiting for updateGraphicsInProgress mutex", __itm__current__function__);
                     /**/ updateGraphicsInProgress.lock();
-                    /**/itm::debug(itm::LEV3, "Access granted from updateGraphicsInProgress mutex", __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, "Access granted from updateGraphicsInProgress mutex", __itm__current__function__);
 
 
                     // send data
@@ -155,7 +155,7 @@ void CVolume::run()
                                 voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, cur_t, cur_t, voiResIndex).c_str());
 
                     // unlock updateGraphicsInProgress mutex
-                    /**/itm::debug(itm::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
                     /**/ updateGraphicsInProgress.unlock();
                 }
                 {
@@ -163,15 +163,15 @@ void CVolume::run()
                     QElapsedTimer timerIO;
                     timerIO.start();
                     volume->setActiveFrames(voiT0, voiT1);
-                    /**/itm::debug(itm::LEV3, "load data", __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, "load data", __itm__current__function__);
                     uint8* voiData = volume->loadSubvolume_to_UINT8(voiV0, voiV1, voiH0, voiH1, voiD0, voiD1);
                     qint64 elapsedTime = timerIO.elapsed();
 
 
                     // wait for GUI thread to update graphics
-                    /**/itm::debug(itm::LEV3, "Waiting for updateGraphicsInProgress mutex", __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, "Waiting for updateGraphicsInProgress mutex", __itm__current__function__);
                     /**/ updateGraphicsInProgress.lock();
-                    /**/itm::debug(itm::LEV3, "Access granted from updateGraphicsInProgress mutex", __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, "Access granted from updateGraphicsInProgress mutex", __itm__current__function__);
 
 
                     // send data
@@ -180,10 +180,10 @@ void CVolume::run()
                     emit sendData(voiData, data_s, data_c, source, true, 0, elapsedTime,
                                 strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d), T=[%d, %d] loaded from res %d",
                                 voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, voiT0, voiT1, voiResIndex).c_str());
-                    /**/itm::debug(itm::LEV3, "sendData signal emitted", __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, "sendData signal emitted", __itm__current__function__);
 
                     // unlock updateGraphicsInProgress mutex
-                    /**/itm::debug(itm::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
+                    /**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
                     /**/ updateGraphicsInProgress.unlock();
                 }
             }
@@ -202,7 +202,7 @@ void CVolume::run()
 //                    for (int step = 1; step <= streamingSteps; step++)
 //                    {
 //                        // load current selected frame
-//                        /**/itm::debug(itm::LEV3, strprintf("Time step %d/2: loading data", step).c_str(), __itm__current__function__);
+//                        /**/tf::debug(tf::LEV3, strprintf("Time step %d/2: loading data", step).c_str(), __itm__current__function__);
 //                        volume->setActiveFrames(step == 1 ? cur_t : voiT0, step == 1 ? cur_t : voiT1);
 //                        QElapsedTimer timerIO;
 //                        timerIO.start();
@@ -210,9 +210,9 @@ void CVolume::run()
 //                        qint64 elapsedTime = timerIO.elapsed();
 
 //                        // copy frame to buffer ( ** CRITICAL SECTION ** )
-//                        /**/itm::debug(itm::LEV3, strprintf("Time step %d/2: waiting for buffer mutex", step).c_str(), __itm__current__function__);
+//                        /**/tf::debug(tf::LEV3, strprintf("Time step %d/2: waiting for buffer mutex", step).c_str(), __itm__current__function__);
 //                        /**/ bufferMutex.lock();
-//                        /**/itm::debug(itm::LEV3, strprintf("Time step %d/2: access granted on buffer mutex", step).c_str(), __itm__current__function__);
+//                        /**/tf::debug(tf::LEV3, strprintf("Time step %d/2: access granted on buffer mutex", step).c_str(), __itm__current__function__);
 //                        uint32 buf_dims[5]      = {voiH1-voiH0, voiV1-voiV0, voiD1-voiD0, volume->getDIM_C(), voiT1 - voiT0 +1};
 //                        uint32 buf_offset[5]    = {0,           0,           0,           0,                            cur_t-voiT0};
 //                        uint32 cur_t_dims[5]    = {voiH1-voiH0, voiV1-voiV0, voiD1-voiD0, volume->getDIM_C(), 1};
@@ -221,18 +221,18 @@ void CVolume::run()
 //                        CViewer::copyVOI(cur_t_data, cur_t_dims, cur_t_offset, cur_t_count, buffer, buf_dims, buf_offset);
 //                        delete[] cur_t_data;
 //                        /**/ bufferMutex.unlock();
-//                        /**/itm::debug(itm::LEV3, strprintf("Time step %d/2: unlocked buffer mutex", step).c_str(), __itm__current__function__);
+//                        /**/tf::debug(tf::LEV3, strprintf("Time step %d/2: unlocked buffer mutex", step).c_str(), __itm__current__function__);
 
 
 //                        // wait GUI thread to complete update graphics
-//                        /**/itm::debug(itm::LEV3, strprintf("Time step %d/2: waiting for updateGraphicsInProgress mutex", step).c_str(), __itm__current__function__);
+//                        /**/tf::debug(tf::LEV3, strprintf("Time step %d/2: waiting for updateGraphicsInProgress mutex", step).c_str(), __itm__current__function__);
 //                        /**/ destination->updateGraphicsInProgress.lock();
 //                        /**/ destination->updateGraphicsInProgress.unlock();
-//                        /**/itm::debug(itm::LEV3, strprintf("Time step %d/2: unlocked updateGraphicsInProgress mutex", step).c_str(), __itm__current__function__);
+//                        /**/tf::debug(tf::LEV3, strprintf("Time step %d/2: unlocked updateGraphicsInProgress mutex", step).c_str(), __itm__current__function__);
 
 //                        // send data to GUI thread
 //                        finished = false;
-//                        /**/itm::debug(itm::LEV3, strprintf("Time step %d/2: sendOperationOutcome", step).c_str(), __itm__current__function__);
+//                        /**/tf::debug(tf::LEV3, strprintf("Time step %d/2: sendOperationOutcome", step).c_str(), __itm__current__function__);
 //                        sprintf(msg, "Streaming %d/%d: Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) loaded from res %d",
 //                                1, 2, voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, voiResIndex);
 //                        emit sendOperationOutcome(buffer, 0, destination, elapsedTime, msg, 1);
@@ -247,7 +247,7 @@ void CVolume::run()
 
 
 //                    // load current selected frame
-//                    /**/itm::debug(itm::LEV3, "Time step 1/2: loading data", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 1/2: loading data", __itm__current__function__);
 //                    volume->setActiveFrames(cur_t, cur_t);
 //                    QElapsedTimer timerIO;
 //                    timerIO.start();
@@ -255,27 +255,27 @@ void CVolume::run()
 //                    qint64 elapsedTime = timerIO.elapsed();
 
 
-//                    /**/itm::debug(itm::LEV3, "Time step 2/2: waiting for buffer mutex", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 2/2: waiting for buffer mutex", __itm__current__function__);
 //                    /**/ bufferMutex.lock();
-//                    /**/itm::debug(itm::LEV3, "Time step 2/2: access granted on buffer mutex", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 2/2: access granted on buffer mutex", __itm__current__function__);
 //                    timerIO.start();
 //                    volume->setActiveFrames(voiT0 + (voiT1-voiT0)/2, voiT1);
-//                    /**/itm::debug(itm::LEV3, "Time step 2/2: loading data", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 2/2: loading data", __itm__current__function__);
 //                    buffer = volume->loadSubvolume_to_UINT8(voiV0, voiV1, voiH0, voiH1, voiD0, voiD1);
 //                    elapsedTime = timerIO.elapsed();
 //                    /**/ bufferMutex.unlock();
-//                    /**/itm::debug(itm::LEV3, "Time step 2/2: unlocked buffer mutex", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 2/2: unlocked buffer mutex", __itm__current__function__);
 
 //                    sprintf(msg, "Streaming %d/%d: Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) loaded from res %d",
 //                            2, 2, voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, voiResIndex);
 
-//                    /**/itm::debug(itm::LEV3, "Time step 1/2: waiting for updateGraphicsInProgress mutex", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 1/2: waiting for updateGraphicsInProgress mutex", __itm__current__function__);
 //                    /**/ destination->updateGraphicsInProgress.lock();
 //                    /**/ destination->updateGraphicsInProgress.unlock();
-//                    /**/itm::debug(itm::LEV3, "Time step 1/2: unlocked updateGraphicsInProgress mutex", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 1/2: unlocked updateGraphicsInProgress mutex", __itm__current__function__);
 
 //                    finished = true;
-//                    /**/itm::debug(itm::LEV3, "Time step 1/2: sendOperationOutcome", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Time step 1/2: sendOperationOutcome", __itm__current__function__);
 //                    emit sendOperationOutcome(buffer, 0, destination, elapsedTime, msg, 2);
 
 
@@ -291,7 +291,7 @@ void CVolume::run()
 //                throw RuntimeException("Streaming not yet supported for this type of destination");
 
 //            //reading/writing from/to the same buffer with MUTEX (see Producer-Consumer problem)
-//            /**/itm::debug(itm::LEV3, "Calling streamedLoadSubvolume_open", __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, "Calling streamedLoadSubvolume_open", __itm__current__function__);
 //            void *stream_descr = 0;
 //            if(vaa3D_volume_RGB)
 //                stream_descr = vaa3D_volume_RGB->streamedLoadSubvolume_open(streamingSteps, buffer, voiV0, voiV1, voiH0, voiH1, voiD0, voiD1);
@@ -300,9 +300,9 @@ void CVolume::run()
 //            for (int currentStep = 1; currentStep <= streamingSteps; currentStep++)
 //            {
 
-//                /**/itm::debug(itm::LEV3, "Waiting for buffer mutex", __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, "Waiting for buffer mutex", __itm__current__function__);
 //                /**/ bufferMutex.lock();
-//                /**/itm::debug(itm::LEV3, "Access granted to buffer mutex, locking", __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, "Access granted to buffer mutex, locking", __itm__current__function__);
 //                QElapsedTimer timerIO;
 //                timerIO.start();
 //                if(vaa3D_volume_RGB)
@@ -311,36 +311,36 @@ void CVolume::run()
 //                    buffer = vaa3D_volume_4D->streamedLoadSubvolume_dostep(stream_descr);
 //                qint64 elapsedTime = timerIO.elapsed();
 //                /**/ bufferMutex.unlock();
-//                /**/itm::debug(itm::LEV3, "Unlocked buffer mutex", __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, "Unlocked buffer mutex", __itm__current__function__);
 
 //                sprintf(msg, "Streaming %d/%d: Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) loaded from res %d",
 //                        currentStep, streamingSteps, voiH0, voiH1, voiV0, voiV1, voiD0, voiD1, voiResIndex);
 
-//                /**/itm::debug(itm::LEV3, "Waiting for updateGraphicsInProgress mutex", __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, "Waiting for updateGraphicsInProgress mutex", __itm__current__function__);
 //                /**/ destination->updateGraphicsInProgress.lock();
 //                /**/ destination->updateGraphicsInProgress.unlock();
-//                /**/itm::debug(itm::LEV3, "Unlocked updateGraphicsInProgress mutex", __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, "Unlocked updateGraphicsInProgress mutex", __itm__current__function__);
 
 
 //                finished = currentStep == streamingSteps;
 
 //                if(finished)
 //                {
-//                    /**/itm::debug(itm::LEV3, "Calling streamedLoadSubvolume_close", __itm__current__function__);
+//                    /**/tf::debug(tf::LEV3, "Calling streamedLoadSubvolume_close", __itm__current__function__);
 //                    if(vaa3D_volume_RGB)
 //                        buffer = vaa3D_volume_RGB->streamedLoadSubvolume_close(stream_descr);
 //                    else if(vaa3D_volume_4D)
 //                        buffer = vaa3D_volume_4D->streamedLoadSubvolume_close(stream_descr);
 //                }
 
-//                /**/itm::debug(itm::LEV3, strprintf("sendOperationOutcome, step %d", currentStep).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("sendOperationOutcome, step %d", currentStep).c_str(), __itm__current__function__);
 //                emit sendOperationOutcome(buffer, 0, destination, elapsedTime, msg, currentStep);
             }
         }
         else
             throw RuntimeException("No volume has been imported yet.");
 
-        /**/itm::debug(itm::LEV1, "EOF", __itm__current__function__);
+        /**/tf::debug(tf::LEV1, "EOF", __itm__current__function__);
     }
     catch( iim::IOException& exception)
     {
@@ -349,7 +349,7 @@ void CVolume::run()
         /**/ updateGraphicsInProgress.lock();
         reset();
         //bufferMutex.unlock();
-        itm::warning(exception.what(), "CVolume");
+        tf::warning(exception.what(), "CVolume");
         /**/ updateGraphicsInProgress.unlock();
 
         emit sendData(0, make_vector<int>(), make_vector<int>(), dest, true, new RuntimeException(exception.what()), 0, "");
@@ -361,7 +361,7 @@ void CVolume::run()
         /**/ updateGraphicsInProgress.lock();
         reset();
         //bufferMutex.unlock();
-        itm::warning(exception.what(), "CVolume");
+        tf::warning(exception.what(), "CVolume");
         /**/ updateGraphicsInProgress.unlock();
 
         emit sendData(0, make_vector<int>(), make_vector<int>(), dest, true, new RuntimeException(exception.what()), 0, "");
@@ -373,7 +373,7 @@ void CVolume::run()
         /**/ updateGraphicsInProgress.lock();
         reset();
         //bufferMutex.unlock();
-        itm::warning(exception.what(), "CVolume");
+        tf::warning(exception.what(), "CVolume");
         /**/ updateGraphicsInProgress.unlock();
 
         emit sendData(0, make_vector<int>(), make_vector<int>(), dest, true, new RuntimeException(exception.what()), 0, "");
@@ -385,7 +385,7 @@ void CVolume::run()
         /**/ updateGraphicsInProgress.lock();
         reset();
         //bufferMutex.unlock();
-        itm::warning(error, "CVolume");
+        tf::warning(error, "CVolume");
         /**/ updateGraphicsInProgress.unlock();
 
         emit sendData(0, make_vector<int>(), make_vector<int>(), dest, true, new RuntimeException(error), 0, "");
@@ -397,7 +397,7 @@ void CVolume::run()
         /**/ updateGraphicsInProgress.lock();
         reset();
         //bufferMutex.unlock();
-        itm::warning("Unknown error occurred", "CVolume");
+        tf::warning("Unknown error occurred", "CVolume");
         /**/ updateGraphicsInProgress.unlock();
 
         emit sendData(0, make_vector<int>(), make_vector<int>(), dest, true, new RuntimeException("Unknown error occurred"), 0, "");

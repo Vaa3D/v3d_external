@@ -35,7 +35,7 @@
 #include "CImport.h"
 #include "CViewer.h"
 
-class teramanager::CVolume : public QThread
+class terafly::CVolume : public QThread
 {
     Q_OBJECT
 
@@ -48,7 +48,7 @@ class teramanager::CVolume : public QThread
         static CVolume* uniqueInstance;
         CVolume() : QThread()
         {
-         /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+         /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
             reset();
         }
@@ -80,12 +80,12 @@ class teramanager::CVolume : public QThread
         ~CVolume();
 
         //GET and SET methods
-//        void initBuffer(itm::uint8* data, int xDim, int yDim, int zDim, int cDim=1, int tDim=1) throw (itm::RuntimeException)
+//        void initBuffer(tf::uint8* data, int xDim, int yDim, int zDim, int cDim=1, int tDim=1) throw (tf::RuntimeException)
 //        {
-//            /**/itm::debug(itm::LEV1, strprintf("xDim = %d, yDim=%d, zDim = %d, cDim=%d, tDim = %d",
+//            /**/tf::debug(tf::LEV1, strprintf("xDim = %d, yDim=%d, zDim = %d, cDim=%d, tDim = %d",
 //                                                xDim,       yDim,    zDim,      cDim,    tDim).c_str(), __itm__current__function__);
 
-//            itm::uint64 size = xDim;
+//            tf::uint64 size = xDim;
 //            size *= yDim;
 //            size *= zDim;
 //            size *= cDim;
@@ -93,19 +93,19 @@ class teramanager::CVolume : public QThread
 //            if(buffer)
 //                delete[] buffer;
 
-//            try{ buffer = new itm::uint8[size]; }
-//            catch(...){ throw itm::RuntimeException("in CVolume::initBuffer(): cannot allocate memory");}
+//            try{ buffer = new tf::uint8[size]; }
+//            catch(...){ throw tf::RuntimeException("in CVolume::initBuffer(): cannot allocate memory");}
 
-//            for(itm::uint8 *buf_p = buffer, *data_p = data; buf_p - buffer < size; buf_p++, data_p++)
+//            for(tf::uint8 *buf_p = buffer, *data_p = data; buf_p - buffer < size; buf_p++, data_p++)
 //                *buf_p = *data_p;
 //        }
-//        itm::uint8* getBuffer(){return buffer;}
+//        tf::uint8* getBuffer(){return buffer;}
 
         void setStreamingSteps(int nsteps){streamingSteps = nsteps;}
         int getStreamingSteps(){return streamingSteps;}
         void reset()
         {
-            /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+            /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
             voiResIndex = -1;
             //buffer = 0;
@@ -123,9 +123,9 @@ class teramanager::CVolume : public QThread
         int getVoiT0(){return voiT0;}
         int getVoiT1(){return voiT1;}
         int getVoiResIndex(){return voiResIndex;}
-        void setVoi(QWidget* _sourceObject, int _voiResIndex, int _V0, int _V1, int _H0, int _H1, int _D0, int _D1, int _T0, int _T1) throw (itm::RuntimeException)
+        void setVoi(QWidget* _sourceObject, int _voiResIndex, int _V0, int _V1, int _H0, int _H1, int _D0, int _D1, int _T0, int _T1) throw (tf::RuntimeException)
         {
-            /**/itm::debug(itm::LEV1, strprintf("_voiResIndex = %d, _V0 = %d, _V1=%d, _H0 = %d, _H1=%d, _D0 = %d, _D1=%d, _T0 = %d, _T1=%d",
+            /**/tf::debug(tf::LEV1, strprintf("_voiResIndex = %d, _V0 = %d, _V1=%d, _H0 = %d, _H1=%d, _D0 = %d, _D1=%d, _T0 = %d, _T1=%d",
                                                 _voiResIndex, _V0, _V1, _H0, _H1, _D0, _D1, _T0, _T1).c_str(), __itm__current__function__);
 
             source = _sourceObject;
@@ -145,13 +145,13 @@ class teramanager::CVolume : public QThread
 
             //---- Alessandro 2013-09-03: added check to detect invalid VOI
             if(voiV1 - voiV0 <= 0 || voiH1 - voiH0 <= 0 || voiD1 - voiD0 <= 0 || voiT1 - voiT0 < 0)
-                throw itm::RuntimeException("Invalid VOI selected");
+                throw tf::RuntimeException("Invalid VOI selected");
         }
         void setSource(QWidget* _sourceObject){source =_sourceObject;}
 
-        void setVoiT(int _T0, int _T1, int _cur_t = -1) throw (itm::RuntimeException)
+        void setVoiT(int _T0, int _T1, int _cur_t = -1) throw (tf::RuntimeException)
         {
-            /**/itm::debug(itm::LEV1, strprintf("asked to set [%d, %d] and _cur_t = %d",_T0, _T1, _cur_t).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV1, strprintf("asked to set [%d, %d] and _cur_t = %d",_T0, _T1, _cur_t).c_str(), __itm__current__function__);
             iim::VirtualVolume* volume = CImport::instance()->getVolume(voiResIndex);
 
             // correct [voiT0, voiT1]
@@ -164,30 +164,30 @@ class teramanager::CVolume : public QThread
             else
                 cur_t = _cur_t;
 
-            /**/itm::debug(itm::LEV1, strprintf("but set [%d, %d] and cur_t = %d", voiT0, voiT1, cur_t).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV1, strprintf("but set [%d, %d] and cur_t = %d", voiT0, voiT1, cur_t).c_str(), __itm__current__function__);
 
             if(voiT1 - voiT0 < 0)
-                throw itm::RuntimeException(itm::strprintf("Invalid VOI selected along T: [%d,%d]", voiT0, voiT1).c_str());
+                throw tf::RuntimeException(tf::strprintf("Invalid VOI selected along T: [%d,%d]", voiT0, voiT1).c_str());
         }
 
         template<typename T>
-        static inline T scaleCoord(T coord, int srcRes, int dstRes, iim::axis dir, bool round) throw (itm::RuntimeException)
+        static inline T scaleCoord(T coord, int srcRes, int dstRes, iim::axis dir, bool round) throw (tf::RuntimeException)
         {
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV3, itm::strprintf("coord = %s, srcRes = %d, dstRes = %d, dir = %d, round = %s", itm::num2str(coord).c_str(), srcRes, dstRes, dir, round ? "true": "false").c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, tf::strprintf("coord = %s, srcRes = %d, dstRes = %d, dir = %d, round = %s", tf::num2str(coord).c_str(), srcRes, dstRes, dir, round ? "true": "false").c_str(), __itm__current__function__);
             #endif
 
             // checks
             if(srcRes < 0 || srcRes >= CImport::instance()->getResolutions())
-                throw itm::RuntimeException("scaleCoord(): invalid source resolution");
+                throw tf::RuntimeException("scaleCoord(): invalid source resolution");
             if(dstRes < 0 || dstRes >= CImport::instance()->getResolutions())
-                throw itm::RuntimeException("scaleCoord(): invalid destination resolution");
+                throw tf::RuntimeException("scaleCoord(): invalid destination resolution");
 
             // special case: image spaces match
             if(srcRes == dstRes)
             {
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, itm::strprintf("image spaces match, return %s", itm::num2str(coord).c_str()).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("image spaces match, return %s", tf::num2str(coord).c_str()).c_str(), __itm__current__function__);
                 #endif
                 return coord;
             }
@@ -195,7 +195,7 @@ class teramanager::CVolume : public QThread
             else if(coord >= CImport::instance()->getVolume(srcRes)->getDIM(dir))
             {
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, itm::strprintf("boundary coordinate, return %d", CImport::instance()->getVolume(dstRes)->getDIM(dir)).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("boundary coordinate, return %d", CImport::instance()->getVolume(dstRes)->getDIM(dir)).c_str(), __itm__current__function__);
                 #endif
                 return CImport::instance()->getVolume(dstRes)->getDIM(dir);
             }
@@ -203,7 +203,7 @@ class teramanager::CVolume : public QThread
             else if(CImport::instance()->getVolume(srcRes)->getDIM(dir) == 1)
             {
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, itm::strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM(dir) : 0).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM(dir) : 0).c_str(), __itm__current__function__);
                 #endif
                 return coord ? CImport::instance()->getVolume(dstRes)->getDIM(dir) : 0;
             }
@@ -213,17 +213,17 @@ class teramanager::CVolume : public QThread
                 float rescale = CImport::instance()->getRescaleFactor(dstRes, srcRes, dir);
 
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, itm::strprintf("normal case, rescale = %f, return %s", rescale, itm::num2str(round? itm::round(coord*rescale) : (coord*rescale)).c_str()).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("normal case, rescale = %f, return %s", rescale, tf::num2str(round? tf::round(coord*rescale) : (coord*rescale)).c_str()).c_str(), __itm__current__function__);
                 #endif
 
-                return round? itm::round(coord*rescale) : coord*rescale;
+                return round? tf::round(coord*rescale) : coord*rescale;
             }
         }
 
 //        static inline int scaleVCoord(int coord, int srcRes, int dstRes) throw (RuntimeException)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("coord = %d, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("coord = %d, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
 //            #endif
 
 //            //checks
@@ -236,7 +236,7 @@ class teramanager::CVolume : public QThread
 //            if(srcRes == dstRes)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes = dstRes, return %d", coord).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes = dstRes, return %d", coord).c_str(), __itm__current__function__);
 //                #endif
 //                return coord;
 //            }
@@ -244,14 +244,14 @@ class teramanager::CVolume : public QThread
 //            else if(coord == CImport::instance()->getVolume(srcRes)->getDIM_V())
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("coord = srcRes->DIM_V(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_V()).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("coord = srcRes->DIM_V(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_V()).c_str(), __itm__current__function__);
 //                #endif
 //                return CImport::instance()->getVolume(dstRes)->getDIM_V();
 //            }
 //            else if(CImport::instance()->getVolume(srcRes)->getDIM_V() == 1)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_V() : 0).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_V() : 0).c_str(), __itm__current__function__);
 //                #endif
 //                return coord ? CImport::instance()->getVolume(dstRes)->getDIM_V() : 0;
 //            }
@@ -259,7 +259,7 @@ class teramanager::CVolume : public QThread
 //            {
 //                float ratio = (CImport::instance()->getVolume(dstRes)->getDIM_V()-1.0f)/(CImport::instance()->getVolume(srcRes)->getDIM_V()-1.0f);
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("final else, return %d", static_cast<int>(coord*ratio + 0.5f)).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("final else, return %d", static_cast<int>(coord*ratio + 0.5f)).c_str(), __itm__current__function__);
 //                #endif
 //                return static_cast<int>(coord*ratio + 0.5f);
 //            }
@@ -267,7 +267,7 @@ class teramanager::CVolume : public QThread
 //        static inline int scaleHCoord(int coord, int srcRes, int dstRes) throw (RuntimeException)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("coord = %d, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("coord = %d, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
 //            #endif
 
 //            //checks
@@ -280,21 +280,21 @@ class teramanager::CVolume : public QThread
 //            if(srcRes == dstRes)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes = dstRes, return %d", coord).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes = dstRes, return %d", coord).c_str(), __itm__current__function__);
 //                #endif
 //                return coord;
 //            }
 //            else if(coord == CImport::instance()->getVolume(srcRes)->getDIM_H())
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("coord = srcRes->DIM_H(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_H()).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("coord = srcRes->DIM_H(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_H()).c_str(), __itm__current__function__);
 //                #endif
 //                return CImport::instance()->getVolume(dstRes)->getDIM_H();
 //            }
 //            else if(CImport::instance()->getVolume(srcRes)->getDIM_H() == 1)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_H() : 0).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_H() : 0).c_str(), __itm__current__function__);
 //                #endif
 //                return coord ? CImport::instance()->getVolume(dstRes)->getDIM_H() : 0;
 //            }
@@ -302,7 +302,7 @@ class teramanager::CVolume : public QThread
 //            {
 //                float ratio = (CImport::instance()->getVolume(dstRes)->getDIM_H()-1.0f)/(CImport::instance()->getVolume(srcRes)->getDIM_H()-1.0f);
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("final else, return %d", static_cast<int>(coord*ratio + 0.5f)).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("final else, return %d", static_cast<int>(coord*ratio + 0.5f)).c_str(), __itm__current__function__);
 //                #endif
 //                return static_cast<int>(coord*ratio + 0.5f);
 //            }
@@ -310,7 +310,7 @@ class teramanager::CVolume : public QThread
 //        static inline int scaleDCoord(int coord, int srcRes, int dstRes) throw (RuntimeException)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("coord = %d, srcRes = %d, dstRes = %d, srcRes->getDIM_D() = %d, dstRes->getDIM_D() = %d", coord, srcRes, dstRes, CImport::instance()->getVolume(srcRes)->getDIM_D(), CImport::instance()->getVolume(dstRes)->getDIM_D()).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("coord = %d, srcRes = %d, dstRes = %d, srcRes->getDIM_D() = %d, dstRes->getDIM_D() = %d", coord, srcRes, dstRes, CImport::instance()->getVolume(srcRes)->getDIM_D(), CImport::instance()->getVolume(dstRes)->getDIM_D()).c_str(), __itm__current__function__);
 //            #endif
 
 //            //checks
@@ -323,21 +323,21 @@ class teramanager::CVolume : public QThread
 //            if(srcRes == dstRes)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes = dstRes, return %d", coord).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes = dstRes, return %d", coord).c_str(), __itm__current__function__);
 //                #endif
 //                return coord;
 //            }
 //            else if(coord == CImport::instance()->getVolume(srcRes)->getDIM_D())
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("coord = srcRes->DIM_D(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_D()).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("coord = srcRes->DIM_D(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_D()).c_str(), __itm__current__function__);
 //                #endif
 //                return CImport::instance()->getVolume(dstRes)->getDIM_D();
 //            }
 //            else if(CImport::instance()->getVolume(srcRes)->getDIM_D() == 1)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_D() : 0).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_D() : 0).c_str(), __itm__current__function__);
 //                #endif
 //                return coord ? CImport::instance()->getVolume(dstRes)->getDIM_D() : 0;
 //            }
@@ -345,7 +345,7 @@ class teramanager::CVolume : public QThread
 //            {
 //                float ratio = (CImport::instance()->getVolume(dstRes)->getDIM_D()-1.0f)/(CImport::instance()->getVolume(srcRes)->getDIM_D()-1.0f);
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("final else, return %d", static_cast<int>(coord*ratio + 0.5f)).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("final else, return %d", static_cast<int>(coord*ratio + 0.5f)).c_str(), __itm__current__function__);
 //                #endif
 //                return static_cast<int>(coord*ratio + 0.5f);
 //            }
@@ -353,7 +353,7 @@ class teramanager::CVolume : public QThread
 //        static inline float scaleVCoord(float coord, int srcRes, int dstRes) throw (RuntimeException)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("coord = %.3f, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("coord = %.3f, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
 //            #endif
 
 //            //checks
@@ -366,21 +366,21 @@ class teramanager::CVolume : public QThread
 //            if(srcRes == dstRes)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes = dstRes, return %f", coord).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes = dstRes, return %f", coord).c_str(), __itm__current__function__);
 //                #endif
 //                return coord;
 //            }
 //            else if(coord == static_cast<float>(CImport::instance()->getVolume(srcRes)->getDIM_V()))
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("coord = srcRes->DIM_V(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_V()).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("coord = srcRes->DIM_V(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_V()).c_str(), __itm__current__function__);
 //                #endif
 //                return static_cast<float>(CImport::instance()->getVolume(dstRes)->getDIM_V());
 //            }
 //            else if(CImport::instance()->getVolume(srcRes)->getDIM_V() == 1)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_V() : 0).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_V() : 0).c_str(), __itm__current__function__);
 //                #endif
 //                return coord ? static_cast<float>(CImport::instance()->getVolume(dstRes)->getDIM_V()) : 0;
 //            }
@@ -388,7 +388,7 @@ class teramanager::CVolume : public QThread
 //            {
 //                float ratio = (CImport::instance()->getVolume(dstRes)->getDIM_V()-1.0f)/(CImport::instance()->getVolume(srcRes)->getDIM_V()-1.0f);
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("final else, return %f", coord*ratio).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("final else, return %f", coord*ratio).c_str(), __itm__current__function__);
 //                #endif
 //                return coord*ratio;
 //            }
@@ -396,7 +396,7 @@ class teramanager::CVolume : public QThread
 //        static inline float scaleHCoord(float coord, int srcRes, int dstRes) throw (RuntimeException)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("coord = %.3f, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("coord = %.3f, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
 //            #endif
 
 //            //checks
@@ -409,21 +409,21 @@ class teramanager::CVolume : public QThread
 //            if(srcRes == dstRes)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes = dstRes, return %f", coord).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes = dstRes, return %f", coord).c_str(), __itm__current__function__);
 //                #endif
 //                return coord;
 //            }
 //            else if(coord == static_cast<float>(CImport::instance()->getVolume(srcRes)->getDIM_H()))
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("coord = srcRes->DIM_H(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_H()).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("coord = srcRes->DIM_H(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_H()).c_str(), __itm__current__function__);
 //                #endif
 //                return static_cast<float>(CImport::instance()->getVolume(dstRes)->getDIM_H());
 //            }
 //            else if(CImport::instance()->getVolume(srcRes)->getDIM_H() == 1)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_H() : 0).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_H() : 0).c_str(), __itm__current__function__);
 //                #endif
 //                return coord ? static_cast<float>(CImport::instance()->getVolume(dstRes)->getDIM_H()) : 0;
 //            }
@@ -431,7 +431,7 @@ class teramanager::CVolume : public QThread
 //            {
 //                float ratio = (CImport::instance()->getVolume(dstRes)->getDIM_H()-1.0f)/(CImport::instance()->getVolume(srcRes)->getDIM_H()-1.0f);
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("final else, return %f", coord*ratio).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("final else, return %f", coord*ratio).c_str(), __itm__current__function__);
 //                #endif
 //                return coord*ratio;
 //            }
@@ -439,7 +439,7 @@ class teramanager::CVolume : public QThread
 //        static inline float scaleDCoord(float coord, int srcRes, int dstRes) throw (RuntimeException)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("coord = %.3f, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("coord = %.3f, srcRes = %d, dstRes = %d", coord, srcRes, dstRes).c_str(), __itm__current__function__);
 //            #endif
 
 //            //checks
@@ -452,21 +452,21 @@ class teramanager::CVolume : public QThread
 //            if(srcRes == dstRes)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes = dstRes, return %f", coord).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes = dstRes, return %f", coord).c_str(), __itm__current__function__);
 //                #endif
 //                return coord;
 //            }
 //            else if(coord == static_cast<float>(CImport::instance()->getVolume(srcRes)->getDIM_D()))
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("coord = srcRes->DIM_D(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_D()).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("coord = srcRes->DIM_D(), return %d", CImport::instance()->getVolume(dstRes)->getDIM_D()).c_str(), __itm__current__function__);
 //                #endif
 //                return static_cast<float>(CImport::instance()->getVolume(dstRes)->getDIM_D());
 //            }
 //            else if(CImport::instance()->getVolume(srcRes)->getDIM_D() == 1)
 //            {
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_D() : 0).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("srcRes is 2D, return %d", coord ? CImport::instance()->getVolume(dstRes)->getDIM_D() : 0).c_str(), __itm__current__function__);
 //                #endif
 //                return coord ? static_cast<float>(CImport::instance()->getVolume(dstRes)->getDIM_D()) : 0;
 //            }
@@ -474,14 +474,14 @@ class teramanager::CVolume : public QThread
 //            {
 //                float ratio = (CImport::instance()->getVolume(dstRes)->getDIM_D()-1.0f)/(CImport::instance()->getVolume(srcRes)->getDIM_D()-1.0f);
 //                #ifdef terafly_enable_debug_max_level
-//                /**/itm::debug(itm::LEV3, strprintf("final else, return %f", coord*ratio).c_str(), __itm__current__function__);
+//                /**/tf::debug(tf::LEV3, strprintf("final else, return %f", coord*ratio).c_str(), __itm__current__function__);
 //                #endif
 //                return coord*ratio;
 //            }
 //        }
 
         // load data using the currently set VOI
-        itm::uint8* loadData() throw (itm::RuntimeException);
+        tf::uint8* loadData() throw (tf::RuntimeException);
 
         friend class CViewer;
 
@@ -491,12 +491,12 @@ class teramanager::CVolume : public QThread
         * Send data (and metadata) to the listener throughout the loading process
         **********************************************************************************/
         void sendData(
-                itm::uint8* data,                   // data (any dimension)
-                itm::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
-                itm::integer_array data_c,          // data count along X, Y, Z, C, t
+                tf::uint8* data,                   // data (any dimension)
+                tf::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
+                tf::integer_array data_c,          // data count along X, Y, Z, C, t
                 QWidget* dest,                      // listener handle
                 bool finished,                      // whether the loading operation is terminated
-                itm::RuntimeException* ex = 0,      // exception (optional)
+                tf::RuntimeException* ex = 0,      // exception (optional)
                 qint64 elapsed_time = 0,            // elapsed time (optional)
                 QString op_dsc="",                  // operation descriptor (optional)
                 int step=0);                        // step number (optional)

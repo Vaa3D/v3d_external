@@ -2974,7 +2974,7 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 
     // inform TeraFly (SAFE)
     // this does nothing except when TeraFly is active
-    itm::TeraFly::doaction("marker multiselect");
+    tf::TeraFly::doaction("marker multiselect");
 }
 
 // @ADDED by Alessandro on 2015-05-07.

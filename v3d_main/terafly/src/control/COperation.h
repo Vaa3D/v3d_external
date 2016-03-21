@@ -3,7 +3,7 @@
 
 #include "CPlugin.h"
 
-namespace teramanager
+namespace terafly
 {
     enum COMPONENT{ALL_COMPS, GPU, CPU, IO};        // system-component types
     static std::string comp2str(COMPONENT c){
@@ -212,14 +212,14 @@ namespace teramanager
 #define TERAFLY_TIME_START(classname)   \
 QElapsedTimer timer##classname;         \
 timer##classname.start();               \
-teramanager::classname::newGroup();
+terafly::classname::newGroup();
 
 #define TERAFLY_TIME_RESTART(classname) \
 timer##classname.restart();
 
 #define TERAFLY_TIME_STOP(classname, component, message)    \
-if(teramanager::PLog::instance()->isIoCoreOperationsEnabled()) \
-    teramanager::PLog::instance()->emitSendAppend(new teramanager::classname(message, component, timer##classname.elapsed()));
+if(terafly::PLog::instance()->isIoCoreOperationsEnabled()) \
+    terafly::PLog::instance()->emitSendAppend(new terafly::classname(message, component, timer##classname.elapsed()));
 
 //#define TERAFLY_TIME_START(classname)
 //#define TERAFLY_TIME_RESTART(classname)

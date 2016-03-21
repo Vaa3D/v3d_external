@@ -37,14 +37,14 @@
 #include "VolumeConverter.h"
 #include "iomanager.config.h"
 
-using namespace teramanager;
+using namespace terafly;
 using namespace iim;
 
 CConverter* CConverter::uniqueInstance = 0;
 
 void CConverter::uninstance()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(uniqueInstance)
     {
@@ -55,18 +55,18 @@ void CConverter::uninstance()
 
 CConverter::~CConverter()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(resolutions)
         delete[] resolutions;
     resolutions = 0;
 
-    /**/itm::debug(itm::LEV1, "object successfully DESTROYED", __itm__current__function__);
+    /**/tf::debug(tf::LEV1, "object successfully DESTROYED", __itm__current__function__);
 }
 
 void CConverter::setMembers(PConverter* pConverter) throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     char errMsg[1024];
 
@@ -131,7 +131,7 @@ void CConverter::setMembers(PConverter* pConverter) throw (RuntimeException)
 //automatically called when current thread is started
 void CConverter::run()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     try
     {
@@ -156,7 +156,7 @@ void CConverter::run()
         //everything went OK
         emit sendOperationOutcome(0);
 
-        /**/itm::debug(itm::LEV1, "EOF", __itm__current__function__);
+        /**/tf::debug(tf::LEV1, "EOF", __itm__current__function__);
     }
     catch( iim::IOException& exception)  {reset(); emit sendOperationOutcome(new RuntimeException(exception.what()));}
     catch( iom::exception& exception)    {reset(); emit sendOperationOutcome(new RuntimeException(exception.what()));}

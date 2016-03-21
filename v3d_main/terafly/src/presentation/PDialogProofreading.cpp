@@ -2,15 +2,15 @@
 #include "PMain.h"
 #include "../control/CVolume.h"
 
-std::vector<itm::block_t> itm::PDialogProofreading::blocks;
-int itm::PDialogProofreading::blocks_res=0;
+std::vector<tf::block_t> tf::PDialogProofreading::blocks;
+int tf::PDialogProofreading::blocks_res=0;
 
 /*********************************************************************************
 * Singleton design pattern: this class can have one instance only,  which must be
 * instantiated by calling static method "istance(...)"
 **********************************************************************************/
-itm::PDialogProofreading* itm::PDialogProofreading::uniqueInstance = 0;
-void itm::PDialogProofreading::uninstance()
+tf::PDialogProofreading* tf::PDialogProofreading::uniqueInstance = 0;
+void tf::PDialogProofreading::uninstance()
 {
     if(uniqueInstance)
     {
@@ -19,9 +19,9 @@ void itm::PDialogProofreading::uninstance()
     }
 }
 
-itm::PDialogProofreading::PDialogProofreading(itm::PMain *_parent) : QWidget(0)
+tf::PDialogProofreading::PDialogProofreading(tf::PMain *_parent) : QWidget(0)
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     parent = _parent;
 
@@ -193,9 +193,9 @@ itm::PDialogProofreading::PDialogProofreading(itm::PMain *_parent) : QWidget(0)
 /**********************************************************************************
 * Called when <start_button> emits <click()> signal.
 ***********************************************************************************/
-void itm::PDialogProofreading::startButtonClicked()
+void tf::PDialogProofreading::startButtonClicked()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     blocks_res = resolution_cbox->currentIndex();
     parent->PRstart();
@@ -204,9 +204,9 @@ void itm::PDialogProofreading::startButtonClicked()
 
 
 //overrides closeEvent method of QWidget
-void itm::PDialogProofreading::closeEvent(QCloseEvent *evt)
+void tf::PDialogProofreading::closeEvent(QCloseEvent *evt)
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     if(evt)
     {
@@ -218,12 +218,12 @@ void itm::PDialogProofreading::closeEvent(QCloseEvent *evt)
 /**********************************************************************************
 * Called when <show_blocks_button> emits <click()> signal.
 ***********************************************************************************/
-void itm::PDialogProofreading::showBlocksButtonClicked()
+void tf::PDialogProofreading::showBlocksButtonClicked()
 {
     setCursor(Qt::WaitCursor);
     blocks_text->clear();
     for(int i=0; i<blocks.size(); i++)
-        blocks_text->append(itm::strprintf("block %d: X=[%d,%d], Y=[%d,%d], Z=[%d,%d]", i, blocks[i].xInt.start+1, blocks[i].xInt.end,
+        blocks_text->append(tf::strprintf("block %d: X=[%d,%d], Y=[%d,%d], Z=[%d,%d]", i, blocks[i].xInt.start+1, blocks[i].xInt.end,
                                            blocks[i].yInt.start+1, blocks[i].yInt.end, blocks[i].zInt.start+1, blocks[i].zInt.end).c_str());
     blocks_text->moveCursor (QTextCursor::Start) ;
     blocks_text->ensureCursorVisible();
@@ -231,9 +231,9 @@ void itm::PDialogProofreading::showBlocksButtonClicked()
 }
 
 // re-computes blocks and updates GUI
-void itm::PDialogProofreading::updateBlocks(int)
+void tf::PDialogProofreading::updateBlocks(int)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CViewer* curWin = CViewer::getCurrent();
     if(curWin)
@@ -259,7 +259,7 @@ void itm::PDialogProofreading::updateBlocks(int)
         int tolerance = 30;
 
         // generate X intervals
-        vector<itm::interval_t> xInts;
+        vector<tf::interval_t> xInts;
         int count = 0;
         while(xInts.empty() || xInts.back().end < dimX)
         {
@@ -276,7 +276,7 @@ void itm::PDialogProofreading::updateBlocks(int)
         }
 
         // generate Y intervals
-        vector<itm::interval_t> yInts;
+        vector<tf::interval_t> yInts;
         count = 0;
         while(yInts.empty() || yInts.back().end < dimY)
         {
@@ -293,7 +293,7 @@ void itm::PDialogProofreading::updateBlocks(int)
         }
 
         // generate Z intervals
-        vector<itm::interval_t> zInts;
+        vector<tf::interval_t> zInts;
         count = 0;
         while(zInts.empty() || zInts.back().end < dimZ)
         {
@@ -334,16 +334,16 @@ void itm::PDialogProofreading::updateBlocks(int)
                     blocks.push_back(block_t(xInts[x], yInts[y], zInts[z]));
 
         // update GUI elements
-        blocks_size_field->setText(itm::strprintf("%d (X) x %d (Y) x %d (Z)", parent->Hdim_sbox->value(), parent->Vdim_sbox->value(), parent->Ddim_sbox->value()).c_str());
-        VOI_field->setText(itm::strprintf("[%d, %d] (X) x [%d, %d] (Y) x [%d, %d] (Z)", parent->H0_sbox->value(), parent->H1_sbox->value(),
+        blocks_size_field->setText(tf::strprintf("%d (X) x %d (Y) x %d (Z)", parent->Hdim_sbox->value(), parent->Vdim_sbox->value(), parent->Ddim_sbox->value()).c_str());
+        VOI_field->setText(tf::strprintf("[%d, %d] (X) x [%d, %d] (Y) x [%d, %d] (Z)", parent->H0_sbox->value(), parent->H1_sbox->value(),
                                           parent->V0_sbox->value(), parent->V1_sbox->value(), parent->D0_sbox->value(), parent->D1_sbox->value()).c_str());
         blocks_field->setText(QString::number(blocks.size()));
-        itm::uint64 cur_res_size = (uint64)1*
+        tf::uint64 cur_res_size = (uint64)1*
                                    CImport::instance()->getVolume(resolution_cbox->currentIndex())->getDIM_V() *
                                    CImport::instance()->getVolume(resolution_cbox->currentIndex())->getDIM_H() *
                                    CImport::instance()->getVolume(resolution_cbox->currentIndex())->getDIM_D();
-        itm::uint64 cur_sel_size = (uint64)1 * dimX * dimY * dimZ;
-        coverage_field->setText( (itm::strprintf("%.3f", (cur_sel_size*100.0/cur_res_size)) + "\%").c_str());
+        tf::uint64 cur_sel_size = (uint64)1 * dimX * dimY * dimZ;
+        coverage_field->setText( (tf::strprintf("%.3f", (cur_sel_size*100.0/cur_res_size)) + "\%").c_str());
         if(blocks.size() < 2)
         {
             start_button->setEnabled(false);
@@ -356,7 +356,7 @@ void itm::PDialogProofreading::updateBlocks(int)
         }
         int est_time_minutes = ((perblock_time_sbox->value()*blocks.size())%3600)/60;
         int est_time_hours   = (perblock_time_sbox->value()*blocks.size())/3600;
-        est_time_field->setText(itm::strprintf("%d hours and %d minutes", est_time_hours, est_time_minutes).c_str());
+        est_time_field->setText(tf::strprintf("%d hours and %d minutes", est_time_hours, est_time_minutes).c_str());
 
     }
 }
@@ -364,7 +364,7 @@ void itm::PDialogProofreading::updateBlocks(int)
 /**********************************************************************************
 * For mouse-enter tooltips
 ***********************************************************************************/
-bool itm::PDialogProofreading::eventFilter(QObject *obj, QEvent *evt)
+bool tf::PDialogProofreading::eventFilter(QObject *obj, QEvent *evt)
 {
     if(obj == VOI_field && evt->type()==QEvent::Enter)
     {

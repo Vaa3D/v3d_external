@@ -34,7 +34,7 @@
 #include "../control/CSettings.h"
 #include "QProgressSender.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 PConverter* PConverter::uniqueInstance = NULL;
 PConverter* PConverter::instance(V3DPluginCallback *callback, QWidget *parent)
@@ -45,7 +45,7 @@ PConverter* PConverter::instance(V3DPluginCallback *callback, QWidget *parent)
 }
 void PConverter::uninstance()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CConverter::uninstance();
     PLog::uninstance();
@@ -58,7 +58,7 @@ void PConverter::uninstance()
 
 PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     //initializing members
     V3D_env = callback;
@@ -300,7 +300,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     layout->setSpacing(0);
     layout->setContentsMargins(10,5,10,0);
     setLayout(layout);
-    setWindowTitle(QString("TeraConverter v").append(teramanager::version.c_str()));
+    setWindowTitle(QString("TeraConverter v").append(terafly::version.c_str()));
     this->setFixedWidth(800);
 
     //signals and slots
@@ -311,7 +311,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     connect(inFormatCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(volformatChanged(int)));
     connect(outFormatCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(volformatChanged(int)));
     connect(timeSeriesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(volformatChanged(int)));
-    connect(CConverter::instance(), SIGNAL(sendOperationOutcome(itm::RuntimeException*)), this, SLOT(operationDone(itm::RuntimeException*)), Qt::QueuedConnection);
+    connect(CConverter::instance(), SIGNAL(sendOperationOutcome(tf::RuntimeException*)), this, SLOT(operationDone(tf::RuntimeException*)), Qt::QueuedConnection);
     connect(inDirButton, SIGNAL(clicked()), this, SLOT(inDirButtonClicked()));
     connect(inFileButton, SIGNAL(clicked()), this, SLOT(inFileButtonClicked()));
     connect(outFileButton, SIGNAL(clicked()), this, SLOT(outFileButtonClicked()));
@@ -336,12 +336,12 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     // instance PLog
     PLog::instance(this);
 
-    /**/itm::debug(itm::LEV1, "object successfully created", __itm__current__function__);
+    /**/tf::debug(tf::LEV1, "object successfully created", __itm__current__function__);
 }
 
 PConverter::~PConverter()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 }
 
 //reset GUI method
@@ -365,7 +365,7 @@ void PConverter::startButtonClicked()
         return;
     operationInProgress = true;
 
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     try
     {
@@ -438,7 +438,7 @@ void PConverter::startButtonClicked()
 //called when stopButton has been clicked
 void PConverter::stopButtonClicked()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(QMessageBox::information(this, "Warning", "Terminating this step can be unsafe and cause Vaa3D to crash. \n"
                                               "\nPlease save your data first or click on \"Cancel\" and close the "
@@ -465,7 +465,7 @@ void PConverter::stopButtonClicked()
 
 void PConverter::inDirButtonClicked()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     #ifdef _USE_QT_DIALOGS
     QString path;
@@ -493,7 +493,7 @@ void PConverter::inDirButtonClicked()
 
 void PConverter::inFileButtonClicked()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     std::string namefilter;
     if(inFormatCBox->currentText().compare(iim::TIF3D_FORMAT.c_str()) == 0)
@@ -531,7 +531,7 @@ void PConverter::inFileButtonClicked()
 
 void PConverter::outFileButtonClicked()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     #ifdef _USE_QT_DIALOGS
     QString path;
@@ -546,7 +546,7 @@ void PConverter::outFileButtonClicked()
         path = dialog.directory().absolutePath();
 
     #else
-    QString path = QFileDialog::getSaveFileName(this, "Select output file", itm::cdUp(CSettings::instance()->getVCOutputPath()).c_str(), tr("HDF5 file (*.h5)"));
+    QString path = QFileDialog::getSaveFileName(this, "Select output file", tf::cdUp(CSettings::instance()->getVCOutputPath()).c_str(), tr("HDF5 file (*.h5)"));
     //QString path = QFileDialog::getExistingDirectory(this, "Select the directory where the converted volume has to be stored", CSettings::instance()->getVCOutputPath().c_str(), QFileDialog::ShowDirsOnly);
     #endif
 
@@ -556,7 +556,7 @@ void PConverter::outFileButtonClicked()
 
 void PConverter::outDirButtonClicked()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     #ifdef _USE_QT_DIALOGS
     QString path;
@@ -703,7 +703,7 @@ void PConverter::volformatChanged (int )
 //overrides closeEvent method of QWidget
 void PConverter::closeEvent(QCloseEvent *evt)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(progressBar->isEnabled() && QMessageBox::information(this, "Warning", "An operation is still in progress. Terminating it can be unsafe and cause Vaa3D to crash. \n"
                                                                     "\nPlease save your data first.", "Close TeraConverter plugin", "Cancel"))
@@ -740,7 +740,7 @@ void PConverter::progressBarChanged(int val, int minutes, int seconds, std::stri
 ***********************************************************************************/
 void PConverter::operationDone(RuntimeException *ex)
 {
-    /**/itm::debug(itm::LEV1, strprintf("ex = %s", (ex? "error" : "0")).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("ex = %s", (ex? "error" : "0")).c_str(), __itm__current__function__);
 
 
     //if an exception has occurred, showing a message error
@@ -770,7 +770,7 @@ void PConverter::operationDone(RuntimeException *ex)
 //        startButton->setEnabled(false);
 //        stopButton->setEnabled(false);
         double elapsed_mm = timer.elapsed()/(1000*60.0);
-        QMessageBox::information(this, "Success!", itm::strprintf("Conversion successfully done in %.1f minutes!", elapsed_mm).c_str());
+        QMessageBox::information(this, "Success!", tf::strprintf("Conversion successfully done in %.1f minutes!", elapsed_mm).c_str());
         //close();
 
         statusBar->clearMessage();
@@ -831,7 +831,7 @@ void PConverter::operationDone(RuntimeException *ex)
 ***********************************************************************************/
 void PConverter::updateContent()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     try
     {
@@ -879,7 +879,7 @@ void PConverter::updateContent()
 
 void PConverter::addResolution()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     try
     {

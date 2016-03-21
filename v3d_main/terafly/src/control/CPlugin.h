@@ -53,7 +53,7 @@ class V3DPluginCallback2;
 /*******************************************************************************************************************************
  *   Interfaces, types, parameters and constants   													                           *
  *******************************************************************************************************************************/
-namespace teramanager
+namespace terafly
 {
     /***************************
     *    CLASS DECLARATIONS    *
@@ -125,7 +125,7 @@ namespace teramanager
             static void sleep(unsigned long secs){QThread::sleep(secs);}
     };
 
-    //exception thrown by functions in the current module
+    // custom exception
     class RuntimeException : public std::exception
     {
         private:
@@ -141,59 +141,6 @@ namespace teramanager
             virtual ~RuntimeException() throw(){}
             virtual const char* what() throw() {return message.c_str();}
             const char* getSource() const {return source.c_str();}
-    };
-
-    template<class T>
-    struct xyz
-    {
-        T x,y,z;
-        xyz(void) : x(0), y(0), z(0){}
-        xyz(T _x, T _y, T _z) : x(_x), y(_y), z(_z){}
-        xyz(XYZ &p) : x(p.x), y(p.y), z(p.z){}
-
-        bool operator == (const xyz &p) const{
-            return p.x == x && p.y == y && p.z == z;
-        }
-
-        bool operator <  (const xyz &p) const{
-            return p.x < x && p.y < y && p.z < z;
-        }
-    };
-
-    template<class T>
-    struct xyzt
-    {
-        T x,y,z,t;
-        xyzt(void) : x(0), y(0), z(0), t(0){}
-        xyzt(T _x, T _y, T _z, T _t=0) : x(_x), y(_y), z(_z), t(_t){}
-    };
-
-    template<class T = unsigned int>
-    struct active_channels
-    {
-        T* table;
-        size_t dim;
-        active_channels() : table(0), dim(0){}
-        active_channels(T* _table, size_t _dim) : table(_table), dim(_dim){}
-    };
-
-    template<class T>
-    struct xyzct
-    {
-        T x,y,z,c,t;
-        xyzct(void) : x(0), y(0), z(0), c(0), t(0){}
-        xyzct(T _x, T _y, T _z, T _c=0, T _t=0) : x(_x), y(_y), z(_z), c(_c), t(_t){}
-    };
-
-    template<class T>
-    struct image_5D
-    {
-        T* data;
-        xyzt<size_t> dims;
-        active_channels<> chans;
-        image_5D() : data(0), dims(xyzt<size_t>(0,0,0,0)), chans(0,0){}
-        image_5D(T* _data, xyzt<size_t> _dims, active_channels<> _chans) : data(_data), dims(_dims), chans(_chans){}
-        xyzct<size_t> getDims(){return xyzct<size_t>(dims.x, dims.y, dims.z, static_cast<size_t>(chans.dim), dims.t);}
     };
 
     // emulate initializer list for STL vector
@@ -589,10 +536,110 @@ namespace teramanager
         }
     }
     /*-------------------------------------------------------------------------------------------------------------------------*/
-}
-namespace itm = teramanager;	//a short alias for the current namespace: Icon Tera Manager (itm)
 
-class teramanager::TeraFly : public QObject
+
+
+
+    /********************************
+    *    OTHER UTILITY CLASSES      *
+    *********************************
+    ---------------------------------------------------------------------------------------------------------------------------*/
+    // 3D point (x + y + z)
+    template<class T>
+    struct xyz
+    {
+        T x,y,z;
+        xyz(void) : x(0), y(0), z(0){}
+        xyz(T _x, T _y, T _z) : x(_x), y(_y), z(_z){}
+        xyz(XYZ &p) : x(p.x), y(p.y), z(p.z){}
+
+        bool operator == (const xyz &p) const{
+            return p.x == x && p.y == y && p.z == z;
+        }
+
+        bool operator <  (const xyz &p) const{
+            return p.x < x && p.y < y && p.z < z;
+        }
+    };
+
+    // 4D point (x + y + z + time)
+    template<class T>
+    struct xyzt
+    {
+        T x,y,z,t;
+        xyzt(void) : x(0), y(0), z(0), t(0){}
+        xyzt(T _x, T _y, T _z, T _t) : x(_x), y(_y), z(_z), t(_t){}
+    };
+
+    // 5D point (x + y + z + channel + time)
+    template<class T>
+    struct xyzct
+    {
+        T x,y,z,c,t;
+        xyzct(void) : x(0), y(0), z(0), c(0), t(0){}
+        xyzct(T _x, T _y, T _z, T _c=0, T _t=0) : x(_x), y(_y), z(_z), c(_c), t(_t){}
+    };
+
+    // 4D Volume Of Interest
+    template<class T>
+    struct voi4D
+    {
+        xyzt<T> start;
+        xyzt<T> end;
+        voi4D() : start(0,0,0,0), end(0,0,0,0){}
+        voi4D(xyzt<T> _start, xyzt<T> _end) : start(_start), end(_end){}
+        xyzt<T> dims(){
+            return xyzt<T>(
+                        end.x > start.x ? end.x-start.x : 0,
+                        end.y > start.y ? end.y-start.y : 0,
+                        end.z > start.z ? end.z-start.z : 0,
+                        end.t > start.t ? end.t-start.t : 0);
+        }
+        T size(){
+            xyzt<T> _dims=dims(); return _dims.x*_dims.y*_dims.z*_dims.t;
+        }
+    };
+
+    template<class T = unsigned int>
+    struct active_channels
+    {
+        T* table;
+        size_t dim;
+        active_channels() : table(0), dim(0){}
+        active_channels(T* _table, size_t _dim) : table(_table), dim(_dim){}
+        std::string toString(){
+            std::string res;
+            for(size_t i=0; i<dim; i++)
+                res = res+num2str<T>(table[i]) + (i < dim-1 ? "," :  "");
+            return res;
+        }
+        static std::string toString(std::vector<T> chans){
+            std::string res;
+            for(size_t i=0; i<chans.size(); i++)
+                res = res+num2str<T>(chans[i]) + (i < chans.size()-1 ? "," :  "");
+            return res;
+        }
+    };
+
+
+
+    template<class T>
+    struct image5D
+    {
+        T* data;
+        xyzt<size_t> dims;
+        active_channels<> chans;
+        image5D() : data(0), dims(xyzt<size_t>(0,0,0,0)), chans(0,0){}
+        image5D(T* _data, xyzt<size_t> _dims, active_channels<> _chans) : data(_data), dims(_dims), chans(_chans){}
+        xyzct<size_t> getDims(){return xyzct<size_t>(dims.x, dims.y, dims.z, static_cast<size_t>(chans.dim), dims.t);}
+        size_t size(){return sizeof(T)*dims.x*dims.y*dims.z*dims.t*chans.dim;}
+    };
+    /*-------------------------------------------------------------------------------------------------------------------------*/
+
+}
+namespace tf  = terafly;	//a short alias for the current namespace: TeraFly
+
+class terafly::TeraFly : public QObject
 {
     Q_OBJECT
 

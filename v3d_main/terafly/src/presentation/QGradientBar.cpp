@@ -4,7 +4,7 @@
 
 #include "QGradientBar.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 void QGradientBar::paintEvent(QPaintEvent * evt)
 {

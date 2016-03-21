@@ -4,7 +4,7 @@
 #endif
 #include "QArrowButton.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 QArrowButton::QArrowButton(QWidget *parent, QColor arrowColor, int arrowSize, int arrowWidth, int arrowMargin, int arrowOrientation, bool _mousePressedBlocking) : QPushButton(parent)
 {
@@ -58,10 +58,10 @@ void QArrowButton::paintEvent(QPaintEvent * evt)
         //arrow head
         QLineF line(p2, p1);
         double angle = ::acos(line.dx() / line.length());
-        QPointF arrowP1 = p2 + QPointF(sin(angle + teramanager::pi / 3) * arrSize,
-                                       cos(angle + teramanager::pi / 3) * arrSize);
-        QPointF arrowP2 = p2 + QPointF(sin(angle + teramanager::pi - teramanager::pi / 3) * arrSize,
-                                       cos(angle + teramanager::pi - teramanager::pi / 3) * arrSize);
+        QPointF arrowP1 = p2 + QPointF(sin(angle + terafly::pi / 3) * arrSize,
+                                       cos(angle + terafly::pi / 3) * arrSize);
+        QPointF arrowP2 = p2 + QPointF(sin(angle + terafly::pi - terafly::pi / 3) * arrSize,
+                                       cos(angle + terafly::pi - terafly::pi / 3) * arrSize);
         arrowHead << p2 << arrowP1 << arrowP2;
 
         //arrow body
@@ -85,10 +85,10 @@ void QArrowButton::paintEvent(QPaintEvent * evt)
         //arrow head
         QLineF line(p1, p2);
         double angle = ::acos(line.dx() / line.length());
-        QPointF arrowP1 = p1 + QPointF(sin(angle + teramanager::pi / 3) * arrSize,
-                                       cos(angle + teramanager::pi / 3) * arrSize);
-        QPointF arrowP2 = p1 + QPointF(sin(angle + teramanager::pi - teramanager::pi / 3) * arrSize,
-                                       cos(angle + teramanager::pi - teramanager::pi / 3) * arrSize);
+        QPointF arrowP1 = p1 + QPointF(sin(angle + terafly::pi / 3) * arrSize,
+                                       cos(angle + terafly::pi / 3) * arrSize);
+        QPointF arrowP2 = p1 + QPointF(sin(angle + terafly::pi - terafly::pi / 3) * arrSize,
+                                       cos(angle + terafly::pi - terafly::pi / 3) * arrSize);
         arrowHead << p1 << arrowP1 << arrowP2;
 
         //arrow body

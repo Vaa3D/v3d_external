@@ -4,18 +4,18 @@
 #include "volumemanager.config.h"
 #include "S_config.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 PAbout* PAbout::uniqueInstance = 0;
 
 PAbout::PAbout(QWidget *parent) : QDialog(parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     setWindowTitle("About TeraFly");
 
     desc = new QLabel();
-    desc->setText( itm::strprintf(
+    desc->setText( tf::strprintf(
                          "<html><h3>Vaa3D-TeraFly v. %s </h3>"
                          "<p><h5>module \"imagemanager\" v. %s<br>"
                          "module \"iomanager\" v. %s<br>"
@@ -29,7 +29,7 @@ PAbout::PAbout(QWidget *parent) : QDialog(parent)
                                 "University Campus Bio-Medico of Rome</li>"
                          "<li><b>Hanchuan Peng</b> (email: hanchuan.peng@gmail.com)<br>"
                                  "Allen Institute for Brain Science and Janelia @ HHMI</li></ul></small></html>",
-                                  teramanager::version.c_str(), iim::VERSION.c_str(), iom::VERSION.c_str(), vm::VERSION.c_str(), stitcher::version.c_str()).c_str());
+                                  terafly::version.c_str(), iim::VERSION.c_str(), iom::VERSION.c_str(), vm::VERSION.c_str(), stitcher::version.c_str()).c_str());
     desc->setWordWrap(true);
 
     logo = new QLabel();

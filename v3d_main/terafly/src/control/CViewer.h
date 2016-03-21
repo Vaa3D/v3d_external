@@ -41,7 +41,7 @@
 #include "CImport.h"
 #include "v3d_imaging_para.h"
 
-class teramanager::CViewer : public QWidget
+class terafly::CViewer : public QWidget
 {
     Q_OBJECT
 
@@ -55,7 +55,7 @@ class teramanager::CViewer : public QWidget
         V3dR_MainWindow* window3D;      //the window enclosing <view3DWidget>
         CViewer *next, *prev;   //the next (higher resolution) and previous (lower resolution) <CExplorerWindow> objects
         int volResIndex;                //resolution index of the volume displayed in the current window (see member <volumes> of CImport)
-        itm::uint8* imgData;
+        tf::uint8* imgData;
         int volV0, volV1;               //first and last vertical coordinates of the volume displayed in the current window
         int volH0, volH1;               //first and last horizontal coordinates of the volume displayed in the current window
         int volD0, volD1;               //first and last depth coordinates of the volume displayed in the current window
@@ -102,40 +102,13 @@ class teramanager::CViewer : public QWidget
         //inhibiting default constructor
         CViewer();
 
-        /**********************************************************************************
-        * Returns  the  global coordinate  (which starts from 0) in  the given  resolution
-        * volume image space given the local coordinate (which starts from 0) in the current
-        * resolution volume image space. If resIndex is not set, the returned global coord-
-        * inate will be in the highest resolution image space.
-        ***********************************************************************************/
-        // @moved to public section and made inline
-//        int getGlobalVCoord(int localVCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        int getGlobalHCoord(int localHCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        int getGlobalDCoord(int localDCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        float getGlobalVCoord(float localVCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        float getGlobalHCoord(float localHCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        float getGlobalDCoord(float localDCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-
-        /**********************************************************************************
-        * Returns the local coordinate (which starts from 0) in the current resolution vol-
-        * ume image space given the global coordinate  (which starts from 0) in the highest
-        * resolution volume image space.
-        ***********************************************************************************/
-        // @moved to public section and made inline
-//        int getLocalVCoord(int highestResGlobalVCoord, bool toVaa3Dcoordinates = false);
-//        int getLocalHCoord(int highestResGlobalHCoord, bool toVaa3Dcoordinates = false);
-//        int getLocalDCoord(int highestResGlobalDCoord, bool toVaa3Dcoordinates = false);
-//        float getLocalVCoord(float highestResGlobalVCoord, bool toVaa3Dcoordinates = false);
-//        float getLocalHCoord(float highestResGlobalHCoord, bool toVaa3Dcoordinates = false);
-//        float getLocalDCoord(float highestResGlobalDCoord, bool toVaa3Dcoordinates = false);
-
 
         /**********************************************************************************
         * Returns the most  likely 3D  point in the  image that the user is pointing on the
         * renderer at the given location.
         * This is based on the Vaa3D 3D point selection with one mouse click.
         ***********************************************************************************/
-        XYZ getRenderer3DPoint(int x, int y) throw (itm::RuntimeException);
+        XYZ getRenderer3DPoint(int x, int y) throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Syncronizes widgets from <src> to <dst>
@@ -146,12 +119,12 @@ class teramanager::CViewer : public QWidget
     public:
 
         //CONSTRUCTOR, DECONSTRUCTOR
-        CViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
+        CViewer(V3DPluginCallback2* _V3D_env, int _resIndex, tf::uint8* _imgData, int _volV0, int _volV1,
                         int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer* _prev, int _slidingViewerBlockID = -1);
         ~CViewer();
         static void uninstance()
         {
-            /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+            /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
             while(first){
                 CViewer* p = first->next;
@@ -187,7 +160,7 @@ class teramanager::CViewer : public QWidget
         * Called by the next(prev) <CExplorerWindow>  when the user  zooms out(in) and  the
         * lower(higher) resoolution has to be reestabilished.
         ***********************************************************************************/
-        void restoreViewerFrom(CViewer* source) throw (itm::RuntimeException);
+        void restoreViewerFrom(CViewer* source) throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Generates a new viewer using the given coordinates.
@@ -212,7 +185,7 @@ class teramanager::CViewer : public QWidget
         * achievable interpolation method. The image currently shown is used as data source.
         * Missing pieces of data are filled with black and returned to the caller.
         ***********************************************************************************/
-        itm::uint8*
+        tf::uint8*
             getVOI(int x0, int x1,              // VOI [x0, x1) in the local reference sys
                    int y0, int y1,              // VOI [y0, y1) in the local reference sys
                    int z0, int z1,              // VOI [z0, z1) in the local reference sys
@@ -224,40 +197,40 @@ class teramanager::CViewer : public QWidget
                    int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
                    int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
                    int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
-        throw (itm::RuntimeException);
+        throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Returns  the  maximum intensity projection  of the given VOI in a newly allocated
         * array. Data is taken from the currently displayed image.
         ***********************************************************************************/
-        itm::uint8*
+        tf::uint8*
             getMIP(int x0, int x1,              // VOI [x0, x1) in the local reference sys
                    int y0, int y1,              // VOI [y0, y1) in the local reference sys
                    int z0, int z1,              // VOI [z0, z1) in the local reference sys
                    int t0 = -1, int t1 = -1,    // VOI [t0, t1] in the local reference sys
-                   itm::direction dir = itm::z,
+                   tf::direction dir = tf::z,
                    bool to_BGRA = false,        //true if mip data must be stored into BGRA format
-                   itm::uint8 alpha = 255)      //alpha transparency used if to_BGRA is true
-        throw (itm::RuntimeException);
+                   tf::uint8 alpha = 255)      //alpha transparency used if to_BGRA is true
+        throw (tf::RuntimeException);
 
 
         /**********************************************************************************
         * Makes the current view the last one by  deleting (and deallocting) its subsequent
         * views.
         ***********************************************************************************/
-        void makeLastView() throw (itm::RuntimeException);
+        void makeLastView() throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Annotations are stored/loaded to/from the <CAnnotations> object
         ***********************************************************************************/
-        void storeAnnotations() throw (itm::RuntimeException);
-        void loadAnnotations() throw (itm::RuntimeException);
-        void clearAnnotations() throw (itm::RuntimeException);
-        void deleteSelectedMarkers() throw (itm::RuntimeException);
-        void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (itm::RuntimeException);
-        void createMarkerAt(int x, int y) throw (itm::RuntimeException);
-		void createMarker2At(int x, int y) throw (itm::RuntimeException);
-		void updateAnnotationSpace() throw (itm::RuntimeException);
+        void storeAnnotations() throw (tf::RuntimeException);
+        void loadAnnotations() throw (tf::RuntimeException);
+        void clearAnnotations() throw (tf::RuntimeException);
+        void deleteSelectedMarkers() throw (tf::RuntimeException);
+        void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (tf::RuntimeException);
+        void createMarkerAt(int x, int y) throw (tf::RuntimeException);
+        void createMarker2At(int x, int y) throw (tf::RuntimeException);
+        void updateAnnotationSpace() throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Saves/restores the state of PMain spinboxes for subvolume selection
@@ -271,10 +244,9 @@ class teramanager::CViewer : public QWidget
         void invokedFromVaa3D(v3d_imaging_paras* params = 0);
 
         /**********************************************************************************
-        * Alignes the given widget to the left(right) of the current window
+        * Alignes the given widget to the right of the current window
         ***********************************************************************************/
-        void alignToLeft(QWidget* widget, QEvent* evt);
-        void alignToRight(QWidget* widget);
+        void alignToRight(QWidget* widget, QEvent* evt);
 
         /**********************************************************************************
         * Overriding position, size and resize QWidget methods
@@ -297,7 +269,7 @@ class teramanager::CViewer : public QWidget
         ***********************************************************************************/
         void setActive(bool active)
         {
-            /**/itm::debug(itm::LEV1, strprintf("title = %s, active = %s", titleShort.c_str() , active ? "true" : "false").c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV1, strprintf("title = %s, active = %s", titleShort.c_str() , active ? "true" : "false").c_str(), __itm__current__function__);
 
             isActive = active;
             if(!isActive)
@@ -366,12 +338,12 @@ class teramanager::CViewer : public QWidget
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/
         void receiveData(
-                itm::uint8* data,                   // data (any dimension)
-                itm::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
-                itm::integer_array data_c,          // data count along X, Y, Z, C, t
+                tf::uint8* data,                   // data (any dimension)
+                tf::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
+                tf::integer_array data_c,          // data count along X, Y, Z, C, t
                 QWidget* dest,                         // address of the listener
                 bool finished,                      // whether the loading operation is terminated
-                itm::RuntimeException* ex = 0,      // exception (optional)
+                tf::RuntimeException* ex = 0,      // exception (optional)
                 qint64 elapsed_time = 0,            // elapsed time (optional)
                 QString op_dsc="",                  // operation descriptor (optional)
                 int step=0);                        // step number (optional)
@@ -417,7 +389,7 @@ class teramanager::CViewer : public QWidget
         /**********************************************************************************
         * utility method: return volume dimension along the given direction
         ***********************************************************************************/
-        inline int dimension(iim::axis dir) throw (itm::RuntimeException)
+        inline int dimension(iim::axis dir) throw (tf::RuntimeException)
         {
             if(dir == iim::vertical || dir == iim::inv_vertical)
                 return volV1-volV0;
@@ -426,13 +398,13 @@ class teramanager::CViewer : public QWidget
             else if(dir == iim::depth || dir == iim::inv_depth)
                 return volD1-volD0;
             else
-                throw itm::RuntimeException("CViewer::getDIM(): axis invalid");
+                throw tf::RuntimeException("CViewer::getDIM(): axis invalid");
         }
 
         /**********************************************************************************
         * utility method: return current origin coordinate along the given direction
         ***********************************************************************************/
-        inline int origin(iim::axis dir) throw (itm::RuntimeException)
+        inline int origin(iim::axis dir) throw (tf::RuntimeException)
         {
             if(dir == iim::vertical || dir == iim::inv_vertical)
                 return volV0;
@@ -441,14 +413,14 @@ class teramanager::CViewer : public QWidget
             else if(dir == iim::depth || dir == iim::inv_depth)
                 return volD0;
             else
-                throw itm::RuntimeException("CViewer::getDIM(): axis invalid");
+                throw tf::RuntimeException("CViewer::getDIM(): axis invalid");
         }
 
         /**********************************************************************************
         * utility method: return Vaa3D viewer limit along the given direction
         ***********************************************************************************/
         template<typename T>
-        T vaa3dLimit(iim::axis dir) throw (itm::RuntimeException)
+        T vaa3dLimit(iim::axis dir) throw (tf::RuntimeException)
         {
             if(dir == iim::vertical || dir == iim::inv_vertical)
                 return static_cast<T>(LIMIT_VOLY);
@@ -457,7 +429,7 @@ class teramanager::CViewer : public QWidget
             else if(dir == iim::depth || dir == iim::inv_depth)
                 return static_cast<T>(LIMIT_VOLZ);
             else
-                throw itm::RuntimeException("CViewer::getDIM(): axis invalid");
+                throw tf::RuntimeException("CViewer::getDIM(): axis invalid");
         }
 
         /**********************************************************************************
@@ -474,8 +446,8 @@ class teramanager::CViewer : public QWidget
                 const char *src    = 0)
         {
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, local = %s, dir = %d, res = %d, round = %s, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
-                                                titleShort.c_str(), itm::num2str(local).c_str(), dir, res, round ? "true" : "false", fromVaa3D ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, tf::strprintf("title = %s, local = %s, dir = %d, res = %d, round = %s, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
+                                                titleShort.c_str(), tf::num2str(local).c_str(), dir, res, round ? "true" : "false", fromVaa3D ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
             #endif
 
             // set default res
@@ -490,17 +462,17 @@ class teramanager::CViewer : public QWidget
                 local = local >= CImport::instance()->getVolume(volResIndex)->getDIM(dir) ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : local;
 
                 #ifdef terafly_enable_debug_max_level
-                itm::debug(itm::LEV3, strprintf("cutOutOfRange, local --> %s", itm::num2str(local).c_str()).c_str(), __itm__current__function__);
+                tf::debug(tf::LEV3, strprintf("cutOutOfRange, local --> %s", tf::num2str(local).c_str()).c_str(), __itm__current__function__);
                 #endif
             }
 
             // if required, map 'local' from the resampled Vaa3D image space [0, LIMIT_VOL) to the current image space [0, dim]
             if(fromVaa3D && (dimension(dir) > vaa3dLimit<T>(dir)))
             {
-                local = round ? itm::round( local* dimension(dir)/vaa3dLimit<float>(dir) ) : ( local* dimension(dir)/vaa3dLimit<float>(dir) );
+                local = round ? tf::round( local* dimension(dir)/vaa3dLimit<float>(dir) ) : ( local* dimension(dir)/vaa3dLimit<float>(dir) );
 
                 #ifdef terafly_enable_debug_max_level
-                itm::debug(itm::LEV3, strprintf("map 2 Vaa3D, local --> %s", itm::num2str(local).c_str()).c_str(), __itm__current__function__);
+                tf::debug(tf::LEV3, strprintf("map 2 Vaa3D, local --> %s", tf::num2str(local).c_str()).c_str(), __itm__current__function__);
                 #endif
             }
 
@@ -509,7 +481,7 @@ class teramanager::CViewer : public QWidget
             if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)
             {
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, strprintf("2D image, return %d",
+                /**/tf::debug(tf::LEV3, strprintf("2D image, return %d",
                                                     local ? CImport::instance()->getVolume(res)->getDIM(dir) : 0).c_str(), __itm__current__function__);
                 #endif
 
@@ -520,7 +492,7 @@ class teramanager::CViewer : public QWidget
             if(local >= CImport::instance()->getVolume(volResIndex)->getDIM(dir))
             {
                 #ifdef terafly_enable_debug_max_level
-                itm::debug(itm::LEV3, strprintf("boundary coordinate, return %d",
+                tf::debug(tf::LEV3, strprintf("boundary coordinate, return %d",
                                                     CImport::instance()->getVolume(res)->getDIM(dir)).c_str(), __itm__current__function__);
                 #endif
                 return CImport::instance()->getVolume(res)->getDIM(dir);
@@ -530,10 +502,10 @@ class teramanager::CViewer : public QWidget
             float rescale = CImport::instance()->getRescaleFactor(res, volResIndex, dir);
 
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV3, strprintf("normal case, rescale = %f, return %s", rescale, itm::num2str(round? itm::round((origin(dir)+local)*rescale) : (origin(dir)+local)*rescale).c_str()).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("normal case, rescale = %f, return %s", rescale, tf::num2str(round? tf::round((origin(dir)+local)*rescale) : (origin(dir)+local)*rescale).c_str()).c_str(), __itm__current__function__);
             #endif
 
-            return round? itm::round((origin(dir)+local)*rescale) : (origin(dir)+local)*rescale;
+            return round? tf::round((origin(dir)+local)*rescale) : (origin(dir)+local)*rescale;
         }
 
 
@@ -545,15 +517,15 @@ class teramanager::CViewer : public QWidget
                 bool toVaa3D = false)           // whether local coordinate should be computed in the Vaa3D resampled space [0, LIMIT_VOL)
         {
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV3, strprintf("title = %s, global = %s, toVaa3D = %s",
-                                                titleShort.c_str(), itm::num2str(global).c_str(), toVaa3D ? "true" : "false").c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("title = %s, global = %s, toVaa3D = %s",
+                                                titleShort.c_str(), tf::num2str(global).c_str(), toVaa3D ? "true" : "false").c_str(), __itm__current__function__);
             #endif
 
             // special case: boundary coordinate
             if(global == CImport::instance()->getHighestResVolume()->getDIM(dir))
             {
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, strprintf("boundary coordinate, return %d", CImport::instance()->getVolume(volResIndex)->getDIM(dir)).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, strprintf("boundary coordinate, return %d", CImport::instance()->getVolume(volResIndex)->getDIM(dir)).c_str(), __itm__current__function__);
                 #endif
 
                 return CImport::instance()->getVolume(volResIndex)->getDIM(dir);
@@ -563,7 +535,7 @@ class teramanager::CViewer : public QWidget
             if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)
             {
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, strprintf("2D image, return %d", global ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : 0).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, strprintf("2D image, return %d", global ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : 0).c_str(), __itm__current__function__);
                 #endif
 
                 return global ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : 0;
@@ -571,19 +543,19 @@ class teramanager::CViewer : public QWidget
 
             // normal case
             float rescale = CImport::instance()->getRescaleFactor(CImport::instance()->getResolutions()-1, volResIndex, dir);
-            T local =  round ? itm::round(global/rescale - origin(dir)) : global/rescale - origin(dir);
+            T local =  round ? tf::round(global/rescale - origin(dir)) : global/rescale - origin(dir);
 
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV3, strprintf("rescale = %f, local = %s", rescale, itm::num2str(local).c_str()).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("rescale = %f, local = %s", rescale, tf::num2str(local).c_str()).c_str(), __itm__current__function__);
             #endif
 
             // map local coordinate to Vaa3D viewer coordinate
             if(toVaa3D && (dimension(dir) > vaa3dLimit<T>(dir)))
             {
-                local = round ? itm::round( local* vaa3dLimit<float>(dir)/dimension(dir) ) : local* vaa3dLimit<float>(dir)/dimension(dir);
+                local = round ? tf::round( local* vaa3dLimit<float>(dir)/dimension(dir) ) : local* vaa3dLimit<float>(dir)/dimension(dir);
 
                 #ifdef terafly_enable_debug_max_level
-                /**/itm::debug(itm::LEV3, strprintf("vaa3d correction, local --> %s", itm::num2str(local).c_str()).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, strprintf("vaa3d correction, local --> %s", tf::num2str(local).c_str()).c_str(), __itm__current__function__);
                 #endif
             }
 
@@ -598,7 +570,7 @@ class teramanager::CViewer : public QWidget
 //        inline int getLocalVCoord(int highestResGlobalVCoord, bool toVaa3Dcoordinates  = false)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
 //                                                titleShort.c_str(), highestResGlobalVCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
 //            #endif
 
@@ -610,7 +582,7 @@ class teramanager::CViewer : public QWidget
 //                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLY-1)/(volV1-volV0-1) ) +0.5f);
 
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
 //            #endif
 
 //            return localCoord;
@@ -618,7 +590,7 @@ class teramanager::CViewer : public QWidget
 //        inline int getLocalHCoord(int highestResGlobalHCoord, bool toVaa3Dcoordinates  = false)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
 //                                                titleShort.c_str(), highestResGlobalHCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
 //            #endif
 
@@ -630,7 +602,7 @@ class teramanager::CViewer : public QWidget
 //                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLX-1)/(volH1-volH0-1) ) +0.5f);
 
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
 //            #endif
 
 //            return localCoord;
@@ -638,7 +610,7 @@ class teramanager::CViewer : public QWidget
 //        inline int getLocalDCoord(int highestResGlobalDCoord, bool toVaa3Dcoordinates  = false)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
 //                                                titleShort.c_str(), highestResGlobalDCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
 //            #endif
 
@@ -650,7 +622,7 @@ class teramanager::CViewer : public QWidget
 //                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLZ-1)/(volD1-volD0-1) ) +0.5f);
 
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
 //            #endif
 
 //            return localCoord;
@@ -658,7 +630,7 @@ class teramanager::CViewer : public QWidget
 //        inline float getLocalVCoord(float &highestResGlobalVCoord, bool toVaa3Dcoordinates  = false)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
 //                                                titleShort.c_str(), highestResGlobalVCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
 //            #endif
 
@@ -670,7 +642,7 @@ class teramanager::CViewer : public QWidget
 //                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLY-1)/(volV1-volV0-1) );
 
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
 //            #endif
 
 //            return localCoord;
@@ -678,7 +650,7 @@ class teramanager::CViewer : public QWidget
 //        inline float getLocalHCoord(float &highestResGlobalHCoord, bool toVaa3Dcoordinates  = false)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
 //                                                titleShort.c_str(), highestResGlobalHCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
 //            #endif
 
@@ -690,7 +662,7 @@ class teramanager::CViewer : public QWidget
 //                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLX-1)/(volH1-volH0-1) );
 
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
 //            #endif
 
 //            return localCoord;
@@ -698,7 +670,7 @@ class teramanager::CViewer : public QWidget
 //        inline float getLocalDCoord(float &highestResGlobalDCoord, bool toVaa3Dcoordinates  = false)
 //        {
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
 //                                                titleShort.c_str(), highestResGlobalDCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
 //            #endif
 
@@ -710,7 +682,7 @@ class teramanager::CViewer : public QWidget
 //                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLZ-1)/(volD1-volD0-1) );
 
 //            #ifdef terafly_enable_debug_max_level
-//            /**/itm::debug(itm::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
 //            #endif
 
 //            return localCoord;

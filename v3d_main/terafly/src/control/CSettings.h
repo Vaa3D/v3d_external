@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <map>
 
-class teramanager::CSettings
+class terafly::CSettings
 {
     private:
 
@@ -45,7 +45,7 @@ class teramanager::CSettings
         static CSettings* uniqueInstance;
         CSettings()
         {
-             /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+             /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
             loadDefaultSettings();
             readSettings();
         }
@@ -69,6 +69,8 @@ class teramanager::CSettings
         int annotationMarkerSize;
         bool previewMode;
         int pyramidResamplingFactor;
+        int viewerHeight;
+        int viewerWidth;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -113,15 +115,17 @@ class teramanager::CSettings
         int getAnnotationMarkerSize(){return annotationMarkerSize;}
         bool getPreviewMode(){return previewMode;}
         int getPyramidResamplingFactor(){return pyramidResamplingFactor;}
+        int getViewerHeight(){return viewerHeight;}
+        int getViewerWidth(){return viewerWidth;}
 
         void setVolumePathLRU(std::string _volumePathLRU)
         {
-            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePathLRU = \"%s\"", _volumePathLRU.c_str()).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV_MAX, strprintf("_volumePathLRU = \"%s\"", _volumePathLRU.c_str()).c_str(), __itm__current__function__);
             volumePathLRU = _volumePathLRU;
         }
         void addRecentImage(std::string path, std::string format)
         {
-            /**/itm::debug(itm::LEV_MAX, strprintf("path = \"%s\", format = \"%s\"", path.c_str(), format.c_str()).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV_MAX, strprintf("path = \"%s\", format = \"%s\"", path.c_str(), format.c_str()).c_str(), __itm__current__function__);
             std::pair<std::string, std::string> newval = std::pair<std::string, std::string>(path, format);
             if(std::find(recentImages.begin(), recentImages.end(), newval) != recentImages.end())
                 recentImages.erase(std::find(recentImages.begin(), recentImages.end(), newval));
@@ -150,6 +154,8 @@ class teramanager::CSettings
         void setAnnotationMarkerSize(int newval){annotationMarkerSize = newval;}
         void setPreviewMode(bool newval){previewMode = newval;}
         void setPyramidResamplingFactor(int newval){pyramidResamplingFactor = newval;}
+        void setViewerHeight(int newval){viewerHeight = newval;}
+        void setViewerWidth(int newval){viewerWidth = newval;}
 
         //GET and SET methods for TeraConverter
         std::string getVCInputPath(){return volumeConverterInputPathLRU;}

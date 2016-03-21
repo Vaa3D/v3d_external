@@ -55,7 +55,7 @@
 #include "iomanager.config.h"
 #include "VirtualPyramid.h"
 
-using namespace teramanager;
+using namespace terafly;
 using namespace iim;
 
 string PMain::HTwelcome = "Go to <i>File > Open volume</i> and select From the file dialog, select any of volume resolutions starting with \"RES\". To change volume import options, go to <i>Options > Import</i>.";
@@ -97,7 +97,7 @@ PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
             CViewer::getCurrent()->window3D->raise();
             CViewer::getCurrent()->window3D->activateWindow();
             CViewer::getCurrent()->window3D->show();
-            CViewer::getCurrent()->alignToLeft(uniqueInstance, 0);
+            CViewer::getCurrent()->alignToRight(uniqueInstance, 0);
         }
     }
 	return uniqueInstance;
@@ -108,7 +108,7 @@ PMain* PMain::getInstance()
         return uniqueInstance;
     else
     {
-        itm::warning("TeraFly not yet instantiated", __itm__current__function__);
+        tf::warning("TeraFly not yet instantiated", __itm__current__function__);
         QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
 		return 0;
     }
@@ -116,7 +116,7 @@ PMain* PMain::getInstance()
 
 void PMain::uninstance()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CImport::uninstance();
     PDialogImport::uninstance();
@@ -136,12 +136,12 @@ void PMain::uninstance()
 
 PMain::~PMain()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 }
 
 PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     //initializing members
     V3D_env = callback;
@@ -156,7 +156,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #endif
 
     //initializing menu
-    /**/itm::debug(itm::LEV3, "initializing menu", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "initializing menu", __itm__current__function__);
     menuBar = new QMenuBar(0);
     /* --------------------------- "File" menu --------------------------- */
     fileMenu = menuBar->addMenu("File");
@@ -517,7 +517,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tabs = new QTabWidget(this);
 
     //Page "Volume's info": contains informations of the loaded volume
-    /**/itm::debug(itm::LEV3, "Page \"Volume's info\"", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "Page \"Volume's info\"", __itm__current__function__);
     info_page = new QWidget();
 
     vol_format_field = new QLineEdit();
@@ -564,7 +564,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     org_field->setFont(tinyFont);
 
     //Page "Controls": contains navigation controls
-    /**/itm::debug(itm::LEV3, "Page \"Controls\"", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "Page \"Controls\"", __itm__current__function__);
     /* ------- local viewer panel widgets ------- */
     controls_page = new QWidget();
     localViewer_panel = new QGroupBox("Viewer");
@@ -600,7 +600,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     resolution_cbox->installEventFilter(this);
 
     /* ------- zoom options panel widgets ------- */
-    /**/itm::debug(itm::LEV3, "zoom options panel", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "zoom options panel", __itm__current__function__);
     zoom_panel = new QGroupBox("Zoom-in/out");
     zoomOutSens = new QSlider(Qt::Horizontal, this);
     zoomOutSens->setTickPosition(QSlider::TicksBelow);
@@ -632,7 +632,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomInMethod->setCurrentIndex(1);
 
     //"Global coordinates" widgets
-    /**/itm::debug(itm::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
     globalCoord_panel = new QGroupBox("Volume Of Interest (VOI)'s coordinates");
     traslXpos = new QArrowButton(this, QColor(255,0,0), 15, 6, 0, Qt::LeftToRight, true);
     traslXneg = new QArrowButton(this, QColor(255,0,0), 15, 6, 0, Qt::RightToLeft, true);
@@ -712,7 +712,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     statusBar = new QStatusBar();
 
     //****LAYOUT SECTIONS****
-    /**/itm::debug(itm::LEV3, "Layouting", __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "Layouting", __itm__current__function__);
 
     //Page "Volume's info": contains informations of the loaded volume
     QGridLayout* info_panel_layout = new QGridLayout();
@@ -1004,13 +1004,13 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     layout->setSpacing(0);
     setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    setWindowTitle(QString("TeraFly v").append(teramanager::version.c_str()));
+    setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
 
     // signals and slots
-    /**/itm::debug(itm::LEV3, "Signals and slots", __itm__current__function__);
-    connect(CImport::instance(), SIGNAL(sendOperationOutcome(itm::RuntimeException*, qint64)), this, SLOT(importDone(itm::RuntimeException*, qint64)), Qt::QueuedConnection);
+    /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);
+    connect(CImport::instance(), SIGNAL(sendOperationOutcome(tf::RuntimeException*, qint64)), this, SLOT(importDone(tf::RuntimeException*, qint64)), Qt::QueuedConnection);
     connect(xShiftSBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
     connect(yShiftSBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
     connect(zShiftSBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
@@ -1035,7 +1035,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
     // first resize to the desired size
-    resize(380, qApp->desktop()->availableGeometry().height());
+    resize(380, CSettings::instance()->getViewerHeight());
 
 
     //set always on top and show
@@ -1059,13 +1059,13 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PLog::instance(this);
 
 
-    /**/itm::debug(itm::LEV1, "object successfully constructed", __itm__current__function__);
+    /**/tf::debug(tf::LEV1, "object successfully constructed", __itm__current__function__);
 }
 
 //reset everything
 void PMain::reset()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     //resetting menu options and widgets
     openTeraFlyVolumeAction->setEnabled(true);
@@ -1180,7 +1180,7 @@ void PMain::reset()
 //reset GUI method
 void PMain::resetGUI()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     progressBar->setEnabled(false);
     progressBar->setMaximum(1);         //needed to stop animation on some operating systems
@@ -1195,7 +1195,7 @@ void PMain::resetGUI()
 ***********************************************************************************/
 void PMain::openRecentVolume()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     std::string recentpath = qobject_cast<QAction*>(sender())->text().toStdString();
     openImage(recentpath);
@@ -1213,7 +1213,7 @@ void PMain::openRecentVolume()
 ***********************************************************************************/
 void PMain::clearRecentVolumes()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CSettings::instance()->clearRecentImages();
     QList<QAction*> actions = recentVolumesMenu->actions();
@@ -1238,7 +1238,7 @@ void PMain::openImage(std::string path /*= ""*/)
         // these senders require a folder selection dialog
         if(sender() == openTeraFlyVolumeAction || sender() == openUnconvertedVolumeFolderAction)
         {
-            /**/itm::debug(itm::LEV2, "launch folder dialog", __itm__current__function__);
+            /**/tf::debug(tf::LEV2, "launch folder dialog", __itm__current__function__);
 
             std::string title = sender() == openTeraFlyVolumeAction ?
                         "Select any folder with prefix \"RES\"" :
@@ -1258,7 +1258,7 @@ void PMain::openImage(std::string path /*= ""*/)
                                                      QFileDialog::ShowDirsOnly).toStdString();
             #endif
 
-            /**/itm::debug(itm::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
 
             if (path.empty())
                 return;
@@ -1267,15 +1267,15 @@ void PMain::openImage(std::string path /*= ""*/)
             if(sender() == openTeraFlyVolumeAction)
             {
                 QDir dir(path.c_str());
-                if( dir.dirName().toStdString().substr(0,3).compare(itm::RESOLUTION_PREFIX) != 0)
+                if( dir.dirName().toStdString().substr(0,3).compare(tf::RESOLUTION_PREFIX) != 0)
                     throw RuntimeException(strprintf("\"%s\" is not a valid resolution: the name of the folder does not start with \"%s\"",
-                                           path.c_str(), itm::RESOLUTION_PREFIX.c_str() ).c_str());
+                                           path.c_str(), tf::RESOLUTION_PREFIX.c_str() ).c_str());
             }
         }
         // these senders require a file selection dialog
         else if(sender() == openHDF5VolumeAction || sender() == openUnconvertedVolumeFileAction)
         {
-            /**/itm::debug(itm::LEV2, "launch file dialog", __itm__current__function__);
+            /**/tf::debug(tf::LEV2, "launch file dialog", __itm__current__function__);
 
             std::string filter = sender() == openHDF5VolumeAction ? "HDF5 files (*.h5)" : "Vaa3D files (*.raw *.v3draw * *.RAW *.V3DRAW);; TIFF files (*.tif *.TIFF)";
             #ifdef _USE_QT_DIALOGS
@@ -1292,7 +1292,7 @@ void PMain::openImage(std::string path /*= ""*/)
             #else
             path = QFileDialog::getOpenFileName(this, "Select image file", QString(), tr(filter.c_str())).toStdString();
             #endif
-            /**/itm::debug(itm::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
 
             if (path.empty())
                 return;
@@ -1306,23 +1306,23 @@ void PMain::openImage(std::string path /*= ""*/)
 
 
         // infer image format
-        itm::volume_format image_format(itm::volume_format::UNKNOWN);
+        tf::volume_format image_format(tf::volume_format::UNKNOWN);
         if(sender() == openTeraFlyVolumeAction)
-            image_format.id = itm::volume_format::TERAFLY;
+            image_format.id = tf::volume_format::TERAFLY;
         else if(sender() == openHDF5VolumeAction)
-            image_format.id = itm::volume_format::BDVHDF5;
+            image_format.id = tf::volume_format::BDVHDF5;
         else if(sender() == openUnconvertedVolumeFileAction || sender() == openUnconvertedVolumeFolderAction)
-            image_format.id = itm::volume_format::UNCONVERTED;
+            image_format.id = tf::volume_format::UNCONVERTED;
         else
         {
             for(std::list< std::pair<std::string, std::string> >::iterator it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
                 if(it->first.compare(path) == 0)
                 {
-                    image_format = itm::volume_format(it->second);
+                    image_format = tf::volume_format(it->second);
                     break;
                 }
         }
-        if(image_format.id == itm::volume_format::UNKNOWN)
+        if(image_format.id == tf::volume_format::UNKNOWN)
             throw RuntimeException("Unrecognized image super-format. You should never see this.");        
         CImport::instance()->setFormat(image_format.toString());
 
@@ -1384,7 +1384,7 @@ void PMain::openImage(std::string path /*= ""*/)
         PMain::getInstance()->resetGUI();
         CImport::instance()->reset();
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         PMain::getInstance()->resetGUI();
@@ -1399,7 +1399,7 @@ void PMain::openImage(std::string path /*= ""*/)
 ***********************************************************************************/
 void PMain::closeVolume()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->releaseTools();
@@ -1420,7 +1420,7 @@ void PMain::closeVolume()
 ***********************************************************************************/
 void PMain::loadAnnotations()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CViewer *cur_win = CViewer::getCurrent();
 
@@ -1446,9 +1446,9 @@ void PMain::loadAnnotations()
                    path = dialog.selectedFiles().front();
 
             #else
-            //itm::setWidgetOnTop(cur_win->window3D, false);
+            //tf::setWidgetOnTop(cur_win->window3D, false);
             QString path = QFileDialog::getOpenFileName(cur_win->window3D, "Open annotation file", dir.absolutePath(), tr("annotation files (*.ano)"));
-            //itm::setWidgetOnTop(cur_win->window3D, true);
+            //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
             if(!path.isEmpty())
@@ -1489,7 +1489,7 @@ void PMain::loadAnnotations()
 ***********************************************************************************/
 void PMain::saveAnnotations()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CViewer *cur_win = CViewer::getCurrent();
 
@@ -1526,7 +1526,7 @@ void PMain::saveAnnotations()
 }
 void PMain::saveAnnotationsAs()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CViewer *cur_win = CViewer::getCurrent();
 
@@ -1553,9 +1553,9 @@ void PMain::saveAnnotationsAs()
                    path = dialog.selectedFiles().front();
 
             #else
-            //itm::setWidgetOnTop(cur_win->window3D, false);
+            //tf::setWidgetOnTop(cur_win->window3D, false);
             QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath(), tr("annotation files (*.ano)"));
-            //itm::setWidgetOnTop(cur_win->window3D, true);
+            //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
             if(!path.isEmpty())
@@ -1595,7 +1595,7 @@ void PMain::saveAnnotationsAs()
 ***********************************************************************************/
 void PMain::clearAnnotations()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     try
     {
@@ -1624,7 +1624,7 @@ void PMain::clearAnnotations()
 ***********************************************************************************/
 void PMain::exit()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     this->close();
 }
@@ -1634,7 +1634,7 @@ void PMain::exit()
 ***********************************************************************************/
 void PMain::about()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     PAbout::instance(this)->exec();
 }
@@ -1648,7 +1648,7 @@ void PMain::about()
 **********************************************************************************/
 void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 {
-    /**/itm::debug(itm::LEV1, strprintf("ex = %s", (ex? "error" : "0")).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("ex = %s", (ex? "error" : "0")).c_str(), __itm__current__function__);
 
     //if an exception has occurred, showing a message error and re-enabling import form
     if(ex)
@@ -1658,14 +1658,14 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
     else
     {
         // create new macro-group for ImportOperation
-        itm::ImportOperation::newGroup();
+        tf::ImportOperation::newGroup();
 
         //first updating IO time
-        /**/itm::debug(itm::LEV3, "updating IO time", __itm__current__function__);
-        PLog::instance()->appendOperation(new ImportOperation("Volume imported and map loaded", itm::IO, elapsed_time));
+        /**/tf::debug(tf::LEV3, "updating IO time", __itm__current__function__);
+        PLog::instance()->appendOperation(new ImportOperation("Volume imported and map loaded", tf::IO, elapsed_time));
 
         //otherwise inserting volume's informations
-        /**/itm::debug(itm::LEV3, "inserting volume's informations", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "inserting volume's informations", __itm__current__function__);
         QElapsedTimer timerGUI;
         timerGUI.start();
         VirtualVolume* volume = CImport::instance()->getHighestResVolume();
@@ -1676,23 +1676,23 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         if(TVoxels < 0.1)
         {
             double GBytes = GVoxels*CImport::instance()->getVMapCDim();
-            vol_size_field->setText(itm::strprintf("  %.1f Gigavoxels (%.1f Gigabytes)", GVoxels, GBytes).c_str());
+            vol_size_field->setText(tf::strprintf("  %.1f Gigavoxels (%.1f Gigabytes)", GVoxels, GBytes).c_str());
         }
         else
         {
             double TBytes = TVoxels*CImport::instance()->getVMapCDim();
-            vol_size_field->setText(itm::strprintf("  %.1f Teravoxels (%.1f Terabytes)", TVoxels, TBytes).c_str());
+            vol_size_field->setText(tf::strprintf("  %.1f Teravoxels (%.1f Terabytes)", TVoxels, TBytes).c_str());
         }
 
         vol_dims_mm_field->setText(
-                    itm::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)",
+                    tf::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)",
                                    fabs(volume->getDIM_H()*volume->getVXL_H()/1000.0f),
                                    fabs(volume->getDIM_V()*volume->getVXL_V()/1000.0f),
                                    fabs(volume->getDIM_D()*volume->getVXL_D()/1000.0f)).c_str());
 
 
         vol_dims_vxl_field->setText(
-                    itm::strprintf("  %d(x) x %d(y) x %d(z) x %d(c) x %d(t)",
+                    tf::strprintf("  %d(x) x %d(y) x %d(z) x %d(c) x %d(t)",
                                    volume->getDIM_H(),
                                    volume->getDIM_V(),
                                    volume->getDIM_D(), volume->getDIM_C(), volume->getDIM_T()).c_str());
@@ -1701,14 +1701,14 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         if(dynamic_cast<StackedVolume*>(volume_ith))
         {
             StackedVolume* vol = dynamic_cast<StackedVolume*>(volume_ith);
-            tiles_grid_field->setText(itm::strprintf("  %d(x) x %d(y) x 1(z)", vol->getN_COLS(), vol->getN_ROWS()).c_str());
-            tile_dim_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getDIM_D()).c_str());
+            tiles_grid_field->setText(tf::strprintf("  %d(x) x %d(y) x 1(z)", vol->getN_COLS(), vol->getN_ROWS()).c_str());
+            tile_dim_field->setText(tf::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getDIM_D()).c_str());
         }
         else if(dynamic_cast<TiledVolume*>(volume_ith) || dynamic_cast<TiledMCVolume*>(volume_ith))
         {
             TiledVolume* vol = dynamic_cast<TiledVolume*>(volume_ith) ? dynamic_cast<TiledVolume*>(volume_ith) : dynamic_cast<TiledMCVolume*>(volume_ith)->getVolumes()[0];
-            tiles_grid_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getN_COLS(), vol->getN_ROWS(), vol->getBLOCKS()[0][0]->getN_BLOCKS()).c_str());
-            tile_dim_field->setText(itm::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getBLOCKS()[0][0]->getBLOCK_SIZE()[0]).c_str());
+            tiles_grid_field->setText(tf::strprintf("  %d(x) x %d(y) x %d(z)", vol->getN_COLS(), vol->getN_ROWS(), vol->getBLOCKS()[0][0]->getN_BLOCKS()).c_str());
+            tile_dim_field->setText(tf::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getBLOCKS()[0][0]->getBLOCK_SIZE()[0]).c_str());
         }
         else if(dynamic_cast<BDVVolume*>(volume_ith))
         {
@@ -1720,11 +1720,11 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
             tiles_grid_field->setText("custom grid");
             tile_dim_field->setText("custom tile dim");
         }
-        vxl_field->setText(itm::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
-        org_field->setText(itm::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
+        vxl_field->setText(tf::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
+        org_field->setText(tf::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
 
         //and setting subvol widgets limits
-        /**/itm::debug(itm::LEV3, "setting subvol widgets limits", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "setting subvol widgets limits", __itm__current__function__);
         V0_sbox->setMinimum(1);
         V0_sbox->setMaximum(volume->getDIM_V());
         V0_sbox->setValue(1);
@@ -1757,7 +1757,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         PR_panel->setEnabled(true);
 
         //updating menu items
-        /**/itm::debug(itm::LEV3, "updating menu items", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "updating menu items", __itm__current__function__);
         openTeraFlyVolumeAction->setEnabled(false);
         openHDF5VolumeAction->setEnabled(false);
         recentVolumesMenu->setEnabled(false);
@@ -1781,7 +1781,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         gradientBar->setNSteps(CImport::instance()->getResolutions());
 
         //inserting available resolutions
-        /**/itm::debug(itm::LEV3, "inserting available resolutions", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "inserting available resolutions", __itm__current__function__);
         resolution_cbox->setEnabled(false);
         for(int i=0; i<CImport::instance()->getResolutions(); i++)
         {
@@ -1814,20 +1814,20 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 
 
         //instantiating CAnnotations
-        /**/itm::debug(itm::LEV3, "instantiating CAnnotations", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "instantiating CAnnotations", __itm__current__function__);
         CAnnotations::instance(volume->getDIM_V(), volume->getDIM_H(), volume->getDIM_D());
 
         //updating GUI time
-        /**/itm::debug(itm::LEV3, "updating GUI time", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "updating GUI time", __itm__current__function__);
 
-        PLog::instance()->appendOperation(new ImportOperation( "TeraFly's GUI initialized", itm::GPU, timerGUI.elapsed()));
+        PLog::instance()->appendOperation(new ImportOperation( "TeraFly's GUI initialized", tf::GPU, timerGUI.elapsed()));
 
         //starting 3D exploration
-        /**/itm::debug(itm::LEV3, "instantiating CViewer", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "instantiating CViewer", __itm__current__function__);
         CViewer *new_win = new CViewer(V3D_env, CImport::instance()->getVMapResIndex(), CImport::instance()->getVMapRawData(),
                             0, CImport::instance()->getVMapYDim(), 0, CImport::instance()->getVMapXDim(),
                             0, CImport::instance()->getVMapZDim(), 0, CImport::instance()->getVMapTDim()-1, CImport::instance()->getVMapCDim(), 0);
-        /**/itm::debug(itm::LEV3, "showing CViewer", __itm__current__function__);
+        /**/tf::debug(tf::LEV3, "showing CViewer", __itm__current__function__);
         new_win->show();
         new_win->isReady = true;
 
@@ -1840,7 +1840,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         QPixmapToolTip::instance(this)->installEventFilter(this);
 
         //updating actual time
-        PLog::instance()->appendOperation(new ImportOperation( "TeraFly 3D exploration started", itm::ALL_COMPS, CImport::instance()->timerIO.elapsed()));
+        PLog::instance()->appendOperation(new ImportOperation( "TeraFly 3D exploration started", tf::ALL_COMPS, CImport::instance()->timerIO.elapsed()));
 
         //activate annotation toolbar
         showToolbarButton->setChecked(true);
@@ -1854,7 +1854,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 //overrides closeEvent method of QWidget
 void PMain::closeEvent(QCloseEvent *evt)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(evt)
     {
@@ -1878,7 +1878,7 @@ void PMain::closeEvent(QCloseEvent *evt)
 ***********************************************************************************/
 void PMain::settingsChanged(int)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CSettings::instance()->setVOIdimV(Vdim_sbox->value());
     CSettings::instance()->setVOIdimH(Hdim_sbox->value());
@@ -1899,7 +1899,7 @@ void PMain::settingsChanged(int)
 ***********************************************************************************/
 void PMain::resolutionIndexChanged(int i)
 {
-    /**/itm::debug(itm::LEV1, strprintf("resolution = %d", i).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("resolution = %d", i).c_str(), __itm__current__function__);
 
     try
     {
@@ -1925,7 +1925,7 @@ void PMain::resolutionIndexChanged(int i)
                 int z1 = CVolume::scaleCoord<int>(D1_sbox->value(), CImport::instance()->getResolutions()-1,    i, iim::depth, true);
                 int t0 = CViewer::getCurrent()->volT0;
                 int t1 = CViewer::getCurrent()->volT1;
-                /**/itm::debug(itm::LEV3, strprintf("global VOI [%d,%d) [%d,%d) [%d,%d) rescaled to [%d,%d) [%d,%d) [%d,%d) at selected res = %d",
+                /**/tf::debug(tf::LEV3, strprintf("global VOI [%d,%d) [%d,%d) [%d,%d) rescaled to [%d,%d) [%d,%d) [%d,%d) at selected res = %d",
                                                        H0_sbox->value()-1, H1_sbox->value(),
                                                        V0_sbox->value()-1, V1_sbox->value(),
                                                        D0_sbox->value()-1, D1_sbox->value(),
@@ -1965,7 +1965,7 @@ void PMain::setEnabledDirectionalShifts(bool enabled)
 ***********************************************************************************/
 void PMain::traslXposClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -1977,7 +1977,7 @@ void PMain::traslXposClicked()
 }
 void PMain::traslXnegClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -1989,7 +1989,7 @@ void PMain::traslXnegClicked()
 }
 void PMain::traslYposClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -2001,7 +2001,7 @@ void PMain::traslYposClicked()
 }
 void PMain::traslYnegClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -2013,7 +2013,7 @@ void PMain::traslYnegClicked()
 }
 void PMain::traslZposClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -2025,7 +2025,7 @@ void PMain::traslZposClicked()
 }
 void PMain::traslZnegClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -2037,7 +2037,7 @@ void PMain::traslZnegClicked()
 }
 void PMain::traslTposClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -2061,7 +2061,7 @@ void PMain::traslTposClicked()
 }
 void PMain::traslTnegClicked()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->isActive && !expl->toBeClosed)
@@ -2089,6 +2089,13 @@ void PMain::traslTnegClicked()
 ***********************************************************************************/
 bool PMain::eventFilter(QObject *object, QEvent *event)
 {
+    /*if(object == this && event->type() == QEvent::Resize)
+    {
+        CSettings::instance()->setPMainHeight(static_cast<QResizeEvent*>(event)->size().height());
+        CSettings::instance()->writeSettings();
+        return QWidget::eventFilter(object, event);
+    }
+    else */
     if ((object == Vdim_sbox || object == Hdim_sbox || object == Ddim_sbox || object == Tdim_sbox) && localViewer_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
@@ -2258,7 +2265,7 @@ void PMain::displayToolTip(QWidget* widget, QEvent* event, string msg)
 ***********************************************************************************/
 void PMain::resetMultiresControls()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     cacheSens->setValue(70);
     zoomInSens->setValue(40);
@@ -2290,15 +2297,15 @@ void PMain::addGaussianNoiseTriggered()
 
 void PMain::debugAction1Triggered()
 {
-    /**/itm::debug(itm::NO_DEBUG, 0, __itm__current__function__);
+    /**/tf::debug(tf::NO_DEBUG, 0, __itm__current__function__);
 
     try
     {
-        //itm::VirtualPyramidCache("asd", xyzct<size_t>(10,10,10,1,1), xyzct<size_t>(3,3,3,3,3));
+        //tf::VirtualPyramidCache("asd", xyzct<size_t>(10,10,10,1,1), xyzct<size_t>(3,3,3,3,3));
         QString blah = QString(QCryptographicHash::hash(("/Users/Administrator/Projects/v3d_external/v3d_main/build-vaa3d64 -Qt_4_7_1_Qt_4_7_1-Debug"),QCryptographicHash::Md5).toHex());
         v3d_msg(blah);
     }
-    catch(itm::RuntimeException &e)
+    catch(tf::RuntimeException &e)
     {
         v3d_msg(e.what());
     }
@@ -2311,7 +2318,7 @@ void PMain::debugAction1Triggered()
     double acc = 0;
     double GV = 0;
     iim::VirtualVolume *vol = //new RawVolume("/Volumes/Volumes/bigbrain.allen.neuron.raw");
-            itm::CImport::instance()->getHighestResVolume();
+            tf::CImport::instance()->getHighestResVolume();
     size_t xdim = 500, ydim = 500, zdim = 100;
     for(size_t d0=0; d0 < vol->getDIM_D(); d0 += zdim)
         for(size_t v0=0; v0 < vol->getDIM_V(); v0 += ydim)
@@ -2323,19 +2330,19 @@ void PMain::debugAction1Triggered()
                 GV += ((v1-v0)*(h1-h0)*(d1-d0)*vol->getDIM_C())*1.0e-9;
                 QElapsedTimer timer;
                 timer.start();
-                itm::uint8 *data = vol->loadSubvolume_to_UINT8(v0, v1, h0, h1, d0, d1);
+                tf::uint8 *data = vol->loadSubvolume_to_UINT8(v0, v1, h0, h1, d0, d1);
                 acc += timer.elapsed()/1000.0;
                 count++;
                 delete data;
-                statusBar->showMessage(itm::strprintf("%.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());
+                statusBar->showMessage(tf::strprintf("%.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());
                 QApplication::processEvents();
             }
-    statusBar->showMessage(itm::strprintf("FINISHED: %.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());*/
+    statusBar->showMessage(tf::strprintf("FINISHED: %.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());*/
 }
 
 void PMain::showLogTriggered()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     PLog::instance()->show();
 }
@@ -2345,7 +2352,7 @@ void PMain::showLogTriggered()
 ***********************************************************************************/
 void PMain::curveDimsChanged(int dim)
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setAnnotationCurvesDims(dim);
     CSettings::instance()->writeSettings();
@@ -2353,7 +2360,7 @@ void PMain::curveDimsChanged(int dim)
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win)
     {
-        /**/itm::debug(itm::LEV3, strprintf("set Vaa3D's renderer <lineWidth> = %d", curveDimsSpinBox->value()).c_str(), __itm__current__function__);
+        /**/tf::debug(tf::LEV3, strprintf("set Vaa3D's renderer <lineWidth> = %d", curveDimsSpinBox->value()).c_str(), __itm__current__function__);
         cur_win->view3DWidget->getRenderer()->lineWidth = dim;
         cur_win->view3DWidget->updateTool();
         cur_win->view3DWidget->update();
@@ -2362,7 +2369,7 @@ void PMain::curveDimsChanged(int dim)
 
 void PMain::curveAspectChanged()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setAnnotationCurvesAspectTube(curveAspectTube->isChecked());
     CSettings::instance()->writeSettings();
@@ -2370,7 +2377,7 @@ void PMain::curveAspectChanged()
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win)
     {
-        /**/itm::debug(itm::LEV3, strprintf("set Vaa3D's renderer <lineWidth> = %d and <lineType> = %s", curveDimsSpinBox->value(), curveAspectTube->isChecked() ? "tube" : "skeleton").c_str(), __itm__current__function__);
+        /**/tf::debug(tf::LEV3, strprintf("set Vaa3D's renderer <lineWidth> = %d and <lineType> = %s", curveDimsSpinBox->value(), curveAspectTube->isChecked() ? "tube" : "skeleton").c_str(), __itm__current__function__);
         cur_win->view3DWidget->getRenderer()->lineWidth = curveDimsSpinBox->value();
         cur_win->view3DWidget->getRenderer()->lineType = !curveAspectTube->isChecked();
         cur_win->view3DWidget->updateTool();
@@ -2383,7 +2390,7 @@ void PMain::curveAspectChanged()
 ***********************************************************************************/
 void PMain::pyramidResamplingFactorChanged()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     if(sender() == PyramidResamplingFactorAction2)
         CSettings::instance()->setPyramidResamplingFactor(2);
@@ -2398,7 +2405,7 @@ void PMain::pyramidResamplingFactorChanged()
 ***********************************************************************************/
 void PMain::fetchAndDisplayChanged()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setPreviewMode(fdPreviewAction->isChecked());
     CSettings::instance()->writeSettings();
@@ -2409,7 +2416,7 @@ void PMain::fetchAndDisplayChanged()
 ***********************************************************************************/
 void PMain::virtualSpaceSizeChanged()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setAnnotationSpaceUnlimited(spaceSizeUnlimited->isChecked());
 }
@@ -2420,16 +2427,16 @@ void PMain::virtualSpaceSizeChanged()
 ***********************************************************************************/
 void PMain::verbosityChanged(int i)
 {
-    /**/itm::debug(itm::LEV1, strprintf("i = %d", i).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("i = %d", i).c_str(), __itm__current__function__);
 
-    itm::DEBUG = i;
+    tf::DEBUG = i;
     iim::DEBUG = i;
 //    CSettings::instance()->writeSettings();
 }
 
 void PMain::PRbuttonClicked()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     if(isPRactive())
         PRsetActive(false);
@@ -2439,14 +2446,14 @@ void PMain::PRbuttonClicked()
 
 void PMain::PRsetActive(bool active)
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     // check precondition: 3D visualization is active
     CViewer* curWin = CViewer::getCurrent();
     if(!curWin)
         return;
 
-    std::vector<itm::block_t> & blocks = PDialogProofreading::blocks;
+    std::vector<tf::block_t> & blocks = PDialogProofreading::blocks;
     /* ------------------- "Local viewer" panel ---------------------- */
     resolution_cbox->setEnabled(!active);
     Vdim_sbox->setEnabled(!active);
@@ -2510,7 +2517,7 @@ void PMain::PRsetActive(bool active)
 
 void PMain::PRstart()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     PRsetActive(true);
     PRblockSpinboxEditingFinished();
@@ -2521,14 +2528,14 @@ void PMain::PRstart()
 ***********************************************************************************/
 void PMain::PRblockSpinboxEditingFinished()
 {
-    std::vector<itm::block_t> & blocks = PDialogProofreading::blocks;
+    std::vector<tf::block_t> & blocks = PDialogProofreading::blocks;
     int blocks_res = PDialogProofreading::blocks_res;
     int b = PR_spbox->value();
 
     if(b == 0 || !PR_spbox->isEnabled() || blocks.empty())
         return;
 
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CViewer* curWin = CViewer::getCurrent();
     if(curWin && curWin->isActive && !curWin->toBeClosed)
@@ -2567,12 +2574,12 @@ void PMain::PRblockSpinboxChanged(int b)
     if(b == 0 || !PR_spbox->isEnabled())
         return;
 
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
         CViewer* curWin = CViewer::getCurrent();
-        std::vector<itm::block_t> & blocks = PDialogProofreading::blocks;
+        std::vector<tf::block_t> & blocks = PDialogProofreading::blocks;
         int blocks_res = PDialogProofreading::blocks_res;
         if(curWin && curWin->isActive && !curWin->toBeClosed)
         {
@@ -2629,7 +2636,7 @@ void PMain::PRblockSpinboxChanged(int b)
 
 
             // compute z-mip of the selected block on the lowest resolution image
-            uint8 *mip = CViewer::first->getMIP(ROIxs_lr, ROIxe_lr, ROIys_lr, ROIye_lr, ROIzs_lr, ROIze_lr, -1, -1, itm::z, true, 240);
+            uint8 *mip = CViewer::first->getMIP(ROIxs_lr, ROIxe_lr, ROIys_lr, ROIye_lr, ROIzs_lr, ROIze_lr, -1, -1, tf::z, true, 240);
             QImage qmip(mip, ROIxe_lr-ROIxs_lr, ROIye_lr-ROIys_lr, QImage::Format_ARGB32);
 
             // apply current color map to the mip
@@ -2650,7 +2657,7 @@ void PMain::PRblockSpinboxChanged(int b)
 //            QToolTip::showText(gpos, "Press Enter to load", PR_spbox);
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
@@ -2663,13 +2670,13 @@ void PMain::debugRedirectSTDoutPathEdited(QString s)
 {
     if(s.isEmpty())
     {
-        itm::DEBUG_DEST = itm::TO_STDOUT;
+        tf::DEBUG_DEST = tf::TO_STDOUT;
         iim::DEBUG_TO_FILE = false;
     }
     else
     {
-        itm::DEBUG_DEST = itm::TO_FILE;
-        itm::DEBUG_FILE_PATH = s.toStdString();
+        tf::DEBUG_DEST = tf::TO_FILE;
+        tf::DEBUG_FILE_PATH = s.toStdString();
         iim::DEBUG_TO_FILE = true;
         iim::DEBUG_FILE_PATH = s.toStdString();
     }
@@ -2681,7 +2688,7 @@ void PMain::debugRedirectSTDoutPathEdited(QString s)
 ***********************************************************************************/
 void PMain::progressBarChanged(int val, int minutes, int seconds, const char* message)
 {
-    /**/itm::debug(itm::LEV3, strprintf("val = %d, minutes = %d, seconds = %d, message = %s", val, minutes, seconds, message).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("val = %d, minutes = %d, seconds = %d, message = %s", val, minutes, seconds, message).c_str(), __itm__current__function__);
 
     progressBar->setMinimum(0);
     progressBar->setMaximum(100);
@@ -2703,7 +2710,7 @@ void PMain::progressBarChanged(int val, int minutes, int seconds, const char* me
 ***********************************************************************************/
 void PMain::showToolbarButtonChanged(bool changed)
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->setVisible(changed);
@@ -2715,7 +2722,7 @@ void PMain::showToolbarButtonChanged(bool changed)
 ***********************************************************************************/
 void PMain::markersShowROIMarginSpinBoxChanged(int value)
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setAnnotationVirtualMargin(value);
     CSettings::instance()->writeSettings();
@@ -2728,7 +2735,7 @@ void PMain::markersShowROIMarginSpinBoxChanged(int value)
 ***********************************************************************************/
 void PMain::markersSizeSpinBoxChanged(int value)
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
     CSettings::instance()->setAnnotationMarkerSize(value);
     CSettings::instance()->writeSettings();
 
@@ -2743,7 +2750,7 @@ void PMain::markersSizeSpinBoxChanged(int value)
 
 void PMain::showDialogVtk2APO()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -2753,12 +2760,12 @@ void PMain::showDialogVtk2APO()
             QString apoFilePath = QFileDialog::getSaveFileName(this, tr("Save to"), 0,tr("APO files (*.apo)"));
             if(!apoFilePath.isEmpty())
             {
-                itm::CAnnotations::convertVtk2APO(vtkFilePath.toStdString(), apoFilePath.toStdString());
+                tf::CAnnotations::convertVtk2APO(vtkFilePath.toStdString(), apoFilePath.toStdString());
                 v3d_msg("DONE!");
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
@@ -2766,7 +2773,7 @@ void PMain::showDialogVtk2APO()
 
 void PMain::showDialogMaMut2APO()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -2776,12 +2783,12 @@ void PMain::showDialogMaMut2APO()
             QString apoFilePath = QFileDialog::getSaveFileName(this, tr("Save to"), 0,tr("APO files (*.apo)"));
             if(!apoFilePath.isEmpty())
             {
-                itm::CAnnotations::convertMaMuT2APO(xmlFilePath.toStdString(), apoFilePath.toStdString());
+                tf::CAnnotations::convertMaMuT2APO(xmlFilePath.toStdString(), apoFilePath.toStdString());
                 v3d_msg("DONE!");
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
@@ -2789,7 +2796,7 @@ void PMain::showDialogMaMut2APO()
 
 void PMain::showDialogTypeIandTypeIIerrors()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -2804,14 +2811,14 @@ void PMain::showDialogTypeIandTypeIIerrors()
                 {
                     int d = QInputDialog::getInt(this, "Input 1/2", "Tolerance distance:", 5, 0);
                     std::string ID = QInputDialog::getText(this, "Input 2/2", "Filter cells by name (no ',' or '.' characters):", QLineEdit::Normal, "none").toStdString();
-                    std::pair<int,int> errors = itm::CAnnotations::typeIandIIerrorAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, ID, outputPath.toStdString());
-                    v3d_msg(itm::strprintf("Type I  errors (false positives): %d\n"
+                    std::pair<int,int> errors = tf::CAnnotations::typeIandIIerrorAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, ID, outputPath.toStdString());
+                    v3d_msg(tf::strprintf("Type I  errors (false positives): %d\n"
                             "Type II errors (false negatives): %d", errors.first, errors.second).c_str());
                 }
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
@@ -2819,7 +2826,7 @@ void PMain::showDialogTypeIandTypeIIerrors()
 
 void PMain::showDialogDiffAPO()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -2832,7 +2839,7 @@ void PMain::showDialogDiffAPO()
                 QString savePath = QFileDialog::getSaveFileName(this, tr("Output file"), 0,tr("APO files (*.apo)"));
                 if(!savePath.isEmpty())
                 {
-                    itm::CAnnotations::diffAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), H0_sbox->value(), H1_sbox->value(),
+                    tf::CAnnotations::diffAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), H0_sbox->value(), H1_sbox->value(),
                                            V0_sbox->value(), V1_sbox->value(), D0_sbox->value(), D1_sbox->value(), savePath.toStdString());
 
                     v3d_msg("DONE!");
@@ -2840,7 +2847,7 @@ void PMain::showDialogDiffAPO()
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
@@ -2848,7 +2855,7 @@ void PMain::showDialogDiffAPO()
 
 void PMain::showDialogTrimAPO()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -2864,21 +2871,21 @@ void PMain::showDialogTrimAPO()
                 int y1 = QInputDialog::getInt(this, "Select VOI", "y1)");
                 int z0 = QInputDialog::getInt(this, "Select VOI", "[z0");
                 int z1 = QInputDialog::getInt(this, "Select VOI", "z1)");
-                itm::CAnnotations::trimAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), x0, x1, y0, y1, z0, z1);
+                tf::CAnnotations::trimAPO(apo1FilePath.toStdString(), apo2FilePath.toStdString(), x0, x1, y0, y1, z0, z1);
 
                 v3d_msg("DONE!");
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
 }
 
-void itm::PMain::showDialogLabelDuplicateAPO()
+void tf::PMain::showDialogLabelDuplicateAPO()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -2896,36 +2903,36 @@ void itm::PMain::showDialogLabelDuplicateAPO()
                 color.r = r;
                 color.g = g;
                 color.b = b;
-                itm::CAnnotations::labelDuplicates(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, color);
+                tf::CAnnotations::labelDuplicates(apo1FilePath.toStdString(), apo2FilePath.toStdString(), d, color);
 
                 v3d_msg("DONE!");
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
 }
 
-void itm::PMain::showDialogDiffnAPO()
+void tf::PMain::showDialogDiffnAPO()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
         QStringList apos = QFileDialog::getOpenFileNames(this, "Select two (or more) input files", 0, tr("APO files (*.apo)"));
         if(apos.size() < 2)
-            throw itm::RuntimeException("At least two .apo files should be selected");
+            throw tf::RuntimeException("At least two .apo files should be selected");
 
         QString apoPath = QFileDialog::getSaveFileName(this, tr("Select output APO file"), 0,tr("APO files (*.apo)"));
         if(apoPath.size())
         {
-            itm::CAnnotations::diffnAPO(apos, apoPath.toStdString());
+            tf::CAnnotations::diffnAPO(apos, apoPath.toStdString());
             v3d_msg("DONE!");
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
@@ -2933,7 +2940,7 @@ void itm::PMain::showDialogDiffnAPO()
 
 void PMain::showDialogMergeImageJCellCounterXMLs()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -2952,12 +2959,12 @@ void PMain::showDialogMergeImageJCellCounterXMLs()
             int x0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner X coordinate:", 0, 0);
             int y0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Y coordinate:", 0, 0);
             int z0 = QInputDialog::getInt(this, ".xml (ImageJ Cell Counter markers) -> .apo", "Insert top-left corner Z coordinate:", 0, 0);
-            itm::CAnnotations::mergeImageJCellCounterXMLs(xmls, apoPath.toStdString(), xS, yS, zS, blocks_overlap, x0, y0, z0);
+            tf::CAnnotations::mergeImageJCellCounterXMLs(xmls, apoPath.toStdString(), xS, yS, zS, blocks_overlap, x0, y0, z0);
 
             v3d_msg("DONE!");
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
@@ -2965,31 +2972,31 @@ void PMain::showDialogMergeImageJCellCounterXMLs()
 
 void PMain::showDialogCountDuplicateMarkers()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
-    if(!itm::CViewer::current)
+    if(!tf::CViewer::current)
     {
         v3d_msg("No image opened");
         return;
     }
 
     int d = QInputDialog::getInt(this, "Input required", "Tolerance distance:");
-    int count = itm::CAnnotations::getInstance()->countDuplicateMarkers(d);
-    QMessageBox::information(this, "Result", itm::strprintf("Found %d markers", count).c_str());
-    itm::CViewer::current->clearAnnotations();
-    itm::CViewer::current->loadAnnotations();
+    int count = tf::CAnnotations::getInstance()->countDuplicateMarkers(d);
+    QMessageBox::information(this, "Result", tf::strprintf("Found %d markers", count).c_str());
+    tf::CViewer::current->clearAnnotations();
+    tf::CViewer::current->loadAnnotations();
 }
 
 void PMain::showDialogGenerateTimeSeriesInterpolation()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
         std::string im1Path = QFileDialog::getOpenFileName(this, tr("Select frame A image")).toStdString();
         if(!im1Path.empty())
         {
-            std::string im2Path = QFileDialog::getOpenFileName(this, tr("Select frame B image"), itm::cdUp(im1Path).c_str()).toStdString();
+            std::string im2Path = QFileDialog::getOpenFileName(this, tr("Select frame B image"), tf::cdUp(im1Path).c_str()).toStdString();
             if(!im2Path.empty())
             {
                 std::string dirPath = QFileDialog::getExistingDirectory(this, tr("Select output directory"), 0, QFileDialog::ShowDirsOnly).toStdString();
@@ -3006,12 +3013,12 @@ void PMain::showDialogGenerateTimeSeriesInterpolation()
                     Image4DSimple* im2 =  V3D_env->loadImage(const_cast<char*>(im2Path.c_str()));
                     for(int k=0; k<=nSteps; k++)
                     {
-                        statusBar->showMessage(itm::strprintf("Processing frame %d/%d...", k+1, nSteps+1).c_str());
+                        statusBar->showMessage(tf::strprintf("Processing frame %d/%d...", k+1, nSteps+1).c_str());
                         QTime dieTime= QTime::currentTime().addSecs(1);
                             while (QTime::currentTime() < dieTime)
                                 QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-                        Image4DSimple* out = itm::CImageUtils::interpolateLinear(im1, im2, k, nSteps);
-                        out->saveImage(itm::strprintf("%s/frame%07d.v3draw", dirPath.c_str(), k).c_str());
+                        Image4DSimple* out = tf::CImageUtils::interpolateLinear(im1, im2, k, nSteps);
+                        out->saveImage(tf::strprintf("%s/frame%07d.v3draw", dirPath.c_str(), k).c_str());
                         delete out;
                         progressBar->setValue(k);
                     }
@@ -3020,7 +3027,7 @@ void PMain::showDialogGenerateTimeSeriesInterpolation()
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         this->resetGUI();
@@ -3029,7 +3036,7 @@ void PMain::showDialogGenerateTimeSeriesInterpolation()
 
 void PMain::showDialogGenerateTimeSeriesReplication()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -3048,13 +3055,13 @@ void PMain::showDialogGenerateTimeSeriesReplication()
                 Image4DSimple* im1 =  V3D_env->loadImage(const_cast<char*>(im1Path.c_str()));
                 for(int k=0; k<nSteps; k++)
                 {
-                    statusBar->showMessage(itm::strprintf("Processing frame %d/%d...", k+1, nSteps).c_str());
+                    statusBar->showMessage(tf::strprintf("Processing frame %d/%d...", k+1, nSteps).c_str());
                     QTime dieTime= QTime::currentTime().addSecs(1);
                         while (QTime::currentTime() < dieTime)
                             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 
-                    Image4DSimple* out = itm::CImageUtils::addGaussianNoise(im1,static_cast<float>(k)/(nSteps-1));
-                    out->saveImage(itm::strprintf("%s/frame%07d.v3draw", dirPath.c_str(), k).c_str());
+                    Image4DSimple* out = tf::CImageUtils::addGaussianNoise(im1,static_cast<float>(k)/(nSteps-1));
+                    out->saveImage(tf::strprintf("%s/frame%07d.v3draw", dirPath.c_str(), k).c_str());
                     delete out;
                     progressBar->setValue(k);
                 }
@@ -3062,7 +3069,7 @@ void PMain::showDialogGenerateTimeSeriesReplication()
             }
         }
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         this->resetGUI();
@@ -3071,7 +3078,7 @@ void PMain::showDialogGenerateTimeSeriesReplication()
 
 void PMain::showAnoOctree()
 {
-    /**/itm::debug(itm::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     try
     {
@@ -3103,7 +3110,7 @@ void PMain::showAnoOctree()
         else
             QMessageBox::warning(this, "Warning", "No 3D viewer found");
     }
-    catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }

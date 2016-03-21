@@ -5,7 +5,7 @@
 
 #include "../control/CPlugin.h"
 
-class teramanager::PAbout : public QDialog
+class terafly::PAbout : public QDialog
 {
         Q_OBJECT
 

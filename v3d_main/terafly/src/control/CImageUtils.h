@@ -4,7 +4,7 @@
 #include "CPlugin.h"
 #include "v3d_interface.h"
 
-class teramanager::CImageUtils
+class terafly::CImageUtils
 {
     private:
 
@@ -16,28 +16,28 @@ class teramanager::CImageUtils
         * Copies the given VOI from "src" to "dst". Offsets and scaling are supported.
         ***********************************************************************************/
         static void
-            copyVOI(itm::uint8 const * src, //pointer to const data source
+            copyVOI(tf::uint8 const * src, //pointer to const data source
                 uint src_dims[5],           //dimensions of "src" along X, Y, Z, channels and T
                 uint src_offset[5],         //VOI's offset along X, Y, Z, <empty> and T
                 uint src_count[5],          //VOI's dimensions along X, Y, Z, <empty> and T
-                itm::uint8* dst,            //pointer to data destination
+                tf::uint8* dst,            //pointer to data destination
                 uint dst_dims[5],           //dimensions of "dst" along X, Y, Z, channels and T
                 uint dst_offset[5],         //offset of "dst" along X, Y, Z, <empty> and T
                 uint scaling = 1)           //scaling factor (integer only)
-        throw (itm::RuntimeException);
+        throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Returns the Maximum Intensity Projection of the given VOI in a newly allocated array.
         ***********************************************************************************/
-        static itm::uint8*
-            mip(itm::uint8 const * src,     //pointer to const data source
+        static tf::uint8*
+            mip(tf::uint8 const * src,     //pointer to const data source
                    uint src_dims[5],        //dimensions of "src" along X, Y, Z, channels and T
                    uint src_offset[5],      //VOI's offset along X, Y, Z, <empty> and T
                    uint src_count[5],       //VOI's dimensions along X, Y, Z, <empty> and T
-                   itm::direction dir,      //direction of projection
+                   tf::direction dir,      //direction of projection
                    bool to_BGRA = false,    //true if mip data must be stored into BGRA format
-                   itm::uint8 alpha = 255)  //alpha transparency (used if to_BGRA = true)
-           throw (itm::RuntimeException);
+                   tf::uint8 alpha = 255)  //alpha transparency (used if to_BGRA = true)
+           throw (tf::RuntimeException);
 
 
         /**********************************************************************************
@@ -68,7 +68,7 @@ class teramanager::CImageUtils
         void changeImage(QImage& image, int value );
         /*********************************************************************************/
 
-        static inline RGBA8 vaa3D_color(itm::uint8 r, itm::uint8 g, itm::uint8 b){
+        static inline RGBA8 vaa3D_color(tf::uint8 r, tf::uint8 g, tf::uint8 b){
             RGBA8 color;
             color.r = r;
             color.g = g;
@@ -90,7 +90,7 @@ class teramanager::CImageUtils
             Image4DSimple* im2,         // second image
             int i,                      // step  index
             int N)                      // steps number
-        throw (itm::RuntimeException);
+        throw (tf::RuntimeException);
 
 
         /**********************************************************************************
@@ -99,7 +99,7 @@ class teramanager::CImageUtils
         static Image4DSimple* addGaussianNoise(
                 Image4DSimple* im,      // input image
                 float w)                // gaussian noise weight (1 = only noise, 0 = no noise)
-        throw (itm::RuntimeException);
+        throw (tf::RuntimeException);
 };
 
 #endif // CIMAGEUTILS_H

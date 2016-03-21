@@ -8,11 +8,11 @@
 #define GL_MULTISAMPLE  0x809D
 #endif
 
-using namespace teramanager;
+using namespace terafly;
 
 QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     xRot = 0;
     yRot = 0;
@@ -38,7 +38,7 @@ QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers),
 
 QGLRefSys::~QGLRefSys()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 }
 
 QSize QGLRefSys::minimumSizeHint() const
@@ -64,7 +64,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
                         int _ROIxDim /* =0 */, int _ROIyDim /* = 0 */, int _ROIzDim /* = 0 */,
                         int _ROIxShift /* = 0 */, int _ROIyShift /* = 0 */, int _ROIzShift /* = 0 */)
 {
-    /**/itm::debug(itm::LEV_MAX, strprintf("dim = {%d, %d, %d}, ROIdim = {%d, %d, %d}, ROIshift = {%d, %d, %d}",
+    /**/tf::debug(tf::LEV_MAX, strprintf("dim = {%d, %d, %d}, ROIdim = {%d, %d, %d}, ROIshift = {%d, %d, %d}",
                                             dimX, dimY, dimZ, _ROIxDim, _ROIyDim, _ROIzDim, _ROIxShift, _ROIyShift, _ROIzShift).c_str(), __itm__current__function__);
 
     if(dimX >= dimY && dimX >= dimZ)

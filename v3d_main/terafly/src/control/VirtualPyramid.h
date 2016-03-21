@@ -7,7 +7,7 @@
 // Virtual Pyramid class
 // - a container for virtual pyramid layers (not containing any data)
 // - a container for actual  pyramid layers (do contain actual data + caching)
-class teramanager::VirtualPyramid
+class terafly::VirtualPyramid
 {
     private:
 
@@ -15,15 +15,15 @@ class teramanager::VirtualPyramid
         iim::VirtualVolume*                 highresVol;     // highest-res (unconverted) volume
         std::string                         highresPath;    // highest-res (unconverted) volume path
         std::string                         localPath;      // where local files should be stored
-        std::vector< itm::VirtualPyramidLayer* > virtualPyramid;   // virtual (=do NOT contain any data) pyramid layers, from highest-res to lowest-res
-        std::vector< itm::HyperGridCache*>  pyramid;        // actual (=do contain data) pyramid layers, use caching from/to disk and RAM, from highest-res to lowest-res
+        std::vector< tf::VirtualPyramidLayer* > virtualPyramid;   // virtual (=do NOT contain any data) pyramid layers, from highest-res to lowest-res
+        std::vector< tf::HyperGridCache*>  pyramid;        // actual (=do contain data) pyramid layers, use caching from/to disk and RAM, from highest-res to lowest-res
 
         // disable default constructor
         VirtualPyramid(){}
 
         // object utility methods
-        void instanceHighresVol() throw (iim::IOException, iom::exception, itm::RuntimeException);// init highest-res volume
-        void init() throw (iim::IOException, iom::exception, itm::RuntimeException);              // init metadata
+        void instanceHighresVol() throw (iim::IOException, iom::exception, tf::RuntimeException);// init highest-res volume
+        void init() throw (iim::IOException, iom::exception, tf::RuntimeException);              // init metadata
 
 
     public:
@@ -34,7 +34,7 @@ class teramanager::VirtualPyramid
                 int reduction_factor,                       // pyramid reduction factor (i.e. divide by reduction_factor along all axes for all layers)
                 float lower_bound = 100,                    // lower bound (in MVoxels) for the lowest-res pyramid image (i.e. divide by reduction_factor until the lowest-res has size <= lower_bound)
                 iim::VirtualVolume* _highresVol = 0)        // highest-res (unconverted) volume, if null will be instantiated on-the-fly
-        throw (iim::IOException, iom::exception, itm::RuntimeException);
+        throw (iim::IOException, iom::exception, tf::RuntimeException);
 
 
         // constructor 2
@@ -42,7 +42,7 @@ class teramanager::VirtualPyramid
                 std::string _highresPath,                   // highest-res (unconverted) volume path
                 std::vector< xyz<int> > reduction_factors,  // pyramid reduction factors (i.e. divide by reduction_factors[i].x along X for layer i)
                 iim::VirtualVolume* _highresVol = 0)        // highest-res (unconverted) volume, if null will be instantiated on-the-fly
-        throw (iim::IOException, iom::exception, itm::RuntimeException);
+        throw (iim::IOException, iom::exception, tf::RuntimeException);
 
 
         // destructor
@@ -58,12 +58,12 @@ class teramanager::VirtualPyramid
 
         // load volume of interest from the given resolution layer
         // - communicates with 'highresVol' (which contains highres data) and with 'pyramid' (which contain cached data)
-        image_5D<uint8>
+        tf::image5D<uint8>
         loadVOI(
                 xyz<size_t> start,  // xyz range [start, end)
                 xyz<size_t> end,    // xyz range [start, end)
                 int level)          // pyramid layer (0=highest resolution, the higher the lower the resolution)
-        throw (iim::IOException, iom::exception, itm::RuntimeException);
+        throw (iim::IOException, iom::exception, tf::RuntimeException);
 
 
         friend class VirtualPyramidLayer;
@@ -73,14 +73,14 @@ class teramanager::VirtualPyramid
 // Virtual Pyramid Layer class
 // - a wrapper built on the highest-res image to intercept its load methods
 // - inherits from VirtualVolume, which makes using a Virtual Pyramid Image transparent to the client
-class teramanager::VirtualPyramidLayer : public iim::VirtualVolume
+class terafly::VirtualPyramidLayer : public iim::VirtualVolume
 {
     private:
 
         // object members
-        itm::VirtualPyramid*    parent;             // container
-        int                     level;              // pyramid level (0 = highest-res, the coarser the resolution the higher)
-        itm::xyz<int>           reductionFactor;    // pyramid reduction factor relative to the highest-res image
+        tf::VirtualPyramid*    parent;             // container
+        int                    level;              // pyramid level (0 = highest-res, the coarser the resolution the higher)
+        tf::xyz<int>           reductionFactor;    // pyramid reduction factor relative to the highest-res image
 
         // disable default constructor
         VirtualPyramidLayer(){}
@@ -90,15 +90,15 @@ class teramanager::VirtualPyramidLayer : public iim::VirtualVolume
         // constructor
         VirtualPyramidLayer(
                 int _level,                         // pyramid level (0 = highest-res, the coarser the resolution the higher)
-                VirtualPyramid* _parent,            // container
-                xyz<int> _reduction_factor)         // reduction factor relative to the highest-res image
+                tf::VirtualPyramid* _parent,        // container
+                tf::xyz<int> _reduction_factor)     // reduction factor relative to the highest-res image
         throw (iim::IOException);
 
         // deconstructor
         virtual ~VirtualPyramidLayer() throw (iim::IOException);
 
         // GET methods
-        VirtualPyramid* getPyramid(){return parent;}
+        tf::VirtualPyramid* getPyramid(){return parent;}
 
         // inherited pure virtual methods, to implement
         virtual void initChannels ( ) throw (iim::IOException);
@@ -124,7 +124,7 @@ class teramanager::VirtualPyramidLayer : public iim::VirtualVolume
 // - send/receive image data to/from client
 // - store cached data permanently on the disk
 // - supports up to 5D images
-class teramanager::HyperGridCache
+class terafly::HyperGridCache
 {
     private:
 
@@ -132,45 +132,44 @@ class teramanager::HyperGridCache
         class CacheBlock;                       // forward-declaration
         std::string path;                       // where cache files are stored / have to be stored
         CacheBlock ******hypergrid;             // 5D array of <CacheBlock>, follows T-C-Z-Y-Z order
-        xyzct<size_t> block_dim;                // desired dimensions of each <CacheBlock>
+        tf::xyzct<size_t> block_dim;            // desired dimensions of each <CacheBlock>
         size_t nX, nY, nZ, nC, nT;              // hypergrid dimension along X, Y, Z, C (channel), and T (time)
         size_t dimX, dimY, dimZ, dimC, dimT;    // image space dimensions along X, Y, Z, C (channel), and T (time)
 
         // object methods
         HyperGridCache(){}                      // disable default constructor
-        void load() throw (iim::IOException, itm::RuntimeException);   // load from disk
-        void save() throw (iim::IOException, itm::RuntimeException);   // save to disk
-        void init() throw (iim::IOException, itm::RuntimeException);   // init persistency files
+        void load() throw (iim::IOException, tf::RuntimeException);   // load from disk
+        void save() throw (iim::IOException, tf::RuntimeException);   // save to disk
+        void init() throw (iim::IOException, tf::RuntimeException);   // init persistency files
 
     public:
 
         // constructor 1
         HyperGridCache(
-                std::string _path,                                                      // where cache files are stored / have to be stored
-                xyzct<size_t> image_dim,                                                // image dimensions along X, Y, Z, C (channel), and T (time)
-                xyzct<size_t> _block_dim = xyzct<size_t>(256,256,256,inf<size_t>(),inf<size_t>()))  // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
-        throw (iim::IOException, itm::RuntimeException);
+                std::string _path,                                                                                  // where cache files are stored / have to be stored
+                tf::xyzct<size_t> image_dim,                                                                        // image dimensions along X, Y, Z, C (channel), and T (time)
+                tf::xyzct<size_t> _block_dim = tf::xyzct<size_t>(256,256,256,tf::inf<size_t>(),tf::inf<size_t>()))  // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+        throw (iim::IOException, tf::RuntimeException);
 
         // destructor
         ~HyperGridCache() throw (iim::IOException);
 
 
-        // read data from the cache (downsampling on-the-fly supported)
-        image_5D<uint8>                                         // <image data, image data size> output
+        // read data from cache (downsampling on-the-fly supported)
+        tf::image5D<uint8>                                         // <image data, image data size> output
         readData(
-                xyzt<size_t> start,                             // start coordinate in the current X,Y,Z,T image space
-                xyzt<size_t> end,                               // end coordinate in the current X,Y,Z,T image space
-                active_channels<> channels,                     // active channels
-                xyz<int> downsamplingFactor = xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
+                tf::voi4D<size_t> voi,                                  // 4D VOI in X,Y,Z,T space
+                tf::active_channels<> channels,                         // active channels
+                tf::xyz<int> downsamplingFactor = tf::xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
         throw (iim::IOException);
 
 
         // put data into the cache (downsampling on-the-fly supported)
         void putData(
-                const image_5D<uint8>,                          // image data array, follows T-C-Z-Y-Z order
-                xyzt<size_t> shift,                             // shift relative to (0,0,0,0)
-                active_channels<> channels,                     // active channels
-                xyz<int> downsamplingFactor = xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
+                const tf::image5D<uint8>,                               // image data array, follows T-C-Z-Y-Z order
+                tf::xyzt<size_t> shift,                                 // shift relative to (0,0,0,0)
+                tf::active_channels<> channels,                         // active channels
+                tf::xyz<int> downsamplingFactor = tf::xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
         throw (iim::IOException);
 
 
@@ -187,12 +186,13 @@ class teramanager::HyperGridCache
             private:
 
                 // object members
-                HyperGridCache* parent;                 // container
-                xyzct<size_t> origin;                   // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
-                image_5D<uint8> imdata;                 // cached image data
-                xyzct<size_t> idx;                      // 5D index in the parent hypergrid
-                std::string path;                       // path of file where this block is stored
-                int visits;                             // #times this block has been visited (for both loading and storing of image data)
+                HyperGridCache*   parent;                   // container
+                tf::xyzct<size_t> origin;                   // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
+                tf::xyzct<size_t> dims;                     // block dimensions - block has coordinates [origin, origin + dims)
+                tf::uint8*        imdata;                   // cached image data
+                tf::xyzct<size_t> index;                    // 5D index in the parent hypergrid
+                std::string path;                           // path of file where this block is stored
+                int visits;                                 // #times this block has been visited (for both loading and storing of image data)
 
                 // object utility methods
                 CacheBlock(){}                          // disable default constructor
@@ -206,20 +206,26 @@ class teramanager::HyperGridCache
                 // contructor 1
                 CacheBlock(
                         HyperGridCache* _parent,
-                        xyzct<size_t> _origin,          // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
-                        xyzct<size_t> _dims,            // dimensions of the block
-                        xyzct<size_t> _index)           // 5D index in the parent hypergrid
+                        tf::xyzct<size_t> _origin,          // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
+                        tf::xyzct<size_t> _dims,            // dimensions of the block
+                        tf::xyzct<size_t> _index)           // 5D index in the parent hypergrid
                 throw (iim::IOException);
 
                 // destructor
                 ~CacheBlock() throw (iim::IOException);
 
                 // GET and SET methods
-                xyzct<size_t> getOrigin(){return origin;}
-                xyzct<size_t> getDims(){return imdata.getDims();}
-                int getVisits(){return visits;}
-                void setVisits(int _visits){visits=_visits;}
-                uint8* getImageDataPtr(){return imdata.data;}
+                tf::xyzct<size_t> getOrigin(){return origin;}
+                tf::xyzct<size_t> getDims()  {return dims;}
+                int getVisits()              {return visits;}
+                uint8* getImageDataPtr()     {return imdata;}
+                void setVisits(int _visits)  {visits=_visits;}
+
+                // calculate XYZT intersection with current block
+                tf::voi4D<size_t> xyzt_intersection(tf::voi4D<size_t> range);
+
+                // calculate channel intersection with current block
+                std::vector<unsigned int> c_intersection(tf::active_channels<> chans);
         };
 };
 

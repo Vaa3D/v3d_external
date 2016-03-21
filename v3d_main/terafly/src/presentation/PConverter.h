@@ -34,7 +34,7 @@
 #include "../control/CPlugin.h"
 #include "QHelpBox.h"
 
-class teramanager::PConverter : public QWidget
+class terafly::PConverter : public QWidget
 {
     Q_OBJECT
 
@@ -145,7 +145,7 @@ class teramanager::PConverter : public QWidget
         * If an exception has occurred in the <CConverter> thread, it is propagated and
         * managed in the current thread (ex != 0).
         ***********************************************************************************/
-        void operationDone(itm::RuntimeException *ex);
+        void operationDone(tf::RuntimeException *ex);
 
         /**********************************************************************************
         * Called when the GUI widgets that control application settings change.

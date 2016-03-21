@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "../control/CPlugin.h"
 
-class teramanager::QGradientBar : public QWidget
+class terafly::QGradientBar : public QWidget
 {
     Q_OBJECT
 

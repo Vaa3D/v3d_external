@@ -44,7 +44,7 @@
 
 using namespace std;
 
-class teramanager::CImport : public QThread
+class terafly::CImport : public QThread
 {
     Q_OBJECT
 
@@ -57,7 +57,7 @@ class teramanager::CImport : public QThread
         static CImport* uniqueInstance;
         CImport() : QThread()
         {
-            /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+            /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
             vmapData = 0;
             HDF5_descr = (void *) 0;
             reset();
@@ -83,8 +83,8 @@ class teramanager::CImport : public QThread
 
         // output members
         vector<iim::VirtualVolume*> volumes;        // stores the volumes at the different resolutions
-        itm::uint8* vmapData;                       //volume map data
-        itm::uint32 vmapYDim, vmapXDim, vmapZDim, vmapCDim, vmapTDim; //volume map actualdimensions
+        tf::uint8* vmapData;                       //volume map data
+        tf::uint32 vmapYDim, vmapXDim, vmapZDim, vmapCDim, vmapTDim; //volume map actualdimensions
 
 		// should be released only when the multi resolution image is closed
 		void *HDF5_descr;   
@@ -112,12 +112,12 @@ class teramanager::CImport : public QThread
 
         // GET methods
         string getPath(){return path;}
-        itm::uint8* getVMapRawData(){return vmapData;}
-        itm::uint32 getVMapXDim(){return vmapXDim;}
-        itm::uint32 getVMapYDim(){return vmapYDim;}
-        itm::uint32 getVMapZDim(){return vmapZDim;}
-        itm::uint32 getVMapCDim(){return vmapCDim;}
-        itm::uint32 getVMapTDim(){return vmapTDim;}
+        tf::uint8* getVMapRawData(){return vmapData;}
+        tf::uint32 getVMapXDim(){return vmapXDim;}
+        tf::uint32 getVMapYDim(){return vmapYDim;}
+        tf::uint32 getVMapZDim(){return vmapZDim;}
+        tf::uint32 getVMapCDim(){return vmapCDim;}
+        tf::uint32 getVMapTDim(){return vmapTDim;}
         int getTDim(){
             if(!volumes.empty())
                 return volumes[0]->getDIM_T();
@@ -146,13 +146,13 @@ class teramanager::CImport : public QThread
                 return (volumes.back()->getDIM_V()-1.0f)/(volumes[resIndex]->getDIM_V()-1.0f);
             else return 1.0f;
         }
-        inline float getRescaleFactor(int res0, int res1, iim::axis dir) throw (itm::RuntimeException)
+        inline float getRescaleFactor(int res0, int res1, iim::axis dir) throw (tf::RuntimeException)
         {
             try{
                 return volumes[res0]->getDIM(dir)/static_cast<float>(volumes[res1]->getDIM(dir));
             }
             catch(iim::IOException &e){
-                throw itm::RuntimeException(e.what());
+                throw tf::RuntimeException(e.what());
             }
         }
 
@@ -180,7 +180,7 @@ class teramanager::CImport : public QThread
         // 1) the volume map does not exist OR
         // 2) it is not compatible with the current version OR
         // 3) contains a number of 'T' frames with T < vmapTDimMax
-        bool hasVolumeMapToBeRegenerated(std::string vmapFilepath, std::string min_required_version) throw (itm::RuntimeException);
+        bool hasVolumeMapToBeRegenerated(std::string vmapFilepath, std::string min_required_version) throw (tf::RuntimeException);
 
 
     signals:
@@ -188,10 +188,10 @@ class teramanager::CImport : public QThread
         /*********************************************************************************
         * Carries the outcome of the operation associated to this thread.
         **********************************************************************************/
-        void sendOperationOutcome(itm::RuntimeException* ex, qint64 elapsed_time = 0);
+        void sendOperationOutcome(tf::RuntimeException* ex, qint64 elapsed_time = 0);
 };
 
-struct teramanager::volume_format
+struct terafly::volume_format
 {
     enum kind{TERAFLY, BDVHDF5, UNCONVERTED, UNKNOWN} id;
     volume_format() : id(UNKNOWN){}
