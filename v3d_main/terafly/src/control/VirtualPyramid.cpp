@@ -116,34 +116,36 @@ void tf::VirtualPyramid::instanceHighresVol() throw (iim::IOException, iom::exce
         throw iim::IOException(tf::strprintf("Cannot create local folder for Virtual Pyramid at \"%s\"", localPath.c_str()));
 
     // create (or check) metadata for Virtual Pyramid
-    std::string image_path = MD5_path + "/.volume.txt";
-    if(iim::isFile(image_path))
+    std::string volumetxtPath = MD5_path + "/.volume.txt";
+    if(iim::isFile(volumetxtPath))
     {
-        std::ifstream f(image_path.c_str());
+        std::ifstream f(volumetxtPath.c_str());
         if(!f.is_open())
-            throw iim::IOException("Cannot open .volume.txt file at \"%s\"", image_path.c_str());
+            throw iim::IOException("Cannot open .volume.txt file at \"%s\"", volumetxtPath.c_str());
         std::string line;
         std::getline(f, line);
-        std::vector<std::string> tokens = tf::parse(line, ":", 2, image_path);
+        std::vector<std::string> tokens = tf::parse(line, ":", 2, volumetxtPath);
         if(tokens[1].compare(highresPath) != 0)
-            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", image_path.c_str(), highresPath.c_str(), tokens[1].c_str()));
+            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), highresPath.c_str(), tokens[1].c_str()));
         std::getline(f, line);
-        tokens = tf::parse(line, ":", 2, image_path);
+        tokens = tf::parse(line, ":", 2, volumetxtPath);
         if(highresVol && tokens[1].compare(highresVol->getPrintableFormat()) != 0)
-            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", image_path.c_str(), highresPath.c_str(), tokens[1].c_str()));
+            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), highresPath.c_str(), tokens[1].c_str()));
         else
             highresVol = iim::VirtualVolume::instance_format(highresPath.c_str(), tokens[1]);
         f.close();
     }
     {
-        std::ofstream f(image_path.c_str());
-        if(!f.is_open())
-            throw iim::IOException("Cannot open .volume.txt file at \"%s\"", image_path.c_str());
-        f << "imagepath:" << highresPath << std::endl;
-
         // if volume is not instantiated, and we haven't done it before, we have to use the (time-consuming) auto instantiator
+        // @FIXED by Alessandro on 2016/03/25: this should be done BEFORE creating the volume.txt file
+        // so that in case it throws, no (incomplete) volume.txt is created
         if(highresVol == 0)
             highresVol = iim::VirtualVolume::instance(highresPath.c_str());
+
+        std::ofstream f(volumetxtPath.c_str());
+        if(!f.is_open())
+            throw iim::IOException("Cannot open .volume.txt file at \"%s\"", volumetxtPath.c_str());
+        f << "imagepath:" << highresPath << std::endl;
 
         // then we can store the image format
         f << "format:" << highresVol->getPrintableFormat() << std::endl;
