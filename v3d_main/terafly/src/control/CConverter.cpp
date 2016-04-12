@@ -136,8 +136,8 @@ void CConverter::run()
     try
     {
         // TO BE REMOVED !!!
-        iom::IMIN_PLUGIN = "tiff3D";
-        iom::IMOUT_PLUGIN = "tiff3D";
+        //iom::IMIN_PLUGIN = "tiff3D";
+        //iom::IMOUT_PLUGIN = "tiff3D";
 
         if(!conversionMode)
         {

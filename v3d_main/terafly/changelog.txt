@@ -11,8 +11,16 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.147 / TeraFly version 2.1.57
+April 12th, 2016
+--------------------------------------------------------------------------------------------
+- Fix: fixed TeraConverter crash when converting from 3D to 2D formats
+- Fix: fixed non-persistent output format in TeraConverter
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.146 / TeraFly version 2.1.56
-March 25st, 2016
+March 25th, 2016
 --------------------------------------------------------------------------------------------
 - New: added support to 16 bit tiff images (2D series or 2/3D tiled)
 - New: added support to single TIF files for Unconverted Volume (still 8 bit)

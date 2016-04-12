@@ -320,6 +320,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     connect(inPathField, SIGNAL(editingFinished()), this, SLOT(startButtonClicked()));
     connect(outPathField, SIGNAL(textChanged(QString)), this, SLOT(settingsChanged()));
     connect(inFormatCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
+    connect(outFormatCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
     connect(blockWidthField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
     connect(blockHeightField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
     connect(blockDepthField, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
