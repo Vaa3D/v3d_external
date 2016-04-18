@@ -84,6 +84,7 @@ void CSettings::loadDefaultSettings()
     volumeConverterStacksWidthLRU = 256;
     volumeConverterStacksHeightLRU = 256;
     volumeConverterStacksDepthLRU = 256;
+    volumeConverterTimeSeries = false;
 }
 
 void CSettings::writeSettings()
@@ -134,6 +135,8 @@ void CSettings::writeSettings()
     settings.setValue("volumeConverterStacksWidthLRU", volumeConverterStacksWidthLRU);
     settings.setValue("volumeConverterStacksHeightLRU", volumeConverterStacksHeightLRU);
     settings.setValue("volumeConverterStacksDepthLRU", volumeConverterStacksDepthLRU);
+    settings.setValue("volumeConverterTimeSeries", volumeConverterTimeSeries);
+
 
 
     settings.setValue("verbosity", tf::DEBUG);
@@ -212,6 +215,10 @@ void CSettings::readSettings()
         volumeConverterStacksHeightLRU = settings.value("volumeConverterStacksHeightLRU").toInt();
     if(settings.contains("volumeConverterStacksDepthLRU"))
         volumeConverterStacksDepthLRU = settings.value("volumeConverterStacksDepthLRU").toInt();
+    if(settings.contains("volumeConverterTimeSeries"))
+        volumeConverterTimeSeries = settings.value("volumeConverterTimeSeries").toBool();
+
+
 
 //     if(settings.contains("verbosity"))
 //     {

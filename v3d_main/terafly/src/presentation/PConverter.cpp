@@ -119,6 +119,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     inDirButton = new QPushButton("Browse for dir...");
     inFileButton = new QPushButton("Browse for file...");
     timeSeriesCheckBox = new QCheckBox("Time series of");
+    timeSeriesCheckBox->setChecked(CSettings::instance()->getVCTimeSeries());
 
     //import form layout
     inButtonLayout = new QStackedLayout();
@@ -591,6 +592,7 @@ void PConverter::settingsChanged()
     CSettings::instance()->setVCStacksWidth(blockWidthField->value());
     CSettings::instance()->setVCStacksHeight(blockHeightField->value());
     CSettings::instance()->setVCStacksDepth(blockDepthField->value());
+    CSettings::instance()->setVCTimeSeries(timeSeriesCheckBox->isChecked());
     CSettings::instance()->writeSettings();
 }
 
@@ -684,7 +686,10 @@ void PConverter::volformatChanged (int )
     else if(sender->currentText().compare(iim::TIF3D_FORMAT.c_str(), Qt::CaseInsensitive) == 0)
     {
         helpBox->setText("A single multipage (3D) TIFF file.");
-        buttonLayout->setCurrentWidget(fileButton);
+        if(timeSeriesCheckBox->isChecked())
+            buttonLayout->setCurrentWidget(dirButton);
+        else
+            buttonLayout->setCurrentWidget(fileButton);
 
         if(sender == outFormatCBox)
             blockDepthField->setVisible(false);

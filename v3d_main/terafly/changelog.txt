@@ -11,6 +11,15 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.148 / TeraFly version 2.1.58
+April 18th, 2016
+--------------------------------------------------------------------------------------------
+- Opt: made "Time series of" checkbox state persistent in TeraConverter
+- Fix: fixed TeraConverter bug which prevented folder selection when selectin "Timer series"
+       of "TIFF (3D)"
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.147 / TeraFly version 2.1.57
 April 12th, 2016
 --------------------------------------------------------------------------------------------

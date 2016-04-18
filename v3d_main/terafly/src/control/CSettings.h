@@ -80,6 +80,7 @@ class terafly::CSettings
         int volumeConverterStacksWidthLRU;
         int volumeConverterStacksHeightLRU;
         int volumeConverterStacksDepthLRU;
+        bool volumeConverterTimeSeries;
 
     public:
 
@@ -165,6 +166,7 @@ class terafly::CSettings
         int getVCStacksWidth(){return volumeConverterStacksWidthLRU;}
         int getVCStacksHeight(){return volumeConverterStacksHeightLRU;}
         int getVCStacksDepth(){return volumeConverterStacksDepthLRU;}
+        bool getVCTimeSeries(){return volumeConverterTimeSeries;}
         void setVCInputPath(std::string newval){volumeConverterInputPathLRU = newval;}
         void setVCOutputPath(std::string newval){volumeConverterOutputPathLRU = newval;}
         void setVCInputFormat(std::string newval){volumeConverterInputFormatLRU = newval;}
@@ -172,6 +174,7 @@ class terafly::CSettings
         void setVCStacksWidth(int newval){volumeConverterStacksWidthLRU = newval;}
         void setVCStacksHeight(int newval){volumeConverterStacksHeightLRU = newval;}
         void setVCStacksDepth(int newval){volumeConverterStacksDepthLRU = newval;}
+        void setVCTimeSeries(bool newval){volumeConverterTimeSeries = newval;}
 
         //save and restore application settings
         void writeSettings();
