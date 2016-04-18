@@ -60,6 +60,11 @@ DEFINES += WITH_QT
 #enable HDF5
 DEFINES += ENABLE_BDV_HDF5
 
+#just define dummy symbols needed by TeraStitcher code
+DEFINES += TERASTITCHER_MAJOR
+DEFINES += TERASTITCHER_MINOR
+DEFINES += TERASTITCHER_PATCH
+
 #setup iomanager
 INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
 HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h
@@ -171,13 +176,13 @@ SOURCES += ../terafly/src/terarepo/src/crossmips/compute_funcs.cpp
 SOURCES += ../terafly/src/terarepo/src/crossmips/libcrossmips.cpp
 
 # set up tinyxml
-INCLUDEPATH += ../terafly/src/terarepo/src/tinyxml
-HEADERS += ../terafly/src/terarepo/src/tinyxml/tinyxml.h
-HEADERS += ../terafly/src/terarepo/src/tinyxml/tinystr.h
-SOURCES += ../terafly/src/terarepo/src/tinyxml/tinystr.cpp
-SOURCES += ../terafly/src/terarepo/src/tinyxml/tinyxmlparser.cpp
-SOURCES += ../terafly/src/terarepo/src/tinyxml/tinyxmlerror.cpp
-SOURCES += ../terafly/src/terarepo/src/tinyxml/tinyxml.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/3rdparty/tinyxml
+HEADERS += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxml.h
+HEADERS += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinystr.h
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinystr.cpp
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxmlparser.cpp
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxmlerror.cpp
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxml.cpp
 
 # set up common
 INCLUDEPATH += ../terafly/src/terarepo/src/common
