@@ -28,7 +28,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     int i = 0;
     do
     {
-        xyz<int> rf = xyz<int>(pow(reduction_factor, i),pow(reduction_factor, i),pow(reduction_factor, i));
+        xyz<int> rf = xyz<int>(pow(reduction_factor*1.0, i),pow(reduction_factor*1.0, i),pow(reduction_factor*1.0, i));
 
         // instance only nonempty layers
         if(VirtualPyramidLayer::isEmpty(highresVol, rf))

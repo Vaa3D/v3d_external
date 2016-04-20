@@ -148,7 +148,8 @@ class terafly::HyperGridCache
         HyperGridCache(
                 std::string _path,                                                                                  // where cache files are stored / have to be stored
                 tf::xyzct<size_t> image_dim,                                                                        // image dimensions along X, Y, Z, C (channel), and T (time)
-                tf::xyzct<size_t> _block_dim = tf::xyzct<size_t>(256,256,256,tf::inf<size_t>(),tf::inf<size_t>()))  // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+                tf::xyzct<size_t> _block_dim = tf::xyzct<size_t>(256,256,256,std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max()))
+				//tf::xyzct<size_t> _block_dim = tf::xyzct<size_t>(256,256,256,tf::inf<size_t>(),tf::inf<size_t>()))  // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
         throw (iim::IOException, tf::RuntimeException);
 
         // destructor
