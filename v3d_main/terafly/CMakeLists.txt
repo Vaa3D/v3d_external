@@ -66,6 +66,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/tinyxml)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D)
 
