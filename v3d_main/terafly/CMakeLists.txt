@@ -1,5 +1,6 @@
 # include useful cmake scripts
 include(cmake/utils.cmake)
+include(cmake/TeraStitcher_Version.cmake)
 
 # enable TeraFly code in Vaa3D
 # add_definitions(-D_ALLOW_TERAFLY_MENU_) # does not work since v3d CMakeLists is at the same level of the current CMakeLists
@@ -64,7 +65,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/utils/volumecon
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/tinyxml)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D)
@@ -78,7 +79,8 @@ file(GLOB volumeconverter_h 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/utils/
 file(GLOB volumemanager_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager/*.h)
 file(GLOB stitcher_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher/*.h)
 file(GLOB crossmips_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips/*.h)
-file(GLOB tinyxml_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/tinyxml/*.h)
+file(GLOB tinyxml_h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml/*.h)
 file(GLOB iomanager_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.h)
 file(GLOB plugin_tiff2D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.h)
 file(GLOB plugin_tiff3D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.h)
@@ -92,7 +94,8 @@ file(GLOB volumeconverter_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/util
 file(GLOB volumemanager_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager/*.cpp)
 file(GLOB stitcher_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher/*.cpp)
 file(GLOB crossmips_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips/*.cpp)
-file(GLOB tinyxml_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/tinyxml/*.cpp)
+file(GLOB tinyxml_src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml/*.cpp)
 file(GLOB iomanager_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.cpp)
 file(GLOB plugin_tiff2D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.cpp)
 file(GLOB plugin_tiff3D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.cpp)
