@@ -35,15 +35,10 @@ QT_PATH = $$dirname(QMAKE_QMAKE)/..
 INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 
 win32 {
-   !contains(QMAKE_TARGET.arch, x86_64) {
-      message("hdf5: no support for 32 bit windows")
-   }
-  else
-   {
+     message("WARNING: hdf5: no support for 32 bit windows")
    ## 64bit
      INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5-win64
      LIBS += -L$$V3DMAINPATH/common_lib/winlib64 -lhdf5 -lszip -lzlib
-   }
 }
 
 macx {
