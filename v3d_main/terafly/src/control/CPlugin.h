@@ -229,8 +229,23 @@ namespace terafly
     inline int round(float  x) { return static_cast<int>(x > 0.0f ? x + 0.5f : x - 0.5f);}
     inline int round(double x) { return static_cast<int>(x > 0.0  ? x + 0.5  : x - 0.5 );}
 
+    // positive and negative infinity
     template<typename T>
-    T inf(){return std::numeric_limits<T>::max();}
+    T infp()
+    {
+        if(std::numeric_limits<T>::has_infinity)
+            return std::numeric_limits<T>::infinity();
+        else
+            return std::numeric_limits<T>::max();
+    }
+    template<typename T>
+    T infn()
+    {
+        if(std::numeric_limits<T>::has_infinity)
+            return -std::numeric_limits<T>::infinity();
+        else
+            return std::numeric_limits<T>::min();
+    }
 
     //string-based sprintf function
     inline std::string strprintf(const std::string fmt, ...)
