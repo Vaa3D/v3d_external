@@ -125,6 +125,7 @@ endif()
 # create TeraFly lib
 add_library(terafly STATIC
     ${TERAFLY_MOC_SRCS}
+	${stitcher_h}
 	${presentation_src}
 	${control_src}
 	${imagemanager_src}
@@ -145,7 +146,6 @@ add_library(terafly STATIC
 	${iomanager_h}
 	${plugin_tiff2D_h}
 	${plugin_tiff3D_h}
-	${stitcher_h}
 	${crossmips_h}
 	${tinyxml_h}
 	${common_h}
