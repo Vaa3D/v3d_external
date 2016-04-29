@@ -58,12 +58,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 include_directories(${Boost_INCLUDE_DIR})
 
 # add internal include directories
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/presentation)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/control)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/imagemanager)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/utils/volumeconverter)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager)
