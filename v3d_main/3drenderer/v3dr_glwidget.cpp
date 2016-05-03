@@ -2293,7 +2293,6 @@ int V3dR_GLWidget::getLocalStartPosX()
 int V3dR_GLWidget::getLocalStartPosY()
 {
     if (_idep){
-        qDebug("BRL mod start.y");
         return _idep->local_start.y;
     }else{
         return -1;
