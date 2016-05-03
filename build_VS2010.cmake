@@ -128,7 +128,7 @@ case $OPERATION in
         			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
         				echo "Downloading cmake"
         				download http://www.cmake.org/files/v3.1/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
-        				tar xvzf cmake-$CMAKE_VERSION.tar.gz
+        				tar xvfz cmake-$CMAKE_VERSION.tar.gz
         			fi
         			cd cmake-$CMAKE_VERSION
         			./configure --prefix=.
@@ -159,7 +159,7 @@ case $OPERATION in
                 cmd //c .\\bootstrap.bat
                 cmd //c .\\b2.exe --toolset=msvc-10.0 address-model=64 --prefix=$boost_prefix install
             else
-                tar xzf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
+                tar xvf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
                 cd boost_$BOOST_VERSION
                 ./bootstrap.sh --prefix=$boost_prefix
                 ./b2 install
@@ -171,7 +171,7 @@ case $OPERATION in
           if [[ ! -e $ROOT_DIR/v3d_main/common_lib/include/tiff.h ]]; then
               echo "Configuring TIFF headers"
               cd $ROOT_DIR/v3d_main/common_lib/build
-              tar xzf ../src_packages/tiff-4.0.2.tar.gz
+              /c/Program\ Files/7-Zip/7z x -y ../src_packages/tiff-4.0.2.tar.gz
               cd tiff-4.0.2
               nmake Makefile.vc
               cp libtiff/tiff.h ../../include

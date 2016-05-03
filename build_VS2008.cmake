@@ -15,7 +15,7 @@ function download {
 
 shopt -s expand_aliases;
 BUILD_HDF5=0
-BOOST_MAJOR_VERSION=1_57
+BOOST_MAJOR_VERSION=1_46
 BOOST_VERSION=${BOOST_MAJOR_VERSION}_0
 CMAKE_VERSION=2.8.12
 CMAKE_ARGS=""
@@ -162,10 +162,10 @@ case $OPERATION in
                     /c/Program\ Files/7-Zip/7z x -y boost_$BOOST_VERSION.tar
                 fi
                 cd boost_$BOOST_VERSION
-                cmd //c .\\bootstrap.bat
-                cmd //c .\\b2.exe --toolset=msvc-9.0 address-model=64 --prefix=$boost_prefix install
+                bootstrap.bat
+                bjam.exe --toolset=msvc-9.0 build-type=complete link=static threading=multi address-model=64 --prefix=$boost_prefix install
             else
-                tar xzf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
+                tar xvf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
                 cd boost_$BOOST_VERSION
                 ./bootstrap.sh --prefix=$boost_prefix
                 ./b2 install
@@ -177,7 +177,7 @@ case $OPERATION in
           if [[ ! -e $ROOT_DIR/v3d_main/common_lib/include/tiff.h ]]; then
               echo "Configuring TIFF headers"
               cd $ROOT_DIR/v3d_main/common_lib/build
-              tar xzf ../src_packages/tiff-4.0.2.tar.gz
+              /c/Program\ Files/7-Zip/7z x -y ../src_packages/tiff-4.0.2.tar.gz
               cd tiff-4.0.2
               nmake Makefile.vc
               cp libtiff/tiff.h ../../include
@@ -193,11 +193,11 @@ case $OPERATION in
             CMAKE_EXE+=" -G \"Visual Studio 9 2008 Win64\""
             cd $ROOT_DIR/v3d_main/common_lib
             if [[ ! -e fftw-3.3.4-dll64 ]]; then
-                echo "tar xzf fftw-3.3.4-dll64"
-                tar xzf fftw-3.3.4-dll64.tgz
+                echo "/c/Program\ Files/7-Zip/7z x -y fftw-3.3.4-dll64"
+                /c/Program\ Files/7-Zip/7z x -y fftw-3.3.4-dll64.tgz
             fi
             if [[ ! -e ffmpeg-2.5.2-win64 ]]; then
-                tar xzf ffmpeg-2.5.2-win64.tgz
+                /c/Program\ Files/7-Zip/7z x -y ffmpeg-2.5.2-win64.tgz
             fi
             cd ../../
         fi
