@@ -101,6 +101,7 @@ for arg in $*; do
 	  V3DPLUGINSCOMPILE="YES"
 	  NEWMATCOMPILE="YES"      #ARG_LIB+=" -B"
       ARG_V3D+=" -B" 
+      ARG_PLUGINS+=" -B" 
 	  continue
    fi
 
