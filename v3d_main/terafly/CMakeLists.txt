@@ -1,6 +1,8 @@
 set(CMAKE_AUTOMOC ON)
 
 # include useful cmake scripts
+set(CMAKE_AUTOMOC TRUE) #to avoid qobject undefined linking error
+
 include(cmake/utils.cmake)
 include(cmake/TeraStitcher_Version.cmake)
 
@@ -62,6 +64,7 @@ include_directories(${Boost_INCLUDE_DIR})
 
 # add internal include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/presentation)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/control)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/imagemanager)
@@ -70,7 +73,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D)
 
