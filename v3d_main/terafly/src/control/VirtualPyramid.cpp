@@ -97,6 +97,14 @@ tf::VirtualPyramid::~VirtualPyramid() throw(iim::IOException)
     delete highresVol;
 }
 
+// get pyramid method
+std::vector<iim::VirtualVolume*> tf::VirtualPyramid::getVirtualPyramid()
+{
+    std::vector<iim::VirtualVolume*> tmp(virtualPyramid.begin(), virtualPyramid.end());
+    std::reverse(tmp.begin(), tmp.end());
+    return tmp;
+}
+
 void tf::VirtualPyramid::instanceHighresVol() throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);

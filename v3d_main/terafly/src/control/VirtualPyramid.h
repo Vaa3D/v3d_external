@@ -50,11 +50,7 @@ class terafly::VirtualPyramid
 
 
         // GET methods
-        std::vector<iim::VirtualVolume*> getVirtualPyramid(){
-            std::vector<iim::VirtualVolume*> tmp(virtualPyramid.begin(), virtualPyramid.end());
-            std::reverse(tmp.begin(), tmp.end());
-            return tmp;
-        }
+        std::vector<iim::VirtualVolume*> getVirtualPyramid();
 
         // load volume of interest from the given resolution layer
         // - communicates with 'highresVol' (which contains highres data) and with 'pyramid' (which contain cached data)
