@@ -1,8 +1,5 @@
 set(CMAKE_AUTOMOC ON)
 
-# include useful cmake scripts
-set(CMAKE_AUTOMOC TRUE) #to avoid qobject undefined linking error
-
 include(cmake/utils.cmake)
 include(cmake/TeraStitcher_Version.cmake)
 
@@ -11,7 +8,7 @@ include(cmake/TeraStitcher_Version.cmake)
 
 # enable TeraFly code in terarepo/src
 add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
-add_definitions(-DWITH_QTGIN_MODE)
+add_definitions(-DWITH_QT)
 add_definitions(-DENABLE_BDV_HDF5)
 
 
@@ -109,24 +106,6 @@ file(GLOB common_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common/*.cp
 
 # look for "Q_OBJECT" in headers to determine which ones to MOC
 message(STATUS "TeraFly: finding header files containing 'Q_OBJECT' macro...")
-file(GLOB TERAFLY_MOC_CANDIDATES
-    src/presentation/*.h
-    src/control/*.h)
-foreach(TERAFLY_MOC_CAND ${TERAFLY_MOC_CANDIDATES})
-    file(READ "${TERAFLY_MOC_CAND}" HEADER_TEXT LIMIT 10000)
-    string(REGEX MATCH "Q_OBJECT" QOB_RESULT ${HEADER_TEXT})
-    if(QOB_RESULT)
-        set(TERAFLY_MOC_FILES ${TERAFLY_MOC_CANDIDATES} ${TERAFLY_MOC_CAND})
-    endif()
-endforeach()
-message(STATUS "TeraFly: finished examining header files")
-
-# MOC
-if(NOT Qt5Core_FOUND)
-  QT4_WRAP_CPP(TERAFLY_MOC_SRCS ${TERAFLY_MOC_FILES})
-else()
-  QT5_WRAP_CPP(TERAFLY_MOC_SRCS ${TERAFLY_MOC_FILES})
-endif()
 
 # create TeraFly lib
 add_library(terafly STATIC
