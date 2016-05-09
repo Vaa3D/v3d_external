@@ -1,3 +1,5 @@
+set(CMAKE_AUTOMOC ON)
+
 # include useful cmake scripts
 include(cmake/utils.cmake)
 include(cmake/TeraStitcher_Version.cmake)
