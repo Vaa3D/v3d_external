@@ -365,38 +365,6 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e released_plugins_mo
   rm -fr released_plugins_more/v3d/plugins
 fi
 
-
-#build the vaa3d plugins
-
-if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
-  cd released_plugins
-  echo =========================================================
-  echo "Now build more vaa3d plugins"
-  echo =========================================================
-  if [ $V3DPLUGINSCOMPILE == "YES" ]; then
-    rm -fr v3d/plugins
-	sh build_plugindemo.sh clean
-  fi
-  echo =========================================================
-  echo sh build_plugindemo.sh $ARG_PLUGINS    #$*
-  echo =========================================================
-  sh build_plugindemo.sh $ARG_PLUGINS         #$*    # for plugins, just pass the args to the batch compiling script
-
-  cd ../
-  if [ $SYSTEMBITS == "32" ]; then
-	mkdir -p bin/plugins
-    cp -fR released_plugins/v3d/plugins/* bin/plugins/     #copy to the executable folder
-  fi	
-  if [ $SYSTEMBITS == "64" ]; then
-#	mkdir -p bin/plugins/64bit
-#    cp -fR released_plugins/v3d/plugins/* bin/plugins/64bit/     #copy to the executable folder
-    mkdir -p bin/plugins
-    cp -fR released_plugins/v3d/plugins/* bin/plugins/     #copy to the executable folder
-  fi	
-  rm -fr released_plugins/v3d/plugins
-fi
-
-
 #now try to move the 3rd party jar file(s) to bin folder
 
 #if [ -f bin/plugins/64bit/imageIO/load_image_using_Bioformats/loci_tools.jar ]; then
