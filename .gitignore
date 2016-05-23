@@ -4,6 +4,19 @@
 **/moc_*.*
 **/qrc_*.*
 **/Makefile
+**/*pro.user
+**/*.autosave
+**/*.sln
+**/*.sdf
+**/*.user
+**/*vcxproj*
+**/*~
+**/*.swp
+**/*.suo
+**/*.pdb
+**/*.obj
+**/*.Debug
+**/ipch
 bin/*
 
 #ignore lib files or header files in common_lib
