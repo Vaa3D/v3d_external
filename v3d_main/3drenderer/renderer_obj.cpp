@@ -1123,6 +1123,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 		{
 			SS.n = 1+listNeuronTree.size();
 			listNeuronTree.append(SS);
+			qDebug("	listNeuronTree.size() = %d!!!!!", listNeuronTree.size());
 		}
 		// make sure only one current editing neuron has editable flag
 		qDebug("	lastEditingNeuron = %d, NeuronTree.n = %d", curEditingNeuron, SS.n);

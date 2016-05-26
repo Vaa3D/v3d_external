@@ -1540,6 +1540,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 curImg->tracedNeuron.name = "vaa3d_traced_neuron";
                 curImg->tracedNeuron.file = "vaa3d_traced_neuron";
                 listNeuronTree.clear();
+				qDebug("	listNeuronTree.size() = %d!!!!!", listNeuronTree.size());
 
                 //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
                 curImg->proj_trace_history_append();
@@ -1579,8 +1580,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     }
 
                     b_editDroppedNeuron = false;
-                }
-            }
+                }	
+			} 
+
+			for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+			{curImg->tracedNeuron.seg[i].on = true;}
+			curImg->update_3drenderer_neuron_view(w, this);
 
 			finishEditingNeuronTree();
 		}
