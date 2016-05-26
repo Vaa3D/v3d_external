@@ -1316,8 +1316,8 @@ void V3dR_GLWidget::updateTool()
 
 	if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
 	{
-		//int i = surfaceDlg->getCurTab();
-		surfaceDlg->linkTo(this);
+        //int i = surfaceDlg->getCurTab();
+        surfaceDlg->linkTo(this);
         surfaceDlg->setCurTab(-1);  //-1 = last tab
 	}
 	if (colormapDlg && !(colormapDlg->isHidden()) ) //081219

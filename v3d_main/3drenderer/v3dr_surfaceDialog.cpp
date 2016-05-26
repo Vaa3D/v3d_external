@@ -883,7 +883,7 @@ void V3dr_surfaceDialog::pickMarker(int i, int j)
 
 QTableWidget* V3dr_surfaceDialog::createTableSWC()
 {
-	qDebug("##SWC Table is recreated!!!");
+    //qDebug("##SWC Table is recreated!!!");
 	
 	Renderer_gl1* r = renderer;
 	if (! r)  return 0;
@@ -927,7 +927,7 @@ QTableWidget* V3dr_surfaceDialog::createTableSWC()
 
 		MESSAGE_ASSERT(j==col);
 	}
-	//qDebug("  end   t->rowCount = %d", t->rowCount());
+  //  qDebug("  end   t->rowCount = %d", t->rowCount());
 
 	t->resizeColumnsToContents();
 	return t;
@@ -963,7 +963,7 @@ void V3dr_surfaceDialog::pickSWC(int i, int j)
 
 QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 {
-	qDebug("##NeuronSegment Table is recreated!!!");
+    //qDebug("##NeuronSegment Table is recreated!!!");
 
 	Renderer_gl1* r = renderer;
 	if (! r)  return 0;

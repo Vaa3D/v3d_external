@@ -3170,7 +3170,8 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
                 continue;
-            for (V3DLONG i=0;i<p_listneuron->size();i++)
+            V3DLONG p_listneuron_num = p_listneuron->size();
+            for (V3DLONG i=0;i<p_listneuron_num;i++)
             {
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
@@ -3190,8 +3191,10 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
                             curImg->update_3drenderer_neuron_view(w, this);
-
+                            p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
+                            p_listneuron = &(p_tree->listNeuron);
                             break;   // found intersection with neuron segment: no more need to continue on this inner loop
+
                         }
                     }
 
