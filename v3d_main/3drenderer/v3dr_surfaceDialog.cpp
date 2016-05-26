@@ -973,7 +973,7 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
 
 	QStringList qsl;
-	qsl <<"on/off" << "color" << "count" << "name" << "comment" <<"in file";
+	qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file";
 	int row;	
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
@@ -1003,6 +1003,8 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 		ADD_QCOLOR(color);
 
 		ADD_STRING( tr("%1").arg(curSeg.row.size()) );
+
+		ADD_STRING( tr("%1").arg(curSeg.row[1].type) );
 		
 		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
 
