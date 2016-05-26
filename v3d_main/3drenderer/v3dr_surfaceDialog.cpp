@@ -929,7 +929,7 @@ QTableWidget* V3dr_surfaceDialog::createTableSWC()
 	}
   //  qDebug("  end   t->rowCount = %d", t->rowCount());
 
-	t->resizeColumnsToContents();
+    t->resizeColumnsToContents();
 	return t;
 }
 
@@ -978,13 +978,13 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
         if (r->listNeuronTree[i].editable) flag = true;
-    if (!flag)
+    if (r->listNeuronTree.size() !=0 && !flag)
 		row = 0;
 	else row =tracedNeuron->nsegs();
 
 	int col = qsl.size();
 
-	QTableWidget* t = new QTableWidget(row,col, this);
+    QTableWidget* t = new QTableWidget(row,col, this);
 	t->setHorizontalHeaderLabels(qsl);
 
 	for (int i=0; i<row; i++)
@@ -1013,9 +1013,9 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 		ADD_STRING( QString::fromUtf8(curSeg.file.c_str()) );
 
 		MESSAGE_ASSERT(j==col);
-	}
+    }
 
-	t->resizeColumnsToContents();
+    t->resizeColumnsToContents();
 	return t;
 }
 
