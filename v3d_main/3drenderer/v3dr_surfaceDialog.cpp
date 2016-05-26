@@ -975,7 +975,10 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	QStringList qsl;
 	qsl <<"on/off" << "color" << "count" << "name" << "comment" <<"in file";
 	int row;	
-	if (r->listNeuronTree.size() != 0 && !(r->listNeuronTree[0].editable))
+    bool flag = false;
+    for (int i=0; i<r->listNeuronTree.size();i++)
+        if (r->listNeuronTree[i].editable) flag = true;
+    if (!flag)
 		row = 0;
 	else row =tracedNeuron->nsegs();
 
