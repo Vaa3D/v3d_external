@@ -71,39 +71,29 @@ V3dr_surfaceDialog::~V3dr_surfaceDialog()
 	if (glwidget) glwidget->clearSurfaceDialog();
 }
 
+
 void V3dr_surfaceDialog::undo()
 {
-	Renderer_gl1* r = renderer;
-	if (! r)  return;	
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
-	V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+	qDebug("  V3dr_surfaceDialog::undo");
 
-	
-	curImg->update_3drenderer_neuron_view(w, r);
+	int itab = getCurTab();
+
+	if (bCanUndo && bMod && renderer)
+	{
+		// restore the old state
+		renderer->listLabelSurf  = listLabelSurf;
+		renderer->listNeuronTree = listNeuronTree;  //renderer->compileNeuronTreeList(); // for pre-compiled
+		renderer->listCell       = listCell;
+		renderer->listMarker     = listMarker;
+
+		linkTo(glwidget);
+	}
+
+	setCurTab(itab);
+
+	UPDATE_VIEW(glwidget);
+	ACTIVATE(glwidget);
 }
-//void V3dr_surfaceDialog::undo()
-//{
-//	qDebug("  V3dr_surfaceDialog::undo");
-//
-//	int itab = getCurTab();
-//
-//	if (bCanUndo && bMod && renderer)
-//	{
-//		// restore the old state
-//		renderer->listLabelSurf  = listLabelSurf;
-//		renderer->listNeuronTree = listNeuronTree;  //renderer->compileNeuronTreeList(); // for pre-compiled
-//		renderer->listCell       = listCell;
-//		renderer->listMarker     = listMarker;
-//
-//		linkTo(glwidget);
-//	}
-//
-//	setCurTab(itab);
-//
-//	UPDATE_VIEW(glwidget);
-//	ACTIVATE(glwidget);
-//}
 
 
 void V3dr_surfaceDialog::linkTo(QWidget* w)
