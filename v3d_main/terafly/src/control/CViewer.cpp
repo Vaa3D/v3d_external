@@ -29,6 +29,7 @@
 /******************
 *    CHANGELOG    *
 *******************
+* 2016-05-31. Alessandro. @FIXED missing hidden neuron segments.
 * 2014-11-17. Alessandro. @FIXED "duplicated annotations" bug
 * 2014-11-17. Alessandro. @ADDED 'anoV0', ..., 'anoD1' VOI annotation (global) coordinates as object members in order to fix "duplicated annotations" bug
 */
@@ -1501,12 +1502,25 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     /**********************************************************************************
     * CURVES
     ***********************************************************************************/
+    // @FIXED missing hidden neuron segments by Alessandro on 2016-05-31.
+    std::vector<bool> activeNeuronSegments;
+    if(view3DWidget->getiDrawExternalParameter() && view3DWidget->getiDrawExternalParameter()->image4d)
+    {
+        My4DImage* curImg = view3DWidget->getiDrawExternalParameter()->image4d;
+        for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+        {
+            activeNeuronSegments.push_back(curImg->tracedNeuron.seg[i].on);
+            curImg->tracedNeuron.seg[i].on = true;
+        }
+        curImg->update_3drenderer_neuron_view(view3DWidget, static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+    }
+    else
+        tf::warning("Cannot store hidden neuron segments: cannot retrieve image4D from current 3D widget");
+
     //storing edited curves
     NeuronTree nt = this->V3D_env->getSWC(this->window);
     if(!nt.listNeuron.empty())
     {
-        /* @debug */ //printf("\ngoing to store in TeraFly the curve points ");
-
         //converting local coordinates into global coordinates
         timer.restart();
         for(int i=0; i<nt.listNeuron.size(); i++)
@@ -1526,6 +1540,15 @@ void CViewer::storeAnnotations() throw (RuntimeException)
         PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: store curves in the octree, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
     }
 
+
+    // @FIXED missing hidden neuron segments by Alessandro on 2016-05-31.
+    if(view3DWidget->getiDrawExternalParameter() && view3DWidget->getiDrawExternalParameter()->image4d)
+    {
+        My4DImage* curImg = view3DWidget->getiDrawExternalParameter()->image4d;
+        for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+            curImg->tracedNeuron.seg[i].on = activeNeuronSegments[i];
+        curImg->update_3drenderer_neuron_view(view3DWidget, static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+    }
 }
 
 void CViewer::clearAnnotations() throw (RuntimeException)
