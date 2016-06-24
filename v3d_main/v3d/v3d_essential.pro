@@ -380,6 +380,14 @@ FORMS += landmark_property.ui \
     dialog_update_downloading.ui \
     dialog_update_checking.ui
 
+RESOURCES += ../mozak/mozak.qrc
+HEADERS +=  ../mozak/MozakUI.h \
+            ../mozak/Mozak3DView.h
+SOURCES +=  ../mozak/MozakUI.cpp \
+            ../mozak/Mozak3DView.cpp
+
+
+
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl

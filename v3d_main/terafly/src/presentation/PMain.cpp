@@ -1017,7 +1017,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     // move to center(vertical)-right(horizontal)
     move(qApp->desktop()->availableGeometry().width() - width(), 0);
 
-
+	PMain::virtualSpaceSizeChanged();
 
 
     // register this as event filter
@@ -1616,8 +1616,10 @@ void PMain::clearAnnotations()
             cur_win->loadAnnotations();
             if(PAnoToolBar::isInstantiated())
             {
-                PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-                PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+                if (PAnoToolBar::instance()->buttonUndo != 0)
+                    PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+                if (PAnoToolBar::instance()->buttonRedo != 0)
+                    PAnoToolBar::instance()->buttonRedo->setEnabled(false);
             }
         }
         virtualSpaceSizeMenu->setEnabled(true);
@@ -1832,7 +1834,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 
         //starting 3D exploration
         /**/itm::debug(itm::LEV3, "instantiating CViewer", __itm__current__function__);
-        CViewer *new_win = new CViewer(V3D_env, CImport::instance()->getVMapResIndex(), CImport::instance()->getVMapRawData(),
+        CViewer *new_win = initViewer(V3D_env, CImport::instance()->getVMapResIndex(), CImport::instance()->getVMapRawData(),
                             0, CImport::instance()->getVMapYDim(), 0, CImport::instance()->getVMapXDim(),
                             0, CImport::instance()->getVMapZDim(), 0, CImport::instance()->getVMapTDim()-1, CImport::instance()->getVMapCDim(), 0);
         /**/itm::debug(itm::LEV3, "showing CViewer", __itm__current__function__);
@@ -1857,6 +1859,15 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
     //resetting some widgets
     resetGUI();
 
+}
+
+// Separate initialization to allow inherited classes to define their own viewer
+CViewer * PMain::initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
+							int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer* _prev)
+{
+	CViewer *new_win = new CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
+                        _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev);
+	return new_win;
 }
 
 //overrides closeEvent method of QWidget
@@ -2816,9 +2827,10 @@ void PMain::progressBarChanged(int val, int minutes, int seconds, const char* me
 void PMain::showToolbarButtonChanged(bool changed)
 {
     /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
-
+#ifndef HIDE_ANO_TOOLBAR
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->setVisible(changed);
+#endif
 }
 
 

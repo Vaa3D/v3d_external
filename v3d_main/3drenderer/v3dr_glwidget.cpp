@@ -51,6 +51,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer_gl1.h"
 #include "renderer_gl2.h"
 
+bool V3dR_GLWidget::disableUndoRedo = false;
+bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
+
+
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
 V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
@@ -152,7 +156,8 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 		//f.setAccumBufferSize(16);
 		//f.setStereo(true);    // 081126, for glDrawBuffers, QGLFormat do NOT support AUX_BUFFER !!!, will cause system DEAD
 	}
-	setFormat(f);
+    if (!skipFormat)
+	    setFormat(f);
 
 	///////////////////////////////////////////////////////////////
 	//makeCurrent(); //090729: this make sure created GL context
@@ -217,7 +222,7 @@ void V3dR_GLWidget::choiceRenderer()
 	{
 		renderer = new Renderer(this);
 	}
-
+    if (renderer) renderer->selectMode = Renderer::defaultSelectMode;
 	//if (renderer) renderer->widget = (void*)this; //081025 //100827 move to constructor parameter
 }
 
@@ -1006,7 +1011,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             // @ADDED by Alessandro on 2015-05-23. Also allow redo with CTRL+SHIFT+Z
             if (KM.testFlag(Qt::ShiftModifier) && (KM.testFlag(Qt::ControlModifier) || KM.testFlag(Qt::MetaModifier)))
             {
-                if (v3dr_getImage4d(_idep) && renderer)
+                if (!V3dR_GLWidget::disableUndoRedo && v3dr_getImage4d(_idep) && renderer)
                 {
                     v3dr_getImage4d(_idep)->proj_trace_history_redo();
                     v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
@@ -1015,7 +1020,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             //undo the last tracing step if possible. by PHC, 090120
             else if (IS_CTRL_MODIFIER)
 		    {
-		    	if (v3dr_getImage4d(_idep) && renderer)
+		    	if (!V3dR_GLWidget::disableUndoRedo && v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_undo();
 		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
@@ -1026,7 +1031,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		case Qt::Key_X: //090924 RZC: redo
 		    if (IS_CTRL_MODIFIER)
 		    {
-		    	if (v3dr_getImage4d(_idep) && renderer)
+		    	if (!V3dR_GLWidget::disableUndoRedo && v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_redo();
 		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924

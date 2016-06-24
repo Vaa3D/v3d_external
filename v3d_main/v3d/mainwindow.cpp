@@ -68,6 +68,8 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "../terafly/src/control/CPlugin.h"
 #endif
 
+#include "../mozak/MozakUI.h";
+
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
 MainWindow::MainWindow()
@@ -2115,6 +2117,9 @@ void MainWindow::updateProcessingMenu()
     QAction* open_teraconverter_action = new QAction(tr("TeraConverter"), this);
     proc_terafly_menu->addAction(open_teraconverter_action);
     connect(open_teraconverter_action, SIGNAL(triggered()), this, SLOT(func_open_teraconverter()));
+    QAction* open_mozak_action = new QAction(tr("Mozak"), this);
+    proc_terafly_menu->addAction(open_mozak_action);
+    connect(open_mozak_action, SIGNAL(triggered()), this, SLOT(func_open_neuron_game()));
 #endif
     //
 #ifdef _ALLOW_IMGSTD_MENU_
@@ -2919,6 +2924,13 @@ void MainWindow::func_open_teraconverter()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
     teramanager::TeraFly::domenu("TeraConverter", *pl, this);
+}
+
+void MainWindow::func_open_neuron_game()
+{
+	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+    qRegisterMetaType<itm::integer_array>("itm::integer_array");
+	mozak::MozakUI::init(pl);
 }
 #endif
 

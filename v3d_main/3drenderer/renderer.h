@@ -47,6 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <GL/glu.h>
 #endif
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Renderer
 // to create:
@@ -70,6 +71,7 @@ public:
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
                          smMarkerRefineT, smMarkerRefineC,
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
+					smCurveCreate_pointclickAutoZ,
                       smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveEditRefine_fm, smCurveRubberDrag,
@@ -80,13 +82,19 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
+                      smBreakTwoNeurons, // Same function as smBreakMultiNeurons, but only one break is created TDP 201512
+                      smJoinTwoNodes, // Straight line connect, joining two nodes without tracing TDP 201601
+                     smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
+                     smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
+                     smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 
 //protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
-     SelectMode refineMode;
+	static SelectMode defaultSelectMode;
+	SelectMode refineMode;
 	void* widget;
 
 public:
@@ -222,7 +230,14 @@ public:
      int sShowRubberBand; // ZJL 1109221
 
 	bool bShowBoundingBox, bShowBoundingBox2, bShowAxes, bOrthoView;
-	bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
+    // TDP 201601 - provide optional XY translation arrows directly in 3D view to navigate to adjacent/overlapping ROI
+    bool bShowXYTranslateArrows;
+	int iPosXTranslateArrowEnabled, iNegXTranslateArrowEnabled, iPosYTranslateArrowEnabled, iNegYTranslateArrowEnabled;
+	BoundingBox* posXTranslateBB;
+	BoundingBox* negXTranslateBB;
+	BoundingBox* posYTranslateBB;
+	BoundingBox* negYTranslateBB;
+    bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
 	float CSbeta, alpha_threshold;
 	RGBA32f color_background, color_background2, color_line, color_proxy;
 
@@ -274,6 +289,16 @@ private:
 	    bShowAxes = true;
 	    bOrthoView = false;
 
+		bShowXYTranslateArrows = 0;
+		iPosXTranslateArrowEnabled = 0;
+		iNegXTranslateArrowEnabled = 0;
+		iPosYTranslateArrowEnabled = 0;
+		iNegYTranslateArrowEnabled = 0;
+        posXTranslateBB = 0;
+        negXTranslateBB = 0;
+        posYTranslateBB = 0;
+        negYTranslateBB = 0;
+
 	    bShowCSline = true;
 	    bShowFSline = true;
 	    bXSlice = bYSlice = bZSlice = true;
@@ -315,7 +340,7 @@ private:
 	    viewClip = 1000000;  // no clip
 	    renderMode = rmMaxIntensityProjection;
 	    selectMode = smObject;
-
+        
          refineMode = smCurveRefine_fm;
 
 		//// perspective view frustum

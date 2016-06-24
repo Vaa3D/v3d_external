@@ -45,7 +45,7 @@ class teramanager::CViewer : public QWidget
 {
     Q_OBJECT
 
-    private:
+    protected:
 
         //OBJECT members
         V3DPluginCallback2* V3D_env;    //handle of V3D environment
@@ -84,8 +84,10 @@ class teramanager::CViewer : public QWidget
         int anoV0, anoV1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along V (annotation VOI != VOI)
         int anoH0, anoH1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along H (annotation VOI != VOI)
         int anoD0, anoD1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along D (annotation VOI != VOI)
-
-        //CLASS members
+		XYZ lastWheelFocus;             // @ADDED by T Pavlik on 2015-11-05 Saving mouse wheel point to create new view focusing on moused over area rather than center of ROI
+		bool useLastWheelFocus;         // @ADDED by T Pavlik on 2015-11-05 True to use mousewheel point for new viewer creation
+        
+		//CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
         static CViewer *last;   //pointer to the last window of the multiresolution explorer windows chain
         static CViewer *current;//pointer to the current window of the multiresolution explorer windows chain
@@ -136,12 +138,21 @@ class teramanager::CViewer : public QWidget
         * This is based on the Vaa3D 3D point selection with one mouse click.
         ***********************************************************************************/
         XYZ getRenderer3DPoint(int x, int y) throw (itm::RuntimeException);
+		
+		/**********************************************************************************
+		* Triggers when neuron tree has been edited
+		***********************************************************************************/
+		virtual void onNeuronEdit();
 
         /**********************************************************************************
         * Syncronizes widgets from <src> to <dst>
         ***********************************************************************************/
         void syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst);
-
+		/************************************************
+        * Allow method for overriding new view creation
+        *************************************************/
+		virtual CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID);
 
     public:
 
@@ -163,7 +174,7 @@ class teramanager::CViewer : public QWidget
         }
 
         //performs all the operations needed to show 3D data (such as creating Vaa3D widgets)
-        void show();
+        virtual void show();
 
         //safely close this viewer
         void close();
@@ -180,7 +191,7 @@ class teramanager::CViewer : public QWidget
         * We're interested to intercept these events to provide many useful ways to explore
         * the 3D volume at different resolutions without changing Vaa3D code.
         ***********************************************************************************/
-        bool eventFilter(QObject *object, QEvent *event);
+        virtual bool eventFilter(QObject *object, QEvent *event);
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.
@@ -194,7 +205,7 @@ class teramanager::CViewer : public QWidget
         * Called by the current <CExplorerWindow> when the user zooms in and the higher res-
         * lution has to be loaded.
         ***********************************************************************************/
-        void
+        virtual void
         newViewer(
             int x, int y, int z,                //can be either the VOI's center (default)
                                                 //or the VOI's ending point (see x0,y0,z0)
@@ -251,9 +262,9 @@ class teramanager::CViewer : public QWidget
         /**********************************************************************************
         * Annotations are stored/loaded to/from the <CAnnotations> object
         ***********************************************************************************/
-        void storeAnnotations() throw (itm::RuntimeException);
-        void loadAnnotations() throw (itm::RuntimeException);
-        void clearAnnotations() throw (itm::RuntimeException);
+        virtual void storeAnnotations() throw (itm::RuntimeException);
+        virtual void loadAnnotations() throw (itm::RuntimeException);
+        virtual void clearAnnotations() throw (itm::RuntimeException);
         void deleteSelectedMarkers() throw (itm::RuntimeException);
         void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (itm::RuntimeException);
         void createMarkerAt(int x, int y) throw (itm::RuntimeException);
@@ -343,6 +354,8 @@ class teramanager::CViewer : public QWidget
                    y < 0  || y >= volV1-volV0 ||
                    z < 0  || z >= volD1-volD0;
         }
+		
+		void processWheelEvt(QWheelEvent* wheelEvt);
 
         /**********************************************************************************
         * Change current Vaa3D's rendered cursor
@@ -366,7 +379,7 @@ class teramanager::CViewer : public QWidget
         /*********************************************************************************
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/
-        void receiveData(
+        virtual void receiveData(
                 itm::uint8* data,                   // data (any dimension)
                 itm::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
                 itm::integer_array data_c,          // data count along X, Y, Z, C, t

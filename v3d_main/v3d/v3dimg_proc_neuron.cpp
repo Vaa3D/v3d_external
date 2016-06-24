@@ -824,7 +824,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 	return true;
 }
 
-bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno)
+bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type=3)
 {
     if (mCoord.size()<=0)  return false;
 
@@ -832,7 +832,7 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno)
     V3DLONG nexist = tracedNeuron.maxnoden();
 
     V_NeuronSWC cur_seg;
-    set_simple_path(cur_seg, nexist, mCoord, false); //reverse link
+    set_simple_path(cur_seg, nexist, mCoord, false, 1, default_type); //reverse link
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
@@ -873,13 +873,13 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno)
     return true;
 }
 
-NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited)
+NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type=3)
 {
     NeuronTree newNeuronEdited;
     if (mCoord.size()<=0)  return newNeuronEdited;
 
     V_NeuronSWC cur_seg;
-    set_simple_path(cur_seg, 0, mCoord, false); //reverse link
+    set_simple_path(cur_seg, 0, mCoord, false, default_type); //reverse link
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);

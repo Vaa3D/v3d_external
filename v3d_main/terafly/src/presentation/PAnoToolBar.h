@@ -9,7 +9,7 @@ class teramanager::PAnoToolBar : public QWidget
 {
     Q_OBJECT
 
-    private:
+    public:
 
         QToolBar* toolBar;                      //tool bar with buttons
         QToolButton *buttonMarkerCreate;        //button1
@@ -30,8 +30,9 @@ class teramanager::PAnoToolBar : public QWidget
         * instantiated by calling static method "istance(...)"
         **********************************************************************************/
         static PAnoToolBar* uniqueInstance;
+        static bool disableNonMozakButtons; // TDP 201602 - way to avoid adding undesired buttons to toolbar
 
-    public:
+    //public:
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be

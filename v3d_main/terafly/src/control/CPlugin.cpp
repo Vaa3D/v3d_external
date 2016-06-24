@@ -123,10 +123,9 @@ void TeraFly::doaction(const QString &action_name)
     {
         if(CViewer::getCurrent())
         {
-            CViewer::getCurrent()->undoStack.beginMacro("vaa3d action");
-            CViewer::getCurrent()->undoStack.push(new QUndoVaa3DNeuron(CViewer::getCurrent()));
-            CViewer::getCurrent()->undoStack.endMacro();
-            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+			CViewer::getCurrent()->onNeuronEdit();
+			if (PAnoToolBar::instance()->buttonUndo != 0)
+				PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
     }
     else
