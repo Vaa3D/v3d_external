@@ -2,6 +2,7 @@
 #include "VirtualVolume.h"
 #include <fstream>
 #include "IOPluginAPI.h"
+#include "v3d_message.h"
 
 /********************************
 *   VIRTUAL PYRAMID definitions *
@@ -268,9 +269,9 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
 // return true if 'highestVol' downsampled by 'reduction_factor' generates a 0-sized image
 bool tf::VirtualPyramidLayer::isEmpty(iim::VirtualVolume* highresVol, xyz<int> _reduction_factor)
 {
-    int dim_v = tf::round(highresVol->getDIM_V()/static_cast<float>(_reduction_factor.y));
-    int dim_h = tf::round(highresVol->getDIM_H()/static_cast<float>(_reduction_factor.x));
-    int dim_d = tf::round(highresVol->getDIM_D()/static_cast<float>(_reduction_factor.z));
+    int dim_v = highresVol->getDIM_V()/static_cast<float>(_reduction_factor.y);
+    int dim_h = highresVol->getDIM_H()/static_cast<float>(_reduction_factor.x);
+    int dim_d = highresVol->getDIM_D()/static_cast<float>(_reduction_factor.z);
 
     return dim_v == 0 || dim_h == 0 || dim_d == 0;
 }

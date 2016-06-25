@@ -2301,9 +2301,11 @@ void PMain::debugAction1Triggered()
 
     try
     {
+        float lower_bound = (static_cast<float>(128)*128*128)/1000000.0f;
+        new tf::VirtualPyramid("/Volumes/Volumes/test.wholebrain.tiff.2D.series.16bit", 2, lower_bound);
         //tf::VirtualPyramidCache("asd", xyzct<size_t>(10,10,10,1,1), xyzct<size_t>(3,3,3,3,3));
-        QString blah = QString(QCryptographicHash::hash(("/Users/Administrator/Projects/v3d_external/v3d_main/build-vaa3d64 -Qt_4_7_1_Qt_4_7_1-Debug"),QCryptographicHash::Md5).toHex());
-        v3d_msg(blah);
+        //QString blah = QString(QCryptographicHash::hash(("/Users/Administrator/Projects/v3d_external/v3d_main/build-vaa3d64 -Qt_4_7_1_Qt_4_7_1-Debug"),QCryptographicHash::Md5).toHex());
+        //v3d_msg(blah);
     }
     catch(tf::RuntimeException &e)
     {
