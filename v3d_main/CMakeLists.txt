@@ -421,6 +421,8 @@ add_subdirectory( neuron_tracing )
 
 add_subdirectory( neuron_annotator )
 
+
+
 include_directories(v3d)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/neuron_annotator)
 add_subdirectory( v3dbase )
@@ -428,6 +430,7 @@ add_subdirectory( v3dbase )
 add_subdirectory( plugin_loader )
 
 add_subdirectory( imaging ) # CMB Oct-11-2010
+
 add_subdirectory( multithreadimageIO ) # CMB Dec-16-2010
 
 include_directories(${Boost_INCLUDE_DIR})
@@ -438,6 +441,7 @@ add_subdirectory( worm_straighten_c )
 add_subdirectory( jba )
 
 add_subdirectory( cellseg )
+
 
 add_subdirectory( terafly )
 

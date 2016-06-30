@@ -2918,18 +2918,18 @@ void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 void MainWindow::func_open_terafly()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    teramanager::TeraFly::domenu("TeraFly", *pl, this);
+    terafly::TeraFly::domenu("TeraFly", *pl, this);
 }
 void MainWindow::func_open_teraconverter()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    teramanager::TeraFly::domenu("TeraConverter", *pl, this);
+    terafly::TeraFly::domenu("TeraConverter", *pl, this);
 }
 
 void MainWindow::func_open_neuron_game()
 {
 	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    qRegisterMetaType<itm::integer_array>("itm::integer_array");
+    qRegisterMetaType<tf::integer_array>("tf::integer_array");
 	mozak::MozakUI::init(pl);
 }
 #endif

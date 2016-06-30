@@ -32,7 +32,7 @@ void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
         uniqueInstance->openHDF5Volume(path);
     }
 #else
-	uniqueInstance->openTeraFlyVolume(""); // this will prompt for user to find path
+    //uniqueInstance->openImage(""); // this will prompt for user to find path
 #endif
 #ifdef MOZAK_HIDE_VAA3D_CONTROLS
 	uniqueInstance->hide();
@@ -45,9 +45,9 @@ MozakUI* MozakUI::getMozakInstance()
 	return static_cast<MozakUI*>(uniqueInstance);
 }
 
-MozakUI::MozakUI(V3DPluginCallback2 *callback, QWidget *parent) : teramanager::PMain(callback, parent)
+MozakUI::MozakUI(V3DPluginCallback2 *callback, QWidget *parent) : terafly::PMain(callback, parent)
 {
-    // This inherits from the PMain constructor ( teramanager::PMain(callback, parent) )
+    // This inherits from the PMain constructor ( terafly::PMain(callback, parent) )
 	// so that constructor will be called before the following code:
     
 	// Adjust Terafly UI
@@ -59,9 +59,9 @@ void MozakUI::reset()
 
 }
 
-teramanager::CViewer * MozakUI::initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
-	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer* _prev)
+terafly::CViewer * MozakUI::initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, tf::uint8* _imgData, int _volV0, int _volV1,
+	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, tf::CViewer* _prev)
 {
-	teramanager::CViewer* new_win = new Mozak3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, -1);
+    terafly::CViewer* new_win = new Mozak3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, -1);
 	return new_win;
 }

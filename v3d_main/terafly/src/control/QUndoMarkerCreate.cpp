@@ -3,7 +3,7 @@
 #include "v3dr_glwidget.h"
 #include "../presentation/PAnoToolBar.h"
 
-itm::QUndoMarkerCreate::QUndoMarkerCreate(itm::CViewer* _source, LocationSimple _marker) : QUndoCommand()
+tf::QUndoMarkerCreate::QUndoMarkerCreate(tf::CViewer* _source, LocationSimple _marker) : QUndoCommand()
 {
     source = _source;
     marker = _marker;
@@ -11,9 +11,9 @@ itm::QUndoMarkerCreate::QUndoMarkerCreate(itm::CViewer* _source, LocationSimple 
 }
 
 // undo and redo methods
-void itm::QUndoMarkerCreate::undo()
+void tf::QUndoMarkerCreate::undo()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     // get markers from Vaa3D
     QList<LocationSimple> vaa3dMarkers = source->V3D_env->getLandmark(source->window);
@@ -34,9 +34,9 @@ void itm::QUndoMarkerCreate::undo()
     //source->view3DWidget->getRenderer()->endSelectMode();
 }
 
-void itm::QUndoMarkerCreate::redo()
+void tf::QUndoMarkerCreate::redo()
 {
-    /**/itm::debug(itm::LEV1, itm::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, tf::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
 
     // first time redo's call is aborted: we don't want it to be called once the command is pushed into the QUndoStack
     if(!redoFirstTime)
@@ -63,16 +63,16 @@ void itm::QUndoMarkerCreate::redo()
 
 
 
-itm::QUndoVaa3DNeuron::QUndoVaa3DNeuron(itm::CViewer* _source) : QUndoCommand()
+tf::QUndoVaa3DNeuron::QUndoVaa3DNeuron(tf::CViewer* _source) : QUndoCommand()
 {
     source = _source;
     redoFirstTime = true;
 }
 
 // undo and redo methods
-void itm::QUndoVaa3DNeuron::undo()
+void tf::QUndoVaa3DNeuron::undo()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if (v3dr_getImage4d(source->view3DWidget->_idep) && source->view3DWidget->renderer)
     {
@@ -83,9 +83,9 @@ void itm::QUndoVaa3DNeuron::undo()
     }
 }
 
-void itm::QUndoVaa3DNeuron::redo()
+void tf::QUndoVaa3DNeuron::redo()
 {
-    /**/itm::debug(itm::LEV1, itm::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, tf::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
 
     // first time redo's call is aborted: we don't want it to be called once the command is pushed into the QUndoStack
     if(!redoFirstTime)

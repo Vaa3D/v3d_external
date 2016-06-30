@@ -2,7 +2,7 @@
 #include "PMain.h"
 #include "../control/CViewer.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 bool PAnoToolBar::disableNonMozakButtons = false;
 PAnoToolBar* PAnoToolBar::uniqueInstance = 0;
@@ -14,7 +14,7 @@ PAnoToolBar::~PAnoToolBar()
 
 PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     // create toolbar
     toolBar = new QToolBar("ToolBar", this);
@@ -132,7 +132,7 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
 
 void PAnoToolBar::buttonMarkerCreateChecked(bool checked)
 {
-     /**/itm::debug(itm::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
+     /**/tf::debug(tf::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
 
@@ -173,7 +173,7 @@ void PAnoToolBar::buttonMarkerCreateChecked(bool checked)
 
 void PAnoToolBar::buttonMarkerCreate2Checked(bool checked)
 {
-     /**/itm::debug(itm::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
+     /**/tf::debug(tf::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
 
@@ -215,7 +215,7 @@ void PAnoToolBar::buttonMarkerCreate2Checked(bool checked)
 
 void PAnoToolBar::buttonMarkerDeleteChecked(bool checked)
 {
-     /**/itm::debug(itm::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
+     /**/tf::debug(tf::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
 
@@ -265,7 +265,7 @@ void PAnoToolBar::buttonMarkerDeleteChecked(bool checked)
 
 void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
 {
-     /**/itm::debug(itm::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
+     /**/tf::debug(tf::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
 
@@ -313,7 +313,7 @@ void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
 
 void PAnoToolBar::buttonMarkerRoiViewChecked(bool checked)
 {
-    /**/itm::debug(itm::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl)
@@ -359,7 +359,7 @@ void PAnoToolBar::buttonMarkerRoiViewChecked(bool checked)
 
 void PAnoToolBar::buttonUndoClicked()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->undoStack.canUndo())
@@ -373,7 +373,7 @@ void PAnoToolBar::buttonUndoClicked()
 
 void PAnoToolBar::buttonRedoClicked()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->undoStack.canRedo())
@@ -409,7 +409,7 @@ bool PAnoToolBar::eventFilter(QObject *object, QEvent *event)
 ***********************************************************************************/
 void PAnoToolBar::releaseTools()
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     if(buttonMarkerCreate->isChecked())
         buttonMarkerCreate->setChecked(false);
@@ -426,7 +426,7 @@ void PAnoToolBar::releaseTools()
 ***********************************************************************************/
 void PAnoToolBar::refreshTools()
 {
-    /**/itm::debug(itm::LEV_MAX, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
     if(buttonMarkerCreate->isChecked())
         buttonMarkerCreateChecked(true);

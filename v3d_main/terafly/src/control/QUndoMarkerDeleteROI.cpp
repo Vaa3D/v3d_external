@@ -3,7 +3,7 @@
 #include "v3dr_glwidget.h"
 #include "../presentation/PAnoToolBar.h"
 
-itm::QUndoMarkerDeleteROI::QUndoMarkerDeleteROI(itm::CViewer* _source, QList<LocationSimple> _markers) :  QUndoCommand()
+tf::QUndoMarkerDeleteROI::QUndoMarkerDeleteROI(tf::CViewer* _source, QList<LocationSimple> _markers) :  QUndoCommand()
 {
     source = _source;
     markers = _markers;
@@ -16,9 +16,9 @@ itm::QUndoMarkerDeleteROI::QUndoMarkerDeleteROI(itm::CViewer* _source, QList<Loc
 }
 
 // undo and redo methods
-void itm::QUndoMarkerDeleteROI::undo()
+void tf::QUndoMarkerDeleteROI::undo()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     // get markers from Vaa3D
     QList<LocationSimple> vaa3dMarkers = source->V3D_env->getLandmark(source->window);
@@ -35,14 +35,14 @@ void itm::QUndoMarkerDeleteROI::undo()
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
 
-    //QMessageBox::information(0, "Info", itm::strprintf("QUndoMarkerDeleteROI::undo()\n\nAdded %d markers", markers.size()).c_str());
+    //QMessageBox::information(0, "Info", tf::strprintf("QUndoMarkerDeleteROI::undo()\n\nAdded %d markers", markers.size()).c_str());
     // end select mode
     //source->view3DWidget->getRenderer()->endSelectMode();
 }
 
-void itm::QUndoMarkerDeleteROI::redo()
+void tf::QUndoMarkerDeleteROI::redo()
 {
-    /**/itm::debug(itm::LEV1, itm::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, tf::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
 
     // first time redo's call is aborted: we don't want it to be called once the command is pushed into the QUndoStack
     if(!redoFirstTime)
@@ -65,7 +65,7 @@ void itm::QUndoMarkerDeleteROI::redo()
                 }
             }
 //            if(!removed)
-//                QMessageBox::warning(0, "warning", itm::strprintf("cannot find marker at (%.1f, %.1f, %.1f)", markers[j].x, markers[j].y, markers[j].z).c_str());
+//                QMessageBox::warning(0, "warning", tf::strprintf("cannot find marker at (%.1f, %.1f, %.1f)", markers[j].x, markers[j].y, markers[j].z).c_str());
         }
 
         // set new markers
@@ -75,7 +75,7 @@ void itm::QUndoMarkerDeleteROI::redo()
         //update visible markers
         PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
-        //QMessageBox::information(0, "Info", itm::strprintf("QUndoMarkerDeleteROI::undo()\n\nRemoved %d markers",count).c_str());
+        //QMessageBox::information(0, "Info", tf::strprintf("QUndoMarkerDeleteROI::undo()\n\nRemoved %d markers",count).c_str());
 
         // end select mode
         //source->view3DWidget->getRenderer()->endSelectMode();

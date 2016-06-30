@@ -30,7 +30,7 @@
 #include "PMain.h"
 #include "../control/CImport.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 /*********************************************************************************
 * Singleton design pattern: this class can have one instance only,  which must be
@@ -48,7 +48,7 @@ void PDialogImport::uninstance()
 
 PDialogImport::PDialogImport(QWidget* parent) : QDialog(parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     //import form widgets
     QFont tinyFont = QApplication::font();
@@ -217,19 +217,19 @@ PDialogImport::PDialogImport(QWidget* parent) : QDialog(parent)
 //    setFixedSize(800, 600);
     reset();
 
-    /**/itm::debug(itm::LEV1, "object successfully constructed", __itm__current__function__);
+    /**/tf::debug(tf::LEV1, "object successfully constructed", __itm__current__function__);
 }
 
 
 PDialogImport::~PDialogImport()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 }
 
 //reset method
 void PDialogImport::reset()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     axs1_field->setCurrentIndex(0);
     axs2_field->setCurrentIndex(2);
@@ -253,7 +253,7 @@ void PDialogImport::reset()
 ***********************************************************************************/
 void PDialogImport::import_button_clicked()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     try
     {

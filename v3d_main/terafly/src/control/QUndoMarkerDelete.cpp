@@ -3,7 +3,7 @@
 #include "v3dr_glwidget.h"
 #include "../presentation/PAnoToolBar.h"
 
-itm::QUndoMarkerDelete::QUndoMarkerDelete(itm::CViewer* _source, LocationSimple _marker) :  QUndoCommand()
+tf::QUndoMarkerDelete::QUndoMarkerDelete(tf::CViewer* _source, LocationSimple _marker) :  QUndoCommand()
 {
     source = _source;
     marker = _marker;
@@ -11,9 +11,9 @@ itm::QUndoMarkerDelete::QUndoMarkerDelete(itm::CViewer* _source, LocationSimple 
 }
 
 // undo and redo methods
-void itm::QUndoMarkerDelete::undo()
+void tf::QUndoMarkerDelete::undo()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     // get markers from Vaa3D
     QList<LocationSimple> vaa3dMarkers = source->V3D_env->getLandmark(source->window);
@@ -32,9 +32,9 @@ void itm::QUndoMarkerDelete::undo()
     //source->view3DWidget->getRenderer()->endSelectMode();
 }
 
-void itm::QUndoMarkerDelete::redo()
+void tf::QUndoMarkerDelete::redo()
 {
-    /**/itm::debug(itm::LEV1, itm::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, tf::strprintf("redoFirstTime = %s", redoFirstTime ? "true" : "false").c_str(), __itm__current__function__);
 
     // first time redo's call is aborted: we don't want it to be called once the command is pushed into the QUndoStack
     if(!redoFirstTime)

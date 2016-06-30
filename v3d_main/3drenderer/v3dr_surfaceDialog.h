@@ -67,6 +67,7 @@ protected:
 	bool bAttached;
 	QString title;
 	int last_marker; //updated in pressedClickHandler
+	bool isBatchOperation; //added by Y. Wang 20160525
 
 	void setItemEditor();
 	void createFirst();
@@ -100,6 +101,7 @@ public slots:
 	void pressedClickHandler(int row, int col);
 	void doubleClickHandler(int row, int col);
 	void pickSurf(int row, int col);
+	void pickNeuronSegment(int row, int col);
 	void pickSWC(int row, int col);
 	void pickAPO(int row, int col);
 	void pickAPO_Set(int row, int col);
@@ -119,6 +121,7 @@ protected:
 
 	QTableWidget* createTableSurf();
 	QTableWidget* createTableSWC();
+	QTableWidget* createTableNeuronSegment();
 	QTableWidget* createTableAPO();
 	QTableWidget* createTableMarker();
 	QTableWidget* createTableAPO_Set();
@@ -143,7 +146,7 @@ protected:
                 *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
 
 	QTabWidget *tabOptions;
-	QTableWidget *table[1+5];
+	QTableWidget *table[1+6];
 	QCheckBox *checkBox_accumulateLastHighlightHits, *checkBox_attachedToCurrentView;
 
 	// search group
@@ -166,12 +169,13 @@ protected:
 		bAttached = false;
 		title = tr("Object Manager");  //Object Pick/Color Options")); //090423 RZC: changed
 		last_marker = -1;
+		isBatchOperation = false;
 
 		okButton=cancelButton=undoButton=0;
 		selectAllButton=deselectAllButton=inverseSelectButton=
 			onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=markerLocalView =0;
         objectSetDisplayModeButton = 0;
-		for (int i=0; i<=5; i++)  table[i]=0; //by PHC, 090521 change to 5
+		for (int i=0; i<=6; i++)  table[i]=0; //by PHC, 090521 change to 5
 		tabOptions=0;
 		checkBox_accumulateLastHighlightHits = checkBox_attachedToCurrentView =0;//100809 RZC
 		searchTextEditLabel=searchTextResultLabel = 0;

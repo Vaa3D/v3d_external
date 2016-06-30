@@ -4,7 +4,7 @@
 #include <QPushButton>
 #include "../control/CPlugin.h"
 
-class teramanager::QArrowButton : public QPushButton
+class terafly::QArrowButton : public QPushButton
 {
     Q_OBJECT
 

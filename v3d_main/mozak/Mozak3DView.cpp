@@ -12,9 +12,9 @@ using namespace mozak;
 
 int Mozak3DView::contrastValue = 0;
 
-Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
-	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID)
-		: teramanager::CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
+Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
+    int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, tf::CViewer *_prev, int _slidingViewerBlockID)
+        : terafly::CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
 {
 	nextImg = 0;
@@ -29,8 +29,8 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	contrastSlider->setPageStep(10);
 	contrastSlider->setValue(contrastValue);
 
-    itm::CSettings::instance()->setTraslX(60); // (100% - this setting) = % of existing view to be translated in X
-    itm::CSettings::instance()->setTraslY(60); // (100% - this setting) = % of existing view to be translated in Y
+    tf::CSettings::instance()->setTraslX(60); // (100% - this setting) = % of existing view to be translated in X
+    tf::CSettings::instance()->setTraslY(60); // (100% - this setting) = % of existing view to be translated in Y
 	paint_timer = new QTimer(this);
     QObject::connect(paint_timer, SIGNAL(timeout()), this, SLOT(paintTimerCall()));
     paint_timer->setInterval(500);
@@ -38,8 +38,8 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
-teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
-	int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID)
+terafly::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
+    int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, tf::CViewer *_prev, int _slidingViewerBlockID)
 {
 	Mozak3DView* neuronView = new Mozak3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 		_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID);
@@ -56,12 +56,12 @@ void Mozak3DView::appendHistory()
     // Ensure history size <= MAX_history
 	while (undoRedoHistory.size() >= MAX_history) undoRedoHistory.pop_front();
     
-    itm::interval_t x_range(0, itm::CAnnotations::getInstance()->octreeDimX);
-    itm::interval_t y_range(0, itm::CAnnotations::getInstance()->octreeDimY);
-    itm::interval_t z_range(0, itm::CAnnotations::getInstance()->octreeDimZ);
+    tf::interval_t x_range(0, tf::CAnnotations::getInstance()->octreeDimX);
+    tf::interval_t y_range(0, tf::CAnnotations::getInstance()->octreeDimY);
+    tf::interval_t z_range(0, tf::CAnnotations::getInstance()->octreeDimZ);
 
     NeuronTree nt;
-    itm::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
+    tf::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
     undoRedoHistory.push_back(nt);
 	cur_history = undoRedoHistory.size() - 1;
     //updateUndoLabel();
@@ -81,10 +81,10 @@ void Mozak3DView::performUndo()
     cur_history = min(undoRedoHistory.size() - 1, cur_history);
     
     // X,Y,Z intervals are used to clear annotations, which we've already done above, so input minimal intervals
-    itm::CAnnotations::getInstance()->clear();
+    tf::CAnnotations::getInstance()->clear();
     NeuronTree nt = undoRedoHistory.at(cur_history);
-    itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
-    itm::CViewer::loadAnnotations();
+    tf::CAnnotations::getInstance()->addCurves(tf::interval_t(0, 1), tf::interval_t(0, 1), tf::interval_t(0, 1), nt);
+    tf::CViewer::loadAnnotations();
     makeTracedNeuronsEditable();
     updateUndoLabel();
 }
@@ -101,10 +101,10 @@ void Mozak3DView::performRedo()
 	else if (cur_history >= 0 && cur_history < undoRedoHistory.size())
 	{
         qDebug() << "Redoing...";
-		itm::CAnnotations::getInstance()->clear();
+        tf::CAnnotations::getInstance()->clear();
         NeuronTree nt = undoRedoHistory.at(cur_history);
-        itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
-        itm::CViewer::loadAnnotations();
+        tf::CAnnotations::getInstance()->addCurves(tf::interval_t(0, 1), tf::interval_t(0, 1), tf::interval_t(0, 1), nt);
+        tf::CViewer::loadAnnotations();
         makeTracedNeuronsEditable();
 	}
     updateUndoLabel();
@@ -123,7 +123,7 @@ void Mozak3DView::paintTimerCall()
 
 void Mozak3DView::onNeuronEdit()
 {
-    teramanager::CViewer::onNeuronEdit();
+    terafly::CViewer::onNeuronEdit();
 	MozakUI* moz = MozakUI::getMozakInstance();
     std::string prevPath = moz->annotationsPathLRU;
 	moz->annotationsPathLRU = "./autosave.ano";
@@ -354,13 +354,13 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					loadingNextImg = true;
 					window3D->setCursor(Qt::BusyCursor);
 					view3DWidget->setCursor(Qt::BusyCursor);
-					itm::CVolume* cVolume = itm::CVolume::instance();
+                    tf::CVolume* cVolume = tf::CVolume::instance();
 					try
 					{
 						cVolume->setVoi(0, prevView->resIndex, prevView->volV0, prevView->volV1, prevView->volH0, prevView->volH1,
 							prevView->volD0, prevView->volD1, prevView->volT0, prevView->volT1);
 					}
-					catch(itm::RuntimeException &ex)
+                    catch(tf::RuntimeException &ex)
 					{
 						qDebug() << "WARNING! Exception thrown trying to call cVolume->setVoi: " << ex.what();
 					}
@@ -390,7 +390,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		else
 		{
 			// Left double clicks (zoom in resolution) handled by CViewer 
-			return teramanager::CViewer::eventFilter(object, event);
+            return terafly::CViewer::eventFilter(object, event);
 		}
 	}
 	else if (object == view3DWidget && event->type() == QEvent::KeyPress) // intercept keypress events
@@ -702,7 +702,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
             if (needRepaint)
                 ((QWidget *)(curr_renderer->widget))->repaint();
 		}
-		bool res = teramanager::CViewer::eventFilter(object, event);
+        bool res = terafly::CViewer::eventFilter(object, event);
         //if (neuronTreeChanged)
 		//	onNeuronEdit();
 		return res;
@@ -712,10 +712,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 
 void Mozak3DView::show()
 {
-    teramanager::PAnoToolBar::disableNonMozakButtons = true;
+    terafly::PAnoToolBar::disableNonMozakButtons = true;
     V3dR_GLWidget::disableUndoRedo = true;
     V3dR_GLWidget::skipFormat = true;
-	teramanager::CViewer::show();
+    terafly::CViewer::show();
     window3D->setWindowTitle("Mozak");
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     Renderer::defaultSelectMode = Renderer::smCurveTiltedBB_fm_sbbox;
@@ -729,8 +729,8 @@ void Mozak3DView::show()
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->clearAnnotations();
 
-    itm::PAnoToolBar::instance()->buttonOptions->setMenu(0); // disconnect existing menu
-    connect(itm::PAnoToolBar::instance()->buttonOptions, SIGNAL(clicked()), this, SLOT(buttonOptionsClicked()));
+    tf::PAnoToolBar::instance()->buttonOptions->setMenu(0); // disconnect existing menu
+    connect(tf::PAnoToolBar::instance()->buttonOptions, SIGNAL(clicked()), this, SLOT(buttonOptionsClicked()));
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
@@ -740,15 +740,15 @@ void Mozak3DView::show()
     buttonUndo->setEnabled(false);
     buttonUndo->setShortcut(QKeySequence("Ctrl+Z"));
     connect(buttonUndo, SIGNAL(clicked()), this, SLOT(buttonUndoClicked()));
-    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonUndo);
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonUndo);
     buttonRedo = new QToolButton();
     buttonRedo->setIcon(QIcon(":/icons/redo.png"));
     buttonRedo->setToolTip("Redo (Ctrl+Shift+Z)");
     buttonRedo->setShortcut(QKeySequence("Ctrl+Shift+Z"));
     buttonRedo->setEnabled(false);
     connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
-    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonRedo);
-    itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonRedo);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
 
 	invertImageButton = new QToolButton();
 	invertImageButton->setIcon(QIcon(":/mozak/icons/invert.png"));
@@ -804,26 +804,26 @@ void Mozak3DView::show()
     deleteSegmentsButton->setCheckable(true);
     connect(deleteSegmentsButton, SIGNAL(toggled(bool)), this, SLOT(deleteSegmentsButtonToggled(bool)));
 	
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, extendButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, joinButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineAutoZButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, retypeSegmentsButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, splitSegmentButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, extendButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, connectButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, joinButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, polyLineAutoZButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, retypeSegmentsButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, splitSegmentButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
 
     //Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     //curr_renderer->currentTraceType = 3; // dendrite
@@ -832,34 +832,34 @@ void Mozak3DView::show()
 	currTypeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
 	currTypeLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
 	currTypeLabel->setToolTip("Press 0-7 key to change type of subsequent neuron traces");
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currTypeLabel);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, currTypeLabel);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
 	
 	currZoomLabel = new QLabel();
 	updateZoomLabel(1);
 	currZoomLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
 	currZoomLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
 	currZoomLabel->setToolTip("Current zoom level (camera). Use mouse scroll wheel to zoom in/out");
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currZoomLabel);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, currZoomLabel);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
 
 	currResolutionLabel = new QLabel();
 	updateResolutionLabel();
 	currResolutionLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
 	currResolutionLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
 	currResolutionLabel->setToolTip("Current resolution level (Terafly). Double left click to increase, double right click to decrease.");
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currResolutionLabel);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, currResolutionLabel);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
     
     currUndoLabel = new QLabel();
 	updateUndoLabel();
 	currUndoLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
 	currUndoLabel->setStyleSheet("QLabel { font-size:14px; color:black; background-color:rgba(0,0,0,50)}");
 	currUndoLabel->setToolTip("Current edit history. Press Ctrl+Z to undo and Ctrl+Y to redo to move through history.");
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currUndoLabel);
-	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+    tf::PAnoToolBar::instance()->toolBar->insertWidget(0, currUndoLabel);
+    tf::PAnoToolBar::instance()->toolBar->addSeparator();
 
-	itm::PAnoToolBar::instance()->refreshTools();
+    tf::PAnoToolBar::instance()->refreshTools();
 	
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
@@ -878,28 +878,28 @@ Mozak3DView::~Mozak3DView()
     curr_renderer->colorByAncestry = false;
     V3dR_GLWidget::disableUndoRedo = false;
     V3dR_GLWidget::skipFormat = false;
-    teramanager::PAnoToolBar::disableNonMozakButtons = false;
+    terafly::PAnoToolBar::disableNonMozakButtons = false;
     curr_renderer->nodeSize = prevNodeSize;
     curr_renderer->rootSize = prevRootSize;
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->close();
 }
 
-void Mozak3DView::storeAnnotations() throw (itm::RuntimeException)
+void Mozak3DView::storeAnnotations() throw (tf::RuntimeException)
 {
-    teramanager::CViewer::storeAnnotations();
+    terafly::CViewer::storeAnnotations();
 }
 
-void Mozak3DView::loadAnnotations() throw (itm::RuntimeException)
+void Mozak3DView::loadAnnotations() throw (tf::RuntimeException)
 {
-    teramanager::CViewer::loadAnnotations();
+    terafly::CViewer::loadAnnotations();
     appendHistory();
 }
 
 
-void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
+void Mozak3DView::clearAnnotations() throw (tf::RuntimeException)
 {
-    teramanager::CViewer::clearAnnotations();
+    terafly::CViewer::clearAnnotations();
 }
 
 
@@ -915,8 +915,8 @@ void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL
 		else
             initialTraceType = curr_renderer->currentTraceType;
     }
-	if (currTypeLabel)
-		currTypeLabel->setText(itm::strprintf("Type:\n%s", typeNames[initialTraceType]).c_str());
+    if (currTypeLabel)
+        currTypeLabel->setText(tf::strprintf("Type:\n%s", typeNames[initialTraceType]).c_str());
 }
 
 void Mozak3DView::updateZoomLabel(int zr)
@@ -932,14 +932,14 @@ void Mozak3DView::updateZoomLabel(int zr)
 			zoom = 2599.0f;
 	}
 	if (currZoomLabel)
-		currZoomLabel->setText(itm::strprintf("%d%s", (int)zoom, "%").c_str());
+        currZoomLabel->setText(tf::strprintf("%d%s", (int)zoom, "%").c_str());
 }
 
 void Mozak3DView::updateResolutionLabel()
 {
-	int maxRes = itm::CImport::instance()->getResolutions();
+    int maxRes = tf::CImport::instance()->getResolutions();
 	if (currResolutionLabel)
-		currResolutionLabel->setText(itm::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
+        currResolutionLabel->setText(tf::strprintf("RES %d/%d", (volResIndex+1), maxRes).c_str());
 }
 
 void Mozak3DView::buttonOptionsClicked()
@@ -961,7 +961,7 @@ void Mozak3DView::buttonRedoClicked()
 void Mozak3DView::updateUndoLabel()
 {
 	if (currUndoLabel)
-		currUndoLabel->setText(itm::strprintf("Hist %d/%d", cur_history+1, undoRedoHistory.size()).c_str());
+        currUndoLabel->setText(tf::strprintf("Hist %d/%d", cur_history+1, undoRedoHistory.size()).c_str());
     if (buttonUndo)
     {
         buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
@@ -972,8 +972,8 @@ void Mozak3DView::updateUndoLabel()
 void Mozak3DView::updateTranslateXYArrows()
 {
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-    itm::CVolume* cVolume = itm::CVolume::instance();
-    IconImageManager::VirtualVolume *currentVolume = itm::CImport::instance()->getVolume(volResIndex);
+    tf::CVolume* cVolume = tf::CVolume::instance();
+    IconImageManager::VirtualVolume *currentVolume = tf::CImport::instance()->getVolume(volResIndex);
     
     if (cVolume->getVoiResIndex() == -1) // not initialized
         return;
@@ -1200,24 +1200,24 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 * Receive data (and metadata) from <CVolume> throughout the loading process
 **********************************************************************************/
 void Mozak3DView::receiveData(
-        itm::uint8* data,                               // data (any dimension)
-        itm::integer_array data_s,                           // data start coordinates along X, Y, Z, C, t
-        itm::integer_array data_c,                           // data count along X, Y, Z, C, t
+        tf::uint8* data,                               // data (any dimension)
+        tf::integer_array data_s,                           // data start coordinates along X, Y, Z, C, t
+        tf::integer_array data_c,                           // data count along X, Y, Z, C, t
         QWidget *dest,                                  // address of the listener
         bool finished,                                  // whether the loading operation is terminated
-        itm::RuntimeException* ex /* = 0*/,             // exception (optional)
+        tf::RuntimeException* ex /* = 0*/,             // exception (optional)
         qint64 elapsed_time       /* = 0 */,            // elapsed time (optional)
         QString op_dsc            /* = ""*/,            // operation descriptor (optional)
         int step                  /* = 0 */)            // step number (optional)
 {
-    /*itm::debug(itm::LEV1, strprintf("title = %s, data_s = {%s}, data_c = {%s}, finished = %s",
+    /*tf::debug(tf::LEV1, strprintf("title = %s, data_s = {%s}, data_c = {%s}, finished = %s",
                                         titleShort.c_str(),
                                         !data_s.empty() ? strprintf("%d,%d,%d,%d,%d", data_s[0], data_s[1], data_s[2], data_s[3], data_s[4]).c_str() : "",
                                         !data_c.empty() ? strprintf("%d,%d,%d,%d,%d", data_c[0], data_c[1], data_c[2], data_c[3], data_c[4]).c_str() : "",
                                         finished ? "true" : "false").c_str(), __itm__current__function__);*/
 
     char message[1000];
-    itm::CVolume* cVolume = itm::CVolume::instance();
+    tf::CVolume* cVolume = tf::CVolume::instance();
 	
 	int nextImgVolV0 = cVolume->getVoiV0();
 	int nextImgVolV1 = cVolume->getVoiV1();
@@ -1235,26 +1235,26 @@ void Mozak3DView::receiveData(
     {
         try
         {
-            itm::uint32 img_dims[5]       = {std::max(0,nextImgVolH1-nextImgVolH0), std::max(0,nextImgVolV1-nextImgVolV0), std::max(0,nextImgVolD1-nextImgVolD0), nchannels, std::max(0,nextImgVolT1-nextImgVolT0+1)};
-			itm::uint32 img_offset[5]     = {std::max(0,data_s[0]-nextImgVolH0),    std::max(0,data_s[1]-nextImgVolV0),    std::max(0,data_s[2]-nextImgVolD0),    0,         std::max(0,data_s[4]-nextImgVolT0)     };
-            itm::uint32 new_img_dims[5]   = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
-            itm::uint32 new_img_offset[5] = {0,                                     0,                                     0,                                     0,         0                                      };
-            itm::uint32 new_img_count[5]  = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
-			itm::CImageUtils::copyVOI(data, new_img_dims, new_img_offset, new_img_count,
+            tf::uint32 img_dims[5]       = {std::max(0,nextImgVolH1-nextImgVolH0), std::max(0,nextImgVolV1-nextImgVolV0), std::max(0,nextImgVolD1-nextImgVolD0), nchannels, std::max(0,nextImgVolT1-nextImgVolT0+1)};
+            tf::uint32 img_offset[5]     = {std::max(0,data_s[0]-nextImgVolH0),    std::max(0,data_s[1]-nextImgVolV0),    std::max(0,data_s[2]-nextImgVolD0),    0,         std::max(0,data_s[4]-nextImgVolT0)     };
+            tf::uint32 new_img_dims[5]   = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
+            tf::uint32 new_img_offset[5] = {0,                                     0,                                     0,                                     0,         0                                      };
+            tf::uint32 new_img_count[5]  = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
+            tf::CImageUtils::copyVOI(data, new_img_dims, new_img_offset, new_img_count,
                     nextImg->getRawData(), img_dims, img_offset);
             
             // release memory
             delete[] data;
 
             // if 5D data, update selected time frame
-            if(itm::CImport::instance()->is5D())
+            if(tf::CImport::instance()->is5D())
                 view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-nextImgVolT0);
 			
 			// operations to be performed when all image data have been loaded
             if(finished)
             {
                 // disconnect from data producer
-                disconnect(cVolume, SIGNAL(sendData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)));
+                disconnect(cVolume, SIGNAL(sendData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)));
 
 				// store the previous image4D data
 				Image4DSimple* prevImg = new Image4DSimple();
@@ -1307,7 +1307,7 @@ void Mozak3DView::receiveData(
 				loadingNextImg = false;
             }
         }
-		catch(itm::RuntimeException &ex)
+        catch(tf::RuntimeException &ex)
         {
 			QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
 			isReady = true;
@@ -1326,9 +1326,9 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 												int _volH0, int _volH1,
 												int _volD0, int _volD1,
 												int _volT0, int _volT1	) {
-	qDebug() << itm::strprintf("\n  Loading new resolution data resolution=%d volV0=%d volV1=%d volH0=%d volH1=%d volD0=%d volD1=%d", _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1).c_str();
+    qDebug() << tf::strprintf("\n  Loading new resolution data resolution=%d volV0=%d volV1=%d volH0=%d volH1=%d volD0=%d volD1=%d", _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1).c_str();
 	
-	itm::CViewer::storeAnnotations();
+    tf::CViewer::storeAnnotations();
     int prev_line_width = ((Renderer_gl2*)(view3DWidget->getRenderer()))->lineWidth;
 	int prev_node_size = ((Renderer_gl2*)(view3DWidget->getRenderer()))->nodeSize;
 	int prev_root_size = ((Renderer_gl2*)(view3DWidget->getRenderer()))->rootSize;
@@ -1354,8 +1354,8 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	imgData = _img->getRawData();
 
 	// exit from "waiting for 5D data" state, if previously set
-	if(this->waitingFor5D)
-		this->setWaitingFor5D(false);
+    if(this->waitingForData)
+        this->setWaitingForData(false);
 
     QList <V_NeuronSWC_list> prevHist = view3DWidget->getiDrawExternalParameter()->image4d->tracedNeuron_historylist;
 
@@ -1372,8 +1372,8 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	view3DWidget->updateImageData();
     
 	// update z-cuts for new view resolution.
-    float ratio = ((float)itm::CImport::instance()->getVolume(volResIndex)->getDIM_D())/
-		((float)itm::CImport::instance()->getVolume(prevRes)->getDIM_D());
+    float ratio = ((float)tf::CImport::instance()->getVolume(volResIndex)->getDIM_D())/
+        ((float)tf::CImport::instance()->getVolume(prevRes)->getDIM_D());
 
 	// scale z-cut minimum and maximum from previous-resolution voxels to new-resolution voxels... (for ratios < 1 it may not be 
 	// possible to have a z-cut which displays the same data as the previous z-cut; err on the side of too-wide cuts rather than
@@ -1396,7 +1396,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
     window3D->zcminSlider->setValue(newZCutMin);
     window3D->zcmaxSlider->setValue(newZCutMax);
 
-	itm::CViewer::loadAnnotations();
+    tf::CViewer::loadAnnotations();
 	makeTracedNeuronsEditable();
 
 	MozakUI* moz = MozakUI::getMozakInstance();
@@ -1420,18 +1420,19 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
     moz->gradientBar->setStep(volResIndex);
     moz->gradientBar->update();
 
+    //TODO: check if rounding might break any functionality
 	//setting min, max and value of PMain GUI VOI's widgets
-    moz->V0_sbox->setMinimum(getGlobalVCoord(view3DWidget->yCut0(), -1, true, false, __itm__current__function__)+1);
+    moz->V0_sbox->setMinimum(coord2global<int>(view3DWidget->yCut0(), iim::vertical, false, -1, true, false, __itm__current__function__)+1);
     moz->V0_sbox->setValue(moz->V0_sbox->minimum());
-    moz->V1_sbox->setMaximum(getGlobalVCoord(view3DWidget->yCut1(), -1, true, false, __itm__current__function__)+1);
+    moz->V1_sbox->setMaximum(coord2global<int>(view3DWidget->yCut1() + 1, iim::vertical, false, -1, true, false, __itm__current__function__)+1);
     moz->V1_sbox->setValue(moz->V1_sbox->maximum());
-    moz->H0_sbox->setMinimum(getGlobalHCoord(view3DWidget->xCut0(), -1, true, false, __itm__current__function__)+1);
+    moz->H0_sbox->setMinimum(coord2global(view3DWidget->xCut0(), iim::horizontal, false, -1, true, false, __itm__current__function__)+1);
     moz->H0_sbox->setValue(moz->H0_sbox->minimum());
-    moz->H1_sbox->setMaximum(getGlobalHCoord(view3DWidget->xCut1(), -1, true, false, __itm__current__function__)+1);
+    moz->H1_sbox->setMaximum(coord2global(view3DWidget->xCut1() + 1, iim::horizontal, false, -1, true, false, __itm__current__function__)+1);
     moz->H1_sbox->setValue(moz->H1_sbox->maximum());
-    moz->D0_sbox->setMinimum(getGlobalDCoord(view3DWidget->zCut0(), -1, true, false, __itm__current__function__)+1);
+    moz->D0_sbox->setMinimum(coord2global(view3DWidget->zCut0(), iim::depth, false,-1, true, false, __itm__current__function__)+1);
     moz->D0_sbox->setValue(moz->D0_sbox->minimum());
-    moz->D1_sbox->setMaximum(getGlobalDCoord(view3DWidget->zCut1(), -1, true, false, __itm__current__function__)+1);
+    moz->D1_sbox->setMaximum(coord2global(view3DWidget->zCut1() + 1, iim::depth, false, -1, true, false, __itm__current__function__)+1);
     moz->D1_sbox->setValue(moz->D1_sbox->maximum());
     moz->statusBar->showMessage("Ready.");
 
@@ -1474,10 +1475,10 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
     int sliding_viewer_block_ID /* = -1 */)          //block ID in "Sliding viewer" mode
 
 {
-	//qDebug() << itm::strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+    //qDebug() << tf::strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
 	//							titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str();
     // check precondition #2: valid resolution
-    if(resolution >= itm::CImport::instance()->getResolutions())
+    if(resolution >= tf::CImport::instance()->getResolutions())
         resolution = volResIndex;
 
     if(toBeClosed || loadingNextImg)
@@ -1497,8 +1498,8 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
         window3D->setCursor(Qt::BusyCursor);
         moz->setCursor(Qt::BusyCursor);
 
-		IconImageManager::VirtualVolume *currentVolume = itm::CImport::instance()->getVolume(volResIndex), 
-			*newVolume = itm::CImport::instance()->getVolume(resolution);
+        IconImageManager::VirtualVolume *currentVolume = tf::CImport::instance()->getVolume(volResIndex),
+            *newVolume = tf::CImport::instance()->getVolume(resolution);
 
         // scale VOI coordinates to the reference system of the target resolution
         if(scale_coords)
@@ -1507,30 +1508,30 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
             float ratioY = static_cast<float>(newVolume->getDIM_V())/currentVolume->getDIM_V();
             float ratioZ = static_cast<float>(newVolume->getDIM_D())/currentVolume->getDIM_D();
             // NOTE! The following functions use the current values for volResIndex and volH0, volV0, volD0, etc
-			x = getGlobalHCoord(x, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
-            y = getGlobalVCoord(y, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
-            z = getGlobalDCoord(z, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+            x = coord2global<int>(x, iim::horizontal, false, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+            y = coord2global<int>(y, iim::vertical, false, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+            z = coord2global<int>(z, iim::depth, false, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             if(x0 != -1)
-                x0 = getGlobalHCoord(x0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+                x0 = coord2global<int>(x0, iim::horizontal, false, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             else
-                dx = dx == -1 ? itm::int_inf : static_cast<int>(dx*ratioX+0.5f);
+                dx = dx == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dx*ratioX+0.5f);
             if(y0 != -1)
-                y0 = getGlobalVCoord(y0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+                y0 = coord2global<int>(y0, iim::horizontal, false, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             else
-                dy = dy == -1 ? itm::int_inf : static_cast<int>(dy*ratioY+0.5f);
+                dy = dy == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dy*ratioY+0.5f);
             if(z0 != -1)
-                z0 = getGlobalDCoord(z0, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
+                z0 = coord2global<int>(z0, iim::horizontal, false, resolution, fromVaa3Dcoordinates, false, __itm__current__function__);
             else
-                dz = dz == -1 ? itm::int_inf : static_cast<int>(dz*ratioZ+0.5f);
+                dz = dz == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dz*ratioZ+0.5f);
         }
-		//qDebug() << itm::strprintf("\n  After scaling:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+        //qDebug() << tf::strprintf("\n  After scaling:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
 		//							titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str();
 
         // adjust time size so as to use all the available frames set by the user
-        if(itm::CImport::instance()->is5D() && ((t1 - t0 +1) != moz->Tdim_sbox->value()))
+        if(tf::CImport::instance()->is5D() && ((t1 - t0 +1) != moz->Tdim_sbox->value()))
         {
             t1 = t0 + (moz->Tdim_sbox->value()-1);
-            /**/itm::debug(itm::LEV1, itm::strprintf("mismatch between |[t0,t1]| (%d) and max T dims (%d), adjusting it to [%d,%d]", t1-t0+1, moz->Tdim_sbox->value(), t0, t1).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV1, tf::strprintf("mismatch between |[t0,t1]| (%d) and max T dims (%d), adjusting it to [%d,%d]", t1-t0+1, moz->Tdim_sbox->value(), t0, t1).c_str(), __itm__current__function__);
         }
 
 		int final_x0, final_x1, final_y0, final_y1, final_z0, final_z1, final_t0, final_t1;
@@ -1541,7 +1542,7 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
             // modality #1: VOI = [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
             if(dx != -1 && dy != -1 && dz != -1)
 			{
-                /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, cropping bbox dims from (%d,%d,%d) t[%d,%d] to...", titleShort.c_str(),  dx, dy, dz, t0, t1).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("title = %s, cropping bbox dims from (%d,%d,%d) t[%d,%d] to...", titleShort.c_str(),  dx, dy, dz, t0, t1).c_str(), __itm__current__function__);
 				
 				// CB: adaptive VOI size, full-depth slices
 				int maxVoxels = moz->Hdim_sbox->value() * moz->Vdim_sbox->value() * moz->Ddim_sbox->value();
@@ -1562,19 +1563,19 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 					{
 						// square's off the left edge
 						final_x0 = 0;
-						final_x1 = itm::round(width);
+                        final_x1 = tf::round(width);
 					} 
 					else if ((x + width / 2.0f) > newVolume->getDIM_H())
 					{
 						// square's off the right edge
 						final_x1 = newVolume->getDIM_H();
-						final_x0 = newVolume->getDIM_H() - itm::round(width);
+                        final_x0 = newVolume->getDIM_H() - tf::round(width);
 					}
 					else
 					{
 						// center square at click point
-						final_x0 = x - itm::round(width / 2.0f);
-						final_x1 = x + itm::round(width / 2.0f);
+                        final_x0 = x - tf::round(width / 2.0f);
+                        final_x1 = x + tf::round(width / 2.0f);
 					}
 
 					// adjust Y coordinate
@@ -1582,19 +1583,19 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 					{
 						// square's off the top edge
 						final_y0 = 0;
-						final_y1 = itm::round(height);
+                        final_y1 = tf::round(height);
 					} 
 					else if ((y + height / 2.0f) > newVolume->getDIM_V())
 					{
 						// square's off the bottom edge
 						final_y1 = newVolume->getDIM_V();
-						final_y0 = newVolume->getDIM_V() - itm::round(height);
+                        final_y0 = newVolume->getDIM_V() - tf::round(height);
 					}
 					else
 					{
 						// center square at click point
-						final_y0 = y - itm::round(height / 2.0f);
-						final_y1 = y + itm::round(height / 2.0f);
+                        final_y0 = y - tf::round(height / 2.0f);
+                        final_y1 = y + tf::round(height / 2.0f);
 					}
 
 					final_z0 = 0;
@@ -1615,21 +1616,21 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 
                 t0 = std::max(0, std::min(t0,currentVolume->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,currentVolume->getDIM_T()-1));
-                if(itm::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
+                if(tf::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
                     t1 = t0 + moz->Tdim_sbox->value();
-                if(itm::CImport::instance()->is5D() && (t1 >= itm::CImport::instance()->getTDim()-1))
+                if(tf::CImport::instance()->is5D() && (t1 >= tf::CImport::instance()->getTDim()-1))
                     t0 = t1 - (moz->Tdim_sbox->value()-1);
-                if(itm::CImport::instance()->is5D() && (t0 == 0))
+                if(tf::CImport::instance()->is5D() && (t0 == 0))
                     t1 = moz->Tdim_sbox->value()-1;
 
 				final_t0 = t0; final_t1 = t1;
 
-                /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, ...to (%d,%d,%d)", titleShort.c_str(),  dx, dy, dz).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("title = %s, ...to (%d,%d,%d)", titleShort.c_str(),  dx, dy, dz).c_str(), __itm__current__function__);
             }
             // modality #2: VOI = [x0, x), [y0, y), [z0, z), [t0, t1]
             else
             {
-                /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, cropping bbox dims from [%d,%d) [%d,%d) [%d,%d) [%d,%d] to...", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("title = %s, cropping bbox dims from [%d,%d) [%d,%d) [%d,%d) [%d,%d] to...", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
                 if(x - x0 > moz->Hdim_sbox->value())
                 {
                     float margin = ( (x - x0) - moz->Hdim_sbox->value() )/2.0f ;
@@ -1650,30 +1651,30 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
                 }
                 t0 = std::max(0, std::min(t0,currentVolume->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,currentVolume->getDIM_T()-1));
-                if(itm::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
+                if(tf::CImport::instance()->is5D() && (t1-t0+1 > moz->Tdim_sbox->value()))
                     t1 = t0 + moz->Tdim_sbox->value();
-                if(itm::CImport::instance()->is5D() && (t1 >= itm::CImport::instance()->getTDim()-1))
+                if(tf::CImport::instance()->is5D() && (t1 >= tf::CImport::instance()->getTDim()-1))
                     t0 = t1 - (moz->Tdim_sbox->value()-1);
-                if(itm::CImport::instance()->is5D() && (t0 == 0))
+                if(tf::CImport::instance()->is5D() && (t0 == 0))
                     t1 = moz->Tdim_sbox->value()-1;
 
 				final_t0 = t0; final_t1 = t1;
 
-                /**/itm::debug(itm::LEV3, itm::strprintf("title = %s, ...to [%d,%d) [%d,%d) [%d,%d) [%d,%d]", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
+                /**/tf::debug(tf::LEV3, tf::strprintf("title = %s, ...to [%d,%d) [%d,%d) [%d,%d) [%d,%d]", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
             }
-			//qDebug() << itm::strprintf("\n  After auto_crop:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+            //qDebug() << tf::strprintf("\n  After auto_crop:\ntitle = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
 			//												titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str();
         }
 
         // ask CVolume to check (and correct) for a valid VOI
-        itm::CVolume* cVolume = itm::CVolume::instance();
+        tf::CVolume* cVolume = tf::CVolume::instance();
         try
         {
 			cVolume->setVoi(0, resolution, final_y0, final_y1, final_x0, final_x1, final_z0, final_z1, final_t0, final_t1);
         }
-        catch(itm::RuntimeException &ex)
+        catch(tf::RuntimeException &ex)
         {
-            /**/itm::warning(itm::strprintf("Exception thrown when setting VOI: \"%s\". Aborting newView", ex.what()).c_str(), __itm__current__function__);
+            /**/tf::warning(tf::strprintf("Exception thrown when setting VOI: \"%s\". Aborting newView", ex.what()).c_str(), __itm__current__function__);
             view3DWidget->setCursor(Qt::ArrowCursor);
             window3D->setCursor(Qt::ArrowCursor);
             loadingNextImg = false;
@@ -1692,12 +1693,12 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 		int nextImgVolT0 = cVolume->getVoiT0();
 		int nextImgVolT1 = cVolume->getVoiT1();
 		
-		qDebug() << itm::strprintf("\n  Allocating nextImg with nextImgVolV0=%d nextImgVolV1=%d nextImgVolH0=%d nextImgVolH1=%d nextImgVolD0=%d nextImgVolD1=%d", nextImgVolV0, nextImgVolV1, nextImgVolH0, nextImgVolH1, nextImgVolD0, nextImgVolD1).c_str();
+        qDebug() << tf::strprintf("\n  Allocating nextImg with nextImgVolV0=%d nextImgVolV1=%d nextImgVolH0=%d nextImgVolH1=%d nextImgVolD0=%d nextImgVolD1=%d", nextImgVolV0, nextImgVolV1, nextImgVolH0, nextImgVolH1, nextImgVolD0, nextImgVolD1).c_str();
 		
 		try {
 			// Allocate memory for data to be loaded
 			int imgSize = (nextImgVolH1-nextImgVolH0)*(nextImgVolV1-nextImgVolV0)*(nextImgVolD1-nextImgVolD0)*nchannels*(nextImgVolT1-nextImgVolT0+1);
-			itm::uint8* nextImgData = new itm::uint8 [imgSize];
+            tf::uint8* nextImgData = new tf::uint8 [imgSize];
 			nextImg = new Image4DSimple();
 			nextImg->setFileName(title.c_str());
 			nextImg->setData(nextImgData, nextImgVolH1-nextImgVolH0, nextImgVolV1-nextImgVolV0, nextImgVolD1-nextImgVolD0, nchannels*(nextImgVolT1-nextImgVolT0+1), V3D_UINT8);
@@ -1710,12 +1711,12 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
 		}
 		// connect new window to data producer
 		cVolume->setSource(this);
-        connect(cVolume, SIGNAL(sendData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(itm::uint8*,itm::integer_array,itm::integer_array,QWidget*,bool,itm::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
+        connect(cVolume, SIGNAL(sendData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
 
 // lock updateGraphicsInProgress mutex on this thread (i.e. the GUI thread or main queue event thread)
-/**/itm::debug(itm::LEV3, itm::strprintf("Waiting for updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
-/**/ itm::updateGraphicsInProgress.lock();
-/**/itm::debug(itm::LEV3, itm::strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
+/**/tf::debug(tf::LEV3, tf::strprintf("Waiting for updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
+/**/ tf::updateGraphicsInProgress.lock();
+/**/tf::debug(tf::LEV3, tf::strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
 
         // update status bar message
         moz->statusBar->showMessage("Loading image data...");
@@ -1724,10 +1725,10 @@ void Mozak3DView::newViewer(int x, int y, int z,//can be either the VOI's center
         cVolume->start();
 
 // unlock updateGraphicsInProgress mutex
-/**/itm::debug(itm::LEV3, itm::strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
-/**/ itm::updateGraphicsInProgress.unlock();
+/**/tf::debug(tf::LEV3, tf::strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
+/**/ tf::updateGraphicsInProgress.unlock();
 	}
-	catch(itm::RuntimeException &ex)
+    catch(tf::RuntimeException &ex)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
 		loadingNextImg = false;

@@ -5,7 +5,7 @@
 
 #include "../control/CPlugin.h"
 
-class teramanager::PAnoToolBar : public QWidget
+class terafly::PAnoToolBar : public QWidget
 {
     Q_OBJECT
 

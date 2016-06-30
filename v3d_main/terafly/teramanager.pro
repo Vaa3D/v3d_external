@@ -34,13 +34,22 @@ QT_PATH = $$dirname(QMAKE_QMAKE)/..
 #HDF5 headers and precompiled library and dependencies (libz and libszip)
 INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 
+win32 {
+     message("WARNING: hdf5: no support for 32 bit windows")
+   ## 64bit
+     INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5-win64
+     LIBS += -L$$V3DMAINPATH/common_lib/winlib64 -lhdf5 -lszip -lzlib
+}
+
 macx {
-  LIBS += -L$$V3DMAINPATH/common_lib/lib_mac64 -lhdf5 -lszip -lz
-  }
+INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
+LIBS += -L$$V3DMAINPATH/common_lib/lib_mac64 -lhdf5 -lszip -lz
+}
 
 unix {
-  LIBS += -L$$V3DMAINPATH/common_lib/lib_unix64 -lhdf5 -lszip -lz -ldl
-  }
+INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
+LIBS += -L$$V3DMAINPATH/common_lib/lib_unix64 -lhdf5 -lszip -lz -ldl
+}
 #Vaa3D headers and sources needed by the plugin
 INCLUDEPATH+= $$QT_PATH/demos/shared
 INCLUDEPATH += $$V3DMAINPATH/basic_c_fun
@@ -49,131 +58,151 @@ INCLUDEPATH += $$V3DMAINPATH/common_lib/include
 INCLUDEPATH += $$V3DMAINPATH/basic_c_fun/customary_structs
 INCLUDEPATH += $$V3DMAINPATH
 INCLUDEPATH += $$V3DMAINPATH/v3d
+
 #enable experimental features
 DEFINES += USE_EXPERIMENTAL_FEATURES
+#DEFINES += terafly_enable_debug_max_level
+
+#enable gui progress bar
+DEFINES += WITH_QT
+
+#enable HDF5
+DEFINES += ENABLE_BDV_HDF5
+
+#just define dummy symbols needed by TeraStitcher code
+DEFINES += TERASTITCHER_MAJOR
+DEFINES += TERASTITCHER_MINOR
+DEFINES += TERASTITCHER_PATCH
 
 #setup iomanager
-INCLUDEPATH += ../terafly/src/core/iomanager
-HEADERS += ../terafly/src/core/iomanager/iomanager.config.h
-HEADERS += ../terafly/src/core/iomanager/ioplugins.h
-HEADERS += ../terafly/src/core/iomanager/IOPluginAPI.h
-HEADERS += ../terafly/src/core/iomanager/ProgressBar.h
-HEADERS += ../terafly/src/core/iomanager/plugins/exampleplugin2D/exampleplugin2D.h
-#HEADERS += ../terafly/src/core/iomanager/plugins/opencv2D/opencv2D.h
-HEADERS += ../terafly/src/core/iomanager/plugins/tiff2D/tiff2D.h
-HEADERS += ../terafly/src/core/iomanager/plugins/tiff3D/tiff3D.h
-SOURCES += ../terafly/src/core/iomanager/iomanager.config.cpp
-SOURCES += ../terafly/src/core/iomanager/ProgressBar.cpp
-SOURCES += ../terafly/src/core/iomanager/plugins/exampleplugin2D/exampleplugin2D.cpp
-#SOURCES += ../terafly/src/core/iomanager/plugins/opencv2D/opencv2D.cpp
-SOURCES += ../terafly/src/core/iomanager/plugins/tiff2D/tiff2D.cpp
-SOURCES += ../terafly/src/core/iomanager/plugins/tiff3D/tiff3D.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
+HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h
+HEADERS += ../terafly/src/terarepo/src/iomanager/ioplugins.h
+HEADERS += ../terafly/src/terarepo/src/iomanager/IOPluginAPI.h
+HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/exampleplugin2D/exampleplugin2D.h
+#HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/opencv2D/opencv2D.h
+HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff2D/tiff2D.h
+HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff3D/tiff3D.h
+SOURCES += ../terafly/src/terarepo/src/iomanager/iomanager.config.cpp
+SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/exampleplugin2D/exampleplugin2D.cpp
+#SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/opencv2D/opencv2D.cpp
+SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/tiff2D/tiff2D.cpp
+SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/tiff3D/tiff3D.cpp
 
 #setup imagemanager
-INCLUDEPATH += ../terafly/src/core/imagemanager
-HEADERS += ../terafly/src/core/imagemanager/BDVVolume.h
-HEADERS += ../terafly/src/core/imagemanager/HDF5Mngr.h
-HEADERS += ../terafly/src/core/imagemanager/imBlock.h
-HEADERS += ../terafly/src/core/imagemanager/dirent_win.h
-HEADERS += ../terafly/src/core/imagemanager/IM_config.h
-HEADERS += ../terafly/src/core/imagemanager/ProgressBar.h
-HEADERS += ../terafly/src/core/imagemanager/RawFmtMngr.h
-HEADERS += ../terafly/src/core/imagemanager/RawVolume.h
-HEADERS += ../terafly/src/core/imagemanager/SimpleVolume.h
-HEADERS += ../terafly/src/core/imagemanager/SimpleVolumeRaw.h
-HEADERS += ../terafly/src/core/imagemanager/Stack.h
-HEADERS += ../terafly/src/core/imagemanager/StackRaw.h
-HEADERS += ../terafly/src/core/imagemanager/StackedVolume.h
-HEADERS += ../terafly/src/core/imagemanager/Tiff3DMngr.h
-HEADERS += ../terafly/src/core/imagemanager/TiledMCVolume.h
-HEADERS += ../terafly/src/core/imagemanager/TiledVolume.h
-HEADERS += ../terafly/src/core/imagemanager/TimeSeries.h
-HEADERS += ../terafly/src/core/imagemanager/VirtualFmtMngr.h
-HEADERS += ../terafly/src/core/imagemanager/VirtualVolume.h
-HEADERS += ../terafly/src/core/imagemanager/UnstitchedVolume.h
-SOURCES += ../terafly/src/core/imagemanager/BDVVolume.cpp
-SOURCES += ../terafly/src/core/imagemanager/HDF5Mngr.cpp
-SOURCES += ../terafly/src/core/imagemanager/imBlock.cpp
-SOURCES += ../terafly/src/core/imagemanager/IM_config.cpp
-SOURCES += ../terafly/src/core/imagemanager/imProgressBar.cpp
-SOURCES += ../terafly/src/core/imagemanager/RawFmtMngr.cpp
-SOURCES += ../terafly/src/core/imagemanager/RawVolume.cpp
-SOURCES += ../terafly/src/core/imagemanager/SimpleVolume.cpp
-SOURCES += ../terafly/src/core/imagemanager/SimpleVolumeRaw.cpp
-SOURCES += ../terafly/src/core/imagemanager/Stack.cpp
-SOURCES += ../terafly/src/core/imagemanager/StackRaw.cpp
-SOURCES += ../terafly/src/core/imagemanager/StackedVolume.cpp
-SOURCES += ../terafly/src/core/imagemanager/Tiff3DMngr.cpp
-SOURCES += ../terafly/src/core/imagemanager/TiledMCVolume.cpp
-SOURCES += ../terafly/src/core/imagemanager/TiledVolume.cpp
-SOURCES += ../terafly/src/core/imagemanager/TimeSeries.cpp
-SOURCES += ../terafly/src/core/imagemanager/VirtualFmtMngr.cpp
-SOURCES += ../terafly/src/core/imagemanager/VirtualVolume.cpp
-SOURCES += ../terafly/src/core/imagemanager/UnstitchedVolume.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/imagemanager
+HEADERS += ../terafly/src/terarepo/src/imagemanager/BDVVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/HDF5Mngr.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/imBlock.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/dirent_win.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/IM_config.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/RawFmtMngr.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/RawVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/SimpleVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/SimpleVolumeRaw.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/Stack.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/StackRaw.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/StackedVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/Tiff3DMngr.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/TiledMCVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/TiledVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/TimeSeries.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/VirtualFmtMngr.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/VirtualVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/UnstitchedVolume.h
+SOURCES += ../terafly/src/terarepo/src/imagemanager/BDVVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/HDF5Mngr.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/imBlock.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/IM_config.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/RawFmtMngr.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/RawVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/SimpleVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/SimpleVolumeRaw.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/Stack.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/StackRaw.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/StackedVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/Tiff3DMngr.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/TiledMCVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/TiledVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/TimeSeries.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/VirtualFmtMngr.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/VirtualVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/UnstitchedVolume.cpp
 
 
 # set up stitcher
-INCLUDEPATH += ../terafly/src/core/stitcher
-HEADERS += ../terafly/src/core/stitcher/S_config.h
-HEADERS += ../terafly/src/core/stitcher/Displacement.h
-HEADERS += ../terafly/src/core/stitcher/DisplacementMIPNCC.h
-HEADERS += ../terafly/src/core/stitcher/PDAlgo.h
-HEADERS += ../terafly/src/core/stitcher/PDAlgoMIPNCC.h
-HEADERS += ../terafly/src/core/stitcher/StackRestorer.h
-HEADERS += ../terafly/src/core/stitcher/StackStitcher.h
-HEADERS += ../terafly/src/core/stitcher/TPAlgo.h
-HEADERS += ../terafly/src/core/stitcher/TPAlgoMST.h
-HEADERS += ../terafly/src/core/stitcher/resumer.h
-SOURCES += ../terafly/src/core/stitcher/Displacement.cpp
-SOURCES += ../terafly/src/core/stitcher/DisplacementMIPNCC.cpp
-SOURCES += ../terafly/src/core/stitcher/MergeTiles.cpp
-SOURCES += ../terafly/src/core/stitcher/PDAlgo.cpp
-SOURCES += ../terafly/src/core/stitcher/PDAlgoMIPNCC.cpp
-SOURCES += ../terafly/src/core/stitcher/StackRestorer.cpp
-SOURCES += ../terafly/src/core/stitcher/StackStitcher.cpp
-SOURCES += ../terafly/src/core/stitcher/TPAlgo.cpp
-SOURCES += ../terafly/src/core/stitcher/TPAlgoMST.cpp
-SOURCES += ../terafly/src/core/stitcher/resumer.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/stitcher
+HEADERS += ../terafly/src/terarepo/src/stitcher/S_config.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/Displacement.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/DisplacementMIPNCC.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/PDAlgo.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/PDAlgoMIPNCC.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/StackRestorer.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/StackStitcher.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/TPAlgo.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/TPAlgoMST.h
+#HEADERS += ../terafly/src/terarepo/src/stitcher/resumer.h
+SOURCES += ../terafly/src/terarepo/src/stitcher/Displacement.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/DisplacementMIPNCC.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/MergeTiles.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/PDAlgo.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/PDAlgoMIPNCC.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/StackRestorer.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/StackStitcher.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgo.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgoMST.cpp
+#SOURCES += ../terafly/src/terarepo/src/stitcher/resumer.cpp
 
 # set up volumeconverter
-INCLUDEPATH += ../terafly/src/core/volumeconverter
-HEADERS += ../terafly/src/core/volumeconverter/S_config.h
-HEADERS += ../terafly/src/core/volumeconverter/VolumeConverter.h
-SOURCES += ../terafly/src/core/volumeconverter/VolumeConverter.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/utils/volumeconverter
+HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/S_config.h
+HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/VolumeConverter.h
+SOURCES += ../terafly/src/terarepo/src/utils/volumeconverter/VolumeConverter.cpp
+HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/vcresumer.h
+SOURCES += ../terafly/src/terarepo/src/utils/volumeconverter/vcresumer.cpp
 
 # set up volumemanager
-INCLUDEPATH += ../terafly/src/core/volumemanager
-HEADERS += ../terafly/src/core/volumemanager/vmBlock.h
-HEADERS += ../terafly/src/core/volumemanager/vmBlockVolume.h
-HEADERS += ../terafly/src/core/volumemanager/vmStack.h
-HEADERS += ../terafly/src/core/volumemanager/vmStackedVolume.h
-HEADERS += ../terafly/src/core/volumemanager/vmVirtualStack.h
-HEADERS += ../terafly/src/core/volumemanager/vmVirtualVolume.h
-HEADERS += ../terafly/src/core/volumemanager/volumemanager.config.h
-SOURCES += ../terafly/src/core/volumemanager/vmBlock.cpp
-SOURCES += ../terafly/src/core/volumemanager/vmBlockVolume.cpp
-SOURCES += ../terafly/src/core/volumemanager/vmStack.cpp
-SOURCES += ../terafly/src/core/volumemanager/vmStackedVolume.cpp
-SOURCES += ../terafly/src/core/volumemanager/vmVirtualStack.cpp
-SOURCES += ../terafly/src/core/volumemanager/vmVirtualVolume.cpp
-SOURCES += ../terafly/src/core/volumemanager/volumemanager.config.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/volumemanager
+HEADERS += ../terafly/src/terarepo/src/volumemanager/vmBlock.h
+HEADERS += ../terafly/src/terarepo/src/volumemanager/vmBlockVolume.h
+HEADERS += ../terafly/src/terarepo/src/volumemanager/vmStack.h
+HEADERS += ../terafly/src/terarepo/src/volumemanager/vmStackedVolume.h
+HEADERS += ../terafly/src/terarepo/src/volumemanager/vmVirtualStack.h
+HEADERS += ../terafly/src/terarepo/src/volumemanager/vmVirtualVolume.h
+HEADERS += ../terafly/src/terarepo/src/volumemanager/volumemanager.config.h
+SOURCES += ../terafly/src/terarepo/src/volumemanager/vmBlock.cpp
+SOURCES += ../terafly/src/terarepo/src/volumemanager/vmBlockVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/volumemanager/vmStack.cpp
+SOURCES += ../terafly/src/terarepo/src/volumemanager/vmStackedVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/volumemanager/vmVirtualStack.cpp
+SOURCES += ../terafly/src/terarepo/src/volumemanager/vmVirtualVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/volumemanager/volumemanager.config.cpp
 
 # set up crossmips
-INCLUDEPATH += ../terafly/src/core/crossmips
-HEADERS += ../terafly/src/core/crossmips/my_defs.h
-HEADERS += ../terafly/src/core/crossmips/CrossMIPs.h
-HEADERS += ../terafly/src/core/crossmips/compute_funcs.h
-SOURCES += ../terafly/src/core/crossmips/compute_funcs.cpp
-SOURCES += ../terafly/src/core/crossmips/libcrossmips.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/crossmips
+HEADERS += ../terafly/src/terarepo/src/crossmips/my_defs.h
+HEADERS += ../terafly/src/terarepo/src/crossmips/CrossMIPs.h
+HEADERS += ../terafly/src/terarepo/src/crossmips/compute_funcs.h
+SOURCES += ../terafly/src/terarepo/src/crossmips/compute_funcs.cpp
+SOURCES += ../terafly/src/terarepo/src/crossmips/libcrossmips.cpp
 
 # set up tinyxml
-INCLUDEPATH += ../terafly/src/core/tinyxml
-HEADERS += ../terafly/src/core/tinyxml/tinyxml.h
-HEADERS += ../terafly/src/core/tinyxml/tinystr.h
-SOURCES += ../terafly/src/core/tinyxml/tinystr.cpp
-SOURCES += ../terafly/src/core/tinyxml/tinyxmlparser.cpp
-SOURCES += ../terafly/src/core/tinyxml/tinyxmlerror.cpp
-SOURCES += ../terafly/src/core/tinyxml/tinyxml.cpp
+INCLUDEPATH += ../terafly/src/terarepo/src/3rdparty/tinyxml
+HEADERS += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxml.h
+HEADERS += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinystr.h
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinystr.cpp
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxmlparser.cpp
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxmlerror.cpp
+SOURCES += ../terafly/src/terarepo/src/3rdparty/tinyxml/tinyxml.cpp
+
+# set up common
+INCLUDEPATH += ../terafly/src/terarepo/src/common
+HEADERS += ../terafly/src/terarepo/src/common/config.h
+HEADERS += ../terafly/src/terarepo/src/common/ProgressBar.h
+HEADERS += ../terafly/src/terarepo/src/common/QProgressSender.h
+SOURCES += ../terafly/src/terarepo/src/common/config.cpp
+SOURCES += ../terafly/src/terarepo/src/common/ProgressBar.cpp
+SOURCES += ../terafly/src/terarepo/src/common/QProgressSender.cpp
 
 
 #set up TeraFly plugin (control and presentation classes)
@@ -189,6 +218,7 @@ HEADERS += ../terafly/src/control/CSettings.h
 HEADERS += ../terafly/src/control/CVolume.h
 HEADERS += ../terafly/src/control/CImageUtils.h
 HEADERS += ../terafly/src/control/V3Dsubclasses.h
+HEADERS += ../terafly/src/control/VirtualPyramid.h
 HEADERS += ../terafly/src/control/COperation.h
 INCLUDEPATH += ../terafly/src/presentation
 HEADERS += ../terafly/src/presentation/PConverter.h
@@ -216,6 +246,7 @@ SOURCES += ../terafly/src/control/CVolume.cpp
 SOURCES += ../terafly/src/control/CImageUtils.cpp
 SOURCES += ../terafly/src/control/COperation.cpp
 SOURCES += ../terafly/src/control/V3Dsubclasses.cpp
+SOURCES += ../terafly/src/control/VirtualPyramid.cpp
 SOURCES += ../terafly/src/presentation/PConverter.cpp
 SOURCES += ../terafly/src/presentation/PDialogImport.cpp
 SOURCES += ../terafly/src/presentation/PDialogProofreading.cpp

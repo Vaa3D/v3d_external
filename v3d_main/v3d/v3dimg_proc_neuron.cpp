@@ -936,7 +936,7 @@ void My4DImage::proj_trace_history_append()
 
     // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
     // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
-    itm::TeraFly::doaction("neuron edit");
+    tf::TeraFly::doaction("neuron edit");
 }
 
 void My4DImage::proj_trace_history_append(V_NeuronSWC_list & tNeuron)

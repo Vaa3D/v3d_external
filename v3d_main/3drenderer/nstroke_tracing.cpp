@@ -3123,7 +3123,7 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 
     // inform TeraFly (SAFE)
     // this does nothing except when TeraFly is active
-    itm::TeraFly::doaction("marker multiselect");
+    tf::TeraFly::doaction("marker multiselect");
 }
 
 // @ADDED by Alessandro on 2015-05-07.
@@ -3335,7 +3335,8 @@ void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
                 continue;
-            for (V3DLONG i=0;i<p_listneuron->size();i++)
+            V3DLONG p_listneuron_num = p_listneuron->size();
+            for (V3DLONG i=0;i<p_listneuron_num;i++)
             {
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
@@ -3367,7 +3368,9 @@ void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
                             {
                                 curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
                                 curImg->update_3drenderer_neuron_view(w, this);
-                            
+
+                                p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
+                                p_listneuron = &(p_tree->listNeuron);
                                 break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
                         }

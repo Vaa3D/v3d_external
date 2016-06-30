@@ -6,7 +6,7 @@
 #include "../control/CPlugin.h"
 #include "../control/CImageUtils.h"
 
-class teramanager::QPixmapToolTip : public QWidget
+class terafly::QPixmapToolTip : public QWidget
 {
     Q_OBJECT
 

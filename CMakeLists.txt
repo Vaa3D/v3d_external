@@ -190,10 +190,6 @@ endif()
 # Build plugins
 set(V3D_BASIC_C_FUN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/basic_c_fun)
 
-# Only build the plugins if Qt4 is requested
-if(FORCE_QT4)
-    add_subdirectory(released_plugins)
-endif()
 
 # Build jba application itself, if the directory has been checked out here
 # (at the same level as v3d_main)

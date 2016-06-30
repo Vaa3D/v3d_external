@@ -1,6 +1,6 @@
 #include "QHelpBox.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 QHelpBox::QHelpBox(QWidget *_parent) : QWidget(_parent)
 {

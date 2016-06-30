@@ -407,7 +407,7 @@ unix:!macx {
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
 #add -lglut -lGLU to fix the GL referencing issue on Ubuntu, otherwise it complains 
-unix:LIBS += -lglut -lGLU
+unix!macx:LIBS += -lglut -lGLU
 
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff -lv3dnewmat

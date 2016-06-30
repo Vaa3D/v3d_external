@@ -37,6 +37,8 @@
 #include <limits>
 #include <sstream>
 #include <algorithm>
+#include <QThread>
+#include "v3d_core.h"
 
 class V3DPluginCallback2;
 
@@ -49,13 +51,13 @@ class V3DPluginCallback2;
 #endif
 
 /*******************************************************************************************************************************
- *   Interfaces, types, parameters and constants   													       *
+ *   Interfaces, types, parameters and constants   													                           *
  *******************************************************************************************************************************/
-namespace teramanager
+namespace terafly
 {
-    /*******************
-    *    INTERFACES    *
-    ********************
+    /***************************
+    *    CLASS DECLARATIONS    *
+    ****************************
     ---------------------------------------------------------------------------------------------------------------------------*/
     class TeraFly;              //the class defined in this header and derived from V3DPluginInterface2_1
     class PMain;                //main presentation class: it contains the main frame
@@ -83,46 +85,112 @@ namespace teramanager
     class QUndoMarkerDelete;    //QUndoCommand for marker deletion
     class QUndoMarkerDeleteROI; //QUndoCommand for marker in ROI deletion
     class QUndoVaa3DNeuron;     //QUndoCommand for Vaa3D neuron editing
+    class VirtualPyramid;       //entity class to model virtual pyramid image where data are filled online from an unconverted highres image
+    class VirtualPyramidLayer;  //entity class to model a virtual pyramid layer/volume
+    class HyperGridCache;  //entity class to model a virtual pyramid cache
+    class myRenderer_gl1;       //Vaa3D-inhrerited class
+    class myV3dR_GLWidget;      //Vaa3D-inhrerited class
+    class myV3dR_MainWindow;    //Vaa3D-inhrerited class
+    class myImage4DSimple;      //Vaa3D-inhrerited class
     struct annotation;          //base class for annotations
-
-    class myRenderer_gl1;       //Vaa3D-customized class
-    class myV3dR_GLWidget;      //Vaa3D-customized class
-    class myV3dR_MainWindow;    //Vaa3D-customized class
-    class myImage4DSimple;      //Vaa3D-customized class    
-    struct point;
-
-    enum  debug_level { NO_DEBUG, LEV1, LEV2, LEV3, LEV_MAX };  //debug levels
-    enum  direction {x, y, z};
-    class RuntimeException;		//exception thrown by functions in the current module
+    struct volume_format;       //enum-like class to distinguish different volume formats
     /*-------------------------------------------------------------------------------------------------------------------------*/
+
+
+    /********************************
+    *    UTILITY CLASSES AND ENUMS  *
+    *********************************
+    ---------------------------------------------------------------------------------------------------------------------------*/
+    // interval type
+    struct interval_t
+    {
+        int start, end;
+        interval_t(void) : start(-1), end(-1)  {}
+        interval_t(int _start, int _end) : start(_start), end(_end){}
+    };
+
+    // block type
+    struct block_t
+    {
+        interval_t xInt, yInt, zInt;
+        block_t(interval_t _xInt, interval_t _yInt, interval_t _zInt) : xInt(_xInt), yInt(_yInt), zInt(_zInt){}
+    };
+
+    // sleeper
+    class Sleeper : public QThread
+    {
+        public:
+            static void usleep(unsigned long usecs){QThread::usleep(usecs);}
+            static void msleep(unsigned long msecs){QThread::msleep(msecs);}
+            static void sleep(unsigned long secs){QThread::sleep(secs);}
+    };
+
+    // custom exception
+    class RuntimeException : public std::exception
+    {
+        private:
+
+            std::string source;
+            std::string message;
+            RuntimeException(void);
+
+        public:
+
+            RuntimeException(std::string _message, std::string _source = "unknown"){
+                source = _source; message = _message;}
+            virtual ~RuntimeException() throw(){}
+            virtual const char* what() throw() {return message.c_str();}
+            const char* getSource() const {return source.c_str();}
+    };
+
+    // emulate initializer list for STL vector
+    template <typename T>
+    class make_vector
+    {
+        public:
+
+          typedef make_vector<T> my_type;
+          my_type& operator<< (const T& val) {
+            data_.push_back(val);
+            return *this;
+          }
+          operator std::vector<T>() const {
+            return data_;
+          }
+        private:
+          std::vector<T> data_;
+    };
+
+    enum  debug_level { NO_DEBUG, LEV1, LEV2, LEV3, LEV_MAX };  // debug levels
+    enum  debug_output { TO_STDOUT, TO_GUI, TO_FILE};           // where debug messages should be printed
+    enum  direction {x, y, z};                                  // axis direction
+    /*-------------------------------------------------------------------------------------------------------------------------*/
+
 
 
     /*******************
     *    CONSTANTS     *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    const char   undefined_str[] = "undefined";
-    const int    undefined_int32 = -1;
-    const int    int_inf = std::numeric_limits<int>::max();
-    const float  undefined_real32 = -1.0f;
-    const int    STATIC_STRING_SIZE = 2000;
-    const int    FILE_LINE_BUFFER_SIZE = 10000;
     const double pi = 3.14159265359;
+    const std::string VMAP_BIN_FILE_NAME = "vmap.bin";      // name of volume map binary file
+    const std::string RESOLUTION_PREFIX = "RES";            // prefix identifying a folder containing data of a certain resolution
+    const char   undefined_str[] = "undefined";
     const int    ZOOM_HISTORY_SIZE = 3;
-    const std::string VMAP_BIN_FILE_NAME = "vmap.bin";   //name of volume map binary file
-    const std::string RESOLUTION_PREFIX = "RES";         // prefix identifying a folder containing data of a certain resolution
     /*-------------------------------------------------------------------------------------------------------------------------*/
+
 
 
     /*******************
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    extern std::string version;                 //version number of current module
-    extern int DEBUG;							//debug level of current module
-    extern bool DEBUG_TO_FILE;                  //whether debug messages should be printed on the screen or to a file (default: screen)
-    extern std::string DEBUG_FILE_PATH;         //filepath where to save debug information
+    extern std::string version;                 // version number of current module
+    extern int DEBUG;							// debug level of current module
+    extern debug_output DEBUG_DEST;             // where debug messages should be print (default: stdout)
+    extern std::string DEBUG_FILE_PATH;         // filepath where to save debug information
     /*-------------------------------------------------------------------------------------------------------------------------*/
+
 
 
     /*******************
@@ -140,31 +208,17 @@ namespace teramanager
     typedef float real32;						//real single precision
     typedef double real64;						//real double precision
     typedef std::vector<int> integer_array;     //need to typedef this so as to register with qRegisterMetaType
-
-    //interval type
-    struct interval_t
-    {
-        int start, end;
-        interval_t(void) : start(-1), end(-1)  {}
-        interval_t(int _start, int _end) : start(_start), end(_end){}
-    };
-
-    //block type
-    struct block_t
-    {
-        interval_t xInt, yInt, zInt;
-        block_t(interval_t _xInt, interval_t _yInt, interval_t _zInt) : xInt(_xInt), yInt(_yInt), zInt(_zInt){}
-    };
-
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
 
+
     /*******************
-    *  SYNCRONIZATION  *
+    *  CONCURRENCY     *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
     extern QMutex updateGraphicsInProgress;
     /*-------------------------------------------------------------------------------------------------------------------------*/
+
 
 
     /********************************************
@@ -175,8 +229,27 @@ namespace teramanager
     inline int round(float  x) { return static_cast<int>(x > 0.0f ? x + 0.5f : x - 0.5f);}
     inline int round(double x) { return static_cast<int>(x > 0.0  ? x + 0.5  : x - 0.5 );}
 
+    // positive and negative infinity
+    template<typename T>
+    T infp()
+    {
+        if(std::numeric_limits<T>::has_infinity)
+            return std::numeric_limits<T>::infinity();
+        else
+            return std::numeric_limits<T>::max();
+    }
+    template<typename T>
+    T infn()
+    {
+        if(std::numeric_limits<T>::has_infinity)
+            return -std::numeric_limits<T>::infinity();
+        else
+            return std::numeric_limits<T>::min();
+    }
+
     //string-based sprintf function
-    inline std::string strprintf(const std::string fmt, ...){
+    inline std::string strprintf(const std::string fmt, ...)
+    {
         int size = 100;
         std::string str;
         va_list ap;
@@ -200,6 +273,7 @@ namespace teramanager
     // split
     inline void	split(const std::string& theString, std::string delim, std::vector<std::string>& tokens)
     {
+        tokens.clear();
         size_t  start = 0, end = 0;
         while ( end != std::string::npos)
         {
@@ -215,31 +289,53 @@ namespace teramanager
         }
     }
 
+    inline std::vector<std::string> parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename) throw (RuntimeException)
+    {
+        std::vector<std::string> tokens;
+        split(line, delim, tokens);
+        if(tokens.size() != nTokensExpected)
+            throw RuntimeException(strprintf("in file \"%s\", line \"%s\": expected %d \"%s\"-separated tokens, found %d",
+                                   filename.c_str(), line.c_str(), nTokensExpected, delim.c_str(), tokens.size()));
+        return tokens;
+    }
+
+    inline void parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename, std::vector<std::string> &tokens) throw (RuntimeException)
+    {;
+        tokens.clear();
+        split(line, delim, tokens);
+        if(tokens.size() != nTokensExpected)
+            throw RuntimeException(strprintf("in file \"%s\", line \"%s\": expected %d \'%s\'-separated tokens, found %d",
+                                   filename.c_str(), line.c_str(), nTokensExpected, delim.c_str(), tokens.size()));
+    }
+
     //returns true if the given string <fullString> ends with <ending>
-    inline bool hasEnding (std::string const &fullString, std::string const &ending){
-        if (fullString.length() >= ending.length()) {
+    inline bool hasEnding (std::string const &fullString, std::string const &ending)
+    {
+        if (fullString.length() >= ending.length())
             return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
-        } else {
+        else
             return false;
-        }
     }
 
     //returns file extension, if any (otherwise returns "")
-    inline std::string getFileExtension(const std::string& FileName){
+    inline std::string getFileExtension(const std::string& FileName)
+    {
         if(FileName.find_last_of(".") != std::string::npos)
             return FileName.substr(FileName.find_last_of(".")+1);
         return "";
     }
 
     // removes all tab, space and newline characters from the given string (in-place version and copy-based version)
-    inline std::string clsi(std::string& string){
+    inline std::string clsi(std::string& string)
+    {
         string.erase(std::remove(string.begin(), string.end(), '\t'), string.end());
         string.erase(std::remove(string.begin(), string.end(), ' '),  string.end());
         string.erase(std::remove(string.begin(), string.end(), '\n'), string.end());
         string.erase(std::remove(string.begin(), string.end(), '\r'), string.end());
         return string;
     }
-    inline std::string cls(std::string string){
+    inline std::string cls(std::string string)
+    {
         string.erase(std::remove(string.begin(), string.end(), '\t'), string.end());
         string.erase(std::remove(string.begin(), string.end(), ' '),  string.end());
         string.erase(std::remove(string.begin(), string.end(), '\n'), string.end());
@@ -249,8 +345,8 @@ namespace teramanager
 
 
     //extracts the filename from the given path and stores it into <filename>
-    inline std::string getFileName(std::string const & path, bool save_ext = true){
-
+    inline std::string getFileName(std::string const & path, bool save_ext = true)
+    {
         std::string filename = path;
 
         // Remove directory if present.
@@ -271,12 +367,14 @@ namespace teramanager
     }
 
     // changes directory by moving one directory up from the current directory
-    inline std::string cdUp(std::string const & path){
+    inline std::string cdUp(std::string const & path)
+    {
         return path.substr(0, path.find_last_of("/\\"));
     }
 
     // removes carriage return characters
-    inline std::string clcr(const std::string & _str){
+    inline std::string clcr(const std::string & _str)
+    {
         std::string str = _str;
         str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
         str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
@@ -285,33 +383,20 @@ namespace teramanager
 
     //number to string conversion function and vice versa
     template <typename T>
-    std::string num2str ( T Number ){
+    std::string num2str ( T Number )
+    {
         std::stringstream ss;
         ss << Number;
         return ss.str();
     }
     template <typename T>
-    T str2num ( const std::string &Text ){
+    T str2num ( const std::string &Text )
+    {
         std::stringstream ss(Text);
         T result;
         return ss >> result ? result : 0;
     }
 
-    // emulate initializer list for STL vector
-    template <typename T>
-    class make_vector {
-        public:
-          typedef make_vector<T> my_type;
-          my_type& operator<< (const T& val) {
-            data_.push_back(val);
-            return *this;
-          }
-          operator std::vector<T>() const {
-            return data_;
-          }
-        private:
-          std::vector<T> data_;
-    };
 
     template<class T>
     inline static const T& kClamp( const T& x, const T& low, const T& high )
@@ -326,12 +411,28 @@ namespace teramanager
 
     // linear interpolation
     template <typename T>
-    inline static T linear(T a, T b, float t){
+    inline static T linear(T a, T b, float t)
+    {
         return a * (1 - t) + b * t;
     }
     template <typename T>
-    inline static T linear(T a, T b, int step_index, int steps_number){
+    inline static T linear(T a, T b, int step_index, int steps_number)
+    {
         return (b - a) * step_index / static_cast<float>(steps_number) + a;
+    }
+
+    // partition a discrete range into subranges which differ by 1 at most
+    template <typename T>
+    inline std::vector<T> partition(T range, T desired_part_size) throw (RuntimeException)
+    {
+        if(range <= 0)
+            throw RuntimeException(strprintf("in partition(): range is <= 0 (%s)", num2str<T>(range).c_str()));
+        if(desired_part_size <=0)
+            throw RuntimeException(strprintf("in partition(): desired_part_size is <= 0 (%s)", num2str<T>(desired_part_size).c_str()));
+        std::vector<T> subranges(static_cast<T>(ceil(range/(float)desired_part_size )));
+        for(int i=0; i<subranges.size(); i++)
+            subranges[i] =  range/subranges.size() + (i < range % subranges.size() ? 1:0 );
+        return subranges;
     }
 
     //cross-platform current function macro
@@ -356,7 +457,8 @@ namespace teramanager
     *    DEBUG, WARNING and EXCEPTION FUNCTIONS    *
     ************************************************
     ---------------------------------------------------------------------------------------------------------------------------*/
-	inline std::string shortFuncName(const std::string & longname){
+    inline std::string shortFuncName(const std::string & longname)
+    {
 		std::vector <std::string> tokens;
 		split(longname, "::", tokens);
 		tokens[0] = tokens[0].substr(tokens[0].rfind(" ")+1);
@@ -373,8 +475,9 @@ namespace teramanager
 		return result;
 
 	}
-    inline void warning(const char* message, const char* source = 0){
-        if(DEBUG_TO_FILE)
+    inline void warning(const char* message, const char* source = 0)
+    {
+        if(DEBUG_DEST == TO_FILE)
         {
             FILE* f = fopen(DEBUG_FILE_PATH.c_str(), "a");
             if(source)
@@ -384,7 +487,7 @@ namespace teramanager
                 fprintf(f, "\n**** WARNING ****: %s\n", message);
             fclose(f);
         }
-        else
+        else if(DEBUG_DEST == TO_STDOUT)
         {
             if(source)
                 printf("\n**** WARNING (source: \"%s\") ****\n"
@@ -392,20 +495,22 @@ namespace teramanager
             else
                 printf("\n**** WARNING ****: %s\n", message);
         }
+        else if(DEBUG_DEST == TO_GUI)
+        {
+            if(source)
+                v3d_msg(strprintf("\n**** WARNING (source: \"%s\") ****\n"
+                "    |=> \"%s\"\n\n", shortFuncName(source).c_str(), message).c_str());
+            else
+                v3d_msg(strprintf("\n**** WARNING ****: %s\n", message).c_str());
+        }
     }
 
-    inline void setWidgetOnTop(QWidget* widget, bool val)
+
+    inline void debug(debug_level dbg_level, const char* message=0, const char* source=0, bool short_print = false)
     {
-        if (val == true)
-            widget->setWindowFlags(widget->windowFlags() | Qt::WindowStaysOnTopHint);
-        else
-            widget->setWindowFlags(widget->windowFlags() & ~Qt::WindowStaysOnTopHint);
-        widget->show();
-    }
-
-    inline void debug(debug_level dbg_level, const char* message=0, const char* source=0, bool short_print = false){
-        if(DEBUG >= dbg_level){
-            if(DEBUG_TO_FILE)
+        if(DEBUG >= dbg_level)
+        {
+            if(DEBUG_DEST == TO_FILE)
             {
                 FILE* f = fopen(DEBUG_FILE_PATH.c_str(), "a");
 				if(message && source && !short_print)
@@ -419,7 +524,7 @@ namespace teramanager
 					fprintf(f,"\n                             message: %s\n", message);
                 fclose(f);
             }
-            else
+            else if (DEBUG_DEST == TO_STDOUT)
             {
                 if(message && source && !short_print)
                     printf("\n---(debug level %d)--- in \"%s\"\n"
@@ -431,30 +536,125 @@ namespace teramanager
                 else if(short_print && message)
 					printf("\n                             message: %s\n", message);
             }
+            else if (DEBUG_DEST == TO_GUI)
+            {
+                if(message && source && !short_print)
+                    v3d_msg(strprintf("\n---(debug level %d)--- in \"%s\"\n"
+                             "                             message: %s\n\n", dbg_level, shortFuncName(source).c_str(), message).c_str());
+                else if(message && !short_print)
+                    v3d_msg(strprintf("\n---(debug level %d)---       message: %s\"\n\n", dbg_level, message).c_str());
+                else if(source && !short_print)
+                    v3d_msg(strprintf("\n---(debug level %d)--- in \"%s\"\n", dbg_level, shortFuncName(source).c_str()).c_str());
+                else if(short_print && message)
+                    v3d_msg(strprintf("\n                             message: %s\n", message).c_str());
+            }
         }
     }
+    /*-------------------------------------------------------------------------------------------------------------------------*/
 
-    class RuntimeException
+
+
+
+    /********************************
+    *    OTHER UTILITY CLASSES      *
+    *********************************
+    ---------------------------------------------------------------------------------------------------------------------------*/
+    // 3D point (x + y + z)
+    template<class T>
+    struct xyz
     {
-        private:
+        T x,y,z;
+        xyz(void) : x(0), y(0), z(0){}
+        xyz(T _x, T _y, T _z) : x(_x), y(_y), z(_z){}
+        xyz(XYZ &p) : x(p.x), y(p.y), z(p.z){}
 
-            std::string source;
-            std::string message;
-            RuntimeException(void);
+        bool operator == (const xyz &p) const{
+            return p.x == x && p.y == y && p.z == z;
+        }
 
-        public:
+        bool operator <  (const xyz &p) const{
+            return p.x < x && p.y < y && p.z < z;
+        }
+    };
 
-            RuntimeException(std::string _message, std::string _source = "unknown"){
-                source = _source; message = _message;}
-            ~RuntimeException(void){}
-            const char* what() const {return message.c_str();}
-            const char* getSource() const {return source.c_str();}
+    // 4D point (x + y + z + time)
+    template<class T>
+    struct xyzt
+    {
+        T x,y,z,t;
+        xyzt(void) : x(0), y(0), z(0), t(0){}
+        xyzt(T _x, T _y, T _z, T _t) : x(_x), y(_y), z(_z), t(_t){}
+    };
+
+    // 5D point (x + y + z + channel + time)
+    template<class T>
+    struct xyzct
+    {
+        T x,y,z,c,t;
+        xyzct(void) : x(0), y(0), z(0), c(0), t(0){}
+        xyzct(T _x, T _y, T _z, T _c=0, T _t=0) : x(_x), y(_y), z(_z), c(_c), t(_t){}
+    };
+
+    // 4D Volume Of Interest
+    template<class T>
+    struct voi4D
+    {
+        xyzt<T> start;
+        xyzt<T> end;
+        voi4D() : start(0,0,0,0), end(0,0,0,0){}
+        voi4D(xyzt<T> _start, xyzt<T> _end) : start(_start), end(_end){}
+        xyzt<T> dims(){
+            return xyzt<T>(
+                        end.x > start.x ? end.x-start.x : 0,
+                        end.y > start.y ? end.y-start.y : 0,
+                        end.z > start.z ? end.z-start.z : 0,
+                        end.t > start.t ? end.t-start.t : 0);
+        }
+        T size(){
+            xyzt<T> _dims=dims(); return _dims.x*_dims.y*_dims.z*_dims.t;
+        }
+    };
+
+    template<class T = unsigned int>
+    struct active_channels
+    {
+        T* table;
+        size_t dim;
+        active_channels() : table(0), dim(0){}
+        active_channels(T* _table, size_t _dim) : table(_table), dim(_dim){}
+        std::string toString(){
+            std::string res;
+            for(size_t i=0; i<dim; i++)
+                res = res+num2str<T>(table[i]) + (i < dim-1 ? "," :  "");
+            return res;
+        }
+        static std::string toString(std::vector<T> chans){
+            std::string res;
+            for(size_t i=0; i<chans.size(); i++)
+                res = res+num2str<T>(chans[i]) + (i < chans.size()-1 ? "," :  "");
+            return res;
+        }
+    };
+
+
+
+    template<class T>
+    struct image5D
+    {
+        T* data;
+        xyzt<size_t> dims;
+        active_channels<> chans;
+        image5D() : data(0), dims(xyzt<size_t>(0,0,0,0)), chans(0,0){}
+        image5D(T* _data, xyzt<size_t> _dims, active_channels<> _chans) : data(_data), dims(_dims), chans(_chans){}
+        xyzct<size_t> getDims(){return xyzct<size_t>(dims.x, dims.y, dims.z, static_cast<size_t>(chans.dim), dims.t);}
+        size_t size(){return sizeof(T)*dims.x*dims.y*dims.z*dims.t*chans.dim;}
     };
     /*-------------------------------------------------------------------------------------------------------------------------*/
-}
-namespace itm = teramanager;	//a short alias for the current namespace: Icon Tera Manager (itm)
 
-class teramanager::TeraFly : public QObject
+}
+namespace tf  = terafly;	//a short alias for the current namespace: TeraFly
+
+class terafly::TeraFly : public QObject
 {
     Q_OBJECT
 

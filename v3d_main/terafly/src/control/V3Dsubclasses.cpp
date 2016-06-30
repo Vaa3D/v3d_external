@@ -6,13 +6,13 @@
 #include <QElapsedTimer>
 
 
-using namespace teramanager;
+using namespace terafly;
 using namespace std;
 
 //converts mouse 2D position into image 3D point
 XYZ myRenderer_gl1::get3DPoint(int x, int y)
 {
-    /**/itm::debug(itm::LEV1, strprintf("x = %d, y = %d", x, y).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("x = %d, y = %d", x, y).c_str(), __itm__current__function__);
 
     Renderer_gl1::MarkerPos pos;
     pos.x = x;
@@ -29,7 +29,7 @@ XYZ myRenderer_gl1::get3DPoint(int x, int y)
 
 void myV3dR_GLWidget::setZoomO(int zr)
 {
-    /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, zoom = %d", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, zoom = %d", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
 
     //qDebug("V3dR_GLWidget::setZoom = %i",zr);
     zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
@@ -49,7 +49,7 @@ void myV3dR_GLWidget::setZoomO(int zr)
 
 void myV3dR_GLWidget::setZoomO(float zr)
 {
-    /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, zoom = %.2f", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, zoom = %.2f", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
 
     //qDebug("V3dR_GLWidget::setZoom = %i",zr);
     zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
@@ -69,7 +69,7 @@ void myV3dR_GLWidget::setZoomO(float zr)
 
 void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
 {
-    /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, mouse_x = %d, mouse_y = %d",
+    /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, mouse_x = %d, mouse_y = %d",
                                            data_title.toStdString().c_str(), event->pos().x(), event->pos().y()).c_str(), __itm__current__function__);
 
     this->setFocus(); // accept KeyPressEvent, by RZC 081028
@@ -111,7 +111,7 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
 //zoomIn method(s)
 void myV3dR_GLWidget::zoomIn(const char* method)
 {
-    /**/itm::debug(itm::LEV1, strprintf("title = %s, method = %s", data_title.toStdString().c_str(), method).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("title = %s, method = %s", data_title.toStdString().c_str(), method).c_str(), __itm__current__function__);
 
     ZoominRoiOperation::newGroup();
     QElapsedTimer timer;
@@ -127,7 +127,7 @@ void myV3dR_GLWidget::zoomIn(const char* method)
         roi->ye = centralPoint.y + PMain::getInstance()->Vdim_sbox->value()/2;
         roi->zs = centralPoint.z - PMain::getInstance()->Ddim_sbox->value()/2;
         roi->ze = centralPoint.z + PMain::getInstance()->Ddim_sbox->value()/2;
-        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: Virtual Finger (bVF)", itm::ALL_COMPS, timer.elapsed()));
+        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: Virtual Finger (bVF)", tf::ALL_COMPS, timer.elapsed()));
         if(CViewer::getCurrent())
             CViewer::getCurrent()->invokedFromVaa3D(roi);
 
@@ -200,13 +200,13 @@ void myV3dR_GLWidget::zoomIn(const char* method)
 
             points = points_shifted;
         }
-		std::map<point, int> votes;
+        std::map< xyz<float>, int> votes;
         for(int i=0; i<n; i++)
-            votes[point(points[i])]++;
+            votes[xyz<float>(points[i])]++;
 
-        point thepoint;
+        xyz<float> thepoint;
         int mostvoted = 0;
-        for(std::map<point, int>::iterator it = votes.begin(); it != votes.end(); it++)
+        for(std::map< xyz<float>, int>::iterator it = votes.begin(); it != votes.end(); it++)
         {
             if(it->second > mostvoted)
             {
@@ -225,7 +225,7 @@ void myV3dR_GLWidget::zoomIn(const char* method)
         roi->ye = thepoint.y + PMain::getInstance()->Vdim_sbox->value()/2;
         roi->zs = thepoint.z - PMain::getInstance()->Ddim_sbox->value()/2;
         roi->ze = thepoint.z + PMain::getInstance()->Ddim_sbox->value()/2;
-        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: MSMS", itm::ALL_COMPS, timer.elapsed()));
+        PLog::instance()->appendOperation(new ZoominRoiOperation( "Generated 3D ROI with method: MSMS", tf::ALL_COMPS, timer.elapsed()));
         if(CViewer::getCurrent())
             CViewer::getCurrent()->invokedFromVaa3D(roi);
     }
@@ -236,7 +236,7 @@ void myV3dR_GLWidget::zoomIn(const char* method)
 //fast version (without displaying progress bar) of updateImageData method
 void myV3dR_GLWidget::updateImageDataFast()
 {
-    /**/itm::debug(itm::LEV_MAX, strprintf("title = %s", data_title.toStdString().c_str()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV_MAX, strprintf("title = %s", data_title.toStdString().c_str()).c_str(), __itm__current__function__);
 
     renderer->setupData(_idep);
     static_cast<Renderer_gl1*>(renderer)->loadVol();

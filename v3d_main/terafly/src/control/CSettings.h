@@ -32,8 +32,9 @@
 #include "CPlugin.h"
 #include <vector>
 #include <algorithm>
+#include <map>
 
-class teramanager::CSettings
+class terafly::CSettings
 {
     private:
 
@@ -44,14 +45,14 @@ class teramanager::CSettings
         static CSettings* uniqueInstance;
         CSettings()
         {
-             /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+             /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
             loadDefaultSettings();
             readSettings();
         }
 
         //TeraFly members
-		std::string volumePathLRU;
-        std::list<std::string> volumePathHistory;
+        std::string volumePathLRU;
+        std::list< std::pair<std::string, std::string> > recentImages;    // <path, format> pairs
 		std::string annotationPathLRU;
         int VOIdimV;
         int VOIdimH;
@@ -67,6 +68,9 @@ class teramanager::CSettings
         int annotationVirtualMargin;
         int annotationMarkerSize;
         bool previewMode;
+        int pyramidResamplingFactor;
+        int viewerHeight;
+        int viewerWidth;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -76,6 +80,7 @@ class teramanager::CSettings
         int volumeConverterStacksWidthLRU;
         int volumeConverterStacksHeightLRU;
         int volumeConverterStacksDepthLRU;
+        bool volumeConverterTimeSeries;
 
     public:
 
@@ -94,7 +99,7 @@ class teramanager::CSettings
 
         //GET and SET methods for TeraFly
         std::string getVolumePathLRU(){return volumePathLRU;}
-        std::list<std::string>& getVolumePathHistory(){return volumePathHistory;}
+        std::list< std::pair<std::string, std::string> >& getRecentImages(){return recentImages;}
         std::string getAnnotationPathLRU(){return annotationPathLRU;}
         int getVOIdimV(){return VOIdimV;}
         int getVOIdimH(){return VOIdimH;}
@@ -110,23 +115,27 @@ class teramanager::CSettings
         int getAnnotationVirtualMargin(){return annotationVirtualMargin;}
         int getAnnotationMarkerSize(){return annotationMarkerSize;}
         bool getPreviewMode(){return previewMode;}
+        int getPyramidResamplingFactor(){return pyramidResamplingFactor;}
+        int getViewerHeight(){return viewerHeight;}
+        int getViewerWidth(){return viewerWidth;}
 
         void setVolumePathLRU(std::string _volumePathLRU)
         {
-            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePathLRU = \"%s\"", _volumePathLRU.c_str()).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV_MAX, strprintf("_volumePathLRU = \"%s\"", _volumePathLRU.c_str()).c_str(), __itm__current__function__);
             volumePathLRU = _volumePathLRU;
         }
-        void addVolumePathToHistory(std::string _volumePath)
+        void addRecentImage(std::string path, std::string format)
         {
-            /**/itm::debug(itm::LEV_MAX, strprintf("_volumePath = \"%s\"", _volumePath.c_str()).c_str(), __itm__current__function__);
-
-            if(volumePathHistory.size() > 10)
-                volumePathHistory.pop_front();
-            volumePathHistory.push_back(_volumePath);
-            volumePathHistory.erase(unique(volumePathHistory.begin(), volumePathHistory.end()), volumePathHistory.end());
+            /**/tf::debug(tf::LEV_MAX, strprintf("path = \"%s\", format = \"%s\"", path.c_str(), format.c_str()).c_str(), __itm__current__function__);
+            std::pair<std::string, std::string> newval = std::pair<std::string, std::string>(path, format);
+            if(std::find(recentImages.begin(), recentImages.end(), newval) != recentImages.end())
+                recentImages.erase(std::find(recentImages.begin(), recentImages.end(), newval));
+            if(recentImages.size() > 15)
+                recentImages.pop_back();
+            recentImages.push_front(newval);
         }
-        void clearVolumePathHistory(){
-            volumePathHistory.clear();
+        void clearRecentImages(){
+            recentImages.clear();
             writeSettings();
         }
 
@@ -145,6 +154,9 @@ class teramanager::CSettings
         void setAnnotationVirtualMargin(int newval){annotationVirtualMargin = newval;}
         void setAnnotationMarkerSize(int newval){annotationMarkerSize = newval;}
         void setPreviewMode(bool newval){previewMode = newval;}
+        void setPyramidResamplingFactor(int newval){pyramidResamplingFactor = newval;}
+        void setViewerHeight(int newval){viewerHeight = newval;}
+        void setViewerWidth(int newval){viewerWidth = newval;}
 
         //GET and SET methods for TeraConverter
         std::string getVCInputPath(){return volumeConverterInputPathLRU;}
@@ -154,6 +166,7 @@ class teramanager::CSettings
         int getVCStacksWidth(){return volumeConverterStacksWidthLRU;}
         int getVCStacksHeight(){return volumeConverterStacksHeightLRU;}
         int getVCStacksDepth(){return volumeConverterStacksDepthLRU;}
+        bool getVCTimeSeries(){return volumeConverterTimeSeries;}
         void setVCInputPath(std::string newval){volumeConverterInputPathLRU = newval;}
         void setVCOutputPath(std::string newval){volumeConverterOutputPathLRU = newval;}
         void setVCInputFormat(std::string newval){volumeConverterInputFormatLRU = newval;}
@@ -161,6 +174,7 @@ class teramanager::CSettings
         void setVCStacksWidth(int newval){volumeConverterStacksWidthLRU = newval;}
         void setVCStacksHeight(int newval){volumeConverterStacksHeightLRU = newval;}
         void setVCStacksDepth(int newval){volumeConverterStacksDepthLRU = newval;}
+        void setVCTimeSeries(bool newval){volumeConverterTimeSeries = newval;}
 
         //save and restore application settings
         void writeSettings();

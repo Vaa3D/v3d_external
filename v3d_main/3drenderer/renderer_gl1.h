@@ -67,9 +67,10 @@ enum v3dr_VolSlice { vsSliceNone=0,
 enum v3dr_SurfaceType { stSurfaceNone=0,
 				stImageMarker=1,
 				stLabelSurface=2,
-				stNeuronStructure=3,
-				stPointCloud=4,
-				stPointSet=5,
+				stNeuronSegment=3,
+				stNeuronStructure=4,
+				stPointCloud=5,
+				stPointSet=6,
 				};
 
 //////////////////////////////////////////////////////////////////////////////////////////

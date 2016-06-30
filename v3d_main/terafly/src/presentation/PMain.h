@@ -41,7 +41,7 @@
 #include "QGradientBar.h"
 #include "QGLRefSys.h"
 
-class teramanager::PMain : public QWidget
+class terafly::PMain : public QWidget
 {
     Q_OBJECT
 
@@ -52,7 +52,7 @@ class teramanager::PMain : public QWidget
         * instantiated by calling static method "istance(...)"
         **********************************************************************************/
         static PMain* uniqueInstance;
-        PMain(){    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);   }
+        PMain(){    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);   }
         PMain(V3DPluginCallback2 *callback, QWidget *parent);
 
         //members
@@ -63,9 +63,12 @@ class teramanager::PMain : public QWidget
         QMenuBar* menuBar;              //Menu bar
 
         // "File" menu widgets
-        QMenu* fileMenu;                    //"File" menu
-        QAction* openTeraFlyVolumeAction;   //"Open TeraFly volume" menu action
-        QAction* openHDF5VolumeAction;      //"Open HDF5 volume" menu action
+        QMenu* fileMenu;                        //"File" menu
+        QAction* openTeraFlyVolumeAction;       //"Open TeraFly image" menu action
+        QAction* openHDF5VolumeAction;          //"Open HDF5 image" menu action
+        QMenu*   openUnconvertedVolumeMenu;     //"Open unconverted image" menu
+        QAction* openUnconvertedVolumeFileAction;     //"Browse for file..." action
+        QAction* openUnconvertedVolumeFolderAction;     //"Browse for dir..." action
         QAction* closeVolumeAction;     //"Close volume" menu action
         QAction* loadAnnotationsAction; //"Load annotations" menu action
         QAction* saveAnnotationsAction; //"Save annotations" menu action
@@ -79,6 +82,11 @@ class teramanager::PMain : public QWidget
         QMenu* importOptionsMenu;       //"Import" menu level 2
         QAction *regenMData_cAction;    // if active, metadata will be regenerated
         QAction *regenVMap_cAction;     // if active, volume map is regenerated
+        QMenu* UnconvertedImageMenu;                // "Unconverted Image" menu level 3
+        QMenu* PyramidResamplingFactorMenu;         // "Pyramid Resampling Factor" menu level 4
+        QAction* PyramidResamplingFactorAction2;    // resampling factor = 2
+        QAction* PyramidResamplingFactorAction3;    // resampling factor = 3
+        QAction* PyramidResamplingFactorAction4;    // resampling factor = 4
         // ---- annotation menu level --------------- 2
         QMenu* annotationMenu;          //"Annotation" menu level 2
         // ---- curves menu level ------------------- 3
@@ -170,6 +178,7 @@ class teramanager::PMain : public QWidget
         QTabWidget *tabs;               //tab widget
         //Page "Volume's info": contains informations of the loaded volume
         QWidget* info_page;
+        QLineEdit* vol_format_field;
         QLineEdit* vol_size_field;
         QLineEdit* vol_dims_mm_field;
         QLineEdit* vol_dims_vxl_field;
@@ -317,26 +326,19 @@ class teramanager::PMain : public QWidget
     public slots:
 
         /**********************************************************************************
-        * Called when "Open TeraFly volume" menu action is triggered.
-        * If path is not provided, opens a QFileDialog to select volume's path.
+        * Unified method for all "Open ..." UI actions
         ***********************************************************************************/
-        void openTeraFlyVolume(string path = "");
-
-        /**********************************************************************************
-        * Called when "Open HDF5 volume" menu action is triggered.
-        * If path is not provided, opens a QFileDialog to select volume's path.
-        ***********************************************************************************/
-        void openHDF5Volume(string path = "");
+        void openImage(std::string path = "");
 
         /**********************************************************************************
         * Called when a path in the "Recent volumes" menu is selected.
         ***********************************************************************************/
-        void openVolumeActionTriggered();
+        void openRecentVolume();
 
         /**********************************************************************************
         * Called when "Clear menu" action in "Recent volumes" menu is triggered.
         ***********************************************************************************/
-        void clearRecentVolumesTriggered();
+        void clearRecentVolumes();
 
         /**********************************************************************************
         * Called when "Close volume" menu action is triggered.
@@ -383,13 +385,13 @@ class teramanager::PMain : public QWidget
         * aged in the current thread (ex != 0). Otherwise, volume information are imported
         * in the GUI by the <StackedVolume> handle of <CImport>.
         ***********************************************************************************/
-        void importDone(itm::RuntimeException *ex, qint64 elapsed_time = 0);
+        void importDone(tf::RuntimeException *ex, qint64 elapsed_time = 0);
 		
 		/*********************************************************************************
 		* Separate initialization to allow inherited classes to define their own viewer
 		**********************************************************************************/
-		virtual CViewer * initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
-			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer* _prev);
+        virtual CViewer * initViewer(V3DPluginCallback2* _V3D_env, int _resIndex, tf::uint8* _imgData, int _volV0, int _volV1,
+            int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, tf::CViewer* _prev);
 
         /**********************************************************************************
         * Called when the GUI widgets that control application settings change.
@@ -427,6 +429,11 @@ class teramanager::PMain : public QWidget
         ***********************************************************************************/
         void curveDimsChanged(int dim);
         void curveAspectChanged();
+
+        /**********************************************************************************
+        * Called when the corresponding Options->Import->Unconverted Image->Pyramid resampling factor changed
+        ***********************************************************************************/
+        void pyramidResamplingFactorChanged();
 
         /**********************************************************************************
         * Called when the corresponding Options->3D annotation->Virtual space size actions are triggered

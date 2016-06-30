@@ -12,7 +12,7 @@
 * Vaa3D subclasses needed to access/override protected members/methods
 ***********************************************************************************/
 
-class teramanager::myRenderer_gl1 : public Renderer_gl1
+class terafly::myRenderer_gl1 : public Renderer_gl1
 {
     public:
 
@@ -29,7 +29,7 @@ class teramanager::myRenderer_gl1 : public Renderer_gl1
         static myRenderer_gl1* cast(Renderer* instance){return static_cast<myRenderer_gl1*>(instance);}
 };
 
-class teramanager::myV3dR_GLWidget : public V3dR_GLWidget
+class terafly::myV3dR_GLWidget : public V3dR_GLWidget
 {
     Q_OBJECT
 
@@ -58,7 +58,7 @@ class teramanager::myV3dR_GLWidget : public V3dR_GLWidget
         void setZoomO(float zr);
 };
 
-class teramanager::myV3dR_MainWindow : public V3dR_MainWindow
+class terafly::myV3dR_MainWindow : public V3dR_MainWindow
 {
     public:
 
@@ -70,7 +70,7 @@ class teramanager::myV3dR_MainWindow : public V3dR_MainWindow
         static myV3dR_MainWindow* cast(V3dR_MainWindow* instance){return static_cast<myV3dR_MainWindow*>(instance);}
 };
 
-class teramanager::myImage4DSimple : Image4DSimple
+class terafly::myImage4DSimple : Image4DSimple
 {
     public:
 
@@ -81,22 +81,6 @@ class teramanager::myImage4DSimple : Image4DSimple
         //casting
         //--- note ---: dynamic_cast would be better, but needs too many Vaa3D sources to be included
         static myImage4DSimple* cast(Image4DSimple* instance){return static_cast<myImage4DSimple*>(instance);}
-};
-
-
-struct teramanager::point
-{
-    float x,y,z;
-    point(void) : x(0.0f), y(0.0f), z(0.0f){}
-    point(XYZ &p) : x(p.x), y(p.y), z(p.z){}
-
-    bool operator == (const point &p) const{
-        return p.x == x && p.y == y && p.z == z;
-    }
-
-    bool operator <  (const point &p) const{
-        return p.x < x && p.y < y && p.z < z;
-    }
 };
 
 #endif // V3DSUBCLASSES_H

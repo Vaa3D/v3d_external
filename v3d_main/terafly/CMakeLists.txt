@@ -1,11 +1,15 @@
-# include useful cmake scripts
+set(CMAKE_AUTOMOC ON)
+
 include(cmake/utils.cmake)
+include(cmake/TeraStitcher_Version.cmake)
 
 # enable TeraFly code in Vaa3D
 # add_definitions(-D_ALLOW_TERAFLY_MENU_) # does not work since v3d CMakeLists is at the same level of the current CMakeLists
 
-# enable TeraFly code in iomanager TeraFly's module
+# enable TeraFly code in terarepo/src
 add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
+add_definitions(-DWITH_QT)
+add_definitions(-DENABLE_BDV_HDF5)
 
 
 # disable annoying warnings on MSVC compilers
@@ -32,92 +36,81 @@ if (APPLE)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  if(NOT USE_HDF5)
 	  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include/hdf5-win64")
 	  link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64")
 	  set (HDF5_LIBRARY
 	      "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libhdf5.lib")
-  endif()
+
   set (szip_LIBRARY
       "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libszip.lib")
   set (z_LIBRARY
       "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libzlib.lib")
-endif()
 
+  endif()
 
 
 # add external include directories
-include_directories(../v3d)
-include_directories(../3drenderer)
-include_directories(../basic_c_fun)
-include_directories(../common_lib/include)
-include_directories(../basic_c_fun/customary_structs)
-include_directories(..)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../v3d)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../3drenderer)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../basic_c_fun)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../basic_c_fun/customary_structs)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 include_directories(${Boost_INCLUDE_DIR})
 
 # add internal include directories
-include_directories(./src/presentation)
-include_directories(./src/control)
-include_directories(./src/core/imagemanager)
-include_directories(./src/core/volumeconverter)
-include_directories(./src/core/volumemanager)
-include_directories(./src/core/stitcher)
-include_directories(./src/core/crossmips)
-include_directories(./src/core/tinyxml)
-include_directories(./src/core/iomanager)
-include_directories(./src/core/iomanager/plugins/tiff2D)
-include_directories(./src/core/iomanager/plugins/tiff3D)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/presentation)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/control)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/imagemanager)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/utils/volumeconverter)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D)
 
 # add internal header files
-file(GLOB presentation_h 		./src/presentation/*.h)
-file(GLOB control_h 			./src/control/*.h)
-file(GLOB imagemanager_h 		./src/core/imagemanager/*.h)
-file(GLOB volumeconverter_h 	./src/core/volumeconverter/*.h)
-file(GLOB volumemanager_h 		./src/core/volumemanager/*.h)
-file(GLOB stitcher_h 			./src/core/stitcher/*.h)
-file(GLOB crossmips_h 			./src/core/crossmips/*.h)
-file(GLOB tinyxml_h 			./src/core/tinyxml/*.h)
-file(GLOB iomanager_h 			./src/core/iomanager/*.h)
-file(GLOB plugin_tiff2D_h 		./src/core/iomanager/plugins/tiff2D/*.h)
-file(GLOB plugin_tiff3D_h 		./src/core/iomanager/plugins/tiff3D/*.h)
+file(GLOB presentation_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/*.h)
+file(GLOB control_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/control/*.h)
+file(GLOB imagemanager_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/imagemanager/*.h)
+file(GLOB volumeconverter_h 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/utils/volumeconverter/*.h)
+file(GLOB volumemanager_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager/*.h)
+file(GLOB stitcher_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher/*.h)
+file(GLOB crossmips_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips/*.h)
+file(GLOB tinyxml_h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml/*.h)
+file(GLOB iomanager_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.h)
+file(GLOB plugin_tiff2D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.h)
+file(GLOB plugin_tiff3D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.h)
+file(GLOB common_h 				${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common/*.h)
 
 # add internal source files
-file(GLOB presentation_src 		./src/presentation/*.cpp)
-file(GLOB control_src 			./src/control/*.cpp)
-file(GLOB imagemanager_src 		./src/core/imagemanager/*.cpp)
-file(GLOB volumeconverter_src 	./src/core/volumeconverter/*.cpp)
-file(GLOB volumemanager_src 	./src/core/volumemanager/*.cpp)
-file(GLOB stitcher_src 			./src/core/stitcher/*.cpp)
-file(GLOB crossmips_src 		./src/core/crossmips/*.cpp)
-file(GLOB tinyxml_src 			./src/core/tinyxml/*.cpp)
-file(GLOB iomanager_src 		./src/core/iomanager/*.cpp)
-file(GLOB plugin_tiff2D_src 	./src/core/iomanager/plugins/tiff2D/*.cpp)
-file(GLOB plugin_tiff3D_src 	./src/core/iomanager/plugins/tiff3D/*.cpp)
+file(GLOB presentation_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/*.cpp)
+file(GLOB control_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/control/*.cpp)
+file(GLOB imagemanager_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/imagemanager/*.cpp)
+file(GLOB volumeconverter_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/utils/volumeconverter/*.cpp)
+file(GLOB volumemanager_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager/*.cpp)
+file(GLOB stitcher_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher/*.cpp)
+file(GLOB crossmips_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips/*.cpp)
+file(GLOB tinyxml_src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml/*.cpp)
+file(GLOB iomanager_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.cpp)
+file(GLOB plugin_tiff2D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.cpp)
+file(GLOB plugin_tiff3D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.cpp)
+file(GLOB common_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common/*.cpp)
 
 # look for "Q_OBJECT" in headers to determine which ones to MOC
 message(STATUS "TeraFly: finding header files containing 'Q_OBJECT' macro...")
-file(GLOB TERAFLY_MOC_CANDIDATES
-    src/presentation/*.h
-    src/control/*.h)
-foreach(TERAFLY_MOC_CAND ${TERAFLY_MOC_CANDIDATES})
-    file(READ "${TERAFLY_MOC_CAND}" HEADER_TEXT LIMIT 10000)
-    string(REGEX MATCH "Q_OBJECT" QOB_RESULT ${HEADER_TEXT})
-    if(QOB_RESULT)
-        set(TERAFLY_MOC_FILES ${TERAFLY_MOC_CANDIDATES} ${TERAFLY_MOC_CAND})
-    endif()
-endforeach()
-message(STATUS "TeraFly: finished examining header files")
-
-# MOC
-if(NOT Qt5Core_FOUND)
-  QT4_WRAP_CPP(TERAFLY_MOC_SRCS ${TERAFLY_MOC_FILES})
-else()
-  QT5_WRAP_CPP(TERAFLY_MOC_SRCS ${TERAFLY_MOC_FILES})
-endif()
 
 # create TeraFly lib
 add_library(terafly STATIC
     ${TERAFLY_MOC_SRCS}
+	${stitcher_h}
 	${presentation_src}
 	${control_src}
 	${imagemanager_src}
@@ -129,6 +122,7 @@ add_library(terafly STATIC
 	${stitcher_src}
 	${crossmips_src}
 	${tinyxml_src}
+	${common_src}
 	${presentation_h}
 	${control_h}
 	${imagemanager_h}
@@ -137,9 +131,9 @@ add_library(terafly STATIC
 	${iomanager_h}
 	${plugin_tiff2D_h}
 	${plugin_tiff3D_h}
-	${stitcher_h}
 	${crossmips_h}
 	${tinyxml_h}
+	${common_h}
 )
 
 target_link_libraries(terafly ${HDF5_LIBRARY} ${z_LIBRARY} ${szip_LIBRARY})

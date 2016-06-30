@@ -5,7 +5,7 @@
 
 #include "../control/CPlugin.h"
 
-class teramanager::QHelpBox : public QWidget
+class terafly::QHelpBox : public QWidget
 {
     Q_OBJECT
 

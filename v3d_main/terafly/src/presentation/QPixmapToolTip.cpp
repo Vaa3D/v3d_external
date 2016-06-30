@@ -1,13 +1,13 @@
 #include "QPixmapToolTip.h"
 #include "../control/CImageUtils.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 QPixmapToolTip* QPixmapToolTip::uniqueInstance = 0;
 
 QPixmapToolTip::QPixmapToolTip(QWidget *parent) : QWidget(parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     QFont tinyFont = QApplication::font();
     #ifdef Q_OS_LINUX

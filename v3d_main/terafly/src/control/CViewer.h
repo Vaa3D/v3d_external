@@ -41,7 +41,7 @@
 #include "CImport.h"
 #include "v3d_imaging_para.h"
 
-class teramanager::CViewer : public QWidget
+class terafly::CViewer : public QWidget
 {
     Q_OBJECT
 
@@ -55,7 +55,7 @@ class teramanager::CViewer : public QWidget
         V3dR_MainWindow* window3D;      //the window enclosing <view3DWidget>
         CViewer *next, *prev;   //the next (higher resolution) and previous (lower resolution) <CExplorerWindow> objects
         int volResIndex;                //resolution index of the volume displayed in the current window (see member <volumes> of CImport)
-        itm::uint8* imgData;
+        tf::uint8* imgData;
         int volV0, volV1;               //first and last vertical coordinates of the volume displayed in the current window
         int volH0, volH1;               //first and last horizontal coordinates of the volume displayed in the current window
         int volD0, volD1;               //first and last depth coordinates of the volume displayed in the current window
@@ -77,7 +77,7 @@ class teramanager::CViewer : public QWidget
         int T0_sbox_min, T0_sbox_val;   //to save the state of subvolume spinboxes when the current window is hidden
         int T1_sbox_max, T1_sbox_val;   //to save the state of subvolume spinboxes when the current window is hidden
         int ID;
-        bool waitingFor5D;              //"waiting for 5D data" state flag
+        bool waitingForData;              //"waiting for 5D data" state flag
         QUndoStack undoStack;           //stack containing undo command actions
         int slidingViewerBlockID;
         bool forceZoomIn;
@@ -104,40 +104,13 @@ class teramanager::CViewer : public QWidget
         //inhibiting default constructor
         CViewer();
 
-        /**********************************************************************************
-        * Returns  the  global coordinate  (which starts from 0) in  the given  resolution
-        * volume image space given the local coordinate (which starts from 0) in the current
-        * resolution volume image space. If resIndex is not set, the returned global coord-
-        * inate will be in the highest resolution image space.
-        ***********************************************************************************/
-        // @moved to public section and made inline
-//        int getGlobalVCoord(int localVCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        int getGlobalHCoord(int localHCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        int getGlobalDCoord(int localDCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        float getGlobalVCoord(float localVCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        float getGlobalHCoord(float localHCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-//        float getGlobalDCoord(float localDCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char* src = 0);
-
-        /**********************************************************************************
-        * Returns the local coordinate (which starts from 0) in the current resolution vol-
-        * ume image space given the global coordinate  (which starts from 0) in the highest
-        * resolution volume image space.
-        ***********************************************************************************/
-        // @moved to public section and made inline
-//        int getLocalVCoord(int highestResGlobalVCoord, bool toVaa3Dcoordinates = false);
-//        int getLocalHCoord(int highestResGlobalHCoord, bool toVaa3Dcoordinates = false);
-//        int getLocalDCoord(int highestResGlobalDCoord, bool toVaa3Dcoordinates = false);
-//        float getLocalVCoord(float highestResGlobalVCoord, bool toVaa3Dcoordinates = false);
-//        float getLocalHCoord(float highestResGlobalHCoord, bool toVaa3Dcoordinates = false);
-//        float getLocalDCoord(float highestResGlobalDCoord, bool toVaa3Dcoordinates = false);
-
 
         /**********************************************************************************
         * Returns the most  likely 3D  point in the  image that the user is pointing on the
         * renderer at the given location.
         * This is based on the Vaa3D 3D point selection with one mouse click.
         ***********************************************************************************/
-        XYZ getRenderer3DPoint(int x, int y) throw (itm::RuntimeException);
+        XYZ getRenderer3DPoint(int x, int y) throw (tf::RuntimeException);
 		
 		/**********************************************************************************
 		* Triggers when neuron tree has been edited
@@ -151,18 +124,18 @@ class teramanager::CViewer : public QWidget
 		/************************************************
         * Allow method for overriding new view creation
         *************************************************/
-		virtual CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
+        virtual CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
 			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID);
 
     public:
 
         //CONSTRUCTOR, DECONSTRUCTOR
-        CViewer(V3DPluginCallback2* _V3D_env, int _resIndex, itm::uint8* _imgData, int _volV0, int _volV1,
+        CViewer(V3DPluginCallback2* _V3D_env, int _resIndex, tf::uint8* _imgData, int _volV0, int _volV1,
                         int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer* _prev, int _slidingViewerBlockID = -1);
         ~CViewer();
         static void uninstance()
         {
-            /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+            /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
             while(first){
                 CViewer* p = first->next;
@@ -198,7 +171,7 @@ class teramanager::CViewer : public QWidget
         * Called by the next(prev) <CExplorerWindow>  when the user  zooms out(in) and  the
         * lower(higher) resoolution has to be reestabilished.
         ***********************************************************************************/
-        void restoreViewerFrom(CViewer* source) throw (itm::RuntimeException);
+        void restoreViewerFrom(CViewer* source) throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Generates a new viewer using the given coordinates.
@@ -211,7 +184,6 @@ class teramanager::CViewer : public QWidget
                                                 //or the VOI's ending point (see x0,y0,z0)
             int resolution,                     //resolution index of the view requested
             int t0, int t1,                     //time frames selection
-            bool fromVaa3Dcoordinates = false,  //if coordinates were obtained from Vaa3D
             int dx=-1, int dy=-1, int dz=-1,    //VOI [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz)
             int x0=-1, int y0=-1, int z0=-1,    //VOI [x0, x), [y0, y), [z0, z)
             bool auto_crop = true,              //whether to crop the VOI to the max dims
@@ -224,7 +196,7 @@ class teramanager::CViewer : public QWidget
         * achievable interpolation method. The image currently shown is used as data source.
         * Missing pieces of data are filled with black and returned to the caller.
         ***********************************************************************************/
-        itm::uint8*
+        tf::uint8*
             getVOI(int x0, int x1,              // VOI [x0, x1) in the local reference sys
                    int y0, int y1,              // VOI [y0, y1) in the local reference sys
                    int z0, int z1,              // VOI [z0, z1) in the local reference sys
@@ -236,40 +208,40 @@ class teramanager::CViewer : public QWidget
                    int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
                    int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
                    int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
-        throw (itm::RuntimeException);
+        throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Returns  the  maximum intensity projection  of the given VOI in a newly allocated
         * array. Data is taken from the currently displayed image.
         ***********************************************************************************/
-        itm::uint8*
+        tf::uint8*
             getMIP(int x0, int x1,              // VOI [x0, x1) in the local reference sys
                    int y0, int y1,              // VOI [y0, y1) in the local reference sys
                    int z0, int z1,              // VOI [z0, z1) in the local reference sys
                    int t0 = -1, int t1 = -1,    // VOI [t0, t1] in the local reference sys
-                   itm::direction dir = itm::z,
+                   tf::direction dir = tf::z,
                    bool to_BGRA = false,        //true if mip data must be stored into BGRA format
-                   itm::uint8 alpha = 255)      //alpha transparency used if to_BGRA is true
-        throw (itm::RuntimeException);
+                   tf::uint8 alpha = 255)      //alpha transparency used if to_BGRA is true
+        throw (tf::RuntimeException);
 
 
         /**********************************************************************************
         * Makes the current view the last one by  deleting (and deallocting) its subsequent
         * views.
         ***********************************************************************************/
-        void makeLastView() throw (itm::RuntimeException);
+        void makeLastView() throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Annotations are stored/loaded to/from the <CAnnotations> object
         ***********************************************************************************/
-        virtual void storeAnnotations() throw (itm::RuntimeException);
-        virtual void loadAnnotations() throw (itm::RuntimeException);
-        virtual void clearAnnotations() throw (itm::RuntimeException);
-        void deleteSelectedMarkers() throw (itm::RuntimeException);
-        void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (itm::RuntimeException);
-        void createMarkerAt(int x, int y) throw (itm::RuntimeException);
-		void createMarker2At(int x, int y) throw (itm::RuntimeException);
-		void updateAnnotationSpace() throw (itm::RuntimeException);
+        virtual void storeAnnotations() throw (tf::RuntimeException);
+        virtual void loadAnnotations() throw (tf::RuntimeException);
+        virtual void clearAnnotations() throw (tf::RuntimeException);
+        void deleteSelectedMarkers() throw (tf::RuntimeException);
+        void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (tf::RuntimeException);
+        void createMarkerAt(int x, int y) throw (tf::RuntimeException);
+        void createMarker2At(int x, int y) throw (tf::RuntimeException);
+        void updateAnnotationSpace() throw (tf::RuntimeException);
 
         /**********************************************************************************
         * Saves/restores the state of PMain spinboxes for subvolume selection
@@ -283,10 +255,9 @@ class teramanager::CViewer : public QWidget
         void invokedFromVaa3D(v3d_imaging_paras* params = 0);
 
         /**********************************************************************************
-        * Alignes the given widget to the left(right) of the current window
+        * Alignes the given widget to the right of the current window
         ***********************************************************************************/
-        void alignToLeft(QWidget* widget, QEvent* evt);
-        void alignToRight(QWidget* widget);
+        void alignToRight(QWidget* widget, QEvent* evt);
 
         /**********************************************************************************
         * Overriding position, size and resize QWidget methods
@@ -309,7 +280,7 @@ class teramanager::CViewer : public QWidget
         ***********************************************************************************/
         void setActive(bool active)
         {
-            /**/itm::debug(itm::LEV1, strprintf("title = %s, active = %s", titleShort.c_str() , active ? "true" : "false").c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV1, strprintf("title = %s, active = %s", titleShort.c_str() , active ? "true" : "false").c_str(), __itm__current__function__);
 
             isActive = active;
             if(!isActive)
@@ -317,26 +288,26 @@ class teramanager::CViewer : public QWidget
         }
 
         /**********************************************************************************
-        * Change to "waiting for 5D" state (i.e., when 5D data are to be loaded or are loading)
+        * Change to "waiting" state (i.e., when image data are to be loaded or are loading)
         ***********************************************************************************/
-        void setWaitingFor5D(bool wait, bool pre_wait=false);
+        void setWaitingForData(bool wait, bool pre_wait=false);
 
         /**********************************************************************************
         * Zoom history methods (inline because the are called frequently)
         ***********************************************************************************/
         inline void resetZoomHistory(){
             for(int i=0; i<ZOOM_HISTORY_SIZE; i++)
-                zoomHistory[i] = int_inf;
+                zoomHistory[i] = std::numeric_limits<int>::max();
         }
         inline bool isZoomDerivativePos(){
             for(int i=1; i<ZOOM_HISTORY_SIZE; i++)
-                if(zoomHistory[i-1] == int_inf || zoomHistory[i] <= zoomHistory[i-1])
+                if(zoomHistory[i-1] == std::numeric_limits<int>::max() || zoomHistory[i] <= zoomHistory[i-1])
                     return false;
             return true;
         }
         inline bool isZoomDerivativeNeg(){
             for(int i=1; i<ZOOM_HISTORY_SIZE; i++)
-                if(zoomHistory[i-1] == int_inf || zoomHistory[i] >= zoomHistory[i-1])
+                if(zoomHistory[i-1] == std::numeric_limits<int>::max() || zoomHistory[i] >= zoomHistory[i-1])
                     return false;
             return true;
         }
@@ -380,12 +351,12 @@ class teramanager::CViewer : public QWidget
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/
         virtual void receiveData(
-                itm::uint8* data,                   // data (any dimension)
-                itm::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
-                itm::integer_array data_c,          // data count along X, Y, Z, C, t
+                tf::uint8* data,                   // data (any dimension)
+                tf::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
+                tf::integer_array data_c,          // data count along X, Y, Z, C, t
                 QWidget* dest,                         // address of the listener
                 bool finished,                      // whether the loading operation is terminated
-                itm::RuntimeException* ex = 0,      // exception (optional)
+                tf::RuntimeException* ex = 0,      // exception (optional)
                 qint64 elapsed_time = 0,            // elapsed time (optional)
                 QString op_dsc="",                  // operation descriptor (optional)
                 int step=0);                        // step number (optional)
@@ -429,341 +400,306 @@ class teramanager::CViewer : public QWidget
     public:
 
         /**********************************************************************************
-        * Returns  the  global coordinate  (which starts from 0) in  the given  resolution
-        * volume image space given the local coordinate (which starts from 0) in the current
-        * resolution volume image space. If resIndex is not set, the returned global coord-
-        * inate will be in the highest resolution image space.
+        * utility method: return volume dimension along the given direction
         ***********************************************************************************/
-        inline int getGlobalVCoord(int localVCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char *src =0)
+        inline int dimension(iim::axis dir) throw (tf::RuntimeException)
         {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %d, res = %d, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
-                                                titleShort.c_str(), localVCoord, resIndex,  fromVaa3Dcoordinates ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
-            #endif
-
-            //setting resIndex if it has not been set
-            if(resIndex == -1)
-                resIndex = CImport::instance()->getResolutions()-1;
-
-            //cutting out-of-range coordinate, if <cutOutOfRange> is set
-            if(cutOutOfRange)
-            {
-                localVCoord = localVCoord <  0                                                       ? 0                                                       : localVCoord;
-                localVCoord = localVCoord >= CImport::instance()->getVolume(volResIndex)->getDIM_V() ? CImport::instance()->getVolume(volResIndex)->getDIM_V() : localVCoord;
-            }
-
-            //if the Vaa3D image size limit has been reached along this direction, mapping Vaa3D coordinates to the non-downsampled image space coordinate system
-            if(fromVaa3Dcoordinates && (volV1-volV0 > LIMIT_VOLY))
-                localVCoord = static_cast<int>(localVCoord* ( static_cast<float>(volV1-volV0-1)/(LIMIT_VOLY-1) ) +0.5f);
-
-            //--- Alessandro 29/09/2013: fixing "division by zero" bug in case of volumes with 1 pixel size along the considered direction
-            if(CImport::instance()->getVolume(volResIndex)->getDIM_V() == 1)
-                return 0;
-
-            float ratio = (CImport::instance()->getVolume(resIndex)->getDIM_V()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_V()-1.0f);
-
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %d", titleShort.c_str(), static_cast<int>((volV0+localVCoord)*ratio + 0.5f)).c_str(), __itm__current__function__);
-            #endif
-
-            return (volV0+localVCoord)*ratio + 0.5f;
-        }
-        inline int getGlobalHCoord(int localHCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char *src =0)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %d, res = %d, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
-                                                titleShort.c_str(), localHCoord, resIndex,  fromVaa3Dcoordinates ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
-            #endif
-
-            //setting resIndex if it has not been set
-            if(resIndex == -1)
-                resIndex = CImport::instance()->getResolutions()-1;
-
-            //cutting out-of-range coordinate, if <cutOutOfRange> is set
-            if(cutOutOfRange)
-            {
-                localHCoord = localHCoord <  0                                                       ? 0                                                       : localHCoord;
-                localHCoord = localHCoord >= CImport::instance()->getVolume(volResIndex)->getDIM_H() ? CImport::instance()->getVolume(volResIndex)->getDIM_H() : localHCoord;
-            }
-
-            //if the Vaa3D image size limit has been reached along this direction, mapping Vaa3D coordinates to the non-downsampled image space coordinate system
-            if(fromVaa3Dcoordinates && (volH1-volH0 > LIMIT_VOLX))
-                localHCoord = static_cast<int>(localHCoord* ( static_cast<float>(volH1-volH0-1)/(LIMIT_VOLX-1) ) +0.5f);
-
-            //--- Alessandro 29/09/2013: fixing "division by zero" bug in case of volumes with 1 pixel size along the considered direction
-            if(CImport::instance()->getVolume(volResIndex)->getDIM_H() == 1)
-                return 0;
-
-            float ratio = (CImport::instance()->getVolume(resIndex)->getDIM_H()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_H()-1.0f);
-
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %d", titleShort.c_str(), static_cast<int>((volH0+localHCoord)*ratio + 0.5f)).c_str(), __itm__current__function__);
-            #endif
-
-            return (volH0+localHCoord)*ratio + 0.5f;
-        }
-        inline int getGlobalDCoord(int localDCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char *src =0)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %d, res = %d, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
-                                                titleShort.c_str(), localDCoord, resIndex,  fromVaa3Dcoordinates ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
-            #endif
-
-            //setting resIndex if it has not been set
-            if(resIndex == -1)
-                resIndex = CImport::instance()->getResolutions()-1;
-
-            //cutting out-of-range coordinate, if <cutOutOfRange> is set
-            if(cutOutOfRange)
-            {
-                localDCoord = localDCoord <  0                                                       ? 0                                                       : localDCoord;
-                localDCoord = localDCoord >= CImport::instance()->getVolume(volResIndex)->getDIM_D() ? CImport::instance()->getVolume(volResIndex)->getDIM_D() : localDCoord;
-            }
-
-            //if the Vaa3D image size limit has been reached along this direction, mapping Vaa3D coordinates to the non-downsampled image space coordinate system
-            if(fromVaa3Dcoordinates && (volD1-volD0 > LIMIT_VOLZ))
-                localDCoord = static_cast<int>(localDCoord* ( static_cast<float>(volD1-volD0-1)/(LIMIT_VOLZ-1) ) +0.5f);
-
-            //--- Alessandro 29/09/2013: fixing "division by zero" bug in case of volumes with 1 pixel size along the considered direction
-            if(CImport::instance()->getVolume(volResIndex)->getDIM_D() == 1)
-                return 0;
-
-            float ratio = (CImport::instance()->getVolume(resIndex)->getDIM_D()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_D()-1.0f);
-
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %d", titleShort.c_str(), static_cast<int>((volD0+localDCoord)*ratio + 0.5f)).c_str(), __itm__current__function__);
-            #endif
-
-            return (volD0+localDCoord)*ratio + 0.5f;
-        }
-        inline float getGlobalVCoord(float &localVCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char *src =0)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %.2f, res = %d, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
-                                                titleShort.c_str(), localVCoord, resIndex,  fromVaa3Dcoordinates ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
-            #endif
-
-            //setting resIndex if it has not been set
-            if(resIndex == -1)
-                resIndex = CImport::instance()->getResolutions()-1;
-
-            //cutting out-of-range coordinate, if <cutOutOfRange> is set
-            if(cutOutOfRange)
-            {
-                localVCoord = localVCoord <  0                                                       ? 0                                                       : localVCoord;
-                localVCoord = localVCoord >= CImport::instance()->getVolume(volResIndex)->getDIM_V() ? CImport::instance()->getVolume(volResIndex)->getDIM_V() : localVCoord;
-            }
-
-            //if the Vaa3D image size limit has been reached along this direction, mapping Vaa3D coordinates to the non-downsampled image space coordinate system
-            if(fromVaa3Dcoordinates && (volV1-volV0 > LIMIT_VOLY))
-                localVCoord *= static_cast<float>(volV1-volV0-1)/(LIMIT_VOLY-1);
-
-            //--- Alessandro 29/09/2013: fixing "division by zero" bug in case of volumes with 1 pixel size along the considered direction
-            if(CImport::instance()->getVolume(volResIndex)->getDIM_V() == 1)
-                return 0.0f;
-
-            float ratio = (CImport::instance()->getVolume(resIndex)->getDIM_V()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_V()-1.0f);
-
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %.2f", titleShort.c_str(), (volV0+localVCoord)*ratio).c_str(), __itm__current__function__);
-            #endif
-
-            return (volV0+localVCoord)*ratio;
-        }
-        inline float getGlobalHCoord(float &localHCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char *src =0)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %.2f, res = %d, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
-                                                titleShort.c_str(), localHCoord, resIndex,  fromVaa3Dcoordinates ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
-            #endif
-
-            //setting resIndex if it has not been set
-            if(resIndex == -1)
-                resIndex = CImport::instance()->getResolutions()-1;
-
-            //cutting out-of-range coordinate, if <cutOutOfRange> is set
-            if(cutOutOfRange)
-            {
-                localHCoord = localHCoord <  0                                                       ? 0                                                       : localHCoord;
-                localHCoord = localHCoord >= CImport::instance()->getVolume(volResIndex)->getDIM_H() ? CImport::instance()->getVolume(volResIndex)->getDIM_H() : localHCoord;
-            }
-
-            //if the Vaa3D image size limit has been reached along this direction, mapping Vaa3D coordinates to the non-downsampled image space coordinate system
-            if(fromVaa3Dcoordinates && (volH1-volH0 > LIMIT_VOLX))
-                localHCoord *= static_cast<float>(volH1-volH0-1)/(LIMIT_VOLX-1);
-
-            //--- Alessandro 29/09/2013: fixing "division by zero" bug in case of volumes with 1 pixel size along the considered direction
-            if(CImport::instance()->getVolume(volResIndex)->getDIM_H() == 1)
-                return 0.0f;
-
-            float ratio = (CImport::instance()->getVolume(resIndex)->getDIM_H()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_H()-1.0f);
-
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %.2f", titleShort.c_str(), (volH0+localHCoord)*ratio).c_str(), __itm__current__function__);
-            #endif
-
-            return (volH0+localHCoord)*ratio;
-        }
-        inline float getGlobalDCoord(float &localDCoord, int resIndex = -1, bool fromVaa3Dcoordinates = false, bool cutOutOfRange = false, const char *src =0)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %.2f, res = %d, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
-                                                titleShort.c_str(), localDCoord, resIndex,  fromVaa3Dcoordinates ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
-            #endif
-
-            //setting resIndex if it has not been set
-            if(resIndex == -1)
-                resIndex = CImport::instance()->getResolutions()-1;
-
-            //cutting out-of-range coordinate, if <cutOutOfRange> is set
-            if(cutOutOfRange)
-            {
-                localDCoord = localDCoord <  0                                                       ? 0                                                       : localDCoord;
-                localDCoord = localDCoord >= CImport::instance()->getVolume(volResIndex)->getDIM_D() ? CImport::instance()->getVolume(volResIndex)->getDIM_D() : localDCoord;
-            }
-
-            //if the Vaa3D image size limit has been reached along this direction, mapping Vaa3D coordinates to the non-downsampled image space coordinate system
-            if(fromVaa3Dcoordinates && (volD1-volD0 > LIMIT_VOLZ))
-                localDCoord *= static_cast<float>(volD1-volD0-1)/(LIMIT_VOLZ-1);
-
-            //--- Alessandro 29/09/2013: fixing "division by zero" bug in case of volumes with 1 pixel size along the considered direction
-            if(CImport::instance()->getVolume(volResIndex)->getDIM_D() == 1)
-                return 0.0f;
-
-            float ratio = (CImport::instance()->getVolume(resIndex)->getDIM_D()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_D()-1.0f);
-
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %.2f", titleShort.c_str(), (volD0+localDCoord)*ratio).c_str(), __itm__current__function__);
-            #endif
-
-            return (volD0+localDCoord)*ratio;
+            if(dir == iim::vertical || dir == iim::inv_vertical)
+                return volV1-volV0;
+            else if(dir == iim::horizontal || dir == iim::inv_horizontal)
+                return volH1-volH0;
+            else if(dir == iim::depth || dir == iim::inv_depth)
+                return volD1-volD0;
+            else
+                throw tf::RuntimeException("CViewer::getDIM(): axis invalid");
         }
 
         /**********************************************************************************
-        * Returns the local coordinate (which starts from 0) in the current resolution vol-
-        * ume image space given the global coordinate  (which starts from 0) in the highest
-        * resolution volume image space.
+        * utility method: return current origin coordinate along the given direction
         ***********************************************************************************/
-        inline int getLocalVCoord(int highestResGlobalVCoord, bool toVaa3Dcoordinates  = false)
+        inline int origin(iim::axis dir) throw (tf::RuntimeException)
+        {
+            if(dir == iim::vertical || dir == iim::inv_vertical)
+                return volV0;
+            else if(dir == iim::horizontal || dir == iim::inv_horizontal)
+                return volH0;
+            else if(dir == iim::depth || dir == iim::inv_depth)
+                return volD0;
+            else
+                throw tf::RuntimeException("CViewer::getDIM(): axis invalid");
+        }
+
+        /**********************************************************************************
+        * utility method: return Vaa3D viewer limit along the given direction
+        ***********************************************************************************/
+        template<typename T>
+        T vaa3dLimit(iim::axis dir) throw (tf::RuntimeException)
+        {
+            if(dir == iim::vertical || dir == iim::inv_vertical)
+                return static_cast<T>(LIMIT_VOLY);
+            else if(dir == iim::horizontal || dir == iim::inv_horizontal)
+                return static_cast<T>(LIMIT_VOLX);
+            else if(dir == iim::depth || dir == iim::inv_depth)
+                return static_cast<T>(LIMIT_VOLZ);
+            else
+                throw tf::RuntimeException("CViewer::getDIM(): axis invalid");
+        }
+
+        /**********************************************************************************
+        * Maps local coordinate to the global image space of the selected resolution
+        ***********************************************************************************/
+        template <typename T>
+        inline T coord2global(
+                T local,                        // local coordinate in current image space [0, dim) or in the Vaa3D resampled space [0, LIMIT_VOL)
+                iim::axis dir,                  // direction (x, y or z)
+                bool round,                     // whether to round coordinate to nearest integer
+                int res            = -1,        // resolution index of destination image space (0 = lowest-res, the higher the higher resolution)
+                bool fromVaa3D     = false,     // whether 'local' comes from the Vaa3D resampled space [0, LIMIT_VOL)
+                bool cutOutOfRange = false,     // whether 'local' should be adjusted to fit within the current image space
+                const char *src    = 0)
         {
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
-                                                titleShort.c_str(), highestResGlobalVCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, tf::strprintf("title = %s, local = %s, dir = %d, res = %d, round = %s, fromVaa3D = %s, cutOutOfRange = %s, src = %s",
+                                                titleShort.c_str(), tf::num2str(local).c_str(), dir, res, round ? "true" : "false", fromVaa3D ? "true" : "false", cutOutOfRange ? "true" : "false", src ? src : "unknown").c_str(), __itm__current__function__);
             #endif
 
-            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_V()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_V()-1.0f);
-            int localCoord =  static_cast<int>(highestResGlobalVCoord/ratio - volV0 + 0.5f);
+            // set default res
+            if(res == -1)
+                res = CImport::instance()->getResolutions()-1;
 
-            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
-            if(toVaa3Dcoordinates && (volV1-volV0 > LIMIT_VOLY))
-                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLY-1)/(volV1-volV0-1) ) +0.5f);
+
+            // if required, adjust 'local' to fit within current image space
+            if(cutOutOfRange)
+            {
+                local = local <  0 ? 0 : local;
+                local = local >= CImport::instance()->getVolume(volResIndex)->getDIM(dir) ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : local;
+
+                #ifdef terafly_enable_debug_max_level
+                tf::debug(tf::LEV3, strprintf("cutOutOfRange, local --> %s", tf::num2str(local).c_str()).c_str(), __itm__current__function__);
+                #endif
+            }
+
+            // if required, map 'local' from the resampled Vaa3D image space [0, LIMIT_VOL) to the current image space [0, dim]
+            if(fromVaa3D && (dimension(dir) > vaa3dLimit<T>(dir)))
+            {
+                local = round ? tf::round( local* dimension(dir)/vaa3dLimit<float>(dir) ) : ( local* dimension(dir)/vaa3dLimit<float>(dir) );
+
+                #ifdef terafly_enable_debug_max_level
+                tf::debug(tf::LEV3, strprintf("map 2 Vaa3D, local --> %s", tf::num2str(local).c_str()).c_str(), __itm__current__function__);
+                #endif
+            }
+
+
+            // special case: 2D image
+            if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)
+            {
+                #ifdef terafly_enable_debug_max_level
+                /**/tf::debug(tf::LEV3, strprintf("2D image, return %d",
+                                                    local ? CImport::instance()->getVolume(res)->getDIM(dir) : 0).c_str(), __itm__current__function__);
+                #endif
+
+                return local ? CImport::instance()->getVolume(res)->getDIM(dir) : 0;
+            }
+
+            // special case: boundary coordinate
+            if(local >= CImport::instance()->getVolume(volResIndex)->getDIM(dir))
+            {
+                #ifdef terafly_enable_debug_max_level
+                tf::debug(tf::LEV3, strprintf("boundary coordinate, return %d",
+                                                    CImport::instance()->getVolume(res)->getDIM(dir)).c_str(), __itm__current__function__);
+                #endif
+                return CImport::instance()->getVolume(res)->getDIM(dir);
+            }
+
+            // normal case: scale coordinate
+            float rescale = CImport::instance()->getRescaleFactor(res, volResIndex, dir);
 
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("normal case, rescale = %f, return %s", rescale, tf::num2str(round? tf::round((origin(dir)+local)*rescale) : (origin(dir)+local)*rescale).c_str()).c_str(), __itm__current__function__);
             #endif
 
-            return localCoord;
+            return round? tf::round((origin(dir)+local)*rescale) : (origin(dir)+local)*rescale;
         }
-        inline int getLocalHCoord(int highestResGlobalHCoord, bool toVaa3Dcoordinates  = false)
+
+
+        template <typename T>
+        inline T coord2local(
+                T global,                       // global coordinate in highest-res image space [0, dim)
+                iim::axis dir,                  // direction (x, y or z)
+                bool round,                     // whether to round coordinate to nearest integer
+                bool toVaa3D = false)           // whether local coordinate should be computed in the Vaa3D resampled space [0, LIMIT_VOL)
         {
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
-                                                titleShort.c_str(), highestResGlobalHCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("title = %s, global = %s, toVaa3D = %s",
+                                                titleShort.c_str(), tf::num2str(global).c_str(), toVaa3D ? "true" : "false").c_str(), __itm__current__function__);
             #endif
 
-            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_H()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_H()-1.0f);
-            int localCoord =  static_cast<int>(highestResGlobalHCoord/ratio - volH0 + 0.5f);
+            // special case: boundary coordinate
+            if(global == CImport::instance()->getHighestResVolume()->getDIM(dir))
+            {
+                #ifdef terafly_enable_debug_max_level
+                /**/tf::debug(tf::LEV3, strprintf("boundary coordinate, return %d", CImport::instance()->getVolume(volResIndex)->getDIM(dir)).c_str(), __itm__current__function__);
+                #endif
 
-            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
-            if(toVaa3Dcoordinates && (volH1-volH0 > LIMIT_VOLX))
-                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLX-1)/(volH1-volH0-1) ) +0.5f);
+                return CImport::instance()->getVolume(volResIndex)->getDIM(dir);
+            }
+
+            // special case: 2D image
+            if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)
+            {
+                #ifdef terafly_enable_debug_max_level
+                /**/tf::debug(tf::LEV3, strprintf("2D image, return %d", global ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : 0).c_str(), __itm__current__function__);
+                #endif
+
+                return global ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : 0;
+            }
+
+            // normal case
+            float rescale = CImport::instance()->getRescaleFactor(CImport::instance()->getResolutions()-1, volResIndex, dir);
+            T local =  round ? tf::round(global/rescale - origin(dir)) : global/rescale - origin(dir);
 
             #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+            /**/tf::debug(tf::LEV3, strprintf("rescale = %f, local = %s", rescale, tf::num2str(local).c_str()).c_str(), __itm__current__function__);
             #endif
 
-            return localCoord;
+            // map local coordinate to Vaa3D viewer coordinate
+            if(toVaa3D && (dimension(dir) > vaa3dLimit<T>(dir)))
+            {
+                local = round ? tf::round( local* vaa3dLimit<float>(dir)/dimension(dir) ) : local* vaa3dLimit<float>(dir)/dimension(dir);
+
+                #ifdef terafly_enable_debug_max_level
+                /**/tf::debug(tf::LEV3, strprintf("vaa3d correction, local --> %s", tf::num2str(local).c_str()).c_str(), __itm__current__function__);
+                #endif
+            }
+
+            return local;
         }
-        inline int getLocalDCoord(int highestResGlobalDCoord, bool toVaa3Dcoordinates  = false)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
-                                                titleShort.c_str(), highestResGlobalDCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
-            #endif
 
-            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_D()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_D()-1.0f);
-            int localCoord =  static_cast<int>(highestResGlobalDCoord/ratio - volD0 + 0.5f);
+//        /**********************************************************************************
+//        * Returns the local coordinate (which starts from 0) in the current resolution vol-
+//        * ume image space given the global coordinate  (which starts from 0) in the highest
+//        * resolution volume image space.
+//        ***********************************************************************************/
+//        inline int getLocalVCoord(int highestResGlobalVCoord, bool toVaa3Dcoordinates  = false)
+//        {
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
+//                                                titleShort.c_str(), highestResGlobalVCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+//            #endif
 
-            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
-            if(toVaa3Dcoordinates && (volD1-volD0 > LIMIT_VOLZ))
-                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLZ-1)/(volD1-volD0-1) ) +0.5f);
+//            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_V()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_V()-1.0f);
+//            int localCoord =  static_cast<int>(highestResGlobalVCoord/ratio - volV0 + 0.5f);
 
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
-            #endif
+//            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
+//            if(toVaa3Dcoordinates && (volV1-volV0 > LIMIT_VOLY))
+//                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLY-1)/(volV1-volV0-1) ) +0.5f);
 
-            return localCoord;
-        }
-        inline float getLocalVCoord(float &highestResGlobalVCoord, bool toVaa3Dcoordinates  = false)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
-                                                titleShort.c_str(), highestResGlobalVCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
-            #endif
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            #endif
 
-            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_V()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_V()-1.0f);
-            float localCoord = highestResGlobalVCoord/ratio - volV0;
+//            return localCoord;
+//        }
+//        inline int getLocalHCoord(int highestResGlobalHCoord, bool toVaa3Dcoordinates  = false)
+//        {
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
+//                                                titleShort.c_str(), highestResGlobalHCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+//            #endif
 
-            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
-            if(toVaa3Dcoordinates && (volV1-volV0 > LIMIT_VOLY))
-                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLY-1)/(volV1-volV0-1) );
+//            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_H()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_H()-1.0f);
+//            int localCoord =  static_cast<int>(highestResGlobalHCoord/ratio - volH0 + 0.5f);
 
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
-            #endif
+//            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
+//            if(toVaa3Dcoordinates && (volH1-volH0 > LIMIT_VOLX))
+//                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLX-1)/(volH1-volH0-1) ) +0.5f);
 
-            return localCoord;
-        }
-        inline float getLocalHCoord(float &highestResGlobalHCoord, bool toVaa3Dcoordinates  = false)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
-                                                titleShort.c_str(), highestResGlobalHCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
-            #endif
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            #endif
 
-            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_H()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_H()-1.0f);
-            float localCoord = highestResGlobalHCoord/ratio - volH0;
+//            return localCoord;
+//        }
+//        inline int getLocalDCoord(int highestResGlobalDCoord, bool toVaa3Dcoordinates  = false)
+//        {
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %d, toVaa3Dcoordinates = %s",
+//                                                titleShort.c_str(), highestResGlobalDCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+//            #endif
 
-            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
-            if(toVaa3Dcoordinates && (volH1-volH0 > LIMIT_VOLX))
-                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLX-1)/(volH1-volH0-1) );
+//            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_D()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_D()-1.0f);
+//            int localCoord =  static_cast<int>(highestResGlobalDCoord/ratio - volD0 + 0.5f);
 
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
-            #endif
+//            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
+//            if(toVaa3Dcoordinates && (volD1-volD0 > LIMIT_VOLZ))
+//                localCoord = static_cast<int>(localCoord* ( static_cast<float>(LIMIT_VOLZ-1)/(volD1-volD0-1) ) +0.5f);
 
-            return localCoord;
-        }
-        inline float getLocalDCoord(float &highestResGlobalDCoord, bool toVaa3Dcoordinates  = false)
-        {
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
-                                                titleShort.c_str(), highestResGlobalDCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
-            #endif
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %d", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            #endif
 
-            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_D()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_D()-1.0f);
-            float localCoord = highestResGlobalDCoord/ratio - volD0;
+//            return localCoord;
+//        }
+//        inline float getLocalVCoord(float &highestResGlobalVCoord, bool toVaa3Dcoordinates  = false)
+//        {
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
+//                                                titleShort.c_str(), highestResGlobalVCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+//            #endif
 
-            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
-            if(toVaa3Dcoordinates && (volD1-volD0 > LIMIT_VOLZ))
-                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLZ-1)/(volD1-volD0-1) );
+//            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_V()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_V()-1.0f);
+//            float localCoord = highestResGlobalVCoord/ratio - volV0;
 
-            #ifdef terafly_enable_debug_max_level
-            /**/itm::debug(itm::LEV_MAX, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
-            #endif
+//            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
+//            if(toVaa3Dcoordinates && (volV1-volV0 > LIMIT_VOLY))
+//                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLY-1)/(volV1-volV0-1) );
 
-            return localCoord;
-        }
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            #endif
+
+//            return localCoord;
+//        }
+//        inline float getLocalHCoord(float &highestResGlobalHCoord, bool toVaa3Dcoordinates  = false)
+//        {
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
+//                                                titleShort.c_str(), highestResGlobalHCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+//            #endif
+
+//            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_H()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_H()-1.0f);
+//            float localCoord = highestResGlobalHCoord/ratio - volH0;
+
+//            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
+//            if(toVaa3Dcoordinates && (volH1-volH0 > LIMIT_VOLX))
+//                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLX-1)/(volH1-volH0-1) );
+
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            #endif
+
+//            return localCoord;
+//        }
+//        inline float getLocalDCoord(float &highestResGlobalDCoord, bool toVaa3Dcoordinates  = false)
+//        {
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, coord = %.2f, toVaa3Dcoordinates = %s",
+//                                                titleShort.c_str(), highestResGlobalDCoord, toVaa3Dcoordinates ? "true" : "false").c_str(), __itm__current__function__);
+//            #endif
+
+//            float ratio = (CImport::instance()->getHighestResVolume()->getDIM_D()-1.0f)/(CImport::instance()->getVolume(volResIndex)->getDIM_D()-1.0f);
+//            float localCoord = highestResGlobalDCoord/ratio - volD0;
+
+//            //if the Vaa3D image size limit has been reached along this direction, mapping coordinate to the downsampled image space coordinate system
+//            if(toVaa3Dcoordinates && (volD1-volD0 > LIMIT_VOLZ))
+//                localCoord = localCoord* ( static_cast<float>(LIMIT_VOLZ-1)/(volD1-volD0-1) );
+
+//            #ifdef terafly_enable_debug_max_level
+//            /**/tf::debug(tf::LEV3, strprintf("title = %s, returning %.2f", titleShort.c_str(), localCoord).c_str(), __itm__current__function__);
+//            #endif
+
+//            return localCoord;
+//        }
 };
 
 #endif // CEXPLORERWINDOW_H

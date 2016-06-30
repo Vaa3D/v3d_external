@@ -34,7 +34,7 @@
 
 #include "../control/CPlugin.h"
 
-class teramanager::PDialogImport : public QDialog
+class terafly::PDialogImport : public QDialog
 {
     Q_OBJECT
 

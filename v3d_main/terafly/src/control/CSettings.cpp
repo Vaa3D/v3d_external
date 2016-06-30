@@ -31,14 +31,14 @@
 #include "CSettings.h"
 #include "IM_config.h"
 
-using namespace teramanager;
+using namespace terafly;
 using namespace std;
 
 CSettings* CSettings::uniqueInstance = 0;
 
 void CSettings::uninstance()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     if(uniqueInstance)
     {
@@ -49,14 +49,14 @@ void CSettings::uninstance()
 
 CSettings::~CSettings()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     writeSettings();
 }
 
 void CSettings::loadDefaultSettings()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     //TeraFly settings
     volumePathLRU = "";
@@ -72,6 +72,9 @@ void CSettings::loadDefaultSettings()
     annotationVirtualMargin = 20;
     annotationMarkerSize = 20;
     previewMode = true;
+    pyramidResamplingFactor = 2;
+    viewerHeight = qApp->desktop()->availableGeometry().height();
+    viewerWidth = qApp->desktop()->availableGeometry().width()-380;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -81,11 +84,12 @@ void CSettings::loadDefaultSettings()
     volumeConverterStacksWidthLRU = 256;
     volumeConverterStacksHeightLRU = 256;
     volumeConverterStacksDepthLRU = 256;
+    volumeConverterTimeSeries = false;
 }
 
 void CSettings::writeSettings()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     QSettings settings("ICON", "TeraManager");
     QString volumePathLRU_qstring(volumePathLRU.c_str());
@@ -93,12 +97,15 @@ void CSettings::writeSettings()
     settings.setValue("annotationPathLRU", annotationPathLRU_qstring);
     settings.setValue("volumePathLRU", volumePathLRU_qstring);
 
-    settings.beginWriteArray("volumePathHistory");
-    std::list<string>::iterator it = volumePathHistory.begin();
-    for (size_t i = 0; i < volumePathHistory.size(); ++i, it++) {
-        settings.setArrayIndex(i);
-        QString path(it->c_str());
+    settings.beginWriteArray("recentImages");
+    size_t i = 0;
+    for (std::list< std::pair<std::string, std::string> >::iterator it = recentImages.begin(); it != recentImages.end(); it++)
+    {
+        settings.setArrayIndex(i++);
+        QString path(it->first.c_str());
+        QString format(it->second.c_str());
         settings.setValue("path", path);
+        settings.setValue("format", format);
     }
     settings.endArray();
 
@@ -116,6 +123,10 @@ void CSettings::writeSettings()
     settings.setValue("annotationVirtualMargin", annotationVirtualMargin);
     settings.setValue("annotationMarkerSize", annotationMarkerSize);
     settings.setValue("previewMode", previewMode);
+    settings.setValue("pyramidResamplingFactor", pyramidResamplingFactor);
+    settings.setValue("viewerHeight", viewerHeight);
+    settings.setValue("viewerWidth", viewerWidth);
+
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
     settings.setValue("volumeConverterOutputPathLRU", QString(volumeConverterOutputPathLRU.c_str()));
@@ -124,16 +135,18 @@ void CSettings::writeSettings()
     settings.setValue("volumeConverterStacksWidthLRU", volumeConverterStacksWidthLRU);
     settings.setValue("volumeConverterStacksHeightLRU", volumeConverterStacksHeightLRU);
     settings.setValue("volumeConverterStacksDepthLRU", volumeConverterStacksDepthLRU);
+    settings.setValue("volumeConverterTimeSeries", volumeConverterTimeSeries);
 
 
-    settings.setValue("verbosity", itm::DEBUG);
+
+    settings.setValue("verbosity", tf::DEBUG);
 }
 
 
 
 void CSettings::readSettings()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     QSettings settings("ICON", "TeraManager");
 
@@ -170,13 +183,20 @@ void CSettings::readSettings()
         annotationMarkerSize = settings.value("annotationMarkerSize").toInt();
     if(settings.contains("previewMode"))
         previewMode = settings.value("previewMode").toBool();
+    if(settings.contains("pyramidResamplingFactor"))
+        pyramidResamplingFactor = settings.value("pyramidResamplingFactor").toInt();
+    if(settings.contains("viewerHeight"))
+        viewerHeight = settings.value("viewerHeight").toInt();
+    if(settings.contains("viewerWidth"))
+        viewerWidth = settings.value("viewerWidth").toInt();
 
-    int size = settings.beginReadArray("volumePathHistory");
-    volumePathHistory.clear();
+    int size = settings.beginReadArray("recentImages");
+    recentImages.clear();
     for (int i = 0; i < size; ++i)
     {
         settings.setArrayIndex(i);
-        volumePathHistory.push_back(settings.value("path").toString().toStdString());
+        recentImages.push_back(std::pair<std::string, std::string>(settings.value("path").toString().toStdString(), settings.value("format").toString().toStdString()));
+        //v3d_msg(tf::strprintf("\"%s\", format \"%s\"", recentImages.back().first.c_str(), recentImages.back().second.c_str()).c_str());
     }
     settings.endArray();
 
@@ -195,13 +215,17 @@ void CSettings::readSettings()
         volumeConverterStacksHeightLRU = settings.value("volumeConverterStacksHeightLRU").toInt();
     if(settings.contains("volumeConverterStacksDepthLRU"))
         volumeConverterStacksDepthLRU = settings.value("volumeConverterStacksDepthLRU").toInt();
+    if(settings.contains("volumeConverterTimeSeries"))
+        volumeConverterTimeSeries = settings.value("volumeConverterTimeSeries").toBool();
+
+
 
 //     if(settings.contains("verbosity"))
 //     {
-//         itm::DEBUG = settings.value("verbosity").toInt();
+//         tf::DEBUG = settings.value("verbosity").toInt();
 //         iim::DEBUG = settings.value("verbosity").toInt();
 //     }
 //     else
     iim::DEBUG = iim::NO_DEBUG;
-    itm::DEBUG = itm::NO_DEBUG;
+    tf::DEBUG = tf::NO_DEBUG;
 }

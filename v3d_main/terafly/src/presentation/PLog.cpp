@@ -3,13 +3,13 @@
 #include <fstream>
 #include "PLog.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 PLog* PLog::uniqueInstance = 0;
 
 PLog::PLog(QWidget *parent) : QDialog(parent)
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     setWindowTitle("TeraFly's log");
 
@@ -40,24 +40,24 @@ PLog::PLog(QWidget *parent) : QDialog(parent)
     appendOpComboBox = new QComboBox();
     appendOpComboBox->setEnabled(false);
     appendOpComboBox->addItem("--operation--");
-    appendOpComboBox->addItem(itm::ImportOperation().name().c_str());
-    appendOpComboBox->addItem(itm::NewViewerOperation().name().c_str());
-    appendOpComboBox->addItem(itm::RestoreViewerOperation().name().c_str());
-    appendOpComboBox->addItem(itm::AnnotationOperation().name().c_str());
-    appendOpComboBox->addItem(itm::ZoominRoiOperation().name().c_str());
-    appendOpComboBox->addItem(itm::ConverterLoadBlockOperation().name().c_str());
-    appendOpComboBox->addItem(itm::ConverterWriteBlockOperation().name().c_str());
-    appendOpComboBox->addItem(itm::TiffLoadMetadata().name().c_str());
-    appendOpComboBox->addItem(itm::TiffLoadData().name().c_str());
-    appendOpComboBox->addItem(itm::TiffInitData().name().c_str());
-    appendOpComboBox->addItem(itm::TiffAppendData().name().c_str());
+    appendOpComboBox->addItem(tf::ImportOperation().name().c_str());
+    appendOpComboBox->addItem(tf::NewViewerOperation().name().c_str());
+    appendOpComboBox->addItem(tf::RestoreViewerOperation().name().c_str());
+    appendOpComboBox->addItem(tf::AnnotationOperation().name().c_str());
+    appendOpComboBox->addItem(tf::ZoominRoiOperation().name().c_str());
+    appendOpComboBox->addItem(tf::ConverterLoadBlockOperation().name().c_str());
+    appendOpComboBox->addItem(tf::ConverterWriteBlockOperation().name().c_str());
+    appendOpComboBox->addItem(tf::TiffLoadMetadata().name().c_str());
+    appendOpComboBox->addItem(tf::TiffLoadData().name().c_str());
+    appendOpComboBox->addItem(tf::TiffInitData().name().c_str());
+    appendOpComboBox->addItem(tf::TiffAppendData().name().c_str());
     appendCompComboBox = new QComboBox();
     appendCompComboBox->setEnabled(false);
     appendCompComboBox->addItem("--component--");
-    appendCompComboBox->addItem(itm::comp2str(ALL_COMPS).c_str());
-    appendCompComboBox->addItem(itm::comp2str(GPU).c_str());
-    appendCompComboBox->addItem(itm::comp2str(CPU).c_str());
-    appendCompComboBox->addItem(itm::comp2str(IO).c_str());
+    appendCompComboBox->addItem(tf::comp2str(ALL_COMPS).c_str());
+    appendCompComboBox->addItem(tf::comp2str(GPU).c_str());
+    appendCompComboBox->addItem(tf::comp2str(CPU).c_str());
+    appendCompComboBox->addItem(tf::comp2str(IO).c_str());
     appendToFileLineEdit = new QLineEdit();
     appendToFileLineEdit->setText("[to filepath]");
     appendToFileLineEdit->setEnabled(false);
@@ -153,7 +153,7 @@ float PLog::toFloat(QString timeField)
 //update
 void PLog::update()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     // time components
     float timeIOperc = (timeIO / timeSum) * 100.0f;
@@ -174,7 +174,7 @@ void PLog::update()
     // time operations
     std::string opText;
     // group by operation
-    for(std::map< std::string, std::vector<itm::Operation*> >::iterator it = loggedOperations.begin(); it != loggedOperations.end(); it++)
+    for(std::map< std::string, std::vector<tf::Operation*> >::iterator it = loggedOperations.begin(); it != loggedOperations.end(); it++)
     {
         // group by component
         for(int c=0; c<4; c++)
@@ -225,13 +225,13 @@ void PLog::append(std::string text)
     log->append(QString("@").append(QTime::currentTime().toString()).append(": ").append(text.c_str()));
 }
 
-void PLog::appendOperation(itm::Operation *op, bool update_time_comps /* = true */)
+void PLog::appendOperation(tf::Operation *op, bool update_time_comps /* = true */)
 {
     // add operation to its group vector
     loggedOperations[op->name()].push_back(op);
 
 //    if( op->name().compare(appendOpComboBox->currentText().toStdString()) == 0 &&
-//        op->comp == itm::str2comp(appendCompComboBox->currentText().toStdString()))
+//        op->comp == tf::str2comp(appendCompComboBox->currentText().toStdString()))
 //        printf("[%05d] %s\n", op->milliseconds, op->message.c_str());
 
     // update GUI
@@ -243,13 +243,13 @@ void PLog::appendOperation(itm::Operation *op, bool update_time_comps /* = true 
             // add operation to log
             this->append( std::string("[") + QString::number(op->groupID).toStdString() + "]" + op->name() + "(" + op->compName() + ")( " + QString::number(op->milliseconds/1000.0f, 'f', 3).toStdString() + "s ): " + op->message);
 
-            if(op->comp == itm::IO)
+            if(op->comp == tf::IO)
                 timeIO += op->milliseconds / 1000.0f;
-            else if(op->comp == itm::GPU)
+            else if(op->comp == tf::GPU)
                 timeGPU += op->milliseconds / 1000.0f;
-            else if(op->comp == itm::CPU)
+            else if(op->comp == tf::CPU)
                 timeCPU += op->milliseconds / 1000.0f;
-            else if(op->comp == itm::ALL_COMPS)
+            else if(op->comp == tf::ALL_COMPS)
                 timeActual += op->milliseconds / 1000.0f;
         }
 
@@ -262,7 +262,7 @@ void PLog::appendOperation(itm::Operation *op, bool update_time_comps /* = true 
 
 }
 
-void PLog::appendOperationToFile(itm::Operation* op)
+void PLog::appendOperationToFile(tf::Operation* op)
 {
     // static variables
     static int writings = 0;
@@ -293,11 +293,11 @@ void PLog::appendOperationToFile(itm::Operation* op)
             appendEverySecondsSpinBox->setSuffix(QString(" seconds (x") + QString::number(++writings) + ")");
         }
         else
-            itm::warning(itm::strprintf("Cannot open file at \"%s\" in append mode", appendToFileLineEdit->text().toStdString().c_str()).c_str(), __itm__current__function__);
+            tf::warning(tf::strprintf("Cannot open file at \"%s\" in append mode", appendToFileLineEdit->text().toStdString().c_str()).c_str(), __itm__current__function__);
 
         // clear
         op_times.clear();
-        for(std::map< std::string, std::vector<itm::Operation*> >::iterator it = loggedOperations.begin(); it != loggedOperations.end(); it++)
+        for(std::map< std::string, std::vector<tf::Operation*> >::iterator it = loggedOperations.begin(); it != loggedOperations.end(); it++)
         {
             for(int k=0; k< it->second.size(); k++)
                 delete it->second[k];
@@ -308,14 +308,14 @@ void PLog::appendOperationToFile(itm::Operation* op)
         timer.restart();
     }
     else if(op->name().compare(appendOpComboBox->currentText().toStdString()) == 0 &&
-            op->comp == itm::str2comp(appendCompComboBox->currentText().toStdString()))
+            op->comp == tf::str2comp(appendCompComboBox->currentText().toStdString()))
         op_times.push_back(op->milliseconds);
 }
 
 
 void PLog::reset()
 {
-    /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     timeIO = timeGPU = timeCPU = timeActual = 0.0f;
 
@@ -324,7 +324,7 @@ void PLog::reset()
     log->setText("");
     append(QString("Log started on ").append(QDateTime::currentDateTime().date().toString()).toStdString());
 
-    for(std::map< std::string, std::vector<itm::Operation*> >::iterator it = loggedOperations.begin(); it != loggedOperations.end(); it++)
+    for(std::map< std::string, std::vector<tf::Operation*> >::iterator it = loggedOperations.begin(); it != loggedOperations.end(); it++)
         for(int k=0; k< it->second.size(); k++)
             delete it->second[k];
     loggedOperations.clear();
@@ -344,7 +344,7 @@ void PLog::emitSendAppend(void* op)
 ***********************************************************************************/
 void PLog::appendOperationVoid(void* op)
 {
-    appendOperation((itm::Operation*)(op), false);
+    appendOperation((tf::Operation*)(op), false);
 }
 
 /**********************************************************************************

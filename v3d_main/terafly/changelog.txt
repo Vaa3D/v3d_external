@@ -11,6 +11,137 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.211 / TeraFly version 2.2.0
+June 25th, 2016
+--------------------------------------------------------------------------------------------
+- Fix: fixed super-slow visualization of huge 2D tiff series
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.21 / TeraFly version 2.1.60
+May 31st, 2016
+--------------------------------------------------------------------------------------------
+- Fix: fixed missing hidden neuron segments.
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.149 / TeraFly version 2.1.59
+April 20th, 2016
+--------------------------------------------------------------------------------------------
+- Fix: fixed bug which caused TIFF plugin error when TeraFly-ing Vaa3D raw color images.
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.148 / TeraFly version 2.1.58
+April 18th, 2016
+--------------------------------------------------------------------------------------------
+- Opt: made "Time series of" checkbox state persistent in TeraConverter
+- Fix: fixed TeraConverter bug which prevented folder selection when selectin "Time series"
+       of "TIFF (3D)"
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.147 / TeraFly version 2.1.57
+April 12th, 2016
+--------------------------------------------------------------------------------------------
+- Fix: fixed TeraConverter crash when converting from 3D to 2D formats
+- Fix: fixed non-persistent output format in TeraConverter
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.146 / TeraFly version 2.1.56
+March 25th, 2016
+--------------------------------------------------------------------------------------------
+- New: added support to 16 bit tiff images (2D series or 2/3D tiled)
+- New: added support to single TIF files for Unconverted Volume (still 8 bit)
+- Fix: fixed bug which caused corrupted metadata with non correctly imported unconverted
+       volumes
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.145 / TeraFly version 2.1.55
+March 21st, 2016
+--------------------------------------------------------------------------------------------
+- Dev: further development of Virtual Pyramid cache.
+- New: persistent viewer dimensions. 
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.144 / TeraFly version 2.1.54
+March 19th, 2016
+--------------------------------------------------------------------------------------------
+- Dev: slitghly redesign of Virtual Pyramid for Unconverted Image
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.143 / TeraFly version 2.1.53
+March 17th, 2016
+--------------------------------------------------------------------------------------------
+- New: added persistent metadata for Unconverted Volume.
+- Dev: redesigned coordinate mapping functions.
+- Fix: fixed various bugs related to coordinate mapping and resolution jumps.
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.142 / TeraFly version 2.1.52
+March 15th, 2016
+--------------------------------------------------------------------------------------------
+- New: added submodule version number in TeraFly > About menu.
+- Fix: fixed bug when opening a series of 2D tiffs as "Unconverted image" in TeraFly
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.141 / TeraFly version 2.1.51
+March 14th, 2016
+--------------------------------------------------------------------------------------------
+- Dev: work in progress on the caching functionality for Unconverted Image format.
+- Fix: removed C++11-based code which caused compilation issues on some gcc compilers.
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.14 / TeraFly version 2.1.5
+March 13th, 2016
+--------------------------------------------------------------------------------------------
+- New: "Open unconverted image" feature 100% supported. A virtual pyramid image is generated
+       according to the user-selectable resampling factor (menu Options > Import > Unconver-
+       ted Image > Pyramid Resampling Factor).
+       To see image data, one should zoom-in to the highest resolution. 
+       @TODO: already viewed data will be cached and back-propagated throughout the pyramid
+- New: GUI changes color (currently, to yellow) while waiting for image data to be loaded
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.134 / TeraFly version 2.1.44
+March 10th, 2016
+--------------------------------------------------------------------------------------------
+- Dev: new, more robust import code
+- Fix: fixed automated format discovery for file-based formats, now based on file extension
+- Fix: fixed compilation issue on Linux (ambiguous uint8/uint32)
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.133 / TeraFly version 2.1.43
+March 10th, 2016
+--------------------------------------------------------------------------------------------
+- GUI: added "Open unconverted image" menu action (still to be implemented)
+- GUI: new icons for "Open ..." menu actions
+- Fix: fixed compilation issue caused by duplicated "swap2bytes" and "swap4bytes" functions
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.132 / TeraFly version 2.1.42
+March 8th, 2016
+--------------------------------------------------------------------------------------------
+- Fix: re-enabled BDV-HDF5 extension
+--------------------------------------------------------------------------------------------
+
+
+Vaa3D v3.131 / TeraFly version 2.1.41
+March 8th, 2016
+--------------------------------------------------------------------------------------------
+- Dev: added TeraStitcher submodule
+--------------------------------------------------------------------------------------------
+
 Vaa3D v3.113 / TeraFly version 2.1.4
 December 12th, 2015
 --------------------------------------------------------------------------------------------

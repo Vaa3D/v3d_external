@@ -33,9 +33,9 @@
 #include <string>
 #include "CPlugin.h"
 #include "../presentation/PConverter.h"
-#include "../core/volumeconverter/VolumeConverter.h"
+#include "VolumeConverter.h"
 
-class teramanager::CConverter : public QThread
+class terafly::CConverter : public QThread
 {
     Q_OBJECT
 
@@ -47,9 +47,9 @@ class teramanager::CConverter : public QThread
         **********************************************************************************/
         static CConverter* uniqueInstance;
         CConverter() : QThread(), inVolPath(undefined_str), inVolFormat(undefined_str), inFileMode(false), conversionMode(false), resolutions(0),
-            resolutionsSize(0), stacksWidth(undefined_int32), stacksHeight(undefined_int32), outVolPath(undefined_str), outVolFormat(undefined_str), vc(0)
+            resolutionsSize(0), stacksWidth(-1), stacksHeight(-1), outVolPath(undefined_str), outVolFormat(undefined_str), vc(0)
         {
-            /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+            /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
         }
 
         //automatically called when current thread is started
@@ -108,9 +108,9 @@ class teramanager::CConverter : public QThread
             conversionMode = false;
             resolutions = 0;
             resolutionsSize = 0;
-            stacksWidth  = undefined_int32;
-            stacksHeight = undefined_int32;
-            stacksDepth = undefined_int32;
+            stacksWidth  = -1;
+            stacksHeight = -1;
+            stacksDepth = -1;
             outVolPath = undefined_str;
             outVolFormat = undefined_str;
             inFileMode = false;
@@ -124,7 +124,7 @@ class teramanager::CConverter : public QThread
         /*********************************************************************************
         * Carries the outcome of the operation associated to this thread.
         **********************************************************************************/
-        void sendOperationOutcome(itm::RuntimeException* ex);
+        void sendOperationOutcome(tf::RuntimeException* ex);
 };
 
 #endif // CCONVERTER_H

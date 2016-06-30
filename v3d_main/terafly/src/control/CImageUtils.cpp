@@ -1,23 +1,23 @@
 #include "CImageUtils.h"
 
-using namespace teramanager;
+using namespace terafly;
 
 /**********************************************************************************
 * Copies the given VOI from "src" to "dst". Offsets and scaling are supported.
 ***********************************************************************************/
 void
     CImageUtils::copyVOI(
-        itm::uint8 const * src,     //pointer to const data source
+        tf::uint8 const * src,     //pointer to const data source
         uint src_dims[5],           //dimensions of "src" along X, Y, Z, channels and T
         uint src_offset[5],         //VOI's offset along X, Y, Z, <empty> and T
         uint src_count[5],          //VOI's dimensions along X, Y, Z, <empty> and T
-        itm::uint8* dst,            //pointer to data destination
+        tf::uint8* dst,            //pointer to data destination
         uint dst_dims[5],           //dimensions of "dst" along X, Y, Z, channels and T
         uint dst_offset[5],         //offset of "dst" along X, Y, Z, <empty> and T
         uint scaling /*= 1 */)      //scaling factor (integer only)
 throw (RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("src_dims = (%d x %d x %d x %d x %d), src_offset = (%d, %d, %d, %d, %d), src_count = (%d, %d, %d, %d, %d), dst_dims = (%d x %d x %d x %d x %d), dst_offset = (%d, %d, %d, %d, %d), scaling = %d",
+    /**/tf::debug(tf::LEV1, strprintf("src_dims = (%d x %d x %d x %d x %d), src_offset = (%d, %d, %d, %d, %d), src_count = (%d, %d, %d, %d, %d), dst_dims = (%d x %d x %d x %d x %d), dst_offset = (%d, %d, %d, %d, %d), scaling = %d",
                                         src_dims[0], src_dims[1],src_dims[2],src_dims[3],src_dims[4], src_offset[0],src_offset[1],src_offset[2],src_offset[3], src_offset[4],src_count[0],src_count[1],src_count[2],src_count[3], src_count[4],
                                         dst_dims[0], dst_dims[1],dst_dims[2],dst_dims[3],dst_dims[4], dst_offset[0],dst_offset[1],dst_offset[2],dst_offset[3], dst_offset[4],scaling).c_str(), __itm__current__function__);
 
@@ -27,11 +27,11 @@ throw (RuntimeException)
 
     //cheking preconditions
     if(src_dims[3] != dst_dims[3])
-        throw itm::RuntimeException(itm::strprintf("Can't copy VOI to destination image: source has %d channels, destination has %d", src_dims[3], dst_dims[3]).c_str());
+        throw tf::RuntimeException(tf::strprintf("Can't copy VOI to destination image: source has %d channels, destination has %d", src_dims[3], dst_dims[3]).c_str());
     for(int d=0; d<3; d++)
     {
         if(src_offset[d] + src_count[d] > src_dims[d])
-            throw itm::RuntimeException(itm::strprintf("Can't copy VOI to destination image: VOI [%u, %u) exceeds image size (%u) along axis %d", src_offset[d], src_offset[d] + src_count[d], src_dims[d], d).c_str());
+            throw tf::RuntimeException(tf::strprintf("Can't copy VOI to destination image: VOI [%u, %u) exceeds image size (%u) along axis %d", src_offset[d], src_offset[d] + src_count[d], src_dims[d], d).c_str());
         if(dst_offset[d] + src_count[d]*scaling > dst_dims[d])
         {
             //cutting copiable VOI to the largest one that can be stored into the destination image
@@ -39,14 +39,14 @@ throw (RuntimeException)
             src_count[d] = (dst_dims[d] - dst_offset[d]) / scaling; //it's ok to approximate this calculation to the floor.
 
 
-            itm::warning(strprintf("--------------------- teramanager plugin [thread *] !! WARNING in copyVOI !! VOI exceeded destination dimension along axis %d, then cutting VOI from %d to %d\n",
+            tf::warning(strprintf("--------------------- teramanager plugin [thread *] !! WARNING in copyVOI !! VOI exceeded destination dimension along axis %d, then cutting VOI from %d to %d\n",
                    d, old, src_count[d]).c_str());
         }
     }
     if(src_offset[4] + src_count[4] > src_dims[4])
-        throw itm::RuntimeException(itm::strprintf("Can't copy VOI to destination image: VOI [%u, %u) exceeds source image size (%u) along T axis", src_offset[4], src_offset[4] + src_count[4], src_dims[4]).c_str());
+        throw tf::RuntimeException(tf::strprintf("Can't copy VOI to destination image: VOI [%u, %u) exceeds source image size (%u) along T axis", src_offset[4], src_offset[4] + src_count[4], src_dims[4]).c_str());
     if(dst_offset[4] + src_count[4] > dst_dims[4])
-        throw itm::RuntimeException(itm::strprintf("Can't copy VOI to destination image: VOI [%u, %u) exceeds destination image size (%u) along T axis", dst_offset[4], dst_offset[4] + src_count[4], dst_dims[4]).c_str());
+        throw tf::RuntimeException(tf::strprintf("Can't copy VOI to destination image: VOI [%u, %u) exceeds destination image size (%u) along T axis", dst_offset[4], dst_offset[4] + src_count[4], dst_dims[4]).c_str());
 
 
     //quick version (with precomputed offsets, strides and counts: "1" for "dst", "2" for "src")
@@ -106,23 +106,23 @@ throw (RuntimeException)
                 }
              }
 
-    /**/itm::debug(itm::LEV3, "copy VOI finished",  __itm__current__function__);
+    /**/tf::debug(tf::LEV3, "copy VOI finished",  __itm__current__function__);
 }
 
 /**********************************************************************************
 * Returns the Maximum Intensity Projection of the given ROI in a newly allocated array.
 ***********************************************************************************/
-itm::uint8*
-    CImageUtils::mip(itm::uint8 const * src,    //pointer to const data source
+tf::uint8*
+    CImageUtils::mip(tf::uint8 const * src,    //pointer to const data source
                         uint src_dims[5],       //dimensions of "src" along X, Y, Z, channels and T
                         uint src_offset[5],     //VOI's offset along X, Y, Z, <empty> and T
                         uint src_count[5],      //VOI's dimensions along X, Y, Z, <empty> and T
-                        itm::direction dir,     //direction of projection
+                        tf::direction dir,     //direction of projection
                         bool to_BGRA /*=false*/,//true if mip data must be stored into BGRA format
-                        itm::uint8 alpha /* = 255 */)//alpha transparency (used if to_BGRA = true)
-   throw (itm::RuntimeException)
+                        tf::uint8 alpha /* = 255 */)//alpha transparency (used if to_BGRA = true)
+   throw (tf::RuntimeException)
 {
-    /**/itm::debug(itm::LEV1, strprintf("src_dims = (%u x %u x %u x %u x %u), src_offset = (%u, %u, %u, %u, %u), src_count = (%u, %u, %u, %u, %u), "
+    /**/tf::debug(tf::LEV1, strprintf("src_dims = (%u x %u x %u x %u x %u), src_offset = (%u, %u, %u, %u, %u), src_count = (%u, %u, %u, %u, %u), "
                                         "direction = %d, to_BGRA = %s, alpha = %d",
                                         src_dims[0], src_dims[1],src_dims[2],src_dims[3],src_dims[4], src_offset[0],src_offset[1],src_offset[2],src_offset[3],
                                         src_offset[4],src_count[0],src_count[1],src_count[2],src_count[3], src_count[4], dir,
@@ -131,17 +131,17 @@ itm::uint8*
 
     // precondition checks
     if(src_count[4] != 1)
-        throw itm::RuntimeException("Maximum Intensity Projection is not supported on 5D data yet.");
+        throw tf::RuntimeException("Maximum Intensity Projection is not supported on 5D data yet.");
     if(src_dims[3] > 3)
-        throw itm::RuntimeException("Maximum Intensity Projection is not supported on real 4D data yet.");
-    if(dir != itm::z)
-        throw itm::RuntimeException("Maximum Intensity Projection is supported along Z only.");
+        throw tf::RuntimeException("Maximum Intensity Projection is not supported on real 4D data yet.");
+    if(dir != tf::z)
+        throw tf::RuntimeException("Maximum Intensity Projection is supported along Z only.");
     for(int d=0; d<5; d++)
     {
         if(d != 3 && (src_offset[d] + src_count[d] > src_dims[d]))
-            throw itm::RuntimeException(itm::strprintf("Can't compute MIP from the selected VOI: VOI [%u, %u) exceeds image size (%u) along axis %d.", src_offset[d], src_offset[d] + src_count[d], src_dims[d], d).c_str());
+            throw tf::RuntimeException(tf::strprintf("Can't compute MIP from the selected VOI: VOI [%u, %u) exceeds image size (%u) along axis %d.", src_offset[d], src_offset[d] + src_count[d], src_dims[d], d).c_str());
         else if(d != 3 && src_offset[d] >= src_dims[d])
-            throw itm::RuntimeException(itm::strprintf("Can't compute MIP from the selected VOI: invalid offset (%u) compared to image size (%u) along axis %d.", src_offset[d], src_dims[d], d).c_str());
+            throw tf::RuntimeException(tf::strprintf("Can't compute MIP from the selected VOI: invalid offset (%u) compared to image size (%u) along axis %d.", src_offset[d], src_dims[d], d).c_str());
     }
 
     // source strides
@@ -249,17 +249,17 @@ itm::uint8*
 
 void CImageUtils::applyVaa3DColorMap(QImage& image, RGBA8 cmap[4][256])
 {
-    /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     if(image.isNull())
     {
-        itm::warning("image is empty", __itm__current__function__);
+        tf::warning("image is empty", __itm__current__function__);
         return;
     }
 
     if(image.format() != QImage::Format_ARGB32)
     {
-        itm::warning("unsupported format, cannot apply the given color map", __itm__current__function__);
+        tf::warning("unsupported format, cannot apply the given color map", __itm__current__function__);
         return;
     }
 
@@ -358,29 +358,29 @@ Image4DSimple* CImageUtils::interpolateLinear(
     Image4DSimple* im2,         // second image
     int i,                      // step  index
     int N)                      // steps number
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
     // checks
     if(!im1 || !im1->getRawData())
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): invalid 1st image data");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): invalid 1st image data");
     if(!im2 || !im2->getRawData())
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): invalid 2nd image data");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): invalid 2nd image data");
     if(im1->getXDim() != im2->getXDim())
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in X dimensions");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in X dimensions");
     if(im1->getYDim() != im2->getYDim())
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in Y dimensions");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in Y dimensions");
     if(im1->getZDim() != im2->getZDim())
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in Z dimensions");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in Z dimensions");
     if(im1->getCDim() != im2->getCDim())
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in channel dimensions");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): the two images differ in channel dimensions");
     if(im1->getTDim() > 1)
-        throw itm::RuntimeException(itm::strprintf("in CImageUtils::interpolate_linear(): 1st image has TDim = %d (5D not supported)", im1->getTDim()));
+        throw tf::RuntimeException(tf::strprintf("in CImageUtils::interpolate_linear(): 1st image has TDim = %d (5D not supported)", im1->getTDim()));
     if(im2->getTDim() > 1)
-        throw itm::RuntimeException(itm::strprintf("in CImageUtils::interpolate_linear(): 2nd image has TDim = %d (5D not supported)", im2->getTDim()));
+        throw tf::RuntimeException(tf::strprintf("in CImageUtils::interpolate_linear(): 2nd image has TDim = %d (5D not supported)", im2->getTDim()));
     if(im1->getDatatype() != V3D_UINT8)
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): 1st image is not UINT8 (not supported)");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): 1st image is not UINT8 (not supported)");
     if(im2->getDatatype() != V3D_UINT8)
-        throw itm::RuntimeException("in CImageUtils::interpolate_linear(): 2nd image is not UINT8 (not supported)");
+        throw tf::RuntimeException("in CImageUtils::interpolate_linear(): 2nd image is not UINT8 (not supported)");
 
     // allocate new image
     Image4DSimple* imout = new Image4DSimple();
@@ -399,7 +399,7 @@ throw (itm::RuntimeException)
     unsigned char* data1 = im1->getRawData();
     unsigned char* data2 = im2->getRawData();
     for(V3DLONG k=0; k<data_size; k++)
-        data[k] = itm::linear<unsigned char>(data1[k], data2[k], i, N);
+        data[k] = tf::linear<unsigned char>(data1[k], data2[k], i, N);
 
     return imout;
 }
@@ -410,13 +410,13 @@ throw (itm::RuntimeException)
 Image4DSimple* CImageUtils::addGaussianNoise(
         Image4DSimple* im,      // input image
         float w)                // gaussian noise weight (1 = only noise, 0 = no noise)
-throw (itm::RuntimeException)
+throw (tf::RuntimeException)
 {
     // checks
     if(!im || !im->getRawData())
-        throw itm::RuntimeException("in CImageUtils::addGaussianNoise(): invalid image data");
+        throw tf::RuntimeException("in CImageUtils::addGaussianNoise(): invalid image data");
     if(im->getTDim() > 1)
-        throw itm::RuntimeException(itm::strprintf("in CImageUtils::addGaussianNoise(): image has TDim = %d (5D not supported)", im->getTDim()));
+        throw tf::RuntimeException(tf::strprintf("in CImageUtils::addGaussianNoise(): image has TDim = %d (5D not supported)", im->getTDim()));
 
     // allocate new image
     Image4DSimple* imout = new Image4DSimple();
@@ -435,16 +435,16 @@ throw (itm::RuntimeException)
     {
         unsigned char* data_in = im->getRawData();
         for(V3DLONG k=0; k<data_size; k++)
-            data[k] = static_cast<itm::uint8>((1-w)*data_in[k] + w*(rand()%256) +0.5f);
+            data[k] = static_cast<tf::uint8>((1-w)*data_in[k] + w*(rand()%256) +0.5f);
     }
     else if(imout->getDatatype() == V3D_UINT16)
     {
         unsigned short* data_in = (unsigned short*)(im->getRawData());
         for(V3DLONG k=0; k<data_size/2; k++)
-            data[k] = static_cast<itm::uint16>((1-w)*data_in[k] + w*(rand()%65535) +0.5f);
+            data[k] = static_cast<tf::uint16>((1-w)*data_in[k] + w*(rand()%65535) +0.5f);
     }
     else
-        throw itm::RuntimeException("in CImageUtils::addGaussianNoise(): image is neither UINT8 nor UINT16 (not supported)");
+        throw tf::RuntimeException("in CImageUtils::addGaussianNoise(): image is neither UINT8 nor UINT16 (not supported)");
 
     return imout;
 }
@@ -463,7 +463,7 @@ namespace
 }
 
 // convert HSL to RGB. H, S, and L should be in [0.0,1.0]
-RGBA8 itm::CImageUtils::hsl2rgb(float h, float s, float l)
+RGBA8 tf::CImageUtils::hsl2rgb(float h, float s, float l)
 {
     float r=0, g=0, b=0;
 
@@ -532,7 +532,7 @@ namespace
     }
 }
 // get n distinct colors
-std::vector<RGBA8> itm::CImageUtils::distinctColors(int n)
+std::vector<RGBA8> tf::CImageUtils::distinctColors(int n)
 {
     std::vector<RGBA8> colors;
     if (n < 2)

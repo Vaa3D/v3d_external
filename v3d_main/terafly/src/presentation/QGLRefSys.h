@@ -4,7 +4,7 @@
 #include <QGLWidget>
 #include "../control/CPlugin.h"
 
-class teramanager::QGLRefSys : public QGLWidget
+class terafly::QGLRefSys : public QGLWidget
 {
     Q_OBJECT
 

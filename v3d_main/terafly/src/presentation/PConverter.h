@@ -34,7 +34,7 @@
 #include "../control/CPlugin.h"
 #include "QHelpBox.h"
 
-class teramanager::PConverter : public QWidget
+class terafly::PConverter : public QWidget
 {
     Q_OBJECT
 
@@ -124,13 +124,6 @@ class teramanager::PConverter : public QWidget
         //overrides closeEvent method of QWidget
         void closeEvent(QCloseEvent *evt);
 
-        /**********************************************************************************
-        * Called by algorithms running from different threads.
-        * Emits <sendProgressBarChanged> signal
-        ***********************************************************************************/
-        void emitProgressBarChanged(int val, int minutes, int seconds, const char* message = 0)
-        {emit sendProgressBarChanged(val, minutes, seconds, message);}
-
     public slots:
 
         void startButtonClicked();
@@ -145,14 +138,14 @@ class teramanager::PConverter : public QWidget
         /**********************************************************************************
         * <sendProgressBarChanged> event handler
         ***********************************************************************************/
-        void progressBarChanged(int val, int minutes, int seconds, const char* message);
+        void progressBarChanged(int val, int minutes, int seconds, std::string message);
 
         /**********************************************************************************
         * Called by <CConverter> when the associated operation has been performed.
         * If an exception has occurred in the <CConverter> thread, it is propagated and
         * managed in the current thread (ex != 0).
         ***********************************************************************************/
-        void operationDone(itm::RuntimeException *ex);
+        void operationDone(tf::RuntimeException *ex);
 
         /**********************************************************************************
         * Called when the GUI widgets that control application settings change.
@@ -168,10 +161,6 @@ class teramanager::PConverter : public QWidget
 
     signals:
 
-        /*********************************************************************************
-        * Carries progress bar informations (progress percentage and remaining minutes).
-        **********************************************************************************/
-        void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 };
 
 #endif // PCONVETER_GUI_H

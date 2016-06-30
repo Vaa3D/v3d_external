@@ -1321,8 +1321,8 @@ void V3dR_GLWidget::updateTool()
 
 	if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
 	{
-		//int i = surfaceDlg->getCurTab();
-		surfaceDlg->linkTo(this);
+        //int i = surfaceDlg->getCurTab();
+        surfaceDlg->linkTo(this);
         surfaceDlg->setCurTab(-1);  //-1 = last tab
 	}
 	if (colormapDlg && !(colormapDlg->isHidden()) ) //081219
@@ -2297,10 +2297,11 @@ int V3dR_GLWidget::getLocalStartPosX()
 
 int V3dR_GLWidget::getLocalStartPosY()
 {
-    if (_idep)
-        return _idep->local_start.z;
-    else
+    if (_idep){
+        return _idep->local_start.y;
+    }else{
         return -1;
+    }
 }
 
 int V3dR_GLWidget::getLocalStartPosZ()

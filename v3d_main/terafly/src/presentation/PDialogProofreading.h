@@ -6,7 +6,7 @@
 #include "../control/CPlugin.h"
 #include "PMain.h"
 
-class teramanager::PDialogProofreading : public QWidget
+class terafly::PDialogProofreading : public QWidget
 {
     Q_OBJECT
 
@@ -17,9 +17,9 @@ class teramanager::PDialogProofreading : public QWidget
         * instantiated by calling static method "istance(...)"
         **********************************************************************************/
         static PDialogProofreading* uniqueInstance;
-        PDialogProofreading(itm::PMain *_parent);
+        PDialogProofreading(tf::PMain *_parent);
 
-        itm::PMain  *parent;
+        tf::PMain  *parent;
         QComboBox*   resolution_cbox;   // combobox "Resolution"
         QComboBox*   scan_method_cbox;  // combobox "Scan pattern"
         QSpinBox*    overlap_sbox;      // spinbox "Blocks overlap"
@@ -45,7 +45,7 @@ class teramanager::PDialogProofreading : public QWidget
         static PDialogProofreading* instance()
         {
             if (uniqueInstance == 0)
-                uniqueInstance = new PDialogProofreading(itm::PMain::getInstance());
+                uniqueInstance = new PDialogProofreading(tf::PMain::getInstance());
             return uniqueInstance;
         }
         static bool isActive(){
@@ -61,7 +61,7 @@ class teramanager::PDialogProofreading : public QWidget
         // overrides closeEvent method of QWidget
         void closeEvent(QCloseEvent *evt);
 
-        static std::vector<itm::block_t> blocks;   // permanently stores the array of blocks
+        static std::vector<tf::block_t> blocks;   // permanently stores the array of blocks
         static int blocks_res;                     // permanently stores blocks resolution
 
     signals:

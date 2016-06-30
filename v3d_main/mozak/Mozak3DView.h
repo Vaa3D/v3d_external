@@ -52,7 +52,7 @@ struct mozak::CViewInfo
 	}
 };
 
-class mozak::Mozak3DView : protected teramanager::CViewer
+class mozak::Mozak3DView : protected terafly::CViewer
 {
 	Q_OBJECT
 
@@ -60,11 +60,11 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		/**************************************************************************************
 		* Constructor needs to be protected because inherits from protected CViewer constructor
 		***************************************************************************************/
-		Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
-			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
+        Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
+            int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, tf::CViewer *_prev, int _slidingViewerBlockID);
 		~Mozak3DView();
-        virtual teramanager::CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
-			int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, itm::CViewer *_prev, int _slidingViewerBlockID);
+        virtual terafly::CViewer* makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
+            int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, tf::CViewer *_prev, int _slidingViewerBlockID);
 		virtual void onNeuronEdit();
 		void updateRendererParams();
 		void makeTracedNeuronsEditable();
@@ -233,9 +233,9 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         }
 
 		virtual void show();
-        virtual void storeAnnotations() throw (itm::RuntimeException);
-        virtual void loadAnnotations() throw (itm::RuntimeException);
-        virtual void clearAnnotations() throw (itm::RuntimeException);
+        virtual void storeAnnotations() throw (tf::RuntimeException);
+        virtual void loadAnnotations() throw (tf::RuntimeException);
+        virtual void clearAnnotations() throw (tf::RuntimeException);
 		virtual bool eventFilter(QObject *object, QEvent *event);
 		
 		friend class MozakUI;
@@ -291,12 +291,12 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/
         virtual void receiveData(
-                itm::uint8* data,                   // data (any dimension)
-                itm::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
-                itm::integer_array data_c,          // data count along X, Y, Z, C, t
+                tf::uint8* data,                   // data (any dimension)
+                tf::integer_array data_s,          // data start coordinates along X, Y, Z, C, t
+                tf::integer_array data_c,          // data count along X, Y, Z, C, t
                 QWidget* dest,                         // address of the listener
                 bool finished,                      // whether the loading operation is terminated
-                itm::RuntimeException* ex = 0,      // exception (optional)
+                tf::RuntimeException* ex = 0,      // exception (optional)
                 qint64 elapsed_time = 0,            // elapsed time (optional)
                 QString op_dsc="",                  // operation descriptor (optional)
                 int step=0);                        // step number (optional)
