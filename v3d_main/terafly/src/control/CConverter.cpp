@@ -91,8 +91,10 @@ void CConverter::setMembers(PConverter* pConverter) throw (RuntimeException)
            outVolFormat.compare(iim::TILED_FORMAT)          != 0 &&
            outVolFormat.compare(iim::TILED_MC_FORMAT)       != 0 &&
            outVolFormat.compare(iim::TILED_TIF3D_FORMAT)    != 0 &&
-            outVolFormat.compare(iim::BDV_HDF5_FORMAT)      != 0 &&
-           outVolFormat.compare(iim::TILED_MC_TIF3D_FORMAT) != 0)
+           outVolFormat.compare(iim::BDV_HDF5_FORMAT)       != 0 &&
+           outVolFormat.compare(iim::TILED_MC_TIF3D_FORMAT) != 0 &&
+           outVolFormat.compare(iim::SIMPLE_FORMAT)         != 0 &&
+           outVolFormat.compare(iim::SIMPLE_RAW_FORMAT)     != 0)
         {
             sprintf(errMsg, "Output format \"%s\" not yet supported", outVolFormat.c_str());
             throw RuntimeException(errMsg);

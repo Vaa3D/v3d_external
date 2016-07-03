@@ -1675,7 +1675,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         double TVoxels = GVoxels/1000.0;
         if(TVoxels < 0.1)
         {
-            double GBytes = GVoxels*CImport::instance()->getVMapCDim();
+            double GBytes = GVoxels*CImport::instance()->getVMapCDim()*volume->getBYTESxCHAN();
             vol_size_field->setText(tf::strprintf("  %.1f Gigavoxels (%.1f Gigabytes)", GVoxels, GBytes).c_str());
         }
         else
