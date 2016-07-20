@@ -163,7 +163,7 @@ case $OPERATION in
                 fi
                 cd boost_$BOOST_VERSION
                 cmd /c bootstrap.bat
-                bjam.exe --toolset=msvc-9.0 build-type=complete link=static threading=multi address-model=64 --prefix=$boost_prefix install
+                bjam.exe --toolset=msvc-9.0 --build-type=complete --link=static threading=multi --address-model=64 --prefix=$boost_prefix install
             else
                 tar xvf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
                 cd boost_$BOOST_VERSION
