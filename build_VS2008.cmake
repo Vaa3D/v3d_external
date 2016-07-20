@@ -162,7 +162,7 @@ case $OPERATION in
                     /c/Program\ Files/7-Zip/7z x -y boost_$BOOST_VERSION.tar
                 fi
                 cd boost_$BOOST_VERSION
-                bootstrap.bat
+                cmd /c bootstrap.bat
                 bjam.exe --toolset=msvc-9.0 build-type=complete link=static threading=multi address-model=64 --prefix=$boost_prefix install
             else
                 tar xvf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
