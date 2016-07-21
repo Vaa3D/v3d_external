@@ -141,7 +141,7 @@ HEADERS += ../terafly/src/terarepo/src/stitcher/StackRestorer.h
 HEADERS += ../terafly/src/terarepo/src/stitcher/StackStitcher.h
 HEADERS += ../terafly/src/terarepo/src/stitcher/TPAlgo.h
 HEADERS += ../terafly/src/terarepo/src/stitcher/TPAlgoMST.h
-#HEADERS += ../terafly/src/terarepo/src/stitcher/resumer.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/resumer.h
 SOURCES += ../terafly/src/terarepo/src/stitcher/Displacement.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/DisplacementMIPNCC.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/MergeTiles.cpp
@@ -151,7 +151,7 @@ SOURCES += ../terafly/src/terarepo/src/stitcher/StackRestorer.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/StackStitcher.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgo.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgoMST.cpp
-#SOURCES += ../terafly/src/terarepo/src/stitcher/resumer.cpp
+SOURCES += ../terafly/src/terarepo/src/stitcher/resumer.cpp
 
 # set up volumeconverter
 INCLUDEPATH += ../terafly/src/terarepo/src/utils/volumeconverter
