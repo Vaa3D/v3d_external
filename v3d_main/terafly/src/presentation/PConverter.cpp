@@ -192,6 +192,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     downsamplingCbox = new QComboBox(this);
     downsamplingCbox->addItem(QString("Mean (2").append(QChar(0x00D7)).append("2").append(QChar(0x00D7)).append("2)"));
     downsamplingCbox->addItem(QString("Max  (2").append(QChar(0x00D7)).append("2").append(QChar(0x00D7)).append("2)"));
+    downsamplingCbox->setCurrentIndex(1);
 
     //conversion form layout
     QVBoxLayout* conversionFormLayout = new QVBoxLayout();
