@@ -109,6 +109,9 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 		else
 			ss.dist_apartnodes = 0;
 	}
+
+    ss.percent_12_apartnodes = double(nseg1big)/nseg1;
+    ss.percent_21_apartnodes = double(nseg2big)/nseg2;
 	ss.percent_apartnodes = (double(nseg1big)/nseg1 + double(nseg2big)/nseg2)/2.0;
 
     ss.dist_max = (maxdist12<maxdist21) ? maxdist12 : maxdist21; //this max distance should refelect the meaningful measure.
