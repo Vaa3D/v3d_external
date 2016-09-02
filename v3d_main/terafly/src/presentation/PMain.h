@@ -68,8 +68,9 @@ class terafly::PMain : public QWidget
         QAction* openTeraFlyVolumeAction;       //"Open TeraFly image" menu action
         QAction* openHDF5VolumeAction;          //"Open HDF5 image" menu action
         QMenu*   openUnconvertedVolumeMenu;     //"Open unconverted image" menu
-        QAction* openUnconvertedVolumeFileAction;     //"Browse for file..." action
+        QAction* openUnconvertedVolumeFileAction;       //"Browse for file..." action
         QAction* openUnconvertedVolumeFolderAction;     //"Browse for dir..." action
+        QAction* openUnstitchedImageAction;             //"Open unstitched image" menu
         QAction* closeVolumeAction;     //"Close volume" menu action
         QAction* loadAnnotationsAction; //"Load annotations" menu action
         QAction* saveAnnotationsAction; //"Save annotations" menu action

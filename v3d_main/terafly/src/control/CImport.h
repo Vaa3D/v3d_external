@@ -193,7 +193,7 @@ class terafly::CImport : public QThread
 
 struct terafly::volume_format
 {
-    enum kind{TERAFLY, BDVHDF5, UNCONVERTED, UNKNOWN} id;
+    enum kind{TERAFLY, BDVHDF5, UNCONVERTED, UNSTITCHED, UNKNOWN} id;
     volume_format() : id(UNKNOWN){}
     volume_format(kind _id) : id(_id){}
     std::string toString(){
@@ -203,12 +203,14 @@ struct terafly::volume_format
             return "BDVHDF5";
         else if(id == UNCONVERTED)
             return "UNCONVERTED";
+        else if(id == UNSTITCHED)
+            return "UNSTITCHED";
         else
             return "UNKNOWN";
     }
     volume_format(std::string string_id)
     {
-        for(int i=0; i<4; i++)
+        for(int i=0; i<5; i++)
             if(volume_format(kind(i)).toString().compare(string_id) == 0)
             {
                 id = kind(i);

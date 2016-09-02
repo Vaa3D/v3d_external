@@ -162,6 +162,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu = menuBar->addMenu("File");
     openTeraFlyVolumeAction = new QAction(QIcon(":/icons/open_image_terafly.png"), "Open TeraFly Image (3-5D)", this);
     openHDF5VolumeAction = new QAction(QIcon(":/icons/open_image_hdf5.png"),    "Open HDF5 Image (3-4D)", this);
+    openUnstitchedImageAction = new QAction(QIcon(":/icons/open_image_unconverted.png"),    "Open Unstitched image (3-4D)", this);
     openUnconvertedVolumeFileAction = new QAction(QIcon(":/icons/open_image_file.png"), "Browse For File", this);
     openUnconvertedVolumeFolderAction = new QAction(QIcon(":/icons/open_image_folder.png"), "Browse For Folder", this);
     closeVolumeAction = new QAction(QIcon(":/icons/close.png"), "Close image", this);
@@ -180,6 +181,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     exitAction->setShortcut(QKeySequence("Ctrl+Q"));
     connect(openTeraFlyVolumeAction, SIGNAL(triggered()), this, SLOT(openImage()));
     connect(openHDF5VolumeAction, SIGNAL(triggered()), this, SLOT(openImage()));
+    connect(openUnstitchedImageAction, SIGNAL(triggered()), this, SLOT(openImage()));
     connect(openUnconvertedVolumeFolderAction, SIGNAL(triggered()), this, SLOT(openImage()));
     connect(openUnconvertedVolumeFileAction, SIGNAL(triggered()), this, SLOT(openImage()));
     connect(closeVolumeAction, SIGNAL(triggered()), this, SLOT(closeVolume()));
@@ -190,6 +192,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
     fileMenu->addAction(openTeraFlyVolumeAction);
     fileMenu->addAction(openHDF5VolumeAction);
+    fileMenu->addAction(openUnstitchedImageAction);
     openUnconvertedVolumeMenu = fileMenu->addMenu(QIcon(":/icons/open_image_unconverted.png"), "Open Unconverted Image (3-4D)");
     openUnconvertedVolumeMenu->addAction(openUnconvertedVolumeFolderAction);
     openUnconvertedVolumeMenu->addAction(openUnconvertedVolumeFileAction);
@@ -496,6 +499,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     openMenu->addAction(openTeraFlyVolumeAction);
     openMenu->addAction(openHDF5VolumeAction);
+    openMenu->addAction(openUnstitchedImageAction);
     openMenu->addMenu(openUnconvertedVolumeMenu);
     openMenu->addMenu(recentVolumesMenu);
     openVolumeToolButton = new QToolButton();
@@ -1070,6 +1074,7 @@ void PMain::reset()
     //resetting menu options and widgets
     openTeraFlyVolumeAction->setEnabled(true);
     openHDF5VolumeAction->setEnabled(true);
+    openUnstitchedImageAction->setEnabled(true);
     openVolumeToolButton->setEnabled(true);
     recentVolumesMenu->setEnabled(true);
     closeVolumeAction->setEnabled(false);
@@ -1273,24 +1278,32 @@ void PMain::openImage(std::string path /*= ""*/)
             }
         }
         // these senders require a file selection dialog
-        else if(sender() == openHDF5VolumeAction || sender() == openUnconvertedVolumeFileAction)
+        else if(sender() == openHDF5VolumeAction || sender() == openUnconvertedVolumeFileAction || sender() == openUnstitchedImageAction)
         {
             /**/tf::debug(tf::LEV2, "launch file dialog", __itm__current__function__);
 
-            std::string filter = sender() == openHDF5VolumeAction ? "HDF5 files (*.h5)" : "Vaa3D files (*.raw *.v3draw * *.RAW *.V3DRAW);; TIFF files (*.tif *.TIFF)";
+
+            std::string filter;
+            if(sender() == openHDF5VolumeAction)
+                filter = "HDF5 files (*.h5)";
+            else if(sender() == openUnconvertedVolumeFileAction)
+                filter = "Vaa3D files (*.raw *.v3draw * *.RAW *.V3DRAW);; TIFF files (*.tif *.TIFF)" ;
+            else if(sender() == openUnstitchedImageAction)
+                filter = "Image descriptor files (*.xml)" ;
+
             #ifdef _USE_QT_DIALOGS
             QFileDialog dialog(0);
             dialog.setFileMode(QFileDialog::ExistingFile);
             dialog.setNameFilter(tr(filter.c_str()));
             dialog.setViewMode(QFileDialog::Detail);
             dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
-            dialog.setWindowTitle("Select image file");
+            dialog.setWindowTitle("Select file");
             dialog.setDirectory(CSettings::instance()->getVolumePathLRU().c_str());
             if(dialog.exec())
                 path = dialog.directory().absolutePath().toStdString();
 
             #else
-            path = QFileDialog::getOpenFileName(this, "Select image file", QString(), tr(filter.c_str())).toStdString();
+            path = QFileDialog::getOpenFileName(this, "Select file", QString(), tr(filter.c_str())).toStdString();
             #endif
             /**/tf::debug(tf::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
 
@@ -1313,6 +1326,8 @@ void PMain::openImage(std::string path /*= ""*/)
             image_format.id = tf::volume_format::BDVHDF5;
         else if(sender() == openUnconvertedVolumeFileAction || sender() == openUnconvertedVolumeFolderAction)
             image_format.id = tf::volume_format::UNCONVERTED;
+        else if(sender() == openUnstitchedImageAction)
+            image_format.id = tf::volume_format::UNSTITCHED;
         else
         {
             for(std::list< std::pair<std::string, std::string> >::iterator it = CSettings::instance()->getRecentImages().begin(); it != CSettings::instance()->getRecentImages().end(); it++)
