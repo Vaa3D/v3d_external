@@ -98,7 +98,7 @@ list(REMOVE_ITEM imagemanager_src ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/i
 file(GLOB volumeconverter_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/utils/volumeconverter/*.cpp)
 file(GLOB volumemanager_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/volumemanager/*.cpp)
 file(GLOB stitcher_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher/*.cpp)
-list(REMOVE_ITEM stitcher_src   ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher/resumer.cpp)
+#list(REMOVE_ITEM stitcher_src   ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/stitcher/resumer.cpp)
 file(GLOB crossmips_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/crossmips/*.cpp)
 file(GLOB tinyxml_src           ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rdparty/tinyxml/*.cpp)
 file(GLOB iomanager_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.cpp)
