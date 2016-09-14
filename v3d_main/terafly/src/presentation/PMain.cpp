@@ -1204,13 +1204,6 @@ void PMain::openRecentVolume()
 
     std::string recentpath = qobject_cast<QAction*>(sender())->text().toStdString();
     openImage(recentpath);
-    /*QFileInfo pathinfo(recentpath.c_str());
-    if(pathinfo.isDir())
-        openTeraFlyVolume(qobject_cast<QAction*>(sender())->text().toStdString());
-    else if(pathinfo.isFile())
-        openHDF5Volume(qobject_cast<QAction*>(sender())->text().toStdString());
-    else
-        QMessageBox::critical(this,QObject::tr("Error"), "Cannot find the file",QObject::tr("Ok"));*/
 }
 
 /**********************************************************************************
@@ -1350,6 +1343,12 @@ void PMain::openImage(std::string path /*= ""*/)
                 return;
            CImport::instance()->setReimport(true);
            CImport::instance()->setRegenerateVolumeMap(true);
+        }
+
+        // check if this is the first time
+        if(image_format.id == tf::volume_format::UNCONVERTED)
+        {
+            ;
         }
 
 
