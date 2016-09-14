@@ -134,40 +134,38 @@ class terafly::HyperGridCache
 
         // object methods
         HyperGridCache(){}                      // disable default constructor
-        void load() throw (iim::IOException, tf::RuntimeException);   // load from disk
-        void save() throw (iim::IOException, tf::RuntimeException);   // save to disk
-        void init() throw (iim::IOException, tf::RuntimeException);   // init persistency files
+        void load() throw (iim::IOException, tf::RuntimeException, iom::exception);		// load from disk
+        void save() throw (iim::IOException, tf::RuntimeException, iom::exception);		// save to disk
+        void init() throw (iim::IOException, tf::RuntimeException, iom::exception);		// init persistency files
 
     public:
 
         // constructor 1
         HyperGridCache(
-                std::string _path,                                                                                  // where cache files are stored / have to be stored
-                tf::xyzct<size_t> image_dim,                                                                        // image dimensions along X, Y, Z, C (channel), and T (time)
-                tf::xyzct<size_t> _block_dim = tf::xyzct<size_t>(256,256,256,std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max()))
-				//tf::xyzct<size_t> _block_dim = tf::xyzct<size_t>(256,256,256,tf::inf<size_t>(),tf::inf<size_t>()))  // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
-        throw (iim::IOException, tf::RuntimeException);
+                std::string _path,										// where cache files are stored / have to be stored
+                tf::xyzct<size_t> _image_dim,							// image dimensions along X, Y, Z, C (channel), and T (time)
+                tf::xyzct<size_t> _block_dim							// hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+					= tf::xyzct<size_t>(256,256,256,std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max()))
+        throw (iim::IOException, tf::RuntimeException, iom::exception);
 
         // destructor
         ~HyperGridCache() throw (iim::IOException);
 
 
-        // read data from cache (downsampling on-the-fly supported)
-        tf::image5D<uint8>                                         // <image data, image data size> output
-        readData(
-                tf::voi4D<size_t> voi,                                  // 4D VOI in X,Y,Z,T space
-                tf::active_channels<> channels,                         // active channels
-                tf::xyz<int> downsamplingFactor = tf::xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
-        throw (iim::IOException);
+        // read data from cache (rescaling on-the-fly supported)
+        tf::image5D<uint8>												// 5D image output
+        readData(tf::voi4D<int> voi,                                    // 4D VOI in X,Y,Z,T space
+                tf::active_channels<> channels,                         // channels to load
+                tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
+        throw (iim::IOException, iom::exception, tf::RuntimeException);
 
 
-        // put data into the cache (downsampling on-the-fly supported)
+        // put data into the cache (rescaling on-the-fly supported)
         void putData(
-                const tf::image5D<uint8>,                               // image data array, follows T-C-Z-Y-Z order
-                tf::xyzt<size_t> shift,                                 // shift relative to (0,0,0,0)
-                tf::active_channels<> channels,                         // active channels
-                tf::xyz<int> downsamplingFactor = tf::xyz<int>(1,1,1))  // downsampling factors along X,Y and Z
-        throw (iim::IOException);
+                const tf::image5D<uint8> &img,							// 5D image input
+				tf::xyzt<size_t> offset,								// offset relative to (0,0,0,0), it is up(or down)scaled if needed
+                tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling) 
+        throw (iim::IOException, iom::exception, tf::RuntimeException);
 
 
         // class members
@@ -188,13 +186,14 @@ class terafly::HyperGridCache
                 tf::xyzct<size_t> dims;                     // block dimensions - block has coordinates [origin, origin + dims)
                 tf::uint8*        imdata;                   // cached image data
                 tf::xyzct<size_t> index;                    // 5D index in the parent hypergrid
-                std::string path;                           // path of file where this block is stored
-                int visits;                                 // #times this block has been visited (for both loading and storing of image data)
+                std::string       path;                     // path of file where this block is stored
+                bool              modified;                 // whether the data of this block has been modified
+                int               visits;                   // #times this block has been visited (for both loading and storing of image data)
 
                 // object utility methods
                 CacheBlock(){}                          // disable default constructor
-                void load() throw (iim::IOException, iom::exception);   // load from disk
-                void save() throw (iim::IOException, iom::exception);   // save to disk
+                void load() throw (iim::IOException, iom::exception, tf::RuntimeException);   // load from disk
+                void save() throw (iim::IOException, iom::exception, tf::RuntimeException);   // save to disk
 
 
             public:
@@ -206,23 +205,48 @@ class terafly::HyperGridCache
                         tf::xyzct<size_t> _origin,          // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
                         tf::xyzct<size_t> _dims,            // dimensions of the block
                         tf::xyzct<size_t> _index)           // 5D index in the parent hypergrid
-                throw (iim::IOException);
+                throw (iim::IOException, iom::exception);
 
                 // destructor
-                ~CacheBlock() throw (iim::IOException);
+                ~CacheBlock() throw (iim::IOException, iom::exception);
 
                 // GET and SET methods
                 tf::xyzct<size_t> getOrigin(){return origin;}
                 tf::xyzct<size_t> getDims()  {return dims;}
                 int getVisits()              {return visits;}
-                uint8* getImageDataPtr()     {return imdata;}
                 void setVisits(int _visits)  {visits=_visits;}
 
-                // calculate XYZT intersection with current block
-                tf::voi4D<size_t> xyzt_intersection(tf::voi4D<size_t> range);
+                // calculate XYZT and C intersection
+                template <typename T>
+                tf::voi4D<T> intersection(tf::voi4D<T> xyzt)
+                {
+                    return tf::voi4D<T>(
+                                tf::xyzt<T>(std::max(xyzt.start.x, T(origin.x)),
+                                            std::max(xyzt.start.y, T(origin.y)),
+                                            std::max(xyzt.start.z, T(origin.z)),
+                                            std::max(xyzt.start.t, T(origin.t))),
+                                tf::xyzt<T>(std::min(xyzt.end.x,   T(origin.x + dims.x)),
+                                            std::min(xyzt.end.y,   T(origin.y + dims.y)),
+                                            std::min(xyzt.end.z,   T(origin.z + dims.z)),
+                                            std::min(xyzt.end.t,   T(origin.t + dims.t))));
+                }
+                std::vector<unsigned int> intersection(tf::active_channels<> chans);
 
-                // calculate channel intersection with current block
-                std::vector<unsigned int> c_intersection(tf::active_channels<> chans);
+                // put data from given image into current block (rescaling on-the-fly supported)
+                void putData(
+                    const tf::image5D<uint8> & image,       // 5D image input
+					tf::voi4D<int> image_voi,				// image VOI (already scaled)
+					tf::voi4D<int> block_voi,				// current block VOI (already scaled)
+					tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
+                ) throw (iim::IOException, iom::exception, tf::RuntimeException);
+
+                // read data from block and put into image buffer (rescaling on-the-fly supported)
+                void readData(
+                    tf::image5D<uint8> & image,             // 5D image buffer (preallocated)
+                    tf::voi4D<int> image_voi,				// image VOI (already scaled)
+                    tf::voi4D<int> block_voi,				// current block VOI (already scaled)
+                    tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
+                ) throw (iim::IOException, iom::exception, tf::RuntimeException);
         };
 };
 

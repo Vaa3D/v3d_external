@@ -771,7 +771,7 @@ void CViewer::receiveData(
                 uint32 new_img_dims[5]   = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
                 uint32 new_img_offset[5] = {0,                  0,                  0,                  0,          0               };
                 uint32 new_img_count[5]  = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
-                CImageUtils::copyVOI(data, new_img_dims, new_img_offset, new_img_count,
+                CImageUtils::upscaleVOI(data, new_img_dims, new_img_offset, new_img_count,
                         view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset);
                 qint64 elapsedTime = timer.elapsed();
 
@@ -1319,7 +1319,7 @@ throw (RuntimeException)
         uint32 img_offset[5]      = {x0a-x0,      y0a-y0,      z0a-z0,      0,         t0a-t0};
         uint32 buf_data_count[5]  = {x1a-x0a,     y1a-y0a,     z1a-z0a,     0,         t1a-t0a+1};
 
-        CImageUtils::copyVOI(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), buf_data_dims, buf_data_offset, buf_data_count, img, img_dims, img_offset, scalx);
+        CImageUtils::upscaleVOI(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), buf_data_dims, buf_data_offset, buf_data_count, img, img_dims, img_offset, tf::xyz<int>(scalx, scaly, scalz));
     }
 
     //interpolation

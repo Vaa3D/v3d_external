@@ -2,7 +2,7 @@
 #include "VirtualVolume.h"
 #include <fstream>
 #include "IOPluginAPI.h"
-#include "v3d_message.h"
+#include "CImageUtils.h"
 
 /********************************
 *   VIRTUAL PYRAMID definitions *
@@ -133,11 +133,11 @@ void tf::VirtualPyramid::instanceHighresVol() throw (iim::IOException, iom::exce
             throw iim::IOException("Cannot open .volume.txt file at \"%s\"", volumetxtPath.c_str());
         std::string line;
         std::getline(f, line);
-        std::vector<std::string> tokens = tf::parse(line, ":", 2, volumetxtPath);
+        std::vector<std::string> tokens = tf::parse(line, "=", 2, volumetxtPath);
         if(tokens[1].compare(highresPath) != 0)
             throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), highresPath.c_str(), tokens[1].c_str()));
         std::getline(f, line);
-        tokens = tf::parse(line, ":", 2, volumetxtPath);
+        tokens = tf::parse(line, "=", 2, volumetxtPath);
         if(highresVol && tokens[1].compare(highresVol->getPrintableFormat()) != 0)
             throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), highresPath.c_str(), tokens[1].c_str()));
         else
@@ -154,10 +154,10 @@ void tf::VirtualPyramid::instanceHighresVol() throw (iim::IOException, iom::exce
         std::ofstream f(volumetxtPath.c_str());
         if(!f.is_open())
             throw iim::IOException("Cannot open .volume.txt file at \"%s\"", volumetxtPath.c_str());
-        f << "imagepath:" << highresPath << std::endl;
+        f << "imagepath=" << highresPath << std::endl;
 
         // then we can store the image format
-        f << "format:" << highresVol->getPrintableFormat() << std::endl;
+        f << "format=" << highresVol->getPrintableFormat() << std::endl;
         f.close();
     }
 }
@@ -238,15 +238,26 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
         // load data from highest-res image
         data = highresVol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
 
-        // put data into CACHE
-        //parent->cache->putData(image_5D<uint8>(data, xyzct<size_t>(0,0,0,0,0)), xyzct<size_t>(0,0,0,0,0), reductionFactor);
+        // propagate data to higher layers
+		for(size_t l = 1; l <pyramid.size(); l++)
+			pyramid[l]->putData
+			(
+				tf::image5D<uint8>
+				(
+					data, 
+					xyzt<size_t>(end.x - start.x, end.y - start.y, end.z - start.z, highresVol->getNActiveFrames()), 
+					active_channels<>(highresVol->getActiveChannels(), highresVol->getNACtiveChannels())
+				),
+				tf::xyzt<size_t>( start.x, start.y, start.z, highresVol->getT0()), 
+				virtualPyramid[l]->reductionFactor * (-1)
+			);
     }
     else
     {
         data = pyramid[level]->readData(
-                    voi4D<size_t>(
-                        xyzt<size_t>(start.x, start.y, start.z, highresVol->getT0()),
-                        xyzt<size_t>(end.x, end.y, end.z, highresVol->getT1()+1)),
+                    voi4D<int>(
+                        xyzt<int>(start.x, start.y, start.z, highresVol->getT0()),
+                        xyzt<int>(end.x, end.y, end.z, highresVol->getT1()+1)),
                     active_channels<>(highresVol->getActiveChannels(), highresVol->getNACtiveChannels())).data;
     }
     return tf::image5D<uint8>(
@@ -381,7 +392,18 @@ throw (iim::IOException)
     if(channels)
         *channels = (int)n_active;
 
-    return parent->loadVOI(xyz<size_t>(H0,V0,D0), xyz<size_t>(H1,V1,D1), level).data;
+    try
+    {
+        return parent->loadVOI(xyz<size_t>(H0,V0,D0), xyz<size_t>(H1,V1,D1), level).data;
+    }
+    catch(iom::exception e)
+    {
+        throw iim::IOException(e.what());
+    }
+    catch(tf::RuntimeException e)
+    {
+        throw iim::IOException(e.what());
+    }
 }
 /*---- END VIRTUAL PYRAMID LAYER section ----------------------------------------------------------------------------------*/
 
@@ -398,20 +420,20 @@ float tf::HyperGridCache::maximumSizeGB = 1;
 
 // constructor 1
 tf::HyperGridCache::HyperGridCache(
-        std::string _path,                                                      // where cache files are stored / have to be stored
-        xyzct<size_t> image_dim,                                                // image dimensions along X, Y, Z, C (channel), and T (time)
-        xyzct<size_t> _block_dim /*= xyzct<size_t>(256,256,256,inf,inf)*/)       // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
-throw (iim::IOException, tf::RuntimeException)
+        std::string _path,                              // where cache files are stored / have to be stored
+        xyzct<size_t> _image_dim,                       // image dimensions along X, Y, Z, C (channel), and T (time)
+        xyzct<size_t> _block_dim)						// hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+throw (iim::IOException, tf::RuntimeException, iom::exception)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     // set object members
     path = _path;
-    dimX = image_dim.x;
-    dimY = image_dim.y;
-    dimZ = image_dim.z;
-    dimC = image_dim.c;
-    dimT = image_dim.t;
+    dimX = _image_dim.x;
+    dimY = _image_dim.y;
+    dimZ = _image_dim.z;
+    dimC = _image_dim.c;
+    dimT = _image_dim.t;
     block_dim = _block_dim;
 
     // @TODO
@@ -486,7 +508,7 @@ tf::HyperGridCache::~HyperGridCache() throw (iim::IOException)
 }
 
 // init persistency files
-void tf::HyperGridCache::init() throw (iim::IOException, tf::RuntimeException)
+void tf::HyperGridCache::init() throw (iim::IOException, tf::RuntimeException, iom::exception)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -505,7 +527,7 @@ void tf::HyperGridCache::init() throw (iim::IOException, tf::RuntimeException)
 }
 
 // load from disk
-void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException)
+void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException, iom::exception)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -566,7 +588,7 @@ void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException)
 }
 
 // save to disk
-void tf::HyperGridCache::save() throw (iim::IOException, tf::RuntimeException)
+void tf::HyperGridCache::save() throw (iim::IOException, tf::RuntimeException, iom::exception)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -601,17 +623,17 @@ void tf::HyperGridCache::save() throw (iim::IOException, tf::RuntimeException)
 }
 
 
-// read data from the cache (downsampling on-the-fly supported)
-tf::image5D<tf::uint8>                                          // <image data, image data size> output
+// read data from the cache (rescaling on-the-fly supported)
+tf::image5D<tf::uint8>                          // 5D image output
 tf::HyperGridCache::readData(
-        tf::voi4D<size_t> voi,                                  // range in X,Y,Z,T space
-        active_channels<> channels,                             // active channels
-        tf::xyz<int> downsamplingFactor)                        // downsampling factors along X,Y and Z
-throw (iim::IOException)
+        tf::voi4D<int> voi,                     // 4D VOI in X,Y,Z,T space
+        active_channels<> channels,             // channels to load
+        tf::xyz<int> scaling)					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling) 
+throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
-    /**/tf::debug(tf::LEV2, tf::strprintf("voi = [%d,%d),{%s},[%d,%d),[%d,%d),[%d,%d), downsampling = {%d,%d,%d}",
+    /**/tf::debug(tf::LEV2, tf::strprintf("voi = [%d,%d),{%s},[%d,%d),[%d,%d),[%d,%d), downsampling = {%f,%f,%f}",
                                           voi.start.t, voi.end.t, channels.toString().c_str(), voi.start.z, voi.end.z,
-                                          voi.start.y, voi.end.y, voi.start.x, voi.end.x, downsamplingFactor.x, downsamplingFactor.y, downsamplingFactor.z).c_str(), __itm__current__function__);
+                                          voi.start.y, voi.end.y, voi.start.x, voi.end.x, scaling.x, scaling.y, scaling.z).c_str(), __itm__current__function__);
 
     // check xyzt data selection
     if(voi.start.x >= voi.end.x || voi.start.y >= voi.end.y || voi.start.z >= voi.end.z || voi.start.t >= voi.end.t)
@@ -628,45 +650,144 @@ throw (iim::IOException)
             throw iim::IOException(tf::strprintf("Out of range channel selection %d, number of channels is %d",
                                                   channels.table[i], dimC), __itm__current__function__);
 
-    // check downsampling factor
-    if(downsamplingFactor.x < 1 || downsamplingFactor.y < 1 || downsamplingFactor.z < 1)
-        throw iim::IOException(tf::strprintf("Invalid downsampling factor {%d,%d%d}, minimum is {1,1,1}",
-                                              downsamplingFactor.x, downsamplingFactor.y, downsamplingFactor.z), __itm__current__function__);
+    // check scaling
+    if(scaling.x != 1 || scaling.y != 1 || scaling.z != 1)
+        throw iim::IOException(tf::strprintf("Invalid scaling {%d,%d,%d}: scaling not yet supported when read data from HyperGridCache",
+                                              scaling.x, scaling.y, scaling.z), __itm__current__function__);
 
 
     // allocate and initialize data
     tf::image5D<tf::uint8> img;
     img.chans = channels;
-    img.dims.x = voi.dims().x / downsamplingFactor.x;
-    img.dims.y = voi.dims().y / downsamplingFactor.y;
-    img.dims.z = voi.dims().z / downsamplingFactor.z;
-    img.dims.t = voi.dims().t;
+    img.dims = voi.dims();
     img.data  = new tf::uint8[img.size()];
     for(size_t i=0; i<img.size(); i++)
         img.data[i] = 0;
 
 
     // detecting intersecting blocks
-    printf("\n");
+    //printf("\n");
     for(size_t t=0; t<nT; t++)
         for(size_t c=0; c<nC; c++)
             for(size_t z=0; z<nZ; z++)
                 for(size_t y=0; y<nY; y++)
                     for(size_t x=0; x<nX; x++)
-                        if(hypergrid[t][c][z][y][x]->xyzt_intersection(voi).size()   > 0 &&
-                           hypergrid[t][c][z][y][x]->c_intersection(channels).size() > 0)
+                        if(hypergrid[t][c][z][y][x]->intersection(voi).size()   > 0 &&
+                           hypergrid[t][c][z][y][x]->intersection(channels).size() > 0)
                         {
-                            voi4D<size_t> iv = hypergrid[t][c][z][y][x]->xyzt_intersection(voi);
-                            std::vector<unsigned int> ic = hypergrid[t][c][z][y][x]->c_intersection(channels);
-                            printf("hypergrid[%02d][%02d][%02d][%02d][%02d] intersection WITH [%d,%d),{%s},[%d,%d),[%d,%d),[%d,%d) IS [%d,%d),{%s},[%d,%d),[%d,%d),[%d,%d)\n",
-                                   t,c,z,y,x,
-                                   voi.start.t, voi.end.t, channels.toString().c_str(),             voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x,
-                                    iv.start.t,  iv.end.t,  active_channels<>::toString(ic).c_str(), iv.start.z,  iv.end.z,  iv.start.y,  iv.end.y,  iv.start.x,  iv.end.x);
+                            voi4D<float> iv = hypergrid[t][c][z][y][x]->intersection(voi);
+                            std::vector<unsigned int> ic = hypergrid[t][c][z][y][x]->intersection(channels);
+
+                            // local VOI = intersecting ROI - origin shift
+                            voi4D<int> loc_VOI = iv.rounded();
+                            loc_VOI -= hypergrid[t][c][z][y][x]->getOrigin();
+
+                            voi4D<int> img_VOI = iv.rounded();
+                            img_VOI -= voi.start;
+
+
+                            printf("readData: hypergrid[%02d][%02d][%02d][%02d][%02d]: block [%d,%d),[%d,%d),[%d,%d),[%d,%d),[%d,%d) intersection WITH [%d,%d),{%s},[%d,%d),[%d,%d),[%d,%d) IS [%.0f,%.0f),{%s},[%.0f,%.0f),[%.0f,%.0f),[%.0f,%.0f)\n",
+                                t,c,z,y,x,
+                                hypergrid[t][c][z][y][x]->getOrigin().t, hypergrid[t][c][z][y][x]->getOrigin().t + hypergrid[t][c][z][y][x]->getDims().t,
+                                hypergrid[t][c][z][y][x]->getOrigin().c, hypergrid[t][c][z][y][x]->getOrigin().c + hypergrid[t][c][z][y][x]->getDims().c,
+                                hypergrid[t][c][z][y][x]->getOrigin().z, hypergrid[t][c][z][y][x]->getOrigin().z + hypergrid[t][c][z][y][x]->getDims().z,
+                                hypergrid[t][c][z][y][x]->getOrigin().y, hypergrid[t][c][z][y][x]->getOrigin().y + hypergrid[t][c][z][y][x]->getDims().y,
+                                hypergrid[t][c][z][y][x]->getOrigin().x, hypergrid[t][c][z][y][x]->getOrigin().x + hypergrid[t][c][z][y][x]->getDims().x,
+                                voi.start.t, voi.end.t, img.chans.toString().c_str(), voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x,
+                                iv.start.t,  iv.end.t,  active_channels<>::toString(ic).c_str(), iv.start.z,  iv.end.z,  iv.start.y,  iv.end.y,  iv.start.x,  iv.end.x);
+
+                            printf("readData: local VOI is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", loc_VOI.start.t, loc_VOI.end.t, loc_VOI.start.z, loc_VOI.end.z, loc_VOI.start.y, loc_VOI.end.y, loc_VOI.start.x, loc_VOI.end.x);
+                            printf("readData: image VOI is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", img_VOI.start.t, img_VOI.end.t, img_VOI.start.z, img_VOI.end.z, img_VOI.start.y, img_VOI.end.y, img_VOI.start.x, img_VOI.end.x);
+
+
+                            hypergrid[t][c][z][y][x]->readData(img, img_VOI, loc_VOI, scaling);
                         }
-    printf("\n");
+    //printf("\n");
 
     return img;
 }
+
+// put data into the cache (rescaling on-the-fly supported)
+void tf::HyperGridCache::putData(
+    const tf::image5D<uint8> & img,		// 5D image input
+	tf::xyzt<size_t> offset,			// offset relative to (0,0,0,0), it is up(or down)scaled if needed
+	tf::xyz<int> scaling)				// scaling along X,Y and Z (powers of 2 only)
+    throw (iim::IOException, iom::exception, tf::RuntimeException)
+{
+	/**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), offset = (%d, %d, %d, %d), scaling = (%d,%d,%d)",
+		path.c_str(), img.dims.x, img.dims.y, img.dims.z, img.chans.dim, img.dims.t, offset.x, offset.y, offset.z, offset.t, scaling.x, scaling.y, scaling.z).c_str(), __itm__current__function__);
+
+	// check scaling
+	if(!scaling.x || !scaling.y || !scaling.z)
+		throw iim::IOException(tf::strprintf("Invalid scaling {%d,%d,%d}",
+		scaling.x, scaling.y, scaling.z), __itm__current__function__);
+    if( !(scaling.x > 0 && scaling.y > 0 && scaling.z > 0) && !(scaling.x < 0 && scaling.y < 0 && scaling.z < 0))
+		throw iim::IOException(tf::strprintf("Invalid scaling {%d,%d,%d}: all three scaling factors must be > 0 (upscaling) or < 0 (downscaling)",
+		scaling.x, scaling.y, scaling.z), __itm__current__function__);
+	bool upscaling = scaling.x > 0;
+	if(!upscaling)
+        scaling = scaling * (-1);
+
+	// determine voi
+    voi4D<float> voi(
+        tf::xyzt<float>(offset.x, offset.y, offset.z, offset.t),
+        tf::xyzt<float>(offset.x + img.dims.x, offset.y + img.dims.y, offset.z + img.dims.z, offset.t + img.dims.t));
+
+	// scale voi
+	if(upscaling)
+        voi *= tf::xyz<float>(scaling);
+	else
+        voi /= tf::xyz<float>(scaling);
+
+
+	// put data into intersecting blocks
+	printf("put data into intersecting blocks \n");
+	for(size_t t=0; t<nT; t++)
+		for(size_t c=0; c<nC; c++)
+			for(size_t z=0; z<nZ; z++)
+				for(size_t y=0; y<nY; y++)
+					for(size_t x=0; x<nX; x++)
+					{
+                        voi4D<float>              iv = hypergrid[t][c][z][y][x]->intersection(voi);
+						std::vector<unsigned int> ic = hypergrid[t][c][z][y][x]->intersection(img.chans);
+
+						bool intersects = iv.size() > 0 && ic.size() > 0;
+						if(intersects)
+						{
+                            printf("hypergrid[%02d][%02d][%02d][%02d][%02d]: block [%d,%d),[%d,%d),[%d,%d),[%d,%d),[%d,%d) %s [%.1f,%.1f),{%s},[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f) IS [%.1f,%.1f),{%s},[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f)\n",
+								t,c,z,y,x, 
+								hypergrid[t][c][z][y][x]->getOrigin().t, hypergrid[t][c][z][y][x]->getOrigin().t + hypergrid[t][c][z][y][x]->getDims().t,
+								hypergrid[t][c][z][y][x]->getOrigin().c, hypergrid[t][c][z][y][x]->getOrigin().c + hypergrid[t][c][z][y][x]->getDims().c,
+								hypergrid[t][c][z][y][x]->getOrigin().z, hypergrid[t][c][z][y][x]->getOrigin().z + hypergrid[t][c][z][y][x]->getDims().z,
+								hypergrid[t][c][z][y][x]->getOrigin().y, hypergrid[t][c][z][y][x]->getOrigin().y + hypergrid[t][c][z][y][x]->getDims().y,
+								hypergrid[t][c][z][y][x]->getOrigin().x, hypergrid[t][c][z][y][x]->getOrigin().x + hypergrid[t][c][z][y][x]->getDims().x,
+								intersects ? "intersects with" : "DOES NOT intersect with",
+								voi.start.t, voi.end.t, img.chans.toString().c_str(),             voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x,
+								iv.start.t,  iv.end.t,  active_channels<>::toString(ic).c_str(), iv.start.z,  iv.end.z,  iv.start.y,  iv.end.y,  iv.start.x,  iv.end.x);
+
+
+                            // local VOI = intersecting ROI - origin shift
+                            voi4D<int> loc_VOI = iv.rounded();
+                            loc_VOI -= hypergrid[t][c][z][y][x]->getOrigin();
+
+                            // image VOI = scaling(intersecting ROI)
+                            voi4D<float> img_VOIf = iv;
+							if(upscaling)
+                                img_VOIf /= tf::xyz<float>(scaling);
+							else
+                                img_VOIf *= tf::xyz<float>(scaling);
+                            img_VOIf -= tf::xyzt<float>(offset);
+                            voi4D<int> img_VOI = img_VOIf.rounded();
+
+							printf("local VOI is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", loc_VOI.start.t, loc_VOI.end.t, loc_VOI.start.z, loc_VOI.end.z, loc_VOI.start.y, loc_VOI.end.y, loc_VOI.start.x, loc_VOI.end.x);
+							printf("image VOI is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", img_VOI.start.t, img_VOI.end.t, img_VOI.start.z, img_VOI.end.z, img_VOI.start.y, img_VOI.end.y, img_VOI.start.x, img_VOI.end.x);
+
+							hypergrid[t][c][z][y][x]->putData(img, img_VOI, loc_VOI, upscaling ? scaling : scaling * (-1));
+						}
+					}
+	printf("\n");
+}
+
 
 /*---- END HYPER GRID CACHE section ---------------------------------------------------------------------------------------*/
 
@@ -685,7 +806,7 @@ tf::HyperGridCache::CacheBlock::CacheBlock(
         xyzct<size_t> _origin,          // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
         xyzct<size_t> _dims,            // dimensions of the block
         xyzct<size_t> _index)           // 5D index in the parent hypergrid
-throw (iim::IOException)
+throw (iim::IOException, iom::exception)
 {
     /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
@@ -695,8 +816,9 @@ throw (iim::IOException)
     imdata = 0;
     index  = _index;
     visits = 0;
+    modified = false;
 
-    path = parent->path + tf::strprintf("t%s_c%s_z%s_y%s_x%s.tif",
+    path = parent->path + "/" + tf::strprintf("t%s_c%s_z%s_y%s_x%s.tif",
                                                              tf::num2str(index.t).c_str(),
                                                              tf::num2str(index.c).c_str(),
                                                              tf::num2str(index.z).c_str(),
@@ -706,32 +828,20 @@ throw (iim::IOException)
 
 
 // destructor
-tf::HyperGridCache::CacheBlock::~CacheBlock() throw (iim::IOException)
+tf::HyperGridCache::CacheBlock::~CacheBlock() throw (iim::IOException, iom::exception)
 {
     /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
     if(imdata)
+	{
+        //save();
         delete imdata;
+	}
 }
 
-// calculate intersection with current block
-tf::voi4D<size_t> tf::HyperGridCache::CacheBlock::xyzt_intersection(tf::voi4D<size_t> range)
-{
-    /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
-
-    return tf::voi4D<size_t>(
-                tf::xyzt<size_t>(std::max(range.start.x, origin.x),
-                                 std::max(range.start.y, origin.y),
-                                 std::max(range.start.z, origin.z),
-                                 std::max(range.start.t, origin.t)),
-                tf::xyzt<size_t>(std::min(range.end.x,   origin.x + dims.x),
-                                 std::min(range.end.y,   origin.y + dims.y),
-                                 std::min(range.end.z,   origin.z + dims.z),
-                                 std::min(range.end.t,   origin.t + dims.t)));
-}
 
 // calculate channel intersection with current block
-std::vector<unsigned int> tf::HyperGridCache::CacheBlock::c_intersection(tf::active_channels<> chans)
+std::vector<unsigned int> tf::HyperGridCache::CacheBlock::intersection(tf::active_channels<> chans)
 {
     /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
@@ -743,39 +853,246 @@ std::vector<unsigned int> tf::HyperGridCache::CacheBlock::c_intersection(tf::act
 }
 
 // load from disk
-void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::exception)
+void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
+    // precondition checks
     if(dims.c > 3)
         throw iim::IOException("I/O functions with c (channels) > 3 not yet implemented", __itm__current__function__);
     if(dims.t > 1)
         throw iim::IOException("I/O functions with t (time) > 1 not yet implemented", __itm__current__function__);
+    if(!dims.x || !dims.y || !dims.z || !dims.c ||!dims.t)
+        throw iim::IOException("dims <= 0", __itm__current__function__);
 
+    // allocate memory for data if needed
+    if(!imdata)
+        imdata = new uint8[dims.x * dims.y * dims.z * dims.c * dims.t];
+
+    // try to load data from disk
     if(iim::isFile(path))
     {
-        if(imdata)
-            imdata = new uint8[dims.x * dims.y * dims.z * dims.c];
-        int dimX, dimY, dimZ, dimC, bytes;
-        iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(path, dimX, dimY, dimZ, bytes, dimC, imdata);
+        int dimX = dims.x, dimY=dims.y, dimZ=dims.z, dimC=dims.c, bytes = 1;
+
+        if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
+        {
+            tf::uint8 *interleaved = new tf::uint8[dims.x*dims.y*dims.z*dims.c];
+            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(path, dimX, dimY, dimZ, bytes, dimC, interleaved);
+            tf::uint8 *iptr = interleaved;
+            size_t dims_zyx = dims.z*dims.y*dims.x;
+            for(size_t z=0; z<dims.z; z++)
+            {
+                size_t zyx = z*dims.y*dims.x;
+                for(size_t y=0; y<dims.y; y++)
+                {
+                    size_t stride  = zyx + y*dims.x;
+                    for(size_t x=0; x<dims.x; x++)
+                    {
+                        for(size_t c=0; c<dims.c; c++, iptr++)
+                            imdata[c*dims_zyx + stride + x] = *iptr;
+                    }
+                }
+            }
+            delete[] interleaved;
+        }
+        else
+            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(path, dimX, dimY, dimZ, bytes, dimC, imdata);
+    }
+    else // otherwise initialize to black
+    {
+        size_t imdata_size = dims.x * dims.y * dims.z * dims.c * dims.t;
+        for(size_t i = 0; i<imdata_size; i++)
+            imdata[i] = 0;
     }
 }
 
 // save to disk
-void tf::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::exception)
+void tf::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
+    // precondition checks
     if(dims.c > 3)
         throw iim::IOException("I/O functions with c (channels) > 3 not yet implemented", __itm__current__function__);
     if(dims.t > 1)
         throw iim::IOException("I/O functions with t (time) > 1 not yet implemented", __itm__current__function__);
+    if(!dims.x || !dims.y || !dims.z || !dims.c ||!dims.t)
+        throw iim::IOException("dims <= 0", __itm__current__function__);
 
-    if(imdata)
+    // only save when data has been modified
+    if(imdata && modified)
     {
+		double t0 = -TIME(0);
         if(!iim::isFile(path))
             iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->create3Dimage(path, dims.y, dims.x, dims.z, 1, dims.c);
-        iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(path, imdata, dims.y, dims.x, dims.z, 1, dims.c);
+        if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
+        {
+            tf::uint8 *interleaved = new tf::uint8[dims.x*dims.y*dims.z*dims.c];
+            tf::uint8 *write_ptr = interleaved;
+            size_t dims_zyx = dims.z*dims.y*dims.x;
+            for(size_t z=0; z<dims.z; z++)
+            {
+                size_t zyx = z*dims.y*dims.x;
+                for(size_t y=0; y<dims.y; y++)
+                {
+                    size_t stride  = zyx + y*dims.x;
+                    for(size_t x=0; x<dims.x; x++)
+                    {
+                        for(size_t c=0; c<dims.c; c++, write_ptr++)
+                            *write_ptr = imdata[c*dims_zyx + stride + x];
+                    }
+                }
+            }
+            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(path, interleaved, dims.y, dims.x, dims.z, 1, dims.c);
+            delete[] interleaved;
+        }
+        else
+            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(path, imdata, dims.y, dims.x, dims.z, 1, dims.c);
+		printf("\n\nblock \"%s\" saved in %.1f seconds\n\n", path.c_str(), t0 + TIME(0));
     }
 }
+
+// put data into current block (rescaling on-the-fly supported)
+void tf::HyperGridCache::CacheBlock::putData(
+    const tf::image5D<uint8> &image,        // 5D image input
+	tf::voi4D<int> image_voi,				// image VOI (already scaled)
+	tf::voi4D<int> block_voi,				// current block VOI (already scaled)
+	tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
+    ) throw (iim::IOException, iom::exception, tf::RuntimeException)
+{
+	/**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
+		path.c_str(), 
+		image.dims.x, image.dims.y, image.dims.z, image.chans.dim, image.dims.t, 
+		image_voi.start.x, image_voi.end.x, image_voi.start.y, image_voi.end.y, image_voi.start.z, image_voi.end.z, image_voi.start.t, image_voi.end.t, 
+		block_voi.start.x, block_voi.end.x, block_voi.start.y, block_voi.end.y, block_voi.start.z, block_voi.end.z, block_voi.start.t, block_voi.end.t, 
+		scaling.x, scaling.y, scaling.z).c_str(), __itm__current__function__);
+
+
+	// check scaling
+	if(!scaling.x || !scaling.y || !scaling.z)
+		throw iim::IOException(tf::strprintf("Invalid scaling {%d,%d,%d}",
+		scaling.x, scaling.y, scaling.z), __itm__current__function__);
+	if( !(scaling.x > 0 && scaling.y > 0 && scaling.z > 0) && !(scaling.x < 0 && scaling.y < 0 && scaling.z < 0))
+		throw iim::IOException(tf::strprintf("Invalid scaling {%d,%d,%d}: all three scaling factors must be > 0 (upscaling) or < 0 (downscaling)",
+		scaling.x, scaling.y, scaling.z), __itm__current__function__);
+
+	// check voi
+	if(image_voi.start.t < 0 || image_voi.end.t - image_voi.start.t <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along t-axis", image_voi.start.t, image_voi.end.t));
+	if(image_voi.start.z < 0 || image_voi.end.z - image_voi.start.z <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along z-axis", image_voi.start.z, image_voi.end.z));
+	if(image_voi.start.y < 0 || image_voi.end.y - image_voi.start.y <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along y-axis", image_voi.start.y, image_voi.end.y));
+	if(image_voi.start.x < 0 || image_voi.end.x - image_voi.start.x <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along x-axis", image_voi.start.x, image_voi.end.x));
+	if(block_voi.start.t < 0 || block_voi.end.t - block_voi.start.t <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along t-axis", block_voi.start.t, block_voi.end.t));
+	if(block_voi.start.z < 0 || block_voi.end.z - block_voi.start.z <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along z-axis", block_voi.start.z, block_voi.end.z));
+	if(block_voi.start.y < 0 || block_voi.end.y - block_voi.start.y <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along y-axis", block_voi.start.y, block_voi.end.y));
+	if(block_voi.start.x < 0 || block_voi.end.x - block_voi.start.x <= 0)
+		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along x-axis", block_voi.start.x, block_voi.end.x));
+
+	// load block if needed
+	if(!imdata)
+		load();
+
+	// prepare metadata
+	unsigned int src_dims[5], src_offset[5], src_count[5], dst_dims[5], dst_offset[5];
+	for(size_t i=0; i<5; i++)
+	{
+		src_dims[i] = image.getDims()[i];
+		dst_dims[i] = dims[i];
+	}
+	src_offset[0] = image_voi.start.x;
+	src_offset[1] = image_voi.start.y;
+	src_offset[2] = image_voi.start.z;
+	src_offset[4] = image_voi.start.t;
+	src_count[0]  = image_voi.end.x - image_voi.start.x;
+	src_count[1]  = image_voi.end.y - image_voi.start.y;
+	src_count[2]  = image_voi.end.z - image_voi.start.z;
+	src_count[4]  = image_voi.end.t - image_voi.start.t;
+	dst_offset[0] = block_voi.start.x;
+	dst_offset[1] = block_voi.start.y;
+	dst_offset[2] = block_voi.start.z;
+	dst_offset[4] = block_voi.start.t;
+
+	// copy and rescale VOI
+    tf::CImageUtils::copyRescaleVOI(image.data, src_dims, src_offset, src_count, imdata, dst_dims, dst_offset, scaling);
+
+	// set this block as modified
+	modified = true;
+}
+
+// read data from block and put into image buffer (rescaling on-the-fly supported)
+void tf::HyperGridCache::CacheBlock::readData(
+    tf::image5D<uint8> & image,             // 5D image buffer (preallocated)
+    tf::voi4D<int> image_voi,				// image VOI (already scaled)
+    tf::voi4D<int> block_voi,				// current block VOI (already scaled)
+    tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
+) throw (iim::IOException, iom::exception, tf::RuntimeException)
+{
+    /**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
+        path.c_str(),
+        image.dims.x, image.dims.y, image.dims.z, image.chans.dim, image.dims.t,
+        image_voi.start.x, image_voi.end.x, image_voi.start.y, image_voi.end.y, image_voi.start.z, image_voi.end.z, image_voi.start.t, image_voi.end.t,
+        block_voi.start.x, block_voi.end.x, block_voi.start.y, block_voi.end.y, block_voi.start.z, block_voi.end.z, block_voi.start.t, block_voi.end.t,
+        scaling.x, scaling.y, scaling.z).c_str(), __itm__current__function__);
+
+
+    // check scaling
+    if(!scaling.x || !scaling.y || !scaling.z)
+        throw iim::IOException(tf::strprintf("Invalid scaling {%d,%d,%d}",
+        scaling.x, scaling.y, scaling.z), __itm__current__function__);
+    if( !(scaling.x > 0 && scaling.y > 0 && scaling.z > 0) && !(scaling.x < 0 && scaling.y < 0 && scaling.z < 0))
+        throw iim::IOException(tf::strprintf("Invalid scaling {%d,%d,%d}: all three scaling factors must be > 0 (upscaling) or < 0 (downscaling)",
+        scaling.x, scaling.y, scaling.z), __itm__current__function__);
+
+    // check voi
+    if(image_voi.start.t < 0 || image_voi.end.t - image_voi.start.t <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along t-axis", image_voi.start.t, image_voi.end.t));
+    if(image_voi.start.z < 0 || image_voi.end.z - image_voi.start.z <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along z-axis", image_voi.start.z, image_voi.end.z));
+    if(image_voi.start.y < 0 || image_voi.end.y - image_voi.start.y <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along y-axis", image_voi.start.y, image_voi.end.y));
+    if(image_voi.start.x < 0 || image_voi.end.x - image_voi.start.x <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along x-axis", image_voi.start.x, image_voi.end.x));
+    if(block_voi.start.t < 0 || block_voi.end.t - block_voi.start.t <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along t-axis", block_voi.start.t, block_voi.end.t));
+    if(block_voi.start.z < 0 || block_voi.end.z - block_voi.start.z <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along z-axis", block_voi.start.z, block_voi.end.z));
+    if(block_voi.start.y < 0 || block_voi.end.y - block_voi.start.y <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along y-axis", block_voi.start.y, block_voi.end.y));
+    if(block_voi.start.x < 0 || block_voi.end.x - block_voi.start.x <= 0)
+        throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along x-axis", block_voi.start.x, block_voi.end.x));
+
+    // load block if needed
+    if(!imdata)
+        load();
+
+    // prepare metadata
+    unsigned int src_dims[5], src_offset[5], src_count[5], dst_dims[5], dst_offset[5];
+    for(size_t i=0; i<5; i++)
+    {
+        src_dims[i] = dims[i];
+        dst_dims[i] = image.getDims()[i];
+    }
+    dst_offset[0] = image_voi.start.x;
+    dst_offset[1] = image_voi.start.y;
+    dst_offset[2] = image_voi.start.z;
+    dst_offset[4] = image_voi.start.t;
+    src_count[0]  = block_voi.end.x - block_voi.start.x;
+    src_count[1]  = block_voi.end.y - block_voi.start.y;
+    src_count[2]  = block_voi.end.z - block_voi.start.z;
+    src_count[4]  = block_voi.end.t - block_voi.start.t;
+    src_offset[0] = block_voi.start.x;
+    src_offset[1] = block_voi.start.y;
+    src_offset[2] = block_voi.start.z;
+    src_offset[4] = block_voi.start.t;
+
+    // copy and rescale VOI
+    tf::CImageUtils::copyRescaleVOI(imdata, src_dims, src_offset, src_count, image.data, dst_dims, dst_offset, scaling);
+}
+
 /*---- END HYPER GRID CACHE BLOCK section --------------------------------------------------------------------------------*/

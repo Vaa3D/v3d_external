@@ -13,17 +13,48 @@ class terafly::CImageUtils
     public:
 
         /**********************************************************************************
-        * Copies the given VOI from "src" to "dst". Offsets and scaling are supported.
+        * Copy the given VOI from "src" to "dst". Offsets and rescaling on-the-fly are supported.
         ***********************************************************************************/
         static void
-            copyVOI(tf::uint8 const * src, //pointer to const data source
-                uint src_dims[5],           //dimensions of "src" along X, Y, Z, channels and T
-                uint src_offset[5],         //VOI's offset along X, Y, Z, <empty> and T
-                uint src_count[5],          //VOI's dimensions along X, Y, Z, <empty> and T
-                tf::uint8* dst,            //pointer to data destination
-                uint dst_dims[5],           //dimensions of "dst" along X, Y, Z, channels and T
-                uint dst_offset[5],         //offset of "dst" along X, Y, Z, <empty> and T
-                uint scaling = 1)           //scaling factor (integer only)
+            copyRescaleVOI(
+                tf::uint8 const * src,          // pointer to const data source
+                uint src_dims[5],				// dimensions of "src" along X, Y, Z, channels and T
+                uint src_offset[5],				// VOI's offset along X, Y, Z, <empty> and T
+                uint src_count[5],				// VOI's dimensions along X, Y, Z, <empty> and T
+                tf::uint8* dst,					// pointer to data destination
+                uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
+                uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
+                tf::xyz<int> scaling = tf::xyz<int>(1,1,1))	// rescaling factors along X,Y,Z (> 0 upscaling, < 0 rescaling)
+        throw (tf::RuntimeException);
+
+
+        /**********************************************************************************
+        * Copy the given VOI from "src" to "dst". Offsets and upscaling are supported.
+        ***********************************************************************************/
+        static void
+            upscaleVOI(tf::uint8 const * src,	// pointer to const data source
+                uint src_dims[5],				// dimensions of "src" along X, Y, Z, channels and T
+                uint src_offset[5],				// VOI's offset along X, Y, Z, <empty> and T
+                uint src_count[5],				// VOI's dimensions along X, Y, Z, <empty> and T
+                tf::uint8* dst,					// pointer to data destination
+                uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
+                uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
+                tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// upscaling factors along X,Y,Z (positive integers only)
+        throw (tf::RuntimeException);
+
+		/**********************************************************************************
+        * Copy the given VOI from "src" to "dst". Offsets and downscaling are supported.
+        ***********************************************************************************/
+        static void
+            downscaleVOI(
+				tf::uint8 const * src,			// pointer to const data source
+                uint src_dims[5],				// dimensions of "src" along X, Y, Z, channels and T
+                uint src_offset[5],				// VOI's offset along X, Y, Z, <empty> and T
+                uint src_count[5],				// VOI's dimensions along X, Y, Z, <empty> and T
+                tf::uint8* dst,					// pointer to data destination (preallocated, 0-initialized)
+                uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
+                uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
+                tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// downscaling factors along X,Y,Z (positive integers only)
         throw (tf::RuntimeException);
 
         /**********************************************************************************

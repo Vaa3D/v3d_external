@@ -11,6 +11,15 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.217 / TeraFly version 2.3.2
+September 14th, 2016
+--------------------------------------------------------------------------------------------
+- Fix: fixed bug which caused crashes when converting/visualizating 16-bit time series.
+- Dev: completed Virtual Pyramid code
+- Dev: updated TeraFly I/O submodule
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.216 / TeraFly version 2.3.1
 September 5th, 2016
 --------------------------------------------------------------------------------------------

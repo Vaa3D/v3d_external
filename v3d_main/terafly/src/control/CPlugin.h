@@ -575,6 +575,37 @@ namespace terafly
         bool operator <  (const xyz &p) const{
             return p.x < x && p.y < y && p.z < z;
         }
+
+		const T& operator[](size_t i) const{
+			if(i==0)
+				return x;
+			else if(i==1)
+				return y;
+			else 
+				return z;
+		}
+		T& operator[](size_t i){
+			if(i==0)
+				return x;
+			else if(i==1)
+				return y;
+			else 
+				return z;
+		}
+
+        xyz<T> operator*(T s) const
+		{
+			xyz<T> res(x,y,z);
+			res.x *= s;
+			res.y *= s;
+			res.z *= s;
+			return res;
+		}
+
+        template <typename T2>
+        operator xyz<T2>() const {
+            return xyz<T2>(T2(x),T2(y),T2(z));
+        }
     };
 
     // 4D point (x + y + z + time)
@@ -584,6 +615,11 @@ namespace terafly
         T x,y,z,t;
         xyzt(void) : x(0), y(0), z(0), t(0){}
         xyzt(T _x, T _y, T _z, T _t) : x(_x), y(_y), z(_z), t(_t){}
+
+        template <typename T2>
+        operator xyzt<T2>() const {
+            return xyzt<T2>(T2(x),T2(y),T2(z),T2(t));
+        }
     };
 
     // 5D point (x + y + z + channel + time)
@@ -593,6 +629,31 @@ namespace terafly
         T x,y,z,c,t;
         xyzct(void) : x(0), y(0), z(0), c(0), t(0){}
         xyzct(T _x, T _y, T _z, T _c=0, T _t=0) : x(_x), y(_y), z(_z), c(_c), t(_t){}
+
+        const T& operator[](size_t i) const{
+            if(i==0)
+                return x;
+            else if(i==1)
+                return y;
+            else if(i==2)
+                return z;
+            else if(i==3)
+                return c;
+            else
+                return t;
+        }
+        T& operator[](size_t i){
+            if(i==0)
+                return x;
+            else if(i==1)
+                return y;
+            else if(i==2)
+                return z;
+            else if(i==3)
+                return c;
+            else
+                return t;
+        }
     };
 
     // 4D Volume Of Interest
@@ -603,15 +664,106 @@ namespace terafly
         xyzt<T> end;
         voi4D() : start(0,0,0,0), end(0,0,0,0){}
         voi4D(xyzt<T> _start, xyzt<T> _end) : start(_start), end(_end){}
-        xyzt<T> dims(){
-            return xyzt<T>(
-                        end.x > start.x ? end.x-start.x : 0,
-                        end.y > start.y ? end.y-start.y : 0,
-                        end.z > start.z ? end.z-start.z : 0,
-                        end.t > start.t ? end.t-start.t : 0);
+        xyzt<size_t> dims(){
+            return xyzt<size_t>(
+                        size_t(end.x > start.x ? end.x-start.x : 0),
+                        size_t(end.y > start.y ? end.y-start.y : 0),
+                        size_t(end.z > start.z ? end.z-start.z : 0),
+                        size_t(end.t > start.t ? end.t-start.t : 0));
         }
-        T size(){
-            xyzt<T> _dims=dims(); return _dims.x*_dims.y*_dims.z*_dims.t;
+        size_t size(){
+            xyzt<size_t> _dims=dims(); return _dims.x*_dims.y*_dims.z*_dims.t;
+        }
+
+        voi4D<T>& operator/=(xyz<T> s){
+            start.x /= T(s.x);
+            start.y /= T(s.y);
+            start.z /= T(s.z);
+            end.x   /= T(s.x);
+            end.y   /= T(s.y);
+            end.z   /= T(s.z);
+            return *this;
+		}
+
+        voi4D<T>& operator*=(xyz<T> s){
+            start.x *= T(s.x);
+            start.y *= T(s.y);
+            start.z *= T(s.z);
+            end.x   *= T(s.x);
+            end.y   *= T(s.y);
+            end.z   *= T(s.z);
+            return *this;
+        }
+
+        voi4D<T>& operator-=(xyz<T> s){
+            start.x -= T(s.x);
+            start.y -= T(s.y);
+            start.z -= T(s.z);
+            end.x   -= T(s.x);
+            end.y   -= T(s.y);
+            end.z   -= T(s.z);
+            return *this;
+        }
+
+        voi4D<T>& operator-=(xyzt<size_t> s){
+            start.x -= T(s.x);
+            start.y -= T(s.y);
+            start.z -= T(s.z);
+            start.t -= T(s.t);
+            end.x   -= T(s.x);
+            end.y   -= T(s.y);
+            end.z   -= T(s.z);
+            end.t   -= T(s.t);
+            return *this;
+        }
+
+        voi4D<T>& operator-=(xyzct<size_t> s){
+            start.x -= T(s.x);
+            start.y -= T(s.y);
+            start.z -= T(s.z);
+            start.t -= T(s.t);
+            end.x   -= T(s.x);
+            end.y   -= T(s.y);
+            end.z   -= T(s.z);
+            end.t   -= T(s.t);
+            return *this;
+        }
+
+        voi4D<T>& operator+=(xyz<T> s){
+            start.x += T(s.x);
+            start.y += T(s.y);
+            start.z += T(s.z);
+            end.x   += T(s.x);
+            end.y   += T(s.y);
+            end.z   += T(s.z);
+            return *this;
+        }
+
+        template <typename T2>
+        operator voi4D<T2>() const {
+            voi4D<T2> voi;
+            voi.start.x = T2(start.x);
+            voi.start.y = T2(start.y);
+            voi.start.z = T2(start.z);
+            voi.start.t = T2(start.t);
+            voi.end.x = T2(end.x);
+            voi.end.y = T2(end.y);
+            voi.end.z = T2(end.z);
+            voi.end.t = T2(end.t);
+            return voi;
+        }
+
+        voi4D<int> rounded() const{
+            voi4D<int> voi;
+            voi.start.x = round(start.x);
+            voi.start.y = round(start.y);
+            voi.start.z = round(start.z);
+            voi.start.t = round(start.t);
+            voi.end.x = round(end.x);
+            voi.end.y = round(end.y);
+            voi.end.z = round(end.z);
+            voi.end.t = round(end.t);
+            return voi;
         }
     };
 
@@ -622,7 +774,7 @@ namespace terafly
         size_t dim;
         active_channels() : table(0), dim(0){}
         active_channels(T* _table, size_t _dim) : table(_table), dim(_dim){}
-        std::string toString(){
+        std::string toString() const{
             std::string res;
             for(size_t i=0; i<dim; i++)
                 res = res+num2str<T>(table[i]) + (i < dim-1 ? "," :  "");
@@ -633,6 +785,33 @@ namespace terafly
             for(size_t i=0; i<chans.size(); i++)
                 res = res+num2str<T>(chans[i]) + (i < chans.size()-1 ? "," :  "");
             return res;
+        }
+
+        // Copy constructor
+        active_channels(const active_channels & chans)
+        {
+            // do the copy
+            dim = chans.dim;
+            table = new T[dim];
+            for(size_t i=0; i<dim; i++)
+                table[i] = chans.table[i];
+        }
+
+        // Assignment operator
+        active_channels& operator= (const active_channels & chans)
+        {
+            // self-assignment guard
+            if (this == &chans)
+                return *this;
+
+            // do the copy
+            dim = chans.dim;
+            table = new T[dim];
+            for(size_t i=0; i<dim; i++)
+                table[i] = chans.table[i];
+
+            // return the existing object so we can chain this operator
+            return *this;
         }
     };
 
@@ -646,8 +825,8 @@ namespace terafly
         active_channels<> chans;
         image5D() : data(0), dims(xyzt<size_t>(0,0,0,0)), chans(0,0){}
         image5D(T* _data, xyzt<size_t> _dims, active_channels<> _chans) : data(_data), dims(_dims), chans(_chans){}
-        xyzct<size_t> getDims(){return xyzct<size_t>(dims.x, dims.y, dims.z, static_cast<size_t>(chans.dim), dims.t);}
-        size_t size(){return sizeof(T)*dims.x*dims.y*dims.z*dims.t*chans.dim;}
+        xyzct<size_t> getDims() const {return xyzct<size_t>(dims.x, dims.y, dims.z, static_cast<size_t>(chans.dim), dims.t);}
+        size_t size() const {return sizeof(T)*dims.x*dims.y*dims.z*dims.t*chans.dim;}
     };
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
