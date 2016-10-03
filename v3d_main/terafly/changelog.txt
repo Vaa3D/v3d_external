@@ -11,6 +11,14 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
+Vaa3D v3.219 / TeraFly version 2.4.0
+October 3rd, 2016
+--------------------------------------------------------------------------------------------
+- New: first (beta) version of TeraFly new Virtual Pyramid mode for visualization of Uncon-
+       verted and unstitched images.
+--------------------------------------------------------------------------------------------
+
+
 Vaa3D v3.218 / TeraFly version 2.3.3
 September 14th, 2016
 --------------------------------------------------------------------------------------------

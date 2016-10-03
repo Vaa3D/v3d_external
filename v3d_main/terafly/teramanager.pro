@@ -207,7 +207,7 @@ SOURCES += ../terafly/src/terarepo/src/common/ProgressBar.cpp
 SOURCES += ../terafly/src/terarepo/src/common/QProgressSender.cpp
 
 
-#set up TeraFly plugin (control and presentation classes)
+#set up TeraFly (control and presentation classes)
 RESOURCES += ../terafly/icons.qrc
 INCLUDEPATH += ../terafly/src/control
 HEADERS += ../terafly/src/control/V3Dsubclasses.h
@@ -226,12 +226,15 @@ INCLUDEPATH += ../terafly/src/presentation
 HEADERS += ../terafly/src/presentation/PConverter.h
 HEADERS += ../terafly/src/presentation/PDialogImport.h
 HEADERS += ../terafly/src/presentation/PDialogProofreading.h
+HEADERS += ../terafly/src/presentation/PDialogVirtualPyramid.h
 HEADERS += ../terafly/src/presentation/PMain.h
+HEADERS += ../terafly/src/presentation/PTabVolumeInfo.h
 HEADERS += ../terafly/src/presentation/QArrowButton.h
 HEADERS += ../terafly/src/presentation/QGradientBar.h
 HEADERS += ../terafly/src/presentation/QHelpBox.h
 HEADERS += ../terafly/src/presentation/QGLRefSys.h
 HEADERS += ../terafly/src/presentation/QPixmapToolTip.h
+HEADERS += ../terafly/src/presentation/QPrefixSuffixLineEdit.h
 HEADERS += ../terafly/src/presentation/PAbout.h
 HEADERS += ../terafly/src/presentation/PLog.h
 HEADERS += ../terafly/src/presentation/PAnoToolBar.h
@@ -252,7 +255,9 @@ SOURCES += ../terafly/src/control/VirtualPyramid.cpp
 SOURCES += ../terafly/src/presentation/PConverter.cpp
 SOURCES += ../terafly/src/presentation/PDialogImport.cpp
 SOURCES += ../terafly/src/presentation/PDialogProofreading.cpp
+SOURCES += ../terafly/src/presentation/PDialogVirtualPyramid.cpp
 SOURCES += ../terafly/src/presentation/PMain.cpp
+SOURCES += ../terafly/src/presentation/PTabVolumeInfo.cpp
 SOURCES += ../terafly/src/presentation/PAbout.cpp
 SOURCES += ../terafly/src/presentation/PLog.cpp
 SOURCES += ../terafly/src/presentation/PAnoToolBar.cpp
@@ -261,6 +266,7 @@ SOURCES += ../terafly/src/presentation/QArrowButton.cpp
 SOURCES += ../terafly/src/presentation/QGradientBar.cpp
 SOURCES += ../terafly/src/presentation/QHelpBox.cpp
 SOURCES += ../terafly/src/presentation/QGLRefSys.cpp
+SOURCES += ../terafly/src/presentation/QPrefixSuffixLineEdit.cpp
 SOURCES += ../terafly/src/control/QUndoMarkerCreate.cpp
 SOURCES += ../terafly/src/control/QUndoMarkerDelete.cpp
 SOURCES += ../terafly/src/control/QUndoMarkerDeleteROI.cpp

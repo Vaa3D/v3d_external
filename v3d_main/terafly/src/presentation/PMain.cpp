@@ -54,6 +54,7 @@
 #include "RawVolume.h"
 #include "iomanager.config.h"
 #include "VirtualPyramid.h"
+#include "PDialogVirtualPyramid.h"
 
 using namespace terafly;
 using namespace iim;
@@ -217,28 +218,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     regenVMap_cAction = new QAction("Regenerate volume map", this);
     regenVMap_cAction->setCheckable(true);
     importOptionsMenu-> addAction(regenVMap_cAction);
-    UnconvertedImageMenu = importOptionsMenu->addMenu("Unconverted Image");
-    PyramidResamplingFactorMenu = UnconvertedImageMenu->addMenu("Pyramid resampling factor");
-    PyramidResamplingFactorAction2 = new QAction("2", this);
-    PyramidResamplingFactorAction2->setCheckable(true);
-    PyramidResamplingFactorAction3 = new QAction("3", this);
-    PyramidResamplingFactorAction3->setCheckable(true);
-    PyramidResamplingFactorAction4 = new QAction("4", this);
-    PyramidResamplingFactorAction4->setCheckable(true);
-    QActionGroup* PyramidResamplingFactorMutex = new QActionGroup(this);
-    PyramidResamplingFactorMutex->addAction(PyramidResamplingFactorAction2);
-    PyramidResamplingFactorMutex->addAction(PyramidResamplingFactorAction3);
-    PyramidResamplingFactorMutex->addAction(PyramidResamplingFactorAction4);
-    PyramidResamplingFactorMutex->setExclusive(true);
-    PyramidResamplingFactorMenu->addAction(PyramidResamplingFactorAction2);
-    PyramidResamplingFactorMenu->addAction(PyramidResamplingFactorAction3);
-    PyramidResamplingFactorMenu->addAction(PyramidResamplingFactorAction4);
-    PyramidResamplingFactorAction2->setChecked(CSettings::instance()->getPyramidResamplingFactor() == 2);
-    PyramidResamplingFactorAction3->setChecked(CSettings::instance()->getPyramidResamplingFactor() == 3);
-    PyramidResamplingFactorAction4->setChecked(CSettings::instance()->getPyramidResamplingFactor() == 4);
-    connect(PyramidResamplingFactorAction2, SIGNAL(changed()), this, SLOT(pyramidResamplingFactorChanged()));
-    connect(PyramidResamplingFactorAction3, SIGNAL(changed()), this, SLOT(pyramidResamplingFactorChanged()));
-    connect(PyramidResamplingFactorAction4, SIGNAL(changed()), this, SLOT(pyramidResamplingFactorChanged()));
     /* ------------------------- "Options" menu: Annotation ---------------------- */
     annotationMenu = optionsMenu->addMenu("Annotations");
     markersMenu = annotationMenu->addMenu("Markers");
@@ -522,50 +501,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     //Page "Volume's info": contains informations of the loaded volume
     /**/tf::debug(tf::LEV3, "Page \"Volume's info\"", __itm__current__function__);
-    info_page = new QWidget();
-
-    vol_format_field = new QLineEdit();
-    vol_format_field->setAlignment(Qt::AlignLeft);
-    vol_format_field->setReadOnly(true);
-    vol_format_field->setFont(tinyFont);
-
-    vol_size_field = new QLineEdit();
-    vol_size_field->setAlignment(Qt::AlignLeft);
-    vol_size_field->setReadOnly(true);
-    vol_size_field->setFont(tinyFont);
-
-    vol_dims_vxl_field = new QLineEdit();
-    vol_dims_vxl_field->setAlignment(Qt::AlignLeft);
-    vol_dims_vxl_field->setReadOnly(true);
-    vol_dims_vxl_field->setFont(tinyFont);
-
-    vol_dims_mm_field = new QLineEdit();
-    vol_dims_mm_field->setAlignment(Qt::AlignLeft);
-    vol_dims_mm_field->setReadOnly(true);
-    vol_dims_mm_field->setFont(tinyFont);
-
-
-    tiles_grid_field = new QLineEdit();
-    tiles_grid_field->setAlignment(Qt::AlignLeft);
-    tiles_grid_field->setReadOnly(true);
-    tiles_grid_field->setFont(tinyFont);
-
-
-    tile_dim_field = new QLineEdit();
-    tile_dim_field->setAlignment(Qt::AlignLeft);
-    tile_dim_field->setReadOnly(true);
-    tile_dim_field->setFont(tinyFont);
-
-    voxel_dims_label = new QLabel(QString("Voxel's dims (").append(QChar(0x03BC)).append("m):"));
-    vxl_field = new QLineEdit();
-    vxl_field->setAlignment(Qt::AlignLeft);
-    vxl_field->setReadOnly(true);
-    vxl_field->setFont(tinyFont);
-
-    org_field = new QLineEdit();
-    org_field->setAlignment(Qt::AlignLeft);
-    org_field->setReadOnly(true);
-    org_field->setFont(tinyFont);
+    info_page = new PTabVolumeInfo(this);
 
     //Page "Controls": contains navigation controls
     /**/tf::debug(tf::LEV3, "Page \"Controls\"", __itm__current__function__);
@@ -717,36 +653,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     //****LAYOUT SECTIONS****
     /**/tf::debug(tf::LEV3, "Layouting", __itm__current__function__);
-
-    //Page "Volume's info": contains informations of the loaded volume
-    QGridLayout* info_panel_layout = new QGridLayout();
-
-    QLabel* size_label = new QLabel("Size (in files):");
-    size_label->setFixedWidth(100);
-    info_panel_layout->addWidget(size_label,                    0,0,1,1);
-    info_panel_layout->addWidget(vol_size_field,                0,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Dims (mm):"),      1,0,1,1);
-    info_panel_layout->addWidget(vol_dims_mm_field,             1,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Dims (vxl)"),      2,0,1,1);
-    info_panel_layout->addWidget(vol_dims_vxl_field,            2,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Format"),          3,0,1,1);
-    info_panel_layout->addWidget(vol_format_field,              3,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Tiles grid"),      4,0,1,1);
-    info_panel_layout->addWidget(tiles_grid_field,              4,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Tiles dims"),      5,0,1,1);
-    info_panel_layout->addWidget(tile_dim_field,                5,2,1,1);
-    info_panel_layout->addWidget(voxel_dims_label,              6,0,1,1);
-    info_panel_layout->addWidget(vxl_field,                     6,2,1,1);
-    info_panel_layout->addWidget(new QLabel("Origin (mm)"),     7,0,1,1);
-    info_panel_layout->addWidget(org_field,                     7,2,1,1);
-
-    QVBoxLayout* info_page_layout = new QVBoxLayout(info_page);
-    info_page_layout->addLayout(info_panel_layout, 0);
-    info_page_layout->addStretch(1);
-    info_page->setLayout(info_page_layout);
-    #ifdef Q_OS_LINUX
-    info_page->setStyle(new QWindowsStyle());
-    #endif
 
     // "Global coordinates" panel layout
     QGridLayout* global_coordinates_layout = new QGridLayout();
@@ -981,7 +887,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
-    tabs->addTab(info_page, "Volume's info");
+    tabs->addTab(info_page, "Others");
 
     //overall
     QVBoxLayout* layout = new QVBoxLayout();
@@ -1090,14 +996,7 @@ void PMain::reset()
 
     //reseting info panel widgets
     info_page->setEnabled(false);
-    vol_format_field->setText("");
-    vol_size_field->setText("");
-    vol_dims_mm_field->setText("");
-    vol_dims_vxl_field->setText("");
-    tiles_grid_field->setText("");
-    tile_dim_field->setText("");
-    vxl_field->setText("");
-    org_field->setText("");
+    info_page->reset();
 
     //resetting multiresolution mode widgets
     gradientBar->setEnabled(false);
@@ -1345,10 +1244,46 @@ void PMain::openImage(std::string path /*= ""*/)
            CImport::instance()->setRegenerateVolumeMap(true);
         }
 
-        // check if this is the first time
+        // special checks for Virtual Pyramid
         if(image_format.id == tf::volume_format::UNCONVERTED)
         {
-            ;
+            // if Virtual Pyramid files do not exist on either local or remote storage, launch setup dialog
+            if(!tf::VirtualPyramid::exists(path))
+            {
+                if( (new PDialogVirtualPyramid(path, this))->exec() == QDialog::Rejected)
+                     return;
+
+                // no pyramid found: need to setup a new one
+                CImport::instance()->vpSetup = true;
+            }
+            // if Virtual Pyramid files do exist on BOTH local AND remote storage, ask user selection
+            else if(tf::VirtualPyramid::bothExist(path))
+            {
+                QMessageBox msgBox;
+                msgBox.setText("This volume has two different Virtual Pyramids.");
+                msgBox.setInformativeText("Virtual Pyramid files for this volume have been found on both local storage (Vaa3D's executable folder) and remote storage (volume's folder).<br><br>"
+                                          "Do you want to load the local pyramid (default: press Yes) or the remote pyramid (press No)?");
+                msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+                msgBox.setDefaultButton(QMessageBox::Yes);
+                int ret = msgBox.exec();
+                if(ret == QMessageBox::Yes)
+                    CImport::instance()->vpLocal = true;
+                else if(ret == QMessageBox::No)
+                    CImport::instance()->vpLocal = false;
+                else
+                    return;
+
+                // at least one pyramid found: no need to setup a new pyramid
+                CImport::instance()->vpSetup = false;
+            }
+            else
+            {
+                // one and only one pyramid exists: set local or remote
+                CImport::instance()->vpLocal = tf::VirtualPyramid::existLocal(path);
+
+                // at least one pyramid found: no need to setup a new pyramid
+                CImport::instance()->vpSetup = false;
+            }
         }
 
 
@@ -1684,58 +1619,8 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         timerGUI.start();
         VirtualVolume* volume = CImport::instance()->getHighestResVolume();
         info_page->setEnabled(true);
+        info_page->init();
 
-        double GVoxels = (volume->getDIM_V()/1000.0f)*(volume->getDIM_H()/1000.0f)*(volume->getDIM_D()/1000.0f);
-        double TVoxels = GVoxels/1000.0;
-        if(TVoxels < 0.1)
-        {
-            double GBytes = GVoxels*CImport::instance()->getVMapCDim()*volume->getBYTESxCHAN();
-            vol_size_field->setText(tf::strprintf("  %.1f Gigavoxels (%.1f Gigabytes)", GVoxels, GBytes).c_str());
-        }
-        else
-        {
-            double TBytes = TVoxels*CImport::instance()->getVMapCDim();
-            vol_size_field->setText(tf::strprintf("  %.1f Teravoxels (%.1f Terabytes)", TVoxels, TBytes).c_str());
-        }
-
-        vol_dims_mm_field->setText(
-                    tf::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)",
-                                   fabs(volume->getDIM_H()*volume->getVXL_H()/1000.0f),
-                                   fabs(volume->getDIM_V()*volume->getVXL_V()/1000.0f),
-                                   fabs(volume->getDIM_D()*volume->getVXL_D()/1000.0f)).c_str());
-
-
-        vol_dims_vxl_field->setText(
-                    tf::strprintf("  %d(x) x %d(y) x %d(z) x %d(c) x %d(t)",
-                                   volume->getDIM_H(),
-                                   volume->getDIM_V(),
-                                   volume->getDIM_D(), volume->getDIM_C(), volume->getDIM_T()).c_str());
-        VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
-        vol_format_field->setText(volume_ith->getPrintableFormat().c_str());
-        if(dynamic_cast<StackedVolume*>(volume_ith))
-        {
-            StackedVolume* vol = dynamic_cast<StackedVolume*>(volume_ith);
-            tiles_grid_field->setText(tf::strprintf("  %d(x) x %d(y) x 1(z)", vol->getN_COLS(), vol->getN_ROWS()).c_str());
-            tile_dim_field->setText(tf::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getDIM_D()).c_str());
-        }
-        else if(dynamic_cast<TiledVolume*>(volume_ith) || dynamic_cast<TiledMCVolume*>(volume_ith))
-        {
-            TiledVolume* vol = dynamic_cast<TiledVolume*>(volume_ith) ? dynamic_cast<TiledVolume*>(volume_ith) : dynamic_cast<TiledMCVolume*>(volume_ith)->getVolumes()[0];
-            tiles_grid_field->setText(tf::strprintf("  %d(x) x %d(y) x %d(z)", vol->getN_COLS(), vol->getN_ROWS(), vol->getBLOCKS()[0][0]->getN_BLOCKS()).c_str());
-            tile_dim_field->setText(tf::strprintf("  %d(x) x %d(y) x %d(z)", vol->getStacksWidth(), vol->getStacksWidth(), vol->getBLOCKS()[0][0]->getBLOCK_SIZE()[0]).c_str());
-        }
-        else if(dynamic_cast<BDVVolume*>(volume_ith))
-        {
-            tiles_grid_field->setText("custom grid");
-            tile_dim_field->setText("custom tile dim");
-        }
-        else if(dynamic_cast<VirtualPyramidLayer*>(volume_ith))
-        {
-            tiles_grid_field->setText("custom grid");
-            tile_dim_field->setText("custom tile dim");
-        }
-        vxl_field->setText(tf::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
-        org_field->setText(tf::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
 
         //and setting subvol widgets limits
         /**/tf::debug(tf::LEV3, "setting subvol widgets limits", __itm__current__function__);
@@ -2495,21 +2380,6 @@ void PMain::curveAspectChanged()
         cur_win->view3DWidget->updateTool();
         cur_win->view3DWidget->update();
     }
-}
-
-/**********************************************************************************
-* Called when the corresponding Options->Import->Unconverted Image->Pyramid resampling factor changed
-***********************************************************************************/
-void PMain::pyramidResamplingFactorChanged()
-{
-    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
-
-    if(sender() == PyramidResamplingFactorAction2)
-        CSettings::instance()->setPyramidResamplingFactor(2);
-    else if(sender() == PyramidResamplingFactorAction3)
-        CSettings::instance()->setPyramidResamplingFactor(3);
-    else if(sender() == PyramidResamplingFactorAction4)
-        CSettings::instance()->setPyramidResamplingFactor(4);
 }
 
 /**********************************************************************************

@@ -143,6 +143,17 @@ void tf::CImport::reset()
     vmapData = 0;
     vmapXDim = vmapYDim = vmapZDim = vmapTDim = vmapCDim = -1;
     updateMaxDims();
+
+    vpResamplingFactor = -1;
+    vpResamplingFactors.clear();
+    vpMode = tf::VirtualPyramid::DEFAULT;
+    vpLowResImagePath = "";
+    vpSampling = -1;
+    vpLowerBound = 100;
+    vp = false;
+    vpLocal = true;
+    vpSetup = false;
+    vpBlockDims.x = vpBlockDims.y = vpBlockDims.z = 256;
 }
 
 //automatically called when current thread is started
@@ -160,15 +171,24 @@ void CImport::run()
         if( format.compare(tf::volume_format(tf::volume_format::UNCONVERTED).toString()) == 0 ||
             format.compare(tf::volume_format(tf::volume_format::UNSTITCHED).toString()) == 0   )
         {
-            // get lower bound and resampling factor of the virtual pyramid image to be generated
-            float lower_bound = (static_cast<float>(vmapXDimMax)*vmapYDimMax*vmapZDimMax)/1000000.0f;
-            int resampling_factor = CSettings::instance()->getPyramidResamplingFactor();
+            // reimport high-res unconverted image if needed
+            VirtualVolume* vpHighResVolume = 0;
+            if(reimport)
+                vpHighResVolume = VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3);
 
             // generate virtual pyramid image from high-res unconverted image
-            if(reimport)
-                volumes = (new tf::VirtualPyramid(path, resampling_factor, lower_bound, VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3)))->getVirtualPyramid();
+            if(vpSetup)
+            {
+                if(vpResamplingFactors.empty())
+                    volumes = (new tf::VirtualPyramid(path, vpResamplingFactor,  float(vpLowerBound), vpHighResVolume, vpMode, vpLowResImagePath, vpSampling, vpLocal, vpBlockDims))->virtualPyramid();
+                else
+                    volumes = (new tf::VirtualPyramid(path, vpResamplingFactors, vpHighResVolume, vpMode, vpLowResImagePath, vpSampling, vpLocal, vpBlockDims))->virtualPyramid();
+            }
             else
-                volumes = (new tf::VirtualPyramid(path, resampling_factor, lower_bound))->getVirtualPyramid();
+                volumes = (new tf::VirtualPyramid(path, vpHighResVolume, vpLocal))->virtualPyramid();
+
+            // activate VP mode
+            vp = true;
 
             // load image data from lowest-res pyramid layer
             vmapXDim = volumes[0]->getDIM_H();

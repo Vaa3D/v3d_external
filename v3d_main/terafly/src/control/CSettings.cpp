@@ -72,9 +72,10 @@ void CSettings::loadDefaultSettings()
     annotationVirtualMargin = 20;
     annotationMarkerSize = 20;
     previewMode = true;
-    pyramidResamplingFactor = 2;
+    pyramidResamplingFactor = 3;
     viewerHeight = qApp->desktop()->availableGeometry().height();
     viewerWidth = qApp->desktop()->availableGeometry().width()-380;
+    ramLimitGB = 1.0f;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -126,6 +127,7 @@ void CSettings::writeSettings()
     settings.setValue("pyramidResamplingFactor", pyramidResamplingFactor);
     settings.setValue("viewerHeight", viewerHeight);
     settings.setValue("viewerWidth", viewerWidth);
+    settings.setValue("ramLimitGB", ramLimitGB);
 
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
@@ -189,6 +191,8 @@ void CSettings::readSettings()
         viewerHeight = settings.value("viewerHeight").toInt();
     if(settings.contains("viewerWidth"))
         viewerWidth = settings.value("viewerWidth").toInt();
+    if(settings.contains("ramLimitGB"))
+        ramLimitGB = settings.value("ramLimitGB").toFloat();
 
     int size = settings.beginReadArray("recentImages");
     recentImages.clear();

@@ -71,6 +71,7 @@ class terafly::CSettings
         int pyramidResamplingFactor;
         int viewerHeight;
         int viewerWidth;
+        float ramLimitGB;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -118,6 +119,7 @@ class terafly::CSettings
         int getPyramidResamplingFactor(){return pyramidResamplingFactor;}
         int getViewerHeight(){return viewerHeight;}
         int getViewerWidth(){return viewerWidth;}
+        float getRamLimitGB(){return ramLimitGB;}
 
         void setVolumePathLRU(std::string _volumePathLRU)
         {
@@ -157,6 +159,7 @@ class terafly::CSettings
         void setPyramidResamplingFactor(int newval){pyramidResamplingFactor = newval;}
         void setViewerHeight(int newval){viewerHeight = newval;}
         void setViewerWidth(int newval){viewerWidth = newval;}
+        void setRamLimitGB(float newval){ramLimitGB = newval;}
 
         //GET and SET methods for TeraConverter
         std::string getVCInputPath(){return volumeConverterInputPathLRU;}

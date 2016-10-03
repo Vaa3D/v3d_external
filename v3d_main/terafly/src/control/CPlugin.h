@@ -565,6 +565,7 @@ namespace terafly
     {
         T x,y,z;
         xyz(void) : x(0), y(0), z(0){}
+        xyz(T v) : x(v), y(v), z(v){}
         xyz(T _x, T _y, T _z) : x(_x), y(_y), z(_z){}
         xyz(XYZ &p) : x(p.x), y(p.y), z(p.z){}
 
@@ -605,6 +606,10 @@ namespace terafly
         template <typename T2>
         operator xyz<T2>() const {
             return xyz<T2>(T2(x),T2(y),T2(z));
+        }
+
+        std::string toString(){
+            return strprintf("{%s,%s,%s}", num2str<T>(x).c_str(), num2str<T>(y).c_str(), num2str<T>(z).c_str());
         }
     };
 
@@ -654,6 +659,12 @@ namespace terafly
             else
                 return t;
         }
+
+        std::string toString(){
+            return strprintf("{%s(x) x %s(y) x %s(z) x %s(c) x %s(t)}", num2str<T>(x).c_str(), num2str<T>(y).c_str(), num2str<T>(z).c_str(), num2str<T>(c).c_str(), num2str<T>(t).c_str());
+        }
+
+        T size(){return x*y*z*c*t;}
     };
 
     // 4D Volume Of Interest

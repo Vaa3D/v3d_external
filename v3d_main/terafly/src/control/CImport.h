@@ -41,6 +41,7 @@
 #include "CPlugin.h"
 #include "CSettings.h"
 #include "VirtualPyramid.h"
+#include "PDialogVirtualPyramid.h"
 
 using namespace std;
 
@@ -81,6 +82,19 @@ class terafly::CImport : public QThread
         bool isTimeSeries;                          /* (optional) whether the volume to be imported is a time series */
         int vmapYDimMax, vmapXDimMax, vmapZDimMax, vmapCDimMax, vmapTDimMax; //volume map maximum dimensions
 
+        // additional Virtual Pyramid (VP) input members (for Unconverted and Unstitched formats)
+        int vpLowerBound;                                   // maximum size (in MVoxels) of lowest-res layer in VP
+        int vpResamplingFactor;                             // resampling factor applied at all scales, along all axes
+        std::vector< tf::xyz<int> > vpResamplingFactors;    // individual resampling factors for each scale, for each axis
+        tf::VirtualPyramid::init_mode vpMode;               // VP initialization modality
+        std::string vpLowResImagePath;                      // low-res image file for VP initialization
+        int vpSampling;                                     // sampling factor for VP generation
+        bool vpLocal;                                       // store VP data on local or remote storage
+        bool vp;                                            // VP mode
+        bool vpSetup;                                       // whether a new Virtual Pyramid setup is required
+        tf::xyz<size_t> vpBlockDims;
+
+
         // output members
         vector<iim::VirtualVolume*> volumes;        // stores the volumes at the different resolutions
         tf::uint8* vmapData;                       //volume map data
@@ -96,6 +110,7 @@ class terafly::CImport : public QThread
     public:
 
         friend class PMain;
+        friend class PDialogVirtualPyramid;
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be
@@ -155,6 +170,7 @@ class terafly::CImport : public QThread
                 throw tf::RuntimeException(e.what());
             }
         }
+        bool isVirtualPyramid(){return vp;}
 
         // SET methods
         void setPath(string new_path){path = new_path;}

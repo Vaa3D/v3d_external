@@ -40,6 +40,8 @@
 #include "QHelpBox.h"
 #include "QGradientBar.h"
 #include "QGLRefSys.h"
+#include "PDialogVirtualPyramid.h"
+#include "PTabVolumeInfo.h"
 
 class terafly::PMain : public QWidget
 {
@@ -84,11 +86,6 @@ class terafly::PMain : public QWidget
         QMenu* importOptionsMenu;       //"Import" menu level 2
         QAction *regenMData_cAction;    // if active, metadata will be regenerated
         QAction *regenVMap_cAction;     // if active, volume map is regenerated
-        QMenu* UnconvertedImageMenu;                // "Unconverted Image" menu level 3
-        QMenu* PyramidResamplingFactorMenu;         // "Pyramid Resampling Factor" menu level 4
-        QAction* PyramidResamplingFactorAction2;    // resampling factor = 2
-        QAction* PyramidResamplingFactorAction3;    // resampling factor = 3
-        QAction* PyramidResamplingFactorAction4;    // resampling factor = 4
         // ---- annotation menu level --------------- 2
         QMenu* annotationMenu;          //"Annotation" menu level 2
         // ---- curves menu level ------------------- 3
@@ -179,17 +176,7 @@ class terafly::PMain : public QWidget
 
         QTabWidget *tabs;               //tab widget
         //Page "Volume's info": contains informations of the loaded volume
-        QWidget* info_page;
-        QLineEdit* vol_format_field;
-        QLineEdit* vol_size_field;
-        QLineEdit* vol_dims_mm_field;
-        QLineEdit* vol_dims_vxl_field;
-        QLineEdit* tiles_grid_field;
-        QLineEdit* tile_dim_field;
-        QLabel* voxel_dims_label;
-        QLineEdit* vxl_field;
-        QLineEdit* org_field;
-
+        PTabVolumeInfo* info_page;
 
         //Page "Controls": contains navigation controls
         QWidget* controls_page;
@@ -303,6 +290,7 @@ class terafly::PMain : public QWidget
         friend class CViewer;
         friend class PAnoToolBar;
         friend class PDialogProofreading;
+        friend class PDialogVirtualPyramid;
         friend class myV3dR_GLWidget;
 
         //help texts
@@ -423,11 +411,6 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void curveDimsChanged(int dim);
         void curveAspectChanged();
-
-        /**********************************************************************************
-        * Called when the corresponding Options->Import->Unconverted Image->Pyramid resampling factor changed
-        ***********************************************************************************/
-        void pyramidResamplingFactorChanged();
 
         /**********************************************************************************
         * Called when the corresponding Options->3D annotation->Virtual space size actions are triggered

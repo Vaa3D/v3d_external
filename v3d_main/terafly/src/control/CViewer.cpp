@@ -2061,6 +2061,10 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
         //current windows now gets ready to user input
         isReady = true;
+
+        // zoom-out on Virtual Pyramid requires image refresh
+        if(source->volResIndex > volResIndex && CImport::instance()->isVirtualPyramid())
+            refresh();
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
 
@@ -2598,5 +2602,29 @@ void CViewer::setCursor(const QCursor& cur, bool renderer_only /* = false */)
         CViewer::current->window3D->setCursor(cur);
         CViewer::current->view3DWidget->setCursor(cur);
     }
+}
+
+/**********************************************************************************
+* Refresh image data
+***********************************************************************************/
+void CViewer::refresh() throw (tf::RuntimeException)
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    CVolume *cVolume = CVolume::instance();
+
+    cVolume->setVoi(this, volResIndex, volV0, volV1, volH0, volH1, volD0, volD1, volT0, volT1);
+    cVolume->setSource(this);
+    cVolume->setStreamingSteps(1);
+    connect(CVolume::instance(), SIGNAL(sendData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), this, SLOT(receiveData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
+
+    // update status bar message
+    PMain::getInstance()->statusBar->showMessage("Loading image data...");
+
+    // load new data in a separate thread. When done, the "receiveData" method of the new window will be called
+    cVolume->start();
+
+    // enter "waiting for 5D data" state, if possible
+    this->setWaitingForData(true);
 }
 
