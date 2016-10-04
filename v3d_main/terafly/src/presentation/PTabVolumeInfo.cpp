@@ -53,7 +53,7 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     // virtual pyramid panel
     vp_panel = new QGroupBox("Info", this);
 #ifdef Q_OS_LINUX
-    virtualpyramid_panel->setStyle(new QWindowsStyle());
+    vp_panel->setStyle(new QWindowsStyle());
 #endif
     vp_path = new QLineEdit(this);
     vp_path->setReadOnly(true);
@@ -440,7 +440,7 @@ void tf::PTabVolumeInfo::show_ram_layers_toggled(bool checked)
     else
         vp_ram_show_res_buttons->setText("Show layers");
 
-    //if(vp_ram_panel->isVisible())
+    if(vp_ram_panel->isVisible())
     {
         iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
         if(!volume)
