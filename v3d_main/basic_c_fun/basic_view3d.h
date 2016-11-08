@@ -222,6 +222,9 @@ public:
     virtual int getLocalEndPosX()=0;
     virtual int getLocalEndPosY()=0;
     virtual int getLocalEndPosZ()=0;
+
+    //get marker size, Nov. 08, 2016 by Zhi Zhou
+    virtual int getMarkerSize() const =0;
 };
 
 #endif /* BASIC_VIEW3D_H_ */
