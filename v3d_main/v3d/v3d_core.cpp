@@ -125,7 +125,8 @@
 #include <QPainter>
 #include <QPainterPath>
 //#include <QTextEdit>
-#ifdef USE_Qt5
+
+#ifdef USE_Qt5_VS2015
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -2964,7 +2965,7 @@ void XFormView::dispHistogram()
 
 #define _______XFormWidget_functions________
 
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 XFormWidget::XFormWidget(QWidget *parent) : QMdiSubWindow(parent)
 #else
 XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
@@ -2976,7 +2977,7 @@ XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
 	updateDataRelatedGUI();
 }
 
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QMdiSubWindow(parent) //added on 080814: this function is for future use. Not really get called now
 #else
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QWidget(parent) //added on 080814: this function is for future use. Not really get called now
@@ -5886,7 +5887,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 			curInfo.pimg = tmp_pimg;
 
 			//then select the channel of this image
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 			curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
 #else
 			curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
@@ -5894,7 +5895,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 			//then select RGB info
 			int rgbVal;
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 			rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
 			curInfo.rr = rgbVal/255.0;
 			rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
@@ -5924,7 +5925,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 				curInfo.pimg = tmp_pimg;
 
 				//then select the channel of this image
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 				curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
 #else
 				curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
@@ -5932,7 +5933,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 				//then select RGB info
 				int rgbVal;
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 				rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.rr = rgbVal/255.0;
 				rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);

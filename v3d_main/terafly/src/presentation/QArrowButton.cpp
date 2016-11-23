@@ -1,5 +1,5 @@
 #include <cmath>
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 #include <QPainter>
 #endif
 #include "QArrowButton.h"

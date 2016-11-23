@@ -1467,4 +1467,4 @@ GLAPI void APIENTRY glSamplePass( GLenum pass );
 }
 #endif
 
-#endif /* __gl_h_ */
+//#endif /* __gl_h_ */

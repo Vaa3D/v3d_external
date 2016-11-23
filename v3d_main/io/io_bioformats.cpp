@@ -1,6 +1,6 @@
 #include "io_bioformats.h"
 #include "../basic_c_fun/v3d_message.h"
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
   #include <QtWidgets>
 #else
   #include <QtGui>

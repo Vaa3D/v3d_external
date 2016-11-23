@@ -41,7 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef _V3D_PLUGIN_LOADER_H_
 #define _V3D_PLUGIN_LOADER_H_
 
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
   #include <QtWidgets>
 #else
   #include <QtGui>
