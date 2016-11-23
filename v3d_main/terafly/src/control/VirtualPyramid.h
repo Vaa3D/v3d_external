@@ -141,7 +141,7 @@ class terafly::VirtualPyramidLayer : public iim::VirtualVolume
         throw (iim::IOException);
 
         // deconstructor
-        virtual ~VirtualPyramidLayer() throw (iim::IOException);
+		//virtual ~VirtualPyramidLayer() throw (iim::IOException);   ==>  Commented out by MK, 11/22/2016, due to overriding rules in newer version of C++ language. Need to be aware of memory problem later on.
 
         // GET methods
         tf::VirtualPyramid* pyramid(){return _parent;}

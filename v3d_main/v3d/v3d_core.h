@@ -88,7 +88,7 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 #ifdef USE_Qt5
 #include "./painting/shared/arthurwidgets.h"
 #else
-#include <arthurwidgets.h>
+#include "../../../Qt/Qt5.6.2/Examples/Qt-5.6/widgets/painting/shared/arthurwidgets.h" // Added by MK, 11/18/2016, for migrating from Qt4 to At5.
 #endif
 
 #include "../cellseg/template_matching_seg.h"

@@ -27,6 +27,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  2010-06-01: add more plugin interface for global setting and swc curves
 **
 ****************************************************************************/
+
+// Added by MK, for migrating from VS2010/Qt4 to VS2015/Qt5
+#define USE_Qt5
+
+///////////////////////////////////////////////////////////////////
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #define __v3d_custom_toolbar__
@@ -42,6 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <QWorkspace>
 #endif
+
 #include "v3d_actions.h"
 #include "v3d_compile_constraints.h"
 #include "../worm_straighten_c/bdb_minus.h"
