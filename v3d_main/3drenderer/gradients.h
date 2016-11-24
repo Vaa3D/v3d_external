@@ -71,6 +71,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 **
 ****************************************************************************/
 
+<<<<<<< HEAD
 
 #ifndef GRADIENTS_H
 #define GRADIENTS_H
@@ -78,6 +79,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifdef USE_Qt5_VS2015
 #include <QtWidgets>
 #include "..\..\..\released_plugins\v3d_plugins\neurontracing_MOST\hoverpoints.h"
+=======
+#ifndef GRADIENTS_H
+#define GRADIENTS_H
+
+#ifdef USE_Qt5
+#include <QWidget>
+#include "../v3d/painting/shared/hoverpoints.h"
+>>>>>>> 25373f43ef21fe3014152ff2fd930c3c26707494
 #else
 #include <QtGui>
 #include <hoverpoints.h>

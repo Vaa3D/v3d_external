@@ -25,6 +25,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 *************/
 
+<<<<<<< HEAD
 // Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
 #pragma warning(disable : 4430)
 #ifdef USE_Qt5_VS2015
@@ -32,6 +33,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../../../../Qt/Qt5.6.2/5.6/msvc2015_64/include/QtWidgets//qcolordialog.h"
 #endif
 //////////////////////////////////////////////////////////
+=======
+
+>>>>>>> 25373f43ef21fe3014152ff2fd930c3c26707494
 
 
 /*

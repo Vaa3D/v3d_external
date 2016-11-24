@@ -6,8 +6,8 @@
 #ifdef USE_Qt5_VS2015 //added by PHC 2015May
 
 #include <QtWidgets>
-//#include <QtConcurrent>
-//#include <C:\Qt\Qt5.6.2\5.6\msvc2015_64\include\QtConcurrent>
+#include <QtConcurrent>
+//#include </Users/pengh/Qt5.4.1//5.4/clang_64/lib/QtConcurrent.framework/Versions/5/Headers/QtConcurrent>
 
 
 #else

@@ -141,11 +141,15 @@ class terafly::VirtualPyramidLayer : public iim::VirtualVolume
         throw (iim::IOException);
 
         // deconstructor
+<<<<<<< HEAD
 #ifndef USE_Qt5_VS2015  // MK, 11/23/2016, due to overriding rules in newer version of C++ language. Need to be aware of memory problem later on.
 		virtual ~VirtualPyramidLayer() throw (iim::IOException);
 #endif // USE_Qt5_VS2015
 
 		
+=======
+        virtual ~VirtualPyramidLayer() throw (iim::IOException);
+>>>>>>> 25373f43ef21fe3014152ff2fd930c3c26707494
 
         // GET methods
         tf::VirtualPyramid* pyramid(){return _parent;}

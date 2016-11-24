@@ -66,16 +66,16 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 	int pixelnbits=1; //100817
 
     const char * curFileSuffix = getSuffix(imgSrcFile);
-    printf("The current input file has the suffix [%s]\n", curFileSuffix);
+    //printf("The current input file has the suffix [%s]\n", curFileSuffix);
 
     if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
         strcasecmp(curFileSuffix, "lsm")==0) ) //read tiff/lsm stacks
 	{
-            printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
+            //printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
 
 #if defined _WIN32
 		{
-			v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+            //v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
             if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
 			{
 				if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
@@ -109,7 +109,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 		}
 		else
 		{
-			v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+            //v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
             if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
 			{
 				if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
@@ -127,7 +127,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 				}
 			}
 		}
-                printf("Image4DSimple::loadImage finished\n");
+               // printf("Image4DSimple::loadImage finished\n");
 
 #endif
 
@@ -135,7 +135,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 
     else if (curFileSuffix && (strcasecmp(curFileSuffix, "nrrd")==0 || strcasecmp(curFileSuffix, "nhdr")==0)) //read nrrd stacks
     {
-        printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
+       // printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);
         float pxinfo[4];
         float spaceorigin[3];
         if (!read_nrrd_with_pxinfo(imgSrcFile, data1d, tmp_sz, tmp_datatype, pxinfo, spaceorigin))
@@ -255,11 +255,11 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
     if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
         strcasecmp(curFileSuffix, "lsm")==0) ) //read tiff/lsm stacks
     {
-            printf("Image4DSimple::loadImage loading filename=[%s] slice =[%ld]\n", filename, zsliceno);
+           // printf("Image4DSimple::loadImage loading filename=[%s] slice =[%ld]\n", filename, zsliceno);
 
 #if defined _WIN32
         {
-            v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+            //v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
             if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
             {
                 if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
@@ -292,7 +292,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
         }
         else
         {
-            v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+            //v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
             if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
             {
                 if (loadTifSlice(imgSrcFile, data1d, tmp_sz, tmp_datatype, zsliceno, false))
@@ -310,7 +310,7 @@ void Image4DSimple::loadImage_slice(char filename[], bool b_useMyLib, V3DLONG zs
                 }
             }
         }
-                printf("Image4DSimple::loadImage finished\n");
+               // printf("Image4DSimple::loadImage finished\n");
 
 #endif
 
