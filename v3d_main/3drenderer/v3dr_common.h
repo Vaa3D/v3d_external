@@ -26,6 +26,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 *************/
 
 
+// Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
+#pragma warning(disable : 4430)
+#ifdef USE_Qt5_VS2015
+#include "../../../../Qt/Qt5.6.2/5.6/msvc2015_64/include/QtWidgets/qprogressdialog.h"
+#include "../../../../Qt/Qt5.6.2/5.6/msvc2015_64/include/QtWidgets//qcolordialog.h"
+#endif
+//////////////////////////////////////////////////////////
+
 
 
 /*
@@ -41,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 //for X11/Qt, qt constant must be included before any header file that defines Status
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -256,7 +264,7 @@ inline RGBA8 RGBA8FromQColor(QColor qc)
 
 #define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
 #define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 #define QCOLORV(var)    (var.value<QColor>( ))
 #define RGBA8V(var)     RGBA8FromQColor(var.value<QColor>( ))
 #else

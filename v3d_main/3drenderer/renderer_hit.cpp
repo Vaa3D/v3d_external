@@ -1280,7 +1280,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			bool ok1=true;
 			V3DLONG chno=1;
 			if (curImg->getCDim()>1)
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 				chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
 #else
 				chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);

@@ -3,7 +3,7 @@
 #ifndef __T_HEADER_PHC__
 #define __T_HEADER_PHC__
 
-#ifdef USE_Qt5 //added by PHC 2015May
+#ifdef USE_Qt5_VS2015 //added by PHC 2015May
 
 #include <QtWidgets>
 #include <QtConcurrent>

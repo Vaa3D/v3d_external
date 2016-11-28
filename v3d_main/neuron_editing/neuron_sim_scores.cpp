@@ -56,7 +56,7 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
     if(bmenu)
     {
         bool ok1;
-#ifndef USE_Qt5
+#ifndef USE_Qt5_VS2015
         V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
                                                        "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
 #else

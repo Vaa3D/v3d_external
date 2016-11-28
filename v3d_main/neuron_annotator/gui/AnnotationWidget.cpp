@@ -15,7 +15,7 @@
 #include "../utility/DataThread.h"
 #include "../utility/JacsUtil.h"
 #include <QModelIndex>
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
   #include <QtWidgets>
 #else
   #include <QtGui>

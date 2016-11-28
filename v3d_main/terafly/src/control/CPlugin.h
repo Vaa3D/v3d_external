@@ -29,7 +29,7 @@
 #ifndef __TERAMANAGER_C_PLUGIN_H__
 #define __TERAMANAGER_C_PLUGIN_H__
 
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 #include <QWidget>
 #else
 #include <QtGui>

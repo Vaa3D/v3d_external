@@ -35,7 +35,10 @@
 #endif
 
 #include <stddef.h> /* for wchar_t */
-#include <GL/gl.h>
+#include "../../../../../v3d_main/v3d/VersionControl.h"
+#ifdef USE_Qt5_2015
+#include <GL/glew.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -27,17 +27,22 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  2010-06-01: add more plugin interface for global setting and swc curves
 **
 ****************************************************************************/
+
+
+
+///////////////////////////////////////////////////////////////////
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #define __v3d_custom_toolbar__
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
   #include <QtWidgets>
 #else
   #include <QtGui>
 #endif
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include <QMainWindow>
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 #include <QMdiArea>
 #else
 #include <QWorkspace>
@@ -280,14 +285,14 @@ private:
      //void saveDataFor3DViewer(iDrawExternalParameter* _idep);
 #ifdef __v3d_custom_toolbar__
 public :
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 	QMdiArea *workspace;
 #else
 	QWorkspace *workspace;
 #endif
 private:
 #else
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 	QMdiArea *workspace;
 #else
 	QWorkspace *workspace;
@@ -475,7 +480,7 @@ public: //for image processing, some of the parameters should be globally set
 		if (workspace)
 		{
 			workspace->update();
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 			foreach (QWidget* w, workspace->subWindowList()) w->update();
 #else
 			foreach (QWidget* w, workspace->windowList()) w->update();
@@ -484,7 +489,7 @@ public: //for image processing, some of the parameters should be globally set
 	}
 	void cascadeWindows()
 	{
-#ifdef USE_Qt5
+#ifdef USE_Qt5_VS2015
 		if (workspace) workspace->cascadeSubWindows();
 #else
 		if (workspace) workspace->cascade();
