@@ -3052,7 +3052,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
-#ifdef USE_Qt5_VS2015
+#ifdef USE_Qt5_VS2015_Win7_10_14393
     node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
                               QObject::tr("SWC type: "
                                         "\n 0 -- undefined (white)"

@@ -86,8 +86,8 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 #include "mapview.h"
 
 // // Added by MK, 11/23/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
-#include <VersionControl.h>
-#ifdef USE_Qt5_VS2015
+#include "version_control.h"
+#ifdef USE_Qt5_VS2015_Win7_10_14393
 #include "../../../Qt/Qt5.6.2/Examples/Qt-5.6/widgets/painting/shared/arthurwidgets.h" 
 #else
 #include <arthurwidgets.h>

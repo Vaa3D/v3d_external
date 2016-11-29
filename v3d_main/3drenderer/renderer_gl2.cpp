@@ -35,6 +35,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *      Author: ruanzongcai
  */
 
+#include "version_control.h"
+#ifdef USE_Qt5_VS2015_Win7_10_14393
+#include <QtGui>
+//#include <QtANGLE\GLES2\gl2.h>
+#include <QtANGLE\GLES3\gl3.h>
+#endif // USE_Qt5_VS2015_Win7_10_14393
+
 
 #include "renderer_gl2.h"
 
@@ -48,7 +55,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		QObject::tr("3D View: Please close some images or views to release memory, then try again.\n\n") ); \
 }
 
-#define CATCH_handler( func_name ) \
+#define CATCH_handler( func_name ) (\
 	catch (std::exception& e) { \
 		\
 		qDebug("    *** std exception occurred in "func_name); \
@@ -63,7 +70,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		\
 		ERROR_MessageBox( func_name, "UNKOWN", "unknown exception" ); \
 		\
-	}
+	})
 
 
 
@@ -100,8 +107,9 @@ void Renderer_gl2::initialize(int version)
 		if (version<2) return;
 
 		loadShader();
-
+		//throw "Renderer_gl2::initialize";
 	}CATCH_handler( "Renderer_gl2::initialize" );
+	//catch (char*) {}
 }
 
 

@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef ITEM_EDITOR_H_
 #define ITEM_EDITOR_H_
 
-#ifdef USE_Qt5_VS2015
+#ifdef USE_Qt5_VS2015_Win7_10_14393
   #include <QtWidgets>
 #else
   #include <QtGui>

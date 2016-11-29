@@ -91,7 +91,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #endif
 
-#include <VersionControl.h>
+#include <version_control.h>
 
 //yuy added _WIN6, 2010-05-19
 // #ifdef _WIN32 || _WIN64
@@ -100,7 +100,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX //added by PHC, 2010-05-20 to overcome VC min max macro
 	#include <windows.h>
-	#ifdef USE_Qt5_VS2015
+	#ifdef USE_Qt5_VS2015_Win7_10_14393
 		#include <GL/glew.h>
 	#elif 
 		#include <GL/glu.h>
