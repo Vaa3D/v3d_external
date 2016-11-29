@@ -36,11 +36,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  */
 
 #include "version_control.h"
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
 #include <QtGui>
 //#include <QtANGLE\GLES2\gl2.h>
 #include <QtANGLE\GLES3\gl3.h>
-#endif // USE_Qt5_VS2015_Win7_10_14393
+#endif // USE_Qt5_VS2015_Win7_10_14393 || USE_Qt5_VS2015_Win10_10_14393
 
 
 #include "renderer_gl2.h"

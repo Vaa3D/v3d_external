@@ -72,7 +72,7 @@ PConverter::PConverter(V3DPluginCallback *callback, QWidget *parent) : QWidget(p
     import_panel = new QGroupBox("Step 1: Import volume from:");
     conversion_panel = new QGroupBox("Step 2: Convert volume to:");
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393 
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393) 
     
     import_panel->setStyle(new QCommonStyle());
     conversion_panel->setStyle(new QCommonStyle());

@@ -154,7 +154,7 @@ void Renderer_gl1::loadLabelfieldSurf(const QString& filename, int ch)
     {
     	qtitle = QObject::tr("Creating Range Surface");
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     	mesh_iso0 = QInputDialog::getInt(0, qtitle,
 										qchannel+ QObject::tr("Range from: "),
     									0, 0, 0xffff, 1, &ok);					// 0--2^16
@@ -165,7 +165,7 @@ void Renderer_gl1::loadLabelfieldSurf(const QString& filename, int ch)
 #endif
     	if (! ok) return;
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     	mesh_iso1 = QInputDialog::getInt(0, qtitle,
 										qchannel+  QObject::tr("Range from %1 to: ").arg(mesh_iso0),
     									mesh_iso0, mesh_iso0, 0xffff, 1, &ok);		// 0--2^16
@@ -186,7 +186,7 @@ void Renderer_gl1::loadLabelfieldSurf(const QString& filename, int ch)
 		if (! ok) return;
 		mesh_method = items.indexOf(item);
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
 		mesh_density = QInputDialog::getInt(0, qtitle,
 										qchannel+ QObject::tr("Creating Mesh density:"), 100, 0, 1000, 1, &ok);
 #else
@@ -993,7 +993,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
 	int myoffset;
 	bool ok1;
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
 	myoffset = QInputDialog::getInt((QWidget*)widget, "z offset", "z offset:", 0, -1000, 1000, 1, &ok1);
 #else
 	myoffset = QInputDialog::getInteger((QWidget*)widget, "z offset", "z offset:", 0, -1000, 1000, 1, &ok1);

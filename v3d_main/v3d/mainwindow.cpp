@@ -41,7 +41,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 **
 ****************************************************************************/
 #include "../3drenderer/v3dr_common.h"
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -224,7 +224,7 @@ MainWindow::MainWindow()
     setAcceptDrops(true); //080827
     //
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     workspace = new QMdiArea;
 #else
     workspace = new QWorkspace;
@@ -516,7 +516,7 @@ void MainWindow::handleCoordinatedCloseEvent_real() {
     }
     //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     workspace->closeAllSubWindows();
 #else
     workspace->closeAllWindows();
@@ -796,7 +796,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         if (existing_imgwin)
         {
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
             workspace->setActiveSubWindow(existing_imgwin);
 #else
             workspace->setActiveWindow(existing_imgwin);
@@ -845,7 +845,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
                             child_rawimg->show();
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
@@ -873,7 +873,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             statusBar()->showMessage(tr("File loaded [%1]").arg(cc.labelfield_image_file_list.at(i)), 2000);
                             child_maskimg->show();
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
@@ -1038,7 +1038,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     statusBar()->showMessage(tr("File loaded [%1]").arg(cur_atlas_list[kk].imgfile), 2000);
                     child->show();
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
                     workspace->cascadeSubWindows();
 #else
                     workspace->cascade();
@@ -1512,7 +1512,7 @@ void MainWindow::import_GeneralImageFile()
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
             workspace->setActiveSubWindow(existing);
 #else
             workspace->setActiveWindow(existing);
@@ -1544,7 +1544,7 @@ void MainWindow::import_Leica()
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
             workspace->setActiveSubWindow(existing);
 #else
             workspace->setActiveWindow(existing);
@@ -1988,7 +1988,7 @@ void MainWindow::updateWindowMenu()
     windowMenu->addAction(previousAct);
     windowMenu->addAction(separator_ImgWindows_Act);
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     QList<QMdiSubWindow *> windows = workspace->subWindowList();
 #else
     QList<QWidget *> windows = workspace->windowList();
@@ -2656,14 +2656,14 @@ XFormWidget *MainWindow::createMdiChild()
     //																	//080814: important fix to assure the destructor function will be called.
     XFormWidget *child = new XFormWidget((QWidget *)0);
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     workspace->addSubWindow(child);  //child is wrapped in his parentWidget()
 #else
     workspace->addWindow(child);  //child is wrapped in his parentWidget()
 #endif
     //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help to update the workspace->windowList()
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->subWindowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
 #else
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
@@ -2687,7 +2687,7 @@ XFormWidget *MainWindow::createMdiChild()
 XFormWidget *MainWindow::activeMdiChild()
 {
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     return qobject_cast<XFormWidget *>(workspace->activeSubWindow());
 #else
     return qobject_cast<XFormWidget *>(workspace->activeWindow());
@@ -2700,7 +2700,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //090818 RZC 20110427 YuY
     XFormWidget *mdiChildFind;
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2722,7 +2722,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     {
         // try find image name contains the input string from the end
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
         foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
         foreach (QWidget *window, workspace->windowList()) {
@@ -2755,7 +2755,7 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
 {
     nchild=0;
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2767,7 +2767,7 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
     XFormWidget ** plist = new XFormWidget * [nchild];
     int i=0;
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2780,7 +2780,7 @@ bool MainWindow::setCurHiddenSelectedWindow( XFormWidget* a) //by PHC, 101009
 {
     bool b_found=false;
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) //ensure the value is valid (especially the window has not been closed)
 #else
     foreach (QWidget *window, workspace->windowList()) //ensure the value is valid (especially the window has not been closed)
@@ -3002,7 +3002,7 @@ void MainWindow::func_procPC_Atlas_view_atlas_computeVanoObjStat()
     //ask which channel to compute info
     bool ok1;
 
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
     int ch_ind = QInputDialog::getInt(this, tr("channel"),
                                           tr("The selected directory contains %1 .ano files. <br><br> which image channel to compute the image objects statistics?").arg(listRecompute.size()),
                                           1, 1, 3, 1, &ok1) - 1;

@@ -22,7 +22,7 @@ class EmptyClass{};
 typedef void (EmptyClass::*VoidFunc)();
 #ifndef __v3d_custom_toolbar_plugin__
 typedef void (MainWindow::*MainWindowFunc)();
-#ifdef USE_Qt5_VS2015_Win7_10_14393
+#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
 typedef void (QMdiArea::*WorkspaceFunc)();
 #else
 typedef void (QWorkspace::*WorkspaceFunc)();
