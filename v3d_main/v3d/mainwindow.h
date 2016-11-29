@@ -36,7 +36,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define MAINWINDOW_H
 #define __v3d_custom_toolbar__
 
-#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include <QMainWindow>
 
-#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 #include <QMdiArea>
 #else
 #include <QWorkspace>
@@ -287,14 +287,14 @@ private:
      //void saveDataFor3DViewer(iDrawExternalParameter* _idep);
 #ifdef __v3d_custom_toolbar__
 public :
-#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 	QMdiArea *workspace;
 #else
 	QWorkspace *workspace;
 #endif
 private:
 #else
-#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 	QMdiArea *workspace;
 #else
 	QWorkspace *workspace;
@@ -483,7 +483,7 @@ public: //for image processing, some of the parameters should be globally set
 		{
 			workspace->update();
 
-#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 			foreach (QWidget* w, workspace->subWindowList()) w->update();
 #else
 			foreach (QWidget* w, workspace->windowList()) w->update();
@@ -493,7 +493,7 @@ public: //for image processing, some of the parameters should be globally set
 	void cascadeWindows()
 	{
 
-#if defined(USE_Qt5_VS2015_Win7_10_14393) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 		if (workspace) workspace->cascadeSubWindows();
 #else
 		if (workspace) workspace->cascade();
