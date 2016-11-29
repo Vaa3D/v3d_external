@@ -65,6 +65,7 @@ My4DImage* MainWindow::currentImage()
 QList<void*> MainWindow::allWindowList()
 {
 	QList<void*> list;
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 	foreach (QWidget* w, workspace->subWindowList()) list << w;
 #else

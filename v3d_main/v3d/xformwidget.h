@@ -122,6 +122,7 @@ struct iDrawExternalParameter
      }
 };
 
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 class XFormWidget : public QMdiSubWindow, public TriviewControl //class XFormWidget : public QMainWindow
 #else

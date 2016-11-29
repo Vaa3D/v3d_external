@@ -31,6 +31,12 @@
 #include "CSettings.h"
 #include "IM_config.h"
 
+//////// Added by MK, 11/27/2016, for Qt5/VS2015 environment 
+#ifdef USE_Qt5_VS2015
+#include <QtWidgets>
+#endif
+//////////////////////////////////////////////////////////////
+
 using namespace terafly;
 using namespace std;
 

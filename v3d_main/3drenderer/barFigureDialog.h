@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef BARFIGUREDIALOG_H_
 #define BARFIGUREDIALOG_H_
 
+
 #include "version_control.h"
 #ifdef USE_Qt5_VS2015_Win7_10_14393
   #include <QtWidgets>

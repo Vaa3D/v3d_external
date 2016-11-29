@@ -1,4 +1,4 @@
-//a header file for Qt5 / Qt4 migration
+// This is a header for migrating from Qt4 to Qt5, under VS2015 environment.
 
 #ifndef __T_HEADER_PHC__
 #define __T_HEADER_PHC__
@@ -7,7 +7,6 @@
 
 #include <QtWidgets>
 #include <QtConcurrent>
-
 
 #else
 

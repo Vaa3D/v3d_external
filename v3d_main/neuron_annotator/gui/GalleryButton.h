@@ -3,6 +3,7 @@
 
 #include "Na3DWidget.h"
 #include "NeuronContextMenu.h"
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
   #include <QtWidgets>
 #else

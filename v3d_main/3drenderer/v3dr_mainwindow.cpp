@@ -381,6 +381,7 @@ int V3dR_MainWindow::getAnimateRotTimePoints(QString qtitle, bool* ok, int v)
 	if (glWidget->dataDim5()>1)
 	{
 		timepoints = v;
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 		timepoints = QInputDialog::getInt(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
 #else
@@ -414,6 +415,7 @@ void V3dR_MainWindow::setAnimateRotSpeedSec()
 	animateStep(); //to stop
 
 	bool ok;
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 	int time_sec = QInputDialog::getInt(0, QObject::tr("Animation"),
 									QObject::tr("Seconds per rotation of speed:"), rotationSpeedSec, 0, 1000, 1, &ok);
@@ -548,6 +550,7 @@ void V3dR_MainWindow::saveMovie()
 		}
 		// frames of rotation
 		{
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 			rotation_frames = QInputDialog::getInt(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
 #else

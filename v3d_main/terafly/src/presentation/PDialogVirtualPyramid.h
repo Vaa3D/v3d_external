@@ -56,7 +56,7 @@ class terafly::PDialogVirtualPyramid : public QDialog
         QRadioButton* noimage_radiobutton;
 
 
-        QDialogButtonBox *qbuttons;
+        QDialogButtonBox* qbuttons;
 
         std::string volumePath;
 

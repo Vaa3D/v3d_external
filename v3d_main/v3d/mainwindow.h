@@ -35,6 +35,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #define __v3d_custom_toolbar__
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
   #include <QtWidgets>
 #else
@@ -42,6 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include <QMainWindow>
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 #include <QMdiArea>
 #else
@@ -480,6 +482,7 @@ public: //for image processing, some of the parameters should be globally set
 		if (workspace)
 		{
 			workspace->update();
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 			foreach (QWidget* w, workspace->subWindowList()) w->update();
 #else
@@ -489,6 +492,7 @@ public: //for image processing, some of the parameters should be globally set
 	}
 	void cascadeWindows()
 	{
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 		if (workspace) workspace->cascadeSubWindows();
 #else

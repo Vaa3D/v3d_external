@@ -15,9 +15,9 @@ You will ***have to agree*** the following terms, *before* downloading/using/run
 
 2. You agree to appropriately cite this work in your related studies and publications.
 
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) ‚ÄúV3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,‚Äù Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) ?úV3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,??Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
 
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstruction of 3D neuron structures using a graph-augmented deformable model,‚Äù Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?úAutomatic reconstruction of 3D neuron structures using a graph-augmented deformable model,??Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
 
 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 
@@ -43,6 +43,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstructi
  *      Author: Zongcai Ruan and Hanchuan Peng
  * Last change. 20100406. change ZTHICK_RANGE to 20
  */
+
+#pragma warning(disable: 4430) // To silence a type of warning shown as error in VS2015.
 
 #ifndef V3DR_COMMON_H_
 #define V3DR_COMMON_H_
@@ -226,13 +228,13 @@ extern QProgressDialog progress;
 //Note: When QObjects are created on the stack, the C++ language standard (ISO/IEC 14882:2003) specifies that
 //     destructors of local objects are called in the reverse order of their constructors.
 //
-//____‘delete’ vs deleteLater()
+//____‘delete?vs deleteLater()
 //QObject supports being deleted while signaling. In order to take advantage of it
 //you just have to be sure your object does not try to access any of its own members after being deleted.
 //However, most Qt objects are not written this way, and there is no requirement for them to be either.
 //For this reason, it is recommended that you always call deleteLater() if you need to delete an object during one of its signals,
-//because odds are that ‘delete’ will just crash the application.
-//That is, it is not always obvious that a code path has a signal source. Often, you might have a block of code that uses ‘delete’ on some objects that is safe today,
+//because odds are that ‘delete?will just crash the application.
+//That is, it is not always obvious that a code path has a signal source. Often, you might have a block of code that uses ‘delete?on some objects that is safe today,
 //but at some point in the future this same block of code ends up getting invoked from a signal source and now suddenly your application is crashing.
 //The only general solution to this problem is to use deleteLater() all the time, even if at a glance it seems unnecessary.
 //
@@ -264,6 +266,7 @@ inline RGBA8 RGBA8FromQColor(QColor qc)
 
 #define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
 #define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
+
 #ifdef USE_Qt5_VS2015_Win7_10_14393
 #define QCOLORV(var)    (var.value<QColor>( ))
 #define RGBA8V(var)     RGBA8FromQColor(var.value<QColor>( ))

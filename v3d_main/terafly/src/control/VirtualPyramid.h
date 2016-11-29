@@ -146,8 +146,6 @@ class terafly::VirtualPyramidLayer : public iim::VirtualVolume
 		virtual ~VirtualPyramidLayer() throw (iim::IOException);
 #endif // USE_Qt5_VS2015_Win7_10_14393
 
-		
-
         // GET methods
         tf::VirtualPyramid* pyramid(){return _parent;}
         tf::xyz<int> resamplingFactor(){return _resamplingFactor;}
