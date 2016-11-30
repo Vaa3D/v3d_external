@@ -55,7 +55,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		QObject::tr("3D View: Please close some images or views to release memory, then try again.\n\n") ); \
 }
 
-#define CATCH_handler( func_name ) (\
+#define CATCH_handler( func_name ) \
 	catch (std::exception& e) { \
 		\
 		qDebug("    *** std exception occurred in "func_name); \
@@ -70,7 +70,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		\
 		ERROR_MessageBox( func_name, "UNKOWN", "unknown exception" ); \
 		\
-	})
+	}
 
 
 
@@ -107,9 +107,8 @@ void Renderer_gl2::initialize(int version)
 		if (version<2) return;
 
 		loadShader();
-		//throw "Renderer_gl2::initialize";
-	}CATCH_handler( "Renderer_gl2::initialize" );
-	//catch (char*) {}
+
+	} CATCH_handler( "Renderer_gl2::initialize" );
 }
 
 

@@ -13,6 +13,10 @@
 #include "boost/shared_ptr.hpp"
 #include <stdint.h>
 
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#include <GLES3\gl3.h>
+#endif
+
 class RendererNeuronAnnotator;
 class DataColorModel;
 namespace jfrc {

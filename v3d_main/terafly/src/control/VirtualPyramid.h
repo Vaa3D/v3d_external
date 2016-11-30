@@ -4,6 +4,10 @@
 #include "CPlugin.h"
 #include "VirtualVolume.h"
 
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#include <QtWidgets>
+#endif
+
 // Virtual Pyramid class
 // - a container for virtual pyramid layers (not containing any data)
 // - a container for actual  pyramid layers (do contain actual data + caching)

@@ -31,7 +31,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //dialog_rotate.cpp
 //by Hanchuan Peng
 //080322
-
+#include "version_control.h"
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else

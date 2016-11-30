@@ -9,6 +9,7 @@
 
 #include <QtGui>
 #include <map>
+#include "qaction.h"
 
 #ifdef __v3d_custom_toolbar_plugin__
 	#include "../basic_c_fun/v3d_interface.h"
