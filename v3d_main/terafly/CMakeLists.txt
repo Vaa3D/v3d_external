@@ -73,6 +73,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/IMS_HDF5)
 
 # add internal header files
 file(GLOB presentation_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/*.h)
@@ -88,6 +89,7 @@ file(GLOB tinyxml_h             ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rd
 file(GLOB iomanager_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.h)
 file(GLOB plugin_tiff2D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.h)
 file(GLOB plugin_tiff3D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.h)
+file(GLOB plugin_IMS_HDF5_h 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/IMS_HDF5/*.h)
 file(GLOB common_h 				${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common/*.h)
 
 # add internal source files
@@ -104,6 +106,7 @@ file(GLOB tinyxml_src           ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rd
 file(GLOB iomanager_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.cpp)
 file(GLOB plugin_tiff2D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.cpp)
 file(GLOB plugin_tiff3D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.cpp)
+file(GLOB plugin_IMS_HDF5_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/IMS_HDF5/*.cpp)
 file(GLOB common_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common/*.cpp)
 
 # look for "Q_OBJECT" in headers to determine which ones to MOC
@@ -121,6 +124,7 @@ add_library(terafly STATIC
 	${iomanager_src}
 	${plugin_tiff2D_src}
 	${plugin_tiff3D_src}
+	${plugin_IMS_HDF5_src}
 	${stitcher_src}
 	${crossmips_src}
 	${tinyxml_src}
@@ -133,6 +137,7 @@ add_library(terafly STATIC
 	${iomanager_h}
 	${plugin_tiff2D_h}
 	${plugin_tiff3D_h}
+	${plugin_IMS_HDF5_h}
 	${crossmips_h}
 	${tinyxml_h}
 	${common_h}
