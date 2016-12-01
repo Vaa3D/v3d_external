@@ -10,7 +10,7 @@
 
 using namespace terafly;
 
-PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, QWidget* parent) : QDialog(parent), volumePath(_volumepath)
+PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, iim::VirtualVolume *_volumeHandle, QWidget* parent) : QDialog(parent), volumePath(_volumepath), volume(_volumeHandle)
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -64,6 +64,8 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, QW
     blockz_spinbox->setMaximum(2048);
     blockz_spinbox->setAlignment(Qt::AlignCenter);
     blockz_spinbox->setSuffix(" (z)");
+    space_required_line = new QLineEdit(this);
+    space_required_line->setReadOnly(true);
     QButtonGroup *subsampling_group = new QButtonGroup(this);
     subsampling_group->addButton(auto_radiobutton);
     subsampling_group->addButton(manual_radiobutton);
@@ -80,7 +82,7 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, QW
     volumepath_line = new QLineEdit(this);
     volumepath_line->setReadOnly(true);
 
-    lowres_panel = new QGroupBox("Preprocessing", this);
+    lowres_panel = new QGroupBox("Preconversion", this);
 #ifdef Q_OS_LINUX
     lowres_panel->setStyle(new QWindowsStyle());
 #endif
@@ -96,7 +98,7 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, QW
     generate_spinbox->setPrefix(" sample 1 every ");
     generate_spinbox->setSuffix(" pixels");
     generate_spinbox->setAlignment(Qt::AlignCenter);
-    noimage_radiobutton = new QRadioButton("skip (all layers initially empty)", this);
+    noimage_radiobutton = new QRadioButton("none (all layers initially empty)", this);
     lowres_group->addButton(imagefile_radiobutton);
     lowres_group->addButton(generate_radiobutton);
     lowres_group->addButton(generate_all_radiobutton);
@@ -130,8 +132,12 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, QW
     block_layout->addWidget(blocky_spinbox);
     block_layout->addWidget(blockz_spinbox);
     subsampling_layout->addLayout(block_layout);
-    //subsampling_spinbox->setFixedWidth(300);
-    //lowerbound_spinbox->setFixedWidth(300);
+    QHBoxLayout* space_required_layout = new QHBoxLayout();
+    QLabel* space_required_label = new QLabel("space required:");
+    space_required_label->setFixedWidth(100);
+    space_required_layout->addWidget(space_required_label);
+    space_required_layout->addWidget(space_required_line);
+    subsampling_layout->addLayout(space_required_layout);
     /* ------------------ save to --------------------- */
     QVBoxLayout *storage_layout = new QVBoxLayout();
     QHBoxLayout *storage_buttons_layout = new QHBoxLayout();
@@ -199,6 +205,8 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, QW
     connect(noimage_radiobutton, SIGNAL(clicked()), this, SLOT(lowres_radiobutton_changed()));
     connect(browse_button, SIGNAL(clicked()), this, SLOT(browse_button_clicked()));
     connect(subsampling_spinbox, SIGNAL(valueChanged(int)), this, SLOT(subsampling_spinbox_changed(int)));
+    connect(lowerbound_spinbox, SIGNAL(valueChanged(int)), this, SLOT(subsampling_spinbox_changed(int)));
+    connect(subsamplings_line, SIGNAL(textChanged(QString)), this, SLOT(subsamplings_line_changed(QString)));
 
     reset();
 
@@ -229,8 +237,8 @@ void PDialogVirtualPyramid::reset()
     blocky_spinbox->setValue(256);
     blockz_spinbox->setValue(256);
 
-    if(QFile(tf::VirtualPyramid::getLowResPath(volumePath).c_str()).exists())
-        imagefile_line->setText(tf::VirtualPyramid::getLowResPath(volumePath).c_str());
+    if(QFile(tf::VirtualPyramid::pathLowRes(volumePath).c_str()).exists())
+        imagefile_line->setText(tf::VirtualPyramid::pathLowRes(volumePath).c_str());
     else
         imagefile_line->setText(" lowres.tif not found");
     generate_spinbox->setValue(16);
@@ -242,6 +250,12 @@ void PDialogVirtualPyramid::reset()
 void PDialogVirtualPyramid::subsampling_spinbox_changed(int v)
 {
     tf::CSettings::instance()->setPyramidResamplingFactor(v);
+    update_space_required();
+}
+
+void PDialogVirtualPyramid::subsamplings_line_changed(QString)
+{
+    update_space_required();
 }
 
 void PDialogVirtualPyramid::ok_button_clicked()
@@ -335,9 +349,9 @@ void PDialogVirtualPyramid::browse_button_clicked()
 void PDialogVirtualPyramid::storage_radiobutton_changed()
 {
     if(QObject::sender() == storage_radiobutton)
-        volumepath_line->setText(tf::VirtualPyramid::getRemotePath(volumePath).c_str());
+        volumepath_line->setText(tf::VirtualPyramid::pathRemote(volumePath).c_str());
     else
-        volumepath_line->setText(tf::VirtualPyramid::getLocalPath(volumePath).c_str());
+        volumepath_line->setText(tf::VirtualPyramid::pathLocal(volumePath).c_str());
 }
 
 void PDialogVirtualPyramid::subsampling_radiobutton_changed()
@@ -354,6 +368,8 @@ void PDialogVirtualPyramid::subsampling_radiobutton_changed()
         lowerbound_spinbox->setEnabled(true);
         subsamplings_line->setEnabled(false);
     }
+
+    update_space_required();
 }
 
 void PDialogVirtualPyramid::lowres_radiobutton_changed()
@@ -397,6 +413,40 @@ void PDialogVirtualPyramid::lowres_radiobutton_changed()
 
 
         pyramid_image_label->setPixmap(*pyramid_image_empty);//->scaled(365, 200, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+    }
+}
+
+void PDialogVirtualPyramid::update_space_required()
+{
+    try
+    {
+        float GB = 0;
+        if(auto_radiobutton->isChecked())
+            GB = tf::VirtualPyramid::predictGB(volume, subsampling_spinbox->value(), lowerbound_spinbox->value());
+        else if(manual_radiobutton->isChecked())
+        {
+            std::vector< tf::xyz<int> > resampling_factors;
+            std::string line = subsamplings_line->text().toStdString();
+            std::vector <std::string> tokens;
+            tf::split(line, "{", tokens);
+            for(size_t i=1; i<tokens.size(); i++)
+            {
+                std::string triplet = tf::cls(tokens[i]);
+                std::vector <std::string> items;
+                tf::parse(triplet, ",", 3, "<no file>", items);
+                resampling_factors.push_back(tf::xyz<int>(tf::str2num<int>(items[0]), tf::str2num<int>(items[1]), tf::str2num<int>(items[2]) ));
+            }
+
+            GB = tf::VirtualPyramid::predictGB(volume, resampling_factors);
+        }
+        if(GB)
+            space_required_line->setText(tf::strprintf(" %.2f GB  at most ( 0%% compression and 100%% explored )", GB).c_str());
+        else
+            space_required_line->setText("n.a. (empty virtual pyramid)");
+    }
+    catch (tf::RuntimeException & ex)
+    {
+        space_required_line->setText(QString("n.a. (cannot parse subsampling line)"));
     }
 }
 

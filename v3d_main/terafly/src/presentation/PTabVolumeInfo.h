@@ -34,7 +34,7 @@ class terafly::PTabVolumeInfo : public QWidget
         QLineEdit* vxl_field;
         QLineEdit* org_field;
 
-        // virtual pyramid panel
+        // virtual pyramid info panel
         QGroupBox* vp_panel;
         QLineEdit* vp_path;
         QPushButton* vp_open;
@@ -43,10 +43,17 @@ class terafly::PTabVolumeInfo : public QWidget
         QLineEdit* vp_subsampling;
         QLineEdit* vp_tiledims;
 
+        // virtual pyramid exploration panel
+        QGroupBox* vp_exploration_panel;
+        QLineEdit* vp_coverage_line;
+        QPushButton* vp_prefetch_button;
+        QSpinBox* vp_prefetch_blocks_spinbox;
+        QSpinBox* vp_prefetch_blocks_dims;
+
         // virtual pyramid RAM panel
         QGroupBox* vp_ram_panel;
         QDoubleSpinBox* vp_max_ram_spinbox;
-        QPushButton* vp_ram_show_res_buttons;
+        //QPushButton* vp_ram_show_res_buttons;
         std::vector <QLabel*> vp_ram_labels;
         std::vector <QLabel*> vp_ram_used_labels;
         std::vector <QGradientBar*> vp_ram_bars;
@@ -72,7 +79,8 @@ class terafly::PTabVolumeInfo : public QWidget
         void recheck_button_clicked();
         void clear_button_clicked();
         void ram_limit_changed(double v);
-        void show_ram_layers_toggled(bool checked);
+        void fetch_button_clicked();
+        //void show_ram_layers_toggled(bool checked);
 
 };
 

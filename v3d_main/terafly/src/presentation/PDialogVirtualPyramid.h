@@ -9,6 +9,7 @@
 #include "theader.h"
 #include "../control/CPlugin.h"
 #include "QPrefixSuffixLineEdit.h"
+#include "VirtualVolume.h"
 
 namespace terafly
 {
@@ -40,6 +41,7 @@ class terafly::PDialogVirtualPyramid : public QDialog
         QSpinBox *blockx_spinbox;
         QSpinBox *blocky_spinbox;
         QSpinBox *blockz_spinbox;
+        QLineEdit *space_required_line;
 
         QGroupBox* saveto_panel;
         QRadioButton* local_radiobutton;
@@ -59,11 +61,12 @@ class terafly::PDialogVirtualPyramid : public QDialog
         QDialogButtonBox* qbuttons;
 
         std::string volumePath;
+        iim::VirtualVolume* volume;
 
     public:
 
         // constructor
-        PDialogVirtualPyramid(const std::string & _volumepath, QWidget* parent);
+        PDialogVirtualPyramid(const std::string & _volumepath, iim::VirtualVolume* _volumeHandle, QWidget* parent);
 
         // reset method
         void reset();
@@ -76,6 +79,9 @@ class terafly::PDialogVirtualPyramid : public QDialog
         void storage_radiobutton_changed();
         void lowres_radiobutton_changed();
         void subsampling_spinbox_changed(int v);
+        void subsamplings_line_changed(QString);
+
+        void update_space_required();
 };
 
 #endif // PDialogVirtualPyramid_H

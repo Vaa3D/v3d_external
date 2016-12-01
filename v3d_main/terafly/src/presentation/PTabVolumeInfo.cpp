@@ -74,6 +74,20 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_tiledims->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     vp_tiledims->setTextMargins(5, 0, 0, 0);
 
+    // virtual pyramid exploration panel
+    vp_exploration_panel = new QGroupBox("Exploration", this);
+#ifdef Q_OS_LINUX
+    vp_exploration_panel->setStyle(new QWindowsStyle());
+#endif
+    vp_coverage_line = new QLineEdit(this);
+    vp_coverage_line->setReadOnly(true);
+    vp_prefetch_button = new QPushButton("Fetch", this);
+    vp_prefetch_blocks_spinbox = new QSpinBox(this);
+    vp_prefetch_blocks_spinbox->setSuffix(" blocks");
+    vp_prefetch_blocks_spinbox->setAlignment(Qt::AlignCenter);
+    vp_prefetch_blocks_dims = new QSpinBox(this);
+    vp_prefetch_blocks_dims->setSuffix(" voxels");
+    vp_prefetch_blocks_dims->setAlignment(Qt::AlignCenter);
 
     // virtual pyramid RAM panel
     vp_ram_panel = new QGroupBox("RAM usage", this);
@@ -95,8 +109,8 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_max_ram_spinbox->setMinimum(0.5);
     vp_max_ram_spinbox->setAlignment(Qt::AlignCenter);
     vp_max_ram_spinbox->setSingleStep(0.1);
-    vp_ram_show_res_buttons = new QPushButton(this);
-    vp_ram_show_res_buttons->setCheckable(true);
+    //vp_ram_show_res_buttons = new QPushButton(this);
+    //vp_ram_show_res_buttons->setCheckable(true);
 
     /*** LAYOUT SECTION ***/
     /* ---------------- info panel ------------------- */
@@ -118,8 +132,10 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     info_panel->setLayout(info_panel_layout);
     /* ----------- virtual pyramid panel ------------- */
     QGridLayout* vp_layout = new QGridLayout();
+    vp_layout->setContentsMargins(5,5,5,5);
+    vp_layout->setSpacing(5);
     QLabel* path_label = new QLabel("Path:");
-    path_label->setFixedWidth(70);
+    path_label->setFixedWidth(80);
     vp_layout->addWidget(path_label,                            0,0,1,1);
     vp_layout->addWidget(vp_path,                               0,1,1,1);
     vp_layout->addWidget(vp_open,                               0,2,1,1);
@@ -131,28 +147,46 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_layout->addWidget(new QLabel("Block dims:"),             3,0,1,1);
     vp_layout->addWidget(vp_tiledims,                           3,1,1,2);
     vp_panel->setLayout(vp_layout);
+    /* ----------- virtual pyramid exploration panel ------------- */
+    QGridLayout* expl_panel_layout = new QGridLayout();
+    expl_panel_layout->setContentsMargins(5,5,5,5);
+    expl_panel_layout->setSpacing(5);
+    QLabel* coverage_label = new QLabel("% explored:");
+    coverage_label->setFixedWidth(80);
+    expl_panel_layout->addWidget(coverage_label,                0,0,1,1);
+    expl_panel_layout->addWidget(vp_coverage_line,              0,1,1,1);
+    vp_prefetch_button->setFixedWidth(80);
+    expl_panel_layout->addWidget(vp_prefetch_button,            1,0,1,1);
+    expl_panel_layout->addWidget(vp_prefetch_blocks_spinbox,    1,1,1,1);
+    expl_panel_layout->addWidget(new QLabel("of size"),         1,2,1,1);
+    expl_panel_layout->addWidget(vp_prefetch_blocks_dims,       1,3,1,1);
+    vp_exploration_panel->setLayout(expl_panel_layout);
     /* ----------- allocated RAM panel --------------- */
     QGridLayout* vp_RAM_layout = new QGridLayout();
+    vp_RAM_layout->setContentsMargins(5,5,5,5);
+    vp_RAM_layout->setSpacing(5);
     vp_RAM_layout->addWidget(new QLabel("Set limit to:"),       0,0,1,1);
     vp_RAM_layout->addWidget(vp_max_ram_spinbox,                0,1,1,1);
-    vp_ram_labels[0]->setFixedWidth(70);
+    vp_ram_labels[0]->setFixedWidth(80);
     vp_RAM_layout->addWidget(vp_ram_labels[0],                  1,0,1,1);
     vp_RAM_layout->addWidget(vp_ram_bars[0],                    1,1,1,1);
     vp_RAM_layout->addWidget(vp_ram_used_labels[0],             1,2,1,1);
     vp_RAM_layout->addWidget(vp_ram_clear_buttons[0],           1,3,1,1);
-    vp_RAM_layout->addWidget(new QWidget(this),                 2,0,1,4);
-    vp_RAM_layout->addWidget(vp_ram_show_res_buttons,           3,0,1,4);
+    //vp_RAM_layout->addWidget(new QLabel("Layers:"),             2,0,1,4);
+    //vp_RAM_layout->addWidget(new QWidget(this),                 2,0,1,4);
+    //vp_RAM_layout->addWidget(vp_ram_show_res_buttons,           3,0,1,4);
     for(size_t i=1; i<vp_ram_max_size; i++)
     {
-        vp_RAM_layout->addWidget(vp_ram_labels[i],              i+3,0,1,1);
-        vp_RAM_layout->addWidget(vp_ram_bars[i],                i+3,1,1,1);
-        vp_RAM_layout->addWidget(vp_ram_used_labels[i],         i+3,2,1,1);
-        vp_RAM_layout->addWidget(vp_ram_clear_buttons[i],       i+3,3,1,1);
+        vp_RAM_layout->addWidget(vp_ram_labels[i],              i+1,0,1,1);
+        vp_RAM_layout->addWidget(vp_ram_bars[i],                i+1,1,1,1);
+        vp_RAM_layout->addWidget(vp_ram_used_labels[i],         i+1,2,1,1);
+        vp_RAM_layout->addWidget(vp_ram_clear_buttons[i],       i+1,3,1,1);
     }
     vp_ram_panel->setLayout(vp_RAM_layout);
     /* ---------------- MAIN LAYOUT ------------------ */
     QVBoxLayout* pyramid_layout = new QVBoxLayout();
     pyramid_layout->addWidget(vp_panel, 0);
+    pyramid_layout->addWidget(vp_exploration_panel, 0);
     pyramid_layout->addWidget(vp_ram_panel, 0);
     pyramid_layout->addStretch(1);
     pyramid_layout->setContentsMargins(10,10,10,10);
@@ -180,7 +214,8 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     connect(vp_recheck, SIGNAL(clicked()), this, SLOT(recheck_button_clicked()));
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
     connect(vp_max_ram_spinbox, SIGNAL(valueChanged(double)), this, SLOT(ram_limit_changed(double)));
-    connect(vp_ram_show_res_buttons, SIGNAL(toggled(bool)), this, SLOT(show_ram_layers_toggled(bool)));
+    connect(vp_prefetch_button, SIGNAL(clicked()), this, SLOT(fetch_button_clicked()));
+    //connect(vp_ram_show_res_buttons, SIGNAL(toggled(bool)), this, SLOT(show_ram_layers_toggled(bool)));
 
     for(size_t i=0; i<vp_ram_clear_buttons.size(); i++)
         connect(vp_ram_clear_buttons[i], SIGNAL(clicked()), this, SLOT(clear_button_clicked()));
@@ -200,6 +235,7 @@ void tf::PTabVolumeInfo::reset()
     vp_tiledims->setText("");
     vp_panel->setVisible(false);
     vp_ram_panel->setVisible(false);
+    vp_exploration_panel->setVisible(false);
 
     for(int i=0; i<vp_ram_max_size; i++)
     {
@@ -213,12 +249,25 @@ void tf::PTabVolumeInfo::reset()
 
     vp_max_ram_spinbox->setValue(CSettings::instance()->getRamLimitGB());
 
-    vp_ram_show_res_buttons->setText("Show all layers");
+    //vp_ram_show_res_buttons->setText("Show all layers");
+
+    vp_prefetch_blocks_dims->setMaximum(1024);
+    vp_prefetch_blocks_dims->setMinimum(64);
+    vp_prefetch_blocks_dims->setValue(256);
+    vp_prefetch_blocks_spinbox->setMaximum(100);
+    vp_prefetch_blocks_spinbox->setMinimum(1);
+    vp_prefetch_blocks_spinbox->setValue(10);
+    vp_coverage_line->setText(" 0.0 %");
 }
 
 void tf::PTabVolumeInfo::init()
 {
     iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
+    if(!volume)
+    {
+        QMessageBox::critical(this, "Error", "Info tab cannot get volume handle (you should never see this)");
+        return;
+    }
 
     double GVoxels = (volume->getDIM_V()/1000.0f)*(volume->getDIM_H()/1000.0f)*(volume->getDIM_D()/1000.0f);
     double TVoxels = GVoxels/1000.0;
@@ -246,6 +295,11 @@ void tf::PTabVolumeInfo::init()
                                volume->getDIM_V(),
                                volume->getDIM_D(), volume->getDIM_C(), volume->getDIM_T()).c_str());
     iim::VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
+    if(!volume_ith)
+    {
+        QMessageBox::critical(this, "Error", "Info tab cannot get 0th-volume handle (you should never see this)");
+        return;
+    }
     vol_format_field->setText(QString("  ") + volume_ith->getPrintableFormat().c_str());
     vxl_field->setText(tf::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
     org_field->setText(tf::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
@@ -257,6 +311,8 @@ void tf::PTabVolumeInfo::init()
             vp_panel->setVisible(true);
         if(vp_ram_panel->isVisible() == false)
             vp_ram_panel->setVisible(true);
+        if(vp_exploration_panel->isVisible() == false)
+            vp_exploration_panel->setVisible(true);
 
         tf::VirtualPyramid *virtualPyramid = dynamic_cast<tf::VirtualPyramidLayer*>(volume_ith)->pyramid();
         std::vector <tf::HyperGridCache*> pyramid = virtualPyramid->cachePyramid();
@@ -293,8 +349,8 @@ void tf::PTabVolumeInfo::init()
     }
 
     update();
-    vp_ram_show_res_buttons->setChecked(true);
-    show_ram_layers_toggled(true);
+    //vp_ram_show_res_buttons->setChecked(true);
+    //show_ram_layers_toggled(true);
 }
 
 void tf::PTabVolumeInfo::open_button_clicked()
@@ -433,7 +489,12 @@ void tf::PTabVolumeInfo::ram_limit_changed(double v)
     update();
 }
 
-void tf::PTabVolumeInfo::show_ram_layers_toggled(bool checked)
+void tf::PTabVolumeInfo::fetch_button_clicked()
+{
+    v3d_msg("Not yet implemented!");
+}
+
+/*void tf::PTabVolumeInfo::show_ram_layers_toggled(bool checked)
 {
     if(checked)
         vp_ram_show_res_buttons->setText("Hide layers");
@@ -461,5 +522,5 @@ void tf::PTabVolumeInfo::show_ram_layers_toggled(bool checked)
             vp_ram_clear_buttons[i+1]->setVisible(checked);
         }
     }
-}
+}*/
 

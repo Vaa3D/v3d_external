@@ -43,10 +43,10 @@ class terafly::VirtualPyramid
 
         // constructor 1 (first time instance / Virtual Pyramid files do not exist)
         VirtualPyramid(
-                std::string highresPath,                   // highest-res (unconverted) volume path
+                std::string highresPath,                    // highest-res (unconverted) volume path
                 int reduction_factor,                       // pyramid reduction factor (i.e. divide by reduction_factor along all axes for all layers)
                 float lower_bound = 100,                    // lower bound (in MVoxels) for the lowest-res pyramid image (i.e. divide by reduction_factor until the lowest-res has size <= lower_bound)
-                iim::VirtualVolume* highresVol = 0,        // highest-res (unconverted) volume, if null will be instantiated on-the-fly
+                iim::VirtualVolume* highresVol = 0,         // highest-res (unconverted) volume, if null will be instantiated on-the-fly
                 init_mode mode = DEFAULT,                   // initialization mode
                 const std::string & lowResImagePath = "",   // path of low-res image file (to be used when mode == GENERATE_LOW_RES_FROM_FILE)
                 int sampling = 16,                          // sampling factor (to be used when mode == GENERATE_LOW_RES || GENERATE_ALL)
@@ -57,9 +57,9 @@ class terafly::VirtualPyramid
 
         // constructor 2 (first time instance / Virtual Pyramid files do not exist)
         VirtualPyramid(
-                std::string highresPath,                   // highest-res (unconverted) volume path
+                std::string highresPath,                    // highest-res (unconverted) volume path
                 std::vector< xyz<int> > reduction_factors,  // pyramid reduction factors (i.e. divide by reduction_factors[i].x along X for layer i)
-                iim::VirtualVolume* highresVol = 0,        // highest-res (unconverted) volume, if null will be instantiated on-the-fly
+                iim::VirtualVolume* highresVol = 0,         // highest-res (unconverted) volume, if null will be instantiated on-the-fly
                 init_mode mode = DEFAULT,                   // initialization mode
                 const std::string & lowResImagePath = "",   // path of low-res image file (to be used when mode == GENERATE_LOW_RES_FROM_FILE)
                 int sampling = 16,                          // sampling factor (to be used when mode == GENERATE_LOW_RES || GENERATE_ALL)
@@ -84,6 +84,7 @@ class terafly::VirtualPyramid
         std::string path(){return _path;}
         std::vector <tf::HyperGridCache*> cachePyramid(){return _cachePyramid;}
 
+
         // load volume of interest from the given resolution layer
         // - communicates with 'highresVol' (which contains highres data) and with 'pyramid' (which contain cached data)
         tf::image5D<uint8>
@@ -100,21 +101,34 @@ class terafly::VirtualPyramid
                 int layer = -1)             // layer selection (-1 = all layers)
         throw (iim::IOException, iom::exception, tf::RuntimeException);
 
-        // return path where Virtual Pyramid data are expected to be found on local storage (i.e. executable's folder)
-        static std::string getLocalPath(const std::string & _highresPath);
-        // return path where Virtual Pyramid data are expected to be found on remote storage (i.e. volume's folder)
-        static std::string getRemotePath(const std::string & _highresPath);
-        // return true if Virtual Pyramid files are found in either local or remote storage (see getLocalPath and getRemotePath)
-        static bool exists(const std::string & _highresPath);
-        // return true if Virtual Pyramid files are found in local AND remote storage (see getLocalPath and getRemotePath)
-        static bool bothExist(const std::string & _highresPath);
-        // return true if Virtual Pyramid files are found on local storage (see getLocalPath)
-        static bool existLocal(const std::string & _highresPath);
-        // return true if Virtual Pyramid files are found on remote storage (see getRemotePath)
-        static bool existRemote(const std::string & _highresPath);
 
+        // *** PATH (local, remote, lowres image, ...) getters and checkers ***
+        // return path where Virtual Pyramid data are expected to be found on local storage (i.e. executable's folder)
+        static std::string pathLocal(const std::string & _highresPath);
+        // return path where Virtual Pyramid data are expected to be found on remote storage (i.e. volume's folder)
+        static std::string pathRemote(const std::string & _highresPath);
+        // return true if Virtual Pyramid files are found in either local or remote storage (see getLocalPath and getRemotePath)
+        static bool exist(const std::string & _highresPath);
+        // return true if Virtual Pyramid files are found in local AND remote storage (see getLocalPath and getRemotePath)
+        static bool existTwice(const std::string & _highresPath);
+        // return true if Virtual Pyramid files are found on local storage (see getLocalPath)
+        static bool existOnLocal(const std::string & _highresPath);
+        // return true if Virtual Pyramid files are found on remote storage (see getRemotePath)
+        static bool existOnRemote(const std::string & _highresPath);
         // return path where low res image file is expected to be found (if any)
-        static std::string getLowResPath(const std::string & _highresPath);
+        static std::string pathLowRes(const std::string & _highresPath);
+
+
+        // pyramid size predictors
+        static float predictGB(
+            iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
+            int reduction_factor,                       // pyramid reduction factor (i.e. divide by reduction_factor along all axes for all layers)
+            float lower_bound                           // lower bound (in MVoxels) for the lowest-res pyramid image (i.e. divide by reduction_factor until the lowest-res has size <= lower_bound)
+        ) throw (tf::RuntimeException);
+        static float predictGB(
+            iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
+            std::vector< xyz<int> > reduction_factors   // pyramid reduction factors (i.e. divide by reduction_factors[i].x along X for layer i)
+        ) throw (tf::RuntimeException);
 
         friend class VirtualPyramidLayer;
 };
@@ -254,11 +268,13 @@ class terafly::HyperGridCache
                 tf::xyzct<size_t> _index;                   // 5D index in the parent hypergrid
                 std::string       _path;                    // path of file where this block is stored
                 bool              _modified;                // whether the data of this block has been modified w.r.t. its original version stored on the disk
-                int               _visits;                  // #times this block has been visited (for both loading and storing of image data)
+                int               _visits;                  // # of times this block has been visited (load and/or store)
+                size_t            _emptycount;              // # of empty voxels (= 0 with '0' reserved for empty voxels only / values start from 1)
 
                 // object utility methods
-                CacheBlock(){}                          // disable default constructor
+                CacheBlock(){}                              // disable default constructor
                 void load() throw (iim::IOException, iom::exception, tf::RuntimeException);   // load from disk
+                void updateEmptyCount();                    // update empty voxel count
 
 
             public:
@@ -284,6 +300,8 @@ class terafly::HyperGridCache
                 size_t bytesPerPixel(){return sizeof(unsigned char);}
                 float currentRamUsageGB(){return _imdata ? _dims.size() * bytesPerPixel() * 1.0e-9 : 0.0f;}
                 float maximumRamUsageGB(){return _dims.size() * bytesPerPixel() * 1.0e-9;}
+                size_t emptyCount(){return _emptycount;}
+                size_t nonEmptyCount(){return _dims.size() - _emptycount;}
 
                 // calculate XYZT and C intersection
                 template <typename T>

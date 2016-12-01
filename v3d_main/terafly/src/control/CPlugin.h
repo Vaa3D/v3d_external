@@ -661,7 +661,7 @@ namespace terafly
         }
 
         std::string toString(){
-            return strprintf("{%s(x) x %s(y) x %s(z) x %s(c) x %s(t)}", num2str<T>(x).c_str(), num2str<T>(y).c_str(), num2str<T>(z).c_str(), num2str<T>(c).c_str(), num2str<T>(t).c_str());
+            return strprintf("%s(x) x %s(y) x %s(z) x %s(c) x %s(t)", num2str<T>(x).c_str(), num2str<T>(y).c_str(), num2str<T>(z).c_str(), num2str<T>(c).c_str(), num2str<T>(t).c_str());
         }
 
         T size(){return x*y*z*c*t;}

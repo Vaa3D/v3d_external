@@ -1247,17 +1247,21 @@ void PMain::openImage(std::string path /*= ""*/)
         // special checks for Virtual Pyramid
         if(image_format.id == tf::volume_format::UNCONVERTED)
         {
+            // instance high res volume here, so that Virtual Pyramid
+            CImport::instance()->setPath(path);
+            CImport::instance()->vpInstanceHighResVolume();
+
             // if Virtual Pyramid files do not exist on either local or remote storage, launch setup dialog
-            if(!tf::VirtualPyramid::exists(path))
+            if(!tf::VirtualPyramid::exist(path))
             {
-                if( (new PDialogVirtualPyramid(path, this))->exec() == QDialog::Rejected)
+                if( (new PDialogVirtualPyramid(path, CImport::instance()->getVPHighResVolume(), this))->exec() == QDialog::Rejected)
                      return;
 
                 // no pyramid found: need to setup a new one
                 CImport::instance()->vpSetup = true;
             }
             // if Virtual Pyramid files do exist on BOTH local AND remote storage, ask user selection
-            else if(tf::VirtualPyramid::bothExist(path))
+            else if(tf::VirtualPyramid::existTwice(path))
             {
                 QMessageBox msgBox;
                 msgBox.setText("This volume has two different Virtual Pyramids.");
@@ -1279,7 +1283,7 @@ void PMain::openImage(std::string path /*= ""*/)
             else
             {
                 // one and only one pyramid exists: set local or remote
-                CImport::instance()->vpLocal = tf::VirtualPyramid::existLocal(path);
+                CImport::instance()->vpLocal = tf::VirtualPyramid::existOnLocal(path);
 
                 // at least one pyramid found: no need to setup a new pyramid
                 CImport::instance()->vpSetup = false;
@@ -2200,6 +2204,45 @@ void PMain::debugAction1Triggered()
 
     try
     {
+        CViewer::getCurrent()->setWaitingForData(true);
+
+        iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
+        if(!volume)
+            return;
+        iim::VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
+        if(!volume_ith)
+            return;
+        tf::VirtualPyramid *virtualPyramid = dynamic_cast<tf::VirtualPyramidLayer*>(volume_ith)->pyramid();
+        if(!virtualPyramid)
+            return;
+
+        int nBlocks = 1;
+        QProgressDialog progress("Fetch random blocks...", "Cancel", 0, nBlocks, this);
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setMinimumDuration(0);
+
+        for (int i = 0; i < nBlocks; i++)
+        {
+            progress.setValue(i);
+            progress.setLabelText(iim::strprintf("Fetch random block %d of %d...", i+1, nBlocks).c_str());
+
+            tf::xyz<size_t> start, end;
+            start.x = rand() % (H1_sbox->value()-H0_sbox->value()) + H0_sbox->value();
+            start.y = rand() % (V1_sbox->value()-V0_sbox->value()) + V0_sbox->value();
+            start.z = rand() % (D1_sbox->value()-D0_sbox->value()) + D0_sbox->value();
+
+            end.x = start.x + 256;
+            end.y = start.y + 256;
+            end.z = start.z + 256;
+            virtualPyramid->loadVOI(start, end, 0);
+
+            if (progress.wasCanceled())
+                break;
+        }
+        progress.setValue(nBlocks);
+
+        CViewer::getCurrent()->refresh();
+        CViewer::getCurrent()->setWaitingForData(false);
 		//for(size_t side = 4; side < 128; side++)
 		//{
 		//	//size_t side = 255;
@@ -2243,57 +2286,57 @@ void PMain::debugAction1Triggered()
 		//	
 		//	//for(int
 		//}
-		if(1)
-		{
-			Image4DSimple* img_src = CViewer::current->V3D_env->getImage(CViewer::current->window);
+//		if(1)
+//		{
+//			Image4DSimple* img_src = CViewer::current->V3D_env->getImage(CViewer::current->window);
 
-			uint src_dims[5], dst_dims[5], src_offset[5], dst_offset[5], src_count[5];
+//			uint src_dims[5], dst_dims[5], src_offset[5], dst_offset[5], src_count[5];
 
-			src_dims[0] = img_src->getXDim();
-			src_dims[1] = img_src->getYDim();
-			src_dims[2] = img_src->getZDim();
-			src_dims[3] = img_src->getCDim();
-			src_dims[4] = 1;
+//			src_dims[0] = img_src->getXDim();
+//			src_dims[1] = img_src->getYDim();
+//			src_dims[2] = img_src->getZDim();
+//			src_dims[3] = img_src->getCDim();
+//			src_dims[4] = 1;
 
-			dst_dims[0] = src_dims[0];
-			dst_dims[1] = src_dims[1];
-			dst_dims[2] = src_dims[2];
-			dst_dims[3] = src_dims[3];
-			dst_dims[4] = 1;
+//			dst_dims[0] = src_dims[0];
+//			dst_dims[1] = src_dims[1];
+//			dst_dims[2] = src_dims[2];
+//			dst_dims[3] = src_dims[3];
+//			dst_dims[4] = 1;
 
-			size_t img_data_size = size_t(dst_dims[0])*size_t(dst_dims[1])*size_t(dst_dims[2])*size_t(dst_dims[3]);
-			unsigned char* imgdata = new unsigned char[img_data_size];
+//			size_t img_data_size = size_t(dst_dims[0])*size_t(dst_dims[1])*size_t(dst_dims[2])*size_t(dst_dims[3]);
+//			unsigned char* imgdata = new unsigned char[img_data_size];
 
-			for(size_t i=0; i< img_data_size; i++)
-				imgdata[i]=0;
+//			for(size_t i=0; i< img_data_size; i++)
+//				imgdata[i]=0;
 
-			src_offset[0] = 0;
-			src_offset[1] = 0;
-			src_offset[2] = 0;
-			src_offset[3] = 0;
-			src_offset[4] = 0;
+//			src_offset[0] = 0;
+//			src_offset[1] = 0;
+//			src_offset[2] = 0;
+//			src_offset[3] = 0;
+//			src_offset[4] = 0;
 
-			dst_offset[0] = 0;
-			dst_offset[1] = 0;
-			dst_offset[2] = 0;
-			dst_offset[3] = 0;
-			dst_offset[4] = 0;
-
-
-			src_count[0] = 500;
-			src_count[1] = 500;
-			src_count[2] = 500;
-			src_count[3] = 3;
-			src_count[4] = 1;
+//			dst_offset[0] = 0;
+//			dst_offset[1] = 0;
+//			dst_offset[2] = 0;
+//			dst_offset[3] = 0;
+//			dst_offset[4] = 0;
 
 
-			Image4DSimple* img_dst = new Image4DSimple();
-			CImageUtils::downscaleVOI(img_src->getRawData(), src_dims, src_offset, src_count, imgdata, dst_dims, dst_offset, tf::xyz<int>(2,2,1));
-			img_dst->setData(imgdata, dst_dims[0], dst_dims[1], dst_dims[2], dst_dims[3], img_src->getDatatype());
+//			src_count[0] = 500;
+//			src_count[1] = 500;
+//			src_count[2] = 500;
+//			src_count[3] = 3;
+//			src_count[4] = 1;
 
-			CViewer::current->V3D_env->setImage(CViewer::current->window, img_dst);
-			CViewer::current->V3D_env->pushImageIn3DWindow(CViewer::current->window);
-		}
+
+//			Image4DSimple* img_dst = new Image4DSimple();
+//			CImageUtils::downscaleVOI(img_src->getRawData(), src_dims, src_offset, src_count, imgdata, dst_dims, dst_offset, tf::xyz<int>(2,2,1));
+//			img_dst->setData(imgdata, dst_dims[0], dst_dims[1], dst_dims[2], dst_dims[3], img_src->getDatatype());
+
+//			CViewer::current->V3D_env->setImage(CViewer::current->window, img_dst);
+//			CViewer::current->V3D_env->pushImageIn3DWindow(CViewer::current->window);
+//		}
 
 
         //float lower_bound = (static_cast<float>(128)*128*128)/1000000.0f;

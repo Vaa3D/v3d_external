@@ -154,6 +154,27 @@ void tf::CImport::reset()
     vpLocal = true;
     vpSetup = false;
     vpBlockDims.x = vpBlockDims.y = vpBlockDims.z = 256;
+    vpHighResVolume = 0;
+}
+
+// instance high res volume for virtual pyramid
+void CImport::vpInstanceHighResVolume() throw (tf::RuntimeException)
+{
+    try
+    {
+        if(reimport)
+            vpHighResVolume = iim::VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3);
+        else
+            vpHighResVolume = iim::VirtualVolume::instance(path.c_str());
+    }
+    catch (iim::IOException & ex)
+    {
+        throw tf::RuntimeException(ex.what(), __itm__current__function__);
+    }
+    catch (iom::exception & ex)
+    {
+        throw tf::RuntimeException(ex.what(), __itm__current__function__);
+    }
 }
 
 //automatically called when current thread is started
@@ -171,11 +192,6 @@ void CImport::run()
         if( format.compare(tf::volume_format(tf::volume_format::UNCONVERTED).toString()) == 0 ||
             format.compare(tf::volume_format(tf::volume_format::UNSTITCHED).toString()) == 0   )
         {
-            // reimport high-res unconverted image if needed
-            VirtualVolume* vpHighResVolume = 0;
-            if(reimport)
-                vpHighResVolume = VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3);
-
             // generate virtual pyramid image from high-res unconverted image
             if(vpSetup)
             {

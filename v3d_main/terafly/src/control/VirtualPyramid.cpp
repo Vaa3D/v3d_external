@@ -25,8 +25,8 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     // check first time instance
-    if(iim::isDirectory( local ? getLocalPath(_highresPath) : getRemotePath(_highresPath)))
-        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? getLocalPath(_highresPath) : getRemotePath(_highresPath)).c_str()));
+    if(iim::isDirectory( local ? pathLocal(_highresPath) : pathRemote(_highresPath)))
+        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? pathLocal(_highresPath) : pathRemote(_highresPath)).c_str()));
 
     // set object members
     _highresVol = highresVol;
@@ -80,8 +80,8 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     // check first time instance
-    if(iim::isDirectory( local ? getLocalPath(_highresPath) : getRemotePath(_highresPath)))
-        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? getLocalPath(_highresPath) : getRemotePath(_highresPath)).c_str()));
+    if(iim::isDirectory( local ? pathLocal(_highresPath) : pathRemote(_highresPath)))
+        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? pathLocal(_highresPath) : pathRemote(_highresPath)).c_str()));
 
     // set object members
     _highresVol = highresVol;
@@ -107,6 +107,85 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
 
     // create/check metadata
     initPyramid(block_dim);
+}
+
+// pyramid size predictors
+float tf::VirtualPyramid::predictGB(
+    iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
+    int reduction_factor,                       // pyramid reduction factor (i.e. divide by reduction_factor along all axes for all layers)
+    float lower_bound                           // lower bound (in MVoxels) for the lowest-res pyramid image (i.e. divide by reduction_factor until the lowest-res has size <= lower_bound)
+)  throw (tf::RuntimeException)
+{
+    if(!highresVol)
+        throw tf::RuntimeException("high res volume not instantiated");
+
+    float GB = 0;
+    float MB_i = 0;
+
+    // iteratively add a new layer until the lowest-res layer has size > lower_bound
+    int i = 1;
+    do
+    {
+        xyz<int> rf = xyz<int>(pow(reduction_factor*1.0, i),pow(reduction_factor*1.0, i),pow(reduction_factor*1.0, i));
+
+        // instance only nonempty layers
+        if(VirtualPyramidLayer::isEmpty(highresVol, rf))
+            break;
+        else
+        {
+            int DIM_C = highresVol->getDIM_C();
+            int BYTESxCHAN = highresVol->getBYTESxCHAN();
+            int DIM_T = highresVol->getDIM_T();
+            int DIM_V = int(highresVol->getDIM_V()/static_cast<float>(rf.y));
+            int DIM_H = int(highresVol->getDIM_H()/static_cast<float>(rf.x));
+            int DIM_D = int(highresVol->getDIM_D()/static_cast<float>(rf.z));
+            GB   += (DIM_T/1000.0f) * (DIM_C/1000.0f) * (BYTESxCHAN/1000.0f) * DIM_V * DIM_H * DIM_D;
+            MB_i  = (DIM_T/1000.0f) * (DIM_C/1000.0f) *  BYTESxCHAN          * DIM_V * DIM_H * DIM_D;
+            i++;
+        }
+    }
+    while (MB_i > lower_bound);
+
+    // at least two layers are needed: return 0 (invalid pyramid)
+    if(i < 2)
+        return 0;
+    else
+        return GB;
+}
+float tf::VirtualPyramid::predictGB(
+    iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
+    std::vector< xyz<int> > reduction_factors   // pyramid reduction factors (i.e. divide by reduction_factors[i].x along X for layer i)
+)  throw (tf::RuntimeException)
+{
+    if(!highresVol)
+        throw tf::RuntimeException("high res volume not instantiated");
+
+    float GB = 0;
+
+    // generate layers according to the given reduction factors
+    int nonempty=0;
+    for(int i=1; i<reduction_factors.size(); i++)
+    {
+        // instance only nonempty layers
+        if(!VirtualPyramidLayer::isEmpty(highresVol, reduction_factors[i]))
+        {
+            int DIM_C = highresVol->getDIM_C();
+            int BYTESxCHAN = highresVol->getBYTESxCHAN();
+            int DIM_T = highresVol->getDIM_T();
+            int DIM_V = int(highresVol->getDIM_V()/static_cast<float>(reduction_factors[i].y));
+            int DIM_H = int(highresVol->getDIM_H()/static_cast<float>(reduction_factors[i].x));
+            int DIM_D = int(highresVol->getDIM_D()/static_cast<float>(reduction_factors[i].z));
+            GB += (DIM_T/1000.0f) * (DIM_C/1000.0f) * (BYTESxCHAN/1000.0f) * DIM_V * DIM_H * DIM_D;
+
+            nonempty++;
+        }
+    }
+
+    // at least two layers (high res + one resampled) needed: return 0 (invalid pyramid)
+    if(nonempty < 1)
+        return 0;
+    else
+        return GB;
 }
 
 // constructor 3 (Virtual Pyramid files already exist)
@@ -158,13 +237,13 @@ std::vector<iim::VirtualVolume*> tf::VirtualPyramid::virtualPyramid()
 }
 
 // return path where Virtual Pyramid data are expected to be found on local storage (i.e. executable's folder)
-std::string tf::VirtualPyramid::getLocalPath(const std::string & _highresPath)
+std::string tf::VirtualPyramid::pathLocal(const std::string & _highresPath)
 {
     return QDir::currentPath().toStdString() + "/.terafly/." + QString(QCryptographicHash::hash(tf::getFileName(_highresPath).c_str(),QCryptographicHash::Md5).toHex()).toStdString() + "/.virtualpyramid";
 }
 
  // return path where Virtual Pyramid data are expected to be found on remote storage (i.e. volume's folder)
-std::string tf::VirtualPyramid::getRemotePath(const std::string & _highresPath)
+std::string tf::VirtualPyramid::pathRemote(const std::string & _highresPath)
 {
     if(iim::isFile(_highresPath))
     {
@@ -180,31 +259,31 @@ std::string tf::VirtualPyramid::getRemotePath(const std::string & _highresPath)
 }
 
 // return true if Virtual Pyramid files are found in either local or remote storage (see getLocalPath and getRemotePath)
-bool tf::VirtualPyramid::exists(const std::string & _highresPath)
+bool tf::VirtualPyramid::exist(const std::string & _highresPath)
 {
-    return iim::isDirectory(getLocalPath(_highresPath)) || iim::isDirectory(getRemotePath(_highresPath));
+    return iim::isDirectory(pathLocal(_highresPath)) || iim::isDirectory(pathRemote(_highresPath));
 }
 
 // return true if Virtual Pyramid files are found in local AND remote storage (see getLocalPath and getRemotePath)
-bool tf::VirtualPyramid::bothExist(const std::string & _highresPath)
+bool tf::VirtualPyramid::existTwice(const std::string & _highresPath)
 {
-    return iim::isDirectory(getLocalPath(_highresPath)) && iim::isDirectory(getRemotePath(_highresPath));
+    return iim::isDirectory(pathLocal(_highresPath)) && iim::isDirectory(pathRemote(_highresPath));
 }
 
 // return true if Virtual Pyramid files are found on local storage (see getLocalPath)
-bool tf::VirtualPyramid::existLocal(const std::string & _highresPath)
+bool tf::VirtualPyramid::existOnLocal(const std::string & _highresPath)
 {
-    return iim::isDirectory(getLocalPath(_highresPath));
+    return iim::isDirectory(pathLocal(_highresPath));
 }
 
 // return true if Virtual Pyramid files are found on remote storage (see getRemotePath)
-bool tf::VirtualPyramid::existRemote(const std::string & _highresPath)
+bool tf::VirtualPyramid::existOnRemote(const std::string & _highresPath)
 {
-    return iim::isDirectory(getRemotePath(_highresPath));
+    return iim::isDirectory(pathRemote(_highresPath));
 }
 
 // return path where low res image file is expected to be found (if any)
-std::string tf::VirtualPyramid::getLowResPath(const std::string & _highresPath)
+std::string tf::VirtualPyramid::pathLowRes(const std::string & _highresPath)
 {
     if(iim::isDirectory(_highresPath))
         return _highresPath + "/lowres.tif";
@@ -1162,6 +1241,7 @@ throw (iim::IOException, iom::exception)
     _imdata = 0;
     _index  = index;
     _visits = 0;
+    _emptycount = 0;
     _modified = false;
 
     _path = _parent->_path + "/" + tf::strprintf("t%s_c%s_z%s_y%s_x%s.tif",
@@ -1179,10 +1259,7 @@ tf::HyperGridCache::CacheBlock::~CacheBlock() throw (iim::IOException, iom::exce
     /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
     if(_imdata)
-	{
-        //save();
         delete _imdata;
-	}
 }
 
 
@@ -1196,6 +1273,19 @@ std::vector<unsigned int> tf::HyperGridCache::CacheBlock::intersection(tf::activ
         if(chans.table[i] >= _origin.c && chans.table[i] < _origin.c + _dims.c)
             chs.push_back(chans.table[i]);
     return chs;
+}
+
+// update empty voxel count
+void tf::HyperGridCache::CacheBlock::updateEmptyCount()
+{
+    if(_imdata)
+    {
+        _emptycount = 0;
+        size_t total = _dims.size();
+        for(size_t i=0; i<total; i++)
+            if(_imdata[i] == 0)
+                _emptycount++;
+    }
 }
 
 // load from disk
@@ -1244,12 +1334,15 @@ void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::except
         else
             iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(_path, dimX, dimY, dimZ, bytes, dimC, _imdata);
     }
-    else // otherwise initialize to black
+    else // otherwise initialize to perfect black (0: value reserved for empty voxels)
     {
-        size_t imdata_size = _dims.x * _dims.y * _dims.z * _dims.c * _dims.t;
+        size_t imdata_size = _dims.size();
         for(size_t i = 0; i<imdata_size; i++)
             _imdata[i] = 0;
     }
+
+    // update empty voxel count
+    updateEmptyCount();
 }
 
 // save to disk
@@ -1268,7 +1361,6 @@ void tf::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::except
     // only save when data has been modified
     if(_imdata && _modified)
     {
-		double t0 = -TIME(0);
         if(!iim::isFile(_path))
             iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->create3Dimage(_path, _dims.y, _dims.x, _dims.z, 1, _dims.c);
         if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
@@ -1296,7 +1388,6 @@ void tf::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::except
             iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(_path, _imdata, _dims.y, _dims.x, _dims.z, 1, _dims.c);
 
         _modified = false;
-        //printf("\n\nblock \"%s\" saved in %.1f seconds\n\n", _path.c_str(), t0 + TIME(0));
     }
 }
 
@@ -1371,6 +1462,12 @@ void tf::HyperGridCache::CacheBlock::putData(
 
 	// set this block as modified
     _modified = true;
+
+    // update empty voxel count
+    updateEmptyCount();
+
+    // increment visit counter
+    _visits++;
 }
 
 // read data from block and put into image buffer (rescaling on-the-fly supported)
@@ -1441,6 +1538,9 @@ void tf::HyperGridCache::CacheBlock::readData(
 
     // copy and rescale VOI
     tf::CImageUtils::copyRescaleVOI(_imdata, src_dims, src_offset, src_count, image.data, dst_dims, dst_offset, scaling);
+
+    // increment visit counter
+    _visits++;
 }
 
 /*---- END HYPER GRID CACHE BLOCK section --------------------------------------------------------------------------------*/

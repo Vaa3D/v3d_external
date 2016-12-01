@@ -92,7 +92,8 @@ class terafly::CImport : public QThread
         bool vpLocal;                                       // store VP data on local or remote storage
         bool vp;                                            // VP mode
         bool vpSetup;                                       // whether a new Virtual Pyramid setup is required
-        tf::xyz<size_t> vpBlockDims;
+        tf::xyz<size_t> vpBlockDims;                        // pyramid block dimensions
+        iim::VirtualVolume* vpHighResVolume;                // pyramid base layer (high res) volume
 
 
         // output members
@@ -171,6 +172,7 @@ class terafly::CImport : public QThread
             }
         }
         bool isVirtualPyramid(){return vp;}
+        iim::VirtualVolume* getVPHighResVolume(){return vpHighResVolume;}
 
         // SET methods
         void setPath(string new_path){path = new_path;}
@@ -197,6 +199,9 @@ class terafly::CImport : public QThread
         // 2) it is not compatible with the current version OR
         // 3) contains a number of 'T' frames with T < vmapTDimMax
         bool hasVolumeMapToBeRegenerated(std::string vmapFilepath, std::string min_required_version) throw (tf::RuntimeException);
+
+        // instance high res volume for virtual pyramid
+        void vpInstanceHighResVolume() throw (tf::RuntimeException);
 
 
     signals:
