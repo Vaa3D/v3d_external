@@ -25,7 +25,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 *************/
 
+/********************************************************
 
+NOTICE 12/1/2016, MK
+
+Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h and cannot be declared here. Changed the varuable name to sqr2 to avoid the error.
+
+********************************************************/
 
 
 //v3dimg_proc_neuron.cpp
@@ -1574,13 +1580,13 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 			scx = subject_swc.row.at(j).data[2];
 			scy = subject_swc.row.at(j).data[3];
 			scz = subject_swc.row.at(j).data[4];
-			double scr2 = subject_swc.row.at(j).data[5];
-			scr2 *= scr2; //squared radius
+			double sqr2 = subject_swc.row.at(j).data[5];
+			sqr2 *= sqr2; //squared radius
 			for (V3DLONG i=0;i<tlength;i++)
 			{
 				double tcr2 = target_swc.row.at(i).data[5]; tcr2 *= tcr2; //squared radius
 
-				double tt = (scr2>tcr2)?scr2:tcr2;
+				double tt = (sqr2>tcr2)?sqr2:tcr2;
 				tt=tt/2; //devide by 2 so that the transition will be smoother
 
 				double dtcx = target_swc.row.at(i).data[2] - scx; dtcx *= dtcx;
@@ -1828,8 +1834,8 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 			double scx = subject_swc.row.at(j).x;
 			double scy = subject_swc.row.at(j).y;
 			double scz = subject_swc.row.at(j).z;
-			double scr2 = subject_swc.row.at(j).r;
-			scr2 *= scr2; //squared radius
+			double sqr2 = subject_swc.row.at(j).r;
+			sqr2 *= sqr2; //squared radius
 
 			V3DLONG ind_best_merge_seg=-1, ind_best_merge_node=-1;	double r_best_merge=-1, dist_best; //set as -1 for initialization
 			for (cur_sid=seg_id+1;cur_sid<NSegs;cur_sid++)
@@ -1845,7 +1851,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 				{
 					double tcr2 = target_swc.row.at(i).r; tcr2 *= tcr2; //squared radius
 
-					double tt = (scr2>tcr2)?scr2:tcr2;
+					double tt = (sqr2>tcr2)?sqr2:tcr2;
 					tt=tt; //4; //devide by 2*2=4 so that the transition will be smoother
 
 					double dtcx = target_swc.row.at(i).x - scx; dtcx *= dtcx;
@@ -1860,7 +1866,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()  //bug inside this funct
 					if (dtcz>tt || dtcz+dtcy+dtcx>tt)
 						continue;
 
-					if (tcr2>scr2 && tcr2>r_best_merge)
+					if (tcr2>sqr2 && tcr2>r_best_merge)
 					{
 						ind_best_merge_seg = cur_sid;
 						ind_best_merge_node = i;
