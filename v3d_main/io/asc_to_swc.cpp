@@ -4,7 +4,7 @@
 #include <sstream>
 
 
-bool lookFor(char * string, ifstream* in) {
+bool lookFor(const char * string, ifstream* in) { // MK, 11/30/2016. The input argument is const char* and cannot be coverted to char*. Needs to add keyword const before char*.
     char c[500];
     *in >> c;
     while((!in->eof() || !in->fail()) && strncmp(c,string,strlen(string))!=0){

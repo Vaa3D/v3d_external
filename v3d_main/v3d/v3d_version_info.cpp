@@ -39,7 +39,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../plugin_loader/v3d_plugin_loader.h"
 #include "v3d_actions.h"
 
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
+
 #include <QNetworkReply>
 // #include <QXmlSchema> // Qt 4.6 or later only
 #include <QtXml>
