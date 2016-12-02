@@ -35,10 +35,11 @@
 #endif
 
 #include <stddef.h> /* for wchar_t */
-#include "../../../../../v3d_main/v3d/VersionControl.h"
-#ifdef USE_Qt5_2015
+#include "../../../../../v3d_main/v3d/version_control.h"
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 #include <GL/glew.h>
-#endif
+#else
+#include <GL/gl.h>
 
 #ifdef __cplusplus
 extern "C" {
