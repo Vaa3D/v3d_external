@@ -26,14 +26,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?œAutomatic reconstructio
 *************/
 
 
-// Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
-#pragma warning(disable : 4430)
-#include "version_control.h"
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
-#include <QtWidgets>
-#endif
-//////////////////////////////////////////////////////////
-
 
 
 /*
@@ -50,7 +42,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?œAutomatic reconstructio
 #define V3DR_COMMON_H_
 
 
-//for X11/Qt, qt constant must be included before any header file that defines Status
+// Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
+#include "version_control.h"
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else

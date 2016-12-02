@@ -103,7 +103,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 	#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 		#include <GL/glew.h>
 	#else
-		#include <GL/glu.h>
+		#include <GL/gl.h>
 	#endif
 #elif defined(__APPLE__) || defined(__APPLE_CC__) || defined(__DARWIN__)
 	#include <OpenGL/gl.h>
