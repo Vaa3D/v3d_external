@@ -91,7 +91,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #endif
 
-#include "..\..\v3d\version_control.h"
+#include "../../v3d/version_control.h"
 
 //yuy added _WIN6, 2010-05-19
 // #ifdef _WIN32 || _WIN64
