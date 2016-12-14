@@ -68,6 +68,7 @@ DEFINES += WITH_QT
 
 #enable HDF5
 DEFINES += ENABLE_BDV_HDF5
+DEFINES += ENABLE_IMS_HDF5
 
 #just define dummy symbols needed by TeraStitcher code
 DEFINES += TERASTITCHER_MAJOR

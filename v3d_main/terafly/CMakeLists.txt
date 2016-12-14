@@ -9,7 +9,9 @@ include(cmake/TeraStitcher_Version.cmake)
 # enable TeraFly code in terarepo/src
 add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
 add_definitions(-DWITH_QT)
+# enable HDF5-dependent code
 add_definitions(-DENABLE_BDV_HDF5)
+add_definitions(-DENABLE_IMS_HDF5)
 
 
 # disable annoying warnings on MSVC compilers
