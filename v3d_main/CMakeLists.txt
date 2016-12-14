@@ -389,7 +389,7 @@ if(NOT Qt5Core_FOUND)
     set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
   endif()
 else()
-  set(arthurwidgets_path "${QT_DEMO_PREFIX}/widgets/painting/shared")
+  set(arthurwidgets_path "${QT_DEMOS_INCLUDE_DIR}/")
 endif()
 
 message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
