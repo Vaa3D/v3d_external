@@ -1245,7 +1245,7 @@ void PMain::openImage(std::string path /*= ""*/)
         }
 
         // special checks for Virtual Pyramid
-        if(image_format.id == tf::volume_format::UNCONVERTED)
+        if(image_format.id == tf::volume_format::UNCONVERTED || image_format.id == tf::volume_format::UNSTITCHED)
         {
             // instance high res volume here, so that Virtual Pyramid
             CImport::instance()->setPath(path);

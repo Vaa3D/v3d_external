@@ -189,8 +189,8 @@ void CImport::run()
         /**/tf::debug(tf::LEV_MAX, strprintf("importing current volume at \"%s\"", path.c_str()).c_str(), __itm__current__function__);
 
         // @ADDED by Alessandro on 2016-03-10. Unconverted and unstitched volumes requires ad hoc import procedure
-        if( format.compare(tf::volume_format(tf::volume_format::UNCONVERTED).toString()) == 0 ||
-            format.compare(tf::volume_format(tf::volume_format::UNSTITCHED).toString()) == 0   )
+        if( format == tf::volume_format(tf::volume_format::UNCONVERTED).toString() ||
+            format == tf::volume_format(tf::volume_format::UNSTITCHED).toString()   )
         {
             // generate virtual pyramid image from high-res unconverted image
             if(vpSetup)
