@@ -44,19 +44,19 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?œAutomatic reconstructio
 // Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
 #include "../../v3d/version_control.h"
 
-#if defined(USE_GLEW) 
-  #include <GL\glew.h>
-#else
-  #include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
-#endif
-
-#include "GLee_r.h"
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else
   #include <QtGui>
 #endif
 
+#if defined(USE_GLEW)
+  #include <GL\glew.h>
+//#else
+//  #include "GLee_r.h"
+#endif
+
+#include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
 
 // #include <QtOpenGL>
 //#include <QtTest>
