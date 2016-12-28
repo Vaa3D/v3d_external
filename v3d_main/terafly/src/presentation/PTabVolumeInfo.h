@@ -28,7 +28,7 @@ class terafly::CUserInactivityFilter : public QObject
 
         bool eventFilter(QObject *obj, QEvent *ev)
         {
-            if(ev->type() == QEvent::KeyPress || ev->type() == QEvent::MouseMove)
+            if(ev->type() == 6 || ev->type() == 5)
             {
                 //printf("elapsed = %d\n", timer.elapsed());
                 timer.restart();

@@ -551,15 +551,15 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     if(level == 0)
     {
         // fetch data
-        //data = _vol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
+        data = _vol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
 
         // replace perfect 0 with 1 ('0' value is reserved for empty/nonloaded voxels)
         // ***WARNING*** : here, we are deliberately changing the meaning of the data for efficient representation, counting, and access of empty/nonloaded voxels
         size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
-        data = new uint8[data_dim];
+        //data = new uint8[data_dim];
         for(size_t i=0; i<data_dim; i++)
-            //data[i] = std::max(iim::uint8(1), data[i]);
-            data[i] = 1;
+            data[i] = std::max(iim::uint8(1), data[i]);
+            //data[i] = 1;
 
         // propagate data to higher layers
         //size_t l = _cachePyramid.size()-1;
