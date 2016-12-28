@@ -137,8 +137,15 @@ void tf::CImport::reset()
     VXL_1=VXL_2=VXL_3=0.0f;
     format = "";
     isTimeSeries = false;
-    for(size_t i=0; i<volumes.size(); i++)
-        delete volumes[i];
+	try
+	{
+		for(size_t i=0; i<volumes.size(); i++)
+			delete volumes[i];
+	}
+	catch(iim::IOException & ex)
+	{
+		QMessageBox::critical(0,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+	}
     volumes.clear();
     vmapData = 0;
     vmapXDim = vmapYDim = vmapZDim = vmapTDim = vmapCDim = -1;
@@ -162,6 +169,7 @@ void CImport::vpInstanceHighResVolume() throw (tf::RuntimeException)
 {
     try
     {
+        //setenv("__UNST_CACHE__", "enable:1000 printstats:true", 1);
         if(reimport)
             vpHighResVolume = iim::VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3);
         else
@@ -192,14 +200,15 @@ void CImport::run()
         if( format == tf::volume_format(tf::volume_format::UNCONVERTED).toString() ||
             format == tf::volume_format(tf::volume_format::UNSTITCHED).toString()   )
         {
-            // generate virtual pyramid image from high-res unconverted image
+            // first time opening: generate virtual pyramid image from high-res unconverted image
             if(vpSetup)
             {
                 if(vpResamplingFactors.empty())
-                    volumes = (new tf::VirtualPyramid(path, vpResamplingFactor,  float(vpLowerBound), vpHighResVolume, vpMode, vpLowResImagePath, vpSampling, vpLocal, vpBlockDims))->virtualPyramid();
+                    volumes = (new tf::VirtualPyramid(path, vpResamplingFactor,  float(vpLowerBound), vpHighResVolume, vpMode, vpLowResImagePath, vpSampling, vpLocal, vpBlockDims, vpBlockFormat))->virtualPyramid();
                 else
-                    volumes = (new tf::VirtualPyramid(path, vpResamplingFactors, vpHighResVolume, vpMode, vpLowResImagePath, vpSampling, vpLocal, vpBlockDims))->virtualPyramid();
+                    volumes = (new tf::VirtualPyramid(path, vpResamplingFactors, vpHighResVolume, vpMode, vpLowResImagePath, vpSampling, vpLocal, vpBlockDims, vpBlockFormat))->virtualPyramid();
             }
+            // otherwise load the currently stored virtual pyramid as is
             else
                 volumes = (new tf::VirtualPyramid(path, vpHighResVolume, vpLocal))->virtualPyramid();
 

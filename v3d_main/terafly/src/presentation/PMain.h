@@ -291,6 +291,7 @@ class terafly::PMain : public QWidget
         friend class PAnoToolBar;
         friend class PDialogProofreading;
         friend class PDialogVirtualPyramid;
+        friend class PTabVolumeInfo;
         friend class myV3dR_GLWidget;
 
         //help texts

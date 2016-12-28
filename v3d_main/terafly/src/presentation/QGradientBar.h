@@ -10,15 +10,21 @@ class terafly::QGradientBar : public QWidget
 
     private:
 
-        int nSteps;
-        int step;
-        bool active;
+        int _nsteps;
+        int _step;
+        bool _active;
+        std::string _text;
+        std::vector<QColor> _colors;        // alternative to gradient: n different colors for n macro-steps
 
     public:
 
-        QGradientBar(QWidget *parent = 0) : QWidget(parent){nSteps = -1; step = 0;}
-        void setNSteps(int _nSteps){nSteps = _nSteps;}
-        void setStep(int _step){step = _step;}
+        QGradientBar(QWidget *parent = 0) : QWidget(parent), _nsteps(-1), _step(0){}
+        bool finished(){return _step >= _nsteps;}
+        int step(){return _step;}
+        void setNSteps(int nsteps){_nsteps = nsteps;}
+        void setStep(int step){_step = step;}
+        void setText(const std::string & newText){_text = newText;}
+        void setMultiColor(std::vector<QColor> colors){_colors = colors;}
 
     protected:
 

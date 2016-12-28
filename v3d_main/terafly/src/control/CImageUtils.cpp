@@ -1,10 +1,11 @@
 #include "CImageUtils.h"
+#include <cmath>
 
 using namespace terafly;
 
-/**********************************************************************************
-* Copies the given VOI from "src" to "dst". Offsets and downscaling are supported.
-***********************************************************************************/
+/*****************************************************************************************
+* Copy the given VOI from "src" to "dst". Offsets and downscaling on-the-fly are supported.
+******************************************************************************************/
 void
     CImageUtils::downscaleVOI(
 		tf::uint8 const * src,			// pointer to const data source
@@ -17,9 +18,9 @@ void
         tf::xyz<int> scaling)			// downscaling factors along X,Y,Z (positive integers only)
 throw (tf::RuntimeException)
 {
-    /**/tf::debug(tf::LEV1, strprintf("src_dims = (%d x %d x %d x %d x %d), src_offset = (%d, %d, %d, ignored, %d), src_count = (%d, %d, %d, ignored, %d), dst_dims = (%d x %d x %d x %d x %d), dst_offset = (%d, %d, %d, %d, %d), scaling = (%d,%d,%d)",
-        src_dims[0], src_dims[1],src_dims[2],src_dims[3],src_dims[4], src_offset[0],src_offset[1],src_offset[2], src_offset[4],src_count[0],src_count[1],src_count[2], src_count[4],
-		dst_dims[0], dst_dims[1],dst_dims[2],dst_dims[3],dst_dims[4], dst_offset[0],dst_offset[1],dst_offset[2],dst_offset[3], dst_offset[4],scaling.x, scaling.y, scaling.z).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("src_dims = (%d x %d x %d x %d x %d), src_offset = (%d, %d, %d, ignored, %d), src_count = (%d, %d, %d, ignored, %d), dst_dims = (%d x %d x %d x %d x %d), dst_offset = (%d, %d, %d, ignored, %d), scaling = (%d,%d,%d)",
+        int(src_dims[0]), int(src_dims[1]), int(src_dims[2]), int(src_dims[3]), int(src_dims[4]), int(src_offset[0]), int(src_offset[1]), int(src_offset[2]), int(src_offset[4]), int(src_count[0]), int(src_count[1]), int(src_count[2]), int(src_count[4]),
+        int(dst_dims[0]), int(dst_dims[1]), int(dst_dims[2]), int(dst_dims[3]), int(dst_dims[4]), int(dst_offset[0]), int(dst_offset[1]), int(dst_offset[2]), int(dst_offset[4]), scaling.x, scaling.y, scaling.z).c_str(), __itm__current__function__);
 
 	// do nothing if src and dst are the same
 	if(src == dst)
@@ -29,12 +30,11 @@ throw (tf::RuntimeException)
 	if(scaling.x <= 0 || scaling.y <= 0 || scaling.z <= 0)
 		throw tf::RuntimeException(tf::strprintf("Can't downscale VOI to destination image: invalid scaling (%d,%d,%d)", scaling.x, scaling.y, scaling.z).c_str());
 
-
 	// check c (channels)
 	if(src_dims[3] != dst_dims[3])
 		throw tf::RuntimeException(tf::strprintf("Can't downscale VOI to destination image: source has %d channels, destination has %d", src_dims[3], dst_dims[3]).c_str());
 	
-	// check x-y-z
+    // check source VOI along x-y-z
 	for(int d=0; d<3; d++)
 	{
 		// trim VOI if it exceeds the source image dimensions
@@ -42,24 +42,46 @@ throw (tf::RuntimeException)
 		{
 			int old = src_count[d];
 			src_count[d] = src_dims[d] - src_offset[d];
-			tf::warning(tf::strprintf("VOI exceeded source image dimension along axis %d, then trim VOI from %d to %d", d, old, src_count[d]).c_str());
+            //tf::warning(tf::strprintf("VOI exceeded source image dimension along axis %d, then trim VOI from %d to %d", d, old, src_count[d]).c_str());
 		}
-		
+    }
+
+    // compute dst_count by scaling 'src_count' with 'scaling'
+    uint dst_count[5];
+    dst_count[4] = src_count[4];
+    dst_count[3] = src_count[3];
+    //               |
+    //               |
+    //              \ /
+    //               °   CRUCIAL *** : we use 'ceil' to take into account also the remainder of 'src_count/scaling'
+    //                                 division, i.e. those voxels who otherwise would not be included in the result
+    dst_count[2] = uint(std::ceil(src_count[2] / float(scaling.z)));
+    dst_count[1] = uint(std::ceil(src_count[1] / float(scaling.y)));
+    dst_count[0] = uint(std::ceil(src_count[0] / float(scaling.x)));
+
+    // check target VOI along x-y-z
+    for(int d=0; d<3; d++)
+    {
 		// trim VOI if it does not fit the destination image
-		if(dst_offset[d] + src_count[d]/scaling[d] > dst_dims[d])
+        if(dst_offset[d] + dst_count[d] > dst_dims[d])
 		{
 			int old = src_count[d];
-			src_count[d] = (dst_dims[d] - dst_offset[d]) * scaling[d];
-			tf::warning(tf::strprintf("VOI exceeded destination image dimension along axis %d, then trim VOI from %d to %d\n",	d, old, src_count[d]).c_str(), __itm__current__function__);
+            dst_count[d] = dst_dims[d] - dst_offset[d];
+            src_count[d] = dst_count[d] * scaling[d];   // we can safely do this since our copy loops are 'out-of-bounds' safe
+            tf::warning(tf::strprintf("VOI exceeded destination image dimension along axis %d, then trim VOI from %d to %d\n",	d, old, src_count[d]).c_str(), __itm__current__function__);
 		}
 
 		// do nothing if scaled VOI size is 0
-		if(src_count[d]/scaling[d] == 0)
+        if(dst_count[d] == 0)
 		{
 			tf::warning("VOI has size 0 after downscaling --> do nothing", __itm__current__function__);
 			return;
 		}
 	}
+
+    /**/tf::debug(tf::LEV1, strprintf("after VOI check/correction: src_count = (%d, %d, %d, ignored, %d), dst_count = (%d, %d, %d, ignored, %d)",
+        src_count[0], src_count[1], src_count[2], src_count[4], dst_count[0], dst_count[1], dst_count[2], dst_count[4]).c_str(), __itm__current__function__);
+
 
 	// check t (time)
 	if(src_offset[4] + src_count[4] > src_dims[4])
@@ -68,7 +90,8 @@ throw (tf::RuntimeException)
 		throw tf::RuntimeException(tf::strprintf("Can't copy VOI to destination image: VOI [%u, %u) exceeds destination image size (%u) along T axis", dst_offset[4], dst_offset[4] + src_count[4], dst_dims[4]).c_str());
 
 
-	// quick version (with precomputed offsets, strides and counts: "1" for "src", "2" for "dst")
+    // quick version (with precomputed offsets, strides, counts: "1" for "src", "2" for "dst")
+    // strides
 	const uint64 stride_t1 =  (uint64)1*              src_dims [3] * src_dims [2] * src_dims[1]   * src_dims[0];
 	const uint64 stride_t2 =  (uint64)1*              dst_dims [3] * dst_dims [2] * dst_dims[1]   * dst_dims[0];
 	const uint64 stride_c1 =  (uint64)1*                             src_dims [2] * src_dims[1]   * src_dims[0];
@@ -78,62 +101,96 @@ throw (tf::RuntimeException)
 	const uint64 stride_i1 =  (uint64)1*                                                            src_dims[0] * scaling.y;
 	const uint64 stride_i2 =  (uint64)1*                                                            dst_dims[0];
 	const uint64 stride_j1 =  (uint64)1                                                                         * scaling.x;
-	
-    //const uint64 count_t1  =  (uint64)1* src_count[4] * stride_t1;
-	const uint64 count_t2  =  (uint64)1* src_count[4] * stride_t2;
-    //const uint64 count_c1  =  (uint64)1* src_dims[3]  * stride_c1;
-	const uint64 count_c2  =  (uint64)1* dst_dims[3]  * stride_c2;
-	const uint64 count_k1  =  (uint64)1* src_count[2] * stride_k1;
-    const uint64 count_k2  =  (uint64)1* (src_count[2] / scaling.z) * stride_k2;
-	const uint64 count_i1  =  (uint64)1* src_count[1] * stride_i1;
-    const uint64 count_i2  =  (uint64)1* (src_count[1] / scaling.y) * stride_i2;
-	const uint64 count_j1  =  (uint64)1* src_count[0] * stride_j1;
-    const uint64 count_j2  =  (uint64)1* (src_count[0] / scaling.x);
-
+    // counts
+    const uint64 count_t2  =  (uint64)1* dst_count[4] * stride_t2;
+    const uint64 count_c2  =  (uint64)1* dst_dims[3]  * stride_c2;
+    const uint64 count_k2  =  (uint64)1* dst_count[2] * stride_k2;
+    const uint64 count_i2  =  (uint64)1* dst_count[1] * stride_i2;
+    const uint64 count_j2  =  (uint64)1* dst_count[0];
+    // offsets
 	const uint64 offset_t1 =  (uint64)1*src_offset[4]*src_dims [3] * src_dims [2] * src_dims[1]   * src_dims[0];
 	const uint64 offset_t2 =  (uint64)1*dst_offset[4]*dst_dims [3] * dst_dims [2] * dst_dims[1]   * dst_dims[0];
 	const uint64 offset_k2 =  (uint64)1*                             dst_offset[2]* dst_dims[1]   * dst_dims[0];
 	const uint64 offset_i2 =  (uint64)1*                                            dst_offset[1] * dst_dims[0];
 	const uint64 offset_j2 =  (uint64)1*                                                            dst_offset[0];
 
-	//printf("\n\n");
+    // data reads / writes are within loops 100% 'out-of-bounds' safe
+    // we calculate the maximum for each of B = (scaling.z X scaling.y X scaling.x) blocks of the source image
+    // 1 block of the source image = 1 voxel of the target image
 	for(int sk = 0; sk < scaling.z; sk++)
+    {
 		for(int si = 0; si < scaling.y; si++)
+        {
 			for(int sj = 0; sj < scaling.x; sj++)
 			{
+                // x-y-z offsets (array indices) of source image
 				const uint64 offset_k1 = src_offset[2] * src_dims[1]    * src_dims[0]    + sk * src_dims[1] * src_dims[0] ;
 				const uint64 offset_i1 =                 src_offset[1]  * src_dims[0]    + si * src_dims[0];
 				const uint64 offset_j1 =                                  src_offset[0]  + sj;
 
+                // x-y-z offsets (3D coordinates) of source image
+                size_t offset_x1 = src_offset[0] + sj;
+                size_t offset_y1 = src_offset[1] + si;
+                size_t offset_z1 = src_offset[2] + sk;
+
+                // current t plane (references) of source and target images
 				uint8* const start_t1 = const_cast<uint8*>(src) + offset_t1;
 				uint8* const start_t2 = dst + offset_t2;
-				for(uint8 *img_t1 = start_t1, *img_t2 = start_t2; img_t2 - start_t2 < count_t2; img_t1 += stride_t1, img_t2 += stride_t2)
+
+                // t-c-z-y-x loop
+                for(uint8 *img_t1 = start_t1, *img_t2 = start_t2; img_t2 - start_t2 < count_t2; img_t1 += stride_t1, img_t2 += stride_t2)
 				{
-					for(uint8 *img_c1 = img_t1, *img_c2 = img_t2; img_c2 - img_t2 < count_c2; img_c1 += stride_c1, img_c2 += stride_c2)
+                    for(uint8 *img_c1 = img_t1, *img_c2 = img_t2; img_c2 - img_t2 < count_c2; img_c1 += stride_c1, img_c2 += stride_c2)
 					{
+                        // current z plane (references) of source and target images
 						uint8* const start_k1 = img_c1 + offset_k1;
-						uint8* const start_k2 = img_c2 + offset_k2;
-						int z=0, y=0, x=0;
-						for(uint8 *img_k1 = start_k1, *img_k2 = start_k2; (img_k2 - start_k2  < count_k2) && (img_k1 - start_k1  < count_k1); img_k1 += stride_k1, img_k2 += stride_k2, z++)
+                        uint8* const start_k2 = img_c2 + offset_k2;
+
+                        // current z plane (3D coordinates) of source and target images
+                        size_t z1 = offset_z1;
+                        size_t z2 = dst_offset[2];
+
+                        // z-loop with 'in-bounds' condition (z2 < dst_dims[2] && z1 < src_dims[2])
+                        for(
+                            uint8 *img_k1 = start_k1, *img_k2 = start_k2;
+                            (img_k2 - start_k2  < count_k2)  && (z2 < dst_dims[2] && z1 < src_dims[2]);
+                            img_k1 += stride_k1, img_k2 += stride_k2, z2++, z1+=scaling.z)
 						{
+                            // current y plane (references) of source and target images
 							uint8* const start_i1 = img_k1 + offset_i1;
-							uint8* const start_i2 = img_k2 + offset_i2;
-							y=0;
-							for(uint8 *img_i1 = start_i1, *img_i2 = start_i2; (img_i2 - start_i2  < count_i2) && (img_i1 - start_i1  < count_i1); img_i1 += stride_i1, img_i2 += stride_i2, y++)
+                            uint8* const start_i2 = img_k2 + offset_i2;
+
+                            // current y plane (3D coordinates) of source and target images
+                            size_t y1 = offset_y1;
+                            size_t y2 = dst_offset[1];
+
+                            // y-loop with 'in-bounds' condition (y2 < dst_dims[1] && y1 < src_dims[1])
+                            for(
+                                uint8 *img_i1 = start_i1, *img_i2 = start_i2;
+                                (img_i2 - start_i2  < count_i2)  && (y2 < dst_dims[1] && y1 < src_dims[1]);
+                                img_i1 += stride_i1, img_i2 += stride_i2, y2++, y1+=scaling.y)
 							{
-								x=0;
+                                // current x plane (references) of source and target images
 								uint8* const start_j1 = img_i1 + offset_j1;
 								uint8* const start_j2 = img_i2 + offset_j2;
-								for(uint8 *img_j1 = start_j1, *img_j2 = start_j2; (img_j2 - start_j2  < count_j2) && (img_j1 - start_j1  < count_j1); img_j1 += stride_j1, img_j2++, x++)
-									*img_j2 = std::max(*img_j1, *img_j2);
+
+                                // current x plane (3D coordinates) of source and target images
+                                size_t x1 = offset_x1;
+                                size_t x2 = dst_offset[0];
+
+                                // x-loop with 'in-bounds' condition (x2 < dst_dims[0] && x1 < src_dims[0])
+                                for(
+                                    uint8 *img_j1 = start_j1, *img_j2 = start_j2;
+                                    (img_j2 - start_j2  < count_j2) && (x2 < dst_dims[0] && x1 < src_dims[0]);
+                                    img_j1 += stride_j1, img_j2++, x2++, x1+=scaling.x)
+                                        *img_j2 = std::max(*img_j1, *img_j2);
 							}
-						}
-						//printf("sk %d, si %d, sj %d, z = %d, y = %d, x = %d\n", sk, si, sj, z, y, x);
+                        }
 					}
 				}
 			}
-//printf("\n\n");
-
+        }
+    }
 
 	/**/tf::debug(tf::LEV3, "downscale VOI finished",  __itm__current__function__);
 }

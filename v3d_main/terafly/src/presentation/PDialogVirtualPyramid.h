@@ -46,6 +46,7 @@ class terafly::PDialogVirtualPyramid : public QDialog
         QGroupBox* saveto_panel;
         QRadioButton* local_radiobutton;
         QRadioButton* storage_radiobutton;
+        QComboBox* block_format_combobox;
         QLineEdit *volumepath_line;
 
         QGroupBox* lowres_panel;
@@ -80,6 +81,7 @@ class terafly::PDialogVirtualPyramid : public QDialog
         void lowres_radiobutton_changed();
         void subsampling_spinbox_changed(int v);
         void subsamplings_line_changed(QString);
+        void block_format_combobox_changed(int v);
 
         void update_space_required();
 };

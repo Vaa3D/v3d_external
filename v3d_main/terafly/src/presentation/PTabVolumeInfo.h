@@ -9,9 +9,34 @@
 namespace terafly
 {
     class PTabVolumeInfo;
+    class CUserInactivityFilter;
 
     quint64 dir_size(const QString & str);
 }
+
+class terafly::CUserInactivityFilter : public QObject
+{
+    Q_OBJECT
+
+    public:
+
+        QElapsedTimer timer;
+
+        CUserInactivityFilter(QObject* parent=0) : QObject(parent){timer.start();}
+
+    protected:
+
+        bool eventFilter(QObject *obj, QEvent *ev)
+        {
+            if(ev->type() == QEvent::KeyPress || ev->type() == QEvent::MouseMove)
+            {
+                //printf("elapsed = %d\n", timer.elapsed());
+                timer.restart();
+            }
+
+            return QObject::eventFilter(obj, ev);
+        }
+};
 
 class terafly::PTabVolumeInfo : public QWidget
 {
@@ -42,30 +67,40 @@ class terafly::PTabVolumeInfo : public QWidget
         QPushButton* vp_recheck;
         QLineEdit* vp_subsampling;
         QLineEdit* vp_tiledims;
+        QLineEdit* vp_tileformat;
 
         // virtual pyramid exploration panel
         QGroupBox* vp_exploration_panel;
-        QLineEdit* vp_coverage_line;
-        QPushButton* vp_prefetch_button;
-        QSpinBox* vp_prefetch_blocks_spinbox;
-        QSpinBox* vp_prefetch_blocks_dims;
+        QCheckBox* vp_refill_auto_checkbox;
+        QGradientBar* vp_exploration_bar_local;
+        QGradientBar* vp_exploration_bar_global;
+        QComboBox* vp_empty_viz_method_combobox;
+        QSpinBox*   vp_empty_viz_intensity;
+        QPushButton* vp_refill_button;
+        QComboBox* vp_refill_strategy_combobox;
+        QComboBox* vp_refill_stop_combobox;
+        QSpinBox* vp_refill_times_spinbox;
+        QSpinBox* vp_refill_coverage_spinbox;
 
         // virtual pyramid RAM panel
         QGroupBox* vp_ram_panel;
         QDoubleSpinBox* vp_max_ram_spinbox;
         //QPushButton* vp_ram_show_res_buttons;
         std::vector <QLabel*> vp_ram_labels;
-        std::vector <QLabel*> vp_ram_used_labels;
         std::vector <QGradientBar*> vp_ram_bars;
         std::vector <QPushButton*> vp_ram_clear_buttons;
         static const size_t vp_ram_max_size = 10;
 
         QTimer updateTimer;
+        QMutex refill_mutex;
+        CUserInactivityFilter inactivityDetector;
 
 
     public:
 
         PTabVolumeInfo(QWidget *parent);
+
+        void showVirtualPyramidTab(){tabs->setCurrentIndex(0);}
 
     signals:
 
@@ -79,8 +114,14 @@ class terafly::PTabVolumeInfo : public QWidget
         void recheck_button_clicked();
         void clear_button_clicked();
         void ram_limit_changed(double v);
-        void fetch_button_clicked();
-        //void show_ram_layers_toggled(bool checked);
+        void empty_combobox_index_changed(int v);
+        void empty_intensity_value_changed(int v);
+        void vp_refill_button_clicked(bool in_background = false);
+        void vp_refill_strategy_combobox_changed(int v);
+        void vp_refill_times_spinbox_changed(int v);
+        void vp_refill_auto_checkbox_changed(bool v);
+        void vp_refill_stop_combobox_changed(int v);
+        void vp_refill_coverage_spinbox_changed(int v);
 
 };
 

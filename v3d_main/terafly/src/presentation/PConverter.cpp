@@ -594,7 +594,6 @@ void PConverter::settingsChanged()
     CSettings::instance()->setVCStacksHeight(blockHeightField->value());
     CSettings::instance()->setVCStacksDepth(blockDepthField->value());
     CSettings::instance()->setVCTimeSeries(timeSeriesCheckBox->isChecked());
-    CSettings::instance()->writeSettings();
 }
 
 void PConverter::volformatChanged (int )

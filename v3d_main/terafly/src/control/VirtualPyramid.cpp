@@ -3,40 +3,53 @@
 #include <fstream>
 #include "IOPluginAPI.h"
 #include "CImageUtils.h"
+#include "basic_4dimage.h"
+
 
 /********************************
 *   VIRTUAL PYRAMID definitions *
 *********************************
 ---------------------------------------------------------------------------------------------------------------------------*/
+
+// empty image space visualization: method
+tf::VirtualPyramid::empty_viz_mode tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::RAW;
+
+// empty image space visualization: intensity level of empty voxels
+unsigned char tf::VirtualPyramid::empty_viz_intensity = 128;
+
+// empty image space visualization: salt & pepper percentage
+float tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.001;
+
 // VirtualPyramid constructor 1
 tf::VirtualPyramid::VirtualPyramid(
-        std::string           highresPath,             // highest-res (unconverted) volume path
+        std::string           highresPath,              // highest-res (unconverted) volume path
         int                 reduction_factor,           // pyramid reduction factor (i.e. divide by reduction_factor along all axes for all layers)
         float lower_bound /*= 100*/,                    // lower bound (in MVoxels) for the lowest-res pyramid image (i.e. divide by reduction_factor until the lowest-res has size <= lower_bound)
-        iim::VirtualVolume* highresVol /*= 0*/,        // highest-res (unconverted) volume, if null will be instantiated on-the-fly
+        iim::VirtualVolume* highresVol /*= 0*/,         // highest-res (unconverted) volume, if null will be instantiated on-the-fly
         init_mode mode /*= DEFAULT*/,                   // initialization mode
         const std::string & lowResImagePath /*= ""*/,   // path of low-res image file (to be used when mode == GENERATE_LOW_RES_FROM_FILE)
         int sampling /*= 16*/,                          // sampling factor (to be used when mode == GENERATE_LOW_RES || GENERATE_ALL)
         int local /*= true*/,                           // store data on local drive (i.e. exe's folder) or remote storage (i.e. volume's folder)
-        tf::xyz<size_t> block_dim                       // x-y-z dimensions of virtual pyramid blocks
+        tf::xyz<size_t> block_dim,                      // x-y-z dimensions of virtual pyramid blocks
+        const std::string block_format /*= ".tif"*/     // block file format
 )
 throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     // check first time instance
-    if(iim::isDirectory( local ? pathLocal(_highresPath) : pathRemote(_highresPath)))
-        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? pathLocal(_highresPath) : pathRemote(_highresPath)).c_str()));
+    if(iim::isDirectory( local ? pathLocal(_volPath) : pathRemote(_volPath)))
+        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? pathLocal(_volPath) : pathRemote(_volPath)).c_str()));
 
     // set object members
-    _highresVol = highresVol;
-    _highresPath = highresPath;
+    _vol = highresVol;
+    _volPath = highresPath;
 
     // init working folder
     initPath(local);
 
     // instance highest-res volume
-    initHighResVolume();
+    initVolume();
 
     // iteratively add a new layer until the lowest-res layer has size > lower_bound
     int i = 0;
@@ -45,7 +58,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
         xyz<int> rf = xyz<int>(pow(reduction_factor*1.0, i),pow(reduction_factor*1.0, i),pow(reduction_factor*1.0, i));
 
         // instance only nonempty layers
-        if(VirtualPyramidLayer::isEmpty(_highresVol, rf))
+        if(VirtualPyramidLayer::isEmpty(_vol, rf))
             break;
         else
         {
@@ -60,44 +73,45 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
         throw iim::IOException("Cannot instance Virtual Pyramid with the given settings: at least 2 layers needed. Please check resampling/reduction options or your image size.");
 
     // create/check metadata
-    initPyramid(block_dim);
+    initPyramid(block_dim, block_format);
 }
 
 
 // VirtualPyramid constructor 2
 tf::VirtualPyramid::VirtualPyramid(
-        std::string  highresPath,                      // highest-res (unconverted) volume path
+        std::string  highresPath,                       // highest-res (unconverted) volume path
         std::vector< xyz<int> > reduction_factors,      // pyramid reduction factors (i.e. divide by reduction_factors[i].x along X for layer i)
-        iim::VirtualVolume* highresVol /*= 0*/,        // highest-res (unconverted) volume, if null will be instantiated on-the-fly
+        iim::VirtualVolume* highresVol /*= 0*/,         // highest-res (unconverted) volume, if null will be instantiated on-the-fly
         init_mode mode /*= DEFAULT*/,                   // initialization mode
         const std::string & lowResImagePath /*= ""*/,   // path of low-res image file (to be used when mode == GENERATE_LOW_RES_FROM_FILE)
         int sampling /*= 16*/,                          // sampling factor (to be used when mode == GENERATE_LOW_RES || GENERATE_ALL)
         int local /*= true*/,                           // store data on local drive (i.e. exe's folder) or remote storage (i.e. volume's folder)
-        tf::xyz<size_t> block_dim                       // x-y-z dimensions of virtual pyramid blocks
+        tf::xyz<size_t> block_dim,                      // x-y-z dimensions of virtual pyramid blocks
+        const std::string block_format /*= ".tif"*/     // block file format
 )
 throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     // check first time instance
-    if(iim::isDirectory( local ? pathLocal(_highresPath) : pathRemote(_highresPath)))
-        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? pathLocal(_highresPath) : pathRemote(_highresPath)).c_str()));
+    if(iim::isDirectory( local ? pathLocal(_volPath) : pathRemote(_volPath)))
+        throw iim::IOException(iim::strprintf("Cannot setup a new Virtual Pyramid in \"%s\": another Virtual Pyramid already exists at this path", ( local ? pathLocal(_volPath) : pathRemote(_volPath)).c_str()));
 
     // set object members
-    _highresVol = highresVol;
-    _highresPath = highresPath;
+    _vol = highresVol;
+    _volPath = highresPath;
 
     // init working folder
     initPath(local);
 
     // instance highest-res volume
-    initHighResVolume();
+    initVolume();
 
     // generate layers according to the given reduction factors
     for(int i=0; i<reduction_factors.size(); i++)
     {
         // instance only nonempty layers
-        if(!VirtualPyramidLayer::isEmpty(_highresVol, reduction_factors[i]))
+        if(!VirtualPyramidLayer::isEmpty(_vol, reduction_factors[i]))
             _virtualPyramid.push_back(new VirtualPyramidLayer(i, this, reduction_factors[i]));
     }
 
@@ -106,7 +120,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
         throw iim::IOException("Cannot instance Virtual Pyramid with the given settings: at least 2 layers needed. Please check resampling/reduction options or your image size.");
 
     // create/check metadata
-    initPyramid(block_dim);
+    initPyramid(block_dim, block_format);
 }
 
 // pyramid size predictors
@@ -198,14 +212,14 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     // set object members
-    _highresVol = highresVol;
-    _highresPath = highresPath;
+    _vol = highresVol;
+    _volPath = highresPath;
 
     // init working folder
     initPath(local);
 
     // instance highest-res volume
-    initHighResVolume();
+    initVolume();
 
     // create/check metadata
     initPyramid();
@@ -216,16 +230,27 @@ tf::VirtualPyramid::~VirtualPyramid() throw(iim::IOException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
-    this->clear(false);
+    try
+    {
+		this->clear(false);
+    }
+	catch (tf::RuntimeException & e)
+    {
+		throw iim::IOException(e.what());
+	}
+	catch (iom::exception & e)
+	{
+		throw iim::IOException(e.what());
+	}
 
     // virtual layers should automatically remove themselves from virtualPyramid once they are destroyed
     if(_virtualPyramid.size())
-        throw iim::IOException("Cannot destroy VirtualPyramid: not all layers have been destroyed");
+        throw tf::RuntimeException("Cannot destroy VirtualPyramid: not all layers have been destroyed");
 
     for(int i=0; i<_cachePyramid.size(); i++)
         delete _cachePyramid[i];
 
-    delete _highresVol;
+    delete _vol;
 }
 
 // get pyramid method
@@ -300,7 +325,7 @@ void tf::VirtualPyramid::initPath(bool local) throw (iim::IOException, iom::exce
             throw iim::IOException("Cannot create local folder \".terafly\" in the executable folder");
 
         // create subfolder with the MD5 id generated from the image file name / folder name
-        std::string MD5_path = QDir::currentPath().toStdString() + std::string("/.terafly/.") + QString(QCryptographicHash::hash(tf::getFileName(_highresPath).c_str(),QCryptographicHash::Md5).toHex()).toStdString();
+        std::string MD5_path = QDir::currentPath().toStdString() + std::string("/.terafly/.") + QString(QCryptographicHash::hash(tf::getFileName(_volPath).c_str(),QCryptographicHash::Md5).toHex()).toStdString();
         if(!iim::check_and_make_dir(MD5_path.c_str()))
             throw iim::IOException(tf::strprintf("Cannot create local folder for unconverted volume at \"%s\"", MD5_path.c_str()));
 
@@ -311,9 +336,9 @@ void tf::VirtualPyramid::initPath(bool local) throw (iim::IOException, iom::exce
     }
     else
     {
-        if(iim::isFile(_highresPath))
+        if(iim::isFile(_volPath))
         {
-            QDir remote_dir(_highresPath.c_str());
+            QDir remote_dir(_volPath.c_str());
             remote_dir.cdUp();
             std::string rpath = remote_dir.absolutePath().toStdString();
             rpath += "/.terafly";
@@ -323,7 +348,7 @@ void tf::VirtualPyramid::initPath(bool local) throw (iim::IOException, iom::exce
                 throw iim::IOException(iim::strprintf("Cannot create remote folder for Virtual Pyramid at \"%s\"", rpath.c_str()));
 
             // create subfolder with the MD5 id generated from the image file name / folder name
-            std::string MD5_path = rpath + "/." + QString(QCryptographicHash::hash(tf::getFileName(_highresPath).c_str(),QCryptographicHash::Md5).toHex()).toStdString();
+            std::string MD5_path = rpath + "/." + QString(QCryptographicHash::hash(tf::getFileName(_volPath).c_str(),QCryptographicHash::Md5).toHex()).toStdString();
             if(!iim::check_and_make_dir(MD5_path.c_str()))
                 throw iim::IOException(iim::strprintf("Cannot create remote folder for Virtual Pyramid at \"%s\"", MD5_path.c_str()));
 
@@ -334,7 +359,7 @@ void tf::VirtualPyramid::initPath(bool local) throw (iim::IOException, iom::exce
         }
         else
         {
-            std::string rpath = _highresPath + "/.terafly";
+            std::string rpath = _volPath + "/.terafly";
 
             // create terafly local folder in the volume's file contaienr folder
             if(!iim::check_and_make_dir(rpath.c_str()))
@@ -348,7 +373,7 @@ void tf::VirtualPyramid::initPath(bool local) throw (iim::IOException, iom::exce
     }
 }
 
-void tf::VirtualPyramid::initHighResVolume() throw (iim::IOException, iom::exception, tf::RuntimeException)
+void tf::VirtualPyramid::initVolume() throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -362,35 +387,38 @@ void tf::VirtualPyramid::initHighResVolume() throw (iim::IOException, iom::excep
         std::string line;
         std::getline(f, line);
         std::vector<std::string> tokens = tf::parse(line, "=", 2, volumetxtPath);
-        if(tokens[1].compare(tf::getFileName(_highresPath)) != 0)
-            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), _highresPath.c_str(), tokens[1].c_str()));
+        if(tokens[1].compare(tf::getFileName(_volPath)) != 0)
+            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), _volPath.c_str(), tokens[1].c_str()));
         std::getline(f, line);
         tokens = tf::parse(line, "=", 2, volumetxtPath);
-        if(_highresVol && tokens[1].compare(_highresVol->getPrintableFormat()) != 0)
-            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), _highresPath.c_str(), tokens[1].c_str()));
+        if(_vol && tokens[1].compare(_vol->getPrintableFormat()) != 0)
+            throw iim::IOException(tf::strprintf("Unconverted image path mismatch at \"%s\": expected \"%s\", found \"%s\"", volumetxtPath.c_str(), _volPath.c_str(), tokens[1].c_str()));
         else
-            _highresVol = iim::VirtualVolume::instance_format(_highresPath.c_str(), tokens[1]);
+            _vol = iim::VirtualVolume::instance_format(_volPath.c_str(), tokens[1]);
         f.close();
     }
     {
         // if volume is not instantiated, and we haven't done it before, we have to use the (time-consuming) auto instantiator
         // @FIXED by Alessandro on 2016/03/25: this should be done BEFORE creating the volume.txt file
         // so that in case it throws, no (incomplete) volume.txt is created
-        if(_highresVol == 0)
-            _highresVol = iim::VirtualVolume::instance(_highresPath.c_str());
+        if(_vol == 0)
+            _vol = iim::VirtualVolume::instance(_volPath.c_str());
 
         std::ofstream f(volumetxtPath.c_str());
         if(!f.is_open())
             throw iim::IOException("Cannot open .volume.txt file at \"%s\"", volumetxtPath.c_str());
-        f << "imagename=" << tf::getFileName(_highresPath) << std::endl;
+        f << "imagename=" << tf::getFileName(_volPath) << std::endl;
 
         // then we can store the image format
-        f << "format=" << _highresVol->getPrintableFormat() << std::endl;
+        f << "format=" << _vol->getPrintableFormat() << std::endl;
         f.close();
     }
 }
 
-void tf::VirtualPyramid::initPyramid(tf::xyz<size_t> block_dim)  throw (iim::IOException, iom::exception, tf::RuntimeException)
+void tf::VirtualPyramid::initPyramid(
+        tf::xyz<size_t> block_dim,          // block dimensions
+        const std::string block_format      // block file format
+)  throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -412,7 +440,7 @@ void tf::VirtualPyramid::initPyramid(tf::xyz<size_t> block_dim)  throw (iim::IOE
                 tf::xyz<int> reduction_factor(tf::str2num<int>(factors[0]), tf::str2num<int>(factors[1]), tf::str2num<int>(factors[2]));
 
                 // instance only nonempty layers
-                if(!VirtualPyramidLayer::isEmpty(_highresVol, reduction_factor))
+                if(!VirtualPyramidLayer::isEmpty(_vol, reduction_factor))
                     _virtualPyramid.push_back(new VirtualPyramidLayer(_virtualPyramid.size(), this, reduction_factor));
             }
             setup_file.close();
@@ -486,7 +514,7 @@ void tf::VirtualPyramid::initPyramid(tf::xyz<size_t> block_dim)  throw (iim::IOE
                                                  _virtualPyramid[k]->getDIM_V(),
                                                  _virtualPyramid[k]->getDIM_D(),
                                                  _virtualPyramid[k]->getDIM_C(),
-                                                 _virtualPyramid[k]->getDIM_T()), block5Ddim));
+                                                 _virtualPyramid[k]->getDIM_T()), block5Ddim, block_format));
     }
 }
 
@@ -498,44 +526,271 @@ tf::VirtualPyramid::loadVOI(
         int level)               // pyramid level (0=highest resolution, the higher the lower the resolution)
 throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
-    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+    /**/tf::debug(tf::LEV1, tf::strprintf("VOI is x=[%d,%d) y=[%d,%d) z=[%d,%d), level = %d", start.x, end.x, start.y, end.y, start.z, end.z, level).c_str(), __itm__current__function__);
 
     // checks
     if(level < 0 || level > _cachePyramid.size())
-        throw tf::RuntimeException(tf::strprintf("Invalid pyramid level %d", level));
+        throw tf::RuntimeException(tf::strprintf("Pyramid level %d out of _cachePyramid bounds [0, %d)", level, _cachePyramid.size()));
+    if(level < 0 || level > _virtualPyramid.size())
+        throw tf::RuntimeException(tf::strprintf("Pyramid level %d out of _virtualPyramid bounds [0, %d)", level, _virtualPyramid.size()));
+    if(end.x <= start.x || end.y <= start.y || end.z <= start.z)
+        throw tf::RuntimeException(tf::strprintf("Invalid VOI [%d,%d) x [%d,%d) x [%d,%d)", start.x, end.x, start.y, end.y, start.z, end.z));
 
+    // x,y,z truncation
+    if(end.x > _virtualPyramid[level]->getDIM_H())
+        end.x = _virtualPyramid[level]->getDIM_H();
+    if(end.y > _virtualPyramid[level]->getDIM_V())
+        end.y = _virtualPyramid[level]->getDIM_V();
+    if(end.z > _virtualPyramid[level]->getDIM_D())
+        end.z = _virtualPyramid[level]->getDIM_D();
+
+    // prepare output data array
     iim::uint8* data = 0;
+
+    // highest-res layer = THE image
     if(level == 0)
     {
-        // load data from highest-res image
-        data = _highresVol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
+        // fetch data
+        //data = _vol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
+
+        // replace perfect 0 with 1 ('0' value is reserved for empty/nonloaded voxels)
+        // ***WARNING*** : here, we are deliberately changing the meaning of the data for efficient representation, counting, and access of empty/nonloaded voxels
+        size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
+        data = new uint8[data_dim];
+        for(size_t i=0; i<data_dim; i++)
+            //data[i] = std::max(iim::uint8(1), data[i]);
+            data[i] = 1;
 
         // propagate data to higher layers
+        //size_t l = _cachePyramid.size()-1;
+        //             |
+        //             |
+        //            \ /
+        //             °   CRUCIAL : in this version, we decided not to cache the highest-res layer (too RAM / disk space expensive)
         for(size_t l = 1; l <_cachePyramid.size(); l++)
             _cachePyramid[l]->putData
 			(
 				tf::image5D<uint8>
 				(
 					data, 
-                    xyzt<size_t>(end.x - start.x, end.y - start.y, end.z - start.z, _highresVol->getNActiveFrames()),
-                    active_channels<>(_highresVol->getActiveChannels(), _highresVol->getNACtiveChannels())
+                    xyzt<size_t>(end.x - start.x, end.y - start.y, end.z - start.z, _vol->getNActiveFrames()),
+                    active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())
 				),
-                tf::xyzt<size_t>( start.x, start.y, start.z, _highresVol->getT0()),
+                tf::xyzt<size_t>( start.x, start.y, start.z, _vol->getT0()),
                 _virtualPyramid[l]->_resamplingFactor * (-1)
 			);
     }
+    // lower-res layers = virtual layers
     else
     {
+        // fetch data
         data = _cachePyramid[level]->readData(
                     voi4D<int>(
-                        xyzt<int>(start.x, start.y, start.z, _highresVol->getT0()),
-                        xyzt<int>(end.x, end.y, end.z, _highresVol->getT1()+1)),
-                    active_channels<>(_highresVol->getActiveChannels(), _highresVol->getNACtiveChannels())).data;
+                        xyzt<int>(start.x, start.y, start.z, _vol->getT0()),
+                        xyzt<int>(end.x, end.y, end.z, _vol->getT1()+1)),
+                    active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())).data;
+
+        // if required, replace empty voxels (0s) with the chosen visualization method for empty image regions
+        if(empty_viz_method == tf::VirtualPyramid::SALT_AND_PEPPER)
+        {
+            size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
+            for(size_t i=0; i<data_dim; i++)
+                if(!data[i] && ((double)rand() / RAND_MAX) < empty_viz_salt_pepper_percentage)
+                    data[i] = empty_viz_intensity;
+        }
+        if(empty_viz_method == tf::VirtualPyramid::SOLID)
+        {
+            size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
+            for(size_t i=0; i<data_dim; i++)
+                if(!data[i])
+                    data[i] = empty_viz_intensity;
+        }
     }
     return tf::image5D<uint8>(
                 data,
-                xyzt<size_t>(end.x-start.x, end.y-start.y, end.z-start.z, _highresVol->getNActiveFrames()),
-                active_channels<>(_highresVol->getActiveChannels(), _highresVol->getNACtiveChannels()));
+                xyzt<size_t>(end.x-start.x, end.y-start.y, end.z-start.z, _vol->getNActiveFrames()),
+                active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels()));
+}
+
+// refills pyramid by searching the first noncomplete region in the given cache layer and VOI and populating it with real image data
+// - image data are taken from the unconverted image
+// - region dim = tile dim if volume is tiled, otherwise region dim = block dim of highest-res cache layer
+bool                                // return true if refill was successful, otherwise return false (no empty regions found)
+tf::VirtualPyramid::refill(
+        int cache_level,            // cache level where to search the 'emptiest' region (default: lowest-res cache layer)
+        iim::voi3D<> VOI,           // volume of interest in the 'cache_level' coordinate system
+        refill_strategy strategy    // refill strategy
+) throw (iim::IOException, iom::exception, tf::RuntimeException)
+{
+    // check preconditions
+    if(!_vol)
+        throw tf::RuntimeException("in VirtualPyramid::refill(): volume has not been initialized yet");
+    if(_cachePyramid.empty())
+        throw tf::RuntimeException("in VirtualPyramid::refill(): cache pyramid has not been initialized yet");
+
+    // check / adjust optional inputs
+    if (cache_level < 0)
+        cache_level = _cachePyramid.size()-1;   // default: lowest-res layer
+    VOI.end.x = std::min(VOI.end.x, size_t(_vol->getDIM_H()));
+    VOI.end.y = std::min(VOI.end.y, size_t(_vol->getDIM_V()));
+    VOI.end.z = std::min(VOI.end.z, size_t(_vol->getDIM_D()));
+    if(!VOI.isValid())
+        throw tf::RuntimeException(tf::strprintf("in VirtualPyramid::refill(): invalid VOI x=[%d,%d) y=[%d,%d) z=[%d,%d)", VOI.start.x, VOI.end.x, VOI.start.y, VOI.end.y, VOI.start.z, VOI.end.z));
+
+    // get tiles from image
+    std::vector < iim::voi3D<size_t> > tiles = _vol->tilesXYZ();
+
+    // volume is tiled only along x,y: we need to further partition along z
+    if(tiles.size() && _vol->isTiled(iim::dimension_x) && _vol->isTiled(iim::dimension_y) && !_vol->isTiled(iim::dimension_z))
+    {
+        // we use block dim (along z) of highest-cache layer to partition
+        std::vector<size_t> zparts = tf::partition(size_t(_vol->getDIM_D()), _cachePyramid[0]->blockDim().z);
+
+        std::vector < iim::voi3D<size_t> > tiles_sub;
+        for(size_t i=0; i<tiles.size(); i++)
+        {
+            size_t zcount = 0;
+            for(size_t j=0; j<zparts.size(); j++)
+            {
+                tiles_sub.push_back( iim::voi3D<size_t>(
+                                         iim::xyz<size_t>(tiles[i].start.x, tiles[i].start.y, zcount),
+                                         iim::xyz<size_t>(tiles[i].end.x  , tiles[i].end.y,   zcount + zparts[j]) ) );
+                zcount += zparts[j];
+            }
+        }
+        tiles = tiles_sub;
+    }
+
+    // no tiles available: we need to partition along x,y,z
+    if(tiles.empty())
+    {
+        // we use block dim (along x,y,z) of highest-cache layer to partition
+        std::vector<size_t> xparts = tf::partition(size_t(_vol->getDIM_H()), _cachePyramid[0]->blockDim().x);
+        std::vector<size_t> yparts = tf::partition(size_t(_vol->getDIM_V()), _cachePyramid[0]->blockDim().y);
+        std::vector<size_t> zparts = tf::partition(size_t(_vol->getDIM_D()), _cachePyramid[0]->blockDim().z);
+
+        size_t xcount = 0;
+        for(size_t i=0; i<xparts.size(); i++)
+        {
+            size_t ycount = 0;
+            for(size_t j=0; j<yparts.size(); j++)
+            {
+                size_t zcount = 0;
+                for(size_t k=0; k<zparts.size(); k++)
+                {
+                    tiles.push_back( iim::voi3D<size_t>(
+                                             iim::xyz<size_t>(xcount,             ycount,             zcount),
+                                             iim::xyz<size_t>(xcount + xparts[i], ycount + yparts[j], zcount + zparts[k]) ) );
+                    zcount += zparts[k];
+                }
+                ycount += yparts[j];
+            }
+            xcount += xparts[i];
+        }
+    }
+
+    // apply scan strategy
+    if(strategy == REFILL_RANDOM)
+        std::random_shuffle(tiles.begin(), tiles.end());
+    else if(strategy == REFILL_ZYX)
+        std::sort(tiles.begin(), tiles.end());
+    else if(strategy == REFILL_CENTER)
+    {
+        tf::xyz<float> VOI_center(VOI.start.x + (VOI.end.x-VOI.start.x)/2.0f, VOI.start.y + (VOI.end.y-VOI.start.y)/2.0f, VOI.start.z + (VOI.end.z-VOI.start.z)/2.0f);
+        iim::xyz<size_t> VOI_center_mapped(
+                    CImageUtils::mapCoord<float>(VOI_center.x, _cachePyramid[cache_level]->dims().x, _vol->getDIM_H(), true),
+                    CImageUtils::mapCoord<float>(VOI_center.y, _cachePyramid[cache_level]->dims().y, _vol->getDIM_V(), true),
+                    CImageUtils::mapCoord<float>(VOI_center.z, _cachePyramid[cache_level]->dims().z, _vol->getDIM_D(), true));
+        std::sort(tiles.begin(), tiles.end(), iim::voi3D<size_t>::distanceFromPointFunctor(VOI_center_mapped));
+    }
+
+    // make a copy of tiles before changing coordinate system
+    std::vector < iim::voi3D<size_t> > tiles_copy = tiles;
+
+//    printf("tiles before mapping\n");
+//    for(size_t i=0; i<tiles.size(); i++)
+//         printf("[%d,%d) [%d,%d) [%d,%d)\n",
+//             tiles[i].start.x, tiles[i].end.x,
+//             tiles[i].start.y, tiles[i].end.y,
+//             tiles[i].start.z, tiles[i].end.z);
+//    printf("\n\n");
+
+    // scale tile coordinates to the selected cache layer coordinate system
+    for(size_t i=0; i<tiles.size(); i++)
+    {
+        tiles[i].start.x = round05(CImageUtils::mapCoord<float>(tiles[i].start.x, _vol->getDIM_H(), _cachePyramid[cache_level]->dims().x, false, true));
+        tiles[i].end.x   = round(CImageUtils::mapCoord<float>(tiles[i].end.x,   _vol->getDIM_H(), _cachePyramid[cache_level]->dims().x, false, true));
+        tiles[i].start.y = round05(CImageUtils::mapCoord<float>(tiles[i].start.y, _vol->getDIM_V(), _cachePyramid[cache_level]->dims().y, false, true));
+        tiles[i].end.y   = round(CImageUtils::mapCoord<float>(tiles[i].end.y,   _vol->getDIM_V(), _cachePyramid[cache_level]->dims().y, false, true));
+        tiles[i].start.z = round05(CImageUtils::mapCoord<float>(tiles[i].start.z, _vol->getDIM_D(), _cachePyramid[cache_level]->dims().z, false, true));
+        tiles[i].end.z   = round(CImageUtils::mapCoord<float>(tiles[i].end.z,   _vol->getDIM_D(), _cachePyramid[cache_level]->dims().z, false, true));
+    }
+
+
+//    printf("tiles AFTER mapping\n");
+//    for(size_t i=0; i<tiles.size(); i++)
+//         printf("[%d,%d) [%d,%d) [%d,%d)\n",
+//             tiles[i].start.x, tiles[i].end.x,
+//             tiles[i].start.y, tiles[i].end.y,
+//             tiles[i].start.z, tiles[i].end.z);
+//    printf("\n\n");
+
+
+    // remove tiles that do not intersect with the given VOI (also sync the result with tiles_copy)
+    for( std::vector < iim::voi3D<size_t> >::iterator it = tiles.begin(), it_copy = tiles_copy.begin(); it != tiles.end(); )
+    {
+        if(VOI.intersection(*it).isValid() == false)
+        {
+            tiles.erase(it);
+            tiles_copy.erase(it_copy);
+        }
+        else
+        {
+            it++;
+            it_copy++;
+        }
+    }
+
+
+//    printf("tiles after erasing not intersecting\n");
+//    for(size_t i=0; i<tiles.size(); i++)
+//        printf("[%d,%d) [%d,%d) [%d,%d)\n",
+//               tiles[i].start.x, tiles[i].end.x,
+//               tiles[i].start.y, tiles[i].end.y,
+//               tiles[i].start.z, tiles[i].end.z);
+//    printf("\n\n");
+
+
+    // take first non-complete tile
+    size_t k = 0;
+    for(; k < tiles.size(); k++)
+    {
+        float c = _cachePyramid[cache_level]->completeness(tiles[k]);
+        if(c < 1)
+        {
+//            printf("first noncomplete tile found (%f): [%d,%d) [%d,%d) [%d,%d)\n",
+//                   c,
+//                   tiles[k].start.x, tiles[k].end.x,
+//                   tiles[k].start.y, tiles[k].end.y,
+//                   tiles[k].start.z, tiles[k].end.z);
+            break;
+        }
+    }
+
+
+    // if k is out of bounds, it means all tiles are complete --> return false
+    if(k == tiles.size())
+        return false;
+    // otherwise fetch data from highest-res (layer = 0) using the 'tiles_copy' tiles with coordinates in the highest-res image space
+    else
+        delete this->loadVOI(tf::xyz<size_t>(tiles_copy[k].start.x, tiles_copy[k].start.y, tiles_copy[k].start.z),
+                             tf::xyz<size_t>(tiles_copy[k].end.x,   tiles_copy[k].end.y,   tiles_copy[k].end.z), 0).data;
+
+    float cnew = _cachePyramid[cache_level]->completeness(tiles[k]);
+    if(cnew != 1)
+        throw tf::RuntimeException(tf::strprintf("in VirtualPyramid::refill(): completeness != 1 (%f) after refill, VOI x=[%d,%d) y=[%d,%d) z=[%d,%d)", cnew, tiles[k].start.x, tiles[k].end.x, tiles[k].start.y, tiles[k].end.y, tiles[k].start.z, tiles[k].end.z));
+
+    return true;
 }
 
 
@@ -558,7 +813,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     {
         if(layer == -1 || layer == i)
         {
-            std::vector <tf::HyperGridCache::CacheBlock*> modified_i = cachePyramid()[i]->blocks_modified();
+            std::vector <tf::HyperGridCache::CacheBlock*> modified_i = cachePyramid()[i]->blocksChanged();
             blocks_modified.insert(blocks_modified.end(), modified_i.begin(), modified_i.end());
         }
     }
@@ -566,7 +821,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     // calculate overall image data size
     float GB = 0;
     for(int i=0; i<blocks_modified.size(); i++)
-        GB += blocks_modified[i]->maximumRamUsageGB();
+        GB += blocks_modified[i]->memoryMax();
 
 
     // save modified blocks
@@ -647,19 +902,19 @@ throw (iim::IOException) : VirtualVolume()
     _parent = parent;
     _resamplingFactor = _reduction_factor;
 
-    VXL_V = _parent->_highresVol->getVXL_V()*_resamplingFactor.y;
-    VXL_H = _parent->_highresVol->getVXL_H()*_resamplingFactor.x;
-    VXL_D = _parent->_highresVol->getVXL_D()*_resamplingFactor.z;
-    ORG_V = _parent->_highresVol->getORG_V();
-    ORG_H = _parent->_highresVol->getORG_H();
-    ORG_D = _parent->_highresVol->getORG_D();
-    DIM_C = _parent->_highresVol->getDIM_C();
-    BYTESxCHAN = _parent->_highresVol->getBYTESxCHAN();
+    VXL_V = _parent->_vol->getVXL_V()*_resamplingFactor.y;
+    VXL_H = _parent->_vol->getVXL_H()*_resamplingFactor.x;
+    VXL_D = _parent->_vol->getVXL_D()*_resamplingFactor.z;
+    ORG_V = _parent->_vol->getORG_V();
+    ORG_H = _parent->_vol->getORG_H();
+    ORG_D = _parent->_vol->getORG_D();
+    DIM_C = _parent->_vol->getDIM_C();
+    BYTESxCHAN = _parent->_vol->getBYTESxCHAN();
     initChannels();
-    DIM_T = _parent->_highresVol->getDIM_T();
-    DIM_V = _parent->_highresVol->getDIM_V()/static_cast<float>(_resamplingFactor.y);
-    DIM_H = _parent->_highresVol->getDIM_H()/static_cast<float>(_resamplingFactor.x);
-    DIM_D = _parent->_highresVol->getDIM_D()/static_cast<float>(_resamplingFactor.z);
+    DIM_T = _parent->_vol->getDIM_T();
+    DIM_V = _parent->_vol->getDIM_V()/static_cast<float>(_resamplingFactor.y);
+    DIM_H = _parent->_vol->getDIM_H()/static_cast<float>(_resamplingFactor.x);
+    DIM_D = _parent->_vol->getDIM_D()/static_cast<float>(_resamplingFactor.z);
 }
 
 void tf::VirtualPyramidLayer::initChannels() throw (iim::IOException)
@@ -668,11 +923,11 @@ void tf::VirtualPyramidLayer::initChannels() throw (iim::IOException)
 
     static bool first_time = true;
     if(first_time)
-        _parent->_highresVol->initChannels();
+        _parent->_vol->initChannels();
     else
         first_time = false;
-    active = _parent->_highresVol->getActiveChannels();
-    n_active = _parent->_highresVol->getNACtiveChannels();
+    active = _parent->_vol->getActiveChannels();
+    n_active = _parent->_vol->getNACtiveChannels();
 }
 
 // VirtualPyramidLayer deconstructor
@@ -767,17 +1022,19 @@ throw (iim::IOException)
 tf::HyperGridCache::HyperGridCache(
         std::string path,                              // where cache files are stored / have to be stored
         xyzct<size_t> image_dim,                       // image dimensions along X, Y, Z, C (channel), and T (time)
-        xyzct<size_t> block_dim)						// hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+        xyzct<size_t> block_dim,					// hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
+        const std::string block_fmt)                   // hypergrid block file format
 throw (iim::IOException, tf::RuntimeException, iom::exception)
 {
-    /**/tf::debug(tf::LEV2, iim::strprintf("_path = \"%s\", _image_dim = {%d, %d, %d, %d, %d}, _block_dim = {%d, %d, %d, %d, %d}",
-                                           _path.c_str(), image_dim.x, image_dim.y, image_dim.z, image_dim.c, image_dim.t, _block_dim.x, _block_dim.y, _block_dim.z, _block_dim.c, _block_dim.t).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV2, iim::strprintf("_path = \"%s\", image_dim = {%d, %d, %d, %d, %d}, block_dim = {%d, %d, %d, %d, %d}, block_fmt = \"%s\"",
+                                           _path.c_str(), image_dim.x, image_dim.y, image_dim.z, image_dim.c, image_dim.t, block_dim.x, block_dim.y, block_dim.z, block_dim.c, block_dim.t, block_fmt.c_str()).c_str(), __itm__current__function__);
 
     // set object members
     _path = path;
     _dims = image_dim;
     _block_dim = block_dim;
     _hypergrid = 0;
+    _block_fmt = block_fmt;
 
     // adjust block dim if needed
     if(_block_dim.x == std::numeric_limits<size_t>::max())
@@ -922,6 +1179,8 @@ void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException, i
             _dims.c = tf::str2num<size_t>(tokens[1]);
         if(tokens[0].compare("image.dimT") == 0)
             _dims.t = tf::str2num<size_t>(tokens[1]);
+        if(tokens[0].compare("blocks.format") == 0)
+            _block_fmt = tf::cls(tokens[1]);
         if(tokens[0].compare("blocks.nX") == 0)
             _nBlocks.x = tf::str2num<size_t>(tokens[1]);
         if(tokens[0].compare("blocks.nY") == 0)
@@ -979,6 +1238,7 @@ void tf::HyperGridCache::save() throw (iim::IOException, tf::RuntimeException, i
     f << "image.dimZ:" << _dims.z << std::endl;
     f << "image.dimC:" << _dims.c << std::endl;
     f << "image.dimT:" << _dims.t << std::endl;
+    f << "blocks.format:" << _block_fmt << std::endl;
     f << "blocks.nX:" << _nBlocks.x << std::endl;
     f << "blocks.nY:" << _nBlocks.y << std::endl;
     f << "blocks.nZ:" << _nBlocks.z << std::endl;
@@ -1090,8 +1350,8 @@ void tf::HyperGridCache::putData(
 	tf::xyz<int> scaling)				// scaling along X,Y and Z (powers of 2 only)
     throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
-	/**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), offset = (%d, %d, %d, %d), scaling = (%d,%d,%d)",
-        _path.c_str(), img.dims.x, img.dims.y, img.dims.z, img.chans.dim, img.dims.t, offset.x, offset.y, offset.z, offset.t, scaling.x, scaling.y, scaling.z).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims(t,c,z,y,x) = (%d x %d x %d x %d x %d), offset(t,z,y,x) = (%d, %d, %d, %d), scaling(z,y,x) = (%d,%d,%d)",
+        _path.c_str(), img.dims.t, img.chans.dim, img.dims.z, img.dims.y, img.dims.x, offset.t, offset.z, offset.y, offset.x, scaling.z, scaling.y, scaling.x).c_str(), __itm__current__function__);
 
 	// check scaling
 	if(!scaling.x || !scaling.y || !scaling.z)
@@ -1109,12 +1369,15 @@ void tf::HyperGridCache::putData(
         tf::xyzt<float>(offset.x, offset.y, offset.z, offset.t),
         tf::xyzt<float>(offset.x + img.dims.x, offset.y + img.dims.y, offset.z + img.dims.z, offset.t + img.dims.t));
 
+//    printf("before scaling, VOI(t,z,t,x) is [%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f)\n", voi.start.t, voi.end.t, voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x);
+
 	// scale voi
 	if(upscaling)
         voi *= tf::xyz<float>(scaling);
 	else
         voi /= tf::xyz<float>(scaling);
 
+//    printf("after scaling, VOI(t,z,t,x) is [%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f)\n", voi.start.t, voi.end.t, voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x);
 
 	// put data into intersecting blocks
     //printf("put data into intersecting blocks \n");
@@ -1127,20 +1390,22 @@ void tf::HyperGridCache::putData(
                         voi4D<float>              iv = _hypergrid[t][c][z][y][x]->intersection(voi);
                         std::vector<unsigned int> ic = _hypergrid[t][c][z][y][x]->intersection(img.chans);
 
-						bool intersects = iv.size() > 0 && ic.size() > 0;
+                        bool intersects = iv.isValid() > 0 && ic.size() > 0;
+
+//                        printf("hypergrid[%02d][%02d][%02d][%02d][%02d]: block [%d,%d),[%d,%d),[%d,%d),[%d,%d),[%d,%d) %s [%.1f,%.1f),{%s},[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f) IS [%.1f,%.1f),{%s},[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f)\n",
+//                            t,c,z,y,x,
+//                            _hypergrid[t][c][z][y][x]->origin().t, _hypergrid[t][c][z][y][x]->origin().t + _hypergrid[t][c][z][y][x]->dims().t,
+//                            _hypergrid[t][c][z][y][x]->origin().c, _hypergrid[t][c][z][y][x]->origin().c + _hypergrid[t][c][z][y][x]->dims().c,
+//                            _hypergrid[t][c][z][y][x]->origin().z, _hypergrid[t][c][z][y][x]->origin().z + _hypergrid[t][c][z][y][x]->dims().z,
+//                            _hypergrid[t][c][z][y][x]->origin().y, _hypergrid[t][c][z][y][x]->origin().y + _hypergrid[t][c][z][y][x]->dims().y,
+//                            _hypergrid[t][c][z][y][x]->origin().x, _hypergrid[t][c][z][y][x]->origin().x + _hypergrid[t][c][z][y][x]->dims().x,
+//                            intersects ? "intersects with" : "DOES NOT intersect with",
+//                            voi.start.t, voi.end.t, img.chans.toString().c_str(),             voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x,
+//                            iv.start.t,  iv.end.t,  active_channels<>::toString(ic).c_str(), iv.start.z,  iv.end.z,  iv.start.y,  iv.end.y,  iv.start.x,  iv.end.x);
+
+
 						if(intersects)
 						{
-//                            printf("hypergrid[%02d][%02d][%02d][%02d][%02d]: block [%d,%d),[%d,%d),[%d,%d),[%d,%d),[%d,%d) %s [%.1f,%.1f),{%s},[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f) IS [%.1f,%.1f),{%s},[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f)\n",
-//								t,c,z,y,x,
-//								hypergrid[t][c][z][y][x]->getOrigin().t, hypergrid[t][c][z][y][x]->getOrigin().t + hypergrid[t][c][z][y][x]->getDims().t,
-//								hypergrid[t][c][z][y][x]->getOrigin().c, hypergrid[t][c][z][y][x]->getOrigin().c + hypergrid[t][c][z][y][x]->getDims().c,
-//								hypergrid[t][c][z][y][x]->getOrigin().z, hypergrid[t][c][z][y][x]->getOrigin().z + hypergrid[t][c][z][y][x]->getDims().z,
-//								hypergrid[t][c][z][y][x]->getOrigin().y, hypergrid[t][c][z][y][x]->getOrigin().y + hypergrid[t][c][z][y][x]->getDims().y,
-//								hypergrid[t][c][z][y][x]->getOrigin().x, hypergrid[t][c][z][y][x]->getOrigin().x + hypergrid[t][c][z][y][x]->getDims().x,
-//								intersects ? "intersects with" : "DOES NOT intersect with",
-//								voi.start.t, voi.end.t, img.chans.toString().c_str(),             voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x,
-//								iv.start.t,  iv.end.t,  active_channels<>::toString(ic).c_str(), iv.start.z,  iv.end.z,  iv.start.y,  iv.end.y,  iv.start.x,  iv.end.x);
-
 
                             // local VOI = intersecting ROI - origin shift
                             voi4D<int> loc_VOI = iv.rounded();
@@ -1152,20 +1417,24 @@ void tf::HyperGridCache::putData(
                                 img_VOIf /= tf::xyz<float>(scaling);
 							else
                                 img_VOIf *= tf::xyz<float>(scaling);
+//                            printf("after scaling: img_VOIf(t,z,t,x) is [%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f)\n", img_VOIf.start.t, img_VOIf.end.t, img_VOIf.start.z, img_VOIf.end.z, img_VOIf.start.y, img_VOIf.end.y, img_VOIf.start.x, img_VOIf.end.x);
                             img_VOIf -= tf::xyzt<float>(offset);
+//                            printf("after shift  : img_VOIf(t,z,t,x) is [%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f),[%.1f,%.1f)\n", img_VOIf.start.t, img_VOIf.end.t, img_VOIf.start.z, img_VOIf.end.z, img_VOIf.start.y, img_VOIf.end.y, img_VOIf.start.x, img_VOIf.end.x);
+
                             voi4D<int> img_VOI = img_VOIf.rounded();
 
-//							printf("local VOI is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", loc_VOI.start.t, loc_VOI.end.t, loc_VOI.start.z, loc_VOI.end.z, loc_VOI.start.y, loc_VOI.end.y, loc_VOI.start.x, loc_VOI.end.x);
-//							printf("image VOI is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", img_VOI.start.t, img_VOI.end.t, img_VOI.start.z, img_VOI.end.z, img_VOI.start.y, img_VOI.end.y, img_VOI.start.x, img_VOI.end.x);
+//                            printf("local VOI(t,z,t,x) is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", loc_VOI.start.t, loc_VOI.end.t, loc_VOI.start.z, loc_VOI.end.z, loc_VOI.start.y, loc_VOI.end.y, loc_VOI.start.x, loc_VOI.end.x);
+//                            printf("image VOI(t,z,t,x) is [%d,%d),[%d,%d),[%d,%d),[%d,%d)\n", img_VOI.start.t, img_VOI.end.t, img_VOI.start.z, img_VOI.end.z, img_VOI.start.y, img_VOI.end.y, img_VOI.start.x, img_VOI.end.x);
 
-                            _hypergrid[t][c][z][y][x]->putData(img, img_VOI, loc_VOI, upscaling ? scaling : scaling * (-1));
+                            if(img_VOI.isValid() && loc_VOI.isValid())
+                                _hypergrid[t][c][z][y][x]->putData(img, img_VOI, loc_VOI, upscaling ? scaling : scaling * (-1));
 						}
 					}
     //printf("\n");
 }
 
 
-std::vector<tf::HyperGridCache::CacheBlock*> tf::HyperGridCache::blocks_modified()
+std::vector<tf::HyperGridCache::CacheBlock*> tf::HyperGridCache::blocksChanged()
 {
     std::vector<tf::HyperGridCache::CacheBlock*> modified;
     for(size_t t=0; t<_nBlocks.t; t++)
@@ -1173,7 +1442,7 @@ std::vector<tf::HyperGridCache::CacheBlock*> tf::HyperGridCache::blocks_modified
             for(size_t z=0; z<_nBlocks.z; z++)
                 for(size_t y=0; y<_nBlocks.y; y++)
                     for(size_t x=0; x<_nBlocks.x; x++)
-                        if(_hypergrid[t][c][z][y][x]->modified())
+                        if(_hypergrid[t][c][z][y][x]->hasChanged())
                             modified.push_back(_hypergrid[t][c][z][y][x]);
     return modified;
 }
@@ -1189,7 +1458,7 @@ void tf::HyperGridCache::clear()
                         _hypergrid[t][c][z][y][x]->clear();
 }
 
-float tf::HyperGridCache::currentRamUsageGB()
+float tf::HyperGridCache::memoryUsed()
 {
     float sum = 0;
     for(size_t t=0; t<_nBlocks.t; t++)
@@ -1197,11 +1466,11 @@ float tf::HyperGridCache::currentRamUsageGB()
             for(size_t z=0; z<_nBlocks.z; z++)
                 for(size_t y=0; y<_nBlocks.y; y++)
                     for(size_t x=0; x<_nBlocks.x; x++)
-                        sum += _hypergrid[t][c][z][y][x]->currentRamUsageGB();
+                        sum += _hypergrid[t][c][z][y][x]->memoryUsed();
     return sum;
 }
 
-float tf::HyperGridCache::maximumRamUsageGB()
+float tf::HyperGridCache::memoryMax()
 {
     float sum = 0;
     for(size_t t=0; t<_nBlocks.t; t++)
@@ -1209,8 +1478,40 @@ float tf::HyperGridCache::maximumRamUsageGB()
             for(size_t z=0; z<_nBlocks.z; z++)
                 for(size_t y=0; y<_nBlocks.y; y++)
                     for(size_t x=0; x<_nBlocks.x; x++)
-                        sum += _hypergrid[t][c][z][y][x]->maximumRamUsageGB();
+                        sum += _hypergrid[t][c][z][y][x]->memoryMax();
     return sum;
+}
+
+// completeness index between 0 (0% explored) and 1 (100% explored)
+// it is calculated by counting 'empty' voxels, i.e. that haven't been fetched yet
+float tf::HyperGridCache::completeness(iim::voi3D<> voi) throw (iim::IOException, iom::exception, tf::RuntimeException)
+{
+    // adjust voi if it has not been provided
+    if(voi == iim::voi3D<>::biggest())
+    {
+        voi.end.x = _dims.x;
+        voi.end.y = _dims.y;
+        voi.end.z = _dims.z;
+    }
+
+    // check voi
+    if(voi.intersection( iim::voi3D<>( iim::xyz<size_t>(0), iim::xyz<size_t>(_dims.x,_dims.y,_dims.z) ) ).isValid() == false)
+        throw tf::RuntimeException(tf::strprintf("in completeness(): VOI x=[%d,%d) y=[%d,%d) z=[%d,%d) is out of bounds x=[0,%d) y=[0,%d) z=[0,%d)",
+                                                 voi.start.x, voi.end.x, voi.start.y, voi.end.y, voi.start.z, voi.end.z, _dims.x, _dims.y, _dims.z));
+
+    // sum empty counts among all blocks
+    size_t sum_empty = 0, sum_total = 0;
+    for(size_t t=0; t<_nBlocks.t; t++)
+        for(size_t c=0; c<_nBlocks.c; c++)
+            for(size_t z=0; z<_nBlocks.z; z++)
+                for(size_t y=0; y<_nBlocks.y; y++)
+                    for(size_t x=0; x<_nBlocks.x; x++)
+                        if(_hypergrid[t][c][z][y][x]->intersection(voi).isValid())
+                        {
+                            sum_empty += _hypergrid[t][c][z][y][x]->countEmpty(voi);
+                            sum_total += _hypergrid[t][c][z][y][x]->intersection(voi).size() * _hypergrid[t][c][z][y][x]->dims().c * _hypergrid[t][c][z][y][x]->dims().t;
+                        }
+    return 1.0f - float(sum_empty)/sum_total;
 }
 
 
@@ -1242,14 +1543,15 @@ throw (iim::IOException, iom::exception)
     _index  = index;
     _visits = 0;
     _emptycount = 0;
-    _modified = false;
+    _hasChanged = false;
 
-    _path = _parent->_path + "/" + tf::strprintf("t%s_c%s_z%s_y%s_x%s.tif",
+    _path = _parent->_path + "/" + tf::strprintf("t%s_c%s_z%s_y%s_x%s%s",
                                                              tf::num2str(_index.t).c_str(),
                                                              tf::num2str(_index.c).c_str(),
                                                              tf::num2str(_index.z).c_str(),
                                                              tf::num2str(_index.y).c_str(),
-                                                             tf::num2str(_index.x).c_str());
+                                                             tf::num2str(_index.x).c_str(),
+                                                            _parent->blockFormat().c_str());
 }
 
 
@@ -1261,7 +1563,6 @@ tf::HyperGridCache::CacheBlock::~CacheBlock() throw (iim::IOException, iom::exce
     if(_imdata)
         delete _imdata;
 }
-
 
 // calculate channel intersection with current block
 std::vector<unsigned int> tf::HyperGridCache::CacheBlock::intersection(tf::active_channels<> chans)
@@ -1283,8 +1584,66 @@ void tf::HyperGridCache::CacheBlock::updateEmptyCount()
         _emptycount = 0;
         size_t total = _dims.size();
         for(size_t i=0; i<total; i++)
-            if(_imdata[i] == 0)
+            if(!_imdata[i])
                 _emptycount++;
+    }
+}
+
+// get empty voxel count within the given voi
+size_t tf::HyperGridCache::CacheBlock::countEmpty( iim::voi3D<> voi )
+{
+    /**/tf::debug(tf::LEV1, strprintf("block(z,y,x) = [%d,%d) [%d,%d) [%d,%d), voi(z,y,x) = [%d,%d) [%d,%d) [%d,%d)",
+        _origin.z, _origin.z + _dims.z, _origin.y, _origin.y + _dims.y, _origin.x, _origin.x + _dims.x,
+        voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x).c_str(), __itm__current__function__);
+
+    if(voi == iim::voi3D<>::biggest())
+        return _emptycount;
+    else
+    {
+        // get intersection with current block
+        iim::voi3D<> ivoi = this->intersection(voi);
+//        printf("intersection = [%d,%d) [%d,%d) [%d,%d)\n", ivoi.start.x, ivoi.end.x, ivoi.start.y, ivoi.end.y, ivoi.start.z, ivoi.end.z);
+
+        // subtract origin --> get local image voi
+        ivoi.start.x -= _origin.x;
+        ivoi.start.y -= _origin.y;
+        ivoi.start.z -= _origin.z;
+        ivoi.end.x   -= _origin.x;
+        ivoi.end.y   -= _origin.y;
+        ivoi.end.z   -= _origin.z;
+
+        // count empty pixels in image voi, if image data are available
+        if(_imdata)
+        {
+            size_t empty = 0;
+            for(size_t t=0; t<_dims.t; t++)
+            {
+                size_t stride_t = t * _dims.c * _dims.z * _dims.y * _dims.x;
+                for(size_t c=0; c<_dims.c; c++)
+                {
+                    size_t stride_c = stride_t + c * _dims.z * _dims.y * _dims.x;
+                    for(size_t z=ivoi.start.z; z<ivoi.end.z; z++)
+                    {
+                        size_t stride_z = stride_c + z * _dims.y * _dims.x;
+                        for(size_t y=ivoi.start.y; y<ivoi.end.y; y++)
+                        {
+                            size_t stride_y = stride_z + y * _dims.x;
+                            for(size_t x=ivoi.start.x; x<ivoi.end.x; x++)
+                                if(!_imdata[stride_y + x])
+                                    empty++;
+                        }
+                    }
+                }
+            }
+//            printf("return empty (%d)\n", empty);
+            return empty;
+        }
+        // otherwise return intersection size
+        else
+        {
+//            printf("return intersection size (%d)\n", ivoi.size() * _dims.c * _dims.t);
+            return ivoi.size() * _dims.c * _dims.t;
+        }
     }
 }
 
@@ -1308,9 +1667,15 @@ void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::except
     // try to load data from disk
     if(iim::isFile(_path))
     {
-        int dimX = _dims.x, dimY=_dims.y, dimZ=_dims.z, dimC=_dims.c, bytes = 1;
-
-        if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
+        //int dimX = _dims.x, dimY=_dims.y, dimZ=_dims.z, dimC=_dims.c, bytes = 1;
+        Image4DSimple img;
+        img.loadImage(_path.c_str());
+        if(!img.valid())
+            throw iim::IOException(tf::strprintf("Cannot read image block at \"%s\"", _path.c_str()));
+        delete _imdata;
+        _imdata = img.getRawData();
+        img.setRawDataPointerToNull();
+        /*if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
         {
             tf::uint8 *interleaved = new tf::uint8[_dims.x*_dims.y*_dims.z*_dims.c];
             iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(_path, dimX, dimY, dimZ, bytes, dimC, interleaved);
@@ -1332,7 +1697,7 @@ void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::except
             delete[] interleaved;
         }
         else
-            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(_path, dimX, dimY, dimZ, bytes, dimC, _imdata);
+            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(_path, dimX, dimY, dimZ, bytes, dimC, _imdata);*/
     }
     else // otherwise initialize to perfect black (0: value reserved for empty voxels)
     {
@@ -1359,35 +1724,47 @@ void tf::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::except
         throw iim::IOException("dims <= 0", __itm__current__function__);
 
     // only save when data has been modified
-    if(_imdata && _modified)
+    if(_imdata && _hasChanged)
     {
-        if(!iim::isFile(_path))
-            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->create3Dimage(_path, _dims.y, _dims.x, _dims.z, 1, _dims.c);
-        if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
-        {
-            tf::uint8 *interleaved = new tf::uint8[_dims.x*_dims.y*_dims.z*_dims.c];
-            tf::uint8 *write_ptr = interleaved;
-            size_t dims_zyx = _dims.z*_dims.y*_dims.x;
-            for(size_t z=0; z<_dims.z; z++)
-            {
-                size_t zyx = z*_dims.y*_dims.x;
-                for(size_t y=0; y<_dims.y; y++)
-                {
-                    size_t stride  = zyx + y*_dims.x;
-                    for(size_t x=0; x<_dims.x; x++)
-                    {
-                        for(size_t c=0; c<_dims.c; c++, write_ptr++)
-                            *write_ptr = _imdata[c*dims_zyx + stride + x];
-                    }
-                }
-            }
-            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(_path, interleaved, _dims.y, _dims.x, _dims.z, 1, _dims.c);
-            delete[] interleaved;
-        }
-        else
-            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(_path, _imdata, _dims.y, _dims.x, _dims.z, 1, _dims.c);
+        Image4DSimple img;
+        img.setDatatype(V3D_UINT8);
+        img.setXDim(_dims.x);
+        img.setYDim(_dims.y);
+        img.setZDim(_dims.z);
+        img.setCDim(_dims.c);
+        img.setTDim(_dims.y);
+        img.setRawDataPointer(_imdata);
+        bool saved = img.saveImage(_path.c_str());
+        img.setRawDataPointerToNull();
+        if(!saved)
+            throw iim::IOException(tf::strprintf("Cannot save image block at \"%s\"", _path.c_str()));
+//        if(!iim::isFile(_path))
+//            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->create3Dimage(_path, _dims.y, _dims.x, _dims.z, 1, _dims.c);
+//        if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
+//        {
+//            tf::uint8 *interleaved = new tf::uint8[_dims.x*_dims.y*_dims.z*_dims.c];
+//            tf::uint8 *write_ptr = interleaved;
+//            size_t dims_zyx = _dims.z*_dims.y*_dims.x;
+//            for(size_t z=0; z<_dims.z; z++)
+//            {
+//                size_t zyx = z*_dims.y*_dims.x;
+//                for(size_t y=0; y<_dims.y; y++)
+//                {
+//                    size_t stride  = zyx + y*_dims.x;
+//                    for(size_t x=0; x<_dims.x; x++)
+//                    {
+//                        for(size_t c=0; c<_dims.c; c++, write_ptr++)
+//                            *write_ptr = _imdata[c*dims_zyx + stride + x];
+//                    }
+//                }
+//            }
+//            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(_path, interleaved, _dims.y, _dims.x, _dims.z, 1, _dims.c);
+//            delete[] interleaved;
+//        }
+//        else
+//            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(_path, _imdata, _dims.y, _dims.x, _dims.z, 1, _dims.c);
 
-        _modified = false;
+        _hasChanged = false;
     }
 }
 
@@ -1399,7 +1776,7 @@ void tf::HyperGridCache::CacheBlock::putData(
 	tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
     ) throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
-	/**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
+    /**/tf::debug(tf::NO_DEBUG, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
         _path.c_str(),
 		image.dims.x, image.dims.y, image.dims.z, image.chans.dim, image.dims.t, 
 		image_voi.start.x, image_voi.end.x, image_voi.start.y, image_voi.end.y, image_voi.start.z, image_voi.end.z, image_voi.start.t, image_voi.end.t, 
@@ -1425,13 +1802,13 @@ void tf::HyperGridCache::CacheBlock::putData(
 	if(image_voi.start.x < 0 || image_voi.end.x - image_voi.start.x <= 0)
 		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along x-axis", image_voi.start.x, image_voi.end.x));
 	if(block_voi.start.t < 0 || block_voi.end.t - block_voi.start.t <= 0)
-		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along t-axis", block_voi.start.t, block_voi.end.t));
+        throw iim::IOException(tf::strprintf("Invalid block VOI [%d,%d) along t-axis", block_voi.start.t, block_voi.end.t));
 	if(block_voi.start.z < 0 || block_voi.end.z - block_voi.start.z <= 0)
-		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along z-axis", block_voi.start.z, block_voi.end.z));
+        throw iim::IOException(tf::strprintf("Invalid block VOI [%d,%d) along z-axis", block_voi.start.z, block_voi.end.z));
 	if(block_voi.start.y < 0 || block_voi.end.y - block_voi.start.y <= 0)
-		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along y-axis", block_voi.start.y, block_voi.end.y));
+        throw iim::IOException(tf::strprintf("Invalid block VOI [%d,%d) along y-axis", block_voi.start.y, block_voi.end.y));
 	if(block_voi.start.x < 0 || block_voi.end.x - block_voi.start.x <= 0)
-		throw iim::IOException(tf::strprintf("Invalid image VOI [%d,%d) along x-axis", block_voi.start.x, block_voi.end.x));
+        throw iim::IOException(tf::strprintf("Invalid block VOI [%d,%d) along x-axis", block_voi.start.x, block_voi.end.x));
 
 	// load block if needed
     if(!_imdata)
@@ -1444,13 +1821,13 @@ void tf::HyperGridCache::CacheBlock::putData(
 		src_dims[i] = image.getDims()[i];
         dst_dims[i] = _dims[i];
 	}
-	src_offset[0] = image_voi.start.x;
-	src_offset[1] = image_voi.start.y;
-	src_offset[2] = image_voi.start.z;
-	src_offset[4] = image_voi.start.t;
-	src_count[0]  = image_voi.end.x - image_voi.start.x;
-	src_count[1]  = image_voi.end.y - image_voi.start.y;
-	src_count[2]  = image_voi.end.z - image_voi.start.z;
+    src_offset[0] = image_voi.start.x;
+    src_offset[1] = image_voi.start.y;
+    src_offset[2] = image_voi.start.z;
+    src_offset[4] = image_voi.start.t;
+    src_count[0]  = image_voi.end.x - image_voi.start.x;
+    src_count[1]  = image_voi.end.y - image_voi.start.y;
+    src_count[2]  = image_voi.end.z - image_voi.start.z;
 	src_count[4]  = image_voi.end.t - image_voi.start.t;
 	dst_offset[0] = block_voi.start.x;
 	dst_offset[1] = block_voi.start.y;
@@ -1461,7 +1838,7 @@ void tf::HyperGridCache::CacheBlock::putData(
     tf::CImageUtils::copyRescaleVOI(image.data, src_dims, src_offset, src_count, _imdata, dst_dims, dst_offset, scaling);
 
 	// set this block as modified
-    _modified = true;
+    _hasChanged = true;
 
     // update empty voxel count
     updateEmptyCount();

@@ -81,6 +81,9 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, ii
     storage_group->addButton(storage_radiobutton);
     volumepath_line = new QLineEdit(this);
     volumepath_line->setReadOnly(true);
+    block_format_combobox = new QComboBox(this);
+    block_format_combobox->addItem(".tif");
+    block_format_combobox->addItem(".v3draw");
 
     lowres_panel = new QGroupBox("Preconversion", this);
 #ifdef Q_OS_LINUX
@@ -143,6 +146,10 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, ii
     QHBoxLayout *storage_buttons_layout = new QHBoxLayout();
     storage_buttons_layout->addWidget(local_radiobutton);
     storage_buttons_layout->addWidget(storage_radiobutton);
+    QLabel *block_format_label = new QLabel("format:");
+    block_format_label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    storage_buttons_layout->addWidget(block_format_label);
+    storage_buttons_layout->addWidget(block_format_combobox);
     storage_layout->addLayout(storage_buttons_layout);
     storage_layout->addWidget(volumepath_line);
     saveto_panel->setLayout(storage_layout);
@@ -205,8 +212,8 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, ii
     connect(noimage_radiobutton, SIGNAL(clicked()), this, SLOT(lowres_radiobutton_changed()));
     connect(browse_button, SIGNAL(clicked()), this, SLOT(browse_button_clicked()));
     connect(subsampling_spinbox, SIGNAL(valueChanged(int)), this, SLOT(subsampling_spinbox_changed(int)));
-    connect(lowerbound_spinbox, SIGNAL(valueChanged(int)), this, SLOT(subsampling_spinbox_changed(int)));
     connect(subsamplings_line, SIGNAL(textChanged(QString)), this, SLOT(subsamplings_line_changed(QString)));
+    connect(block_format_combobox, SIGNAL(currentIndexChanged(int)), this, SLOT(block_format_combobox_changed(int)));
 
     reset();
 
@@ -237,6 +244,8 @@ void PDialogVirtualPyramid::reset()
     blocky_spinbox->setValue(256);
     blockz_spinbox->setValue(256);
 
+    block_format_combobox->setCurrentIndex(CSettings::instance()->getVpBlockFormatIndex());
+
     if(QFile(tf::VirtualPyramid::pathLowRes(volumePath).c_str()).exists())
         imagefile_line->setText(tf::VirtualPyramid::pathLowRes(volumePath).c_str());
     else
@@ -251,6 +260,12 @@ void PDialogVirtualPyramid::subsampling_spinbox_changed(int v)
 {
     tf::CSettings::instance()->setPyramidResamplingFactor(v);
     update_space_required();
+}
+
+
+void PDialogVirtualPyramid::block_format_combobox_changed(int v)
+{
+    CSettings::instance()->setVpBlockFormatIndex(v);
 }
 
 void PDialogVirtualPyramid::subsamplings_line_changed(QString)
@@ -309,6 +324,7 @@ void PDialogVirtualPyramid::ok_button_clicked()
         CImport::instance()->vpBlockDims.x = blockx_spinbox->value();
         CImport::instance()->vpBlockDims.y = blocky_spinbox->value();
         CImport::instance()->vpBlockDims.z = blockz_spinbox->value();
+        CImport::instance()->vpBlockFormat = block_format_combobox->currentText().toStdString();
 
         accept();
         close();

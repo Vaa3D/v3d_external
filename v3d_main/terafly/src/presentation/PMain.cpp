@@ -1294,7 +1294,6 @@ void PMain::openImage(std::string path /*= ""*/)
         // store the path permanently into the system
         CSettings::instance()->setVolumePathLRU(path);
         CSettings::instance()->addRecentImage(path, image_format.toString());
-        CSettings::instance()->writeSettings();
 
 
         // update recent volumes menu
@@ -1732,7 +1731,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
                             0, CImport::instance()->getVMapZDim(), 0, CImport::instance()->getVMapTDim()-1, CImport::instance()->getVMapCDim(), 0);
         /**/tf::debug(tf::LEV3, "showing CViewer", __itm__current__function__);
         new_win->show();
-        new_win->isReady = true;
+        new_win->_isReady = true;
 
         helpBox->setText(HTbase);
 
@@ -1747,6 +1746,14 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 
         //activate annotation toolbar
         showToolbarButton->setChecked(true);
+
+        // virtual pyramid mode: jump to virtual pyramid tab
+        if(CImport::instance()->getVirtualPyramid())
+        {
+            tabs->setCurrentIndex(2);
+            info_page->showVirtualPyramidTab();
+        }
+
     }
 
     //resetting some widgets
@@ -1791,7 +1798,6 @@ void PMain::settingsChanged(int)
     CSettings::instance()->setTraslY(yShiftSBox->value());
     CSettings::instance()->setTraslZ(zShiftSBox->value());
     CSettings::instance()->setTraslT(tShiftSBox->value());
-    CSettings::instance()->writeSettings();
     if(PDialogProofreading::isActive())
         PDialogProofreading::instance()->updateBlocks(0);
 }
@@ -1871,7 +1877,7 @@ void PMain::traslXposClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         expl->newViewer((expl->volH1-expl->volH0)/2 + (expl->volH1-expl->volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
                       (expl->volV1-expl->volV0)/2,
@@ -1883,7 +1889,7 @@ void PMain::traslXnegClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         expl->newViewer((expl->volH1-expl->volH0)/2 - (expl->volH1-expl->volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
                       (expl->volV1-expl->volV0)/2,
@@ -1895,7 +1901,7 @@ void PMain::traslYposClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2 + (expl->volV1-expl->volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
@@ -1907,7 +1913,7 @@ void PMain::traslYnegClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2 - (expl->volV1-expl->volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
@@ -1919,7 +1925,7 @@ void PMain::traslZposClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2,
@@ -1931,7 +1937,7 @@ void PMain::traslZnegClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         expl->newViewer((expl->volH1-expl->volH0)/2,
                       (expl->volV1-expl->volV0)/2,
@@ -1943,7 +1949,7 @@ void PMain::traslTposClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         int newT0 = Tdim_sbox->value() == 1 ? expl->volT0+1 : expl->volT0 + (expl->volT1-expl->volT0)*(100-CSettings::instance()->getTraslT())/100.0f;
         int newT1 = newT0 + (Tdim_sbox->value()-1);
@@ -1967,7 +1973,7 @@ void PMain::traslTnegClicked()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->isActive && !expl->toBeClosed)
+    if(expl && expl->_isActive && !expl->toBeClosed)
     {
         int newT1 = Tdim_sbox->value() == 1 ? expl->volT1-1 : expl->volT1 - (expl->volT1-expl->volT0)*(100-CSettings::instance()->getTraslT())/100.0f;
         int newT0 = newT1 - (Tdim_sbox->value()-1);
@@ -2204,146 +2210,110 @@ void PMain::debugAction1Triggered()
 
     try
     {
-        CViewer::getCurrent()->setWaitingForData(true);
+//        unsigned int src_dims[5]   = { 19, 17,  1,  1,  1 };
+//        unsigned int src_offset[5] = {  0,  0,  0,  0,  0 };
+//        unsigned int src_count[5]  = { 19, 17,  1,  1,  1 };
+//        unsigned int dst_dims[5]   = {  5,  5,  1,  1,  1 };
+//        unsigned int dst_offset[5] = {  0,  0,  0,  0,  0 };
+//        tf::xyz<int> scaling = tf::xyz<int>(4,4,4);
+//        size_t src_size = src_dims[0]*src_dims[1]*src_dims[2]*src_dims[3]*src_dims[4];
+//        size_t dst_size = dst_dims[0]*dst_dims[1]*dst_dims[2]*dst_dims[3]*dst_dims[4];
+//        unsigned char * src = new unsigned char[src_size];
+//        unsigned char * dst = new unsigned char[dst_size];
 
-        iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
-        if(!volume)
-            return;
-        iim::VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
-        if(!volume_ith)
-            return;
-        tf::VirtualPyramid *virtualPyramid = dynamic_cast<tf::VirtualPyramidLayer*>(volume_ith)->pyramid();
-        if(!virtualPyramid)
-            return;
+//        for(size_t i=0; i<src_size; i++)
+//            src[i] = 0;
+//        for(size_t i=0; i<dst_size; i++)
+//            dst[i] = 0;
 
-        int nBlocks = 1;
-        QProgressDialog progress("Fetch random blocks...", "Cancel", 0, nBlocks, this);
-        progress.setWindowModality(Qt::WindowModal);
-        progress.setMinimumDuration(0);
+//        for(size_t t = src_offset[4]; t < src_offset[4] + src_count[4]; t++)
+//        {
+//            size_t stride_t = t * src_dims[3] * src_dims[2] * src_dims[1] * src_dims[0];
+//            for(size_t c = src_offset[3]; c < src_offset[3] + src_count[3]; c++)
+//            {
+//                size_t stride_c = stride_t + c * src_dims[2] * src_dims[1] * src_dims[0];
+//                for(size_t z = src_offset[2]; z < src_offset[2] + src_count[2]; z++)
+//                {
+//                    size_t stride_z = stride_c + z * src_dims[1] * src_dims[0];
+//                    for(size_t y = src_offset[1]; y < src_offset[1] + src_count[1]; y++)
+//                    {
+//                        size_t stride_y = stride_z + y * src_dims[0];
+//                        for(size_t x = src_offset[0]; x < src_offset[0] + src_count[0]; x++)
+//                        {
+//                            if( (x-src_offset[0]) < (src_count[0]/scaling.x)*scaling.x &&
+//                                (y-src_offset[1]) < (src_count[1]/scaling.y)*scaling.y)
+//                               src[stride_y + x] = 255;
+//                            else if((x-src_offset[0]) < (src_count[0]/scaling.x)*scaling.x)
+//                               src[stride_y + x] = (x-src_offset[0])/scaling.x;
+//                            else if((y-src_offset[1]) < (src_count[1]/scaling.y)*scaling.y)
+//                               src[stride_y + x] = (src_count[0]/scaling.x) + (y-src_offset[1])/scaling.y;
+//                            else
+//                               src[stride_y + x] = (src_count[0]/scaling.x) + (src_count[1]/scaling.y);
+//                        }
+//                    }
+//                }
+//            }
+//        }
 
-        for (int i = 0; i < nBlocks; i++)
-        {
-            progress.setValue(i);
-            progress.setLabelText(iim::strprintf("Fetch random block %d of %d...", i+1, nBlocks).c_str());
+//        tf::CImageUtils::downscaleVOI(src, src_dims, src_offset, src_count, dst, dst_dims, dst_offset, scaling);
 
-            tf::xyz<size_t> start, end;
-            start.x = rand() % (H1_sbox->value()-H0_sbox->value()) + H0_sbox->value();
-            start.y = rand() % (V1_sbox->value()-V0_sbox->value()) + V0_sbox->value();
-            start.z = rand() % (D1_sbox->value()-D0_sbox->value()) + D0_sbox->value();
+//        printf("SOURCE:\n");
+//        for(size_t z = 0; z < src_dims[2]; z++)
+//        {
+//            printf("z%d:\n", z);
+//            size_t stride_z = z * src_dims[1] * src_dims[0];
+//            printf("    ");
+//            for(size_t x = 0; x < src_dims[0]; x++)
+//                printf("x%02d ", x);
+//            printf("\n");
+//            for(size_t y = 0; y < src_dims[1]; y++)
+//            {
+//                printf("y%02d ", y);
+//                size_t stride_y = stride_z + y * src_dims[0];
+//                for(size_t x = 0; x < src_dims[0]; x++)
+//                    printf("%03d ", src[stride_y + x]);
+//                printf("y%02d\n", y);
+//            }
+//            printf("    ");
+//            for(size_t x = 0; x < src_dims[0]; x++)
+//                printf("x%02d ", x);
+//            printf("\n");
+//        }
+//        printf("\n");
 
-            end.x = start.x + 256;
-            end.y = start.y + 256;
-            end.z = start.z + 256;
-            virtualPyramid->loadVOI(start, end, 0);
-
-            if (progress.wasCanceled())
-                break;
-        }
-        progress.setValue(nBlocks);
-
-        CViewer::getCurrent()->refresh();
-        CViewer::getCurrent()->setWaitingForData(false);
-		//for(size_t side = 4; side < 128; side++)
-		//{
-		//	//size_t side = 255;
-		//	printf("\n\nside = %d\n", side);
-		//	
-		//	tf::xyz<uint8> *img_src_data = new tf::xyz<uint8>[side*side*side];
-		//	tf::xyz<uint8> *img_dst_data = new tf::xyz<uint8>[side*side*side];
-		//	for(size_t z=0; z<side; z++)
-		//		for(size_t y=0; y<side; y++)
-		//			for(size_t x=0; x<side; x++)
-		//			{
-
-		//				img_src_data[z*side*side + y*side + x] = xyz<uint8>(x,y,z);
-		//				img_dst_data[z*side*side + y*side + x] = xyz<uint8>(x,y,z);
-		//			}
-
-
-		//	uint src_dims[5], dst_dims[5], src_offset[5], dst_offset[5], src_count[5];
-		//	src_dims[0] = side;
-		//	src_dims[1] = side;
-		//	src_dims[2] = side;
-		//	src_dims[3] = 1;
-		//	src_dims[4] = 1;
-
-		//	dst_dims[0] = side;
-		//	dst_dims[1] = side;
-		//	dst_dims[2] = side;
-		//	dst_dims[3] = 1;
-		//	dst_dims[4] = 1;
-
-		//	src_offset[0] = src_offset[1] = src_offset[2] = src_offset[3] = src_offset[4] = 0;
-		//	dst_offset[0] = dst_offset[1] = dst_offset[2] = dst_offset[3] = dst_offset[4] = 0;
-
-		//	src_count[0] = src_dims[0];
-		//	src_count[1] = src_dims[1];
-		//	src_count[2] = src_dims[2];
-		//	src_count[3] = src_dims[3];
-		//	src_count[4] = 1;
-
-		//	CImageUtils::downscaleVOI(img_src_data, src_dims, src_offset, src_count, img_dst_data, dst_dims, dst_offset, 2);
-		//	
-		//	//for(int
-		//}
-//		if(1)
-//		{
-//			Image4DSimple* img_src = CViewer::current->V3D_env->getImage(CViewer::current->window);
-
-//			uint src_dims[5], dst_dims[5], src_offset[5], dst_offset[5], src_count[5];
-
-//			src_dims[0] = img_src->getXDim();
-//			src_dims[1] = img_src->getYDim();
-//			src_dims[2] = img_src->getZDim();
-//			src_dims[3] = img_src->getCDim();
-//			src_dims[4] = 1;
-
-//			dst_dims[0] = src_dims[0];
-//			dst_dims[1] = src_dims[1];
-//			dst_dims[2] = src_dims[2];
-//			dst_dims[3] = src_dims[3];
-//			dst_dims[4] = 1;
-
-//			size_t img_data_size = size_t(dst_dims[0])*size_t(dst_dims[1])*size_t(dst_dims[2])*size_t(dst_dims[3]);
-//			unsigned char* imgdata = new unsigned char[img_data_size];
-
-//			for(size_t i=0; i< img_data_size; i++)
-//				imgdata[i]=0;
-
-//			src_offset[0] = 0;
-//			src_offset[1] = 0;
-//			src_offset[2] = 0;
-//			src_offset[3] = 0;
-//			src_offset[4] = 0;
-
-//			dst_offset[0] = 0;
-//			dst_offset[1] = 0;
-//			dst_offset[2] = 0;
-//			dst_offset[3] = 0;
-//			dst_offset[4] = 0;
+//        printf("DEST:\n");
+//        for(size_t z = 0; z < dst_dims[2]; z++)
+//        {
+//            printf("z%d:\n", z);
+//            size_t stride_z = z * dst_dims[1] * dst_dims[0];
+//            printf("    ");
+//            for(size_t x = 0; x < dst_dims[0]; x++)
+//                printf("x%02d ", x);
+//            printf("\n");
+//            for(size_t y = 0; y < dst_dims[1]; y++)
+//            {
+//                printf("y%02d ", y);
+//                size_t stride_y = stride_z + y * dst_dims[0];
+//                for(size_t x = 0; x < dst_dims[0]; x++)
+//                    printf("%03d ", dst[stride_y + x]);
+//                printf("y%02d\n", y);
+//            }
+//            printf("    ");
+//            for(size_t x = 0; x < dst_dims[0]; x++)
+//                printf("x%02d ", x);
+//            printf("\n");
+//        }
+//        printf("\n");
 
 
-//			src_count[0] = 500;
-//			src_count[1] = 500;
-//			src_count[2] = 500;
-//			src_count[3] = 3;
-//			src_count[4] = 1;
 
-
-//			Image4DSimple* img_dst = new Image4DSimple();
-//			CImageUtils::downscaleVOI(img_src->getRawData(), src_dims, src_offset, src_count, imgdata, dst_dims, dst_offset, tf::xyz<int>(2,2,1));
-//			img_dst->setData(imgdata, dst_dims[0], dst_dims[1], dst_dims[2], dst_dims[3], img_src->getDatatype());
-
-//			CViewer::current->V3D_env->setImage(CViewer::current->window, img_dst);
-//			CViewer::current->V3D_env->pushImageIn3DWindow(CViewer::current->window);
-//		}
-
-
-        //float lower_bound = (static_cast<float>(128)*128*128)/1000000.0f;
-        //new tf::VirtualPyramid("/Volumes/Volumes/test.wholebrain.tiff.2D.series.16bit", 2, lower_bound);
-        //tf::VirtualPyramidCache("asd", xyzct<size_t>(10,10,10,1,1), xyzct<size_t>(3,3,3,3,3));
-        //QString blah = QString(QCryptographicHash::hash(("/Users/Administrator/Projects/v3d_external/v3d_main/build-vaa3d64 -Qt_4_7_1_Qt_4_7_1-Debug"),QCryptographicHash::Md5).toHex());
-        //v3d_msg(blah);
+        CViewer* viewer = CViewer::getCurrent();
+        size_t dims = size_t(viewer->volV1-viewer->volV0) * (viewer->volH1-viewer->volH0) * (viewer->volD1-viewer->volD0) * viewer->nchannels;
+        size_t empty = 0;
+        for(size_t i=0; i<dims; i++)
+            if(!viewer->imgData[i])
+                empty++;
+        v3d_msg(tf::strprintf("%.2f", (1 - empty/(float)dims)*100).c_str());
     }
     catch(tf::RuntimeException &e)
     {
@@ -2353,31 +2323,6 @@ void PMain::debugAction1Triggered()
     {
         v3d_msg(e.what());
     }
-
-   /* int count = 0;
-    double acc = 0;
-    double GV = 0;
-    iim::VirtualVolume *vol = //new RawVolume("/Volumes/Volumes/bigbrain.allen.neuron.raw");
-            tf::CImport::instance()->getHighestResVolume();
-    size_t xdim = 500, ydim = 500, zdim = 100;
-    for(size_t d0=0; d0 < vol->getDIM_D(); d0 += zdim)
-        for(size_t v0=0; v0 < vol->getDIM_V(); v0 += ydim)
-            for(size_t h0=0; h0 < vol->getDIM_H(); h0 += xdim)
-            {
-                size_t v1 = std::min(v0+ydim, (size_t)(vol->getDIM_V()));
-                size_t h1 = std::min(h0+xdim, (size_t)(vol->getDIM_H()));
-                size_t d1 = std::min(d0+zdim, (size_t)(vol->getDIM_D()));
-                GV += ((v1-v0)*(h1-h0)*(d1-d0)*vol->getDIM_C())*1.0e-9;
-                QElapsedTimer timer;
-                timer.start();
-                tf::uint8 *data = vol->loadSubvolume_to_UINT8(v0, v1, h0, h1, d0, d1);
-                acc += timer.elapsed()/1000.0;
-                count++;
-                delete data;
-                statusBar->showMessage(tf::strprintf("%.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());
-                QApplication::processEvents();
-            }
-    statusBar->showMessage(tf::strprintf("FINISHED: %.2f Gvoxels, speed = %.2f Gvoxels/s, total = %.0f s", GV, GV/acc, acc).c_str());*/
 }
 
 void PMain::showLogTriggered()
@@ -2395,7 +2340,6 @@ void PMain::curveDimsChanged(int dim)
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setAnnotationCurvesDims(dim);
-    CSettings::instance()->writeSettings();
 
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win)
@@ -2412,7 +2356,6 @@ void PMain::curveAspectChanged()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setAnnotationCurvesAspectTube(curveAspectTube->isChecked());
-    CSettings::instance()->writeSettings();
 
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win)
@@ -2433,7 +2376,6 @@ void PMain::fetchAndDisplayChanged()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setPreviewMode(fdPreviewAction->isChecked());
-    CSettings::instance()->writeSettings();
 }
 
 /**********************************************************************************
@@ -2563,7 +2505,7 @@ void PMain::PRblockSpinboxEditingFinished()
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     CViewer* curWin = CViewer::getCurrent();
-    if(curWin && curWin->isActive && !curWin->toBeClosed)
+    if(curWin && curWin->_isActive && !curWin->toBeClosed)
     {
         // if the selected block is the one being viewed, exit
         if(curWin->slidingViewerBlockID == b)
@@ -2606,7 +2548,7 @@ void PMain::PRblockSpinboxChanged(int b)
         CViewer* curWin = CViewer::getCurrent();
         std::vector<tf::block_t> & blocks = PDialogProofreading::blocks;
         int blocks_res = PDialogProofreading::blocks_res;
-        if(curWin && curWin->isActive && !curWin->toBeClosed)
+        if(curWin && curWin->_isActive && !curWin->toBeClosed)
         {
             // update 3D reference system
             int ROIxS   = blocks[b-1].xInt.start;
@@ -2750,7 +2692,6 @@ void PMain::markersShowROIMarginSpinBoxChanged(int value)
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setAnnotationVirtualMargin(value);
-    CSettings::instance()->writeSettings();
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
@@ -2762,7 +2703,6 @@ void PMain::markersSizeSpinBoxChanged(int value)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
     CSettings::instance()->setAnnotationMarkerSize(value);
-    CSettings::instance()->writeSettings();
 
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win)

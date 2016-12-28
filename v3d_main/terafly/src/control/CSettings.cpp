@@ -28,6 +28,7 @@
 
 #include <QSettings>
 #include <iostream>
+#include "VirtualPyramid.h"
 #include "CSettings.h"
 #include "IM_config.h"
 
@@ -68,7 +69,7 @@ void CSettings::loadDefaultSettings()
     volumePathLRU = "";
     annotationPathLRU = "";
     VOIdimV = VOIdimH = 256;
-    VOIdimD = 128;
+    VOIdimD = 256;
     VOIdimT = 1;
     traslX = traslY = traslZ = 50;  //percentage value
     traslT = 0;
@@ -78,10 +79,19 @@ void CSettings::loadDefaultSettings()
     annotationVirtualMargin = 20;
     annotationMarkerSize = 20;
     previewMode = true;
-    pyramidResamplingFactor = 3;
+    pyramidResamplingFactor = 2;
     viewerHeight = qApp->desktop()->availableGeometry().height();
     viewerWidth = qApp->desktop()->availableGeometry().width()-380;
     ramLimitGB = 1.0f;
+    vpEmptyVizMethod = tf::VirtualPyramid::SALT_AND_PEPPER;
+    vpEmptyVizIntensity = 255;
+    vpEmptyVizSaltPepperPercentage = 0.001;
+    vpFetchMethod = 2;
+    vpFetchNBlocks = 5;
+    vpBlockFormatIndex = 0;
+    vpRefillAuto = true;
+    vpRefillCoverage = 10;
+    vpRefillStopCondition = 0;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -134,7 +144,15 @@ void CSettings::writeSettings()
     settings.setValue("viewerHeight", viewerHeight);
     settings.setValue("viewerWidth", viewerWidth);
     settings.setValue("ramLimitGB", ramLimitGB);
-
+    settings.setValue("vpEmptyVizMethod", vpEmptyVizMethod);
+    settings.setValue("vpEmptyVizIntensity", vpEmptyVizIntensity);
+    settings.setValue("vpEmptyVizSaltPepperPercentage", vpEmptyVizSaltPepperPercentage);
+    settings.setValue("vpFetchMethod", vpFetchMethod);
+    settings.setValue("vpFetchNBlocks", vpFetchNBlocks);
+    settings.setValue("vpBlockFormatIndex", vpBlockFormatIndex);
+    settings.setValue("vpRefillAuto", vpRefillAuto);
+    settings.setValue("vpRefillCoverage", vpRefillCoverage);
+    settings.setValue("vpRefillStopCondition", vpRefillStopCondition);
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
     settings.setValue("volumeConverterOutputPathLRU", QString(volumeConverterOutputPathLRU.c_str()));
@@ -199,6 +217,26 @@ void CSettings::readSettings()
         viewerWidth = settings.value("viewerWidth").toInt();
     if(settings.contains("ramLimitGB"))
         ramLimitGB = settings.value("ramLimitGB").toFloat();
+    if(settings.contains("vpEmptyVizMethod"))
+        vpEmptyVizMethod = settings.value("vpEmptyVizMethod").toInt();
+    if(settings.contains("vpEmptyVizIntensity"))
+        vpEmptyVizIntensity = settings.value("vpEmptyVizIntensity").toInt();
+    if(settings.contains("vpEmptyVizSaltPepperPercentage"))
+        vpEmptyVizSaltPepperPercentage = settings.value("vpEmptyVizSaltPepperPercentage").toFloat();
+    if(settings.contains("vpFetchMethod"))
+        vpFetchMethod = settings.value("vpFetchMethod").toInt();
+    if(settings.contains("vpFetchNBlocks"))
+        vpFetchNBlocks = settings.value("vpFetchNBlocks").toInt();
+    if(settings.contains("vpBlockFormatIndex"))
+        vpBlockFormatIndex = settings.value("vpBlockFormatIndex").toInt();
+    if(settings.contains("vpRefillAuto"))
+        vpRefillAuto = settings.value("vpRefillAuto").toBool();
+    if(settings.contains("vpRefillCoverage"))
+        vpRefillCoverage = settings.value("vpRefillCoverage").toInt();
+    if(settings.contains("vpRefillStopCondition"))
+        vpRefillStopCondition = settings.value("vpRefillStopCondition").toInt();
+
+
 
     int size = settings.beginReadArray("recentImages");
     recentImages.clear();

@@ -42,9 +42,9 @@ class terafly::CImageUtils
                 tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// upscaling factors along X,Y,Z (positive integers only)
         throw (tf::RuntimeException);
 
-		/**********************************************************************************
-        * Copy the given VOI from "src" to "dst". Offsets and downscaling are supported.
-        ***********************************************************************************/
+        /*****************************************************************************************
+        * Copy the given VOI from "src" to "dst". Offsets and downscaling on-the-fly are supported.
+        ******************************************************************************************/
         static void
             downscaleVOI(
 				tf::uint8 const * src,			// pointer to const data source
@@ -131,6 +131,44 @@ class terafly::CImageUtils
                 Image4DSimple* im,      // input image
                 float w)                // gaussian noise weight (1 = only noise, 0 = no noise)
         throw (tf::RuntimeException);
+
+
+        /**********************************************************************************
+        * Maps coordinate from one image space to another
+        ***********************************************************************************/
+        template <typename T>
+        static inline T
+        mapCoord(
+                T coord,                // coordinate given in the source image space
+                T source_space_dim,     // source image space dimension
+                T target_space_dim,     // target image space dimension
+                bool roundRes = false,  // whether to round the result to the nearest integer
+                bool roundScale = false // whether to round the scale factor to the nearest integer
+                )
+        {
+//            printf("mapCoord: coord(%s), source_space_dim(%s), target_space_dim(%s)\n",
+//                   tf::num2str<T>(coord).c_str(), tf::num2str<T>(source_space_dim).c_str(), tf::num2str<T>(target_space_dim).c_str());
+            // special case: boundary coordinate
+            if(coord == source_space_dim)
+            {
+//                printf("mapCoord (boundary coordinate): return %s\n", tf::num2str<T>(target_space_dim).c_str());
+                return target_space_dim;
+            }
+
+            // special case: unary image space
+            if(source_space_dim == 1)
+            {
+//                printf("mapCoord (unary image space): return %d\n", coord ? target_space_dim : 0);
+                return coord ? target_space_dim : 0;
+            }
+
+            // all other cases
+            float rescale = float(source_space_dim) / target_space_dim;
+            if(roundScale)
+                rescale = tf::round(rescale);
+//            printf("mapCoord (all other cases): rescale = %f, return %s\n", rescale, tf::num2str<T>(T( roundRes ? tf::round(coord/rescale) : coord/rescale)).c_str());
+            return T( roundRes ? tf::round(coord/rescale) : coord/rescale) ;
+        }
 };
 
 #endif // CIMAGEUTILS_H

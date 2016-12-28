@@ -72,6 +72,15 @@ class terafly::CSettings
         int viewerHeight;
         int viewerWidth;
         float ramLimitGB;
+        int vpEmptyVizMethod;
+        int vpEmptyVizIntensity;
+        float vpEmptyVizSaltPepperPercentage;
+        int vpFetchMethod;
+        int vpFetchNBlocks;
+        int vpBlockFormatIndex;
+        bool vpRefillAuto;
+        int vpRefillCoverage;
+        int vpRefillStopCondition;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -120,6 +129,17 @@ class terafly::CSettings
         int getViewerHeight(){return viewerHeight;}
         int getViewerWidth(){return viewerWidth;}
         float getRamLimitGB(){return ramLimitGB;}
+        int getVpEmptyVizIntensity(){return vpEmptyVizIntensity;}
+        int getVpEmptyVizMethod(){return vpEmptyVizMethod;}
+        float getVpEmptyVizSaltPepperPercentage(){return vpEmptyVizSaltPepperPercentage;}
+        int getVpFetchMethod(){return vpFetchMethod;}
+        int getVpFetchNBlocks(){return vpFetchNBlocks;}
+        int getVpBlockFormatIndex(){return vpBlockFormatIndex;}
+        int getVpRefillAuto(){return vpRefillAuto;}
+        int getVpRefillCoverage(){return vpRefillCoverage;}
+        int getVpRefillStopCondition(){return vpRefillStopCondition;}
+
+
 
         void setVolumePathLRU(std::string _volumePathLRU)
         {
@@ -141,25 +161,36 @@ class terafly::CSettings
             writeSettings();
         }
 
-        void setAnnotationPathLRU(std::string _annotationPathLRU){annotationPathLRU = _annotationPathLRU;}
-        void setVOIdimV(int _VOIdimV){VOIdimV = _VOIdimV;}
-        void setVOIdimH(int _VOIdimH){VOIdimH = _VOIdimH;}
-        void setVOIdimD(int _VOIdimD){VOIdimD = _VOIdimD;}
-        void setVOIdimT(int _VOIdimT){VOIdimT = _VOIdimT;}
-        void setTraslX(int _traslX){traslX = _traslX;}
-        void setTraslY(int _traslY){traslY = _traslY;}
-        void setTraslZ(int _traslZ){traslZ = _traslZ;}
-        void setTraslT(int _traslT){traslT = _traslT;}
-        void setAnnotationSpaceUnlimited(bool _unl){annotationSpaceUnlimited = _unl;}
-        void setAnnotationCurvesDims(int newval){annotationCurvesDims = newval;}
-        void setAnnotationCurvesAspectTube(bool newval){annotationCurvesAspectTube = newval;}
-        void setAnnotationVirtualMargin(int newval){annotationVirtualMargin = newval;}
-        void setAnnotationMarkerSize(int newval){annotationMarkerSize = newval;}
-        void setPreviewMode(bool newval){previewMode = newval;}
-        void setPyramidResamplingFactor(int newval){pyramidResamplingFactor = newval;}
-        void setViewerHeight(int newval){viewerHeight = newval;}
-        void setViewerWidth(int newval){viewerWidth = newval;}
-        void setRamLimitGB(float newval){ramLimitGB = newval;}
+        void setAnnotationPathLRU(std::string _annotationPathLRU){annotationPathLRU = _annotationPathLRU; writeSettings();}
+        void setVOIdimV(int _VOIdimV){VOIdimV = _VOIdimV; writeSettings();}
+        void setVOIdimH(int _VOIdimH){VOIdimH = _VOIdimH; writeSettings();}
+        void setVOIdimD(int _VOIdimD){VOIdimD = _VOIdimD; writeSettings();}
+        void setVOIdimT(int _VOIdimT){VOIdimT = _VOIdimT; writeSettings();}
+        void setTraslX(int _traslX){traslX = _traslX; writeSettings();}
+        void setTraslY(int _traslY){traslY = _traslY; writeSettings();}
+        void setTraslZ(int _traslZ){traslZ = _traslZ; writeSettings();}
+        void setTraslT(int _traslT){traslT = _traslT; writeSettings();}
+        void setAnnotationSpaceUnlimited(bool _unl){annotationSpaceUnlimited = _unl; writeSettings();}
+        void setAnnotationCurvesDims(int newval){annotationCurvesDims = newval; writeSettings();}
+        void setAnnotationCurvesAspectTube(bool newval){annotationCurvesAspectTube = newval; writeSettings();}
+        void setAnnotationVirtualMargin(int newval){annotationVirtualMargin = newval; writeSettings();}
+        void setAnnotationMarkerSize(int newval){annotationMarkerSize = newval; writeSettings();}
+        void setPreviewMode(bool newval){previewMode = newval; writeSettings();}
+        void setPyramidResamplingFactor(int newval){pyramidResamplingFactor = newval; writeSettings();}
+        void setViewerHeight(int newval){viewerHeight = newval; writeSettings();}
+        void setViewerWidth(int newval){viewerWidth = newval; writeSettings();}
+        void setRamLimitGB(float newval){ramLimitGB = newval; writeSettings();}
+        void setVpEmptyVizMethod(int newval){vpEmptyVizMethod = newval; writeSettings();}
+        void setVpEmptyVizIntensity(int newval){vpEmptyVizIntensity = newval; writeSettings();}
+        void setVpEmptyVizSaltPepperPercentage(float newval){vpEmptyVizSaltPepperPercentage = newval; writeSettings();}
+        void setVpFetchMethod(int newval){vpFetchMethod = newval; writeSettings();}
+        void setVpFetchNBlocks(int newval){vpFetchNBlocks = newval; writeSettings();}
+        void setVpBlockFormatIndex(int newval){vpBlockFormatIndex = newval; writeSettings();}
+        void setVpRefillAuto(bool newval){vpRefillAuto = newval; writeSettings();}
+        void setVpRefillCoverage(int newval){vpRefillCoverage = newval; writeSettings();}
+        void setVpRefillStopCondition(int newval){vpRefillStopCondition = newval; writeSettings();}
+
+
 
         //GET and SET methods for TeraConverter
         std::string getVCInputPath(){return volumeConverterInputPathLRU;}
@@ -170,14 +201,14 @@ class terafly::CSettings
         int getVCStacksHeight(){return volumeConverterStacksHeightLRU;}
         int getVCStacksDepth(){return volumeConverterStacksDepthLRU;}
         bool getVCTimeSeries(){return volumeConverterTimeSeries;}
-        void setVCInputPath(std::string newval){volumeConverterInputPathLRU = newval;}
-        void setVCOutputPath(std::string newval){volumeConverterOutputPathLRU = newval;}
-        void setVCInputFormat(std::string newval){volumeConverterInputFormatLRU = newval;}
-        void setVCOutputFormat(std::string newval){volumeConverterOutputFormatLRU = newval;}
-        void setVCStacksWidth(int newval){volumeConverterStacksWidthLRU = newval;}
-        void setVCStacksHeight(int newval){volumeConverterStacksHeightLRU = newval;}
-        void setVCStacksDepth(int newval){volumeConverterStacksDepthLRU = newval;}
-        void setVCTimeSeries(bool newval){volumeConverterTimeSeries = newval;}
+        void setVCInputPath(std::string newval){volumeConverterInputPathLRU = newval; writeSettings();}
+        void setVCOutputPath(std::string newval){volumeConverterOutputPathLRU = newval; writeSettings();}
+        void setVCInputFormat(std::string newval){volumeConverterInputFormatLRU = newval; writeSettings();}
+        void setVCOutputFormat(std::string newval){volumeConverterOutputFormatLRU = newval; writeSettings();}
+        void setVCStacksWidth(int newval){volumeConverterStacksWidthLRU = newval; writeSettings();}
+        void setVCStacksHeight(int newval){volumeConverterStacksHeightLRU = newval; writeSettings();}
+        void setVCStacksDepth(int newval){volumeConverterStacksDepthLRU = newval; writeSettings();}
+        void setVCTimeSeries(bool newval){volumeConverterTimeSeries = newval; writeSettings();}
 
         //save and restore application settings
         void writeSettings();

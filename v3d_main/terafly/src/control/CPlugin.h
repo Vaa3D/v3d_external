@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <QThread>
 #include "v3d_core.h"
+#include <cmath>
 
 class V3DPluginCallback2;
 
@@ -228,6 +229,9 @@ namespace terafly
     // round functions
     inline int round(float  x) { return static_cast<int>(x > 0.0f ? x + 0.5f : x - 0.5f);}
     inline int round(double x) { return static_cast<int>(x > 0.0  ? x + 0.5  : x - 0.5 );}
+    // special round functions: ceil if x > 0.5
+    inline int round05(float x)  { return x - int(x) > 0.5 ? round(x) : int(x);}
+    inline int round05(double x) { return x - int(x) > 0.5 ? round(x) : int(x);}
 
     // positive and negative infinity
     template<typename T>
@@ -686,6 +690,10 @@ namespace terafly
             xyzt<size_t> _dims=dims(); return _dims.x*_dims.y*_dims.z*_dims.t;
         }
 
+        bool isValid(){
+            return end.x > start.x && end.y > start.y && end.z > start.z && end.t > start.t;
+        }
+
         voi4D<T>& operator/=(xyz<T> s){
             start.x /= T(s.x);
             start.y /= T(s.y);
@@ -766,9 +774,9 @@ namespace terafly
 
         voi4D<int> rounded() const{
             voi4D<int> voi;
-            voi.start.x = round(start.x);
-            voi.start.y = round(start.y);
-            voi.start.z = round(start.z);
+            voi.start.x = round05(start.x);
+            voi.start.y = round05(start.y);
+            voi.start.z = round05(start.z);
             voi.start.t = round(start.t);
             voi.end.x = round(end.x);
             voi.end.y = round(end.y);
@@ -776,6 +784,19 @@ namespace terafly
             voi.end.t = round(end.t);
             return voi;
         }
+
+        /*voi4D<int> ceil() const{
+            voi4D<int> voi;
+            voi.start.x = std::floor(start.x);
+            voi.start.y = std::floor(start.y);
+            voi.start.z = std::floor(start.z);
+            voi.start.t = std::floor(start.t);
+            voi.end.x = std::ceil(end.x);
+            voi.end.y = std::ceil(end.y);
+            voi.end.z = std::ceil(end.z);
+            voi.end.t = std::ceil(end.t);
+            return voi;
+        }*/
     };
 
     template<class T = unsigned int>

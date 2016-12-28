@@ -382,7 +382,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     //initializations
     ID = nTotalInstances++;
     resetZoomHistory();
-    isActive = isReady = false;
+    _isActive = _isReady = false;
     this->V3D_env = _V3D_env;
     this->prev = _prev;
     this->next = 0;
@@ -399,7 +399,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     this->nchannels = _nchannels;
     this->toBeClosed = false;
     this->imgData = _imgData;
-    this->isReady = false;
+    this->_isReady = false;
     this->waitingForData = false;
     this->has_double_clicked = false;
     char ctitle[1024];
@@ -475,7 +475,7 @@ CViewer::~CViewer()
     }
 
     // remove the event filter from the 3D renderer and from the 3D window
-    isActive = false;
+    _isActive = false;
     view3DWidget->removeEventFilter(this);
     window3D->removeEventFilter(this);
     window3D->timeSlider->removeEventFilter(this);
@@ -519,7 +519,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
     try
     {
         //ignoring all events when window is not active
-        if(!isActive)
+        if(!_isActive)
         {
             //printf("Ignoring event from CViewer[%s] cause it's not active\n", title.c_str());
             event->ignore();
@@ -554,7 +554,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                view3DWidget->zoom() < PMain::getInstance()->zoomOutSens->value())          //zoom-out threshold reached
             {
                 // if window is not ready for "switch view" events, reset zoom-out and ignore this event
-                if(!isReady)
+                if(!_isReady)
                 {
                     resetZoomHistory();
                     return false;
@@ -759,7 +759,7 @@ void CViewer::receiveData(
             QElapsedTimer timer;
 
             // PREVIEW+STREAMING mode only: copy loaded data
-            if(cVolume->getStreamingSteps() != 0)
+            if(data && cVolume->getStreamingSteps() != 0)
             {
                 // update IO time
                 PLog::instance()->appendOperation(new NewViewerOperation(op_dsc.toStdString(), tf::IO, elapsed_time));
@@ -839,7 +839,7 @@ void CViewer::receiveData(
                 /**/tf::debug(tf::LEV3, strprintf("title = %s: directional shifts successfully reactivated", titleShort.c_str()).c_str(), __itm__current__function__);
 
                 //current window is now ready for user input
-                isReady = true;
+                _isReady = true;
 
                 //saving elapsed time to log
                 if(prev)
@@ -856,7 +856,7 @@ void CViewer::receiveData(
         {
             QMessageBox::critical(PMain::getInstance(),QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
             PMain::getInstance()->resetGUI();
-            isReady = true;
+            _isReady = true;
         }
     }
 //    QMessageBox::information(0, "Stop", "Wait...");
@@ -882,7 +882,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
     // check precondition #1: active window
-    if(!isActive || toBeClosed)
+    if(!_isActive || toBeClosed)
     {
         QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
         return;
@@ -893,7 +893,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         resolution = volResIndex;
 
     // check precondition #3: window ready for "newView" events
-    if( !isReady )
+    if( !_isReady )
     {
         tf::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
         return;
@@ -2060,7 +2060,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         PAnoToolBar::instance()->refreshTools();
 
         //current windows now gets ready to user input
-        isReady = true;
+        _isReady = true;
 
         // zoom-out on Virtual Pyramid requires image refresh
         if(source->volResIndex > volResIndex && CImport::instance()->isVirtualPyramid())
@@ -2097,7 +2097,7 @@ XYZ CViewer::getRenderer3DPoint(int x, int y)  throw (RuntimeException)
 ***********************************************************************************/
 void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 {
-    if(!isActive || toBeClosed)
+    if(!_isActive || toBeClosed)
         return;
 
     if(params)
@@ -2232,7 +2232,7 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
                                                        intersectionX, intersectionY, intersectionZ, coverageFactor).c_str(), __itm__current__function__);
 
                 //if Vaa3D VOI is covered for the selected percentage by the existing cached volume, just restoring its view
-                if((coverageFactor >= PMain::getInstance()->cacheSens->value()/100.0f) && isReady)
+                if((coverageFactor >= PMain::getInstance()->cacheSens->value()/100.0f) && _isReady)
                 {
                     setActive(false);
                     resetZoomHistory();
@@ -2330,8 +2330,8 @@ void CViewer::Vaa3D_changeTSlider(int s, bool editingFinished /* = false */)
     /**/tf::debug(tf::LEV3, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
     #endif
 
-    if(isActive     &&              // window is visible
-       isReady      &&              // window is ready for user input
+    if(_isActive     &&              // window is visible
+       _isReady      &&              // window is ready for user input
        !toBeClosed  &&              // window is not going to be destroyed
        view3DWidget &&              // Vaa3D renderer has been instantiated
        CImport::instance()->is5D()) // data is 5D type
@@ -2454,7 +2454,6 @@ void CViewer::alignToRight(QWidget* widget, QEvent *evt)
         QResizeEvent* revt = static_cast<QResizeEvent*>(evt);
         CSettings::instance()->setViewerHeight(revt->size().height());
         CSettings::instance()->setViewerWidth(revt->size().width());
-        CSettings::instance()->writeSettings();
     }
 
     // update height
@@ -2468,7 +2467,7 @@ void CViewer::alignToRight(QWidget* widget, QEvent *evt)
 ***********************************************************************************/
 void CViewer::Vaa3D_rotationchanged(int s)
 {
-    if(isActive && !toBeClosed)
+    if(_isActive && !toBeClosed)
     {
 //        printf("disconnect\n");
 //        disconnect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -2498,7 +2497,7 @@ void CViewer::Vaa3D_rotationchanged(int s)
 }
 void CViewer::PMain_rotationchanged()
 {
-    if(isActive && !toBeClosed)
+    if(_isActive && !toBeClosed)
     {
         QGLRefSys* refsys = PMain::getInstance()->refSys;
         view3DWidget->doAbsoluteRot(refsys->getXRot(), refsys->getYRot(), refsys->getZRot());
@@ -2605,11 +2604,15 @@ void CViewer::setCursor(const QCursor& cur, bool renderer_only /* = false */)
 }
 
 /**********************************************************************************
-* Refresh image data
+* Refresh image data (if viewer is not busy - otherwise no refresh is possible)
 ***********************************************************************************/
 void CViewer::refresh() throw (tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    if(isWaitingForData())
+        return;
+    setWaitingForData(true);
 
     CVolume *cVolume = CVolume::instance();
 
@@ -2624,7 +2627,7 @@ void CViewer::refresh() throw (tf::RuntimeException)
     // load new data in a separate thread. When done, the "receiveData" method of the new window will be called
     cVolume->start();
 
-    // enter "waiting for 5D data" state, if possible
-    this->setWaitingForData(true);
+    // enter "waiting for data" state, if possible
+    //this->setWaitingForData(true);
 }
 

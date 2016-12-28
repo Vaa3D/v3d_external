@@ -10,6 +10,7 @@
 #include "VirtualPyramid.h"
 #include "TimeSeries.h"
 #include "CViewer.h"
+#include "PMain.h"
 
 tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
 {
@@ -73,21 +74,49 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_tiledims->setReadOnly(true);
     vp_tiledims->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     vp_tiledims->setTextMargins(5, 0, 0, 0);
+    vp_tileformat = new QLineEdit(this);
+    vp_tileformat->setReadOnly(true);
+    vp_tileformat->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    vp_tileformat->setTextMargins(5, 0, 0, 0);
 
     // virtual pyramid exploration panel
-    vp_exploration_panel = new QGroupBox("Exploration", this);
+    vp_exploration_panel = new QGroupBox("Image exploration", this);
 #ifdef Q_OS_LINUX
     vp_exploration_panel->setStyle(new QWindowsStyle());
 #endif
-    vp_coverage_line = new QLineEdit(this);
-    vp_coverage_line->setReadOnly(true);
-    vp_prefetch_button = new QPushButton("Fetch", this);
-    vp_prefetch_blocks_spinbox = new QSpinBox(this);
-    vp_prefetch_blocks_spinbox->setSuffix(" blocks");
-    vp_prefetch_blocks_spinbox->setAlignment(Qt::AlignCenter);
-    vp_prefetch_blocks_dims = new QSpinBox(this);
-    vp_prefetch_blocks_dims->setSuffix(" voxels");
-    vp_prefetch_blocks_dims->setAlignment(Qt::AlignCenter);
+    vp_exploration_bar_local = new QGradientBar(this);
+    vp_exploration_bar_local->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+    vp_exploration_bar_local->setMinimumHeight(25);
+    vp_exploration_bar_global = new QGradientBar(this);
+    vp_exploration_bar_global->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+    vp_exploration_bar_global->setMinimumHeight(25);
+    vp_refill_button = new QPushButton("Refill", this);
+    vp_empty_viz_method_combobox = new QComboBox(this);
+    vp_empty_viz_method_combobox->addItem("100% black");
+    vp_empty_viz_method_combobox->addItem("100% intensity");
+    vp_empty_viz_method_combobox->addItem("black + salt (10%)");
+    vp_empty_viz_method_combobox->addItem("black + salt (1%)");
+    vp_empty_viz_method_combobox->addItem("black + salt (0.1%)");
+    vp_empty_viz_method_combobox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    vp_empty_viz_intensity = new QSpinBox(this);
+    vp_empty_viz_intensity->setMinimum(0);
+    vp_empty_viz_intensity->setMaximum(255);
+    vp_empty_viz_intensity->setPrefix(" I = ");
+    vp_refill_times_spinbox = new QSpinBox(this);
+    vp_refill_times_spinbox->setPrefix("x");
+    vp_refill_times_spinbox->setAlignment(Qt::AlignCenter);
+    vp_refill_strategy_combobox = new QComboBox(this);
+    vp_refill_strategy_combobox->addItem("randomly");
+    vp_refill_strategy_combobox->addItem("sequentially");
+    vp_refill_strategy_combobox->addItem("spirally");
+    vp_refill_strategy_combobox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    vp_refill_auto_checkbox = new QCheckBox("auto", this);
+    vp_refill_stop_combobox = new QComboBox(this);
+    vp_refill_stop_combobox->addItem("by fetching exactly");
+    vp_refill_stop_combobox->addItem("until %VOI explored is <");
+    vp_refill_coverage_spinbox = new QSpinBox(this);
+    vp_refill_coverage_spinbox->setSuffix("%");
+    vp_refill_coverage_spinbox->setAlignment(Qt::AlignCenter);
 
     // virtual pyramid RAM panel
     vp_ram_panel = new QGroupBox("RAM usage", this);
@@ -97,8 +126,12 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     for(size_t i=0; i<vp_ram_max_size; i++)
     {
         vp_ram_labels.push_back(new QLabel(this));
-        vp_ram_used_labels.push_back(new QLabel(this));
         vp_ram_bars.push_back(new QGradientBar(this));
+        std::vector <QColor> bar_colors;
+        bar_colors.push_back(QColor(167,229,145));
+        bar_colors.push_back(QColor(255,230,153));
+        bar_colors.push_back(QColor(231,158,158));
+        vp_ram_bars.back()->setMultiColor(bar_colors);
         vp_ram_clear_buttons.push_back(new QPushButton("Clear", this));
 
         vp_ram_bars[i]->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -114,9 +147,11 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
 
     /*** LAYOUT SECTION ***/
     /* ---------------- info panel ------------------- */
+    int firstColumnWidth = 80;
+    int lastColumnWidth = 80;
     QGridLayout* info_panel_layout = new QGridLayout();
     QLabel* size_label = new QLabel("Size:");
-    size_label->setFixedWidth(80);
+    size_label->setFixedWidth(firstColumnWidth);
     info_panel_layout->addWidget(size_label,                    0,0,1,1);
     info_panel_layout->addWidget(vol_size_field,                0,2,1,1);
     info_panel_layout->addWidget(new QLabel("Dims (mm):"),      1,0,1,1);
@@ -135,9 +170,11 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_layout->setContentsMargins(5,5,5,5);
     vp_layout->setSpacing(5);
     QLabel* path_label = new QLabel("Path:");
-    path_label->setFixedWidth(80);
+    path_label->setFixedWidth(firstColumnWidth);
     vp_layout->addWidget(path_label,                            0,0,1,1);
     vp_layout->addWidget(vp_path,                               0,1,1,1);
+    vp_open->setFixedWidth(lastColumnWidth);
+    vp_recheck->setFixedWidth(lastColumnWidth);
     vp_layout->addWidget(vp_open,                               0,2,1,1);
     vp_layout->addWidget(new QLabel("Size on disk:"),           1,0,1,1);
     vp_layout->addWidget(vp_size,                               1,1,1,1);
@@ -146,20 +183,31 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_layout->addWidget(vp_subsampling,                        2,1,1,2);
     vp_layout->addWidget(new QLabel("Block dims:"),             3,0,1,1);
     vp_layout->addWidget(vp_tiledims,                           3,1,1,2);
+    vp_layout->addWidget(new QLabel("Block format:"),           4,0,1,1);
+    vp_layout->addWidget(vp_tileformat,                         4,1,1,2);
     vp_panel->setLayout(vp_layout);
     /* ----------- virtual pyramid exploration panel ------------- */
     QGridLayout* expl_panel_layout = new QGridLayout();
     expl_panel_layout->setContentsMargins(5,5,5,5);
     expl_panel_layout->setSpacing(5);
-    QLabel* coverage_label = new QLabel("% explored:");
-    coverage_label->setFixedWidth(80);
-    expl_panel_layout->addWidget(coverage_label,                0,0,1,1);
-    expl_panel_layout->addWidget(vp_coverage_line,              0,1,1,1);
-    vp_prefetch_button->setFixedWidth(80);
-    expl_panel_layout->addWidget(vp_prefetch_button,            1,0,1,1);
-    expl_panel_layout->addWidget(vp_prefetch_blocks_spinbox,    1,1,1,1);
-    expl_panel_layout->addWidget(new QLabel("of size"),         1,2,1,1);
-    expl_panel_layout->addWidget(vp_prefetch_blocks_dims,       1,3,1,1);
+    expl_panel_layout->addWidget(new QLabel("Unexplored:"),     0,0,1,1);
+    expl_panel_layout->addWidget(vp_empty_viz_method_combobox,  0,1,1,1);
+    vp_empty_viz_intensity->setFixedWidth(lastColumnWidth);
+    expl_panel_layout->addWidget(vp_empty_viz_intensity,        0,2,1,1);
+    QLabel* coverage_label = new QLabel("Explored:");
+    coverage_label->setFixedWidth(firstColumnWidth);
+    expl_panel_layout->addWidget(coverage_label,                1,0,1,1);
+    expl_panel_layout->addWidget(vp_exploration_bar_global,     1,1,1,2);
+    expl_panel_layout->addWidget(vp_exploration_bar_local,      2,1,1,2);
+    vp_refill_button->setFixedWidth(firstColumnWidth);
+    vp_refill_times_spinbox->setFixedWidth(lastColumnWidth);
+    vp_refill_coverage_spinbox->setFixedWidth(lastColumnWidth);
+    expl_panel_layout->addWidget(vp_refill_button,              3,0,1,1);
+    expl_panel_layout->addWidget(vp_refill_strategy_combobox,   3,1,1,1);
+    expl_panel_layout->addWidget(vp_refill_auto_checkbox,       4,0,1,1, Qt::AlignCenter);
+    expl_panel_layout->addWidget(vp_refill_stop_combobox,       4,1,1,1);
+    expl_panel_layout->addWidget(vp_refill_times_spinbox,       4,2,1,1);
+    expl_panel_layout->addWidget(vp_refill_coverage_spinbox,    4,2,1,1);
     vp_exploration_panel->setLayout(expl_panel_layout);
     /* ----------- allocated RAM panel --------------- */
     QGridLayout* vp_RAM_layout = new QGridLayout();
@@ -167,20 +215,17 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_RAM_layout->setSpacing(5);
     vp_RAM_layout->addWidget(new QLabel("Set limit to:"),       0,0,1,1);
     vp_RAM_layout->addWidget(vp_max_ram_spinbox,                0,1,1,1);
-    vp_ram_labels[0]->setFixedWidth(80);
+    vp_ram_labels[0]->setFixedWidth(firstColumnWidth);
     vp_RAM_layout->addWidget(vp_ram_labels[0],                  1,0,1,1);
     vp_RAM_layout->addWidget(vp_ram_bars[0],                    1,1,1,1);
-    vp_RAM_layout->addWidget(vp_ram_used_labels[0],             1,2,1,1);
-    vp_RAM_layout->addWidget(vp_ram_clear_buttons[0],           1,3,1,1);
-    //vp_RAM_layout->addWidget(new QLabel("Layers:"),             2,0,1,4);
-    //vp_RAM_layout->addWidget(new QWidget(this),                 2,0,1,4);
-    //vp_RAM_layout->addWidget(vp_ram_show_res_buttons,           3,0,1,4);
+    vp_RAM_layout->addWidget(vp_ram_clear_buttons[0],           1,2,1,1);
+    vp_ram_clear_buttons[0]->setFixedWidth(lastColumnWidth);
     for(size_t i=1; i<vp_ram_max_size; i++)
     {
         vp_RAM_layout->addWidget(vp_ram_labels[i],              i+1,0,1,1);
         vp_RAM_layout->addWidget(vp_ram_bars[i],                i+1,1,1,1);
-        vp_RAM_layout->addWidget(vp_ram_used_labels[i],         i+1,2,1,1);
-        vp_RAM_layout->addWidget(vp_ram_clear_buttons[i],       i+1,3,1,1);
+        vp_RAM_layout->addWidget(vp_ram_clear_buttons[i],       i+1,2,1,1);
+        vp_ram_clear_buttons[i]->setFixedWidth(lastColumnWidth);
     }
     vp_ram_panel->setLayout(vp_RAM_layout);
     /* ---------------- MAIN LAYOUT ------------------ */
@@ -214,11 +259,19 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     connect(vp_recheck, SIGNAL(clicked()), this, SLOT(recheck_button_clicked()));
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
     connect(vp_max_ram_spinbox, SIGNAL(valueChanged(double)), this, SLOT(ram_limit_changed(double)));
-    connect(vp_prefetch_button, SIGNAL(clicked()), this, SLOT(fetch_button_clicked()));
-    //connect(vp_ram_show_res_buttons, SIGNAL(toggled(bool)), this, SLOT(show_ram_layers_toggled(bool)));
+    connect(vp_refill_button, SIGNAL(clicked()), this, SLOT(vp_refill_button_clicked()));
+    connect(vp_empty_viz_method_combobox, SIGNAL(currentIndexChanged(int)), this, SLOT(empty_combobox_index_changed(int)));
+    connect(vp_empty_viz_intensity, SIGNAL(valueChanged(int)), this, SLOT(empty_intensity_value_changed(int)));
+    connect(vp_refill_strategy_combobox, SIGNAL(currentIndexChanged(int)), this, SLOT(vp_refill_strategy_combobox_changed(int)));
+    connect(vp_refill_times_spinbox, SIGNAL(valueChanged(int)), this, SLOT(vp_refill_times_spinbox_changed(int)));
+    connect(vp_refill_auto_checkbox, SIGNAL(toggled(bool)), this, SLOT(vp_refill_auto_checkbox_changed(bool)));
+    connect(vp_refill_stop_combobox, SIGNAL(currentIndexChanged(int)), this, SLOT(vp_refill_stop_combobox_changed(int)));
+    connect(vp_refill_coverage_spinbox, SIGNAL(valueChanged(int)), this, SLOT(vp_refill_coverage_spinbox_changed(int)));
 
     for(size_t i=0; i<vp_ram_clear_buttons.size(); i++)
         connect(vp_ram_clear_buttons[i], SIGNAL(clicked()), this, SLOT(clear_button_clicked()));
+
+    QApplication::instance()->installEventFilter(&inactivityDetector);
 }
 
 void tf::PTabVolumeInfo::reset()
@@ -233,6 +286,7 @@ void tf::PTabVolumeInfo::reset()
     vp_size->setText("");
     vp_subsampling->setText("");
     vp_tiledims->setText("");
+    vp_tileformat->setText("");
     vp_panel->setVisible(false);
     vp_ram_panel->setVisible(false);
     vp_exploration_panel->setVisible(false);
@@ -244,31 +298,63 @@ void tf::PTabVolumeInfo::reset()
         else
             vp_ram_labels[i]->setText("");
         vp_ram_bars[i]->setNSteps(100);
-        vp_ram_used_labels[i]->setText("0/0 MB");
     }
 
     vp_max_ram_spinbox->setValue(CSettings::instance()->getRamLimitGB());
 
-    //vp_ram_show_res_buttons->setText("Show all layers");
 
-    vp_prefetch_blocks_dims->setMaximum(1024);
-    vp_prefetch_blocks_dims->setMinimum(64);
-    vp_prefetch_blocks_dims->setValue(256);
-    vp_prefetch_blocks_spinbox->setMaximum(100);
-    vp_prefetch_blocks_spinbox->setMinimum(1);
-    vp_prefetch_blocks_spinbox->setValue(10);
-    vp_coverage_line->setText(" 0.0 %");
+    // get empty visualization flags
+    tf::VirtualPyramid::empty_viz_mode empty_viz_method = tf::VirtualPyramid::empty_viz_mode(CSettings::instance()->getVpEmptyVizMethod());
+    float empty_viz_salt_pepper_perc = CSettings::instance()->getVpEmptyVizSaltPepperPercentage();
+    vp_empty_viz_intensity->setValue(CSettings::instance()->getVpEmptyVizIntensity());
+    if(empty_viz_method == tf::VirtualPyramid::RAW)
+        vp_empty_viz_method_combobox->setCurrentIndex(0);
+    else if(empty_viz_method == tf::VirtualPyramid::SOLID)
+        vp_empty_viz_method_combobox->setCurrentIndex(1);
+    else if(empty_viz_method == tf::VirtualPyramid::SALT_AND_PEPPER)
+    {
+        if(empty_viz_salt_pepper_perc == 0.1f)
+            vp_empty_viz_method_combobox->setCurrentIndex(2);
+        else if(empty_viz_salt_pepper_perc == 0.01f)
+            vp_empty_viz_method_combobox->setCurrentIndex(3);
+        else if(empty_viz_salt_pepper_perc == 0.001f)
+            vp_empty_viz_method_combobox->setCurrentIndex(4);
+    }
+    tf::VirtualPyramid::empty_viz_method = empty_viz_method;
+    tf::VirtualPyramid::empty_viz_intensity = CSettings::instance()->getVpEmptyVizIntensity();
+    tf::VirtualPyramid::empty_viz_salt_pepper_percentage = empty_viz_salt_pepper_perc;
+
+
+    vp_exploration_bar_local->setNSteps(10000);
+    vp_exploration_bar_global->setNSteps(10000);
+
+    vp_refill_times_spinbox->setMinimum(1);
+    vp_refill_times_spinbox->setMaximum(1000);
+    vp_refill_times_spinbox->setValue(CSettings::instance()->getVpFetchNBlocks());
+
+    vp_refill_strategy_combobox->setCurrentIndex(CSettings::instance()->getVpFetchMethod());
+
+    vp_refill_auto_checkbox->setChecked(CSettings::instance()->getVpRefillAuto());
+    vp_refill_auto_checkbox_changed(vp_refill_auto_checkbox->isChecked());
+
+
+    vp_refill_coverage_spinbox->setValue(CSettings::instance()->getVpRefillCoverage());
+    vp_refill_coverage_spinbox->setMinimum(1);
+    vp_refill_coverage_spinbox->setMaximum(100);
+    vp_refill_coverage_spinbox_changed(vp_refill_coverage_spinbox->value());
+    vp_refill_stop_combobox->setCurrentIndex(CSettings::instance()->getVpRefillStopCondition());
+    vp_refill_stop_combobox_changed(vp_refill_stop_combobox->currentIndex());
+
 }
 
 void tf::PTabVolumeInfo::init()
 {
+    // do nothing if volume has not been imported yet
     iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
     if(!volume)
-    {
-        QMessageBox::critical(this, "Error", "Info tab cannot get volume handle (you should never see this)");
         return;
-    }
 
+    // general info
     double GVoxels = (volume->getDIM_V()/1000.0f)*(volume->getDIM_H()/1000.0f)*(volume->getDIM_D()/1000.0f);
     double TVoxels = GVoxels/1000.0;
     if(TVoxels < 0.1)
@@ -294,19 +380,19 @@ void tf::PTabVolumeInfo::init()
                                volume->getDIM_H(),
                                volume->getDIM_V(),
                                volume->getDIM_D(), volume->getDIM_C(), volume->getDIM_T()).c_str());
-    iim::VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
-    if(!volume_ith)
-    {
-        QMessageBox::critical(this, "Error", "Info tab cannot get 0th-volume handle (you should never see this)");
-        return;
-    }
-    vol_format_field->setText(QString("  ") + volume_ith->getPrintableFormat().c_str());
+
+    vol_format_field->setText(QString("  ") + volume->getPrintableFormat().c_str());
     vxl_field->setText(tf::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
     org_field->setText(tf::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
 
-    // Virtual Pyramid
-    if(volume_ith->getPrintableFormat().find(tf::VirtualPyramidLayer::name()) != std::string::npos)
+    // Virtual Pyramid info (do nothing if no virtual pyramid is found)
+    tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
+    if(!virtualPyramid)
+        return;
     {
+        std::vector <tf::HyperGridCache*> pyramid = virtualPyramid->cachePyramid();
+        std::vector<iim::VirtualVolume*>  layers = virtualPyramid->virtualPyramid();
+
         if(vp_panel->isVisible() == false)
             vp_panel->setVisible(true);
         if(vp_ram_panel->isVisible() == false)
@@ -314,9 +400,6 @@ void tf::PTabVolumeInfo::init()
         if(vp_exploration_panel->isVisible() == false)
             vp_exploration_panel->setVisible(true);
 
-        tf::VirtualPyramid *virtualPyramid = dynamic_cast<tf::VirtualPyramidLayer*>(volume_ith)->pyramid();
-        std::vector <tf::HyperGridCache*> pyramid = virtualPyramid->cachePyramid();
-        std::vector<iim::VirtualVolume*>  layers = virtualPyramid->virtualPyramid();
         std::reverse(layers.begin(), layers.end());
 
         vp_path->setText(virtualPyramid->path().c_str());
@@ -327,6 +410,7 @@ void tf::PTabVolumeInfo::init()
         vp_subsampling->setText(resampling_factors.c_str());
 
         vp_tiledims->setText(pyramid[0]->blockDim().toString().c_str());
+        vp_tileformat->setText(pyramid[0]->blockFormat().c_str());
 
         recheck_button_clicked();
 
@@ -338,7 +422,6 @@ void tf::PTabVolumeInfo::init()
         for(size_t i = 0; i<vp_ram_max_size; i++)
         {
             vp_ram_labels[i]->setVisible(i < pyramid.size() + 1);
-            vp_ram_used_labels[i]->setVisible(i < pyramid.size() + 1);
             vp_ram_clear_buttons[i]->setVisible(i < pyramid.size() + 1);
             vp_ram_clear_buttons[i]->setEnabled(true);
             vp_ram_bars[i]->setVisible(i < pyramid.size() + 1);
@@ -346,11 +429,9 @@ void tf::PTabVolumeInfo::init()
             if(i < pyramid.size() + 1 && i>0)
                 vp_ram_labels[i]->setText(dynamic_cast<tf::VirtualPyramidLayer*>(layers[i-1])->resamplingFactor().toString().c_str());
         }
-    }
 
-    update();
-    //vp_ram_show_res_buttons->setChecked(true);
-    //show_ram_layers_toggled(true);
+        update();
+    }
 }
 
 void tf::PTabVolumeInfo::open_button_clicked()
@@ -385,28 +466,27 @@ void tf::PTabVolumeInfo::recheck_button_clicked()
 
 void tf::PTabVolumeInfo::clear_button_clicked()
 {
-    if(vp_ram_panel->isVisible())
-    {
-        iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
-        if(!volume)
-            return;
-        iim::VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
-        if(!volume_ith)
-            return;
-        tf::VirtualPyramid *virtualPyramid = dynamic_cast<tf::VirtualPyramidLayer*>(volume_ith)->pyramid();
-        if(!virtualPyramid)
-            return;
+    // checks
+    if(vp_ram_panel->isVisible() == false)
+        return;
+    CViewer* viewer = CViewer::getCurrent();
+    if(!viewer)
+        return;
+    if(!viewer->isInSafeState())
+        return;
+    tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
+    if(!virtualPyramid)
+        return;
 
-        int layer = -1;
-        for(size_t i=1; i<vp_ram_clear_buttons.size() && layer == -1; i++)
-            if(QObject::sender() == vp_ram_clear_buttons[i])
-                layer = i-1;
+    // clear selected layer
+    int layer = -1;
+    for(size_t i=1; i<vp_ram_clear_buttons.size() && layer == -1; i++)
+        if(QObject::sender() == vp_ram_clear_buttons[i])
+            layer = i-1;
+    virtualPyramid->clear(true, layer);
 
-
-        virtualPyramid->clear(true, layer);
-
-        recheck_button_clicked();
-    }
+    // refresh
+    viewer->refresh();
 }
 
 quint64 tf::dir_size(const QString & str)
@@ -431,56 +511,65 @@ quint64 tf::dir_size(const QString & str)
 
 void tf::PTabVolumeInfo::update()
 {
-    if(vp_ram_panel->isVisible())
+    // checks
+    CViewer* viewer = CViewer::getCurrent();
+    if(!viewer)
+        return;
+    if(!viewer->isInSafeState())
+        return;
+    if(!vp_ram_panel->isVisible() )
+        return;
+    tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
+    if(!virtualPyramid)
+        return;
+
+    // update RAM usage for each Virtual Pyramid cache layer
+    std::vector <tf::HyperGridCache*> cache = virtualPyramid->cachePyramid();
+    float sum = 0;
+    for(int i=0; i<cache.size(); i++)
     {
-        iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
-        if(!volume)
-            return;
-        iim::VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
-        if(!volume_ith)
-            return;
-        tf::VirtualPyramid *virtualPyramid = dynamic_cast<tf::VirtualPyramidLayer*>(volume_ith)->pyramid();
-        if(!virtualPyramid)
-            return;
-        std::vector <tf::HyperGridCache*> cache = virtualPyramid->cachePyramid();
+        float allocableMB = cache[i]->memoryMax() * 1000;
+        float allocatedMB = cache[i]->memoryUsed() * 1000;
+        sum += allocatedMB;
+        if(allocableMB < 100)
+            vp_ram_bars[i+1]->setText(tf::strprintf("%.1f/%.1f MB", allocatedMB, allocableMB));
+        else if(allocableMB < 100000)
+            vp_ram_bars[i+1]->setText(tf::strprintf("%.1f/%.1f GB", allocatedMB/1000.0f, allocableMB/1000.0f));
+        else
+            vp_ram_bars[i+1]->setText(tf::strprintf("%.1f/%.1f TB", allocatedMB/1000000.0f, allocableMB/1000000.0f));
+        vp_ram_bars[i+1]->setStep(tf::round(100*allocatedMB/allocableMB));
 
-        float sum = 0;
-        for(int i=0; i<cache.size(); i++)
-        {
-            float allocableMB = cache[i]->maximumRamUsageGB() * 1000;
-            float allocatedMB = cache[i]->currentRamUsageGB() * 1000;
-            sum += allocatedMB;
-            if(allocableMB < 100)
-                vp_ram_used_labels[i+1]->setText(tf::strprintf("%.1f/%.1f MB", allocatedMB, allocableMB).c_str());
-            else if(allocableMB < 100000)
-                vp_ram_used_labels[i+1]->setText(tf::strprintf("%.1f/%.1f GB", allocatedMB/1000.0f, allocableMB/1000.0f).c_str());
-            else
-                vp_ram_used_labels[i+1]->setText(tf::strprintf("%.1f/%.1f TB", allocatedMB/1000000.0f, allocableMB/1000000.0f).c_str());
-            vp_ram_bars[i+1]->setStep(tf::round(100*allocatedMB/allocableMB));
+        if(viewer->getResIndex() == (cache.size()-i-1))
+            vp_ram_labels[i+1]->setStyleSheet("QLabel { color : blue; }");
+        else
 
-            if(CViewer::getCurrent()->getResIndex() == (cache.size()-i-1))
-            {
-                vp_ram_labels[i+1]->setStyleSheet("QLabel { color : red; }");
-                vp_ram_used_labels[i+1]->setStyleSheet("QLabel { color : red; }");
-            }
-            else
-            {
-                vp_ram_labels[i+1]->setStyleSheet("");
-                vp_ram_used_labels[i+1]->setStyleSheet("");
-            }
-        }
-
-        vp_ram_used_labels[0]->setText(tf::strprintf("%.1f/%.1f GB", sum / 1000.0f, vp_max_ram_spinbox->value()).c_str());
-        vp_ram_bars[0]->setStep(tf::round(100*(sum/1000.0f)/vp_max_ram_spinbox->value()));
-
-
-        // automatically release RAM resources
-        if(sum/1000 > vp_max_ram_spinbox->value() && CViewer::getCurrent()->isWaitingForData() == false)
-        {
-            virtualPyramid->clear(false);
-            recheck_button_clicked();
-        }
+            vp_ram_labels[i+1]->setStyleSheet("");
     }
+
+    // update total RAM usage
+    vp_ram_bars[0]->setText(tf::strprintf("%.1f/%.1f GB", sum / 1000.0f, vp_max_ram_spinbox->value()).c_str());
+    vp_ram_bars[0]->setStep(tf::round(100*(sum/1000.0f)/vp_max_ram_spinbox->value()));
+
+
+    // automatically release RAM resources if needed
+    if(sum/1000 > vp_max_ram_spinbox->value())
+    {
+        virtualPyramid->clear(false);
+        recheck_button_clicked();
+    }
+
+    // update local and global exploration bars
+    iim::voi3D<> voi( iim::xyz<size_t>(viewer->volH0, viewer->volV0, viewer->volD0), iim::xyz<size_t>(viewer->volH1, viewer->volV1, viewer->volD1) );
+    float completeness_local  = viewer->volResIndex == cache.size() - 1 ? 1.0f : cache[cache.size()-1-viewer->volResIndex]->completeness(voi);
+    float completeness_global = cache[cache.size()-1]->completeness();
+    vp_exploration_bar_local->setStep(tf::round(completeness_local*10000));
+    vp_exploration_bar_global->setStep(tf::round(completeness_global*10000));
+    vp_exploration_bar_local->setText(tf::strprintf( "Current VOI: %.2f %%", completeness_local*100));
+    vp_exploration_bar_global->setText(tf::strprintf("Whole image: %.2f %%", completeness_global*100));
+
+    // refill in background after 3 seconds inactivity
+    if(vp_refill_auto_checkbox->isChecked() && inactivityDetector.timer.elapsed() >= 3000)
+        vp_refill_button_clicked(true);
 }
 
 void tf::PTabVolumeInfo::ram_limit_changed(double v)
@@ -489,38 +578,217 @@ void tf::PTabVolumeInfo::ram_limit_changed(double v)
     update();
 }
 
-void tf::PTabVolumeInfo::fetch_button_clicked()
+void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
 {
-    v3d_msg("Not yet implemented!");
-}
-
-/*void tf::PTabVolumeInfo::show_ram_layers_toggled(bool checked)
-{
-    if(checked)
-        vp_ram_show_res_buttons->setText("Hide layers");
-    else
-        vp_ram_show_res_buttons->setText("Show layers");
-
-    if(vp_ram_panel->isVisible())
+    // checks
+    if(vp_refill_button->isVisible() == false)
+        return;
+    CViewer* viewer = CViewer::getCurrent();
+    if(!viewer)
+        return;
+    if(!viewer->isInSafeState())
+        return;
+    tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
+    if(!virtualPyramid)
+        return;
+    if(vp_exploration_bar_local->finished())
     {
-        iim::VirtualVolume* volume = CImport::instance()->getHighestResVolume();
-        if(!volume)
-            return;
-        iim::VirtualVolume* volume_ith = dynamic_cast<TimeSeries*>(volume) ? dynamic_cast<TimeSeries*>(volume)->getFrameAt(0) : volume;
-        if(!volume_ith)
-            return;
-        tf::VirtualPyramid *virtualPyramid = dynamic_cast<tf::VirtualPyramidLayer*>(volume_ith)->pyramid();
-        if(!virtualPyramid)
-            return;
-        std::vector <tf::HyperGridCache*> cache = virtualPyramid->cachePyramid();
+        if(!in_background) // need to be "quiet" if refill is done in background
+            QMessageBox::information(this, "Warning", "No refill needed!\n%VOI explored already is 100%");
+        return;
+    }
+    if(vp_refill_stop_combobox->currentIndex() == 1 &&    // until %VOI explored is <
+       in_background == false                       &&    // operation is not in background
+       vp_refill_coverage_spinbox->value() <= vp_exploration_bar_local->step()/100 )
+    {
+        QMessageBox::information(this, "Warning", tf::strprintf("No refill needed!\n%VOI explored already is >= %d%%", vp_refill_coverage_spinbox->value()).c_str());
+        return;
+    }
 
-        for(int i=0; i<cache.size(); i++)
+    // try to lock mutex for refill, if fails return immediately
+    if(!refill_mutex.tryLock())
+        return;
+
+    // set busy state
+    PMain& pMain = *(PMain::getInstance());
+    pMain.progressBar->setEnabled(true);
+    pMain.progressBar->setMinimum(0);
+    pMain.progressBar->setMaximum(0);
+    pMain.statusBar->showMessage("Refill...");
+    viewer->view3DWidget->setCursor(Qt::BusyCursor);
+    viewer->window3D->setCursor(Qt::BusyCursor);
+    pMain.setCursor(Qt::BusyCursor);
+
+    // prepare progress bar
+    int maximum = in_background ? 1 : vp_refill_stop_combobox->currentIndex() == 0? vp_refill_times_spinbox->value() : vp_refill_coverage_spinbox->value()*100 - vp_exploration_bar_local->step() ;
+    QProgressDialog progress("Refill...", "Cancel", 0, maximum, this);
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(0);
+    progress.setLabelText("Refill...");
+
+    // do as many times as requested by user
+    try
+    {
+        std::vector <tf::HyperGridCache*> cache = virtualPyramid->cachePyramid();
+        int value = 0;
+        while(value < maximum)
         {
-            vp_ram_labels[i+1]->setVisible(checked);
-            vp_ram_used_labels[i+1]->setVisible(checked);
-            vp_ram_bars[i+1]->setVisible(checked);
-            vp_ram_clear_buttons[i+1]->setVisible(checked);
+            // refill here
+            // @TODO: use a separate thread
+            QApplication::processEvents();
+            iim::voi3D<> voi( iim::xyz<size_t>(viewer->volH0, viewer->volV0, viewer->volD0), iim::xyz<size_t>(viewer->volH1, viewer->volV1, viewer->volD1) );
+            virtualPyramid->refill(cache.size()-1-viewer->volResIndex, voi, tf::VirtualPyramid::refill_strategy(vp_refill_strategy_combobox->currentIndex()));
+            QApplication::processEvents();
+
+            // update GUI (otherwise it will freeze: we are blocking the event-loop thread)
+           // update();
+
+            // show/update progress
+            value = vp_refill_stop_combobox->currentIndex() == 0 || in_background ? value+1 : vp_exploration_bar_local->step() - vp_refill_coverage_spinbox->value()*100 + maximum;
+            progress.setValue(value);
+
+            // refresh
+            viewer->refresh();
+
+            // terminate now if requested by the user
+            if (progress.wasCanceled())
+                break;
         }
     }
-}*/
+    catch(tf::RuntimeException & ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+    catch (iim::IOException & ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+    catch (iom::exception & ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+    progress.setValue(progress.maximum());
 
+    // release mutex
+    refill_mutex.unlock();
+
+    // unset busy state
+    viewer->view3DWidget->setCursor(Qt::ArrowCursor);
+    viewer->window3D->setCursor(Qt::ArrowCursor);
+    pMain.resetGUI();
+}
+
+void tf::PTabVolumeInfo::empty_combobox_index_changed(int v)
+{
+    // checks
+    if(vp_empty_viz_method_combobox->isVisible() == false)
+        return;
+    CViewer* viewer = CViewer::getCurrent();
+    if(!viewer)
+        return;
+    if(!viewer->isInSafeState())
+        return;
+    tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
+    if(!virtualPyramid)
+        return;
+
+    vp_empty_viz_intensity->setEnabled(v);
+
+    if(v == 0)          // 100% black
+        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::RAW;
+    else if(v == 1)     // 100% intensity
+        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SOLID;
+    else if(v == 2)     // black + 10% salt
+    {
+        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SALT_AND_PEPPER;
+        tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.1;
+    }
+    else if(v == 3)     // black + 1% salt
+    {
+        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SALT_AND_PEPPER;
+        tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.01;
+    }
+    else if(v == 4)     // black + 0.1% salt
+    {
+        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SALT_AND_PEPPER;
+        tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.001;
+    }
+
+    // store new settings
+    CSettings::instance()->setVpEmptyVizMethod(tf::VirtualPyramid::empty_viz_method);
+    CSettings::instance()->setVpEmptyVizSaltPepperPercentage(tf::VirtualPyramid::empty_viz_salt_pepper_percentage);
+
+    // refresh 3D viewer
+    viewer->refresh();
+}
+
+void tf::PTabVolumeInfo::empty_intensity_value_changed(int v)
+{
+    // checks
+    if(vp_empty_viz_intensity->isVisible() == false)
+        return;
+    // checks
+    CViewer* viewer = CViewer::getCurrent();
+    if(!viewer)
+        return;
+    if(!viewer->isInSafeState())
+        return;
+    tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
+    if(!virtualPyramid)
+        return;
+
+    // store new settings
+    tf::VirtualPyramid::empty_viz_intensity = v;
+    CSettings::instance()->setVpEmptyVizIntensity(v);
+
+    // refresh 3D viewer
+    viewer->refresh();
+}
+
+void tf::PTabVolumeInfo::vp_refill_strategy_combobox_changed(int v)
+{
+//    if(vp_refill_strategy_combobox->isVisible() == false)
+//        return;
+
+    CSettings::instance()->setVpFetchMethod(v);
+}
+
+void tf::PTabVolumeInfo::vp_refill_times_spinbox_changed(int v)
+{
+//    if(vp_refill_times_spinbox->isVisible() == false)
+//        return;
+
+    CSettings::instance()->setVpFetchNBlocks(v);
+}
+
+void tf::PTabVolumeInfo::vp_refill_coverage_spinbox_changed(int v)
+{
+//    if(vp_refill_coverage_spinbox->isVisible() == false)
+//        return;
+
+    CSettings::instance()->setVpRefillCoverage(v);
+}
+
+void tf::PTabVolumeInfo::vp_refill_auto_checkbox_changed(bool v)
+{
+//    if(vp_refill_auto_checkbox->isVisible() == false)
+//        return;
+
+    vp_refill_button->setEnabled(!v);
+    vp_refill_times_spinbox->setEnabled(!v);
+    vp_refill_coverage_spinbox->setEnabled(!v);
+    vp_refill_stop_combobox->setEnabled(!v);
+
+    CSettings::instance()->setVpRefillAuto(v);
+}
+
+void tf::PTabVolumeInfo::vp_refill_stop_combobox_changed(int v)
+{
+//    if(vp_refill_stop_combobox->isVisible() == false)
+//        return;
+
+    vp_refill_coverage_spinbox->setVisible(v);
+    vp_refill_times_spinbox->setVisible(!v);
+
+    CSettings::instance()->setVpRefillStopCondition(v);
+}

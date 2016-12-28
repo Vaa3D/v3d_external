@@ -92,6 +92,7 @@ class terafly::CImport : public QThread
         bool vpLocal;                                       // store VP data on local or remote storage
         bool vp;                                            // VP mode
         bool vpSetup;                                       // whether a new Virtual Pyramid setup is required
+        std::string vpBlockFormat;                          // block file format (e.g. ".tif", ".v3draw", ...)
         tf::xyz<size_t> vpBlockDims;                        // pyramid block dimensions
         iim::VirtualVolume* vpHighResVolume;                // pyramid base layer (high res) volume
 
@@ -173,6 +174,15 @@ class terafly::CImport : public QThread
         }
         bool isVirtualPyramid(){return vp;}
         iim::VirtualVolume* getVPHighResVolume(){return vpHighResVolume;}
+        tf::VirtualPyramid* getVirtualPyramid(){
+            iim::VirtualVolume* volume = getHighestResVolume();
+            if(!volume)
+                return 0;
+            tf::VirtualPyramidLayer *virtualPyramidLayer = dynamic_cast<tf::VirtualPyramidLayer*>(volume);
+            if(!virtualPyramidLayer)
+                return 0;
+            return virtualPyramidLayer->pyramid();
+        }
 
         // SET methods
         void setPath(string new_path){path = new_path;}
