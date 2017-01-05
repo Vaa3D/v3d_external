@@ -113,14 +113,15 @@ class terafly::VirtualPyramid
         throw (iim::IOException, iom::exception, tf::RuntimeException);
 
 
-        // refills pyramid by searching the first noncomplete region in the given cache layer and VOI and populating it with real image data
+        // refills pyramid by searching the first noncomplete block in the given cache layer and VOI and populating it with real image data
         // - image data are taken from the unconverted image
-        // - region dim = tile dim if volume is tiled, otherwise region dim = block dim of highest-res cache layer
-        bool                                                // return true if refill was successful, otherwise return false (no empty regions found)
+        // - block dim (if not provided) = tile dim if volume is tiled, otherwise block dim = block dim of highest-res cache layer
+        bool                                                            // return true if refill was successful, otherwise return false (no empty regions found)
         refill(
-                int cache_level = -1,                       // cache level where to search the 'emptiest' region (default: lowest-res cache layer)
-                iim::voi3D<> VOI = iim::voi3D<>::biggest(), // volume of interest in the 'cache_level' coordinate system (default: the entire volume)
-                refill_strategy strategy = REFILL_RANDOM    // refill strategy
+                int cache_level = -1,                                   // cache level where to search the 'emptiest' region (default: lowest-res cache layer)
+                iim::voi3D<> VOI = iim::voi3D<>::biggest(),             // volume of interest in the 'cache_level' coordinate system (default: the entire volume)
+                refill_strategy strategy = REFILL_RANDOM,               // refill strategy
+                tf::xyz<size_t> block_dim = tf::xyz<size_t>::biggest()  // block dimension
         )
         throw (iim::IOException, iom::exception, tf::RuntimeException);
 

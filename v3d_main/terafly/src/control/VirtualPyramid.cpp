@@ -614,12 +614,13 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
 
 // refills pyramid by searching the first noncomplete region in the given cache layer and VOI and populating it with real image data
 // - image data are taken from the unconverted image
-// - region dim = tile dim if volume is tiled, otherwise region dim = block dim of highest-res cache layer
+// - block dim (if not provided) = tile dim if volume is tiled, otherwise block dim = block dim of highest-res cache layer
 bool                                // return true if refill was successful, otherwise return false (no empty regions found)
 tf::VirtualPyramid::refill(
         int cache_level,            // cache level where to search the 'emptiest' region (default: lowest-res cache layer)
         iim::voi3D<> VOI,           // volume of interest in the 'cache_level' coordinate system
-        refill_strategy strategy    // refill strategy
+        refill_strategy strategy,   // refill strategy
+        tf::xyz<size_t> block_dim   // block dimension
 ) throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     // check preconditions
@@ -637,37 +638,48 @@ tf::VirtualPyramid::refill(
     if(!VOI.isValid())
         throw tf::RuntimeException(tf::strprintf("in VirtualPyramid::refill(): invalid VOI x=[%d,%d) y=[%d,%d) z=[%d,%d)", VOI.start.x, VOI.end.x, VOI.start.y, VOI.end.y, VOI.start.z, VOI.end.z));
 
-    // get tiles from image
-    std::vector < iim::voi3D<size_t> > tiles = _vol->tilesXYZ();
+    // the set of tiles to be checked for completeness
+    std::vector < iim::voi3D<size_t> > tiles;
 
-    // volume is tiled only along x,y: we need to further partition along z
-    if(tiles.size() && _vol->isTiled(iim::dimension_x) && _vol->isTiled(iim::dimension_y) && !_vol->isTiled(iim::dimension_z))
+    // block dim was not specified: we use volume tiles as blocks
+    if(block_dim == tf::xyz<size_t>::biggest())
     {
-        // we use block dim (along z) of highest-cache layer to partition
-        std::vector<size_t> zparts = tf::partition(size_t(_vol->getDIM_D()), _cachePyramid[0]->blockDim().z);
+        // get tiles from volume
+        tiles = _vol->tilesXYZ();
 
-        std::vector < iim::voi3D<size_t> > tiles_sub;
-        for(size_t i=0; i<tiles.size(); i++)
+        // volume is tiled only along x,y: we need to further partition along z
+        if(tiles.size() && _vol->isTiled(iim::dimension_x) && _vol->isTiled(iim::dimension_y) && !_vol->isTiled(iim::dimension_z))
         {
-            size_t zcount = 0;
-            for(size_t j=0; j<zparts.size(); j++)
+            // we use block dim (along z) of highest-cache layer to partition
+            std::vector<size_t> zparts = tf::partition(size_t(_vol->getDIM_D()), _cachePyramid[0]->blockDim().z);
+
+            std::vector < iim::voi3D<size_t> > tiles_sub;
+            for(size_t i=0; i<tiles.size(); i++)
             {
-                tiles_sub.push_back( iim::voi3D<size_t>(
-                                         iim::xyz<size_t>(tiles[i].start.x, tiles[i].start.y, zcount),
-                                         iim::xyz<size_t>(tiles[i].end.x  , tiles[i].end.y,   zcount + zparts[j]) ) );
-                zcount += zparts[j];
+                size_t zcount = 0;
+                for(size_t j=0; j<zparts.size(); j++)
+                {
+                    tiles_sub.push_back( iim::voi3D<size_t>(
+                                             iim::xyz<size_t>(tiles[i].start.x, tiles[i].start.y, zcount),
+                                             iim::xyz<size_t>(tiles[i].end.x  , tiles[i].end.y,   zcount + zparts[j]) ) );
+                    zcount += zparts[j];
+                }
             }
+            tiles = tiles_sub;
         }
-        tiles = tiles_sub;
     }
 
-    // no tiles available: we need to partition along x,y,z
+    // no tiles available (or block dim specified): we need to partition along x,y,z
     if(tiles.empty())
     {
+        // block dim not specified: set block dim = block dim of highest-res cache layer
+        if(block_dim == tf::xyz<size_t>::biggest())
+            block_dim = _cachePyramid[0]->blockDim().toXYZ();
+
         // we use block dim (along x,y,z) of highest-cache layer to partition
-        std::vector<size_t> xparts = tf::partition(size_t(_vol->getDIM_H()), _cachePyramid[0]->blockDim().x);
-        std::vector<size_t> yparts = tf::partition(size_t(_vol->getDIM_V()), _cachePyramid[0]->blockDim().y);
-        std::vector<size_t> zparts = tf::partition(size_t(_vol->getDIM_D()), _cachePyramid[0]->blockDim().z);
+        std::vector<size_t> xparts = tf::partition(size_t(_vol->getDIM_H()), block_dim.x);
+        std::vector<size_t> yparts = tf::partition(size_t(_vol->getDIM_V()), block_dim.y);
+        std::vector<size_t> zparts = tf::partition(size_t(_vol->getDIM_D()), block_dim.z);
 
         size_t xcount = 0;
         for(size_t i=0; i<xparts.size(); i++)
@@ -786,9 +798,9 @@ tf::VirtualPyramid::refill(
         delete this->loadVOI(tf::xyz<size_t>(tiles_copy[k].start.x, tiles_copy[k].start.y, tiles_copy[k].start.z),
                              tf::xyz<size_t>(tiles_copy[k].end.x,   tiles_copy[k].end.y,   tiles_copy[k].end.z), 0).data;
 
-    float cnew = _cachePyramid[cache_level]->completeness(tiles[k]);
-    if(cnew != 1)
-        throw tf::RuntimeException(tf::strprintf("in VirtualPyramid::refill(): completeness != 1 (%f) after refill, VOI x=[%d,%d) y=[%d,%d) z=[%d,%d)", cnew, tiles[k].start.x, tiles[k].end.x, tiles[k].start.y, tiles[k].end.y, tiles[k].start.z, tiles[k].end.z));
+//    float cnew = _cachePyramid[cache_level]->completeness(tiles[k]);
+//    if(cnew != 1)
+//        throw tf::RuntimeException(tf::strprintf("in VirtualPyramid::refill(): completeness != 1 (%f) after refill, VOI x=[%d,%d) y=[%d,%d) z=[%d,%d)", cnew, tiles[k].start.x, tiles[k].end.x, tiles[k].start.y, tiles[k].end.y, tiles[k].start.z, tiles[k].end.z));
 
     return true;
 }
@@ -1776,7 +1788,7 @@ void tf::HyperGridCache::CacheBlock::putData(
 	tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
     ) throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
-    /**/tf::debug(tf::NO_DEBUG, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
+    /**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
         _path.c_str(),
 		image.dims.x, image.dims.y, image.dims.z, image.chans.dim, image.dims.t, 
 		image_voi.start.x, image_voi.end.x, image_voi.start.y, image_voi.end.y, image_voi.start.z, image_voi.end.z, image_voi.start.t, image_voi.end.t, 

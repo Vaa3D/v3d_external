@@ -81,6 +81,9 @@ class terafly::PTabVolumeInfo : public QWidget
         QComboBox* vp_refill_stop_combobox;
         QSpinBox* vp_refill_times_spinbox;
         QSpinBox* vp_refill_coverage_spinbox;
+        QSpinBox* vp_block_dimX;
+        QSpinBox* vp_block_dimY;
+        QSpinBox* vp_block_dimZ;
 
         // virtual pyramid RAM panel
         QGroupBox* vp_ram_panel;
@@ -89,7 +92,7 @@ class terafly::PTabVolumeInfo : public QWidget
         std::vector <QLabel*> vp_ram_labels;
         std::vector <QGradientBar*> vp_ram_bars;
         std::vector <QPushButton*> vp_ram_clear_buttons;
-        static const size_t vp_ram_max_size = 10;
+        static const size_t vp_ram_max_size = 8;
 
         QTimer updateTimer;
         QMutex refill_mutex;

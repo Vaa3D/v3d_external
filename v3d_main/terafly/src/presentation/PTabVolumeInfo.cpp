@@ -117,6 +117,21 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_refill_coverage_spinbox = new QSpinBox(this);
     vp_refill_coverage_spinbox->setSuffix("%");
     vp_refill_coverage_spinbox->setAlignment(Qt::AlignCenter);
+    vp_block_dimX = new QSpinBox(this);
+    vp_block_dimX->setAlignment(Qt::AlignCenter);
+    vp_block_dimX->setSuffix("(x)");
+    vp_block_dimX->setMinimum(1);
+    vp_block_dimX->setMaximum(999);
+    vp_block_dimY = new QSpinBox(this);
+    vp_block_dimY->setAlignment(Qt::AlignCenter);
+    vp_block_dimY->setSuffix("(y)");
+    vp_block_dimY->setMinimum(1);
+    vp_block_dimY->setMaximum(999);
+    vp_block_dimZ = new QSpinBox(this);
+    vp_block_dimZ->setAlignment(Qt::AlignCenter);
+    vp_block_dimZ->setSuffix("(z)");
+    vp_block_dimZ->setMinimum(1);
+    vp_block_dimZ->setMaximum(999);
 
     // virtual pyramid RAM panel
     vp_ram_panel = new QGroupBox("RAM usage", this);
@@ -204,10 +219,16 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_refill_coverage_spinbox->setFixedWidth(lastColumnWidth);
     expl_panel_layout->addWidget(vp_refill_button,              3,0,1,1);
     expl_panel_layout->addWidget(vp_refill_strategy_combobox,   3,1,1,1);
-    expl_panel_layout->addWidget(vp_refill_auto_checkbox,       4,0,1,1, Qt::AlignCenter);
+    expl_panel_layout->addWidget(vp_refill_auto_checkbox,       4,0,2,1, Qt::AlignCenter);
     expl_panel_layout->addWidget(vp_refill_stop_combobox,       4,1,1,1);
     expl_panel_layout->addWidget(vp_refill_times_spinbox,       4,2,1,1);
     expl_panel_layout->addWidget(vp_refill_coverage_spinbox,    4,2,1,1);
+    expl_panel_layout->addWidget(new QLabel("(block dims)"),    5,2,1,1);
+    QHBoxLayout* block_layout = new QHBoxLayout();
+    block_layout->addWidget(vp_block_dimX);
+    block_layout->addWidget(vp_block_dimY);
+    block_layout->addWidget(vp_block_dimZ);
+    expl_panel_layout->addLayout(block_layout,                  5,1,1,1);
     vp_exploration_panel->setLayout(expl_panel_layout);
     /* ----------- allocated RAM panel --------------- */
     QGridLayout* vp_RAM_layout = new QGridLayout();
@@ -411,6 +432,10 @@ void tf::PTabVolumeInfo::init()
 
         vp_tiledims->setText(pyramid[0]->blockDim().toString().c_str());
         vp_tileformat->setText(pyramid[0]->blockFormat().c_str());
+
+        vp_block_dimX->setValue(pyramid[0]->blockDim().x);
+        vp_block_dimY->setValue(pyramid[0]->blockDim().y);
+        vp_block_dimZ->setValue(pyramid[0]->blockDim().z);
 
         recheck_button_clicked();
 
@@ -626,6 +651,14 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
     progress.setMinimumDuration(0);
     progress.setLabelText("Refill...");
 
+    tf::xyz<size_t> block_dim = tf::xyz<size_t>::biggest();
+    if( ! vp_refill_auto_checkbox->isChecked())
+    {
+        block_dim.x = vp_block_dimX->value();
+        block_dim.y = vp_block_dimY->value();
+        block_dim.z = vp_block_dimZ->value();
+    }
+
     // do as many times as requested by user
     try
     {
@@ -637,7 +670,7 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
             // @TODO: use a separate thread
             QApplication::processEvents();
             iim::voi3D<> voi( iim::xyz<size_t>(viewer->volH0, viewer->volV0, viewer->volD0), iim::xyz<size_t>(viewer->volH1, viewer->volV1, viewer->volD1) );
-            virtualPyramid->refill(cache.size()-1-viewer->volResIndex, voi, tf::VirtualPyramid::refill_strategy(vp_refill_strategy_combobox->currentIndex()));
+            virtualPyramid->refill(cache.size()-1-viewer->volResIndex, voi, tf::VirtualPyramid::refill_strategy(vp_refill_strategy_combobox->currentIndex()), block_dim);
             QApplication::processEvents();
 
             // update GUI (otherwise it will freeze: we are blocking the event-loop thread)
@@ -778,6 +811,9 @@ void tf::PTabVolumeInfo::vp_refill_auto_checkbox_changed(bool v)
     vp_refill_times_spinbox->setEnabled(!v);
     vp_refill_coverage_spinbox->setEnabled(!v);
     vp_refill_stop_combobox->setEnabled(!v);
+    vp_block_dimX->setEnabled(!v);
+    vp_block_dimY->setEnabled(!v);
+    vp_block_dimZ->setEnabled(!v);
 
     CSettings::instance()->setVpRefillAuto(v);
 }

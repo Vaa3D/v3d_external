@@ -615,6 +615,10 @@ namespace terafly
         std::string toString(){
             return strprintf("{%s,%s,%s}", num2str<T>(x).c_str(), num2str<T>(y).c_str(), num2str<T>(z).c_str());
         }
+
+        static xyz<T> biggest(){
+            return xyz<T> (std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity() : std::numeric_limits<T>::max());
+        }
     };
 
     // 4D point (x + y + z + time)
@@ -669,6 +673,10 @@ namespace terafly
         }
 
         T size(){return x*y*z*c*t;}
+
+        xyz<T> toXYZ(){
+            return xyz<T>(x,y,z);
+        }
     };
 
     // 4D Volume Of Interest
