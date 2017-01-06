@@ -2723,7 +2723,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
 int Renderer_gl1::hitWheel(int x, int y)
 {
-    qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
+  //  qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
     wheelPos.x = x;
     wheelPos.y = y;
     int i;
@@ -2731,8 +2731,8 @@ int Renderer_gl1::hitWheel(int x, int y)
     {
         wheelPos.view[i] = viewport[i];
     }
-    qDebug(" wheel pos (x=%5.3f y=%5.3f) viewport (%d, %d, %d, %d)", wheelPos.x, wheelPos.y,
-           wheelPos.view[0], wheelPos.view[1], wheelPos.view[2], wheelPos.view[3]);
+  /*  qDebug(" wheel pos (x=%5.3f y=%5.3f) viewport (%d, %d, %d, %d)", wheelPos.x, wheelPos.y,
+           wheelPos.view[0], wheelPos.view[1], wheelPos.view[2], wheelPos.view[3]);*/
     for (i=0; i<16; i++)
     {
         wheelPos.P[i]  = projectionMatrix[i];

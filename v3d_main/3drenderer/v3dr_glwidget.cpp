@@ -617,7 +617,7 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
     //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
 
 	mouse_held = 0;
-    v3d_msg("before mouseReleaseEvent _appendMarkerPos ",0);
+  //  v3d_msg("before mouseReleaseEvent _appendMarkerPos ",0);
 
 	if (event->button()==Qt::RightButton && renderer) //right-drag end
     {
