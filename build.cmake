@@ -118,6 +118,11 @@ fi
 
 case $OPERATION in
     install)
+        # See if the code is complete
+        if [[ ! -e v3d_main/terafly/src/terarepo/src ]]; then
+            echo "Missing the terafly repository. Did you do a git submodule command?"
+            exit 1
+        fi
         # See if the CMAKE_DIR is set
         if [ ! "$CMAKE_DIR" = "" ]; then
             if [[ -e $CMAKE_DIR ]]; then
@@ -162,12 +167,12 @@ case $OPERATION in
                     /c/Program\ Files/7-Zip/7z x -y boost_$BOOST_VERSION.tar
                 fi
                 cd boost_$BOOST_VERSION
-                cmd //c .\\bootstrap.bat
+                cmd //c .\\bootstrap.bat -without-libraries=python
                 cmd //c .\\b2.exe --toolset=msvc-12.0 address-model=64 --prefix=$boost_prefix install
             else
                 tar xzf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
                 cd boost_$BOOST_VERSION
-                ./bootstrap.sh --prefix=$boost_prefix
+                ./bootstrap.sh --prefix=$boost_prefix -without-libraries=python
                 ./b2 install
             fi
             cd ../../../../
