@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 # 2010-08-07 by Hanchuan Peng
 # a convenience script for building the system with cmake
 # It will download and build CMake if it's not present,
@@ -14,10 +14,12 @@ function download {
 }
 
 shopt -s expand_aliases;
-BUILD_HDF5=0
+BUILD_HDF5=1
 BOOST_MAJOR_VERSION=1_57
 BOOST_VERSION=${BOOST_MAJOR_VERSION}_0
-CMAKE_VERSION=3.1.3
+CMAKE_MAJOR_VERSION=3.2
+CMAKE_MINOR_VERSION=1
+CMAKE_VERSION=${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}
 CMAKE_ARGS=""
 CMAKE_PLATFORM_ARGS=
 CMAKE_BUILD="Release"
@@ -123,6 +125,11 @@ case $OPERATION in
             echo "Missing the terafly repository. Did you do a git submodule command?"
             exit 1
         fi
+
+        if [[ ! -e $BUILD_DIR/build_$PLATFORM ]]; then
+            mkdir -p $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
+        fi
+
         # See if the CMAKE_DIR is set
         if [ ! "$CMAKE_DIR" = "" ]; then
             if [[ -e $CMAKE_DIR ]]; then
@@ -133,29 +140,33 @@ case $OPERATION in
         # If CMAKE_EXE is not set, then either find or build cmake
         if [ "$CMAKE_EXE" = "" ]; then
             if hash cmake 2>/dev/null; then
-                CMAKE_EXE="cmake"
-            else
-        		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
-        			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
-        				echo "Downloading cmake"
-        				download http://www.cmake.org/files/v3.1/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
-        				tar xvzf cmake-$CMAKE_VERSION.tar.gz
-        			fi
-        			cd cmake-$CMAKE_VERSION
-        			./configure --prefix=.
-        			make
-        			make install
-        			cd ..
-        		fi
-                CMAKE_EXE="../cmake-$CMAKE_VERSION/bin/cmake"
+                echo "cmake_minimum_required(VERSION 3.1)" > $BUILD_DIR/build_$PLATFORM/test_cmake_version
+		set +e
+                cmake -P $BUILD_DIR/build_$PLATFORM/test_cmake_version &> /dev/null
+		status=$?
+		set -e
+                if [ $status = 0 ]; then
+                    CMAKE_EXE="cmake"
+                fi
             fi
+        fi
+        if [ "$CMAKE_EXE" = "" ]; then
+    		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
+    			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
+    				echo "Downloading cmake"
+    				download http://www.cmake.org/files/v$CMAKE_MAJOR_VERSION/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
+    				tar xvzf cmake-$CMAKE_VERSION.tar.gz
+    			fi
+    			cd cmake-$CMAKE_VERSION
+    			./configure --prefix=. -- -DCMAKE_USE_OPENSSL=ON
+    			make
+    			make install
+    			cd ..
+    		fi
+            CMAKE_EXE="../cmake-$CMAKE_VERSION/bin/cmake"
         fi
 
         echo "Using $CMAKE_EXE"
-
-		if [[ ! -e $BUILD_DIR/build_$PLATFORM ]]; then
-			mkdir -p $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
-		fi
 
         echo $boost_prefix
         if [[ ! -e $boost_prefix/include ]]; then

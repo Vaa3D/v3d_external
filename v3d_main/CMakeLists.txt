@@ -111,7 +111,7 @@ if(USE_FFMPEG)
 
     ExternalProject_Add(
         PKG-CONFIG-0-28
-        URL http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
+        URL https://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
         SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/pkg-config/src
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install
         UPDATE_COMMAND ""
