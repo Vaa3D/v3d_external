@@ -48,7 +48,7 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 double d_thres = 2.0;
 
 //round all neuronal node coordinates, and compute the average min distance matches for all places the neurons go through
-NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2,bool bmenu)
+NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2,bool bmenu, double d_thres_updated)
 {
 	NeuronDistSimple ss;
 
@@ -68,7 +68,8 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
         {
             d_thres = d_thres_new;
         }
-    }
+    }else
+        d_thres = d_thres_updated;
     //===
 
 
