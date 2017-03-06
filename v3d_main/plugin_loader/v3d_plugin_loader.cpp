@@ -1239,6 +1239,15 @@ void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
     }
 }
 
+QString V3d_PluginLoader::getWindowDataTitle(V3dR_MainWindow * w)
+{
+    if (v3d_mainwindow )
+    {
+      return w->getDataTitle();
+    }
+}
+
+
 
 void V3d_PluginLoader::pushObjectIn3DWindow(v3dhandle image_window)
 {
