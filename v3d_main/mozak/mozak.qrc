@@ -9,5 +9,6 @@
         <file>icons/polyline-autoz.png</file>
         <file>icons/retype.png</file>
         <file>icons/split.png</file>
+        <file>icons/overviewMonitor.png</file>
     </qresource>
 </RCC>

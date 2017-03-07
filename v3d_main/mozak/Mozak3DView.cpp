@@ -21,7 +21,9 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
     prevZCutMin = -1;
     prevZCutMax = -1;
     cur_history = -1;
+    currentWriggleFrame = 0;
 	loadingNextImg = false;
+    isWriggling = false;
 	
 	contrastSlider = new QScrollBar(Qt::Vertical);
 	contrastSlider->setRange(-50, 50);
@@ -33,9 +35,19 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
     itm::CSettings::instance()->setTraslY(60); // (100% - this setting) = % of existing view to be translated in Y
 	paint_timer = new QTimer(this);
     QObject::connect(paint_timer, SIGNAL(timeout()), this, SLOT(paintTimerCall()));
-    paint_timer->setInterval(500);
+    paint_timer->setInterval( (int)(500) );
     paint_timer->setSingleShot(false);
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
+
+
+	float total_wriggle_time = 0.7;
+	float total_wriggle_frames = 21;
+    wriggle_timer = new QTimer(this);
+    QObject::connect(wriggle_timer, SIGNAL(timeout()), this, SLOT(wriggleTimerCall()));
+    wriggle_timer->setSingleShot(false);
+    wriggle_timer->setInterval( (int)(1000.0 * total_wriggle_time / total_wriggle_frames) ); // num of rotations per second = 2 / 15;
+    //wriggle_timer->setInterval( 70 );
+    QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 }
 
 teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
@@ -108,6 +120,83 @@ void Mozak3DView::performRedo()
         makeTracedNeuronsEditable();
 	}
     updateUndoLabel();
+}
+
+//The input are integers in [0, TOTAL_WRIGGLE_FRAMES)
+//The outputs are degrees to rotate around the axis, in radians
+GLdouble Mozak3DView::wriggleDegreeFunction(int index){
+    GLdouble degreeToRadian = 3.141569 / 180;
+    GLdouble maxWriggleRadian = 45;
+    maxWriggleRadian *= degreeToRadian;
+    GLdouble input = (GLdouble(index) / (total_wriggle_frames - 1)) * 3.141569; //from 0 to 3.141569
+    GLdouble output = maxWriggleRadian * sin(input * 2);
+    //cout << "Output is " << output << endl;
+    return output;
+}
+
+void Mozak3DView::wriggleTimerCall()
+{
+    //cout << "Wriggle timer call" << endl;
+    if(currentWriggleFrame < total_wriggle_frames){
+
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+        GLdouble u, v, w, a, b, c, theta = wriggleDegreeFunction(currentWriggleFrame);
+        XYZ normalizedUVW = XYZ(curr_renderer->rotateAxisBeginNode - curr_renderer->rotateAxisEndNode);
+        normalize(normalizedUVW);
+        a = curr_renderer->rotateAxisBeginNode.x;
+        b = curr_renderer->rotateAxisBeginNode.y;
+        c = curr_renderer->rotateAxisBeginNode.z;
+        u = normalizedUVW.x;
+        v = -normalizedUVW.y;
+        w = normalizedUVW.z;
+        if(u == 0 && v == 0 && w ==0){
+            return;
+        }
+        GLdouble fixedRadianRotation[16], newMRot[16]; //Construct a new rotation from scratch, this only rotates the identity
+        //Diagonals
+        fixedRadianRotation[0] = (u * u) + (v * v + w * w) * cos(theta);
+        fixedRadianRotation[5] = (v * v) + (u * u + w * w) * cos(theta);
+        fixedRadianRotation[10] = (w * w) + (u * u + v * v) * cos(theta);
+
+        //Non-diagonal non-homogenous
+        fixedRadianRotation[1] = (u * v) * (1 - cos(theta)) - w * sin(theta);
+        fixedRadianRotation[2] = (u * w) * (1 - cos(theta)) + v * sin(theta);
+        fixedRadianRotation[4] = (u * v) * (1 - cos(theta)) + w * sin(theta);
+        fixedRadianRotation[6] = (v * w) * (1 - cos(theta)) - u * sin(theta);
+        fixedRadianRotation[8] = (u * w) * (1 - cos(theta)) - v * sin(theta);
+        fixedRadianRotation[9] = (v * w) * (1 - cos(theta)) + u * sin(theta);
+
+        //Homogenous
+        fixedRadianRotation[3] = (a * (v * v + w * w) - u * (b * v + c * w)) * (1 - cos(theta)) + (b * w - c * v) * sin(theta);
+        fixedRadianRotation[7] = (c * (u * u + w * w) - v * (a * u + c * w)) * (1 - cos(theta)) + (c * u - a * w) * sin(theta);
+        fixedRadianRotation[11] = (c * (u * u + v * v) - w * (a * u + b * c)) * (1 - cos(theta)) + (a * v - b * u) * sin(theta);
+
+        fixedRadianRotation[12] = fixedRadianRotation[13] = fixedRadianRotation[14] = 0;
+        fixedRadianRotation[15] = 1;
+
+        for(int i = 0; i < 16; i++){
+            newMRot[i] = 0;
+        }
+
+        for(int i = 0; i < 4; i++){
+            for(int j = 0; j < 4; j++){
+                for(int x = 0; x < 4; x++){
+                    newMRot[i * 4 + j] += fixedRadianRotation[i * 4 + x] * originalRotationMatrix[x * 4 + j];
+                }
+            }
+        }
+
+        for(int i = 0; i < 16; i++){
+            view3DWidget->mRot[i] = newMRot[i];
+        }
+        view3DWidget->paintGL();
+        ((QWidget *)(curr_renderer->widget))->repaint();
+        currentWriggleFrame++;
+    }else{
+        wriggle_timer->stop();
+        isWriggling = false;
+        currentWriggleFrame = 0;
+    }
 }
 
 void Mozak3DView::paintTimerCall()
@@ -433,9 +522,17 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				updateTypeLabel();
 				break;
 			case Qt::Key_7:
-				curr_renderer->currentTraceType = 7; // custom
+				curr_renderer->currentTraceType = 7; // custom1
                 updateTypeLabel();
 				break;
+            case Qt::Key_8:
+                curr_renderer->currentTraceType = 8; // custom2
+                updateTypeLabel();
+                break;
+            case Qt::Key_9:
+                curr_renderer->currentTraceType = 9; // custom3
+                updateTypeLabel();
+                break;
             case Qt::Key_A:
                 if (!polyLineAutoZButton->isChecked())
 					polyLineAutoZButton->setChecked(true);
@@ -447,13 +544,25 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				if (!deleteSegmentsButton->isChecked())
 					deleteSegmentsButton->setChecked(true);
 				changeMode(Renderer::smDeleteMultiNeurons, false, true);
-				break;
+                break;
+            case Qt::Key_W:{
+                    if(!isWriggling){
+                        wriggle_timer->start();
+                        isWriggling = true;
+                        currentWriggleFrame = 0;
+                        for(int i = 0; i < 16; i++){
+                            originalRotationMatrix[i] = view3DWidget->mRot[i];
+                        }
+                    }
+                }
+
+                break;
             case Qt::Key_J:
 				if (!joinButton->isChecked())
 					joinButton->setChecked(true);
 				changeMode(Renderer::smJoinTwoNodes, false, true);
 				break;
-			case Qt::Key_S:
+            case Qt::Key_S:
 				if (!splitSegmentButton->isChecked())
 					splitSegmentButton->setChecked(true);
 				changeMode(Renderer::smBreakTwoNeurons, false, true);
@@ -492,6 +601,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 }else{
                     curr_renderer->polygonMode = 3;
                 }
+                break;
+            case Qt::Key_V:
+                curr_renderer->colorByTypeOnlyMode = !(curr_renderer->colorByTypeOnlyMode);
                 break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
@@ -721,6 +833,7 @@ void Mozak3DView::show()
     Renderer::defaultSelectMode = Renderer::smCurveTiltedBB_fm_sbbox;
     Renderer_gl1::rightClickMenuDisabled = true;
     curr_renderer->colorByAncestry = true;
+    curr_renderer->colorByTypeOnlyMode = false;
     prevNodeSize = curr_renderer->nodeSize;
     prevRootSize = curr_renderer->rootSize;
     curr_renderer->nodeSize = 5;
@@ -803,6 +916,12 @@ void Mozak3DView::show()
     deleteSegmentsButton->setToolTip("Delete multiple segments with right click stroke");
     deleteSegmentsButton->setCheckable(true);
     connect(deleteSegmentsButton, SIGNAL(toggled(bool)), this, SLOT(deleteSegmentsButtonToggled(bool)));
+
+	overviewMonitorButton = new QToolButton();
+	overviewMonitorButton->setIcon(QIcon(":/mozak/icons/overviewMonitor.png"));
+	overviewMonitorButton->setToolTip("Open Overview window");
+	overviewMonitorButton->setCheckable(true);
+	connect(overviewMonitorButton, SIGNAL(toggled(bool)), this, SLOT(overviewMonitorButtonClicked(bool)));
 	
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);
@@ -824,7 +943,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, deleteSegmentsButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, overviewMonitorButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
     //Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     //curr_renderer->currentTraceType = 3; // dendrite
 	currTypeLabel = new QLabel();
@@ -864,6 +984,9 @@ void Mozak3DView::show()
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	updateTranslateXYArrows();
 	updateRendererParams();
+	overviewTimer = new QTimer;
+	connect(overviewTimer, SIGNAL(timeout()), this,SLOT(overviewSyncOneShot()));// SLOT(timerupdate()));
+	overviewActive = false;
     appendHistory();
     makeTracedNeuronsEditable();
     paint_timer->start();
@@ -903,7 +1026,7 @@ void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
 }
 
 
-const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom" };
+const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom1", "custom2", "custom3" };
 
 void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL that this SLOT could listen to
 {
@@ -1114,6 +1237,83 @@ void Mozak3DView::deleteSegmentsButtonToggled(bool checked)
 	changeMode(Renderer::smDeleteMultiNeurons, false, checked);
 }
 
+void Mozak3DView::overviewMonitorButtonClicked(bool checked){
+	// test mozak autosave path:
+
+	MozakUI* moz = MozakUI::getMozakInstance();
+
+
+
+	qDebug()<<"checked? "<< checked;
+	QList<V3dR_MainWindow*> windowList =	moz->V3D_env->getListAll3DViewers();
+	if (windowList.length()==1){ //there's only one window open: Mozak!
+		V3dR_MainWindow* overviewWindow = moz->V3D_env->createEmpty3DViewer();
+		moz->V3D_env->setWindowDataTitle(overviewWindow, "Overview");
+		overviewTimer->setInterval(1500);
+		overviewTimer->start();
+		overviewActive = true;
+		return;
+	}
+	if (overviewActive){
+		overviewTimer->stop();
+		overviewActive = false;
+	}else{
+		overviewTimer->setInterval(1500);
+		overviewTimer->start();
+		overviewActive = true;
+	}
+}
+
+
+void Mozak3DView::overviewSyncOneShot(){
+
+
+
+	if (overviewActive){
+
+		qDebug()<<"overview active";
+		MozakUI* moz = MozakUI::getMozakInstance();
+
+
+			QList<NeuronTree> *overview_nt_list = moz->V3D_env->getHandleNeuronTrees_Any3DViewer(moz->V3D_env->find3DViewerByName("Overview"));
+
+				NeuronTree testLoad;
+				qDebug()<<"autosave.ano.swc loading!";
+				QFileInfo fInfo = QFileInfo("./autosave.ano.swc");
+				if (fInfo.isReadable()){
+				 testLoad= readSWC_file( "./autosave.ano.swc");// "D:\\mozak_git\\v3d_main\\v3d\\release\\autosave.ano.swc"  );
+				}else{
+					return;}
+
+				if ((testLoad.n>0) && !(moz->V3D_env->find3DViewerByName("Overview")==0)){
+					moz->V3D_env->getHandleNeuronTrees_Any3DViewer(moz->V3D_env->find3DViewerByName("Overview"))->clear();
+					moz->V3D_env->getHandleNeuronTrees_Any3DViewer(moz->V3D_env->find3DViewerByName("Overview"))->push_back(testLoad);
+				}
+              
+
+			if (moz->V3D_env->find3DViewerByName("Overview")){
+
+					moz->V3D_env->update_NeuronBoundingBox(moz->V3D_env->find3DViewerByName("Overview"));
+				}
+			if (moz->V3D_env->find3DViewerByName("Overview")) {
+
+				moz->V3D_env->update_3DViewer(moz->V3D_env->find3DViewerByName("Overview"));
+
+				}else{
+				overviewTimer->stop();
+				overviewActive = false;
+				return;}
+			
+
+			
+		}else{
+			//add handling here
+			qDebug()<<"overview off";
+			return;}
+	
+}
+
+
 void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn)
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
@@ -1123,9 +1323,6 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 	{
         if (prevMode == mode) // no action needed, mode already on
             return;
-        curr_renderer->endSelectMode();
-		curr_renderer->selectMode = mode;
-		curr_renderer->b_addthiscurve = addThisCurve;
 		// Uncheck any other currently checked modes
 		if (mode != Renderer::smCurveEditExtendOneNode && extendButton->isChecked())
 			extendButton->setChecked(false);
@@ -1143,6 +1340,9 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			deleteSegmentsButton->setChecked(false);
         if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
             retypeSegmentsButton->setChecked(false);
+        curr_renderer->endSelectMode();
+        curr_renderer->selectMode = mode;
+        curr_renderer->b_addthiscurve = addThisCurve;
         switch (mode)
 		{
 			case Renderer::smCurveCreate_pointclick:

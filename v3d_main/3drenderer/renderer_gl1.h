@@ -325,8 +325,10 @@ public:
     QHash<V3DLONG, V3DLONG> segmentParentDict;
     QHash<V3DLONG, V3DLONG> segmentLevelDict;
     QList<V3DLONG> loopSegs; // a list of segments involved in a loop
+    QList<V3DLONG> debugSegs; // a list of segments in debug mode
 
     bool colorByAncestry;
+    bool colorByTypeOnlyMode; //This is only checked if colorByAncestry is enabled
     bool setColorAncestryInfo();
     void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
     void setColorByAncestry(NeuronSWC s, time_t seconds);
@@ -570,6 +572,8 @@ private:
 		highlightedEndNode = -1; //Added by ZMS 20151203 highlight final node we are going to extend.
 		selectedStartNode = -1;
         highlightedEndNodeChanged = false;
+        rotateAxisBeginNode = XYZ(0, 0, 1);
+        rotateAxisEndNode = XYZ(0, 0, 0);
 
 		_idep=0;
 		isSimulatedData=false;
@@ -677,6 +681,8 @@ public:
     int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
     V3DLONG highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
     bool highlightedEndNodeChanged;
+    XYZ rotateAxisBeginNode; //Added by ZMS 20160209 for wriggle feature. The first node of the last-drawn segment.
+    XYZ rotateAxisEndNode; //Added by ZMS 20160209 for wriggle feature. The final node of the last-drawn segment.
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
 	void constructLabelfieldSurf(int mesh_method, int mesh_density);

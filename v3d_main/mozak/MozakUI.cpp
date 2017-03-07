@@ -20,6 +20,7 @@ void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
     if (uniqueInstance == 0)
         uniqueInstance = new MozakUI(callback, parent);
     uniqueInstance->reset();
+    uniqueInstance->show();
 
 #ifdef MOZAK_AUTOLOAD_VOLUME_PATH
 	string path = MOZAK_AUTOLOAD_VOLUME_PATH;
@@ -36,8 +37,8 @@ void MozakUI::createInstance(V3DPluginCallback2 *callback, QWidget *parent)
 #endif
 #ifdef MOZAK_HIDE_VAA3D_CONTROLS
 	uniqueInstance->hide();
+	//V3dApplication::deactivateMainWindow();
 #endif
-	V3dApplication::deactivateMainWindow();
 }
 
 MozakUI* MozakUI::getMozakInstance()

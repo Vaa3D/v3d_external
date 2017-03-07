@@ -84,6 +84,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		Image4DSimple* nextImg;
 		QList<CViewInfo*> lowerResViews;
 		bool loadingNextImg;
+		bool overviewActive;
         QToolButton* buttonUndo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
         QToolButton* buttonRedo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
 		QToolButton* invertImageButton;
@@ -95,10 +96,13 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* retypeSegmentsButton;
 		QToolButton* splitSegmentButton;
 		QToolButton* deleteSegmentsButton;
+		QToolButton* overviewMonitorButton;
 		QLabel* currTypeLabel;
 		QLabel* currZoomLabel;
 		QLabel* currResolutionLabel;
         QLabel* currUndoLabel;
+
+		QTimer* overviewTimer;
 
         int prevZCutMin;
         int prevZCutMax;
@@ -240,6 +244,16 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		
 		friend class MozakUI;
 
+        bool isWriggling;
+
+        //By ZMS 20120216
+        GLdouble originalRotationMatrix[16];
+        float total_wriggle_time/* = 0.7*/;
+        float total_wriggle_frames/* = 21*/; //30 fps
+        int currentWriggleFrame;
+        QTimer* wriggle_timer;
+        //End ZMS
+
         QTimer* paint_timer;
         
 		QScrollBar *contrastSlider;
@@ -287,6 +301,10 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void deleteSegmentsButtonToggled(bool checked);
 		void updateZoomLabel(int zr);
         void paintTimerCall();
+        GLdouble wriggleDegreeFunction(int i);
+        void wriggleTimerCall();
+		void overviewMonitorButtonClicked(bool checked);
+		void overviewSyncOneShot();
 		/*********************************************************************************
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/
