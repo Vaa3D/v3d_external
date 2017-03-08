@@ -40,8 +40,8 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 	QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
 
 
-	float total_wriggle_time = 0.7;
-	float total_wriggle_frames = 21;
+	total_wriggle_time = .7;
+	total_wriggle_frames = 30.0;
     wriggle_timer = new QTimer(this);
     QObject::connect(wriggle_timer, SIGNAL(timeout()), this, SLOT(wriggleTimerCall()));
     wriggle_timer->setSingleShot(false);
@@ -130,14 +130,14 @@ GLdouble Mozak3DView::wriggleDegreeFunction(int index){
     maxWriggleRadian *= degreeToRadian;
     GLdouble input = (GLdouble(index) / (total_wriggle_frames - 1)) * 3.141569; //from 0 to 3.141569
     GLdouble output = maxWriggleRadian * sin(input * 2);
-    //cout << "Output is " << output << endl;
     return output;
 }
 
 void Mozak3DView::wriggleTimerCall()
 {
-    //cout << "Wriggle timer call" << endl;
-    if(currentWriggleFrame < total_wriggle_frames){
+
+
+    if((int) currentWriggleFrame < (int) total_wriggle_frames){
 
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
         GLdouble u, v, w, a, b, c, theta = wriggleDegreeFunction(currentWriggleFrame);
@@ -189,6 +189,7 @@ void Mozak3DView::wriggleTimerCall()
         for(int i = 0; i < 16; i++){
             view3DWidget->mRot[i] = newMRot[i];
         }
+		qDebug()<<"should push new mRot to renderer...";
         view3DWidget->paintGL();
         ((QWidget *)(curr_renderer->widget))->repaint();
         currentWriggleFrame++;
@@ -547,13 +548,15 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 break;
             case Qt::Key_W:{
                     if(!isWriggling){
-                        wriggle_timer->start();
-                        isWriggling = true;
-                        currentWriggleFrame = 0;
+
                         for(int i = 0; i < 16; i++){
-                            originalRotationMatrix[i] = view3DWidget->mRot[i];
-                        }
-                    }
+                           originalRotationMatrix[i] = view3DWidget->mRot[i];
+                     }
+						isWriggling = true;
+                        currentWriggleFrame = 0;
+						wriggle_timer->start();
+
+					}
                 }
 
                 break;
