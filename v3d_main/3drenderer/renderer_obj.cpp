@@ -1467,6 +1467,128 @@ const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----
 { 10.608 , 0.0 , 0.0 } // black
 };
 
+void Renderer_gl1::setNeuronColor(NeuronSWC s, time_t seconds){
+	switch (neuronColorMode){
+case 0:	break;
+case 1:
+	glColor3ub(255, 255, 0);
+	setColorByAncestry(s, seconds);
+	break;
+case 2:
+	glColor3ub(255, 255, 0);
+	setNeuronReviewColors(s);
+	}				
+
+
+}
+
+void Renderer_gl1::setNeuronReviewColors(NeuronSWC s){
+	if(s.type == 1){
+		glColor3ub(147, 0, 204);
+	}else if(s.type == 2){ //axon  reddish grey
+		switch(segmentLevelDict.value(s.seg_id)){
+		case -2: //In a loop
+			glColor3ub(127, 0, 0);
+			break;
+		case -1: // orphan segment
+			switch(segmentLengthDict.value(s.seg_id) % 16){
+		case 0: glColor3ub(150, 128, 128); break;
+		case 1: glColor3ub(110, 128, 128); break;
+		case 2: glColor3ub(100, 128, 128); break;
+		case 3: glColor3ub(90, 128, 128); break;
+		case 4: glColor3ub(100, 128, 128); break;
+		case 5: glColor3ub(110, 128, 128); break;
+		case 6: glColor3ub(130, 128, 128); break;
+		case 7: glColor3ub(120, 128, 128); break;
+		case 8: glColor3ub(140, 128, 128); break;
+		case 9: glColor3ub(120, 128, 128); break;
+		case 10: glColor3ub(130, 128, 128); break;
+		case 11: glColor3ub(150, 128, 128); break;
+		case 12: glColor3ub(100, 128, 128); break;
+		case 13: glColor3ub(110, 128, 128); break;
+		case 14: glColor3ub(134, 128, 128); break;
+		case 15: glColor3ub(100, 128, 128); break;
+			}break;
+		case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+		case 7: glColor3ub(150, 128, 128); break;
+		case 6: glColor3ub(110, 128, 128); break;
+		case 5: glColor3ub(120, 128, 128); break;
+		case 4: glColor3ub(135, 128, 128); break;
+		case 3: glColor3ub(130, 128, 128); break;
+		case 2: glColor3ub(145, 128, 128); break;
+		case 1: glColor3ub(100, 128, 128); break;
+		default: glColor3ub(150, 128, 128); break;
+		}
+	}else if(s.type == 3){ //dendrite
+		switch(segmentLevelDict.value(s.seg_id)){
+		case -2: //In a loop
+			glColor3ub(0, 0, 150);
+			break;
+		case -1: //orphan dendrite
+			switch(segmentLengthDict.value(s.seg_id) % 16){
+		case 0: glColor3ub(128, 128, 150); break;
+		case 1: glColor3ub(128, 128, 145); break;
+		case 2: glColor3ub(128, 128, 133); break;
+		case 3: glColor3ub(128, 128, 160); break;
+		case 4: glColor3ub(128, 128, 148); break;
+		case 5: glColor3ub(128, 128, 138); break;
+		case 6: glColor3ub(128, 128, 132); break;
+		case 7: glColor3ub(128, 128, 155); break;
+		case 8: glColor3ub(128, 128, 166); break;
+		case 9: glColor3ub(128, 128, 158); break;
+		case 10: glColor3ub(128, 128, 142); break;
+		case 11: glColor3ub(128, 128, 149); break;
+		case 12: glColor3ub(128, 128, 155); break;
+		case 13: glColor3ub(128, 128, 180); break;
+		case 14: glColor3ub(128, 128, 173); break;
+		case 15: glColor3ub(128, 128, 169); break;
+			}break;
+		case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+		case 7: glColor3ub(128, 128, 155); break;
+		case 6: glColor3ub(128, 128, 145); break;
+		case 5: glColor3ub(128, 128, 135); break;
+		case 4: glColor3ub(128, 128, 130); break;
+		case 3: glColor3ub(128, 128, 165); break;
+		case 2: glColor3ub(128, 128, 140); break;
+		case 1: glColor3ub(128, 128, 175); break;
+		default: glColor3ub(128, 128, 155); break;}
+
+	}else if(s.type == 5){ //TO-REVIEW dendrite (test)
+		switch(segmentLevelDict.value(s.seg_id)){
+		case -2: //In a loop
+			glColor3ub(200, 200, 0);
+			break;
+		case -1: //orphan dendrite
+			glColor3ub(255, 255, 0); 
+			break;        
+		case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+		default: glColor3ub(255, 255, 0); break;}
+
+	}else if(s.type == 6){ //TO-REVIEW axon (test)
+		switch(segmentLevelDict.value(s.seg_id)){
+		case -2: //In a loop
+			glColor3ub(0, 200, 0);
+			break;
+		case -1: //orphan dendrite
+			glColor3ub(0, 255, 0); 
+			break;        
+		case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+		default: glColor3ub(0, 255, 0); break;}
+	}else if(s.type == 7){ //TO-REVIEW untyped (test)
+		switch(segmentLevelDict.value(s.seg_id)){
+		case -2: //In a loop
+			glColor3ub(0, 200, 200);
+			break;
+		case -1: //orphan dendrite
+			glColor3ub(0, 255, 240); 
+			break;        
+		case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+		default: glColor3ub(0, 255, 255); break;}
+	}else{
+		glColor3ub(85, 85, 85); // label all other types as grey
+	}
+}
+
 void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
     if(s.type == 1){
         glColor3ub(147, 0, 204);
@@ -1983,10 +2105,11 @@ void Renderer_gl1::drawNeuronTree(int index)
 				if (length >0)  // branch line
 				{
 					glLineWidth(lineWidth);
-                    if(colorByAncestry){
-                        glColor3ub(255, 255, 0);
-                        setColorByAncestry(S1, seconds);
-                    }
+					setNeuronColor(S1, seconds);
+                    //if(colorByAncestry){
+                     //   glColor3ub(255, 255, 0);
+                     //   setColorByAncestry(S1, seconds);
+                   // }
 					glBegin(GL_LINES);
 					glVertex3f(S0.x, S0.y, S0.z);	glVertex3f(S1.x, S1.y, S1.z);
 					glEnd();
@@ -2024,10 +2147,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				}
 				else if (rootSize)// root point
 				{
-                    if(colorByAncestry){
-                                       glColor3ub(255, 255, 0);
-                                       setColorByAncestry(S1, seconds);
-                    }
+                setNeuronColor(S1,seconds);
 					glPointSize(rootSize);
                     //20151203 ZMS: Highlight selected nodes
                     if((i == highlightedNode || i == selectedStartNode) && 

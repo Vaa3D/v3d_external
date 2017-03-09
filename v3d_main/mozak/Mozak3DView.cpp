@@ -24,7 +24,7 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
     currentWriggleFrame = 0;
 	loadingNextImg = false;
     isWriggling = false;
-	
+	neuronColorMode = 1;
 	contrastSlider = new QScrollBar(Qt::Vertical);
 	contrastSlider->setRange(-50, 50);
 	contrastSlider->setSingleStep(1);
@@ -189,7 +189,7 @@ void Mozak3DView::wriggleTimerCall()
         for(int i = 0; i < 16; i++){
             view3DWidget->mRot[i] = newMRot[i];
         }
-		qDebug()<<"should push new mRot to renderer...";
+
         view3DWidget->paintGL();
         ((QWidget *)(curr_renderer->widget))->repaint();
         currentWriggleFrame++;
@@ -606,7 +606,28 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 }
                 break;
             case Qt::Key_V:
-                curr_renderer->colorByTypeOnlyMode = !(curr_renderer->colorByTypeOnlyMode);
+				neuronColorMode++;
+				neuronColorMode = neuronColorMode%3;
+				updateColorMode(neuronColorMode);
+				// update this hotkey to cycle through multiple colormap modes.  
+				// 0. Vaa3d edit mode (random colors)
+				// 1. Mozak ancestry mode (random colors also showing ancestry)
+				// 2. vaa3d colorscheme with red, blue whatever original types.
+				// 3. new annotation mode where everything is grey/blue except for magenta axon, green dendrite and cyan for undef  segments that need attention during tag-team review
+
+                //curr_renderer->colorByTypeOnlyMode = !(curr_renderer->colorByTypeOnlyMode); //colorByTypeOnly was eliminated before last release from Mozak crew.
+				// 
+				//  PLAN:
+				//   1. add new int neuronColorMode to renderer classes
+				//   2. add set and get methods for neuronColorMode.  
+				//   3 the set method will actually update the renderer:
+				//       a. check input (int input within range of options) and set the neuronColorMode variable
+				//		b.  do whatever time stuff is being used for loop mode
+				//      c. pass conditioned mode and added time to the actual coloring method
+				//   4. coloring method will 
+				//      a. have medium-sized switch...case on neuronColorMode input
+				//      b. 
+				//curr_renderer->colorByAncestry	= !(curr_renderer->colorByAncestry);
                 break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
@@ -1246,12 +1267,15 @@ void Mozak3DView::overviewMonitorButtonClicked(bool checked){
 	MozakUI* moz = MozakUI::getMozakInstance();
 
 
-
 	qDebug()<<"checked? "<< checked;
 	QList<V3dR_MainWindow*> windowList =	moz->V3D_env->getListAll3DViewers();
 	if (windowList.length()==1){ //there's only one window open: Mozak!
 		V3dR_MainWindow* overviewWindow = moz->V3D_env->createEmpty3DViewer();
 		moz->V3D_env->setWindowDataTitle(overviewWindow, "Overview");
+		Renderer_gl2* overview_renderer = (Renderer_gl2*)(overviewWindow->getGLWidget()->getRenderer());
+		overview_renderer->colorByAncestry = true;
+		overview_renderer->setColorAncestryInfo();
+		overview_renderer->neuronColorMode = neuronColorMode;
 		overviewTimer->setInterval(1500);
 		overviewTimer->start();
 		overviewActive = true;
@@ -1314,6 +1338,20 @@ void Mozak3DView::overviewSyncOneShot(){
 			qDebug()<<"overview off";
 			return;}
 	
+}
+
+
+void Mozak3DView::updateColorMode(int colorMode){
+
+		Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+		curr_renderer->neuronColorMode = colorMode;
+		if (overviewActive){
+		MozakUI* moz = MozakUI::getMozakInstance();
+		Renderer_gl2* overview_renderer = (Renderer_gl2*)(moz->V3D_env->find3DViewerByName("Overview")->getGLWidget()->getRenderer());
+		overview_renderer->setColorAncestryInfo();
+
+		overview_renderer->neuronColorMode = colorMode;
+		}
 }
 
 

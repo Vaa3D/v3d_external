@@ -246,6 +246,8 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 
         bool isWriggling;
 
+		int neuronColorMode; // 0: Vaa3d EditNeuron colors;  1: Mozak colorByAncestry; 2: Vaa3d neuron type colors; 3: BRL review colors;
+
         //By ZMS 20120216
         GLdouble originalRotationMatrix[16];
         float total_wriggle_time/* = 0.7*/;
@@ -305,6 +307,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         void wriggleTimerCall();
 		void overviewMonitorButtonClicked(bool checked);
 		void overviewSyncOneShot();
+		void updateColorMode(int colorMode);
 		/*********************************************************************************
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/
