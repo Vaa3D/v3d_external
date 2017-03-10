@@ -4852,7 +4852,6 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
 //-2 Indicates the prescence of a loop
 bool Renderer_gl1::setColorAncestryInfo(){
 
-    cout << "SetColorAncestryInfo" << endl;
     segmentParentDict.clear();
     segmentLevelDict.clear();
     segmentLengthDict.clear();
@@ -4863,7 +4862,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
     PointCloudHash pch; //Hashes the location of the nodes to a list containing all nodes occupying the same point
     QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //A list of segments, hases seg_id  to doubly-linked segments
 
-   // cout << "neuron tree size from find" << listNeuronTree.length() << endl;
+
 
     QList<NeuronTree>::iterator it;
     if(listNeuronTree.length() > 0){
@@ -4876,7 +4875,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
         for (int i=0; i<p_listneuron.size(); i++)
         {
             NeuronSWC node = p_listneuron.at(i);
-            //cout << "SegId = " << node.n << endl;
+
             if(node.type == 1){ //This is a soma
                 somas.push_back(node);
             }
@@ -4905,8 +4904,8 @@ bool Renderer_gl1::setColorAncestryInfo(){
 
     //If fringe not empty, then we insert all the points connected to the soma into
     //the fringe and do depth-first traversal around the entire neuron tree, in addition marking the soma as visited
-    if(somas.length() != 0){
-        //cout << "soma not empty" << endl;
+	if(somas.length() != 0){
+
         segmentParentDict.insert(somas.at(0).seg_id, somas.at(0).seg_id); //If a segment's parent is itself, then its the soma
         segmentLevelDict.insert(somas.at(0).seg_id, 0); //Soma has level 0
 
@@ -4936,7 +4935,7 @@ bool Renderer_gl1::setColorAncestryInfo(){
                 }
             }
         }
-    }
+	}
 
     while(!f.isEmpty()){
 
@@ -5061,10 +5060,6 @@ bool Renderer_gl1::setColorAncestryInfo(){
         segmentLevelDict.insert(*iter, -2);
     }
 
-    QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator dit;
-    for (dit = (dict_dlnh.begin()); dit != (dict_dlnh.end()); ++dit){
-        delete (dit.value());
-    }
 
     //For debugging
 
@@ -5075,11 +5070,16 @@ bool Renderer_gl1::setColorAncestryInfo(){
         cout << "parent value" << i.value() << endl;
     }
 
+	QHash<V3DLONG, V3DLONG>::iterator i;
     for (i = segmentLevelDict.begin(); i != segmentLevelDict.end(); ++i){
-        cout << "level key" << i.key() << endl;
-        cout << "level value" << i.value() << endl;
+        cout << "level key " << i.key() << endl;
+        cout << "level value " << i.value() << endl;
     }
-    */
+        QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator dit;
+    for (dit = (dict_dlnh.begin()); dit != (dict_dlnh.end()); ++dit){
+        delete (dit.value());
+    }
+	*/
     //We're done.
     return true;
 }

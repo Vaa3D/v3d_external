@@ -523,15 +523,15 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				updateTypeLabel();
 				break;
 			case Qt::Key_7:
-				curr_renderer->currentTraceType = 7; // custom1
+				curr_renderer->currentTraceType = 7; // FixIt! Axon
                 updateTypeLabel();
 				break;
             case Qt::Key_8:
-                curr_renderer->currentTraceType = 8; // custom2
+                curr_renderer->currentTraceType = 8; // FixIt! Dendrite
                 updateTypeLabel();
                 break;
             case Qt::Key_9:
-                curr_renderer->currentTraceType = 9; // custom3
+                curr_renderer->currentTraceType = 9; // FixIt! Unknown
                 updateTypeLabel();
                 break;
             case Qt::Key_A:
@@ -609,25 +609,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				neuronColorMode++;
 				neuronColorMode = neuronColorMode%3;
 				updateColorMode(neuronColorMode);
-				// update this hotkey to cycle through multiple colormap modes.  
-				// 0. Vaa3d edit mode (random colors)
-				// 1. Mozak ancestry mode (random colors also showing ancestry)
-				// 2. vaa3d colorscheme with red, blue whatever original types.
-				// 3. new annotation mode where everything is grey/blue except for magenta axon, green dendrite and cyan for undef  segments that need attention during tag-team review
-
                 //curr_renderer->colorByTypeOnlyMode = !(curr_renderer->colorByTypeOnlyMode); //colorByTypeOnly was eliminated before last release from Mozak crew.
-				// 
-				//  PLAN:
-				//   1. add new int neuronColorMode to renderer classes
-				//   2. add set and get methods for neuronColorMode.  
-				//   3 the set method will actually update the renderer:
-				//       a. check input (int input within range of options) and set the neuronColorMode variable
-				//		b.  do whatever time stuff is being used for loop mode
-				//      c. pass conditioned mode and added time to the actual coloring method
-				//   4. coloring method will 
-				//      a. have medium-sized switch...case on neuronColorMode input
-				//      b. 
-				//curr_renderer->colorByAncestry	= !(curr_renderer->colorByAncestry);
+	
                 break;
             case Qt::Key_E:
                 //This is a very unfortunate workaround to solve an issue where the cursor move calls
@@ -969,8 +952,7 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, overviewMonitorButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-    //Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-    //curr_renderer->currentTraceType = 3; // dendrite
+
 	currTypeLabel = new QLabel();
 	updateTypeLabel();
 	currTypeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -1050,20 +1032,22 @@ void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
 }
 
 
-const char *typeNames[] = { "undef", "soma", "axon", "dendrite", "apic den", "fork pt", "end pt", "custom1", "custom2", "custom3" };
+const char *typeNamesRow1[] = { "??", "soma", "axon", "dendrite", "apical", "fork", "end", "FixIt!", "FixIt!", "FixIt! " };
+const char *typeNamesRow2[] = { " ", " ", " ", " ", "dendrite", "point", "point", "Axon", "dendrite", " ?? " };
 
 void Mozak3DView::updateTypeLabel() // TODO: make any type changes emit a SIGNAL that this SLOT could listen to
 {
 	int initialTraceType = 3;
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	if (curr_renderer) {
-        if (curr_renderer->highlightedNodeType >= 0)
-            initialTraceType = curr_renderer->highlightedNodeType;
+		if (curr_renderer->highlightedNodeType >= 0)
+			initialTraceType = curr_renderer->highlightedNodeType;
 		else
-            initialTraceType = curr_renderer->currentTraceType;
-    }
-	if (currTypeLabel)
-		currTypeLabel->setText(itm::strprintf("Type:\n%s", typeNames[initialTraceType]).c_str());
+			initialTraceType = curr_renderer->currentTraceType;
+	}
+	if (currTypeLabel){
+		currTypeLabel->setText(QString("Type:\n").append(typeNamesRow1[initialTraceType]).append("\n").append(typeNamesRow2[initialTraceType]));
+	}
 }
 
 void Mozak3DView::updateZoomLabel(int zr)
@@ -1309,12 +1293,31 @@ void Mozak3DView::overviewSyncOneShot(){
 				QFileInfo fInfo = QFileInfo("./autosave.ano.swc");
 				if (fInfo.isReadable()){
 				 testLoad= readSWC_file( "./autosave.ano.swc");// "D:\\mozak_git\\v3d_main\\v3d\\release\\autosave.ano.swc"  );
+				 qDebug()<<"testLoad ORIGINAL  info : "<< testLoad.n<<" "<<testLoad.listNeuron.length();
+				 testLoad.editable = true;
+				 V_NeuronSWC_list tList = NeuronTree__2__V_NeuronSWC_list(testLoad);
+				 //tList.decompose(); 
+				 //tList.merge();
+				 testLoad = V_NeuronSWC_list__2__NeuronTree(tList);
+				 qDebug()<<"testLoad info : "<< testLoad.n<<" "<<testLoad.listNeuron.length();
+				 
 				}else{
 					return;}
 
-				if ((testLoad.n>0) && !(moz->V3D_env->find3DViewerByName("Overview")==0)){
+				if ( !(moz->V3D_env->find3DViewerByName("Overview")==0)){  // formerly checked for  (testLoad.n>0) &&   but V_NeuronSWC_list_2_neuronTree sets NeuronTree.n=-1 for output. 
 					moz->V3D_env->getHandleNeuronTrees_Any3DViewer(moz->V3D_env->find3DViewerByName("Overview"))->clear();
 					moz->V3D_env->getHandleNeuronTrees_Any3DViewer(moz->V3D_env->find3DViewerByName("Overview"))->push_back(testLoad);
+
+					Renderer_gl2* overview_renderer = (Renderer_gl2*)(moz->V3D_env->find3DViewerByName("Overview")->getGLWidget()->getRenderer());
+					int sz = overview_renderer->listNeuronTree.size();
+						for (int i=0; i<sz; i++)
+							{
+								overview_renderer->listNeuronTree[i].editable = true;
+							}
+			
+					overview_renderer->setColorAncestryInfo();
+					overview_renderer->neuronColorMode = neuronColorMode;
+
 				}
               
 
