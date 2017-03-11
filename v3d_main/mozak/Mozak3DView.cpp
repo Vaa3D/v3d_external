@@ -349,24 +349,55 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		if (currentMode == Renderer::smCurveCreate_pointclick || currentMode == Renderer::smCurveCreate_pointclickAutoZ)
 		{
 			// If polyline mode(s), use mouse wheel to change the current z-slice (and restrict to one or NUM_POLY_AUTO_Z_PLANES)
+		
+			int zoff = (currentMode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
+			int volumeDelta = 1;
 			int prevVal = (window3D->zcminSlider->value() + window3D->zcmaxSlider->value()) / 2;
-            int zoff = (currentMode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
+			float zSliderScaleFactor = ((float)(window3D->zSminSlider->maximum()- window3D->zSminSlider->minimum()+1))/((float)(window3D->zcminSlider->maximum()-window3D->zcminSlider->minimum()+1));
+			qDebug()<<" zSliderScaleFactor: "<<zSliderScaleFactor;
+			qDebug()<<" prevVal : "<<prevVal;
+			qDebug()<<" vol max, minimum " <<window3D->zcminSlider->maximum()<<", "<<window3D->zcminSlider->minimum();
+			qDebug()<<" S max, minimum " <<window3D->zSminSlider->maximum()<<", "<<window3D->zSminSlider->minimum();		
+			
+
+
+			// this is doing what I want it to with the sliders, it's just that the sliders are fundamentally different. it's stupid.
+			// first, the sliders are scaled differently. the surface slider is "0 to 200" regardless of input volume size
+			// second, sometimes the z range for the vector objects spans the entire slider range, other times it doesn't. 
+			// maybe the solution is to just set the min and max myself upon stack loading...
+
+			int volumeMinSliderUp = prevVal - zoff + volumeDelta;
+			int volumeMaxSliderUp = prevVal + zoff + volumeDelta;
+			int volumeMinSliderDown = prevVal - zoff - volumeDelta;
+			int volumeMaxSliderDown = prevVal + zoff - volumeDelta;
+			int surfaceMinSliderUp = (int) (zSliderScaleFactor * (float)volumeMinSliderUp -1.0);
+			int surfaceMaxSliderUp = (int) (zSliderScaleFactor * (float)volumeMaxSliderUp +1.0);
+			int surfaceMinSliderDown = (int) (zSliderScaleFactor * (float)volumeMinSliderDown  -1.0);
+			int surfaceMaxSliderDown = (int) (zSliderScaleFactor * (float)volumeMaxSliderDown  +1.0);
+
+
+			qDebug()<<"[vmUp vMUp vmD vMD smUp sMUp smD sMD] = ["<< volumeMinSliderUp <<" "<< volumeMaxSliderUp<<" "<<volumeMinSliderDown <<" "<< volumeMaxSliderDown <<" "<<
+				surfaceMinSliderUp <<" "<< surfaceMaxSliderUp<<" "<< surfaceMinSliderDown<<" "<<surfaceMaxSliderDown <<" ]";
             if (wheelEvt->delta() > 0)
 			{
-                if (prevVal - zoff + 1 >= window3D->zcminSlider->minimum() && 
-                    prevVal + zoff + 1 <= window3D->zcmaxSlider->maximum())
+                if (volumeMinSliderUp >= window3D->zcminSlider->minimum() && 
+                    volumeMaxSliderUp <= window3D->zcmaxSlider->maximum())
                 {
-				    window3D->zcminSlider->setValue(prevVal - zoff + 1);
-				    window3D->zcmaxSlider->setValue(prevVal + zoff + 1);
+				    window3D->zcminSlider->setValue(volumeMinSliderUp);
+				    window3D->zcmaxSlider->setValue(volumeMaxSliderUp);
+				    window3D->zSminSlider->setValue(surfaceMinSliderUp);
+				    window3D->zSmaxSlider->setValue(surfaceMaxSliderUp);
                 }
 			}
 			else
 			{
-                if (prevVal - zoff - 1 >= window3D->zcminSlider->minimum() && 
-                    prevVal + zoff - 1 <= window3D->zcmaxSlider->maximum())
+                if (volumeMinSliderDown >= window3D->zcminSlider->minimum() && 
+                    volumeMinSliderUp <= window3D->zcmaxSlider->maximum())
                 {
-				    window3D->zcminSlider->setValue(prevVal - zoff - 1);
-				    window3D->zcmaxSlider->setValue(prevVal + zoff - 1);
+				    window3D->zcminSlider->setValue(volumeMinSliderDown);
+				    window3D->zcmaxSlider->setValue(volumeMaxSliderDown);
+					window3D->zSminSlider->setValue(surfaceMinSliderDown);
+				    window3D->zSmaxSlider->setValue(surfaceMaxSliderDown);
                 }
 			}
 		}
@@ -1407,6 +1438,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 				// TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
 				window3D->zcminSlider->setValue(centZ - zoff);
 				window3D->zcmaxSlider->setValue(centZ + zoff);
+
+				
 			}
 			break;
             case Renderer::smJoinTwoNodes:

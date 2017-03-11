@@ -464,6 +464,8 @@ void V3dR_MainWindow::createControlWidgets()
 		zSminSlider = createCutPlaneSlider(CLIP_RANGE);
 		zSmaxSlider = createCutPlaneSlider(CLIP_RANGE);
 
+
+
 		cutPlaneRgnLayout[i] = new QGridLayout(cutPlaneGroup[i]);
 
 		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-min"), 1, 0, 1, 5);
@@ -665,7 +667,7 @@ void V3dR_MainWindow::createControlWidgets()
 	SliderTipFilter *CsliderTip = new SliderTipFilter(this, "", "%", 0);
 	transparentSlider->installEventFilter(CsliderTip);
 
-	SliderTipFilter *SsliderTip = new SliderTipFilter(this, "", "%", -100);
+	SliderTipFilter *SsliderTip = new SliderTipFilter(this, "", "%", 0);
 	fcutSlider->installEventFilter(SsliderTip);
 	fCSSlider->installEventFilter(SsliderTip);
 	xSminSlider->installEventFilter(SsliderTip);

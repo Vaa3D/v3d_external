@@ -1554,7 +1554,7 @@ void Renderer_gl1::setNeuronReviewColors(NeuronSWC s){
 		default: glColor3ub(128, 128, 140); break;}
 
     }else if(s.type == 7){ // FixIt!  Axon
-        glColor3ub(255, 0, 255); //magenta
+        glColor3ub(0, 255, 255); //cyan
         
 
         
@@ -1574,7 +1574,7 @@ void Renderer_gl1::setNeuronReviewColors(NeuronSWC s){
 }
 
 void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
-    if(s.type == 1){ // unknown type
+    if(s.type == 1){ // ?? type
         glColor3ub(147, 0, 204);
     }else if(s.type == 2){ //axon
         switch(segmentLevelDict.value(s.seg_id)){
@@ -1588,13 +1588,13 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
             switch(segmentLengthDict.value(s.seg_id) % 16){
             case 0: glColor3ub(233, 100, 22); break;
             case 1: glColor3ub(250, 128, 14); break;
-            case 2: glColor3ub(255, 60, 22); break;
+            case 2: glColor3ub(240, 60, 22); break;
             case 3: glColor3ub(255, 65, 0); break;
-            case 4: glColor3ub(255, 40, 0); break;
+            case 4: glColor3ub(240, 40, 0); break;
             case 5: glColor3ub(255, 127, 80); break;
             case 6: glColor3ub(240, 128, 28); break;
-            case 7: glColor3ub(255, 99, 71); break;
-            case 8: glColor3ub(255, 69, 0); break;
+            case 7: glColor3ub(235, 99, 71); break;
+            case 8: glColor3ub(225, 69, 0); break;
             case 9: glColor3ub(255, 0, 0); break;
             case 10: glColor3ub(188, 43, 43); break;
             case 11: glColor3ub(205, 192, 92); break;
@@ -1621,37 +1621,37 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
             else
                 glColor3ub(0, 0, 127);
             break;
-        case -1: //Free-randing, try to pick a random-shade of red that does not depend on VOI
+        case -1: //Free-randing, try to pick a random-shade of blue that does not depend on VOI
             switch(segmentLengthDict.value(s.seg_id) % 16){
             case 0: glColor3ub(0, 0, 128); break;
-            case 1: glColor3ub(100, 149, 237); break;
+            case 1: glColor3ub(100, 149, 200); break;
             case 2: glColor3ub(72, 61, 139); break;
             case 3: glColor3ub(106, 90, 205); break;
             case 4: glColor3ub(132, 112, 255); break;
             case 5: glColor3ub(0, 0, 205); break;
             case 6: glColor3ub(65, 105, 225); break;
-            case 7: glColor3ub(0, 0, 255); break;
+            case 7: glColor3ub(0, 0, 245); break;
             case 8: glColor3ub(30, 144, 255); break;
-            case 9: glColor3ub(0, 191, 255); break;
-            case 10: glColor3ub(135, 206, 250); break;
+            case 9: glColor3ub(10, 100, 235); break;
+            case 10: glColor3ub(95, 170, 250); break;
             case 11: glColor3ub(70, 130, 180); break;
             case 12: glColor3ub(176, 196, 222); break;
             case 13: glColor3ub(173, 216, 230); break;
-            case 14: glColor3ub(0, 206, 209); break;
+            case 14: glColor3ub(0, 16, 209); break;
             case 15: glColor3ub(95, 158, 160); break;
             }break;
         case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
         case 7: glColor3ub(19, 0, 90); break;
         case 6: glColor3ub(42, 0, 136); break;
         case 5: glColor3ub(0, 64, 152); break;
-        case 4: glColor3ub(0, 121, 172); break;
-        case 3: glColor3ub(0, 160, 175); break;
+        case 4: glColor3ub(0, 101, 172); break;
+        case 3: glColor3ub(50, 10, 175); break;
         case 2: glColor3ub(0, 243, 180); break;
-        case 1: glColor3ub(0, 255, 255); break;
-        default: glColor3ub(0, 55, 255); break;
+        case 1: glColor3ub(10, 25, 255); break;
+        default: glColor3ub(20, 55, 240); break;
         }
     }else if(s.type == 4){  // apical dendrite
-        glColor3ub(125, 158, 192); //sgl lightblue
+        glColor3ub(255, 0, 200); //pink
         switch(segmentLevelDict.value(s.seg_id)){
             case -2: //In a loop
                 if (seconds % 2 == 1)
@@ -1675,7 +1675,7 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
                 break;
         }
     }else if(s.type == 7){ // FixIt!  Axon
-        glColor3ub(255, 0, 255); //magenta
+        glColor3ub(0, 255, 255); //cyan
         switch(segmentLevelDict.value(s.seg_id)){
             case -2: //In a loop
                 if (seconds % 2 == 1)
