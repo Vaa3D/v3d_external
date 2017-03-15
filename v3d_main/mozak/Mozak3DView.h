@@ -97,6 +97,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* splitSegmentButton;
 		QToolButton* deleteSegmentsButton;
 		QToolButton* overviewMonitorButton;
+		QToolButton* zLockButton;
 		QLabel* currTypeLabel;
 		QLabel* currZoomLabel;
 		QLabel* currResolutionLabel;
@@ -110,6 +111,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         int prevNodeSize;
         int prevRootSize;
 
+		int extraSurfaceOffset;
         QList <NeuronTree> undoRedoHistory;
         static const int MAX_history = 20;
 	    int cur_history;
@@ -301,11 +303,16 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void retypeSegmentsButtonToggled(bool checked);
 		void splitSegmentButtonToggled(bool checked);
 		void deleteSegmentsButtonToggled(bool checked);
+		void zLockButtonClicked(bool checked);
+		void overviewMonitorButtonClicked(bool checked);
+
+		void setZSurfaceLimitValues(int ignore);
+
 		void updateZoomLabel(int zr);
         void paintTimerCall();
         GLdouble wriggleDegreeFunction(int i);
         void wriggleTimerCall();
-		void overviewMonitorButtonClicked(bool checked);
+	
 		void overviewSyncOneShot();
 		void updateColorMode(int colorMode);
 		/*********************************************************************************

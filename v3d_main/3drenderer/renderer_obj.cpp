@@ -958,7 +958,21 @@ void Renderer_gl1::loadNeuronTree(const QString& filename)
     }
     updateNeuronBoundingBox();
 }
-void Renderer_gl1::updateNeuronBoundingBox()
+
+void Renderer_gl1::setBBZ(float zMinIn, float zMaxIn){
+	zMin = zMinIn;
+	zMax = zMaxIn;
+	updateNeuronBoundingBox();
+	updateBoundingBox();
+}
+
+void Renderer_gl1::setBBZcutFlag(bool cuttingZ){
+	this->cuttingZ = cuttingZ;
+	updateNeuronBoundingBox();
+	updateBoundingBox();
+}
+
+void Renderer_gl1::updateNeuronBoundingBoxWithZCut(float zMin, float zMax)
 {
     swcBB = NULL_BoundingBox;
     foreach(NeuronTree SS, listNeuronTree)
@@ -972,7 +986,29 @@ void Renderer_gl1::updateNeuronBoundingBox()
 			swcBB.expand(BoundingBox(XYZ(S)-d, XYZ(S)+d));
 		}
     }
+	swcBB.z0= zMin;
+	swcBB.z1 =zMax;
 }
+
+void Renderer_gl1::updateNeuronBoundingBox()
+{
+	if ((cuttingZ) && (zMin!=-1)){	updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
+
+    swcBB = NULL_BoundingBox;
+    foreach(NeuronTree SS, listNeuronTree)
+    //for(int i=0; i<listNeuronTree.size(); i++)
+    { //const QList<NeuronSWC> & listNeuron = listNeuronTree.at(i).listNeuron;
+    	foreach(NeuronSWC S, SS.listNeuron)
+    	//for (int j=0; j<listNeuron.size(); j++)
+ 		{ //const NeuronSWC & S = listNeuron.at(j);
+			//swcBB.expand(XYZ(S));
+			float d = S.r *2;
+			swcBB.expand(BoundingBox(XYZ(S)-d, XYZ(S)+d));
+		}
+    }
+}
+
+
 #define CURVE_NAME "curve_segment"
 #define CURVE_FILE "curve_segment"
 void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)

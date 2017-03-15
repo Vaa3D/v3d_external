@@ -10,5 +10,6 @@
         <file>icons/retype.png</file>
         <file>icons/split.png</file>
         <file>icons/overviewMonitor.png</file>
+      <file>icons/z-lock.png</file>
     </qresource>
 </RCC>

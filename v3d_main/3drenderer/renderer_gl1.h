@@ -334,7 +334,11 @@ public:
     void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
     void setColorByAncestry(NeuronSWC s, time_t seconds); // colorByAncestry mode
     // end ZMS
-
+	bool cuttingZ;
+	void setBBZcutFlag(bool cuttingZ);
+	void updateNeuronBoundingBoxWithZCut(float zMin, float zMax);
+	void setBBZ(float zMinIn, float zMaxIn);
+	float zMin, zMax;
 
 	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
 	// this will call setColorByAncestry if needed.
@@ -622,6 +626,9 @@ private:
           b_editDroppedNeuron = false; //20150527, PHC
 		currentTraceType=3;
 		useCurrentTraceTypeForRetyping = false;
+		cuttingZ = false;
+		zMin =-1.0;
+		zMax = 1.0;
      }
 
 
