@@ -353,7 +353,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			int zoff = (currentMode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
 			int volumeDelta = 1;
 			int prevVal = (window3D->zcminSlider->value() + window3D->zcmaxSlider->value()) / 2;
-			float zSliderScaleFactor = ((float)(window3D->zSminSlider->maximum()- window3D->zSminSlider->minimum()+1))/((float)(window3D->zcminSlider->maximum()-window3D->zcminSlider->minimum()+1));
+			float zSliderScaleFactor = ((float)(window3D->zSminSlider->maximum()- window3D->zSminSlider->minimum()+1))/((float)(window3D->zcminSlider->maximum()-window3D->zcminSlider->minimum()+1-zoff));
 			qDebug()<<" zSliderScaleFactor: "<<zSliderScaleFactor;
 			qDebug()<<" prevVal : "<<prevVal;
 			qDebug()<<" vol max, minimum " <<window3D->zcminSlider->maximum()<<", "<<window3D->zcminSlider->minimum();
@@ -385,8 +385,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 {
 				    window3D->zcminSlider->setValue(volumeMinSliderUp);
 				    window3D->zcmaxSlider->setValue(volumeMaxSliderUp);
-				    window3D->zSminSlider->setValue(surfaceMinSliderUp);
-				    window3D->zSmaxSlider->setValue(surfaceMaxSliderUp);
+				  //  window3D->zSminSlider->setValue(surfaceMinSliderUp);
+				  //  window3D->zSmaxSlider->setValue(surfaceMaxSliderUp);
                 }
 			}
 			else
@@ -396,8 +396,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 {
 				    window3D->zcminSlider->setValue(volumeMinSliderDown);
 				    window3D->zcmaxSlider->setValue(volumeMaxSliderDown);
-					window3D->zSminSlider->setValue(surfaceMinSliderDown);
-				    window3D->zSmaxSlider->setValue(surfaceMaxSliderDown);
+				//	window3D->zSminSlider->setValue(surfaceMinSliderDown);
+				   // window3D->zSmaxSlider->setValue(surfaceMaxSliderDown);
                 }
 			}
 		}
@@ -929,13 +929,13 @@ void Mozak3DView::show()
 	polyLineButton->setIcon(QIcon(":/mozak/icons/polyline.png"));
     polyLineButton->setToolTip("Series of right-clicks to define a 3D polyline (Esc to finish)");
     polyLineButton->setCheckable(true);
-    connect(polyLineButton, SIGNAL(toggled(bool)), this, SLOT(polyLineButtonToggled(bool)));
+    connect(polyLineButton, SIGNAL(clicked(bool)), this, SLOT(polyLineButtonToggled(bool))); // this should only emit when the button is clicked, not when the value is changed programatically (e.g. by hotkey, which changes the mode itself)
 
 	polyLineAutoZButton = new QToolButton();
 	polyLineAutoZButton->setIcon(QIcon(":/mozak/icons/polyline-autoz.png"));
     polyLineAutoZButton->setToolTip("Series of right-clicks to define a 3D polyline - Auto Z select (Esc to finish)");
     polyLineAutoZButton->setCheckable(true);
-    connect(polyLineAutoZButton, SIGNAL(toggled(bool)), this, SLOT(polyLineAutoZButtonToggled(bool)));
+    connect(polyLineAutoZButton, SIGNAL(clicked(bool)), this, SLOT(polyLineAutoZButtonToggled(bool)));
 
 	retypeSegmentsButton = new QToolButton();
 	retypeSegmentsButton->setIcon(QIcon(":/mozak/icons/retype.png"));
