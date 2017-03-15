@@ -353,6 +353,8 @@ QGradientStops GradientEditor::updateAlphaStops()
 
 static void set_shade_points(const QPolygonF &points, ShadeWidget *shade)
 {
+    if (!shade || points.size()<=0)
+        return;
     shade->hoverPoints()->setPoints(points);
     shade->hoverPoints()->setPointLock(0, HoverPoints::LockToLeft);
     shade->hoverPoints()->setPointLock(points.size()-1, HoverPoints::LockToRight);
