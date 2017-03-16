@@ -3131,74 +3131,88 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
 	//v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
-    const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
+	const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
 
-    // contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
-    bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+	// contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
+	bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
-    // contour 2 polygon
-    QPolygon poly;
-    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
-        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
-    
-    const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
-    for (V3DLONG s=0; s<nsegs; s++)
-    {
-        if (s >= curImg->tracedNeuron.seg.size())
-        {
-            qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
-            break;
-        }
-        if (curImg->tracedNeuron.seg[s].to_be_deleted)
-            continue;
-        V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(s);
-        const V3DLONG nrows = this_seg.row.size();
-        for (V3DLONG i=0;i<nrows;i++)
-        {
-            if (curImg->tracedNeuron.seg[s].to_be_deleted)
-                break;
-            GLdouble px, py, pz, ix, iy, iz;
-            V_NeuronSWC_unit this_unit = this_seg.row.at(i);
-            ix = this_unit.x;
-            iy = this_unit.y;
-            iz = this_unit.z;
-            if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
-            {
-                py = viewport[3]-py; //the Y axis is reversed
-                QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+	// contour 2 polygon
+	QPolygon poly;
+	for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+		poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
 
-                if(contour_mode)
-                {
-                    if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
-                        curImg->tracedNeuron.seg[s].to_be_deleted = true;
-                }
-                else
-                {
-                    for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
-                    {
-                        QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                        if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )
-                        {
-                            if (s >= curImg->tracedNeuron.seg.size())
-                            {
-                                qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
-                                break;
-                            }
-                            curImg->tracedNeuron.seg[s].to_be_deleted = true;
-                            break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                        }
-                    }
-                }
-            }
-        }
-    }
-    curImg->update_3drenderer_neuron_view(w, this);
-    curImg->proj_trace_history_append();
+	const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
+	for (V3DLONG s=0; s<nsegs; s++)
+	{
+		if (s >= curImg->tracedNeuron.seg.size())
+		{
+			qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
+			break;
+		}
+		if (curImg->tracedNeuron.seg[s].to_be_deleted)
+			continue;
+
+
+		V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(s);
+		const V3DLONG nrows = this_seg.row.size();
+
+
+		bool allUnitsOutsideZCut = false;
+		for (V3DLONG i=0;i<nrows;i++)
+		{
+
+			GLdouble px, py, pz, ix, iy, iz;
+			V_NeuronSWC_unit this_unit = this_seg.row.at(i);
+			ix = this_unit.x;
+			iy = this_unit.y;
+			iz = this_unit.z;
+			allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
+			
+			if (allUnitsOutsideZCut)			qDebug()<<"s ="<<s<< "; iz = "<<(float) iz<<";  zClip0, zClip1 :"<<  this->swcBB.z0 <<" , "<< this->swcBB.z1<<" outside z cut ? "<<allUnitsOutsideZCut;
+
+			if (curImg->tracedNeuron.seg[s].to_be_deleted)
+				break;
+
+
+			if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+			{
+				py = viewport[3]-py; //the Y axis is reversed
+				QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+				if(contour_mode)
+				{
+					if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+						curImg->tracedNeuron.seg[s].to_be_deleted = true;
+				}
+				else
+				{
+					for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+					{
+						QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+						if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )
+						{
+							if (s >= curImg->tracedNeuron.seg.size())
+							{
+								qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
+								break;
+							}
+							curImg->tracedNeuron.seg[s].to_be_deleted = true;
+							break;   // found intersection with neuron segment: no more need to continue on this inner loop
+						}
+					}
+				}
+			}
+		}
+		if (this->cuttingZ)		{
+			curImg->tracedNeuron.seg[s].to_be_deleted = curImg->tracedNeuron.seg[s].to_be_deleted && !allUnitsOutsideZCut;
+		}
+	}
+	curImg->update_3drenderer_neuron_view(w, this);
+	curImg->proj_trace_history_append();
 }
 
 void Renderer_gl1::retypeMultiNeuronsByStroke()
