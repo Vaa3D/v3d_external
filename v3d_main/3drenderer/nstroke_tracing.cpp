@@ -3172,8 +3172,6 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			iz = this_unit.z;
 			allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
 			
-			if (allUnitsOutsideZCut)			qDebug()<<"s ="<<s<< "; iz = "<<(float) iz<<";  zClip0, zClip1 :"<<  this->swcBB.z0 <<" , "<< this->swcBB.z1<<" outside z cut ? "<<allUnitsOutsideZCut;
-
 			if (curImg->tracedNeuron.seg[s].to_be_deleted)
 				break;
 
@@ -3274,19 +3272,22 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
                 continue;
+			bool allUnitsOutsideZCut = false;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
                 iy = p_listneuron->at(i).y;
                 iz = p_listneuron->at(i).z;
+				allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
+
                 if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
                     py = viewport[3]-py; //the Y axis is reversed
                     QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
                     if(contour_mode)
                     {
-                        if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+                        if(   (poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)) && !allUnitsOutsideZCut)
                         {
                             change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
                         }
@@ -3296,8 +3297,9 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                         {
                             QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                            if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )
+                            if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
                             {
+								
                                change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
