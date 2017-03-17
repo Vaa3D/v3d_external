@@ -1496,6 +1496,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 	{
 		// When exiting poly mode, restore all z cuts
 		curr_renderer->setBBZcutFlag(zLockButton->isChecked());
+		prevPolyZCut = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
         window3D->zcminSlider->setValue((prevZCutMin > -1) ? prevZCutMin : window3D->zcminSlider->minimum());
 		window3D->zcmaxSlider->setValue((prevZCutMax > -1) ? prevZCutMax : window3D->zcmaxSlider->maximum());
 	}
