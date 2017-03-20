@@ -388,7 +388,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			else
 			{
                 if (volumeMinSliderDown >= window3D->zcminSlider->minimum() && 
-                    volumeMinSliderUp <= window3D->zcmaxSlider->maximum())
+                    volumeMaxSliderDown <= window3D->zcmaxSlider->maximum())
                 {
 				    window3D->zcminSlider->setValue(volumeMinSliderDown);
 				    window3D->zcmaxSlider->setValue(volumeMaxSliderDown);
@@ -514,9 +514,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	else if (object == view3DWidget && event->type() == QEvent::KeyPress) // intercept keypress events
 	{
 		key_evt = (QKeyEvent*)event;
-		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
+
 		// Implement custom key events
         int keyPressed = key_evt->key();
+		if (key_evt->isAutoRepeat()&&keyPressed!=Qt::Key_A&&keyPressed!=Qt::Key_P) return true; // ignore holding down of key unless it's being used to simply click (or unclick) a QAbstractButton
+
+
 		Renderer::SelectMode newMode;
         bool bAddCurve = true;
 
@@ -563,10 +566,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 updateTypeLabel();
                 break;
             case Qt::Key_A:
-                if (!polyLineAutoZButton->isChecked())
-					polyLineAutoZButton->setChecked(true);
+				polyLineAutoZButton->animateClick();
+				//polyLineAutoZButton->toggle();
+               // if (!polyLineAutoZButton->isChecked())
+				//	polyLineAutoZButton->setChecked(true);
 
-                changeMode(Renderer::smCurveCreate_pointclickAutoZ, true, true);
+//                changeMode(Renderer::smCurveCreate_pointclickAutoZ, true, true);
                 break;
 			case Qt::Key_D:
 				if (!deleteSegmentsButton->isChecked())
@@ -603,9 +608,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				changeMode(Renderer::smRetypeMultiNeurons, false, true);
 				break;
 			case Qt::Key_P:
-				if (!polyLineButton->isChecked())
-					polyLineButton->setChecked(true);
-				changeMode(Renderer::smCurveCreate_pointclick, true, true);
+				polyLineButton->click();
+				//if (!polyLineButton->isChecked())
+				//	polyLineButton->setChecked(true);
+				//changeMode(Renderer::smCurveCreate_pointclick, true, true);
                 break;
             case Qt::Key_Y:
                 if (key_evt->modifiers() & Qt::ControlModifier)
@@ -675,12 +681,12 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_Z:
 				view3DWidget->setThickness(1.0);
 				break;
-			case Qt::Key_A:
+			//case Qt::Key_A:
 			case Qt::Key_C:
 			case Qt::Key_D:
 			case Qt::Key_E:
             case Qt::Key_J:
-			case Qt::Key_P:
+			//case Qt::Key_P:
 			case Qt::Key_R:
 			case Qt::Key_S:
                 // If exiting a mode, change back to default mode
