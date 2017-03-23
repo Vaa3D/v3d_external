@@ -98,7 +98,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* deleteSegmentsButton;
 		QToolButton* overviewMonitorButton;
 		QToolButton* zLockButton;
-		QToolButton* highlightChildrenButton;
+		QToolButton* highlightChildrenButton; // button icon says subtree
 		QLabel* currTypeLabel;
 		QLabel* currZoomLabel;
 		QLabel* currResolutionLabel;
@@ -315,7 +315,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         void wriggleTimerCall();
 	
 		void overviewSyncOneShot();
-		void updateColorMode(int colorMode);
+		void updateColorMode(int colorMode);// 0: Vaa3d EditNeuron colors;  1: Mozak colorByAncestry; 2: Vaa3d neuron type colors; 3: BRL review colors;
 		/*********************************************************************************
         * Receive data (and metadata) from <CVolume> throughout the loading process
         **********************************************************************************/

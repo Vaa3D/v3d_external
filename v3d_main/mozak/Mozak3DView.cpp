@@ -993,7 +993,7 @@ void Mozak3DView::show()
 
 
 	highlightChildrenButton = new QToolButton();
-	highlightChildrenButton->setIcon(QIcon(":/mozak/icons/findKids.png"));
+	highlightChildrenButton->setIcon(QIcon(":/mozak/icons/subtree.png")); 
 	highlightChildrenButton->setToolTip("highlight children of selected segment");
 	highlightChildrenButton->setCheckable(true);
 	connect(highlightChildrenButton,SIGNAL(clicked(bool)), this, SLOT(highlightChildrenButtonClicked(bool)));
