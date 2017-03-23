@@ -324,13 +324,13 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
             }
 		}else if (currentMode == Renderer::smHighlightChildren	)
         {
-			if (curr_renderer->highlightedStartNode == -1)
-            {
+			
+            
                 //Highlight start node
                 curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
                 updatedNodes = true;
-				qDebug()<<"highlightedNode = "<<curr_renderer->highlightedNode;
-            }
+				
+            
 		}
         if (updatedNodes)
         {
@@ -824,7 +824,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 						
 						curr_renderer->addToListOfChildSegs(start_pt_existing.seg_id);
 						//alter behavior here to allow this mode to continue
-				        changeMode(Renderer::defaultSelectMode, true, true);
+				        //changeMode(Renderer::defaultSelectMode, true, true);
                     }
                 }
 			}
@@ -996,7 +996,7 @@ void Mozak3DView::show()
 	highlightChildrenButton->setIcon(QIcon(":/mozak/icons/findKids.png"));
 	highlightChildrenButton->setToolTip("highlight children of selected segment");
 	highlightChildrenButton->setCheckable(true);
-	connect(highlightChildrenButton,SIGNAL(toggled(bool)), this, SLOT(highlightChildrenButtonClicked(bool)));
+	connect(highlightChildrenButton,SIGNAL(clicked(bool)), this, SLOT(highlightChildrenButtonClicked(bool)));
 
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);

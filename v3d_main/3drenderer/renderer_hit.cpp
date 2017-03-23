@@ -4849,51 +4849,41 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
 
 
 void Renderer_gl1::addToListOfChildSegs(V3DLONG segID){
-	//childSegs.clear();
-	qDebug()<<"addToListofChildSegs segID :"<<segID;
-	childSegs.append(segID);
-	qDebug()<<"childSegs length :"<<childSegs.length();
+	childSegs.clear();
 
-
-	// go get this segmentID
 
 	// use the segment parent hash calculated in setColorAncestryInfo...
 
 	if (segmentParentDict.isEmpty()) setColorAncestryInfo();
 
-	// we also have a hash of doubly-linked segments, which might have what I want if it's kept up-to-date
-
-	//dict_dlnh; //A list of segments, hases seg_id  to doubly-linked segments
-	qDebug()<<"dict_dlnh size "<<dict_dlnh.size();
-	bool looking = true;
 	QList<V3DLONG> lookingList;
 	QList<V3DLONG> nextList;
 	lookingList.clear();
+	lookingList.append(segID);
 
-	lookingList.append(dict_dlnh.value(segID)->tail->seg_id);
-	qDebug()<<"segID= "<<segID;
-	qDebug()<<"tail seg_ID = "<<dict_dlnh.value(segID)->tail->seg_id;
-	// this doesn't do what I thought it did.  as far as I can tell, the 'upstream' and 'downstream', 'head' and 'tail' only talk about nodes within the segment.  
-	// so now I either have to look for where those nodes are repeated or make a new list with the info I want or do the thing where I search the entire parent hash every time I go down a level in the tree.
 
-	int depth=0;
-	while (!lookingList.isEmpty() && depth<100){
+// I'm just going to try searching the segmentParentDict every time... we'll see how slow it is.
+	QTime startTime = QTime::currentTime();
+
+	while (!lookingList.isEmpty()){
 		nextList.clear();
 		for (V3DLONG i = 0; i<lookingList.length() ; i++){
 			childSegs.append(lookingList.at(i));
-			if (dict_dlnh.value(lookingList.at(i))->tail->seg_id !=NULL){
-				V3DLONG newSeg=dict_dlnh.value(lookingList.at(i))->tail->seg_id;
-				qDebug()<<"newSeg = "<<newSeg;
-				if (newSeg>0){
-					nextList.append(newSeg);
-				}
-			}
-		}
-		qDebug()<<"childSegs length :"<<childSegs.length();
-		lookingList=nextList;
-		depth++;
-	}
+			
 
+			QHash<V3DLONG, V3DLONG>::const_iterator j = segmentParentDict.constBegin();
+			while (j != segmentParentDict.constEnd()) {
+				if (j.value()==lookingList.at(i)) nextList.append(j.key());
+				++j;
+			}
+
+		}
+		lookingList=nextList;
+
+	}
+	QTime endTime = QTime::currentTime();
+
+	qDebug()<<"elapsed time to find descendents :"<< startTime.msecsTo(endTime); // this is fast enough.
 }
 
 
