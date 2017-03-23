@@ -1509,10 +1509,17 @@ case 0:	break;
 case 1:
 	glColor3ub(255, 255, 0);
 	setColorByAncestry(s, seconds);
+	if (childHighlightMode && !childSegs.contains( s.seg_id)) {
+		glColor3ub(128,128,128);
+	}
+		
 	break;
 case 2:
 	glColor3ub(255, 255, 0);
 	setNeuronReviewColors(s);
+		if (childHighlightMode && !childSegs.contains( s.seg_id)) {
+		glColor3ub(128,128,128);
+	}
 	}				
 
 
@@ -1608,6 +1615,98 @@ void Renderer_gl1::setNeuronReviewColors(NeuronSWC s){
 		glColor3ub(150, 150, 150); // label all other types as grey
 	}
 }
+
+void Renderer_gl1::setHighlightColors(NeuronSWC s){  // currently not used... utility TBD. simple check in setNeuronColor may be enough.
+	if(s.type == 1){ // soma
+		glColor3ub(20, 190, 150);
+	}else if(s.type == 2){ //axon  reddish grey
+		switch(segmentLevelDict.value(s.seg_id)){
+		case -2: //In a loop
+			glColor3ub(127, 0, 0);
+			break;
+		case -1: // orphan segment
+			switch(segmentLengthDict.value(s.seg_id) % 16){
+		case 0: glColor3ub(140, 128, 128); break;
+		case 1: glColor3ub(120, 128, 128); break;
+		case 2: glColor3ub(138, 128, 128); break;
+		case 3: glColor3ub(123, 128, 128); break;
+		case 4: glColor3ub(130, 128, 128); break;
+		case 5: glColor3ub(128, 128, 128); break;
+		case 6: glColor3ub(135, 128, 128); break;
+		case 7: glColor3ub(122, 128, 128); break;
+		case 8: glColor3ub(139, 128, 128); break;
+		case 9: glColor3ub(134, 128, 128); break;
+		case 10: glColor3ub(132, 128, 128); break;
+		case 11: glColor3ub(142, 128, 128); break;
+		case 12: glColor3ub(118, 128, 128); break;
+		case 13: glColor3ub(127, 128, 128); break;
+		case 14: glColor3ub(137, 128, 128); break;
+		case 15: glColor3ub(126, 128, 128); break;
+			}break;
+		case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+		case 1: glColor3ub(120, 128, 128); break;
+		case 2: glColor3ub(138, 128, 128); break;
+		case 3: glColor3ub(123, 128, 128); break;
+		case 4: glColor3ub(130, 128, 128); break;
+		case 5: glColor3ub(128, 128, 128); break;
+		case 6: glColor3ub(135, 128, 128); break;
+		case 7: glColor3ub(122, 128, 128); break;
+		default: glColor3ub(140, 128, 128); break;
+		}
+	}else if(s.type == 3){ //dendrite
+		switch(segmentLevelDict.value(s.seg_id)){
+		case -2: //In a loop
+			glColor3ub(0, 0, 150);
+			break;
+		case -1: //orphan dendrite
+			switch(segmentLengthDict.value(s.seg_id) % 16){
+		case 0: glColor3ub(128, 128, 140); break;
+		case 1: glColor3ub(128, 128, 142); break;
+		case 2: glColor3ub(128, 128, 133); break;
+		case 3: glColor3ub(128, 128, 120); break;
+		case 4: glColor3ub(128, 128, 128); break;
+		case 5: glColor3ub(128, 128, 138); break;
+		case 6: glColor3ub(128, 128, 132); break;
+		case 7: glColor3ub(128, 128, 135); break;
+		case 8: glColor3ub(128, 128, 126); break;
+		case 9: glColor3ub(128, 128, 138); break;
+		case 10: glColor3ub(128, 128, 123); break;
+		case 11: glColor3ub(128, 128, 133); break;
+		case 12: glColor3ub(128, 128, 136); break;
+		case 13: glColor3ub(128, 128, 129); break;
+		case 14: glColor3ub(128, 128, 122); break;
+		case 15: glColor3ub(128, 128, 125); break;
+			}break;
+		case 0: glColor3ub(255, 255, 255); break; //Should be impossible, report error by using white
+		case 1: glColor3ub(128, 128, 142); break;
+		case 2: glColor3ub(128, 128, 133); break;
+		case 3: glColor3ub(128, 128, 120); break;
+		case 4: glColor3ub(128, 128, 128); break;
+		case 5: glColor3ub(128, 128, 138); break;
+		case 6: glColor3ub(128, 128, 132); break;
+		case 7: glColor3ub(128, 128, 135); break;
+		default: glColor3ub(128, 128, 140); break;}
+
+    }else if(s.type == 7){ // FixIt!  Axon
+        glColor3ub(0, 255, 255); //cyan
+        
+
+        
+    }else if(s.type == 8){  // FixIt! Dendrite
+        glColor3ub(0, 255, 0); //green
+       
+
+        
+    }else if(s.type == 9){ // FixIt! ???
+        glColor3ub(255, 200, 0); //orangey yellow?
+       
+        
+
+	}else{
+		glColor3ub(150, 150, 150); // label all other types as grey
+	}
+}
+
 
 void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
     if(s.type == 1){ // ?? type
@@ -2208,10 +2307,11 @@ void Renderer_gl1::drawNeuronTree(int index)
 
 						glPointSize(nodeSize);
                         //20151203 ZMS: Highlight selected nodes
-                        if((i == highlightedNode || i == selectedStartNode) && 
+                        if((i == highlightedNode || i == selectedStartNode || i == highlightedStartNode) && 
                             (selectMode == Renderer::smCurveEditExtendOneNode || 
                             selectMode == Renderer::smCurveEditExtendTwoNode ||
-                            selectMode == Renderer::smJoinTwoNodes)){
+                            selectMode == Renderer::smJoinTwoNodes ||
+							selectMode == Renderer::smHighlightChildren)){
                             if(IS_TRANSPARENT){
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
@@ -2219,7 +2319,8 @@ void Renderer_gl1::drawNeuronTree(int index)
                             glPointSize(max(nodeSize, rootSize) + 2);
                         }
                         if(i == highlightedEndNode && (selectMode == Renderer::smCurveEditExtendTwoNode ||
-                            selectMode == Renderer::smJoinTwoNodes)){
+                            selectMode == Renderer::smJoinTwoNodes ||
+							selectMode == Renderer::smHighlightChildren)){
                             if(IS_TRANSPARENT){
                                 glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                             }
@@ -2240,9 +2341,10 @@ void Renderer_gl1::drawNeuronTree(int index)
                 setNeuronColor(S1,seconds);
 					glPointSize(rootSize);
                     //20151203 ZMS: Highlight selected nodes
-                    if((i == highlightedNode || i == selectedStartNode) && 
+                    if((i == highlightedNode || i == selectedStartNode || i == highlightedStartNode) && 
                         (selectMode == Renderer::smCurveEditExtendOneNode || selectMode == Renderer::smCurveEditExtendTwoNode || 
-                        selectMode == Renderer::smJoinTwoNodes)){
+                        selectMode == Renderer::smJoinTwoNodes ||
+						selectMode == Renderer::smHighlightChildren)){
                         if(IS_TRANSPARENT){
                             glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                         }
@@ -2250,7 +2352,8 @@ void Renderer_gl1::drawNeuronTree(int index)
                         glPointSize(rootSize + 6);
                     }
                     if(i == highlightedEndNode && (selectMode == Renderer::smCurveEditExtendTwoNode ||
-                            selectMode == Renderer::smJoinTwoNodes)){
+                            selectMode == Renderer::smJoinTwoNodes ||
+							selectMode == Renderer::smHighlightChildren)){
                         if(IS_TRANSPARENT){
                             glBlendColorEXT(1, 1, 1, 1); //Highlighted node is never transparent
                         }

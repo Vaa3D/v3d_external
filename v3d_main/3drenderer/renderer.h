@@ -70,6 +70,7 @@ public:
 	enum SelectMode {smObject=0, smMultipleObject,
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
                          smMarkerRefineT, smMarkerRefineC,
+						 smHighlightChildren, // highlight all the children of a selected node BRL 2017.03
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
 					smCurveCreate_pointclickAutoZ,
                       smCurveCreateM,
@@ -662,6 +663,58 @@ template <class T> float sampling3dAllTypesatBounding(T* data, V3DLONG dim1, V3D
 }
 
 
+
+
+//Need a list to store this <- which does it's own initialization upon insert and delete
+//The following classes are data structures used to calculate level information in the neuron tree
+class DoublyLinkedNeuronNode{
+public:
+    DoublyLinkedNeuronNode* upstream;
+    DoublyLinkedNeuronNode* downstream;
+    XYZ position;
+    V3DLONG seg_id;
+    DoublyLinkedNeuronNode(V3DLONG segId, XYZ pos):
+        seg_id(segId),
+        downstream(NULL),
+        upstream(NULL),
+        position(pos)
+        {}
+    bool isHead(){return (upstream == NULL);}
+    bool isTail(){return (downstream == NULL);}
+};
+
+class DoublyLinkedNeuronsList{
+public:
+    int length;
+    DoublyLinkedNeuronNode* head;
+    DoublyLinkedNeuronNode* tail;
+    DoublyLinkedNeuronsList(): head(NULL), tail(NULL), length(0){}
+    void append(V3DLONG segId, XYZ pos){
+        length++;
+        DoublyLinkedNeuronNode* toAdd = new DoublyLinkedNeuronNode(segId, pos);
+        if(head == NULL){
+            head = toAdd;
+            tail = toAdd;
+            toAdd->downstream = NULL;
+            toAdd->upstream = NULL;
+        }else{
+            tail->downstream = toAdd;
+            toAdd->upstream = tail;
+            toAdd->downstream = NULL;
+            tail = toAdd;
+        }
+    }
+    ~DoublyLinkedNeuronsList(){
+        //cout << "calling deleting" << endl;
+        DoublyLinkedNeuronNode* current = head;
+        while( current != NULL ) {
+            //cout << "deleting" << endl;
+            DoublyLinkedNeuronNode* next = current->downstream;
+            delete current;
+            current = next;
+        }
+    }
+};
 
 
 #endif //V3D_RENDERER_H

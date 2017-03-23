@@ -327,6 +327,10 @@ public:
     QList<V3DLONG> loopSegs; // a list of segments involved in a loop
     QList<V3DLONG> debugSegs; // a list of segments in debug mode
 
+	QList<V3DLONG> childSegs; // a list of child segments (for a TBD node)
+	
+	QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //  A list of segments, hases seg_id  to doubly-linked segments
+
     bool colorByAncestry;
     bool colorByTypeOnlyMode; //This is only checked if colorByAncestry is enabled
     bool setColorAncestryInfo();
@@ -334,6 +338,9 @@ public:
     void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
     void setColorByAncestry(NeuronSWC s, time_t seconds); // colorByAncestry mode
     // end ZMS
+
+	void addToListOfChildSegs(V3DLONG segID); // add this segment and all of its children to the list of child segments
+
 	bool cuttingZ;
 	void setBBZcutFlag(bool cuttingZ);
 	void updateNeuronBoundingBoxWithZCut(float zMin, float zMax);
@@ -343,6 +350,8 @@ public:
 	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
 	// this will call setColorByAncestry if needed.
 	void setNeuronReviewColors(NeuronSWC s); // review mode
+	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
+	bool childHighlightMode;
 
     // beginning of ZJL
 #ifndef test_main_cpp //140211
@@ -585,6 +594,8 @@ private:
         rotateAxisBeginNode = XYZ(0, 0, 1);
         rotateAxisEndNode = XYZ(0, 0, 0);
 
+		childHighlightMode = false;
+
 		_idep=0;
 		isSimulatedData=false;
 		data_unitbytes=0;
@@ -696,6 +707,9 @@ public:
     bool highlightedEndNodeChanged;
     XYZ rotateAxisBeginNode; //Added by ZMS 20160209 for wriggle feature. The first node of the last-drawn segment.
     XYZ rotateAxisEndNode; //Added by ZMS 20160209 for wriggle feature. The final node of the last-drawn segment.
+
+
+	V3DLONG highlightedStartNode; // this is for highlighting all children of selected node
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
 	void constructLabelfieldSurf(int mesh_method, int mesh_density);
@@ -813,3 +827,5 @@ void _copyYzxFromZyx(RGBA8* rgbaYzx, RGBA8* rgbaZyx, int imageX, int imageY, int
 
 
 #endif
+
+

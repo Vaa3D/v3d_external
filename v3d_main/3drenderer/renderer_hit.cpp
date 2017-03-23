@@ -4667,57 +4667,57 @@ LandmarkList * Renderer_gl1::getHandleLandmark() //by Hanbo Chen, 20141018
 QString XYZtoQString(XYZ pos){
     return QString::number(pos.x) + " " + QString::number(pos.y) + " " + QString::number(pos.z);
 }
-
-//Need a list to store this <- which does it's own initialization upon insert and delete
-//The following classes are data structures used to calculate level information in the neuron tree
-class DoublyLinkedNeuronNode{
-public:
-    DoublyLinkedNeuronNode* upstream;
-    DoublyLinkedNeuronNode* downstream;
-    XYZ position;
-    V3DLONG seg_id;
-    DoublyLinkedNeuronNode(V3DLONG segId, XYZ pos):
-        seg_id(segId),
-        downstream(NULL),
-        upstream(NULL),
-        position(pos)
-        {}
-    bool isHead(){return (upstream == NULL);}
-    bool isTail(){return (downstream == NULL);}
-};
-
-class DoublyLinkedNeuronsList{
-public:
-    int length;
-    DoublyLinkedNeuronNode* head;
-    DoublyLinkedNeuronNode* tail;
-    DoublyLinkedNeuronsList(): head(NULL), tail(NULL), length(0){}
-    void append(V3DLONG segId, XYZ pos){
-        length++;
-        DoublyLinkedNeuronNode* toAdd = new DoublyLinkedNeuronNode(segId, pos);
-        if(head == NULL){
-            head = toAdd;
-            tail = toAdd;
-            toAdd->downstream = NULL;
-            toAdd->upstream = NULL;
-        }else{
-            tail->downstream = toAdd;
-            toAdd->upstream = tail;
-            toAdd->downstream = NULL;
-            tail = toAdd;
-        }
-    }
-    ~DoublyLinkedNeuronsList(){
-        //cout << "calling deleting" << endl;
-        DoublyLinkedNeuronNode* current = head;
-        while( current != NULL ) {
-            //cout << "deleting" << endl;
-            DoublyLinkedNeuronNode* next = current->downstream;
-            delete current;
-            current = next;
-        }
-    }
-};
+//
+////Need a list to store this <- which does it's own initialization upon insert and delete
+////The following classes are data structures used to calculate level information in the neuron tree
+//class DoublyLinkedNeuronNode{
+//public:
+//    DoublyLinkedNeuronNode* upstream;
+//    DoublyLinkedNeuronNode* downstream;
+//    XYZ position;
+//    V3DLONG seg_id;
+//    DoublyLinkedNeuronNode(V3DLONG segId, XYZ pos):
+//        seg_id(segId),
+//        downstream(NULL),
+//        upstream(NULL),
+//        position(pos)
+//        {}
+//    bool isHead(){return (upstream == NULL);}
+//    bool isTail(){return (downstream == NULL);}
+//};
+//
+//class DoublyLinkedNeuronsList{
+//public:
+//    int length;
+//    DoublyLinkedNeuronNode* head;
+//    DoublyLinkedNeuronNode* tail;
+//    DoublyLinkedNeuronsList(): head(NULL), tail(NULL), length(0){}
+//    void append(V3DLONG segId, XYZ pos){
+//        length++;
+//        DoublyLinkedNeuronNode* toAdd = new DoublyLinkedNeuronNode(segId, pos);
+//        if(head == NULL){
+//            head = toAdd;
+//            tail = toAdd;
+//            toAdd->downstream = NULL;
+//            toAdd->upstream = NULL;
+//        }else{
+//            tail->downstream = toAdd;
+//            toAdd->upstream = tail;
+//            toAdd->downstream = NULL;
+//            tail = toAdd;
+//        }
+//    }
+//    ~DoublyLinkedNeuronsList(){
+//        //cout << "calling deleting" << endl;
+//        DoublyLinkedNeuronNode* current = head;
+//        while( current != NULL ) {
+//            //cout << "deleting" << endl;
+//            DoublyLinkedNeuronNode* next = current->downstream;
+//            delete current;
+//            current = next;
+//        }
+//    }
+//};
 
 //This list stores all nodes in the same temporal location. The list should only be visited once, otherwise a loop exists.
 class SamePointList{
@@ -4777,6 +4777,9 @@ public:
     V3DLONG parent;
     FringeNode(DoublyLinkedNeuronNode*n, bool up, V3DLONG lvl, V3DLONG p): node(n), isGoingUpstream(up), level(lvl), parent(p){}
 };
+
+
+
 
 void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secondVisitSegId, V3DLONG violatingSegId){
 
@@ -4843,6 +4846,57 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
 
 }
 
+
+
+void Renderer_gl1::addToListOfChildSegs(V3DLONG segID){
+	//childSegs.clear();
+	qDebug()<<"addToListofChildSegs segID :"<<segID;
+	childSegs.append(segID);
+	qDebug()<<"childSegs length :"<<childSegs.length();
+
+
+	// go get this segmentID
+
+	// use the segment parent hash calculated in setColorAncestryInfo...
+
+	if (segmentParentDict.isEmpty()) setColorAncestryInfo();
+
+	// we also have a hash of doubly-linked segments, which might have what I want if it's kept up-to-date
+
+	//dict_dlnh; //A list of segments, hases seg_id  to doubly-linked segments
+	qDebug()<<"dict_dlnh size "<<dict_dlnh.size();
+	bool looking = true;
+	QList<V3DLONG> lookingList;
+	QList<V3DLONG> nextList;
+	lookingList.clear();
+
+	lookingList.append(dict_dlnh.value(segID)->tail->seg_id);
+	qDebug()<<"segID= "<<segID;
+	qDebug()<<"tail seg_ID = "<<dict_dlnh.value(segID)->tail->seg_id;
+	// this doesn't do what I thought it did.  as far as I can tell, the 'upstream' and 'downstream', 'head' and 'tail' only talk about nodes within the segment.  
+	// so now I either have to look for where those nodes are repeated or make a new list with the info I want or do the thing where I search the entire parent hash every time I go down a level in the tree.
+
+	int depth=0;
+	while (!lookingList.isEmpty() && depth<100){
+		nextList.clear();
+		for (V3DLONG i = 0; i<lookingList.length() ; i++){
+			childSegs.append(lookingList.at(i));
+			if (dict_dlnh.value(lookingList.at(i))->tail->seg_id !=NULL){
+				V3DLONG newSeg=dict_dlnh.value(lookingList.at(i))->tail->seg_id;
+				qDebug()<<"newSeg = "<<newSeg;
+				if (newSeg>0){
+					nextList.append(newSeg);
+				}
+			}
+		}
+		qDebug()<<"childSegs length :"<<childSegs.length();
+		lookingList=nextList;
+		depth++;
+	}
+
+}
+
+
 //Assigns each segment neuron list a level (corresponding to the segment'slevel in the neuron tree), given that a soma is present
 //The coloring effects of this function will only be availible when the ColorByLevel bool is toggled to true
 //Returns false if a loop esists, and sets color of all segments to purple. Otherwise, sets the segmentParentsList and segmentLevelList correctly
@@ -4860,7 +4914,8 @@ bool Renderer_gl1::setColorAncestryInfo(){
     QList<FringeNode> f; //A list of nodes to traverse next, in a depth-first search fashion
     QList<NeuronSWC> somas; //List of soma nodes
     PointCloudHash pch; //Hashes the location of the nodes to a list containing all nodes occupying the same point
-    QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //A list of segments, hases seg_id  to doubly-linked segments
+    //QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //A list of segments, hases seg_id  to doubly-linked segments
+	dict_dlnh.clear();
 
 
 

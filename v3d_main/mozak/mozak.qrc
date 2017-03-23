@@ -11,5 +11,7 @@
         <file>icons/split.png</file>
         <file>icons/overviewMonitor.png</file>
       <file>icons/z-lock.png</file>
+      <file>icons/findKids.png</file>
+      
     </qresource>
 </RCC>

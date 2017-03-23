@@ -322,7 +322,16 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 if (curr_renderer->highlightedEndNodeChanged)
                     updatedNodes = true;
             }
-        }
+		}else if (currentMode == Renderer::smHighlightChildren	)
+        {
+			if (curr_renderer->highlightedStartNode == -1)
+            {
+                //Highlight start node
+                curr_renderer->highlightedNode = findNearestNeuronNode(k->x(), k->y(), true);
+                updatedNodes = true;
+				qDebug()<<"highlightedNode = "<<curr_renderer->highlightedNode;
+            }
+		}
         if (updatedNodes)
         {
             curr_renderer->drawNeuronTreeList();
@@ -804,6 +813,19 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                         curr_renderer->selectedStartNode = curr_renderer->highlightedNode;
                         curr_renderer->highlightedNode = -1;
                     }
+				}else if (currentMode == Renderer::smHighlightChildren)
+                {
+					curr_renderer->highlightedStartNode = curr_renderer->highlightedNode;
+					if ( curr_renderer->listNeuronTree.size() > 0 &&
+                        curr_renderer->highlightedStartNode < curr_renderer->listNeuronTree.at(0).listNeuron.size())
+                    {
+                        // identify all children of the highlightedStartNode
+                        NeuronSWC start_pt_existing = curr_renderer->listNeuronTree.at(0).listNeuron.at(curr_renderer->highlightedStartNode);
+						
+						curr_renderer->addToListOfChildSegs(start_pt_existing.seg_id);
+						//alter behavior here to allow this mode to continue
+				        changeMode(Renderer::defaultSelectMode, true, true);
+                    }
                 }
 			}
             if (mouseEvt->button() == Qt::LeftButton)
@@ -969,6 +991,13 @@ void Mozak3DView::show()
 	zLockButton->setCheckable(true);
 	connect(zLockButton, SIGNAL(clicked(bool)),this, SLOT(zLockButtonClicked(bool)));
 
+
+	highlightChildrenButton = new QToolButton();
+	highlightChildrenButton->setIcon(QIcon(":/mozak/icons/findKids.png"));
+	highlightChildrenButton->setToolTip("highlight children of selected segment");
+	highlightChildrenButton->setCheckable(true);
+	connect(highlightChildrenButton,SIGNAL(toggled(bool)), this, SLOT(highlightChildrenButtonClicked(bool)));
+
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -992,6 +1021,8 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, overviewMonitorButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0,zLockButton);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, highlightChildrenButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 
 	currTypeLabel = new QLabel();
@@ -1419,7 +1450,12 @@ void Mozak3DView::updateColorMode(int colorMode){
 		}
 }
 
-
+void Mozak3DView::highlightChildrenButtonClicked(bool checked){
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	curr_renderer->childHighlightMode = checked;
+	changeMode(Renderer::smHighlightChildren, false, checked);
+	qDebug()<<"highlightChildrenButtonClicked!";
+}
 void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn)
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
@@ -1446,6 +1482,9 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			deleteSegmentsButton->setChecked(false);
         if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
             retypeSegmentsButton->setChecked(false);
+		if (mode != Renderer::smHighlightChildren && highlightChildrenButton->isChecked())
+			highlightChildrenButton->setChecked(false);
+
         curr_renderer->endSelectMode();
         curr_renderer->selectMode = mode;
         curr_renderer->b_addthiscurve = addThisCurve;
@@ -1481,6 +1520,12 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
                 curr_renderer->highlightedEndNode = -1;
             }
             break;
+			case Renderer::smHighlightChildren:
+				{
+					curr_renderer->highlightedStartNode = -1;
+					qDebug()<<"set mode smHighlightChildren";
+				}
+				break;									
 			default:
 				break;
 		}
@@ -1490,6 +1535,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 
         curr_renderer->endSelectMode();
         curr_renderer->highlightedNodeType = -1;
+		curr_renderer->highlightedStartNode = -1;
         updateTypeLabel();
 		makeTracedNeuronsEditable();
         if (prevMode == Renderer::defaultSelectMode)
