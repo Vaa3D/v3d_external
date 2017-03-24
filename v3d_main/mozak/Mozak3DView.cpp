@@ -674,6 +674,35 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 // Reset view to viewing XY plane from +z axis
                 view3DWidget->doAbsoluteRot(0, 0, 0);
                 break;
+				//Ctl + ARROW KEYS is the equivalent of clicking the arrow to move to the next Terafly tile 
+			case Qt::Key_Up:				// Process X/Y ROI Translate
+				if (key_evt->modifiers() & Qt::ControlModifier)
+				{
+					MozakUI* moz = MozakUI::getMozakInstance();
+					moz->traslYnegClicked();
+				}
+				break;
+			case Qt::Key_Left:				// Process X/Y ROI Translate
+				if (key_evt->modifiers() & Qt::ControlModifier)
+				{
+					MozakUI* moz = MozakUI::getMozakInstance();
+					moz->traslXnegClicked();
+				}
+				break;			
+			case Qt::Key_Right:				// Process X/Y ROI Translate
+				if (key_evt->modifiers() & Qt::ControlModifier)
+				{
+					MozakUI* moz = MozakUI::getMozakInstance();
+					moz->traslXposClicked();
+				}
+				break;			
+			case Qt::Key_Down:				// Process X/Y ROI Translate
+				if (key_evt->modifiers() & Qt::ControlModifier)
+				{
+					MozakUI* moz = MozakUI::getMozakInstance();
+					moz->traslYposClicked();
+				}
+				break;
             default:
                 changeMode(Renderer::defaultSelectMode, true, true);
 				break;
