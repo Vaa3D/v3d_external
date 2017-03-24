@@ -42,7 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?œAutomatic reconstructio
 #define V3DR_COMMON_H_
 
 // Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
-#include "../../v3d/version_control.h"
+#include "../v3d/version_control.h"
 
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
