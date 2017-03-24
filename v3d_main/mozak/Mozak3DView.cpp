@@ -998,6 +998,14 @@ void Mozak3DView::show()
 	highlightSubtreeButton->setCheckable(true);
 	connect(highlightSubtreeButton,SIGNAL(clicked(bool)), this, SLOT(highlightSubtreeButtonClicked(bool)));
 
+	zLockLayerSB = new QSpinBox;
+	zLockLayerSB->setMinimum(0);
+	zLockLayerSB->setMaximum(5);
+	zLockLayerSB->setValue(2);
+	zLockLayerSB->setToolTip("z-layer for z-cut");
+	currZLockLayer = new QLabel();
+	currZLockLayer->setText("z layer");
+	
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
@@ -1024,6 +1032,11 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, highlightSubtreeButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, currZLockLayer);
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0,zLockLayerSB);
+	itm::PAnoToolBar::instance()->toolBar->addSeparator();
+
+
 
 	currTypeLabel = new QLabel();
 	updateTypeLabel();
@@ -1335,7 +1348,7 @@ void Mozak3DView::setZSurfaceLimitValues(int ignore){
 	if (zLockButton->isChecked()){
 		Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 
-		curr_renderer->setBBZ((float) window3D->zcminSlider->value()-extraSurfaceOffset, (float) window3D->zcmaxSlider->value()+extraSurfaceOffset);
+		curr_renderer->setBBZ((float) window3D->zcminSlider->value()-zLockLayerSB->value(), (float) window3D->zcmaxSlider->value()+zLockLayerSB->value());
 	}
 }
 

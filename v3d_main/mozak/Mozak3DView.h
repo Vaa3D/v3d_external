@@ -99,10 +99,12 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* overviewMonitorButton;
 		QToolButton* zLockButton;
 		QToolButton* highlightSubtreeButton; // button icon says subtree
+		QSpinBox* zLockLayerSB;
 		QLabel* currTypeLabel;
 		QLabel* currZoomLabel;
 		QLabel* currResolutionLabel;
         QLabel* currUndoLabel;
+		QLabel* currZLockLayer;
 
 		QTimer* overviewTimer;
 
