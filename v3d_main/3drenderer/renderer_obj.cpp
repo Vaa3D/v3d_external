@@ -992,7 +992,7 @@ void Renderer_gl1::updateNeuronBoundingBoxWithZCut(float zMin, float zMax)
 
 void Renderer_gl1::updateNeuronBoundingBox()
 {
-	if ((cuttingZ) && (zMin!=-1)){	updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
+	if (cuttingZ){	updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
 
     swcBB = NULL_BoundingBox;
     foreach(NeuronTree SS, listNeuronTree)

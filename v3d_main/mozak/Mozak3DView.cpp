@@ -360,7 +360,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		{
 			// If polyline mode(s), use mouse wheel to change the current z-slice (and restrict to one or NUM_POLY_AUTO_Z_PLANES)
 			int zoff = (currentMode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
-			int extraSurfaceOffset = 3;
+
 			int volumeDelta = 1;
 			int prevVal = (window3D->zcminSlider->value() + window3D->zcmaxSlider->value()) / 2;
 			float zSliderScaleFactor = ((float)(window3D->zSminSlider->maximum()- window3D->zSminSlider->minimum()+1))/((float)(window3D->zcminSlider->maximum()-window3D->zcminSlider->minimum()+1-zoff));
@@ -992,11 +992,11 @@ void Mozak3DView::show()
 	connect(zLockButton, SIGNAL(clicked(bool)),this, SLOT(zLockButtonClicked(bool)));
 
 
-	highlightChildrenButton = new QToolButton();
-	highlightChildrenButton->setIcon(QIcon(":/mozak/icons/subtree.png")); 
-	highlightChildrenButton->setToolTip("highlight children of selected segment");
-	highlightChildrenButton->setCheckable(true);
-	connect(highlightChildrenButton,SIGNAL(clicked(bool)), this, SLOT(highlightChildrenButtonClicked(bool)));
+	highlightSubtreeButton = new QToolButton();
+	highlightSubtreeButton->setIcon(QIcon(":/mozak/icons/subtree.png")); 
+	highlightSubtreeButton->setToolTip("highlight subtree from selected segment");
+	highlightSubtreeButton->setCheckable(true);
+	connect(highlightSubtreeButton,SIGNAL(clicked(bool)), this, SLOT(highlightSubtreeButtonClicked(bool)));
 
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, invertImageButton);
@@ -1022,7 +1022,7 @@ void Mozak3DView::show()
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 	itm::PAnoToolBar::instance()->toolBar->insertWidget(0,zLockButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
-	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, highlightChildrenButton);
+	itm::PAnoToolBar::instance()->toolBar->insertWidget(0, highlightSubtreeButton);
 	itm::PAnoToolBar::instance()->toolBar->addSeparator();
 
 	currTypeLabel = new QLabel();
@@ -1334,6 +1334,7 @@ void Mozak3DView::zLockButtonClicked(bool checked){
 void Mozak3DView::setZSurfaceLimitValues(int ignore){
 	if (zLockButton->isChecked()){
 		Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+
 		curr_renderer->setBBZ((float) window3D->zcminSlider->value()-extraSurfaceOffset, (float) window3D->zcmaxSlider->value()+extraSurfaceOffset);
 	}
 }
@@ -1356,7 +1357,7 @@ void Mozak3DView::overviewMonitorButtonClicked(bool checked){
 		overviewTimer->setInterval(1500);
 		overviewTimer->start();
 		overviewActive = true;
-		return;
+	 	return;
 	}
 	if (overviewActive){
 		overviewTimer->stop();
@@ -1450,11 +1451,11 @@ void Mozak3DView::updateColorMode(int colorMode){
 		}
 }
 
-void Mozak3DView::highlightChildrenButtonClicked(bool checked){
+void Mozak3DView::highlightSubtreeButtonClicked(bool checked){
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	curr_renderer->childHighlightMode = checked;
 	changeMode(Renderer::smHighlightChildren, false, checked);
-	qDebug()<<"highlightChildrenButtonClicked!";
+	qDebug()<<"highlightSubtreeButtonClicked!";
 }
 void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool turnOn)
 {
@@ -1482,8 +1483,8 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 			deleteSegmentsButton->setChecked(false);
         if (mode != Renderer::smRetypeMultiNeurons && retypeSegmentsButton->isChecked())
             retypeSegmentsButton->setChecked(false);
-		if (mode != Renderer::smHighlightChildren && highlightChildrenButton->isChecked())
-			highlightChildrenButton->setChecked(false);
+		if (mode != Renderer::smHighlightChildren && highlightSubtreeButton->isChecked())
+			highlightSubtreeButton->setChecked(false);
 
         curr_renderer->endSelectMode();
         curr_renderer->selectMode = mode;

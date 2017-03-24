@@ -98,7 +98,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* deleteSegmentsButton;
 		QToolButton* overviewMonitorButton;
 		QToolButton* zLockButton;
-		QToolButton* highlightChildrenButton; // button icon says subtree
+		QToolButton* highlightSubtreeButton; // button icon says subtree
 		QLabel* currTypeLabel;
 		QLabel* currZoomLabel;
 		QLabel* currResolutionLabel;
@@ -306,7 +306,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void deleteSegmentsButtonToggled(bool checked);
 		void zLockButtonClicked(bool checked);
 		void overviewMonitorButtonClicked(bool checked);
-		void highlightChildrenButtonClicked(bool checked);
+		void highlightSubtreeButtonClicked(bool checked);
 		void setZSurfaceLimitValues(int ignore);
 
 		void updateZoomLabel(int zr);
