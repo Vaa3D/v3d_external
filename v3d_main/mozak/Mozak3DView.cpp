@@ -611,6 +611,14 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					splitSegmentButton->setChecked(true);
 				changeMode(Renderer::smBreakTwoNeurons, false, true);
                 break;
+			case Qt::Key_O:
+				// toggle reconstruction entirely on and off
+				if (curr_renderer->sShowSurfObjects!=2){
+					curr_renderer->sShowSurfObjects = 2;
+				}else{
+					curr_renderer->sShowSurfObjects = 0;
+				}
+				break;
 			case Qt::Key_R:
 				if (!retypeSegmentsButton->isChecked())
 					retypeSegmentsButton->setChecked(true);
@@ -633,11 +641,16 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 {
                     performUndo();
                 }
-                else
-                {
+				else
+				{
 				    // stretch the image volume in the z-axis
 				    view3DWidget->setThickness(3.0);
                 }
+				break;
+			case Qt::Key_L:
+				{
+					zLockButton->click();
+				}
 				break;
             case Qt::Key_H:
                 //Sets segment rendermode to "Transparent" (0.1 alpha).
@@ -674,7 +687,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 // Reset view to viewing XY plane from +z axis
                 view3DWidget->doAbsoluteRot(0, 0, 0);
                 break;
-				//Ctl + ARROW KEYS is the equivalent of clicking the arrow to move to the next Terafly tile 
+
 			case Qt::Key_Up:				// Process X/Y ROI Translate
 				if (key_evt->modifiers() & Qt::ControlModifier)
 				{
@@ -1366,11 +1379,10 @@ void Mozak3DView::zLockButtonClicked(bool checked){
 
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
 	curr_renderer->setBBZcutFlag(checked);
-	if (!checked){
-	    prevPolyZCut = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
-        window3D->zcminSlider->setValue((prevZCutMin > -1) ? prevZCutMin : window3D->zcminSlider->minimum());
-		window3D->zcmaxSlider->setValue((prevZCutMax > -1) ? prevZCutMax : window3D->zcmaxSlider->maximum());
-	}
+
+	window3D->zcminSlider->setValue(window3D->zcminSlider->value());
+	window3D->zcmaxSlider->setValue(window3D->zcmaxSlider->value());
+	
 }
 
 void Mozak3DView::setZSurfaceLimitValues(int ignore){
@@ -1547,12 +1559,12 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 				prevZCutMax = window3D->zcmaxSlider->value();
 				}
 				// Use previously-scrolled polyline z-cut if within bounds, otherwise use midpoint of current bounds
-				int centZ = (window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2;
+				int centZ = ((window3D->zcmaxSlider->value() + window3D->zcminSlider->value()) / 2);
                 if (prevPolyZCut - zoff >= prevZCutMin && prevPolyZCut + zoff <= prevZCutMax)
 					centZ = prevPolyZCut;
 				// TODO: use max intensity of ray from current mouse projection to get z-plane instead of midVal
 				window3D->zcminSlider->setValue(centZ - zoff);
-				window3D->zcmaxSlider->setValue(centZ + zoff);
+				window3D->zcmaxSlider->setValue(centZ + zoff-1);
 				if (zLockButton->isChecked()) curr_renderer->setBBZcutFlag(true);
 				
 			}
