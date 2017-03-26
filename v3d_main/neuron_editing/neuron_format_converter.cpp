@@ -115,14 +115,14 @@ V_NeuronSWC_list NeuronTree__2__V_NeuronSWC_list(NeuronTree * nt)           //co
 		v.parent = qlist[i].pn;
 		
 		cur_seg.append(v);
-		//qDebug("%d ", cur_seg.nnodes());
+        //qDebug("%d ", cur_seg.nnodes());
 	}
 	cur_seg.name = qPrintable(QString("%1").arg(1));
     cur_seg.b_linegraph=false; //do not forget to do this
 	
 	V_NeuronSWC_list editableNeuron;
 	editableNeuron.seg = cur_seg.decompose(); //////////////
-        qDebug("	editableNeuron.seg.size = %z", editableNeuron.seg.size());
+        qDebug("	editableNeuron.seg.size = %d", editableNeuron.seg.size());
 	
 	editableNeuron.name = qPrintable(nt->name);
 	editableNeuron.file = qPrintable(nt->file);
