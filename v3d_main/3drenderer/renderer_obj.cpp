@@ -2110,11 +2110,11 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
                 break;
         }
     }else if(s.type == 5){ // fork point
-        glColor3ub(142, 142, 56); //sgl oliverdrab
+        glColor3ub(255, 230, 10); // yellow
         switch(segmentLevelDict.value(s.seg_id)){
             case -2: //In a loop
                 if (seconds % 2 == 1)
-                    glColor3ub(92, 92, 6);
+                    glColor3ub(232, 192, 6);
                 break;
         }
     }else if(s.type == 6){ // end point
