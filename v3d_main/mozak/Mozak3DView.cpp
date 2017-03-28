@@ -662,7 +662,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 break;
             case Qt::Key_V:
 				neuronColorMode++;
-				neuronColorMode = neuronColorMode%3;
+				neuronColorMode = neuronColorMode%5;
 				updateColorMode(neuronColorMode);
                 //curr_renderer->colorByTypeOnlyMode = !(curr_renderer->colorByTypeOnlyMode); //colorByTypeOnly was eliminated before last release from Mozak crew.
 	

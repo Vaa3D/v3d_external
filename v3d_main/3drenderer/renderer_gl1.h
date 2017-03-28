@@ -330,7 +330,18 @@ public:
 	QList<V3DLONG> childSegs; // a list of child segments (for a TBD node)
 	
 	QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //  A list of segments, hases seg_id  to doubly-linked segments
+//static const GLubyte neuron_type_color[275 ][3] ;
+//static const 
+//int neuron_type_color_num;// = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
+
+
+
+
+
+
+
+	void initColorMaps();
     bool colorByAncestry;
     bool colorByTypeOnlyMode; //This is only checked if colorByAncestry is enabled
     bool setColorAncestryInfo();
@@ -351,6 +362,7 @@ public:
 	// this will call setColorByAncestry if needed.
 	void setNeuronReviewColors(NeuronSWC s); // review mode
 	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
+	void setBasicNeuronColors(NeuronSWC s);
 	bool childHighlightMode;
 
     // beginning of ZJL
@@ -640,6 +652,7 @@ private:
 		cuttingZ = false;
 		zMin =-1.0;
 		zMax = 1.0;
+		initColorMaps();
      }
 
 
@@ -652,7 +665,6 @@ public:
 	#define NTYPE_MARKER  5
 	GLuint glistMarker[NTYPE_MARKER];
 	RGBA8 marker_color[NTYPE_MARKER];
-
 	// cell apo
 	QList <CellAPO> listCell;
 	GLuint glistCell;
@@ -791,6 +803,8 @@ public:
                                 }
                 return _safe3DBuf;
         }
+
+
 };
 
 

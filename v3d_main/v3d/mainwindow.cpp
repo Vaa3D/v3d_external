@@ -261,6 +261,8 @@ MainWindow::MainWindow()
     connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
     cl_plugin = false; // init
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
+
+	func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 }
 //void MainWindow::postClose() //090812 RZC
 //{
