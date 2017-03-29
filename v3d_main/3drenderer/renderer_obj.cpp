@@ -2142,7 +2142,7 @@ void Renderer_gl1::setColorByAncestry(NeuronSWC s, time_t seconds){
                 break;
         }
     }else if(s.type == 9){ // FixIt! ???
-        glColor3ub(255, 200, 0); //orangey yellow?
+        glColor3ub(255, 210, 0); //orangey yellow?
         switch(segmentLevelDict.value(s.seg_id)){
             case -2: //In a loop
                 if (seconds % 2 == 1)
