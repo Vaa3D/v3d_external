@@ -95,7 +95,7 @@ double total_etime; //added by PHC, 20120412, as a convenient way to know the to
 //}
 int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
-	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
+	qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
 	QString qsName;
@@ -215,7 +215,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actDoNeuronToolBoxPlugin=0,
 			*actDispSurfVertexInfo=0,
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
-            *actZoomin_currentviewport=0 //PHC, 130701
+            *actZoomin_currentviewport=0, //PHC, 130701
+
+			*actNeuronConnect=0
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -436,6 +438,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                         // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
+
+						// MK
+						listAct.append(actNeuronConnect = new QAction("connect separate nodes with one stroke", w));
 
                         //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                         //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -701,6 +706,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                 listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
+
+				// MK
+				listAct.append(actNeuronConnect = new QAction("connect separate nodes with one stroke", w));
 
                 //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                 //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -1735,6 +1743,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
+	else if (act==actNeuronConnect) //MK
+	{
+		if (NEURON_CONDITION)
+		{
+               selectMode = smConnectNeurons;
+               b_addthiscurve = false;
+               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
 	else if (act==actBreakNeuronSegNearestNeuronNode)
 	{
 		if (NEURON_CONDITION)
@@ -2101,12 +2118,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smConnectNeurons)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
 		{
-			//qDebug("\t track ( %i, %i ) to define Curve", x,y);
+			qDebug("\t track ( %i, %i ) to define Curve", x,y);
 			this->sShowTrack = 1;
 			return 1; //display 2d track
 		}
@@ -2115,7 +2132,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+        int N = (selectMode == smConnectNeurons || selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -2147,6 +2164,10 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             {
                 selectMultiMarkersByStroke();
             }
+			else if(selectMode == smConnectNeurons)
+			{
+				connectNeuronsByStroke();
+			}
 
 
 			list_listCurvePos.clear();

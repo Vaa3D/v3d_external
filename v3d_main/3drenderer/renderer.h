@@ -84,6 +84,7 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
+					  smConnectNeurons, //MK
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 
