@@ -3062,73 +3062,67 @@ void Renderer_gl1::connectNeuronsByStroke()
     //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
     float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
 
-    // contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
-    bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
-
-    // contour 2 polygon
-    QPolygon poly;
-    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
-        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
-
     // back-project the node curve points and mark segments to be deleted
     for(V3DLONG j=0; j<listNeuronTree.size(); j++)
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-        if (p_tree
-            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+        if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
         {
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
-            if (!p_listneuron)
-                continue;
-
+            if (!p_listneuron) continue;
+			//for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
+			
 			vector<segInfoUnit> segInfo;
 			long segCheck = 0;
-            for (V3DLONG i=0;i<p_listneuron->size();i++)
-            {
-                GLdouble px, py, pz, ix, iy, iz;
-                ix = p_listneuron->at(i).x;
-                iy = p_listneuron->at(i).y;
-                iz = p_listneuron->at(i).z;
-                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
-                {
-                    py = viewport[3]-py; //the Y axis is reversed
-                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
 
-                    if(contour_mode)
-                    {
-                        if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
-                            curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
-                    }
-                    else
-                    {
-                        for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+			for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+			{
+
+				for (V3DLONG j=0; j<p_listneuron->size(); j++)
+				{
+					GLdouble px, py, pz, ix, iy, iz;
+					ix = p_listneuron->at(j).x;
+					iy = p_listneuron->at(j).y;
+					iz = p_listneuron->at(j).z;
+					if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+					{
+						py = viewport[3]-py; //the Y axis is reversed
+						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+                        QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+						if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
                         {
-							if (p_listneuron->at(i).seg_id == segCheck) break;
-                            QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                            if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
-                            {
-								for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row.begin();
-									it!=curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row.end(); it++)
+							qDebug() << p.x() << " " << p.y();
+							for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[p_listneuron->at(j).seg_id].row.begin();
+								it!=curImg->tracedNeuron.seg[p_listneuron->at(j).seg_id].row.end(); it++)
+							{
+								if (p_listneuron->at(j).x==it->data[2] && p_listneuron->at(j).y==it->data[3] && p_listneuron->at(j).z==it->data[4]) 
 								{
-									if (p_listneuron->at(i).x==it->data[2] && p_listneuron->at(i).y==it->data[3] && p_listneuron->at(i).z==it->data[4]) 
+									if (it->data[6]==2 || it->data[6]==-1)
 									{
-										if (it->data[6]==2 || it->data[6]==-1)
+										qDebug() << p_listneuron->at(j).seg_id << " " << p_listneuron->at(j).parent;
+										segInfoUnit curSeg;
+										curSeg.head_tail = it->data[6]; curSeg.segID = p_listneuron->at(j).seg_id;
+										vector<segInfoUnit>::iterator chkIt = segInfo.end();
+										if (segInfo.begin() == segInfo.end())
 										{
-											qDebug() << p_listneuron->at(i).seg_id << " " << p_listneuron->at(i).parent;
-											segInfoUnit curSeg;
-											curSeg.head_tail = it->data[6]; curSeg.segID = p_listneuron->at(i).seg_id;
+											segInfo.push_back(curSeg);
+											segCheck = it->data[6];
+										}
+										else if ((chkIt-1)->segID == curSeg.segID) break;
+										else 
+										{
 											segInfo.push_back(curSeg);
 											segCheck = it->data[6];
 										}
 									}
 								}
-								//curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].printInfo();
-                               break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                            }
-                        }
-                    }
-                }
-            }
+							}
+							break;
+						}
+					}
+				}
+			}
 			
 			for (vector<segInfoUnit>::iterator it=segInfo.begin(); it!=segInfo.end(); it++)
 			{
@@ -3140,7 +3134,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 						for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.end()-1;
 							itNextSeg>=curImg->tracedNeuron.seg[(it+1)->segID].row.begin(); itNextSeg--)
 						{
-							qDebug() << "=====" << itNextSeg->data[0] << " " << itNextSeg->data[6];
+							//qDebug() << "=====" << itNextSeg->data[0] << " " << itNextSeg->data[6];
 							curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
 						}
 						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[segInfo[0].segID].row.begin();
