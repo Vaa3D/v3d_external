@@ -3157,7 +3157,81 @@ void Renderer_gl1::connectNeuronsByStroke()
 					}
 					else if ((it+1)->head_tail == 2)
 					{
-
+						for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.begin();
+							itNextSeg!=curImg->tracedNeuron.seg[(it+1)->segID].row.end(); itNextSeg++)
+						{
+							//qDebug() << "=====" << itNextSeg->data[0] << " " << itNextSeg->data[6];
+							curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+						}
+						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[segInfo[0].segID].row.begin();
+							itSort!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); itSort++)
+						{
+							if (itSort->data[6]==-1)
+							{
+								itSort->data[6] = itSort->data[0] + 1;
+								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); itSortMiddle++)
+								{
+									itSortMiddle->data[0] = (itSortMiddle-1)->data[6];
+									itSortMiddle->data[6] = itSortMiddle->data[0] + 1;
+								}
+								break;
+							}
+						}
+						(curImg->tracedNeuron.seg[segInfo[0].segID].row.end()-1)->data[6] = -1;
+						//curImg->tracedNeuron.seg[segInfo[0].segID].printInfo();
+						curImg->tracedNeuron.seg[(it+1)->segID].to_be_deleted = true;
+					}
+				}
+				else if (it->head_tail == 2)
+				{
+					if ((it+1)->head_tail == -1)
+					{
+						for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it)->segID].row.begin();
+							itNextSeg!=curImg->tracedNeuron.seg[(it)->segID].row.end(); itNextSeg++)
+						{
+							//qDebug() << "=====" << itNextSeg->data[0] << " " << itNextSeg->data[6];
+							curImg->tracedNeuron.seg[segInfo[1].segID].row.push_back(*itNextSeg);
+						}
+						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[segInfo[1].segID].row.begin();
+							itSort!=curImg->tracedNeuron.seg[segInfo[1].segID].row.end(); itSort++)
+						{
+							if (itSort->data[6]==-1)
+							{
+								itSort->data[6] = itSort->data[0] + 1;
+								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[segInfo[1].segID].row.end(); itSortMiddle++)
+								{
+									itSortMiddle->data[0] = (itSortMiddle-1)->data[6];
+									itSortMiddle->data[6] = itSortMiddle->data[0] + 1;
+								}
+								break;
+							}
+						}
+						(curImg->tracedNeuron.seg[segInfo[1].segID].row.end()-1)->data[6] = -1;
+						//curImg->tracedNeuron.seg[segInfo[0].segID].printInfo();
+						curImg->tracedNeuron.seg[(it)->segID].to_be_deleted = true;
+					}
+					else if ((it+1)->head_tail == 2)
+					{
+						int nextSegNo = 1;
+						std::reverse(curImg->tracedNeuron.seg[(it+1)->segID].row.begin(), curImg->tracedNeuron.seg[(it+1)->segID].row.end());
+						for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.begin();
+							itNextSeg!=curImg->tracedNeuron.seg[(it+1)->segID].row.end(); itNextSeg++)
+						{
+							itNextSeg->data[0] = nextSegNo;
+							itNextSeg->data[6] = itNextSeg->data[0] + 1;
+							++nextSegNo;
+						}
+						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[it->segID].row.begin();
+							itSort!=curImg->tracedNeuron.seg[it->segID].row.end(); itSort++)
+						{
+							itSort->data[0] = nextSegNo;
+							itSort->data[6] = itSort->data[0] + 1;
+							++nextSegNo;
+							curImg->tracedNeuron.seg[(it+1)->segID].row.push_back(*itSort);
+						}
+						(curImg->tracedNeuron.seg[(it+1)->segID].row.end()-1)->data[6] = -1;
+						//curImg->tracedNeuron.seg[segInfo[0].segID].printInfo();
+						curImg->tracedNeuron.seg[(it)->segID].to_be_deleted = true;
 					}
 				}
 			}
