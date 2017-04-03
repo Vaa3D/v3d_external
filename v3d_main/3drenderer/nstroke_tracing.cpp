@@ -177,6 +177,12 @@
 template <class Tpre, class Tpost>
      void converting_to_8bit(void *pre1d, Tpost *pPost, V3DLONG imsz);
 
+struct segInfoUnit
+{
+	long segID;
+	long head_tail;
+};     
+
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
@@ -3048,12 +3054,6 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 
 void Renderer_gl1::connectNeuronsByStroke()
 {
-	struct segInfoUnit
-	{
-		long segID;
-		long head_tail;
-	};
-
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
@@ -3071,7 +3071,7 @@ void Renderer_gl1::connectNeuronsByStroke()
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron) continue;
 			//for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
-			
+	
 			vector<segInfoUnit> segInfo;
 			long segCheck = 0;
 
