@@ -3092,7 +3092,7 @@ void Renderer_gl1::connectNeuronsByStroke()
                         QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
 						if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
                         {
-							qDebug() << p.x() << " " << p.y();
+							//qDebug() << p.x() << " " << p.y();
 							for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[p_listneuron->at(j).seg_id].row.begin();
 								it!=curImg->tracedNeuron.seg[p_listneuron->at(j).seg_id].row.end(); it++)
 							{
@@ -3126,7 +3126,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 			
 			for (vector<segInfoUnit>::iterator it=segInfo.begin(); it!=segInfo.end(); it++)
 			{
-				qDebug() << "\n" << it->segID << " " << it->head_tail;
+				qDebug() << it->segID << " " << it->head_tail;
 				if (it->head_tail == -1)
 				{
 					if ((it+1)->head_tail == -1)
@@ -3135,15 +3135,15 @@ void Renderer_gl1::connectNeuronsByStroke()
 							itNextSeg>=curImg->tracedNeuron.seg[(it+1)->segID].row.begin(); itNextSeg--)
 						{
 							//qDebug() << "=====" << itNextSeg->data[0] << " " << itNextSeg->data[6];
-							curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+							curImg->tracedNeuron.seg[it->segID].row.push_back(*itNextSeg);
 						}
-						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[segInfo[0].segID].row.begin();
-							itSort!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); itSort++)
+						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[it->segID].row.begin();
+							itSort!=curImg->tracedNeuron.seg[it->segID].row.end(); itSort++)
 						{
 							if (itSort->data[6]==-1)
 							{
 								itSort->data[6] = itSort->data[0] + 1;
-								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); itSortMiddle++)
+								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[it->segID].row.end(); itSortMiddle++)
 								{
 									itSortMiddle->data[0] = (itSortMiddle-1)->data[6];
 									itSortMiddle->data[6] = itSortMiddle->data[0] + 1;
@@ -3151,7 +3151,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 								break;
 							}
 						}
-						(curImg->tracedNeuron.seg[segInfo[0].segID].row.end()-1)->data[6] = -1;
+						(curImg->tracedNeuron.seg[it->segID].row.end()-1)->data[6] = -1;
 						//curImg->tracedNeuron.seg[segInfo[0].segID].printInfo();
 						curImg->tracedNeuron.seg[(it+1)->segID].to_be_deleted = true;
 					}
@@ -3161,15 +3161,15 @@ void Renderer_gl1::connectNeuronsByStroke()
 							itNextSeg!=curImg->tracedNeuron.seg[(it+1)->segID].row.end(); itNextSeg++)
 						{
 							//qDebug() << "=====" << itNextSeg->data[0] << " " << itNextSeg->data[6];
-							curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+							curImg->tracedNeuron.seg[it->segID].row.push_back(*itNextSeg);
 						}
-						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[segInfo[0].segID].row.begin();
-							itSort!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); itSort++)
+						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[it->segID].row.begin();
+							itSort!=curImg->tracedNeuron.seg[it->segID].row.end(); itSort++)
 						{
 							if (itSort->data[6]==-1)
 							{
 								itSort->data[6] = itSort->data[0] + 1;
-								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); itSortMiddle++)
+								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[it->segID].row.end(); itSortMiddle++)
 								{
 									itSortMiddle->data[0] = (itSortMiddle-1)->data[6];
 									itSortMiddle->data[6] = itSortMiddle->data[0] + 1;
@@ -3177,7 +3177,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 								break;
 							}
 						}
-						(curImg->tracedNeuron.seg[segInfo[0].segID].row.end()-1)->data[6] = -1;
+						(curImg->tracedNeuron.seg[it->segID].row.end()-1)->data[6] = -1;
 						//curImg->tracedNeuron.seg[segInfo[0].segID].printInfo();
 						curImg->tracedNeuron.seg[(it+1)->segID].to_be_deleted = true;
 					}
@@ -3190,15 +3190,15 @@ void Renderer_gl1::connectNeuronsByStroke()
 							itNextSeg!=curImg->tracedNeuron.seg[(it)->segID].row.end(); itNextSeg++)
 						{
 							//qDebug() << "=====" << itNextSeg->data[0] << " " << itNextSeg->data[6];
-							curImg->tracedNeuron.seg[segInfo[1].segID].row.push_back(*itNextSeg);
+							curImg->tracedNeuron.seg[(it+1)->segID].row.push_back(*itNextSeg);
 						}
-						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[segInfo[1].segID].row.begin();
-							itSort!=curImg->tracedNeuron.seg[segInfo[1].segID].row.end(); itSort++)
+						for (vector<V_NeuronSWC_unit>::iterator itSort=curImg->tracedNeuron.seg[(it+1)->segID].row.begin();
+							itSort!=curImg->tracedNeuron.seg[(it+1)->segID].row.end(); itSort++)
 						{
 							if (itSort->data[6]==-1)
 							{
 								itSort->data[6] = itSort->data[0] + 1;
-								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[segInfo[1].segID].row.end(); itSortMiddle++)
+								for (vector<V_NeuronSWC_unit>::iterator itSortMiddle=(itSort+1); itSortMiddle!=curImg->tracedNeuron.seg[(it+1)->segID].row.end(); itSortMiddle++)
 								{
 									itSortMiddle->data[0] = (itSortMiddle-1)->data[6];
 									itSortMiddle->data[6] = itSortMiddle->data[0] + 1;
@@ -3206,7 +3206,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 								break;
 							}
 						}
-						(curImg->tracedNeuron.seg[segInfo[1].segID].row.end()-1)->data[6] = -1;
+						(curImg->tracedNeuron.seg[(it+1)->segID].row.end()-1)->data[6] = -1;
 						//curImg->tracedNeuron.seg[segInfo[0].segID].printInfo();
 						curImg->tracedNeuron.seg[(it)->segID].to_be_deleted = true;
 					}
