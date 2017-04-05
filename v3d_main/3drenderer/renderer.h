@@ -155,6 +155,8 @@ public:
 	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
 
     virtual void drawVaa3DInfo(int fontsize=30);
+	virtual void drawSegInfo();
+	vector<size_t> SegInfo;
     virtual void drawScaleBar(float AlineWidth=3);
 
 	virtual void updateVolCutRange();

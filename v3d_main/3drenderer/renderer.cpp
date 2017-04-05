@@ -39,7 +39,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "renderer.h"
 #include "v3dr_glwidget.h" //for makeCurrent, drawText
+#include <sstream>
+#include <string>
 
+using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -506,6 +509,64 @@ void Renderer::drawVaa3DInfo(int fontsize)
         //glColor3f(0, 1, 0);		drawString(A0.x, A1.y + td, A0.z, "Y");
         //glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z + td, "Z");
     }
+
+    glPopAttrib();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void Renderer::drawSegInfo()
+{
+	if (SegInfo.empty()) 
+	{
+		//qDebug() << "No segmentation information updated.";
+		return;
+	}
+
+	GLdouble mRot[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
+    for (int i=0; i<3; i++) mRot[i*4 +3]=mRot[3*4 +i]=0; mRot[3*4 +3]=1; // only reserve rotation, remove translation in mRot
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    double aspect = double(screenW)/MAX(screenH,1);
+    double halfw = 1.3*aspect;
+    double halfh = 1.3;
+    glOrtho(-halfw, halfw, -halfh, halfh, -1, 1000); // 1000 makes 0 at most front depth in z-buffer
+    glTranslated(-1.2, +1.15, 0); // put at right-bottom corner
+
+    double sbar = 0.1; // scale bar display size
+    glScaled(sbar*2, sbar*2, sbar*2); //[0,1]-->[-1,+1]
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glMultMatrixd(mRot); // last rotation pose
+
+    glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_POLYGON_OFFSET_LINE);
+
+    glColor3fv(color_line.c);
+
+    BoundingBox BB = UNIT_BoundingBox;
+    float D = (BB.Dmax());
+    float ld = D*0.0001; //1e-4 is best
+    float td = 0.02;
+    XYZ A0 = BB.Vabsmin();
+    XYZ A1 = BB.V1();
+	XYZ A2 = BB.Vabsmax();
+
+	stringstream totalSeg;
+	stringstream segRemain;
+	totalSeg << SegInfo.size(); string segNum = totalSeg.str();
+	string segEntry = "Segments connected: ";
+	segRemain << *(SegInfo.end()-1); string remainSegNum = segRemain.str();
+	string unEntry = "Segments untouched: ";
+	string segNumTex = segEntry + segNum + "   " + unEntry + remainSegNum;
+	
+    drawString(A0.x + td, A0.y, A0.z, &segNumTex[0], 0, 10);
 
     glPopAttrib();
     glMatrixMode(GL_PROJECTION);

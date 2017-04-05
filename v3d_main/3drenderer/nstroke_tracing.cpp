@@ -3077,7 +3077,6 @@ void Renderer_gl1::connectNeuronsByStroke()
 
 			for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
 			{
-
 				for (V3DLONG j=0; j<p_listneuron->size(); j++)
 				{
 					GLdouble px, py, pz, ix, iy, iz;
@@ -3128,7 +3127,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 			{
 				if (segInfo[0].head_tail == -1)
 				{
-					qDebug() << it->segID << " " << it->head_tail;
+					//qDebug() << it->segID << " " << it->head_tail;
 					while (it != (segInfo.end()-1))
 					{
 						if ((it+1)->segID == it->segID) 
@@ -3138,7 +3137,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 						}
 						else 
 						{
-							qDebug() << (it+1)->segID << " " << it->head_tail;
+							//qDebug() << (it+1)->segID << " " << it->head_tail;
 							if ((it+1)->head_tail == -1) 
 							{
 								for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.end()-1;
@@ -3152,7 +3151,9 @@ void Renderer_gl1::connectNeuronsByStroke()
 								curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
 							}
 							curImg->tracedNeuron.seg[(it+1)->segID].to_be_deleted = true;
+							SegInfo.push_back((it+1)->segID);
 							++it;
+							
 						}
 					} 
 
@@ -3168,7 +3169,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 				}
 				else if (segInfo[0].head_tail == 2)
 				{
-					qDebug() << it->segID << " " << it->head_tail;
+					//qDebug() << it->segID << " " << it->head_tail;
 					std::reverse(curImg->tracedNeuron.seg[segInfo[0].segID].row.begin(), curImg->tracedNeuron.seg[segInfo[0].segID].row.end());
 					while (it != (segInfo.end()-1))
 					{
@@ -3179,7 +3180,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 						}
 						else 
 						{
-							qDebug() << (it+1)->segID << " " << (it+1)->head_tail;
+							//qDebug() << (it+1)->segID << " " << (it+1)->head_tail;
 							if ((it+1)->head_tail == -1) 
 							{
 								for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.end()-1;
@@ -3193,6 +3194,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 								curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
 							}
 							curImg->tracedNeuron.seg[(it+1)->segID].to_be_deleted = true;
+							SegInfo.push_back((it+1)->segID);
 							++it;
 						}
 					}
@@ -3212,6 +3214,8 @@ void Renderer_gl1::connectNeuronsByStroke()
 
             curImg->update_3drenderer_neuron_view(w, this);
             curImg->proj_trace_history_append();
+			size_t totalSeg = curImg->tracedNeuron.seg.size();
+			SegInfo.push_back(totalSeg - SegInfo.size());
         }
     }
 }
