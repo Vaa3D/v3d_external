@@ -49,6 +49,13 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
     wriggle_timer->setInterval( (int)(1000.0 * total_wriggle_time / total_wriggle_frames) ); // num of rotations per second = 2 / 15;
     //wriggle_timer->setInterval( 70 );
     QObject::connect(contrastSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateContrast(int)));
+	changingGrid=false;
+	gridSpacing = 1000;
+	deltaGridSpacing = 50;
+	minGridSpacing = 100;
+	maxGridSpacing = 5000;
+	setGrid(-1);
+	
 }
 
 teramanager::CViewer* Mozak3DView::makeView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgData, int _volV0, int _volV1,
@@ -356,6 +363,21 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 	if (((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel))
 	{
 		QWheelEvent* wheelEvt = (QWheelEvent*)event;
+
+
+		if (changingGrid && curr_renderer->showingGrid){
+			if (wheelEvt->delta() > 0 && gridSpacing>minGridSpacing+deltaGridSpacing){
+				this->gridSpacing = this->gridSpacing-deltaGridSpacing;
+			}
+			if (wheelEvt->delta() < 0&& gridSpacing<maxGridSpacing+deltaGridSpacing){
+				this->gridSpacing = this->gridSpacing+deltaGridSpacing;
+			}
+			setGrid(-1);
+			updateGrid();
+			return true;
+		}
+
+
 		if (currentMode == Renderer::smCurveCreate_pointclick || currentMode == Renderer::smCurveCreate_pointclickAutoZ)
 		{
 			// If polyline mode(s), use mouse wheel to change the current z-slice (and restrict to one or NUM_POLY_AUTO_Z_PLANES)
@@ -611,6 +633,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					splitSegmentButton->setChecked(true);
 				changeMode(Renderer::smBreakTwoNeurons, false, true);
                 break;
+			case Qt::Key_G:
+				changingGrid = true;
+				curr_renderer->showingGrid = !curr_renderer->showingGrid;
+				break;
 			case Qt::Key_O:
 				// toggle reconstruction entirely on and off
 				if (curr_renderer->sShowSurfObjects!=2){
@@ -726,29 +752,32 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key
 
-        int keyReleased = key_evt->key();
-        switch (keyReleased)
-        {
-			case Qt::Key_Z:
-				view3DWidget->setThickness(1.0);
-				break;
+		int keyReleased = key_evt->key();
+		switch (keyReleased)
+		{
+		case Qt::Key_G:
+			changingGrid = false;
+			break;
+		case Qt::Key_Z:
+			view3DWidget->setThickness(1.0);
+			break;
 			//case Qt::Key_A:
-			case Qt::Key_C:
-			case Qt::Key_D:
-			case Qt::Key_E:
-            case Qt::Key_J:
+		case Qt::Key_C:
+		case Qt::Key_D:
+		case Qt::Key_E:
+		case Qt::Key_J:
 			//case Qt::Key_P:
-			case Qt::Key_R:
-			case Qt::Key_S:
-                // If exiting a mode, change back to default mode
-				if (curr_renderer->selectMode != Renderer::defaultSelectMode)
-				{
-					changeMode(Renderer::defaultSelectMode, true, true);
-				}
-                break;
-            default:
-				break;
-        }
+		case Qt::Key_R:
+		case Qt::Key_S:
+			// If exiting a mode, change back to default mode
+			if (curr_renderer->selectMode != Renderer::defaultSelectMode)
+			{
+				changeMode(Renderer::defaultSelectMode, true, true);
+			}
+			break;
+		default:
+			break;
+		}
 	}
 	else
 	{
@@ -1609,6 +1638,46 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 	}
 }
 
+void Mozak3DView::updateGrid(){
+
+	QList<ImageMarker> tileGridLocs;
+	QList<long> gridNumbers;
+	tileGridLocs.clear();
+	for (int i =0; i<allGridLocs.length(); i++){
+		for (int j = 0; j<allGridLocs.at(i).length(); j++){
+		if (allGridLocs.at(i).at(j).x >= anoH0-gridSpacing && allGridLocs.at(i).at(j).x <= anoH1 && 
+			allGridLocs.at(i).at(j).y >= anoV0-gridSpacing && allGridLocs.at(i).at(j).y <= anoV1) {
+				tileGridLocs.append(allGridLocs.at(i).at(j));
+				gridNumbers.append((long)(i*gridSpacing+j));
+		}
+		}
+	
+	}
+
+	for (int k =0; k<tileGridLocs.length(); k++){
+		tileGridLocs[k].x = 	getLocalHCoord(tileGridLocs.at(k).x);
+		tileGridLocs[k].y = 	getLocalVCoord(tileGridLocs.at(k).y);
+		tileGridLocs[k].z = 	getLocalDCoord(tileGridLocs.at(k).z);
+	}
+	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+ float	localSpacing = getLocalHCoord((float)gridSpacing) - getLocalHCoord(0.0);
+	curr_renderer->setLocalGrid(tileGridLocs,gridNumbers,localSpacing);
+	// set these new values as the values in the renderer
+}
+
+void Mozak3DView::setGrid(int spacing){
+	if (spacing>=minGridSpacing)	gridSpacing = spacing; //otherwise ignore the input value.  
+	allGridLocs.clear();
+	for (int i = 0; i< 100; i++){
+		QList<ImageMarker> iList;
+		for (int j = 0; j<100; j++){
+			iList.append(ImageMarker((float)i*(float)gridSpacing,(float)j*(float)gridSpacing, 0.0));
+		}
+		allGridLocs.append(iList);
+	}
+	
+}
+
 /*********************************************************************************
 * Receive data (and metadata) from <CVolume> throughout the loading process
 **********************************************************************************/
@@ -1810,7 +1879,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
     window3D->zcmaxSlider->setValue(newZCutMax);
 
 	itm::CViewer::loadAnnotations();
-	makeTracedNeuronsEditable();
+
 
 	MozakUI* moz = MozakUI::getMozakInstance();
 
@@ -1866,7 +1935,7 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
     ((Renderer_gl2*)(view3DWidget->getRenderer()))->lineWidth = prev_line_width;
 	((Renderer_gl2*)(view3DWidget->getRenderer()))->nodeSize = prev_node_size;
 	((Renderer_gl2*)(view3DWidget->getRenderer()))->rootSize = prev_root_size;
-
+	updateGrid();
     updateTranslateXYArrows();
 	updateRendererParams();
 }

@@ -99,6 +99,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QToolButton* overviewMonitorButton;
 		QToolButton* zLockButton;
 		QToolButton* highlightSubtreeButton; // button icon says subtree
+
 		QSpinBox* zLockLayerSB;
 		QLabel* currTypeLabel;
 		QLabel* currZoomLabel;
@@ -114,6 +115,13 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         int prevNodeSize;
         int prevRootSize;
 
+
+		QList<QList<ImageMarker>> allGridLocs;
+		int gridSpacing;
+		int deltaGridSpacing;
+		int minGridSpacing;
+		int maxGridSpacing;
+		bool changingGrid;
 		int extraSurfaceOffset;
         QList <NeuronTree> undoRedoHistory;
         static const int MAX_history = 20;
@@ -310,12 +318,15 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		void overviewMonitorButtonClicked(bool checked);
 		void highlightSubtreeButtonClicked(bool checked);
 		void setZSurfaceLimitValues(int ignore);
-
+		void updateGrid();
+		void setGrid(int spacing);
 		void updateZoomLabel(int zr);
         void paintTimerCall();
         GLdouble wriggleDegreeFunction(int i);
         void wriggleTimerCall();
-	
+		
+
+
 		void overviewSyncOneShot();
 		void updateColorMode(int colorMode);// 0: Vaa3d EditNeuron colors;  1: Mozak colorByAncestry; 2: Vaa3d neuron type colors; 3: BRL review colors;
 		/*********************************************************************************

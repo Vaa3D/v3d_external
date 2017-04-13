@@ -895,6 +895,7 @@ void Renderer_gl1::drawObj()
 	glPopName();
 	glPushName(stNeuronStructure);
 		drawNeuronTreeList();
+		if (showingGrid) drawGrid();
 	glPopName();
 	glPushName(stPointCloud);
 		drawCellList();
@@ -2496,6 +2497,74 @@ void Renderer_gl1::drawNeuronTreeList()
 //	glDisable(GL_CULL_FACE);
 	glPopAttrib();
 }
-/*
-//#include "labelfield.cpp"
-*/
+
+void Renderer_gl1::setLocalGrid(QList<ImageMarker> inputGridList, QList<long> inputGridNumber, float gridside){
+	gridList= inputGridList;
+	gridSpacing =  gridside;
+	gridIndexList = inputGridNumber; // list of indices of the inputGridList used for this tile. this allows a global colormap to be used. 
+	// an alternative scheme would be to have a new struct or class for the grid locations.
+}
+
+QList<ImageMarker> Renderer_gl1::getLocalGrid(){
+	qDebug()<<"getLocalGrid";
+	return gridList;
+}
+
+void Renderer_gl1::drawGrid()
+{
+	if (gridList.size()<1)  return;
+	glPushAttrib(GL_LIGHTING_BIT | GL_POLYGON_BIT);
+	glDisable(GL_LIGHTING);
+    glFrontFace(GL_CW);
+	//glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+	float eps = gridSpacing*.01;
+	for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
+	{
+		setFloatDrawOp(pass, sShowSurfObjects);
+		for (int i=0; i<gridList.size(); i++)
+		{
+			ImageMarker gridMarker = gridList.at(i);
+			glPushName(1+i);
+			glLineWidth(lineWidth);
+			glColor4ub(neuron_type_color[gridIndexList.at(i)%275+20][0], neuron_type_color[gridIndexList.at(i)%255+20][1], neuron_type_color[gridIndexList.at(i)%255+20][2], 128);
+			glPolygonMode( GL_FRONT, GL_FILL );
+			glPolygonMode( GL_BACK, GL_FILL ); 
+			glBegin(GL_POLYGON);
+			glVertex3f(gridMarker.x+eps , gridMarker.y+eps, zCut0);	
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+eps, zCut0);
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+eps, zCut1);
+			glVertex3f(gridMarker.x+eps, gridMarker.y+eps,zCut1);
+			glVertex3f(gridMarker.x+eps , gridMarker.y+eps, zCut0);
+			glEnd();
+			glBegin(GL_POLYGON);
+			glVertex3f(gridMarker.x+eps , gridMarker.y+eps,zCut0);	
+			glVertex3f(gridMarker.x+eps, gridMarker.y+gridSpacing-eps, zCut0);
+			glVertex3f(gridMarker.x+eps, gridMarker.y+gridSpacing-eps,zCut1);
+			glVertex3f(gridMarker.x+eps, gridMarker.y+eps, zCut1);
+			glVertex3f(gridMarker.x+eps , gridMarker.y+eps, zCut0);
+			glEnd();
+			//glColor3ub(0, 255, 255);
+			glBegin(GL_POLYGON);
+			glVertex3f(gridMarker.x+eps , gridMarker.y+gridSpacing-eps, zCut0);	
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+gridSpacing-eps, zCut0);
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+gridSpacing-eps, zCut1);
+			glVertex3f(gridMarker.x+eps, gridMarker.y+gridSpacing-eps,zCut1);
+			glVertex3f(gridMarker.x+eps, gridMarker.y+gridSpacing-eps, zCut0);
+			glEnd();
+			glBegin(GL_POLYGON);
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+eps,zCut0);	
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+gridSpacing-eps, zCut0);
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+gridSpacing-eps,zCut1);
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+eps, zCut1);
+			glVertex3f(gridMarker.x+gridSpacing-eps, gridMarker.y+eps, zCut0);
+			glEnd();
+			glPopName();
+
+		}
+	}
+	setFloatDrawOp(-1, sShowSurfObjects);
+//	glEnable(GL_LIGHTING);
+//	glDisable(GL_CULL_FACE);
+	glPopAttrib();
+}

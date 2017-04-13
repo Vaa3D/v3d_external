@@ -365,6 +365,9 @@ public:
 	void setBasicNeuronColors(NeuronSWC s);
 	bool childHighlightMode;
 
+
+
+
     // beginning of ZJL
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersFastMarching(); //using fast marching method
@@ -607,7 +610,7 @@ private:
         rotateAxisEndNode = XYZ(0, 0, 0);
 
 		childHighlightMode = false;
-
+		showingGrid = false;
 		_idep=0;
 		isSimulatedData=false;
 		data_unitbytes=0;
@@ -653,6 +656,7 @@ private:
 		zMin =-1.0;
 		zMax = 1.0;
 		initColorMaps();
+		gridSpacing = 10.0;
      }
 
 
@@ -687,6 +691,12 @@ public:
      QList <V_NeuronSWC_unit> DraggedNeurons; // ZJL 110921
      V3DLONG draggedCenterIndex; // ZJL 110921
 
+	//overlay grid
+	QList <ImageMarker> gridList;
+	QList<long> gridIndexList;
+	float gridSpacing;
+	bool showingGrid;
+
 
 	// labelfield surf
 	QList <LabelSurf> listLabelSurf;
@@ -712,7 +722,13 @@ public:
 	void updateNeuronBoundingBox();
 	virtual void drawNeuronTree(int i);
 	virtual void drawNeuronTreeList();
-    int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
+	virtual void drawGrid();
+
+	void setLocalGrid(QList<ImageMarker> inputGridList,QList<long> inputGridNumber, float gridside);
+    QList<ImageMarker> getLocalGrid();
+
+
+	int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
     int selectedStartNode; // TDP 20160203 for selecting start node for joining two nodes
     int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
     V3DLONG highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
