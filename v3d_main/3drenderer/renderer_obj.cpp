@@ -1526,17 +1526,16 @@ void Renderer_gl1::setBBZcutFlag(bool cuttingZ){
 void Renderer_gl1::updateNeuronBoundingBoxWithZCut(float zMin, float zMax)
 {
     swcBB = NULL_BoundingBox;
+	if (showingGrid) swcBB.expand(boundingBox);
     foreach(NeuronTree SS, listNeuronTree)
-    //for(int i=0; i<listNeuronTree.size(); i++)
-    { //const QList<NeuronSWC> & listNeuron = listNeuronTree.at(i).listNeuron;
+    { 
     	foreach(NeuronSWC S, SS.listNeuron)
-    	//for (int j=0; j<listNeuron.size(); j++)
- 		{ //const NeuronSWC & S = listNeuron.at(j);
-			//swcBB.expand(XYZ(S));
+ 		{ 
 			float d = S.r *2;
 			swcBB.expand(BoundingBox(XYZ(S)-d, XYZ(S)+d));
 		}
     }
+
 	swcBB.z0= zMin;
 	swcBB.z1 =zMax;
 }
@@ -1546,13 +1545,12 @@ void Renderer_gl1::updateNeuronBoundingBox()
 	if (cuttingZ){	updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
 
     swcBB = NULL_BoundingBox;
+	if (showingGrid) swcBB.expand(boundingBox);
     foreach(NeuronTree SS, listNeuronTree)
-    //for(int i=0; i<listNeuronTree.size(); i++)
-    { //const QList<NeuronSWC> & listNeuron = listNeuronTree.at(i).listNeuron;
+
+    { 
     	foreach(NeuronSWC S, SS.listNeuron)
-    	//for (int j=0; j<listNeuron.size(); j++)
- 		{ //const NeuronSWC & S = listNeuron.at(j);
-			//swcBB.expand(XYZ(S));
+ 		{ 
 			float d = S.r *2;
 			swcBB.expand(BoundingBox(XYZ(S)-d, XYZ(S)+d));
 		}

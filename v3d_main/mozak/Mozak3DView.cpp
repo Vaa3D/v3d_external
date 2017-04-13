@@ -636,6 +636,11 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			case Qt::Key_G:
 				changingGrid = true;
 				curr_renderer->showingGrid = !curr_renderer->showingGrid;
+				if (this->overviewActive){
+					MozakUI* moz = MozakUI::getMozakInstance();
+					Renderer_gl1* overviewRenderer =(Renderer_gl1*)( moz->V3D_env->find3DViewerByName("Overview")->getGLWidget()->getRenderer());
+					overviewRenderer->showingGrid = !overviewRenderer->showingGrid ;
+				}
 				break;
 			case Qt::Key_O:
 				// toggle reconstruction entirely on and off
@@ -1662,6 +1667,12 @@ void Mozak3DView::updateGrid(){
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
  float	localSpacing = getLocalHCoord((float)gridSpacing) - getLocalHCoord(0.0);
 	curr_renderer->setLocalGrid(tileGridLocs,gridNumbers,localSpacing);
+
+	if (this->overviewActive){
+		MozakUI* moz = MozakUI::getMozakInstance();
+		Renderer_gl1* overviewRenderer =(Renderer_gl1*)( moz->V3D_env->find3DViewerByName("Overview")->getGLWidget()->getRenderer());
+		overviewRenderer->setLocalGrid(tileGridLocs,gridNumbers,localSpacing);
+	}
 	// set these new values as the values in the renderer
 }
 
