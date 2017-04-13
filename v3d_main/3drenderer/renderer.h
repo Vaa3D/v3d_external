@@ -84,14 +84,16 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
-					  smConnectNeurons, //MK
+					  smConnectNeurons, smConnectPointCloud,//MK
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
+	enum editMode {segmentEdit, pointCloudEdit}; // MK, for different node connecting mode.
 
 //protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
-     SelectMode refineMode;
+    SelectMode refineMode;
+	editMode connectEdit;
 	void* widget;
 
 public:
@@ -155,8 +157,9 @@ public:
 	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
 
     virtual void drawVaa3DInfo(int fontsize=30);
+	
 	virtual void drawSegInfo();
-	vector<size_t> SegInfo;
+	vector<size_t> segInfoShow;
     virtual void drawScaleBar(float AlineWidth=3);
 
 	virtual void updateVolCutRange();

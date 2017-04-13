@@ -373,6 +373,7 @@ public:
 
 	 //MK
 	 void connectNeuronsByStroke();
+	 void connectPointCloudByStroke();
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();

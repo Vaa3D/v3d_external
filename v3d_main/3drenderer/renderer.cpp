@@ -518,7 +518,7 @@ void Renderer::drawVaa3DInfo(int fontsize)
 
 void Renderer::drawSegInfo()
 {
-	if (SegInfo.empty()) 
+	if (segInfoShow.empty()) 
 	{
 		//qDebug() << "No segmentation information updated.";
 		return;
@@ -558,16 +558,26 @@ void Renderer::drawSegInfo()
     XYZ A1 = BB.V1();
 	XYZ A2 = BB.Vabsmax();
 
-	stringstream totalSeg;
-	stringstream segRemain;
-	totalSeg << SegInfo.size(); string segNum = totalSeg.str();
-	string segEntry = "Segments connected: ";
-	segRemain << *(SegInfo.end()-1); string remainSegNum = segRemain.str();
-	string unEntry = "Segments untouched: ";
-	string segNumTex = segEntry + segNum + "   " + unEntry + remainSegNum;
+	if (connectEdit == segmentEdit)
+	{
+		stringstream totalSeg;
+		stringstream segRemain;
+		totalSeg << segInfoShow.size(); string segNum = totalSeg.str();
+		string segEntry = "Segments connected: ";
+		segRemain << *(segInfoShow.end()-1); string remainSegNum = segRemain.str();
+		string unEntry = "Segments untouched: ";
+		string segNumTex = segEntry + segNum + "   " + unEntry + remainSegNum;
+		drawString(A0.x + td, A0.y, A0.z, &segNumTex[0], 0, 10);
+	}
+	else if (connectEdit == pointCloudEdit)
+	{
+		stringstream totalSeg;
+		totalSeg << segInfoShow.size(); string segNum = totalSeg.str();
+		string segEntry = "Number of segments created: ";
+		string segNumTex = segEntry + segNum;
+		drawString(A0.x + td, A0.y, A0.z, &segNumTex[0], 0, 10);
+	}
 	
-    drawString(A0.x + td, A0.y, A0.z, &segNumTex[0], 0, 10);
-
     glPopAttrib();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
