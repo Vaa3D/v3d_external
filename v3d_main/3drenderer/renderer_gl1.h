@@ -374,6 +374,13 @@ public:
 	 //MK
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
+	 struct segInfoUnit
+	 {
+		long segID;
+		long head_tail;
+		long nodeCount;
+	 };
+	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>& connectedSeg, vector<size_t>& inputSegInfoShow);
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
