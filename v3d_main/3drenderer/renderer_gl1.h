@@ -379,6 +379,7 @@ public:
 		long segID;
 		long head_tail;
 		long nodeCount;
+		long cummNodeCount;
 	 };
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>& connectedSeg, vector<size_t>& inputSegInfoShow);
 

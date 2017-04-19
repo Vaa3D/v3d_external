@@ -158,10 +158,8 @@ public:
 
     virtual void drawVaa3DInfo(int fontsize=30);
 	
-	// MK, showing real item segment editing status
 	virtual void drawSegInfo();
 	vector<size_t> segInfoShow;
-
     virtual void drawScaleBar(float AlineWidth=3);
 
 	virtual void updateVolCutRange();

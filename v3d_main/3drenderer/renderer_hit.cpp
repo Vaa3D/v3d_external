@@ -126,6 +126,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		case stImageMarker: {//marker
 			(qsName = QString("marker #%1 ... ").arg(names[2]) + listMarker.at(names[2]-1).name);
 			LIST_SELECTED(listMarker, names[2]-1, true);
+			qsInfo = info_Marker(names[2]-1);
 		}break;
 		case stLabelSurface: {//label surface
 			(qsName = QString("label surface #%1 ... ").arg(names[2]) + listLabelSurf.at(names[2]-1).name);
@@ -145,7 +146,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		case stPointCloud: {//apo
 			(qsName = QString("point cloud #%1 ... ").arg(names[2]) + listCell.at(names[2]-1).name);
 			LIST_SELECTED(listCell, names[2]-1, true);
-			//qDebug() << qsName;
 		}break;
 		}
 	}
@@ -217,7 +217,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect
+			*actNeuronConnect=0, *actPointCloudConnect=0
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -2130,7 +2130,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	// define a curve //091023
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || 
 		selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smConnectNeurons
-		|| smConnectPointCloud)
+		|| selectMode == smConnectPointCloud)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
