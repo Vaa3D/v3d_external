@@ -182,7 +182,7 @@ struct nodeInfo
 	double sqr1, sqr2, dot, radAngle, distToMain, turnCost;
 	vector<V_NeuronSWC_unit>::iterator nodeAddress;
 	bool front, back;
-	long segID, frontSegID, backSegID;
+	long segID, frontSegID, backSegID, nodeNum;
 };
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
@@ -3153,13 +3153,19 @@ void Renderer_gl1::connectNeuronsByStroke()
 							{
 								for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.end()-1;
 								itNextSeg>=curImg->tracedNeuron.seg[(it+1)->segID].row.begin(); itNextSeg--)
-								curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								{
+									itNextSeg->seg_id = (it+1)->segID;
+									curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								}
 							}
 							else if ((it+1)->head_tail == 2)
 							{
 								for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.begin();
 								itNextSeg!=curImg->tracedNeuron.seg[(it+1)->segID].row.end(); itNextSeg++)
-								curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								{
+									itNextSeg->seg_id = (it+1)->segID;
+									curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								}
 							}
 							curImg->tracedNeuron.seg[(it+1)->segID].to_be_deleted = true;
 							segInfoShow.push_back((it+1)->segID);
@@ -3195,13 +3201,19 @@ void Renderer_gl1::connectNeuronsByStroke()
 							{
 								for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.end()-1;
 								itNextSeg>=curImg->tracedNeuron.seg[(it+1)->segID].row.begin(); itNextSeg--)
-								curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								{
+									itNextSeg->seg_id = (it+1)->segID;
+									curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								}
 							}
 							else if ((it+1)->head_tail == 2)
 							{
 								for (vector<V_NeuronSWC_unit>::iterator itNextSeg=curImg->tracedNeuron.seg[(it+1)->segID].row.begin();
 								itNextSeg!=curImg->tracedNeuron.seg[(it+1)->segID].row.end(); itNextSeg++)
-								curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								{
+									itNextSeg->seg_id = (it+1)->segID;
+									curImg->tracedNeuron.seg[segInfo[0].segID].row.push_back(*itNextSeg);
+								}
 							}
 							curImg->tracedNeuron.seg[(it+1)->segID].to_be_deleted = true;
 							segInfoShow.push_back((it+1)->segID);
@@ -3220,10 +3232,9 @@ void Renderer_gl1::connectNeuronsByStroke()
 					}
 					(curImg->tracedNeuron.seg[segInfo[0].segID].row.end()-1)->data[6] = -1;
 				}
+				if (segInfo.size() > 0) segmentStraighten(curImg->tracedNeuron.seg[segInfo[0].segID].row, curImg, segInfo, segInfoShow);
 			}
 			// END of [Connecting segments, sorting nodes] ---------------------------------------------------------------
-			
-			segmentStraighten(curImg->tracedNeuron.seg[segInfo[0].segID].row, curImg, segInfo, segInfoShow);
 
             curImg->update_3drenderer_neuron_view(w, this);
             curImg->proj_trace_history_append();
@@ -3310,15 +3321,11 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 					 ((inputSeg.end()-1)->z-inputSeg.begin()->z)*((inputSeg.end()-1)->z-inputSeg.begin()->z);
 	double segDist = sqrt(mainSqr);
 	double nodeHeadDot, nodeHeadSqr, nodeHeadRadAngle, nodeToMainDist, nodeToMainDistMean = 0;
-	cout << "segment displacement: " << segDist << endl << endl;
+	//cout << "segment displacement: " << segDist << endl << endl;
 
 	vector<nodeInfo> pickedNode;
-	long inputSegNodeCount = 1;
-	double adjacent = 10;
 	for (vector<V_NeuronSWC_unit>::iterator it=inputSeg.begin()+1; it!=inputSeg.end()-1; ++it)
-	{
-		++inputSegNodeCount;
-		
+	{	
 		dot = ((it-1)->x-it->x)*((it+1)->x-it->x) + ((it-1)->y-it->y)*((it+1)->y-it->y) + ((it-1)->z-it->z)*((it+1)->z-it->z);
 		sq1 = ((it-1)->x-it->x)*((it-1)->x-it->x) + ((it-1)->y-it->y)*((it-1)->y-it->y) + ((it-1)->z-it->z)*((it-1)->z-it->z);
 		sq2 = ((it+1)->x-it->x)*((it+1)->x-it->x) + ((it+1)->y-it->y)*((it+1)->y-it->y) + ((it+1)->z-it->z)*((it+1)->z-it->z);
@@ -3336,54 +3343,26 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 		if ((radAngle/PI) < 0.6) // Detecting sharp turns and distance outliers => a) obviously errorneous depth situation
 		{
 			nodeInfo sharp;
-			sharp.front = false, sharp.back = false;
-			long segNodeCount = 0;
-			vector<segInfoUnit>::iterator infoIt = connectedSeg.begin();
-			while (infoIt!=connectedSeg.end())
-			{
-				segNodeCount = segNodeCount + infoIt->nodeCount;
-				if (inputSegNodeCount <= segNodeCount)  
-				{
-					sharp.segID = infoIt->segID;
-					cout << inputSegNodeCount << " " << segNodeCount << " " << sharp.segID << endl;
-					break;
-				}
-				++infoIt;
-			}
+			sharp.segID = it->seg_id;
+			cout << "picked node seg_ID: " << sharp.segID << endl;
+			
 			sharp.distToMain = nodeToMainDist;
 			sharp.sqr1 = sq1; sharp.sqr2 = sq2; sharp.dot = dot;
 			sharp.radAngle = radAngle;
 			sharp.nodeAddress = it;
 			sharp.turnCost = (sqrt(sq1)+sqrt(sq2)) / (radAngle/PI);
-			cout << sqrt(sharp.sqr1) << " " << sqrt(sharp.sqr2) << " " << endl;
-			if (sqrt(sharp.sqr1) <= adjacent) 
-			{
-				if ((inputSegNodeCount-1) <= (infoIt->cummNodeCount-infoIt->nodeCount))
-				{
-					sharp.front = true;
-					sharp.frontSegID = (infoIt-1)->segID;
-					cout << sharp.frontSegID << " ";
-				}
-			}
-			if (sqrt(sharp.sqr2) <= adjacent) 
-			{
-				if ((inputSegNodeCount+1) > infoIt->cummNodeCount)
-				{
-					sharp.back = true;
-					sharp.backSegID = (infoIt+1)->segID;
-					cout << sharp.backSegID << endl;
-				}
-			}
+			
 			pickedNode.push_back(sharp);
 			turnCostMean = turnCostMean + sharp.turnCost;
 		}
 	}
 	if (pickedNode.empty()) return;
 
-	cout << "======================" << endl;
 	nodeToMainDistMean = nodeToMainDistMean / (inputSeg.size()-2);
 	turnCostMean = turnCostMean / pickedNode.size();
 	cout << "total node numbers: " << inputSeg.size() << endl;
+	cout << "======================" << endl;
+	
 	int delete_count = 0;
 	ptrdiff_t order = 0;
 	for (vector<nodeInfo>::iterator it=pickedNode.begin(); it!=pickedNode.end(); ++it)
@@ -3392,57 +3371,19 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 		if (it->distToMain>=nodeToMainDistMean || it->turnCost>=turnCostMean || it->distToMain>=segDist)
 		{
 			++delete_count;
-			V_NeuronSWC preservedSeg;
-			preservedSeg.row.push_back(*(it->nodeAddress));
 			cout << it->segID << " " << curImgPtr->tracedNeuron.seg[it->segID].to_be_deleted << endl;
 			curImgPtr->tracedNeuron.seg[it->segID].to_be_deleted = false;
+			for (vector<segInfoUnit>::iterator infoIt=connectedSeg.begin(); infoIt!=connectedSeg.end(); ++infoIt)
+			{
+				if (infoIt->segID == it->segID) 
+				{
+					connectedSeg.erase(infoIt);
+					break;
+				}
+			}
 			inputSeg.erase(it->nodeAddress - order);
 			++order;
-			if (it->front == true)
-			{
-				curImgPtr->tracedNeuron.seg[it->frontSegID].to_be_deleted = false;
-				for (vector<segInfoUnit>::iterator ita=connectedSeg.begin(); ita!=connectedSeg.end(); ++ita)
-				{
-					if (ita->segID == it->segID)
-					{
-						connectedSeg.erase(ita);
-						break;
-					}
-				}
-				inputSeg.erase(it->nodeAddress - order);
-				++order;
-				if (it->back == true)
-				{
-					curImgPtr->tracedNeuron.seg[it->backSegID].to_be_deleted = false;
-					for (vector<segInfoUnit>::iterator ita=connectedSeg.begin(); ita!=connectedSeg.end(); ++ita)
-					{
-						if (ita->segID == it->segID)
-						{
-							connectedSeg.erase(ita);
-							break;
-						}
-					}
-					inputSeg.erase(it->nodeAddress - order - 1);
-					++order;
-				}
-			}
-			else
-			{
-				if (it->back == true)
-				{
-					curImgPtr->tracedNeuron.seg[it->backSegID].to_be_deleted = false;
-					for (vector<segInfoUnit>::iterator ita=connectedSeg.begin(); ita!=connectedSeg.end(); ++ita)
-					{
-						if (ita->segID == it->segID)
-						{
-							connectedSeg.erase(ita);
-							break;
-						}
-					}
-					inputSeg.erase(it->nodeAddress - order);
-					++order;
-				}
-			}
+			
 			cout << "delete " << it->segID << " " << delete_count << endl;
 			cout << "----" << endl;
 
@@ -3454,53 +3395,57 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 	}
 
 	cout << "==============" << endl;
-	if (inputSeg.size() > 3)
+	
+	int deleteCount2;
+	do
 	{
-		long segCount2 = 1;
-		long segNodeCount2 = 0;
+		if (inputSeg.size() <= 3) break;
+		deleteCount2 = 0;
 		for (vector<V_NeuronSWC_unit>::iterator it=inputSeg.begin()+1; it!=inputSeg.end()-1; ++it)
 		{
-			++segCount2;
 			double dot2 = (it->x-(it-1)->x)*((it+1)->x-it->x) + (it->y-(it-1)->y)*((it+1)->y-it->y) + (it->z-(it-1)->z)*((it+1)->z-it->z);
 			double sq1_2 = ((it-1)->x-it->x)*((it-1)->x-it->x) + ((it-1)->y-it->y)*((it-1)->y-it->y) + ((it-1)->z-it->z)*((it-1)->z-it->z);
 			double sq2_2 = ((it+1)->x-it->x)*((it+1)->x-it->x) + ((it+1)->y-it->y)*((it+1)->y-it->y) + ((it+1)->z-it->z)*((it+1)->z-it->z);
+			if (isnan( acos(dot2/sqrt(sq1_2*sq2_2)) )) return;
 			double radAngle_2 = acos(dot2/sqrt(sq1_2*sq2_2));
 			cout << "2nd rad Angle:" << radAngle_2 << " [" << it->x << " " << it->y << " " << it->z << "]" << endl;
 			
-			long segID2;
-			if ((radAngle_2/PI)*180 > 90) 
+			if ((radAngle_2/PI)*180 > 70) 
 			{
 				if (sqrt(sq1_2) > (1/10)*sqrt(sq2_2))
 				{
-					vector<segInfoUnit>::iterator infoIt = connectedSeg.begin();
-					while (infoIt!=connectedSeg.end())
+					for (vector<segInfoUnit>::iterator infoIt=connectedSeg.begin(); infoIt!=connectedSeg.end(); ++infoIt)
 					{
-						segNodeCount2 = segNodeCount2 + infoIt->nodeCount;
-						if (segCount2 <= segNodeCount2)
-						{
-							segID2 = infoIt->segID;
-							break;
-						}
+						if (infoIt->segID == it->seg_id) connectedSeg.erase(infoIt);
 					}
-					curImgPtr->tracedNeuron.seg[segID2].to_be_deleted = false;
-					inputSeg.erase(it);
+					++deleteCount2;
+					cout << "delete " << it->seg_id << " " << deleteCount2 << endl;
+					if ((inputSeg.size()-deleteCount2) <= 2)
+					{
+						--deleteCount2;
+						break;
+					}
+					curImgPtr->tracedNeuron.seg[it->seg_id].to_be_deleted = false;
 					for (vector<size_t>::iterator showIt=segShow.begin(); showIt!=segShow.end(); ++showIt) 
 					{
-						if (*showIt == segID2) segShow.erase(showIt);
+						if (*showIt == it->seg_id) segShow.erase(showIt);
 					}
+					inputSeg.erase(it);
 				}
 			}
 		}
-	}
+		cout << "deleted nodes: " << deleteCount2 << "\n=================" << endl;
+	} while (deleteCount2 > 0);
 
 	size_t label = 1;
 	cout << "total node numbers: " << inputSeg.size() << endl;
 	for (vector<V_NeuronSWC_unit>::iterator it=inputSeg.begin(); it!=inputSeg.end(); ++it)
 	{
+		it->seg_id = connectedSeg[0].segID;
 		it->data[0] = label; 
 		it->data[6] = label + 1;
 		++label;
-		cout << "[" << it->x << " " << it->y << " " << it->z << "] ";
+		cout << "[" << it->seg_id << ": " << it->x << " " << it->y << " " << it->z << "] ";
 	}
 	cout << endl;
 	(inputSeg.end()-1)->data[6] = -1;
