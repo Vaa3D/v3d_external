@@ -3461,7 +3461,7 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 	
 	size_t label = 1;
 	cout << "total node numbers: " << inputSeg.size() << endl;
-	cout << "seg num: " << curImgPtr->tracedNeuron.seg.size() << endl;
+	//cout << "seg num: " << curImgPtr->tracedNeuron.seg.size() << endl;
 	for (vector<V_NeuronSWC_unit>::iterator it=inputSeg.begin(); it!=inputSeg.end(); ++it)
 	{
 		it->seg_id = curImgPtr->tracedNeuron.seg.size() + 1;
@@ -3482,7 +3482,7 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 		nodeIt->row[0].seg_id = curImgPtr->tracedNeuron.seg.size() + singleNodeCount;
 		++singleNodeCount;
 		curImgPtr->tracedNeuron.seg.push_back(*nodeIt);
-		cout << "seg num: " << curImgPtr->tracedNeuron.seg.size() << endl;
+		//cout << "seg num: " << curImgPtr->tracedNeuron.seg.size() << endl;
 	}
 		
 	
