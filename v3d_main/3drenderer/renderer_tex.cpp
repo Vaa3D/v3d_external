@@ -567,7 +567,7 @@ void Renderer_gl1::paint()
         glPushMatrix(); //============================================== {
 
         drawVaa3DInfo(16);
-		drawSegInfo();
+		//drawSegInfo();
 
         glPopMatrix(); //========================================================= }
     }
