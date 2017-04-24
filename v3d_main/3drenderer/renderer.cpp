@@ -562,9 +562,9 @@ void Renderer::drawSegInfo()
 	{
 		stringstream totalSeg;
 		stringstream segRemain;
-		totalSeg << segInfoShow.size(); string segNum = totalSeg.str();
+		totalSeg << segInfoShow[0]; string segNum = totalSeg.str();
 		string segEntry = "Segments connected: ";
-		segRemain << *(segInfoShow.end()-1); string remainSegNum = segRemain.str();
+		segRemain << segInfoShow[2]; string remainSegNum = segRemain.str();
 		string unEntry = "Segments untouched: ";
 		string segNumTex = segEntry + segNum + "   " + unEntry + remainSegNum;
 		drawString(A0.x + td, A0.y, A0.z, &segNumTex[0], 0, 10);

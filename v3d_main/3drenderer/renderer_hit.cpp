@@ -440,7 +440,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
 						// MK
-						listAct.append(actNeuronConnect = new QAction("connect separate nodes with one stroke", w));
+						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
 
                         //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                         //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -712,7 +712,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
 				// MK
-				listAct.append(actNeuronConnect = new QAction("connect separate nodes with one stroke", w));
+				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
 
                 //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                 //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
