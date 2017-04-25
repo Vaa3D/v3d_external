@@ -3463,6 +3463,8 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 	//cout << "segment displacement: " << segDist << endl << endl;
 
 	cout << "    -- nodes contained in the segment to be straightned: " << segInfoPtr->nodeCount << endl;
+	for (vector<V_NeuronSWC_unit>::iterator check=inputSeg.begin(); check!=inputSeg.end(); ++check) cout << "[" << check->x << " " << check->y << " " << check->z << "] ";
+	cout << endl;
 	vector<nodeInfo> pickedNode;
 	for (vector<V_NeuronSWC_unit>::iterator it=inputSeg.begin()+1; it!=inputSeg.end()-1; ++it)
 	{	
@@ -3471,7 +3473,6 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 		sq2 = ((it+1)->x-it->x)*((it+1)->x-it->x) + ((it+1)->y-it->y)*((it+1)->y-it->y) + ((it+1)->z-it->z)*((it+1)->z-it->z);
 		if (isnan( acos(dot/sqrt(sq1*sq2)) )) return;
 		radAngle = acos(dot/sqrt(sq1*sq2));
-
 		nodeHeadDot = (it->x-inputSeg.begin()->x)*((inputSeg.end()-1)->x-inputSeg.begin()->x) + 
 					  (it->y-inputSeg.begin()->y)*((inputSeg.end()-1)->y-inputSeg.begin()->y) + 
 					  (it->z-inputSeg.begin()->z)*((inputSeg.end()-1)->z-inputSeg.begin()->z);
@@ -3502,7 +3503,6 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 
 	nodeToMainDistMean = nodeToMainDistMean / (inputSeg.size()-2);
 	turnCostMean = turnCostMean / pickedNode.size();
-	cout << "total node numbers: " << inputSeg.size() << endl;
 	cout << endl << endl << "  ==== start deleting nodes... " << endl;
 	
 	int delete_count = 0;
@@ -3511,12 +3511,13 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 	for (vector<nodeInfo>::iterator it=pickedNode.begin(); it!=pickedNode.end(); ++it)
 	{
 		cout << "  Avg(d(node_main)):" << nodeToMainDistMean << " d(node-main):" << it->distToMain << " Avg(turning cost):" << turnCostMean << " turning cost:" << it->turnCost;
-		cout << "[" << it->x << " " << it->y << " " << it->z << "] " << endl;
+		cout << " [" << it->x << " " << it->y << " " << it->z << "] " << endl;
 		if (it->distToMain>=nodeToMainDistMean || it->turnCost>=turnCostMean || it->distToMain>=segDist)
 		{
 			++delete_count;
-			curImgPtr->tracedNeuron.seg[it->segID].to_be_deleted = true;
+			if (connectEdit == segmentEdit) curImgPtr->tracedNeuron.seg[it->segID].to_be_deleted = true;
 			--(segInfoPtr->nodeCount);
+
 			V_NeuronSWC preservedNode;
 			preservedNode.row.push_back(*(it->nodeAddress - order));
 			preservedNode.row[0].data[6] = -1;
@@ -3556,7 +3557,8 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 						++(segInfoPtr->nodeCount);
 						break;
 					}
-					curImgPtr->tracedNeuron.seg[it->seg_id].to_be_deleted = true;
+					if (connectEdit == segmentEdit) curImgPtr->tracedNeuron.seg[it->seg_id].to_be_deleted = true;
+
 					V_NeuronSWC preservedNode;
 					preservedNode.row.push_back(*it);
 					preservedNode.row[0].data[6] = -1;
@@ -3581,17 +3583,21 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 	}
 	cout << endl;
 	(inputSeg.end()-1)->data[6] = -1;
-	V_NeuronSWC newSeg;
-	newSeg.row = inputSeg;
-	curImgPtr->tracedNeuron.seg[segInfoPtr->segID] = newSeg;
 	
-	size_t singleNodeCount = 1;
-	for (vector<V_NeuronSWC>::iterator nodeIt=preservedSegs.begin(); nodeIt!=preservedSegs.end(); ++nodeIt)
+	if (connectEdit == segmentEdit)
 	{
-		nodeIt->row[0].seg_id = curImgPtr->tracedNeuron.seg.size() + singleNodeCount;
-		++singleNodeCount;
-		curImgPtr->tracedNeuron.seg.push_back(*nodeIt);
-		//cout << "seg num: " << curImgPtr->tracedNeuron.seg.size() << endl;
+		V_NeuronSWC newSeg;
+		newSeg.row = inputSeg;
+		curImgPtr->tracedNeuron.seg[segInfoPtr->segID] = newSeg;
+	
+		size_t singleNodeCount = 1;
+		for (vector<V_NeuronSWC>::iterator nodeIt=preservedSegs.begin(); nodeIt!=preservedSegs.end(); ++nodeIt)
+		{
+			nodeIt->row[0].seg_id = curImgPtr->tracedNeuron.seg.size() + singleNodeCount;
+			++singleNodeCount;
+			curImgPtr->tracedNeuron.seg.push_back(*nodeIt);
+			//cout << "seg num: " << curImgPtr->tracedNeuron.seg.size() << endl;
+		}
 	}
 		
 	return;

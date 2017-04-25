@@ -621,8 +621,8 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
 	if (event->button()==Qt::RightButton && renderer) //right-drag end
     {
-         (renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
-		 qDebug() << "done drawing\n";
+        (renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
+		//qDebug() << "done drawing\n";
 		updateTool();
 
 		POST_updateGL(); //update display of curve
@@ -1312,7 +1312,7 @@ void V3dR_GLWidget::hideTool()
 }
 void V3dR_GLWidget::updateTool()
 {
-	qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
+	//qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
 
 	if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
 	{
