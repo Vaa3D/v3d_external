@@ -3473,9 +3473,9 @@ void Renderer_gl1::connectMarkerByStroke()
 		for (V3DLONG j=0; j<listMarker.size(); j++)
 		{
 			GLdouble px, py, pz, ix, iy, iz;
-			ix = listMarker[j].x + 1;
-			iy = listMarker[j].y + 1;
-			iz = listMarker[j].z + 1;
+			ix = listMarker[j].x - 1;
+			iy = listMarker[j].y - 1;
+			iz = listMarker[j].z - 1;
 			if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
 			{
 				py = viewport[3]-py; //the Y axis is reversed
