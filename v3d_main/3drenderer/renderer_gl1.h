@@ -374,6 +374,7 @@ public:
 	 //MK
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
+	 void connectMarkerByStroke();
 	 struct segInfoUnit
 	 {
 		long segID;

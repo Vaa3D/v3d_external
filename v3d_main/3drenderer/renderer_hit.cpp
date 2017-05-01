@@ -217,7 +217,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0
+			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -558,6 +558,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
 				listAct.append(actMarkerRefineT = new QAction("translate marker position by 1 right-click", w));
+				listAct.append(actMarkerConnect = new QAction("create segments by connecting markers", w));
 				listAct.append(actMarkerDelete = new QAction("delete this marker", w));
 				listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
 				listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
@@ -1747,6 +1748,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
+	/*** Segment functionalities. Developed by MK ***/
 	else if (act == actNeuronConnect) //MK
 	{
 		if (NEURON_CONDITION)
@@ -1758,10 +1760,23 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	}
 	else if (act == actPointCloudConnect)
 	{
-		selectMode = smConnectPointCloud;
-        b_addthiscurve = false;
-        if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		if (NEURON_CONDITION)
+		{
+			selectMode = smConnectPointCloud;
+			b_addthiscurve = false;
+			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
 	}
+	else if (act == actMarkerConnect)
+	{
+		if (NEURON_CONDITION)
+		{
+			selectMode = smConnectMarker;
+			b_addthismarker = false;
+			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	/*************************************************/
 	else if (act==actBreakNeuronSegNearestNeuronNode)
 	{
 		if (NEURON_CONDITION)
@@ -2129,8 +2144,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || 
-		selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smConnectNeurons
-		|| selectMode == smConnectPointCloud)
+		selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons 
+		|| selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2144,7 +2159,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker
+			|| selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -2179,6 +2195,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			// MK
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
+			else if (selectMode == smConnectMarker) connectMarkerByStroke();
 
 			list_listCurvePos.clear();
 			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode

@@ -3426,7 +3426,91 @@ void Renderer_gl1::connectPointCloudByStroke()
 		++nodeLabel;
 	}
 	(newSeg.row.end()-1)->data[6] = -1;
-	cout << " -- points included: " << newSeg.row.size() << endl; 
+	cout << " -- number of points included: " << newSeg.row.size() << endl; 
+
+	vector<segInfoUnit> createdSegs;
+	segInfoUnit singleSeg;
+	singleSeg.nodeCount = newSeg.row.size();
+	singleSeg.refine = true;
+	singleSeg.segID = curImg->tracedNeuron.seg.size() + 1;
+	createdSegs.push_back(singleSeg);
+	vector<segInfoUnit>::iterator refinIt = createdSegs.begin();
+	segmentStraighten(newSeg.row, curImg, refinIt);
+	curImg->tracedNeuron.seg.push_back(newSeg);
+
+	size_t totalSeg = curImg->tracedNeuron.seg.size();
+	segInfoShow.push_back(totalSeg);
+
+	curImg->update_3drenderer_neuron_view(w, this);
+    curImg->proj_trace_history_append();
+	
+	return;
+}
+
+void Renderer_gl1::connectMarkerByStroke()
+{
+	connectEdit = markerEdit;
+
+	//qDebug() << listCell.size();
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
+    float tolerance = 15; // tolerance distance from the backprojected neuron to the curve point
+	
+	V_NeuronSWC_unit node;
+	V_NeuronSWC_unit nodeTemp;
+	V_NeuronSWC newSeg;
+	for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+	{
+		for (V3DLONG j=0; j<listMarker.size(); j++)
+		{
+			GLdouble px, py, pz, ix, iy, iz;
+			ix = listMarker[j].x;
+			iy = listMarker[j].y;
+			iz = listMarker[j].z;
+			if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+			{
+				py = viewport[3]-py; //the Y axis is reversed
+				QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+                QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+				if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
+                {
+					//cout << ix << " " << iy << " " << iz << endl;
+					nodeTemp.set(ix, iy, iz, 1, 2);
+					bool repeat = false;
+					for (vector<V_NeuronSWC_unit>::iterator pointIt=newSeg.row.begin(); pointIt!=newSeg.row.end(); ++pointIt)
+					{
+						if (nodeTemp.x==pointIt->x && nodeTemp.y==pointIt->y && nodeTemp.z==pointIt->z)
+						{
+							repeat = true;
+							break;
+						}
+					}
+					if (repeat == false)
+					{
+						node = nodeTemp;
+						newSeg.row.push_back(node);
+					}
+				}
+			}
+		}
+	}
+	if (newSeg.row.empty()) return;
+	size_t nodeLabel = 1, segNum = curImg->tracedNeuron.seg.size() + 1;
+	std::reverse(newSeg.row.begin(), newSeg.row.end());
+	for (vector<V_NeuronSWC_unit>::iterator itSort=newSeg.row.begin(); itSort!=newSeg.row.end(); itSort++)
+	{
+		itSort->seg_id = segNum;
+		itSort->data[0] = nodeLabel;
+		itSort->data[6] = nodeLabel + 1;
+		++nodeLabel;
+	}
+	(newSeg.row.end()-1)->data[6] = -1;
+	cout << " -- number of markers included: " << newSeg.row.size() << endl; 
 
 	vector<segInfoUnit> createdSegs;
 	segInfoUnit singleSeg;
