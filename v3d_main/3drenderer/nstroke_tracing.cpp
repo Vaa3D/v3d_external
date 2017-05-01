@@ -3348,7 +3348,11 @@ void Renderer_gl1::connectNeuronsByStroke()
 				}
 
 				for (vector<V_NeuronSWC_unit>::iterator reID=curImg->tracedNeuron.seg[segInfo[0].segID].row.begin(); 
-					reID!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); ++reID) reID->seg_id = segInfo[0].segID;
+					reID!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); ++reID) 
+				{
+					reID->seg_id = segInfo[0].segID;
+					reID->type = 3;
+				}
 			}
 			/* ============================== END of [Connet segments] ============================== */
 
@@ -3421,6 +3425,7 @@ void Renderer_gl1::connectPointCloudByStroke()
 	for (vector<V_NeuronSWC_unit>::iterator itSort=newSeg.row.begin(); itSort!=newSeg.row.end(); itSort++)
 	{
 		itSort->seg_id = segNum;
+		itSort->type = 3;
 		itSort->data[0] = nodeLabel;
 		itSort->data[6] = nodeLabel + 1;
 		++nodeLabel;
@@ -3468,9 +3473,9 @@ void Renderer_gl1::connectMarkerByStroke()
 		for (V3DLONG j=0; j<listMarker.size(); j++)
 		{
 			GLdouble px, py, pz, ix, iy, iz;
-			ix = listMarker[j].x;
-			iy = listMarker[j].y;
-			iz = listMarker[j].z;
+			ix = listMarker[j].x + 1;
+			iy = listMarker[j].y + 1;
+			iz = listMarker[j].z + 1;
 			if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
 			{
 				py = viewport[3]-py; //the Y axis is reversed
@@ -3505,6 +3510,7 @@ void Renderer_gl1::connectMarkerByStroke()
 	for (vector<V_NeuronSWC_unit>::iterator itSort=newSeg.row.begin(); itSort!=newSeg.row.end(); itSort++)
 	{
 		itSort->seg_id = segNum;
+		itSort->type = 3;
 		itSort->data[0] = nodeLabel;
 		itSort->data[6] = nodeLabel + 1;
 		++nodeLabel;
