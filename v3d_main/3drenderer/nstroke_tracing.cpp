@@ -3081,35 +3081,47 @@ void Renderer_gl1::connectNeuronsByStroke()
 			long cummNodeNum = 0;
 			
 			/* ============== Get all segments information included in the movePen trajectory, merge, and refine. ============== */
-			/*
-			vector<long> nodeLabel;
-			XYZ minLoc, maxLoc;
-			if (this->boundingboxFromStroke(minLoc, maxLoc) == true)
+			  /* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
+			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+			for (size_t i=0; i<list_listCurvePos.at(0).size(); ++i)
 			{
-				for (size_t i=0; i<p_listneuron->size(); ++i)
-				{
-					GLdouble px, py, pz, ix, iy, iz;
-					ix = p_listneuron->at(i).x;
-					iy = p_listneuron->at(i).y;
-					iz = p_listneuron->at(i).z;
-					gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
-					if((px>=minLoc.x && px<=maxLoc.x) && (py>=minLoc.y && py<=maxLoc.y) && (pz>=minLoc.z && pz<=maxLoc.z)) nodeLabel.push_back(i);
-				}
-				cout << minLoc.x << " " << maxLoc.x << " " << minLoc.y << " " << maxLoc.y << " " << minLoc.z << " " << maxLoc.z << endl;
-				cout << p_listneuron->size() << " " << nodeLabel.size() << endl;
+				if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+				if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
 			}
-			*/
-			
-
+			minX = minX - 5; maxX = maxX + 5;
+			minY = minY - 5; maxY = maxY + 5;
+			//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+			QList<NeuronSWC> nodeOnStroke;
+			for (size_t i=0; i<p_listneuron->size(); ++i)
+			{
+				GLdouble px, py, pz, ix, iy, iz;
+				ix = p_listneuron->at(i).x;
+				iy = p_listneuron->at(i).y;
+				iz = p_listneuron->at(i).z;
+				if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+				{
+					py = viewport[3]-py; //the Y axis is reversed
+					QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+					if ((p.x()>=minX && p.x()<=maxX) && (p.y()>=minY && p.y()<=maxY))
+					{
+						nodeOnStroke.push_back(p_listneuron->at(i));
+						//cout << p.x() << " " << p.y() << endl;
+					}
+				}
+			}
+			  /* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
 
 			for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
 			{
-				for (V3DLONG j=0; j<p_listneuron->size(); j++)
+				for (V3DLONG j=0; j<nodeOnStroke.size(); j++)
 				{
 					GLdouble px, py, pz, ix, iy, iz;
-					ix = p_listneuron->at(j).x;
-					iy = p_listneuron->at(j).y;
-					iz = p_listneuron->at(j).z;
+					ix = nodeOnStroke.at(j).x;
+					iy = nodeOnStroke.at(j).y;
+					iz = nodeOnStroke.at(j).z;
 					if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
 					{
 						py = viewport[3]-py; //the Y axis is reversed
@@ -3118,19 +3130,19 @@ void Renderer_gl1::connectNeuronsByStroke()
                         QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
 						if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
                         {
-							for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[p_listneuron->at(j).seg_id].row.begin();
-								it!=curImg->tracedNeuron.seg[p_listneuron->at(j).seg_id].row.end(); it++)
+							for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
+								it!=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
 							{
-								if (p_listneuron->at(j).x==it->data[2] && p_listneuron->at(j).y==it->data[3] && p_listneuron->at(j).z==it->data[4]) 
+								if (nodeOnStroke.at(j).x==it->data[2] && nodeOnStroke.at(j).y==it->data[3] && nodeOnStroke.at(j).z==it->data[4]) 
 								{
 									if (it->data[6]==2 || it->data[6]==-1)
 									{
 										//---------------------- Get seg IDs
-										//qDebug() << p_listneuron->at(j).seg_id << " " << p_listneuron->at(j).parent << " " << p.x() << " " << p.y();
+										//qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
 										segInfoUnit curSeg;
 										curSeg.head_tail = it->data[6]; 
-										curSeg.segID = p_listneuron->at(j).seg_id;
-										curSeg.nodeCount = curImg->tracedNeuron.seg[p_listneuron->at(j).seg_id].row.size();
+										curSeg.segID = nodeOnStroke.at(j).seg_id;
+										curSeg.nodeCount = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.size();
 										curSeg.refine = false;
 										vector<segInfoUnit>::iterator chkIt = segInfo.end();
 										if (segInfo.begin() == segInfo.end())
@@ -3402,17 +3414,50 @@ void Renderer_gl1::connectPointCloudByStroke()
     //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
     float tolerance = 7; // tolerance distance from the backprojected neuron to the curve point
 	
+	/* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
+	long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+	long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+	for (size_t i=0; i<list_listCurvePos.at(0).size(); ++i)
+	{
+		if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+		if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+		if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+		if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
+	}
+	minX = minX - 5; maxX = maxX + 5;
+	minY = minY - 5; maxY = maxY + 5;
+	//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+	QList<CellAPO> nodeOnStroke;
+	for (size_t i=0; i<listCell.size(); ++i)
+	{
+		GLdouble px, py, pz, ix, iy, iz;
+		ix = listCell[i].x;
+		iy = listCell[i].y;
+		iz = listCell[i].z;
+		if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+		{
+			py = viewport[3]-py; //the Y axis is reversed
+			QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+			if ((p.x()>=minX && p.x()<=maxX) && (p.y()>=minY && p.y()<=maxY))
+			{
+				nodeOnStroke.push_back(listCell[i]);
+				//cout << p.x() << " " << p.y() << endl;
+			}
+		}
+	}
+	/* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
+
 	V_NeuronSWC_unit node;
 	V_NeuronSWC_unit nodeTemp;
 	V_NeuronSWC newSeg;
 	for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
 	{
-		for (V3DLONG j=0; j<listCell.size(); j++)
+		for (V3DLONG j=0; j<nodeOnStroke.size(); j++)
 		{
 			GLdouble px, py, pz, ix, iy, iz;
-			ix = listCell[j].x;
-			iy = listCell[j].y;
-			iz = listCell[j].z;
+			ix = nodeOnStroke[j].x;
+			iy = nodeOnStroke[j].y;
+			iz = nodeOnStroke[j].z;
 			if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
 			{
 				py = viewport[3]-py; //the Y axis is reversed
@@ -3487,17 +3532,50 @@ void Renderer_gl1::connectMarkerByStroke()
     //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
     float tolerance = 15; // tolerance distance from the backprojected neuron to the curve point
 	
+	/* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
+	long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+	long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+	for (size_t i=0; i<list_listCurvePos.at(0).size(); ++i)
+	{
+		if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+		if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+		if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+		if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
+	}
+	minX = minX - 5; maxX = maxX + 5;
+	minY = minY - 5; maxY = maxY + 5;
+	//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+	QList<ImageMarker> nodeOnStroke;
+	for (size_t i=0; i<listMarker.size(); ++i)
+	{
+		GLdouble px, py, pz, ix, iy, iz;
+		ix = listMarker[i].x;
+		iy = listMarker[i].y;
+		iz = listMarker[i].z;
+		if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+		{
+			py = viewport[3]-py; //the Y axis is reversed
+			QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+			if ((p.x()>=minX && p.x()<=maxX) && (p.y()>=minY && p.y()<=maxY))
+			{
+				nodeOnStroke.push_back(listMarker[i]);
+				//cout << p.x() << " " << p.y() << endl;
+			}
+		}
+	}
+	/* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
+
 	V_NeuronSWC_unit node;
 	V_NeuronSWC_unit nodeTemp;
 	V_NeuronSWC newSeg;
 	for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
 	{
-		for (V3DLONG j=0; j<listMarker.size(); j++)
+		for (V3DLONG j=0; j<nodeOnStroke.size(); j++)
 		{
 			GLdouble px, py, pz, ix, iy, iz;
-			ix = listMarker[j].x - 1;
-			iy = listMarker[j].y - 1;
-			iz = listMarker[j].z - 1;
+			ix = nodeOnStroke[j].x - 1;
+			iy = nodeOnStroke[j].y - 1;
+			iz = nodeOnStroke[j].z - 1;
 			if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
 			{
 				py = viewport[3]-py; //the Y axis is reversed
