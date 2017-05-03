@@ -1760,12 +1760,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	}
 	else if (act == actPointCloudConnect)
 	{
-		if (NEURON_CONDITION)
-		{
-			selectMode = smConnectPointCloud;
-			b_addthiscurve = false;
-			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
-		}
+		selectMode = smConnectPointCloud;
+		b_addthiscurve = false;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actMarkerConnect)
 	{

@@ -2380,11 +2380,11 @@ bool Renderer_gl1::boundingboxFromStroke(XYZ& minloc, XYZ& maxloc)
      //
      int boundary = 5;
 
-     minloc.x = minx - boundary;
+     minloc.x = minx - boundary; cout << minloc.x << endl;
      minloc.y = miny - boundary;
      minloc.z = minz - boundary;
 
-     maxloc.x = maxx + boundary;
+     maxloc.x = maxx + boundary; cout << maxloc.x << endl;
      maxloc.y = maxy + boundary;
      maxloc.z = maxz + boundary;
 
@@ -3079,7 +3079,29 @@ void Renderer_gl1::connectNeuronsByStroke()
 			vector<segInfoUnit> segInfo;
 			long segCheck = 0;
 			long cummNodeNum = 0;
+			
 			/* ============== Get all segments information included in the movePen trajectory, merge, and refine. ============== */
+			/*
+			vector<long> nodeLabel;
+			XYZ minLoc, maxLoc;
+			if (this->boundingboxFromStroke(minLoc, maxLoc) == true)
+			{
+				for (size_t i=0; i<p_listneuron->size(); ++i)
+				{
+					GLdouble px, py, pz, ix, iy, iz;
+					ix = p_listneuron->at(i).x;
+					iy = p_listneuron->at(i).y;
+					iz = p_listneuron->at(i).z;
+					gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
+					if((px>=minLoc.x && px<=maxLoc.x) && (py>=minLoc.y && py<=maxLoc.y) && (pz>=minLoc.z && pz<=maxLoc.z)) nodeLabel.push_back(i);
+				}
+				cout << minLoc.x << " " << maxLoc.x << " " << minLoc.y << " " << maxLoc.y << " " << minLoc.z << " " << maxLoc.z << endl;
+				cout << p_listneuron->size() << " " << nodeLabel.size() << endl;
+			}
+			*/
+			
+
+
 			for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
 			{
 				for (V3DLONG j=0; j<p_listneuron->size(); j++)
