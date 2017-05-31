@@ -201,7 +201,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*act_imaging_pinpoint_n_shoot=0, *act_imaging_cut_3d_curve=0,
             *actCurveCreate_zoom_grabhighrezdata=0, *actMarkerCreate_zoom_grabhighrezdata=0, //for TeraManager or similar high-rez data acqusition. by PHC, 20120717
             *actVaa3DNeuron2App2=0, //for Vaa3D_Neuron2 APP tracing. by PHC, 20121201
-			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
+            *actGDCurveline=0, //for GD based curveline detection. by PHC, 20170529
+            //need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
 			*actChangeNeuronSegType=0, *actChangeNeuronSegRadius=0, *actReverseNeuronSeg=0,
 			*actDispRecNeuronSegInfo=0, *actDeleteNeuronSeg=0, *actBreakNeuronSegNearestNeuronNode=0, *actBreakNeuronSeg_markclick=0,
@@ -392,6 +393,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         listAct.append(actVaa3DNeuron2App2 = new QAction("Vaa3D-Neuron2 auto-tracing", w));
                     }
 
+                    pluginsDir1 = pluginsDir;
+                    if (pluginsDir1.cd("plugins/line_detector")==true) //by PHC 20170529
+                    {
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                        listAct.append(actGDCurveline = new QAction("GD-curveline detection", w));
+                    }
                 }
 
 //150616. Add neuron menu when there is only one neuron
@@ -1332,6 +1339,31 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
 		}
 	}
+
+#define __vaa3d_gd_curveline_tracing__ // dummy, just for easy locating //by PHC 20170529
+    else if (act == actGDCurveline)
+    {
+        if (w && curImg)
+        {
+            v3d_msg("Now try to use the GD curveline detection feature.", 0);
+            v3d_imaging_paras myimagingp;
+            myimagingp.OPS = "GD Curveline";
+            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+            //set the hiddenSelectWidget for the V3D mainwindow
+            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+            {
+                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+            }
+            else
+            {
+                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+            }
+        }
+    }
+
+
+
 
 #define __actions_of_marker__ // dummy, just for easy locating
 	else if (act == actMarkerDelete)

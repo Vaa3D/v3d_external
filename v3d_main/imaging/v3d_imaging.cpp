@@ -80,6 +80,14 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
                 return false;
             }            
         }
+        else if (p.OPS == "GD Curveline") //PHC 20170530
+        {
+            if (pluginsDir.cd("plugins/line_detector")==false)
+            {
+                v3d_msg("Cannot find ./plugins/line_detector directory!");
+                return false;
+            }
+        }
         else if (p.OPS == "Fetch Highrez Image Data from File")
         {
             // @FIXED by Alessandro on 2015-09-30.
