@@ -902,8 +902,17 @@ void Renderer_gl1::drawDynamicNeuronTube(float rb, float rt, float length)
 	GLUquadric* Q = gluNewQuadric();
 	gluQuadricOrientation( Q, GLU_OUTSIDE);
 	gluQuadricNormals(Q, GLU_SMOOTH);
-	gluCylinder( Q, .5*rb, .5*rt, length,  mNeuron, 1);
-	gluDeleteQuadric(Q);
+
+    //adaptive mesh density by PHC 20170531
+    double my_r = (rb+rt)/2.0;
+    int mesh_d = mNeuron;
+    if (my_r<=1) mesh_d = 3;
+    else if (my_r>10) mesh_d = mNeuron;
+    else mesh_d = (my_r-1)/(10-1)*(mNeuron-3)+3;
+    gluCylinder( Q, .5*rb, .5*rt, length,  mesh_d, 1);
+
+    //
+    gluDeleteQuadric(Q);
 }
 void Renderer_gl1::saveNeuronTree(int kk, const QString& filename) //kk is the cur number of the tree to save
 {
@@ -1875,9 +1884,10 @@ void Renderer_gl1::drawNeuronTree(int index)
 				m[0][2] = A.z;	m[1][2] = B.z;	m[2][2] = C.z;	m[3][2] = S1.z;
 				m[0][3] = 0;	m[1][3] = 0;	m[2][3] = 0;	m[3][3] = 1;
 				glMultMatrixf(&m[0][0]);
-				if (length >0)
+                if (length > 0)
 				{
-					glPushMatrix();
+                    //v3d_msg(QString("").setNum(i).prepend("swc node = "), 0);
+                    glPushMatrix();
 					//					float s,a,b,c;
 					//					s = length;
 					//					c = (r1-r0)*s / ((r1-r0)*s - r1);		if (r1==r0) c = 0;
@@ -1895,7 +1905,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				}
 				glPushMatrix();
 				{
-					glScaled(r1, r1, r1);
+                    glScaled(r1, r1, r1); //for now the spheres are created using the faster method, w/o resampled mesh density. by PHC 20170531
 					//glScaled(r1/thicknessX, r1/thicknessY, r1/thicknessZ); // 090421 RZC: adjusted with image thickness
 					glCallList(glistTubeEnd);
 				}
