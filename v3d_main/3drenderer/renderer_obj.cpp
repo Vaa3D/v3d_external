@@ -230,6 +230,7 @@ void Renderer_gl1::loadObj()
 	createCell_atom();     		//qDebug("	 glGetError(createCell_atom) = %u", glGetError());
 	CHECK_GLErrorString_throw();
 }
+
 void Renderer_gl1::cleanObj()
 {
 	qDebug("   Renderer_gl1::cleanObj");
@@ -477,6 +478,7 @@ static GLuint _createDiamond()
 }
 static GLuint _createSphere(int m=36)
 {
+	cout << "sphere" << endl;
 	GLuint g = glGenLists(1);
 	glNewList(g, GL_COMPILE);
 	{
@@ -885,6 +887,16 @@ void Renderer_gl1::createNeuron_tube()
 	glistTube    = _createCylinder(mNeuron,1);
 	glistTubeEnd = _createSphere(mNeuron);
 }
+
+void Renderer_gl1::loadObj_meshChange(int new_mesh)
+{
+	cleanObj(); //070905
+	qDebug("  Renderer_gl1::loadObj_changeMesh");
+	glistTube    = _createCylinder(new_mesh, 1);
+	glistTubeEnd = _createSphere(new_mesh); 
+	return;
+}
+
 void Renderer_gl1::drawDynamicNeuronTube(float rb, float rt, float length)
 {
 	GLUquadric* Q = gluNewQuadric();

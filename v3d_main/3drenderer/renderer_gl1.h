@@ -112,6 +112,7 @@ public:
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
 
 	virtual void loadObj();  	// called by initialize()  	// makeCurrent
+	virtual void loadObj_meshChange(int new_mesh); 
 	virtual void cleanObj(); 	// called by ~Renderer_gl1	// makeCurrent
 	virtual void drawObj();  	// called by paint()
 

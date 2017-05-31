@@ -43,7 +43,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../v3d/surfaceobj_annotation_dialog.h"
 #endif
 
-
 ///////////////////////////////////////////////////////////
 #define UPDATE_VIEW(w)   {if(w) w->update();}
 #define ACTIVATE(w)	     {if(w) w->activateWindow();}
@@ -409,6 +408,11 @@ void V3dr_surfaceDialog::doMenuOfColor()
 void V3dr_surfaceDialog::createMenuOfDisplayMode()
 {
     QAction* Act;
+	QAction* mesh18;
+	QAction* mesh54;
+	QAction* mesh72;
+	QAction* meshDefault;
+	QMenu* mesh_menu;
 
     Act = new QAction(tr("Use global setting..."), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingGlobalSettings()));
@@ -421,6 +425,36 @@ void V3dr_surfaceDialog::createMenuOfDisplayMode()
     Act = new QAction(tr("Always tube mode"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingTube()));
     menuDisplayMode.addAction(Act);
+
+	mesh_menu = new QMenu(tr("Change mesh density of neuron surface"), this);
+	menuDisplayMode.addMenu(mesh_menu);
+	meshDefault = new QAction(tr("Default (36)"), this);
+	connect(meshDefault, SIGNAL(triggered()), this, SLOT(setMeshDensityDefault()));
+	mesh_menu->addAction(meshDefault);
+	mesh18 = new QAction(tr("18"), this);
+	connect(mesh18, SIGNAL(triggered()), this, SLOT(setMeshDensity18()));
+	mesh_menu->addAction(mesh18);
+	mesh54 = new QAction(tr("54"), this);
+	connect(mesh54, SIGNAL(triggered()), this, SLOT(setMeshDensity54()));
+	mesh_menu->addAction(mesh54);
+	mesh72 = new QAction(tr("72"), this);
+	connect(mesh72, SIGNAL(triggered()), this, SLOT(setMeshDensity72()));
+	mesh_menu->addAction(mesh72);
+}
+
+void V3dr_surfaceDialog::setMeshDensity(int newMeshDensity)
+{
+	//cout << newMeshDensity << endl;
+	Renderer_gl1* r = renderer;
+	r->cleanObj();
+	this->meshDensity = newMeshDensity;
+	iDrawExternalParameter* idep = (iDrawExternalParameter*) r->_idep;
+	//qDebug() << idep->swc_file_list;
+	QString swcFileName = idep->swc_file_list[0];
+	
+	r->loadObj_meshChange(newMeshDensity);
+	r->loadObjectFilename(swcFileName);
+	return;
 }
 
 void V3dr_surfaceDialog::doMenuOfDisplayMode()

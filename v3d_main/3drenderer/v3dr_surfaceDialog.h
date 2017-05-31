@@ -58,6 +58,7 @@ public:
 	virtual ~V3dr_surfaceDialog();
     void setCurTab(int i)  {if(i<0) i=iLastTab;  if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504, 110713
 	int  getCurTab()       {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622
+	int meshDensity;
 
 protected:
 	V3dR_GLWidget *glwidget, *tolink_widget;
@@ -97,6 +98,11 @@ public slots:
     void setSWCDisplayUsingGlobalSettings() {setSWCDisplayMode(-1);}
     void setSWCDisplayUsingLine() {setSWCDisplayMode(1);}
     void setSWCDisplayUsingTube() {setSWCDisplayMode(0);}
+	void setMeshDensity(int newMeshDensity);
+	void setMeshDensity18() {setMeshDensity(18);}
+	void setMeshDensity54() {setMeshDensity(54);}
+	void setMeshDensity72() {setMeshDensity(72);}
+	void setMeshDensityDefault() {setMeshDensity(36);}
 
 	void pressedClickHandler(int row, int col);
 	void doubleClickHandler(int row, int col);
