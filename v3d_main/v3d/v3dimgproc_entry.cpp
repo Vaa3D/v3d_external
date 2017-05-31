@@ -911,7 +911,7 @@ void XFormView::popupImageProcessingDialog(QString item)
                     v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
                 else
                 {
-                    v3d_msg("Cannot locate the controlling widget,thus do nothing.");
+                    v3d_msg("Cannot locate the controlling widget for GD curveline,thus do nothing.");
                 }
             }
             else if (item==tr(" -- trace one marker to all others"))

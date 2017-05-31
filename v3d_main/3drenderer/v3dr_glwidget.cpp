@@ -983,11 +983,15 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	changeLineOption();
 			}
-              else if(IS_SHIFT_MODIFIER)
-              {
-                   toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
-              }
-              break;
+            else if(IS_SHIFT_MODIFIER)
+            {
+                toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+            }
+            else
+            {
+                callCurveLineDetector();//by PHC 20170531
+            }
+            break;
 
           case Qt::Key_W:
 		    if (IS_ALT_MODIFIER)
@@ -2587,6 +2591,16 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
 		renderer->toggleNStrokeCurveDrawing();
 		POST_updateGL();
 	}
+}
+
+// For curveline detection , by PHC 20170531
+void V3dR_GLWidget::callCurveLineDetector()
+{
+    if (renderer && v3dr_getImage4d(_idep))
+    {
+        v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
+        POST_updateGL();
+    }
 }
 
 void V3dR_GLWidget::setDragWinSize(int csize)
