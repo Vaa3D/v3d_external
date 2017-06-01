@@ -914,6 +914,21 @@ void XFormView::popupImageProcessingDialog(QString item)
                     v3d_msg("Cannot locate the controlling widget for GD curveline,thus do nothing.");
                 }
             }
+            else if (item==tr(" -- GD Curveline infinite")) //by PHC, 20170601
+            {
+                v3d_imaging_paras myimagingp;
+                myimagingp.OPS = "GD Curveline infinite";
+                myimagingp.imgp = (Image4DSimple *)imgData; //the image data for a plugin to call
+
+                if (imgData->getXWidget())
+                {
+                    v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
+                }
+                else
+                {
+                    v3d_msg("Cannot locate the controlling widget for GD curveline,thus do nothing.");
+                }
+            }
             else if (item==tr(" -- trace one marker to all others"))
 			{
 				if (imgData->proj_trace_deformablepath_one_point_to_allotherpoints(imgData->cur_hit_landmark))

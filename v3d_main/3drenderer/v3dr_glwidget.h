@@ -332,7 +332,7 @@ public slots:
     //
 
      virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
-    virtual void callCurveLineDetector(); // for quick curve line structure detection, by PHC, 20170531
+    virtual void callCurveLineDetector(int option); // for quick curve line structure detection, by PHC, 20170531
 
 
      virtual void setDragWinSize(int csize); // ZJL 110927
