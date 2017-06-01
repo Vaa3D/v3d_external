@@ -307,7 +307,7 @@ void Renderer::initialize(int version)
 	glDepthFunc(GL_LESS);
 
 	if (rgbaBuf==0)   color_background = color_background2; // only geometric objects, 081023
-
+	
 	loadObj();
 }
 

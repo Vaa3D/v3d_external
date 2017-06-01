@@ -218,7 +218,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0
+			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0 // MK, 2017 April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -446,7 +446,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-						// MK
+						// MK, MK 2017 April
 						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
 
                         //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
@@ -565,7 +565,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
 				listAct.append(actMarkerRefineT = new QAction("translate marker position by 1 right-click", w));
-				listAct.append(actMarkerConnect = new QAction("create segments by connecting markers", w));
+				listAct.append(actMarkerConnect = new QAction("create segments by connecting markers", w)); // MK, 2017 April
 				listAct.append(actMarkerDelete = new QAction("delete this marker", w));
 				listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
 				listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
@@ -719,7 +719,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                 listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-				// MK
+				// MK, 2017 April
 				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
 
                 //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
@@ -1780,7 +1780,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
-	/*** Segment functionalities. Developed by MK ***/
+	/*** Segment functionalities. MK, 2017 April ***/
 	else if (act == actNeuronConnect) //MK
 	{
 		if (NEURON_CONDITION)
@@ -2221,10 +2221,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             {
                 selectMultiMarkersByStroke();
             }
-			// MK
+			// MK, 2017 April ---------------------------------------------------------
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
+			// ------------------------------------------------------------------------
 
 			list_listCurvePos.clear();
 			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode

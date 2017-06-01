@@ -3054,6 +3054,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     }
 }
 
+// ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------
 void Renderer_gl1::connectNeuronsByStroke()
 {
 	connectEdit = segmentEdit;
@@ -3792,6 +3793,7 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 		
 	return;
 }
+// ---- END of [segment/points could/marker connecting tool, by MK 2017 April ------------------------------]
 
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {

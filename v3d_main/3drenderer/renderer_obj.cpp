@@ -890,7 +890,7 @@ void Renderer_gl1::createNeuron_tube()
 
 void Renderer_gl1::loadObj_meshChange(int new_mesh)
 {
-	cleanObj(); //070905
+	cleanObj();
 	qDebug("  Renderer_gl1::loadObj_changeMesh");
 	glistTube    = _createCylinder(new_mesh, 1);
 	glistTubeEnd = _createSphere(new_mesh); 

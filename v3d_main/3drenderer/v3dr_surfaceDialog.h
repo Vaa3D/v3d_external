@@ -98,11 +98,11 @@ public slots:
     void setSWCDisplayUsingGlobalSettings() {setSWCDisplayMode(-1);}
     void setSWCDisplayUsingLine() {setSWCDisplayMode(1);}
     void setSWCDisplayUsingTube() {setSWCDisplayMode(0);}
-	void setMeshDensity(int newMeshDensity);
+	/*void setMeshDensity(int newMeshDensity);
+	void setMeshDensity27() {setMeshDensity(27);}
 	void setMeshDensity18() {setMeshDensity(18);}
-	void setMeshDensity54() {setMeshDensity(54);}
-	void setMeshDensity72() {setMeshDensity(72);}
-	void setMeshDensityDefault() {setMeshDensity(36);}
+	void setMeshDensity9() {setMeshDensity(9);}
+	void setMeshDensityDefault() {setMeshDensity(36);}*/
 
 	void pressedClickHandler(int row, int col);
 	void doubleClickHandler(int row, int col);

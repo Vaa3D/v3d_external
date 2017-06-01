@@ -408,9 +408,9 @@ void V3dr_surfaceDialog::doMenuOfColor()
 void V3dr_surfaceDialog::createMenuOfDisplayMode()
 {
     QAction* Act;
+	QAction* mesh27;
 	QAction* mesh18;
-	QAction* mesh54;
-	QAction* mesh72;
+	QAction* mesh9;
 	QAction* meshDefault;
 	QMenu* mesh_menu;
 
@@ -426,23 +426,23 @@ void V3dr_surfaceDialog::createMenuOfDisplayMode()
     connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingTube()));
     menuDisplayMode.addAction(Act);
 
-	mesh_menu = new QMenu(tr("Change mesh density of neuron surface"), this);
+	/*mesh_menu = new QMenu(tr("Change mesh density of neuron surface"), this);
 	menuDisplayMode.addMenu(mesh_menu);
 	meshDefault = new QAction(tr("Default (36)"), this);
 	connect(meshDefault, SIGNAL(triggered()), this, SLOT(setMeshDensityDefault()));
 	mesh_menu->addAction(meshDefault);
+	mesh27 = new QAction(tr("27"), this);
+	connect(mesh27, SIGNAL(triggered()), this, SLOT(setMeshDensity27()));
+	mesh_menu->addAction(mesh27);
 	mesh18 = new QAction(tr("18"), this);
 	connect(mesh18, SIGNAL(triggered()), this, SLOT(setMeshDensity18()));
 	mesh_menu->addAction(mesh18);
-	mesh54 = new QAction(tr("54"), this);
-	connect(mesh54, SIGNAL(triggered()), this, SLOT(setMeshDensity54()));
-	mesh_menu->addAction(mesh54);
-	mesh72 = new QAction(tr("72"), this);
-	connect(mesh72, SIGNAL(triggered()), this, SLOT(setMeshDensity72()));
-	mesh_menu->addAction(mesh72);
+	mesh9 = new QAction(tr("9"), this);
+	connect(mesh9, SIGNAL(triggered()), this, SLOT(setMeshDensity9()));
+	mesh_menu->addAction(mesh9);*/
 }
 
-void V3dr_surfaceDialog::setMeshDensity(int newMeshDensity)
+/*void V3dr_surfaceDialog::setMeshDensity(int newMeshDensity)
 {
 	//cout << newMeshDensity << endl;
 	Renderer_gl1* r = renderer;
@@ -455,7 +455,7 @@ void V3dr_surfaceDialog::setMeshDensity(int newMeshDensity)
 	r->loadObj_meshChange(newMeshDensity);
 	r->loadObjectFilename(swcFileName);
 	return;
-}
+}*/
 
 void V3dr_surfaceDialog::doMenuOfDisplayMode()
 {
