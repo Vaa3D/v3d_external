@@ -2597,7 +2597,7 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
 // For curveline detection , by PHC 20170531
 void V3dR_GLWidget::callCurveLineDetector(int option)
 {
-    if (renderer && v3dr_getImage4d(_idep))
+    if (renderer && v3dr_getImage4d(_idep)->get_xy_view())
     {
         if (option==0)
             v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
