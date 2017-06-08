@@ -542,7 +542,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			return teramanager::CViewer::eventFilter(object, event);
 		}
 	}
-	else if (object == view3DWidget && event->type() == QEvent::KeyPress) // intercept keypress events
+	else if (object == view3DWidget && event->type() == (QEvent::Type)6)  //2017-6-9 RZC: deal with the #define KeyPress in X.h of XWindow
+														//QEvent::KeyPress) // intercept keypress events
 	{
 		key_evt = (QKeyEvent*)event;
 
@@ -752,7 +753,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				break;
 		}
 	}
-	else if (event->type() == QEvent::KeyRelease) // intercept keypress events
+	else if (event->type() == (QEvent::Type)7)  //2017-6-9 RZC: deal with the #define KeyRelease in X.h of XWindow
+							//QEvent::KeyRelease) // intercept keypress events
 	{
 		key_evt = (QKeyEvent*)event;
 		if (key_evt->isAutoRepeat()) return true; // ignore holding down of key

@@ -40,7 +40,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer.h"
 #include "v3dr_glwidget.h" //for makeCurrent, drawText
 
-Renderer::SelectMode Renderer::defaultSelectMode = Renderer::SelectMode::smObject;
+Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
 ////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(void* widget)

@@ -116,7 +116,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         int prevRootSize;
 
 
-		QList<QList<ImageMarker>> allGridLocs;
+		QList< QList<ImageMarker> > allGridLocs;
 		int gridSpacing;
 		int deltaGridSpacing;
 		int minGridSpacing;
