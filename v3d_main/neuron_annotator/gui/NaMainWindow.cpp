@@ -333,6 +333,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     // show axes
     connect(ui->actionShow_Axes, SIGNAL(toggled(bool)),
             ui->v3dr_glwidget, SLOT(setShowCornerAxes(bool)));
+    // show scale bar
+    connect(ui->actionShow_Scale_Bar, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(showScaleBar(bool)));
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui->actionLink_viewers, SIGNAL(toggled(bool)),
@@ -1941,6 +1944,9 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
         ui->naLargeMIPWidget->setMipMergedData(NULL);
         return;
     }
+
+    connect(dataFlowModel, SIGNAL(zRatioChanged(double)),
+            ui->zThicknessDoubleSpinBox, SLOT(setValue(double)));
 
     connect(this, SIGNAL(subsampleLabelPbdFileNamed(QUrl)),
             &dataFlowModel->getVolumeTexture(), SLOT(setLabelPbdFileUrl(QUrl)));

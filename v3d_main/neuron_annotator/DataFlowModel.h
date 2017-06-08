@@ -39,7 +39,9 @@ public:
         return zRatio;
     }
     void setZRatio(double ZRatioParam) {
+        if (zRatio == ZRatioParam) return;
         zRatio=ZRatioParam;
+        emit zRatioChanged(zRatio);
     }
 
     void setMultiColorImageStackNode(MultiColorImageStackNode* node)
@@ -101,6 +103,7 @@ signals:
     void volumeDataNeeded(); // stimulate VolumeData to load images from disk
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
+    void zRatioChanged(double ratio);
 
 public slots:
     void cancel();

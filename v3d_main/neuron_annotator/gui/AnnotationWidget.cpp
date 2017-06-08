@@ -15,8 +15,7 @@
 #include "../utility/DataThread.h"
 #include "../utility/JacsUtil.h"
 #include <QModelIndex>
-
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#ifdef USE_Qt5
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -240,6 +239,7 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
                     if ((x > 0.0) && (z/x > 0.0)) {
                         naMainWindow->getDataFlowModel()->setZRatio(z/x);
                         naMainWindow->get3DWidget()->setThickness(z/x);
+                        naMainWindow->get3DWidget()->xVoxelSizeInMicrons = x;
                     }
                 }
             }

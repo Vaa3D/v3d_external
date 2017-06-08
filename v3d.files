@@ -2072,3 +2072,5 @@ v3d_main/3drenderer/marchingcubes.h
 v3d_main/3drenderer/nstroke.cpp
 v3d_main/3drenderer/nstroke_tracing.cpp
 v3d_main/3drenderer/marchingcubes.cpp
+v3d_main/neuron_annotator/gui/ScaleBar.h
+v3d_main/neuron_annotator/gui/ScaleBar.cpp
