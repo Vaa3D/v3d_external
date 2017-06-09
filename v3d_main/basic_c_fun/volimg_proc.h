@@ -1500,5 +1500,17 @@ template <class T> double twopoints_lineprofile_3dimg_sum(T *** img, V3DLONG sz0
 		return 0;
 }
 
+template <class T> double cosangle_two_vectors(const T a[3], const T b[3]) //in case an error, return -2
+{
+    double vab=0,vaa=0,vbb=0;
+    for (int i=0;i<3;i++)
+    {
+        vab += a[i]*b[i];
+        vaa += a[i]*a[i];
+        vbb += b[i]*b[i];
+    }
+    return (vaa*vbb<1e-10) ? -2 : vab/sqrt(vaa*vbb);
+}
+
 #endif
 

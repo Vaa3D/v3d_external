@@ -989,7 +989,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             else
             {
-                callCurveLineDetector();//by PHC 20170531
+                //callCurveLineDetector(0); //the 0 option is for a fixed 32 window
+                callCurveLineDetector(1);//by PHC 20170531. // the 1 option is for calling the curveline detector using its infinite loop mode
             }
             break;
 
@@ -2594,12 +2595,18 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
 }
 
 // For curveline detection , by PHC 20170531
-void V3dR_GLWidget::callCurveLineDetector()
+void V3dR_GLWidget::callCurveLineDetector(int option)
 {
-    if (renderer && v3dr_getImage4d(_idep))
+    if (renderer && _idep && v3dr_getImage4d(_idep))
     {
-        v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
-        POST_updateGL();
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            if (option==0)
+                v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
+            else
+                v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline infinite"));
+            POST_updateGL();
+        }
     }
 }
 

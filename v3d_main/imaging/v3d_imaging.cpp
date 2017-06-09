@@ -80,7 +80,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
                 return false;
             }            
         }
-        else if (p.OPS == "GD Curveline") //PHC 20170530
+        else if (p.OPS == "GD Curveline" || p.OPS == "GD Curveline infinite") //PHC 20170530
         {
             if (pluginsDir.cd("plugins/line_detector")==false)
             {
