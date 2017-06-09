@@ -3136,7 +3136,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 							{
 								if (nodeOnStroke.at(j).x==it->data[2] && nodeOnStroke.at(j).y==it->data[3] && nodeOnStroke.at(j).z==it->data[4]) 
 								{
-									if (it->data[6]==2 || it->data[6]==-1)
+									if (it->data[6]==2 || it->data[6]==-1) // only allows heads or tails
 									{
 										//---------------------- Get seg IDs
 										//qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
@@ -3794,6 +3794,101 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 	return;
 }
 // ---- END of [segment/points could/marker connecting tool, by MK 2017 April ------------------------------]
+
+// ---- neuron chopping tool, by MK 2017 June --------------------------------------------------------------
+void Renderer_gl1::cutNeuronsByStroke()
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
+    float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+	
+    // back-project the node curve points and mark segments to be chopped
+    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+    {
+        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+        if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+        {
+            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+            if (!p_listneuron) continue;
+			//for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
+			
+			/* ============== Get all segments and nodes information included in the movePen trajectory. ============== */
+			  /* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
+			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+			for (size_t i=0; i<list_listCurvePos.at(0).size(); ++i)
+			{
+				if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+				if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
+			}
+			minX = minX - 5; maxX = maxX + 5;
+			minY = minY - 5; maxY = maxY + 5;
+			//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+			QList<NeuronSWC> nodeOnStroke;
+			for (size_t i=0; i<p_listneuron->size(); ++i)
+			{
+				GLdouble px, py, pz, ix, iy, iz;
+				ix = p_listneuron->at(i).x;
+				iy = p_listneuron->at(i).y;
+				iz = p_listneuron->at(i).z;
+				if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+				{
+					py = viewport[3]-py; //the Y axis is reversed
+					QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+					if ((p.x()>=minX && p.x()<=maxX) && (p.y()>=minY && p.y()<=maxY))
+					{
+						nodeOnStroke.push_back(p_listneuron->at(i));
+						//cout << p.x() << " " << p.y() << endl;
+					}
+				}
+			}
+			//for (QList<NeuronSWC>::iterator strokeIt=nodeOnStroke.begin(); strokeIt!=nodeOnStroke.end(); ++strokeIt) cout << strokeIt->n << " " << strokeIt->parent << endl;
+			  /* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
+			
+			for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); ++i)
+			{
+				for (V3DLONG j=0; j<nodeOnStroke.size(); ++j)
+				{
+					GLdouble px, py, pz, ix, iy, iz;
+					ix = nodeOnStroke.at(j).x;
+					iy = nodeOnStroke.at(j).y;
+					iz = nodeOnStroke.at(j).z;
+					if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+					{
+						py = viewport[3]-py; //the Y axis is reversed
+						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+                        QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+						if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance )
+                        {
+							for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
+								it!=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); ++it)
+							{
+								if (nodeOnStroke.at(j).x==it->data[2] && nodeOnStroke.at(j).y==it->data[3] && nodeOnStroke.at(j).z==it->data[4]) 
+								{
+									it->data[6] = -1;
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+	}
+
+	return;
+}
+// ---- END of [neuron cutting tool, by MK 2017 June -------------------------------------------------------]
 
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {

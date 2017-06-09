@@ -218,7 +218,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0 // MK, 2017 April
+			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0; // MK, 2017 April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -446,8 +446,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-						// MK, MK 2017 April
+						// MK, 2017 April
 						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+
+						// MK, 2017 June
+						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
 
                         //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                         //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -721,6 +724,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 				// MK, 2017 April
 				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+
+				// MK, 2017 June
+				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
 
                 //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                 //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -1806,6 +1812,19 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}
 	}
 	/*************************************************/
+
+	/*** Neuron cutting functionalities. MK, 2017 June ***/
+	else if (act == actNeuronCut)
+	{
+		if (NEURON_CONDITION)
+		{
+            selectMode = smCutNeurons;
+            b_addthiscurve = false;
+            if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	/*****************************************************/
+
 	else if (act==actBreakNeuronSegNearestNeuronNode)
 	{
 		if (NEURON_CONDITION)
@@ -2174,7 +2193,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	// define a curve //091023
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || 
 		selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons 
-		|| selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker)
+		|| selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker
+		|| selectMode == smCutNeurons)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2188,7 +2208,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker
+        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons
 			|| selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		if (list_listCurvePos.size() >= N)
 		{
@@ -2225,6 +2245,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
+			// MK, 2017 June ----------------------------------------------------------
+			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
 
 			list_listCurvePos.clear();

@@ -372,7 +372,7 @@ public:
      // @ADDED by Alessandro on 2015-05-07. Multiple neuron segments delete by one-mouse stroke.
      void deleteMultiNeuronsByStroke();
 
-	 // ------ Segment/points could/marker connecting tool, by MK 2017 April ------------
+	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
 	 void connectMarkerByStroke();
@@ -384,6 +384,7 @@ public:
 		bool refine;
 	 };
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
+	 void cutNeuronsByStroke();
 	 // ---------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
