@@ -200,11 +200,11 @@ B - Difference) 24 to 127 : Implies the prior 3-bit value is to be followed by (
 110 =  1, -1
 111 =  1,  1
 
-The maximum difference-encoding efficiency is (135*2)/52 = 5.2 positions/byte. NOTE: a sequence of { -1, -1 } can occur, as long as it is split by a 3-bit encoding boundary. 
+The maximum difference-encoding efficiency is (135*2)/52 = 5.2 positions/byte. NOTE: a sequence of { -1, -1 } can occur, as long as it is split by a 3-bit encoding boundary.
 
 C - Repeat) 128 to 255 : The following byte should be divided into two sections, the first 3-bits, and then the following 5-bits.
 
-The key byte should be interpreted as a 7-bit number by subtracting 128, giving a range of 0-127. The 5-bits in the following byte are added to 
+The key byte should be interpreted as a 7-bit number by subtracting 128, giving a range of 0-127. The 5-bits in the following byte are added to
 these 7 bits to give 12-bits of repeat spec, or 4096 max. The actual repeat value is this 12-bit value +1 (because a repeat of 0 doesn't make sense).
 
 ==============================
@@ -213,7 +213,7 @@ Cost Matrix:
 
 #     Literal    Diff     Repeat
 
-1       2        -        2                
+1       2        -        2
 2       2        2        2
 3       3        2        2
 4       3        2        2
@@ -1000,7 +1000,8 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 d1=sourceChar;
                 d1 >>= 2;
                 d1 &= ooooolll;
-                target16Data[dp++]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                target16Data[dp]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                dp++;
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
@@ -1017,7 +1018,8 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 carryOver <<= 1;
                 d0 >>= 7;
                 d0 |= carryOver;
-                target16Data[dp++]=target16Data[dp-1]+(d0<5?d0:4-d0);
+                target16Data[dp]=target16Data[dp-1]+(d0<5?d0:4-d0);
+                dp++;
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
@@ -1026,7 +1028,8 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 d1=sourceChar;
                 d1 >>= 4;
                 d1 &= ooooolll;
-                target16Data[dp++]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                target16Data[dp]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                dp++;
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
@@ -1035,7 +1038,8 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 d2=sourceChar;
                 d2 >>= 1;
                 d2 &= ooooolll;
-                target16Data[dp++]=target16Data[dp-1]+(d2<5?d2:4-d2);
+                target16Data[dp]=target16Data[dp-1]+(d2<5?d2:4-d2);
+                dp++;
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
@@ -1052,7 +1056,8 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 d0 >>= 6;
                 carryOver <<= 2;
                 d0 |= carryOver;
-                target16Data[dp++]=target16Data[dp-1]+(d0<5?d0:4-d0);
+                target16Data[dp]=target16Data[dp-1]+(d0<5?d0:4-d0);
+                dp++;
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
@@ -1061,7 +1066,8 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 d1=sourceChar;
                 d1 >>= 3;
                 d1 &= ooooolll;
-                target16Data[dp++]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                target16Data[dp]=target16Data[dp-1]+(d1<5?d1:4-d1);
+
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
@@ -1069,7 +1075,8 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 }
                 d2=sourceChar;
                 d2 &= ooooolll;
-                target16Data[dp++]=target16Data[dp-1]+(d2<5?d2:4-d2);
+                target16Data[dp]=target16Data[dp-1]+(d2<5?d2:4-d2);
+                dp++;
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
@@ -1536,7 +1543,7 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
 	unsigned char value=sourceBuffer[cp];
 	if (value<sourceMin) {
 	  sourceMin=value;
-	} 
+	}
 	if (value>sourceMax) {
 	  sourceMax=value;
 	}
@@ -1645,7 +1652,7 @@ V3DLONG ImageLoaderBasic::compressPBD3(unsigned char * compressionBuffer, unsign
 	    if (DEBUG) cerr << "Check1\n";
 	    pbd3FindFirstRepeatOfMinLength(sourceBuffer, i, diffTest, PBD_3_DIFF_REPEAT_THRESHOLD, firstRepeatBuffer);
 	    if (firstRepeatBuffer[PBD_3_REPEAT_STARTING_POSITION]>0) {
-	      // Implies repeat found - encode the pre-repeat region. 
+	      // Implies repeat found - encode the pre-repeat region.
 	      diffTest=firstRepeatBuffer[PBD_3_REPEAT_STARTING_POSITION] - i;
 	      // If diffTest is not even, this means the repeat starts off-stride, so grab the extra position
 	      if (diffTest % 2 != 0) {
@@ -2079,7 +2086,7 @@ void ImageLoaderBasic::pbd3FlushLiteral(unsigned char* compressionBuffer, unsign
 // points to the first invalid data position, i.e., all previous positions starting with compressionBuffer
 // are valid.
 void ImageLoaderBasic::updateCompressionBuffer3(unsigned char * updatedCompressionBuffer) {
-  
+
   DEBUG_SUMMARY=false;
   V3DLONG uP=(V3DLONG)updatedCompressionBuffer;
   //  cerr << "updateCompressionBuffer3 - updatedCompressionBuffer=" << uP << "\n";
@@ -2273,7 +2280,7 @@ V3DLONG ImageLoaderBasic::decompressPBD3(unsigned char * sourceData, unsigned ch
 	  iv = value;
 	  cerr << "Value Post=" << iv << "\n";
 	}
-	 
+
 	// Debug
 	int ic=0;
 
@@ -2341,7 +2348,7 @@ V3DLONG ImageLoaderBasic::decompressPBD3(unsigned char * sourceData, unsigned ch
 		l++;
 	      }
 	    }
-	    
+
 	    if (DEBUG) {
 	      cerr << "\n";
 	    }
@@ -2427,10 +2434,10 @@ V3DLONG ImageLoaderBasic::decompressPBD3(unsigned char * sourceData, unsigned ch
 		vC=v;
 		if (DEBUG_SUMMARY) cerr << " bitOffset 7 check: v=" << vC << "\n";
 	    }
-	    
+
 	    //	    targetData[dp++]=valueByLevel[0];
 	    //	    targetData[dp++]=valueByLevel[0];
-	    
+
 	    int pvC=previousValue;
 	    if (DEBUG_SUMMARY) cerr << " previousValue= " << pvC << "\n";
 
@@ -2560,7 +2567,7 @@ int ImageLoaderBasic::pbd3GetRepeatCountFromBytes(unsigned char keyByte, unsigne
     cerr << "Repeat count should not be " << repeatCount << "\n";
     exit(1);
   }
-  repeatCount++; 
+  repeatCount++;
   return repeatCount;
 }
 
