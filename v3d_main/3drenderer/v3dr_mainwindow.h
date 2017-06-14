@@ -221,7 +221,7 @@ public:
 	QAbstractSlider *zoomSlider, *xShiftSlider, *yShiftSlider;
     QSpinBox *xRotBox, *yRotBox, *zRotBox, *zoomBox, *xShiftBox, *yShiftBox;
     QCheckBox *checkBox_absoluteRot;
-    QPushButton *zoomReset, *rotReset, *rotAbsolute, *rotAbsolutePose;
+    QPushButton *zoomReset, *rotReset, *rotAbsolute, *rotAbsolutePose,*rotVRView;//wwbmark freeze
 
     QTabWidget *tabRotZoom;
 
@@ -281,7 +281,7 @@ public:
 		zoomSlider=xShiftSlider=yShiftSlider=0;
 	    xRotBox=yRotBox=zRotBox=zoomBox=xShiftBox=yShiftBox=0;
 	    checkBox_absoluteRot=0;
-		zoomReset=rotReset=rotAbsolute=rotAbsolutePose=0;
+		zoomReset=rotReset=rotAbsolute=rotAbsolutePose=rotVRView=0;
 
 		tabRotZoom=0;
 

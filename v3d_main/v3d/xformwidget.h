@@ -353,6 +353,7 @@ public slots:
 	void popupImageProcessingDialog();
 	void popupImageProcessingDialog(QString item);
 	void doImage3DView();
+	void doImageVRView();//VR
 	void doImage3DLocalMarkerView();
 	void doImage3DLocalRoiView();
 	void doImage3DLocalBBoxView(); //do not have arguments so that can be used as the slot of a timer signal

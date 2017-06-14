@@ -141,6 +141,7 @@ public slots:
 	void func_procLandmarkManager();
 	void func_procAtlasViewer();
 	void func_proc3DViewer();
+	void func_procVRViewer();//VR
 	void func_proc3DLocalRoiViewer();
 	void func_procSettings();
 	void func_proc_plugin_manager();
@@ -357,6 +358,7 @@ private:
 	QAction * procLandmarkManager;
 	QAction * procAtlasViewer;
 	QAction * proc3DViewer;
+	QAction * procVRViewer;//2017-06-11 by Yimin Wang
 	QAction * proc3DLocalRoiViewer;
 	QAction * procSettings;
 	QAction * proc_plugin_manager;

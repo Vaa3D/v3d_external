@@ -129,6 +129,7 @@ public:
 	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep) =0;
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep) =0;
 	virtual void absoluteRotPose() =0;
+	virtual void absoluteVRview() =0; //2017-06-11 by Yimin Wang
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot) =0;
 	virtual void lookAlong(float xLook, float yLook, float zLook) =0;
 

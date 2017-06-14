@@ -45,7 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
-
+#include "../vrrenderer/v3dr_gl_vr.h"
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
@@ -1532,6 +1532,32 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
+void V3dR_GLWidget::absoluteVRview()//0518
+{
+
+		NeuronTree nt;
+		nt.listNeuron.clear();
+		nt.hashNeuron.clear();
+		Renderer_gl1* tempptr = (Renderer_gl1*)renderer;//->getHandleNeuronTrees();
+		const QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+		int index=0,lineType;//change to  load neurontreelist
+		//lineType = tempptr->lineType;
+		lineType=0;
+		nt = listNeuronTrees->at(index);
+		//nt = tempptr->getHandleNeuronTrees()->at(index);
+		if(nt.listNeuron.size()>0)
+		{
+			v3d_msg("succeed in getting neurontree data.\n");
+			//doimageVRViewer_v2(nt,lineType);
+			doimageVRViewer(nt);
+		}
+		else
+		{
+			return;
+		}//*/
+		
+	
+}
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {
