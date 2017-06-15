@@ -190,8 +190,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_landmark.h \
     ../basic_c_fun/v3d_interface.h \
     ../basic_c_fun/v3d_global_preference.h \
-	../basic_c_fun/customary_structs/v3d_imaging_para.h \
-	../basic_c_fun/basic_thread.h \
+    ../basic_c_fun/customary_structs/v3d_imaging_para.h \
+    ../basic_c_fun/basic_thread.h \
+    ../basic_c_fun/basic_view3d.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \
@@ -313,6 +314,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
+    ../3drenderer/v3dr_control_signal.cpp \
  \ #    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
 	../imaging/v3d_imaging.cpp \

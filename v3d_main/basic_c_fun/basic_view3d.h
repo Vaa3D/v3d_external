@@ -30,11 +30,16 @@
  * basic_view3d.h
  *
  *  Created on: Aug 11, 2010
- *      Author: ruanz
+ *      Author: ruanz and hanchuanp
  */
+//last change: add vr support 20160615 by PHC
 
 #ifndef BASIC_VIEW3D_H_
 #define BASIC_VIEW3D_H_
+
+#if defined(_WIN32) || defined(_WIN64)
+#define __ALLOW_VR_FUNCS__
+#endif
 
 class View3DControl
 {
@@ -129,8 +134,11 @@ public:
 	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep) =0;
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep) =0;
 	virtual void absoluteRotPose() =0;
-	virtual void absoluteVRview() =0; //2017-06-11 by Yimin Wang
-	virtual void doAbsoluteRot(int xRot, int yRot, int zRot) =0;
+
+#ifdef __ALLOW_VR_FUNCS__
+    virtual void absoluteVRview() =0; //2017-06-11 by Yimin Wang
+#endif
+    virtual void doAbsoluteRot(int xRot, int yRot, int zRot) =0;
 	virtual void lookAlong(float xLook, float yLook, float zLook) =0;
 
 	virtual void setZoom(int r) =0;

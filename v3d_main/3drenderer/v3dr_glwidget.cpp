@@ -1532,6 +1532,7 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
+#ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::absoluteVRview()//0518
 {
 
@@ -1555,9 +1556,9 @@ void V3dR_GLWidget::absoluteVRview()//0518
 		{
 			return;
 		}//*/
-		
 	
 }
+#endif
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {

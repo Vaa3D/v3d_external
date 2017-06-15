@@ -4917,6 +4917,7 @@ void XFormWidget::doImage3DView()
 }
 
 
+#ifdef __ALLOW_VR_FUNCS__
 void XFormWidget::doImageVRView()//VR
 {
 	NeuronTree nt;
@@ -4924,8 +4925,9 @@ void XFormWidget::doImageVRView()//VR
 	nt.hashNeuron.clear();
 	//doimageVRViewer_v2(nt,0);
 	doimageVRViewer(nt);
-
 }
+#endif
+
 void XFormWidget::doImage3DLocalMarkerView()
 {
 	if (!imgData)  return;

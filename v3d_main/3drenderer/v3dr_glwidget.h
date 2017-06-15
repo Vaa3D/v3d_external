@@ -250,7 +250,9 @@ public slots:
 	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void absoluteRotPose();
-	virtual void absoluteVRview();
+#ifdef __ALLOW_VR_FUNCS__
+    virtual void absoluteVRview();
+#endif
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
 	virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
 
