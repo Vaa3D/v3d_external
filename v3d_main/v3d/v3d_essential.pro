@@ -219,6 +219,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
  \ #    ../3drenderer/v3d_hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
     ../3drenderer/line_box_intersection_check.h \
+    ../vrrenderer/v3dr_gl_vr.h \
     ../neuron_tracing/heap.h \
     ../neuron_tracing/fastmarching_linker.h \
 	../imaging/v3d_imaging.h \
@@ -317,7 +318,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/v3dr_control_signal.cpp \
  \ #    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
-	../imaging/v3d_imaging.cpp \
+    ../vrrenderer/v3dr_gl_vr.cpp \
+        ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
