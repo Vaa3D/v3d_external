@@ -14,13 +14,12 @@
 #define APIENTRY
 
 #else
-//#include <GL/glu.h>
+#include <GL/glu.h>
 #endif
 #include <stdio.h>
 #include <string>
 #include <cstdlib>
 
-#define nullptr 0
 #include <openvr.h>
 
 #include "Matrices.h"//todo-yimin: this header is removable
