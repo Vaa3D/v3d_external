@@ -1067,7 +1067,7 @@ V3DLONG ImageLoaderBasic::decompressPBD16(unsigned char * sourceData, unsigned c
                 d1 >>= 3;
                 d1 &= ooooolll;
                 target16Data[dp]=target16Data[dp-1]+(d1<5?d1:4-d1);
-
+                dp++;
                 //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
                 leftToFill--;
                 if (leftToFill==0) {
