@@ -4,14 +4,17 @@
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 #include "./v3dr_gl_vr.h"
+
 #if defined( OSX )
+
 #include <Foundation/Foundation.h>
 #include <AppKit/AppKit.h>
 #include <OpenGL/glu.h>
 // Apple's version of glut.h #undef's APIENTRY, redefine it
 #define APIENTRY
+
 #else
-#include <GL/glu.h>
+//#include <GL/glu.h>
 #endif
 #include <stdio.h>
 #include <string>

@@ -94,6 +94,10 @@ TARGET +=
 DEPENDPATH += . v3d
 INCLUDEPATH += .
 
+INCLUDEPATH += ../vrrenderer/thirdparty/sdl2-2.0.3/include/ #for VR, by PHC 20170615
+INCLUDEPATH += ../vrrenderer/thirdparty/glew/glew-1.11.0/include/  #for VR, by PHC 20170615
+INCLUDEPATH += ../vrrenderer/thirdparty/   #for VR, by PHC 20170615
+INCLUDEPATH += ../vrrenderer/headers/ #for VR, by PHC 20170615
 
 #DEFINES += USE_Qt5  #this might be invoked from commandline like "~/Qt5.4.1/5.4/clang_64/bin/qmake DEFINES+=USE_Qt5 vaa3d64.pro", however it seems there is some bug
 
@@ -220,6 +224,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/barFigureDialog.h \
     ../3drenderer/line_box_intersection_check.h \
     ../vrrenderer/v3dr_gl_vr.h \
+    ../vrrenderer/Cylinder.h \
+    ../vrrenderer/Sphere.h \
+    ../vrrenderer/Matrices.h \
     ../neuron_tracing/heap.h \
     ../neuron_tracing/fastmarching_linker.h \
 	../imaging/v3d_imaging.h \
@@ -319,6 +326,9 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
  \ #    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
     ../vrrenderer/v3dr_gl_vr.cpp \
+    ../vrrenderer/Cylinder.cpp \
+    ../vrrenderer/Sphere.cpp \
+    ../vrrenderer/Matrices.cpp \
         ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
