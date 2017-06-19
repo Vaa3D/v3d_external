@@ -67,6 +67,12 @@ win32 {
 		LIBS += -L$$MSVC_DIR\\lib	
 		LIBS += -L$$MSSDK_DIR\\Lib\\x64
 		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib64
+                LIBS += -L$$LOCAL_DIR\\common_lib\\src_packages\\boost_1_46_0\\stage\\lib
+                LIBS += -L$$LOCAL_DIR\\vrrenderer\\thirdparty\\sdl2-2.0.3\\bin\\win64
+                LIBS += -L$$LOCAL_DIR\\vrrenderer\\thirdparty\\glew\\glew-1.11.0\\lib\\Release\\x64
+                LIBS += -L$$LOCAL_DIR\\vrrenderer\\thirdparty
+
+
 		
 		LIBS += \
 				-llibtiff \
@@ -74,7 +80,16 @@ win32 {
 				-llibnewmat \ 
 				-llibjba \ 
 				-llibFL_cellseg \
-				-llibFL_brainseg 
+                                -llibFL_brainseg \
+                                -lopenvr_api \
+                                -lglew32 \
+                                -lSDL2 \
+                                -lSDL2main \
+                                -llibhdf5 \
+                                -llibszip \
+                                -llibzlib
+
+
         DEFINES *= TEEM_STATIC
         QMAKE_CXXFLAGS += -DTEEMSTATIC
 	

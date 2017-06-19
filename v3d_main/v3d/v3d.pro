@@ -94,6 +94,7 @@ include(../terafly/teramanager.pro)
 #CONFIG += console
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
+
 #CONFIG  += debug
 
 # Flags for gsoap (web services)

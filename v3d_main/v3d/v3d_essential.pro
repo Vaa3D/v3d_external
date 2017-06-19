@@ -114,6 +114,8 @@ win32 { # platform: win32-command-mingw
     CONFIG += console
 LIBS += -L$$MINGW_DIR/lib \
 	-L$$LOCAL_DIR/lib_win32
+    DEFINES += __ALLOW_VR_FUNCS__
+
 }
 
 
@@ -277,6 +279,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
 #    ./painting/shared/arthurstyle.h \
 #    ./painting/shared/arthurwidgets.h
 
+
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h
 
@@ -371,13 +374,16 @@ HEADERS += \
     ../vrrenderer/v3dr_gl_vr.h \
     ../vrrenderer/Cylinder.h \
     ../vrrenderer/Sphere.h \
-    ../vrrenderer/Matrices.h
+    ../vrrenderer/Matrices.h \
+    ../vrrenderer/RenderableObject.h
 
 SOURCES += \
     ../vrrenderer/v3dr_gl_vr.cpp \
     ../vrrenderer/Cylinder.cpp \
     ../vrrenderer/Sphere.cpp \
-    ../vrrenderer/Matrices.cpp
+    ../vrrenderer/Matrices.cpp \
+    ../vrrenderer/RenderableObject.cpp
+
 }
 
 FORMS += landmark_property.ui \
