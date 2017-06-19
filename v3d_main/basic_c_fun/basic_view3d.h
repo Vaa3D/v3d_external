@@ -37,10 +37,6 @@
 #ifndef BASIC_VIEW3D_H_
 #define BASIC_VIEW3D_H_
 
-#if defined(_WIN32) || defined(_WIN64)
-#define __ALLOW_VR_FUNCS__
-#endif
-
 class View3DControl
 {
 public:
