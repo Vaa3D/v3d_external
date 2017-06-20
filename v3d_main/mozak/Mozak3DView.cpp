@@ -3,10 +3,10 @@
 #include <math.h>
 #include "renderer_gl2.h"
 #include "v3d_application.h"
-#include "../terafly/src/control/CAnnotations.h"
-#include "../terafly/src/control/CVolume.h"
-#include "../terafly/src/control/CImageUtils.h"
-#include "../terafly/src/presentation/PAnoToolBar.h"
+#include "./terafly/src/control/CAnnotations.h"
+#include "./terafly/src/control/CVolume.h"
+#include "./terafly/src/control/CImageUtils.h"
+#include "./terafly/src/presentation/PAnoToolBar.h"
 
 using namespace mozak;
 

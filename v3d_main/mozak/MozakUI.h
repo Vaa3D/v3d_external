@@ -1,9 +1,9 @@
 #ifndef __MOZAK_UI_H__
 #define __MOZAK_UI_H__
 
-#include "../terafly/src/presentation/PMain.h"
-#include "../terafly/src/control/CViewer.h"
-#include "../terafly/src/control/CPlugin.h"
+#include "./terafly/src/presentation/PMain.h"
+#include "./terafly/src/control/CViewer.h"
+#include "./terafly/src/control/CPlugin.h"
 #include "Mozak3DView.h"
 
 class mozak::MozakUI : public teramanager::PMain

@@ -2,7 +2,7 @@
 #define __MOZAK_3D_VIEW_H__
 
 #include "v3dr_common.h"
-#include "../terafly/src/control/CViewer.h"
+#include "./terafly/src/control/CViewer.h"
 
 namespace mozak
 {
