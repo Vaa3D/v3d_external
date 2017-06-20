@@ -1399,10 +1399,14 @@ bool CMainApplication::HandleInput()
 					{
 
 						//qDebug("ROTATION!detX= %f,detY= %f.\n",detX,detY);
+						//glm::vec3 globalRotation = 
+						m_globalMatrix = glm::rotate(m_globalMatrix,detX/300,glm::vec3(1,0,0));
+						m_globalMatrix = glm::rotate(m_globalMatrix,detY/300,glm::vec3(0,1,0));
 						//rotate_func(detX,detY);
 					}
 					else if(m_zoomMode==true)//into zoom mode
 					{
+						m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+detY/1000,1+detY/1000,1+detY/1000));
 						//qDebug("ZOOM!detX= %f,detY= %f.\n",detX,detY);
 						//zoom_func(detX,detY);
 					}
