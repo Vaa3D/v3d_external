@@ -274,8 +274,11 @@ int main(int argc, char **argv)
                 //}
             }
 #endif
+
+#define __AUTOLAUNCH_OPEN_NEURON_GAME___
 #ifdef CGS_AUTOLAUNCH
-			mainWin->func_open_neuron_game();
+            /// RZC 20170620: disable auto launch
+            // mainWin->func_open_neuron_game();
 #endif
 			// launch v3d
 			try

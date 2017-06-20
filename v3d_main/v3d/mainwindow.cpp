@@ -262,7 +262,9 @@ MainWindow::MainWindow()
     cl_plugin = false; // init
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
 
-	func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
+#define __AUTOLAUNCH_OPEN_NEURON_GAME___
+	/// RZC 20170620: disable auto launch
+    // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 }
 //void MainWindow::postClose() //090812 RZC
 //{
@@ -2119,8 +2121,10 @@ void MainWindow::updateProcessingMenu()
     QAction* open_teraconverter_action = new QAction(tr("TeraConverter"), this);
     proc_terafly_menu->addAction(open_teraconverter_action);
     connect(open_teraconverter_action, SIGNAL(triggered()), this, SLOT(func_open_teraconverter()));
+
+#define __MENU_OPEN_MOZAK__
     QAction* open_mozak_action = new QAction(tr("Mozak"), this);
-    proc_terafly_menu->addAction(open_mozak_action);
+    advancedProcMenu->addAction(open_mozak_action);  /// RZC 20070620: move menu entry proc_terafly_menu form to advancedProcMenu
     connect(open_mozak_action, SIGNAL(triggered()), this, SLOT(func_open_neuron_game()));
 #endif
     //
