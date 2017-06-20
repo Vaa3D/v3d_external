@@ -2005,26 +2005,40 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 
 void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 {
+	const QList <NeuronSWC> & listNeuron = neurontree.listNeuron;
+	const QHash <int, int> & hashNeuron = neurontree.hashNeuron;
+	
 	NeuronSWC S0,S1;
 	if(neurontree.listNeuron.size()<1)
 	{
 		return;
 	}//*/
-	for(int i = spheres.size();i<neurontree.listNeuron.size();i++)
+	for(int i = spheres.size();i<listNeuron.size();i++)
 	{
-		S0=neurontree.listNeuron.at(i);
+		S0=listNeuron.at(i);
 
 		//draw sphere
 		spheres.push_back(new Sphere((float)(S0.r)));
 		spheresPos.push_back(glm::vec3(S0.x,S0.y,S0.z));
-		if(S0.pn!=-1){
-			//draw cylinder
-			S1 = neurontree.listNeuron.at(S0.pn-1);
+		//draw cylinder
+		if(S0.pn == -1){
+			cylinders.push_back(new Cylinder(S0.r,S0.r,0,3,2));
+		}
+		else if (S0.pn >= 0)
+		{
+			int j = hashNeuron.value(S0.pn, -1);
+			if (j>=0 && j <listNeuron.size())
+			{
+				S1 = listNeuron.at(j);
+			} else 
+			{
+				qDebug("continue hit.\n");
+				continue;
+			}
+
 			float dist = glm::sqrt((S1.x-S0.x)*(S1.x-S0.x)+(S1.y-S0.y)*(S1.y-S0.y)+(S1.z-S0.z)*(S1.z-S0.z));
 			cylinders.push_back(new Cylinder(S0.r,S1.r,dist));
-		}
-		else{
-			cylinders.push_back(new Cylinder(S0.r,S0.r,0,3,2));
+			//qDebug("surface edge---- %d,%d\n",S0.n,S1.n);
 		}
 		
 	}
@@ -2046,6 +2060,7 @@ void CMainApplication::SetupMorphologyLine( int drawMode)//pass 3 parameters: &n
 
 }//*/
 
+
 //-----------------------------------------------------------------------------
 void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 											GLuint& LineModeVAO, 
@@ -2056,112 +2071,117 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 {
 	vector <glm::vec3> vertices;
 	vector<GLuint> indices;
+	map<int,int> id2loc;//map neuron node id to location in vertices
 
 	NeuronSWC S0,S1;
 	if(neuron_Tree.listNeuron.size()<1)
 	{
-		vertices.clear();
-		indices.clear();
+		//vertices.clear();
+		//indices.clear();
+		return;
 	}
 
 	// try to be consistent with the 3D viewer window, by PHC 20170616
-    const QList <NeuronSWC> & listNeuron = neuron_Tree.listNeuron;
-    const QHash <int, int> & hashNeuron = neuron_Tree.hashNeuron;
-    RGBA8 rgba = neuron_Tree.color;
-    bool on    = neuron_Tree.on;
-    bool editable = neuron_Tree.editable;
-    int cur_linemode = neuron_Tree.linemode;
-    //
+	const QList <NeuronSWC> & listNeuron = neuron_Tree.listNeuron;
+	const QHash <int, int> & hashNeuron = neuron_Tree.hashNeuron;
+	RGBA8 rgba = neuron_Tree.color;
+	bool on    = neuron_Tree.on;
+	bool editable = neuron_Tree.editable;
+	int cur_linemode = neuron_Tree.linemode;
 
- for(int i=0; i<listNeuron.size(); i++)
+	//handle nodes
+	for(int i=0; i<listNeuron.size(); i++)
 	{
-        //S0 = listNeuron.at(i);
-        //by PHC 20170616. also try to fix the bug of nonsorted neuron display
+		S1 = listNeuron.at(i);
 
-        S1 = listNeuron.at(i);   // at(i) faster than [i]
-        bool valid = false;
-        if (S1.pn == -1) // root end, 081105
-        {
-            S0 = S1;
-            valid = true;
-        }
-        else if (S1.pn >= 0) //change to >=0 from >0, PHC 091123
-        {
-            // or using hash for finding parent node
-            int j = hashNeuron.value(S1.pn, -1);
-            if (j>=0 && j <listNeuron.size())
-            {
-                S0 = listNeuron.at(j);
-                valid = true;
-            }
-        }
-        if (! valid)
-            continue;
+		//vertices[2*(S1.n-1)] = glm::vec3(S1.x,S1.y,S1.z);
+		vertices.push_back(glm::vec3(S1.x,S1.y,S1.z));
+		id2loc[S1.n] = i;
+		//qDebug("i=%d,S1.n=%d\n",i,S1.n);
 
-        //
+		glm::vec3 vcolor_load(0,1,0);//green for loaded neuron tree
 
-		vertices.push_back(glm::vec3(S0.x,S0.y,S0.z));
+		//by PHC 20170616. Try to draw as consistent as possible as the 3D viewer
 
-        glm::vec3 vcolor_load(0,1,0);//green for loaded neuron tree
-
-        //by PHC 20170616. Try to draw as consistent as possible as the 3D viewer
-
-        if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
-        {
-            int type = S0.type;
-            if (editable)
-            {
-                int ncolorused = neuron_type_color_num;
-                if (neuron_type_color_num>19)
-                    ncolorused = 19;
-                type = S0.seg_id %(ncolorused -5)+5; //segment color using hanchuan's neuron_type_color
-            }
-            if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
-            {
-                vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
-                vcolor_load[1] =  neuron_type_color_heat[ type - 300][1];
-                vcolor_load[2] =  neuron_type_color_heat[ type - 300][2];
-            }
-            else
-            {
-                vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-                vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-                vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-            }
-        }
-        else
-        {
-            vcolor_load[0] = rgba.c[0];
-            vcolor_load[1] = rgba.c[1];
-            vcolor_load[2] = rgba.c[2];
-        }
-
-        //
-
-        glm::vec3 vcolor_draw(1,0,0);//red for drawing neuron tree
-
-        vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
-
-        //Yimin's original code which does not display nonsorted neuron correctly
-/*
-		if (S0.pn != -1)
+		if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
 		{
-			S1 = neuron_Tree.listNeuron.at(S0.pn-1);
-			indices.push_back(S0.n-1);
-			indices.push_back(S1.n-1);
+			int type = S0.type;
+			if (editable)
+			{
+				int ncolorused = neuron_type_color_num;
+				if (neuron_type_color_num>19)
+					ncolorused = 19;
+				type = S0.seg_id %(ncolorused -5)+5; //segment color using hanchuan's neuron_type_color
+			}
+			if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
+			{
+				vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
+				vcolor_load[1] =  neuron_type_color_heat[ type - 300][1];
+				vcolor_load[2] =  neuron_type_color_heat[ type - 300][2];
+			}
+			else
+			{
+				vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+				vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+				vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+			}
 		}
 		else
 		{
-			indices.push_back(S0.n-1);
-            indices.push_back(S0.n-1);
+			vcolor_load[0] = rgba.c[0];
+			vcolor_load[1] = rgba.c[1];
+			vcolor_load[2] = rgba.c[2];
 		}
- */
 
+		//
 
-        {
-            indices.push_back(S0.n-1);
-            indices.push_back(S1.n-1);
-        }
+		glm::vec3 vcolor_draw(1,0,0);//red for drawing neuron tree
+
+		//vertices[2*(S1.n-1)+1] = (drawMode==0) ? vcolor_load : vcolor_draw;
+		vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
+
+		//indices.push_back(S0.n-1);
+		//indices.push_back(S1.n-1);
+
+	}
+
+	//map<int,int>::iterator iter;
+	//for (iter = id2loc.begin();iter != id2loc.end();++iter)
+	//	qDebug("edge---- %d,%d\n",iter->first,iter->second);
+
+	//handle edges
+	for(int i=0; i<listNeuron.size(); i++)
+	{
+		//by PHC 20170616. also try to fix the bug of nonsorted neuron display
+
+		S1 = listNeuron.at(i);   // at(i) faster than [i]
+		bool valid = false;
+		if (S1.pn == -1) // root end, 081105
+		{
+			S0 = S1;
+			valid = true;
+		}
+		else if (S1.pn >= 0) //change to >=0 from >0, PHC 091123
+		{
+			// or using hash for finding parent node
+			int j = hashNeuron.value(S1.pn, -1);
+			if (j>=0 && j <listNeuron.size())
+			{
+				S0 = listNeuron.at(j);
+				valid = true;
+			}
+		} 
+		if (! valid)
+			continue;
+
+		int loc0, loc1;
+		map<int,int>::iterator iter;
+		iter = id2loc.find(S0.n);
+		loc0 = iter->second;
+		indices.push_back(loc0);
+		iter = id2loc.find(S1.n);
+		loc1 = iter->second;
+		indices.push_back(loc1);
 	}
 
 	Vertcount = vertices.size();
@@ -2187,8 +2207,8 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		glBindVertexArray(0);
 	}
-		glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
+	glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
 	if( vertices.size() > 0 )
 	{
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0],(drawMode==0)?GL_STATIC_DRAW:GL_DYNAMIC_DRAW);
@@ -2589,6 +2609,10 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 
 		// world transformation
+		const QList <NeuronSWC> & loaded_listNeuron = loadedNT.listNeuron;
+		const QHash <int, int> & loaded_hashNeuron = loadedNT.hashNeuron;
+		NeuronSWC S0,S1;
+
 		int cy_count = 0;
 		for(int i = 0;i<loaded_spheres.size();i++)//loaded neuron tree
 		{
@@ -2610,12 +2634,17 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 			//draw cylinder
-			int pn = loadedNT.listNeuron[i].pn;
-			if (pn != -1)
+			//int pn = loadedNT.listNeuron[i].pn;
+			S0 = loaded_listNeuron.at(i);
+			if (S0.pn != -1)
 			{
+				int j = loaded_hashNeuron.value(S0.pn, -1);
+				S1 = loaded_listNeuron.at(j);
+
 				//cylinder between node i and (pn-1)
 				glm::vec3 v1(0.0f, -1.0f, 0.0f);
-				glm::vec3 v2 = loaded_spheresPos[pn-1] - loaded_spheresPos[i];
+				glm::vec3 v2;// = loaded_spheresPos[pn-1] - loaded_spheresPos[i];
+				v2.x = S1.x-S0.x;v2.y = S1.y-S0.y;v2.z = S1.z-S0.z;
 				float dist = glm::length(v2); //dprintf("dist= %f\n", dist);
 				//v1 = glm::normalize(v1);
 				v2 = glm::normalize(v2);
