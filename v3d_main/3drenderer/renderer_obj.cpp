@@ -478,7 +478,6 @@ static GLuint _createDiamond()
 }
 static GLuint _createSphere(int m=36)
 {
-	cout << "sphere" << endl;
 	GLuint g = glGenLists(1);
 	glNewList(g, GL_COMPILE);
 	{

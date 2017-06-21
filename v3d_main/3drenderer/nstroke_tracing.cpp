@@ -185,6 +185,15 @@ struct nodeInfo
 	long segID, frontSegID, backSegID, nodeNum, x, y, z;
 };
 
+struct cutNode
+{
+	V_NeuronSWC_unit node;
+	double distance;
+	vector<V_NeuronSWC_unit>::iterator nodeAddress;
+	long segID;
+	long nodeinSegId;
+};
+
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
@@ -3804,7 +3813,7 @@ void Renderer_gl1::cutNeuronsByStroke()
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
     //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
-    float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+    float tolerance = 100; // tolerance distance from the backprojected neuron to the curve point
 	
     // back-project the node curve points and mark segments to be chopped
     for(V3DLONG j=0; j<listNeuronTree.size(); j++)
@@ -3851,6 +3860,13 @@ void Renderer_gl1::cutNeuronsByStroke()
 			//for (QList<NeuronSWC>::iterator strokeIt=nodeOnStroke.begin(); strokeIt!=nodeOnStroke.end(); ++strokeIt) cout << strokeIt->n << " " << strokeIt->parent << endl;
 			  /* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
 			
+			/* ==== Group nodes with same segID ========================================================= */
+			vector< vector<cutNode> > sameSegList;
+			vector<cutNode> dummyList;
+			sameSegList.push_back(dummyList);
+			cutNode dummyNode;
+			dummyNode.segID = 0;
+			sameSegList[0].push_back(dummyNode);
 			for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); ++i)
 			{
 				for (V3DLONG j=0; j<nodeOnStroke.size(); ++j)
@@ -3865,21 +3881,85 @@ void Renderer_gl1::cutNeuronsByStroke()
 						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
 
                         QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
-						if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance )
+						double dist = 0;
+						dist = std::sqrt( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) );
+						if( dist <= tolerance )
                         {
 							for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
 								it!=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); ++it)
 							{
 								if (nodeOnStroke.at(j).x==it->data[2] && nodeOnStroke.at(j).y==it->data[3] && nodeOnStroke.at(j).z==it->data[4]) 
 								{
-									it->data[6] = -1;
+									vector< vector<cutNode> >::iterator segCheck;
+									for (segCheck=sameSegList.begin(); segCheck!=sameSegList.end(); ++segCheck)
+									{
+										if (nodeOnStroke.at(j).seg_id == segCheck->at(0).segID)
+										{
+											cutNode cut;
+											cut.node = *it;
+											cut.distance = dist;
+											cut.nodeAddress = it;
+											cut.segID = nodeOnStroke.at(j).seg_id;
+											cut.nodeinSegId = nodeOnStroke.at(j).nodeinseg_id;
+											segCheck->push_back(cut);
+											//cout << cut.segID << " " << cut.node.data[0] << " " << endl; 
+											break;
+										}
+									}
+									if (segCheck == sameSegList.end())
+									{
+										vector<cutNode> newSameSegCluster;
+										cutNode cut;
+										cut.node = *it;
+										cut.distance = dist;
+										cut.nodeAddress = it;
+										cut.segID = nodeOnStroke.at(j).seg_id;
+										cut.nodeinSegId = nodeOnStroke.at(j).nodeinseg_id;
+										newSameSegCluster.push_back(cut);
+										sameSegList.push_back(newSameSegCluster);
+										//cout << cut.segID << " " << cut.node.data[0] << " " << endl;
+									}
 								}
 							}
-							break;
 						}
 					}
 				}
 			}
+			/* ==== END of [Group nodes with same segID ] ================================================ */
+
+			/* ==== Cut the original segment short, append the remnant segment ============================ */
+			double smallest;
+			vector<V_NeuronSWC_unit>::iterator cutAddress;
+			vector<cutNode>::iterator cutIt;
+			for (vector< vector<cutNode> >::iterator listCheck=sameSegList.begin()+1; listCheck!=sameSegList.end(); ++listCheck)
+			{
+				smallest = listCheck->at(0).distance;
+				for (vector<cutNode>::iterator cutCheck=listCheck->begin(); cutCheck!=listCheck->end(); ++cutCheck)
+				{
+					if (cutCheck->distance <= smallest) 
+					{
+						smallest = cutCheck->distance;
+						cutAddress = cutCheck->nodeAddress;
+						cutIt = cutCheck;
+					}
+					//cout << cutCheck->segID << " " << cutCheck->node.data[0] << " " << cutCheck->distance << endl;
+				}
+
+				V_NeuronSWC newSeg;
+				vector<V_NeuronSWC_unit>::const_iterator newSegStart = curImg->tracedNeuron.seg[cutIt->segID].row.begin();
+				vector<V_NeuronSWC_unit>::const_iterator newSegEnd = cutAddress + 1;
+				vector<V_NeuronSWC_unit> newRow(newSegStart, newSegEnd);
+				newSeg.row = newRow;
+				(newSeg.row.end()-1)->data[6] = -1;
+
+				//cout << curImg->tracedNeuron.seg[cutIt->segID].row.size() << endl;
+				size_t i;
+				for (i=0; i<newSeg.row.size(); ++i) 
+					curImg->tracedNeuron.seg[cutIt->segID].row.erase(curImg->tracedNeuron.seg[cutIt->segID].row.begin());
+				//cout << curImg->tracedNeuron.seg[cutIt->segID].row.size() << endl;
+				curImg->tracedNeuron.append(newSeg);
+				/* ==== END of [Cut the original segment short, append the remnant segment] ================= */
+			}		
 		}
 
 		curImg->update_3drenderer_neuron_view(w, this);
@@ -4034,7 +4114,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
-                            curImg->update_3drenderer_neuron_view(w, this);
+							curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);
                             break;   // found intersection with neuron segment: no more need to continue on this inner loop
