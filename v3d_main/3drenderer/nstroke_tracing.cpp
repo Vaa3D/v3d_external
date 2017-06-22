@@ -4063,24 +4063,24 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
     if (useCurrentTraceTypeForRetyping)
     {
         node_type = currentTraceType;
     }
     else
     {
-#ifdef USE_Qt5
-        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-                                  QObject::tr("SWC type: "
-                                            "\n 0 -- undefined (white)"
-                                            "\n 1 -- soma (black)"
-                                            "\n 2 -- axon (red)"
-                                            "\n 3 -- dendrite (blue)"
-                                            "\n 4 -- apical dendrite (purple)"
-                                            "\n else -- custom \n"),
-                                          node_type, 0, 100, 1, &ok);
-=======
+//#ifdef USE_Qt5
+//        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+//                                  QObject::tr("SWC type: "
+//                                            "\n 0 -- undefined (white)"
+//                                            "\n 1 -- soma (black)"
+//                                            "\n 2 -- axon (red)"
+//                                            "\n 3 -- dendrite (blue)"
+//                                            "\n 4 -- apical dendrite (purple)"
+//                                            "\n else -- custom \n"),
+//                                          node_type, 0, 100, 1, &ok);
+////=======
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
                               QObject::tr("SWC type: "
@@ -4091,7 +4091,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                         "\n 4 -- apical dendrite (purple)"
                                         "\n else -- custom \n"),
                                       node_type, 0, 100, 1, &ok);
->>>>>>> master
+//>>>>>>> master
 #else
         node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
                                   QObject::tr("SWC type: "
@@ -4228,7 +4228,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
                         {
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
-<<<<<<< HEAD
+//<<<<<<< HEAD
                             if (forceSingleCut)
                             {
                                 if (bestCutDist_squared < 0 || dist2d_squared < bestCutDist_squared)
@@ -4240,19 +4240,19 @@ void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
                             }
                             else
                             {
-                                curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
-                                curImg->update_3drenderer_neuron_view(w, this);
-                            
-                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                            }
-=======
+//                                curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
+//                                curImg->update_3drenderer_neuron_view(w, this);
+//
+//                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
+//                            }
+////=======
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
                             curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);
                             break;   // found intersection with neuron segment: no more need to continue on this inner loop
-
->>>>>>> master
+                            }
+//>>>>>>> master
                         }
                     }
 

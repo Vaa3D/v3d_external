@@ -86,15 +86,15 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
-<<<<<<< HEAD
+//<<<<<<< HEAD
                       smBreakTwoNeurons, // Same function as smBreakMultiNeurons, but only one break is created TDP 201512
                       smJoinTwoNodes, // Straight line connect, joining two nodes without tracing TDP 201601
                      smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
                      smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
                      smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
-=======
+
 					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons,//MK
->>>>>>> master
+//>>>>>>> master
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 	enum editMode {segmentEdit, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
@@ -102,13 +102,12 @@ public:
 //protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
-<<<<<<< HEAD
+//<<<<<<< HEAD
 	static SelectMode defaultSelectMode;
-	SelectMode refineMode;
-=======
     SelectMode refineMode;
-	editMode connectEdit;
->>>>>>> master
+
+    editMode connectEdit;
+//>>>>>>> master
 	void* widget;
 
 public:

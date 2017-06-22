@@ -42,12 +42,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <sstream>
 #include <string>
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
 Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
-=======
+
 using namespace std;
 
->>>>>>> master
+//>>>>>>> master
 ////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(void* widget)

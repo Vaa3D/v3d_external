@@ -830,7 +830,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 	return true;
 }
 
-bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type=3)
+bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/)
 {
     if (mCoord.size()<=0)  return false;
 
@@ -879,7 +879,7 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     return true;
 }
 
-NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type=3)
+NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type/*=3*/)
 {
     NeuronTree newNeuronEdited;
     if (mCoord.size()<=0)  return newNeuronEdited;

@@ -2196,14 +2196,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-<<<<<<< HEAD
-    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
-=======
-    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || 
-		selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons 
-		|| selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker
-		|| selectMode == smCutNeurons)
->>>>>>> master
+//<<<<<<< HEAD
+//    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
+//    	selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
+////=======
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
+		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
+		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker	|| selectMode == smCutNeurons)
+//>>>>>>> master
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2217,12 +2217,16 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-<<<<<<< HEAD
-        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
-=======
-        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons
-			|| selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
->>>>>>> master
+//<<<<<<< HEAD
+//        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
+//					selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
+//					? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+//=======
+        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons ||
+        		 selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
+        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)
+        		 ? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+//>>>>>>> master
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
