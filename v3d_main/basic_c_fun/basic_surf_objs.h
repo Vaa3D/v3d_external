@@ -168,6 +168,38 @@ struct NeuronTree : public BasicSurfObj
         listNeuron.clear(); hashNeuron.clear(); file=""; editable=false;
         linemode=-1; //-1 is no defined. 0 is NO, and 1 is yes
     }
+
+    void deepCopy(const NeuronTree p)
+    {
+        n=p.n; color=p.color; on=p.on;
+        selected=p.selected; name=p.name; comment=p.comment;
+
+        file     = p.file;
+        editable = p.editable;
+        linemode = p.linemode;
+        listNeuron.clear();
+        hashNeuron.clear();
+
+        for (int i =0; i< p.listNeuron.size();i++){
+            NeuronSWC S;
+            S.n = p.listNeuron[i].n;
+            S.type = p.listNeuron[i].type;
+            S.x = p.listNeuron[i].x;
+            S.y= p.listNeuron[i].y;
+            S.z = p.listNeuron[i].z;
+            S.r = p.listNeuron[i].r;
+            S.pn = p.listNeuron[i].pn;
+            S.seg_id = p.listNeuron[i].seg_id;
+            S.fea_val = p.listNeuron[i].fea_val;
+            listNeuron.append(S);
+            hashNeuron.insert(S.n, listNeuron.size()-1);
+        }
+    }
+
+
+
+
+
 	void copy(const NeuronTree & p)
 	{
 		n=p.n; color=p.color; on=p.on; selected=p.selected; name=p.name; comment=p.comment;

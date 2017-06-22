@@ -112,6 +112,7 @@
 
 #include <stdio.h>
 
+
 #if defined (_MSC_VER) //added by PHC, 2010-05-20. do not need to include <strings.h> for VC complier (indeed this file does not even exist)
 #else
 #include <strings.h>
@@ -120,12 +121,15 @@
 #include <math.h>
 
 #include "../3drenderer/v3dr_common.h" // Ensure Glee is loaded first
+#include "../vrrenderer/v3dr_gl_vr.h"
+
 
 #include <QLayout>
 #include <QPainter>
 #include <QPainterPath>
 //#include <QTextEdit>
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -2964,7 +2968,7 @@ void XFormView::dispHistogram()
 
 #define _______XFormWidget_functions________
 
-#ifdef USE_Qt5
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 XFormWidget::XFormWidget(QWidget *parent) : QMdiSubWindow(parent)
 #else
 XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
@@ -2976,7 +2980,7 @@ XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
 	updateDataRelatedGUI();
 }
 
-#ifdef USE_Qt5
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QMdiSubWindow(parent) //added on 080814: this function is for future use. Not really get called now
 #else
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QWidget(parent) //added on 080814: this function is for future use. Not really get called now
@@ -4912,6 +4916,18 @@ void XFormWidget::doImage3DView()
 	doImage3DView(true, 0); //0 for entire image
 }
 
+
+#ifdef __ALLOW_VR_FUNCS__
+void XFormWidget::doImageVRView()//VR
+{
+	NeuronTree nt;
+	nt.listNeuron.clear();
+	nt.hashNeuron.clear();
+	//doimageVRViewer_v2(nt,0);
+	doimageVRViewer(nt);
+}
+#endif
+
 void XFormWidget::doImage3DLocalMarkerView()
 {
 	if (!imgData)  return;
@@ -5886,7 +5902,8 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 			curInfo.pimg = tmp_pimg;
 
 			//then select the channel of this image
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 			curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
 #else
 			curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
@@ -5894,7 +5911,8 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 			//then select RGB info
 			int rgbVal;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 			rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
 			curInfo.rr = rgbVal/255.0;
 			rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
@@ -5924,7 +5942,8 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 				curInfo.pimg = tmp_pimg;
 
 				//then select the channel of this image
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
 #else
 				curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
@@ -5932,7 +5951,8 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 				//then select RGB info
 				int rgbVal;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.rr = rgbVal/255.0;
 				rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);

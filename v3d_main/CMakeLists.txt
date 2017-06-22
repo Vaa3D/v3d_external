@@ -111,7 +111,7 @@ if(USE_FFMPEG)
 
     ExternalProject_Add(
         PKG-CONFIG-0-28
-        URL http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
+        URL https://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
         SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/pkg-config/src
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install
         UPDATE_COMMAND ""
@@ -389,7 +389,7 @@ if(NOT Qt5Core_FOUND)
     set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
   endif()
 else()
-  set(arthurwidgets_path "${QT_DEMO_PREFIX}/widgets/painting/shared")
+  set(arthurwidgets_path "${QT_DEMOS_INCLUDE_DIR}/")
 endif()
 
 message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
@@ -421,6 +421,8 @@ add_subdirectory( neuron_tracing )
 
 add_subdirectory( neuron_annotator )
 
+
+
 include_directories(v3d)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/neuron_annotator)
 add_subdirectory( v3dbase )
@@ -428,6 +430,7 @@ add_subdirectory( v3dbase )
 add_subdirectory( plugin_loader )
 
 add_subdirectory( imaging ) # CMB Oct-11-2010
+
 add_subdirectory( multithreadimageIO ) # CMB Dec-16-2010
 
 include_directories(${Boost_INCLUDE_DIR})
@@ -438,6 +441,7 @@ add_subdirectory( worm_straighten_c )
 add_subdirectory( jba )
 
 add_subdirectory( cellseg )
+
 
 add_subdirectory( terafly )
 

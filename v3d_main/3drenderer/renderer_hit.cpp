@@ -202,7 +202,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*act_imaging_pinpoint_n_shoot=0, *act_imaging_cut_3d_curve=0,
             *actCurveCreate_zoom_grabhighrezdata=0, *actMarkerCreate_zoom_grabhighrezdata=0, //for TeraManager or similar high-rez data acqusition. by PHC, 20120717
             *actVaa3DNeuron2App2=0, //for Vaa3D_Neuron2 APP tracing. by PHC, 20121201
-			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
+            *actGDCurveline=0, //for GD based curveline detection. by PHC, 20170529
+            //need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
 			*actChangeNeuronSegType=0, *actChangeNeuronSegRadius=0, *actReverseNeuronSeg=0,
 			*actDispRecNeuronSegInfo=0, *actDeleteNeuronSeg=0, *actBreakNeuronSegNearestNeuronNode=0, *actBreakNeuronSeg_markclick=0,
@@ -216,7 +217,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actDoNeuronToolBoxPlugin=0,
 			*actDispSurfVertexInfo=0,
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
-            *actZoomin_currentviewport=0 //PHC, 130701
+            *actZoomin_currentviewport=0, //PHC, 130701
+
+			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0; // MK, 2017 April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -391,6 +394,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         listAct.append(actVaa3DNeuron2App2 = new QAction("Vaa3D-Neuron2 auto-tracing", w));
                     }
 
+                    pluginsDir1 = pluginsDir;
+                    if (pluginsDir1.cd("plugins/line_detector")==true) //by PHC 20170529
+                    {
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                        listAct.append(actGDCurveline = new QAction("GD-curveline detection", w));
+                    }
                 }
 
 //150616. Add neuron menu when there is only one neuron
@@ -437,6 +446,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                         // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
+
+						// MK, 2017 April
+						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+
+						// MK, 2017 June
+						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
 
                         //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                         //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -504,7 +519,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			else if (names[1]==stLabelSurface)
 				listAct.append(actSaveSurfaceObj = new QAction("save all label-field surface objects to file", w));
 			else if (names[1]==stPointCloud)
+			{
+				listAct.append(actPointCloudConnect = new QAction("create neuron segments by connecting points cloud", w));
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actSaveSurfaceObj = new QAction("save all point-cloud objects to file", w));
+			}
 #ifdef _ALLOW_ADVANCE_PROCESSING_MENU_
 			if (names[1]==stNeuronStructure || names[1]==stPointCloud)
 			{
@@ -550,6 +569,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
 				listAct.append(actMarkerRefineT = new QAction("translate marker position by 1 right-click", w));
+				listAct.append(actMarkerConnect = new QAction("create segments by connecting markers", w)); // MK, 2017 April
 				listAct.append(actMarkerDelete = new QAction("delete this marker", w));
 				listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
 				listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
@@ -702,6 +722,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                 listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
+
+				// MK, 2017 April
+				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+
+				// MK, 2017 June
+				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
 
                 //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                 //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -1284,7 +1310,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			bool ok1=true;
 			V3DLONG chno=1;
 			if (curImg->getCDim()>1)
-#ifdef USE_Qt5
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
 #else
 				chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
@@ -1323,6 +1349,31 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
 		}
 	}
+
+#define __vaa3d_gd_curveline_tracing__ // dummy, just for easy locating //by PHC 20170529
+    else if (act == actGDCurveline)
+    {
+        if (w && curImg)
+        {
+            v3d_msg("Now try to use the GD curveline detection feature.", 0);
+            v3d_imaging_paras myimagingp;
+            myimagingp.OPS = "GD Curveline";
+            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+            //set the hiddenSelectWidget for the V3D mainwindow
+            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+            {
+                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+            }
+            else
+            {
+                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+            }
+        }
+    }
+
+
+
 
 #define __actions_of_marker__ // dummy, just for easy locating
 	else if (act == actMarkerDelete)
@@ -1544,6 +1595,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 curImg->tracedNeuron.name = "vaa3d_traced_neuron";
                 curImg->tracedNeuron.file = "vaa3d_traced_neuron";
                 listNeuronTree.clear();
+				qDebug("	listNeuronTree.size() = %d!!!!!", listNeuronTree.size());
 
                 //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
                 curImg->proj_trace_history_append();
@@ -1583,8 +1635,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     }
 
                     b_editDroppedNeuron = false;
-                }
-            }
+                }	
+			} 
+
+			for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+			{curImg->tracedNeuron.seg[i].on = true;}
+			curImg->update_3drenderer_neuron_view(w, this);
 
 			finishEditingNeuronTree();
 		}
@@ -1734,6 +1790,45 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
+	/*** Segment functionalities. MK, 2017 April ***/
+	else if (act == actNeuronConnect) //MK
+	{
+		if (NEURON_CONDITION)
+		{
+            selectMode = smConnectNeurons;
+            b_addthiscurve = false;
+            if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	else if (act == actPointCloudConnect)
+	{
+		selectMode = smConnectPointCloud;
+		b_addthiscurve = false;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+	else if (act == actMarkerConnect)
+	{
+		if (NEURON_CONDITION)
+		{
+			selectMode = smConnectMarker;
+			b_addthismarker = false;
+			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	/*************************************************/
+
+	/*** Neuron cutting functionalities. MK, 2017 June ***/
+	else if (act == actNeuronCut)
+	{
+		if (NEURON_CONDITION)
+		{
+            selectMode = smCutNeurons;
+            b_addthiscurve = false;
+            if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	/*****************************************************/
+
 	else if (act==actBreakNeuronSegNearestNeuronNode)
 	{
 		if (NEURON_CONDITION)
@@ -2101,12 +2196,19 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
+<<<<<<< HEAD
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
+=======
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || 
+		selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons 
+		|| selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker
+		|| selectMode == smCutNeurons)
+>>>>>>> master
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
 		{
-			//qDebug("\t track ( %i, %i ) to define Curve", x,y);
+			qDebug("\t track ( %i, %i ) to define Curve", x,y);
 			this->sShowTrack = 1;
 			return 1; //display 2d track
 		}
@@ -2115,7 +2217,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
+<<<<<<< HEAD
         int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+=======
+        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons
+			|| selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+>>>>>>> master
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -2151,7 +2258,13 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             {
                 selectMultiMarkersByStroke();
             }
-
+			// MK, 2017 April ---------------------------------------------------------
+			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
+			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
+			else if (selectMode == smConnectMarker) connectMarkerByStroke();
+			// MK, 2017 June ----------------------------------------------------------
+			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
+			// ------------------------------------------------------------------------
 
 			list_listCurvePos.clear();
 			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode
@@ -2734,7 +2847,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
 int Renderer_gl1::hitWheel(int x, int y)
 {
-    qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
+  //  qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
     wheelPos.x = x;
     wheelPos.y = y;
     int i;
@@ -2742,8 +2855,8 @@ int Renderer_gl1::hitWheel(int x, int y)
     {
         wheelPos.view[i] = viewport[i];
     }
-    qDebug(" wheel pos (x=%5.3f y=%5.3f) viewport (%d, %d, %d, %d)", wheelPos.x, wheelPos.y,
-           wheelPos.view[0], wheelPos.view[1], wheelPos.view[2], wheelPos.view[3]);
+  /*  qDebug(" wheel pos (x=%5.3f y=%5.3f) viewport (%d, %d, %d, %d)", wheelPos.x, wheelPos.y,
+           wheelPos.view[0], wheelPos.view[1], wheelPos.view[2], wheelPos.view[3]);*/
     for (i=0; i<16; i++)
     {
         wheelPos.P[i]  = projectionMatrix[i];

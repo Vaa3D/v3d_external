@@ -149,6 +149,8 @@ public:
 // begin View3DControl interface
 //----------------------------------------------------------------------------------------
 public:
+    // Expose marker size, Nov. 08, 2016 by Zhi Zhou
+    virtual int getMarkerSize() const { return _markerSize; }
     // Expose surface cut getters, Dec.01,2013 by Zhi Zhou
     virtual int xClip0() const { return _xClip0; }
     virtual int xClip1() const { return _xClip1; }
@@ -250,6 +252,9 @@ public slots:
 	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void absoluteRotPose();
+#ifdef __ALLOW_VR_FUNCS__
+    virtual void absoluteVRview();
+#endif
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
 	virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
 
@@ -332,6 +337,8 @@ public slots:
     //
 
      virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+    virtual void callCurveLineDetector(int option); // for quick curve line structure detection, by PHC, 20170531
+
 
      virtual void setDragWinSize(int csize); // ZJL 110927
 

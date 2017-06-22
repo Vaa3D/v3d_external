@@ -274,7 +274,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item==tr(" -- extract one channel"))
 			{
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				V3DLONG bpos_c = QInputDialog::getInt(this, tr("Channel to extract"), tr("Which channel to extract:"), 1, 1, imgData->getCDim(), 1, &ok1);
 #else
 				V3DLONG bpos_c = QInputDialog::getInteger(this, tr("Channel to extract"), tr("Which channel to extract:"), 1, 1, imgData->getCDim(), 1, &ok1);
@@ -325,7 +326,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 				ImageMaskingCode my_maskcode = IMC_XY;
 				bool b_inside=false;
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				tval = QInputDialog::getInt(this, tr("fill value"), tr("fill value:"), 0, 0, 255, 10, &ok1); //090512 RZC
 #else
 				tval = QInputDialog::getInteger(this, tr("fill value"), tr("fill value:"), 0, 0, 255, 10, &ok1); //090512 RZC
@@ -340,7 +342,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 				int mask_channel_no;
 				//int tval;
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				mask_channel_no = QInputDialog::getInt(this, tr("range"), tr("which channel contains the mask (non-zero indicats the mask rgn:"), 3, 1, imgData->getCDim(), 1, &ok1);
 #else
 				mask_channel_no = QInputDialog::getInteger(this, tr("range"), tr("which channel contains the mask (non-zero indicats the mask rgn:"), 3, 1, imgData->getCDim(), 1, &ok1);
@@ -453,7 +456,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 				bool ok1=true;
 				V3DLONG chno=1;
 				if (imgData->getCDim()>1)
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 					chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(imgData->getCDim()), 1, &ok1);
 #else
 					chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(imgData->getCDim()), 1, &ok1);
@@ -499,14 +503,16 @@ void XFormView::popupImageProcessingDialog(QString item)
 					else if (item_opt==tr("along X axis (to YZ plane)")) {myaxis = axis_x; mincoord = maxcoord = imgData->getXDim();}
 					else //if (item_opt==tr("along Y axis (to XZ plane)"))
 						{myaxis = axis_y; mincoord = maxcoord = imgData->getYDim();}
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 					mincoord = QInputDialog::getInt(this, tr("range"), tr("start section:"), 1, 1, mincoord, 10, &ok1);
 #else
 					mincoord = QInputDialog::getInteger(this, tr("range"), tr("start section:"), 1, 1, mincoord, 10, &ok1);
 #endif
 					if (ok1)
 					{
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 						maxcoord = QInputDialog::getInt(this, tr("range"), tr("end section:"), maxcoord, 1, maxcoord, 10, &ok1);
 #else
 						maxcoord = QInputDialog::getInteger(this, tr("range"), tr("end section:"), maxcoord, 1, maxcoord, 10, &ok1);
@@ -536,14 +542,16 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				bool ok1;
 				int lowerbound, higherbound;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				lowerbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Lowerbound of the foreground intensity:"), 30, 0, 255, 10, &ok1);
 #else
 				lowerbound = QInputDialog::getInteger(this, tr("Equalization range"), tr("Lowerbound of the foreground intensity:"), 30, 0, 255, 10, &ok1);
 #endif
 				if (ok1)
 				{
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 					higherbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Higherbound of the foreground intensity:"), 255, 0, 255, 10, &ok1);
 #else
 					higherbound = QInputDialog::getInteger(this, tr("Equalization range"), tr("Higherbound of the foreground intensity:"), 255, 0, 255, 10, &ok1);
@@ -567,7 +575,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item== tr(" -- convert 16bit image to 8 bit"))
 			{
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				int shiftnbits = QInputDialog::getInt(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
 #else
 				int shiftnbits = QInputDialog::getInteger(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
@@ -586,7 +595,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to scale intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to scale intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
@@ -617,7 +627,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to threshold intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to threshold intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
@@ -636,7 +647,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to binarize intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to binarize intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
@@ -660,7 +672,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 			{
 				V3DLONG channo;
 				bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to invert color (select 0 to invert *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
 				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to invert color (select 0 to invert *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
@@ -678,7 +691,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 				else
 				{
 					bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 					int nchannels = QInputDialog::getInt(this, tr("select number of color channels"), tr("How many color channels to want to have:"), 2, 1, 10, 1, &ok1);
 #else
 					int nchannels = QInputDialog::getInteger(this, tr("select number of color channels"), tr("How many color channels to want to have:"), 2, 1, 10, 1, &ok1);
@@ -887,7 +901,35 @@ void XFormView::popupImageProcessingDialog(QString item)
                     v3d_msg("Cannot locate the controlling widget,thus do nothing.");
                 }
 			}
-			else if (item==tr(" -- trace one marker to all others"))
+            else if (item==tr(" -- GD Curveline")) //by PHC, 20170530
+            {
+                v3d_imaging_paras myimagingp;
+                myimagingp.OPS = "GD Curveline";
+                myimagingp.imgp = (Image4DSimple *)imgData; //the image data for a plugin to call
+
+                if (imgData->getXWidget())
+                    v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
+                else
+                {
+                    v3d_msg("Cannot locate the controlling widget for GD curveline,thus do nothing.");
+                }
+            }
+            else if (item==tr(" -- GD Curveline infinite")) //by PHC, 20170601
+            {
+                v3d_imaging_paras myimagingp;
+                myimagingp.OPS = "GD Curveline infinite";
+                myimagingp.imgp = (Image4DSimple *)imgData; //the image data for a plugin to call
+
+                if (imgData->getXWidget())
+                {
+                    v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
+                }
+                else
+                {
+                    v3d_msg("Cannot locate the controlling widget for GD curveline,thus do nothing.");
+                }
+            }
+            else if (item==tr(" -- trace one marker to all others"))
 			{
 				if (imgData->proj_trace_deformablepath_one_point_to_allotherpoints(imgData->cur_hit_landmark))
 					imgData->update_3drenderer_neuron_view();

@@ -4,7 +4,26 @@
 **/moc_*.*
 **/qrc_*.*
 **/Makefile
+**/*pro.user
+**/*.autosave
+**/*.sln
+**/*.sdf
+**/*.user
+**/*vcxproj*
+**/*~
+**/*.swp
+**/*.suo
+**/*.pdb
+**/*.obj
+**/*.Debug
+**/ipch
+**/*.Release
+**/*.tlog
+**/*.manifest
 bin/*
+
+#ignore MacOS system files
+.DS_Store
 
 #ignore lib files or header files in common_lib
 v3d_main/common_lib/*

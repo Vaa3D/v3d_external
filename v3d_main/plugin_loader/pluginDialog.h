@@ -35,7 +35,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef PLUGINDIALOG_H
 #define PLUGINDIALOG_H
 
-#ifdef USE_Qt5 //added by PHC 2015May
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393) 
 #include <QtWidgets>
 #else
 #include <QtGui>

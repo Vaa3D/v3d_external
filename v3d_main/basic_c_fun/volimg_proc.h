@@ -976,13 +976,15 @@ template <class T> bool downsample3dimg_1dpt(T * & img, V3DLONG * sz, double dfa
 
 			for (V3DLONG j=0;j<cur_sz1;j++)
 			{
-				V3DLONG j2low=V3DLONG(floor(j*dfactor)), j2high=V3DLONG(floor((j+1)*dfactor-1));
+				//V3DLONG j2low=V3DLONG(floor(j*dfactor)), j2high=V3DLONG(floor((j+1)*dfactor-1));
+				V3DLONG j2low=V3DLONG(floor(j*dfactor)); V3DLONG j2high=V3DLONG(floor((j+1)*dfactor-1));
 				if (j2high>sz[1]-1) j2high = sz[1]-1;
 				V3DLONG jw = j2high - j2low + 1;
 
 				for (V3DLONG i=0;i<cur_sz0;i++)
 				{
-					V3DLONG i2low=V3DLONG(floor(i*dfactor)), i2high=V3DLONG(floor((i+1)*dfactor-1));
+					//V3DLONG i2low=V3DLONG(floor(i*dfactor)), i2high=V3DLONG(floor((i+1)*dfactor-1));
+					V3DLONG i2low=V3DLONG(floor(i*dfactor)); V3DLONG i2high=V3DLONG(floor((i+1)*dfactor-1));
 					if (i2high>sz[0]-1) i2high = sz[0]-1;
 					V3DLONG iw = i2high - i2low + 1;
 
@@ -1496,6 +1498,18 @@ template <class T> double twopoints_lineprofile_3dimg_sum(T *** img, V3DLONG sz0
 	}
 	else
 		return 0;
+}
+
+template <class T> double cosangle_two_vectors(const T a[3], const T b[3]) //in case an error, return -2
+{
+    double vab=0,vaa=0,vbb=0;
+    for (int i=0;i<3;i++)
+    {
+        vab += a[i]*b[i];
+        vaa += a[i]*a[i];
+        vbb += b[i]*b[i];
+    }
+    return (vaa*vbb<1e-10) ? -2 : vab/sqrt(vaa*vbb);
 }
 
 #endif

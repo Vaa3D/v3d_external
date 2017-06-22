@@ -260,6 +260,11 @@ void V3dR_MainWindow::createControlWidgets()
 	  rotAbsolutePose = new QPushButton("Freeze", rotateBarGroup);
 	  rotAbsolutePose->setToolTip("Absolutize rotation pose about X-Y-Z sequentially for Going back next time");
 
+#ifdef __ALLOW_VR_FUNCS__
+      rotVRView = new QPushButton("See in VR", rotateBarGroup);
+	  rotVRView->setToolTip("You can see current image in VR environment.");
+#endif
+
 //    rotateBarBoxLayout->addWidget(xrotateLabel, 1, 0, 1, 5);
 //    rotateBarBoxLayout->addWidget(xRotSlider, 1, 6, 1, 15);
 //
@@ -284,6 +289,10 @@ void V3dR_MainWindow::createControlWidgets()
 	rotateBarBoxLayout->addWidget(rotAbsolutePose, 3, 0, 1, 7);
 	rotateBarBoxLayout->addWidget(rotAbsolute, 3, 7+1, 1, 7);
 	rotateBarBoxLayout->addWidget(rotReset, 3, 14+2, 1, 7);
+
+#ifdef __ALLOW_VR_FUNCS__
+	rotateBarBoxLayout->addWidget(rotVRView, 4, 7+1, 1, 7);//wwbmark freeze
+#endif
 
 	//rotateBarBoxLayout->setContentsMargins(0,0,0,0);
 
@@ -842,6 +851,12 @@ void V3dR_MainWindow::connectSignal()
 	if (rotAbsolutePose){
 		connect(rotAbsolutePose, SIGNAL(clicked()), glWidget, SLOT(absoluteRotPose()));
 	}
+
+#ifdef __ALLOW_VR_FUNCS__
+	if(rotVRView){
+		connect(rotVRView, SIGNAL(clicked()), glWidget, SLOT(absoluteVRview()));
+	}
+#endif
 
 #define __connnect_zoom_shift__
 	// zoom & shift group

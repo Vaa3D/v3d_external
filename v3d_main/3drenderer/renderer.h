@@ -41,11 +41,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define V3D_RENDERER_H
 
 #include "v3dr_common.h"
-// CMB 05May2013 rearrange headers to compile with Qt4.8.4/MSVC2012
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
+#include "version_control.h"
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+  #include <GLES3\gl3.h>
+  #include <GL\glew.h>
+#elif defined(__APPLE__)
+  #include <OpenGL/glu.h>
 #else
-#include <GL/glu.h>
+  #include <GL/glu.h>
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,19 +86,29 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
+<<<<<<< HEAD
                       smBreakTwoNeurons, // Same function as smBreakMultiNeurons, but only one break is created TDP 201512
                       smJoinTwoNodes, // Straight line connect, joining two nodes without tracing TDP 201601
                      smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
                      smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
                      smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
+=======
+					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons,//MK
+>>>>>>> master
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
+	enum editMode {segmentEdit, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
 
 //protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
+<<<<<<< HEAD
 	static SelectMode defaultSelectMode;
 	SelectMode refineMode;
+=======
+    SelectMode refineMode;
+	editMode connectEdit;
+>>>>>>> master
 	void* widget;
 
 public:
@@ -159,6 +172,9 @@ public:
 	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
 
     virtual void drawVaa3DInfo(int fontsize=30);
+	
+	virtual void drawSegInfo();
+	vector<size_t> segInfoShow;
     virtual void drawScaleBar(float AlineWidth=3);
 
 	virtual void updateVolCutRange();

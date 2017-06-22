@@ -114,6 +114,8 @@ win32 { # platform: win32-command-mingw
     CONFIG += console
 LIBS += -L$$MINGW_DIR/lib \
 	-L$$LOCAL_DIR/lib_win32
+    DEFINES += __ALLOW_VR_FUNCS__
+
 }
 
 
@@ -190,8 +192,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_landmark.h \
     ../basic_c_fun/v3d_interface.h \
     ../basic_c_fun/v3d_global_preference.h \
-	../basic_c_fun/customary_structs/v3d_imaging_para.h \
-	../basic_c_fun/basic_thread.h \
+    ../basic_c_fun/customary_structs/v3d_imaging_para.h \
+    ../basic_c_fun/basic_thread.h \
+    ../basic_c_fun/basic_view3d.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \
@@ -276,6 +279,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
 #    ./painting/shared/arthurstyle.h \
 #    ./painting/shared/arthurwidgets.h
 
+
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h
 
@@ -313,9 +317,10 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
+    ../3drenderer/v3dr_control_signal.cpp \
  \ #    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
-	../imaging/v3d_imaging.cpp \
+        ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
@@ -358,6 +363,28 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
+
+win32 {
+INCLUDEPATH += ../vrrenderer/thirdparty/sdl2-2.0.3/include/ #for VR, by PHC 20170615
+INCLUDEPATH += ../vrrenderer/thirdparty/glew/glew-1.11.0/include/  #for VR, by PHC 20170615
+INCLUDEPATH += ../vrrenderer/thirdparty/   #for VR, by PHC 20170615
+INCLUDEPATH += ../vrrenderer/headers/ #for VR, by PHC 20170615
+
+HEADERS += \
+    ../vrrenderer/v3dr_gl_vr.h \
+    ../vrrenderer/Cylinder.h \
+    ../vrrenderer/Sphere.h \
+    ../vrrenderer/Matrices.h \
+    ../vrrenderer/RenderableObject.h
+
+SOURCES += \
+    ../vrrenderer/v3dr_gl_vr.cpp \
+    ../vrrenderer/Cylinder.cpp \
+    ../vrrenderer/Sphere.cpp \
+    ../vrrenderer/Matrices.cpp \
+    ../vrrenderer/RenderableObject.cpp
+
+}
 
 FORMS += landmark_property.ui \
     surface_obj_annotation.ui \
@@ -407,7 +434,7 @@ unix:!macx {
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
 #add -lglut -lGLU to fix the GL referencing issue on Ubuntu, otherwise it complains 
-unix:LIBS += -lglut -lGLU
+unix!macx:LIBS += -lglut -lGLU
 
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff -lv3dnewmat

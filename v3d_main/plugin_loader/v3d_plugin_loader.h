@@ -40,12 +40,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #ifndef _V3D_PLUGIN_LOADER_H_
 #define _V3D_PLUGIN_LOADER_H_
-
-#ifdef USE_Qt5
+#include <qmenu.h>
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else
   #include <QtGui>
-#endif// These two explicit includes make my IDE work better - CMB 08-Oct-2010
+#endif
+// These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include "../basic_c_fun/v3d_interface.h"
 
 

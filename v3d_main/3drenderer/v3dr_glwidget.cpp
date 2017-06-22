@@ -45,7 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
-
+#include "../vrrenderer/v3dr_gl_vr.h"
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
@@ -622,12 +622,12 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
     //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
 
 	mouse_held = 0;
-    v3d_msg("before mouseReleaseEvent _appendMarkerPos ",0);
+  //  v3d_msg("before mouseReleaseEvent _appendMarkerPos ",0);
 
 	if (event->button()==Qt::RightButton && renderer) //right-drag end
     {
-         (renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
-
+        (renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
+		//qDebug() << "done drawing\n";
 		updateTool();
 
 		POST_updateGL(); //update display of curve
@@ -988,11 +988,16 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	changeLineOption();
 			}
-              else if(IS_SHIFT_MODIFIER)
-              {
-                   toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
-              }
-              break;
+            else if(IS_SHIFT_MODIFIER)
+            {
+                toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+            }
+            else
+            {
+                //callCurveLineDetector(0); //the 0 option is for a fixed 32 window
+                callCurveLineDetector(1);//by PHC 20170531. // the 1 option is for calling the curveline detector using its infinite loop mode
+            }
+            break;
 
           case Qt::Key_W:
 		    if (IS_ALT_MODIFIER)
@@ -1317,12 +1322,12 @@ void V3dR_GLWidget::hideTool()
 }
 void V3dR_GLWidget::updateTool()
 {
-	qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
+	//qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
 
 	if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
 	{
-		//int i = surfaceDlg->getCurTab();
-		surfaceDlg->linkTo(this);
+        //int i = surfaceDlg->getCurTab();
+        surfaceDlg->linkTo(this);
         surfaceDlg->setCurTab(-1);  //-1 = last tab
 	}
 	if (colormapDlg && !(colormapDlg->isHidden()) ) //081219
@@ -1532,6 +1537,33 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
+#ifdef __ALLOW_VR_FUNCS__
+void V3dR_GLWidget::absoluteVRview()//0518
+{
+
+		NeuronTree nt;
+		nt.listNeuron.clear();
+		nt.hashNeuron.clear();
+		Renderer_gl1* tempptr = (Renderer_gl1*)renderer;//->getHandleNeuronTrees();
+		const QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+		int index=0,lineType;//change to  load neurontreelist
+		//lineType = tempptr->lineType;
+		lineType=0;
+		nt = listNeuronTrees->at(index);
+		//nt = tempptr->getHandleNeuronTrees()->at(index);
+		if(nt.listNeuron.size()>0)
+		{
+			v3d_msg("succeed in getting neurontree data.\n");
+			//doimageVRViewer_v2(nt,lineType);
+			doimageVRViewer(nt);
+		}
+		else
+		{
+			return;
+		}//*/
+	
+}
+#endif
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {
@@ -2297,10 +2329,11 @@ int V3dR_GLWidget::getLocalStartPosX()
 
 int V3dR_GLWidget::getLocalStartPosY()
 {
-    if (_idep)
-        return _idep->local_start.z;
-    else
+    if (_idep){
+        return _idep->local_start.y;
+    }else{
         return -1;
+    }
 }
 
 int V3dR_GLWidget::getLocalStartPosZ()
@@ -2591,6 +2624,22 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
 		renderer->toggleNStrokeCurveDrawing();
 		POST_updateGL();
 	}
+}
+
+// For curveline detection , by PHC 20170531
+void V3dR_GLWidget::callCurveLineDetector(int option)
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            if (option==0)
+                v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
+            else
+                v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline infinite"));
+            POST_updateGL();
+        }
+    }
 }
 
 void V3dR_GLWidget::setDragWinSize(int csize)

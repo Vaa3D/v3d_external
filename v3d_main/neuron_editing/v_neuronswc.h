@@ -131,6 +131,7 @@ struct V_NeuronSWC
 	bool b_jointed;
     bool to_be_deleted;   // @ADDED by Alessandro on 2015-05-08. Needed to support late delete of multiple neuron segments.
     bool to_be_broken;
+	bool on; //Added by Y. Wang on 2016-05-25. For the segment-wise display of a SWC.
 
 	bool check_data_consistency() {/* to verify if unique node id have unique coord, and if parent are in the nid, except -1*/ return true;}
 
@@ -139,6 +140,7 @@ struct V_NeuronSWC
 		name=new_name; b_linegraph=is_linegraph;  *(int*)color_uc=0; b_jointed=false;
         to_be_deleted = false;
         to_be_broken = false;
+		on = true;
 	}
 
 	void printInfo();

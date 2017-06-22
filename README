@@ -30,6 +30,12 @@ these plugins should be produced using the same version of QT (of compatible ver
 operating system, the same compiler, and the same release type ("Release" or "Debug") of the
 build.
 
+* License
+
+Vaa3D used a slightly modified revised MIT license, see detail here https://github.com/Vaa3D/Vaa3D_Wiki/wiki/LicenseAndAgreement.wiki .
+
+* Questions
+
 If you have questions, please check the documentations on the Vaa3D website: http://vaa3d.org , 
 and the wiki pages: https://github.com/Vaa3D/Vaa3D_Wiki/wiki/.
 You could find answers of FAQs and submmit your questions using the following help forum:

@@ -35,6 +35,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *      Author: ruanzongcai
  */
 
+#include "version_control.h"
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#include <QtGui>
+//#include <QtANGLE\GLES2\gl2.h>
+#include <QtANGLE\GLES3\gl3.h>
+#endif // USE_Qt5_VS2015_Win7_81 || USE_Qt5_VS2015_Win10_10_14393
+
 
 #include "renderer_gl2.h"
 
@@ -101,7 +108,7 @@ void Renderer_gl2::initialize(int version)
 
 		loadShader();
 
-	}CATCH_handler( "Renderer_gl2::initialize" );
+	} CATCH_handler( "Renderer_gl2::initialize" );
 }
 
 

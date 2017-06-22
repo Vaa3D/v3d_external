@@ -67,9 +67,10 @@ enum v3dr_VolSlice { vsSliceNone=0,
 enum v3dr_SurfaceType { stSurfaceNone=0,
 				stImageMarker=1,
 				stLabelSurface=2,
-				stNeuronStructure=3,
-				stPointCloud=4,
-				stPointSet=5,
+				stNeuronSegment=3,
+				stNeuronStructure=4,
+				stPointCloud=5,
+				stPointSet=6,
 				};
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -111,6 +112,7 @@ public:
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
 
 	virtual void loadObj();  	// called by initialize()  	// makeCurrent
+	virtual void loadObj_meshChange(int new_mesh); 
 	virtual void cleanObj(); 	// called by ~Renderer_gl1	// makeCurrent
 	virtual void drawObj();  	// called by paint()
 
@@ -423,6 +425,22 @@ public:
 
      // @ADDED by Alessandro on 2015-05-07. Multiple neuron segments delete by one-mouse stroke.
      void deleteMultiNeuronsByStroke();
+
+	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
+	 void connectNeuronsByStroke();
+	 void connectPointCloudByStroke();
+	 void connectMarkerByStroke();
+	 struct segInfoUnit
+	 {
+		long segID;
+		long head_tail;
+		long nodeCount;
+		bool refine;
+	 };
+	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
+	 void cutNeuronsByStroke();
+	 // ---------------------------------------------------------------------------------
+
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
      // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.

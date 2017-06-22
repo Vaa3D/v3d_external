@@ -6,6 +6,9 @@
 #    sh build.linux
 #    sh build.linux -B -j4   #rebuild the entire system using 4 processors
 
+# pull terafly submodule
+# git submodule update --init --recursive
+
 cd v3d_main
 
 sh ./build.redhat $*

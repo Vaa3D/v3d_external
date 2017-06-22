@@ -41,7 +41,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 **
 ****************************************************************************/
 #include "../3drenderer/v3dr_common.h"
-#ifdef USE_Qt5
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -126,6 +126,11 @@ MainWindow::MainWindow()
     procLandmarkManager = 0;
     procAtlasViewer = 0;
     proc3DViewer = 0;
+
+#ifdef __ALLOW_VR_FUNCS__
+    procVRViewer = 0;//VR
+#endif
+
     proc3DLocalRoiViewer = 0;
     procSettings = 0;
     proc_plugin_manager = 0;
@@ -225,7 +230,8 @@ MainWindow::MainWindow()
     //set the drop function
     setAcceptDrops(true); //080827
     //
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     workspace = new QMdiArea;
 #else
     workspace = new QWorkspace;
@@ -520,7 +526,8 @@ void MainWindow::handleCoordinatedCloseEvent_real() {
         }
     }
     //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     workspace->closeAllSubWindows();
 #else
     workspace->closeAllWindows();
@@ -799,7 +806,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         XFormWidget *existing_imgwin = findMdiChild(fileName);
         if (existing_imgwin)
         {
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
             workspace->setActiveSubWindow(existing_imgwin);
 #else
             workspace->setActiveWindow(existing_imgwin);
@@ -847,7 +855,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             }
 
                             child_rawimg->show();
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
@@ -874,7 +883,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                         if (child_maskimg->loadFile(cc.labelfield_image_file_list.at(i))) {
                             statusBar()->showMessage(tr("File loaded [%1]").arg(cc.labelfield_image_file_list.at(i)), 2000);
                             child_maskimg->show();
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
@@ -1038,7 +1048,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 if (child->loadFile(cur_atlas_list[kk].imgfile)) {
                     statusBar()->showMessage(tr("File loaded [%1]").arg(cur_atlas_list[kk].imgfile), 2000);
                     child->show();
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
                     workspace->cascadeSubWindows();
 #else
                     workspace->cascade();
@@ -1511,7 +1522,8 @@ void MainWindow::import_GeneralImageFile()
     if (!fileName.isEmpty()) {
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
             workspace->setActiveSubWindow(existing);
 #else
             workspace->setActiveWindow(existing);
@@ -1542,7 +1554,8 @@ void MainWindow::import_Leica()
     if (!fileName.isEmpty()) {
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
             workspace->setActiveSubWindow(existing);
 #else
             workspace->setActiveWindow(existing);
@@ -1940,8 +1953,14 @@ void MainWindow::updateMenus()
         procAtlasViewer->setEnabled(hasMdiChild);
 #endif
     proc3DViewer->setText("3D viewer for the entire image");
+#ifdef __ALLOW_VR_FUNCS__
+    procVRViewer->setText("VR viewer for the entire image");//VR
+#endif
     proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI)");
     proc3DViewer->setEnabled(hasMdiChild);
+#ifdef __ALLOW_VR_FUNCS__
+    procVRViewer->setEnabled(hasMdiChild);//VR
+#endif
     proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
 
 }
@@ -1985,7 +2004,8 @@ void MainWindow::updateWindowMenu()
     windowMenu->addAction(nextAct);
     windowMenu->addAction(previousAct);
     windowMenu->addAction(separator_ImgWindows_Act);
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     QList<QMdiSubWindow *> windows = workspace->subWindowList();
 #else
     QList<QWidget *> windows = workspace->windowList();
@@ -2202,6 +2222,9 @@ void MainWindow::updateProcessingMenu()
 #endif
     //Visualization menu
     visualizeProcMenu->addAction(proc3DViewer);
+#ifdef __ALLOW_VR_FUNCS__
+    visualizeProcMenu->addAction(procVRViewer);//VR
+#endif
     visualizeProcMenu->addAction(proc3DLocalRoiViewer);
     //Plug-in menu
     if (pluginLoader)
@@ -2286,6 +2309,15 @@ void MainWindow::createActions()
     proc3DViewer = new QAction(tr("3D viewer for entire image"), this);
     proc3DViewer->setShortcut(tr("Ctrl+V"));
     connect(proc3DViewer, SIGNAL(triggered()), this, SLOT(func_proc3DViewer()));
+
+#ifdef __ALLOW_VR_FUNCS__
+    //VR
+	procVRViewer = new QAction(tr("VR viewer for entire image"), this);
+    connect(procVRViewer, SIGNAL(triggered()), this, SLOT(func_procVRViewer()));
+    //VR
+
+#endif
+
     proc3DLocalRoiViewer = new QAction(tr("3D viewer for Region of Interest (ROI)"), this);
     proc3DLocalRoiViewer->setShortcut(tr("Shift+V"));
     connect(proc3DLocalRoiViewer, SIGNAL(triggered()), this, SLOT(func_proc3DLocalRoiViewer()));
@@ -2657,13 +2689,15 @@ XFormWidget *MainWindow::createMdiChild()
     //    XFormWidget *child = new XFormWidget((QWidget *)0, Qt::WA_DeleteOnClose); //change to "this" does not change anything of the exit seg fault, 080429
     //																	//080814: important fix to assure the destructor function will be called.
     XFormWidget *child = new XFormWidget((QWidget *)0);
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     workspace->addSubWindow(child);  //child is wrapped in his parentWidget()
 #else
     workspace->addWindow(child);  //child is wrapped in his parentWidget()
 #endif
     //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help to update the workspace->windowList()
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->subWindowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
 #else
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
@@ -2686,7 +2720,8 @@ XFormWidget *MainWindow::createMdiChild()
 }
 XFormWidget *MainWindow::activeMdiChild()
 {
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     return qobject_cast<XFormWidget *>(workspace->activeSubWindow());
 #else
     return qobject_cast<XFormWidget *>(workspace->activeWindow());
@@ -2698,7 +2733,8 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
     if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //090818 RZC 20110427 YuY
     XFormWidget *mdiChildFind;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2719,7 +2755,8 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     if(!numfind) //20110427 YuY
     {
         // try find image name contains the input string from the end
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
         foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
         foreach (QWidget *window, workspace->windowList()) {
@@ -2751,7 +2788,8 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
 {
     nchild=0;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2762,7 +2800,8 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
         return NULL;
     XFormWidget ** plist = new XFormWidget * [nchild];
     int i=0;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2774,7 +2813,8 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
 bool MainWindow::setCurHiddenSelectedWindow( XFormWidget* a) //by PHC, 101009
 {
     bool b_found=false;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) //ensure the value is valid (especially the window has not been closed)
 #else
     foreach (QWidget *window, workspace->windowList()) //ensure the value is valid (especially the window has not been closed)
@@ -2813,6 +2853,9 @@ bool MainWindow::setCurHiddenSelectedWindow_withoutcheckwinlist( XFormWidget* a)
 void MainWindow::func_procLandmarkManager() {if (activeMdiChild()) activeMdiChild()->launchAtlasViewer(1);}
 void MainWindow::func_procAtlasViewer() {if (activeMdiChild()) activeMdiChild()->launchAtlasViewer(0);}
 void MainWindow::func_proc3DViewer() {if (activeMdiChild()) activeMdiChild()->doImage3DView();}
+#ifdef __ALLOW_VR_FUNCS__
+void MainWindow::func_procVRViewer() {if (activeMdiChild()) activeMdiChild()->doImageVRView();}//VR
+#endif
 void MainWindow::func_proc3DLocalRoiViewer() {if (activeMdiChild()) activeMdiChild()->doImage3DLocalRoiView();}
 void MainWindow::func_procSettings()
 {
@@ -2924,12 +2967,12 @@ void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 void MainWindow::func_open_terafly()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    teramanager::TeraFly::domenu("TeraFly", *pl, this);
+    terafly::TeraFly::domenu("TeraFly", *pl, this);
 }
 void MainWindow::func_open_teraconverter()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    teramanager::TeraFly::domenu("TeraConverter", *pl, this);
+    terafly::TeraFly::domenu("TeraConverter", *pl, this);
 }
 
 void MainWindow::func_open_neuron_game()
@@ -3002,7 +3045,8 @@ void MainWindow::func_procPC_Atlas_view_atlas_computeVanoObjStat()
     }
     //ask which channel to compute info
     bool ok1;
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     int ch_ind = QInputDialog::getInt(this, tr("channel"),
                                           tr("The selected directory contains %1 .ano files. <br><br> which image channel to compute the image objects statistics?").arg(listRecompute.size()),
                                           1, 1, 3, 1, &ok1) - 1;

@@ -168,6 +168,9 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
         if(in_swc_list.seg.at(k).to_be_deleted)
             continue;
 
+		if(!in_swc_list.seg.at(k).on)
+            continue;
+
 		vector <V_NeuronSWC_unit> &row = (in_swc_list.seg.at(k).row);
 		if (row.size()<=0) continue;
 
@@ -340,20 +343,20 @@ Link_Map get_link_map(const V_NeuronSWC & in_swc)
 	// setting index of map
 	for (V3DLONG i=0; i<in_swc.row.size(); i++)
 	{
-		V3DLONG nid = in_swc.row.at(i).n;
+        V3DLONG nid = in_swc.row.at(i).n;
 
 		Node_Link nl;
 		nl.i = i;
 		nl.in_link.clear();
 		nl.out_link.clear();
 		nl.nlink = 0;
-		link_map[nid] = nl;
-	}
+        link_map[nid] = nl;
+    }
 
 	// setting link of map
 	for (V3DLONG i=0; i<in_swc.row.size(); i++)
 	{
-		V3DLONG nid = in_swc.row.at(i).n;
+        V3DLONG nid = in_swc.row.at(i).n;
 		V3DLONG parent = in_swc.row.at(i).parent;
 
 		if (parent>=0) // 0/1-based? valid link
@@ -364,9 +367,26 @@ Link_Map get_link_map(const V_NeuronSWC & in_swc)
 
 			Node_Link & pnl = link_map[parent];
 			pnl.in_link.push_back(nid);
-			pnl.nlink ++;
-		}
-	}
+            pnl.nlink ++;
+        }else
+        {
+            bool single_node = true;
+            for (V3DLONG j=0; j<in_swc.row.size(); j++)
+            {
+                if(in_swc.row.at(j).parent == nid)
+                {
+                    single_node = false;
+                    break;
+                }
+            }
+            if(single_node)
+            {
+                Node_Link & nl = link_map[nid];
+                nl.out_link.push_back(nid);
+                nl.nlink ++;
+            }
+        }
+    }
 
 	return link_map;
 }

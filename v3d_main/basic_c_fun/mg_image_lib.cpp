@@ -309,8 +309,9 @@ static int determine_kind(TIFF *tif)   //  Determine nature of current tif image
   TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
   TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photo);
   if (photo <= 1)
-    { if (channels > 1)
-        error("Black and white tiff has more than 1 channel!",NULL);
+    { if (channels > 1) int foo;
+        //error("Black and white tiff has more than 1 channel!",NULL); //TIFFTAG_PHOTOMETRIC indicates the photometric interpretation of the data, wherein 0 means black is 0 and lighter intensity is larger values.
+          // this doesn't preclude multiple channel data.  In fact, if it were 1, it would mean inverted photometric interpretation.  see www.awaresystems.be/imaging/tiff/tifftags/photometricinterpretation.html
       if (bits == 16)
         return (GREY16);
       else
@@ -558,12 +559,13 @@ Stack *Read_Stack(char *file_name)
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
-        if (width != stack->width || height != stack->height)
+        if (width != stack->width || height != stack->height){
           error("Images of stack are not of the same dimensions!",NULL);
-
+           return 0;}
         kind = determine_kind(tif);
-        if (kind != stack->kind)
+        if (kind != stack->kind){
           error("Images of stack are not of the same type (GREY, GREY16, or COLOR)!",NULL);
+          return 0;}
       }
   }
 
@@ -680,12 +682,13 @@ Stack *Read_Stack_Planes(char *prefix, int num_width, int first_num)
         if (!tif) return 0;
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
-        if (width != stack->width || height != stack->height)
+        if (width != stack->width || height != stack->height){
           error("Images of stack are not of the same dimensions!",NULL);
-
+          return 0;}
         kind = determine_kind(tif);
-        if (kind != stack->kind)
+        if (kind != stack->kind){
           error("Images of stack are not of the same type (GREY, GREY16, or COLOR)!",NULL);
+          return 0;}
       }
   }
 

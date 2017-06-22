@@ -74,8 +74,8 @@ sub process_all_plugins
       # Handle libtiff first
       if ( $lib_name =~ m!^(.*/libtiff.*\.dylib)$! ) {
         my $old = $1;
-        print $old;
-        next unless -e $old;
+        #force to update libtiff path
+        #next unless -e $old;
         my @pathparts = split '/', $old;
         my $term_name = pop @pathparts;
         my $full_new = "$app_name/Contents/Frameworks/$term_name";

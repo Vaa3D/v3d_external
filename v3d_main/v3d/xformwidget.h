@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_triview.h"
 #include "../basic_c_fun/volimg_proc.h"
 //#include "../3drenderer/v3dr_common.h"
+#include "../basic_c_fun/basic_view3d.h"
 
 #include "mapview.h"
 
@@ -122,7 +123,8 @@ struct iDrawExternalParameter
      }
 };
 
-#ifdef USE_Qt5
+
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 class XFormWidget : public QMdiSubWindow, public TriviewControl //class XFormWidget : public QMainWindow
 #else
 class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
@@ -352,6 +354,9 @@ public slots:
 	void popupImageProcessingDialog();
 	void popupImageProcessingDialog(QString item);
 	void doImage3DView();
+#ifdef    __ALLOW_VR_FUNCS__
+	void doImageVRView();//VR
+#endif
 	void doImage3DLocalMarkerView();
 	void doImage3DLocalRoiView();
 	void doImage3DLocalBBoxView(); //do not have arguments so that can be used as the slot of a timer signal

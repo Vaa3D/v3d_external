@@ -43,7 +43,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../v3d/surfaceobj_annotation_dialog.h"
 #endif
 
-
 ///////////////////////////////////////////////////////////
 #define UPDATE_VIEW(w)   {if(w) w->update();}
 #define ACTIVATE(w)	     {if(w) w->activateWindow();}
@@ -62,7 +61,7 @@ V3dr_surfaceDialog::V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent)
 	createFirst();
 	linkTo(w);/////
 
-    this->resize(1000,300);
+    this->resize(1200,300);
 }
 
 V3dr_surfaceDialog::~V3dr_surfaceDialog()
@@ -177,7 +176,7 @@ void V3dr_surfaceDialog::clearTables_fromTab()
 //	if (table[stNeuronStructure])  disconnect(table[stNeuronStructure], SIGNAL(cellChanged(int,int)), this, SLOT(pickSWC(int,int)));
 //	if (table[stPointCloud])       disconnect(table[stPointCloud], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO(int,int)));
 //	if (table[stPointSet])       disconnect(table[stPointSet], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO_Set(int,int)));
-	for (int i=1; i<=5; i++)
+	for (int i=1; i<=6; i++)
 		if (table[i])
 	{
 		//delete table[i];  table[i]=0;		//this works well until June 09, so STRANGE !!!
@@ -207,6 +206,7 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 
 	table[stImageMarker]     = createTableMarker();
 	table[stLabelSurface]    = createTableSurf();
+	table[stNeuronSegment] = createTableNeuronSegment();
 	table[stNeuronStructure] = createTableSWC();
 	table[stPointCloud]      = createTableAPO();
 	table[stPointSet]     = createTableAPO_Set();
@@ -222,6 +222,8 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 		tabOptions->setTabToolTip(i, qs);
 		i= tabOptions->addTab(table[stLabelSurface],	qs =QString("Label Surface (%1)").arg(table[stLabelSurface]->rowCount()));
 		tabOptions->setTabToolTip(i, qs);
+		i= tabOptions->addTab(table[stNeuronSegment], qs =QString("Neuron Segment (%1)").arg(table[stNeuronSegment]->rowCount()));
+		tabOptions->setTabToolTip(i, qs);
 		i= tabOptions->addTab(table[stNeuronStructure], qs =QString("Neuron/line Structure (%1)").arg(table[stNeuronStructure]->rowCount()));
 		tabOptions->setTabToolTip(i, qs);
 		i= tabOptions->addTab(table[stPointCloud],      qs =QString("Point Cloud (%1)").arg(table[stPointCloud]->rowCount()));
@@ -234,11 +236,12 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 	//connect cell to table handler
 	if (table[stImageMarker])      connect(table[stImageMarker], SIGNAL(cellChanged(int,int)), this, SLOT(pickMarker(int,int)));
 	if (table[stLabelSurface])     connect(table[stLabelSurface], SIGNAL(cellChanged(int,int)), this, SLOT(pickSurf(int,int)));
+	if (table[stNeuronSegment])  connect(table[stNeuronSegment], SIGNAL(cellChanged(int,int)), this, SLOT(pickNeuronSegment(int,int)));
 	if (table[stNeuronStructure])  connect(table[stNeuronStructure], SIGNAL(cellChanged(int,int)), this, SLOT(pickSWC(int,int)));
 	if (table[stPointCloud])       connect(table[stPointCloud], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO(int,int)));
 	if (table[stPointSet])      connect(table[stPointSet], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO_Set(int,int)));
-
-	for (int i=1; i<=5; i++)
+	
+	for (int i=1; i<=6; i++)
 		if (table[i])
 	{
 		table[i]->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -249,7 +252,7 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 		//use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
 		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
 		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
-	}
+		}
 }
 
 
@@ -405,6 +408,11 @@ void V3dr_surfaceDialog::doMenuOfColor()
 void V3dr_surfaceDialog::createMenuOfDisplayMode()
 {
     QAction* Act;
+	QAction* mesh27;
+	QAction* mesh18;
+	QAction* mesh9;
+	QAction* meshDefault;
+	QMenu* mesh_menu;
 
     Act = new QAction(tr("Use global setting..."), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingGlobalSettings()));
@@ -417,7 +425,37 @@ void V3dr_surfaceDialog::createMenuOfDisplayMode()
     Act = new QAction(tr("Always tube mode"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingTube()));
     menuDisplayMode.addAction(Act);
+
+	/*mesh_menu = new QMenu(tr("Change mesh density of neuron surface"), this);
+	menuDisplayMode.addMenu(mesh_menu);
+	meshDefault = new QAction(tr("Default (36)"), this);
+	connect(meshDefault, SIGNAL(triggered()), this, SLOT(setMeshDensityDefault()));
+	mesh_menu->addAction(meshDefault);
+	mesh27 = new QAction(tr("27"), this);
+	connect(mesh27, SIGNAL(triggered()), this, SLOT(setMeshDensity27()));
+	mesh_menu->addAction(mesh27);
+	mesh18 = new QAction(tr("18"), this);
+	connect(mesh18, SIGNAL(triggered()), this, SLOT(setMeshDensity18()));
+	mesh_menu->addAction(mesh18);
+	mesh9 = new QAction(tr("9"), this);
+	connect(mesh9, SIGNAL(triggered()), this, SLOT(setMeshDensity9()));
+	mesh_menu->addAction(mesh9);*/
 }
+
+/*void V3dr_surfaceDialog::setMeshDensity(int newMeshDensity)
+{
+	//cout << newMeshDensity << endl;
+	Renderer_gl1* r = renderer;
+	r->cleanObj();
+	this->meshDensity = newMeshDensity;
+	iDrawExternalParameter* idep = (iDrawExternalParameter*) r->_idep;
+	//qDebug() << idep->swc_file_list;
+	QString swcFileName = idep->swc_file_list[0];
+	
+	r->loadObj_meshChange(newMeshDensity);
+	r->loadObjectFilename(swcFileName);
+	return;
+}*/
 
 void V3dr_surfaceDialog::doMenuOfDisplayMode()
 {
@@ -616,23 +654,36 @@ void V3dr_surfaceDialog::doubleClickHandler(int i, int j)
 
 void V3dr_surfaceDialog::selectedOnOff(bool state)
 {
+	if (1 + (tabOptions->currentIndex()) == stNeuronSegment) isBatchOperation = true;
+	
 	QTableWidget* t = currentTableWidget();
 	if (! t) return;
 
 	PROGRESS_DIALOG("Updating on/off    ", this);
 	begin_batch();
 
+	qDebug("flag1");
 	QList<QTableWidgetSelectionRange> list_range = t->selectedRanges();
 	for (int ii=0; ii<list_range.size(); ii++)
 	{
 		PROGRESS_PERCENT(ii*100/list_range.size());
 
+		qDebug("flag2");
+
 		int row0 = list_range.at(ii).topRow();
 		int row1 = list_range.at(ii).bottomRow();
+		qDebug("%d,%d",row0,row1);
+
+
 		for (int i=row0; i<=row1; i++)
 		{
+			qDebug("flag3.1");
 			QTableWidgetItem * curItem = t->item(i,0);
+			qDebug("flag3.2");
+			qDebug("state in batch set is");
+			qDebug(state ? "true" : "false");
 			curItem->setCheckState(BOOL_TO_CHECKED( state ));
+			qDebug("flag3.3");
 		}
 	}
 //	for (int i=0; i<t->rowCount(); i++)
@@ -645,6 +696,17 @@ void V3dr_surfaceDialog::selectedOnOff(bool state)
 
 	end_batch();
 	PROGRESS_PERCENT(100);
+
+	if (1 + (tabOptions->currentIndex()) == stNeuronSegment)
+	{
+		isBatchOperation = false;
+		Renderer_gl1* r = renderer;
+		if (! r)  return;	
+		V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+		My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
+		V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+		curImg->update_3drenderer_neuron_view(w, r);
+	}
 
 	updatedContent(t);
 }
@@ -845,25 +907,26 @@ void V3dr_surfaceDialog::pickMarker(int i, int j)
 
 QTableWidget* V3dr_surfaceDialog::createTableSWC()
 {
+    //qDebug("##SWC Table is recreated!!!");
+	
 	Renderer_gl1* r = renderer;
 	if (! r)  return 0;
 
 	QStringList qsl;
-    qsl << "on/off" << "color" << "count" << "display mode" << "editing" << "name" << "comment"<< "file name";
+    qsl << "on/off"  << "color" << "count" << "display mode" << "editing" << "name" << "comment"<< "file name";
 	int row = (r->listNeuronTree.size());
 	int col = qsl.size();
 
 	QTableWidget* t = new QTableWidget(row,col, this);
 	t->setHorizontalHeaderLabels(qsl);
 
-	//qDebug("  create begin t->rowCount = %d", t->rowCount());
+	qDebug("  create begin t->rowCount = %d", t->rowCount());
 	for (int i=0; i<row; i++)
 	{
 		int j=0;
 		QTableWidgetItem *curItem;
 
 		ADD_ONOFF(r->listNeuronTree[i].on);
-
 		ADD_QCOLOR(r->listNeuronTree[i].color);
 
 		ADD_STRING( tr("%1").arg(r->listNeuronTree[i].listNeuron.size()) );
@@ -888,15 +951,15 @@ QTableWidget* V3dr_surfaceDialog::createTableSWC()
 
 		MESSAGE_ASSERT(j==col);
 	}
-	//qDebug("  end   t->rowCount = %d", t->rowCount());
+  //  qDebug("  end   t->rowCount = %d", t->rowCount());
 
-	t->resizeColumnsToContents();
+    t->resizeColumnsToContents();
 	return t;
 }
 
 void V3dr_surfaceDialog::pickSWC(int i, int j)
 {
-	//qDebug("	pickSWC( %d, %d )", i,j);
+	qDebug("	pickSWC( %d, %d )", i,j);
 
 	Renderer_gl1* r = renderer;
 	if (! r)  return;
@@ -920,6 +983,103 @@ void V3dr_surfaceDialog::pickSWC(int i, int j)
 	updatedContent(t);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
+{
+    //qDebug("##NeuronSegment Table is recreated!!!");
+
+	Renderer_gl1* r = renderer;
+	if (! r)  return 0;
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
+	V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+
+	QStringList qsl;
+	qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file";
+	int row;	
+    bool flag = false;
+    for (int i=0; i<r->listNeuronTree.size();i++)
+        if (r->listNeuronTree[i].editable) flag = true;
+    if (r->listNeuronTree.size() !=0 && !flag)
+		row = 0;
+	else row =tracedNeuron->nsegs();
+
+	int col = qsl.size();
+
+    QTableWidget* t = new QTableWidget(row,col, this);
+	t->setHorizontalHeaderLabels(qsl);
+
+	for (int i=0; i<row; i++)
+	{
+		int j=0;
+		QTableWidgetItem *curItem;
+		V_NeuronSWC curSeg = tracedNeuron->seg[i];
+
+		ADD_ONOFF(curSeg.on);
+
+		RGBA8 color;
+		color.r = curSeg.color_uc[0];
+		color.g = curSeg.color_uc[1];
+		color.g = curSeg.color_uc[2];
+		color.a = curSeg.color_uc[3];
+		ADD_QCOLOR(color);
+
+		ADD_STRING( tr("%1").arg(curSeg.row.size()) );
+
+		ADD_STRING( tr("%1").arg(curSeg.row[1].type) );
+		
+		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
+
+		ADD_STRING( QString::fromUtf8(curSeg.comment.c_str()) );
+
+		ADD_STRING( QString::fromUtf8(curSeg.file.c_str()) );
+
+		MESSAGE_ASSERT(j==col);
+    }
+
+    t->resizeColumnsToContents();
+	return t;
+}
+
+
+void V3dr_surfaceDialog::pickNeuronSegment(int i, int j)
+{
+	qDebug("flag4");
+	qDebug("	pickNeuronSegment( %d, %d )", i,j);
+	if (j == 1) return;
+	
+	Renderer_gl1* r = renderer;
+	if (! r)  return;
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
+	V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+
+	if (i<0 || i>=tracedNeuron->nsegs())  return;
+
+	QTableWidget* t = table[stNeuronSegment];
+	QTableWidgetItem *curItem = t->item(i,j);
+
+	switch(j)
+	{
+	case 0:
+		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
+		qDebug(CHECKED_TO_BOOL(curItem->checkState()) ? "true" : "false");
+		tracedNeuron->seg[i].on = CHECKED_TO_BOOL(curItem->checkState());//!tracedNeuron->seg[i].on;
+		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
+		break;
+	case 1:
+		r->listCell[i].color = RGBA8V(curItem->data(0));
+		UPATE_ITEM_ICON(curItem);
+		break;
+	}
+
+	updatedContent(t);
+	if (!isBatchOperation) 
+	curImg->update_3drenderer_neuron_view(w, r);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -970,6 +1130,8 @@ QTableWidget* V3dr_surfaceDialog::createTableAPO()
 
 void V3dr_surfaceDialog::pickAPO(int i, int j)
 {
+	qDebug("	pickAPO( %d, %d )", i,j);
+	
 	Renderer_gl1* r = renderer;
 	if (! r)  return;
 	if (i<0 || i>=r->listCell.size())  return;
@@ -1108,6 +1270,7 @@ void V3dr_surfaceDialog::pickAPO_Set(int i, int j)
 { \
 	if (t==table[stImageMarker])		curItem = t->item(i, 6); \
 	if (t==table[stLabelSurface]) 		curItem = t->item(i, 3); \
+	if (t==table[stNeuronSegment]) 		curItem = t->item(i, 7); \
 	if (t==table[stNeuronStructure]) 	curItem = t->item(i, 4); \
 	if (t==table[stPointCloud]) 		curItem = t->item(i, 7); \
 	if (t==table[stPointSet]) 			curItem = t->item(i, 3); \
@@ -1117,6 +1280,7 @@ void V3dr_surfaceDialog::pickAPO_Set(int i, int j)
 { \
 	if (t==table[stImageMarker])		curItem = t->item(i, 7); \
 	if (t==table[stLabelSurface]) 		curItem = t->item(i, 4); \
+	if (t==table[stNeuronSegment]) 		curItem = t->item(i, 8); \
 	if (t==table[stNeuronStructure]) 	curItem = t->item(i, 5); \
 	if (t==table[stPointCloud]) 		curItem = t->item(i, 8); \
 	if (t==table[stPointSet]) 			curItem = t->item(i, 4); \
@@ -1169,6 +1333,11 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 				{
 					r->listLabelSurf[i].name = realobj_name;
 					r->listLabelSurf[i].comment = realobj_comment;
+				}
+				else if (t==table[stNeuronSegment])
+				{
+					r->listCell[i].name = realobj_name;
+					r->listCell[i].comment = realobj_comment;
 				}
 				else if (t==table[stNeuronStructure])
 				{

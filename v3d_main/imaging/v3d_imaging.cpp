@@ -80,12 +80,20 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
                 return false;
             }            
         }
+        else if (p.OPS == "GD Curveline" || p.OPS == "GD Curveline infinite") //PHC 20170530
+        {
+            if (pluginsDir.cd("plugins/line_detector")==false)
+            {
+                v3d_msg("Cannot find ./plugins/line_detector directory!");
+                return false;
+            }
+        }
         else if (p.OPS == "Fetch Highrez Image Data from File")
         {
             // @FIXED by Alessandro on 2015-09-30.
             // Since TeraFly is part of Vaa3D, here we can directly call TeraFly's domenu function w/o using QPluginLoader.
             curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
-            itm::TeraFly::doaction(p.OPS);
+            tf::TeraFly::doaction(p.OPS);
             return true;
         }
         else if (p.OPS == "Load file using Vaa3D data IO manager")

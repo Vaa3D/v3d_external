@@ -6,9 +6,14 @@
 #endif
 
 #define __hierarchical_file_menu__
-
+#include "version_control.h"
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #include <map>
+#include "qaction.h"
 
 #ifdef __v3d_custom_toolbar_plugin__
 	#include "../basic_c_fun/v3d_interface.h"
@@ -22,7 +27,7 @@ class EmptyClass{};
 typedef void (EmptyClass::*VoidFunc)();
 #ifndef __v3d_custom_toolbar_plugin__
 typedef void (MainWindow::*MainWindowFunc)();
-#ifdef USE_Qt5
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 typedef void (QMdiArea::*WorkspaceFunc)();
 #else
 typedef void (QWorkspace::*WorkspaceFunc)();

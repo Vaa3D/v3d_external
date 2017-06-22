@@ -16,4 +16,3 @@ macx {
     LIBS -= -L../common_lib/lib_mac32  #100811: -lv3dtiff for both 32/64-bit
     LIBS += -L../common_lib/lib_mac64
 }
-

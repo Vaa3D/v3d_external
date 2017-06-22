@@ -48,7 +48,7 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 double d_thres = 2.0;
 
 //round all neuronal node coordinates, and compute the average min distance matches for all places the neurons go through
-NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2,bool bmenu)
+NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2,bool bmenu, double d_thres_updated)
 {
 	NeuronDistSimple ss;
 
@@ -56,7 +56,8 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
     if(bmenu)
     {
         bool ok1;
-#ifndef USE_Qt5
+
+#if not defined(USE_Qt5_VS2015_Win7_81) && not defined(USE_Qt5_VS2015_Win10_10_14393)
         V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
                                                        "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
 #else
@@ -67,7 +68,8 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
         {
             d_thres = d_thres_new;
         }
-    }
+    }else
+        d_thres = d_thres_updated;
     //===
 
 
@@ -109,6 +111,9 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 		else
 			ss.dist_apartnodes = 0;
 	}
+
+    ss.percent_12_apartnodes = double(nseg1big)/nseg1;
+    ss.percent_21_apartnodes = double(nseg2big)/nseg2;
 	ss.percent_apartnodes = (double(nseg1big)/nseg1 + double(nseg2big)/nseg2)/2.0;
 
     ss.dist_max = (maxdist12<maxdist21) ? maxdist12 : maxdist21; //this max distance should refelect the meaningful measure.

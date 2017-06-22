@@ -74,9 +74,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef GRADIENTS_H
 #define GRADIENTS_H
 
-#ifdef USE_Qt5
-#include <QWidget>
-#include "../v3d/painting/shared/hoverpoints.h"
+#include <version_control.h>
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#include <QtWidgets>
+#include "..\..\..\..\Qt\Qt5.6.2\Examples\Qt-5.6\widgets\painting\shared\hoverpoints.h"
 #else
 #include <QtGui>
 #include <hoverpoints.h>

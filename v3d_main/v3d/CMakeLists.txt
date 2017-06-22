@@ -137,6 +137,14 @@ add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIBRARIES} )
 
 
+### boost
+SET(Boost_ADDITIONAL_VERSIONS "1.46.0" "1.57.0" "1.56.1" "1.56.0" "1.54" "1.54.0")
+find_package(Boost COMPONENTS system regex)
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIR})
+    link_directories(${Boost_LIBRARY_DIRS})
+endif()
+
 
 
 ##########################

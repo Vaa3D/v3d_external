@@ -39,7 +39,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../plugin_loader/v3d_plugin_loader.h"
 #include "v3d_actions.h"
 
+#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
+
 #include <QNetworkReply>
 // #include <QXmlSchema> // Qt 4.6 or later only
 #include <QtXml>
@@ -50,7 +55,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(3.13);
+    VersionInfo thisVersionOfV3D(3.239);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -148,8 +153,9 @@ void v3d_aboutinfo()
         "<tr><td>Ctrl-U (Windows, Linux) or Cmd-U (Mac) </td><td>Update landmarks and traced curves from associated tri-view.</td></tr>"
         "<tr><td>Ctrl-P (Windows, Linux) or Cmd-P (Mac) </td><td>toggle the Polygon-fill/line/point/transparent display mode of surface object.</td></tr>"
         "<tr><td>Alt-P                                  </td><td>change Polygon display options of surface object.</td></tr>"
-        "<tr><td>Ctrl-L (Windows, Linux) or Cmd-L (Mac) </td><td>toggle skeLeton-view and tube-view of SWC objects (e.g. a neuron).</td></tr>"
-        "<tr><td>Alt-L                                  </td><td>change skeLeton-view options of SWC objects (e.g. a neuron).</td></tr>"
+        "<tr><td>L                                      </td><td>invoke quick curveline detector.</td></tr>"
+        "<tr><td>Ctrl-L (Windows, Linux) or Cmd-L (Mac) </td><td>toggle skeleton-view and tube-view of SWC objects (e.g. a neuron).</td></tr>"
+        "<tr><td>Alt-L                                  </td><td>change skeleton-view options of SWC objects (e.g. a neuron).</td></tr>"
         "<tr><td>Ctrl-Z (Windows, Linux) or Cmd-Z (Mac) </td><td>Undo last tracing/editing operation of SWC objects (e.g. a neuron).</td></tr>"
         "<tr><td>Ctrl-X (Windows, Linux) or Cmd-X (Mac) </td><td>Redo last tracing/editing operation of SWC objects (e.g. a neuron).</td></tr>"
         "<tr><td>Ctrl-N (Windows, Linux) or Cmd-N (Mac) </td><td>toggle Name of APO object (e.g. point cloud).</td></tr>"
