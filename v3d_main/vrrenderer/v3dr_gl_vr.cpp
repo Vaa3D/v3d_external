@@ -1892,7 +1892,7 @@ bool CMainApplication::SetupTexturemaps()
 {
 	//std::string sExecutableDirectory = Path_StripFilename( Path_GetExecutablePath() );
 	//std::string strFullPath = Path_MakeAbsolute( "../cube_texture.png", sExecutableDirectory );
-	std::string strFullPath ="C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/controller_texture.png";
+	std::string strFullPath ="controller_texture.png";//C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/
 	std::vector<unsigned char> imageRGBA;
 	unsigned nImageWidth, nImageHeight;
 	unsigned nError = lodepng::decode( imageRGBA, nImageWidth, nImageHeight, strFullPath.c_str() );
