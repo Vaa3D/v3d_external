@@ -375,6 +375,7 @@ HEADERS += \
     ../vrrenderer/Cylinder.h \
     ../vrrenderer/Sphere.h \
     ../vrrenderer/Matrices.h \
+    ../vrrenderer/lodepng.h \
     ../vrrenderer/RenderableObject.h
 
 SOURCES += \
@@ -382,6 +383,7 @@ SOURCES += \
     ../vrrenderer/Cylinder.cpp \
     ../vrrenderer/Sphere.cpp \
     ../vrrenderer/Matrices.cpp \
+    ../vrrenderer/lodepng.cpp \
     ../vrrenderer/RenderableObject.cpp
 
 }
