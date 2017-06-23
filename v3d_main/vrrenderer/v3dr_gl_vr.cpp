@@ -739,6 +739,7 @@ private: // OpenGL bookkeeping
 	vector<Sphere*> loaded_spheres;
 	vector<Cylinder*> loaded_cylinders;
 	vector<glm::vec3> loaded_spheresPos;
+	vector<glm::vec3> loaded_spheresColor;
 
 	GLuint m_unMorphologyLineModeVAO;
 	GLuint m_glMorphologyLineModeVertBuffer;
@@ -857,8 +858,8 @@ void dprintf( const char *fmt, ... )
 CMainApplication::CMainApplication( int argc, char *argv[] )
 	: m_pCompanionWindow(NULL)
 	, m_pContext(NULL)
-	, m_nCompanionWindowWidth( 640 )
-	, m_nCompanionWindowHeight( 320 )
+	, m_nCompanionWindowWidth(640)//( 1600 )
+	, m_nCompanionWindowHeight( 320 )//(800)
 	, morphologyShader ( NULL )
 	, m_unCompanionWindowProgramID( 0 )
 	, m_unControllerTransformProgramID( 0 )
@@ -994,7 +995,7 @@ bool CMainApplication::BInit()
 		return false;
 	}
 
-	int nWindowPosX = 700;
+	int nWindowPosX = 100;
 	int nWindowPosY = 100;
 	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 
@@ -2109,8 +2110,10 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 	bool editable = neuron_Tree.editable;
 	int cur_linemode = neuron_Tree.linemode;
 
-	qDebug("rgba color---- %d,%d,%d,%d\n",rgba.c[0],rgba.c[1],rgba.c[2],rgba.a);
-	if (editable) qDebug("editable\n"); else qDebug("not editable\n");
+	if (rgba.a == 255) rgba.a = 0; //special case
+
+	//qDebug("rgba color---- %d,%d,%d,%d\n",rgba.c[0],rgba.c[1],rgba.c[2],rgba.a);
+	//if (editable) qDebug("editable\n"); else qDebug("not editable\n");
 	//rgba.a = 0;
 
 	//handle nodes
@@ -2129,7 +2132,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
 		{
-			int type = S0.type;
+			int type = S1.type;
 			if (editable)
 			{
 				int ncolorused = neuron_type_color_num;
@@ -2149,7 +2152,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 				vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
 				vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
 				vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-				qDebug("set in 2\n");
+				qDebug("set in 2,type=%d\n",type);
 			}
 		}
 		else
@@ -2166,6 +2169,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		//vertices[2*(S1.n-1)+1] = (drawMode==0) ? vcolor_load : vcolor_draw;
 		vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
+		if (drawMode==0) loaded_spheresColor.push_back(vcolor_load);
 	}
 
 	//map<int,int>::iterator iter;
