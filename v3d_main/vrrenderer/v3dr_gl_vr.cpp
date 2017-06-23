@@ -18,6 +18,7 @@
 #include <cstdlib>
 
 #include <openvr.h>
+#include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
 
@@ -641,6 +642,10 @@ public:
 	bool HandleInput();
 	void ProcessVREvent( const vr::VREvent_t & event );
 	void RenderFrame();
+	//wwbmark
+	bool SetupTexturemaps();
+	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
+	void SetupControllerTexture();
 
 	void SetupMorphologyLine(int drawMode);
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
@@ -729,6 +734,14 @@ private: // OpenGL bookkeeping
 	float m_fNearClip;
 
 	float m_fFarClip;
+	//wwbmark
+	GLuint m_iTexture;
+	GLuint m_ControllerTexVAO;
+	GLuint m_ControllerTexVBO;
+	GLuint m_unCtrTexProgramID;
+	GLint m_nCtrTexMatrixLocation;
+	unsigned int m_uiControllerTexIndexSize;
+	
 	// controller index , get them in HandleInput()
 	int	m_iControllerIDLeft;
 	int	m_iControllerIDRight;
@@ -896,6 +909,9 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_fTouchOldYL( 0 )
 	, m_pickUpState(false)
 	, pick_point (-1)
+	, m_ControllerTexVAO( 0 )
+	, m_nCtrTexMatrixLocation( -1 )
+	, m_unCtrTexProgramID( 0 )
 
 {
 
@@ -1056,7 +1072,8 @@ bool CMainApplication::BInit()
 	m_fNearClip = 0.1f;
 
  	m_fFarClip = 30.0f;
-
+	m_iTexture = 0;
+	m_uiControllerTexIndexSize = 0;
 	m_globalMatrix =glm::mat4();
 
 
@@ -1127,7 +1144,7 @@ bool CMainApplication::BInitGL()
 	//SetupMorphologyLine(loadedNT,m_unMorphologyLineModeVAO,m_glMorphologyLineModeVertBuffer,m_glMorphologyLineModeIndexBuffer,m_uiMorphologyLineModeVertcount,0);
 	SetupMorphologySurface(loadedNT,loaded_spheres,loaded_cylinders,loaded_spheresPos);
 
-
+	SetupTexturemaps();
 	SetupCameras();
 	SetupCamerasForMorphology();
 	SetupBoundingBox();
@@ -1623,6 +1640,7 @@ void CMainApplication::RenderFrame()
 	if ( m_pHMD )
 	{
 		RenderControllerAxes();
+		SetupControllerTexture();//wwbmark
 		SetupMorphologyLine(1);
 		SetupMorphologySurface(sketchNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(sketchNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
@@ -1743,7 +1761,39 @@ GLuint CMainApplication::CompileGLShader( const char *pchShaderName, const char 
 bool CMainApplication::CreateAllShaders()//todo: change shader code
 {
 	morphologyShader = new Shader("basic.vert", "basic.frag");
+	//wwbmark
+	m_unCtrTexProgramID = CompileGLShader( 
+		"Scene",
 
+		// Vertex Shader
+		"#version 410\n"
+		"uniform mat4 matrix;\n"
+		"layout(location = 0) in vec4 position;\n"
+		"layout(location = 1) in vec2 v2UVcoordsIn;\n"
+		"layout(location = 2) in vec3 v3NormalIn;\n"
+		"out vec2 v2UVcoords;\n"
+		"void main()\n"
+		"{\n"
+		"	v2UVcoords = v2UVcoordsIn;\n"
+		"	gl_Position = matrix * position;\n"
+		"}\n",
+
+		// Fragment Shader
+		"#version 410 core\n"
+		"uniform sampler2D mytexture;\n"
+		"in vec2 v2UVcoords;\n"
+		"out vec4 outputColor;\n"
+		"void main()\n"
+		"{\n"
+		"   outputColor = texture(mytexture, v2UVcoords);\n"
+		"}\n"
+		);
+	m_nCtrTexMatrixLocation = glGetUniformLocation( m_unCtrTexProgramID, "matrix" );
+	if( m_nCtrTexMatrixLocation == -1 )
+	{
+		dprintf( "Unable to find matrix uniform in scene shader\n" );
+		return false;
+	}
 	m_unControllerTransformProgramID = CompileGLShader(
 		"Controller",//note: for axes
 
@@ -1838,7 +1888,315 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 		&& m_unRenderModelProgramID != 0
 		&& m_unCompanionWindowProgramID != 0;
 }
+bool CMainApplication::SetupTexturemaps()
+{
+	//std::string sExecutableDirectory = Path_StripFilename( Path_GetExecutablePath() );
+	//std::string strFullPath = Path_MakeAbsolute( "../cube_texture.png", sExecutableDirectory );
+	std::string strFullPath ="C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/controller_texture.png";
+	std::vector<unsigned char> imageRGBA;
+	unsigned nImageWidth, nImageHeight;
+	unsigned nError = lodepng::decode( imageRGBA, nImageWidth, nImageHeight, strFullPath.c_str() );
+	
+	if ( nError != 0 )
+		return false;
+	for(int i = 0;i < nImageWidth; i ++)
+	{
+		for(int j = 0; j < nImageHeight; j ++)
+		{
+			if(imageRGBA[(j*nImageWidth + i)*4+1] > 200 && imageRGBA[(j*nImageWidth + i)*4+2] > 200)
+			{
+				imageRGBA[(j*nImageWidth + i)*4+3] = 1;
+			}
+			else
+			{
+				imageRGBA[(j*nImageWidth + i)*4+3] = 255;
+			}
+		}
+	}
+	glGenTextures(1, &m_iTexture );
+	glBindTexture( GL_TEXTURE_2D, m_iTexture );
 
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, nImageWidth, nImageHeight,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, &imageRGBA[0] );
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+
+	GLfloat fLargest;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+	 	
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	return ( m_iTexture != 0 );
+}
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CMainApplication::AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata )
+{
+	vertdata.push_back( fl0 );
+	vertdata.push_back( fl1 );
+	vertdata.push_back( fl2 );
+	vertdata.push_back( fl3 );
+	vertdata.push_back( fl4 );
+}
+void CMainApplication::SetupControllerTexture()
+{
+	if ( !m_pHMD )
+		return;
+
+	std::vector<float> vcVerts;
+
+	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
+	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
+
+	{//left controller
+		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip
+		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
+		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
+		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
+		point_A = mat_L * point_A;
+		point_B = mat_L * point_B;
+		point_C = mat_L * point_C;
+		point_D = mat_L * point_D;//*/
+		AddVertex(point_A.x,point_A.y,point_A.z,0,0.5f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
+		AddVertex(point_D.x,point_D.y,point_D.z,0.5f,0.75f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.5f,vcVerts);
+
+		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2
+		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
+		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
+		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
+		point_A2 = mat_L * point_A2;
+		point_B2 = mat_L * point_B2;
+		point_C2 = mat_L * point_C2;
+		point_D2 = mat_L * point_D2;//
+		AddVertex(point_A2.x,point_A2.y,point_A2.z,1,0.5f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,1,0.75f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,1,0.75f,vcVerts);
+		AddVertex(point_D2.x,point_D2.y,point_D2.z,0.5f,0.75f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0.5f,0.5f,vcVerts);
+
+		Vector4 point_E(-0.015f,0.01f,0.035f,1);// for the touchpad
+		Vector4 point_F(0.015f,0.01f,0.035f,1);
+		Vector4 point_G(-0.015f,0.01f,0.065f,1);
+		Vector4 point_H(0.015f,0.01f,0.065f,1);
+		point_E = mat_L * point_E;
+		point_F = mat_L * point_F;
+		point_G = mat_L * point_G;
+		point_H = mat_L * point_H;
+		switch (m_modeControl)
+		{
+		case 0://nothing
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.75f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,1,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+				break;
+			}
+		case 1://translate
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.25f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.75f,vcVerts);
+				break;
+			}
+		case 2://rotate
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.75f,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.75f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.75f,0.75f,vcVerts);
+				break;
+			}
+		case 3://scale
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.25f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.75f,vcVerts);
+				break;
+			}
+		default:
+			break;
+		}
+		Vector4 point_I(-0.005f,0.01f,0.015f,1);//for the menu button
+		Vector4 point_J(0.005f,0.01f,0.015f,1);
+		Vector4 point_K(-0.005f,0.01f,0.025f,1);
+		Vector4 point_L(0.005f,0.01f,0.025f,1);//*/
+		point_I = mat_L * point_I;
+		point_J = mat_L * point_J;
+		point_K = mat_L * point_K;
+		point_L = mat_L * point_L;
+		AddVertex(point_I.x,point_I.y,point_I.z,0.25f,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.5f,0,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.25f,0.25f,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.25f,0.25f,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.5f,0,vcVerts);
+
+
+		Vector4 point_M(-0.01f,-0.02f,0.035f,1);//for the pull dispaly
+		Vector4 point_N(0.01f,-0.02f,0.035f,1);
+		Vector4 point_O(-0.01f,-0.04f,0.05f,1);
+		Vector4 point_P(0.01f,-0.04f,0.05f,1);//*/
+		point_M = mat_L * point_M;
+		point_N = mat_L * point_N;
+		point_O = mat_L * point_O;
+		point_P = mat_L * point_P;
+		AddVertex(point_M.x,point_M.y,point_M.z,1,0,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
+		AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+	}
+	{// right controller
+		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip
+		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
+		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
+		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
+		point_A = mat_R * point_A;
+		point_B = mat_R * point_B;
+		point_C = mat_R * point_C;
+		point_D = mat_R * point_D;//*/
+
+		AddVertex(point_A.x,point_A.y,point_A.z,0,0.25f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.5f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.5f,vcVerts);
+		AddVertex(point_D.x,point_D.y,point_D.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.25f,vcVerts);
+
+		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2
+		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
+		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
+		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
+		point_A2 = mat_R * point_A2;
+		point_B2 = mat_R * point_B2;
+		point_C2 = mat_R * point_C2;
+		point_D2 = mat_R * point_D2;//*/
+
+		AddVertex(point_A2.x,point_A2.y,point_A2.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.5f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
+
+		Vector4 point_E(-0.015f,0.01f,0.035f,1);// for the touchpad
+		Vector4 point_F(0.015f,0.01f,0.035f,1);
+		Vector4 point_G(-0.015f,0.01f,0.065f,1);
+		Vector4 point_H(0.015f,0.01f,0.065f,1);
+		point_E = mat_R * point_E;
+		point_F = mat_R * point_F;
+		point_G = mat_R * point_G;
+		point_H = mat_R * point_H;
+
+		AddVertex(point_E.x,point_E.y,point_E.z,0.75f,0.75f,vcVerts);
+		AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+		AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+		AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+		AddVertex(point_H.x,point_H.y,point_H.z,1,1,vcVerts);
+		AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+
+		Vector4 point_I(-0.005f,0.01f,0.015f,1);//for the menu button
+		Vector4 point_J(0.005f,0.01f,0.015f,1);
+		Vector4 point_K(-0.005f,0.01f,0.025f,1);
+		Vector4 point_L(0.005f,0.01f,0.025f,1);//*/
+		point_I = mat_R * point_I;
+		point_J = mat_R * point_J;
+		point_K = mat_R * point_K;
+		point_L = mat_R * point_L;
+		AddVertex(point_I.x,point_I.y,point_I.z,0,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.25f,0,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0,0.25f,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0,0.25f,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.25f,0.25f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.25f,0,vcVerts);
+
+
+		Vector4 point_M(-0.01f,-0.02f,0.035f,1);//for the draw dispaly
+		Vector4 point_N(0.01f,-0.02f,0.035f,1);
+		Vector4 point_O(-0.01f,-0.04f,0.05f,1);
+		Vector4 point_P(0.01f,-0.04f,0.05f,1);//*/
+		point_M = mat_R * point_M;
+		point_N = mat_R * point_N;
+		point_O = mat_R * point_O;
+		point_P = mat_R * point_P;
+		AddVertex(point_M.x,point_M.y,point_M.z,1,0.25f,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.5f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.5f,vcVerts);
+		AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0.25,vcVerts);
+
+	
+	}
+
+	m_uiControllerTexIndexSize = vcVerts.size()/5;
+	// Setup the VAO the first time through.
+
+	if(m_ControllerTexVAO==0)
+
+	{
+		//setup vao and vbo stuff
+
+		glGenVertexArrays(1, &m_ControllerTexVAO);
+
+		glGenBuffers(1, &m_ControllerTexVBO);
+
+
+
+		//now allocate buffers
+
+		glBindVertexArray(m_ControllerTexVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_ControllerTexVBO);
+
+
+		glEnableVertexAttribArray(0);
+		GLsizei stride = sizeof(VertexDataScene);
+		uintptr_t offset = 0;
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
+
+		offset =  sizeof( Vector3 );
+
+		glEnableVertexAttribArray( 1 );
+
+		glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
+
+		glBindVertexArray(0);
+	}
+		glBindBuffer(GL_ARRAY_BUFFER, m_ControllerTexVBO);
+
+	if( vcVerts.size() > 0 )
+
+	{
+		glBufferData(GL_ARRAY_BUFFER,  sizeof(float) * vcVerts.size(), &vcVerts[0], GL_STREAM_DRAW );
+	}	
+
+}
 
 //void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 //{
@@ -2687,6 +3045,17 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	{	//wwbmark
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glUseProgram( m_unCtrTexProgramID );
+		glBindVertexArray( m_ControllerTexVAO );
+		glUniformMatrix4fv( m_nCtrTexMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+		glBindTexture( GL_TEXTURE_2D, m_iTexture );
+		glDrawArrays( GL_TRIANGLES, 0, m_uiControllerTexIndexSize );
+		glBindVertexArray( 0 );
+		glDisable(GL_BLEND);
+	}
 
 	if (m_bShowMorphologySurface)
 	{
