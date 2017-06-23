@@ -42,6 +42,8 @@
 NeuronTree loadedNT,sketchNT;
 glm::vec3 loadedNTCenter;
 long int vertexcount =0,swccount = 0;
+int ray_ratio = 1;
+bool bool_ray = true;
 #define dist_thres 0.01
 #define default_radius 0.01
 
@@ -1449,7 +1451,7 @@ bool CMainApplication::HandleInput()
 				//pick up the nearest node and pull it to new locations
 				//note: this part of code only serves as a demonstration, and does not handle complicated cases well.
 				//also, can only pull drawn neurons, not loaded ones.
-				if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
+/*				if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
 				{
 					
 					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
@@ -1518,7 +1520,7 @@ bool CMainApplication::HandleInput()
 				{
 					m_pickUpState = false;
 					pick_point = -1;
-				}//whenever the touchpad is unpressed, reset m_pickUpState and pick_point
+                }*///whenever the touchpad is unpressed, reset m_pickUpState and pick_point
 			}
 	}
 	return bRet;
@@ -1593,6 +1595,60 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}
 
 
+    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
+    {
+
+            const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
+            glm::mat4 mat = glm::mat4();
+            for (size_t i = 0; i < 4; i++)
+            {
+                for (size_t j = 0; j < 4; j++)
+                {
+                    mat[i][j] = *(mat_M.get() + i * 4 + j);
+                }
+            }
+            mat=glm::inverse(m_globalMatrix) * mat;
+
+            Vector4 start = mat_M * Vector4( 0, 0, -0.02f, 1 );
+
+
+            NeuronSWC SL0;
+            NeuronSWC SL1;
+            SL0.x = start.x ;SL0.y = start.y ;SL0.z = start.z ;SL0.r = default_radius;SL0.type = 200; SL0.n = swccount+1;SL0.pn = -1;
+
+//            float dist = 0;
+//            if(swccount>=2)
+//            {
+//                double point_x = sketchNT.listNeuron.at(swccount-2).x;
+//                double point_y = sketchNT.listNeuron.at(swccount-2).y;
+//                double point_z = sketchNT.listNeuron.at(swccount-2).z;
+//                dist = glm::sqrt((point_x-start.x)*(point_x-start.x)+(point_y-start.y)*(point_y-start.y)+(point_z-start.z)*(point_z-start.z));
+//            }
+
+            if(bool_ray)
+            {
+                ray_ratio = 1;
+                double updated_z = -0.29*ray_ratio;
+                Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
+                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+2;SL1.pn = swccount+1;
+                sketchNT.listNeuron.append(SL0);
+                sketchNT.hashNeuron.insert(SL0.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL0 into sketchNT
+                sketchNT.listNeuron.append(SL1);
+                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
+                swccount +=2;
+                bool_ray = false;
+            }else
+            {
+                ray_ratio++;
+                double updated_z = -0.29*ray_ratio;
+                Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
+                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+1;SL1.pn = swccount;
+                sketchNT.listNeuron.append(SL1);
+                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
+                swccount++;
+            }
+
+    }
 
 
 
@@ -1620,6 +1676,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
+        bool_ray = true;
 		if(sketchNT.listNeuron.size()<1)
 			return;
 		QString filename = "swctofile.swc";
