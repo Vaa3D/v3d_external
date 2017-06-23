@@ -23,7 +23,7 @@
 
 #include "shader_m.h"
 #include "Sphere.h"
-#include "Cylinder.h" 
+#include "Cylinder.h"
 
 #if defined(POSIX)
 #include "unistd.h"
@@ -39,6 +39,7 @@
 
 
 NeuronTree loadedNT,sketchNT;
+glm::vec3 loadedNTCenter;
 long int vertexcount =0,swccount = 0;
 #define dist_thres 0.01
 #define default_radius 0.01
@@ -645,6 +646,8 @@ public:
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
 
+	void SetupImage4D();
+
 	void RenderControllerAxes();
 
 	bool SetupStereoRenderTargets();
@@ -751,6 +754,10 @@ private: // OpenGL bookkeeping
 	GLuint m_glSketchMorphologyLineModeVertBuffer;
 	GLuint m_glSketchMorphologyLineModeIndexBuffer;
 	unsigned int m_uiSketchMorphologyLineModeVertcount;
+
+	//Neuron image
+	GLuint m_imageVAO;
+	GLuint m_imageVBO;
 
 	GLuint m_unCompanionWindowVAO; //two 2D boxes
 	GLuint m_glCompanionWindowIDVertBuffer;
@@ -869,6 +876,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_uiMorphologyLineModeVertcount(0)
 	, m_unSketchMorphologyLineModeVAO( 0 )
 	, m_uiSketchMorphologyLineModeVertcount(0)
+	, m_imageVAO( 0 )
 	, m_nControllerMatrixLocation( -1 )
 	, m_nRenderModelMatrixLocation( -1 )
 	, m_iTrackedControllerCount( 0 )
@@ -1223,6 +1231,11 @@ void CMainApplication::Shutdown()
 			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
 		}
 
+		if( m_imageVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_imageVAO );
+			glDeleteBuffers(1, &m_imageVBO);
+		}
 
 		if( m_unCompanionWindowVAO != 0 )
 		{
@@ -1390,8 +1403,7 @@ bool CMainApplication::HandleInput()
 					if(m_translationMode==true)//into translate mode
 					{
 						//qDebug("TRANSLATION!detX= %f,detY= %f.\n",detX,detY);
-						glm::vec3 globalTranslation(detX/300,0,detY/300);
-						m_globalMatrix = glm::translate(m_globalMatrix,globalTranslation );
+						m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(detX/300,0,detY/300) ); 
 						//translate_func(detX,detY);
 
 					}
@@ -1400,13 +1412,17 @@ bool CMainApplication::HandleInput()
 
 						//qDebug("ROTATION!detX= %f,detY= %f.\n",detX,detY);
 						//glm::vec3 globalRotation = 
-						m_globalMatrix = glm::rotate(m_globalMatrix,detX/300,glm::vec3(1,0,0));
-						m_globalMatrix = glm::rotate(m_globalMatrix,detY/300,glm::vec3(0,1,0));
+						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+						m_globalMatrix = glm::rotate(m_globalMatrix,detX/1000,glm::vec3(1,0,0));
+						m_globalMatrix = glm::rotate(m_globalMatrix,detY/1000,glm::vec3(0,1,0));
+						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
 						//rotate_func(detX,detY);
 					}
 					else if(m_zoomMode==true)//into zoom mode
 					{
+						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 						m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+detY/1000,1+detY/1000,1+detY/1000));
+						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
 						//qDebug("ZOOM!detX= %f,detY= %f.\n",detX,detY);
 						//zoom_func(detX,detY);
 					}
@@ -2078,12 +2094,12 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 	map<int,int> id2loc;//map neuron node id to location in vertices
 
 	NeuronSWC S0,S1;
-	if(neuron_Tree.listNeuron.size()<1)
-	{
-		//vertices.clear();
-		//indices.clear();
-		return;
-	}
+	//if(neuron_Tree.listNeuron.size()<1)
+	//{
+	//	vertices.clear();
+	//	indices.clear();
+	//	//return;
+	//}
 
 	// try to be consistent with the 3D viewer window, by PHC 20170616
 	const QList <NeuronSWC> & listNeuron = neuron_Tree.listNeuron;
@@ -2092,6 +2108,10 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 	bool on    = neuron_Tree.on;
 	bool editable = neuron_Tree.editable;
 	int cur_linemode = neuron_Tree.linemode;
+
+	qDebug("rgba color---- %d,%d,%d,%d\n",rgba.c[0],rgba.c[1],rgba.c[2],rgba.a);
+	if (editable) qDebug("editable\n"); else qDebug("not editable\n");
+	//rgba.a = 0;
 
 	//handle nodes
 	for(int i=0; i<listNeuron.size(); i++)
@@ -2122,12 +2142,14 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 				vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
 				vcolor_load[1] =  neuron_type_color_heat[ type - 300][1];
 				vcolor_load[2] =  neuron_type_color_heat[ type - 300][2];
+				qDebug("set in 1\n");
 			}
 			else
 			{
 				vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
 				vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
 				vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+				qDebug("set in 2\n");
 			}
 		}
 		else
@@ -2135,18 +2157,15 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 			vcolor_load[0] = rgba.c[0];
 			vcolor_load[1] = rgba.c[1];
 			vcolor_load[2] = rgba.c[2];
+			//qDebug("set in 3\n");
 		}
-
-		//
+		for(int i=0;i<3;i++) vcolor_load[i] /= 255.0;
+		//qDebug("color---- %f,%f,%f\n",vcolor_load[0],vcolor_load[1],vcolor_load[2]);
 
 		glm::vec3 vcolor_draw(1,0,0);//red for drawing neuron tree
 
 		//vertices[2*(S1.n-1)+1] = (drawMode==0) ? vcolor_load : vcolor_draw;
 		vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
-
-		//indices.push_back(S0.n-1);
-		//indices.push_back(S1.n-1);
-
 	}
 
 	//map<int,int>::iterator iter;
@@ -2219,6 +2238,68 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0],(drawMode==0)?GL_STATIC_DRAW: GL_DYNAMIC_DRAW);
 
 	}		
+}
+
+
+void CMainApplication::SetupImage4D()
+{
+    GLfloat vertices[24] = {
+	0.0, 0.0, 0.0,
+	0.0, 0.0, 1.0,
+	0.0, 1.0, 0.0,
+	0.0, 1.0, 1.0,
+	1.0, 0.0, 0.0,
+	1.0, 0.0, 1.0,
+	1.0, 1.0, 0.0,
+	1.0, 1.0, 1.0
+    };
+// draw the six faces of the boundbox by drawwing triangles
+// draw it contra-clockwise
+// front: 1 5 7 3
+// back: 0 2 6 4
+// left£º0 1 3 2
+// right:7 5 4 6    
+// up: 2 3 7 6
+// down: 1 0 4 5
+    GLuint indices[36] = {
+	1,5,7,
+	7,3,1,
+	0,2,6,
+        6,4,0,
+	0,1,3,
+	3,2,0,
+	7,5,4,
+	4,6,7,
+	2,3,7,
+	7,6,2,
+	1,0,4,
+	4,5,1
+    };
+    GLuint gbo[2];
+    
+    glGenBuffers(2, gbo);
+    GLuint vertexdat = gbo[0];
+    GLuint veridxdat = gbo[1];
+    glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+    glBufferData(GL_ARRAY_BUFFER, 24*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    // used in glDrawElement()
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36*sizeof(GLuint), indices, GL_STATIC_DRAW);
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    // vao like a closure binding 3 buffer object: verlocdat vercoldat and veridxdat
+    glBindVertexArray(vao);
+    glEnableVertexAttribArray(0); // for vertexloc
+    glEnableVertexAttribArray(1); // for vertexcol
+
+    // the vertex location is the same as the vertex color
+    glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat *)NULL);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat *)NULL);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+    // glBindVertexArray(0);
+    m_imageVAO = vao;
 }
 
 //-----------------------------------------------------------------------------
@@ -2418,6 +2499,20 @@ void CMainApplication::NormalizeNeuronTree(NeuronTree& nt)
 		loadedNT.listNeuron[i].z = loadedNT.listNeuron[i].z * scale + trans_z * scale;
 		loadedNT.listNeuron[i].r *= scale;
 	}
+
+	//calculate center after normalization
+	swcBB = NULL_BoundingBox;
+	for(int i = 0;i<loadedNT.listNeuron.size();i++)
+	{
+		NeuronSWC S=loadedNT.listNeuron.at(i);
+		float d = S.r * 2;
+		swcBB.expand(BoundingBox(XYZ(S) - d, XYZ(S) + d));
+		if (S.r > r_max)  r_max = S.r;
+	}
+	loadedNTCenter.x = (swcBB.x0 + swcBB.x1)/2;
+	loadedNTCenter.y = (swcBB.y0 + swcBB.y1)/2;
+	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
+	qDebug("center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 }
 
 //-----------------------------------------------------------------------------
@@ -2655,6 +2750,10 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 				float cos_angle = glm::dot(v1, v2);
 				glm::vec3 axis = glm::cross(v1, v2);//todo-yimin: optimizable: these things can be pre-calculated
 
+				//handle degenerated axis. todo: verify
+				if (glm::length(axis) < 0.0001)//(cos_angle < -1 + 0.001f) { //if the angle is 180 degree, any axis will do.
+					axis = glm::cross(glm::vec3(1.0f,0.0f,0.0f),v1);
+
 				Cylinder* cy = loaded_cylinders[cy_count++];
 				model = glm::translate(glm::mat4(),loaded_spheresPos[i]);
 				model = glm::rotate(model, glm::acos(cos_angle), axis);
@@ -2702,12 +2801,16 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			{
 				//cylinder between node i and (pn-1)
 				glm::vec3 v1(0.0f, -1.0f, 0.0f);
-				glm::vec3 v2 = sketch_spheresPos[pn-1] - sketch_spheresPos[i];
+				glm::vec3 v2 = sketch_spheresPos[pn-1] - sketch_spheresPos[i];//+glm::vec3(0.0001,0.0001,0.0001);
 				float dist = glm::length(v2); //dprintf("dist= %f\n", dist);
 				//v1 = glm::normalize(v1);
 				v2 = glm::normalize(v2);
 				float cos_angle = glm::dot(v1, v2);
 				glm::vec3 axis = glm::cross(v1, v2);
+
+				//handle degenerated axis. todo: verify
+				if (glm::length(axis) < 0.0001)//(cos_angle < -1 + 0.001f) { //if the angle is 180 degree, any axis will do.
+					axis = glm::cross(glm::vec3(1.0f,0.0f,0.0f),v1);
 
 				Cylinder* cy = sketch_cylinders[cy_count++];
 				model = glm::translate(glm::mat4(),sketch_spheresPos[i]);
