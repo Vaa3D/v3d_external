@@ -2602,6 +2602,17 @@ void Renderer_gl1::createNeuron_tube()
 	glistTube    = _createCylinder(mNeuron,1);
 	glistTubeEnd = _createSphere(mNeuron);
 }
+
+//add from mozak
+void Renderer_gl1::loadObj_meshChange(int new_mesh)
+{
+	cleanObj();
+	qDebug("  Renderer_gl1::loadObj_changeMesh");
+	glistTube    = _createCylinder(new_mesh, 1);
+	glistTubeEnd = _createSphere(new_mesh);
+	return;
+}
+
 void Renderer_gl1::drawDynamicNeuronTube(float rb, float rt, float length)
 {
 	GLUquadric* Q = gluNewQuadric();

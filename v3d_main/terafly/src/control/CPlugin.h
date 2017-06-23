@@ -26,8 +26,12 @@
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
 
-#ifndef __TERAMANAGER_C_PLUGIN_H__
-#define __TERAMANAGER_C_PLUGIN_H__
+// 20170623 RZC: change __TERAMANAGER_C_PLUGIN_H__ to __TERAFLY_C_PLUGIN_H__ for merging mozak/terafly
+//#ifndef __TERAMANAGER_C_PLUGIN_H__
+//#define __TERAMANAGER_C_PLUGIN_H__
+#ifndef __TERAFLY_C_PLUGIN_H__
+#define __TERAFLY_C_PLUGIN_H__
+
 
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 #include <QWidget>

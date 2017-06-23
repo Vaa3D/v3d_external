@@ -1,7 +1,7 @@
 #include "MozakUI.h"
 #include "Mozak3DView.h"
 #include "v3d_application.h"
-#include "./terafly/src/control/CViewer.h"
+//#include "../terafly/src/control/CViewer.h"
 
 using namespace mozak;
 

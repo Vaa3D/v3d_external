@@ -2,7 +2,17 @@
 #define __MOZAK_3D_VIEW_H__
 
 #include "v3dr_common.h"
+
+#include "./terafly/src/control/CPlugin.h"
+
 #include "./terafly/src/control/CViewer.h"
+#include "./terafly/src/control/CAnnotations.h"
+#include "./terafly/src/control/CVolume.h"
+#include "./terafly/src/control/CImageUtils.h"
+
+#include "./terafly/src/presentation/PAnoToolBar.h"
+#include "./terafly/src/presentation/PMain.h"
+
 
 namespace mozak
 {
