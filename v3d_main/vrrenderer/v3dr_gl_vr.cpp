@@ -2560,14 +2560,13 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 				vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
 				vcolor_load[1] =  neuron_type_color_heat[ type - 300][1];
 				vcolor_load[2] =  neuron_type_color_heat[ type - 300][2];
-				qDebug("set in 1\n");
 			}
 			else
 			{
 				vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
 				vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
 				vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-				qDebug("set in 2,type=%d\n",type);
+				//qDebug("set in 2,type=%d\n",type);
 			}
 		}
 		else
@@ -3157,7 +3156,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			morphologyShader->setVec3("objectColor", surfcolor);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			sphr->Render();
-			morphologyShader->setVec3("objectColor", wireframecolor);
+			morphologyShader->setVec3("objectColor", loaded_spheresColor[i]);// wireframecolor);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			sphr->Render();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -3195,7 +3194,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 				morphologyShader->setVec3("objectColor", surfcolor);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				cy->Render();
-				morphologyShader->setVec3("objectColor", wireframecolor);
+				morphologyShader->setVec3("objectColor", loaded_spheresColor[i]);// wireframecolor);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				cy->Render();
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
