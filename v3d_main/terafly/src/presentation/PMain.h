@@ -47,7 +47,8 @@ class terafly::PMain : public QWidget
 {
     Q_OBJECT
 
-    private:
+	protected: //20170623 RZC: change from private for merging mozak
+	//private:
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be

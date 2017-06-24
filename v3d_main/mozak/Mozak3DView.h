@@ -3,16 +3,28 @@
 
 #include "v3dr_common.h"
 
-#include "./terafly/src/control/CPlugin.h"
-
-#include "./terafly/src/control/CViewer.h"
-#include "./terafly/src/control/CAnnotations.h"
-#include "./terafly/src/control/CVolume.h"
-#include "./terafly/src/control/CImageUtils.h"
-
-#include "./terafly/src/presentation/PAnoToolBar.h"
-#include "./terafly/src/presentation/PMain.h"
-
+// 20170624 RZC: central control which code set is used
+#if 1
+// use mozak/m_terafly/src/ code set & only share terafly/src/terarepo/
+#include "./m_terafly/src/control/m_CPlugin.h"
+#include "./m_terafly/src/control/m_CViewer.h"
+#include "./m_terafly/src/control/m_CAnnotations.h"
+#include "./m_terafly/src/control/m_CVolume.h"
+#include "./m_terafly/src/control/m_CImageUtils.h"
+#include "./m_terafly/src/presentation/m_PAnoToolBar.h"
+#include "./m_terafly/src/presentation/m_PMain.h"
+#else
+// share master terafly/src/ code set
+#include "../terafly/src/control/CPlugin.h"
+#include "../terafly/src/control/CViewer.h"
+#include "../terafly/src/control/CAnnotations.h"
+#include "../terafly/src/control/CVolume.h"
+#include "../terafly/src/control/CImageUtils.h"
+#include "../terafly/src/presentation/PAnoToolBar.h"
+#include "../terafly/src/presentation/PMain.h"  // openImage & openTeraflyVolume are different implementation
+namespace teramanager = terafly;
+namespace itm = teramanager;	//a short alias for the current namespace: Icon Tera Manager (itm)
+#endif
 
 namespace mozak
 {

@@ -1,3 +1,5 @@
+# 170623: by RZC. change name of terafly/teramanager.pro to terafly.pro
+
 # enable Vaa3D-TeraFly mode
 DEFINES += _VAA3D_TERAFLY_PLUGIN_MODE
 

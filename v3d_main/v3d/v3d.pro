@@ -86,11 +86,21 @@
 # 110806: (Hang) add ../custom_toolbar/v3d_custom_toolbar.h/.cpp
 # 110906: by PHC. Now include v3d_essential.pro
 # 150506: by AB. Now include teramanager.pro
+# 170623: by RZC. move mozak module here from v3d_essential.pro, change name of terafly/teramanager.pro to terafly.pro
 # ######################################################################
 
 
 include(v3d_essential.pro)
-include(../terafly/teramanager.pro)
+include(../terafly/terafly.pro)
+
+# mozak module
+include(../mozak/m_terafly/m_teramanager.pro)
+RESOURCES += ../mozak/mozak.qrc
+HEADERS +=  ../mozak/MozakUI.h \
+            ../mozak/Mozak3DView.h
+SOURCES +=  ../mozak/MozakUI.cpp \
+            ../mozak/Mozak3DView.cpp
+
 
 #CONFIG += console
 DEFINES += __NAWEBSERVICE__

@@ -3,6 +3,7 @@
 #include <math.h>
 #include "renderer_gl2.h"
 #include "v3d_application.h"
+// 20170624 RZC: central control include files in Mozak3DView.h
 //#include "../terafly/src/control/CAnnotations.h"
 //#include "../terafly/src/control/CVolume.h"
 //#include "../terafly/src/control/CImageUtils.h"

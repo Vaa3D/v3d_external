@@ -1,6 +1,7 @@
 #ifndef __MOZAK_UI_H__
 #define __MOZAK_UI_H__
 
+// 20170624 RZC: central control include files in Mozak3DView.h
 //#include "../terafly/src/presentation/PMain.h"
 //#include "../terafly/src/control/CViewer.h"
 //#include "../terafly/src/control/CPlugin.h"
