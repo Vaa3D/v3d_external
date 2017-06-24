@@ -18,12 +18,13 @@
 #include <cstdlib>
 
 #include <openvr.h>
+#include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
 
 #include "shader_m.h"
 #include "Sphere.h"
-#include "Cylinder.h" 
+#include "Cylinder.h"
 
 #if defined(POSIX)
 #include "unistd.h"
@@ -39,9 +40,12 @@
 
 
 NeuronTree loadedNT,sketchNT;
+glm::vec3 loadedNTCenter;
 long int vertexcount =0,swccount = 0;
+int ray_ratio = 1;
+bool bool_ray = true;
 #define dist_thres 0.01
-#define default_radius 0.01
+#define default_radius 0.1
 
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
@@ -640,10 +644,16 @@ public:
 	bool HandleInput();
 	void ProcessVREvent( const vr::VREvent_t & event );
 	void RenderFrame();
+	//wwbmark
+	bool SetupTexturemaps();
+	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
+	void SetupControllerTexture();
 
 	void SetupMorphologyLine(int drawMode);
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
+
+	void SetupImage4D();
 
 	void RenderControllerAxes();
 
@@ -652,7 +662,7 @@ public:
 	void SetupCameras();
 	void SetupCamerasForMorphology();
 
-	void SetupBoundingBox();//2017-06-11 currently not used.
+	void SetupGlobalMatrix();//matrix for glabal transformation
 	void NormalizeNeuronTree(NeuronTree& nt);
 	void RenderStereoTargets();
 	void RenderCompanionWindow();
@@ -726,6 +736,14 @@ private: // OpenGL bookkeeping
 	float m_fNearClip;
 
 	float m_fFarClip;
+	//wwbmark
+	GLuint m_iTexture;
+	GLuint m_ControllerTexVAO;
+	GLuint m_ControllerTexVBO;
+	GLuint m_unCtrTexProgramID;
+	GLint m_nCtrTexMatrixLocation;
+	unsigned int m_uiControllerTexIndexSize;
+	
 	// controller index , get them in HandleInput()
 	int	m_iControllerIDLeft;
 	int	m_iControllerIDRight;
@@ -736,6 +754,7 @@ private: // OpenGL bookkeeping
 	vector<Sphere*> loaded_spheres;
 	vector<Cylinder*> loaded_cylinders;
 	vector<glm::vec3> loaded_spheresPos;
+	vector<glm::vec3> loaded_spheresColor;
 
 	GLuint m_unMorphologyLineModeVAO;
 	GLuint m_glMorphologyLineModeVertBuffer;
@@ -751,6 +770,10 @@ private: // OpenGL bookkeeping
 	GLuint m_glSketchMorphologyLineModeVertBuffer;
 	GLuint m_glSketchMorphologyLineModeIndexBuffer;
 	unsigned int m_uiSketchMorphologyLineModeVertcount;
+
+	//Neuron image
+	GLuint m_imageVAO;
+	GLuint m_imageVBO;
 
 	GLuint m_unCompanionWindowVAO; //two 2D boxes
 	GLuint m_glCompanionWindowIDVertBuffer;
@@ -850,8 +873,8 @@ void dprintf( const char *fmt, ... )
 CMainApplication::CMainApplication( int argc, char *argv[] )
 	: m_pCompanionWindow(NULL)
 	, m_pContext(NULL)
-	, m_nCompanionWindowWidth( 640 )
-	, m_nCompanionWindowHeight( 320 )
+	, m_nCompanionWindowWidth(640)//( 1600 )
+	, m_nCompanionWindowHeight( 320 )//(800)
 	, morphologyShader ( NULL )
 	, m_unCompanionWindowProgramID( 0 )
 	, m_unControllerTransformProgramID( 0 )
@@ -869,6 +892,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_uiMorphologyLineModeVertcount(0)
 	, m_unSketchMorphologyLineModeVAO( 0 )
 	, m_uiSketchMorphologyLineModeVertcount(0)
+	, m_imageVAO( 0 )
 	, m_nControllerMatrixLocation( -1 )
 	, m_nRenderModelMatrixLocation( -1 )
 	, m_iTrackedControllerCount( 0 )
@@ -887,6 +911,9 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_fTouchOldYL( 0 )
 	, m_pickUpState(false)
 	, pick_point (-1)
+	, m_ControllerTexVAO( 0 )
+	, m_nCtrTexMatrixLocation( -1 )
+	, m_unCtrTexProgramID( 0 )
 
 {
 
@@ -986,7 +1013,7 @@ bool CMainApplication::BInit()
 		return false;
 	}
 
-	int nWindowPosX = 700;
+	int nWindowPosX = 100;
 	int nWindowPosY = 100;
 	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 
@@ -1047,7 +1074,8 @@ bool CMainApplication::BInit()
 	m_fNearClip = 0.1f;
 
  	m_fFarClip = 30.0f;
-
+	m_iTexture = 0;
+	m_uiControllerTexIndexSize = 0;
 	m_globalMatrix =glm::mat4();
 
 
@@ -1106,7 +1134,8 @@ bool CMainApplication::BInitGL()
 	//	NeuronSWC S=loadedNT.listNeuron.at(i);
 	//	printf("%f, %f, %f, %f\n", S.x,S.y,S.z,S.r);
 	//}
-	NormalizeNeuronTree(loadedNT);
+	//NormalizeNeuronTree(loadedNT);
+	SetupGlobalMatrix();
 	//printf("after normalize\n");
 	//for(int i = 0;i<loadedNT.listNeuron.size();i++)
 	//{
@@ -1118,10 +1147,9 @@ bool CMainApplication::BInitGL()
 	//SetupMorphologyLine(loadedNT,m_unMorphologyLineModeVAO,m_glMorphologyLineModeVertBuffer,m_glMorphologyLineModeIndexBuffer,m_uiMorphologyLineModeVertcount,0);
 	SetupMorphologySurface(loadedNT,loaded_spheres,loaded_cylinders,loaded_spheresPos);
 
-
+	SetupTexturemaps();
 	SetupCameras();
 	SetupCamerasForMorphology();
-	SetupBoundingBox();
 	SetupStereoRenderTargets();
 
 	SetupCompanionWindow();
@@ -1223,6 +1251,11 @@ void CMainApplication::Shutdown()
 			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
 		}
 
+		if( m_imageVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_imageVAO );
+			glDeleteBuffers(1, &m_imageVBO);
+		}
 
 		if( m_unCompanionWindowVAO != 0 )
 		{
@@ -1390,8 +1423,7 @@ bool CMainApplication::HandleInput()
 					if(m_translationMode==true)//into translate mode
 					{
 						//qDebug("TRANSLATION!detX= %f,detY= %f.\n",detX,detY);
-						glm::vec3 globalTranslation(detX/300,0,detY/300);
-						m_globalMatrix = glm::translate(m_globalMatrix,globalTranslation );
+						m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(detX,0,detY) ); 
 						//translate_func(detX,detY);
 
 					}
@@ -1399,10 +1431,18 @@ bool CMainApplication::HandleInput()
 					{
 
 						//qDebug("ROTATION!detX= %f,detY= %f.\n",detX,detY);
+						//glm::vec3 globalRotation = 
+						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+						m_globalMatrix = glm::rotate(m_globalMatrix,detX/1000,glm::vec3(1,0,0));
+						m_globalMatrix = glm::rotate(m_globalMatrix,detY/1000,glm::vec3(0,1,0));
+						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
 						//rotate_func(detX,detY);
 					}
 					else if(m_zoomMode==true)//into zoom mode
 					{
+						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+						m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+detY/1000,1+detY/1000,1+detY/1000));
+						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
 						//qDebug("ZOOM!detX= %f,detY= %f.\n",detX,detY);
 						//zoom_func(detX,detY);
 					}
@@ -1411,7 +1451,7 @@ bool CMainApplication::HandleInput()
 				//pick up the nearest node and pull it to new locations
 				//note: this part of code only serves as a demonstration, and does not handle complicated cases well.
 				//also, can only pull drawn neurons, not loaded ones.
-				if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
+/*				if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
 				{
 					
 					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
@@ -1480,7 +1520,7 @@ bool CMainApplication::HandleInput()
 				{
 					m_pickUpState = false;
 					pick_point = -1;
-				}//whenever the touchpad is unpressed, reset m_pickUpState and pick_point
+                }*///whenever the touchpad is unpressed, reset m_pickUpState and pick_point
 			}
 	}
 	return bRet;
@@ -1555,6 +1595,60 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}
 
 
+    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
+    {
+
+            const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
+            glm::mat4 mat = glm::mat4();
+            for (size_t i = 0; i < 4; i++)
+            {
+                for (size_t j = 0; j < 4; j++)
+                {
+                    mat[i][j] = *(mat_M.get() + i * 4 + j);
+                }
+            }
+            mat=glm::inverse(m_globalMatrix) * mat;
+
+            Vector4 start = mat_M * Vector4( 0, 0, -0.02f, 1 );
+
+
+            NeuronSWC SL0;
+            NeuronSWC SL1;
+            SL0.x = start.x ;SL0.y = start.y ;SL0.z = start.z ;SL0.r = default_radius;SL0.type = 200; SL0.n = swccount+1;SL0.pn = -1;
+
+//            float dist = 0;
+//            if(swccount>=2)
+//            {
+//                double point_x = sketchNT.listNeuron.at(swccount-2).x;
+//                double point_y = sketchNT.listNeuron.at(swccount-2).y;
+//                double point_z = sketchNT.listNeuron.at(swccount-2).z;
+//                dist = glm::sqrt((point_x-start.x)*(point_x-start.x)+(point_y-start.y)*(point_y-start.y)+(point_z-start.z)*(point_z-start.z));
+//            }
+
+            if(bool_ray)
+            {
+                ray_ratio = 1;
+                double updated_z = -0.29*ray_ratio;
+                Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
+                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+2;SL1.pn = swccount+1;
+                sketchNT.listNeuron.append(SL0);
+                sketchNT.hashNeuron.insert(SL0.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL0 into sketchNT
+                sketchNT.listNeuron.append(SL1);
+                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
+                swccount +=2;
+                bool_ray = false;
+            }else
+            {
+                ray_ratio++;
+                double updated_z = -0.29*ray_ratio;
+                Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
+                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+1;SL1.pn = swccount;
+                sketchNT.listNeuron.append(SL1);
+                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
+                swccount++;
+            }
+
+    }
 
 
 
@@ -1582,6 +1676,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
+        bool_ray = true;
 		if(sketchNT.listNeuron.size()<1)
 			return;
 		QString filename = "swctofile.swc";
@@ -1602,6 +1697,7 @@ void CMainApplication::RenderFrame()
 	if ( m_pHMD )
 	{
 		RenderControllerAxes();
+		SetupControllerTexture();//wwbmark
 		SetupMorphologyLine(1);
 		SetupMorphologySurface(sketchNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(sketchNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
@@ -1722,7 +1818,39 @@ GLuint CMainApplication::CompileGLShader( const char *pchShaderName, const char 
 bool CMainApplication::CreateAllShaders()//todo: change shader code
 {
 	morphologyShader = new Shader("basic.vert", "basic.frag");
+	//wwbmark
+	m_unCtrTexProgramID = CompileGLShader( 
+		"Scene",
 
+		// Vertex Shader
+		"#version 410\n"
+		"uniform mat4 matrix;\n"
+		"layout(location = 0) in vec4 position;\n"
+		"layout(location = 1) in vec2 v2UVcoordsIn;\n"
+		"layout(location = 2) in vec3 v3NormalIn;\n"
+		"out vec2 v2UVcoords;\n"
+		"void main()\n"
+		"{\n"
+		"	v2UVcoords = v2UVcoordsIn;\n"
+		"	gl_Position = matrix * position;\n"
+		"}\n",
+
+		// Fragment Shader
+		"#version 410 core\n"
+		"uniform sampler2D mytexture;\n"
+		"in vec2 v2UVcoords;\n"
+		"out vec4 outputColor;\n"
+		"void main()\n"
+		"{\n"
+		"   outputColor = texture(mytexture, v2UVcoords);\n"
+		"}\n"
+		);
+	m_nCtrTexMatrixLocation = glGetUniformLocation( m_unCtrTexProgramID, "matrix" );
+	if( m_nCtrTexMatrixLocation == -1 )
+	{
+		dprintf( "Unable to find matrix uniform in scene shader\n" );
+		return false;
+	}
 	m_unControllerTransformProgramID = CompileGLShader(
 		"Controller",//note: for axes
 
@@ -1817,7 +1945,315 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 		&& m_unRenderModelProgramID != 0
 		&& m_unCompanionWindowProgramID != 0;
 }
+bool CMainApplication::SetupTexturemaps()
+{
+	//std::string sExecutableDirectory = Path_StripFilename( Path_GetExecutablePath() );
+	//std::string strFullPath = Path_MakeAbsolute( "../cube_texture.png", sExecutableDirectory );
+	std::string strFullPath ="controller_texture.png";//C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/
+	std::vector<unsigned char> imageRGBA;
+	unsigned nImageWidth, nImageHeight;
+	unsigned nError = lodepng::decode( imageRGBA, nImageWidth, nImageHeight, strFullPath.c_str() );
+	
+	if ( nError != 0 )
+		return false;
+	for(int i = 0;i < nImageWidth; i ++)
+	{
+		for(int j = 0; j < nImageHeight; j ++)
+		{
+			if(imageRGBA[(j*nImageWidth + i)*4+1] > 200 && imageRGBA[(j*nImageWidth + i)*4+2] > 200)
+			{
+				imageRGBA[(j*nImageWidth + i)*4+3] = 1;
+			}
+			else
+			{
+				imageRGBA[(j*nImageWidth + i)*4+3] = 255;
+			}
+		}
+	}
+	glGenTextures(1, &m_iTexture );
+	glBindTexture( GL_TEXTURE_2D, m_iTexture );
 
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, nImageWidth, nImageHeight,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, &imageRGBA[0] );
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+
+	GLfloat fLargest;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+	 	
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	return ( m_iTexture != 0 );
+}
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CMainApplication::AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata )
+{
+	vertdata.push_back( fl0 );
+	vertdata.push_back( fl1 );
+	vertdata.push_back( fl2 );
+	vertdata.push_back( fl3 );
+	vertdata.push_back( fl4 );
+}
+void CMainApplication::SetupControllerTexture()
+{
+	if ( !m_pHMD )
+		return;
+
+	std::vector<float> vcVerts;
+
+	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
+	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
+
+	{//left controller
+		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip
+		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
+		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
+		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
+		point_A = mat_L * point_A;
+		point_B = mat_L * point_B;
+		point_C = mat_L * point_C;
+		point_D = mat_L * point_D;//*/
+		AddVertex(point_A.x,point_A.y,point_A.z,0,0.5f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
+		AddVertex(point_D.x,point_D.y,point_D.z,0.5f,0.75f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.5f,vcVerts);
+
+		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2
+		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
+		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
+		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
+		point_A2 = mat_L * point_A2;
+		point_B2 = mat_L * point_B2;
+		point_C2 = mat_L * point_C2;
+		point_D2 = mat_L * point_D2;//
+		AddVertex(point_A2.x,point_A2.y,point_A2.z,1,0.5f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,1,0.75f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,1,0.75f,vcVerts);
+		AddVertex(point_D2.x,point_D2.y,point_D2.z,0.5f,0.75f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0.5f,0.5f,vcVerts);
+
+		Vector4 point_E(-0.015f,0.01f,0.035f,1);// for the touchpad
+		Vector4 point_F(0.015f,0.01f,0.035f,1);
+		Vector4 point_G(-0.015f,0.01f,0.065f,1);
+		Vector4 point_H(0.015f,0.01f,0.065f,1);
+		point_E = mat_L * point_E;
+		point_F = mat_L * point_F;
+		point_G = mat_L * point_G;
+		point_H = mat_L * point_H;
+		switch (m_modeControl)
+		{
+		case 0://nothing
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.75f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,1,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+				break;
+			}
+		case 1://translate
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.25f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.75f,vcVerts);
+				break;
+			}
+		case 2://rotate
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.75f,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.75f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.75f,0.75f,vcVerts);
+				break;
+			}
+		case 3://scale
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.25f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.75f,vcVerts);
+				break;
+			}
+		default:
+			break;
+		}
+		Vector4 point_I(-0.005f,0.01f,0.015f,1);//for the menu button
+		Vector4 point_J(0.005f,0.01f,0.015f,1);
+		Vector4 point_K(-0.005f,0.01f,0.025f,1);
+		Vector4 point_L(0.005f,0.01f,0.025f,1);//*/
+		point_I = mat_L * point_I;
+		point_J = mat_L * point_J;
+		point_K = mat_L * point_K;
+		point_L = mat_L * point_L;
+		AddVertex(point_I.x,point_I.y,point_I.z,0.25f,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.5f,0,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.25f,0.25f,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.25f,0.25f,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.5f,0,vcVerts);
+
+
+		Vector4 point_M(-0.01f,-0.02f,0.035f,1);//for the pull dispaly
+		Vector4 point_N(0.01f,-0.02f,0.035f,1);
+		Vector4 point_O(-0.01f,-0.04f,0.05f,1);
+		Vector4 point_P(0.01f,-0.04f,0.05f,1);//*/
+		point_M = mat_L * point_M;
+		point_N = mat_L * point_N;
+		point_O = mat_L * point_O;
+		point_P = mat_L * point_P;
+		AddVertex(point_M.x,point_M.y,point_M.z,1,0,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
+		AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+	}
+	{// right controller
+		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip
+		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
+		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
+		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
+		point_A = mat_R * point_A;
+		point_B = mat_R * point_B;
+		point_C = mat_R * point_C;
+		point_D = mat_R * point_D;//*/
+
+		AddVertex(point_A.x,point_A.y,point_A.z,0,0.25f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.5f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.5f,vcVerts);
+		AddVertex(point_D.x,point_D.y,point_D.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.25f,vcVerts);
+
+		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2
+		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
+		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
+		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
+		point_A2 = mat_R * point_A2;
+		point_B2 = mat_R * point_B2;
+		point_C2 = mat_R * point_C2;
+		point_D2 = mat_R * point_D2;//*/
+
+		AddVertex(point_A2.x,point_A2.y,point_A2.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.5f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
+
+		Vector4 point_E(-0.015f,0.01f,0.035f,1);// for the touchpad
+		Vector4 point_F(0.015f,0.01f,0.035f,1);
+		Vector4 point_G(-0.015f,0.01f,0.065f,1);
+		Vector4 point_H(0.015f,0.01f,0.065f,1);
+		point_E = mat_R * point_E;
+		point_F = mat_R * point_F;
+		point_G = mat_R * point_G;
+		point_H = mat_R * point_H;
+
+		AddVertex(point_E.x,point_E.y,point_E.z,0.75f,0.75f,vcVerts);
+		AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+		AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+		AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
+		AddVertex(point_H.x,point_H.y,point_H.z,1,1,vcVerts);
+		AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+
+		Vector4 point_I(-0.005f,0.01f,0.015f,1);//for the menu button
+		Vector4 point_J(0.005f,0.01f,0.015f,1);
+		Vector4 point_K(-0.005f,0.01f,0.025f,1);
+		Vector4 point_L(0.005f,0.01f,0.025f,1);//*/
+		point_I = mat_R * point_I;
+		point_J = mat_R * point_J;
+		point_K = mat_R * point_K;
+		point_L = mat_R * point_L;
+		AddVertex(point_I.x,point_I.y,point_I.z,0,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.25f,0,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0,0.25f,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0,0.25f,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.25f,0.25f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.25f,0,vcVerts);
+
+
+		Vector4 point_M(-0.01f,-0.02f,0.035f,1);//for the draw dispaly
+		Vector4 point_N(0.01f,-0.02f,0.035f,1);
+		Vector4 point_O(-0.01f,-0.04f,0.05f,1);
+		Vector4 point_P(0.01f,-0.04f,0.05f,1);//*/
+		point_M = mat_R * point_M;
+		point_N = mat_R * point_N;
+		point_O = mat_R * point_O;
+		point_P = mat_R * point_P;
+		AddVertex(point_M.x,point_M.y,point_M.z,1,0.25f,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.5f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.5f,vcVerts);
+		AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0.25,vcVerts);
+
+	
+	}
+
+	m_uiControllerTexIndexSize = vcVerts.size()/5;
+	// Setup the VAO the first time through.
+
+	if(m_ControllerTexVAO==0)
+
+	{
+		//setup vao and vbo stuff
+
+		glGenVertexArrays(1, &m_ControllerTexVAO);
+
+		glGenBuffers(1, &m_ControllerTexVBO);
+
+
+
+		//now allocate buffers
+
+		glBindVertexArray(m_ControllerTexVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_ControllerTexVBO);
+
+
+		glEnableVertexAttribArray(0);
+		GLsizei stride = sizeof(VertexDataScene);
+		uintptr_t offset = 0;
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
+
+		offset =  sizeof( Vector3 );
+
+		glEnableVertexAttribArray( 1 );
+
+		glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
+
+		glBindVertexArray(0);
+	}
+		glBindBuffer(GL_ARRAY_BUFFER, m_ControllerTexVBO);
+
+	if( vcVerts.size() > 0 )
+
+	{
+		glBufferData(GL_ARRAY_BUFFER,  sizeof(float) * vcVerts.size(), &vcVerts[0], GL_STREAM_DRAW );
+	}	
+
+}
 
 //void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 //{
@@ -2005,26 +2441,40 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 
 void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 {
+	const QList <NeuronSWC> & listNeuron = neurontree.listNeuron;
+	const QHash <int, int> & hashNeuron = neurontree.hashNeuron;
+	
 	NeuronSWC S0,S1;
 	if(neurontree.listNeuron.size()<1)
 	{
 		return;
 	}//*/
-	for(int i = spheres.size();i<neurontree.listNeuron.size();i++)
+	for(int i = spheres.size();i<listNeuron.size();i++)
 	{
-		S0=neurontree.listNeuron.at(i);
+		S0=listNeuron.at(i);
 
 		//draw sphere
 		spheres.push_back(new Sphere((float)(S0.r)));
 		spheresPos.push_back(glm::vec3(S0.x,S0.y,S0.z));
-		if(S0.pn!=-1){
-			//draw cylinder
-			S1 = neurontree.listNeuron.at(S0.pn-1);
+		//draw cylinder
+		if(S0.pn == -1){
+			cylinders.push_back(new Cylinder(S0.r,S0.r,0,3,2));
+		}
+		else if (S0.pn >= 0)
+		{
+			int j = hashNeuron.value(S0.pn, -1);
+			if (j>=0 && j <listNeuron.size())
+			{
+				S1 = listNeuron.at(j);
+			} else 
+			{
+				qDebug("continue hit.\n");
+				continue;
+			}
+
 			float dist = glm::sqrt((S1.x-S0.x)*(S1.x-S0.x)+(S1.y-S0.y)*(S1.y-S0.y)+(S1.z-S0.z)*(S1.z-S0.z));
 			cylinders.push_back(new Cylinder(S0.r,S1.r,dist));
-		}
-		else{
-			cylinders.push_back(new Cylinder(S0.r,S0.r,0,3,2));
+			//qDebug("surface edge---- %d,%d\n",S0.n,S1.n);
 		}
 		
 	}
@@ -2046,6 +2496,7 @@ void CMainApplication::SetupMorphologyLine( int drawMode)//pass 3 parameters: &n
 
 }//*/
 
+
 //-----------------------------------------------------------------------------
 void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 											GLuint& LineModeVAO, 
@@ -2056,112 +2507,122 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 {
 	vector <glm::vec3> vertices;
 	vector<GLuint> indices;
+	map<int,int> id2loc;//map neuron node id to location in vertices
 
 	NeuronSWC S0,S1;
-	if(neuron_Tree.listNeuron.size()<1)
-	{
-		vertices.clear();
-		indices.clear();
-	}
+	//if(neuron_Tree.listNeuron.size()<1)
+	//{
+	//	vertices.clear();
+	//	indices.clear();
+	//	//return;
+	//}
 
 	// try to be consistent with the 3D viewer window, by PHC 20170616
-    const QList <NeuronSWC> & listNeuron = neuron_Tree.listNeuron;
-    const QHash <int, int> & hashNeuron = neuron_Tree.hashNeuron;
-    RGBA8 rgba = neuron_Tree.color;
-    bool on    = neuron_Tree.on;
-    bool editable = neuron_Tree.editable;
-    int cur_linemode = neuron_Tree.linemode;
-    //
+	const QList <NeuronSWC> & listNeuron = neuron_Tree.listNeuron;
+	const QHash <int, int> & hashNeuron = neuron_Tree.hashNeuron;
+	RGBA8 rgba = neuron_Tree.color;
+	bool on    = neuron_Tree.on;
+	bool editable = neuron_Tree.editable;
+	int cur_linemode = neuron_Tree.linemode;
 
- for(int i=0; i<listNeuron.size(); i++)
+	if (rgba.a == 255) rgba.a = 0; //special case
+
+	//qDebug("rgba color---- %d,%d,%d,%d\n",rgba.c[0],rgba.c[1],rgba.c[2],rgba.a);
+	//if (editable) qDebug("editable\n"); else qDebug("not editable\n");
+	//rgba.a = 0;
+
+	//handle nodes
+	for(int i=0; i<listNeuron.size(); i++)
 	{
-        //S0 = listNeuron.at(i);
-        //by PHC 20170616. also try to fix the bug of nonsorted neuron display
+		S1 = listNeuron.at(i);
 
-        S1 = listNeuron.at(i);   // at(i) faster than [i]
-        bool valid = false;
-        if (S1.pn == -1) // root end, 081105
-        {
-            S0 = S1;
-            valid = true;
-        }
-        else if (S1.pn >= 0) //change to >=0 from >0, PHC 091123
-        {
-            // or using hash for finding parent node
-            int j = hashNeuron.value(S1.pn, -1);
-            if (j>=0 && j <listNeuron.size())
-            {
-                S0 = listNeuron.at(j);
-                valid = true;
-            }
-        }
-        if (! valid)
-            continue;
+		//vertices[2*(S1.n-1)] = glm::vec3(S1.x,S1.y,S1.z);
+		vertices.push_back(glm::vec3(S1.x,S1.y,S1.z));
+		id2loc[S1.n] = i;
+		//qDebug("i=%d,S1.n=%d\n",i,S1.n);
 
-        //
+		glm::vec3 vcolor_load(0,1,0);//green for loaded neuron tree
 
-		vertices.push_back(glm::vec3(S0.x,S0.y,S0.z));
+		//by PHC 20170616. Try to draw as consistent as possible as the 3D viewer
 
-        glm::vec3 vcolor_load(0,1,0);//green for loaded neuron tree
-
-        //by PHC 20170616. Try to draw as consistent as possible as the 3D viewer
-
-        if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
-        {
-            int type = S0.type;
-            if (editable)
-            {
-                int ncolorused = neuron_type_color_num;
-                if (neuron_type_color_num>19)
-                    ncolorused = 19;
-                type = S0.seg_id %(ncolorused -5)+5; //segment color using hanchuan's neuron_type_color
-            }
-            if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
-            {
-                vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
-                vcolor_load[1] =  neuron_type_color_heat[ type - 300][1];
-                vcolor_load[2] =  neuron_type_color_heat[ type - 300][2];
-            }
-            else
-            {
-                vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-                vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-                vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-            }
-        }
-        else
-        {
-            vcolor_load[0] = rgba.c[0];
-            vcolor_load[1] = rgba.c[1];
-            vcolor_load[2] = rgba.c[2];
-        }
-
-        //
-
-        glm::vec3 vcolor_draw(1,0,0);//red for drawing neuron tree
-
-        vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
-
-        //Yimin's original code which does not display nonsorted neuron correctly
-/*
-		if (S0.pn != -1)
+		if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
 		{
-			S1 = neuron_Tree.listNeuron.at(S0.pn-1);
-			indices.push_back(S0.n-1);
-			indices.push_back(S1.n-1);
+			int type = S1.type;
+			if (editable)
+			{
+				int ncolorused = neuron_type_color_num;
+				if (neuron_type_color_num>19)
+					ncolorused = 19;
+				type = S0.seg_id %(ncolorused -5)+5; //segment color using hanchuan's neuron_type_color
+			}
+			if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
+			{
+				vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
+				vcolor_load[1] =  neuron_type_color_heat[ type - 300][1];
+				vcolor_load[2] =  neuron_type_color_heat[ type - 300][2];
+			}
+			else
+			{
+				vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+				vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+				vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+				//qDebug("set in 2,type=%d\n",type);
+			}
 		}
 		else
 		{
-			indices.push_back(S0.n-1);
-            indices.push_back(S0.n-1);
+			vcolor_load[0] = rgba.c[0];
+			vcolor_load[1] = rgba.c[1];
+			vcolor_load[2] = rgba.c[2];
+			//qDebug("set in 3\n");
 		}
- */
+		for(int i=0;i<3;i++) vcolor_load[i] /= 255.0;
+		//qDebug("color---- %f,%f,%f\n",vcolor_load[0],vcolor_load[1],vcolor_load[2]);
 
+		glm::vec3 vcolor_draw(1,0,0);//red for drawing neuron tree
 
-        {
-            indices.push_back(S0.n-1);
-            indices.push_back(S1.n-1);
-        }
+		//vertices[2*(S1.n-1)+1] = (drawMode==0) ? vcolor_load : vcolor_draw;
+		vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
+		if (drawMode==0) loaded_spheresColor.push_back(vcolor_load);
+	}
+
+	//map<int,int>::iterator iter;
+	//for (iter = id2loc.begin();iter != id2loc.end();++iter)
+	//	qDebug("edge---- %d,%d\n",iter->first,iter->second);
+
+	//handle edges
+	for(int i=0; i<listNeuron.size(); i++)
+	{
+		//by PHC 20170616. also try to fix the bug of nonsorted neuron display
+
+		S1 = listNeuron.at(i);   // at(i) faster than [i]
+		bool valid = false;
+		if (S1.pn == -1) // root end, 081105
+		{
+			S0 = S1;
+			valid = true;
+		}
+		else if (S1.pn >= 0) //change to >=0 from >0, PHC 091123
+		{
+			// or using hash for finding parent node
+			int j = hashNeuron.value(S1.pn, -1);
+			if (j>=0 && j <listNeuron.size())
+			{
+				S0 = listNeuron.at(j);
+				valid = true;
+			}
+		} 
+		if (! valid)
+			continue;
+
+		int loc0, loc1;
+		map<int,int>::iterator iter;
+		iter = id2loc.find(S0.n);
+		loc0 = iter->second;
+		indices.push_back(loc0);
+		iter = id2loc.find(S1.n);
+		loc1 = iter->second;
+		indices.push_back(loc1);
 	}
 
 	Vertcount = vertices.size();
@@ -2187,14 +2648,76 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		glBindVertexArray(0);
 	}
-		glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
+	glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
 	if( vertices.size() > 0 )
 	{
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0],(drawMode==0)?GL_STATIC_DRAW:GL_DYNAMIC_DRAW);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0],(drawMode==0)?GL_STATIC_DRAW: GL_DYNAMIC_DRAW);
 
 	}		
+}
+
+
+void CMainApplication::SetupImage4D()
+{
+    GLfloat vertices[24] = {
+	0.0, 0.0, 0.0,
+	0.0, 0.0, 1.0,
+	0.0, 1.0, 0.0,
+	0.0, 1.0, 1.0,
+	1.0, 0.0, 0.0,
+	1.0, 0.0, 1.0,
+	1.0, 1.0, 0.0,
+	1.0, 1.0, 1.0
+    };
+// draw the six faces of the boundbox by drawwing triangles
+// draw it contra-clockwise
+// front: 1 5 7 3
+// back: 0 2 6 4
+// left£º0 1 3 2
+// right:7 5 4 6    
+// up: 2 3 7 6
+// down: 1 0 4 5
+    GLuint indices[36] = {
+	1,5,7,
+	7,3,1,
+	0,2,6,
+        6,4,0,
+	0,1,3,
+	3,2,0,
+	7,5,4,
+	4,6,7,
+	2,3,7,
+	7,6,2,
+	1,0,4,
+	4,5,1
+    };
+    GLuint gbo[2];
+    
+    glGenBuffers(2, gbo);
+    GLuint vertexdat = gbo[0];
+    GLuint veridxdat = gbo[1];
+    glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+    glBufferData(GL_ARRAY_BUFFER, 24*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    // used in glDrawElement()
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36*sizeof(GLuint), indices, GL_STATIC_DRAW);
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    // vao like a closure binding 3 buffer object: verlocdat vercoldat and veridxdat
+    glBindVertexArray(vao);
+    glEnableVertexAttribArray(0); // for vertexloc
+    glEnableVertexAttribArray(1); // for vertexcol
+
+    // the vertex location is the same as the vertex color
+    glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat *)NULL);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat *)NULL);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+    // glBindVertexArray(0);
+    m_imageVAO = vao;
 }
 
 //-----------------------------------------------------------------------------
@@ -2331,14 +2854,16 @@ void CMainApplication::SetupCamerasForMorphology()
 
 }
 
-void CMainApplication::SetupBoundingBox()
+void CMainApplication::SetupGlobalMatrix()
 {
+	float r_max = -1;
 	BoundingBox swcBB = NULL_BoundingBox;
 	for(int i = 0;i<loadedNT.listNeuron.size();i++)
 	{
 		NeuronSWC S=loadedNT.listNeuron.at(i);
 		float d = S.r * 2;
 		swcBB.expand(BoundingBox(XYZ(S) - d, XYZ(S) + d));
+		if (S.r > r_max)  r_max = S.r;
 	}
 
 	float DX = swcBB.Dx();
@@ -2346,18 +2871,41 @@ void CMainApplication::SetupBoundingBox()
 	float DZ = swcBB.Dz();
 	float maxD = swcBB.Dmax();
 
-	float s[3];
-	s[0] = 1 / maxD * 2;
-	s[1] = 1 / maxD * 2;
-	s[2] = 1 / maxD * 2;
-	float t[3]; //swc center
-	t[0] = -(swcBB.x0 + DX / 2);
-	t[1] = -(swcBB.y0 + DY / 2);
-	t[2] = -(swcBB.z0 + DZ / 2);
+	//original center location
+	loadedNTCenter.x = (swcBB.x0 + swcBB.x1)/2;
+	loadedNTCenter.y = (swcBB.y0 + swcBB.y1)/2;
+	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
+	qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
-	m_GlobalTransformation = glm::translate(glm::mat4(), glm::vec3(t[0],t[1],t[2]));
-	m_GlobalTransformation = glm::scale(m_GlobalTransformation, glm::vec3(s[0], s[1], s[2]));
-	m_GlobalTransformation = glm::translate(m_GlobalTransformation, glm::vec3(-t[0]-0.6, -t[1]-1.0, -t[2]-0.4));
+	float scale = 1 / maxD * 2;
+	float r_scale = 1 / r_max * 0.2;
+	float trans_x = 0.6 - loadedNTCenter.x;
+	float trans_y = 1.0 - loadedNTCenter.y;
+	float trans_z = 0.4 - loadedNTCenter.z;
+	printf("transform: scale = %f, translate = (%f,%f,%f)\n", scale,trans_x,trans_y,trans_z );
+
+	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(scale,scale,scale));
+	glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+	qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); 
+	cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+	qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+
+	
+
+	//float s[3];
+	//s[0] = 1 / maxD * 2;
+	//s[1] = 1 / maxD * 2;
+	//s[2] = 1 / maxD * 2;
+	//float t[3]; //swc center
+	//t[0] = -(swcBB.x0 + DX / 2);
+	//t[1] = -(swcBB.y0 + DY / 2);
+	//t[2] = -(swcBB.z0 + DZ / 2);
+
+	//m_GlobalTransformation = glm::translate(glm::mat4(), glm::vec3(t[0],t[1],t[2]));
+	//m_GlobalTransformation = glm::scale(m_GlobalTransformation, glm::vec3(s[0], s[1], s[2]));
+	//m_GlobalTransformation = glm::translate(m_GlobalTransformation, glm::vec3(-t[0]-0.6, -t[1]-1.0, -t[2]-0.4));
 }
 
 void CMainApplication::NormalizeNeuronTree(NeuronTree& nt)
@@ -2394,6 +2942,20 @@ void CMainApplication::NormalizeNeuronTree(NeuronTree& nt)
 		loadedNT.listNeuron[i].z = loadedNT.listNeuron[i].z * scale + trans_z * scale;
 		loadedNT.listNeuron[i].r *= scale;
 	}
+
+	//calculate center after normalization
+	swcBB = NULL_BoundingBox;
+	for(int i = 0;i<loadedNT.listNeuron.size();i++)
+	{
+		NeuronSWC S=loadedNT.listNeuron.at(i);
+		float d = S.r * 2;
+		swcBB.expand(BoundingBox(XYZ(S) - d, XYZ(S) + d));
+		if (S.r > r_max)  r_max = S.r;
+	}
+	loadedNTCenter.x = (swcBB.x0 + swcBB.x1)/2;
+	loadedNTCenter.y = (swcBB.y0 + swcBB.y1)/2;
+	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
+	qDebug("center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 }
 
 //-----------------------------------------------------------------------------
@@ -2564,6 +3126,17 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	{	//wwbmark
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glUseProgram( m_unCtrTexProgramID );
+		glBindVertexArray( m_ControllerTexVAO );
+		glUniformMatrix4fv( m_nCtrTexMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+		glBindTexture( GL_TEXTURE_2D, m_iTexture );
+		glDrawArrays( GL_TRIANGLES, 0, m_uiControllerTexIndexSize );
+		glBindVertexArray( 0 );
+		glDisable(GL_BLEND);
+	}
 
 	if (m_bShowMorphologySurface)
 	{
@@ -2589,6 +3162,10 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 
 		// world transformation
+		const QList <NeuronSWC> & loaded_listNeuron = loadedNT.listNeuron;
+		const QHash <int, int> & loaded_hashNeuron = loadedNT.hashNeuron;
+		NeuronSWC S0,S1;
+
 		int cy_count = 0;
 		for(int i = 0;i<loaded_spheres.size();i++)//loaded neuron tree
 		{
@@ -2601,26 +3178,35 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			model = m_globalMatrix * model;
 
 			morphologyShader->setMat4("model", model);
-			morphologyShader->setVec3("objectColor", surfcolor);
+			morphologyShader->setVec3("objectColor", surfcolor);//loaded_spheresColor[i]);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			sphr->Render();
-			morphologyShader->setVec3("objectColor", wireframecolor);
+			morphologyShader->setVec3("objectColor", loaded_spheresColor[i]);// wireframecolor);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			sphr->Render();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 			//draw cylinder
-			int pn = loadedNT.listNeuron[i].pn;
-			if (pn != -1)
+			//int pn = loadedNT.listNeuron[i].pn;
+			S0 = loaded_listNeuron.at(i);
+			if (S0.pn != -1)
 			{
+				int j = loaded_hashNeuron.value(S0.pn, -1);
+				S1 = loaded_listNeuron.at(j);
+
 				//cylinder between node i and (pn-1)
 				glm::vec3 v1(0.0f, -1.0f, 0.0f);
-				glm::vec3 v2 = loaded_spheresPos[pn-1] - loaded_spheresPos[i];
+				glm::vec3 v2;// = loaded_spheresPos[pn-1] - loaded_spheresPos[i];
+				v2.x = S1.x-S0.x;v2.y = S1.y-S0.y;v2.z = S1.z-S0.z;
 				float dist = glm::length(v2); //dprintf("dist= %f\n", dist);
 				//v1 = glm::normalize(v1);
 				v2 = glm::normalize(v2);
 				float cos_angle = glm::dot(v1, v2);
 				glm::vec3 axis = glm::cross(v1, v2);//todo-yimin: optimizable: these things can be pre-calculated
+
+				//handle degenerated axis. todo: verify
+				if (glm::length(axis) < 0.0001)//(cos_angle < -1 + 0.001f) { //if the angle is 180 degree, any axis will do.
+					axis = glm::cross(glm::vec3(1.0f,0.0f,0.0f),v1);
 
 				Cylinder* cy = loaded_cylinders[cy_count++];
 				model = glm::translate(glm::mat4(),loaded_spheresPos[i]);
@@ -2630,13 +3216,13 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 				model = m_globalMatrix * model;
 
 				morphologyShader->setMat4("model", model);
-				morphologyShader->setVec3("objectColor", surfcolor);
+				morphologyShader->setVec3("objectColor", surfcolor);//loaded_spheresColor[i]);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				cy->Render();
-				morphologyShader->setVec3("objectColor", wireframecolor);
+				morphologyShader->setVec3("objectColor", loaded_spheresColor[i]);// wireframecolor);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				cy->Render();
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
 			}
 			else//when a node's pn = -1, do not render it's cylinder 
 			{
@@ -2669,12 +3255,16 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			{
 				//cylinder between node i and (pn-1)
 				glm::vec3 v1(0.0f, -1.0f, 0.0f);
-				glm::vec3 v2 = sketch_spheresPos[pn-1] - sketch_spheresPos[i];
+				glm::vec3 v2 = sketch_spheresPos[pn-1] - sketch_spheresPos[i];//+glm::vec3(0.0001,0.0001,0.0001);
 				float dist = glm::length(v2); //dprintf("dist= %f\n", dist);
 				//v1 = glm::normalize(v1);
 				v2 = glm::normalize(v2);
 				float cos_angle = glm::dot(v1, v2);
 				glm::vec3 axis = glm::cross(v1, v2);
+
+				//handle degenerated axis. todo: verify
+				if (glm::length(axis) < 0.0001)//(cos_angle < -1 + 0.001f) { //if the angle is 180 degree, any axis will do.
+					axis = glm::cross(glm::vec3(1.0f,0.0f,0.0f),v1);
 
 				Cylinder* cy = sketch_cylinders[cy_count++];
 				model = glm::translate(glm::mat4(),sketch_spheresPos[i]);
