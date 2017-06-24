@@ -1429,17 +1429,17 @@ bool CMainApplication::HandleInput()
 
 						//qDebug("ROTATION!detX= %f,detY= %f.\n",detX,detY);
 						//glm::vec3 globalRotation = 
-						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-						m_globalMatrix = glm::rotate(m_globalMatrix,detX/1000,glm::vec3(1,0,0));
-						m_globalMatrix = glm::rotate(m_globalMatrix,detY/1000,glm::vec3(0,1,0));
 						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+						m_globalMatrix = glm::rotate(m_globalMatrix,detX/300,glm::vec3(1,0,0));
+						m_globalMatrix = glm::rotate(m_globalMatrix,detY/300,glm::vec3(0,1,0));
+						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 						//rotate_func(detX,detY);
 					}
 					else if(m_zoomMode==true)//into zoom mode
 					{
-						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-						m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+detY/1000,1+detY/1000,1+detY/1000));
 						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+						m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+detY/1000,1+detY/1000,1+detY/1000));
+						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 						//qDebug("ZOOM!detX= %f,detY= %f.\n",detX,detY);
 						//zoom_func(detX,detY);
 					}
@@ -2877,18 +2877,19 @@ void CMainApplication::SetupGlobalMatrix()
 	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
 	//qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
-	float scale = 1 / maxD * 2;
-	float r_scale = 1 / r_max * 0.2;
-	float trans_x = 0.6 - loadedNTCenter.x;
-	float trans_y = 1.0 - loadedNTCenter.y;
-	float trans_z = 0.4 - loadedNTCenter.z;
+	float scale = 1 / maxD * 2; // these numbers are related to room size
+	float trans_x = 0.6 ;
+	float trans_y = 1.5 ;
+	float trans_z = 0.4 ;
 	//printf("transform: scale = %f, translate = (%f,%f,%f)\n", scale,trans_x,trans_y,trans_z );
+
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); //fine tune
 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(scale,scale,scale));
 	//glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
 	//qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
 
-	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); 
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(- loadedNTCenter.x,- loadedNTCenter.y,- loadedNTCenter.z) ); 
 	//cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
 	//qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
 }
@@ -3059,7 +3060,7 @@ void CMainApplication::SetupCompanionWindow()//question: what's the content here
 //-----------------------------------------------------------------------------
 void CMainApplication::RenderStereoTargets()
 {
-	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+	glClearColor( 204.0f/255, 217.0f/255, 229.0f/255, 1.0f );
 	glEnable( GL_MULTISAMPLE );
 	// Left Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId );
