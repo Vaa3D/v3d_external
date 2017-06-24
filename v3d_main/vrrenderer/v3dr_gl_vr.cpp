@@ -45,7 +45,7 @@ long int vertexcount =0,swccount = 0;
 int ray_ratio = 1;
 bool bool_ray = true;
 #define dist_thres 0.01
-#define default_radius 0.01
+#define default_radius 0.1
 
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
@@ -662,7 +662,7 @@ public:
 	void SetupCameras();
 	void SetupCamerasForMorphology();
 
-	void SetupBoundingBox();//2017-06-11 currently not used.
+	void SetupGlobalMatrix();//matrix for glabal transformation
 	void NormalizeNeuronTree(NeuronTree& nt);
 	void RenderStereoTargets();
 	void RenderCompanionWindow();
@@ -1134,7 +1134,8 @@ bool CMainApplication::BInitGL()
 	//	NeuronSWC S=loadedNT.listNeuron.at(i);
 	//	printf("%f, %f, %f, %f\n", S.x,S.y,S.z,S.r);
 	//}
-	NormalizeNeuronTree(loadedNT);
+	//NormalizeNeuronTree(loadedNT);
+	SetupGlobalMatrix();
 	//printf("after normalize\n");
 	//for(int i = 0;i<loadedNT.listNeuron.size();i++)
 	//{
@@ -1149,7 +1150,6 @@ bool CMainApplication::BInitGL()
 	SetupTexturemaps();
 	SetupCameras();
 	SetupCamerasForMorphology();
-	SetupBoundingBox();
 	SetupStereoRenderTargets();
 
 	SetupCompanionWindow();
@@ -1423,7 +1423,7 @@ bool CMainApplication::HandleInput()
 					if(m_translationMode==true)//into translate mode
 					{
 						//qDebug("TRANSLATION!detX= %f,detY= %f.\n",detX,detY);
-						m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(detX/300,0,detY/300) ); 
+						m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(detX,0,detY) ); 
 						//translate_func(detX,detY);
 
 					}
@@ -2854,14 +2854,16 @@ void CMainApplication::SetupCamerasForMorphology()
 
 }
 
-void CMainApplication::SetupBoundingBox()
+void CMainApplication::SetupGlobalMatrix()
 {
+	float r_max = -1;
 	BoundingBox swcBB = NULL_BoundingBox;
 	for(int i = 0;i<loadedNT.listNeuron.size();i++)
 	{
 		NeuronSWC S=loadedNT.listNeuron.at(i);
 		float d = S.r * 2;
 		swcBB.expand(BoundingBox(XYZ(S) - d, XYZ(S) + d));
+		if (S.r > r_max)  r_max = S.r;
 	}
 
 	float DX = swcBB.Dx();
@@ -2869,18 +2871,41 @@ void CMainApplication::SetupBoundingBox()
 	float DZ = swcBB.Dz();
 	float maxD = swcBB.Dmax();
 
-	float s[3];
-	s[0] = 1 / maxD * 2;
-	s[1] = 1 / maxD * 2;
-	s[2] = 1 / maxD * 2;
-	float t[3]; //swc center
-	t[0] = -(swcBB.x0 + DX / 2);
-	t[1] = -(swcBB.y0 + DY / 2);
-	t[2] = -(swcBB.z0 + DZ / 2);
+	//original center location
+	loadedNTCenter.x = (swcBB.x0 + swcBB.x1)/2;
+	loadedNTCenter.y = (swcBB.y0 + swcBB.y1)/2;
+	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
+	qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
-	m_GlobalTransformation = glm::translate(glm::mat4(), glm::vec3(t[0],t[1],t[2]));
-	m_GlobalTransformation = glm::scale(m_GlobalTransformation, glm::vec3(s[0], s[1], s[2]));
-	m_GlobalTransformation = glm::translate(m_GlobalTransformation, glm::vec3(-t[0]-0.6, -t[1]-1.0, -t[2]-0.4));
+	float scale = 1 / maxD * 2;
+	float r_scale = 1 / r_max * 0.2;
+	float trans_x = 0.6 - loadedNTCenter.x;
+	float trans_y = 1.0 - loadedNTCenter.y;
+	float trans_z = 0.4 - loadedNTCenter.z;
+	printf("transform: scale = %f, translate = (%f,%f,%f)\n", scale,trans_x,trans_y,trans_z );
+
+	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(scale,scale,scale));
+	glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+	qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); 
+	cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+	qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+
+	
+
+	//float s[3];
+	//s[0] = 1 / maxD * 2;
+	//s[1] = 1 / maxD * 2;
+	//s[2] = 1 / maxD * 2;
+	//float t[3]; //swc center
+	//t[0] = -(swcBB.x0 + DX / 2);
+	//t[1] = -(swcBB.y0 + DY / 2);
+	//t[2] = -(swcBB.z0 + DZ / 2);
+
+	//m_GlobalTransformation = glm::translate(glm::mat4(), glm::vec3(t[0],t[1],t[2]));
+	//m_GlobalTransformation = glm::scale(m_GlobalTransformation, glm::vec3(s[0], s[1], s[2]));
+	//m_GlobalTransformation = glm::translate(m_GlobalTransformation, glm::vec3(-t[0]-0.6, -t[1]-1.0, -t[2]-0.4));
 }
 
 void CMainApplication::NormalizeNeuronTree(NeuronTree& nt)
@@ -3153,7 +3178,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			model = m_globalMatrix * model;
 
 			morphologyShader->setMat4("model", model);
-			morphologyShader->setVec3("objectColor", surfcolor);
+			morphologyShader->setVec3("objectColor", surfcolor);//loaded_spheresColor[i]);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			sphr->Render();
 			morphologyShader->setVec3("objectColor", loaded_spheresColor[i]);// wireframecolor);
@@ -3191,13 +3216,13 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 				model = m_globalMatrix * model;
 
 				morphologyShader->setMat4("model", model);
-				morphologyShader->setVec3("objectColor", surfcolor);
+				morphologyShader->setVec3("objectColor", surfcolor);//loaded_spheresColor[i]);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				cy->Render();
 				morphologyShader->setVec3("objectColor", loaded_spheresColor[i]);// wireframecolor);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				cy->Render();
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
 			}
 			else//when a node's pn = -1, do not render it's cylinder 
 			{
