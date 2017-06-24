@@ -45,7 +45,7 @@ long int vertexcount =0,swccount = 0;
 int ray_ratio = 1;
 bool bool_ray = true;
 #define dist_thres 0.01
-#define default_radius 0.1
+#define default_radius 0.5
 
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
@@ -802,9 +802,6 @@ private: // OpenGL bookkeeping
 	glm::mat4 m_ProjTransRight;
 
 	glm::mat4 m_globalMatrix;
-
-	//BoundingBox swcBB;
-	glm::mat4 m_GlobalTransformation;//move neuron to center of the world
 
 	struct VertexDataScene//question: why define this? only used for sizeof()
 	{
@@ -1609,7 +1606,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             }
             mat=glm::inverse(m_globalMatrix) * mat;
 
-            Vector4 start = mat_M * Vector4( 0, 0, -0.02f, 1 );
+			glm::vec4 start = mat * glm::vec4( 0, 0, -0.02f, 1 );
+            //Vector4 start = mat_M * Vector4( 0, 0, -0.02f, 1 );
 
 
             NeuronSWC SL0;
@@ -1629,7 +1627,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             {
                 ray_ratio = 1;
                 double updated_z = -0.29*ray_ratio;
-                Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
+				glm::vec4 end = mat * glm::vec4( 0, 0, updated_z, 1 );
+                //Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
                 SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+2;SL1.pn = swccount+1;
                 sketchNT.listNeuron.append(SL0);
                 sketchNT.hashNeuron.insert(SL0.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL0 into sketchNT
@@ -1641,7 +1640,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             {
                 ray_ratio++;
                 double updated_z = -0.29*ray_ratio;
-                Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
+				glm::vec4 end = mat * glm::vec4( 0, 0, updated_z, 1 );
+                //Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
                 SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+1;SL1.pn = swccount;
                 sketchNT.listNeuron.append(SL1);
                 sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
@@ -2875,37 +2875,22 @@ void CMainApplication::SetupGlobalMatrix()
 	loadedNTCenter.x = (swcBB.x0 + swcBB.x1)/2;
 	loadedNTCenter.y = (swcBB.y0 + swcBB.y1)/2;
 	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
-	qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
+	//qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
 	float scale = 1 / maxD * 2;
 	float r_scale = 1 / r_max * 0.2;
 	float trans_x = 0.6 - loadedNTCenter.x;
 	float trans_y = 1.0 - loadedNTCenter.y;
 	float trans_z = 0.4 - loadedNTCenter.z;
-	printf("transform: scale = %f, translate = (%f,%f,%f)\n", scale,trans_x,trans_y,trans_z );
+	//printf("transform: scale = %f, translate = (%f,%f,%f)\n", scale,trans_x,trans_y,trans_z );
 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(scale,scale,scale));
-	glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
-	qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+	//glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+	//qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
 
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); 
-	cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
-	qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
-
-	
-
-	//float s[3];
-	//s[0] = 1 / maxD * 2;
-	//s[1] = 1 / maxD * 2;
-	//s[2] = 1 / maxD * 2;
-	//float t[3]; //swc center
-	//t[0] = -(swcBB.x0 + DX / 2);
-	//t[1] = -(swcBB.y0 + DY / 2);
-	//t[2] = -(swcBB.z0 + DZ / 2);
-
-	//m_GlobalTransformation = glm::translate(glm::mat4(), glm::vec3(t[0],t[1],t[2]));
-	//m_GlobalTransformation = glm::scale(m_GlobalTransformation, glm::vec3(s[0], s[1], s[2]));
-	//m_GlobalTransformation = glm::translate(m_GlobalTransformation, glm::vec3(-t[0]-0.6, -t[1]-1.0, -t[2]-0.4));
+	//cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+	//qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
 }
 
 void CMainApplication::NormalizeNeuronTree(NeuronTree& nt)
@@ -3149,13 +3134,13 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		{
 			morphologyShader->setVec3("viewPos", m_EyePosLeft);
 			projection = m_ProjTransLeft;
-			view = m_EyeTransLeft * m_HMDTrans;// * m_GlobalTransformation;
+			view = m_EyeTransLeft * m_HMDTrans;
 		}
 		else if (nEye == vr::Eye_Right)
 		{
 			morphologyShader->setVec3("viewPos", m_EyePosRight); 
 			projection = m_ProjTransRight;
-			view = m_EyeTransRight * m_HMDTrans;// * m_GlobalTransformation;
+			view = m_EyeTransRight * m_HMDTrans;
 		}
 		morphologyShader->setMat4("projection", projection);
 		morphologyShader->setMat4("view", view);
@@ -3433,22 +3418,14 @@ Matrix4 CMainApplication::GetHMDMatrixPoseEye( vr::Hmd_Eye nEye )
 //-----------------------------------------------------------------------------
 Matrix4 CMainApplication::GetCurrentViewProjectionMatrix( vr::Hmd_Eye nEye )
 {
-	Matrix4 global(
-		m_GlobalTransformation[0][0], m_GlobalTransformation[0][1], m_GlobalTransformation[0][2], m_GlobalTransformation[0][3],
-		m_GlobalTransformation[1][0], m_GlobalTransformation[1][1], m_GlobalTransformation[1][2], m_GlobalTransformation[1][3],
-		m_GlobalTransformation[2][0], m_GlobalTransformation[2][1], m_GlobalTransformation[2][2], m_GlobalTransformation[2][3],
-		m_GlobalTransformation[3][0], m_GlobalTransformation[3][1], m_GlobalTransformation[3][2], m_GlobalTransformation[3][3]
-	
-	);
-	
 	Matrix4 matMVP;
 	if( nEye == vr::Eye_Left )
 	{
-		matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;// * global;
+		matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;
 	}
 	else if( nEye == vr::Eye_Right )
 	{
-		matMVP = m_mat4ProjectionRight * m_mat4eyePosRight *  m_mat4HMDPose;// * global;
+		matMVP = m_mat4ProjectionRight * m_mat4eyePosRight *  m_mat4HMDPose;
 	}
 
 	return matMVP;
