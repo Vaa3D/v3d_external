@@ -1423,17 +1423,31 @@ bool CMainApplication::HandleInput()
 					}//*/
 					if(m_translationMode==true)//into translate mode
 					{
-						//move along axis
 						const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];
-						Vector4 start = mat_M * Vector4( 0, 0, 0, 1 );
-						Vector4 end = mat_M * Vector4( 0, 0, -1.0f, 1 );
-						Vector4 direction = end - start ;
-						if(m_fTouchPosYL<0) direction = direction * -1;
+						Vector4 direction(0,0,0,1);
+
+						Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
+						Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
+						Vector4 direction_Y = end_Y - start_Y;
+
+						Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
+						Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
+						Vector4 direction_X = end_X - start_X;
+
+						if(fabs(m_fTouchPosXL) > fabs(m_fTouchPosYL)) //move across axis
+						{
+							if(m_fTouchPosXL<0) direction = direction_X * -1;
+							else direction = direction_X;
+						} else //move along axis
+						{
+							if(m_fTouchPosYL<0) direction = direction_Y * -1;
+							else direction = direction_Y;
+						}
 						direction = direction.normalize() * 0.01;
+
 						glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
 						//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
-
-						m_globalMatrix = temp_mat * m_globalMatrix;		
+						m_globalMatrix = temp_mat * m_globalMatrix;
 					}
 					else if(m_rotateMode==true)//into ratate mode
 					{
