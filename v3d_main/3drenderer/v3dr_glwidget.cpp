@@ -1555,7 +1555,7 @@ void V3dR_GLWidget::absoluteVRview()//0518
 		{
 			v3d_msg("succeed in getting neurontree data.\n");
 			//doimageVRViewer_v2(nt,lineType);
-			doimageVRViewer(nt);
+			doimageVRViewer(nt, (MainWindow *)(this->getMainWindow()));
 		}
 		else
 		{
