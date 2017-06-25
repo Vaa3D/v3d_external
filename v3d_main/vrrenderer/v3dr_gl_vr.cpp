@@ -1659,9 +1659,22 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	//////////////////////////////////////////RIGHT
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	
+		//call feature search function, and update display
+		
+		
+		//save current neurons
+		QString outfilename1 = "original_vr_neuron.swc";
+		writeSWC_file(outfilename1, loadedNT);
+		qDebug("Successfully write original_vr_neuron");
+
+		QString outfilename2 = "areaofinterest.swc";
+		writeSWC_file(outfilename2, sketchNT);
+		qDebug("Successfully write areaofinterest");
+		
+		//calculate
 		neuron_subpattern_search(0,mainwindow);
 		
-		//call feature search function, and update display
+		//load again
 		QString filename = "updated_vr_neuron.swc";
 		NeuronTree nt_tmp = readSWC_file(filename);
 		qDebug("Successfully read tagged SWC file");
