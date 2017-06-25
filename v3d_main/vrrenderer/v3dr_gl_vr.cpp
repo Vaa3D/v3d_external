@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 #include "./v3dr_gl_vr.h"
+#include "../v3d/vr_vaa3d_call.h"
 #if defined( OSX )
 #include <Foundation/Foundation.h>
 #include <AppKit/AppKit.h>
@@ -41,6 +42,7 @@
 #endif
 
 
+MainWindow *mainwindow;
 NeuronTree loadedNT,sketchNT;
 glm::vec3 loadedNTCenter;
 long int vertexcount =0,swccount = 0;
@@ -1657,6 +1659,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	//////////////////////////////////////////RIGHT
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	
+		neuron_subpattern_search(0,mainwindow);
+		
 		//call feature search function, and update display
 		QString filename = "updated_vr_neuron.swc";
 		NeuronTree nt_tmp = readSWC_file(filename);
@@ -3742,6 +3746,8 @@ void CGLRenderModel::Draw()
 //-----------------------------------------------------------------------------
 bool doimageVRViewer(NeuronTree nt, MainWindow *pmain)
 {
+	mainwindow = pmain;
+	
 	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 
 	loadedNT.listNeuron.clear();

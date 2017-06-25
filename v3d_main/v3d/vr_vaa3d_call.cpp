@@ -70,7 +70,7 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
         v3d_msg(fullpath, 0);
 
         V3d_PluginLoader mypluginloader(pmain);
-        QString datfilename = "";
+        QString datfilename = "tracing_menu";
 
         QTime t;
         t.start();
