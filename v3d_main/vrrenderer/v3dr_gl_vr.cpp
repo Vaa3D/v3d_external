@@ -26,6 +26,8 @@
 #include "Sphere.h"
 #include "Cylinder.h"
 
+#include "mainwindow.h"
+
 #if defined(POSIX)
 #include "unistd.h"
 #endif
@@ -3723,7 +3725,7 @@ void CGLRenderModel::Draw()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool doimageVRViewer(NeuronTree nt)
+bool doimageVRViewer(NeuronTree nt, MainWindow *pmain)
 {
 	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 

@@ -259,6 +259,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_actions.h \
     v3d_commandlineparser.h \
     pluginfunchandler.h \
+    vr_vaa3d_call.h \
     ../worm_straighten_c/bdb_minus.h \
     ../worm_straighten_c/mst_prim_c.h \
     ../worm_straighten_c/bfs.h \
@@ -349,6 +350,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     v3d_actions.cpp \
     v3d_commandlineparser.cpp \
     pluginfunchandler.cpp \
+    vr_vaa3d_call.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
