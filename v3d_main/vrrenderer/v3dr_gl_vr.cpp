@@ -1653,7 +1653,20 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 
 	//////////////////////////////////////////RIGHT
-	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))
+	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
+	{	
+		//call feature search function, and update display
+		QString filename = "updated_vr_neuron.swc";
+		NeuronTree nt_tmp = readSWC_file(filename);
+		qDebug("Successfully read tagged SWC file");
+
+		for (int i=0; i<loadedNT.listNeuron.size(); i++)
+		{
+			loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
+		}
+		SetupMorphologyLine(0);
+
+	}if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//every time the trigger(right) is unpressd ,set the vertexcount to zero preparing for the next line
 		vertexcount=0;
 		//qDebug("Successfully run here.vertexcount=%d\n",vertexcount);
@@ -2505,6 +2518,8 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 											unsigned int& Vertcount,
 											int drawMode)
 {
+	loaded_spheresColor.clear();
+	
 	vector <glm::vec3> vertices;
 	vector<GLuint> indices;
 	map<int,int> id2loc;//map neuron node id to location in vertices
