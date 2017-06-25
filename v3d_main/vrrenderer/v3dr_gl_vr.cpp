@@ -1420,9 +1420,9 @@ bool CMainApplication::HandleInput()
 					if(m_translationMode==true)//into translate mode
 					{
 						//qDebug("TRANSLATION!detX= %f,detY= %f.\n",detX,detY);
-						m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(detX,0,detY) ); 
-						//translate_func(detX,detY);
-
+						glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
+						m_globalMatrix = temp_mat * m_globalMatrix;
+						//m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(detX,0,detY) ); 			
 					}
 					else if(m_rotateMode==true)//into ratate mode
 					{
@@ -1679,7 +1679,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
         bool_ray = true;
 		if(sketchNT.listNeuron.size()<1)
 			return;
-		QString filename = "swctofile.swc";
+		QString filename = "areaofinterest.swc";
 		writeSWC_file(filename, sketchNT);
 		qDebug("Successfully writeSWC_file");
 	}
