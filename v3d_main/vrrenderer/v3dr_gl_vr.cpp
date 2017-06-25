@@ -1423,10 +1423,17 @@ bool CMainApplication::HandleInput()
 					}//*/
 					if(m_translationMode==true)//into translate mode
 					{
-						//qDebug("TRANSLATION!detX= %f,detY= %f.\n",detX,detY);
-						glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
-						m_globalMatrix = temp_mat * m_globalMatrix;
-						//m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(detX,0,detY) ); 			
+						//move along axis
+						const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];
+						Vector4 start = mat_M * Vector4( 0, 0, 0, 1 );
+						Vector4 end = mat_M * Vector4( 0, 0, -1.0f, 1 );
+						Vector4 direction = end - start ;
+						if(m_fTouchPosYL<0) direction = direction * -1;
+						direction = direction.normalize() * 0.01;
+						glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
+						//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
+
+						m_globalMatrix = temp_mat * m_globalMatrix;		
 					}
 					else if(m_rotateMode==true)//into ratate mode
 					{
