@@ -559,12 +559,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 }
 #endif
 
-                QDir pluginsDir1 = pluginsDir;
-                if (pluginsDir1.cd("plugins/teramanager")==true)
-                {
-                    listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
-                }
-
+                listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
