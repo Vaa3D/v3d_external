@@ -1681,30 +1681,44 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	
 		//call feature search function, and update display
-		
-		
-		//save current neurons
-		QString outfilename1 = "original_vr_neuron.swc";
-		writeSWC_file(outfilename1, loadedNT);
-		qDebug("Successfully write original_vr_neuron");
-
-		QString outfilename2 = "areaofinterest.swc";
-		writeSWC_file(outfilename2, sketchNT);
-		qDebug("Successfully write areaofinterest");
-		
-		//calculate
-		neuron_subpattern_search(0,mainwindow);
-		
-		//load again
-		QString filename = "updated_vr_neuron.swc";
-		NeuronTree nt_tmp = readSWC_file(filename);
-		qDebug("Successfully read tagged SWC file");
-
-		for (int i=0; i<loadedNT.listNeuron.size(); i++)
+		vr::VRControllerState_t state;	
+		m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
+		float temp_x  = state.rAxis[0].x;
+		if(temp_x<-0.1)
 		{
-			loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
+			//means touched the left side of touchpad
+			//call function search 1
+			qDebug("Search 1");
+
+			//save current neurons
+			QString outfilename1 = "original_vr_neuron.swc";
+			writeSWC_file(outfilename1, loadedNT);
+			qDebug("Successfully write original_vr_neuron");
+
+			QString outfilename2 = "areaofinterest.swc";
+			writeSWC_file(outfilename2, sketchNT);
+			qDebug("Successfully write areaofinterest");
+
+			//calculate
+			neuron_subpattern_search(0,mainwindow);
+
+			//load again
+			QString filename = "updated_vr_neuron.swc";
+			NeuronTree nt_tmp = readSWC_file(filename);
+			qDebug("Successfully read tagged SWC file");
+
+			for (int i=0; i<loadedNT.listNeuron.size(); i++)
+			{
+				loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
+			}
+			SetupMorphologyLine(0);
 		}
-		SetupMorphologyLine(0);
+		else if(temp_x>0.1)
+		{
+			//means touched the right side of touchpad
+			//call function search 2
+			qDebug("Search 2");
+		}
 
 	}if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//every time the trigger(right) is unpressd ,set the vertexcount to zero preparing for the next line
@@ -1729,7 +1743,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
-        bool_ray = true;
+		bool_ray = true;
 		if(sketchNT.listNeuron.size()<1)
 			return;
 		QString filename = "areaofinterest.swc";
@@ -2173,10 +2187,10 @@ void CMainApplication::SetupControllerTexture()
 		point_N = mat_L * point_N;
 		point_O = mat_L * point_O;
 		point_P = mat_L * point_P;
-		AddVertex(point_M.x,point_M.y,point_M.z,1,0,vcVerts);
+		AddVertex(point_M.x,point_M.y,point_M.z,0.75,0,vcVerts);
 		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,0.75f,0.25f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,0.75f,0.25f,vcVerts);
 		AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.25f,vcVerts);
 		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
 	}
@@ -2213,21 +2227,21 @@ void CMainApplication::SetupControllerTexture()
 		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.5f,vcVerts);
 		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
 
-		Vector4 point_E(-0.015f,0.01f,0.035f,1);// for the touchpad
-		Vector4 point_F(0.015f,0.01f,0.035f,1);
-		Vector4 point_G(-0.015f,0.01f,0.065f,1);
-		Vector4 point_H(0.015f,0.01f,0.065f,1);
+		Vector4 point_E(-0.02f,0.01f,0.04f,1);// for the touchpad
+		Vector4 point_F(0.02f,0.01f,0.04f,1);
+		Vector4 point_G(-0.02f,0.01f,0.06f,1);
+		Vector4 point_H(0.02f,0.01f,0.06f,1);
 		point_E = mat_R * point_E;
 		point_F = mat_R * point_F;
 		point_G = mat_R * point_G;
 		point_H = mat_R * point_H;
 
-		AddVertex(point_E.x,point_E.y,point_E.z,0.75f,0.75f,vcVerts);
-		AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
-		AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
-		AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
-		AddVertex(point_H.x,point_H.y,point_H.z,1,1,vcVerts);
-		AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+		AddVertex(point_E.x,point_E.y,point_E.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_F.x,point_F.y,point_F.z,1,0.25f,vcVerts);
+		AddVertex(point_G.x,point_G.y,point_G.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_G.x,point_G.y,point_G.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_H.x,point_H.y,point_H.z,1,0.5f,vcVerts);
+		AddVertex(point_F.x,point_F.y,point_F.z,1,0.25f,vcVerts);
 
 		Vector4 point_I(-0.005f,0.01f,0.015f,1);//for the menu button
 		Vector4 point_J(0.005f,0.01f,0.015f,1);
@@ -2253,12 +2267,12 @@ void CMainApplication::SetupControllerTexture()
 		point_N = mat_R * point_N;
 		point_O = mat_R * point_O;
 		point_P = mat_R * point_P;
-		AddVertex(point_M.x,point_M.y,point_M.z,1,0.25f,vcVerts);
-		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0.25f,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,1,0.5f,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,1,0.5f,vcVerts);
-		AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.5f,vcVerts);
-		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0.25,vcVerts);
+		AddVertex(point_M.x,point_M.y,point_M.z,1,0,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.75f,0,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
+		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
+		AddVertex(point_P.x,point_P.y,point_P.z,0.75f,0.25f,vcVerts);
+		AddVertex(point_N.x,point_N.y,point_N.z,0.75f,0,vcVerts);
 
 	
 	}
