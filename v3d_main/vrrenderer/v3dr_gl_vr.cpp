@@ -714,6 +714,7 @@ private: // OpenGL bookkeeping
 	int m_iValidPoseCount_Last;
 	bool m_bShowMorphologyLine;
 	bool m_bShowMorphologySurface;
+	bool m_bFrozen; //freeze the view
 
 	///control edit mode
 	int  m_modeControl;
@@ -807,6 +808,11 @@ private: // OpenGL bookkeeping
 
 	glm::mat4 m_globalMatrix;
 
+	//matrices to store frozen state
+	Matrix4 m_frozen_mat4HMDPose;
+	glm::mat4 m_frozen_HMDTrans;
+	glm::mat4 m_frozen_globalMatrix;
+
 	struct VertexDataScene//question: why define this? only used for sizeof()
 	{
 		Vector3 position;
@@ -847,6 +853,14 @@ private: // OpenGL bookkeeping
 
 	std::vector< CGLRenderModel * > m_vecRenderModels; //note: a duplicated access to below. used in shutdown destroy, check existence routines;
 	CGLRenderModel *m_rTrackedDeviceToRenderModel[ vr::k_unMaxTrackedDeviceCount ]; //note: maintain all the render models for VR devices; used in drawing
+
+/***********************************
+***    volume image rendering    ***
+***********************************/
+//public:
+//	void SetupVolumeImageContainer();
+//private:
+
 };
 
 //-----------------------------------------------------------------------------
@@ -903,6 +917,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_strPoseClasses("")
 	, m_bShowMorphologyLine(true)
 	, m_bShowMorphologySurface(false)
+	, m_bFrozen (false)
 	, m_modeControl(0)
 	, m_translationMode (false)
 	, m_rotateMode (false)
@@ -1700,7 +1715,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			qDebug("Successfully write areaofinterest");
 
 			//calculate
-			neuron_subpattern_search(0,mainwindow);
+			neuron_subpattern_search(2,mainwindow);
 
 			//load again
 			QString filename = "updated_vr_neuron.swc";
@@ -1718,6 +1733,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			//means touched the right side of touchpad
 			//call function search 2
 			qDebug("Search 2");
+
+			m_bFrozen = !m_bFrozen;
 		}
 
 	}if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))
@@ -3221,6 +3238,13 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		const QHash <int, int> & loaded_hashNeuron = loadedNT.hashNeuron;
 		NeuronSWC S0,S1;
 
+		if (!m_bFrozen) {
+			m_frozen_globalMatrix = m_globalMatrix;
+		} else 
+		{
+			m_globalMatrix = m_frozen_globalMatrix;
+		}
+
 		int cy_count = 0;
 		for(int i = 0;i<loaded_spheres.size();i++)//loaded neuron tree
 		{
@@ -3538,14 +3562,24 @@ void CMainApplication::UpdateHMDMatrixPose()
 
 	if ( m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
 	{
-		m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
-		m_mat4HMDPose.invert();
-		for (size_t i = 0; i < 4; i++)
+		if(!m_bFrozen) 
 		{
-			for (size_t j = 0; j < 4; j++)
+			m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+			m_mat4HMDPose.invert();
+			for (size_t i = 0; i < 4; i++)
 			{
-				m_HMDTrans[i][j] = *(m_mat4HMDPose.get() + i * 4 + j);
+				for (size_t j = 0; j < 4; j++)
+				{
+					m_HMDTrans[i][j] = *(m_mat4HMDPose.get() + i * 4 + j);
+				}
 			}
+
+			m_frozen_mat4HMDPose = m_mat4HMDPose;
+			m_frozen_HMDTrans = m_HMDTrans;
+		} else
+		{
+			m_mat4HMDPose = m_frozen_mat4HMDPose;
+			m_HMDTrans = m_frozen_HMDTrans;
 		}
 	}
 }
@@ -3680,6 +3714,69 @@ Matrix4 CMainApplication::ConvertSteamVRMatrixToMatrix4( const vr::HmdMatrix34_t
 	return matrixObj;
 }
 
+/***********************************
+***    volume image rendering    ***
+***********************************/
+//void CMainApplication::SetupVolumeImageContainer()
+//{
+//	GLfloat vertices[24] = {
+//	0.0, 0.0, 0.0,
+//	0.0, 0.0, 1.0,
+//	0.0, 1.0, 0.0,
+//	0.0, 1.0, 1.0,
+//	1.0, 0.0, 0.0,
+//	1.0, 0.0, 1.0,
+//	1.0, 1.0, 0.0,
+//	1.0, 1.0, 1.0
+//    };
+//// draw the six faces of the boundbox by drawwing triangles
+//// draw it contra-clockwise
+//// front: 1 5 7 3
+//// back: 0 2 6 4
+//// left£º0 1 3 2
+//// right:7 5 4 6    
+//// up: 2 3 7 6
+//// down: 1 0 4 5
+//    GLuint indices[36] = {
+//	1,5,7,
+//	7,3,1,
+//	0,2,6,
+//    6,4,0,
+//	0,1,3,
+//	3,2,0,
+//	7,5,4,
+//	4,6,7,
+//	2,3,7,
+//	7,6,2,
+//	1,0,4,
+//	4,5,1
+//    };
+//    GLuint gbo[2];
+//    
+//    glGenBuffers(2, gbo);
+//    GLuint vertexdat = gbo[0];
+//    GLuint veridxdat = gbo[1];
+//    glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+//    glBufferData(GL_ARRAY_BUFFER, 24*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+//    // used in glDrawElement()
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36*sizeof(GLuint), indices, GL_STATIC_DRAW);
+//
+//    GLuint vao;
+//    glGenVertexArrays(1, &vao);
+//    // vao like a closure binding 3 buffer object: verlocdat vercoldat and veridxdat
+//    glBindVertexArray(vao);
+//    glEnableVertexAttribArray(0); // for vertexloc
+//    glEnableVertexAttribArray(1); // for vertexcol
+//
+//    // the vertex location is the same as the vertex color
+//    glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat *)NULL);
+//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat *)NULL);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+//    // glBindVertexArray(0);
+//    g_vao = vao;
+//}
 
 //-----------------------------------------------------------------------------
 // Purpose: Create/destroy GL Render Models
