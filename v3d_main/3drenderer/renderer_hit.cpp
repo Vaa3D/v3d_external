@@ -946,7 +946,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 b_grabhighrez = true;
                 produceZoomViewOf3DRoi(loc_vec,
-                                       1  //one means from non-wheel event
+                                       0  //one means from non-wheel event
                                        );
 			}
 		}
