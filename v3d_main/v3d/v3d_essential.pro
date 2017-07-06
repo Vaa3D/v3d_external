@@ -367,10 +367,9 @@ unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 
 win32 {
-INCLUDEPATH += ../vrrenderer/thirdparty/sdl2-2.0.3/include/ #for VR, by PHC 20170615
-INCLUDEPATH += ../vrrenderer/thirdparty/glew/glew-1.11.0/include/  #for VR, by PHC 20170615
-INCLUDEPATH += ../vrrenderer/thirdparty/   #for VR, by PHC 20170615
-INCLUDEPATH += ../vrrenderer/headers/ #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
 
 HEADERS += \
     ../vrrenderer/v3dr_gl_vr.h \
