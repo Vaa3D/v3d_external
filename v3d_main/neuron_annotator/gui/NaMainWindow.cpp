@@ -308,9 +308,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     connect(ui->v3dr_glwidget, SIGNAL(changeZCut1(int)), ui->ZcmaxSlider, SLOT(setValue(int)));
     connect(ui->ZcmaxSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setZCut1(int)));
 
-    connect(ui->XCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setXCutLock(int)));
-    connect(ui->YCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setYCutLock(int)));
-    connect(ui->ZCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setZCutLock(int)));
+    connect(ui->XCutCB, SIGNAL(toggled(bool)), ui->v3dr_glwidget, SLOT(setXCutLock(bool)));
+    connect(ui->YCutCB, SIGNAL(toggled(bool)), ui->v3dr_glwidget, SLOT(setYCutLock(bool)));
+    connect(ui->ZCutCB, SIGNAL(toggled(bool)), ui->v3dr_glwidget, SLOT(setZCutLock(bool)));
 
     connect(ui->slabThicknessSlider, SIGNAL(valueChanged(int)),
             ui->v3dr_glwidget, SLOT(setSlabThickness(int)));

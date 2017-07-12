@@ -132,9 +132,9 @@ public slots:
     void onNotSingleClick();
     void onPossibleSingleClickAlert();
     virtual void updateImageData();
-    void setXCutLock(int b);
-    void setYCutLock(int b);
-    void setZCutLock(int b);
+    void setXCutLock(bool b);
+    void setYCutLock(bool b);
+    void setZCutLock(bool b);
     void setStereoOff(bool);
     void setStereoLeftEye(bool);
     void setStereoRightEye(bool);

@@ -133,6 +133,7 @@ class ColorMapTexture
 {
 public:
     ColorMapTexture();
+    ColorMapTexture( ColorMapTexture const& rhs );
     virtual ~ColorMapTexture() {}
     const uint32_t* getData() const {return &colors[0];}
     bool update();

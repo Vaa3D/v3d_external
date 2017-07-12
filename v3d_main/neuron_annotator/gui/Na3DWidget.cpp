@@ -2271,19 +2271,19 @@ bool Na3DWidget::screenShot(QString filename)
     }
 }
 
-void Na3DWidget::setXCutLock(int b)
+void Na3DWidget::setXCutLock(bool b)
 {
     if (b)	dxCut = _xCut1-_xCut0;
     else    dxCut = 0;
     lockX = b? 1:0;
 }
-void Na3DWidget::setYCutLock(int b)
+void Na3DWidget::setYCutLock(bool b)
 {
     if (b)	dyCut = _yCut1-_yCut0;
     else    dyCut = 0;
     lockY = b? 1:0;
 }
-void Na3DWidget::setZCutLock(int b)
+void Na3DWidget::setZCutLock(bool b)
 {
     if (b)	dzCut = _zCut1-_zCut0;
     else    dzCut = 0;
