@@ -713,7 +713,7 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QUrl url)
         return loadStackFFMpeg(url, *stackp);
 #ifdef USE_HDF5
     else if (extension == "h5j")
-        return loadStackHDF5(fileName.toStdString().c_str(), *stackp);
+        return loadStackHDF5(url, *stackp);
 #endif
 #endif
 

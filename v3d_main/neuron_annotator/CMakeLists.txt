@@ -144,8 +144,9 @@ if(USE_FFMPEG)
         endif()
         target_link_libraries(NeuronAnnotatorLib
             ${HDF5_CPP_LIBRARY}
+            ${HDF5_HL_LIBRARY}
             ${HDF5_LIBRARY}
-	    ${CMAKE_DL_LIBS}
+	        ${CMAKE_DL_LIBS}
             ${Boost_LIBRARIES}
         )
     endif()

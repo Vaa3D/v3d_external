@@ -1021,8 +1021,16 @@ void NaMainWindow::loadSingleStack(QUrl url)
 /* slot */
 void NaMainWindow::loadSingleStack(QString fileName)
 {
-    QUrl url = QUrl::fromLocalFile(fileName);
-    loadSingleStack(url, true); // default to classic mode
+    QUrl url( fileName );
+    bool local = url.scheme().isEmpty();
+
+    if ( local )
+    {
+        QUrl local_url = QUrl::fromLocalFile( fileName );
+        loadSingleStack( local_url, true ); // default to classic mode
+    }
+    else
+        loadSingleStack( url, false ); // default to classic mode
 }
 
 /* slot */

@@ -3,11 +3,21 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <cassert>
+
+#include <QEventLoop>
+#include <QFile>
+#include <QFileInfo>
+#include <QMutex>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
 #include "loadV3dFFMpeg.h"
 #include "FFMpegVideo.h"
 
 #ifdef USE_HDF5
+#include "hdf5_hl.h"
 #include "H5Cpp.h"
 #endif
 
@@ -231,9 +241,121 @@ bool loadStackFFMpeg( const char* fileName, Image4DSimple& img )
 
 bool loadStackHDF5( const char* fileName, Image4DSimple& img )
 {
+    QUrl url( fileName );
+    bool local = url.scheme().isEmpty();
+    return loadStackHDF5( local ? QUrl::fromLocalFile( fileName ) : url, img );
+}
+
+bool loadStackHDF5(QUrl url, Image4DSimple& img)
+{
+    if (url.isEmpty())
+        return false;
+
+    // Is the movie source a local file?
+    if (url.host() == "localhost")
+        url.setHost("");
+    QString fileName = url.toLocalFile();
+    if ( (! fileName.isEmpty())
+        && (QFileInfo(fileName).exists()) )
+    {
+        QFile fileStream;
+
+        // Yes, the source is a local file
+        fileStream.setFileName(fileName);
+        // qDebug() << fileName;
+        if (! fileStream.open(QIODevice::ReadOnly))
+            return false;
+
+        QBuffer fileBuffer;
+        QByteArray byteArray;
+
+        byteArray = fileStream.readAll();
+        fileStream.close();
+        fileBuffer.setBuffer(&byteArray);
+        fileBuffer.open(QIODevice::ReadOnly);
+        if (! fileBuffer.seek(0))
+            return false;
+
+        return loadStackHDF5(fileBuffer, img);
+    }
+
+    // ...No, the source is not a local file
+    if (url.host() == "")
+        url.setHost("localhost");
+    fileName = url.path();
+
+    // http://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
+    // Load from URL
+    QEventLoop loop; // for synchronous url fetch http://stackoverflow.com/questions/5486090/qnetworkreply-wait-for-finished
+    QNetworkAccessManager networkManager;
+    QNetworkReply* reply;
+
+    QObject::connect(&networkManager, SIGNAL(finished(QNetworkReply*)),
+            &loop, SLOT(quit()));
+    QNetworkRequest request = QNetworkRequest(url);
+    // qDebug() << "networkManager" << __FILE__ << __LINE__;
+    reply = networkManager.get(request);
+    loop.exec();
+    if ( reply->error() != QNetworkReply::NoError )
+    {
+        // qDebug() << reply->error();
+        reply->deleteLater();
+        reply = NULL;
+        return false;
+    }
+    QIODevice* stream = reply;
+    QBuffer fileBuffer;
+    QByteArray byteArray;
+
+    byteArray = stream->readAll();
+    fileBuffer.setBuffer( &byteArray );
+    fileBuffer.open( QIODevice::ReadOnly );
+    if ( ! fileBuffer.seek( 0 ) )
+        return false;
+    bool result = loadStackHDF5( fileBuffer, img );
+    return result;
+}
+
+/**
+* Open a `file image`, i.e. a chunk of memory which contains
+* the contents of a HDF-5 file.
+*
+* See H5LTopen_file_image for the arguments that the constructor
+* takes.
+**/
+#ifdef USE_HDF5
+class H5FileImage : public H5::H5File
+{
+  public:
+    H5FileImage( void* buf_ptr, size_t buf_size, unsigned flags );
+
+    static const unsigned OPEN_RW;
+    static const unsigned DONT_COPY;
+    static const unsigned DONT_RELEASE;
+};
+
+H5FileImage::H5FileImage( void* buf_ptr, size_t buf_size, unsigned flags )
+    : H5::H5File()
+{
+    hid_t id = H5LTopen_file_image( buf_ptr, buf_size, flags );
+    if ( id < 0 )
+        throw H5::FileIException( "H5FileImage constructor",
+                                  "H5LTopen_file_image failed" );
+    p_setId( id );
+}
+
+const unsigned H5FileImage::OPEN_RW      =  H5LT_FILE_IMAGE_OPEN_RW;
+const unsigned H5FileImage::DONT_COPY    =  H5LT_FILE_IMAGE_DONT_COPY;
+const unsigned H5FileImage::DONT_RELEASE =  H5LT_FILE_IMAGE_DONT_RELEASE;
+#endif
+
+
+bool loadStackHDF5( QBuffer& buffer, Image4DSimple& img )
+{
 #ifdef USE_HDF5
     H5::Exception::dontPrint();
-    H5::H5File file( fileName, H5F_ACC_RDONLY );
+    H5FileImage file((void*)(buffer.data().data()), buffer.size(), H5FileImage::DONT_COPY & H5FileImage::DONT_RELEASE);
+    //H5::H5File file( fileName, H5F_ACC_RDONLY );
 
     for ( size_t i = 0; i < file.getObjCount(); i++ )
     {
