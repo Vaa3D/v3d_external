@@ -84,7 +84,10 @@ win32 {
                                 -lSDL2main \
                                 -llibhdf5 \
                                 -llibszip \
-                                -llibzlib
+                                -llibzlib \
+ 				-lsfml-system \
+				-lsfml-network \
+				-lsfml-main
 
 
         DEFINES *= TEEM_STATIC
