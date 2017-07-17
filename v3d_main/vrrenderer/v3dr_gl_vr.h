@@ -5,10 +5,10 @@
 
 #include "../basic_c_fun/v3d_interface.h"
 
+class My4DImage;
 class MainWindow;
-bool doimageVRViewer();
 //bool doimageVRViewer(int argc, char *argv[]);
-bool doimageVRViewer(NeuronTree nt, MainWindow *pmain);
+bool doimageVRViewer(NeuronTree nt, My4DImage *img4d, MainWindow *pmain);
 
 #endif
 
