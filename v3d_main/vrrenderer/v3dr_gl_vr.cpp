@@ -1662,7 +1662,6 @@ void CMainApplication::Shutdown()
 
 		for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 		for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
-
 		for (int i=0;i<sketch_spheres.size();i++) delete sketch_spheres[i];
 		for (int i=0;i<sketch_cylinders.size();i++) delete sketch_cylinders[i];
 
@@ -2125,40 +2124,53 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 		if(fabs(temp_x) > fabs(temp_y))
 		{
-			//call feature search function, and update display
-			
-			//save current neurons
-			QString outfilename1 = "original_vr_neuron.swc";
-			writeSWC_file(outfilename1, loadedNT);
-			qDebug("Successfully write original_vr_neuron");
-
-			QString outfilename2 = "areaofinterest.swc";
-			writeSWC_file(outfilename2, sketchNT);
-			qDebug("Successfully write areaofinterest");
-
-			//calculate
-			if(temp_x<0) 
+			if((loadedNT.listNeuron.size()>0)&&(sketchNT.listNeuron.size()>0)) //both original_vr_neuron and areaofinterest must be non-empty.
 			{
-				qDebug("Search bjut");
-                if(!neuron_subpattern_search(1,mainwindow))
-                    return;
+				//call feature search function, and update display
+
+				//save current neurons
+				QString outfilename1 = "original_vr_neuron.swc";
+				writeSWC_file(outfilename1, loadedNT);
+				qDebug("Successfully write original_vr_neuron");
+
+				QString outfilename2 = "areaofinterest.swc";
+				writeSWC_file(outfilename2, sketchNT);
+				qDebug("Successfully write areaofinterest");
+
+				//calculate
+				if(temp_x<0) 
+				{
+					qDebug("Search bjut");
+					if(!neuron_subpattern_search(1,mainwindow))
+					{
+						qDebug("Search failed!");
+						return;	
+					}
+				}
+				else 
+				{
+					qDebug("Search shu");
+					if(!neuron_subpattern_search(2,mainwindow))
+					{
+						qDebug("Search failed!");
+						return;	
+					}
+				}
+
+				//load again
+				QString filename = "updated_vr_neuron.swc";
+				NeuronTree nt_tmp = readSWC_file(filename);
+				qDebug("Successfully read tagged SWC file");
+
+				for (int i=0; i<loadedNT.listNeuron.size(); i++)
+					loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
+
+				SetupMorphologyLine(0);
 			}
-			else 
+			else
 			{
-				qDebug("Search shu");
-                if(!neuron_subpattern_search(2,mainwindow))
-                    return;
+				qDebug("Area of interest is empty!");
 			}
-
-			//load again
-			QString filename = "updated_vr_neuron.swc";
-			NeuronTree nt_tmp = readSWC_file(filename);
-			qDebug("Successfully read tagged SWC file");
-
-			for (int i=0; i<loadedNT.listNeuron.size(); i++)
-				loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
-
-			SetupMorphologyLine(0);
 		} 
 		else 
 		{

@@ -27,7 +27,7 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
         {
             if (pluginsDir.cd("plugins/vr_neuron_search/vr_nmotif_0")==false)
             {
-                v3d_msg("Cannot find ./plugins/vr_neuron_search/vr_nmotif_0 directory!");
+                qDebug("Cannot find ./plugins/vr_neuron_search/vr_nmotif_0 directory!");
                 return false;
             }
         }
@@ -35,7 +35,7 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
         {
             if (pluginsDir.cd("plugins/vr_neuron_search/vr_nmotif_bjut")==false)
             {
-                v3d_msg("Cannot find ./plugins/vr_neuron_search/vr_nmotif_bjut directory!");
+                qDebug("Cannot find ./plugins/vr_neuron_search/vr_nmotif_bjut directory!");
                 return false;
             }
         }
@@ -43,7 +43,7 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
         {
             if (pluginsDir.cd("plugins/vr_neuron_search/vr_nmotif_shu")==false)
             {
-                v3d_msg("Cannot find ./plugins/vr_neuron_search/vr_nmotif_shu directory!");
+                qDebug("Cannot find ./plugins/vr_neuron_search/vr_nmotif_shu directory!");
                 return false;
             }
         }
@@ -53,7 +53,7 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
         QStringList fileList = pluginsDir.entryList(QDir::Files);
         if (fileList.size()<1)
         {
-            v3d_msg("Cannot find any file in the plugins directory!");
+            qDebug("Cannot find any file in the plugins directory!");
             return false;
         }
 
@@ -81,7 +81,7 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
     }
     catch (...)
     {
-        v3d_msg("Catch a problem in v3d_imaging() wrapper function.", 1);
+        v3d_msg("Catch a problem in v3d_imaging() wrapper function.", 0);
         return false;
     }
 
