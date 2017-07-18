@@ -2140,12 +2140,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			if(temp_x<0) 
 			{
 				qDebug("Search bjut");
-				neuron_subpattern_search(1,mainwindow);	
+                if(!neuron_subpattern_search(1,mainwindow))
+                    return;
 			}
 			else 
 			{
 				qDebug("Search shu");
-				neuron_subpattern_search(2,mainwindow);	
+                if(!neuron_subpattern_search(2,mainwindow))
+                    return;
 			}
 
 			//load again
