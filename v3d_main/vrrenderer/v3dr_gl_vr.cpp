@@ -1571,7 +1571,7 @@ bool CMainApplication::BInitGL()
 	SetupCamerasForMorphology();
 	SetupStereoRenderTargets();
 
-	//SetupVolumeRendering();
+	SetupVolumeRendering();
 
 	SetupCompanionWindow();
 
@@ -3354,9 +3354,20 @@ void CMainApplication::SetupGlobalMatrix()
 		if (S.r > r_max)  r_max = S.r;
 	}
 
+	if (    !((img4d->getXDim()==0)  &&  (img4d->getYDim()==0)  &&  (img4d->getZDim()==0))    ) 
+	{
+		//we've also got an image in the scene, adjust the bounding box
+		swcBB.expand(BoundingBox(XYZ(0,0,0), XYZ(img4d->getXDim(),img4d->getYDim(),img4d->getZDim())));
+	}
+
 	float DX = swcBB.Dx();
 	float DY = swcBB.Dy();
 	float DZ = swcBB.Dz();
+	cout <<"dx,dy,dz "<< DX << "," << DY << "," << DZ <<endl;
+
+
+	
+
 	float maxD = swcBB.Dmax();
 
 	//original center location
@@ -3600,6 +3611,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+
 	//=================== draw controller tags ======================
 	{	
 		glEnable(GL_BLEND);
@@ -3614,10 +3626,9 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	}
 	//=================== draw volume image ======================
     
-/*
+///*
 	// render to texture
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
-    glViewport(0, 0, g_winWidth, g_winHeight);
 	backfaceShader->use();
 	RenderImage4D(backfaceShader,nEye,GL_FRONT); // cull front face
     glUseProgram(0);
@@ -3626,22 +3637,20 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	if (nEye == vr::Eye_Left)
 	{
 		glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId );
-		glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
 	}
 	else if (nEye == vr::Eye_Right)
 	{
 		glBindFramebuffer( GL_FRAMEBUFFER, rightEyeDesc.m_nRenderFramebufferId );
-		glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
 	}
 
 	// ray casting
 	raycastingShader->use();
 	SetUinformsForRayCasting();
     RenderImage4D(raycastingShader,nEye,GL_BACK); // cull back face
-    //glutSwapBuffers();//*/
+    //*/
 
-
-
+	//to make the image not block the morphology surface
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 
 	//=================== draw morphology in tube mode ======================
@@ -4278,28 +4287,33 @@ GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, 
 {
    qDebug("initVol3DTex() is called.");
 
-    FILE *fp;
-    size_t size = w * h * d;
-    GLubyte *data = new GLubyte[size];			  // 8bit
-    if (!(fp = fopen(filename, "rb")))
-    {
-        cout << "Error: opening .raw file failed" << endl;
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        cout << "OK: open .raw file successed" << endl;
-    }
-    if ( fread(data, sizeof(char), size, fp)!= size) 
-    {
-        cout << "Error: read .raw file failed" << endl;
-        exit(1);
-    }
-    else
-    {
-        cout << "OK: read .raw file successed" << endl;
-    }
-    fclose(fp);
+    //FILE *fp;
+    //size_t size = w * h * d;
+    //GLubyte *data = new GLubyte[size];			  // 8bit
+    //if (!(fp = fopen(filename, "rb")))
+    //{
+    //    cout << "Error: opening .raw file failed" << endl;
+    //    exit(EXIT_FAILURE);
+    //}
+    //else
+    //{
+    //    cout << "OK: open .raw file successed" << endl;
+    //}
+    //if ( fread(data, sizeof(char), size, fp)!= size) 
+    //{
+    //    cout << "Error: read .raw file failed" << endl;
+    //    exit(1);
+    //}
+    //else
+    //{
+    //    cout << "OK: read .raw file successed" << endl;
+    //}
+    //fclose(fp);
+
+    w = img4d->getXDim(); h = img4d->getYDim(); d= img4d->getZDim();
+	cout << "w,h,d"<<w<<h<<d << endl;
+	GLubyte *data = (GLubyte *)img4d->getRawData();//*************************************************************
+	
 
     glGenTextures(1, &g_volTexObj);
     // bind 3D texture target
@@ -4386,6 +4400,12 @@ void CMainApplication::DrawCubeForImage4D(GLenum glFaces)
 
 void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cullFace)
 {
+	//if (cullFace == GL_FRONT)
+	{
+		glClearColor(0.2f,0.2f,0.2f,1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+	
 	// setup projection, view, model
 	glm::mat4 projection, view, model;
 	if (nEye == vr::Eye_Left)
