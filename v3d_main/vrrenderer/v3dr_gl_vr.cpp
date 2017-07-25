@@ -923,6 +923,7 @@ public:
 	void SetUinformsForRayCasting();
 	
 private:
+	bool m_bHasImage4D;
 	GLuint m_VolumeImageVAO;
 	Shader* backfaceShader;//back face, first pass
 	Shader* raycastingShader;//ray casting front face, second pass
@@ -1006,12 +1007,15 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_ControllerTexVAO( 0 )
 	, m_nCtrTexMatrixLocation( -1 )
 	, m_unCtrTexProgramID( 0 )
+	, m_bHasImage4D( !img4d->isEmpty() )
 #ifdef __VR_SERVER_FUNCS__
 	, m_unRemoteMorphologyLineModeVAO(0)
 	, m_uiRemoteMorphologyLineModeVertcount(0)
 #endif
 
 {
+	//if (m_bHasImage4D ) cout << "has img4d" << endl;
+	//else cout << "has NO img4d" << endl;
 
 	for( int i = 1; i < argc; i++ )
 	{
@@ -1571,7 +1575,7 @@ bool CMainApplication::BInitGL()
 	SetupCamerasForMorphology();
 	SetupStereoRenderTargets();
 
-	SetupVolumeRendering();
+	if (m_bHasImage4D) SetupVolumeRendering();
 
 	SetupCompanionWindow();
 
@@ -1696,6 +1700,8 @@ void CMainApplication::Shutdown()
 			glDeleteVertexArrays( 1, &m_unControllerVAO );
 			glDeleteBuffers(1, &m_glControllerVertBuffer);
 		}
+
+		img4d = NULL; 
 	}
 
 	if( m_pCompanionWindow )
@@ -2354,7 +2360,7 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 {
 	morphologyShader = new Shader("basic.vert", "basic.frag");
 
-	CreateVolumeRenderingShaders();
+	if (m_bHasImage4D) CreateVolumeRenderingShaders();
 
 	m_unCtrTexProgramID = CompileGLShader( 
 		"Scene",
@@ -3354,16 +3360,18 @@ void CMainApplication::SetupGlobalMatrix()
 		if (S.r > r_max)  r_max = S.r;
 	}
 
-	if (    !((img4d->getXDim()==0)  &&  (img4d->getYDim()==0)  &&  (img4d->getZDim()==0))    ) 
+	
+	//if (    !((img4d->getXDim()==0)  &&  (img4d->getYDim()==0)  &&  (img4d->getZDim()==0))    ) 
+	if (m_bHasImage4D)
 	{
-		//we've also got an image in the scene, adjust the bounding box
+		//have an image in the scene, further adjust the bounding box
 		swcBB.expand(BoundingBox(XYZ(0,0,0), XYZ(img4d->getXDim(),img4d->getYDim(),img4d->getZDim())));
 	}
 
 	float DX = swcBB.Dx();
 	float DY = swcBB.Dy();
 	float DZ = swcBB.Dz();
-	cout <<"dx,dy,dz "<< DX << "," << DY << "," << DZ <<endl;
+	cout <<"bounding box(swc+image): dx = "<< DX << ", dy = " << DY << ", dz =  " << DZ <<endl;
 
 
 	
@@ -3624,34 +3632,36 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glBindVertexArray( 0 );
 		glDisable(GL_BLEND);
 	}
-	//=================== draw volume image ======================
-    
+
 ///*
-	// render to texture
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
-	backfaceShader->use();
-	RenderImage4D(backfaceShader,nEye,GL_FRONT); // cull front face
-    glUseProgram(0);
-
-	// bind to previous framebuffer again
-	if (nEye == vr::Eye_Left)
+	//=================== draw volume image ======================
+	if (m_bHasImage4D)
 	{
-		glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId );
+		// render to texture
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
+		backfaceShader->use();
+		RenderImage4D(backfaceShader,nEye,GL_FRONT); // cull front face
+		glUseProgram(0);
+
+		// bind to previous framebuffer again
+		if (nEye == vr::Eye_Left)
+		{
+			glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId );
+		}
+		else if (nEye == vr::Eye_Right)
+		{
+			glBindFramebuffer( GL_FRAMEBUFFER, rightEyeDesc.m_nRenderFramebufferId );
+		}
+
+		// ray casting
+		raycastingShader->use();
+		SetUinformsForRayCasting();
+		RenderImage4D(raycastingShader,nEye,GL_BACK); // cull back face
+		//*/
+
+		//to make the image not block the morphology surface
+		glClear(GL_DEPTH_BUFFER_BIT);
 	}
-	else if (nEye == vr::Eye_Right)
-	{
-		glBindFramebuffer( GL_FRAMEBUFFER, rightEyeDesc.m_nRenderFramebufferId );
-	}
-
-	// ray casting
-	raycastingShader->use();
-	SetUinformsForRayCasting();
-    RenderImage4D(raycastingShader,nEye,GL_BACK); // cull back face
-    //*/
-
-	//to make the image not block the morphology surface
-	glClear(GL_DEPTH_BUFFER_BIT);
-
 
 	//=================== draw morphology in tube mode ======================
 	if (m_bShowMorphologySurface)
@@ -4170,7 +4180,7 @@ Matrix4 CMainApplication::ConvertSteamVRMatrixToMatrix4( const vr::HmdMatrix34_t
 ***********************************/
 void CMainApplication::SetupCubeForImage4D()
 {
-   qDebug("SetupCubeForImage4D() is called.");
+   //qDebug("SetupCubeForImage4D() is called.");
 	
 	GLfloat vertices[24] = {
 	0.0, 0.0, 0.0,
@@ -4227,7 +4237,7 @@ void CMainApplication::SetupCubeForImage4D()
 // init the 1 dimentional texture for transfer function
 GLuint CMainApplication::initTFF1DTex(const char* filename)
 {
-    qDebug("initTFF1DTex() is called.");
+    //qDebug("initTFF1DTex() is called.");
 
 	// read in the user defined data of transfer function
     ifstream inFile(filename, ifstream::in);
@@ -4269,7 +4279,7 @@ GLuint CMainApplication::initTFF1DTex(const char* filename)
 // init the 2D texture for render backface 'bf' stands for backface
 GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
 {
-    qDebug("initFace2DTex() is called.");
+    //qDebug("initFace2DTex() is called.");
 	
 	GLuint backFace2DTex;
     glGenTextures(1, &backFace2DTex);
@@ -4285,7 +4295,7 @@ GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
 // init 3D texture to store the volume data used fo ray casting
 GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, GLuint d)
 {
-   qDebug("initVol3DTex() is called.");
+   //qDebug("initVol3DTex() is called.");
 
     //FILE *fp;
     //size_t size = w * h * d;
@@ -4311,8 +4321,8 @@ GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, 
     //fclose(fp);
 
     w = img4d->getXDim(); h = img4d->getYDim(); d= img4d->getZDim();
-	cout << "w,h,d"<<w<<h<<d << endl;
-	GLubyte *data = (GLubyte *)img4d->getRawData();//*************************************************************
+	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
+	GLubyte *data = (GLubyte *)img4d->getRawData();
 	
 
     glGenTextures(1, &g_volTexObj);
@@ -4336,7 +4346,7 @@ GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, 
 
 void CMainApplication::initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight)
 {
-	qDebug("initFrameBufferForVolumeRendering() is called.");
+	//qDebug("initFrameBufferForVolumeRendering() is called.");
 	 
 	// create a depth buffer for our framebuffer
 	GLuint depthBuffer;
@@ -4364,7 +4374,7 @@ void CMainApplication::initFrameBufferForVolumeRendering(GLuint texObj, GLuint t
 //setup container cube, 1D, 2D, 3D textures, and framebuffer for volume rendering
 void CMainApplication::SetupVolumeRendering()
 {
-	qDebug("SetupVolumeRendering() is called.");
+	//qDebug("SetupVolumeRendering() is called.");
 	
 	g_texWidth = g_winWidth = m_nRenderWidth;
     g_texHeight = g_winHeight = m_nRenderHeight;
@@ -4382,7 +4392,7 @@ void CMainApplication::SetupVolumeRendering()
 
 bool CMainApplication::CreateVolumeRenderingShaders()
 {
-	qDebug("CreateVolumeRenderingShaders() is called.");
+	//qDebug("CreateVolumeRenderingShaders() is called.");
 	
 	raycastingShader = new Shader("raycasting.vert", "raycasting.frag");
 	backfaceShader = new Shader("backface.vert", "backface.frag");
@@ -4402,7 +4412,7 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
 {
 	//if (cullFace == GL_FRONT)
 	{
-		glClearColor(0.2f,0.2f,0.2f,1.0f);
+		glClearColor(0.098f,0.098f,0.251f,1.0f);//25,25,64
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
@@ -4575,14 +4585,14 @@ bool doimageVRViewer(NeuronTree nt, My4DImage *i4d, MainWindow *pmain)
 {
     mainwindow = pmain;
     
-    CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
-
     loadedNT.listNeuron.clear();
     loadedNT.hashNeuron.clear();
     loadedNT.listNeuron = nt.listNeuron;
     loadedNT.hashNeuron = nt.hashNeuron;
 
     img4d = i4d;
+
+	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 
 	if (!pMainApplication->BInit())
 	{
