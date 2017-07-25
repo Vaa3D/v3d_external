@@ -4322,7 +4322,7 @@ GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, 
 
     w = img4d->getXDim(); h = img4d->getYDim(); d= img4d->getZDim();
 	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
-	GLubyte *data = (GLubyte *)img4d->getRawData();
+    //GLubyte *data = (GLubyte *)img4d->getRawData();
 	
 
     glGenTextures(1, &g_volTexObj);
@@ -4337,9 +4337,9 @@ GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, 
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	GL_ERROR();
     //glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (GLvoid*)data); 
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLvoid*)data); 
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLubyte *)img4d->getRawData());
 	GL_ERROR();
-    delete []data;
+    //delete []data;
     cout << "volume texture created" << endl;
     return g_volTexObj;
 }
