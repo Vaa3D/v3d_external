@@ -1,5 +1,5 @@
 #version 400
-// 杜绝声明未使用的变量，避免bug的产生。
+
 
 
 in vec3 EntryPoint;
@@ -14,15 +14,8 @@ layout (location = 0) out vec4 FragColor;
 
 void main()
 {
-    // ExitPointCoord 的坐标是设备规范化坐标
-    // 出现了和纹理坐标有关的问题。
+
     vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
-    // that will actually give you clip-space coordinates rather than
-    // normalised device coordinates, since you're not performing the perspective
-    // division which happens during the rasterisation process (between the vertex
-    // shader and fragment shader
-    // vec2 exitFragCoord = (ExitPointCoord.xy / ExitPointCoord.w + 1.0)/2.0;
-    // vec3 exitPoint  = texture(ExitPoints, exitFragCoord).xyz;
     if (EntryPoint == exitPoint)
     	//background need no raycasting
     	discard;
@@ -33,31 +26,18 @@ void main()
     vec3 voxelCoord = EntryPoint;
     vec4 colorAcum = vec4(0.0); // The dest color
     float alphaAcum = 0.0;                // The  dest alpha for blending
-    /* 定义颜色查找的坐标 */
     float intensity;
     float lengthAcum = 0.0;
     vec4 colorSample; // The src color 
     float alphaSample; // The src alpha
     // backgroundColor
-    vec4 bgColor = vec4(1.0, 1.0, 1.0, 0.0);
+    vec4 bgColor = vec4(0.0, 0.0, 0.0, 0.0);
  
     for(int i = 0; i < 1600; i++)
     {
-    	// 获得体数据中的标量值scaler value
     	intensity =  texture(VolumeTex, voxelCoord).x;
-    	// 查找传输函数中映射后的值
-    	// 依赖性纹理读取  
-    	//colorSample = texture(TransferFunc, intensity);
-		vec4 colorSample1 = texture(TransferFunc, intensity);
-		colorSample = vec4(intensity,intensity,intensity,colorSample1.a);
-    	// modulate the value of colorSample.a
-    	// front-to-back integration
-    	if (colorSample.a > 0.0) {
-    	    // accomodate for variable sampling rates (base interval defined by mod_compositing.frag)
-    	    colorSample.a = 1.0 - pow(1.0 - colorSample.a, StepSize*200.0f);
-    	    colorAcum.rgb += (1.0 - colorAcum.a) * colorSample.rgb * colorSample.a;
-    	    colorAcum.a += (1.0 - colorAcum.a) * colorSample.a;
-    	}
+        if (colorAcum.r < intensity)
+            colorAcum = vec4(intensity);
     	voxelCoord += deltaDir;
     	lengthAcum += deltaDirLen;
     	if (lengthAcum >= len )
@@ -71,9 +51,6 @@ void main()
     	    break;
     	}
     }
-    FragColor = colorAcum;
-    // for test
-    // FragColor = vec4(EntryPoint, 1.0);
-    // FragColor = vec4(exitPoint, 1.0);
-   
+    colorAcum.a = 1.0;
+    FragColor = colorAcum;   
 }

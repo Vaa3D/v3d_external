@@ -4418,10 +4418,8 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
 		projection = m_ProjTransRight;
 		view = m_EyeTransRight * m_HMDTrans;
 	}
-	model = glm::scale(glm::mat4(),glm::vec3(256,256,256));
+	model = glm::scale(glm::mat4(),glm::vec3(img4d->getXDim(),img4d->getYDim(),img4d->getZDim()));
 	model = m_globalMatrix * model;
-	//model = glm::rotate(glm::mat4(),glm::radians(90.0f),glm::vec3(1.0f, 0.0f, 0.0f));//todo: should use global transform matrix here
-	//model = glm::translate(model,glm::vec3(-0.5f, -0.5f, -0.5f));
 
 	glm::mat4 mvp = projection * view * model;
 	shader->setMat4("MVP",mvp);
