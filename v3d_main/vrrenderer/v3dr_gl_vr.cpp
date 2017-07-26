@@ -918,7 +918,6 @@ public:
 	void initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight);
 	void SetupVolumeRendering();
 	bool CreateVolumeRenderingShaders();
-	void DrawCubeForImage4D(GLenum glFaces);
 	void RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cullFace);
 	void SetUinformsForRayCasting();
 	
@@ -3567,7 +3566,11 @@ void CMainApplication::SetupCompanionWindow()//question: what's the content here
 //-----------------------------------------------------------------------------
 void CMainApplication::RenderStereoTargets()
 {
-	glClearColor( 204.0f/255, 217.0f/255, 229.0f/255, 1.0f );
+	if (m_bHasImage4D)
+		glClearColor( 25.0f/255,  25.0f/255,  64.0f/255,  1.0f );
+	else
+		glClearColor( 204.0f/255, 217.0f/255, 229.0f/255, 1.0f );
+	
 	glEnable( GL_MULTISAMPLE );
 	// Left Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId ); //render scene to m_nRenderFramebufferId
@@ -3638,8 +3641,11 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	if (m_bHasImage4D)
 	{
 		// render to texture
+		glDisable(GL_DEPTH_TEST);
+
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
 		backfaceShader->use();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		RenderImage4D(backfaceShader,nEye,GL_FRONT); // cull front face
 		glUseProgram(0);
 
@@ -3660,7 +3666,8 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		//*/
 
 		//to make the image not block the morphology surface
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	//=================== draw morphology in tube mode ======================
@@ -4371,23 +4378,8 @@ bool CMainApplication::CreateVolumeRenderingShaders()
 	return true;
 }
 
-void CMainApplication::DrawCubeForImage4D(GLenum glFaces)
-{
-    glEnable(GL_CULL_FACE);
-    glCullFace(glFaces);
-    glBindVertexArray(m_VolumeImageVAO);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint *)NULL);
-    glDisable(GL_CULL_FACE);
-}
-
 void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cullFace)
 {
-	//if (cullFace == GL_FRONT)
-	{
-		glClearColor(0.098f,0.098f,0.251f,1.0f);//25,25,64
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-	
 	// setup projection, view, model
 	glm::mat4 projection, view, model;
 	if (nEye == vr::Eye_Left)
@@ -4412,7 +4404,6 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
     glBindVertexArray(m_VolumeImageVAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint *)NULL);
     glDisable(GL_CULL_FACE);
-	//DrawCubeForImage4D(cullFace);
 }
 
 void CMainApplication::SetUinformsForRayCasting()
