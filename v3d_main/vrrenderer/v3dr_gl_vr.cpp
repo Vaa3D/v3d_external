@@ -1007,7 +1007,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_ControllerTexVAO( 0 )
 	, m_nCtrTexMatrixLocation( -1 )
 	, m_unCtrTexProgramID( 0 )
-	, m_bHasImage4D( !img4d->isEmpty() )
+	, m_bHasImage4D( img4d->valid())//!img4d->isEmpty() )
 #ifdef __VR_SERVER_FUNCS__
 	, m_unRemoteMorphologyLineModeVAO(0)
 	, m_uiRemoteMorphologyLineModeVertcount(0)
@@ -4295,35 +4295,8 @@ GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
 // init 3D texture to store the volume data used fo ray casting
 GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, GLuint d)
 {
-   //qDebug("initVol3DTex() is called.");
-
-    //FILE *fp;
-    //size_t size = w * h * d;
-    //GLubyte *data = new GLubyte[size];			  // 8bit
-    //if (!(fp = fopen(filename, "rb")))
-    //{
-    //    cout << "Error: opening .raw file failed" << endl;
-    //    exit(EXIT_FAILURE);
-    //}
-    //else
-    //{
-    //    cout << "OK: open .raw file successed" << endl;
-    //}
-    //if ( fread(data, sizeof(char), size, fp)!= size) 
-    //{
-    //    cout << "Error: read .raw file failed" << endl;
-    //    exit(1);
-    //}
-    //else
-    //{
-    //    cout << "OK: read .raw file successed" << endl;
-    //}
-    //fclose(fp);
-
     w = img4d->getXDim(); h = img4d->getYDim(); d= img4d->getZDim();
 	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
-    //GLubyte *data = (GLubyte *)img4d->getRawData();
-	
 
     glGenTextures(1, &g_volTexObj);
     // bind 3D texture target
@@ -4339,7 +4312,6 @@ GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, 
     //glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (GLvoid*)data); 
     glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLubyte *)img4d->getRawData());
 	GL_ERROR();
-    //delete []data;
     cout << "volume texture created" << endl;
     return g_volTexObj;
 }
