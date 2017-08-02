@@ -233,6 +233,7 @@ public:
 	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double & best_dist);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
 
     LandmarkList * getHandleLandmark(); //20141016, by Hanbo Chen
+    void setHandleLandmark(LandmarkList & landmark_list);
 
 	QList <CellAPO> *getHandleAPOCellList() {return &listCell;}
 

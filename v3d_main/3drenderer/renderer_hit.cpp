@@ -4776,6 +4776,16 @@ LandmarkList * Renderer_gl1::getHandleLandmark() //by Hanbo Chen, 20141018
     }
 }
 
+void Renderer_gl1::setHandleLandmark(LandmarkList & landmark_list)
+{
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d){
+        image4d->listLandmarks = landmark_list;
+    }else{
+        return;
+    }
+}
+
 QString XYZtoQString(XYZ pos){
     return QString::number(pos.x) + " " + QString::number(pos.y) + " " + QString::number(pos.z);
 }
