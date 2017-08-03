@@ -1354,6 +1354,7 @@ bool V3d_PluginLoader::setHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w, Lan
         else
         {
             gp->setHandleLandmark(landmark_list);
+            gp->updateLandmark();
             return true;
         }
     }
