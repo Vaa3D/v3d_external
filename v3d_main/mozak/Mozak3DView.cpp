@@ -483,6 +483,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			return teramanager::CViewer::eventFilter(object, event);
 		}
 	}
+
+#define ____key_pressed_event___
 	else if (object == view3DWidget && event->type() == (QEvent::Type)6)  //2017-6-9 RZC: deal with the #define KeyPress in X.h of XWindow
 														//QEvent::KeyPress) // intercept keypress events
 	{
@@ -572,9 +574,10 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				break;
             case Qt::Key_S:
 				if (!splitSegmentButton->isChecked())
+				{
 					splitSegmentButton->setChecked(true);
 				changeMode(Renderer::smBreakTwoNeurons, false, true);
-                break;
+				}break;
 			case Qt::Key_G:
 				changingGrid = true;
 				curr_renderer->showingGrid = !curr_renderer->showingGrid;
@@ -930,20 +933,28 @@ void Mozak3DView::show()
 
 	window3D->centralLayout->addWidget(contrastSlider, 1);
 	
-    buttonUndo = new QToolButton();
+	//buttonUndo = new QToolButton();
+	buttonUndo = new QAction(0);
     buttonUndo->setIcon(QIcon(":/icons/undo.png"));
     buttonUndo->setToolTip("Undo (Ctrl+Z)");
     buttonUndo->setEnabled(false);
     buttonUndo->setShortcut(QKeySequence("Ctrl+Z"));
-    connect(buttonUndo, SIGNAL(clicked()), this, SLOT(buttonUndoClicked()));
-    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonUndo);
-    buttonRedo = new QToolButton();
+    itm::PAnoToolBar::instance()->toolBar->addAction(buttonUndo);
+    connect(buttonUndo, SIGNAL(triggered()), this, SLOT(buttonUndoClicked()));
+    //connect(buttonUndo, SIGNAL(clicked()), this, SLOT(buttonUndoClicked()));
+    //itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonUndo);
+    //buttonRedo = new QToolButton();
+    buttonRedo = new QAction(0);
     buttonRedo->setIcon(QIcon(":/icons/redo.png"));
-    buttonRedo->setToolTip("Redo (Ctrl+Shift+Z)");
-    buttonRedo->setShortcut(QKeySequence("Ctrl+Shift+Z"));
+    //buttonRedo->setToolTip("Redo (Ctrl+Shift+Z)");
+    //buttonRedo->setShortcut(QKeySequence("Ctrl+Shift+Z"));
+    buttonRedo->setToolTip("Redo (Ctrl+Shift+Z or Ctrl+Y)");
+    buttonRedo->setShortcuts(QList<QKeySequence>()<<QKeySequence("Ctrl+Shift+Z")<<QKeySequence("Ctrl+Y"));
     buttonRedo->setEnabled(false);
-    connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
-    itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonRedo);
+    itm::PAnoToolBar::instance()->toolBar->addAction(buttonRedo);
+    connect(buttonRedo, SIGNAL(triggered()), this, SLOT(buttonRedoClicked()));
+    //connect(buttonRedo, SIGNAL(clicked()), this, SLOT(buttonRedoClicked()));
+    //itm::PAnoToolBar::instance()->toolBar->insertWidget(0, buttonRedo);
     itm::PAnoToolBar::instance()->toolBar->addSeparator();
 
 	invertImageButton = new QToolButton();
@@ -992,7 +1003,8 @@ void Mozak3DView::show()
 	splitSegmentButton->setIcon(QIcon(":/mozak/icons/split.png"));
     splitSegmentButton->setToolTip("Split segment into two using right click stroke");
     splitSegmentButton->setCheckable(true);
-    connect(splitSegmentButton, SIGNAL(toggled(bool)), this, SLOT(splitSegmentButtonToggled(bool)));
+    connect(splitSegmentButton, SIGNAL(clicked(bool)), this, SLOT(splitSegmentButtonToggled(bool)));
+    //connect(splitSegmentButton, SIGNAL(toggled(bool)), this, SLOT(splitSegmentButtonToggled(bool)));
 
 	deleteSegmentsButton = new QToolButton();
 	deleteSegmentsButton->setIcon(QIcon(":/mozak/icons/delete-segments.png"));
@@ -1095,7 +1107,7 @@ void Mozak3DView::show()
 	
 
 #define ___panotoobar_icon_size____
-    itm::PAnoToolBar::instance()->toolBar->setIconSize(QSize(20,20));    //20170803 RZC: make the buttons at toolbar bottom visible
+    itm::PAnoToolBar::instance()->toolBar->setIconSize(QSize(25,20));    //20170803 RZC: make the buttons at toolbar bottom visible
 
     changeMode(Renderer::smObject, false, false);   //20170804 RZC: set toolbar initail mode
 
@@ -1459,6 +1471,7 @@ void Mozak3DView::retypeSegmentsButtonToggled(bool checked)
 
 void Mozak3DView::splitSegmentButtonToggled(bool checked)
 {
+	qDebug()<<"Mozak3DView::splitSegmentButtonToggled "<<checked;
 	changeMode(Renderer::smBreakTwoNeurons, false, checked);
 }
 
@@ -1632,7 +1645,7 @@ void Mozak3DView::changeMode(Renderer::SelectMode mode, bool addThisCurve, bool 
 		if (mode != Renderer::smHighlightChildren && highlightSubtreeButton->isChecked())
 			highlightSubtreeButton->setChecked(false);
 
-        curr_renderer->endSelectMode();
+        /////curr_renderer->endSelectMode(); //170804 RZC: this make hold pressed key cannot work
         curr_renderer->selectMode = mode;
         curr_renderer->b_addthiscurve = addThisCurve;
         switch (mode)

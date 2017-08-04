@@ -108,8 +108,10 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QList<CViewInfo*> lowerResViews;
 		bool loadingNextImg;
 		bool overviewActive;
-        QToolButton* buttonUndo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
-        QToolButton* buttonRedo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
+        QAction* buttonUndo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
+        QAction* buttonRedo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
+        //QToolButton* buttonUndo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
+        //QToolButton* buttonRedo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
 		QToolButton* invertImageButton;
 		QToolButton* connectButton;
 		QToolButton* extendButton;
