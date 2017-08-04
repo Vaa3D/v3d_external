@@ -72,6 +72,15 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, mouse_x = %d, mouse_y = %d",
                                            data_title.toStdString().c_str(), event->pos().x(), event->pos().y()).c_str(), __itm__current__function__);
 
+    //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+	//-1 : scrolldown zoomin
+	//+1 : scrollup zoomin
+	int zoomin_sign = -1;  //default
+	if (_idep && _idep->V3Dmainwindow)
+	{
+		zoomin_sign = (_idep->V3Dmainwindow->global_setting.b_scrollupZoomin)? +1 : -1;
+	}
+
     this->setFocus(); // accept KeyPressEvent, by RZC 081028
 
     float d = (event->delta())/100;  // ~480
@@ -92,7 +101,7 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
     else // default
     {
         (this->renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
-        setZoomO((-zoomStep) + this->_zoom); // scroll down to zoom in
+        setZoomO((zoomin_sign * zoomStep) + this->_zoom); //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 
         //---- Alessandro 2013-04-29: first attempt to combine zoom and translation using mouse position (like Google Earth does). Does not work properly.
 //        int dx = (myRenderer_gl1::cast(renderer)->wheelPos.view[0]+myRenderer_gl1::cast(renderer)->wheelPos.view[2])/2.0 - event->x();

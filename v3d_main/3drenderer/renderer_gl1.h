@@ -572,7 +572,7 @@ public:
 		return result;
 	}
 
-	// in renderer_obj2.cpp
+	// in renderer_obj.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
 
 	//for local view
@@ -670,9 +670,11 @@ private:
           bTestCurveBegin=false;
 
           b_editDroppedNeuron = false; //20150527, PHC
-		currentTraceType=3;
-		useCurrentTraceTypeForRetyping = false;
-		cuttingZ = false;
+
+          highlightedNodeType = -1; //20170804 RZC
+          currentTraceType=3;
+          useCurrentTraceTypeForRetyping = false;
+        cuttingZ = false;
 		zMin =-1.0;
 		zMax = 1.0;
 		initColorMaps();

@@ -831,6 +831,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 	return true;
 }
 
+#define ___trace_add_segment_default_type___
 bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/)
 {
     if (mCoord.size()<=0)  return false;

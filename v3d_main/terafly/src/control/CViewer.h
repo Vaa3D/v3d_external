@@ -133,6 +133,7 @@ class terafly::CViewer : public QWidget
                 first = p;
             }
             first=last=0;
+            current = 0; //20170804 RZC: add for bad pointer from getCurrent(), so many bad pointers!
         }
 
         //performs all the operations needed to show 3D data (such as creating Vaa3D widgets)

@@ -113,8 +113,10 @@ void Mozak3DView::performUndo()
     NeuronTree nt = undoRedoHistory.at(cur_history);
     itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
     itm::CViewer::loadAnnotations();
-	makeTracedNeuronsEditable();
-    updateUndoLabel();
+
+    makeTracedNeuronsEditable();
+
+	updateUndoLabel();
 
 	autoSave();  //20170803 RZC
 }
@@ -135,6 +137,7 @@ void Mozak3DView::performRedo()
         NeuronTree nt = undoRedoHistory.at(cur_history);
         itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
         itm::CViewer::loadAnnotations();
+
         makeTracedNeuronsEditable();
 	}
     updateUndoLabel();
@@ -219,6 +222,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
     bool needRepaint = false;
     if (event->type() == QEvent::MouseMove)
     {
+
         QMouseEvent *k = (QMouseEvent *)event;
         int isLeftMouseDown = k->buttons() & Qt::LeftButton;
         int isRightMouseDown = k->buttons() & Qt::RightButton;
@@ -744,9 +748,9 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 ((QWidget *)(curr_renderer->widget))->repaint();
             }
 		}
+#define ___mouse_button_release___
 		else if (object == view3DWidget && event->type() == QEvent::MouseButtonRelease)
 		{
-#define ___mouse_button_release___
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			if (mouseEvt->button() == Qt::RightButton)
 			{
@@ -894,7 +898,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
 #define ___right_mouse_auto_save___
-		//if (neuronTreeChanged)	onNeuronEdit(); // //autosave the annotations file when right mouse button released
+		//if (neuronTreeChanged)	onNeuronEdit(); // ugly //autosave the annotations file when right mouse button released
 		return res;
 	}
 	return false;
@@ -919,6 +923,7 @@ void Mozak3DView::show()
 	
     MozakUI* moz = MozakUI::getMozakInstance();
     moz->clearAnnotations();
+
 
     itm::PAnoToolBar::instance()->buttonOptions->setMenu(0); // disconnect existing menu
     connect(itm::PAnoToolBar::instance()->buttonOptions, SIGNAL(clicked()), this, SLOT(buttonOptionsClicked()));
@@ -1088,6 +1093,13 @@ void Mozak3DView::show()
 
 	itm::PAnoToolBar::instance()->refreshTools();
 	
+
+#define ___panotoobar_icon_size____
+    itm::PAnoToolBar::instance()->toolBar->setIconSize(QSize(20,20));    //20170803 RZC: make the buttons at toolbar bottom visible
+
+    changeMode(Renderer::smObject, false, false);   //20170804 RZC: set toolbar initail mode
+
+
 	QObject::connect(view3DWidget, SIGNAL(zoomChanged(int)), dynamic_cast<QObject *>(this), SLOT(updateZoomLabel(int)));
 	QObject::connect(window3D->zcminSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(setZSurfaceLimitValues(int)));
 	QObject::connect(window3D->zcmaxSlider, SIGNAL(valueChanged(int)), dynamic_cast<QObject *>(this), SLOT(setZSurfaceLimitValues(int)));
@@ -1098,7 +1110,7 @@ void Mozak3DView::show()
 	connect(overviewTimer, SIGNAL(timeout()), this,SLOT(overviewSyncOneShot()));// SLOT(timerupdate()));
 	overviewActive = false;
 
-	//20170803 RZC: make inactive
+	//20170803 RZC: no use, make inactive
 //	appendHistory();
 //	makeTracedNeuronsEditable();
 
@@ -1188,6 +1200,8 @@ void Mozak3DView::paintTimerCall()
     Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
     if (!curr_renderer) return;
 
+	//makeTracedNeuronsEditable();   //20170804 RZC
+
     if (curr_renderer->loopSegs.length() == 0) return;
 
     // Draw blinking effect if loop detection has found loops in current reconstruction
@@ -1221,7 +1235,10 @@ void Mozak3DView::loadAnnotations() throw (itm::RuntimeException)
 {
     teramanager::CViewer::loadAnnotations();
     appendHistory();
-    //makeTracedNeuronsEditable();          //20170803 RZC  //crash error message: double free or corruption
+
+    //20170804 RZC: no more cash after fixed the crash of ~CViewer()
+    makeTracedNeuronsEditable();          //20170803 RZC  //crash error message: double free or corruption
+
 }
 
 
@@ -1333,6 +1350,10 @@ void Mozak3DView::updateTranslateXYArrows()
 void Mozak3DView::updateRendererParams()
 {
 	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	if (! curr_renderer) return; //20170804 RZC
+
+	curr_renderer->ui3dviewMode = Renderer::Mozak;  //20170804 RZC
+
 	if (curr_renderer->tryTexCompress || 
 		curr_renderer->tryTexStream != -1 || 
 		!curr_renderer->tryTexNPT ||

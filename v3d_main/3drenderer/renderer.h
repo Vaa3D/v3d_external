@@ -98,7 +98,7 @@ public:
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 	enum editMode {segmentEdit, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
-
+	enum UI3dViewMode {Vaa3d, Terafly, Mozak};     //20170804 RZC: diffrent code path in Renderer_gl1::addCurveSWC()
 //protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
@@ -107,6 +107,7 @@ public:
     SelectMode refineMode;
 
     editMode connectEdit;
+    UI3dViewMode  ui3dviewMode;
 //>>>>>>> master
 	void* widget;
 
@@ -354,10 +355,6 @@ private:
 	    xClip0 = yClip0 = zClip0 = -1000000; // no clip
 	    xClip1 = yClip1 = zClip1 = 1000000;  // no clip
 	    viewClip = 1000000;  // no clip
-	    renderMode = rmMaxIntensityProjection;
-	    selectMode = smObject;
-        
-         refineMode = smCurveRefine_fm;
 
 		//// perspective view frustum
 		screenW = screenH = 0;
@@ -376,6 +373,15 @@ private:
 		{
 		    sampleScale[i]=1; bufSize[i]=0;
 		}
+
+
+		renderMode = rmMaxIntensityProjection;
+	    selectMode = smObject;
+
+        refineMode = smCurveRefine_fm;
+
+        ui3dviewMode = Vaa3d;
+
 	}
 
 };

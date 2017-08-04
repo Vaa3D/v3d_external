@@ -78,6 +78,7 @@ public:
 		spinBox_markerSize->setValue(p->default_marker_radius);
 
 		//3d viewer
+		checkBox_scrollupZoomin->setChecked(p->b_scrollupZoomin);
 		checkBox_autoOpenImg3DViewer->setChecked(p->b_autoOpenImg3DViewer);
 		checkBox_autoDispXYZAxes->setChecked(p->b_autoDispXYZAxes);
 		checkBox_autoDispBoundingBox->setChecked(p->b_autoDispBoundingBox);
@@ -130,6 +131,7 @@ public:
 		p->default_marker_radius = spinBox_markerSize->value();
 
 		//3d viewer
+		p->b_scrollupZoomin = checkBox_scrollupZoomin->isChecked();
 		p->b_autoOpenImg3DViewer = checkBox_autoOpenImg3DViewer->isChecked();
 		p->b_autoDispXYZAxes = checkBox_autoDispXYZAxes->isChecked();
 		p->b_autoDispBoundingBox = checkBox_autoDispBoundingBox->isChecked();
@@ -172,6 +174,7 @@ public:
 		global_setting.default_marker_radius = settings.value("default_marker_radius", def.default_marker_radius).toInt();
 
 		//3D viewer tab
+		global_setting.b_scrollupZoomin = settings.value("b_scrollupZoomin", def.b_scrollupZoomin).toBool();
 		global_setting.b_autoOpenImg3DViewer = settings.value("b_autoOpenImg3DViewer", def.b_autoOpenImg3DViewer).toBool();
 		global_setting.b_autoDispXYZAxes = settings.value("b_autoDispXYZAxes", def.b_autoDispXYZAxes).toBool();
 		global_setting.b_autoDispBoundingBox = settings.value("b_autoDispBoundingBox", def.b_autoDispBoundingBox).toBool();
@@ -212,6 +215,7 @@ public:
 		settings.setValue("default_marker_radius", global_setting.default_marker_radius);
 
 		//3D viewer tab
+		settings.setValue("b_scrollupZoomin", global_setting.b_scrollupZoomin);
 		settings.setValue("b_autoOpenImg3DViewer", global_setting.b_autoOpenImg3DViewer);
 		settings.setValue("b_autoDispBoundingBox", global_setting.b_autoDispBoundingBox);
 		settings.setValue("b_autoDispXYZAxes", global_setting.b_autoDispXYZAxes);

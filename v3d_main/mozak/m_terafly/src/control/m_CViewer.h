@@ -174,6 +174,7 @@ class teramanager::CViewer : public QWidget
                 first = p;
             }
             first=last=0;
+            current = 0; //20170804 RZC: add for bad pointer from getCurrent(), so many bad pointers!
             qDebug()<< "CViewer::uninstance() end";
         }
 

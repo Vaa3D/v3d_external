@@ -1571,10 +1571,12 @@ void Renderer_gl1::updateNeuronBoundingBox()
 }
 
 
-#define CURVE_NAME "curve_segment"
-#define CURVE_FILE "curve_segment"
+#define ___add_curve_SWC_with_default_type___
 void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 {
+#define CURVE_NAME "curve_segment"
+#define CURVE_FILE "curve_segment"
+
 #ifndef test_main_cpp
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg =  v3dr_getImage4d(_idep);
@@ -1591,12 +1593,19 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
             listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
             curImg->update_3drenderer_neuron_view(w, this);
         }
-        else
+        //// Mozak
+        else if (ui3dviewMode == Mozak)
         {
             if (highlightedNodeType >= 0)
                 curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType);
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType);
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+        //// Vaa3d || Terafly
+        else
+        {
+            curImg->proj_trace_add_curve_segment(loc_list, chno);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
