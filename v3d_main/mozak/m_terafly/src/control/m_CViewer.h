@@ -163,21 +163,26 @@ class teramanager::CViewer : public QWidget
         static void uninstance()
         {
             /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+            qDebug()<< "CViewer::uninstance()";
 
             while(first){
+                qDebug()<< "CViewer::first= " << CViewer::first;
                 CViewer* p = first->next;
                 first->toBeClosed = true;
-                delete first;
+                //delete first;
+                first->deleteLater(); //20170804 RZC
                 first = p;
             }
             first=last=0;
+            qDebug()<< "CViewer::uninstance() end";
         }
 
         //performs all the operations needed to show 3D data (such as creating Vaa3D widgets)
         virtual void show();
 
         //safely close this viewer
-        void close();
+        void _close();
+        //virtual void closeEvent(QCloseEvent* e) {close();} //override in eventFilter()
 
         //GET methods
         static CViewer* getCurrent(){return current;}

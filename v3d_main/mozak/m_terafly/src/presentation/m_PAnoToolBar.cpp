@@ -19,7 +19,9 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     // create toolbar
     toolBar = new QToolBar("ToolBar", this);
     toolBar->setOrientation(Qt::Vertical);
-    toolBar->setIconSize(QSize(35,35));
+    //toolBar->setIconSize(QSize(35,35));
+    toolBar->setIconSize(QSize(20,20));         //20170803 RZC: make the buttons at toolbar bottom visible
+    //toolBar->layout()->setAlignment(Qt::AlignHCenter);  //no effect
 
     // add already existing buttons from the main GUI
     toolBar->addAction(PMain::getInstance()->loadAnnotationsAction);
@@ -107,7 +109,6 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     layout->addWidget(toolBar);
     layout->setContentsMargins(0,0,0,0);
     setLayout(layout);
-
 
     // make it appear as a true toolbar
     this->setContentsMargins(0,0,0,0);

@@ -456,42 +456,49 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8 *_imgDa
 CViewer::~CViewer()
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+    qDebug()<< "CViewer::~CViewer()";
 
-    // decouple TeraFly's toolbar from Vaa3D 3D viewer (only if required)
-    if(PAnoToolBar::instance()->parent() == window3D)
-    {
-        window3D->centralLayout->takeAt(0);
-        PAnoToolBar::instance()->setParent(0);
-    }
+	if (nInstances>0) //20170804 RZC
+	{
 
-    // remove the event filter from the 3D renderer and from the 3D window
-    isActive = false;
-    view3DWidget->removeEventFilter(this);
-    window3D->removeEventFilter(this);
-    window3D->timeSlider->removeEventFilter(this);
+		//20170804 RZC: set inactive because SIGSEGV, Segmentation fault in PAnoToolBar::PAnoToolBar()
+//		// decouple TeraFly's toolbar from Vaa3D 3D viewer (only if required)
+//		if (PAnoToolBar::instance()->parent() == window3D)
+//		{
+//			window3D->centralLayout->takeAt(0);
+//			PAnoToolBar::instance()->setParent(0);
+//		}
 
-    // CLOSE 3D window (solution #1)
-    //QMessageBox::information(0, "info", strprintf("calling close3Dwindow").c_str());
-    //if(!CImport::instance()->is5D())
-        //V3D_env->close3DWindow(window); //this causes crash on 5D data when scrolling time slider, but is OK in all the other cases
+		// remove the event filter from the 3D renderer and from the 3D window
+		isActive = false;
+		view3DWidget->removeEventFilter(this);
+		window3D->removeEventFilter(this);
+		window3D->timeSlider->removeEventFilter(this);
+
+		// CLOSE 3D window (solution #1)
+		//QMessageBox::information(0, "info", strprintf("calling close3Dwindow").c_str());
+		//if(!CImport::instance()->is5D())
+			//V3D_env->close3DWindow(window); //this causes crash on 5D data when scrolling time slider, but is OK in all the other cases
 
 
-    // CLOSE 3D window (solution #2)
-    // view3DWidget->close();          //this causes crash when makeLastView is called on a very long chain of opened windows
-    // window3D->postClose();
+		// CLOSE 3D window (solution #2)
+		// view3DWidget->close();          //this causes crash when makeLastView is called on a very long chain of opened windows
+		// window3D->postClose();
 
-    // CLOSE 3D window (solution #3)
-    // @fixed  by Alessandro on 2014-04-11: this seems the only way to close the 3D window w/o (randomly) causing TeraFly to crash
-    // @update by Alessandro on 2014-07-15: this causes random crash in "Proofreading" mode, but is ok on 5D data (even in "Proofediting mode"!)
-    // @update by Alessandro on 2014-07-21: this ALWAYS works on Windows. Still has to be tested on other platforms.
-    POST_EVENT(window3D, QEvent::Close); // this OK
+		// CLOSE 3D window (solution #3)
+		// @fixed  by Alessandro on 2014-04-11: this seems the only way to close the 3D window w/o (randomly) causing TeraFly to crash
+		// @update by Alessandro on 2014-07-15: this causes random crash in "Proofreading" mode, but is ok on 5D data (even in "Proofediting mode"!)
+		// @update by Alessandro on 2014-07-21: this ALWAYS works on Windows. Still has to be tested on other platforms.
+		POST_EVENT(window3D, QEvent::Close); // this OK
 
-    //close 2D window
-    triViewWidget->close();
+		//close 2D window
+		triViewWidget->close();
+
+	} //(nInstances>0)
 
     //decreasing the number of instantiated objects
     nInstances--;
-
+    qDebug()<< "CViewer::nInstances= " << nInstances;
 
     /**/itm::debug(itm::LEV1, strprintf("title = %s, nInstances--, nInstances = %d", titleShort.c_str(), nInstances).c_str(), __itm__current__function__);
 
@@ -679,6 +686,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         Close events are intercepted to switch to  the lower resolution,  if avail-
         able. Otherwise, the plugin is closed.
         ***************************************************************************/
+#define ____close_cviewer_by_pman_closevolume____
         else if(object == window3D && event->type()==QEvent::Close)
         {
             if(!toBeClosed)
@@ -1128,7 +1136,7 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
 
             //if the resolution of the loaded voi is the same of the current one, this window will be closed
             if(resolution == volResIndex)
-                this->close();
+                this->_close();
 
 // unlock updateGraphicsInProgress mutex
 /**/itm::debug(itm::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
@@ -1155,7 +1163,7 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
 
             // if new viewer has the same resolution, this window has to be closed
             if(resolution == volResIndex)
-                this->close();
+                this->_close();
         }
     }
     catch(RuntimeException &ex)
@@ -1166,9 +1174,10 @@ CViewer::newViewer(int x, int y, int z,                            //can be eith
 }
 
 //safely close this viewer
-void CViewer::close()
+void CViewer::_close()
 {
     /**/itm::debug(itm::LEV2, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+    qDebug()<< "CViewer::close()";
 
     if(prev)
     {
@@ -1181,10 +1190,13 @@ void CViewer::close()
         next->prev = 0;
         CViewer::first = next;
     }
+    qDebug()<< "CViewer::first= " << CViewer::first;
 
     this->toBeClosed = true;
-    delete this;
+    //delete this;
+    this->deleteLater(); //20170804 RZC
 }
+
 
 /**********************************************************************************
 * Resizes  the  given image subvolume in a  newly allocated array using the fastest

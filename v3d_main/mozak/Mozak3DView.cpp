@@ -18,6 +18,9 @@ Mozak3DView::Mozak3DView(V3DPluginCallback2 *_V3D_env, int _resIndex, itm::uint8
 		: teramanager::CViewer(_V3D_env, _resIndex, _imgData, _volV0, _volV1,
 			_volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, _slidingViewerBlockID)
 {
+	//170729 RZC: to fix crash of calling updateUndoLabel() in appendHistory() when starting
+	currUndoLabel = 0; buttonUndo = buttonRedo = 0;
+
 	nextImg = 0;
     prevZCutMin = -1;
     prevZCutMax = -1;
@@ -85,7 +88,11 @@ void Mozak3DView::appendHistory()
     itm::CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
     undoRedoHistory.push_back(nt);
 	cur_history = undoRedoHistory.size() - 1;
-    //updateUndoLabel();
+
+	if (currUndoLabel && buttonUndo && buttonRedo) //20170729 RZC
+		updateUndoLabel();
+
+	autoSave();  //20170803 RZC
 }
 
 void Mozak3DView::performUndo()
@@ -106,8 +113,10 @@ void Mozak3DView::performUndo()
     NeuronTree nt = undoRedoHistory.at(cur_history);
     itm::CAnnotations::getInstance()->addCurves(itm::interval_t(0, 1), itm::interval_t(0, 1), itm::interval_t(0, 1), nt);
     itm::CViewer::loadAnnotations();
-    makeTracedNeuronsEditable();
+	makeTracedNeuronsEditable();
     updateUndoLabel();
+
+	autoSave();  //20170803 RZC
 }
 
 void Mozak3DView::performRedo()
@@ -129,118 +138,45 @@ void Mozak3DView::performRedo()
         makeTracedNeuronsEditable();
 	}
     updateUndoLabel();
+
+	autoSave();  //20170803 RZC
 }
 
-//The input are integers in [0, TOTAL_WRIGGLE_FRAMES)
-//The outputs are degrees to rotate around the axis, in radians
-GLdouble Mozak3DView::wriggleDegreeFunction(int index){
-    GLdouble degreeToRadian = 3.141569 / 180;
-    GLdouble maxWriggleRadian = 45;
-    maxWriggleRadian *= degreeToRadian;
-    GLdouble input = (GLdouble(index) / (total_wriggle_frames - 1)) * 3.141569; //from 0 to 3.141569
-    GLdouble output = maxWriggleRadian * sin(input * 2);
-    return output;
-}
 
-void Mozak3DView::wriggleTimerCall()
+
+//20170803 RZC: extract from onNeuronEdit() to be reused in performUndo/performRedo
+void Mozak3DView::autoSave()
 {
-
-
-    if((int) currentWriggleFrame < (int) total_wriggle_frames){
-
-        Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-        GLdouble u, v, w, a, b, c, theta = wriggleDegreeFunction(currentWriggleFrame);
-        XYZ normalizedUVW = XYZ(curr_renderer->rotateAxisBeginNode - curr_renderer->rotateAxisEndNode);
-        normalize(normalizedUVW);
-        a = curr_renderer->rotateAxisBeginNode.x;
-        b = curr_renderer->rotateAxisBeginNode.y;
-        c = curr_renderer->rotateAxisBeginNode.z;
-        u = normalizedUVW.x;
-        v = -normalizedUVW.y;
-        w = normalizedUVW.z;
-        if(u == 0 && v == 0 && w ==0){
-            return;
-        }
-        GLdouble fixedRadianRotation[16], newMRot[16]; //Construct a new rotation from scratch, this only rotates the identity
-        //Diagonals
-        fixedRadianRotation[0] = (u * u) + (v * v + w * w) * cos(theta);
-        fixedRadianRotation[5] = (v * v) + (u * u + w * w) * cos(theta);
-        fixedRadianRotation[10] = (w * w) + (u * u + v * v) * cos(theta);
-
-        //Non-diagonal non-homogenous
-        fixedRadianRotation[1] = (u * v) * (1 - cos(theta)) - w * sin(theta);
-        fixedRadianRotation[2] = (u * w) * (1 - cos(theta)) + v * sin(theta);
-        fixedRadianRotation[4] = (u * v) * (1 - cos(theta)) + w * sin(theta);
-        fixedRadianRotation[6] = (v * w) * (1 - cos(theta)) - u * sin(theta);
-        fixedRadianRotation[8] = (u * w) * (1 - cos(theta)) - v * sin(theta);
-        fixedRadianRotation[9] = (v * w) * (1 - cos(theta)) + u * sin(theta);
-
-        //Homogenous
-        fixedRadianRotation[3] = (a * (v * v + w * w) - u * (b * v + c * w)) * (1 - cos(theta)) + (b * w - c * v) * sin(theta);
-        fixedRadianRotation[7] = (c * (u * u + w * w) - v * (a * u + c * w)) * (1 - cos(theta)) + (c * u - a * w) * sin(theta);
-        fixedRadianRotation[11] = (c * (u * u + v * v) - w * (a * u + b * c)) * (1 - cos(theta)) + (a * v - b * u) * sin(theta);
-
-        fixedRadianRotation[12] = fixedRadianRotation[13] = fixedRadianRotation[14] = 0;
-        fixedRadianRotation[15] = 1;
-
-        for(int i = 0; i < 16; i++){
-            newMRot[i] = 0;
-        }
-
-        for(int i = 0; i < 4; i++){
-            for(int j = 0; j < 4; j++){
-                for(int x = 0; x < 4; x++){
-                    newMRot[i * 4 + j] += fixedRadianRotation[i * 4 + x] * originalRotationMatrix[x * 4 + j];
-                }
-            }
-        }
-
-        for(int i = 0; i < 16; i++){
-            view3DWidget->mRot[i] = newMRot[i];
-        }
-
-        view3DWidget->paintGL();
-        ((QWidget *)(curr_renderer->widget))->repaint();
-        currentWriggleFrame++;
-    }else{
-        wriggle_timer->stop();
-        isWriggling = false;
-        currentWriggleFrame = 0;
-    }
-}
-
-void Mozak3DView::paintTimerCall()
-{
-    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-    if (!curr_renderer) return;
-    if (curr_renderer->loopSegs.length() == 0) return;
-    // Draw blinking effect if loop detection has found loops in current reconstruction
-    curr_renderer->drawNeuronTreeList();
-    curr_renderer->drawObj();
-    ((QWidget *)(curr_renderer->widget))->repaint();
-}
-
-void Mozak3DView::onNeuronEdit()
-{
-    teramanager::CViewer::onNeuronEdit();
-	MozakUI* moz = MozakUI::getMozakInstance();
+    MozakUI* moz = MozakUI::getMozakInstance();
     std::string prevPath = moz->annotationsPathLRU;
 	moz->annotationsPathLRU = "./autosave.ano";
 	moz->saveAnnotations();
     moz->annotationsPathLRU = prevPath;
-	makeTracedNeuronsEditable();
+}
+
+void Mozak3DView::onNeuronEdit()
+{
+   // teramanager::CViewer::onNeuronEdit();
+
+	autoSave();  //must called before appendHistory() otherwise redo cannot work
+
+	// makeTracedNeuronsEditable();  //no use
+
     appendHistory();
 }
 
 void Mozak3DView::makeTracedNeuronsEditable()
 {
-	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+//	Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+	Renderer_gl1* curr_renderer = (Renderer_gl1*)(view3DWidget->getRenderer());
+	if (! curr_renderer) return;    //20170803 RZC
+
 	int sz = curr_renderer->listNeuronTree.size();
 	for (int i=0; i<sz; i++)
 	{
 		curr_renderer->listNeuronTree[i].editable = true;
-    }
-	curr_renderer->paint();
+	}
+//	curr_renderer->paint(); //no use
 }
 
 //find the nearest node in a neuron in XY project of the display window
@@ -810,6 +746,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		}
 		else if (object == view3DWidget && event->type() == QEvent::MouseButtonRelease)
 		{
+#define ___mouse_button_release___
 			QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			if (mouseEvt->button() == Qt::RightButton)
 			{
@@ -956,8 +893,8 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 ((QWidget *)(curr_renderer->widget))->repaint();
 		}
 		bool res = teramanager::CViewer::eventFilter(object, event);
-        //if (neuronTreeChanged)
-		//	onNeuronEdit();
+#define ___right_mouse_auto_save___
+		//if (neuronTreeChanged)	onNeuronEdit(); // //autosave the annotations file when right mouse button released
 		return res;
 	}
 	return false;
@@ -1160,9 +1097,103 @@ void Mozak3DView::show()
 	overviewTimer = new QTimer;
 	connect(overviewTimer, SIGNAL(timeout()), this,SLOT(overviewSyncOneShot()));// SLOT(timerupdate()));
 	overviewActive = false;
-    appendHistory();
-    makeTracedNeuronsEditable();
+
+	//20170803 RZC: make inactive
+//	appendHistory();
+//	makeTracedNeuronsEditable();
+
     paint_timer->start();
+}
+
+//The input are integers in [0, TOTAL_WRIGGLE_FRAMES)
+//The outputs are degrees to rotate around the axis, in radians
+GLdouble Mozak3DView::wriggleDegreeFunction(int index){
+    GLdouble degreeToRadian = 3.141569 / 180;
+    GLdouble maxWriggleRadian = 45;
+    maxWriggleRadian *= degreeToRadian;
+    GLdouble input = (GLdouble(index) / (total_wriggle_frames - 1)) * 3.141569; //from 0 to 3.141569
+    GLdouble output = maxWriggleRadian * sin(input * 2);
+    return output;
+}
+
+void Mozak3DView::wriggleTimerCall()
+{
+
+
+    if((int) currentWriggleFrame < (int) total_wriggle_frames){
+
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+        GLdouble u, v, w, a, b, c, theta = wriggleDegreeFunction(currentWriggleFrame);
+        XYZ normalizedUVW = XYZ(curr_renderer->rotateAxisBeginNode - curr_renderer->rotateAxisEndNode);
+        normalize(normalizedUVW);
+        a = curr_renderer->rotateAxisBeginNode.x;
+        b = curr_renderer->rotateAxisBeginNode.y;
+        c = curr_renderer->rotateAxisBeginNode.z;
+        u = normalizedUVW.x;
+        v = -normalizedUVW.y;
+        w = normalizedUVW.z;
+        if(u == 0 && v == 0 && w ==0){
+            return;
+        }
+        GLdouble fixedRadianRotation[16], newMRot[16]; //Construct a new rotation from scratch, this only rotates the identity
+        //Diagonals
+        fixedRadianRotation[0] = (u * u) + (v * v + w * w) * cos(theta);
+        fixedRadianRotation[5] = (v * v) + (u * u + w * w) * cos(theta);
+        fixedRadianRotation[10] = (w * w) + (u * u + v * v) * cos(theta);
+
+        //Non-diagonal non-homogenous
+        fixedRadianRotation[1] = (u * v) * (1 - cos(theta)) - w * sin(theta);
+        fixedRadianRotation[2] = (u * w) * (1 - cos(theta)) + v * sin(theta);
+        fixedRadianRotation[4] = (u * v) * (1 - cos(theta)) + w * sin(theta);
+        fixedRadianRotation[6] = (v * w) * (1 - cos(theta)) - u * sin(theta);
+        fixedRadianRotation[8] = (u * w) * (1 - cos(theta)) - v * sin(theta);
+        fixedRadianRotation[9] = (v * w) * (1 - cos(theta)) + u * sin(theta);
+
+        //Homogenous
+        fixedRadianRotation[3] = (a * (v * v + w * w) - u * (b * v + c * w)) * (1 - cos(theta)) + (b * w - c * v) * sin(theta);
+        fixedRadianRotation[7] = (c * (u * u + w * w) - v * (a * u + c * w)) * (1 - cos(theta)) + (c * u - a * w) * sin(theta);
+        fixedRadianRotation[11] = (c * (u * u + v * v) - w * (a * u + b * c)) * (1 - cos(theta)) + (a * v - b * u) * sin(theta);
+
+        fixedRadianRotation[12] = fixedRadianRotation[13] = fixedRadianRotation[14] = 0;
+        fixedRadianRotation[15] = 1;
+
+        for(int i = 0; i < 16; i++){
+            newMRot[i] = 0;
+        }
+
+        for(int i = 0; i < 4; i++){
+            for(int j = 0; j < 4; j++){
+                for(int x = 0; x < 4; x++){
+                    newMRot[i * 4 + j] += fixedRadianRotation[i * 4 + x] * originalRotationMatrix[x * 4 + j];
+                }
+            }
+        }
+
+        for(int i = 0; i < 16; i++){
+            view3DWidget->mRot[i] = newMRot[i];
+        }
+
+        view3DWidget->paintGL();
+        ((QWidget *)(curr_renderer->widget))->repaint();
+        currentWriggleFrame++;
+    }else{
+        wriggle_timer->stop();
+        isWriggling = false;
+        currentWriggleFrame = 0;
+    }
+}
+
+void Mozak3DView::paintTimerCall()
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    if (!curr_renderer) return;
+
+    if (curr_renderer->loopSegs.length() == 0) return;
+
+    // Draw blinking effect if loop detection has found loops in current reconstruction
+    curr_renderer->drawNeuronTreeList();
+    curr_renderer->drawObj();
+    ((QWidget *)(curr_renderer->widget))->repaint();
 }
 
 Mozak3DView::~Mozak3DView()
@@ -1190,12 +1221,14 @@ void Mozak3DView::loadAnnotations() throw (itm::RuntimeException)
 {
     teramanager::CViewer::loadAnnotations();
     appendHistory();
+    //makeTracedNeuronsEditable();          //20170803 RZC  //crash error message: double free or corruption
 }
 
 
 void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
 {
     teramanager::CViewer::clearAnnotations();
+    appendHistory();                     //20170803 RZC
 }
 
 
@@ -1260,7 +1293,8 @@ void Mozak3DView::updateUndoLabel()
 {
 	if (currUndoLabel)
 		currUndoLabel->setText(itm::strprintf("Hist %d/%d", cur_history+1, undoRedoHistory.size()).c_str());
-    if (buttonUndo)
+    if (buttonUndo
+    		&& buttonRedo) //20170729 RZC
     {
         buttonUndo->setEnabled(undoRedoHistory.size() > 0 && cur_history > 0);
         buttonRedo->setEnabled(undoRedoHistory.size() > 0 && cur_history > -1 && cur_history < undoRedoHistory.size() - 1);
@@ -1436,7 +1470,7 @@ void Mozak3DView::overviewMonitorButtonClicked(bool checked){
 	MozakUI* moz = MozakUI::getMozakInstance();
 
 
-	qDebug()<<"checked? "<< checked;
+	qDebug()<<"overview checked? "<< checked;
 	QList<V3dR_MainWindow*> windowList =	moz->V3D_env->getListAll3DViewers();
 	if (windowList.length()==1){ //there's only one window open: Mozak!
 		V3dR_MainWindow* overviewWindow = moz->V3D_env->createEmpty3DViewer();

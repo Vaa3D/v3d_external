@@ -491,6 +491,12 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 		}
 	}
 
+	int i = int(e->type())-QEvent::User;
+	if (i>0)
+	{
+		qDebug() << "++++++++++++ customEvent: " << i;
+	}
+
 	return QGLWidget::event(e);
 }
 

@@ -4261,7 +4261,69 @@ void Renderer_gl1::breakMultiNeuronsByStrokeCommit()
 }
 
 
-void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
+void Renderer_gl1::breakMultiNeuronsByStroke()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    const float tolerance_squared = 10*10; // tolerance distance (squared for faster dist computation) from the backprojected neuron to the curve point
+
+    // contour 2 polygon
+    QPolygon poly;
+    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+
+    // back-project the node curve points and mark segments to be deleted
+    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+    {
+        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+        if (p_tree
+            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+        {
+            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+            if (!p_listneuron)
+                continue;
+            V3DLONG p_listneuron_num = p_listneuron->size();
+            for (V3DLONG i=0;i<p_listneuron_num;i++)
+            {
+                GLdouble px, py, pz, ix, iy, iz;
+                ix = p_listneuron->at(i).x;
+                iy = p_listneuron->at(i).y;
+                iz = p_listneuron->at(i).z;
+                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+                {
+                    py = viewport[3]-py; //the Y axis is reversed
+                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+                    for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+                    {
+                        QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+						float dist2d_squared = (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y());
+                        if(dist2d_squared <= tolerance_squared)
+                       //     && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
+                        {
+                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
+                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+
+                            curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
+							curImg->update_3drenderer_neuron_view(w, this);
+                            p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
+                            p_listneuron = &(p_tree->listNeuron);
+                            break;   // found intersection with neuron segment: no more need to continue on this inner loop
+                            //}
+//>>>>>>> master
+                        }
+                    }
+
+                }
+            } // for listneuron,size
+            curImg->proj_trace_history_append();
+        } // if editable
+    } // for listneurontree.size
+}
+
+void Renderer_gl1::breakTwoNeuronsByStroke() //(bool forceSingleCut)
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
@@ -4309,39 +4371,31 @@ void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
 //<<<<<<< HEAD
-                            if (forceSingleCut)
-                            {
+                           // if (forceSingleCut) {
                                 if (bestCutDist_squared < 0 || dist2d_squared < bestCutDist_squared)
                                 {
                                     bestCutDist_squared = dist2d_squared;
                                     bestCutTreeIndx = j;
                                     bestCutNeurIndx = i;
                                 }
-                            }
-                            else
-                            {
+//                            }
+//                            else
+//                            {
 //                                curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
 //                                curImg->update_3drenderer_neuron_view(w, this);
 //
 //                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
 //                            }
-////=======
-                            curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
-							curImg->update_3drenderer_neuron_view(w, this);
-                            p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
-                            p_listneuron = &(p_tree->listNeuron);
-                            break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                            }
-//>>>>>>> master
                         }
                     }
 
                 }
-            }
-            //curImg->proj_trace_history_append(); // TDP 20160127: This seems to be redundant, it is adding to the undo/redo stack BEFORE splitting which isn't useful
-        }
-    }
-    if (forceSingleCut && bestCutDist_squared > 0)
+            } // for listneuron,size
+           // curImg->proj_trace_history_append(); // TDP 20160127: This seems to be redundant, it is adding to the undo/redo stack BEFORE splitting which isn't useful
+        } // if editable
+    } // for listnerontree.size
+    if (//forceSingleCut &&
+    		bestCutDist_squared > 0)
     {
         NeuronTree *p_tree_to_split = (NeuronTree *)(&(listNeuronTree.at(bestCutTreeIndx)));
         QList <NeuronSWC> *p_listneuron_to_split = &(p_tree_to_split->listNeuron);
@@ -4350,6 +4404,8 @@ void Renderer_gl1::breakMultiNeuronsByStroke(bool forceSingleCut)
         curImg->proj_trace_history_append();
     }
 }
+
+
 // func of converting kernel
 template <class Tpre, class Tpost>
 void converting_to_8bit(void *pre1d, Tpost *pPost, V3DLONG imsz)

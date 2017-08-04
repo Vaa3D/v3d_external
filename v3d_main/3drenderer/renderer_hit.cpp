@@ -2222,10 +2222,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 //					selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
 //					? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 //=======
-        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons ||
-        		 selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
-        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)
-        		 ? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+//        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons ||
+//        		 selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
+//        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons) //20170731 smBreakTwoNeurons used in mozak
+//        		 ? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+		int N = (selectMode == smCurveCreate3)? 3 : (selectMode == smCurveCreate2)? 2 : 1; //20170731 RZC: more simple expression for less bugs
 //>>>>>>> master
 		if (list_listCurvePos.size() >= N)
 		{
@@ -2255,7 +2256,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             }
             else if (selectMode == smBreakTwoNeurons)
             {
-                breakMultiNeuronsByStroke(true);
+                //breakMultiNeuronsByStroke(true);
+                breakTwoNeuronsByStroke(); //20170731 RZC: make a separate function for mozak to prevent confusion and interference
             }
             // @ADDED by Alessandro on 2015-09-30. Select multiple markers with one-mouse stroke
             else if( selectMode == smSelectMultiMarkers)

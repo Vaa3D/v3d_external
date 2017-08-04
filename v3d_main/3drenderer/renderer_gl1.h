@@ -450,8 +450,9 @@ public:
      void retypeMultiNeuronsByStroke();
 
      // forceSingleCut @ADDED T Pavlik 20151217, split was splitting more segments than desired so best cut option added
-     void breakMultiNeuronsByStroke(bool forceSingleCut=false);
      void breakMultiNeuronsByStrokeCommit();
+     void breakMultiNeuronsByStroke(); //20170731 RZC: no args for master implementation //(bool forceSingleCut=false);
+     void breakTwoNeuronsByStroke();   //20170731 RZC: make a separate function for mozak to prevent confusion and interference
 
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersGD(bool b_customized_bb);

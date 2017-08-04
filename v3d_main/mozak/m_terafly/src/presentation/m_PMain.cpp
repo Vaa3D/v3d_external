@@ -1409,6 +1409,7 @@ void PMain::openTeraFlyVolume(string path /* = "" */)
 void PMain::closeVolume()
 {
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
+    qDebug()<< "PMain::closeVolume()";
 
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->releaseTools();

@@ -69,3 +69,14 @@ teramanager::CViewer * MozakUI::initViewer(V3DPluginCallback2* _V3D_env, int _re
 	teramanager::CViewer* new_win = new Mozak3DView(_V3D_env, _resIndex, _imgData, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels, _prev, -1);
 	return new_win;
 }
+
+
+//20170803 RZC
+void MozakUI::onImageTraceHistoryChanged()
+{
+	Mozak3DView* mozak_view = (Mozak3DView*)( teramanager::CViewer::getCurrent() );
+	if (! mozak_view) return;
+
+	mozak_view->onNeuronEdit();
+}
+

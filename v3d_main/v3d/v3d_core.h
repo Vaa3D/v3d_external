@@ -462,6 +462,7 @@ public:
 
 signals:
 	void focusFeatureViewTextUpdated();
+	void signal_trace_history_append(); //20170801 RZC add
 
 public slots:
 	void setText2FocusPointFeatureWidget();

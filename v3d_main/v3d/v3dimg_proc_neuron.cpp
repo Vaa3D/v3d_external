@@ -49,6 +49,7 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
 #include "../terafly/src/control/CPlugin.h"
+#include "../mozak/MozakUI.h"
 
 //------------------------------------------------------------------------------------------
 
@@ -935,14 +936,22 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
     return newNeuronEdited;
 }
 
-
+#define ___trace_history_append___
 void My4DImage::proj_trace_history_append()
 {
 	proj_trace_history_append(tracedNeuron);
 
+
     // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
     // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
     tf::TeraFly::doaction("neuron edit");
+
+
+    //20170803 RZC
+    mozak::MozakUI::onImageTraceHistoryChanged();
+
+    emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
+	SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
 }
 
 void My4DImage::proj_trace_history_append(V_NeuronSWC_list & tNeuron)
@@ -976,11 +985,14 @@ void My4DImage::proj_trace_history_undo(V_NeuronSWC_list & tNeuron)
 
     cur_history--;
 	if (tracedNeuron_historylist.size()<1 ||  //090924 RZC: fixed from <2 to <1
-		cur_history<0 )
+		cur_history < -1)
+	{
+		cur_history = -1;
+        v3d_msg("Has reached the earliest of saved history!");
+	}
+	else if (cur_history == -1)  //20170803 RZC: make no msgbox for terafly undo
     {
         if (tNeuron.b_traced) tNeuron.seg.clear();
-		cur_history = -1;
-        v3d_msg("Reach the earliest of saved history!");
 	}
 	else if (cur_history>=0 && cur_history<tracedNeuron_historylist.size())
 	{
@@ -1003,12 +1015,12 @@ void My4DImage::proj_trace_history_redo(V_NeuronSWC_list & tNeuron)
 
 	cur_history++;
 	if (tracedNeuron_historylist.size()<1 ||   //090924: fixed from <2 to <1
-		cur_history>=tracedNeuron_historylist.size())
+		cur_history > tracedNeuron_historylist.size()-1)
 	{
 		cur_history = tracedNeuron_historylist.size()-1;
-		v3d_msg("Reach the latest of saved history!");
+		v3d_msg("Has reach the latest of saved history!");
 	}
-	else if (cur_history>=0 && cur_history<tracedNeuron_historylist.size())
+	else if (cur_history>=0 && cur_history<=tracedNeuron_historylist.size()-1)
 	{
 		tNeuron = tracedNeuron_historylist.at(cur_history);
 	}
