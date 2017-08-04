@@ -1107,7 +1107,7 @@ void Mozak3DView::show()
 	
 
 #define ___panotoobar_icon_size____
-    itm::PAnoToolBar::instance()->toolBar->setIconSize(QSize(25,20));    //20170803 RZC: make the buttons at toolbar bottom visible
+   // itm::PAnoToolBar::instance()->toolBar->setIconSize(QSize(25,20));    //20170803 RZC: make the buttons at toolbar bottom visible
 
     changeMode(Renderer::smObject, false, false);   //20170804 RZC: set toolbar initail mode
 
