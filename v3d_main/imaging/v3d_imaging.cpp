@@ -84,7 +84,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
         {
             if (pluginsDir.cd("plugins/line_detector")==false)
             {
-                v3d_msg("Cannot find ./plugins/line_detector directory!");
+                v3d_msg("Cannot find ./plugins/line_detector directory!",0);
                 return false;
             }
         }

@@ -67,10 +67,7 @@ win32 {
 		LIBS += -L$$MSVC_DIR\\lib	
 		LIBS += -L$$MSSDK_DIR\\Lib\\x64
 		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib64
-                LIBS += -L$$LOCAL_DIR\\common_lib\\src_packages\\boost_1_46_0\\stage\\lib
-                LIBS += -L$$LOCAL_DIR\\vrrenderer\\thirdparty\\sdl2-2.0.3\\bin\\win64
-                LIBS += -L$$LOCAL_DIR\\vrrenderer\\thirdparty\\glew\\glew-1.11.0\\lib\\Release\\x64
-                LIBS += -L$$LOCAL_DIR\\vrrenderer\\thirdparty
+        LIBS += -L$$LOCAL_DIR\\common_lib\\src_packages\\boost_1_46_0\\stage\\lib
 
 
 		
@@ -87,7 +84,10 @@ win32 {
                                 -lSDL2main \
                                 -llibhdf5 \
                                 -llibszip \
-                                -llibzlib
+                                -llibzlib \
+ 				-lsfml-system \
+				-lsfml-network \
+				-lsfml-main
 
 
         DEFINES *= TEEM_STATIC

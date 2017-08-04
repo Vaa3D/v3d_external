@@ -2149,7 +2149,11 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
         return;
     }
 
-    // zoom-in around marker or ROI triggers a new window
+    // @ADDED by Alessandro on 2017-06-26: zoom-in around marker or ROI to the highest resolution
+    else if(roi->ops_type == 0 && !forceZoomIn)
+        newViewer(roi->xe, roi->ye, roi->ze, CImport::instance()->getResolutions()-1, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
+
+    // zoom-in around marker or ROI to the higher resolution
     else if(roi->ops_type == 1 && !forceZoomIn)
         newViewer(roi->xe, roi->ye, roi->ze, volResIndex+1, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
 

@@ -1341,6 +1341,25 @@ LandmarkList * V3d_PluginLoader::getHandleLandmarkList_Any3DViewer(V3dR_MainWind
     }
 }
 
+bool V3d_PluginLoader::setHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w, LandmarkList & landmark_list)//Aug. 2, 2017 by Zhi Zhou
+{
+    if (!w) return false;
+    V3dR_GLWidget * vi = w->getGLWidget();
+    if (!vi) return false;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return false;
+        else
+        {
+            gp->setHandleLandmark(landmark_list);
+            gp->updateLandmark();
+            return true;
+        }
+    }
+}
+
 //V3DPluginCallback2
 
 View3DControl * V3d_PluginLoader::getView3DControl(v3dhandle image_window)

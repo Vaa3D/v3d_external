@@ -559,12 +559,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 }
 #endif
 
-                QDir pluginsDir1 = pluginsDir;
-                if (pluginsDir1.cd("plugins/teramanager")==true)
-                {
-                    listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
-                }
-
+                listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
@@ -951,7 +946,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 b_grabhighrez = true;
                 produceZoomViewOf3DRoi(loc_vec,
-                                       1  //one means from non-wheel event
+                                       0  //one means from non-wheel event
                                        );
 			}
 		}
@@ -4780,6 +4775,16 @@ LandmarkList * Renderer_gl1::getHandleLandmark() //by Hanbo Chen, 20141018
         return &(image4d->listLandmarks);
     }else{
         return 0;
+    }
+}
+
+void Renderer_gl1::setHandleLandmark(LandmarkList & landmark_list)
+{
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d){
+        image4d->listLandmarks = landmark_list;
+    }else{
+        return;
     }
 }
 

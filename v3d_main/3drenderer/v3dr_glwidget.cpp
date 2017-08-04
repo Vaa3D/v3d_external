@@ -1559,28 +1559,19 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::absoluteVRview()//0518
 {
+	NeuronTree nt;
+	nt.listNeuron.clear();
+	nt.hashNeuron.clear();
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;//->getHandleNeuronTrees();
+	const QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
 
-		NeuronTree nt;
-		nt.listNeuron.clear();
-		nt.hashNeuron.clear();
-		Renderer_gl1* tempptr = (Renderer_gl1*)renderer;//->getHandleNeuronTrees();
-		const QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-		int index=0,lineType;//change to  load neurontreelist
-		//lineType = tempptr->lineType;
-		lineType=0;
-		nt = listNeuronTrees->at(index);
-		//nt = tempptr->getHandleNeuronTrees()->at(index);
-		if(nt.listNeuron.size()>0)
-		{
-			v3d_msg("succeed in getting neurontree data.\n");
-			//doimageVRViewer_v2(nt,lineType);
-			doimageVRViewer(nt);
-		}
-		else
-		{
-			return;
-		}//*/
-	
+	if(listNeuronTrees->size()>0)
+		nt = listNeuronTrees->at(0);//todo: in the future, load all neuron trees into VR, instead of just loading the first tree
+
+	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+
+	v3d_msg("Data prepared. Now entering VR.\n");
+	doimageVRViewer(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
 }
 #endif
 

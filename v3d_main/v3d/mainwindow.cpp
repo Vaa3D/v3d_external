@@ -2143,7 +2143,7 @@ void MainWindow::updateProcessingMenu()
     connect(open_teraconverter_action, SIGNAL(triggered()), this, SLOT(func_open_teraconverter()));
 
 #define __MENU_OPEN_MOZAK__
-    QAction* open_mozak_action = new QAction(tr("Mozak"), this);
+    QAction* open_mozak_action = new QAction(tr("Kazom's Mozak"), this);
     advancedProcMenu->addAction(open_mozak_action);  /// RZC 20070620: move menu entry proc_terafly_menu form to advancedProcMenu
     connect(open_mozak_action, SIGNAL(triggered()), this, SLOT(func_open_neuron_game()));
 #endif
@@ -2557,7 +2557,7 @@ void MainWindow::createActions()
     procModeDefault->setCheckable(true);
     procModeDefault->setChecked(true);
     connect(procModeDefault, SIGNAL(triggered()), this, SLOT(func_procModeDefault()));
-    procModeNeuronAnnotator = new QAction(tr("Neuron Annotator"), this);
+    procModeNeuronAnnotator = new QAction(tr("Janelia FlyWorkstation Annotator"), this);
     procModeNeuronAnnotator->setCheckable(true);
     procModeNeuronAnnotator->setChecked(false);
     connect(procModeNeuronAnnotator, SIGNAL(triggered()), this, SLOT(func_procModeNeuronAnnotator()));

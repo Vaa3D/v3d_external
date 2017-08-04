@@ -191,6 +191,7 @@ public:
     virtual void update_NeuronBoundingBox(V3dR_MainWindow *w); //Oct. 08, 2014 by Hanbo Chen
 
     virtual LandmarkList * getHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w); //Oct. 16, 2014 by Hanbo Chen
+    virtual bool setHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w, LandmarkList & landmark_list); //Aug. 2, 2017 by Zhi Zhou
 
     virtual DataLists_in_3dviewer fetch_3dviewer_datafilelist(QString name3dviewer); //20140122 a conveniece function to access the record of data in a 3D viewer
 

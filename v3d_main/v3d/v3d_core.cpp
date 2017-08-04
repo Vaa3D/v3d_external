@@ -4923,8 +4923,7 @@ void XFormWidget::doImageVRView()//VR
 	NeuronTree nt;
 	nt.listNeuron.clear();
 	nt.hashNeuron.clear();
-	//doimageVRViewer_v2(nt,0);
-	doimageVRViewer(nt);
+	doimageVRViewer(nt, this->getImageData(), this->getMainControlWindow());
 }
 #endif
 
