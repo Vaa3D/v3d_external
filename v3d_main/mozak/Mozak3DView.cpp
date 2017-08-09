@@ -92,7 +92,7 @@ void Mozak3DView::appendHistory()
 	if (currUndoLabel && buttonUndo && buttonRedo) //20170729 RZC
 		updateUndoLabel();
 
-	autoSave();  //20170803 RZC
+//	autoSave();  //20170803 RZC
 }
 
 void Mozak3DView::performUndo()
