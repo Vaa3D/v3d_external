@@ -121,7 +121,7 @@
 #include <math.h>
 
 #include "../3drenderer/v3dr_common.h" // Ensure Glee is loaded first
-#include "../vrrenderer/v3dr_gl_vr.h"
+//#include "../vrrenderer/v3dr_gl_vr.h"
 
 
 #include <QLayout>
@@ -4917,15 +4917,6 @@ void XFormWidget::doImage3DView()
 }
 
 
-#ifdef __ALLOW_VR_FUNCS__
-void XFormWidget::doImageVRView()//VR
-{
-	NeuronTree nt;
-	nt.listNeuron.clear();
-	nt.hashNeuron.clear();
-	doimageVRViewer(nt, this->getImageData(), this->getMainControlWindow());
-}
-#endif
 
 void XFormWidget::doImage3DLocalMarkerView()
 {

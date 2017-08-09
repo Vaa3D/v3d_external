@@ -377,7 +377,8 @@ HEADERS += \
     ../vrrenderer/Sphere.h \
     ../vrrenderer/Matrices.h \
     ../vrrenderer/lodepng.h \
-    ../vrrenderer/RenderableObject.h
+    ../vrrenderer/RenderableObject.h \
+    ../vrrenderer/VR_MainWindow.h 
 
 SOURCES += \
     ../vrrenderer/v3dr_gl_vr.cpp \
@@ -385,8 +386,8 @@ SOURCES += \
     ../vrrenderer/Sphere.cpp \
     ../vrrenderer/Matrices.cpp \
     ../vrrenderer/lodepng.cpp \
-    ../vrrenderer/RenderableObject.cpp
-
+    ../vrrenderer/RenderableObject.cpp \
+    ../vrrenderer/VR_MainWindow.cpp
 }
 
 FORMS += landmark_property.ui \

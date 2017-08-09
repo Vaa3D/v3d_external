@@ -45,7 +45,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
-#include "../vrrenderer/v3dr_gl_vr.h"
+//#include "../vrrenderer/v3dr_gl_vr.h"
+#include "../vrrenderer/VR_MainWindow.h"
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
@@ -1570,8 +1571,35 @@ void V3dR_GLWidget::absoluteVRview()//0518
 
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
 
-	v3d_msg("Data prepared. Now entering VR.\n");
-	doimageVRViewer(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+	v3d_msg("Data prepared for VR.\nPlease login in the console.\n");
+	this->getMainWindow()->hide();
+	qDebug("Collaborative mode? (Y/N):");
+	char m_mode;
+	m_mode=cin.get();
+	if((m_mode=='Y')||(m_mode=='y'))
+	{	
+		VR_MainWindow * myvrwin= 0;
+		myvrwin =new VR_MainWindow;
+		myvrwin->setWindowTitle("VR MainWindow");
+		bool linkerror = myvrwin->SendLoginRequest();
+		if(linkerror==0)
+		{
+			myvrwin->close();
+		}
+		//else myvrwin->show();
+		myvrwin->StartVRScene(nt,img4d,(MainWindow *)(this->getMainWindow()));
+		
+	}
+	else if((m_mode=='N')||(m_mode=='n'))
+	{	
+		doimageVRViewer(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+		this->getMainWindow()->show();
+	}
+	else
+	{
+		qDebug()<<"Wrong input. Please try again.";
+		this->getMainWindow()->show();
+	}
 }
 #endif
 

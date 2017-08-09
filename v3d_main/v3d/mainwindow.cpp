@@ -126,11 +126,6 @@ MainWindow::MainWindow()
     procLandmarkManager = 0;
     procAtlasViewer = 0;
     proc3DViewer = 0;
-
-#ifdef __ALLOW_VR_FUNCS__
-    procVRViewer = 0;//VR
-#endif
-
     proc3DLocalRoiViewer = 0;
     procSettings = 0;
     proc_plugin_manager = 0;
@@ -1953,14 +1948,8 @@ void MainWindow::updateMenus()
         procAtlasViewer->setEnabled(hasMdiChild);
 #endif
     proc3DViewer->setText("3D viewer for the entire image");
-#ifdef __ALLOW_VR_FUNCS__
-    procVRViewer->setText("VR viewer for the entire image");//VR
-#endif
     proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI)");
     proc3DViewer->setEnabled(hasMdiChild);
-#ifdef __ALLOW_VR_FUNCS__
-    procVRViewer->setEnabled(hasMdiChild);//VR
-#endif
     proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
 
 }
@@ -2222,9 +2211,6 @@ void MainWindow::updateProcessingMenu()
 #endif
     //Visualization menu
     visualizeProcMenu->addAction(proc3DViewer);
-#ifdef __ALLOW_VR_FUNCS__
-    visualizeProcMenu->addAction(procVRViewer);//VR
-#endif
     visualizeProcMenu->addAction(proc3DLocalRoiViewer);
     //Plug-in menu
     if (pluginLoader)
@@ -2309,14 +2295,6 @@ void MainWindow::createActions()
     proc3DViewer = new QAction(tr("3D viewer for entire image"), this);
     proc3DViewer->setShortcut(tr("Ctrl+V"));
     connect(proc3DViewer, SIGNAL(triggered()), this, SLOT(func_proc3DViewer()));
-
-#ifdef __ALLOW_VR_FUNCS__
-    //VR
-	procVRViewer = new QAction(tr("VR viewer for entire image"), this);
-    connect(procVRViewer, SIGNAL(triggered()), this, SLOT(func_procVRViewer()));
-    //VR
-
-#endif
 
     proc3DLocalRoiViewer = new QAction(tr("3D viewer for Region of Interest (ROI)"), this);
     proc3DLocalRoiViewer->setShortcut(tr("Shift+V"));
@@ -2853,9 +2831,6 @@ bool MainWindow::setCurHiddenSelectedWindow_withoutcheckwinlist( XFormWidget* a)
 void MainWindow::func_procLandmarkManager() {if (activeMdiChild()) activeMdiChild()->launchAtlasViewer(1);}
 void MainWindow::func_procAtlasViewer() {if (activeMdiChild()) activeMdiChild()->launchAtlasViewer(0);}
 void MainWindow::func_proc3DViewer() {if (activeMdiChild()) activeMdiChild()->doImage3DView();}
-#ifdef __ALLOW_VR_FUNCS__
-void MainWindow::func_procVRViewer() {if (activeMdiChild()) activeMdiChild()->doImageVRView();}//VR
-#endif
 void MainWindow::func_proc3DLocalRoiViewer() {if (activeMdiChild()) activeMdiChild()->doImage3DLocalRoiView();}
 void MainWindow::func_procSettings()
 {
