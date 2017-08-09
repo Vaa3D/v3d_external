@@ -1416,7 +1416,7 @@ void PMain::loadAnnotations()
 
                 // load
                 cur_win->loadAnnotations();
-                saveAnnotationsAction->setEnabled(true);                
+                //saveAnnotationsAction->setEnabled(true);
                 virtualSpaceSizeMenu->setEnabled(false);
 
                 // reset saved cursor
@@ -1469,6 +1469,9 @@ void PMain::saveAnnotations()
             CViewer::setCursor(cursor);
             if(PAnoToolBar::isInstantiated())
                 PAnoToolBar::instance()->setCursor(cursor);
+
+            // disable save button
+            saveAnnotationsAction->setEnabled(false);
         }
     }
     catch(RuntimeException &ex)
@@ -2711,6 +2714,15 @@ void PMain::markersSizeSpinBoxChanged(int value)
         cur_win->view3DWidget->updateTool();
         cur_win->view3DWidget->update();
     }
+}
+
+/**********************************************************************************
+* Called when annotations (markers, neuron trees, etc.) have changed
+***********************************************************************************/
+void PMain::annotationsChanged()
+{
+    if(!annotationsPathLRU.empty())
+        saveAnnotationsAction->setEnabled(true);
 }
 
 void PMain::showDialogVtk2APO()

@@ -115,6 +115,10 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
 
     // show tooltips also when has no focus on it
     //setAttribute(Qt::WA_AlwaysShowToolTips, true);
+
+    // set autosave interval
+    autosaveTimer.start(autosaveInterval);
+    connect(&autosaveTimer, SIGNAL(timeout()), this, SLOT(saveAnnotations()));
 }
 
 
@@ -429,6 +433,12 @@ void PAnoToolBar::refreshTools()
     if(buttonMarkerRoiDelete->isChecked())
         buttonMarkerRoiDeleteChecked(true);
     update();
+}
+
+void PAnoToolBar::saveAnnotations()
+{
+    if(!PMain::getInstance()->getAnnotationPathRLU().empty())
+        PMain::getInstance()->saveAnnotations();
 }
 
 

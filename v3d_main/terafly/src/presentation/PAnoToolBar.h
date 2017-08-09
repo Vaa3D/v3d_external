@@ -23,6 +23,9 @@ class terafly::PAnoToolBar : public QWidget
 
         QToolButton* buttonOptions;             //options button
 
+        const int autosaveInterval = 60000;     // save annotations every 'autosaveInterval' ms
+        QTimer autosaveTimer;                   // timer for autosave function
+
         QPoint dragPosition;
 
         /*********************************************************************************
@@ -89,6 +92,8 @@ class terafly::PAnoToolBar : public QWidget
         void buttonMarkerRoiViewChecked(bool checked);
         void buttonUndoClicked();
         void buttonRedoClicked();
+
+        void saveAnnotations();
     
 };
 

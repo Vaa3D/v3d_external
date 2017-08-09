@@ -2,12 +2,16 @@
 #include "../control/CViewer.h"
 #include "v3dr_glwidget.h"
 #include "../presentation/PAnoToolBar.h"
+#include "PMain.h"
 
 tf::QUndoMarkerCreate::QUndoMarkerCreate(tf::CViewer* _source, LocationSimple _marker) : QUndoCommand()
 {
     source = _source;
     marker = _marker;
     redoFirstTime = true;
+
+    // tell main GUI that annotations have been changed
+    PMain::getInstance()->annotationsChanged();
 }
 
 // undo and redo methods
@@ -32,6 +36,9 @@ void tf::QUndoMarkerCreate::undo()
 
     // end select mode
     //source->view3DWidget->getRenderer()->endSelectMode();
+
+    // tell main GUI that annotations have been changed
+    PMain::getInstance()->annotationsChanged();
 }
 
 void tf::QUndoMarkerCreate::redo()
@@ -56,6 +63,9 @@ void tf::QUndoMarkerCreate::redo()
 
         // end select mode
         //source->view3DWidget->getRenderer()->endSelectMode();
+
+        // tell main GUI that annotations have been changed
+        PMain::getInstance()->annotationsChanged();
     }
     else
         redoFirstTime = false;
@@ -67,6 +77,9 @@ tf::QUndoVaa3DNeuron::QUndoVaa3DNeuron(tf::CViewer* _source) : QUndoCommand()
 {
     source = _source;
     redoFirstTime = true;
+
+    // tell main GUI that annotations have been changed
+    PMain::getInstance()->annotationsChanged();
 }
 
 // undo and redo methods
@@ -80,6 +93,9 @@ void tf::QUndoVaa3DNeuron::undo()
         v3dr_getImage4d(source->view3DWidget->_idep)->update_3drenderer_neuron_view(source->view3DWidget, (Renderer_gl1*)source->view3DWidget->renderer);//090924
 
         source->view3DWidget->update();
+
+        // tell main GUI that annotations have been changed
+        PMain::getInstance()->annotationsChanged();
     }
 }
 
@@ -96,6 +112,9 @@ void tf::QUndoVaa3DNeuron::redo()
             v3dr_getImage4d(source->view3DWidget->_idep)->update_3drenderer_neuron_view(source->view3DWidget, (Renderer_gl1*)source->view3DWidget->renderer);//090924
 
             source->view3DWidget->update();
+
+            // tell main GUI that annotations have been changed
+            PMain::getInstance()->annotationsChanged();
         }
     }
     else

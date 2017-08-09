@@ -253,6 +253,7 @@ class terafly::PMain : public QWidget
         V3DPluginCallback2* getV3D_env(){return V3D_env;}
         QProgressBar* getProgressBar(){return progressBar;}
         QStatusBar* getStatusBar(){return statusBar;}
+        std::string getAnnotationPathRLU(){return annotationsPathLRU;}
 
         //resets progress bar, start/stop buttons and tab bar
         void resetGUI();
@@ -477,6 +478,11 @@ class terafly::PMain : public QWidget
         * Called when markersSizeSpinBox state has changed
         ***********************************************************************************/
         void markersSizeSpinBoxChanged(int value);
+
+        /**********************************************************************************
+        * Called when annotations (markers, neuron trees, etc.) have changed
+        ***********************************************************************************/
+        void annotationsChanged();
 
         void tabIndexChanged(int value);
 
