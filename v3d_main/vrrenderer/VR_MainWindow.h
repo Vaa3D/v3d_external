@@ -6,9 +6,9 @@
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
 //#include <QRegExpValidator>
-#ifdef _WIN32
-    #include <windows.h>
-#endif
+//#ifdef _WIN32
+//    #include <windows.h>
+//#endif
 
 #include "../basic_c_fun/v3d_interface.h"
 #define PORT 1234

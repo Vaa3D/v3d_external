@@ -42,10 +42,11 @@ bool VR_MainWindow::SendLoginRequest() {
     QString serverNameDefault = "";
     if(!settings.value("vr_serverName").toString().isEmpty())
         serverNameDefault = settings.value("vr_serverName").toString();
-    QString serverName = QInputDialog::getText(0, "Server Address",
+    bool ok1;
+	QString serverName = QInputDialog::getText(0, "Server Address",
                                          "Please enter the server address:", QLineEdit::Normal,
                                          serverNameDefault, &ok1);
-    bool ok1;
+    
     if(ok1 && !serverName.isEmpty())
     {
         settings.setValue("vr_serverName", serverName);
@@ -220,7 +221,7 @@ void VR_MainWindow::RunVRMainloop()
 	{
 		qDebug()<<"Now quit VR";
 		socket->disconnectFromHost();
-		pMainApplication->~CMainApplication();
+		delete pMainApplication;
 		pMainApplication=0;
 		return;
 	}
