@@ -3,6 +3,7 @@
 #include "v3dr_gl_vr.h"
 #include <QRegExp>
 //#include <QMessageBox>
+#include <QtGui>
 #include <QListWidgetItem>
 #include <iostream>
 VR_MainWindow::VR_MainWindow() :
@@ -37,7 +38,38 @@ VR_MainWindow::~VR_MainWindow() {
 
 bool VR_MainWindow::SendLoginRequest() {
 
-	qDebug()<<"Please enter the server address: ";
+    QSettings settings("HHMI", "Vaa3D");
+    QString serverNameDefault = "";
+    if(!settings.value("vr_serverName").toString().isEmpty())
+        serverNameDefault = settings.value("vr_serverName").toString();
+    QString serverName = QInputDialog::getText(0, "Server Address",
+                                         "Please enter the server address:", QLineEdit::Normal,
+                                         serverNameDefault, &ok1);
+    bool ok1;
+    if(ok1 && !serverName.isEmpty())
+    {
+        settings.setValue("vr_serverName", serverName);
+        QString userNameDefault = "";
+        if(!settings.value("vr_userName").toString().isEmpty())
+            userNameDefault = settings.value("vr_userName").toString();
+        bool ok2;
+        userName = QInputDialog::getText(0, "Lgoin Name",
+                                             "Please enter your login name:", QLineEdit::Normal,
+                                             userNameDefault, &ok2);
+        if(!ok2 || userName.isEmpty())
+        {
+            qDebug()<<"WRONG!EMPTY! ";
+            return SendLoginRequest();
+        }else
+            settings.setValue("vr_userName", userName);
+    }
+    else
+    {
+        qDebug()<<"WRONG!EMPTY! ";
+        return SendLoginRequest();
+    }
+
+    /*qDebug()<<"Please enter the server address: ";
 	std::string str;
 	std::cin>>str;
 	QString serverName = QString::fromStdString(str);
@@ -53,7 +85,7 @@ bool VR_MainWindow::SendLoginRequest() {
     if (userName.isEmpty()) {
 		qDebug()<<"WRONG!EMPTY! ";
         return SendLoginRequest();
-    }
+    }*/
 
     socket->connectToHost(serverName, PORT);
 	if(!socket->waitForConnected(15000))

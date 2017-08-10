@@ -51,6 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer.h"
 #include "renderer_gl1.h"
 #include "renderer_gl2.h"
+#include <QtGui>
 
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
@@ -1571,9 +1572,29 @@ void V3dR_GLWidget::absoluteVRview()//0518
 
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
 
-	v3d_msg("Data prepared for VR.\nPlease login in the console.\n");
-	this->getMainWindow()->hide();
-	qDebug("Collaborative mode? (Y/N):");
+    v3d_msg("Data prepared for VR.");
+    this->getMainWindow()->hide();
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(parent, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes)
+    {
+        VR_MainWindow * myvrwin= 0;
+        myvrwin =new VR_MainWindow;
+        myvrwin->setWindowTitle("VR MainWindow");
+        bool linkerror = myvrwin->SendLoginRequest();
+        if(linkerror==0)
+        {
+            myvrwin->close();
+        }
+        //else myvrwin->show();
+        myvrwin->StartVRScene(nt,img4d,(MainWindow *)(this->getMainWindow()));
+    }else
+    {
+        doimageVRViewer(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+        this->getMainWindow()->show();
+    }
+
+    /*qDebug("Collaborative mode? (Y/N):");
 	char m_mode;
 	m_mode=cin.get();
 	if((m_mode=='Y')||(m_mode=='y'))
@@ -1599,7 +1620,7 @@ void V3dR_GLWidget::absoluteVRview()//0518
 	{
 		qDebug()<<"Wrong input. Please try again.";
 		this->getMainWindow()->show();
-	}
+    }*/
 }
 #endif
 
