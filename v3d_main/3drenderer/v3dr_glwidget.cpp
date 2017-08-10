@@ -1575,7 +1575,7 @@ void V3dR_GLWidget::absoluteVRview()//0518
     v3d_msg("Data prepared for VR.");
     this->getMainWindow()->hide();
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(parent, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+    reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes)
     {
         VR_MainWindow * myvrwin= 0;
