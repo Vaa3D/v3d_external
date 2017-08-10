@@ -3155,7 +3155,12 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
 
 	// contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
-	bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+    int contour_mode = 0;
+    if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+        contour_mode = 1; //press "shift"
+    else if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+        contour_mode = 2; //press "ctrl"
+
 
 	// contour 2 polygon
 	QPolygon poly;
@@ -3198,11 +3203,15 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 				py = viewport[3]-py; //the Y axis is reversed
 				QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
 
-				if(contour_mode)
+                if(contour_mode == 1)
 				{
-					if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+                    if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
 						curImg->tracedNeuron.seg[s].to_be_deleted = true;
-				}
+                }else if (contour_mode == 2)
+                {
+                    if(!poly.boundingRect().contains(p) || !pointInPolygon(p.x(), p.y(), poly))
+                        curImg->tracedNeuron.seg[s].to_be_deleted = true;
+                }
 				else
 				{
 					for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
