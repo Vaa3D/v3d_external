@@ -59,10 +59,11 @@ public:
 	bool BInitGL();
 	bool BInitCompositor();
 
-	void UpdateRemoteNT(QString &msg);//merge receieved message/NT with remoteNT
+	void UpdateRemoteNT(QString &msg, int type);//merge receieved message/NT with remoteNT
     QString NT2QString(NeuronTree &sNT);//translate sketchNT to QString as message to send
 	void ClearSketchNT();
 	bool HandleOneIteration();
+	QString getHMDPOSstr();
 
 	void SetupRenderModels();
 

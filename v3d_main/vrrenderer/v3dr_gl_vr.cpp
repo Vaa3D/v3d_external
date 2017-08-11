@@ -1366,7 +1366,7 @@ bool CMainApplication::HandleOneIteration()
 	bQuit = HandleInput();
 	RenderFrame();
 	if(bQuit==true) Shutdown();
-
+	
 	return bQuit;
 
 }
@@ -2472,7 +2472,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 		for(int i=0;i<3;i++) vcolor_load[i] /= 255.0;
 		//qDebug("color---- %f,%f,%f\n",vcolor_load[0],vcolor_load[1],vcolor_load[2]);
 
-		glm::vec3 vcolor_draw(1,0,1);// for locally drawn structures that has not been synchronized yet.
+		glm::vec3 vcolor_draw(0.5,0.5,0.5);// for locally drawn structures that has not been synchronized yet.
 		glm::vec3 vcolor_remote(1,0,0);//red
 		//vertices[2*(S1.n-1)+1] = (drawMode==0) ? vcolor_load : vcolor_draw;
 		//vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
@@ -2481,7 +2481,8 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 		else if(drawMode==1)
 			vertices.push_back(vcolor_draw);
 		else if(drawMode==2)
-			vertices.push_back(vcolor_remote);
+			vertices.push_back(vcolor_load);
+			//vertices.push_back(vcolor_remote);
 		if (drawMode==0) loaded_spheresColor.push_back(vcolor_load);
 	}
 
@@ -3395,6 +3396,22 @@ void CMainApplication::UpdateHMDMatrixPose()
 		}
 	}
 }
+
+QString  CMainApplication::getHMDPOSstr()
+{
+	const Matrix4 & mat_HMD = m_rmat4DevicePose[0];
+	QString positionStr;
+	for(int i=0;i<16;i++)
+	{
+		positionStr+=QString("%5.3f").arg(mat_HMD[i]);
+		positionStr+=" ";
+	}
+	qDebug()<<positionStr;
+	return positionStr;
+}
+
+
+
 QString CMainApplication::NT2QString(NeuronTree &sNT)
 {
 	char messageBuff[8000]="";
@@ -3412,7 +3429,7 @@ QString CMainApplication::NT2QString(NeuronTree &sNT)
 	return str;
 }
 
-void CMainApplication::UpdateRemoteNT(QString &msg)
+void CMainApplication::UpdateRemoteNT(QString &msg, int type)
 {	
 	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
 	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
@@ -3430,7 +3447,7 @@ void CMainApplication::UpdateRemoteNT(QString &msg)
 		}
 		else if (iy==1)
 		{
-			S_temp.type = qsl[i].toInt();
+			S_temp.type = type;
 		}
 		else if (iy==2)
 		{
