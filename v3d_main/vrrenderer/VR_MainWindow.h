@@ -27,8 +27,10 @@ public:
 	bool SendLoginRequest();
 	void StartVRScene(NeuronTree nt, My4DImage *i4d, MainWindow *pmain);
 
+
 public slots:
 	void RunVRMainloop();
+	void SendHMDPosition();
 private slots:
 
     void onReadyRead();
@@ -45,4 +47,13 @@ private:
 };
 //bool doimageVRViewer(int argc, char *argv[]);
 bool doimageVRViewer(NeuronTree nt, My4DImage *img4d, MainWindow *pmain);
+QString FloatToQString(float xx);
+struct Agent {
+	QString name;
+	bool isItSelf;
+	int colorType;
+	float position[16];
+	//float AgentHMDPOS[3];
+
+};
 #endif // VR_MainWindow_H
