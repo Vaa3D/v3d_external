@@ -2635,3 +2635,16 @@ void CViewer::refresh() throw (tf::RuntimeException)
     //this->setWaitingForData(true);
 }
 
+const Image4DSimple* CViewer::getImage() throw (tf::RuntimeException)
+{
+    if(imgData == 0)
+        throw tf::RuntimeException("Image not yet allocated");
+
+    Image4DSimple* image = new Image4DSimple();
+    image->setFileName(title.c_str());
+    image->setData(imgData, volH1-volH0, volV1-volV0, volD1-volD0, nchannels*(volT1-volT0+1), V3D_UINT8);
+    image->setTDim(volT1-volT0+1);
+    image->setTimePackType(TIME_PACK_C);
+    return image;
+}
+

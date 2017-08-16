@@ -44,6 +44,7 @@
 #include <QThread>
 #include "v3d_core.h"
 #include <cmath>
+#include "v3d_interface.h"
 
 class V3DPluginCallback2;
 
@@ -97,6 +98,7 @@ namespace terafly
     class myV3dR_GLWidget;      //Vaa3D-inhrerited class
     class myV3dR_MainWindow;    //Vaa3D-inhrerited class
     class myImage4DSimple;      //Vaa3D-inhrerited class
+    class PluginInterface;
     struct annotation;          //base class for annotations
     struct volume_format;       //enum-like class to distinguish different volume formats
     /*-------------------------------------------------------------------------------------------------------------------------*/
@@ -889,6 +891,27 @@ class terafly::TeraFly : public QObject
 
         // returns true if version >= min_required_version, where version format is version.major.minor
         static bool checkVersion(std::string version, std::string min_required_version);
+};
+
+class terafly::PluginInterface
+{
+    public:
+
+        // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
+        static NeuronTree getSWC(int resolution = infp<int>());
+        static bool setSWC(NeuronTree & nt, int resolution = infp<int>());
+
+        // access the 3D landmark list defined for the whole image at the given resolution (default: highest resolution)
+        static LandmarkList getLandmark(int resolution = infp<int>());
+        static bool setLandmark(LandmarkList & landmark_list, int resolution = infp<int>());
+
+        // get path of the image volume at the given resolution (default: highest resolution)
+        static std::string getPath(int resolution = infp<int>());
+
+        // get currently displayed image (readonly)
+        static const Image4DSimple* getImage();
+
+        static std::string version(){ return "1.0.0"; }
 };
 
 #endif

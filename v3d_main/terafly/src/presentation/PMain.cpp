@@ -2310,13 +2310,23 @@ void PMain::debugAction1Triggered()
 
 
 
-        CViewer* viewer = CViewer::getCurrent();
+        /*CViewer* viewer = CViewer::getCurrent();
         size_t dims = size_t(viewer->volV1-viewer->volV0) * (viewer->volH1-viewer->volH0) * (viewer->volD1-viewer->volD0) * viewer->nchannels;
         size_t empty = 0;
         for(size_t i=0; i<dims; i++)
             if(!viewer->imgData[i])
                 empty++;
-        v3d_msg(tf::strprintf("%.2f", (1 - empty/(float)dims)*100).c_str());
+        v3d_msg(tf::strprintf("%.2f", (1 - empty/(float)dims)*100).c_str());*/
+        //v3d_msg(QString("path = ") + QString(tf::TeraFly::getPath().c_str()) + QString("\n"));
+
+        NeuronTree l = terafly::PluginInterface::getSWC();
+        NeuronSWC n;
+        n.x = rand()%200;
+        n.y = rand()%200;
+        n.z = rand()%200;
+        n.parent = -1;
+        l.listNeuron.append(n);
+        terafly::PluginInterface::setSWC(l);
     }
     catch(tf::RuntimeException &e)
     {
