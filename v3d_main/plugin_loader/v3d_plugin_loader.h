@@ -203,6 +203,15 @@ public:
     virtual QString getWindowDataTitle(V3dR_MainWindow *w);
     virtual void moveWindow(V3dR_MainWindow *w, int x, int y);
     virtual void resizeWindow(V3dR_MainWindow *w, int x, int y);
+
+    //added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
+    virtual NeuronTree getSWCTeraFly();
+    virtual bool setSWCTeraFly(NeuronTree & nt);
+    virtual LandmarkList  getLandmarkTeraFly();
+    virtual bool setLandmarkTeraFly(LandmarkList & landmark_list);
+    virtual QString getPathTeraFly();
+    virtual const Image4DSimple * getImageTeraFly();
+    virtual QString versionTeraFly();
 };
 
 #endif

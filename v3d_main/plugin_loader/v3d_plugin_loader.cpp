@@ -47,6 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include "../v3d/v3d_core.h"
 #include "v3d_plugin_loader.h"
 #include "pluginDialog.h"
+#include "../terafly/src/control/CPlugin.h"
 
 
 void pumpEvents(int loops=100)
@@ -1597,4 +1598,39 @@ bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <L
 //    rescanPlugins();
 //}
 
+//added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
+NeuronTree V3d_PluginLoader::getSWCTeraFly()
+{
+    return terafly::PluginInterface::getSWC();
+}
+
+bool V3d_PluginLoader::setSWCTeraFly(NeuronTree & nt)
+{
+    return terafly::PluginInterface::setSWC(nt);
+}
+
+LandmarkList V3d_PluginLoader::getLandmarkTeraFly()
+{
+    return terafly::PluginInterface::getLandmark();
+}
+
+bool V3d_PluginLoader::setLandmarkTeraFly(LandmarkList & landmark_list)
+{
+    return terafly::PluginInterface::setLandmark(landmark_list);
+}
+
+QString V3d_PluginLoader::getPathTeraFly()
+{
+    return QString(terafly::PluginInterface::getPath().c_str());
+}
+
+const Image4DSimple * V3d_PluginLoader::getImageTeraFly()
+{
+    return terafly::PluginInterface::getImage();
+}
+
+QString V3d_PluginLoader::versionTeraFly()
+{
+    return QString(terafly::PluginInterface::version().c_str());
+}
 

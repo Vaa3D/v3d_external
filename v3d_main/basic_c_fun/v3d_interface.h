@@ -226,6 +226,14 @@ public:
     virtual void moveWindow(V3dR_MainWindow *w, int x, int y) = 0 ;
     virtual void resizeWindow(V3dR_MainWindow *w, int x, int y) = 0 ;
 
+    //added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
+    virtual NeuronTree getSWCTeraFly() = 0;
+    virtual bool setSWCTeraFly(NeuronTree & nt) = 0;
+    virtual LandmarkList  getLandmarkTeraFly() = 0;
+    virtual bool setLandmarkTeraFly(LandmarkList & landmark_list) = 0;
+    virtual QString getPathTeraFly()=0;
+    virtual const Image4DSimple * getImageTeraFly() = 0;
+    virtual QString versionTeraFly() = 0;
 };
 
 class V3DPluginInterface2
