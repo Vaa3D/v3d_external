@@ -1416,7 +1416,7 @@ void PMain::loadAnnotations()
 
                 // load
                 cur_win->loadAnnotations();
-                //saveAnnotationsAction->setEnabled(true);
+                saveAnnotationsAction->setEnabled(true);
                 virtualSpaceSizeMenu->setEnabled(false);
 
                 // reset saved cursor
