@@ -651,6 +651,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_nCompanionWindowHeight(800)//( 320 )//
 	, morphologyShader ( NULL )
 	, raycastingShader ( NULL )
+	, clipPatchShader (NULL)
 	, backfaceShader ( NULL )
 	, m_unCompanionWindowProgramID( 0 )
 	, m_unControllerTransformProgramID( 0 )
@@ -669,6 +670,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_unSketchMorphologyLineModeVAO( 0 )
 	, m_uiSketchMorphologyLineModeVertcount(0)
 	, m_VolumeImageVAO (0)
+	, m_clipPatchVAO (0)
 	, m_nControllerMatrixLocation( -1 )
 	, m_nRenderModelMatrixLocation( -1 )
 	, m_iTrackedControllerCount( 0 )
@@ -700,8 +702,8 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 
 
 {
-	//if (m_bHasImage4D ) cout << "has img4d" << endl;
-	//else cout << "has NO img4d" << endl;
+	leftEyeDesc.m_nDepthBufferId = leftEyeDesc.m_nRenderFramebufferId = leftEyeDesc.m_nRenderTextureId = leftEyeDesc.m_nResolveFramebufferId = leftEyeDesc.m_nResolveTextureId = 0;
+	rightEyeDesc.m_nDepthBufferId = rightEyeDesc.m_nRenderFramebufferId = rightEyeDesc.m_nRenderTextureId = rightEyeDesc.m_nResolveFramebufferId = rightEyeDesc.m_nResolveTextureId = 0;
 
 	for( int i = 1; i < argc; i++ )
 	{
@@ -1007,6 +1009,10 @@ void CMainApplication::Shutdown()
 		{
 			delete backfaceShader;
 		}
+		if (clipPatchShader != NULL)
+		{
+			delete clipPatchShader;
+		}
 		if ( m_unControllerTransformProgramID )
 		{
 			glDeleteProgram( m_unControllerTransformProgramID );
@@ -1071,6 +1077,12 @@ void CMainApplication::Shutdown()
 		if( m_VolumeImageVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
+			//glDeleteBuffers(1, &m_imageVBO);
+		}
+
+		if( m_clipPatchVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_clipPatchVAO );
 			//glDeleteBuffers(1, &m_imageVBO);
 		}
 
@@ -3047,9 +3059,10 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
 		backfaceShader->use();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		RenderImage4D(backfaceShader,nEye,GL_FRONT); // cull front face
+		RenderImage4D(backfaceShader,nEye,GL_BACK); 
 		glUseProgram(0);
 
+		///*
 		// bind to previous framebuffer again
 		if (nEye == vr::Eye_Left)
 		{
@@ -3063,8 +3076,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		// ray casting
 		raycastingShader->use();
 		SetUinformsForRayCasting();
-		RenderImage4D(raycastingShader,nEye,GL_BACK); // cull back face
-		//*/
+		RenderImage4D(raycastingShader,nEye,GL_FRONT); //*/
 
 		//to make the image not block the morphology surface
 		glEnable(GL_DEPTH_TEST);
@@ -3278,8 +3290,6 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 	}
 
-
-
 	//=================== draw morphology in line mode ======================
 	if (m_bShowMorphologyLine)
 	{	
@@ -3364,20 +3374,27 @@ void CMainApplication::RenderCompanionWindow()
 	glUseProgram( m_unCompanionWindowProgramID );
 
 	// render left eye (first half of index array )
-	glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, 0 );
+	if (leftEyeDesc.m_nResolveTextureId != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, 0 );
+
+	}
 
 	// render right eye (second half of index array )
-	glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId  );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, (const void *)(uintptr_t)(m_uiCompanionWindowIndexSize) );
+	if (rightEyeDesc.m_nResolveTextureId != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId  );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, (const void *)(uintptr_t)(m_uiCompanionWindowIndexSize) );
+	}
 
 	glBindVertexArray( 0 );
 	glUseProgram( 0 );
@@ -3803,6 +3820,35 @@ void CMainApplication::SetupCubeForImage4D()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
     // glBindVertexArray(0);
     m_VolumeImageVAO = vao;
+
+	// a custom clip surface that is infinitely close to the near frustum clipping surface
+	float frustum_vertices[] = {
+    // first triangle
+     1.0f, -1.0f, -0.99f,  // bottom right
+	 1.0f,  1.0f, -0.99f,  // top right
+    -1.0f,  1.0f, -0.99f,  // top left 
+    // second triangle
+     -1.0f, -1.0f, -0.99f,  // bottom left
+    1.0f, -1.0f, -0.99f,  // bottom right
+    -1.0f,  1.0f, -0.99f   // top left
+	}; 
+
+	GLuint frustum_vbo;
+	glGenVertexArrays(1, &m_clipPatchVAO);
+    glGenBuffers(1, &frustum_vbo);
+
+	glBindVertexArray(m_clipPatchVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, frustum_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(frustum_vertices), frustum_vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+	glBindVertexArray(0); 
 }
 
 // init the 1 dimentional texture for transfer function
@@ -3864,9 +3910,9 @@ GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
 }
 
 // init 3D texture to store the volume data used fo ray casting
-GLuint CMainApplication::initVol3DTex(const char* filename, GLuint w, GLuint h, GLuint d)
+GLuint CMainApplication::initVol3DTex()
 {
-    w = img4d->getXDim(); h = img4d->getYDim(); d= img4d->getZDim();
+    GLuint w = img4d->getXDim(); GLuint h = img4d->getYDim(); GLuint d= img4d->getZDim();
 	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
 
     glGenTextures(1, &g_volTexObj);
@@ -3928,7 +3974,7 @@ void CMainApplication::SetupVolumeRendering()
 
     g_tffTexObj = initTFF1DTex("tff.dat");
     g_bfTexObj = initFace2DTex(g_texWidth, g_texHeight);
-    g_volTexObj = initVol3DTex("head256.raw", 256, 256, 225);
+    g_volTexObj = initVol3DTex();
 
     initFrameBufferForVolumeRendering(g_bfTexObj, g_texWidth, g_texHeight);
 }
@@ -3939,6 +3985,7 @@ bool CMainApplication::CreateVolumeRenderingShaders()
 	
 	raycastingShader = new Shader("raycasting.vert", "raycasting.frag");
 	backfaceShader = new Shader("backface.vert", "backface.frag");
+	clipPatchShader = new Shader("clippatch.vert", "backface.frag");
 	return true;
 }
 
@@ -3960,11 +4007,23 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
 	model = m_globalMatrix * model;
 
 	glm::mat4 mvp = projection * view * model;
-	shader->setMat4("MVP",mvp);
 
 	// render
 	glEnable(GL_CULL_FACE);
     glCullFace(cullFace);
+
+	if (cullFace == GL_BACK)
+	{
+		//for the patch, tranform the coordinates from NDC space back to world space
+		clipPatchShader->use();
+		clipPatchShader->setMat4("MVP",mvp);
+		glBindVertexArray(m_clipPatchVAO); 
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		shader->use();
+	}
+
+	shader->setMat4("MVP",mvp);
     glBindVertexArray(m_VolumeImageVAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint *)NULL);
     glDisable(GL_CULL_FACE);

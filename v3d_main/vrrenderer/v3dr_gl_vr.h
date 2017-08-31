@@ -308,7 +308,7 @@ public:
 	void SetupCubeForImage4D();
 	GLuint initTFF1DTex(const char* filename);
 	GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
-	GLuint initVol3DTex(const char* filename, GLuint width, GLuint height, GLuint depth);
+	GLuint initVol3DTex();
 	void initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight);
 	void SetupVolumeRendering();
 	bool CreateVolumeRenderingShaders();
@@ -319,9 +319,11 @@ public:
 	bool m_bHasImage4D;
 private:
 	
+	GLuint m_clipPatchVAO;
 	GLuint m_VolumeImageVAO;
 	Shader* backfaceShader;//back face, first pass
 	Shader* raycastingShader;//ray casting front face, second pass
+	Shader* clipPatchShader;//ray casting front face, second pass
 
 	GLuint g_winWidth; //todo: may be removable. wym
 	GLuint g_winHeight;
