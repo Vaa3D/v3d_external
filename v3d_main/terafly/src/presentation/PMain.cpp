@@ -1500,8 +1500,9 @@ void PMain::autosaveAnnotations()
             // save
             cur_win->storeAnnotations();
             QDateTime mytime = QDateTime::currentDateTime();
-            if(QString("./autosave").isEmpty())
-                QDir().mkdir("./autosave");
+            QDir dir(QDir::currentPath());
+            dir.mkdir(QString("autosave"));
+
             QString autosavePath;
             if(annotationsPathLRU.compare("")==0)
                 autosavePath = "./autosave/annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
