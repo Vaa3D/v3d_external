@@ -1559,7 +1559,7 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
 }
 
 #ifdef __ALLOW_VR_FUNCS__
-void V3dR_GLWidget::absoluteVRview()//0518
+void V3dR_GLWidget::doimageVRView()//0518
 {
 	NeuronTree nt;
 	nt.listNeuron.clear();
@@ -1590,7 +1590,7 @@ void V3dR_GLWidget::absoluteVRview()//0518
         myvrwin->StartVRScene(nt,img4d,(MainWindow *)(this->getMainWindow()));
     }else
     {
-        doimageVRViewer(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+        startStandaloneVRScene(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
         this->getMainWindow()->show();
     }
 

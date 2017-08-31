@@ -168,10 +168,10 @@ void VR_MainWindow::onReadyRead() {
 				{
 					if(user == Agents.at(i).name)
 					{
-						qDebug()<<"before erase "<<Agents.size();
+						//qDebug()<<"before erase "<<Agents.size();
 						Agents.erase(Agents.begin()+i);
 						i--;
-						qDebug()<<"before erase "<<Agents.size();
+						//qDebug()<<"before erase "<<Agents.size();
 					}
 				}
 			}
@@ -185,7 +185,6 @@ void VR_MainWindow::onReadyRead() {
 
 			QString user=hmdMSGs.at(0);
 			if(user == userName) return;//the msg is the position of the current user,do nothing 
-
 			for(int i=0;i<Agents.size();i++)
 			{		
 				if(user == Agents.at(i).name)// the msg is the position of user[i],update POS
@@ -209,7 +208,6 @@ void VR_MainWindow::onReadyRead() {
 			if(clrMSGs.size()<2) return;
 			QString user=clrMSGs.at(0);
 			QString clrtype=clrMSGs.at(1);
-			qDebug()<<Agents.size();
 			for(int i=0;i<Agents.size();i++)
 			{
 				if(Agents.at(i).name!=user) continue;
@@ -294,13 +292,17 @@ void VR_MainWindow::SendHMDPosition()
 	//send hmd position
 	socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
 
-	QTimer::singleShot(4000, this, SLOT(SendHMDPosition()));
+	QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
 }
 void VR_MainWindow::RunVRMainloop()
 {
+	//update agents position if necessary
+	if(Agents.size()>0)
+		pMainApplication->SetupAgentModels(Agents);
 
-	//qApp->processEvents();
+	//handle one rendering loop, and handle user interaction
 	bool bQuit=pMainApplication->HandleOneIteration();
+
 	if(bQuit==true)
 	{
 		qDebug()<<"Now quit VR";
@@ -310,6 +312,8 @@ void VR_MainWindow::RunVRMainloop()
 		pMainApplication=0;
 		return;
 	}
+
+	//send local data to server
 	if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
 	//READY_TO_SEND is set to true by the "trigger button up" event;
 	//client sends data to server (using onReadySend());
@@ -320,22 +324,16 @@ void VR_MainWindow::RunVRMainloop()
 		onReadySend(pMainApplication->NT2QString(pMainApplication->sketchNT));
 		CURRENT_DATA_IS_SENT=true;
 	}
+
+
 	QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
-	
 }
 
-QString FloatToQString(float xx)
-{
-  std::string s;  
-  std::stringstream ss(s);//ss(s);  
-  ss<<xx;  
-  return QString::fromStdString(ss.str()); 
-}
 
 //-----------------------------------------------------------------------------
 // Purpose: for standalone VR.
 //-----------------------------------------------------------------------------
-bool doimageVRViewer(NeuronTree nt, My4DImage *i4d, MainWindow *pmain)
+bool startStandaloneVRScene(NeuronTree nt, My4DImage *i4d, MainWindow *pmain)
 {
 
 

@@ -20,7 +20,13 @@
 #include "mainwindow.h"
 
 
+struct Agent {
+	QString name;
+	bool isItSelf;
+	int colorType;
+	float position[16];
 
+};
 
 class Shader;
 class Sphere;
@@ -64,6 +70,7 @@ public:
 	void ClearSketchNT();
 	bool HandleOneIteration();
 	QString getHMDPOSstr();
+	void SetupAgentModels(vector<Agent> &curAgents);
 
 	void SetupRenderModels();
 
@@ -190,6 +197,9 @@ private: // OpenGL bookkeeping
 	vector<Cylinder*> loaded_cylinders;
 	vector<glm::vec3> loaded_spheresPos;
 	vector<glm::vec3> loaded_spheresColor;
+	vector<Sphere*> Agents_spheres;
+	vector<glm::vec3> Agents_spheresPos;
+	vector<glm::vec3> Agents_spheresColor;
 
 	GLuint m_unMorphologyLineModeVAO;
 	GLuint m_glMorphologyLineModeVertBuffer;
@@ -240,7 +250,9 @@ private: // OpenGL bookkeeping
 	glm::mat4 m_ProjTransLeft;
 	glm::mat4 m_ProjTransRight;
 
+	float m_globalScale; // m_globalScale is consistent with m_globalMatrix, and is required somewhere
 	glm::mat4 m_globalMatrix;
+	
 
 	//matrices to store frozen state
 	Matrix4 m_frozen_mat4HMDPose;

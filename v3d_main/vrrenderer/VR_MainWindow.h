@@ -45,15 +45,8 @@ private:
 	bool CURRENT_DATA_IS_SENT;
 
 };
-//bool doimageVRViewer(int argc, char *argv[]);
-bool doimageVRViewer(NeuronTree nt, My4DImage *img4d, MainWindow *pmain);
-QString FloatToQString(float xx);
-struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
-	//float AgentHMDPOS[3];
 
-};
+bool startStandaloneVRScene(NeuronTree nt, My4DImage *img4d, MainWindow *pmain);
+
+
 #endif // VR_MainWindow_H

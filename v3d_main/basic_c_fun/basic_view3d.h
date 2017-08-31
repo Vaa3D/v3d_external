@@ -132,7 +132,7 @@ public:
 	virtual void absoluteRotPose() =0;
 
 #ifdef __ALLOW_VR_FUNCS__
-    virtual void absoluteVRview() =0; //2017-06-11 by Yimin Wang
+    virtual void doimageVRView() =0; //2017-06-11 by Yimin Wang
 #endif
     virtual void doAbsoluteRot(int xRot, int yRot, int zRot) =0;
 	virtual void lookAlong(float xLook, float yLook, float zLook) =0;

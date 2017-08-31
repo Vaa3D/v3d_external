@@ -1039,6 +1039,21 @@ void CMainApplication::Shutdown()
 		for (int i=0;i<sketch_spheres.size();i++) delete sketch_spheres[i];
 		for (int i=0;i<sketch_cylinders.size();i++) delete sketch_cylinders[i];
 
+		for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
+
+		loaded_spheres.clear();
+		loaded_spheresPos.clear();
+		loaded_spheresColor.clear();
+		loaded_cylinders.clear();
+		sketch_spheres.clear();
+		sketch_spheresPos.clear();
+		sketch_cylinders.clear();
+
+		Agents_spheres.clear();
+		Agents_spheresPos.clear();
+		
+		
+
 		if( m_unMorphologyLineModeVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unMorphologyLineModeVAO );
@@ -1371,6 +1386,46 @@ bool CMainApplication::HandleOneIteration()
 
 }
 
+
+void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
+{
+
+	for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
+	Agents_spheres.clear();//clear old spheres
+	Agents_spheresPos.clear();//clear old spheres pos
+	Agents_spheresColor.clear();//clear old spheres color
+
+	if(curAgents.size()<2) return;//size<2 means there is no other users,no need to generate sphere
+
+	for(int i=0;i<curAgents.size();i++)//generate new spheres as other users
+	{
+		if(curAgents.at(i).isItSelf==true) continue;//come to itself, skip
+		Agents_spheres.push_back(new Sphere((0.05f / m_globalScale),5,5));
+
+		int type =curAgents.at(i).colorType;//the color of sphere's surface should be the same as Agent's colortype
+		glm::vec3 agentclr=glm::vec3();
+		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+		Agents_spheresColor.push_back(agentclr);
+
+		glm::mat4 mat_HMD = glm::mat4();
+		for (int k = 0; k < 4; k++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				mat_HMD[k][j]=curAgents.at(i).position[k*4+j];
+			}
+		}
+		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
+		glm::vec3 agentsPos=glm::vec3(posss.x,posss.y,posss.z);
+		//agentsPos  means user's position in world, posss[4] will always be 1.
+		//later may need orientation information
+		Agents_spheresPos.push_back(agentsPos);
+	}
+
+}
 //-----------------------------------------------------------------------------
 // Purpose: Processes a single VR event
 //-----------------------------------------------------------------------------
@@ -2728,7 +2783,7 @@ void CMainApplication::SetupGlobalMatrix()
 	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
 	//qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
-	float scale = 1 / maxD * 2; // these numbers are related to room size
+	m_globalScale = 1 / maxD * 2; // these numbers are related to room size
 	float trans_x = 0.6 ;
 	float trans_y = 1.5 ;
 	float trans_z = 0.4 ;
@@ -2736,7 +2791,7 @@ void CMainApplication::SetupGlobalMatrix()
 
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); //fine tune
 
-	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(scale,scale,scale));
+	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(m_globalScale,m_globalScale,m_globalScale));
 	//glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
 	//qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
 
@@ -2977,6 +3032,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glUniformMatrix4fv( m_nCtrTexMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
 		glBindTexture( GL_TEXTURE_2D, m_iTexture );
 		glDrawArrays( GL_TRIANGLES, 0, m_uiControllerTexIndexSize );
+		glBindTexture( GL_TEXTURE_2D, 0 );
 		glBindVertexArray( 0 );
 		glDisable(GL_BLEND);
 	}
@@ -3013,6 +3069,52 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		//to make the image not block the morphology surface
 		glEnable(GL_DEPTH_TEST);
 		//glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	//=================== draw agent postion with sphere ====================
+	{
+		morphologyShader->use();
+		
+		morphologyShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		morphologyShader->setVec3("lightPos", 1.2f, 1.0f, 2.0f);
+		//morphologyShader->setVec3("lightPos",glm::vec3(m_EyeTransLeft * m_HMDTrans* glm::vec4( 0, 0, 0, 1 )));
+
+		glm::mat4 projection,view;
+		if (nEye == vr::Eye_Left)
+		{
+			morphologyShader->setVec3("viewPos", m_EyePosLeft);
+			projection = m_ProjTransLeft;
+			view = m_EyeTransLeft * m_HMDTrans;
+		}
+		else if (nEye == vr::Eye_Right)
+		{
+			morphologyShader->setVec3("viewPos", m_EyePosRight); 
+			projection = m_ProjTransRight;
+			view = m_EyeTransRight * m_HMDTrans;
+		}
+		morphologyShader->setMat4("projection", projection);
+		morphologyShader->setMat4("view", view);
+		
+		for(int i = 0;i<Agents_spheres.size();i++)// sketch neuron tree
+		{	//draw sphere
+			glm::mat4 model;
+			Sphere* sphr = Agents_spheres[i];
+			glm::vec3 sPos = Agents_spheresPos[i];
+			//glm::vec3 sPos2 = glm::vec3(10,100,50);
+			//qDebug("%f    %f    %f",sPos.x,sPos.y,sPos.z);
+			model = glm::translate(glm::mat4(), sPos);
+
+			model = m_globalMatrix * model;
+
+			morphologyShader->setMat4("model", model);
+			morphologyShader->setVec3("objectColor", Agents_spheresColor[i]);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			sphr->Render();
+			morphologyShader->setVec3("objectColor", surfcolor);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			sphr->Render();
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 	}
 
 	//=================== draw morphology in tube mode ======================
@@ -3175,6 +3277,8 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			}
 		}
 	}
+
+
 
 	//=================== draw morphology in line mode ======================
 	if (m_bShowMorphologyLine)
@@ -3400,13 +3504,30 @@ void CMainApplication::UpdateHMDMatrixPose()
 QString  CMainApplication::getHMDPOSstr()
 {
 	const Matrix4 & mat_HMD = m_rmat4DevicePose[0];
-	QString positionStr;
-	for(int i=0;i<16;i++)
+	glm::mat4 mat = glm::mat4();
+	for (size_t i = 0; i < 4; i++)
 	{
-		positionStr+=QString("%5.3f").arg(mat_HMD[i]);
-		positionStr+=" ";
+		for (size_t j = 0; j < 4; j++)
+		{
+			mat[i][j] = *(mat_HMD.get() + i * 4 + j);
+		}
 	}
-	qDebug()<<positionStr;
+	mat=glm::inverse(m_globalMatrix) * mat;
+	QString positionStr;
+	/*for(int i=0;i<16;i++)
+	{
+		positionStr+=QString("%1").arg(mat_HMD[i]);
+		positionStr+=" ";
+	}*/
+	for (size_t i = 0; i < 4; i++)
+	{
+		for (size_t j = 0; j < 4; j++)
+		{
+			positionStr+=QString("%1").arg(mat[i][j]);
+			positionStr+=" ";
+		}
+	}
+	//qDebug()<<positionStr;
 	return positionStr;
 }
 
@@ -3415,7 +3536,7 @@ QString  CMainApplication::getHMDPOSstr()
 QString CMainApplication::NT2QString(NeuronTree &sNT)
 {
 	char messageBuff[8000]="";
-	for(int i=0;(i<sketchNT.listNeuron.size())&&(i<80);i++)
+	for(int i=0;(i<sketchNT.listNeuron.size())&&(i<120);i++)
 	{
 		char packetbuff[300];
 		NeuronSWC S_temp;
@@ -3433,7 +3554,7 @@ void CMainApplication::UpdateRemoteNT(QString &msg, int type)
 {	
 	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
 	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
-	qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
+	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
 	NeuronSWC S_temp;
 	for(int i=0;i<str_size;i++)
 	{
