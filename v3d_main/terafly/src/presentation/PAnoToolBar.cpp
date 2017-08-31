@@ -117,8 +117,8 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     //setAttribute(Qt::WA_AlwaysShowToolTips, true);
 
     // set autosave interval
-  //  autosaveTimer.start(autosaveInterval);
-  //  connect(&autosaveTimer, SIGNAL(timeout()), this, SLOT(saveAnnotations()));
+    autosaveTimer.start(autosaveInterval);
+    connect(&autosaveTimer, SIGNAL(timeout()), this, SLOT(autosaveAnnotations()));
 }
 
 
@@ -439,6 +439,11 @@ void PAnoToolBar::saveAnnotations()
 {
     if(!PMain::getInstance()->getAnnotationPathRLU().empty())
         PMain::getInstance()->saveAnnotations();
+}
+
+void PAnoToolBar::autosaveAnnotations()
+{
+    PMain::getInstance()->autosaveAnnotations();
 }
 
 

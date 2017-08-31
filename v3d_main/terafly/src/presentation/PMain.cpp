@@ -1479,6 +1479,42 @@ void PMain::saveAnnotations()
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
 }
+
+
+void PMain::autosaveAnnotations()
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    CViewer *cur_win = CViewer::getCurrent();
+
+    try
+    {
+        if(cur_win)
+        {
+            // save current cursor and set wait cursor
+            QCursor cursor = cur_win->view3DWidget->cursor();
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+            CViewer::setCursor(Qt::WaitCursor);
+
+            // save
+            cur_win->storeAnnotations();
+            QDateTime mytime = QDateTime::currentDateTime();
+            QString autosavePath = "./annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str());
+
+            // reset saved cursor
+            CViewer::setCursor(cursor);
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(cursor);
+        }
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
 void PMain::saveAnnotationsAs()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);

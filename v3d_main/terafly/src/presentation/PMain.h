@@ -349,6 +349,8 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void saveAnnotations();
         void saveAnnotationsAs();
+        void autosaveAnnotations();
+
 
         /**********************************************************************************
         * Called when "Clear annotations" menu action is triggered.
