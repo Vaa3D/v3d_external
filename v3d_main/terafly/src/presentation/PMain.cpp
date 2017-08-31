@@ -1500,7 +1500,17 @@ void PMain::autosaveAnnotations()
             // save
             cur_win->storeAnnotations();
             QDateTime mytime = QDateTime::currentDateTime();
-            QString autosavePath = "./annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+            if(QString("./autosave").isEmpty())
+                QDir().mkdir("./autosave");
+            QString autosavePath;
+            if(annotationsPathLRU.compare("")==0)
+                autosavePath = "./autosave/annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+            else
+            {
+                QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+                autosavePath = "./autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+            }
+
             CAnnotations::getInstance()->save(autosavePath.toStdString().c_str());
 
             // reset saved cursor
