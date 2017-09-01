@@ -1623,6 +1623,8 @@ void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%x, %y)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
+    if(vaa3dMarkers.empty())
+        return;
     undoStack.beginMacro("create marker");
     undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
     undoStack.endMacro();
@@ -1647,6 +1649,8 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
     if(every_two_clicks_flag)
     {
         QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
+        if(vaa3dMarkers.empty())
+            return;
         undoStack.beginMacro("create marker");
         undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
         undoStack.endMacro();
