@@ -2366,14 +2366,40 @@ void PMain::debugAction1Triggered()
         v3d_msg(tf::strprintf("%.2f", (1 - empty/(float)dims)*100).c_str());*/
         //v3d_msg(QString("path = ") + QString(tf::TeraFly::getPath().c_str()) + QString("\n"));
 
-        NeuronTree l = terafly::PluginInterface::getSWC();
-        NeuronSWC n;
-        n.x = rand()%200;
-        n.y = rand()%200;
-        n.z = rand()%200;
-        n.parent = -1;
-        l.listNeuron.append(n);
-        terafly::PluginInterface::setSWC(l);
+//        NeuronTree l = terafly::PluginInterface::getSWC();
+//        if(l.listNeuron.empty())
+//        {
+//            NeuronSWC n;
+//            n.x = rand()%200;
+//            n.y = rand()%200;
+//            n.z = rand()%200;
+//            n.parent = -1;
+//            l.listNeuron.append(n);
+//        }
+//        else
+//        {
+//            for(int i=0; i<2; i++)
+//            {
+//                NeuronSWC n;
+//                n.x = rand()%200;
+//                n.y = rand()%200;
+//                n.z = rand()%200;
+//                n.parent = l.listNeuron.back().n;
+//                l.listNeuron.append(n);
+//            }
+//        }
+//        {
+//            //for(int i=0; i<2; i++)
+//            /*{
+//                NeuronSWC n;
+//                n.x = l.listNeuron.back().x + 10;//(rand()%2 ? +rand()%10+1 : rand()%10+1);
+//                n.y = l.listNeuron.back().y + 10; //(rand()%2 ? +rand()%10+1 : rand()%10+1);
+//                n.z = l.listNeuron.back().z + 10; //(rand()%2 ? +rand()%10+1 : rand()%10+1);
+//                n.parent = l.listNeuron.back().n;
+//                l.listNeuron.append(n);
+//            }*/
+//        }
+//        terafly::PluginInterface::setSWC(l);
     }
     catch(tf::RuntimeException &e)
     {
