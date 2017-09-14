@@ -2226,6 +2226,27 @@ void V3dR_GLWidget::setBackgroundColor()
 	POST_updateGL();
 }
 
+void V3dR_GLWidget::switchBackgroundColor()
+{
+    RGBA8 c;
+    c = XYZW(renderer->color_background)*255;
+    QColor qcolor = QColorFromRGBA8(c);
+
+    int diff = qcolor.red() + qcolor.green() + qcolor.blue();
+
+    if(diff == 0) // black
+    {
+        renderer->color_background = backgroundColor/255.f;
+    }
+    else // non-black
+    {
+        backgroundColor = c;
+        renderer->color_background = XYZW(0.f)/255.f;
+    }
+
+    POST_updateGL();
+}
+
 void V3dR_GLWidget::enableShowAxes(bool s)
 {
 	//qDebug("V3dR_GLWidget::setShowAxes = %i",s);

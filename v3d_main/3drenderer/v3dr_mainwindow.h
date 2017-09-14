@@ -204,7 +204,7 @@ public:
 
     // other control
 	QCheckBox *checkBox_displayAxes, *checkBox_displayBoundingBox, *checkBox_OrthoView;
-	QPushButton *colorButton, *brightButton, *reloadDataButton;
+    QPushButton *colorButton, *brightButton, *reloadDataButton, *backgroundColorSwitchButton;
     QPushButton *movieSaveButton, *animateButton;
     QComboBox * comboRotType;
 

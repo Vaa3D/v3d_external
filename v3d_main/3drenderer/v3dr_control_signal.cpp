@@ -200,6 +200,7 @@ void V3dR_MainWindow::createControlWidgets()
 	checkBox_displayAxes = new QCheckBox("Axes", miscDisplayOptGroup);
 	checkBox_displayBoundingBox = new QCheckBox("Bounding box", miscDisplayOptGroup);
 	colorButton = new QPushButton("Color >>", miscDisplayOptGroup);
+    backgroundColorSwitchButton = new QPushButton("BCSwitch", miscDisplayOptGroup);
 	brightButton = new QPushButton("Brighten", miscDisplayOptGroup);
 
 	checkBox_OrthoView = new QCheckBox("Parallel (Scale bar)", miscDisplayOptGroup);
@@ -210,12 +211,13 @@ void V3dR_MainWindow::createControlWidgets()
 
 	layout_miscDisplayOptGroup->addWidget(checkBox_displayAxes, 1, 0, 1, 20);
 	layout_miscDisplayOptGroup->addWidget(checkBox_displayBoundingBox, 2, 0, 1, 20);
-	layout_miscDisplayOptGroup->addWidget(checkBox_OrthoView, 3, 0, 1, 20);
+    layout_miscDisplayOptGroup->addWidget(checkBox_OrthoView, 3, 0, 1, 12);
 	layout_miscDisplayOptGroup->addWidget(colorButton, 4, 0, 1, 12);
 
 	layout_miscDisplayOptGroup->addWidget(movieSaveButton, 1, 1+11, 1, 21-12);
-	layout_miscDisplayOptGroup->addWidget(animateButton, 2, 1+11, 1, 21-12);
+    layout_miscDisplayOptGroup->addWidget(animateButton, 2, 1+11, 1, 21-12);
 	//layout_miscDisplayOptGroup->addWidget(reloadDataButton, 3, 1+11, 1, 21-12);
+    layout_miscDisplayOptGroup->addWidget(backgroundColorSwitchButton, 3, 1+11, 1, 21-12);
 	layout_miscDisplayOptGroup->addWidget(brightButton, 4, 1+11, 1, 21-12);
 
 
@@ -1023,8 +1025,10 @@ void V3dR_MainWindow::connectSignal()
 		connect(colorButton, SIGNAL(clicked()), glWidget, SLOT(setBackgroundColor()));
 	if (brightButton)
 		connect(brightButton, SIGNAL(clicked()), glWidget, SLOT(setBright()));
-	if (reloadDataButton)
-		connect(reloadDataButton, SIGNAL(clicked()), glWidget, SLOT(reloadData()));
+    //if (reloadDataButton)
+    //		connect(reloadDataButton, SIGNAL(clicked()), glWidget, SLOT(reloadData()));
+    if (backgroundColorSwitchButton)
+        connect(backgroundColorSwitchButton, SIGNAL(clicked()), glWidget, SLOT(switchBackgroundColor()));
 
 	if (movieSaveButton)
 		connect(movieSaveButton, SIGNAL(clicked()), this, SLOT(saveMovie()));

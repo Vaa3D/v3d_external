@@ -305,6 +305,7 @@ public slots:
     virtual void enableClipBoundingBox(bool b);  //141013 Hanbo Chen
 	virtual void enableOrthoView(bool b);
 	virtual void setBackgroundColor();
+    virtual void switchBackgroundColor();
 	virtual void setBright();
 
 	virtual void setShowMarkers(int s);
@@ -461,6 +462,8 @@ public:
 	int _Bright, _Contrast, sUpdate_bright, sUpdate_track;
     bool _showAxes, _showBoundingBox, _absRot, _orthoView, _clipBoxEnable;
 	bool _volCompress, _volFilter;
+
+    RGBA8 backgroundColor; // record current non-black backgroundColor
 
 	int _volumeTimePoint; float volumeTimPoint_fraction;
 
