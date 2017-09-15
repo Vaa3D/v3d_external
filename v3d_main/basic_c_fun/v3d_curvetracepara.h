@@ -61,6 +61,8 @@ struct CurveTracePara
 	int sp_graph_resolution_step;
 	int sp_downsample_step;
 	int sp_smoothing_win_sz;
+    int sp_downsample_method; // 0 for average, 1 for max //Added by Zhi 20170915
+
 	
 	double imgTH; //anything <=imgTH should NOT be traced! added by PHC, 2010-Dec-21 for the cmd line v3dneuron tracing program
     double visible_thresh; //2013-02-10
@@ -95,7 +97,8 @@ struct CurveTracePara
 		sp_graph_resolution_step=2;
 		sp_downsample_step=2;
 		sp_smoothing_win_sz=7;
-		
+        sp_downsample_method=1;
+
 		imgTH = 0;
         visible_thresh = 30;
 		
