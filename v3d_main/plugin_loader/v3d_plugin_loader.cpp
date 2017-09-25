@@ -211,6 +211,8 @@ QList<QDir> V3d_PluginLoader::getPluginsDirList()
 #if defined(Q_OS_WIN)
     if (testPluginsDir.dirName().toLower() == "debug" || testPluginsDir.dirName().toLower() == "release")
         testPluginsDir.cdUp();
+
+	qDebug() << testPluginsDir.absolutePath();
 #elif defined(Q_OS_MAC)
     // In a Mac app bundle, plugins directory could be either
     //  a - below the actual executable i.e. v3d.app/Contents/MacOS/plugins/
@@ -467,7 +469,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     	return;
     }
 	
-    loader->unload(); ///
+    //loader->unload(); Commented out by MK, 09242017, attempting to solve plugin issue on Windows with Qt4.8 and higher. Still not sure why it's ok with Qt4.7. 
     QObject *plugin = loader->instance();
     if (!plugin)
     {
@@ -527,7 +529,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	//
     if (!done)  {v3d_msg("No interface found.",0);}
 
-
+	
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
 	//    if (loader->isLoaded())
