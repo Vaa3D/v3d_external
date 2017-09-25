@@ -48,6 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include "v3d_plugin_loader.h"
 #include "pluginDialog.h"
 #include "../terafly/src/control/CPlugin.h"
+#include <QtGlobal>
 
 
 void pumpEvents(int loops=100)
@@ -469,8 +470,12 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     	return;
     }
 	
-    //loader->unload(); Commented out by MK, 09242017, attempting to solve plugin issue on Windows with Qt4.8 and higher. Still not sure why it's ok with Qt4.7. 
-    QObject *plugin = loader->instance();
+
+#if QT_VERSION < 0x040806 // MK, 09242017, attempting to solve plugin issue on Windows with Qt4.8 and higher. Still not sure why it's ok with Qt4.7.
+	loader->unload();
+#endif
+
+	QObject *plugin = loader->instance();
     if (!plugin)
     {
     	v3d_msg("ERROR in Vaa3D_PluginLoader::runPlugin: loader->instance()");
