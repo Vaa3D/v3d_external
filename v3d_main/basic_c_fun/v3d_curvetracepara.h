@@ -97,7 +97,7 @@ struct CurveTracePara
 		sp_graph_resolution_step=2;
 		sp_downsample_step=2;
 		sp_smoothing_win_sz=7;
-        sp_downsample_method=1;
+        sp_downsample_method=0;
 
 		imgTH = 0;
         visible_thresh = 30;
