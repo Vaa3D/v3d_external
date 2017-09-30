@@ -9,6 +9,16 @@ include(cmake/TeraStitcher_Version.cmake)
 # enable TeraFly code in terarepo/src
 add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
 add_definitions(-DWITH_QT)
+# add required definitions for terarepo
+add_definitions(-DTERASTITCHER_MAJOR)
+add_definitions(-DTERASTITCHER_MINOR)
+add_definitions(-DTERASTITCHER_PATCH)
+add_definitions(-DTERASTITCHER2_MAJOR)
+add_definitions(-DTERASTITCHER2_MINOR)
+add_definitions(-DTERASTITCHER2_PATCH)
+add_definitions(-DTERACONVERTER_MAJOR)
+add_definitions(-DTERACONVERTER_MINOR)
+add_definitions(-DTERACONVERTER_PATCH)
 # enable HDF5-dependent code
 add_definitions(-DENABLE_BDV_HDF5)
 add_definitions(-DENABLE_IMS_HDF5)
