@@ -517,7 +517,7 @@ My4DImage* ExportFile::padAndRotateImage(My4DImage* image, const Rotation3D& rot
                 long tOffset=targetZ*yTim*xTim + targetY*xTim + targetX;
 
                 for (int c=0;c<cDim;c++) {
-                    if (data8>0L) {
+                    if (data8 != 0L) {
                         v3d_uint8* d8=image->getRawDataAtChannel(c);
                         v3d_uint8* t8=rotatedImage->getRawDataAtChannel(c);
                         t8[tOffset]=d8[offset];
