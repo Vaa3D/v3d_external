@@ -1461,8 +1461,9 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     * MARKERS
     ***********************************************************************************/
     //storing edited markers
+    /**/tf::debug(tf::LEV3, strprintf("triViewWidget->getImageData()->listLandmarks.size() = %d", triViewWidget->getImageData()->listLandmarks.size()).c_str(), __itm__current__function__);
     QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
-    if(!markers.empty())
+    //if(!markers.empty())  // 2017-10-05. Alessandro. @FIXED: markers set should be saved also when it's empty to deal with the special case when all markers in this VOI have been deleted
     {       
         // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
         // load/store annotation VOIs are now the same (see fix of 2014-11-17).
@@ -1519,7 +1520,7 @@ void CViewer::storeAnnotations() throw (RuntimeException)
 
     //storing edited curves
     NeuronTree nt = this->V3D_env->getSWC(this->window);
-    if(!nt.listNeuron.empty())
+    // if(!nt.listNeuron.empty()) // 2017-10-05. Alessandro. @FIXED: curve set should be saved also when it's empty to deal with the special case when all curves in this VOI have been deleted
     {
         //converting local coordinates into global coordinates
         timer.restart();
@@ -1620,7 +1621,7 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
 
 void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
 {
-    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%x, %y)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
     if(vaa3dMarkers.empty())
@@ -1641,7 +1642,7 @@ void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
 
 void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
 {
-    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%x, %y)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
 
     static bool every_two_clicks_flag = true;
@@ -1671,7 +1672,7 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
 
 void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */) throw (tf::RuntimeException)
 {
-    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%x, %y)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
 
     // select marker (if any) at the clicked location
     view3DWidget->getRenderer()->selectObj(x,y, false);
