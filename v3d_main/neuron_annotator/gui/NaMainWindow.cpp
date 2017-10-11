@@ -1614,7 +1614,7 @@ bool NaMainWindow::openMulticolorImageStack(QUrl url)
     fileUrl.setPath(path + "ConsolidatedLabel");
     multiColorImageStackNode->setPathToMulticolorLabelMaskFile(fileUrl.toString());
     dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
-
+    dataFlowModel->getVolumeData().setAuxillaryImagery(losslessImage, visuallyLosslessImage, channel_spec);
     if (! dataFlowModel->getVolumeData().queueSeparationFolder(url)) {
         onDataLoadFinished();
         return false;

@@ -22,6 +22,9 @@ public:
     QColor getUserColor(const QString & username) const;
     void updateAnnotations(const qint64 & entityId, AnnotationList* annotations, UserColorMap *userColorMap);
     QString getFilePath() const;
+    QString getVisuallyLosslessImage() const;
+    QString getLosslessImage() const;
+    QString getChannelSpecification() const;
     QString name() const;
     Entity* getEntityById(const qint64 & entityId) const;
     inline Entity *entity() const { return _entity; }

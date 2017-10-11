@@ -34,32 +34,32 @@ using namespace jfrc;
 /////////////////////////////////////////
 
 
-NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QUrl fileUrlParam, int stackIndexParam)
-   : QObject(NULL)
-   , stackp(stackpParam)
-   , fileUrl(fileUrlParam)
-   , stackIndex(stackIndexParam)
-   , progressValue(0)
-   , progressMin(0)
-   , progressMax(100)
-   , bIsCanceled(false)
+NaVolumeDataLoadableStack::NaVolumeDataLoadableStack( My4DImage* stackpParam, QUrl fileUrlParam, int stackIndexParam )
+    : QObject( NULL )
+    , stackp( stackpParam )
+    , fileUrl( fileUrlParam )
+    , stackIndex( stackIndexParam )
+    , progressValue( 0 )
+    , progressMin( 0 )
+    , progressMax( 100 )
+    , bIsCanceled( false )
 {
-    connect(&imageLoader, SIGNAL(progressValueChanged(int,int)),
-            this, SIGNAL(progressValueChanged(int,int)));
-    connect(&imageLoader, SIGNAL(progressAborted(int)),
-            this, SIGNAL(failed()));
-    connect(&imageLoader, SIGNAL(progressMessageChanged(QString)),
-            this, SIGNAL(progressMessageChanged(QString)));
+    connect( &imageLoader, SIGNAL( progressValueChanged( int, int ) ),
+             this, SIGNAL( progressValueChanged( int, int ) ) );
+    connect( &imageLoader, SIGNAL( progressAborted( int ) ),
+             this, SIGNAL( failed() ) );
+    connect( &imageLoader, SIGNAL( progressMessageChanged( QString ) ),
+             this, SIGNAL( progressMessageChanged( QString ) ) );
 }
 
 bool NaVolumeDataLoadableStack::load()
 {
-    setRelativeProgress(0.02f); // getting here *is* finite progress
+    setRelativeProgress( 0.02f ); // getting here *is* finite progress
     // qDebug() << "NaVolumeData::LoadableStack::load() fileUrl=" << fileUrl;
-    QUrl fullFileUrl=determineFullFileUrl();
-    if (! exists(fullFileUrl))
+    QUrl fullFileUrl = determineFullFileUrl();
+    if ( ! exists( fullFileUrl ) )
         return false;
-    imageLoader.setProgressIndex(stackIndex);
+    imageLoader.setProgressIndex( stackIndex );
     // qDebug() << fullFileUrl << __FILE__ << __LINE__;
     if (! imageLoader.loadImage(stackp, fullFileUrl)) {
         emit failed();
@@ -74,27 +74,27 @@ bool NaVolumeDataLoadableStack::load()
         return false;
     }
     */
-    setRelativeProgress(0.75);
-    if (! stackp->p_vmin)
+    setRelativeProgress( 0.75 );
+    if ( ! stackp->p_vmin )
         stackp->updateminmaxvalues();
-    setRelativeProgress(1.0);
+    setRelativeProgress( 1.0 );
     emit finished();
     return true;
 }
 
-void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
+void NaVolumeDataLoadableStack::setRelativeProgress( float relativeProgress )
 {
-    int newProgressValue = (int) (progressMin + relativeProgress * (progressMax - progressMin) + 0.5);
-    assert(newProgressValue >= progressMin);
-    assert(newProgressValue <= progressMax);
-    if (newProgressValue == progressValue) return;
+    int newProgressValue = ( int ) ( progressMin + relativeProgress * ( progressMax - progressMin ) + 0.5 );
+    assert( newProgressValue >= progressMin );
+    assert( newProgressValue <= progressMax );
+    if ( newProgressValue == progressValue ) return;
     progressValue = newProgressValue;
-    emit progressValueChanged(progressValue, stackIndex);
+    emit progressValueChanged( progressValue, stackIndex );
 }
 
 QUrl NaVolumeDataLoadableStack::determineFullFileUrl() const
 {
-    if (exists(fileUrl))
+    if ( exists( fileUrl ) )
         return fileUrl;
     QStringList extensions;
 #ifdef USE_FFMPEG
@@ -102,18 +102,18 @@ QUrl NaVolumeDataLoadableStack::determineFullFileUrl() const
     extensions << ".mp4";
 #endif
     extensions
-        << ".v3dpbd"
-        << ".v3draw"
-        << ".tif"
-        << ".tif" // extra entry for when USE_FFMPEG is undefined
-    ;
+            << ".v3dpbd"
+            << ".v3draw"
+            << ".tif"
+            << ".tif" // extra entry for when USE_FFMPEG is undefined
+            ;
     QUrl testUrl = fileUrl;
     QString path = testUrl.path();
-    for (int e = 0; e < extensions.size(); ++e)
+    for ( int e = 0; e < extensions.size(); ++e )
     {
         QString fn = path + extensions[e];
-        testUrl.setPath(fn);
-        if (exists(testUrl))
+        testUrl.setPath( fn );
+        if ( exists( testUrl ) )
             return testUrl;
     }
     return testUrl; // even though the file doesn't exist...
@@ -127,53 +127,53 @@ QUrl NaVolumeDataLoadableStack::determineFullFileUrl() const
 
 /* explicit */
 NaVolumeData::NaVolumeData()
-    : originalImageStack(NULL)
-    , neuronMaskStack(NULL)
-    , referenceStack(NULL)
-    , emptyImage(new My4DImage())
-    , originalImageProxy(emptyImage)
-    , neuronMaskProxy(emptyImage)
-    , referenceImageProxy(emptyImage)
-    , currentProgress(0)
-    , bDoUpdateSignalTexture(true)
-    , volumeTexture(NULL)
-    , doFlipY(true)
+    : originalImageStack( NULL )
+    , neuronMaskStack( NULL )
+    , referenceStack( NULL )
+    , emptyImage( new My4DImage() )
+    , originalImageProxy( emptyImage )
+    , neuronMaskProxy( emptyImage )
+    , referenceImageProxy( emptyImage )
+    , currentProgress( 0 )
+    , bDoUpdateSignalTexture( true )
+    , volumeTexture( NULL )
+    , doFlipY( true )
 {
     // Connect specific signals to general ones
-    connect(this, SIGNAL(channelLoaded(int)),
-            this, SIGNAL(dataChanged()));
-    connect(this, SIGNAL(channelsLoaded(int)),
-            this, SIGNAL(dataChanged()));
-    connect(this, SIGNAL(referenceLoaded()),
-            this, SIGNAL(dataChanged()));
-    connect(this, SIGNAL(neuronMaskLoaded()),
-            this, SIGNAL(dataChanged()));
+    connect( this, SIGNAL( channelLoaded( int ) ),
+             this, SIGNAL( dataChanged() ) );
+    connect( this, SIGNAL( channelsLoaded( int ) ),
+             this, SIGNAL( dataChanged() ) );
+    connect( this, SIGNAL( referenceLoaded() ),
+             this, SIGNAL( dataChanged() ) );
+    connect( this, SIGNAL( neuronMaskLoaded() ),
+             this, SIGNAL( dataChanged() ) );
 
     // React to the appearance of new neuron separation volume files
-    connect(&progressiveLoader, SIGNAL(newFoldersFound()),
-            this, SLOT(loadStagedVolumes()));
+    connect( &progressiveLoader, SIGNAL( newFoldersFound() ),
+             this, SLOT( loadStagedVolumes() ) );
 }
 
 NaVolumeData::~NaVolumeData()
 {
     invalidate();
-    Writer volumeWriter(*this); // Wait for readers to finish before deleting
+    Writer volumeWriter( *this ); // Wait for readers to finish before deleting
     volumeWriter.clearImageData();
 }
 
-void NaVolumeData::setTextureInput(const VolumeTexture* texture)
+void NaVolumeData::setTextureInput( const VolumeTexture* texture )
 {
     volumeTexture = texture;
 }
 
 // Load new volume files from a suddenly appearing directory
-bool NaVolumeData::loadBestVolumeFromDirectory(QUrl dirName)
+bool NaVolumeData::loadBestVolumeFromDirectory( QUrl dirName )
 {
-    if (dirName.isEmpty())
+    if ( dirName.isEmpty() )
         return false;
-    if (! exists(dirName))
+    if ( ! exists( dirName ) )
         return false;
-    QUrl fastloadDir = appendPath(dirName, "fastLoad/");
+    QUrl fastloadDir = appendPath( dirName, "fastLoad/" );
 
     // iterate through possible signal file names, in order of desirability
 
@@ -187,7 +187,7 @@ bool NaVolumeData::loadBestVolumeFromDirectory(QUrl dirName)
     bestSignalFiles << "ConsolidatedSignal2.v3dpbd"; // second choice, 8-bit, sRGB
     bestSignalFiles << "ConsolidatedSignal.v3dpbd"; // third choice, y-flipped, 8-bit, linear
 
-    for (int f = 0; f < bestSignalFiles.size(); ++f)
+    for ( int f = 0; f < bestSignalFiles.size(); ++f )
     {
 
     }
@@ -197,41 +197,41 @@ bool NaVolumeData::loadBestVolumeFromDirectory(QUrl dirName)
 bool NaVolumeData::loadVolumeFromTexture()
 {
     if (NULL == volumeTexture) {
-        emit progressAborted("Volume texture not found");
+        emit progressAborted( "Volume texture not found" );
         return false;
     }
     bool bSucceeded = false;
-    emit progressMessageChanged("Copying volume from 3D texture"); // emit outside of lock block
+    emit progressMessageChanged( "Copying volume from 3D texture" ); // emit outside of lock block
     {
-        Writer writer(*this);
-        if (writer.loadVolumeFromTexture(volumeTexture))
+        Writer writer( *this );
+        if ( writer.loadVolumeFromTexture( volumeTexture ) )
             bSucceeded = true;
     }
 
     if (bSucceeded) {
         // fooDebug() << __FILE__ << __LINE__;
         bDoUpdateSignalTexture = false; // because it was set upstream
-        emit channelsLoaded(3);
+        emit channelsLoaded( 3 );
     }
     else {
-        emit progressAborted("Volume load failed");
+        emit progressAborted( "Volume load failed" );
     }
     return bSucceeded;
 }
 
 /* slot */
-void NaVolumeData::setStackLoadProgress(int progressValue, int stackIndex)
+void NaVolumeData::setStackLoadProgress( int progressValue, int stackIndex )
 {
     // qDebug() << "setStackLoadProgress()" << progressValue << stackIndex;
     if (stackIndex < 0) {
-       // qDebug() << "stack index less than zero";
+        // qDebug() << "stack index less than zero";
         return;
     }
     if (stackIndex >= stackLoadProgressValues.size()) {
-       // qDebug() << "stack index out of range";
+        // qDebug() << "stack index out of range";
         return;
     }
-    if (progressValue == stackLoadProgressValues[stackIndex])
+    if ( progressValue == stackLoadProgressValues[stackIndex] )
         return; // no change
     // TODO - use different weights for each stack depending on file size.
     stackLoadProgressValues[stackIndex] = progressValue;
@@ -239,26 +239,26 @@ void NaVolumeData::setStackLoadProgress(int progressValue, int stackIndex)
     for (int i = 0; i < stackLoadProgressValues.size(); ++i) {
         totalProgressValue += stackLoadProgressValues[i] * 1.0 / stackLoadProgressValues.size();
     }
-    setProgressValue((int) (totalProgressValue + 0.5));
+    setProgressValue( ( int ) ( totalProgressValue + 0.5 ) );
 }
 
 /* slot */
-void NaVolumeData::setProgressValue(int progressValue)
+void NaVolumeData::setProgressValue( int progressValue )
 {
-    if (progressValue < 0) return;
-    if (progressValue > 100) return;
-    if (progressValue == currentProgress) return;
+    if ( progressValue < 0 ) return;
+    if ( progressValue > 100 ) return;
+    if ( progressValue == currentProgress ) return;
     currentProgress = progressValue;
     // qDebug() << "NaVolumeData load progress =" << currentProgress;
-    emit progressValueChanged(currentProgress);
+    emit progressValueChanged( currentProgress );
 }
 
 // You might ask why I don't use My4DImage::flip(axis):
 // Method My4DImage::flip(axis) does not work for multichannel images, and is 5 times slower
 // than this flipY method.
-void flipY(My4DImage* img)
+void flipY( My4DImage* img )
 {
-    if (NULL == img) return;
+    if ( NULL == img ) return;
     const long su = img->getUnitBytes();
     const long sx = img->getXDim();
     const long sy = img->getYDim();
@@ -268,29 +268,29 @@ void flipY(My4DImage* img)
     size_t sliceBytes = rowBytes * sy;
     size_t chanBytes = sliceBytes * sz;
     size_t halfY = sy / 2;
-    std::vector<unsigned char> rowSwapBuf(rowBytes);
+    std::vector<unsigned char> rowSwapBuf( rowBytes );
     unsigned char* rowBuf = &rowSwapBuf[0];
     // qDebug() << sx << sy << sz << sc << halfY;
     // qDebug() << img->getTotalBytes() << img->getTotalUnitNumber() << sx * sy * sz * sc << img->getTotalUnitNumberPerPlane() << sliceBytes;
     unsigned char* rawData = img->getRawData();
     unsigned char* chanPtr;
     unsigned char* slicePtr;
-    for (int c = 0; c < sc; ++c)
+    for ( int c = 0; c < sc; ++c )
     {
         chanPtr = rawData + c * chanBytes;
-        for (int z = 0; z < sz; ++z)
+        for ( int z = 0; z < sz; ++z )
         {
             slicePtr = chanPtr + z * sliceBytes;
-            for (int y = 0; y <= halfY; ++y)
+            for ( int y = 0; y <= halfY; ++y )
             {
                 // swap scan line y with scan line (sz - y - 1)
                 unsigned char* rowA = slicePtr + y * rowBytes;
-                unsigned char* rowB = slicePtr + (sy - 1 - y) * rowBytes;
-                if (rowA == rowB)
+                unsigned char* rowB = slicePtr + ( sy - 1 - y ) * rowBytes;
+                if ( rowA == rowB )
                     continue;
-                memcpy(rowBuf, rowA, rowBytes);
-                memcpy(rowA, rowB, rowBytes);
-                memcpy(rowB, rowBuf, rowBytes);
+                memcpy( rowBuf, rowA, rowBytes );
+                memcpy( rowA, rowB, rowBytes );
+                memcpy( rowB, rowBuf, rowBytes );
             }
         }
     }
@@ -311,13 +311,13 @@ void NaVolumeData::loadStagedVolumes()
     bool bChanged = false;
     QUrl signalPath, labelPath, referencePath;
     // Loop over all volumes to load
-    for (ProgressiveCompanion* item = progressiveLoader.next();
-            item != NULL; item = progressiveLoader.next())
+    for ( ProgressiveCompanion* item = progressiveLoader.next();
+            item != NULL; item = progressiveLoader.next() )
     {
-        assert(item->isFileItem());
+        assert( item->isFileItem() );
         ProgressiveFileCompanion* fileItem =
-                dynamic_cast<ProgressiveFileCompanion*>(item);
-        QUrl fileUrl = fileItem->getFileUrl(progressiveLoader.getFoldersToSearch());
+            dynamic_cast<ProgressiveFileCompanion*>( item );
+        QUrl fileUrl = fileItem->getFileUrl( progressiveLoader.getFoldersToSearch() );
         // qDebug() << "fileUrl =" << fileUrl << __FILE__ << __LINE__;
         SignalChannel channel = fileItem->second;
         if (channel == CHANNEL_LABEL) {
@@ -335,17 +335,17 @@ void NaVolumeData::loadStagedVolumes()
         }
     }
     {
-        Writer writer(*this);
+        Writer writer( *this );
         if (! labelPath.isEmpty()) {
-            writer.setMaskLabelFileUrl(labelPath);
+            writer.setMaskLabelFileUrl( labelPath );
             bChanged = true;
         }
         if (! referencePath.isEmpty()) {
-            writer.setReferenceStackFileUrl(referencePath);
+            writer.setReferenceStackFileUrl( referencePath );
             bChanged = true;
         }
         if (! signalPath.isEmpty()) {
-            writer.setOriginalImageStackFileUrl(signalPath);
+            writer.setOriginalImageStackFileUrl( signalPath );
             bChanged = true;
         }
     }
@@ -363,10 +363,10 @@ void NaVolumeData::loadVolumeDataFromFiles()
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
 
     bool stacksLoaded = false;
-    emit progressMessageChanged("Loading image stack files"); // emit outside of lock block
-    emit progressValueChanged(1); // show a bit of blue
+    emit progressMessageChanged( "Loading image stack files" ); // emit outside of lock block
+    emit progressValueChanged( 1 ); // show a bit of blue
     { // Allocate writer on the stack so write lock will be automatically released when method returns
-        Writer volumeWriter(*this);
+        Writer volumeWriter( *this );
         // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
         volumeWriter.clearImageData();
         // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
@@ -383,8 +383,8 @@ void NaVolumeData::loadVolumeDataFromFiles()
                 // Data images are flipped relative to reference image.  I turned off flipping in
                 // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
                 // emit benchmarkTimerPrintRequested("Starting to flip Y-axis");
-                flipY(originalImageStack);
-                flipY(neuronMaskStack);
+                flipY( originalImageStack );
+                flipY( neuronMaskStack );
                 // emit benchmarkTimerPrintRequested("Finished flipping Y-axis");
                 // flipY(referenceStack);
                 // qDebug() << stopwatch.elapsed();
@@ -393,7 +393,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
     } // release locks before emit
     if (! stacksLoaded) {
         invalidate();
-        emit progressAborted(QString("Problem loading stacks"));
+        emit progressAborted( QString( "Problem loading stacks" ) );
         return;
     }
 
@@ -411,26 +411,26 @@ void NaVolumeData::loadVolumeDataFromFiles()
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() / 1000.0 << "seconds" << __FILE__ << __LINE__;
     emit progressCompleted();
     // fooDebug() << "emitting NaVolumeData::channelsLoaded" << __FILE__ << __LINE__;
-    emit channelsLoaded(originalImageProxy.sc);
+    emit channelsLoaded( originalImageProxy.sc );
 }
 
 /* slot */
-bool NaVolumeData::loadChannels(QUrl url) // includes loading general volumes
+bool NaVolumeData::loadChannels( QUrl url ) // includes loading general volumes
 {
     bool bSucceeded = false;
     int channel_count = 0;
-    emit progressMessageChanged("Loading single volume file"); // emit outside of lock block
+    emit progressMessageChanged( "Loading single volume file" ); // emit outside of lock block
     {
-        Writer writer(*this);
-        channel_count = writer.loadChannels(url);
-        if (channel_count > 0)
+        Writer writer( *this );
+        channel_count = writer.loadChannels( url );
+        if ( channel_count > 0 )
             bSucceeded = true;
     } // release lock before emitting
     if (bSucceeded) {
-        emit channelsLoaded(channel_count);
+        emit channelsLoaded( channel_count );
     }
     else
-        emit progressAborted("Data stack load failed");
+        emit progressAborted( "Data stack load failed" );
     return bSucceeded;
 }
 
@@ -458,55 +458,123 @@ bool NaVolumeData::loadSingleImageMovieVolume(QUrl fileUrl)
 */
 
 /* slot */
-bool NaVolumeData::loadReference(QUrl fileUrl)
+bool NaVolumeData::loadReference( QUrl fileUrl )
 {
     bool bSucceeded = false;
-    emit progressMessageChanged("Loading reference channel"); // emit outside of lock block
+    emit progressMessageChanged( "Loading reference channel" ); // emit outside of lock block
     {
-        Writer writer(*this);
-        if (writer.loadReference(fileUrl))
+        Writer writer( *this );
+        if ( writer.loadReference( fileUrl ) )
             bSucceeded = true;
     }
 
-    if (bSucceeded)
+    if ( bSucceeded )
         emit referenceLoaded();
     else
-        emit progressAborted("Reference load failed");
+        emit progressAborted( "Reference load failed" );
     return bSucceeded;
 }
 
 /* slot */
-bool NaVolumeData::loadOneChannel(QUrl fileUrl, int channel_index) // includes loading general volumes
+bool NaVolumeData::loadOneChannel( QUrl fileUrl, int channel_index ) // includes loading general volumes
 {
     bool bSucceeded = false;
-    emit progressMessageChanged(QString("Loading data channel %1").arg(channel_index)); // emit outside of lock block
+    emit progressMessageChanged( QString( "Loading data channel %1" ).arg( channel_index ) ); // emit outside of lock block
     {
-        Writer writer(*this);
-        if (writer.loadOneChannel(fileUrl, channel_index))
+        Writer writer( *this );
+        if ( writer.loadOneChannel( fileUrl, channel_index ) )
             bSucceeded = true;
     }
-    if (bSucceeded)
-        emit channelLoaded(channel_index);
+    if ( bSucceeded )
+        emit channelLoaded( channel_index );
     else
-        emit progressAborted("Channel load failed");
+        emit progressAborted( "Channel load failed" );
     return bSucceeded;
 }
 
 /* slot */
-bool NaVolumeData::loadNeuronMask(QUrl fileUrl)
+bool NaVolumeData::loadNeuronMask( QUrl fileUrl )
 {
     bool bSucceeded = false;
-    emit progressMessageChanged("Loading neuron mask"); // emit outside of lock block
+    emit progressMessageChanged( "Loading neuron mask" ); // emit outside of lock block
     {
-        Writer writer(*this);
-        if (writer.loadNeuronMask(fileUrl))
+        Writer writer( *this );
+        if ( writer.loadNeuronMask( fileUrl ) )
             bSucceeded = true;
     }
-    if (bSucceeded)
+    if ( bSucceeded )
         emit neuronMaskLoaded();
     else
-        emit progressAborted("Neuron mask load failed");
+        emit progressAborted( "Neuron mask load failed" );
     return bSucceeded;
+}
+
+void
+NaVolumeData::splitH5JStack( )
+{
+    if ( originalImageStack == 0 )
+        return;
+    // qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
+    size_t num_sig_channels = channel_spec.count( 's' );
+    size_t num_ref_channels = channel_spec.count( 'r' );
+    My4DImage* signalImg = new My4DImage();
+    My4DImage* refImg = new My4DImage();
+    signalImg->createImage(
+        originalImageStack->getXDim(),
+        originalImageStack->getYDim(),
+        originalImageStack->getZDim(),
+        num_sig_channels, // three color channels
+        originalImageStack->getDatatype() ); // 1 => 8 bits per value
+    refImg->createImage(
+        originalImageStack->getXDim(),
+        originalImageStack->getYDim(),
+        originalImageStack->getZDim(),
+        num_ref_channels, // three color channels
+        originalImageStack->getDatatype() ); // 1 => 8 bits per value
+    size_t channelBytes = signalImg->getXDim() * signalImg->getYDim() * signalImg->getZDim() * signalImg->getUnitBytes();
+    bool haveMinMax = ( NULL != originalImageStack->p_vmin );
+    if ( haveMinMax )
+    {
+        signalImg->p_vmin = new double[num_sig_channels];
+        signalImg->p_vmax = new double[num_sig_channels];
+        refImg->p_vmin = new double[num_ref_channels];
+        refImg->p_vmax = new double[num_ref_channels];
+    }
+
+    int ref_chan = 0;
+    int sig_chan = 0;
+    for ( int c = 0; c < originalImageStack->getCDim(); ++c )
+    {
+        if ( channel_spec[c] == 's' )
+        {
+            memcpy( signalImg->getRawData() + sig_chan * channelBytes,
+                    originalImageStack->getRawData() + c * channelBytes,
+                    channelBytes );
+            if ( haveMinMax )
+            {
+                signalImg->p_vmin[sig_chan] = originalImageStack->p_vmin[c];
+                signalImg->p_vmax[sig_chan] = originalImageStack->p_vmax[c];
+            }
+            sig_chan++;
+        }
+        else
+        {
+            memcpy( refImg->getRawData() + ref_chan * channelBytes,
+                    originalImageStack->getRawData() + c * channelBytes,
+                    channelBytes );
+            if ( haveMinMax )
+            {
+                refImg->p_vmin[ref_chan] = originalImageStack->p_vmin[c];
+                refImg->p_vmax[ref_chan] = originalImageStack->p_vmax[c];
+            }
+            ref_chan++;
+        }
+    }
+    delete originalImageStack;
+    originalImageStack = signalImg;
+
+    delete referenceStack;
+    referenceStack = refImg;
 }
 
 
@@ -516,13 +584,13 @@ bool NaVolumeData::loadNeuronMask(QUrl fileUrl)
 
 void NaVolumeData::Writer::clearLandmarks()
 {
-    if (m_data->originalImageStack != NULL)
+    if ( m_data->originalImageStack != NULL )
         m_data->originalImageStack->listLandmarks.clear();
 }
 
-void NaVolumeData::Writer::setLandmarks(const QList<LocationSimple> locations)
+void NaVolumeData::Writer::setLandmarks( const QList<LocationSimple> locations )
 {
-    if (m_data->originalImageStack != NULL)
+    if ( m_data->originalImageStack != NULL )
         m_data->originalImageStack->listLandmarks = locations;
 }
 
@@ -550,16 +618,16 @@ void NaVolumeData::Writer::clearImageData()
     }
 }
 
-bool NaVolumeData::Writer::loadSingleImageMovieVolume(QUrl fileUrl)
+bool NaVolumeData::Writer::loadSingleImageMovieVolume( QUrl fileUrl )
 {
-   // qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileUrl;
+    // qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileUrl;
 #ifdef USE_FFMPEG
     My4DImage* img = new My4DImage();
     if (! loadStackFFMpeg(fileUrl, *img) ) {
         delete img;
         return false;
     }
-    if (! setSingleImageVolume(img))
+    if ( ! setSingleImageVolume( img ) )
         return false;
     return true;
 #else
@@ -567,7 +635,7 @@ bool NaVolumeData::Writer::loadSingleImageMovieVolume(QUrl fileUrl)
 #endif
 }
 
-int NaVolumeData::Writer::loadChannels(QUrl url) // includes loading general volumes
+int NaVolumeData::Writer::loadChannels( QUrl url ) // includes loading general volumes
 {
     // qDebug() << "NaVolumeData::Writer::loadChannels()" << fileUrl;
     My4DImage* img = new My4DImage();
@@ -583,56 +651,56 @@ int NaVolumeData::Writer::loadChannels(QUrl url) // includes loading general vol
     return img->getCDim();
 }
 
-bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
+bool NaVolumeData::Writer::setSingleImageVolume( My4DImage* img )
 {
     // qDebug() << "NaVolumeData::Writer::setSingleImageVolume" << __FILE__ << __LINE__;
-    if (m_data->originalImageStack == img)
+    if ( m_data->originalImageStack == img )
         return false; // no change
-    if (NULL == img)
+    if ( NULL == img )
         return false;
-    if (NULL != m_data->originalImageStack)
+    if ( NULL != m_data->originalImageStack )
     {
         delete m_data->originalImageStack;
         m_data->originalImageStack = NULL;
         m_data->originalImageProxy.img0 = NULL;
     }
     m_data->originalImageStack = img;
-    if (! img->p_vmin)
+    if ( ! img->p_vmin )
         img->updateminmaxvalues();
-    m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
-    m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
+    m_data->originalImageProxy = Image4DProxy<My4DImage>( m_data->originalImageStack );
+    m_data->originalImageProxy.set_minmax( m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax );
     return true;
 }
 
 // Convert two-channel image to three channels to avoid crash
-My4DImage* ensureThreeChannel(My4DImage* input)
+My4DImage* ensureThreeChannel( My4DImage* input )
 {
-    if (NULL == input)
+    if ( NULL == input )
         return input;
-    if (3 == input->getCDim())
+    if ( 3 == input->getCDim() )
         return input;
-   // qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
+    // qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
     My4DImage* volImg = new My4DImage();
     volImg->createImage(
-            input->getXDim(),
-            input->getYDim(),
-            input->getZDim(),
-            3, // three color channels
-            input->getDatatype()); // 1 => 8 bits per value
+        input->getXDim(),
+        input->getYDim(),
+        input->getZDim(),
+        3, // three color channels
+        input->getDatatype() ); // 1 => 8 bits per value
     size_t channelBytes = volImg->getXDim() * volImg->getYDim() * volImg->getZDim() * volImg->getUnitBytes();
-    bool haveMinMax = (NULL != input->p_vmin);
+    bool haveMinMax = ( NULL != input->p_vmin );
     if (haveMinMax) {
         volImg->p_vmin = new double[3];
         volImg->p_vmax = new double[3];
     }
-    for (int c = 0; c < 3; ++c)
+    for ( int c = 0; c < 3; ++c )
     {
         int c_in = c;
-        if (c_in >= input->getCDim())
+        if ( c_in >= input->getCDim() )
             c_in = input->getCDim() - 1; // fill other channels with final channel
-        memcpy(volImg->getRawData() + c * channelBytes,
-               input->getRawData() + c_in * channelBytes,
-               channelBytes);
+        memcpy( volImg->getRawData() + c * channelBytes,
+                input->getRawData() + c_in * channelBytes,
+                channelBytes );
         if (haveMinMax) {
             volImg->p_vmin[c] = input->p_vmin[c_in];
             volImg->p_vmax[c] = input->p_vmax[c_in];
@@ -644,51 +712,51 @@ My4DImage* ensureThreeChannel(My4DImage* input)
 
 // Convert 8-bit truncated, gamma corrected stack to linear 16-bit,
 // using metadata file; to approximate original 16-bit values
-My4DImage* transformStackToLinear(My4DImage* img1, QUrl fileUrl)
+My4DImage* transformStackToLinear( My4DImage* img1, QUrl fileUrl )
 {
-    if (img1->getUnitBytes() != 1)
+    if ( img1->getUnitBytes() != 1 )
         return img1; // I only know how to transform 8-bit data
     // Load .metadata file to specify the transformation
     QUrl metadataFileUrl = fileUrl;
-    metadataFileUrl.setPath(fileUrl.path() + ".metadata");
+    metadataFileUrl.setPath( fileUrl.path() + ".metadata" );
     if (! exists(metadataFileUrl)) {
         // Try removing suffix of stack file name
-        QUrl parentUrl = parent(fileUrl);
-        if (parentUrl.isEmpty())
+        QUrl parentUrl = parent( fileUrl );
+        if ( parentUrl.isEmpty() )
             return img1;
-        QFileInfo fi(fileUrl.path());
-        metadataFileUrl = appendPath(parentUrl, fi.completeBaseName() + ".metadata");
-        if (! exists(metadataFileUrl))
+        QFileInfo fi( fileUrl.path() );
+        metadataFileUrl = appendPath( parentUrl, fi.completeBaseName() + ".metadata" );
+        if ( ! exists( metadataFileUrl ) )
             return img1;  // I give up.  There is no metadata file.
     }
     QTime time;
     time.start();
     // assert(QFileInfo(metadataFileUrl).exists());
     SampledVolumeMetadata metadata;
-    metadata.loadFromUrl(metadataFileUrl, 0);
+    metadata.loadFromUrl( metadataFileUrl, 0 );
     // Precompute a table of converted values for all values 0-255
     std::vector< std::vector<uint16_t> > convert;
-    convert.assign(img1->getCDim(), std::vector<uint16_t>((size_t)256, (uint16_t)0));
+    convert.assign( img1->getCDim(), std::vector<uint16_t>( ( size_t )256, ( uint16_t )0 ) );
     // initialize to linear conversion from 8-bits to 12-bits
     for (int c = 0; c < convert.size(); ++c) {
         std::vector<uint16_t>& cc = convert[c];
         double hdr_max = 4095.0;
         double hdr_min = 1.0;
         double gamma = 1.0;
-        if (metadata.channelHdrMaxima.size() > c)
+        if ( metadata.channelHdrMaxima.size() > c )
         {
             hdr_max = metadata.channelHdrMaxima[c];
             hdr_min = metadata.channelHdrMinima[c];
             gamma = metadata.channelGamma[c];
         }
         // 255 maps to hdr_max, 1 maps to hdr_min
-        double range = (hdr_max - hdr_min);
+        double range = ( hdr_max - hdr_min );
         cc[0] = 0; // zero always maps to zero
-        for (int i = 1; i < cc.size(); ++i)
+        for ( int i = 1; i < cc.size(); ++i )
         {
-            double i0 = (i - 1.0) / (cc.size() - 2.0); // range 0-1
-            i0 = std::pow(i0, 1.0/gamma); // apply inverse gamma
-            cc[i] = uint16_t(hdr_min + i0 * range + 0.5);
+            double i0 = ( i - 1.0 ) / ( cc.size() - 2.0 ); // range 0-1
+            i0 = std::pow( i0, 1.0 / gamma ); // apply inverse gamma
+            cc[i] = uint16_t( hdr_min + i0 * range + 0.5 );
         }
     }
     // Apply the conversion to the whole image
@@ -697,7 +765,7 @@ My4DImage* transformStackToLinear(My4DImage* img1, QUrl fileUrl)
     const int sy = img1->getYDim();
     const int sz = img1->getZDim();
     My4DImage* img2 = new My4DImage();
-    img2->loadImage(sx, sy, sz, sc, V3D_UINT16);
+    img2->loadImage( sx, sy, sz, sc, V3D_UINT16 );
     size_t srcRowBytes = sx * img1->getUnitBytes();
     size_t destRowBytes = sx * img2->getUnitBytes();
     size_t srcSliceBytes = sy * srcRowBytes;
@@ -706,7 +774,7 @@ My4DImage* transformStackToLinear(My4DImage* img1, QUrl fileUrl)
     size_t destChannelBytes = sz * destSliceBytes;
     const uint8_t* srcVol = img1->getRawData();
     uint8_t* destVol = img2->getRawData();
-    bool haveMinMax = (NULL != img1->p_vmin);
+    bool haveMinMax = ( NULL != img1->p_vmin );
     if (haveMinMax) {
         img2->p_vmin = new double[sc];
         img2->p_vmax = new double[sc];
@@ -720,7 +788,7 @@ My4DImage* transformStackToLinear(My4DImage* img1, QUrl fileUrl)
             uint8_t* destSlice = destChannel + z * destSliceBytes;
             for (int y = 0; y < sy; ++y) {
                 const uint8_t* srcRow = srcSlice + y * srcRowBytes;
-                uint16_t* destRow = (uint16_t*)(destSlice + y * destRowBytes);
+                uint16_t* destRow = ( uint16_t* )( destSlice + y * destRowBytes );
                 for (int x = 0; x < sx; ++x) {
                     destRow[x] = conv[srcRow[x]];
                 }
@@ -732,46 +800,57 @@ My4DImage* transformStackToLinear(My4DImage* img1, QUrl fileUrl)
             img2->p_vmax[c] = conv[img1->p_vmax[c]];
         }
     }
-   // qDebug() << "linearization took" << time.elapsed() << "milliseconds";
+    // qDebug() << "linearization took" << time.elapsed() << "milliseconds";
 
     return img2;
 }
 
-bool NaVolumeData::queueSeparationFolder(QUrl folder) // using new staged loader
+bool NaVolumeData::queueSeparationFolder( QUrl folder ) // using new staged loader
 {
-    progressiveLoader.queueSeparationFolder(folder);
+    progressiveLoader.queueSeparationFolder( folder );
     /// Loading sequence: ///
     // We only load one group of companion files, from several possible candidates:
     ProgressiveLoadItem* volumeItem = new ProgressiveLoadItem();
     // First try 16-bit full size files
     ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal3.v3dpbd");
-    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel3.v3dpbd", CHANNEL_LABEL);
-    *candidate << new ProgressiveFileCompanion("Reference3.v3dpbd", CHANNEL_ALPHA);
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal3.v3dpbd" );
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel3.v3dpbd", CHANNEL_LABEL );
+    *candidate << new ProgressiveFileCompanion( "Reference3.v3dpbd", CHANNEL_ALPHA );
     *volumeItem << candidate;
     // Next try 8-bit gamma corrected files
     candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2.v3dpbd");
-    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel2.v3dpbd", CHANNEL_LABEL);
-    *candidate << new ProgressiveFileCompanion("Reference2.v3dpbd", CHANNEL_ALPHA);
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal2.v3dpbd" );
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel2.v3dpbd", CHANNEL_LABEL );
+    *candidate << new ProgressiveFileCompanion( "Reference2.v3dpbd", CHANNEL_ALPHA );
     *volumeItem << candidate;
     // Finally try original y-flipped mixed bit-depth files
     candidate = new ProgressiveLoadCandidate();
-    *candidate << &((new ProgressiveFileCompanion("ConsolidatedSignal.v3dpbd"))->setFlippedY(true));
-    *candidate << &((new ProgressiveFileCompanion("ConsolidatedLabel.v3dpbd", CHANNEL_LABEL))->setFlippedY(true));
-    *candidate << new ProgressiveFileCompanion("Reference.v3dpbd", CHANNEL_ALPHA);
+    *candidate << &( ( new ProgressiveFileCompanion( "ConsolidatedSignal.v3dpbd" ) )->setFlippedY( true ) );
+    *candidate << &( ( new ProgressiveFileCompanion( "ConsolidatedLabel.v3dpbd", CHANNEL_LABEL ) )->setFlippedY( true ) );
+    *candidate << new ProgressiveFileCompanion( "Reference.v3dpbd", CHANNEL_ALPHA );
     *volumeItem << candidate;
     //
     candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal.v3draw");
-    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel.v3draw", CHANNEL_LABEL);
-    *candidate << new ProgressiveFileCompanion("Reference.v3draw", CHANNEL_ALPHA);
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal.v3draw" );
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel.v3draw", CHANNEL_LABEL );
+    *candidate << new ProgressiveFileCompanion( "Reference.v3draw", CHANNEL_ALPHA );
     *volumeItem << candidate;
     //
+    if ( !visuallyLosslessImage.isEmpty() )
+    {
+        std::string str = visuallyLosslessImage.toString().toStdString();
+        std::size_t found = str.find_last_of( "/\\" );
+        progressiveLoader.addSearchFolder( QUrl( QString( str.substr( 0, found ).c_str() ) ) );
+        candidate = new ProgressiveLoadCandidate();
+        QString file_name = QString( str.substr( found + 1 ).c_str() );
+        *candidate << new ProgressiveFileCompanion( file_name );
+        *volumeItem << candidate;
+    }
+    //
     candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion("ConsolidatedSignal.tif");
-    *candidate << new ProgressiveFileCompanion("ConsolidatedLabel.tif", CHANNEL_LABEL);
-    *candidate << new ProgressiveFileCompanion("Reference.tif", CHANNEL_ALPHA);
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal.tif" );
+    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel.tif", CHANNEL_LABEL );
+    *candidate << new ProgressiveFileCompanion( "Reference.tif", CHANNEL_ALPHA );
     *volumeItem << candidate;
     //
     progressiveLoader << volumeItem;
@@ -781,196 +860,212 @@ bool NaVolumeData::queueSeparationFolder(QUrl folder) // using new staged loader
 
 bool NaVolumeData::Writer::loadStacks()
 {
-    if (! m_data->representsActualData()) return false;
+    if ( ! m_data->representsActualData() ) return false;
     QTime stopwatch;
     stopwatch.start();
 
     // Prepare to track progress of 3 file load operations
-    m_data->stackLoadProgressValues.assign(3, 0);
+    m_data->stackLoadProgressValues.assign( 3, 0 );
     m_data->currentProgress = -1; // to make sure progress value changes on the next line
-    m_data->setProgressValue(0);
+    m_data->setProgressValue( 0 );
     QCoreApplication::processEvents(); // ensure that progress bar gets displayed
 
     m_data->originalImageStack = new My4DImage();
-    LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFileUrl, 0);
-    connect(&originalStack, SIGNAL(progressValueChanged(int, int)),
-            m_data, SLOT(setStackLoadProgress(int, int)));
-    connect(&originalStack, SIGNAL(progressMessageChanged(QString)),
-            m_data, SIGNAL(progressMessageChanged(QString)));
+    LoadableStack originalStack( m_data->originalImageStack, m_data->originalImageStackFileUrl, 0 );
+    connect( &originalStack, SIGNAL( progressValueChanged( int, int ) ),
+             m_data, SLOT( setStackLoadProgress( int, int ) ) );
+    connect( &originalStack, SIGNAL( progressMessageChanged( QString ) ),
+             m_data, SIGNAL( progressMessageChanged( QString ) ) );
     // qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
     // Pass stack pointer instead of stack reference to avoid problem with lack of QObject copy constructor.
 
     m_data->neuronMaskStack = new My4DImage();
-    LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFileUrl, 1);
-    connect(&maskStack, SIGNAL(progressValueChanged(int, int)),
-            m_data, SLOT(setStackLoadProgress(int, int)));
-    connect(&maskStack, SIGNAL(progressMessageChanged(QString)),
-            m_data, SIGNAL(progressMessageChanged(QString)));
+    LoadableStack maskStack( m_data->neuronMaskStack, m_data->maskLabelFileUrl, 1 );
+    connect( &maskStack, SIGNAL( progressValueChanged( int, int ) ),
+             m_data, SLOT( setStackLoadProgress( int, int ) ) );
+    connect( &maskStack, SIGNAL( progressMessageChanged( QString ) ),
+             m_data, SIGNAL( progressMessageChanged( QString ) ) );
     // qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
 
     m_data->referenceStack = new My4DImage();
     My4DImage* initialReferenceStack = m_data->referenceStack;
-    LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFileUrl, 2);
-    connect(&referenceStack, SIGNAL(progressValueChanged(int, int)),
-            m_data, SLOT(setStackLoadProgress(int, int)));
-    connect(&referenceStack, SIGNAL(progressMessageChanged(QString)),
-            m_data, SIGNAL(progressMessageChanged(QString)));
+    LoadableStack referenceStack( initialReferenceStack, m_data->referenceStackFileUrl, 2 );
+    connect( &referenceStack, SIGNAL( progressValueChanged( int, int ) ),
+             m_data, SLOT( setStackLoadProgress( int, int ) ) );
+    connect( &referenceStack, SIGNAL( progressMessageChanged( QString ) ),
+             m_data, SIGNAL( progressMessageChanged( QString ) ) );
     // qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
 
-    if (! m_data->representsActualData()) return false;
+    if ( ! m_data->representsActualData() ) return false;
 
     // There are some bugs with multithreaded image loading, so make it an option.
     bool bUseMultithreadedLoader = true;
     // Tiff loading is not reentrant, so don't multithread tiff loading.
     int tiff_count = 0;
-    if (originalStack.determineFullFileUrl().path().endsWith(".tif"))
+    if ( !originalStack.getFileUrl().isEmpty() && originalStack.determineFullFileUrl().path().endsWith( ".tif" ) )
         ++tiff_count;
-    if (maskStack.determineFullFileUrl().path().endsWith(".tif"))
+    if ( !maskStack.getFileUrl().isEmpty() && maskStack.determineFullFileUrl().path().endsWith( ".tif" ) )
         ++tiff_count;
-    if (referenceStack.determineFullFileUrl().path().endsWith(".tif"))
+    if ( !referenceStack.getFileUrl().isEmpty() && referenceStack.determineFullFileUrl().path().endsWith( ".tif" ) )
         ++tiff_count;
-    if (tiff_count > 1)
+    if ( tiff_count > 1 )
     {
         bUseMultithreadedLoader = false;
-       // qDebug() << "Using single thread loader because there are nonreentrant tiff files to load.";
+        // qDebug() << "Using single thread loader because there are nonreentrant tiff files to load.";
     }
-    if (bUseMultithreadedLoader)
+    if ( bUseMultithreadedLoader )
     {
         // Load each file in a separate thread.  This assumes that loading code is reentrant...
         QList< QFuture<void> > loaderList;
 
-        QFuture<void> originalLoader = QtConcurrent::run(&originalStack, &LoadableStack::load);
-        loaderList.append(originalLoader);
+        QFuture<void> originalLoader = QtConcurrent::run( &originalStack, &LoadableStack::load );
+        loaderList.append( originalLoader );
 
-        QFuture<void> maskLoader = QtConcurrent::run(&maskStack, &LoadableStack::load);
-        loaderList.append(maskLoader);
+        QFuture<void> maskLoader = QtConcurrent::run( &maskStack, &LoadableStack::load );
+        loaderList.append( maskLoader );
 
-        QFuture<void> referenceLoader = QtConcurrent::run(&referenceStack, &LoadableStack::load);
-        loaderList.append(referenceLoader);
+        QFuture<void> referenceLoader = QtConcurrent::run( &referenceStack, &LoadableStack::load );
+        loaderList.append( referenceLoader );
 
 
-        while(1) {
+        while ( 1 )
+        {
             SleepThread st;
-            st.msleep(1000);
-            if (! m_data->representsActualData()) {
+            st.msleep( 1000 );
+            if ( ! m_data->representsActualData() )
+            {
                 // quick abort during teardown
                 originalStack.cancel();
                 maskStack.cancel();
                 referenceStack.cancel();
             }
-            int doneCount=0;
-            for (int i=0;i<loaderList.size();i++) {
-                QFuture<void> loader=loaderList.at(i);
-                if (loader.isFinished()) {
+            int doneCount = 0;
+            for ( int i = 0; i < loaderList.size(); i++ )
+            {
+                QFuture<void> loader = loaderList.at( i );
+                if ( loader.isFinished() )
+                {
                     doneCount++;
                 }
             }
-            int stillActive=loaderList.size()-doneCount;
-            if (stillActive==0) {
+            int stillActive = loaderList.size() - doneCount;
+            if ( stillActive == 0 )
+            {
                 break;
-            } else {
+            }
+            else
+            {
                 // qDebug() << "Waiting on " << stillActive << " loaders";
             }
             QCoreApplication::processEvents(); // let progress signals through
         }
-        if (! m_data->representsActualData()) return false;
+        if ( ! m_data->representsActualData() ) return false;
     }
-    else {
+    else
+    {
         // Non-threaded sequential loading
-        m_data->setProgressMessage("Loading multicolor brain images...");
-        if (! originalStack.load()) {
+        m_data->setProgressMessage( "Loading multicolor brain images..." );
+        if ( ! originalStack.load() )
+        {
             qDebug() << "ERROR loading signal volume" << m_data->originalImageStackFileUrl;
             return false;
         }
-        if (! m_data->representsActualData()) return false;
-        m_data->setProgressMessage("Loading neuron fragment locations...");
-        if (! maskStack.load()) {
+        if ( ! m_data->representsActualData() ) return false;
+        m_data->setProgressMessage( "Loading neuron fragment locations..." );
+        if ( ! maskStack.load() )
+        {
             qDebug() << "ERROR loading label volume" << m_data->maskLabelFileUrl;
             return false;
         }
-        if (! m_data->representsActualData()) return false;
-        m_data->setProgressMessage("Loading nc82 synaptic reference image...");
-        if (! referenceStack.load()) {
+        if ( ! m_data->representsActualData() ) return false;
+        m_data->setProgressMessage( "Loading nc82 synaptic reference image..." );
+        if ( ! referenceStack.load() )
+        {
             qDebug() << "ERROR loading reference volume" << m_data->referenceStackFileUrl;
             return false;
         }
-        if (! m_data->representsActualData()) return false;
+        if ( ! m_data->representsActualData() ) return false;
     }
 
+    if ( m_data->originalImageStackFileUrl.toString().endsWith( ".h5j" ) )
+    {
+        m_data->splitH5JStack( );
+    }
     // Convert 2-channel image to 3-channels to avoid crash
-    m_data->originalImageStack = ensureThreeChannel(m_data->originalImageStack);
+    m_data->originalImageStack = ensureThreeChannel( m_data->originalImageStack );
 
     // qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
 
-    if (! m_data->originalImageStack->p_vmin)
+    if ( m_data->originalImageStack->getXDim() > 0 && ! m_data->originalImageStack->p_vmin )
         m_data->originalImageStack->updateminmaxvalues();
-    if (! m_data->neuronMaskStack->p_vmin)
+
+    if ( m_data->neuronMaskStack->getXDim() > 0 && ! m_data->neuronMaskStack->p_vmin )
         m_data->neuronMaskStack->updateminmaxvalues();
 
-    if (! m_data->representsActualData()) return false;
+    if ( ! m_data->representsActualData() ) return false;
 
-    if (! m_data->referenceStack->p_vmin)
+    if ( m_data->referenceStack->getXDim() > 0 && ! m_data->referenceStack->p_vmin )
         m_data->referenceStack->updateminmaxvalues();
 
     // Approximate 16-bit data for 8-it data volumes
     // qDebug() << m_data->originalImageStackFileUrl;
     m_data->originalImageStack =
-            transformStackToLinear(m_data->originalImageStack,
-                                   m_data->originalImageStackFileUrl);
+        transformStackToLinear( m_data->originalImageStack,
+                                m_data->originalImageStackFileUrl );
     m_data->referenceStack =
-            transformStackToLinear(m_data->referenceStack,
-                                   m_data->referenceStackFileUrl);
+        transformStackToLinear( m_data->referenceStack,
+                                m_data->referenceStackFileUrl );
 
-    m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
-    m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
-    m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
-    m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
-    m_data->referenceImageProxy = Image4DProxy<My4DImage>(m_data->referenceStack);
-    m_data->referenceImageProxy.set_minmax(m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax);
+    m_data->originalImageProxy = Image4DProxy<My4DImage>( m_data->originalImageStack );
+    m_data->originalImageProxy.set_minmax( m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax );
+    m_data->neuronMaskProxy = Image4DProxy<My4DImage>( m_data->neuronMaskStack );
+    m_data->neuronMaskProxy.set_minmax( m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax );
+    m_data->referenceImageProxy = Image4DProxy<My4DImage>( m_data->referenceStack );
+    m_data->referenceImageProxy.set_minmax( m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax );
 
     return true;
 }
 
-bool NaVolumeData::Writer::loadReference(QUrl fileUrl)
+bool NaVolumeData::Writer::loadReference( QUrl fileUrl )
 {
-    assert(false); // TODO
+    assert( false ); // TODO
     return false;
 }
 
-bool NaVolumeData::Writer::loadOneChannel(QUrl fileUrl, int channel_index) // includes loading general volumes
+bool NaVolumeData::Writer::loadOneChannel( QUrl fileUrl, int channel_index ) // includes loading general volumes
 {
-    assert(false); // TODO
+    assert( false ); // TODO
     return false;
 }
 
-bool NaVolumeData::Writer::loadNeuronMask(QUrl fileUrl)
+bool NaVolumeData::Writer::loadNeuronMask( QUrl fileUrl )
 {
-    assert(false); // TODO
+    assert( false ); // TODO
     return false;
 }
 
-bool NaVolumeData::Writer::loadVolumeFromTexture(const VolumeTexture* texture)
+bool NaVolumeData::Writer::loadVolumeFromTexture( const VolumeTexture* texture )
 {
     // TODO
     // qDebug() << "NaVolumeData::Writer::loadVolumeFromTexture()" << __FILE__ << __LINE__;
-    if (NULL == texture)
+    if ( NULL == texture )
         return false;
     {
         QTime stopwatch;
         stopwatch.start();
-        jfrc::VolumeTexture::Reader textureReader(*texture); // acquire read lock
+        jfrc::VolumeTexture::Reader textureReader( *texture ); // acquire read lock
         jfrc::Dimension size = textureReader.paddedTextureSize();
         size_t sx = size.x();
         size_t sy = size.y();
         size_t sz = size.z();
         My4DImage* volImg = new My4DImage();
-        volImg->createImage(sx, sy, sz,
-                3, // RGB
-                V3D_UINT8); // 1 => 8 bits per value
+        volImg->createImage( sx, sy, sz,
+                             3, // RGB
+                             V3D_UINT8 ); // 1 => 8 bits per value
         My4DImage* refImg = new My4DImage();
-        refImg->createImage(sx, sy, sz,
-                1,
-                V3D_UINT8);
+        refImg->createImage( sx, sy, sz,
+                             1,
+                             V3D_UINT8 );
         // TODO - perform multithreaded copy in z slabs
         // Precomputing these offsets speed debug mode from
         // 7 seconds for loop to 1.1 seconds for loop
@@ -978,7 +1073,7 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const VolumeTexture* texture)
         uint8_t* green_offset = volImg->getRawData() + 1 * sx * sy * sz;
         uint8_t* blue_offset = volImg->getRawData() + 2 * sx * sy * sz;
         uint8_t* nc82_offset = refImg->getRawData() + 0 * sx * sy * sz;
-        const uint8_t* textureData = (const uint8_t*)textureReader.signalData3D();
+        const uint8_t* textureData = ( const uint8_t* )textureReader.signalData3D();
         for (int z = 0; z < sz; ++z) {
             const uint8_t* z_offset1 = textureData + z * sx * sy * 4;
             uint8_t* red_z_offset = red_offset + z * sx * sy * 1;
@@ -1000,9 +1095,9 @@ bool NaVolumeData::Writer::loadVolumeFromTexture(const VolumeTexture* texture)
                 }
             }
         }
-       // qDebug() << "Copying texture took" << stopwatch.elapsed() << "milliseconds";
+        // qDebug() << "Copying texture took" << stopwatch.elapsed() << "milliseconds";
         stopwatch.restart();
-        setSingleImageVolume(volImg);
+        setSingleImageVolume( volImg );
         // qDebug() << "setSingleImageVolume took" << stopwatch.elapsed() << "milliseconds";
     } // release read lock
     // TODO - copy RGBA to data and reference in multiple threads

@@ -69,6 +69,13 @@ public:
     void setTextureInput(const jfrc::VolumeTexture* texture);
     bool doFlipY;
     bool bDoUpdateSignalTexture; // because texture could be populated upstream by VolumeTexture
+    void setAuxillaryImagery( QUrl li_path, QUrl vli_path, QString chanSpec )
+    {
+        visuallyLosslessImage = vli_path;
+        losslessImage = li_path;
+        channel_spec = chanSpec;
+    }
+    void splitH5JStack();
 
 signals:
     void referenceLoaded();
@@ -102,6 +109,8 @@ private:
     QUrl originalImageStackFileUrl;
     QUrl maskLabelFileUrl;
     QUrl referenceStackFileUrl;
+    QUrl visuallyLosslessImage, losslessImage;
+    QString channel_spec;
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
@@ -134,7 +143,10 @@ public:
         bool hasReferenceImage() const {return
                 (m_data->referenceStack != NULL)
                 && (m_data->referenceStack->getTotalBytes() > 0);}
-        bool hasNeuronMask() const {return m_data->neuronMaskStack != NULL;}
+        bool hasNeuronMask() const {return m_data->neuronMaskStack != NULL &&
+                                            m_data->neuronMaskStack->getXDim() &&
+                                            m_data->neuronMaskStack->getYDim() &&
+                                            m_data->neuronMaskStack->getZDim(); }
         bool doUpdateSignalTexture() const;
         int getNumberOfNeurons() const {
             if (NULL == m_data->neuronMaskStack) return 0;

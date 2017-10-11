@@ -226,6 +226,10 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
     ui->annotatedBranchTreeView->resizeColumnToContents(0);
     if (openStack) {
         QString path = annotatedBranch->getFilePath();
+        QString li_path = annotatedBranch->getLosslessImage();
+        QString vli_path = annotatedBranch->getVisuallyLosslessImage();
+        QString ch_spec = annotatedBranch->getChannelSpecification();
+        naMainWindow->setAuxillaryImagery(li_path, vli_path, ch_spec);
         if (naMainWindow->openMulticolorImageStack(path)) {
             // Populate physical voxel size from entity model
             QString ores = annotatedBranch->entity()->getValueByAttributeName("Optical Resolution");
