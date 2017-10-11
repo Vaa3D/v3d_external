@@ -42,6 +42,7 @@ private:
 	
     QTcpSocket* socket;
 	QString userName;
+	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
 
 };

@@ -36,23 +36,40 @@ bool VR_MainWindow::SendLoginRequest() {
                                          "Please enter the server address:", QLineEdit::Normal,
                                          serverNameDefault, &ok1);
     
-    if(ok1 && !serverName.isEmpty())
-    {
-        settings.setValue("vr_serverName", serverName);
-        QString userNameDefault = "";
-        if(!settings.value("vr_userName").toString().isEmpty())
-            userNameDefault = settings.value("vr_userName").toString();
-        bool ok2;
-        userName = QInputDialog::getText(0, "Lgoin Name",
-                                             "Please enter your login name:", QLineEdit::Normal,
-                                             userNameDefault, &ok2);
+	if(ok1 && !serverName.isEmpty())
+	{
+		settings.setValue("vr_serverName", serverName);
+		QString PortDefault = "";
+		if(!settings.value("vr_PORT").toString().isEmpty())
+			PortDefault = settings.value("vr_PORT").toString();
+		bool ok2;
+		vr_Port = QInputDialog::getText(0, "Port",
+			"Please enter the server port:", QLineEdit::Normal,
+			PortDefault, &ok2);
 
-        if(!ok2 || userName.isEmpty())
-        {
-            qDebug()<<"WRONG!EMPTY! ";
-            return SendLoginRequest();
-        }else
-            settings.setValue("vr_userName", userName);
+		if(!ok2 || vr_Port.isEmpty())
+		{
+			qDebug()<<"WRONG!EMPTY! ";
+			return SendLoginRequest();
+		}
+		else
+		{
+			settings.setValue("vr_PORT", vr_Port);
+			QString userNameDefault = "";
+			if(!settings.value("vr_userName").toString().isEmpty())
+				userNameDefault = settings.value("vr_userName").toString();
+			bool ok3;
+			userName = QInputDialog::getText(0, "Lgoin Name",
+				"Please enter your login name:", QLineEdit::Normal,
+				userNameDefault, &ok3);
+
+			if(!ok3 || userName.isEmpty())
+			{
+				qDebug()<<"WRONG!EMPTY! ";
+				return SendLoginRequest();
+			}else
+				settings.setValue("vr_userName", userName);
+		}
 		Agent agent00={
 			//with local information
 			userName,
