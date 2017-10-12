@@ -259,6 +259,7 @@ if(USE_HDF5)
         HDF5
         #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.10.1.tar.gz
         URL https://www.hdfgroup.org/package/gzip/?wpdmdl=4301&refresh=59dd1c8be460b1507662987
+        DOWNLOAD_NAME hdf-1.10.1.tar.gz
         CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=OFF
                    -DCMAKE_INSTALL_PREFIX:PATH=${hdf_dir}/install -DHDF5_BUILD_CPP_LIB:BOOL=ON
                    -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_BUILD_TOOLS:BOOL=ON
