@@ -17,8 +17,8 @@ shopt -s expand_aliases;
 BUILD_HDF5=1
 BOOST_MAJOR_VERSION=1_57
 BOOST_VERSION=${BOOST_MAJOR_VERSION}_0
-CMAKE_MAJOR_VERSION=3.2
-CMAKE_MINOR_VERSION=1
+CMAKE_MAJOR_VERSION=3.9
+CMAKE_MINOR_VERSION=4
 CMAKE_VERSION=${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}
 CMAKE_ARGS=""
 CMAKE_PLATFORM_ARGS=
@@ -140,7 +140,7 @@ case $OPERATION in
         # If CMAKE_EXE is not set, then either find or build cmake
         if [ "$CMAKE_EXE" = "" ]; then
             if hash cmake 2>/dev/null; then
-                echo "cmake_minimum_required(VERSION 3.1)" > $BUILD_DIR/build_$PLATFORM/test_cmake_version
+                echo "cmake_minimum_required(VERSION 3.4)" > $BUILD_DIR/build_$PLATFORM/test_cmake_version
 		set +e
                 cmake -P $BUILD_DIR/build_$PLATFORM/test_cmake_version &> /dev/null
 		status=$?
