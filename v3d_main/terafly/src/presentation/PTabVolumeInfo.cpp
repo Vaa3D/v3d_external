@@ -132,6 +132,8 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_block_dimZ->setSuffix("(z)");
     vp_block_dimZ->setMinimum(1);
     vp_block_dimZ->setMaximum(999);
+    vp_refill_time_spent = new QLineEdit(this);
+    vp_refill_time_spent->setReadOnly(true);
 
     // virtual pyramid RAM panel
     vp_ram_panel = new QGroupBox("RAM usage", this);
@@ -229,6 +231,10 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     block_layout->addWidget(vp_block_dimY);
     block_layout->addWidget(vp_block_dimZ);
     expl_panel_layout->addLayout(block_layout,                  5,1,1,1);
+    QLabel *vp_refill_time_spent_label = new QLabel("Refill time:");
+    vp_refill_time_spent_label->setFixedWidth(firstColumnWidth);
+    expl_panel_layout->addWidget(vp_refill_time_spent_label,    6,0,1,1);
+    expl_panel_layout->addWidget(vp_refill_time_spent,          6,1,1,1);
     vp_exploration_panel->setLayout(expl_panel_layout);
     /* ----------- allocated RAM panel --------------- */
     QGridLayout* vp_RAM_layout = new QGridLayout();
@@ -297,6 +303,9 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
 
 void tf::PTabVolumeInfo::reset()
 {
+    refill_time_total = 0;
+    refill_blocks_total = 0;
+
     vol_format_field->setText("");
     vol_size_field->setText("");
     vol_dims_mm_field->setText("");
@@ -592,6 +601,9 @@ void tf::PTabVolumeInfo::update()
     vp_exploration_bar_local->setText(tf::strprintf( "Current VOI: %.2f %%", completeness_local*100));
     vp_exploration_bar_global->setText(tf::strprintf("Whole image: %.2f %%", completeness_global*100));
 
+    // update refill time elapsed
+    vp_refill_time_spent->setText(tf::strprintf(" %.1f seconds / %d blocks", refill_time_total ? refill_time_total/refill_blocks_total : refill_time_total, refill_blocks_total).c_str());
+
     // refill in background after 3 seconds inactivity
     if(vp_refill_auto_checkbox->isChecked() && inactivityDetector.timer.elapsed() >= 3000)
         vp_refill_button_clicked(true);
@@ -668,10 +680,14 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
         {
             // refill here
             // @TODO: use a separate thread
+            QElapsedTimer timer;
+            timer.start();
             QApplication::processEvents();
             iim::voi3D<> voi( iim::xyz<size_t>(viewer->volH0, viewer->volV0, viewer->volD0), iim::xyz<size_t>(viewer->volH1, viewer->volV1, viewer->volD1) );
             virtualPyramid->refill(cache.size()-1-viewer->volResIndex, voi, tf::VirtualPyramid::refill_strategy(vp_refill_strategy_combobox->currentIndex()), block_dim);
             QApplication::processEvents();
+            refill_time_total += timer.elapsed() / 1000;
+            refill_blocks_total++;
 
             // update GUI (otherwise it will freeze: we are blocking the event-loop thread)
            // update();

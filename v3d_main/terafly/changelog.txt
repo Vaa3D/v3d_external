@@ -12,6 +12,14 @@ ties names are:
 
 ============================================================================================
 TeraFly version 2.5.7
+October 13th, 2017
+--------------------------------------------------------------------------------------------
+- New: added average refill time to Virtual Pyramid tab
+- New: added support to Hamamatsu dcimg format
+--------------------------------------------------------------------------------------------
+
+
+TeraFly version 2.5.7
 October 5th, 2017
 --------------------------------------------------------------------------------------------
 - Fix: fixed non-deletable annotations bug when zooming in/out
