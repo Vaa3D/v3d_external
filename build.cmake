@@ -178,8 +178,8 @@ case $OPERATION in
                     /c/Program\ Files/7-Zip/7z x -y boost_$BOOST_VERSION.tar
                 fi
                 cd boost_$BOOST_VERSION
-                cmd //c .\\bootstrap.bat -without-libraries=python
-                cmd //c .\\b2.exe --toolset=msvc-12.0 address-model=64 --prefix=$boost_prefix install
+                cmd //c .\\bootstrap.bat 
+                cmd //c .\\b2.exe --toolset=msvc-12.0 address-model=64 --prefix=$boost_prefix --without-python install
             else
                 tar xzf $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
                 cd boost_$BOOST_VERSION
