@@ -84,7 +84,6 @@ class terafly::PTabVolumeInfo : public QWidget
         QSpinBox* vp_block_dimX;
         QSpinBox* vp_block_dimY;
         QSpinBox* vp_block_dimZ;
-        QLineEdit* vp_refill_time_spent;
 
         // virtual pyramid RAM panel
         QGroupBox* vp_ram_panel;
@@ -98,8 +97,6 @@ class terafly::PTabVolumeInfo : public QWidget
         QTimer updateTimer;
         QMutex refill_mutex;
         CUserInactivityFilter inactivityDetector;
-        float refill_time_total;
-        int refill_blocks_total;
 
 
     public:
