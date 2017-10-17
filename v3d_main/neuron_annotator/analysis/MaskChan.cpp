@@ -58,7 +58,7 @@ bool MaskChan::setLabelImage(My4DImage *image)
       for (long x=0;x<xdim;x++) {
 	long offset=z*ydim*xdim + y*xdim + x;
 	int labelValue=-1;
-	if (label8>0L) {
+	if (label8>(void*)0L) {
 	  labelValue=label8[offset];
 	} else {
 	  labelValue=label16[offset];
@@ -102,7 +102,7 @@ QList<int> MaskChan::getFragmentListFromLabelStack()
       for (long x=0;x<xdim;x++) {
 	long offset=zOffset+yOffset+x;
 	int labelValue=0;
-	if (label8>0L) {
+	if (label8>(void*)0L) {
 	  labelValue=label8[offset];
 	} else {
 	  labelValue=label16[offset];
@@ -422,7 +422,7 @@ void MaskChan::axisTracer(int direction, int label, QList<MaskRay*> * rayList, l
 
       // do label check for this ray
       bool foundLabelInThisRay=false;
-      if (label8>0L) {
+      if (label8>(void*)0L) {
 	if (direction==0) {
 	  for (long d2=0;d2<D2;d2++) {
 	    offset=d1Offset + d0xdim + d2;
@@ -489,7 +489,7 @@ void MaskChan::axisTracer(int direction, int label, QList<MaskRay*> * rayList, l
 	    offset=d2*xdimydim + d1xdim + d0;
 	  }
 	  int labelValue=-1;
-	  if (label8>0L) {
+	  if (label8>(void*)0L) {
 	    labelValue=label8[offset];
 	  } else {
 	    labelValue=label16[offset];
@@ -519,7 +519,7 @@ void MaskChan::axisTracer(int direction, int label, QList<MaskRay*> * rayList, l
 	    if (debug) {
 	      qDebug() << "start=" << start << " end=" << end << " voxelCount=" << voxelCount;
 	    }
-	    if (data>0L) {
+	    if (data>(void*)0L) {
 	      if (voxelCount > assumedVoxelCount) {
 		qDebug() << "Error: assumedVoxelCount greater than voxelCount";
 		exit(1);
@@ -537,7 +537,7 @@ void MaskChan::axisTracer(int direction, int label, QList<MaskRay*> * rayList, l
 		  long cof=c*cOffset;
 		  long dof=c*assumedVoxelCount;
 		  //qDebug() << "dataPosition=" << dataPosition << " c=" << c << " dof=" << dof << " cof=" << cof << " voxelCount=" << voxelCount;
-		  if (data8>0L) {
+		  if (data8>(void*)0L) {
 		    data8[dataPosition+dof]=source8[sourcePosition+cof];
 		  } else {
 		    data16[dataPosition+dof]=source16[sourcePosition+cof];
@@ -554,7 +554,7 @@ void MaskChan::axisTracer(int direction, int label, QList<MaskRay*> * rayList, l
       } // if foundLabelInThisRay
 
 
-      if (ray>0L) {
+      if (ray>(void*)0L) {
 	pairCount+=ray->endList.size();
 	// Update max values - we will just check first and last values
 	long start=ray->startList[0];
@@ -650,7 +650,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
             FILE* fid2=0L;
             ba = chanFilePath.toUtf8();
             filepath = ba.constData();
-            if ( (fid2=fopen(filepath, "rb"))>0) {
+            if ( (fid2=fopen(filepath, "rb"))>(void*)0) {
                 fread(&chanVoxels, sizeof(long), 1, fid2);
                 fread(&chanChannelCount, sizeof(unsigned char), 1, fid2);
                 fread(&chanRecRed, sizeof(unsigned char), 1, fid2);
