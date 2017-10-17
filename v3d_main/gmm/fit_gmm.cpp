@@ -1382,7 +1382,7 @@ GMM3D_Est * fit_gmm_null(Vol3DSimple <MYFLOAT> * fitImg, const double photonConv
 		{
 		  for (i=0;i<fitImg->sz0();i++)
 		  {
-			if (fitImg_p[j][i]!=NULL && ((j-fy0)*(j-fy0)+(i-fx0)*(i-fx0)<=winRadius2))
+			if (fitImg_p[j][i]>(void*)0 && ((j-fy0)*(j-fy0)+(i-fx0)*(i-fx0)<=winRadius2))
 			{
 			  data2d_p[n][0]=i;
 			  data2d_p[n][1]=j;
