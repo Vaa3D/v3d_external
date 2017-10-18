@@ -70,6 +70,7 @@ public:
 	void ClearSketchNT();
 	bool HandleOneIteration();
 	QString getHMDPOSstr();
+	void SetupCurrentUserInformation(string name, int typeNumber);
 	void SetupAgentModels(vector<Agent> &curAgents);
 
 	void SetupRenderModels();
@@ -124,6 +125,8 @@ public:
 	bool m_bShowMorphologyLine;
 	bool m_bShowMorphologySurface;
 private: 
+	std::string current_agent_color;
+	std::string current_agent_name;
 	bool m_bDebugOpenGL;
 	bool m_bVerbose;
 	bool m_bPerf;

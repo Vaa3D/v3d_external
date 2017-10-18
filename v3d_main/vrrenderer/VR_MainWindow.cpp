@@ -86,7 +86,7 @@ bool VR_MainWindow::SendLoginRequest() {
         return SendLoginRequest();
     }
 
-    socket->connectToHost(serverName, PORT);
+    socket->connectToHost(serverName, vr_Port.toUInt());
 	if(!socket->waitForConnected(15000))
 	{
 		if(socket->state()==QAbstractSocket::UnconnectedState)
@@ -231,6 +231,8 @@ void VR_MainWindow::onReadyRead() {
 					//update agent color
 				Agents.at(i).colorType=clrtype.toInt();
 				qDebug()<<"user:"<<user<<" receievedColorTYPE="<<Agents.at(i).colorType;
+				if(user == userName)
+					pMainApplication->SetupCurrentUserInformation(userName.toStdString(), Agents.at(i).colorType);
 			}
 		}
         else if (messageRex.indexIn(line) != -1) {
@@ -294,6 +296,7 @@ void VR_MainWindow::StartVRScene(NeuronTree nt, My4DImage *i4d, MainWindow *pmai
 		pMainApplication->Shutdown();
 		return;
 	}
+
 	//pMainApplication->RunMainLoop();
 	RunVRMainloop();
 	QTimer::singleShot(3000, this, SLOT(SendHMDPosition()));
@@ -372,6 +375,8 @@ bool startStandaloneVRScene(NeuronTree nt, My4DImage *i4d, MainWindow *pmain)
 		pMainApplication->Shutdown();
 		return 1;
 	}
+
+	pMainApplication->SetupCurrentUserInformation("local user", 13);
 
 	pMainApplication->RunMainLoop();
 

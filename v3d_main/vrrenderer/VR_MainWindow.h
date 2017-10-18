@@ -11,7 +11,6 @@
 //#endif
 
 #include "../basic_c_fun/v3d_interface.h"
-#define PORT 1234
 
 class CMainApplication;
 class My4DImage;

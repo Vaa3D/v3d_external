@@ -1398,6 +1398,53 @@ bool CMainApplication::HandleOneIteration()
 
 }
 
+void CMainApplication::SetupCurrentUserInformation(string name, int typeNumber)
+{
+	current_agent_name = name;
+
+	qDebug("typeNumber: %d",typeNumber);
+
+	switch(typeNumber)
+	{
+	case 2:
+		current_agent_color = "red";
+		break;
+	case 3:
+		current_agent_color = "blue";
+		break;
+	case 4:
+		current_agent_color = "purple";
+		break;
+	case 5:
+		current_agent_color = "cyan";
+		break;
+	case 6:
+		current_agent_color = "yellow";
+		break;
+	case 7:
+		current_agent_color = "green";
+		break;
+	case 8:
+		current_agent_color = "coffee";
+		break;
+	case 9:
+		current_agent_color = "asparagus";
+		break;
+	case 10:
+		current_agent_color = "salmon";
+		break;
+	case 11:
+		current_agent_color = "ice";
+		break;
+	case 12:
+		current_agent_color = "orchid";
+		break;
+	default:
+		current_agent_color = "other color";
+		break;
+	}
+}
+
 
 void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 {
@@ -1648,6 +1695,10 @@ void CMainApplication::RenderFrame()
 	// for now as fast as possible
 	if ( m_pHMD )
 	{
+		QString AgentsNum = QString("%1").arg(Agents_spheres.size()+1);
+		std::string strWindowTitle = "Vaa3D VR [Username: "+current_agent_name+
+			"][Color: "+current_agent_color+"][#Online users: "+AgentsNum.toStdString() + "]";
+		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();
 		SetupControllerTexture();//wwbmark
 		SetupMorphologyLine(1);//for local sketch swc
