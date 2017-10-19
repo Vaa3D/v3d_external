@@ -38,10 +38,12 @@ if (APPLE)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  if(NOT USE_HDF5)
 	  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/include/hdf5-win64")
 	  link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64")
 	  set (HDF5_LIBRARY
 	      "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libhdf5.lib")
+  endif()
 
   set (szip_LIBRARY
       "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/winlib64/libszip.lib")

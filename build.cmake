@@ -110,10 +110,10 @@ fi
 boost_prefix=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
 CMAKE_PLATFORM_ARGS="-DBOOST_ROOT:PATH=$boost_prefix "
 if [ $PLATFORM = "windows-x86_64" ]; then
-    CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/include "
-    CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/winlib64/libtiff.lib "
-    CMAKE_PLATFORM_ARGS+="-DFFTW_INCLUDE_DIR:PATH=$ROOT_DIR/v3d_main/common_lib/fftw-3.3.4-dll64 "
-    CMAKE_PLATFORM_ARGS+="-DFFTW_LIBRARY:PATH=$ROOT_DIR/v3d_main/common_lib/fftw-3.3.4-dll64/libfftw3f-3.lib"
+    CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/include "
+    CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/winlib64/libtiff.lib "
+    CMAKE_PLATFORM_ARGS+="-DFFTW_INCLUDE_DIR:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64 "
+    CMAKE_PLATFORM_ARGS+="-DFFTW_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64/libfftw3f-3.lib"
 fi
 
 : "${CMAKE_DIR:=""}"
@@ -128,6 +128,9 @@ case $OPERATION in
 
         if [[ ! -e $BUILD_DIR/build_$PLATFORM ]]; then
             mkdir -p $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
+            mkdir -p $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/build
+            mkdir -p $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/include
+            cp -r $ROOT_DIR/v3d_main/common_lib/winlib* $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
         fi
 
         # See if the CMAKE_DIR is set
@@ -169,7 +172,7 @@ case $OPERATION in
         echo "Using $CMAKE_EXE"
 
         echo $boost_prefix
-        if [[ ! -e $boost_prefix/include ]]; then
+        if [[ ! -e $boost_prefix/include/boost-$BOOST_MAJOR_VERSION ]]; then
             echo "Unpacking Boost"
             cd $boost_prefix
             if [ $PLATFORM = "windows-x86_64" ]; then
@@ -190,10 +193,10 @@ case $OPERATION in
         fi
 
         if [ $PLATFORM = "windows-x86_64" ]; then
-          if [[ ! -e $ROOT_DIR/v3d_main/common_lib/include/tiff.h ]]; then
+          if [[ ! -e $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/include/tiff.h ]]; then
               echo "Configuring TIFF headers"
-              cd $ROOT_DIR/v3d_main/common_lib/build
-              tar xzf ../src_packages/tiff-4.0.2.tar.gz
+              cd $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/build
+              tar xzf $ROOT_DIR/v3d_main/common_lib//src_packages/tiff-4.0.2.tar.gz
               cd tiff-4.0.2
               nmake Makefile.vc
               cp libtiff/tiff.h ../../include
@@ -207,12 +210,12 @@ case $OPERATION in
 
             echo "Unpacking FFTW"
             CMAKE_EXE+=" -G \"Visual Studio 12 2013 Win64\""
-            cd $ROOT_DIR/v3d_main/common_lib
+            cd $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
             if [[ ! -e fftw-3.3.4-dll64 ]]; then
-                tar xzf fftw-3.3.4-dll64.tgz
+                tar xzf $ROOT_DIR/v3d_main/common_lib/fftw-3.3.4-dll64.tgz
             fi
             if [[ ! -e ffmpeg-2.5.2-win64 ]]; then
-                tar xzf ffmpeg-2.5.2-win64.tgz
+                tar xzf $ROOT_DIR/v3d_main/common_lib/ffmpeg-2.5.2-win64.tgz
             fi
             cd ../../
         fi
