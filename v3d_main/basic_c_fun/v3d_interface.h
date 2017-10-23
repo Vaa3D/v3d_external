@@ -234,6 +234,10 @@ public:
     virtual QString getPathTeraFly()=0;
     virtual const Image4DSimple * getImageTeraFly() = 0;
     virtual QString versionTeraFly() = 0;
+
+    virtual bool getDimTeraFly(const std::string & path, V3DLONG * & sz) = 0;
+    virtual unsigned char* getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1) = 0;
+    virtual void releaseOpenedVolumesTeraFly() = 0;
 };
 
 class V3DPluginInterface2

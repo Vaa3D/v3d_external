@@ -1641,3 +1641,28 @@ QString V3d_PluginLoader::versionTeraFly()
     return QString(terafly::PluginInterface::version().c_str());
 }
 
+bool V3d_PluginLoader::getDimTeraFly(const std::string & path, V3DLONG * & sz)
+{
+    sz = new V3DLONG [5];
+    if (!sz)
+    {
+        return false;
+    }
+    sz[0] = terafly::PluginInterface::getXDim(path);
+    sz[1] = terafly::PluginInterface::getYDim(path);
+    sz[2] = terafly::PluginInterface::getZDim(path);
+    sz[3] = terafly::PluginInterface::getCDim(path);
+    sz[4] = terafly::PluginInterface::getTDim(path);
+    return true;
+}
+
+unsigned char* V3d_PluginLoader::getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1)
+{
+    return terafly::PluginInterface::getSubVolume(path,x0,x1,y0,y1,z0,z1);
+}
+
+
+void V3d_PluginLoader::releaseOpenedVolumesTeraFly()
+{
+    terafly::PluginInterface::releaseOpenedVolumes();
+}
