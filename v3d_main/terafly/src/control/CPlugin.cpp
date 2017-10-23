@@ -30,6 +30,7 @@
 #include "v3d_interface.h"
 #include "../presentation/PMain.h"
 #include "../presentation/PConverter.h"
+#include "VirtualVolume.h"
 #include "v3d_message.h"
 #include "CPlugin.h"
 #include "CViewer.h"
@@ -48,7 +49,7 @@ namespace terafly
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.5.8";          // software version
+    std::string version = "2.5.9";          // software version
     int DEBUG = LEV_MAX;                    // debug level
     debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
     std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
@@ -60,6 +61,8 @@ namespace terafly
     ---------------------------------------------------------------------------------------------------------------------------*/
     QMutex updateGraphicsInProgress;
     /*-------------------------------------------------------------------------------------------------------------------------*/
+
+    static std::map < std::string, iim::VirtualVolume* > volumes_opened = std::map< std::string, iim::VirtualVolume* >();
 }
 
 // 4 - Call the functions corresponding to the domenu items. 
@@ -325,6 +328,141 @@ const Image4DSimple* tf::PluginInterface::getImage()
         return CViewer::getCurrent()->getImage();
     }
     catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// get image metadata from the given image file/folder path
+size_t tf::PluginInterface::getXDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_H());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+size_t tf::PluginInterface::getYDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_V());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+size_t tf::PluginInterface::getZDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_D());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+size_t tf::PluginInterface::getCDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_C());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+size_t tf::PluginInterface::getTDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_T());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// get image subvolume from the given image file/folder path
+// x = horizontal axis, y = vertical axis, z = depth axis, t = time axis
+// intervals are open at right, e.g. [x0, x1)
+unsigned char* tf::PluginInterface::getSubVolume(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1, size_t t0, size_t t1)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        volumes_opened[path]->setActiveFrames(int(t0), int(t1));
+        return volumes_opened[path]->loadSubvolume_to_UINT8(y0, y1, x0, x1, z0, z1);
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// release memory allocated for opened volumes
+void tf::PluginInterface::releaseOpenedVolumes()
+{
+    try
+    {
+        for(std::map <std::string, iim::VirtualVolume*>::iterator it = volumes_opened.begin(); it != volumes_opened.end(); it++)
+            delete it->second;
+        volumes_opened.clear();
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }

@@ -911,7 +911,22 @@ class terafly::PluginInterface
         // get currently displayed image (readonly)
         static const Image4DSimple* getImage();
 
-        static std::string version(){ return "1.0.0"; }
+        // get image metadata from the given image file/folder path
+        static size_t getXDim(const std::string & path);
+        static size_t getYDim(const std::string & path);
+        static size_t getZDim(const std::string & path);
+        static size_t getCDim(const std::string & path);
+        static size_t getTDim(const std::string & path);
+
+        // get image subvolume from the given image file/folder path
+        // x = horizontal axis, y = vertical axis, z = depth axis, t = time axis
+        // intervals are open at right, e.g. [x0, x1)
+        static unsigned char* getSubVolume(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1, size_t t0=0, size_t t1=std::numeric_limits<size_t>::max());
+
+        // release memory allocated for storing volume objects used in the get...(path) methods
+        static void releaseOpenedVolumes();
+
+        static std::string version(){ return "1.1.0"; }
 };
 
 #endif

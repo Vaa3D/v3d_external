@@ -2258,6 +2258,8 @@ void PMain::debugAction1Triggered()
 {
     /**/tf::debug(tf::NO_DEBUG, 0, __itm__current__function__);
 
+
+    //tf::PluginInterface::getSubVolume("/Users/Administrator/Campus BioMedico/Data/tomo300511.raw.RGB/RES(800x800x512)", 0, 500, 0, 500, 0, 1000);
     try
     {
 //        unsigned int src_dims[5]   = { 19, 17,  1,  1,  1 };
