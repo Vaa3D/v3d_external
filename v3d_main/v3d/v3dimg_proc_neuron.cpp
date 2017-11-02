@@ -77,13 +77,13 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 #define TRACE_ERROR_MSG(etype, emsg, trace_res, funcname) \
 	if (etype=="[std]") \
 	{ \
-		QMessageBox::warning(0, "Tracing failure", "Exception in "funcname"\n\n" + emsg + \
+		QMessageBox::warning(0, "Tracing failure", QString("Exception in %1 \n\n").arg(funcname) + emsg + \
 				"\n\nOut of memory!"); \
 		return false; \
 	} \
 	else if (emsg.size() || trace_res==false) \
 	{ \
-		QMessageBox::warning(0, "Tracing failure", "Exception in "funcname"\n\n" + emsg + \
+		QMessageBox::warning(0, "Tracing failure", QString("Exception in %1 \n\n").arg(funcname) + emsg + \
 				"\n\nPlease make sure that:\n  (1) the markers are located in valid CONNECTED image region.\n  (2) the chosen image CHANNEL is your wanted."); \
 		return false; \
 	}

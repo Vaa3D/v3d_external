@@ -46,12 +46,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define CATCH_handler( func_name ) \
 	catch (std::exception& e) { \
 		\
-		qDebug("    *** std exception occurred in "func_name); \
+		qDebug("    *** std exception occurred in %s", func_name); \
 		ERROR_MessageBox(func_name, "std", e.what()); \
 		\
 	} catch (const char* str) { \
 		\
-		qDebug("    *** IO exception occurred in "func_name); \
+		qDebug("    *** IO exception occurred in %s", func_name); \
 		ERROR_MessageBox(func_name, "IO", str); \
 		\
 	} catch (...) { \
