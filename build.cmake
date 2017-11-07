@@ -172,7 +172,14 @@ case $OPERATION in
         echo "Using $CMAKE_EXE"
 
         echo $boost_prefix
-        if [[ ! -e $boost_prefix/include/boost-$BOOST_MAJOR_VERSION ]]; then
+        boost_include_prefix=$boost_prefix/include
+        if [ $PLATFORM = "windows-x86_64" ]; then
+            boost_include_prefix=$boost_include_prefix/boost-$BOOST_MAJOR_VERSION
+        else
+            boost_include_prefix=$boost_include_prefix/boost
+        fi
+
+        if [[ ! -e $boost_include_prefix ]]; then
             echo "Unpacking Boost"
             cd $boost_prefix
             if [ $PLATFORM = "windows-x86_64" ]; then
