@@ -47,6 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_colormapDialog.h"
 //#include "../vrrenderer/v3dr_gl_vr.h"
 #include "../vrrenderer/VR_MainWindow.h"
+#include "../vrrenderer/V3dR_Communicator.h"
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
@@ -1561,14 +1562,8 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::doimageVRView()//0518
 {
-	NeuronTree nt;
-	nt.listNeuron.clear();
-	nt.hashNeuron.clear();
-	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;//->getHandleNeuronTrees();
-	const QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-
-	if(listNeuronTrees->size()>0)
-		nt = listNeuronTrees->at(0);//todo: in the future, load all neuron trees into VR, instead of just loading the first tree
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
 
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
 
@@ -1576,52 +1571,77 @@ void V3dR_GLWidget::doimageVRView()//0518
     this->getMainWindow()->hide();
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-    if (reply == QMessageBox::Yes)
-    {
-        VR_MainWindow * myvrwin= 0;
-        myvrwin =new VR_MainWindow;
-        myvrwin->setWindowTitle("VR MainWindow");
-        bool linkerror = myvrwin->SendLoginRequest();
-        if(linkerror==0)
-        {
-            myvrwin->close();
-        }
-        //else myvrwin->show();
-        myvrwin->StartVRScene(nt,img4d,(MainWindow *)(this->getMainWindow()));
-    }else
-    {
-        startStandaloneVRScene(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-        this->getMainWindow()->show();
-    }
-
-    /*qDebug("Collaborative mode? (Y/N):");
-	char m_mode;
-	m_mode=cin.get();
-	if((m_mode=='Y')||(m_mode=='y'))
-	{	
-		VR_MainWindow * myvrwin= 0;
-		myvrwin =new VR_MainWindow;
-		myvrwin->setWindowTitle("VR MainWindow");
-		bool linkerror = myvrwin->SendLoginRequest();
-		if(linkerror==0)
+	if (reply == QMessageBox::Yes)
+	{
+		if(VRClientON==false)
 		{
-			myvrwin->close();
+			VRClientON = true;
+			VR_MainWindow * myvrwin= 0;
+			myvrwin =new VR_MainWindow;
+			myvrwin->setWindowTitle("VR MainWindow");
+			bool linkerror = myvrwin->SendLoginRequest();
+			myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror);
 		}
-		//else myvrwin->show();
-		myvrwin->StartVRScene(nt,img4d,(MainWindow *)(this->getMainWindow()));
-		
-	}
-	else if((m_mode=='N')||(m_mode=='n'))
-	{	
-		doimageVRViewer(nt, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-		this->getMainWindow()->show();
+		else
+		{
+			v3d_msg("The ** client is running.Failed to start VR client.");
+			this->getMainWindow()->show();
+		}
 	}
 	else
 	{
-		qDebug()<<"Wrong input. Please try again.";
+		startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
 		this->getMainWindow()->show();
-    }*/
+	}
 }
+void V3dR_GLWidget::doclientView(bool check_flag)
+{
+	
+	if(check_flag)
+	{
+		qDebug()<<"run true.";
+		QMessageBox::StandardButton reply;
+		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+		if (reply == QMessageBox::Yes)
+		{
+			if(VRClientON==false)
+			{
+				VRClientON = true;
+				Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+				QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+				myclient = 0;
+				myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+				bool linkerror = myclient->SendLoginRequest();
+				if(!linkerror)
+				{
+					qDebug()<<"Error!Cannot link to server!";
+					myclient = 0;
+				}
+				else
+					v3d_msg("Successed linking to server! ");
+			}
+			else
+			{
+				v3d_msg("The VR client is running.Failed to start ** client.");
+			}
+		}
+	}
+	else
+	{
+		qDebug()<<"run false.";
+		if(myclient->isEnabled())
+		{
+			qDebug()<<"run disc.";
+			delete myclient;
+			myclient = 0;
+		}
+		VRClientON=false;
+	}
+}
+
+
+
+
 #endif
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC

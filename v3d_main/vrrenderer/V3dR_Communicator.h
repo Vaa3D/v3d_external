@@ -1,5 +1,5 @@
-#ifndef VR_MainWindow_H
-#define VR_MainWindow_H
+#ifndef V3DR_COMMUNICATOR_H
+#define V3DR_COMMUNICATOR_H
 
 #include <QWidget>
 #include <QtGui>
@@ -13,41 +13,42 @@
 #include "../basic_c_fun/v3d_interface.h"
 
 
-class CMainApplication;
+//class CMainApplication;
 class My4DImage;
 class MainWindow;
-class VR_MainWindow : public QWidget
+
+class V3dR_Communicator : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit VR_MainWindow();
-    ~VR_MainWindow();
+    explicit V3dR_Communicator(bool *client_flag = 0, QList<NeuronTree>* ntlist=0);
+    ~V3dR_Communicator();
 	void onReadySend(QString &send_MSG);
 	bool SendLoginRequest();
-	void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
-
+	//void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
+	void Update3DViewNTList(QString &msg, int type);
 
 public slots:
-	void RunVRMainloop();
-	void SendHMDPosition();
+	//void RunVRMainloop();
+	//void SendHMDPosition();
 private slots:
 
     void onReadyRead();
     void onConnected();
     void onDisconnected();
-public:
-	CMainApplication *pMainApplication;
+
 private:
 	
     QTcpSocket* socket;
 	QString userName;
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
-
+	bool * clienton;
+	QList<NeuronTree> *NTList_3Dview;	
+	int NTNumReceieved;
 };
 
-bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);
 
 
-#endif // VR_MainWindow_H
+#endif // V3DR_COMMUNICATOR_H

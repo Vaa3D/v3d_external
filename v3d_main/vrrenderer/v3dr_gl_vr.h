@@ -6,6 +6,8 @@
 #include <SDL.h>
 
 #include "../basic_c_fun/v3d_interface.h"
+
+
 #include <openvr.h>
 #include "lodepng.h"
 
@@ -15,7 +17,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
+//#include <gltext.hpp>//include freetype and gltest library
 
 #include "mainwindow.h"
 
@@ -26,6 +28,15 @@ struct Agent {
 	int colorType;
 	float position[16];
 
+};
+
+
+enum ModelControlR
+{
+	m_drawMode = 0,
+	m_deleteMode,
+	m_dragMode,
+	m_markMode
 };
 
 class Shader;
@@ -65,32 +76,40 @@ public:
 	bool BInitGL();
 	bool BInitCompositor();
 
-	void UpdateRemoteNT(QString &msg, int type);//merge receieved message/NT with remoteNT
-    QString NT2QString(NeuronTree &sNT);//translate sketchNT to QString as message to send
-	void ClearSketchNT();
-	bool HandleOneIteration();
-	QString getHMDPOSstr();
+	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
+    QString NT2QString(); // prepare the message to be sent from currentNT.
+	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
+	bool HandleOneIteration();//used in collaboration mode 
+	QString getHMDPOSstr();//get current HMD position, and prepare the message to be sent to server
 	void SetupCurrentUserInformation(string name, int typeNumber);
-	void SetupAgentModels(vector<Agent> &curAgents);
+	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users
+	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
+	QString FindNearestSegment(glm::vec3 dPOS);
+	bool DeleteSegment(QString segName);
+	void abcdefg();//merge sketchedNTList to sketchedNT_merged
+	void MergeNTListtoloadedNT(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge loadedNTlist to loadedNT
 
 	void SetupRenderModels();
 
 	void Shutdown();
 
 	void RunMainLoop();
-	bool HandleInput();
+	bool HandleInput();//handle controller and keyboard input
 	void ProcessVREvent( const vr::VREvent_t & event );
 	void RenderFrame();
-	//wwbmark
-	bool SetupTexturemaps();
+	
+	bool SetupTexturemaps();//load controller textures and setup properties
 	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
-	void SetupControllerTexture();
+	void SetupControllerTexture();//update texture coordinates according to controller's new location
 
 	void SetupMorphologyLine(int drawMode);
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
 
-	void RenderControllerAxes();
+	void SetupMarkerSurface();
+	void SetupMarkerandSurface(double x,double y,double z,int type =3);
+
+	void RenderControllerAxes();//draw XYZ axes on the base point of the controllers 
 
 	bool SetupStereoRenderTargets();
 	void SetupCompanionWindow();
@@ -98,7 +117,6 @@ public:
 	void SetupCamerasForMorphology();
 
 	void SetupGlobalMatrix();//matrix for glabal transformation
-	void NormalizeNeuronTree(NeuronTree& nt);
 	void RenderStereoTargets();
 	void RenderCompanionWindow();
 	void RenderScene( vr::Hmd_Eye nEye );
@@ -120,10 +138,13 @@ public:
 
 	MainWindow *mainwindow;
 	My4DImage *img4d;
-	NeuronTree loadedNT,sketchNT,remoteNT;
+	QList<NeuronTree> *loadedNTList; // neuron trees brought to the VR view from the 3D view.	
 	bool READY_TO_SEND;
-	bool m_bShowMorphologyLine;
-	bool m_bShowMorphologySurface;
+	bool isOnline;
+	ModelControlR  m_modeR;
+	QString delName;
+	QString markerPOS;
+
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -132,6 +153,19 @@ private:
 	bool m_bPerf;
 	bool m_bVblank;
 	bool m_bGlFinishHack;
+	bool m_bShowMorphologyLine;
+	bool m_bShowMorphologySurface;
+	
+	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
+	NeuronTree loadedNT_merged; // merged result of loadedNTList
+	
+	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
+	NeuronTree sketchedNT_merged;//merged result of sketchedNTList, sketchedNT_merged
+	NeuronTree currentNT;// currently drawn stroke of neuron
+	
+	NeuronTree tempNT;//used somewhere, can be change to a local variable
+	BoundingBox swcBB;
+	QList<ImageMarker> drawnMarkerList;
 
 	vr::IVRSystem *m_pHMD;
 	vr::IVRRenderModels *m_pRenderModels;
@@ -140,6 +174,8 @@ private:
 	vr::TrackedDevicePose_t m_rTrackedDevicePose[ vr::k_unMaxTrackedDeviceCount ]; //note: contain everything: validity, matrix, ...
 	Matrix4 m_rmat4DevicePose[ vr::k_unMaxTrackedDeviceCount ]; //note: store device transform matrices, copied from m_rTrackedDevicePose
 	bool m_rbShowTrackedDevice[ vr::k_unMaxTrackedDeviceCount ];
+
+	//gltext::Font * font_VR;//font for render text
 
 private: // SDL bookkeeping
 	SDL_Window *m_pCompanionWindow;
@@ -153,11 +189,11 @@ private: // OpenGL bookkeeping
 	int m_iTrackedControllerCount_Last;
 	int m_iValidPoseCount;
 	int m_iValidPoseCount_Last;
-
 	bool m_bFrozen; //freeze the view
 
 	///control edit mode
-	int  m_modeControl;
+	int  m_modeControlL;
+	int m_modeControlR;
 	bool m_translationMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
@@ -200,9 +236,14 @@ private: // OpenGL bookkeeping
 	vector<Cylinder*> loaded_cylinders;
 	vector<glm::vec3> loaded_spheresPos;
 	vector<glm::vec3> loaded_spheresColor;
+
 	vector<Sphere*> Agents_spheres;
 	vector<glm::vec3> Agents_spheresPos;
 	vector<glm::vec3> Agents_spheresColor;
+
+	vector<Sphere*> Markers_spheres;
+	vector<glm::vec3> Markers_spheresPos;
+	vector<glm::vec3> Markers_spheresColor;
 
 	GLuint m_unMorphologyLineModeVAO;
 	GLuint m_glMorphologyLineModeVertBuffer;
@@ -210,7 +251,7 @@ private: // OpenGL bookkeeping
 	unsigned int m_uiMorphologyLineModeVertcount;
 
 	//VAO/VBO for surface and line of loaded neuron
-	vector<Sphere*> sketch_spheres;
+	vector<Sphere*> sketch_spheres; //2017/11/13, wym: kind of obselete, drawn curves are not shown in surface mode 
 	vector<Cylinder*> sketch_cylinders;
 	vector<glm::vec3> sketch_spheresPos;
 

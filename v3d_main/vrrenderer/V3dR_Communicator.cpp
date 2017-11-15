@@ -1,6 +1,5 @@
-#include "VR_MainWindow.h"
+#include "V3dR_Communicator.h"
 
-#include "v3dr_gl_vr.h"
 #include <QRegExp>
 //#include <QMessageBox>
 #include <QtGui>
@@ -8,10 +7,20 @@
 #include <iostream>
 #include <sstream>
 
-std::vector<Agent> Agents;
-VR_MainWindow::VR_MainWindow() :
+static struct Agent {
+	QString name;
+	bool isItSelf;
+	int colorType;
+	float position[16];
+
+};
+static std::vector<Agent> Agents;
+V3dR_Communicator::V3dR_Communicator(bool *client_flag, QList<NeuronTree>* ntlist) :
 	QWidget()
 {
+	clienton = client_flag;
+	NTList_3Dview = ntlist;
+	NTNumReceieved=0;
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
@@ -21,11 +30,11 @@ VR_MainWindow::VR_MainWindow() :
 	CURRENT_DATA_IS_SENT=false;
 }
 
-VR_MainWindow::~VR_MainWindow() {
+V3dR_Communicator::~V3dR_Communicator() {
 
 }
 
-bool VR_MainWindow::SendLoginRequest() {
+bool V3dR_Communicator::SendLoginRequest() {
 
     QSettings settings("HHMI", "Vaa3D");
     QString serverNameDefault = "";
@@ -100,7 +109,7 @@ bool VR_MainWindow::SendLoginRequest() {
 	return 1;
 }
 
-void VR_MainWindow::onReadySend(QString &send_MSG) {
+void V3dR_Communicator::onReadySend(QString &send_MSG) {
 
     if (!send_MSG.isEmpty()) {
 		if((send_MSG!="exit")&&(send_MSG!="quit"))
@@ -121,12 +130,12 @@ void VR_MainWindow::onReadySend(QString &send_MSG) {
 	}
 }
 
-void VR_MainWindow::onReadyRead() {
+void V3dR_Communicator::onReadyRead() {
     QRegExp usersRex("^/users:(.*)$");
     QRegExp systemRex("^/system:(.*)$");
-	QRegExp hmdposRex("^/hmdpos:(.*)$");
+	//QRegExp hmdposRex("^/hmdpos:(.*)$");
 	QRegExp colorRex("^/color:(.*)$");
-	QRegExp deleteRex("^/del:(.*)$");
+	//QRegExp deleteRex("^/del:(.*)$");
 	QRegExp markerRex("^/marker:(.*)$");
     QRegExp messageRex("^(.*):(.*)$");
 	
@@ -200,28 +209,28 @@ void VR_MainWindow::onReadyRead() {
 			}
 
         }
-		else if(hmdposRex.indexIn(line) != -1) {
-			//qDebug()<<"run hmd";
-			//QString POSofHMD = hmdposRex.cap(1);
-			QStringList hmdMSGs = hmdposRex.cap(1).split(" ");
-			if(hmdMSGs.size()<17) return;
+		//else if(hmdposRex.indexIn(line) != -1) {
+		//	//qDebug()<<"run hmd";
+		//	//QString POSofHMD = hmdposRex.cap(1);
+		//	QStringList hmdMSGs = hmdposRex.cap(1).split(" ");
+		//	if(hmdMSGs.size()<17) return;
 
-			QString user=hmdMSGs.at(0);
-			if(user == userName) return;//the msg is the position of the current user,do nothing 
-			for(int i=0;i<Agents.size();i++)
-			{		
-				if(user == Agents.at(i).name)// the msg is the position of user[i],update POS
-				{
-					for(int j=0;j<16;j++)
-					{
-						Agents.at(i).position[j]=hmdMSGs.at(j+1).toFloat();
-						//qDebug("Agents.at(i).position[15]=%f",Agents.at(i).position[i]);
-						//qDebug()<<"Agent["<<i<<"] "<<" user: "<<Agents.at(i).name<<"HMD Position ="<<Agents.at(i).position[15];				
-					}
-					break;
-				}
-			}
-		}
+		//	QString user=hmdMSGs.at(0);
+		//	if(user == userName) return;//the msg is the position of the current user,do nothing 
+		//	for(int i=0;i<Agents.size();i++)
+		//	{		
+		//		if(user == Agents.at(i).name)// the msg is the position of user[i],update POS
+		//		{
+		//			for(int j=0;j<16;j++)
+		//			{
+		//				Agents.at(i).position[j]=hmdMSGs.at(j+1).toFloat();
+		//				//qDebug("Agents.at(i).position[15]=%f",Agents.at(i).position[i]);
+		//				//qDebug()<<"Agent["<<i<<"] "<<" user: "<<Agents.at(i).name<<"HMD Position ="<<Agents.at(i).position[15];				
+		//			}
+		//			break;
+		//		}
+		//	}
+		//}
 		else if(colorRex.indexIn(line) != -1) {
 			//qDebug()<<"run color";
 			//QString colorFromServer = colorRex.cap(1);
@@ -237,36 +246,31 @@ void VR_MainWindow::onReadyRead() {
 					//update agent color
 				Agents.at(i).colorType=clrtype.toInt();
 				qDebug()<<"user:"<<user<<" receievedColorTYPE="<<Agents.at(i).colorType;
-				if(user == userName)
-					pMainApplication->SetupCurrentUserInformation(userName.toStdString(), Agents.at(i).colorType);
 			}
 		}
-        else if (deleteRex.indexIn(line) != -1) {
-			QStringList delMSGs = deleteRex.cap(1).split(" ");
-			if(delMSGs.size()<2) 
-			{
-					qDebug()<<"size < 2";
-					return;
-			}
-            QString user = delMSGs.at(0);
-            QString delID = delMSGs.at(1);
-			qDebug()<<"user, "<<user<<" delete: "<<delID;
-			if(user==userName)
-			{
-				pMainApplication->READY_TO_SEND=false;
-				CURRENT_DATA_IS_SENT=false;
-				pMainApplication->ClearCurrentNT();
-			}
-			bool delerror = pMainApplication->DeleteSegment(delID);
-			if(delerror==true)
-				qDebug()<<"Segment Deleted.";
-			else
-				qDebug()<<"Cannot Find the Segment ";
-			pMainApplication->abcdefg();
-        }
-
-
-
+   //     else if (deleteRex.indexIn(line) != -1) {
+			//QStringList delMSGs = deleteRex.cap(1).split(" ");
+			//if(delMSGs.size()<2) 
+			//{
+			//		qDebug()<<"size < 2";
+			//		return;
+			//}
+   //         QString user = delMSGs.at(0);
+   //         QString delID = delMSGs.at(1);
+			//qDebug()<<"user, "<<user<<" delete: "<<delID;
+			//if(user==userName)
+			//{
+			//	pMainApplication->READY_TO_SEND=false;
+			//	CURRENT_DATA_IS_SENT=false;
+			//	pMainApplication->ClearSketchNT();
+			//}
+			//bool delerror = pMainApplication->DeleteSegment(delID);
+			//if(delerror==true)
+			//	qDebug()<<"Segment Deleted.";
+			//else
+			//	qDebug()<<"Cannot Find the Segment ";
+			//pMainApplication->MergeNTList2remoteNT();
+   //     }
         else if (markerRex.indexIn(line) != -1) {
 			QStringList markerMSGs = markerRex.cap(1).split(" ");
 			if(markerMSGs.size()<4) 
@@ -279,12 +283,6 @@ void VR_MainWindow::onReadyRead() {
 			float my = markerMSGs.at(2).toFloat();
 			float mz = markerMSGs.at(3).toFloat();
 			qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
-			if(user==userName)
-			{
-				pMainApplication->READY_TO_SEND=false;
-				CURRENT_DATA_IS_SENT=false;
-				pMainApplication->ClearCurrentNT();
-			}
 			int colortype=3;
 			for(int i=0;i<Agents.size();i++)
 			{
@@ -294,177 +292,161 @@ void VR_MainWindow::onReadyRead() {
 					break;
 				}
 			}
-			pMainApplication->SetupMarkerandSurface(mx,my,mz,colortype);
         }
         else if (messageRex.indexIn(line) != -1) {
             QString user = messageRex.cap(1);
             QString message = messageRex.cap(2);
 			//qDebug()<<"user, "<<user<<" said: "<<message;
-			if(pMainApplication)
+			int colortype;
+			for(int i=0;i<Agents.size();i++)
 			{
-				if(user==userName)
+				if(user == Agents.at(i).name)
 				{
-					pMainApplication->READY_TO_SEND=false;
-					CURRENT_DATA_IS_SENT=false;
-					pMainApplication->ClearCurrentNT();
+					colortype=Agents.at(i).colorType;
+					break;
 				}
-
-				int colortype;
-				for(int i=0;i<Agents.size();i++)
-				{
-					if(user == Agents.at(i).name)
-					{
-						colortype=Agents.at(i).colorType;
-						break;
-					}
-				}
-				pMainApplication->UpdateNTList(message,colortype);
 			}
+			qDebug()<<"receieved message :"<<message<<"  from user: "<<user<<"  type :"<<colortype;
+			//trans message to neurontree with colortype
+			//pMainApplication->UpdateNTList(message,colortype);
+			qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
+			Update3DViewNTList(message,colortype);
+			qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
 		}
     }
 }
 
-void VR_MainWindow::onConnected() {
+void V3dR_Communicator::onConnected() {
 
     socket->write(QString("/login:" +userName + "\n").toUtf8());
 
 }
 
-void VR_MainWindow::onDisconnected() {
+void V3dR_Communicator::onDisconnected() {
     qDebug("Now disconnect with the server."); 
+	*clienton = false;
 	//Agents.clear();
-	if(pMainApplication)
-		pMainApplication->isOnline = false;
 	this->close();
 
 }
 
 
-
-void VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, bool isLinkSuccess) {
-
-	pMainApplication = new CMainApplication( 0, 0 );
-
-	pMainApplication->mainwindow =pmain; 
-	pMainApplication->isOnline = isLinkSuccess;
-    //pMainApplication->loadedNT.listNeuron.clear();
-    //pMainApplication->loadedNT.hashNeuron.clear();
-    pMainApplication->loadedNTList = ntlist;
-	//if(pMainApplication->loadedNTList->size()>0)
-	//{
-	//	pMainApplication->loadedNT.listNeuron = ntlist->at(0).listNeuron;
-	//	pMainApplication->loadedNT.hashNeuron = ntlist->at(0).hashNeuron; 
-	//}
-	if(i4d->valid())
+void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
+{	
+	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
+	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
+	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
+	NeuronSWC S_temp;
+	NeuronTree tempNT;
+	tempNT.listNeuron.clear();
+	tempNT.hashNeuron.clear();
+	//each segment has a unique ID storing as its name
+	tempNT.name  = "sketch_"+ QString("%1").arg(NTNumReceieved++);
+	for(int i=0;i<str_size;i++)
 	{
-		pMainApplication->img4d = i4d;
-		pMainApplication->m_bHasImage4D=true;
-	}
-
-	if (!pMainApplication->BInit())
-	{
-		pMainApplication->Shutdown();
-		return;
-	}
-	RunVRMainloop();
-	QTimer::singleShot(3000, this, SLOT(SendHMDPosition()));
-}
-void VR_MainWindow::SendHMDPosition()
-{
-	if(!pMainApplication) return;
-	//get hmd position
-	QString PositionStr=pMainApplication->getHMDPOSstr();
-
-	//send hmd position
-	socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
-
-	QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
-}
-void VR_MainWindow::RunVRMainloop()
-{
-	//update agents position if necessary
-	if(Agents.size()>0)
-		pMainApplication->SetupAgentModels(Agents);
-
-	//handle one rendering loop, and handle user interaction
-	bool bQuit=pMainApplication->HandleOneIteration();
-
-	if(bQuit==true)
-	{
-		qDebug()<<"Now quit VR";
-		socket->disconnectFromHost();
-		Agents.clear();
-		delete pMainApplication;
-		pMainApplication=0;
-		return;
-	}
-
-	//send local data to server
-	if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
-	//READY_TO_SEND is set to true by the "trigger button up" event;
-	//client sends data to server (using onReadySend());
-	//server sends the same data back to client;
-	//READY_TO_SEND is set to false in onReadyRead();
-	//CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
-	{
-		if(pMainApplication->m_modeR==m_drawMode)
-			onReadySend(pMainApplication->NT2QString());
-		else if(pMainApplication->m_modeR==m_deleteMode)
+		qsl[i].truncate(99);
+		//qDebug()<<qsl[i];
+		int iy = i%7;
+		if (iy==0)
 		{
-			qDebug()<<"delname = "<<pMainApplication->delName;
-			if(pMainApplication->delName!="")
-				socket->write(QString("/del:" + pMainApplication->delName + "\n").toUtf8());
-			else
-			{
-				pMainApplication->READY_TO_SEND=false;
-				CURRENT_DATA_IS_SENT=false;
-				pMainApplication->ClearCurrentNT();
-			}
+			S_temp.n = qsl[i].toInt();
 		}
-		else if(pMainApplication->m_modeR==m_markMode)
+		else if (iy==1)
 		{
-			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
-			socket->write(QString("/marker:" + pMainApplication->markerPOS + "\n").toUtf8());
+			S_temp.type = type;
 		}
-		if(pMainApplication->READY_TO_SEND==true)
-			CURRENT_DATA_IS_SENT=true;
-	}
+		else if (iy==2)
+		{
+			S_temp.x = qsl[i].toFloat();
 
+		}
+		else if (iy==3)
+		{
+			S_temp.y = qsl[i].toFloat();
 
-	QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
+		}
+		else if (iy==4)
+		{
+			S_temp.z = qsl[i].toFloat();
+
+		}
+		else if (iy==5)
+		{
+			S_temp.r = qsl[i].toFloat();
+
+		}
+		else if (iy==6)
+		{
+			S_temp.pn = qsl[i].toInt();
+
+			tempNT.listNeuron.append(S_temp);
+			tempNT.hashNeuron.insert(S_temp.n, tempNT.listNeuron.size()-1);
+		}
+	}//*/
+	//RGBA8 tmp= {(unsigned int)type};
+	//tempNT.color = tmp;
+	tempNT.color.i=type;
+	NTList_3Dview->push_back(tempNT);
+	qDebug()<<"receieved nt name is "<<tempNT.name;
+	//updateremoteNT
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: for standalone VR.
-//-----------------------------------------------------------------------------
-bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
-{
+//void V3dR_Communicator::SendHMDPosition()
+//{
+//	if(!pMainApplication) return;
+//	//get hmd position
+//	QString PositionStr=pMainApplication->getHMDPOSstr();
+//
+//	//send hmd position
+//	socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
+//
+//	QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
+//}
+//void V3dR_Communicator::RunVRMainloop()
+//{
+//
+//	//handle one rendering loop, and handle user interaction
+//	bool bQuit;//=HandleOneIteration();
+//
+//	if(bQuit==true)
+//	{
+//		qDebug()<<"Now quit VR";
+//		socket->disconnectFromHost();
+//		Agents.clear();
+//		return;
+//	}
+//
+//	//send local data to server
+//	if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
+//	{
+//		if(pMainApplication->m_modeR==m_drawMode)
+//			onReadySend(pMainApplication->NT2QString());
+//		else if(pMainApplication->m_modeR==m_deleteMode)
+//		{
+//			qDebug()<<"delname = "<<pMainApplication->delName;
+//			if(pMainApplication->delName!="")
+//				socket->write(QString("/del:" + pMainApplication->delName + "\n").toUtf8());
+//			else
+//			{
+//				pMainApplication->READY_TO_SEND=false;
+//				CURRENT_DATA_IS_SENT=false;
+//				pMainApplication->ClearSketchNT();
+//			}
+//		}
+//		else if(pMainApplication->m_modeR==m_markMode)
+//		{
+//			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
+//			socket->write(QString("/marker:" + pMainApplication->markerPOS + "\n").toUtf8());
+//		}
+//		if(pMainApplication->READY_TO_SEND==true)
+//			CURRENT_DATA_IS_SENT=true;
+//	}
+//
+//
+//	QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
+//}
 
-
-	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
-	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
-    pMainApplication->mainwindow = pmain;
-    pMainApplication->isOnline = false;
-    pMainApplication->loadedNTList = ntlist;
-
-	if(i4d->valid())
-	{
-		pMainApplication->img4d = i4d;
-		pMainApplication->m_bHasImage4D=true;
-	}
-	if (!pMainApplication->BInit())
-	{
-		pMainApplication->Shutdown();
-		return 1;
-	}
-	pMainApplication->SetupCurrentUserInformation("local user", 13);
-
-	pMainApplication->RunMainLoop();
-
-	pMainApplication->Shutdown();
-
-	return 0;
-}
+//
 
 

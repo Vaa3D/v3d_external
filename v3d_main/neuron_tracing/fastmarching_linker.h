@@ -182,15 +182,25 @@ struct MyMarker
 };
 
 
-void clean_fm_marker_vector(vector<MyMarker*> &outswc)
-{
-    for (V3DLONG i=outswc.size()-1;i>=0;i--)
-    {
-         if (outswc.at(i)) {delete outswc.at(i); outswc.at(i)=0; }
-        outswc.pop_back();
-    }
-}
+//void clean_fm_marker_vector(vector<MyMarker*> &outswc)
+//{
+//    for (V3DLONG i=outswc.size()-1;i>=0;i--)
+//    {
+//         if (outswc.at(i)) {delete outswc.at(i); outswc.at(i)=0; }
+//        outswc.pop_back();
+//    }
+//}
 
+#ifndef CLEAN_FM_MARKER_VECTOR
+#define CLEAN_FM_MARKER_VECTOR(outswc) \
+{\
+    for (V3DLONG i=outswc.size()-1;i>=0;i--)\
+    {\
+         if (outswc.at(i)) {delete outswc.at(i); outswc.at(i)=0; }\
+        outswc.pop_back();\
+    }\
+}
+#endif
 
 #ifndef GET_LINE_MARKERS
 #define GET_LINE_MARKERS(marker1, marker2, outmarkers) \
@@ -217,7 +227,7 @@ void clean_fm_marker_vector(vector<MyMarker*> &outswc)
 }
 #endif
 
-double dist(MyMarker a, MyMarker b)
+inline double dist(MyMarker a, MyMarker b)
 {
     return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z));
 }

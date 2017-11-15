@@ -47,6 +47,7 @@ class Renderer;
 class V3dR_MainWindow;
 class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
+class V3dR_Communicator;
 //class SurfaceObjGeometryDialog;
 typedef void(*PluginMouseFunc)(QGLWidget*); // May 29, 2012 by Hang
 
@@ -92,7 +93,11 @@ public:
     void setNeuronIndex(int index) {neuronIndex = index;}
     int getNeuronIndex() {return neuronIndex;}
     virtual void preparingRenderer();
-    
+ 
+#ifdef __ALLOW_VR_FUNCS__
+	bool VRClientON;
+	V3dR_Communicator * myclient;
+#endif
 //protected:
 	virtual void choiceRenderer();
 	virtual void settingRenderer(); // for setting the default renderer state when initialize
@@ -254,6 +259,7 @@ public slots:
 	virtual void absoluteRotPose();
 #ifdef __ALLOW_VR_FUNCS__
     virtual void doimageVRView();
+	virtual void doclientView(bool check_flag=false);
 #endif
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
 	virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
@@ -503,6 +509,10 @@ public:
 
 		_volumeTimePoint=0;
 		volumeTimPoint_fraction=0;
+#ifdef __ALLOW_VR_FUNCS__
+		VRClientON=false;
+		myclient = 0;
+#endif
 	}
 };
 

@@ -1715,7 +1715,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 					}
 
 					//always remember to free the potential-memory-problematic fastmarching_linker return value
-					clean_fm_marker_vector(outswc);
+					CLEAN_FM_MARKER_VECTOR(outswc);
 
 					if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
 				} // end of non b_useTitltedBB
@@ -1813,7 +1813,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
              XYZ sub_orig = XYZ(0,0,0);
              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
              //always remember to free the potential-memory-problematic fastmarching_linker return value
-             clean_fm_marker_vector(outswc);
+             CLEAN_FM_MARKER_VECTOR(outswc);
         }// end of b_useTitltedBB
         //clean pSubdata of subvolume boundingbox
         if(b_useStrokeBB) {if(pSubdata) {delete [] pSubdata; pSubdata=0;}}

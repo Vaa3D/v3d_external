@@ -378,6 +378,8 @@ HEADERS += \
     ../vrrenderer/Matrices.h \
     ../vrrenderer/lodepng.h \
     ../vrrenderer/RenderableObject.h \
+    ../vrrenderer/VRFinger.h \
+    ../vrrenderer/V3dR_Communicator.h \
     ../vrrenderer/VR_MainWindow.h 
 
 SOURCES += \
@@ -387,6 +389,8 @@ SOURCES += \
     ../vrrenderer/Matrices.cpp \
     ../vrrenderer/lodepng.cpp \
     ../vrrenderer/RenderableObject.cpp \
+    ../vrrenderer/VRFinger.cpp \
+    ../vrrenderer/V3dR_Communicator.cpp \
     ../vrrenderer/VR_MainWindow.cpp
 }
 
