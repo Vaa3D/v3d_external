@@ -618,7 +618,7 @@ void V3dR_MainWindow::createControlWidgets()
 #ifdef __ALLOW_VR_FUNCS__
 	//=============================================================================
 	//collaboration 
-	rotCView = new QRadioButton("Start Collaboration", controlGroup);
+	rotCView = new QCheckBox("Start collaboration mode in 3D view.");
 	rotCView->setToolTip("You can edit current image in collaboration mode.");
 	controlLayout->addWidget(rotCView);
 	//VR

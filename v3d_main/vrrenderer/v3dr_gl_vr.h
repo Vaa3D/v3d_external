@@ -35,8 +35,19 @@ enum ModelControlR
 {
 	m_drawMode = 0,
 	m_deleteMode,
-	m_dragMode,
-	m_markMode
+	m_markMode,
+	m_dragMode	
+};
+
+enum ModeControlSettings
+{
+	_donothing=0,
+	_Surface=1,
+	_VirtualFinger,	
+	_Freeze,
+	_Search1,
+	_Search2,
+	_Clear
 };
 
 class Shader;
@@ -86,8 +97,9 @@ public:
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
 	bool DeleteSegment(QString segName);
-	void abcdefg();//merge sketchedNTList to sketchedNT_merged
-	void MergeNTListtoloadedNT(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge loadedNTlist to loadedNT
+	void UpdateVR();//update VR data, as merge sketchedNTList to sketchedNT_merged
+	void MergeNTListtosingleNT(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
+	bool isAnyNodeOutBBox(NeuronSWC S_temp);
 
 	void SetupRenderModels();
 
@@ -141,7 +153,7 @@ public:
 	QList<NeuronTree> *loadedNTList; // neuron trees brought to the VR view from the 3D view.	
 	bool READY_TO_SEND;
 	bool isOnline;
-	ModelControlR  m_modeR;
+	ModelControlR  m_modeGrip_R;
 	QString delName;
 	QString markerPOS;
 
@@ -190,18 +202,22 @@ private: // OpenGL bookkeeping
 	int m_iValidPoseCount;
 	int m_iValidPoseCount_Last;
 	bool m_bFrozen; //freeze the view
+	bool m_bVirtualFingerON;
 
-	///control edit mode
-	int  m_modeControlL;
-	int m_modeControlR;
+	//control main functions in right controller
+	int  m_modeControlTouchPad_R;
+	int m_modeControlGrip_R;
+	//control other functions in left controller
+	int m_modeControlGrip_L;
+	ModeControlSettings m_modeGrip_L;
 	bool m_translationMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
 	bool m_TouchFirst;
 	bool m_pickUpState;
 	/////store the pos every first time touch on the touchpad
-	float m_fTouchOldXL;
-	float m_fTouchOldYL;
+	float m_fTouchOldX;
+	float m_fTouchOldY;
 
 	int pick_point;
 

@@ -1600,36 +1600,32 @@ void V3dR_GLWidget::doclientView(bool check_flag)
 	if(check_flag)
 	{
 		qDebug()<<"run true.";
-		QMessageBox::StandardButton reply;
-		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-		if (reply == QMessageBox::Yes)
+		if(VRClientON==false)
 		{
-			if(VRClientON==false)
+			v3d_msg("Now start Collaboration.");
+			VRClientON = true;
+			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+			myclient = 0;
+			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+			bool linkerror = myclient->SendLoginRequest();
+			if(!linkerror)
 			{
-				VRClientON = true;
-				Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-				QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+				v3d_msg("Error!Cannot link to server!");
 				myclient = 0;
-				myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
-				bool linkerror = myclient->SendLoginRequest();
-				if(!linkerror)
-				{
-					qDebug()<<"Error!Cannot link to server!";
-					myclient = 0;
-				}
-				else
-					v3d_msg("Successed linking to server! ");
 			}
 			else
-			{
-				v3d_msg("The VR client is running.Failed to start ** client.");
-			}
+				v3d_msg("Successed linking to server! ");
+		}
+		else
+		{
+			v3d_msg("The VR client is running.Failed to start ** client.");
 		}
 	}
 	else
 	{
 		qDebug()<<"run false.";
-		if(myclient->isEnabled())
+		if(myclient)
 		{
 			qDebug()<<"run disc.";
 			delete myclient;

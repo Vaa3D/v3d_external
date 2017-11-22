@@ -420,9 +420,9 @@ void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to 
 //	//send local data to server
 //	if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
 //	{
-//		if(pMainApplication->m_modeR==m_drawMode)
+//		if(pMainApplication->m_modeGrip_R==m_drawMode)
 //			onReadySend(pMainApplication->NT2QString());
-//		else if(pMainApplication->m_modeR==m_deleteMode)
+//		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 //		{
 //			qDebug()<<"delname = "<<pMainApplication->delName;
 //			if(pMainApplication->delName!="")
@@ -434,7 +434,7 @@ void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to 
 //				pMainApplication->ClearSketchNT();
 //			}
 //		}
-//		else if(pMainApplication->m_modeR==m_markMode)
+//		else if(pMainApplication->m_modeGrip_R==m_markMode)
 //		{
 //			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
 //			socket->write(QString("/marker:" + pMainApplication->markerPOS + "\n").toUtf8());

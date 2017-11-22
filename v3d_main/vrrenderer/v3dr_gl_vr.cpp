@@ -691,14 +691,16 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_bShowMorphologyLine(true)
 	, m_bShowMorphologySurface(false)
 	, m_bFrozen (false)
-	, m_modeControlL(0)
-	, m_modeControlR(0)
+	, m_bVirtualFingerON(true)
+	, m_modeControlTouchPad_R(0)
+	, m_modeControlGrip_R(0)
+	, m_modeControlGrip_L(0)
 	, m_translationMode (false)
 	, m_rotateMode (false)
 	, m_zoomMode (false)
 	, m_TouchFirst (true)
-	, m_fTouchOldXL( 0 )
-	, m_fTouchOldYL( 0 )
+	, m_fTouchOldX( 0 )
+	, m_fTouchOldY( 0 )
 	, m_pickUpState(false)
 	, pick_point (-1)
 	, m_ControllerTexVAO( 0 )
@@ -879,7 +881,8 @@ bool CMainApplication::BInit()
 	m_iTexture = 0;
 	m_uiControllerTexIndexSize = 0;
 	m_globalMatrix =glm::mat4();
-	m_modeR = m_drawMode;
+	m_modeGrip_R = m_drawMode;
+	m_modeGrip_L = _donothing;
 	delName = "";
 
 
@@ -952,7 +955,7 @@ bool CMainApplication::BInitGL()
 	if( !CreateAllShaders() )
 		return false;
 
-	MergeNTListtoloadedNT(loadedNT_merged,loadedNTList);
+	MergeNTListtosingleNT(loadedNT_merged,loadedNTList);
 
 	SetupGlobalMatrix();
 	
@@ -1214,7 +1217,7 @@ bool CMainApplication::HandleInput()
 		{
 			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
 			{
-				if(m_modeR==m_drawMode)
+				if(m_modeGrip_R==m_drawMode)
 				{
 					//this part is for building a neuron tree to further save as SWC file
 					if (vertexcount%10 ==0)//use vertexcount to control point counts in a single line
@@ -1258,6 +1261,78 @@ bool CMainApplication::HandleInput()
 					vertexcount++;
 				}
 			}
+			//whenever touchpad is unpressed, set bool flag  m_TouchFirst = true;
+			if(!(state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
+			{
+				m_TouchFirst=true;
+			}//
+			//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
+			if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
+				!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
+			{
+				float m_fTouchPosY;
+				float m_fTouchPosX;
+				if(m_TouchFirst==true)
+				{//for every first touch,store the axis(x&y) on touchpad as old(means the initial ) POS 
+					m_TouchFirst=false;
+					m_fTouchOldY = state.rAxis[0].y;
+					m_fTouchOldX = state.rAxis[0].x;
+					//qDebug("1m_TouchFirst= %d,m_fTouchOldX= %f,m_fTouchOldY= %f.\n",m_TouchFirst,m_fTouchOldX,m_fTouchOldY);
+				}
+				m_fTouchPosY = state.rAxis[0].y;
+				m_fTouchPosX = state.rAxis[0].x;
+				//qDebug("2m_TouchFirst= %d,m_fTouchPosXR= %f,m_fTouchPosYR= %f.\n",m_TouchFirst,m_fTouchPosXR,m_fTouchPosYR);
+				detX = m_fTouchPosX - m_fTouchOldX;
+				detY = m_fTouchPosY - m_fTouchOldY;
+				if((detX<0.3f)&&(detX>-0.3f))detX=0;
+				if((detY<0.3f)&&(detY>-0.3f))detY=0;
+				/*if(detY>1.7||detY<-1.7)
+				{
+				bRet = true;
+				return bRet;
+				}//*/
+				if(m_translationMode==true)//into translate mode
+				{
+					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];
+					Vector4 direction(0,0,0,1);
+
+					Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
+					Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
+					Vector4 direction_Y = end_Y - start_Y;
+
+					Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
+					Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
+					Vector4 direction_X = end_X - start_X;
+
+					if(fabs(m_fTouchPosX) > fabs(m_fTouchPosY)) //move across axis
+					{
+						if(m_fTouchPosX<0) direction = direction_X * -1;
+						else direction = direction_X;
+					} else //move along axis
+					{
+						if(m_fTouchPosY<0) direction = direction_Y * -1;
+						else direction = direction_Y;
+					}
+					direction = direction.normalize() * 0.01;
+
+					glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
+					//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
+					m_globalMatrix = temp_mat * m_globalMatrix;
+				}
+				else if(m_rotateMode==true)//into ratate mode
+				{
+					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/300,glm::vec3(1,0,0));
+					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/300,glm::vec3(0,1,0));
+					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+				}
+				else if(m_zoomMode==true)//into zoom mode
+				{
+					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+					m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/300,1+m_fTouchPosY/300,1+m_fTouchPosY/300));
+					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+				}
+			}
 		}
 	}//
 
@@ -1269,78 +1344,78 @@ bool CMainApplication::HandleInput()
 
 			if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state) ) )
 			{
-				//whenever touchpad is unpressed, set bool flag  m_TouchFirst = true;
-				if(!(state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
-				{
-					m_TouchFirst=true;
-				}//
-				//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
-				if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
-					!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
-				{
-					float m_fTouchPosYL;
-					float m_fTouchPosXL;
-					if(m_TouchFirst==true)
-					{//for every first touch,store the axis(x&y) on touchpad as old(means the initial ) POS 
-						m_TouchFirst=false;
-						m_fTouchOldYL = state.rAxis[0].y;
-						m_fTouchOldXL = state.rAxis[0].x;
-						//qDebug("1m_TouchFirst= %d,m_fTouchOldXL= %f,m_fTouchOldYL= %f.\n",m_TouchFirst,m_fTouchOldXL,m_fTouchOldYL);
-					}
-					m_fTouchPosYL = state.rAxis[0].y;
-					m_fTouchPosXL = state.rAxis[0].x;
-					//qDebug("2m_TouchFirst= %d,m_fTouchPosXR= %f,m_fTouchPosYR= %f.\n",m_TouchFirst,m_fTouchPosXR,m_fTouchPosYR);
-					detX = m_fTouchPosXL - m_fTouchOldXL;
-					detY = m_fTouchPosYL - m_fTouchOldYL;
-					if((detX<0.3f)&&(detX>-0.3f))detX=0;
-					if((detY<0.3f)&&(detY>-0.3f))detY=0;
-					/*if(detY>1.7||detY<-1.7)
-					{
-						bRet = true;
-						return bRet;
-					}//*/
-					if(m_translationMode==true)//into translate mode
-					{
-						const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];
-						Vector4 direction(0,0,0,1);
+			//	//whenever touchpad is unpressed, set bool flag  m_TouchFirst = true;
+			//	if(!(state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
+			//	{
+			//		m_TouchFirst=true;
+			//	}//
+			//	//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
+			//	if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
+			//		!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
+			//	{
+			//		float m_fTouchPosY;
+			//		float m_fTouchPosX;
+			//		if(m_TouchFirst==true)
+			//		{//for every first touch,store the axis(x&y) on touchpad as old(means the initial ) POS 
+			//			m_TouchFirst=false;
+			//			m_fTouchOldY = state.rAxis[0].y;
+			//			m_fTouchOldX = state.rAxis[0].x;
+			//			//qDebug("1m_TouchFirst= %d,m_fTouchOldX= %f,m_fTouchOldY= %f.\n",m_TouchFirst,m_fTouchOldX,m_fTouchOldY);
+			//		}
+			//		m_fTouchPosY = state.rAxis[0].y;
+			//		m_fTouchPosX = state.rAxis[0].x;
+			//		//qDebug("2m_TouchFirst= %d,m_fTouchPosXR= %f,m_fTouchPosYR= %f.\n",m_TouchFirst,m_fTouchPosXR,m_fTouchPosYR);
+			//		detX = m_fTouchPosX - m_fTouchOldX;
+			//		detY = m_fTouchPosY - m_fTouchOldY;
+			//		if((detX<0.3f)&&(detX>-0.3f))detX=0;
+			//		if((detY<0.3f)&&(detY>-0.3f))detY=0;
+			//		/*if(detY>1.7||detY<-1.7)
+			//		{
+			//			bRet = true;
+			//			return bRet;
+			//		}//*/
+			//		if(m_translationMode==true)//into translate mode
+			//		{
+			//			const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];
+			//			Vector4 direction(0,0,0,1);
 
-						Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
-						Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
-						Vector4 direction_Y = end_Y - start_Y;
+			//			Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
+			//			Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
+			//			Vector4 direction_Y = end_Y - start_Y;
 
-						Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
-						Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
-						Vector4 direction_X = end_X - start_X;
+			//			Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
+			//			Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
+			//			Vector4 direction_X = end_X - start_X;
 
-						if(fabs(m_fTouchPosXL) > fabs(m_fTouchPosYL)) //move across axis
-						{
-							if(m_fTouchPosXL<0) direction = direction_X * -1;
-							else direction = direction_X;
-						} else //move along axis
-						{
-							if(m_fTouchPosYL<0) direction = direction_Y * -1;
-							else direction = direction_Y;
-						}
-						direction = direction.normalize() * 0.01;
+			//			if(fabs(m_fTouchPosX) > fabs(m_fTouchPosY)) //move across axis
+			//			{
+			//				if(m_fTouchPosX<0) direction = direction_X * -1;
+			//				else direction = direction_X;
+			//			} else //move along axis
+			//			{
+			//				if(m_fTouchPosY<0) direction = direction_Y * -1;
+			//				else direction = direction_Y;
+			//			}
+			//			direction = direction.normalize() * 0.01;
 
-						glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
-						//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
-						m_globalMatrix = temp_mat * m_globalMatrix;
-					}
-					else if(m_rotateMode==true)//into ratate mode
-					{
-						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-						m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosXL/300,glm::vec3(1,0,0));
-						m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosYL/300,glm::vec3(0,1,0));
-						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-					}
-					else if(m_zoomMode==true)//into zoom mode
-					{
-						m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-						m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosYL/300,1+m_fTouchPosYL/300,1+m_fTouchPosYL/300));
-						m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-					}
-				}
+			//			glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
+			//			//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
+			//			m_globalMatrix = temp_mat * m_globalMatrix;
+			//		}
+			//		else if(m_rotateMode==true)//into ratate mode
+			//		{
+			//			m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+			//			m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/300,glm::vec3(1,0,0));
+			//			m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/300,glm::vec3(0,1,0));
+			//			m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+			//		}
+			//		else if(m_zoomMode==true)//into zoom mode
+			//		{
+			//			m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+			//			m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/300,1+m_fTouchPosY/300,1+m_fTouchPosY/300));
+			//			m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+			//		}
+			//	}
 
 				//pick up the nearest node and pull it to new locations
 				//note: this part of code only serves as a demonstration, and does not handle complicated cases well.
@@ -1594,37 +1669,103 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 	////////////////////////////////LEFT
 	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_Grip))
-	{		//use grip button to change the display mode linemode or surface mode
-			m_bShowMorphologyLine = !m_bShowMorphologyLine;
-			m_bShowMorphologySurface = !m_bShowMorphologySurface;		
-
+	{	
+		m_modeControlGrip_L++;
+		m_modeControlGrip_L%=7;
+		switch(m_modeControlGrip_L)
+		{
+		case 0:
+			m_modeGrip_L = _donothing;
+			break;
+		case 1:
+			m_modeGrip_L = _Surface;
+			break;
+		case 2:
+			m_modeGrip_L = _VirtualFinger;
+			break;
+		case 3:
+			m_modeGrip_L = _Freeze;
+			break;
+		case 4:
+			m_modeGrip_L = _Search1;
+			break;
+		case 5:
+			m_modeGrip_L = _Search2;
+			break;
+		case 6:
+			m_modeGrip_L = _Clear;
+			break;
+		default:
+			break;
+		}
 	}
+
 	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad))
-	{		
-			// press the toupad to switch among different navigation modes: translation, rotation, scaling, or doing nothing.
-			m_modeControlL++;
-			m_modeControlL%=4;
-				switch(m_modeControlL)
+	{	
+		vr::VRControllerState_t state;	
+		m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state));
+		float temp_x  = state.rAxis[0].x;
+		bool ONorOFF=false;
+		if(temp_x>0)
+		{
+			ONorOFF = false;
+		}
+		else
+		{
+			ONorOFF = true;
+		}
+		switch(m_modeGrip_L)
+		{
+		case 0:
+			break;
+		case 1:
+			{
+				if(ONorOFF==true)
 				{
-				case 0:
-					m_translationMode=m_rotateMode=m_zoomMode = false;
-					break;
-				case 1:
-					m_translationMode = true;
-					m_rotateMode=m_zoomMode = false;
-					break;
-				case 2:
-					m_rotateMode = true;
-					m_translationMode=m_zoomMode = false;
-					break;
-				case 3:
-					m_zoomMode = true;
-					m_translationMode=m_rotateMode = false;
-					break;
-				default:
-					break;
+					m_bShowMorphologySurface=true;
+					m_bShowMorphologyLine=false;
+				}
+				else
+				{
+					m_bShowMorphologySurface=false;
+					m_bShowMorphologyLine=true;
+				}
+				break;
+			}
+		case 2:
+			{
+				qDebug()<<"Run virtual finger chooose";
+				if(ONorOFF==true)
+				{
+					qDebug()<<"VF ON";
+					m_bVirtualFingerON = true;
+				}
+				else
+				{
+					qDebug()<<"VF OFF";
+					m_bVirtualFingerON = false;
+				}				
+				break;
+			}
+		case 3:
+			{
+				if(ONorOFF==true)
+				{
+					qDebug()<<"Freeze View ON";
+					m_bFrozen = true;
+				}
+				else
+				{
+					qDebug()<<"Freeze View OFF";
+					m_bFrozen = false;
 				}	
-			qDebug("m_modeControlL=%d,m_translationMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlL,m_translationMode,m_rotateMode,m_zoomMode);
+				break;
+			}
+		default:
+			break;
+		}
+
+
 	}
 
 
@@ -1689,125 +1830,151 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 
 	//////////////////////////////////////////RIGHT
-	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
-	{	
-		vr::VRControllerState_t state;	
-		m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
-		float temp_x  = state.rAxis[0].x;
-		float temp_y  = state.rAxis[0].y;
+	//if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
+	//{	
+	//	vr::VRControllerState_t state;	
+	//	m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
+	//	float temp_x  = state.rAxis[0].x;
+	//	float temp_y  = state.rAxis[0].y;
 
-		if(fabs(temp_x) > fabs(temp_y))
+	//	if(fabs(temp_x) > fabs(temp_y))
+	//	{
+	//		if((loadedNT.listNeuron.size()>0)&&(sketchNT.listNeuron.size()>0)) //both original_vr_neuron and areaofinterest must be non-empty.
+	//		{
+	//			//call feature search function, and update display
+
+	//			//save current neurons
+	//			QString outfilename1 = "original_vr_neuron.swc";
+	//			writeSWC_file(outfilename1, loadedNT);
+	//			qDebug("Successfully write original_vr_neuron");
+
+	//			QString outfilename2 = "areaofinterest.swc";
+	//			writeSWC_file(outfilename2, sketchNT);
+	//			qDebug("Successfully write areaofinterest");
+
+	//			//calculate
+	//			if(temp_x<0) 
+	//			{
+	//				qDebug("Search bjut");
+	//				if(!neuron_subpattern_search(1,mainwindow))
+	//				{
+	//					qDebug("Search failed!");
+	//					return;	
+	//				}
+	//			}
+	//			else 
+	//			{
+	//				qDebug("Search shu");
+	//				if(!neuron_subpattern_search(2,mainwindow))
+	//				{
+	//					qDebug("Search failed!");
+	//					return;	
+	//				}
+	//			}
+
+	//			//load again
+	//			QString filename = "updated_vr_neuron.swc";
+	//			NeuronTree nt_tmp = readSWC_file(filename);
+	//			qDebug("Successfully read tagged SWC file");
+
+	//			for (int i=0; i<loadedNT.listNeuron.size(); i++)
+	//				loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
+
+	//			SetupMorphologyLine(0);
+	//		}
+	//		else
+	//		{
+	//			qDebug("Area of interest is empty!");
+	//		}
+	//	} 
+	//	else 
+	//	{
+	//		if(temp_y<0) 
+	//		{
+	//			qDebug("none");
+	//		}
+	//		else 
+	//		{
+	//			qDebug("freeze");
+	//			m_bFrozen = !m_bFrozen;
+	//		}
+	//	}
+	//}
+
+	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad))
+	{		//use touchpad press to change the processing mode for touchpad, nothing or translate or rotate or zoom mode
+		m_modeControlTouchPad_R++;
+		m_modeControlTouchPad_R%=4;
+		switch(m_modeControlTouchPad_R)
 		{
-			if((loadedNT_merged.listNeuron.size()>0)&&(currentNT.listNeuron.size()>0)) //both original_vr_neuron and areaofinterest must be non-empty.
-			{
-				//call feature search function, and update display
-
-				//save current neurons
-				QString outfilename1 = "original_vr_neuron.swc";
-				writeSWC_file(outfilename1, loadedNT_merged);
-				qDebug("Successfully write original_vr_neuron");
-
-				QString outfilename2 = "areaofinterest.swc";
-				writeSWC_file(outfilename2, currentNT);
-				qDebug("Successfully write areaofinterest");
-
-				//calculate
-				if(temp_x<0) 
-				{
-					qDebug("Search bjut");
-					if(!neuron_subpattern_search(1,mainwindow))
-					{
-						qDebug("Search failed!");
-						return;	
-					}
-				}
-				else 
-				{
-					qDebug("Search shu");
-					if(!neuron_subpattern_search(2,mainwindow))
-					{
-						qDebug("Search failed!");
-						return;	
-					}
-				}
-
-				//load again
-				QString filename = "updated_vr_neuron.swc";
-				NeuronTree nt_tmp = readSWC_file(filename);
-				qDebug("Successfully read tagged SWC file");
-
-				for (int i=0; i<loadedNT_merged.listNeuron.size(); i++)
-					loadedNT_merged.listNeuron[i].type = nt_tmp.listNeuron[i].type;
-
-				SetupMorphologyLine(0);
-			}
-			else
-			{
-				qDebug("Area of interest is empty!");
-			}
-		} 
-		else 
-		{
-			if(temp_y<0) 
-			{
-				qDebug("none");
-			}
-			else 
-			{
-				qDebug("freeze");
-				m_bFrozen = !m_bFrozen;
-			}
-		}
+		case 0:
+			m_translationMode=m_rotateMode=m_zoomMode = false;
+			break;
+		case 1:
+			m_translationMode = true;
+			m_rotateMode=m_zoomMode = false;
+			break;
+		case 2:
+			m_rotateMode = true;
+			m_translationMode=m_zoomMode = false;
+			break;
+		case 3:
+			m_zoomMode = true;
+			m_translationMode=m_rotateMode = false;
+			break;
+		default:
+			break;
+		}	
+		qDebug("m_modeControlTouchPad_R=%d,m_translationMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_translationMode,m_rotateMode,m_zoomMode);
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	
-		qDebug()<<"current mode is "<<m_modeR;
-		switch(m_modeR)
+		qDebug()<<"current mode is "<<m_modeGrip_R;
+		switch(m_modeGrip_R)
 		{
 		case m_drawMode:
-			//if(m_modeR==m_drawMode)
+			//if(m_modeGrip_R==m_drawMode)
 			{
-				if(img4d) //if an image exist, call virtual finger functions for curve drawing
+				if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawing
 				{	
-					bool isAnyNodeOutBBox = false;
+					//bool isAnyNodeOutBBox = false;
+					tempNT.listNeuron.clear();
+					tempNT.hashNeuron.clear();
 					for(int i=0;i<currentNT.listNeuron.size();i++)
 					{
 						NeuronSWC S_node = currentNT.listNeuron.at(i);//swcBB
-						if((S_node.x<swcBB.x0)||(S_node.y<swcBB.y0)||(S_node.z<swcBB.z0)
-							||(S_node.x>swcBB.x1)||(S_node.y>swcBB.y1)||(S_node.z>swcBB.z1))
+						if(!isAnyNodeOutBBox(S_node))
 						{
-							//means current node is out of image4d
-							//cannot use Virtual Finger to improve it
-							//abandon this sketch
-							isAnyNodeOutBBox = true;
-							qDebug()<<"This line is out of image4d BoundingBox.Please retry.";
-							break;
+							S_node.n=tempNT.listNeuron.size();
+							if(S_node.pn!=-1)
+								S_node.pn = tempNT.listNeuron.last().n;
+							tempNT.listNeuron.append(S_node);
+							tempNT.hashNeuron.insert(S_node.n, tempNT.listNeuron.size()-1);
 						}
 					}
 
 					// improve curve shape
-					if(isAnyNodeOutBBox==false)
+					NeuronTree InputNT;
+					InputNT = tempNT;
+					int iter_number=3;
+					bool convergent = false;//todo:future may add this convergent func
+					for(int i=0;(convergent==false)&&(i<iter_number);i++)
 					{
-						NeuronTree InputNT;
-						InputNT = currentNT;
-						int iter_number=3;
-						bool convergent = false;//todo:future may add this convergent func
-						for(int i=0;(convergent==false)&&(i<iter_number);i++)
-						{
-							NeuronTree OutputNT;
-							RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
-							//convergent = CompareDist(InputNT, OutputNT);
-							InputNT.listNeuron.clear();
-							InputNT.hashNeuron.clear();
-							InputNT = OutputNT;
-						}
-						if(InputNT.listNeuron.size()>0)
-						{
-							currentNT.listNeuron.clear();
-							currentNT.hashNeuron.clear();
-							currentNT = InputNT;
-						}	
+						NeuronTree OutputNT;
+						RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
+						//convergent = CompareDist(InputNT, OutputNT);
+						InputNT.listNeuron.clear();
+						InputNT.hashNeuron.clear();
+						InputNT = OutputNT;
 					}
+					if(InputNT.listNeuron.size()>0)
+					{
+						currentNT.listNeuron.clear();
+						currentNT.hashNeuron.clear();
+						currentNT = InputNT;
+						tempNT.listNeuron.clear();
+						tempNT.hashNeuron.clear();
+					}		
 				}
 				if(isOnline==false)
 				{
@@ -1817,12 +1984,12 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					currentNT.listNeuron.clear();
 					currentNT.hashNeuron.clear();
 					swccount=0;
-					abcdefg();
+					UpdateVR();
 				}
 				break;
 			}
 		case m_deleteMode:
-			//else if(m_modeR==m_deleteMode)
+			//else if(m_modeGrip_R==m_deleteMode)
 			{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
@@ -1844,12 +2011,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						qDebug()<<"Segment Deleted.";
 					else
 						qDebug()<<"Cannot Find the Segment ";
-					abcdefg();
+					UpdateVR();
 				}
-				break;
-			}
-		case m_dragMode:
-			{
 				break;
 			}
 		case m_markMode:
@@ -1873,6 +2036,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+		case m_dragMode:
+			{
+				break;
+			}
 		default :
 			break;
 		}
@@ -1885,26 +2052,26 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	{	//use grip button(right) to clear all the lines been drawn on the HMD
 		////is it necessary if there is delete mode?
 		//ClearSketchNT();
-		m_modeControlR++;
-		m_modeControlR%=4;
-		switch(m_modeControlR)
+		m_modeControlGrip_R++;
+		m_modeControlGrip_R%=4;
+		switch(m_modeControlGrip_R)
 		{
 		case 0:
-			m_modeR = m_drawMode;
+			m_modeGrip_R = m_drawMode;
 			break;
 		case 1:
-			m_modeR = m_deleteMode;
+			m_modeGrip_R = m_deleteMode;
 			break;
 		case 2:
-			m_modeR = m_dragMode;
+			m_modeGrip_R = m_markMode;
 			break;
 		case 3:
-			m_modeR = m_markMode;
+			m_modeGrip_R = m_dragMode;
 			break;
 		default:
 			break;
 		}	
-		qDebug("m_modeR=%d",m_modeR);
+		qDebug("m_modeGrip_R=%d",m_modeGrip_R);
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
@@ -1925,55 +2092,22 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}
 	//////////////////
 }
-
-//merge Ntlist to one single neutontree sketchedNT_merged
-void CMainApplication::abcdefg()//MergeNTList2sktechedNT()//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
+bool CMainApplication::isAnyNodeOutBBox(NeuronSWC S_temp)
 {
-	sketchedNT_merged.listNeuron.clear();
-	sketchedNT_merged.hashNeuron.clear();
-
-	for(int i=0;i<sketchedNTList.size();i++)
-	{
-		NeuronTree  nt = sketchedNTList.at(i);
-		for(int j=0;j<nt.listNeuron.size();j++)
-		{
-			NeuronSWC ss = nt.listNeuron.at(j);
-			ss.n = sketchedNT_merged.listNeuron.size()+1;
-			if(ss.pn!=-1) ss.pn = sketchedNT_merged.listNeuron.size();
-
-			sketchedNT_merged.listNeuron.append(ss);
-			sketchedNT_merged.hashNeuron.insert(ss.n, sketchedNT_merged.listNeuron.size()-1);
-		}
-	}
+	if((S_temp.x<swcBB.x0)||(S_temp.y<swcBB.y0)||(S_temp.z<swcBB.z0)
+		||(S_temp.x>swcBB.x1)||(S_temp.y>swcBB.y1)||(S_temp.z>swcBB.z1))
+		return true;
+	else
+		return false;
 }
-
-//for back up as mergefunction with parameters
-void MergeNTListtoNT(NeuronTree &ntree, const QList<NeuronTree> NTlist)//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
+//merge Ntlist to one single neutontree sketchedNT_merged
+void CMainApplication::UpdateVR()//MergeNTList2sktechedNT()//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
 {
-	bool NTisChanged = true;
-	if(NTisChanged==true)//when neurontree has been changed in last frame,update remoteNT
-	{
-		ntree.listNeuron.clear();
-		ntree.hashNeuron.clear();
-
-		for(int i=0;i<NTlist.size();i++)
-		{
-			NeuronTree  nt = NTlist.at(i);
-			for(int j=0;j<nt.listNeuron.size();j++)
-			{
-				NeuronSWC ss = nt.listNeuron.at(j);
-				ss.n = ntree.listNeuron.size()+1;
-				if(ss.pn!=-1) ss.pn = ntree.listNeuron.size();
-
-				ntree.listNeuron.append(ss);
-				ntree.hashNeuron.insert(ss.n, ntree.listNeuron.size()-1);
-			}
-		}
-	}
+	MergeNTListtosingleNT(sketchedNT_merged,&sketchedNTList);
 }
 
 //merge NTlist( from mainwindow->listneurontrees) to loadedNT_merged
-void CMainApplication::MergeNTListtoloadedNT(NeuronTree &ntree, const QList<NeuronTree> * NTlist)//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
+void CMainApplication::MergeNTListtosingleNT(NeuronTree &ntree, const QList<NeuronTree> * NTlist)//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
 {
 	ntree.listNeuron.clear();
 	ntree.hashNeuron.clear();
@@ -2278,7 +2412,7 @@ bool CMainApplication::SetupTexturemaps()
 	{
 		for(int j = 0; j < nImageHeight; j ++)
 		{
-			if(imageRGBA[(j*nImageWidth + i)*4+1] > 200 && imageRGBA[(j*nImageWidth + i)*4+2] > 200)
+			if(imageRGBA[(j*nImageWidth + i)*4+1] > 225 && imageRGBA[(j*nImageWidth + i)*4+2] > 225)
 			{
 				imageRGBA[(j*nImageWidth + i)*4+3] = 1;
 			}
@@ -2329,124 +2463,176 @@ void CMainApplication::SetupControllerTexture()
 
 	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
 	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
-
-	{//left controller
-		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip
+	//left controller
+	{
+		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip no.1 dispaly "Mode Switch"
 		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
 		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
 		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
 		point_A = mat_L * point_A;
 		point_B = mat_L * point_B;
 		point_C = mat_L * point_C;
-		point_D = mat_L * point_D;//*/
+		point_D = mat_L * point_D;
 		AddVertex(point_A.x,point_A.y,point_A.z,0,0.5f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.5f,vcVerts);
 		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
 		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
-		AddVertex(point_D.x,point_D.y,point_D.z,0.5f,0.75f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.5f,vcVerts);
+		AddVertex(point_D.x,point_D.y,point_D.z,0.34f,0.75f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.5f,vcVerts);
 
-		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2
+		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2 dispaly "Mode Switch"
 		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
 		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
 		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
 		point_A2 = mat_L * point_A2;
 		point_B2 = mat_L * point_B2;
 		point_C2 = mat_L * point_C2;
-		point_D2 = mat_L * point_D2;//
-		AddVertex(point_A2.x,point_A2.y,point_A2.z,1,0.5f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0.5f,0.5f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,1,0.75f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,1,0.75f,vcVerts);
-		AddVertex(point_D2.x,point_D2.y,point_D2.z,0.5f,0.75f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0.5f,0.5f,vcVerts);
+		point_D2 = mat_L * point_D2;
+		AddVertex(point_A2.x,point_A2.y,point_A2.z,0.34f,0.5f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.5f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.75f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.75f,vcVerts);
+		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.75f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.5f,vcVerts);//*/
 
-		Vector4 point_E(-0.015f,0.01f,0.035f,1);// for the touchpad
-		Vector4 point_F(0.015f,0.01f,0.035f,1);
-		Vector4 point_G(-0.015f,0.01f,0.065f,1);
-		Vector4 point_H(0.015f,0.01f,0.065f,1);
+		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad dispaly "ON/OFF"
+		Vector4 point_F(0.02f,0.01f,0.03f,1);
+		Vector4 point_G(-0.02f,0.01f,0.07f,1);
+		Vector4 point_H(0.02f,0.01f,0.07f,1);
 		point_E = mat_L * point_E;
 		point_F = mat_L * point_F;
 		point_G = mat_L * point_G;
 		point_H = mat_L * point_H;
-		switch (m_modeControlL)
+		switch(m_modeGrip_L)
 		{
-		case 0://nothing
+		case 0:
+			break;
+		case 1:
+		case 2:
+		case 3:
 			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.75f,0.75f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.75f,1,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,1,1,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.33f,0.25f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5,0.25f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.33f,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.33f,0.5f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.5,0.5f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5,0.25f,vcVerts);
 				break;
 			}
-		case 1://translate
+		case 4:
+		case 5:
+		case 6:
 			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0,0.75f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.75f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0,1,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0,1,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.25f,1,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.75f,vcVerts);
-				break;
-			}
-		case 2://rotate
-			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.5f,0.75f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.75f,0.75f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.75f,1,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.75f,0.75f,vcVerts);
-				break;
-			}
-		case 3://scale
-			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.25f,0.75f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.75f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,1,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,1,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,1,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.5,0.25f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.25f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5,0.5f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.67f,0.5f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.25f,vcVerts);
 				break;
 			}
 		default:
 			break;
 		}
-		Vector4 point_I(-0.005f,0.01f,0.015f,1);//for the menu button
-		Vector4 point_J(0.005f,0.01f,0.015f,1);
-		Vector4 point_K(-0.005f,0.01f,0.025f,1);
-		Vector4 point_L(0.005f,0.01f,0.025f,1);//*/
+
+		Vector4 point_I(-0.01f,0.01f,0.01f,1);//for the menu button dispaly "QUIT"
+		Vector4 point_J(0.01f,0.01f,0.01f,1);
+		Vector4 point_K(-0.01f,0.01f,0.03f,1);
+		Vector4 point_L(0.01f,0.01f,0.03f,1);//*/
 		point_I = mat_L * point_I;
 		point_J = mat_L * point_J;
 		point_K = mat_L * point_K;
 		point_L = mat_L * point_L;
-		AddVertex(point_I.x,point_I.y,point_I.z,0.25f,0,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.5f,0,vcVerts);
-		AddVertex(point_K.x,point_K.y,point_K.z,0.25f,0.25f,vcVerts);
-		AddVertex(point_K.x,point_K.y,point_K.z,0.25f,0.25f,vcVerts);
-		AddVertex(point_L.x,point_L.y,point_L.z,0.5f,0.25f,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.5f,0,vcVerts);
+		AddVertex(point_I.x,point_I.y,point_I.z,0.17f,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.34f,0,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.17f,0.25f,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.17f,0.25f,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.34f,0.25f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.34f,0,vcVerts);
 
 
-		Vector4 point_M(-0.01f,-0.02f,0.035f,1);//for the pull dispaly
-		Vector4 point_N(0.01f,-0.02f,0.035f,1);
-		Vector4 point_O(-0.01f,-0.04f,0.05f,1);
-		Vector4 point_P(0.01f,-0.04f,0.05f,1);//*/
+		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current mode dispaly "Surface/line  Virtual finger  search ....."
+		Vector4 point_N(0.02f,0.005f,0.1f,1);
+		Vector4 point_O(-0.02f,0.002f,0.14f,1);
+		Vector4 point_P(0.02f,0.002f,0.14f,1);//*/
 		point_M = mat_L * point_M;
 		point_N = mat_L * point_N;
 		point_O = mat_L * point_O;
 		point_P = mat_L * point_P;
-		AddVertex(point_M.x,point_M.y,point_M.z,0.75,0,vcVerts);
-		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,0.75f,0.25f,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,0.75f,0.25f,vcVerts);
-		AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.25f,vcVerts);
-		AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+		switch(m_modeGrip_L)
+		{
+		case 0:
+			{//donothing
+				break;
+			}
+		case 1:
+			{//surface
+				AddVertex(point_M.x,point_M.y,point_M.z,0.17f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.34f,0.25,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.5f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.5f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.34f,0.5f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.34f,0.25,vcVerts);
+				break;
+			}
+		case 2:
+			{//virtual finger
+				AddVertex(point_M.x,point_M.y,point_M.z,0.34f,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+				break;
+			}
+		case 3:
+			{//freeze
+				AddVertex(point_M.x,point_M.y,point_M.z,0.67f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.5f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.5f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.84f,0.5f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.25f,vcVerts);
+				break;
+			}
+		case 4:
+			{//search1
+				AddVertex(point_M.x,point_M.y,point_M.z,0.67f,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.84f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0,vcVerts);
+				break;
+			}
+		case 5:
+			{//search2
+				AddVertex(point_M.x,point_M.y,point_M.z,0.84f,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,1,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0,vcVerts);
+				break;
+			}
+		case 6:
+			{//clear
+				AddVertex(point_M.x,point_M.y,point_M.z,0,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.25,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0,0.5f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0,0.5f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.17f,0.5f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.25,vcVerts);
+				break;
+			}
+		default:
+			break;
+
+		}
 	}
-	{// right controller
-		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip
+	// right controller
+	{
+		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip dispaly "Mode Switch: draw /delete /marker /pull"
 		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
 		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
 		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
@@ -2455,14 +2641,14 @@ void CMainApplication::SetupControllerTexture()
 		point_C = mat_R * point_C;
 		point_D = mat_R * point_D;//*/
 
-		AddVertex(point_A.x,point_A.y,point_A.z,0,0.25f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.25f,vcVerts);
-		AddVertex(point_C.x,point_C.y,point_C.z,0,0.5f,vcVerts);
-		AddVertex(point_C.x,point_C.y,point_C.z,0,0.5f,vcVerts);
-		AddVertex(point_D.x,point_D.y,point_D.z,0.5f,0.5f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.5f,0.25f,vcVerts);
+		AddVertex(point_A.x,point_A.y,point_A.z,0,0.5f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.5f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
+		AddVertex(point_C.x,point_C.y,point_C.z,0,0.75f,vcVerts);
+		AddVertex(point_D.x,point_D.y,point_D.z,0.34f,0.75f,vcVerts);
+		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.5f,vcVerts);
 
-		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2
+		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2 display "Mode Switch: draw /delete /marker /pull"
 		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
 		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
 		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
@@ -2471,61 +2657,137 @@ void CMainApplication::SetupControllerTexture()
 		point_C2 = mat_R * point_C2;
 		point_D2 = mat_R * point_D2;//*/
 
-		AddVertex(point_A2.x,point_A2.y,point_A2.z,0.5f,0.25f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.5f,0.5f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.5f,0.5f,vcVerts);
-		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.5f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
+		AddVertex(point_A2.x,point_A2.y,point_A2.z,0.34f,0.5f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.5f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.75f,vcVerts);
+		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.75f,vcVerts);
+		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.75f,vcVerts);
+		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.5f,vcVerts);//*/
 
-		Vector4 point_E(-0.02f,0.01f,0.035f,1);// for the touchpad
-		Vector4 point_F(0.02f,0.01f,0.035f,1);
-		Vector4 point_G(-0.02f,0.01f,0.065f,1);
-		Vector4 point_H(0.02f,0.01f,0.065f,1);
+		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad switch & display "translate /rotate /scale /nothing
+		Vector4 point_F(0.02f,0.01f,0.03f,1);
+		Vector4 point_G(-0.02f,0.01f,0.07f,1);
+		Vector4 point_H(0.02f,0.01f,0.07f,1);
 		point_E = mat_R * point_E;
 		point_F = mat_R * point_F;
 		point_G = mat_R * point_G;
 		point_H = mat_R * point_H;
+		switch (m_modeControlTouchPad_R)
+		{
+		case 0://nothing
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.84f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.84f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.84f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,1,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,1,0.75f,vcVerts);
+				break;
+			}
+		case 1://translate
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.34,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.34,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.34,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.75f,vcVerts);
+				break;
+			}
+		case 2://rotate
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.67f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.75f,vcVerts);
+				break;
+			}
+		case 3://scale
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.67f,0.75f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.84f,0.75f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.67f,1,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.67f,1,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.84f,1,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.84f,0.75f,vcVerts);
+				break;
+			}
+		default:
+			break;
+		}
 
-		AddVertex(point_E.x,point_E.y,point_E.z,0.5f,0.25f,vcVerts);
-		AddVertex(point_F.x,point_F.y,point_F.z,1,0.25f,vcVerts);
-		AddVertex(point_G.x,point_G.y,point_G.z,0.5f,0.5f,vcVerts);
-		AddVertex(point_G.x,point_G.y,point_G.z,0.5f,0.5f,vcVerts);
-		AddVertex(point_H.x,point_H.y,point_H.z,1,0.5f,vcVerts);
-		AddVertex(point_F.x,point_F.y,point_F.z,1,0.25f,vcVerts);
 
-		Vector4 point_I(-0.005f,0.01f,0.015f,1);//for the menu button
-		Vector4 point_J(0.005f,0.01f,0.015f,1);
-		Vector4 point_K(-0.005f,0.01f,0.025f,1);
-		Vector4 point_L(0.005f,0.01f,0.025f,1);//*/
+		Vector4 point_I(-0.01f,0.01f,0.01f,1);//for the menu button dispaly "SAVE"
+		Vector4 point_J(0.01f,0.01f,0.01f,1);
+		Vector4 point_K(-0.01f,0.01f,0.03f,1);
+		Vector4 point_L(0.01f,0.01f,0.03f,1);//*/
 		point_I = mat_R * point_I;
 		point_J = mat_R * point_J;
 		point_K = mat_R * point_K;
 		point_L = mat_R * point_L;
 		AddVertex(point_I.x,point_I.y,point_I.z,0,0,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.25f,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
 		AddVertex(point_K.x,point_K.y,point_K.z,0,0.25f,vcVerts);
 		AddVertex(point_K.x,point_K.y,point_K.z,0,0.25f,vcVerts);
-		AddVertex(point_L.x,point_L.y,point_L.z,0.25f,0.25f,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.25f,0,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.17f,0.25f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
 
 
-		Vector4 point_M(-0.01f,-0.02f,0.035f,1);//for the draw dispaly
-		Vector4 point_N(0.01f,-0.02f,0.035f,1);
-		Vector4 point_O(-0.01f,-0.04f,0.05f,1);
-		Vector4 point_P(0.01f,-0.04f,0.05f,1);//*/
+		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
+		Vector4 point_N(0.02f,0.005f,0.1f,1);
+		Vector4 point_O(-0.02f,0.002f,0.13f,1);
+		Vector4 point_P(0.02f,0.002f,0.13f,1);//*/
 		point_M = mat_R * point_M;
 		point_N = mat_R * point_N;
 		point_O = mat_R * point_O;
 		point_P = mat_R * point_P;
-		AddVertex(point_M.x,point_M.y,point_M.z,1,0,vcVerts);
-		AddVertex(point_N.x,point_N.y,point_N.z,0.75f,0,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
-		AddVertex(point_O.x,point_O.y,point_O.z,1,0.25f,vcVerts);
-		AddVertex(point_P.x,point_P.y,point_P.z,0.75f,0.25f,vcVerts);
-		AddVertex(point_N.x,point_N.y,point_N.z,0.75f,0,vcVerts);
-
-	
+		switch (m_modeControlGrip_R)
+		{
+		case 0:
+			{//draw line
+				AddVertex(point_M.x,point_M.y,point_M.z,0.34f,0.5,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.5,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.5,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.5,vcVerts);
+				break;
+			}
+		case 1:
+			{//delete segment
+				AddVertex(point_M.x,point_M.y,point_M.z,0.5,0.5,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.67f,0.5,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.5f,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.67f,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.67f,0.5,vcVerts);
+				break;
+			}
+		case 2:
+			{//draw marker
+				AddVertex(point_M.x,point_M.y,point_M.z,0.67,0.5,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.5,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.84f,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.5,vcVerts);
+				break;
+			}
+		case 3:
+			{//pull node
+				AddVertex(point_M.x,point_M.y,point_M.z,0.84,0.5,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,1,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5,vcVerts);
+				break;
+			}
+		default:
+			break;
+		}
 	}
 
 	m_uiControllerTexIndexSize = vcVerts.size()/5;
@@ -4014,7 +4276,7 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 	}//*/
 	sketchedNTList.push_back(tempNT);
 	qDebug()<<"receieved nt name is "<<tempNT.name;
-	abcdefg();
+	UpdateVR(); 
 	//updateremoteNT
 }
 void CMainApplication::ClearCurrentNT()

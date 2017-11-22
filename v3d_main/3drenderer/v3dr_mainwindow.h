@@ -225,7 +225,7 @@ public:
 
 #ifdef __ALLOW_VR_FUNCS__
     QPushButton *rotVRView;
-	QRadioButton *rotCView;
+	QCheckBox *rotCView;
 #endif
 
     QTabWidget *tabRotZoom;

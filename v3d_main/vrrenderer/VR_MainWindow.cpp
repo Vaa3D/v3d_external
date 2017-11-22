@@ -262,7 +262,7 @@ void VR_MainWindow::onReadyRead() {
 				qDebug()<<"Segment Deleted.";
 			else
 				qDebug()<<"Cannot Find the Segment ";
-			pMainApplication->abcdefg();
+			pMainApplication->UpdateVR();
         }
 
 
@@ -407,9 +407,9 @@ void VR_MainWindow::RunVRMainloop()
 	//READY_TO_SEND is set to false in onReadyRead();
 	//CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
 	{
-		if(pMainApplication->m_modeR==m_drawMode)
+		if(pMainApplication->m_modeGrip_R==m_drawMode)
 			onReadySend(pMainApplication->NT2QString());
-		else if(pMainApplication->m_modeR==m_deleteMode)
+		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
 			qDebug()<<"delname = "<<pMainApplication->delName;
 			if(pMainApplication->delName!="")
@@ -421,7 +421,7 @@ void VR_MainWindow::RunVRMainloop()
 				pMainApplication->ClearCurrentNT();
 			}
 		}
-		else if(pMainApplication->m_modeR==m_markMode)
+		else if(pMainApplication->m_modeGrip_R==m_markMode)
 		{
 			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
 			socket->write(QString("/marker:" + pMainApplication->markerPOS + "\n").toUtf8());
