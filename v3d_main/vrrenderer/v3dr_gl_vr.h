@@ -36,9 +36,9 @@ enum ModelControlR
 	m_drawMode = 0,
 	m_deleteMode,
 	m_markMode,
-	m_dragMode	
+	m_dragMode,
+    m_delmarkMode
 };
-
 enum ModeControlSettings
 {
 	_donothing=0,
@@ -97,8 +97,8 @@ public:
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
 	bool DeleteSegment(QString segName);
-	void UpdateVR();//update VR data, as merge sketchedNTList to sketchedNT_merged
-	void MergeNTListtosingleNT(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
+	void MergeNeuronTrees();//merge NTlist to single neurontree
+	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);
 
 	void SetupRenderModels();
@@ -120,6 +120,8 @@ public:
 
 	void SetupMarkerSurface();
 	void SetupMarkerandSurface(double x,double y,double z,int type =3);
+
+	void RemoveMarkerandSurface(double x,double y,double z,int type=3);
 
 	void RenderControllerAxes();//draw XYZ axes on the base point of the controllers 
 
@@ -156,6 +158,7 @@ public:
 	ModelControlR  m_modeGrip_R;
 	QString delName;
 	QString markerPOS;
+	QString delmarkerPOS;
 
 private: 
 	std::string current_agent_color;

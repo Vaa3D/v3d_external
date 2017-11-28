@@ -128,6 +128,7 @@ void VR_MainWindow::onReadyRead() {
 	QRegExp colorRex("^/color:(.*)$");
 	QRegExp deleteRex("^/del:(.*)$");
 	QRegExp markerRex("^/marker:(.*)$");
+	QRegExp delmarkerRex("^/remove:(.*)$");
     QRegExp messageRex("^(.*):(.*)$");
 	
 
@@ -262,11 +263,8 @@ void VR_MainWindow::onReadyRead() {
 				qDebug()<<"Segment Deleted.";
 			else
 				qDebug()<<"Cannot Find the Segment ";
-			pMainApplication->UpdateVR();
+			pMainApplication->MergeNeuronTrees();
         }
-
-
-
         else if (markerRex.indexIn(line) != -1) {
 			QStringList markerMSGs = markerRex.cap(1).split(" ");
 			if(markerMSGs.size()<4) 
@@ -296,6 +294,37 @@ void VR_MainWindow::onReadyRead() {
 			}
 			pMainApplication->SetupMarkerandSurface(mx,my,mz,colortype);
         }
+        else if (delmarkerRex.indexIn(line) != -1) {
+			QStringList delmarkerPOS = delmarkerRex.cap(1).split(" ");
+			if(delmarkerPOS.size()<4) 
+			{
+					qDebug()<<"size < 4";
+					return;
+			}
+            QString user = delmarkerPOS.at(0);
+            float mx = delmarkerPOS.at(1).toFloat();
+			float my = delmarkerPOS.at(2).toFloat();
+			float mz = delmarkerPOS.at(3).toFloat();
+			qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
+			if(user==userName)
+			{
+				pMainApplication->READY_TO_SEND=false;
+				CURRENT_DATA_IS_SENT=false;
+				pMainApplication->ClearCurrentNT();
+			}
+			int colortype=3;
+			for(int i=0;i<Agents.size();i++)
+			{
+				if(user == Agents.at(i).name)
+				{
+					colortype=Agents.at(i).colorType;
+					break;
+				}
+			}
+			qDebug()<<"1126:current type ="<<colortype;
+			pMainApplication->RemoveMarkerandSurface(mx,my,mz,colortype);
+        }
+		//delmarkerRex
         else if (messageRex.indexIn(line) != -1) {
             QString user = messageRex.cap(1);
             QString message = messageRex.cap(2);
@@ -425,6 +454,11 @@ void VR_MainWindow::RunVRMainloop()
 		{
 			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
 			socket->write(QString("/marker:" + pMainApplication->markerPOS + "\n").toUtf8());
+		}
+		else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
+		{
+			qDebug()<<"marker to be delete position = "<<pMainApplication->delmarkerPOS;
+			socket->write(QString("/remove:" + pMainApplication->delmarkerPOS + "\n").toUtf8());
 		}
 		if(pMainApplication->READY_TO_SEND==true)
 			CURRENT_DATA_IS_SENT=true;

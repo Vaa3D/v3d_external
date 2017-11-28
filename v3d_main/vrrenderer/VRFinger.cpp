@@ -134,7 +134,7 @@ void VectorResamplinger(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, 
 
 }
 
-void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
+void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list,int nttype)
 {
 
 	QList <NeuronSWC> listNeuron;
@@ -151,7 +151,7 @@ void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
           NeuronSWC S;
 
           S.n 	= 1+k;
-          S.type 	= 3;
+          S.type 	= nttype;
           S.x 	= loc_list.at(k).x;
           S.y 	= loc_list.at(k).y;
           S.z 	= loc_list.at(k).z;

@@ -438,6 +438,11 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                         par_marker = new_marker;
 						if (ind >= 0 && ind < tol_sz)
 						{
+							if (ind == parent[ind])
+							{
+								cout<<"[WARNING][VIRTUAL FINGER]: a self-loop exists. Abort!\n";
+								break;
+							}
 							ind = parent[ind];
 						} else {
 							break;

@@ -955,7 +955,7 @@ bool CMainApplication::BInitGL()
 	if( !CreateAllShaders() )
 		return false;
 
-	MergeNTListtosingleNT(loadedNT_merged,loadedNTList);
+	MergeNeuronTrees(loadedNT_merged,loadedNTList);
 
 	SetupGlobalMatrix();
 	
@@ -1643,7 +1643,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type
 	drawnMarkerList.push_back(mk);
 
 	Markers_spheres.push_back(new Sphere(mk.radius,10,10));
-	Markers_spheresPos.push_back(glm::vec3(x,y,z));
+	Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
 
 	glm::vec3 agentclr=glm::vec3();
 	agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
@@ -1655,6 +1655,57 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type
 
 }
 
+void CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type)
+{
+	bool deletedmarker=false;
+	//remove the marker in list 
+	for(int i=0;i<drawnMarkerList.size();i++)
+	{
+		ImageMarker markertemp = drawnMarkerList.at(i);
+		float dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+		//cal the dist between pos & current node'position, then compare with the threshold
+		if(dist < (dist_thres/m_globalScale*5))
+		{
+			drawnMarkerList.removeAt(i);
+			qDebug()<<"remove marker at "<<i;
+			if(Markers_spheres[i]) delete Markers_spheres[i];
+			Markers_spheres.erase(Markers_spheres.begin()+i);
+			Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
+			Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
+			deletedmarker = true;
+			break;
+		}
+	}
+	//if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
+	//{
+	//	//empty all Markers_spheres,Markers_spheresPos,Markers_spheresColor
+	//	for (int i=0;i<Markers_spheres.size();i++) delete Markers_spheres[i];
+	//	Markers_spheres.clear();
+	//	Markers_spheresPos.clear();
+	//	Markers_spheresColor.clear();
+
+	//	//reset Markers_spheres,Markers_spheresPos,Markers_spheresColor
+	//	for(int i=0;i<drawnMarkerList.size();i++)
+	//	{
+	//		ImageMarker mk = drawnMarkerList.at(i);
+	//		Markers_spheres.push_back(new Sphere(mk.radius,10,10));
+	//		Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
+
+	//		glm::vec3 agentclr=glm::vec3();
+	//		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+	//		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+	//		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+	//		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+	//		Markers_spheresColor.push_back(agentclr);
+	//	}
+	//}
+	//else
+	//{
+	//	//cannot find marker, do nothing
+	//	qDebug()<<"Cannot find any marker nearby.Please retry.";
+	//}
+
+}
 //-----------------------------------------------------------------------------
 // Purpose: Processes a single VR event
 //-----------------------------------------------------------------------------
@@ -1984,7 +2035,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					currentNT.listNeuron.clear();
 					currentNT.hashNeuron.clear();
 					swccount=0;
-					UpdateVR();
+					MergeNeuronTrees();
 				}
 				break;
 			}
@@ -2011,7 +2062,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						qDebug()<<"Segment Deleted.";
 					else
 						qDebug()<<"Cannot Find the Segment ";
-					UpdateVR();
+					MergeNeuronTrees();
 				}
 				break;
 			}
@@ -2040,6 +2091,27 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				break;
 			}
+		case m_delmarkMode:
+			{
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
+					}
+				}
+				mat=glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
+				delmarkerPOS="";
+				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+				if(isOnline==false)	
+				{
+					RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
+				}
+				break;
+			}
 		default :
 			break;
 		}
@@ -2053,7 +2125,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		////is it necessary if there is delete mode?
 		//ClearSketchNT();
 		m_modeControlGrip_R++;
-		m_modeControlGrip_R%=4;
+		m_modeControlGrip_R%=5;
 		switch(m_modeControlGrip_R)
 		{
 		case 0:
@@ -2067,6 +2139,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			break;
 		case 3:
 			m_modeGrip_R = m_dragMode;
+			break;
+		case 4:
+			m_modeGrip_R = m_delmarkMode;
 			break;
 		default:
 			break;
@@ -2101,13 +2176,13 @@ bool CMainApplication::isAnyNodeOutBBox(NeuronSWC S_temp)
 		return false;
 }
 //merge Ntlist to one single neutontree sketchedNT_merged
-void CMainApplication::UpdateVR()//MergeNTList2sktechedNT()//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
+void CMainApplication::MergeNeuronTrees()
 {
-	MergeNTListtosingleNT(sketchedNT_merged,&sketchedNTList);
+	MergeNeuronTrees(sketchedNT_merged,&sketchedNTList);
 }
 
 //merge NTlist( from mainwindow->listneurontrees) to loadedNT_merged
-void CMainApplication::MergeNTListtosingleNT(NeuronTree &ntree, const QList<NeuronTree> * NTlist)//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
+void CMainApplication::MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist)//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
 {
 	ntree.listNeuron.clear();
 	ntree.hashNeuron.clear();
@@ -2466,9 +2541,9 @@ void CMainApplication::SetupControllerTexture()
 	//left controller
 	{
 		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip no.1 dispaly "Mode Switch"
-		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
-		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
-		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
+		Vector4 point_B(-0.025f,-0.01f,0.11f,1);
+		Vector4 point_C(-0.025f,-0.025f,0.07f,1);
+		Vector4 point_D(-0.025f,-0.025f,0.11f,1);
 		point_A = mat_L * point_A;
 		point_B = mat_L * point_B;
 		point_C = mat_L * point_C;
@@ -2481,9 +2556,9 @@ void CMainApplication::SetupControllerTexture()
 		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.5f,vcVerts);
 
 		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2 dispaly "Mode Switch"
-		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
-		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
-		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
+		Vector4 point_B2(0.025f,-0.01f,0.11f,1);
+		Vector4 point_C2(0.025f,-0.025f,0.07f,1);
+		Vector4 point_D2(0.025f,-0.025f,0.11f,1);
 		point_A2 = mat_L * point_A2;
 		point_B2 = mat_L * point_B2;
 		point_C2 = mat_L * point_C2;
@@ -2633,9 +2708,9 @@ void CMainApplication::SetupControllerTexture()
 	// right controller
 	{
 		Vector4 point_A(-0.025f,-0.01f,0.07f,1);//grip dispaly "Mode Switch: draw /delete /marker /pull"
-		Vector4 point_B(-0.025f,-0.01f,0.10f,1);
-		Vector4 point_C(-0.025f,-0.02f,0.07f,1);
-		Vector4 point_D(-0.025f,-0.02f,0.10f,1);
+		Vector4 point_B(-0.025f,-0.01f,0.11f,1);
+		Vector4 point_C(-0.025f,-0.025f,0.07f,1);
+		Vector4 point_D(-0.025f,-0.025f,0.11f,1);
 		point_A = mat_R * point_A;
 		point_B = mat_R * point_B;
 		point_C = mat_R * point_C;
@@ -2649,9 +2724,9 @@ void CMainApplication::SetupControllerTexture()
 		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.5f,vcVerts);
 
 		Vector4 point_A2(0.025f,-0.01f,0.07f,1);//grip no.2 display "Mode Switch: draw /delete /marker /pull"
-		Vector4 point_B2(0.025f,-0.01f,0.10f,1);
-		Vector4 point_C2(0.025f,-0.02f,0.07f,1);
-		Vector4 point_D2(0.025f,-0.02f,0.10f,1);
+		Vector4 point_B2(0.025f,-0.01f,0.11f,1);
+		Vector4 point_C2(0.025f,-0.025f,0.07f,1);
+		Vector4 point_D2(0.025f,-0.025f,0.11f,1);
 		point_A2 = mat_R * point_A2;
 		point_B2 = mat_R * point_B2;
 		point_C2 = mat_R * point_C2;
@@ -2745,7 +2820,7 @@ void CMainApplication::SetupControllerTexture()
 		point_P = mat_R * point_P;
 		switch (m_modeControlGrip_R)
 		{
-		case 0:
+		case m_drawMode:
 			{//draw line
 				AddVertex(point_M.x,point_M.y,point_M.z,0.34f,0.5,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.5,vcVerts);
@@ -2755,7 +2830,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.5,vcVerts);
 				break;
 			}
-		case 1:
+		case m_deleteMode:
 			{//delete segment
 				AddVertex(point_M.x,point_M.y,point_M.z,0.5,0.5,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.67f,0.5,vcVerts);
@@ -2765,7 +2840,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.67f,0.5,vcVerts);
 				break;
 			}
-		case 2:
+		case m_markMode:
 			{//draw marker
 				AddVertex(point_M.x,point_M.y,point_M.z,0.67,0.5,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.5,vcVerts);
@@ -2775,7 +2850,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.5,vcVerts);
 				break;
 			}
-		case 3:
+		case m_dragMode:
 			{//pull node
 				AddVertex(point_M.x,point_M.y,point_M.z,0.84,0.5,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5,vcVerts);
@@ -2783,6 +2858,16 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.84,0.75f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,1,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5,vcVerts);
+				break;
+			}
+		case m_delmarkMode:
+			{//delete marker mode
+				AddVertex(point_M.x,point_M.y,point_M.z,0.5,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.67,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.5,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.5,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.67,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.67,0,vcVerts);
 				break;
 			}
 		default:
@@ -4276,7 +4361,7 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 	}//*/
 	sketchedNTList.push_back(tempNT);
 	qDebug()<<"receieved nt name is "<<tempNT.name;
-	UpdateVR(); 
+	MergeNeuronTrees(); 
 	//updateremoteNT
 }
 void CMainApplication::ClearCurrentNT()
@@ -4634,7 +4719,8 @@ void CMainApplication::RefineSketchCurve(int direction, NeuronTree &oldNTree, Ne
 	
 	VectorResampling(outswc_final_vec, outswc_final_vec_resampled, 0.5f);
 	VectorToNeuronTree(newNTree,outswc_final_vec_resampled);
-	//VectorToNeuronTree(newNTree,outswc_final_vec);qDebug("run here 4. size =%d,%d",newNTree.listNeuron.size(),newNTree.hashNeuron.size());
+	//can change current neurontree's color by using 
+	//VectorToNeuronTree(newNTree,outswc_final_vec_resampled,type);
 	outswc_final_vec.clear();
 	outswc_final_vec_resampled.clear();//*/
 
