@@ -67,7 +67,7 @@ public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
     void setTextureInput(const jfrc::VolumeTexture* texture);
-    bool doFlipY;
+    bool doFlipY_image, doFlipY_mask;
     bool bDoUpdateSignalTexture; // because texture could be populated upstream by VolumeTexture
     void setAuxillaryImagery( QUrl li_path, QUrl vli_path, QString chanSpec )
     {

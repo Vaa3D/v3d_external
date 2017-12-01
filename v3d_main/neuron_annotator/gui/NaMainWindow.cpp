@@ -1661,7 +1661,8 @@ bool NaMainWindow::loadSeparationDirectoryV1Pbd(QUrl imageInputDirectory)
     dataFlowModel->setNeuronAnnotatorResultNode(resultNode);
 
     // Opposite of fast loading behavior
-    dataFlowModel->getVolumeData().doFlipY = true;
+    dataFlowModel->getVolumeData().doFlipY_mask = true;
+    dataFlowModel->getVolumeData().doFlipY_image = true;
     dataFlowModel->getVolumeData().bDoUpdateSignalTexture = true;
     // fooDebug() << __FILE__ << __LINE__;
 

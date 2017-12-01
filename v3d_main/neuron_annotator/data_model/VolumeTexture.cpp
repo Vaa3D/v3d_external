@@ -179,23 +179,31 @@ bool VolumeTexture::loadReferenceRawFile(QUrl fileUrl)
 // Loads a non-mpeg4 volume
 void VolumeTexture::loadOneVolume(ProgressiveCompanion* item, QList<QUrl> foldersToSearch)
 {
-    if (item->isFileItem()) {
-        ProgressiveFileCompanion* fileItem = dynamic_cast<
-                ProgressiveFileCompanion*>(item);
-        QUrl fileUrl = fileItem->getFileUrl(foldersToSearch);
-        // qDebug() << "VolumeTexture::loadOneVolume" << fileUrl << __FILE__ << __LINE__;
-        // fooDebug() << "Loading" << fileName << __FILE__ << __LINE__;
-        SignalChannel channel = fileItem->second;
-        if (channel == CHANNEL_LABEL) {
-            setLabelPbdFileUrl(fileUrl);
+   if ( item->isFileItem() )
+   {
+      ProgressiveFileCompanion *fileItem =
+          dynamic_cast< ProgressiveFileCompanion * >( item );
+      for ( int i = 0; i < fileItem->count(); ++i )
+      {
+
+         QUrl fileUrl = fileItem->getFileUrl( foldersToSearch, i );
+         // qDebug() << "VolumeTexture::loadOneVolume" << fileUrl << __FILE__ << __LINE__;
+         // fooDebug() << "Loading" << fileName << __FILE__ << __LINE__;
+         SignalChannel channel = ( *fileItem )[ i ].channel;
+         if ( channel == CHANNEL_LABEL )
+         {
+            setLabelPbdFileUrl( fileUrl );
             loadLabelPbdFile();
-        }
-        else if (channel == CHANNEL_ALPHA) {
-            loadReferenceRawFile(fileUrl);
-        }
-        else {
-            loadSignalRawFile(fileUrl);
-        }
+         }
+         else if ( channel == CHANNEL_ALPHA )
+         {
+            loadReferenceRawFile( fileUrl );
+         }
+         else
+         {
+            loadSignalRawFile( fileUrl );
+         }
+      }
     }
     else {
         // TODO - non-file volumes
@@ -227,8 +235,10 @@ void VolumeTexture::loadStagedVolumes()
             mpegVolumesAreQueued = true;
             ProgressiveFileCompanion* fileItem =
                     dynamic_cast<ProgressiveFileCompanion*>(item);
-            QUrl fileUrl = fileItem->getFileUrl(progressiveLoader.getFoldersToSearch());
-            SignalChannel channel = fileItem->second;
+            int index = 0;
+            QUrl fileUrl = fileItem->getFileUrl(progressiveLoader.getFoldersToSearch(), index);
+            // Only get here for a single file companion
+            SignalChannel channel = (*fileItem)[0].channel;
             emit mpegQueueRequested(fileUrl, channel);
         }
         // Flush mpeg-4 queue upon observing any non mpeg-4 file
@@ -476,13 +486,13 @@ bool VolumeTexture::queueSeparationFolder(QUrl url) // using new staged loader
             ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
             QString mv = QString("%1").arg(mvoxels0);
             // First the full color signal with poor color separation
-            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".mp4");
+            *candidate << new ProgressiveSingleFileCompanion("ConsolidatedSignal2_"+mv+".mp4");
             // Second the fourth reference channel to round out the channels
-            *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".mp4", CHANNEL_ALPHA); // companion file
+            *candidate << new ProgressiveSingleFileCompanion("Reference2_"+mv+".mp4", CHANNEL_ALPHA); // companion file
             // Next the individual color channels, to sharpen the colors
-            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Red_"+mv+".mp4", CHANNEL_RED); // companion file
-            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Green_"+mv+".mp4", CHANNEL_GREEN); // companion file
-            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2Blue_"+mv+".mp4", CHANNEL_BLUE); // companion file
+            *candidate << new ProgressiveSingleFileCompanion("ConsolidatedSignal2Red_"+mv+".mp4", CHANNEL_RED); // companion file
+            *candidate << new ProgressiveSingleFileCompanion("ConsolidatedSignal2Green_"+mv+".mp4", CHANNEL_GREEN); // companion file
+            *candidate << new ProgressiveSingleFileCompanion("ConsolidatedSignal2Blue_"+mv+".mp4", CHANNEL_BLUE); // companion file
             mvoxels0 /= 2;
             *fullSizeItem << candidate;
         }
@@ -507,11 +517,11 @@ bool VolumeTexture::queueSeparationFolder(QUrl url) // using new staged loader
             ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
             QString mv = QString("%1").arg(mvoxels0);
             // First the full color signal with poor color separation
-            *candidate << new ProgressiveFileCompanion("ConsolidatedSignal2_"+mv+".v3dpbd");
+            *candidate << new ProgressiveSingleFileCompanion("ConsolidatedSignal2_"+mv+".v3dpbd");
             // Second the fourth reference channel to round out the channels
-            *candidate << new ProgressiveFileCompanion("Reference2_"+mv+".v3dpbd", CHANNEL_ALPHA); // companion file
+            *candidate << new ProgressiveSingleFileCompanion("Reference2_"+mv+".v3dpbd", CHANNEL_ALPHA); // companion file
             // (lossless version needs no individual color channels)
-            *candidate << new ProgressiveFileCompanion("ConsolidatedLabel2_"+mv+".v3dpbd", CHANNEL_LABEL); // companion file
+            *candidate << new ProgressiveSingleFileCompanion("ConsolidatedLabel2_"+mv+".v3dpbd", CHANNEL_LABEL); // companion file
             mvoxels0 /= 2;
             *losslessItem << candidate;
         }

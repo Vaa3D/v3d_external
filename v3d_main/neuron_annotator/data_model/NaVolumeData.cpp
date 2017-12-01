@@ -137,7 +137,7 @@ NaVolumeData::NaVolumeData()
     , currentProgress( 0 )
     , bDoUpdateSignalTexture( true )
     , volumeTexture( NULL )
-    , doFlipY( true )
+    , doFlipY_image( true ), doFlipY_mask( true )
 {
     // Connect specific signals to general ones
     connect( this, SIGNAL( channelLoaded( int ) ),
@@ -307,52 +307,62 @@ void NaVolumeData::loadSecondaryVolumeDataFromFiles()
 /* slot */
 void NaVolumeData::loadStagedVolumes()
 {
-    // qDebug() << "NaVolumeData::loadStagedVolumes" << __FILE__ << __LINE__;
-    bool bChanged = false;
-    QUrl signalPath, labelPath, referencePath;
-    // Loop over all volumes to load
-    for ( ProgressiveCompanion* item = progressiveLoader.next();
-            item != NULL; item = progressiveLoader.next() )
-    {
-        assert( item->isFileItem() );
-        ProgressiveFileCompanion* fileItem =
-            dynamic_cast<ProgressiveFileCompanion*>( item );
-        QUrl fileUrl = fileItem->getFileUrl( progressiveLoader.getFoldersToSearch() );
-        // qDebug() << "fileUrl =" << fileUrl << __FILE__ << __LINE__;
-        SignalChannel channel = fileItem->second;
-        if (channel == CHANNEL_LABEL) {
-            labelPath = fileUrl;
-            // qDebug() << "Label" << fileUrl << __FILE__ << __LINE__;
-        }
-        else if (channel == CHANNEL_ALPHA) {
-            referencePath = fileUrl;
-            // qDebug() << "Reference" << fileUrl << __FILE__ << __LINE__;
-        }
-        else {
-            signalPath = fileUrl;
-            doFlipY = fileItem->isFlippedY();
-            // qDebug() << "Signal" << fileUrl << __FILE__ << __LINE__;
-        }
-    }
-    {
-        Writer writer( *this );
-        if (! labelPath.isEmpty()) {
-            writer.setMaskLabelFileUrl( labelPath );
-            bChanged = true;
-        }
-        if (! referencePath.isEmpty()) {
-            writer.setReferenceStackFileUrl( referencePath );
-            bChanged = true;
-        }
-        if (! signalPath.isEmpty()) {
-            writer.setOriginalImageStackFileUrl( signalPath );
-            bChanged = true;
-        }
-    }
-    if (bChanged) {
-        loadVolumeDataFromFiles();
-    }
-    // qDebug() << "end NaVolumeData::loadStagedVolumes" << __FILE__ << __LINE__;
+   // qDebug() << "NaVolumeData::loadStagedVolumes" << __FILE__ << __LINE__;
+   bool bChanged = false;
+   QUrl signalPath, labelPath, referencePath;
+   // Loop over all volumes to load
+   for ( ProgressiveCompanion *item = progressiveLoader.next(); item != NULL;
+         item = progressiveLoader.next() )
+   {
+      assert( item->isFileItem() );
+      ProgressiveFileCompanion *fileItem =
+          dynamic_cast< ProgressiveFileCompanion * >( item );
+      int i = 0;
+      QUrl fileUrl = fileItem->getFileUrl( progressiveLoader.getFoldersToSearch(), i );
+      // qDebug() << "fileUrl =" << fileUrl << __FILE__ << __LINE__;
+      SignalChannel channel = ( *fileItem )[ i ].channel;
+      if ( channel == CHANNEL_LABEL )
+      {
+         labelPath = fileUrl;
+         doFlipY_mask = ( *fileItem )[ i ].flipped_in_y;
+         // qDebug() << "Label" << fileUrl << __FILE__ << __LINE__;
+      }
+      else if ( channel == CHANNEL_ALPHA )
+      {
+         referencePath = fileUrl;
+         // qDebug() << "Reference" << fileUrl << __FILE__ << __LINE__;
+      }
+      else
+      {
+         signalPath = fileUrl;
+         doFlipY_image = ( *fileItem )[ i ].flipped_in_y;
+         // qDebug() << "Signal" << fileUrl << __FILE__ << __LINE__;
+         /* code */
+      }
+   }
+   {
+      Writer writer( *this );
+      if ( !labelPath.isEmpty() )
+      {
+         writer.setMaskLabelFileUrl( labelPath );
+         bChanged = true;
+      }
+      if ( !referencePath.isEmpty() )
+      {
+         writer.setReferenceStackFileUrl( referencePath );
+         bChanged = true;
+      }
+      if ( !signalPath.isEmpty() )
+      {
+         writer.setOriginalImageStackFileUrl( signalPath );
+         bChanged = true;
+      }
+   }
+   if ( bChanged )
+   {
+      loadVolumeDataFromFiles();
+   }
+   // qDebug() << "end NaVolumeData::loadStagedVolumes" << __FILE__ << __LINE__;
 }
 
 /* slot */
@@ -377,17 +387,11 @@ void NaVolumeData::loadVolumeDataFromFiles()
 
         // Temporary kludge to counteract complicated flipping that occurs during neuron separation.
         if (stacksLoaded) {
-            if (doFlipY) {
-                // qDebug() << "Loading image data into memory from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
-                // qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
-                // Data images are flipped relative to reference image.  I turned off flipping in
-                // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
-                // emit benchmarkTimerPrintRequested("Starting to flip Y-axis");
+            if (doFlipY_image) {
                 flipY( originalImageStack );
+            }
+            if (doFlipY_mask) {
                 flipY( neuronMaskStack );
-                // emit benchmarkTimerPrintRequested("Finished flipping Y-axis");
-                // flipY(referenceStack);
-                // qDebug() << stopwatch.elapsed();
             }
         }
     } // release locks before emit
@@ -813,27 +817,28 @@ bool NaVolumeData::queueSeparationFolder( QUrl folder ) // using new staged load
     ProgressiveLoadItem* volumeItem = new ProgressiveLoadItem();
     // First try 16-bit full size files
     ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal3.v3dpbd" );
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel3.v3dpbd", CHANNEL_LABEL );
-    *candidate << new ProgressiveFileCompanion( "Reference3.v3dpbd", CHANNEL_ALPHA );
+#if 0
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedSignal3.v3dpbd" );
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedLabel3.v3dpbd", CHANNEL_LABEL );
+    *candidate << new ProgressiveSingleFileCompanion( "Reference3.v3dpbd", CHANNEL_ALPHA );
     *volumeItem << candidate;
     // Next try 8-bit gamma corrected files
     candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal2.v3dpbd" );
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel2.v3dpbd", CHANNEL_LABEL );
-    *candidate << new ProgressiveFileCompanion( "Reference2.v3dpbd", CHANNEL_ALPHA );
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedSignal2.v3dpbd" );
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedLabel2.v3dpbd", CHANNEL_LABEL );
+    *candidate << new ProgressiveSingleFileCompanion( "Reference2.v3dpbd", CHANNEL_ALPHA );
     *volumeItem << candidate;
     // Finally try original y-flipped mixed bit-depth files
     candidate = new ProgressiveLoadCandidate();
-    *candidate << &( ( new ProgressiveFileCompanion( "ConsolidatedSignal.v3dpbd" ) )->setFlippedY( true ) );
-    *candidate << &( ( new ProgressiveFileCompanion( "ConsolidatedLabel.v3dpbd", CHANNEL_LABEL ) )->setFlippedY( true ) );
-    *candidate << new ProgressiveFileCompanion( "Reference.v3dpbd", CHANNEL_ALPHA );
+    *candidate << &( ( new ProgressiveSingleFileCompanion( "ConsolidatedSignal.v3dpbd" ) )->setFlippedY( true ) );
+    *candidate << &( ( new ProgressiveSingleFileCompanion( "ConsolidatedLabel.v3dpbd", CHANNEL_LABEL ) )->setFlippedY( true ) );
+    *candidate << new ProgressiveSingleFileCompanion( "Reference.v3dpbd", CHANNEL_ALPHA );
     *volumeItem << candidate;
     //
     candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal.v3draw" );
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel.v3draw", CHANNEL_LABEL );
-    *candidate << new ProgressiveFileCompanion( "Reference.v3draw", CHANNEL_ALPHA );
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedSignal.v3draw" );
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedLabel.v3draw", CHANNEL_LABEL );
+    *candidate << new ProgressiveSingleFileCompanion( "Reference.v3draw", CHANNEL_ALPHA );
     *volumeItem << candidate;
     //
     if ( !visuallyLosslessImage.isEmpty() )
@@ -841,20 +846,66 @@ bool NaVolumeData::queueSeparationFolder( QUrl folder ) // using new staged load
         std::string str = visuallyLosslessImage.toString().toStdString();
         std::size_t found = str.find_last_of( "/\\" );
         progressiveLoader.addSearchFolder( QUrl( QString( str.substr( 0, found ).c_str() ) ) );
+
+        // Try to load a version with the label file
         candidate = new ProgressiveLoadCandidate();
         QString file_name = QString( str.substr( found + 1 ).c_str() );
-        *candidate << new ProgressiveFileCompanion( file_name );
+        *candidate << new ProgressiveSingleFileCompanion( file_name );
+        *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedLabel.v3draw", CHANNEL_LABEL );
+        *volumeItem << candidate;
+
+        // Then try one without
+        candidate = new ProgressiveLoadCandidate();
+        *candidate << new ProgressiveSingleFileCompanion( file_name );
         *volumeItem << candidate;
     }
     //
     candidate = new ProgressiveLoadCandidate();
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedSignal.tif" );
-    *candidate << new ProgressiveFileCompanion( "ConsolidatedLabel.tif", CHANNEL_LABEL );
-    *candidate << new ProgressiveFileCompanion( "Reference.tif", CHANNEL_ALPHA );
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedSignal.tif" );
+    *candidate << new ProgressiveSingleFileCompanion( "ConsolidatedLabel.tif", CHANNEL_LABEL );
+    *candidate << new ProgressiveSingleFileCompanion( "Reference.tif", CHANNEL_ALPHA );
     *volumeItem << candidate;
     //
-    progressiveLoader << volumeItem;
+#else
+    ProgressiveFileChoiceCompanion *signal = new ProgressiveFileChoiceCompanion();
+    *signal << new ProgressiveFileElement( "ConsolidatedSignal3.v3dpbd", CHANNEL_RGB, false );
+    *signal << new ProgressiveFileElement( "ConsolidatedSignal2.v3dpbd", CHANNEL_RGB, false );
+    *signal << new ProgressiveFileElement( "ConsolidatedSignal.v3dpbd", CHANNEL_RGB, true );
+    *signal << new ProgressiveFileElement( "ConsolidatedSignal.v3draw", CHANNEL_RGB, false );
+    if ( !visuallyLosslessImage.isEmpty() )
+    {
+       std::string str = visuallyLosslessImage.toString().toStdString();
+       std::size_t found = str.find_last_of( "/\\" );
+       progressiveLoader.addSearchFolder(
+           QUrl( QString( str.substr( 0, found ).c_str() ) ) );
 
+       // Try to load a version with the label file
+       QString file_name = QString( str.substr( found + 1 ).c_str() );
+       *signal << new ProgressiveFileElement( file_name, CHANNEL_RGB, false );
+    }
+    *signal << new ProgressiveFileElement( "ConsolidatedSignal.tif", CHANNEL_RGB, false );
+    *candidate << signal;
+
+    ProgressiveFileChoiceCompanion *label = new ProgressiveFileChoiceCompanion();
+    *label << new ProgressiveFileElement( "ConsolidatedLabel3.v3dpbd", CHANNEL_LABEL, false );
+    *label << new ProgressiveFileElement( "ConsolidatedLabel2.v3dpbd", CHANNEL_LABEL, false );
+    *label << new ProgressiveFileElement( "ConsolidatedLabel.v3dpbd", CHANNEL_LABEL, true );
+    *label << new ProgressiveFileElement( "ConsolidatedLabel.v3draw", CHANNEL_LABEL, false );
+    *label << new ProgressiveFileElement( "ConsolidatedLabel.tif", CHANNEL_LABEL, false );
+    *candidate << label;
+
+    ProgressiveFileChoiceCompanion *reference = new ProgressiveFileChoiceCompanion();
+    *reference << new ProgressiveFileElement( "Reference3.v3dpbd", CHANNEL_ALPHA, false );
+    *reference << new ProgressiveFileElement( "Reference2.v3dpbd", CHANNEL_ALPHA, false );
+    *reference << new ProgressiveFileElement( "Reference.v3dpbd", CHANNEL_ALPHA, false );
+    *reference << new ProgressiveFileElement( "Reference.v3draw", CHANNEL_ALPHA, false );
+    *reference << new ProgressiveFileElement( "Reference3.tif", CHANNEL_ALPHA, false );
+    *candidate << reference;
+
+    *volumeItem << candidate;
+#endif
+
+    progressiveLoader << volumeItem;
     return true;
 }
 
