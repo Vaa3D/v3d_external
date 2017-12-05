@@ -246,7 +246,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             actMarkerCreate1->setIcon(QIcon(":/icons/click1.png"));
             actMarkerCreate1->setVisible(true);
             actMarkerCreate1->setIconVisibleInMenu(true);
-            listAct.append(actMarkerCreate1Stroke = new QAction("1-right-stroke to define a marker (starting locus will be the output marker)", w));
+            listAct.append(actMarkerCreate1Stroke = new QAction("1-right-stroke to define a marker (starting locus will be the output marker, Esc to finish)", w));
 
             actMarkerCreate1Stroke->setIcon(QIcon(":/icons/click1.png"));
             actMarkerCreate1Stroke->setVisible(true);
