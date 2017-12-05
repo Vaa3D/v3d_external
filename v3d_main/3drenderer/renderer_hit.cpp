@@ -2361,10 +2361,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                         addMarker(loc);
                     }
                 }
-				if(selectMode == smCurveFrom1Marker_fm ||
-                   selectMode == smMarkerCreate1Curve) //by PHC 20121011
+                if(selectMode == smCurveFrom1Marker_fm) //by PHC 20121011
 				{
-					endSelectMode();
+                    endSelectMode(); //disable the option for 1-right-stroke to define a marker function
 				}
 			}
 			else if(selectMode == smCurveCreateMarkerGD)
