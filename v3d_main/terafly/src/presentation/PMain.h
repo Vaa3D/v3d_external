@@ -197,7 +197,7 @@ class terafly::PMain : public QWidget
         QPushButton* controlsResetButton;
         QComboBox* zoomInMethod;
         /* ------- global coord panel widgets ------- */
-        QGroupBox* globalCoord_panel;
+        QGroupBox* VOI_panel;
         QArrowButton* traslXpos;
         QLabel* traslXlabel;
         QArrowButton* traslXneg;

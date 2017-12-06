@@ -571,9 +571,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomInMethod->installEventFilter(this);
     zoomInMethod->setCurrentIndex(1);
 
-    //"Global coordinates" widgets
+    //"Volume Of Interest (VOI)" panel widgets
     /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
-    globalCoord_panel = new QGroupBox("Volume Of Interest (VOI)'s coordinates");
+    VOI_panel = new QGroupBox("Volume Of Interest (VOI)'s coordinates");
     traslXpos = new QArrowButton(this, QColor(255,0,0), 15, 6, 0, Qt::LeftToRight, true);
     traslXneg = new QArrowButton(this, QColor(255,0,0), 15, 6, 0, Qt::RightToLeft, true);
     traslXlabel = new QLabel("");
@@ -654,9 +654,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //****LAYOUT SECTIONS****
     /**/tf::debug(tf::LEV3, "Layouting", __itm__current__function__);
 
-    // "Global coordinates" panel layout
-    QGridLayout* global_coordinates_layout = new QGridLayout();
-    global_coordinates_layout->setVerticalSpacing(2);
+    //"Volume Of Interest (VOI)" panel layout
+    QGridLayout* VOI_layout = new QGridLayout();
+    VOI_layout->setVerticalSpacing(2);
     /* ------------- fix left block elements size ---------------- */
     QWidget* refSysContainer = new QWidget();
     refSysContainer->setFixedWidth(marginLeft);
@@ -756,19 +756,19 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     rightBlockLayout->addLayout(zGlobalCoordLayout, 0);
     rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
     /* -------------- put elements into 4x4 grid ----------------- */
-    global_coordinates_layout->addWidget(refSysContainer,   0, 0, 3, 1);
-    global_coordinates_layout->addWidget(frameCoord,        3, 0, 1, 1);
-    global_coordinates_layout->addWidget(xShiftWidget,      0, 1, 1, 1);
-    global_coordinates_layout->addWidget(yShiftWidget,      1, 1, 1, 1);
-    global_coordinates_layout->addWidget(zShiftWidget,      2, 1, 1, 1);
-    global_coordinates_layout->addWidget(tShiftWidget,      3, 1, 1, 1);
-    global_coordinates_layout->addLayout(xGlobalCoordLayout,0, 2, 1, 2);
-    global_coordinates_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
-    global_coordinates_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
-    global_coordinates_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
+    VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
+    VOI_layout->addWidget(frameCoord,        3, 0, 1, 1);
+    VOI_layout->addWidget(xShiftWidget,      0, 1, 1, 1);
+    VOI_layout->addWidget(yShiftWidget,      1, 1, 1, 1);
+    VOI_layout->addWidget(zShiftWidget,      2, 1, 1, 1);
+    VOI_layout->addWidget(tShiftWidget,      3, 1, 1, 1);
+    VOI_layout->addLayout(xGlobalCoordLayout,0, 2, 1, 2);
+    VOI_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
+    VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
+    VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
     /* ------------- FINALIZATION -------------- */
-    global_coordinates_layout->setContentsMargins(10,5,10,5);
-    globalCoord_panel->setLayout(global_coordinates_layout);
+    VOI_layout->setContentsMargins(10,5,10,5);
+    VOI_panel->setLayout(VOI_layout);
     #ifdef Q_OS_LINUX
     globalCoord_panel->setStyle(new QWindowsStyle());
     #endif
@@ -877,7 +877,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     QVBoxLayout* controlsLayout = new QVBoxLayout(controls_page);
     controlsLayout->addWidget(localViewer_panel, 0);
     controlsLayout->addWidget(zoom_panel, 0);
-    controlsLayout->addWidget(globalCoord_panel, 0);
+    controlsLayout->addWidget(VOI_panel, 0);
     controlsLayout->addWidget(PR_panel, 0);
     controlsLayout->addStretch(1);
     #ifdef Q_OS_MAC
@@ -1035,7 +1035,7 @@ void PMain::reset()
     resetMultiresControls();
 
     //resetting subvol panel widgets
-    globalCoord_panel->setEnabled(false);
+    VOI_panel->setEnabled(false);
     PR_panel->setEnabled(false);
     V0_sbox->setValue(0);
     V1_sbox->setValue(0);
@@ -1054,7 +1054,7 @@ void PMain::reset()
     refSys->setDims(1,1,1);
     refSys->setFilled(true);
     refSys->resetZoom();
-    frameCoord->setPalette(globalCoord_panel->palette());
+    frameCoord->setPalette(VOI_panel->palette());
 
     //reset PR panel widgets
     PR_button->setText("Start");
@@ -1705,7 +1705,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         }
 //        T1_sbox->setMinimum(0);
 //        T1_sbox->setMaximum(CImport::instance()->getVMapTDim()-1);
-        globalCoord_panel->setEnabled(true);
+        VOI_panel->setEnabled(true);
         PR_panel->setEnabled(true);
 
         //updating menu items
@@ -1899,7 +1899,7 @@ void PMain::resolutionIndexChanged(int i)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         resetGUI();
-        globalCoord_panel->setEnabled(true);
+        VOI_panel->setEnabled(true);
         resolution_cbox->setCurrentIndex(CViewer::getCurrent()->getResIndex());
     }
 }
@@ -2111,14 +2111,14 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
         displayToolTip(cacheSens, event, QString::number(cacheSens->value()).append("%").toStdString());
 
     }
-    else if ((object == traslXpos || object == traslYpos || object == traslZpos || object == traslTpos) && globalCoord_panel->isEnabled())
+    else if ((object == traslXpos || object == traslYpos || object == traslZpos || object == traslTpos) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTtraslatePos);
         else if(event->type() == QEvent::Leave)
             helpBox->setText(HTbase);
     }
-    else if ((object == traslXneg || object == traslYneg || object == traslZneg || object == traslTneg) && globalCoord_panel->isEnabled())
+    else if ((object == traslXneg || object == traslYneg || object == traslZneg || object == traslTneg) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTtraslateNeg);
@@ -2128,14 +2128,14 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
     else if ((object == V0_sbox || object == V1_sbox ||
               object == H0_sbox || object == H1_sbox ||
               object == D0_sbox || object == D1_sbox ||
-              object == T0_sbox || object == T1_sbox ) && globalCoord_panel->isEnabled())
+              object == T0_sbox || object == T1_sbox ) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTvolcuts);
         else if(event->type() == QEvent::Leave)
             helpBox->setText(HTbase);
     }
-    else if((object == refSys) && globalCoord_panel->isEnabled())
+    else if((object == refSys) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTrefsys);
