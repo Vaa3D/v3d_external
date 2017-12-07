@@ -770,7 +770,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_layout->setContentsMargins(10,5,10,5);
     VOI_panel->setLayout(VOI_layout);
     #ifdef Q_OS_LINUX
-    globalCoord_panel->setStyle(new QWindowsStyle());
+    VOI_panel->setStyle(new QWindowsStyle());
     #endif
 
     // "Proofreading" panel layout
