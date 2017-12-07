@@ -170,7 +170,7 @@ SOURCES += ../terafly/src/terarepo/src/stitcher/resumer.cpp
 
 # set up volumeconverter
 INCLUDEPATH += ../terafly/src/terarepo/src/utils/volumeconverter
-HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/S_config.h
+#HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/S_config.h
 HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/VolumeConverter.h
 SOURCES += ../terafly/src/terarepo/src/utils/volumeconverter/VolumeConverter.cpp
 HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/vcresumer.h
