@@ -750,7 +750,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tGlobalCoordLayout->addWidget(to_label_4, 0);
     tGlobalCoordLayout->addWidget(T1_sbox, 1);
 #if QT_VERSION < 0x040806 // MK, 12082017: Qt4.8+ seemed to disallow visible property of QLayout class. Need to comment out this part for Qt4.8.
-	loader->unload();
     QVBoxLayout *rightBlockLayout = new QVBoxLayout();
     rightBlockLayout->setContentsMargins(0,0,0,0);
     rightBlockLayout->addLayout(xGlobalCoordLayout, 0);
