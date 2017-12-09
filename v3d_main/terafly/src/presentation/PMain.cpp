@@ -656,7 +656,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     //"Volume Of Interest (VOI)" panel layout
     QGridLayout* VOI_layout = new QGridLayout();
-    VOI_layout->setVerticalSpacing(2);
+    VOI_layout->setVerticalSpacing(1);
     /* ------------- fix left block elements size ---------------- */
     QWidget* refSysContainer = new QWidget();
     refSysContainer->setFixedWidth(marginLeft);
@@ -749,12 +749,15 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tGlobalCoordLayout->addWidget(T0_sbox, 1);
     tGlobalCoordLayout->addWidget(to_label_4, 0);
     tGlobalCoordLayout->addWidget(T1_sbox, 1);
+#if QT_VERSION < 0x040806 // MK, 12082017: Qt4.8+ seemed to disallow visible property of QLayout class. Need to comment out this part for Qt4.8.
+	loader->unload();
     QVBoxLayout *rightBlockLayout = new QVBoxLayout();
     rightBlockLayout->setContentsMargins(0,0,0,0);
     rightBlockLayout->addLayout(xGlobalCoordLayout, 0);
     rightBlockLayout->addLayout(yGlobalCoordLayout, 0);
     rightBlockLayout->addLayout(zGlobalCoordLayout, 0);
-    rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
+	rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
+#endif
     /* -------------- put elements into 4x4 grid ----------------- */
     VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
     VOI_layout->addWidget(frameCoord,        3, 0, 1, 1);
