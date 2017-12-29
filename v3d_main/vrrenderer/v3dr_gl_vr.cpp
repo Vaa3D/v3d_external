@@ -880,7 +880,7 @@ bool CMainApplication::BInit()
  	m_fFarClip = 30.0f;
 	m_iTexture = 0;
 	m_uiControllerTexIndexSize = 0;
-	m_globalMatrix =glm::mat4();
+	m_globalMatrix = m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
 	m_modeGrip_R = m_drawMode;
 	m_modeGrip_L = _donothing;
 	delName = "";
@@ -1344,6 +1344,22 @@ bool CMainApplication::HandleInput()
 
 			if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state) ) )
 			{
+				if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
+				{
+					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];
+					glm::mat4 mat = glm::mat4();
+					for (size_t i = 0; i < 4; i++)
+					{
+						for (size_t j = 0; j < 4; j++)
+						{
+							mat[i][j] = *(mat_M.get() + i * 4 + j);
+						}
+					}
+					// mat = m_ctrlChangeMatrix * m_oldCtrlMatrix 
+					// mat * inverse(m_oldCtrlMatrix) = m_ctrlChangeMatrix
+					m_ctrlChangeMatrix = mat * glm::inverse(m_oldCtrlMatrix);
+					m_globalMatrix = m_ctrlChangeMatrix * m_oldGlobalMatrix;
+				}
 			//	//whenever touchpad is unpressed, set bool flag  m_TouchFirst = true;
 			//	if(!(state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
 			//	{
@@ -1816,9 +1832,23 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			break;
 		}
 
-
 	}
 
+	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
+	{
+
+		const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
+		glm::mat4 mat = glm::mat4();
+		for (size_t i = 0; i < 4; i++)
+		{
+			for (size_t j = 0; j < 4; j++)
+			{
+				mat[i][j] = *(mat_M.get() + i * 4 + j);
+			}
+		}
+		m_oldCtrlMatrix = mat;
+		m_oldGlobalMatrix = m_globalMatrix;
+	}
 
 //    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
 //    {
