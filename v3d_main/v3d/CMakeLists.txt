@@ -348,6 +348,14 @@ else(APPLE)
         # We should document dependencies.
         # set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
         #     libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
+        message("installing ffmpeg libraries into ${V3D_BUILD_BINARY_DIR}")
+        add_custom_command( TARGET v3d POST_BUILD
+                            COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib/lib*so*"
+                            WORKING_DIRECTORY "${av_dir}/install")
+        add_custom_command( TARGET v3d POST_BUILD
+                            COMMAND ${CMAKE_COMMAND} -E tar xfz "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                            COMMAND ${CMAKE_COMMAND} -E remove "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                            WORKING_DIRECTORY "${V3D_BUILD_BINARY_DIR}")
     endif()
     # message("LIB_PATHS = ${LIB_PATHS}")
     foreach(SHLIB ${SHLIBS})
