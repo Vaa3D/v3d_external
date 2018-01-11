@@ -66,14 +66,17 @@ while [[ $# > 0 ]]; do
             PLATFORM="$1"
             ;;
         -h5j)
-            CMAKE_ARGS+="-DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON"
+            CMAKE_ARGS+="-DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON" 
             BUILD_HDF5=1
             ;;
+        -v)
+            CMAKE_ARGS+=" -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE "
+            ;;
         -qt5)
-            CMAKE_ARGS+=" -DFORCE_QT4:BOOL=OFF"
+            CMAKE_ARGS+=" -DFORCE_QT4:BOOL=OFF "
             ;;
         -16)
-            CMAKE_ARGS+=" -DHIGH_BIT_DEPTH:BOOL=ON"
+            CMAKE_ARGS+=" -DHIGH_BIT_DEPTH:BOOL=ON "
             ;;
         -debug)
             CMAKE_BUILD="Debug"
@@ -114,6 +117,8 @@ if [ $PLATFORM = "windows-x86_64" ]; then
     CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/winlib64/libtiff.lib "
     CMAKE_PLATFORM_ARGS+="-DFFTW_INCLUDE_DIR:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64 "
     CMAKE_PLATFORM_ARGS+="-DFFTW_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64/libfftw3f-3.lib"
+elif [ $PLATFORM = "linux-x86_64" ]; then
+    CMAKE_PLATFORM_ARGS+="-DCMAKE_EXE_LINKER_FLAGS:STRING=-Wl,-rpath,'\$ORIGIN/lib'"
 fi
 
 : "${CMAKE_DIR:=""}"
@@ -154,7 +159,8 @@ case $OPERATION in
             fi
         fi
         if [ "$CMAKE_EXE" = "" ]; then
-    		if [[ ! -e cmake-$CMAKE_VERSION/bin/cmake ]]; then
+    		if [[ ! -e $BUILD_DIR/cmake-$CMAKE_VERSION/bin/cmake ]]; then
+                cd $BUILD_DIR
     			if [[ ! -e cmake-$CMAKE_VERSION ]]; then
     				echo "Downloading cmake"
     				download http://www.cmake.org/files/v$CMAKE_MAJOR_VERSION/cmake-$CMAKE_VERSION.tar.gz cmake-$CMAKE_VERSION.tar.gz
@@ -165,8 +171,9 @@ case $OPERATION in
     			make
     			make install
     			cd ..
+                cd $ROOT_DIR
     		fi
-            CMAKE_EXE="../cmake-$CMAKE_VERSION/bin/cmake"
+            CMAKE_EXE="$BUILD_DIR/cmake-$CMAKE_VERSION/bin/cmake"
         fi
 
         echo "Using $CMAKE_EXE"
@@ -242,7 +249,7 @@ case $OPERATION in
             devenv Vaa3D.sln -project INSTALL -build $CMAKE_BUILD -out install.txt
             echo "Done."
         else
-    		make
+    		make -i
         fi
         ;;
     clean)

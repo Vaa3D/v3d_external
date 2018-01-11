@@ -181,6 +181,7 @@ if(USE_FFMPEG)
       set(FFMPEG_PATCH_FILE "ffmpeg-2.5.4-windows.patch")
     endif()
 
+    set(PKG_CONFIG_PATH "${x265_dir}/install/lib/pkgconfig")
     ExternalProject_Add(
         FFMPEG-2.8
         DEPENDS Yasm-1-2-0 X265-1.7 PKG-CONFIG-0-28
@@ -197,6 +198,7 @@ if(USE_FFMPEG)
             --prefix=<INSTALL_DIR>
             --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
             --pkg-config=${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install/bin/pkg-config
+            --pkg-config-flags=--static
             --disable-vda
             --disable-iconv
             --disable-libxcb

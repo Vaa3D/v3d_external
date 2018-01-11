@@ -189,7 +189,7 @@ endif()
 
 # Build plugins
 set(V3D_BASIC_C_FUN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/basic_c_fun)
-
+add_subdirectory(released_plugins_more)
 
 # Build jba application itself, if the directory has been checked out here
 # (at the same level as v3d_main)
