@@ -67,8 +67,7 @@ win32 {
 		LIBS += -L$$MSVC_DIR\\lib	
 		LIBS += -L$$MSSDK_DIR\\Lib\\x64
 		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib64
-        #LIBS += -L$$LOCAL_DIR\\common_lib\\src_packages\\boost_1_46_0\\stage\\lib
-		LIBS += -LC:\\local\\boost_1_63_0\\lib64-msvc-12.0
+		LIBS += -LC:\\local\\boost_1_61_0\\lib64-msvc-10.0
 
 
 		
@@ -93,7 +92,7 @@ win32 {
 	
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
 		               $$LOCAL_DIR\\common_lib\\include \
-					   C:\\local\\boost_1_63_0
+					   C:\\local\\boost_1_61_0
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)
