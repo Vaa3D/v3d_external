@@ -67,10 +67,15 @@ win32 {
 		LIBS += -L$$MSVC_DIR\\lib	
 		LIBS += -L$$MSSDK_DIR\\Lib\\x64
 		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib64
-		LIBS += -LC:\\local\\boost_1_61_0\\lib64-msvc-10.0
 
-
-		
+		MSVCVERSION = $$(QMAKESPEC)
+		equals(MSVCVERSION, "win32-msvc2013") {
+			LIBS += -LC:\\local\\boost_1_61_0\\lib64-msvc-12.0
+		}
+		equals(MSVCVERSION, "win32-msvc2010") {
+			LIBS += -LC:\\local\\boost_1_61_0\\lib64-msvc-10.0
+		}
+				
 		LIBS += \
 				-llibtiff \
 				-lteem \
