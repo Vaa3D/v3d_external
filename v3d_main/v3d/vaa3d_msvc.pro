@@ -69,11 +69,12 @@ win32 {
 		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib64
 
 		MSVCVERSION = $$(QMAKESPEC)
+		BOOSTPATH = $$(BOOST_PATH)
 		equals(MSVCVERSION, "win32-msvc2013") {
-			LIBS += -LC:\\local\\boost_1_61_0\\lib64-msvc-12.0
+			LIBS += -L$$BOOSTPATH\\lib64-msvc-12.0
 		}
 		equals(MSVCVERSION, "win32-msvc2010") {
-			LIBS += -LC:\\local\\boost_1_61_0\\lib64-msvc-10.0
+			LIBS += -L$$BOOSTPATH\\lib64-msvc-10.0
 		}
 				
 		LIBS += \
@@ -97,7 +98,7 @@ win32 {
 	
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
 		               $$LOCAL_DIR\\common_lib\\include \
-					   C:\\local\\boost_1_61_0
+					   $$BOOSTPATH\\boost
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)
