@@ -27,7 +27,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 {
 	v3d_msg(QString("Now try to do imaging or other plugin functions [%1]").arg(p.OPS), 0);
-	
+
 	try 
 	{
 		const char* filename=p.imgp->getFileName();
@@ -88,6 +88,14 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
                 return false;
             }
         }
+        else if (p.OPS == "load_new_stack") //ZZ, 02012018
+        {
+            if (pluginsDir.cd("plugins/neuron_utilities/assemble_neuron_live")==false)
+            {
+                v3d_msg("Cannot find ./plugins/neuron_utilities/assemble_neuron_live!",0);
+                return false;
+            }
+        }
         else if (p.OPS == "Fetch Highrez Image Data from File")
         {
             // @FIXED by Alessandro on 2015-09-30.
@@ -132,7 +140,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		
 		v3d_msg(fullpath, 0);
 		
-		V3d_PluginLoader mypluginloader(mainwindow);
+        V3d_PluginLoader mypluginloader(mainwindow);
 
         if (curw)
         {

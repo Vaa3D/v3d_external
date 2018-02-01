@@ -929,6 +929,22 @@ void XFormView::popupImageProcessingDialog(QString item)
                     v3d_msg("Cannot locate the controlling widget for GD curveline,thus do nothing.");
                 }
             }
+            else if (item==tr(" -- Load New Stack")) //by ZZ, 02012018
+            {
+                v3d_imaging_paras myimagingp;
+                myimagingp.OPS = "load_new_stack";
+                myimagingp.imgp = (Image4DSimple *)imgData; //the image data for a plugin to call
+
+
+                if (imgData->getXWidget())
+                {
+                    v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
+                }
+                else
+                {
+                    v3d_msg("Cannot locate the controlling widget for new stack loading,thus do nothing.");
+                }
+            }
             else if (item==tr(" -- trace one marker to all others"))
 			{
 				if (imgData->proj_trace_deformablepath_one_point_to_allotherpoints(imgData->cur_hit_landmark))

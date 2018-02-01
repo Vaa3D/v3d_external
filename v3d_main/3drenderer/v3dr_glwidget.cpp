@@ -961,6 +961,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	updateImageData();
 			}
+            else
+            {
+                callLoadNewStack();//by ZZ 02012018
+            }
 	  		break;
 
 	  		///// surface object operation //////////////////////////////////////////////////////
@@ -2733,6 +2737,19 @@ void V3dR_GLWidget::callCurveLineDetector(int option)
                 v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
             else
                 v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline infinite"));
+            POST_updateGL();
+        }
+    }
+}
+
+//For load new stack, by ZZ 01212018
+void V3dR_GLWidget::callLoadNewStack()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Load New Stack"));
             POST_updateGL();
         }
     }
