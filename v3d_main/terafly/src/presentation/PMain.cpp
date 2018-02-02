@@ -823,6 +823,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     localviewer_panel_layout->addLayout(resolutionSelection_layout, 0);
     localviewer_panel_layout->addLayout(resolutionBar_layout, 0);
     localviewer_panel_layout->addLayout(VOImaxsize_layout, 0);
+#ifdef __ALLOW_VR_FUNCS__
+	/* --------------------- forth row ---------------------- */
+	teraflyVRView = new QPushButton("See in VR",0);
+	teraflyVRView->setToolTip("You can see current image in VR environment.");
+	localviewer_panel_layout->addWidget(teraflyVRView,0);
+#endif
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
     localViewer_panel->setLayout(localviewer_panel_layout);
     #ifdef Q_OS_LINUX
@@ -941,6 +947,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(traslTpos, SIGNAL(clicked()), this, SLOT(traslTposClicked()));
     connect(traslTneg, SIGNAL(clicked()), this, SLOT(traslTnegClicked()));
     connect(controlsResetButton, SIGNAL(clicked()), this, SLOT(resetMultiresControls()));
+#ifdef __ALLOW_VR_FUNCS__
+    if(teraflyVRView)
+	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
+#endif
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
@@ -2232,6 +2242,24 @@ void PMain::resetMultiresControls()
     zoomInSens->setValue(40);
     zoomOutSens->setValue(0);
 }
+
+#ifdef __ALLOW_VR_FUNCS__
+void PMain::doTeraflyVRView()
+{
+	qDebug()<<"PMain::doTeraflyVRView()";
+	
+	CViewer *cur_win = CViewer::getCurrent();
+	if(cur_win&&cur_win->view3DWidget)
+	{
+		this->hide();
+		//qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
+
+		cur_win->view3DWidget->doimageVRView(false);
+		cur_win->storeAnnotations();
+		this->show();
+	}
+}
+#endif
 
 //very useful (not included in Qt): disables the given item of the given combobox
 void PMain::setEnabledComboBoxItem(QComboBox* cbox, int _index, bool enabled)

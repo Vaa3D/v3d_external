@@ -45,9 +45,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
-//#include "../vrrenderer/v3dr_gl_vr.h"
+
 #include "../vrrenderer/VR_MainWindow.h"
 #include "../vrrenderer/V3dR_Communicator.h"
+#include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
@@ -1564,26 +1565,33 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
 }
 
 #ifdef __ALLOW_VR_FUNCS__
-void V3dR_GLWidget::doimageVRView()//0518
+void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
 	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
 	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
 
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
 
-    v3d_msg("Data prepared for VR.");
     this->getMainWindow()->hide();
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+	if(bCanCoMode)
+		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+	else 
+		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
 		if(VRClientON==false)
 		{
 			VRClientON = true;
-			VR_MainWindow * myvrwin= 0;
-			myvrwin =new VR_MainWindow;
+			if(myvrwin) 
+				delete myvrwin;
+			myvrwin = 0;
+			myvrwin = new VR_MainWindow();
 			myvrwin->setWindowTitle("VR MainWindow");
 			bool linkerror = myvrwin->SendLoginRequest();
+			VRClientON = linkerror;
+			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
+
 			myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror);
 		}
 		else
@@ -1594,8 +1602,12 @@ void V3dR_GLWidget::doimageVRView()//0518
 	}
 	else
 	{
-		startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+		bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
 		this->getMainWindow()->show();
+		if(_Call_ZZ_Plugin)
+		{
+			call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		}
 	}
 }
 void V3dR_GLWidget::doclientView(bool check_flag)
@@ -1610,6 +1622,8 @@ void V3dR_GLWidget::doclientView(bool check_flag)
 			VRClientON = true;
 			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
 			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+			if(myclient) 
+				delete myclient;
 			myclient = 0;
 			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
 			bool linkerror = myclient->SendLoginRequest();
@@ -1617,6 +1631,7 @@ void V3dR_GLWidget::doclientView(bool check_flag)
 			{
 				v3d_msg("Error!Cannot link to server!");
 				myclient = 0;
+				VRClientON = false;
 			}
 			else
 				v3d_msg("Successed linking to server! ");
@@ -1639,6 +1654,11 @@ void V3dR_GLWidget::doclientView(bool check_flag)
 	}
 }
 
+void V3dR_GLWidget::OnVRSocketDisConnected()
+{
+	qDebug()<<"V3dR_GLWidget::OnVRSocketDisConnected()";
+	VRClientON=false;
+}
 
 
 

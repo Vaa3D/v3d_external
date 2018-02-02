@@ -88,4 +88,39 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
     return true;
 }
 
+bool call_neuron_assembler_live_plugin(MainWindow *pmain)
+{
+	try
+	{
+		QDir pluginsDir = QDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+		if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+				pluginsDir.cdUp();
+#endif
 
+		if (pluginsDir.cd("plugins/neuron_utilities/assemble_neuron_live")==false)
+		{
+			qDebug("Cannot find ./plugins/neuron_utilities/assemble_neuron_live directory!");
+			return false;
+		}
+        QStringList fileList =  pluginsDir.entryList(QDir::Files);
+        if (fileList.size()<1)
+        {
+            qDebug("Cannot find any file in the plugins directory!");
+            return false;
+        }
+		QString fullpath = pluginsDir.absoluteFilePath(fileList.at(0)); //always just use the first file (assume it is the only one) found in the folder as the "correct" dll
+        //the real dll name should be "xxxxx.dll"
+        QPluginLoader* loader = new QPluginLoader(fullpath);
+        if(!loader) return false;
+        V3d_PluginLoader mypluginloader(pmain);
+        QString methodname = "load_new_stack";
+        mypluginloader.runPlugin(loader, methodname);
+    }
+    catch (...)
+    {
+        v3d_msg("Catch a problem in v3d_imaging() wrapper function.", 0);
+        return false;
+    }
+	return true;
+}

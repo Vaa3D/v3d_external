@@ -48,6 +48,9 @@ class V3dR_MainWindow;
 class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
 class V3dR_Communicator;
+#ifdef __ALLOW_VR_FUNCS__
+	class VR_MainWindow;
+#endif
 //class SurfaceObjGeometryDialog;
 typedef void(*PluginMouseFunc)(QGLWidget*); // May 29, 2012 by Hang
 
@@ -96,6 +99,7 @@ public:
  
 #ifdef __ALLOW_VR_FUNCS__
 	bool VRClientON;
+	VR_MainWindow * myvrwin;
 	V3dR_Communicator * myclient;
 #endif
 //protected:
@@ -258,8 +262,9 @@ public slots:
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void absoluteRotPose();
 #ifdef __ALLOW_VR_FUNCS__
-    virtual void doimageVRView();
+    virtual void doimageVRView(bool bCanCoMode = true);
 	virtual void doclientView(bool check_flag=false);
+	virtual void OnVRSocketDisConnected();
 #endif
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
 	virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
@@ -512,6 +517,7 @@ public:
 		volumeTimPoint_fraction=0;
 #ifdef __ALLOW_VR_FUNCS__
 		VRClientON=false;
+		myvrwin = 0;
 		myclient = 0;
 #endif
 	}

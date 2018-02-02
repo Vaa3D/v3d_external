@@ -10,6 +10,7 @@ uniform sampler3D VolumeTex;
 uniform sampler1D TransferFunc;  
 uniform float     StepSize;
 uniform vec2      ScreenSize;
+uniform vec2      ImageSettings; // x = contrast, y= brightness
 layout (location = 0) out vec4 FragColor;
 
 void main()
@@ -52,5 +53,12 @@ void main()
     	}
     }
     colorAcum.a = 1.0;
+
+
+    colorAcum.rgb = colorAcum.rgb * ImageSettings.x + ImageSettings.y;
+    if(colorAcum.r>1) colorAcum.r =1;
+    if(colorAcum.g>1) colorAcum.g =1;
+    if(colorAcum.b>1) colorAcum.b =1;
+    
     FragColor = colorAcum;   
 }

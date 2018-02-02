@@ -38,6 +38,8 @@ private slots:
     void onDisconnected();
 public:
 	CMainApplication *pMainApplication;
+signals:
+	void VRSocketDisconnect();
 private:
 	
     QTcpSocket* socket;

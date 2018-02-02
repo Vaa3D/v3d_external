@@ -189,6 +189,9 @@ class terafly::PMain : public QWidget
         QSpinBox* Ddim_sbox;
         QSpinBox* Tdim_sbox;
         QComboBox* resolution_cbox;
+#ifdef __ALLOW_VR_FUNCS__
+		QPushButton* teraflyVRView;
+#endif
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
         QSlider* cacheSens;
@@ -500,7 +503,9 @@ class terafly::PMain : public QWidget
         void showDialogGenerateTimeSeriesInterpolation();
         void showDialogGenerateTimeSeriesReplication();
         void showAnoOctree();
-
+#ifdef __ALLOW_VR_FUNCS__
+		void doTeraflyVRView();
+#endif
 
     signals:
 

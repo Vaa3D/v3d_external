@@ -12,6 +12,8 @@ std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow() :
 	QWidget()
 {
+	if (Agents.size()>0)
+		Agents.clear();
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
@@ -126,9 +128,10 @@ void VR_MainWindow::onReadyRead() {
     QRegExp systemRex("^/system:(.*)$");
 	QRegExp hmdposRex("^/hmdpos:(.*)$");
 	QRegExp colorRex("^/color:(.*)$");
-	QRegExp deleteRex("^/del:(.*)$");
+	QRegExp deletecurveRex("^/del_curve:(.*)$");
 	QRegExp markerRex("^/marker:(.*)$");
-	QRegExp delmarkerRex("^/remove:(.*)$");
+	QRegExp delmarkerRex("^/del_marker:(.*)$");
+	QRegExp dragnodeRex("^/drag_node:(.*)$");
     QRegExp messageRex("^(.*):(.*)$");
 	
 
@@ -242,8 +245,8 @@ void VR_MainWindow::onReadyRead() {
 					pMainApplication->SetupCurrentUserInformation(userName.toStdString(), Agents.at(i).colorType);
 			}
 		}
-        else if (deleteRex.indexIn(line) != -1) {
-			QStringList delMSGs = deleteRex.cap(1).split(" ");
+        else if (deletecurveRex.indexIn(line) != -1) {
+			QStringList delMSGs = deletecurveRex.cap(1).split(" ");
 			if(delMSGs.size()<2) 
 			{
 					qDebug()<<"size < 2";
@@ -324,7 +327,29 @@ void VR_MainWindow::onReadyRead() {
 			qDebug()<<"1126:current type ="<<colortype;
 			pMainApplication->RemoveMarkerandSurface(mx,my,mz,colortype);
         }
-		//delmarkerRex
+        else if (dragnodeRex.indexIn(line) != -1) {
+			QStringList dragnodePOS = dragnodeRex.cap(1).split(" ");
+			if(dragnodePOS.size()<6) 
+			{
+					qDebug()<<"error! size < 6";
+					return;
+			}
+            QString user = dragnodePOS.at(0);
+			int ntnum = dragnodePOS.at(1).toInt();
+			int swcnum = dragnodePOS.at(2).toInt();
+            float mx = dragnodePOS.at(3).toFloat();
+			float my = dragnodePOS.at(4).toFloat();
+			float mz = dragnodePOS.at(5).toFloat();
+			qDebug()<<"user, "<<user<<"drag node's num:"<<ntnum<<" "<<swcnum<<" new position: "<<mx<<" "<<my<<" "<<mz;
+			if(user==userName)
+			{
+				pMainApplication->READY_TO_SEND=false;
+				CURRENT_DATA_IS_SENT=false;
+				pMainApplication->ClearCurrentNT();
+			}
+			pMainApplication->UpdateDragNodeinNTList(ntnum,swcnum,mx,my,mz);
+        }
+		//dragnodeRex
         else if (messageRex.indexIn(line) != -1) {
             QString user = messageRex.cap(1);
             QString message = messageRex.cap(2);
@@ -362,10 +387,11 @@ void VR_MainWindow::onConnected() {
 void VR_MainWindow::onDisconnected() {
     qDebug("Now disconnect with the server."); 
 	//Agents.clear();
+	emit VRSocketDisconnect();
 	if(pMainApplication)
 		pMainApplication->isOnline = false;
 	this->close();
-
+	
 }
 
 
@@ -375,6 +401,7 @@ void VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, Main
 	pMainApplication = new CMainApplication( 0, 0 );
 
 	pMainApplication->mainwindow =pmain; 
+
 	pMainApplication->isOnline = isLinkSuccess;
     //pMainApplication->loadedNT.listNeuron.clear();
     //pMainApplication->loadedNT.hashNeuron.clear();
@@ -442,7 +469,7 @@ void VR_MainWindow::RunVRMainloop()
 		{
 			qDebug()<<"delname = "<<pMainApplication->delName;
 			if(pMainApplication->delName!="")
-				socket->write(QString("/del:" + pMainApplication->delName + "\n").toUtf8());
+				socket->write(QString("/del_curve:" + pMainApplication->delName + "\n").toUtf8());
 			else
 			{
 				pMainApplication->READY_TO_SEND=false;
@@ -458,7 +485,12 @@ void VR_MainWindow::RunVRMainloop()
 		else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
 		{
 			qDebug()<<"marker to be delete position = "<<pMainApplication->delmarkerPOS;
-			socket->write(QString("/remove:" + pMainApplication->delmarkerPOS + "\n").toUtf8());
+			socket->write(QString("/del_marker:" + pMainApplication->delmarkerPOS + "\n").toUtf8());
+		}
+		else if(pMainApplication->m_modeGrip_R==m_dragMode)
+		{
+			qDebug()<<"drag node new position = "<<pMainApplication->dragnodePOS;
+			socket->write(QString("/drag_node:" + pMainApplication->dragnodePOS + "\n").toUtf8());
 		}
 		if(pMainApplication->READY_TO_SEND==true)
 			CURRENT_DATA_IS_SENT=true;
@@ -475,13 +507,25 @@ void VR_MainWindow::RunVRMainloop()
 bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
 
-
 	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
-    pMainApplication->loadedNTList = ntlist;
 
+	if(ntlist != NULL&&(ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
+	{
+		qDebug()<<"means this is terafly special condition.do something";
+		NeuronTree newS;
+		newS.color = XYZW(0,0,255,255);
+		newS = ntlist->at(0);
+		newS.n = 1;
+		newS.on = true;
+		newS.name = "vaa3d_traced_neuron";
+		newS.file = "vaa3d_traced_neuron";
+		ntlist->append(newS); 
+	}
+    pMainApplication->loadedNTList = ntlist;
+	
 	if(i4d->valid())
 	{
 		pMainApplication->img4d = i4d;
@@ -490,7 +534,7 @@ bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindo
 	if (!pMainApplication->BInit())
 	{
 		pMainApplication->Shutdown();
-		return 1;
+		return 0;
 	}
 	pMainApplication->SetupCurrentUserInformation("local user", 13);
 
@@ -498,7 +542,12 @@ bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindo
 
 	pMainApplication->Shutdown();
 
-	return 0;
+	bool _call_that_plugin = pMainApplication->_call_assemble_plugin;
+
+	delete pMainApplication;
+	pMainApplication = NULL;
+
+	return _call_that_plugin;
 }
 
 

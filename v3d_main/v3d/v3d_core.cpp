@@ -121,7 +121,6 @@
 #include <math.h>
 
 #include "../3drenderer/v3dr_common.h" // Ensure Glee is loaded first
-//#include "../vrrenderer/v3dr_gl_vr.h"
 
 
 #include <QLayout>

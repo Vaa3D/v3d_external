@@ -35,8 +35,8 @@ enum ModelControlR
 {
 	m_drawMode = 0,
 	m_deleteMode,
-	m_markMode,
 	m_dragMode,
+	m_markMode,
     m_delmarkMode
 };
 enum ModeControlSettings
@@ -47,8 +47,11 @@ enum ModeControlSettings
 	_Freeze,
 	_Search1,
 	_Search2,
-	_Clear
+	_Clear,
+	_UndoRedo
 };
+
+typedef QList<NeuronTree> NTL;
 
 class Shader;
 class Sphere;
@@ -100,6 +103,7 @@ public:
 	void MergeNeuronTrees();//merge NTlist to single neurontree
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);
+	void UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,float nodey,float nodez);
 
 	void SetupRenderModels();
 
@@ -130,6 +134,13 @@ public:
 	void SetupCameras();
 	void SetupCamerasForMorphology();
 
+
+
+	//undo redo
+	void UndoLastSketchedNT();
+	void RedoLastSketchedNT();
+	void ClearUndoRedoVectors();
+
 	void SetupGlobalMatrix();//matrix for glabal transformation
 	void RenderStereoTargets();
 	void RenderCompanionWindow();
@@ -159,6 +170,8 @@ public:
 	QString delName;
 	QString markerPOS;
 	QString delmarkerPOS;
+	QString dragnodePOS;
+	bool _call_assemble_plugin;
 
 private: 
 	std::string current_agent_color;
@@ -170,6 +183,7 @@ private:
 	bool m_bGlFinishHack;
 	bool m_bShowMorphologyLine;
 	bool m_bShowMorphologySurface;
+	bool bUpdateFlag;
 	
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
@@ -191,6 +205,12 @@ private:
 	bool m_rbShowTrackedDevice[ vr::k_unMaxTrackedDeviceCount ];
 
 	//gltext::Font * font_VR;//font for render text
+
+	//undo redo
+	bool bIsUndoEnable;
+	bool bIsRedoEnable;
+	vector<NTL> vUndoList;
+	vector<NTL> vRedoList;
 
 private: // SDL bookkeeping
 	SDL_Window *m_pCompanionWindow;
@@ -227,6 +247,8 @@ private: // OpenGL bookkeeping
 	float detX;
 	float detY;
 	
+	glm::vec3 loadedNTCenter;
+	long int vertexcount, swccount;
 
 	std::string m_strPoseClasses;                            // what classes we saw poses for this frame
 	char m_rDevClassChar[ vr::k_unMaxTrackedDeviceCount ];   // for each device, a character representing its class
@@ -318,7 +340,7 @@ private: // OpenGL bookkeeping
 	glm::mat4 m_oldGlobalMatrix;
 	glm::mat4 m_ctrlChangeMatrix;
 	glm::mat4 m_oldCtrlMatrix;
-	
+	   
 
 	//matrices to store frozen state
 	Matrix4 m_frozen_mat4HMDPose;
@@ -399,6 +421,9 @@ private:
 	GLuint g_texWidth;
 	GLuint g_texHeight;
 	GLuint g_volTexObj;
+
+	float fBrightness;
+	float fContrast;
 };
 
 
