@@ -125,8 +125,8 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* m
     {
 #ifdef USE_HDF5
         H5::Exception::dontPrint();
-        H5::H5File file( fileName, H5F_ACC_TRUNC );
-        H5::Group* group = new H5::Group( file.createGroup( "/Channels" ) );
+        H5::H5File* file = new H5::H5File( fileName, H5F_ACC_TRUNC );
+        H5::Group* group = new H5::Group( file->createGroup( "/Channels" ) );
 
         Image4DProxy<My4DImage> proxy( const_cast<My4DImage*>( &img ) );
 
@@ -225,7 +225,8 @@ std: stringstream name;
         if ( !mapping )
             delete imap;
 
-        file.close();
+        delete group;
+        delete file;
 
         return true;
     }
