@@ -30,6 +30,8 @@
 #include "PreferencesDialog.h"
 #include "../utility/FooDebug.h"
 #include "../utility/url_tools.h"
+#include "../entity_model/Entity.h"
+
 #include <cstdlib> // getenv
 
 using namespace std;
@@ -1019,6 +1021,17 @@ void NaMainWindow::loadSingleStack(QUrl url)
 }
 
 /* slot */
+void NaMainWindow::loadSingleStack(Entity* entity)
+{
+    QString filepath = entity->getValueByAttributeName("File Path");
+    channel_spec = entity->getValueByAttributeName("Channel Specification");
+    if (channel_spec.isEmpty()) {
+        channel_spec = QString();
+    }
+
+    loadSingleStack( filepath );
+}
+
 void NaMainWindow::loadSingleStack(QString fileName)
 {
     QUrl url( fileName );
@@ -1056,6 +1069,10 @@ void NaMainWindow::loadSingleStack(QUrl url, bool useVaa3dClassic)
         setViewMode(VIEW_SINGLE_STACK);
         onDataLoadStarted();
         createNewDataFlowModel();
+
+        // All of these may be empty, but under certain cases (for Janelia)
+        // the channel_spec will be valid
+        dataFlowModel->getVolumeData().setAuxillaryImagery(losslessImage, visuallyLosslessImage, channel_spec);
 
         VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         volumeTexture.queueVolumeData();

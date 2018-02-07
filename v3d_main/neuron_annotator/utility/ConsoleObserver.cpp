@@ -166,7 +166,7 @@ void ConsoleObserver::entityViewRequestedResults(const void *results)
         if (filepath != NULL)
         {
             // qDebug() << "openStackWithVaa3d " << filepath;
-            emit openStackWithVaa3d(filepath);
+            emit openStackWithVaa3d(entity);
         }
     }
 

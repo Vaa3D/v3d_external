@@ -28,6 +28,7 @@ public:
 using namespace std;
 using namespace jfrc;
 
+My4DImage* ensureThreeChannel( My4DImage* input );
 
 /////////////////////////////////////////
 // NaVolumeDataLoadableStack methods //
@@ -648,11 +649,18 @@ int NaVolumeData::Writer::loadChannels( QUrl url ) // includes loading general v
         delete img;
         return 0;
     }
+
+    setOriginalImageStackFileUrl( url );
+
     if (! setSingleImageVolume(img)) {
         delete img;
         return 0;
     }
-    return img->getCDim();
+
+    int count = m_data->originalImageStack ? m_data->originalImageStack->getCDim() : 0;
+    count += m_data->referenceStack ? m_data->referenceStack->getCDim() : 0;
+
+    return count;
 }
 
 bool NaVolumeData::Writer::setSingleImageVolume( My4DImage* img )
@@ -673,6 +681,30 @@ bool NaVolumeData::Writer::setSingleImageVolume( My4DImage* img )
         img->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>( m_data->originalImageStack );
     m_data->originalImageProxy.set_minmax( m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax );
+
+
+    if ( m_data->originalImageStackFileUrl.toString().endsWith( ".h5j" ) )
+    {
+        m_data->splitH5JStack( );
+
+        m_data->originalImageStack = ensureThreeChannel( m_data->originalImageStack );
+
+        // Approximate 16-bit data for 8-it data volumes
+        // qDebug() << m_data->originalImageStackFileUrl;
+        m_data->originalImageStack =
+            transformStackToLinear( m_data->originalImageStack,
+                                    m_data->originalImageStackFileUrl );
+        m_data->referenceStack =
+            transformStackToLinear( m_data->referenceStack,
+                                    m_data->referenceStackFileUrl );
+
+        // Ensure initialization of proxies
+        m_data->originalImageProxy = Image4DProxy<My4DImage>( m_data->originalImageStack );
+        m_data->originalImageProxy.set_minmax( m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax );
+        m_data->referenceImageProxy = Image4DProxy<My4DImage>( m_data->referenceStack );
+        m_data->referenceImageProxy.set_minmax( m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax );
+    }
+
     return true;
 }
 

@@ -133,6 +133,7 @@ class NaMainWindow : public QMainWindow
     void labelNeuronsAsFlyBrainCompartments();
     void loadSingleStack( QUrl url );
     void loadSingleStack( QString fileName );
+    void loadSingleStack( Entity* entity );
     void loadSingleStack( QUrl url, bool useVaa3dClassic );
     void onDataLoadStarted();
     void onDataLoadFinished();

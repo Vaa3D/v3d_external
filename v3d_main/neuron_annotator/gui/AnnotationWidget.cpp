@@ -371,7 +371,7 @@ void AnnotationWidget::consoleConnect() {
     connect(consoleObserver, SIGNAL(selectEntityById(qint64,bool)), this, SLOT(selectEntityById(qint64,bool)));
     connect(consoleObserver, SIGNAL(communicationError(const QString&)), this, SLOT(communicationError(const QString&)));
     connect(consoleObserver, SIGNAL(updateCurrentSample(Entity*)), this, SLOT(updateCurrentSample(Entity*)));
-    connect(consoleObserver, SIGNAL(openStackWithVaa3d(QString)), naMainWindow, SLOT(loadSingleStack(QString)));
+    connect(consoleObserver, SIGNAL(openStackWithVaa3d(Entity*)), naMainWindow, SLOT(loadSingleStack(Entity*)));
 
     consoleObserverService = new obs::ConsoleObserverServiceImpl(naMainWindow->getConsoleURL());
 
