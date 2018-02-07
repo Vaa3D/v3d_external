@@ -29,6 +29,7 @@ using namespace std;
 using namespace jfrc;
 
 My4DImage* ensureThreeChannel( My4DImage* input );
+My4DImage* transformStackToLinear( My4DImage* img1, QUrl fileUrl );
 
 /////////////////////////////////////////
 // NaVolumeDataLoadableStack methods //
