@@ -261,8 +261,8 @@ if(USE_HDF5)
         HDF5
         #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.10.1.tar.gz
         URL https://www.hdfgroup.org/package/gzip/?wpdmdl=4301&refresh=59dd1c8be460b1507662987
-        DOWNLOAD_NAME hdf-1.10.1.tar.gz
-        CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=OFF
+        DOWNLOAD_NAME hdf-1.8.20.tar.gz
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DBUILD_SHARED_LIBS:BOOL=OFF
                    -DCMAKE_INSTALL_PREFIX:PATH=${hdf_dir}/install -DHDF5_BUILD_CPP_LIB:BOOL=ON
                    -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_BUILD_TOOLS:BOOL=ON
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
@@ -277,17 +277,10 @@ if(USE_HDF5)
       set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/hdf5_cpp.lib CACHE INTERNAL "path to a library")
       set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/hdf5_hl_cpp.lib CACHE INTERNAL "path to a library")
     else()
-      if(APPLE)
-        set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-        set(HDF5_HL_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-        set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-        set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-      else()
-        set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-        set(HDF5_HL_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-        set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-        set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-      endif()
+      set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_HL_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
     endif()
 
     include_directories(${HDF5_INCLUDE_DIR})

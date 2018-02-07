@@ -26,6 +26,7 @@ CMAKE_BUILD="Release"
 CMAKE_EXE=""
 BUILD_DIR=`pwd`
 ROOT_DIR=`pwd`
+NO_STOP_ON_ERROR="-i"
 
 set -eu
 
@@ -66,7 +67,8 @@ while [[ $# > 0 ]]; do
             PLATFORM="$1"
             ;;
         -h5j)
-            CMAKE_ARGS+="-DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON" 
+            CMAKE_ARGS+=" -DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON" 
+            CMAKE_ARGS+=" -DJANELIA_BUILD:BOOL=ON " 
             BUILD_HDF5=1
             ;;
         -v)
@@ -74,6 +76,9 @@ while [[ $# > 0 ]]; do
             ;;
         -qt5)
             CMAKE_ARGS+=" -DFORCE_QT4:BOOL=OFF "
+            ;;
+        -dev)
+            NO_STOP_ON_ERROR=""
             ;;
         -16)
             CMAKE_ARGS+=" -DHIGH_BIT_DEPTH:BOOL=ON "
@@ -115,6 +120,7 @@ CMAKE_PLATFORM_ARGS="-DBOOST_ROOT:PATH=$boost_prefix "
 if [ $PLATFORM = "windows-x86_64" ]; then
     CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/include "
     CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/winlib64/libtiff.lib "
+    CMAKE_PLATFORM_ARGS+="-DZLIB:FILEPATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/winlib64/libzlib.lib "
     CMAKE_PLATFORM_ARGS+="-DFFTW_INCLUDE_DIR:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64 "
     CMAKE_PLATFORM_ARGS+="-DFFTW_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64/libfftw3f-3.lib"
 elif [ $PLATFORM = "linux-x86_64" ]; then
@@ -249,7 +255,7 @@ case $OPERATION in
             devenv Vaa3D.sln -project INSTALL -build $CMAKE_BUILD -out install.txt
             echo "Done."
         else
-    		make -i
+    		make $NO_STOP_ON_ERROR
         fi
         ;;
     clean)

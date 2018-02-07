@@ -13,6 +13,9 @@ set (V3D_MAIN "${CMAKE_SOURCE_DIR}/v3d_main")
 # Switch Qt versions
 set(FORCE_QT4 ON CACHE BOOL "Build with Qt4")
 
+# Disable Janelia version
+set(JANELIA_BUILD OFF CACHE BOOL "Build for HHMI Janelia version")
+
 # Sidestep compile trouble with boost 1.46 with MSVC11/2012
 if(WIN32)
     add_definitions(-DBOOST_NO_0X_HDR_INITIALIZER_LIST)
