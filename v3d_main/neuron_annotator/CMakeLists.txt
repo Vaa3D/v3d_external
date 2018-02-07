@@ -129,7 +129,7 @@ if(USE_FFMPEG)
         ${AVFORMAT_LIBRARY}
         ${AVCODEC_LIBRARY}
         ${AVUTIL_LIBRARY}
-        ${BZIP2_LIBRARIES}
+        ${BZ2_LIB}
         ${ZLIB_LIBRARY}
 #        ${ICONV_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}

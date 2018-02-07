@@ -244,6 +244,14 @@ bool loadStackHDF5( const char* fileName, Image4DSimple& img )
 {
     QUrl url( fileName );
     bool local = url.scheme().isEmpty();
+	// On Windows, Qt considers the drive letter a scheme
+	// We assume that the only scheme were using is http, so test for it
+	// and if the scheme isn't http, assume it's a drive letter and roll the dice
+	if (!local)
+	{
+		if (!url.scheme().startsWith("http"))
+			local = true;
+	}
     return loadStackHDF5( local ? QUrl::fromLocalFile( fileName ) : url, img );
 }
 
@@ -364,48 +372,56 @@ bool loadStackHDF5( QBuffer& buffer, Image4DSimple& img )
         if ( name == "Channels" )
         {
             H5::Group channels = file.openGroup( name );
+			long data[2], width, height;
 
-            // Grab the attributes
+			// Grab the attributes
             H5::Attribute attr = channels.openAttribute( "width" );
             H5::DataType type = attr.getDataType();
-            long width, height;
-            attr.read( type, &width );
+			// Windows throws a runtime error about a corrupted stack if we
+			// try to read the attribute directly into the variable
+			attr.read( type, data ); 
             attr.close();
+			width = data[0];
 
-            attr = channels.openAttribute( "height" );
-            attr.read( type, &height );
+			attr = channels.openAttribute( "height" );
+			type = attr.getDataType();
+            attr.read( type, data );
             attr.close();
+			height = data[0];
 
-            int num_channels = 0;
+			int num_channels = 0;
             // Count the number of channels
             for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
                 if ( channels.getObjTypeByIdx( obj ) == H5G_DATASET )
                     num_channels++;
 
             int channel_idx = 0;
+
             for ( size_t obj = 0; obj < channels.getNumObjs(); obj++ )
             {
                 if ( channels.getObjTypeByIdx( obj ) == H5G_DATASET )
                 {
                     H5std_string ds_name = channels.getObjnameByIdx( obj );
                     H5::DataSet data = channels.openDataSet( ds_name );
-                    uint8_t* buffer = new uint8_t[ data.getStorageSize() ];
-                    data.read( buffer, data.getDataType() );
-                    QByteArray qbarray( ( const char* )buffer, data.getStorageSize() );
+                    uint8_t* channel_buf = new uint8_t[ data.getStorageSize() ];
+                    data.read( channel_buf, data.getDataType() );
+                    QByteArray qbarray( ( const char* )channel_buf, data.getStorageSize() );
                     data.close();
-
+					
                     if ( !loadIndexedStackFFMpeg( &qbarray, img, channel_idx++, num_channels,
                                                   width, height ) )
                     {
                         v3d_msg( "Error happened in HDF file reading. Stop. \n", false );
                         return false;
                     }
-
-                    delete [] buffer;
+					
+                    delete [] channel_buf;
                 }
             }
         }
     }
+
+	file.close();
 
 #endif
 
