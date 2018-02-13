@@ -1,3 +1,4 @@
+
 # #####################################################################
 # Updated: 060924 v3d v0.12
 # Updated: 080131: change from Qt 4.1.4 to 4.3.3 and then back to 4.1.4, as 4.3.3 has a crash on the program exit. sent bug report to Qt already.
@@ -85,15 +86,26 @@
 # 110806: (Hang) add ../custom_toolbar/v3d_custom_toolbar.h/.cpp
 # 110906: by PHC. Now include v3d_essential.pro
 # 150506: by AB. Now include teramanager.pro
+# 170623: by RZC. move mozak module here from v3d_essential.pro, change name of terafly/teramanager.pro to terafly.pro
 # ######################################################################
 
 
 include(v3d_essential.pro)
-include(../terafly/teramanager.pro)
+include(../terafly/terafly.pro)
+
+# mozak module
+include(../mozak/m_terafly/m_teramanager.pro)
+RESOURCES += ../mozak/mozak.qrc
+HEADERS +=  ../mozak/MozakUI.h \
+            ../mozak/Mozak3DView.h
+SOURCES +=  ../mozak/MozakUI.cpp \
+            ../mozak/Mozak3DView.cpp
+
 
 #CONFIG += console
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
+
 #CONFIG  += debug
 
 # Flags for gsoap (web services)
@@ -353,4 +365,5 @@ message(CONFIG=$$CONFIG)
 # aborted attempt to implement reentrant tiff image loading
 # SOURCES -= ../basic_c_fun/mg_image_lib.cpp
 # SOURCES += ../neuron_annotator/utility/mg_image_lib_reentrant.cpp
+
 

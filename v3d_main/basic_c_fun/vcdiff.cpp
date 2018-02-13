@@ -71,10 +71,10 @@ V3DLONG lround(V3DLONG x)
 			return x < 0 ? -floor(fabs(x) + .5) : floor(x + .5);
 		}
 
-		double log2(double x)
-		{
-			return log(x)/log(2.0);
-		}
+double log2(double x)
+{
+	return log(x)/log(2.0);
+}
 	#endif
 #endif
 

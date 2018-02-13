@@ -72,7 +72,12 @@ void v3d_Lite_info();
 
 
 //090908 RZC: build-time info
+#if __cplusplus >= 201103L || (__cplusplus < 200000 && __cplusplus > 199711L)
+#define BUILD_TIME		__TIME__ " " __DATE__  //110713 RZC, fixed back from current_time_stamp()
+#else
 #define BUILD_TIME		__TIME__" "__DATE__  //110713 RZC, fixed back from current_time_stamp()
+#endif
+
 #include <QtGlobal>
 #if defined(Q_WS_MAC)
 	#define BUILD_OS_INFO	"Mac"
@@ -83,7 +88,13 @@ void v3d_Lite_info();
 #else
 	#define BUILD_OS_INFO	"Unknown OS"
 #endif
+
+#if __cplusplus >= 201103L || (__cplusplus < 200000 && __cplusplus > 199711L)
+#define BUILD_QT_INFO 	"Qt " QT_VERSION_STR
+#else
 #define BUILD_QT_INFO 	"Qt "QT_VERSION_STR
+#endif
+
 #if QT_POINTER_SIZE==4
 	#define BUILD_BITS		"32-bit"
 #elif QT_POINTER_SIZE==8

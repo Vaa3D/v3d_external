@@ -106,6 +106,7 @@ public slots:
 #ifdef _ALLOW_TERAFLY_MENU_
 	void func_open_terafly();
     void func_open_teraconverter();
+	void func_open_neuron_game(); // By T Pavlik 20151020
 #endif
 #ifdef __v3d_custom_toolbar__
 	void addCustomToolbar(); // By Hang 06-Aug-2011
@@ -141,7 +142,7 @@ public slots:
 	void func_procLandmarkManager();
 	void func_procAtlasViewer();
 	void func_proc3DViewer();
-	void func_proc3DLocalRoiViewer();
+    void func_proc3DLocalRoiViewer();
 	void func_procSettings();
 	void func_proc_plugin_manager();
 	void func_procIO_export_to_vano_format();
@@ -357,7 +358,8 @@ private:
 	QAction * procLandmarkManager;
 	QAction * procAtlasViewer;
 	QAction * proc3DViewer;
-	QAction * proc3DLocalRoiViewer;
+
+    QAction * proc3DLocalRoiViewer;
 	QAction * procSettings;
 	QAction * proc_plugin_manager;
 	QAction * procIO_export_to_vano_format;

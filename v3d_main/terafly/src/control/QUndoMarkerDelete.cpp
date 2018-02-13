@@ -2,12 +2,16 @@
 #include "../control/CViewer.h"
 #include "v3dr_glwidget.h"
 #include "../presentation/PAnoToolBar.h"
+#include "PMain.h"
 
 tf::QUndoMarkerDelete::QUndoMarkerDelete(tf::CViewer* _source, LocationSimple _marker) :  QUndoCommand()
 {
     source = _source;
     marker = _marker;
     redoFirstTime = true;
+
+    // tell main GUI that annotations have been changed
+    PMain::getInstance()->annotationsChanged();
 }
 
 // undo and redo methods
@@ -30,6 +34,9 @@ void tf::QUndoMarkerDelete::undo()
 
     // end select mode
     //source->view3DWidget->getRenderer()->endSelectMode();
+
+    // tell main GUI that annotations have been changed
+    PMain::getInstance()->annotationsChanged();
 }
 
 void tf::QUndoMarkerDelete::redo()
@@ -56,6 +63,9 @@ void tf::QUndoMarkerDelete::redo()
 
         // end select mode
         //source->view3DWidget->getRenderer()->endSelectMode();
+
+        // tell main GUI that annotations have been changed
+        PMain::getInstance()->annotationsChanged();
     }
     else
         redoFirstTime = false;

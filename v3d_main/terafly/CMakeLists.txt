@@ -9,6 +9,16 @@ include(cmake/TeraStitcher_Version.cmake)
 # enable TeraFly code in terarepo/src
 add_definitions(-D_VAA3D_TERAFLY_PLUGIN_MODE)
 add_definitions(-DWITH_QT)
+# add required definitions for terarepo
+add_definitions(-DTERASTITCHER_MAJOR)
+add_definitions(-DTERASTITCHER_MINOR)
+add_definitions(-DTERASTITCHER_PATCH)
+add_definitions(-DTERASTITCHER2_MAJOR)
+add_definitions(-DTERASTITCHER2_MINOR)
+add_definitions(-DTERASTITCHER2_PATCH)
+add_definitions(-DTERACONVERTER_MAJOR)
+add_definitions(-DTERACONVERTER_MINOR)
+add_definitions(-DTERACONVERTER_PATCH)
 # enable HDF5-dependent code
 add_definitions(-DENABLE_BDV_HDF5)
 add_definitions(-DENABLE_IMS_HDF5)
@@ -93,6 +103,7 @@ file(GLOB tinyxml_h             ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rd
 file(GLOB iomanager_h 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.h)
 file(GLOB plugin_tiff2D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.h)
 file(GLOB plugin_tiff3D_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.h)
+file(GLOB plugin_dcimg_h 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/dcimg/*.h)
 file(GLOB plugin_IMS_HDF5_h 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/IMS_HDF5/*.h)
 file(GLOB common_h 				${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common/*.h)
 
@@ -110,6 +121,7 @@ file(GLOB tinyxml_src           ${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/3rd
 file(GLOB iomanager_src 		${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/*.cpp)
 file(GLOB plugin_tiff2D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff2D/*.cpp)
 file(GLOB plugin_tiff3D_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/tiff3D/*.cpp)
+file(GLOB plugin_dcimg_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/dcimg/*.cpp)
 file(GLOB plugin_IMS_HDF5_src 	${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/iomanager/plugins/IMS_HDF5/*.cpp)
 file(GLOB common_src 			${CMAKE_CURRENT_SOURCE_DIR}/src/terarepo/src/common/*.cpp)
 
@@ -128,6 +140,7 @@ add_library(terafly STATIC
 	${iomanager_src}
 	${plugin_tiff2D_src}
 	${plugin_tiff3D_src}
+	${plugin_dcimg_src}
 	${plugin_IMS_HDF5_src}
 	${stitcher_src}
 	${crossmips_src}
@@ -141,6 +154,7 @@ add_library(terafly STATIC
 	${iomanager_h}
 	${plugin_tiff2D_h}
 	${plugin_tiff3D_h}
+	${plugin_dcimg_h}
 	${plugin_IMS_HDF5_h}
 	${crossmips_h}
 	${tinyxml_h}

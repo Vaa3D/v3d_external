@@ -191,6 +191,7 @@ public:
     virtual void update_NeuronBoundingBox(V3dR_MainWindow *w); //Oct. 08, 2014 by Hanbo Chen
 
     virtual LandmarkList * getHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w); //Oct. 16, 2014 by Hanbo Chen
+    virtual bool setHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w, LandmarkList & landmark_list); //Aug. 2, 2017 by Zhi Zhou
 
     virtual DataLists_in_3dviewer fetch_3dviewer_datafilelist(QString name3dviewer); //20140122 a conveniece function to access the record of data in a 3D viewer
 
@@ -199,8 +200,25 @@ public:
     virtual V3dR_MainWindow * open3DViewerForLinkerFile(QString fileName);
     virtual V3dR_MainWindow * createEmpty3DViewer(); //create a 3D viewer with no content
     virtual void setWindowDataTitle(V3dR_MainWindow *w, QString title);
+    virtual QString getWindowDataTitle(V3dR_MainWindow *w);
     virtual void moveWindow(V3dR_MainWindow *w, int x, int y);
     virtual void resizeWindow(V3dR_MainWindow *w, int x, int y);
+
+    virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false);
+	virtual void openVRWindowV2(v3dhandle image_window, bool bOnlineMode = false);
+
+    //added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
+    virtual NeuronTree getSWCTeraFly();
+    virtual bool setSWCTeraFly(NeuronTree & nt);
+    virtual LandmarkList  getLandmarkTeraFly();
+    virtual bool setLandmarkTeraFly(LandmarkList & landmark_list);
+    virtual QString getPathTeraFly();
+    virtual const Image4DSimple * getImageTeraFly();
+    virtual QString versionTeraFly();
+
+    virtual bool getDimTeraFly(const std::string & path, V3DLONG * & sz);
+    virtual unsigned char* getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1);
+    virtual void releaseOpenedVolumesTeraFly();
 };
 
 #endif

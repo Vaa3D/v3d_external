@@ -122,6 +122,7 @@
 
 #include "../3drenderer/v3dr_common.h" // Ensure Glee is loaded first
 
+
 #include <QLayout>
 #include <QPainter>
 #include <QPainterPath>
@@ -4913,6 +4914,8 @@ void XFormWidget::doImage3DView()
 {
 	doImage3DView(true, 0); //0 for entire image
 }
+
+
 
 void XFormWidget::doImage3DLocalMarkerView()
 {

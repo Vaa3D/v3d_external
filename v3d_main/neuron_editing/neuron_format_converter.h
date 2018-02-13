@@ -39,6 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_surf_objs.h"
 #include "../neuron_editing/v_neuronswc.h"
 
+NeuronTree V_NeuronSWC__2__NeuronTree(V_NeuronSWC & tracedNeuronSeg);// convert V_NeuronSWC to Vaa3D's external neuron structure NeuronTree
 NeuronTree V_NeuronSWC_list__2__NeuronTree(V_NeuronSWC_list & tracedNeuron); //convert to V3D's external neuron structure
 
 V_NeuronSWC_list NeuronTree__2__V_NeuronSWC_list(NeuronTree * nt);           //convert to V3D's internal neuron structure

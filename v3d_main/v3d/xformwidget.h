@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_triview.h"
 #include "../basic_c_fun/volimg_proc.h"
 //#include "../3drenderer/v3dr_common.h"
+#include "../basic_c_fun/basic_view3d.h"
 
 #include "mapview.h"
 

@@ -13,6 +13,8 @@ macx {
 include(v3d.pro)
 
 macx {
+    #QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing
+    #LIBS += -lc++
     LIBS -= -L../common_lib/lib_mac32  #100811: -lv3dtiff for both 32/64-bit
     LIBS += -L../common_lib/lib_mac64
 }

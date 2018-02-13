@@ -52,6 +52,7 @@ struct V3D_GlobalSetting
 	bool b_UseMylibTiff;
 
 	//3D viewer tab
+	bool b_scrollupZoomin;
 	bool b_autoOpenImg3DViewer;
 	bool b_autoDispXYZAxes;
 	bool b_autoDispBoundingBox;

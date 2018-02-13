@@ -351,7 +351,7 @@ void Matrix::operator=(const BaseMatrix& X)
    REPORT //CheckConversion(X);
    // MatrixConversionCheck mcc;
    Eq(X,MatrixType::Rt);
-}
+} 
 
 void SquareMatrix::operator=(const BaseMatrix& X)
 {
@@ -432,7 +432,7 @@ void CroutMatrix::operator=(const CroutMatrix& gm)
    ((CroutMatrix&)gm).get_aux(*this);
    Eq(gm);
 }
-
+   
 
 
 

@@ -200,6 +200,7 @@ void V3dR_MainWindow::createControlWidgets()
 	checkBox_displayAxes = new QCheckBox("Axes", miscDisplayOptGroup);
 	checkBox_displayBoundingBox = new QCheckBox("Bounding box", miscDisplayOptGroup);
 	colorButton = new QPushButton("Color >>", miscDisplayOptGroup);
+    backgroundColorSwitchButton = new QPushButton("BCSwitch", miscDisplayOptGroup);
 	brightButton = new QPushButton("Brighten", miscDisplayOptGroup);
 
 	checkBox_OrthoView = new QCheckBox("Parallel (Scale bar)", miscDisplayOptGroup);
@@ -210,12 +211,13 @@ void V3dR_MainWindow::createControlWidgets()
 
 	layout_miscDisplayOptGroup->addWidget(checkBox_displayAxes, 1, 0, 1, 20);
 	layout_miscDisplayOptGroup->addWidget(checkBox_displayBoundingBox, 2, 0, 1, 20);
-	layout_miscDisplayOptGroup->addWidget(checkBox_OrthoView, 3, 0, 1, 20);
+    layout_miscDisplayOptGroup->addWidget(checkBox_OrthoView, 3, 0, 1, 12);
 	layout_miscDisplayOptGroup->addWidget(colorButton, 4, 0, 1, 12);
 
 	layout_miscDisplayOptGroup->addWidget(movieSaveButton, 1, 1+11, 1, 21-12);
-	layout_miscDisplayOptGroup->addWidget(animateButton, 2, 1+11, 1, 21-12);
+    layout_miscDisplayOptGroup->addWidget(animateButton, 2, 1+11, 1, 21-12);
 	//layout_miscDisplayOptGroup->addWidget(reloadDataButton, 3, 1+11, 1, 21-12);
+    layout_miscDisplayOptGroup->addWidget(backgroundColorSwitchButton, 3, 1+11, 1, 21-12);
 	layout_miscDisplayOptGroup->addWidget(brightButton, 4, 1+11, 1, 21-12);
 
 
@@ -260,6 +262,7 @@ void V3dR_MainWindow::createControlWidgets()
 	  rotAbsolutePose = new QPushButton("Freeze", rotateBarGroup);
 	  rotAbsolutePose->setToolTip("Absolutize rotation pose about X-Y-Z sequentially for Going back next time");
 
+
 //    rotateBarBoxLayout->addWidget(xrotateLabel, 1, 0, 1, 5);
 //    rotateBarBoxLayout->addWidget(xRotSlider, 1, 6, 1, 15);
 //
@@ -284,6 +287,7 @@ void V3dR_MainWindow::createControlWidgets()
 	rotateBarBoxLayout->addWidget(rotAbsolutePose, 3, 0, 1, 7);
 	rotateBarBoxLayout->addWidget(rotAbsolute, 3, 7+1, 1, 7);
 	rotateBarBoxLayout->addWidget(rotReset, 3, 14+2, 1, 7);
+
 
 	//rotateBarBoxLayout->setContentsMargins(0,0,0,0);
 
@@ -464,6 +468,8 @@ void V3dR_MainWindow::createControlWidgets()
 		zSminSlider = createCutPlaneSlider(CLIP_RANGE);
 		zSmaxSlider = createCutPlaneSlider(CLIP_RANGE);
 
+
+
 		cutPlaneRgnLayout[i] = new QGridLayout(cutPlaneGroup[i]);
 
 		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-min"), 1, 0, 1, 5);
@@ -608,6 +614,20 @@ void V3dR_MainWindow::createControlWidgets()
     controlLayout->addWidget(toolBtnGroup); //090712 RZC
     controlLayout->addWidget(tabCutPlane); //cutPlaneGroup);
     controlLayout->addWidget(tabRotZoom); //rotateBarGroup);
+
+#ifdef __ALLOW_VR_FUNCS__
+	//=============================================================================
+	//collaboration 
+	rotCView = new QCheckBox("Start collaboration mode in 3D view.");
+	rotCView->setToolTip("You can edit current image in collaboration mode.");
+	controlLayout->addWidget(rotCView);
+	//VR
+	rotVRView = new QPushButton("See in VR", controlGroup);
+	rotVRView->setToolTip("You can see current image in VR environment.");
+	controlLayout->addWidget(rotVRView);
+
+#endif
+	
     controlLayout->addStretch(0);
     controlLayout->setSpacing(0);
     //------------------------------------------------
@@ -665,7 +685,7 @@ void V3dR_MainWindow::createControlWidgets()
 	SliderTipFilter *CsliderTip = new SliderTipFilter(this, "", "%", 0);
 	transparentSlider->installEventFilter(CsliderTip);
 
-	SliderTipFilter *SsliderTip = new SliderTipFilter(this, "", "%", -100);
+	SliderTipFilter *SsliderTip = new SliderTipFilter(this, "", "%", 0);
 	fcutSlider->installEventFilter(SsliderTip);
 	fCSSlider->installEventFilter(SsliderTip);
 	xSminSlider->installEventFilter(SsliderTip);
@@ -841,6 +861,15 @@ void V3dR_MainWindow::connectSignal()
 		connect(rotAbsolutePose, SIGNAL(clicked()), glWidget, SLOT(absoluteRotPose()));
 	}
 
+#ifdef __ALLOW_VR_FUNCS__
+	if(rotVRView){
+		connect(rotVRView, SIGNAL(clicked()), glWidget, SLOT(doimageVRView()));
+	}
+	if(rotCView){
+		connect(rotCView, SIGNAL(toggled(bool)), glWidget, SLOT(doclientView(bool)));
+	}
+#endif
+
 #define __connnect_zoom_shift__
 	// zoom & shift group
 
@@ -1004,8 +1033,10 @@ void V3dR_MainWindow::connectSignal()
 		connect(colorButton, SIGNAL(clicked()), glWidget, SLOT(setBackgroundColor()));
 	if (brightButton)
 		connect(brightButton, SIGNAL(clicked()), glWidget, SLOT(setBright()));
-	if (reloadDataButton)
-		connect(reloadDataButton, SIGNAL(clicked()), glWidget, SLOT(reloadData()));
+    //if (reloadDataButton)
+    //		connect(reloadDataButton, SIGNAL(clicked()), glWidget, SLOT(reloadData()));
+    if (backgroundColorSwitchButton)
+        connect(backgroundColorSwitchButton, SIGNAL(clicked()), glWidget, SLOT(switchBackgroundColor()));
 
 	if (movieSaveButton)
 		connect(movieSaveButton, SIGNAL(clicked()), this, SLOT(saveMovie()));

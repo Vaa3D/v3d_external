@@ -86,7 +86,7 @@ bool CLP::check_filename(QString fn)
     {
         return true;
     }
-    else if(curfile_info.isFile())
+	else if(curfile_info.isFile() || fn.contains("://"))
     {
         QString cur_suffix = curfile_info.suffix().toUpper();
         if ( (cur_suffix=="ANO") ||
@@ -115,8 +115,7 @@ bool CLP::check_filename(QString fn)
              (cur_suffix=="NII") ||
              (cur_suffix=="MARKER") || // added for reading marker file in -i by ZJL, 2012-05-10
              (cur_suffix=="TXT") ||    // added for reading txt file in -i by ZJL, 2012-05-10
-             (cur_suffix=="DOMAIN") || // added for reading domain file in -i by ZJL, 2012-05-10
-             fn.contains("://") ) // url
+             (cur_suffix=="DOMAIN") ) // added for reading domain file in -i by ZJL, 2012-05-10
         {
             return true;
         }

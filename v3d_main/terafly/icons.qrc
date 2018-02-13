@@ -39,6 +39,5 @@
         <file>icons/virtual.pyramid.full.png</file>
         <file>icons/virtual.pyramid.empty.png</file>
         <file>icons/virtual.pyramid.lowres.png</file>
-        <file>icons/options.png</file>
     </qresource>
 </RCC>

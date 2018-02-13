@@ -67,23 +67,41 @@ win32 {
 		LIBS += -L$$MSVC_DIR\\lib	
 		LIBS += -L$$MSSDK_DIR\\Lib\\x64
 		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib64
-		
+
+		MSVCVERSION = $$(QMAKESPEC)
+		BOOSTPATH = $$(BOOST_PATH)
+		equals(MSVCVERSION, "win32-msvc2013") {
+			LIBS += -L$$BOOSTPATH\\lib64-msvc-12.0
+		}
+		equals(MSVCVERSION, "win32-msvc2010") {
+			LIBS += -L$$BOOSTPATH\\lib64-msvc-10.0
+		}
+				
 		LIBS += \
 				-llibtiff \
 				-lteem \
 				-llibnewmat \ 
 				-llibjba \ 
 				-llibFL_cellseg \
-				-llibFL_brainseg 
+                                -llibFL_brainseg \
+                                -lopenvr_api \
+                                -lglew32 \
+                                -lSDL2 \
+                                -lSDL2main \
+                                -llibhdf5 \
+                                -llibszip \
+                                -llibzlib 
+
+
         DEFINES *= TEEM_STATIC
         QMAKE_CXXFLAGS += -DTEEMSTATIC
 	
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
-		               $$LOCAL_DIR\\common_lib\\include
+		               $$LOCAL_DIR\\common_lib\\include \
+					   $$BOOSTPATH\\boost
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)
     LIBS = $$unique(LIBS)
 }
-
 

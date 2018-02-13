@@ -422,14 +422,28 @@ void Renderer_gl1::paint()
 	if (b_error) return; //080924 try to catch the memory error
 
 	glClearColor(color_background.r, color_background.g, color_background.b, 0);
-	glClearStencil(0);
-	glClearDepth(1);
 	glDepthRange(0, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	// CQB 2015/12/16: performance optimization: at high resolutions, drawing in the track lags
+	// significantly because this paint routine spends most of its time redrawing the volume.
+	// since the volume can't change while the user is drawing a curve, we skip all of the rendering
+	// steps except drawing the track while the track is being displayed.
+    if (!sShowTrack || highlightedEndNodeChanged)
+    {
+		glClearStencil(0);
+		glClearDepth(1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+		// clearing framebuffer; reset the drawn flag on all the markers
+		for (int marker = 0; marker < listMarkerPos.size(); marker++)
+		{
+			listMarkerPos[marker].drawn = false;
+		}
+	}
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-				//GL_LEQUAL);
+	//GL_LEQUAL);
 
 	glMatrixMode(GL_MODELVIEW);
 	// here, MUST BE normalized space of [-1,+1]^3;
@@ -437,118 +451,122 @@ void Renderer_gl1::paint()
 	glGetDoublev(GL_MODELVIEW_MATRIX, volumeViewMatrix); //no scale here, used for drawUnitVolume()
 
 	glPushMatrix();
-		setMarkerSpace(); // space to define marker & curve
-		glGetIntegerv(GL_VIEWPORT,         viewport);            // used for selectObj(smMarkerCreate)
-		glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);    // used for selectObj(smMarkerCreate)
-		glGetDoublev(GL_MODELVIEW_MATRIX,  markerViewMatrix);    // used for selectObj(smMarkerCreate)
+	setMarkerSpace(); // space to define marker & curve
+	glGetIntegerv(GL_VIEWPORT,         viewport);            // used for selectObj(smMarkerCreate)
+	glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);    // used for selectObj(smMarkerCreate)
+	glGetDoublev(GL_MODELVIEW_MATRIX,  markerViewMatrix);    // used for selectObj(smMarkerCreate)
 	glPopMatrix();
 
 	bShowCSline = bShowAxes;
 	bShowFSline = bShowBoundingBox;
 
-     prepareVol();
+	prepareVol();
 
-     if (!b_renderTextureLast) {
-          renderVol();
-     }
-
-	if (sShowMarkers>0 || sShowSurfObjects>0)
+    if (!sShowTrack  || highlightedEndNodeChanged)
 	{
-		if (polygonMode==1)	      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		else if (polygonMode==2)  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		else                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (!b_renderTextureLast) {
+			renderVol();
+		}
 
-		setObjLighting();
-
-		if (sShowSurfObjects>0)
+		if (sShowMarkers>0 || sShowSurfObjects>0)
 		{
-			glPushMatrix(); //================================================= SurfObject {
+			if (polygonMode==1)	      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			else if (polygonMode==2)  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			else                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-			// original surface object space ==>fit in [-1,+1]^3
-			setSurfaceStretchSpace();
-			glPushName(dcSurface);
+			setObjLighting();
+
+			if (sShowSurfObjects>0)
+			{
+				glPushMatrix(); //================================================= SurfObject {
+
+				// original surface object space ==>fit in [-1,+1]^3
+				setSurfaceStretchSpace();
+				glPushName(dcSurface);
 				drawObj();  // neuron-swc, cell-apo, label-surf, etc
-			glPopName();
+				glPopName();
 
-			glPopMatrix(); //============================================================= }
-		}
+				glPopMatrix(); //============================================================= }
+			}
 
-		if (sShowMarkers>0)
-		{
-			glPushMatrix(); //===================================================== Marker {
+			if (sShowMarkers>0)
+			{
+				glPushMatrix(); //===================================================== Marker {
 
-			// marker defined in original image space ==>fit in [-1,+1]^3
-			setMarkerSpace();
-			glPushName(dcSurface);
+				// marker defined in original image space ==>fit in [-1,+1]^3
+				setMarkerSpace();
+				glPushName(dcSurface);
 				drawMarker();  // just markers
-			glPopName();
+				glPopName();
 
-			glPopMatrix(); //============================================================= }
+				glPopMatrix(); //============================================================= }
+			}
+
+			disObjLighting();
 		}
 
-		disObjLighting();
-	}
-
-	if (! b_selecting)
-	{
-		if (bShowBoundingBox || bShowAxes)
+		if (! b_selecting)
 		{
-			glPushMatrix(); //========================== default bounding frame & axes {
+			if (bShowBoundingBox || bShowAxes)
+			{
+				glPushMatrix(); //========================== default bounding frame & axes {
 
-			// bounding box space ==>fit in [-1,+1]^3
-			setObjectSpace();
-			drawBoundingBoxAndAxes(boundingBox, 1, 3);
+				// bounding box space ==>fit in [-1,+1]^3
+				setObjectSpace();
+				drawBoundingBoxAndAxes(boundingBox, 1, 3);
 
-			glPopMatrix(); //========================================================= }
+				glPopMatrix(); //========================================================= }
+			}
+
+			if (bShowBoundingBox2 && has_image() && !surfBoundingBox.isNegtive() )
+			{
+				glPushMatrix(); //============================ surface object bounding box {
+
+				setSurfaceStretchSpace();
+				drawBoundingBoxAndAxes(surfBoundingBox, 1, 0);
+
+				glPopMatrix(); //========================================================= }
+			}
+
+			if (bOrthoView)
+			{
+				glPushMatrix(); //============================================== scale bar {
+
+				drawScaleBar();
+
+				glPopMatrix(); //========================================================= }
+			}
 		}
 
-		if (bShowBoundingBox2 && has_image() && !surfBoundingBox.isNegtive() )
+		if (b_renderTextureLast) {
+			renderVol();
+		}
+
+		// must be at last
+		// show rubber band track for dragging neuron
+		if (! b_selecting && sShowRubberBand)
 		{
-			glPushMatrix(); //============================ surface object bounding box {
+			if (polygonMode==1)	      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			else if (polygonMode==2)  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			else                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-			setSurfaceStretchSpace();
-			drawBoundingBoxAndAxes(surfBoundingBox, 1, 0);
-
-			glPopMatrix(); //========================================================= }
-		}
-
-	    if (bOrthoView)
-	    {
-			glPushMatrix(); //============================================== scale bar {
-
-			drawScaleBar();
-
-			glPopMatrix(); //========================================================= }
-	    }
-	}
-
-     if (b_renderTextureLast) {
-          renderVol();
-     }
-
-	// must be at last
-     // show rubber band track for dragging neuron
-     if (! b_selecting && sShowRubberBand)
-     {
-          if (polygonMode==1)	      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		else if (polygonMode==2)  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		else                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-          setObjLighting();
-          beginHighlight();
-          glPushMatrix();
-          setMarkerSpace();
-	     //blendRubberNeuron();
+			setObjLighting();
+			beginHighlight();
+			glPushMatrix();
+			setMarkerSpace();
+			//blendRubberNeuron();
 
 #ifndef test_main_cpp //140211
-          blendDraggedNeuron();
+			blendDraggedNeuron();
 #endif
 
-          glPopMatrix();
-          endHighlight();
-          disObjLighting();
-     }
-	if (! b_selecting && sShowTrack)
+			glPopMatrix();
+			endHighlight();
+			disObjLighting();
+		}
+	} // !sShowTrack
+
+    if (! b_selecting && sShowTrack)
 	{
 		blendTrack();
 	}
@@ -2026,9 +2044,16 @@ void Renderer_gl1::blendTrack()
 	for (int i=0; i<N; i++)
 	{
 		const MarkerPos & pos = listMarkerPos.at(i);
-		double x = (pos.x   - pos.view[0])/pos.view[2];
-		double y = (pos.y   - pos.view[1])/pos.view[3];
-		glVertex2d( x, y );
+
+		// only draw in markers that haven't already been rendered since the last framebuffer clear
+        if (!pos.drawn)
+		{
+			double x = (pos.x   - pos.view[0])/pos.view[2];
+			double y = (pos.y   - pos.view[1])/pos.view[3];
+			glVertex2d( x, y );
+			listMarkerPos[i].drawn = true;
+		}
+
 		//qDebug("\t blend track (%g, %g)", pos.x, pos.y);
 	}
 

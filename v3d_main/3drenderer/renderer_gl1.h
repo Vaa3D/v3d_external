@@ -52,7 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "renderer.h"
 #include "marchingcubes.h"
-
+#include <time.h>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -112,9 +112,10 @@ public:
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
 
 	virtual void loadObj();  	// called by initialize()  	// makeCurrent
-	virtual void loadObj_meshChange(int new_mesh); 
 	virtual void cleanObj(); 	// called by ~Renderer_gl1	// makeCurrent
 	virtual void drawObj();  	// called by paint()
+
+	virtual void loadObj_meshChange(int new_mesh); // maybe naming neuronTube_meshChange is better
 
 	virtual void loadVol();  	// called by initialize()  	// makeCurrent
 	virtual void cleanVol();	// called by ~Renderer_gl1	// makeCurrent
@@ -223,6 +224,7 @@ public:
 
 #endif
 
+    static bool rightClickMenuDisabled;
 	QString info_Marker(int marker_i);
 	QString info_NeuronNode(int node_i, NeuronTree * ptree);
 	QString info_SurfVertex(int vertex_i, Triangle * triangle, int label);
@@ -231,6 +233,7 @@ public:
 	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double & best_dist);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
 
     LandmarkList * getHandleLandmark(); //20141016, by Hanbo Chen
+    void setHandleLandmark(LandmarkList & landmark_list);
 
 	QList <CellAPO> *getHandleAPOCellList() {return &listCell;}
 
@@ -262,6 +265,7 @@ public:
 		int view[4];        // view-port
 		double P[16];		// 4x4 projection matrix
 		double MV[16];		// 4x4 model-view matrix
+		bool drawn;			// has this marker already been drawn to the screen?
 	};
 	QList <MarkerPos> listMarkerPos; //081221, screen projection position
 	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position list for curve
@@ -299,6 +303,7 @@ public:
 	int currentMarkerName;
     XYZ getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno=-1);
 	double solveMarkerCenter();
+    double solveMarkerCenterMaxIntensity();
 	void solveMarkerViews();
 	void refineMarkerTranslate();
 	void refineMarkerCenter();
@@ -319,6 +324,54 @@ public:
 	void solveCurveViews();
 	void solveCurveFromMarkers();
 
+    // beginning ZMS 2016125
+    QHash<V3DLONG, V3DLONG> segmentLengthDict;
+    QHash<V3DLONG, V3DLONG> segmentParentDict;
+    QHash<V3DLONG, V3DLONG> segmentLevelDict;
+    QList<V3DLONG> loopSegs; // a list of segments involved in a loop
+    QList<V3DLONG> debugSegs; // a list of segments in debug mode
+
+	QList<V3DLONG> childSegs; // a list of child segments (for a TBD node)
+	
+	QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //  A list of segments, hases seg_id  to doubly-linked segments
+//static const GLubyte neuron_type_color[275 ][3] ;
+//static const 
+//int neuron_type_color_num;// = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
+
+
+
+
+
+
+
+
+	void initColorMaps();
+    bool colorByAncestry;
+    bool colorByTypeOnlyMode; //This is only checked if colorByAncestry is enabled
+    bool setColorAncestryInfo();
+	int neuronColorMode;
+    void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
+    void setColorByAncestry(NeuronSWC s, time_t seconds); // colorByAncestry mode
+    // end ZMS
+
+	void addToListOfChildSegs(V3DLONG segID); // add this segment and all of its children to the list of child segments
+
+	bool cuttingZ;
+	void setBBZcutFlag(bool cuttingZ);
+	void updateNeuronBoundingBoxWithZCut(float zMin, float zMax);
+	void setBBZ(float zMinIn, float zMaxIn);
+	float zMin, zMax;
+
+	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
+	// this will call setColorByAncestry if needed.
+	void setNeuronReviewColors(NeuronSWC s); // review mode
+	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
+	void setBasicNeuronColors(NeuronSWC s);
+	bool childHighlightMode;
+
+
+
+
     // beginning of ZJL
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersFastMarching(); //using fast marching method
@@ -328,6 +381,7 @@ public:
 
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      void solveCurveRefineLast();
+     void solveCurveExtendGlobal(); //extends the closest seg. By ZMS for neuron game 20151106
      void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower);
      void blendRubberNeuron();
      void solveCurveRubberDrag();
@@ -337,6 +391,8 @@ public:
 #endif
 
      void adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize);
+     void adaptiveCurveResamplingRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, float epsilon);
+     void recursiveRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int start_i, int end_i, float epsilon);
      //void resampleCurveStrokes(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
      void resampleCurveStrokes2(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
 
@@ -372,7 +428,7 @@ public:
      // @ADDED by Alessandro on 2015-05-07. Multiple neuron segments delete by one-mouse stroke.
      void deleteMultiNeuronsByStroke();
 
-	 // ------ Segment/points could/marker connecting tool, by MK 2017 April ------------
+	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
 	 void connectMarkerByStroke();
@@ -384,6 +440,7 @@ public:
 		bool refine;
 	 };
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
+	 void cutNeuronsByStroke();
 	 // ---------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
@@ -393,8 +450,10 @@ public:
 
      void retypeMultiNeuronsByStroke();
 
-     void breakMultiNeuronsByStroke();
+     // forceSingleCut @ADDED T Pavlik 20151217, split was splitting more segments than desired so best cut option added
      void breakMultiNeuronsByStrokeCommit();
+     void breakMultiNeuronsByStroke(); //20170731 RZC: no args for master implementation //(bool forceSingleCut=false);
+     void breakTwoNeuronsByStroke();   //20170731 RZC: make a separate function for mozak to prevent confusion and interference
 
 #ifndef test_main_cpp //140211
      void solveCurveFromMarkersGD(bool b_customized_bb);
@@ -429,7 +488,92 @@ public:
 
      // END of ZJL
 
-	// in renderer_obj2.cpp
+	// intersect helpers for nstroke_tracing
+	template <int N>
+	struct IntersectResult {
+		bool success[N];
+		XYZ hit_locs[N];
+	};
+
+	struct NearFarPoints {
+		bool valid;
+		XYZ near_pt;
+		XYZ far_pt;
+	};
+
+	IntersectResult<1> directedIntersectPoint(const XYZ &loc0, const XYZ &loc1) const
+	{
+		IntersectResult<1> result;
+		result.success[0] = false;
+
+		if (dataViewProcBox.isInner(loc0, 0))
+		{
+			result.success[0] = true;
+			result.hit_locs[0] = loc0;
+		}
+		else
+		{
+			XYZ v_1_0 = loc1 - loc0;
+			XYZ D = v_1_0; normalize(D);
+			float length = dist_L2(loc0, loc1);
+
+			for (int ii = 0; ii < length; ii++)
+			{
+				XYZ loci = loc0 + D * ii;
+				if (dataViewProcBox.isInner(loci, 0))
+				{
+					result.success[0] = true;
+					result.hit_locs[0] = loci;
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	IntersectResult<2> intersectPointsWithData(const XYZ &loc0_t, const XYZ &loc1_t) const
+	{
+		IntersectResult<2> result;
+
+		{
+			IntersectResult<1> result0 = directedIntersectPoint(loc0_t, loc1_t);
+			result.success[0] = result0.success[0];
+			result.hit_locs[0] = result0.hit_locs[0];
+		}
+
+		{
+			IntersectResult<1> result1 = directedIntersectPoint(loc1_t, loc0_t);
+			result.success[1] = result1.success[0];
+			result.hit_locs[1] = result1.hit_locs[0];
+		}
+
+		return result;
+	}
+
+	NearFarPoints markerPosToNearFarLocs(int curveIndex, int pointIndex)
+	{
+		NearFarPoints result;
+
+		const MarkerPos &pos = list_listCurvePos.at(curveIndex).at(pointIndex);
+		double clipplane[4] = { 0.0, 0.0, -1.0, viewClip };
+
+		ViewPlaneToModel(pos.MV, clipplane); // modifies clipplane
+
+		XYZ loc0_t, loc1_t;
+
+		_MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+		
+		IntersectResult<2> intersect = intersectPointsWithData(loc0_t, loc1_t);
+
+		result.valid = intersect.success[0] && intersect.success[1];
+		result.near_pt = intersect.hit_locs[0];
+		result.far_pt = intersect.hit_locs[1];
+
+		return result;
+	}
+
+	// in renderer_obj.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
 
 	//for local view
@@ -468,6 +612,8 @@ public:
 	int VOLUME_FILTER;
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
      bool b_renderTextureLast;
+	double currentTraceType;
+	bool useCurrentTraceTypeForRetyping;
 
 private:
 	void init_members()
@@ -476,7 +622,16 @@ private:
 		currentMarkerName = -1;
 		curEditingNeuron = -1;
         realCurEditingNeuron_inNeuronTree = -1;
+		
+		highlightedNode = -1; //Added by ZMS 20151203 highlight initial node we are going to extend.
+		highlightedEndNode = -1; //Added by ZMS 20151203 highlight final node we are going to extend.
+		selectedStartNode = -1;
+        highlightedEndNodeChanged = false;
+        rotateAxisBeginNode = XYZ(0, 0, 1);
+        rotateAxisEndNode = XYZ(0, 0, 0);
 
+		childHighlightMode = false;
+		showingGrid = false;
 		_idep=0;
 		isSimulatedData=false;
 		data_unitbytes=0;
@@ -516,6 +671,15 @@ private:
           bTestCurveBegin=false;
 
           b_editDroppedNeuron = false; //20150527, PHC
+
+          highlightedNodeType = -1; //20170804 RZC
+          currentTraceType=3;
+          useCurrentTraceTypeForRetyping = false;
+        cuttingZ = false;
+		zMin =-1.0;
+		zMax = 1.0;
+		initColorMaps();
+		gridSpacing = 10.0;
      }
 
 
@@ -528,7 +692,6 @@ public:
 	#define NTYPE_MARKER  5
 	GLuint glistMarker[NTYPE_MARKER];
 	RGBA8 marker_color[NTYPE_MARKER];
-
 	// cell apo
 	QList <CellAPO> listCell;
 	GLuint glistCell;
@@ -550,6 +713,12 @@ public:
      // the neuron is copied from original and pos is changed
      QList <V_NeuronSWC_unit> DraggedNeurons; // ZJL 110921
      V3DLONG draggedCenterIndex; // ZJL 110921
+
+	//overlay grid
+	QList <ImageMarker> gridList;
+	QList<long> gridIndexList;
+	float gridSpacing;
+	bool showingGrid;
 
 
 	// labelfield surf
@@ -576,6 +745,22 @@ public:
 	void updateNeuronBoundingBox();
 	virtual void drawNeuronTree(int i);
 	virtual void drawNeuronTreeList();
+	virtual void drawGrid();
+
+	void setLocalGrid(QList<ImageMarker> inputGridList,QList<long> inputGridNumber, float gridside);
+    QList<ImageMarker> getLocalGrid();
+
+
+	int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
+    int selectedStartNode; // TDP 20160203 for selecting start node for joining two nodes
+    int highlightedNodeType; //Added by ZMS 20151203 highlight initial node type we are going to extend.
+    V3DLONG highlightedEndNode; //Added by ZMS 20151203 highlight final node we are going to extend.
+    bool highlightedEndNodeChanged;
+    XYZ rotateAxisBeginNode; //Added by ZMS 20160209 for wriggle feature. The first node of the last-drawn segment.
+    XYZ rotateAxisEndNode; //Added by ZMS 20160209 for wriggle feature. The final node of the last-drawn segment.
+
+
+	V3DLONG highlightedStartNode; // this is for highlighting all children of selected node
 
 	void loadLabelfieldSurf(const QString& filename, int ch=0);
 	void constructLabelfieldSurf(int mesh_method, int mesh_density);
@@ -657,6 +842,8 @@ public:
                                 }
                 return _safe3DBuf;
         }
+
+
 };
 
 
@@ -693,3 +880,5 @@ void _copyYzxFromZyx(RGBA8* rgbaYzx, RGBA8* rgbaZyx, int imageX, int imageY, int
 
 
 #endif
+
+

@@ -27,7 +27,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 
-
+//last edit: 170606. add by PHC to introduce a favorite tracing direction
 
 #ifndef __V3D_CURVETRACEPARA_H__
 #define __V3D_CURVETRACEPARA_H__
@@ -61,9 +61,14 @@ struct CurveTracePara
 	int sp_graph_resolution_step;
 	int sp_downsample_step;
 	int sp_smoothing_win_sz;
+    int sp_downsample_method; // 0 for average, 1 for max //Added by Zhi 20170915
+
 	
 	double imgTH; //anything <=imgTH should NOT be traced! added by PHC, 2010-Dec-21 for the cmd line v3dneuron tracing program
     double visible_thresh; //2013-02-10
+
+    bool b_use_favorite_direction;//whether or not use the favorite direction to trace. // by PHC 170606
+    double favorite_direction[3]; //170606. add by PHC to introduce a favorite tracing direction
 
 	V3DLONG landmark_id_start, landmark_id_end;
 
@@ -92,11 +97,15 @@ struct CurveTracePara
 		sp_graph_resolution_step=2;
 		sp_downsample_step=2;
 		sp_smoothing_win_sz=7;
-		
+        sp_downsample_method=0;
+
 		imgTH = 0;
         visible_thresh = 30;
 		
 		b_3dcurve_width_from_xyonly = false;
+
+                b_use_favorite_direction = false; //default set to false
+                favorite_direction[0] = favorite_direction[1] = favorite_direction[2] = 0;
 	}
 };
 

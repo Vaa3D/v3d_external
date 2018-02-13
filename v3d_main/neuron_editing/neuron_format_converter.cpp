@@ -36,18 +36,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "neuron_format_converter.h"
 
-NeuronTree V_NeuronSWC_list__2__NeuronTree(V_NeuronSWC_list & tracedNeuron) //convert to Vaa3D's external neuron structure
+NeuronTree V_NeuronSWC__2__NeuronTree(V_NeuronSWC & seg) // convert V_NeuronSWC to Vaa3D's external neuron structure NeuronTree
 {
 	NeuronTree SS;
-	
-	//first conversion
-	
-	V_NeuronSWC seg = merge_V_NeuronSWC_list(tracedNeuron);
-	seg.name = tracedNeuron.name;
-	seg.file = tracedNeuron.file;
-	
-	//second conversion
-	
+
 	QList <NeuronSWC> listNeuron;
 	QHash <int, int>  hashNeuron;
 	listNeuron.clear();
@@ -93,6 +85,18 @@ NeuronTree V_NeuronSWC_list__2__NeuronTree(V_NeuronSWC_list & tracedNeuron) //co
 	}
 	
 	return SS;
+}
+
+NeuronTree V_NeuronSWC_list__2__NeuronTree(V_NeuronSWC_list & tracedNeuron) //convert to Vaa3D's external neuron structure
+{	
+	//first conversion
+	
+	V_NeuronSWC seg = merge_V_NeuronSWC_list(tracedNeuron);
+	seg.name = tracedNeuron.name;
+	seg.file = tracedNeuron.file;
+	
+	//second conversion	
+	return V_NeuronSWC__2__NeuronTree(seg);
 }
 
 V_NeuronSWC_list NeuronTree__2__V_NeuronSWC_list(NeuronTree * nt)           //convert to V3D's internal neuron structure

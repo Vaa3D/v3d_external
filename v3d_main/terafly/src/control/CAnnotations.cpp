@@ -867,6 +867,11 @@ void CAnnotations::Octree::prune() throw(tf::RuntimeException)
 //insert given neuron in the octree
 void CAnnotations::Octree::insert(annotation& neuron)  throw(RuntimeException)
 {
+    // @FIXED by Alessandro on 2017-09-03: set negative coordinates to zero so that annotation can be stored in the octree
+    neuron.x = std::max(neuron.x, 0.f);
+    neuron.y = std::max(neuron.y, 0.f);
+    neuron.z = std::max(neuron.z, 0.f);
+
     _rec_insert(root,neuron);
 }
 

@@ -73,7 +73,9 @@ public:
 	enum SelectMode {smObject=0, smMultipleObject,
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
                          smMarkerRefineT, smMarkerRefineC,
+						 smHighlightChildren, // highlight all the children of a selected node BRL 2017.03
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
+					smCurveCreate_pointclickAutoZ,
                       smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveEditRefine_fm, smCurveRubberDrag,
@@ -84,16 +86,29 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
-					  smConnectNeurons, smConnectPointCloud, smConnectMarker,//MK
+//<<<<<<< HEAD
+                      smBreakTwoNeurons, // Same function as smBreakMultiNeurons, but only one break is created TDP 201512
+                      smJoinTwoNodes, // Straight line connect, joining two nodes without tracing TDP 201601
+                     smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
+                     smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
+                     smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
+
+					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons,//MK
+//>>>>>>> master
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 	enum editMode {segmentEdit, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
-
+	enum UI3dViewMode {Vaa3d, Terafly, Mozak};     //20170804 RZC: diffrent code path in Renderer_gl1::addCurveSWC()
 //protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
+//<<<<<<< HEAD
+	static SelectMode defaultSelectMode;
     SelectMode refineMode;
-	editMode connectEdit;
+
+    editMode connectEdit;
+    UI3dViewMode  ui3dviewMode;
+//>>>>>>> master
 	void* widget;
 
 public:
@@ -232,7 +247,14 @@ public:
      int sShowRubberBand; // ZJL 1109221
 
 	bool bShowBoundingBox, bShowBoundingBox2, bShowAxes, bOrthoView;
-	bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
+    // TDP 201601 - provide optional XY translation arrows directly in 3D view to navigate to adjacent/overlapping ROI
+    bool bShowXYTranslateArrows;
+	int iPosXTranslateArrowEnabled, iNegXTranslateArrowEnabled, iPosYTranslateArrowEnabled, iNegYTranslateArrowEnabled;
+	BoundingBox* posXTranslateBB;
+	BoundingBox* negXTranslateBB;
+	BoundingBox* posYTranslateBB;
+	BoundingBox* negYTranslateBB;
+    bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
 	float CSbeta, alpha_threshold;
 	RGBA32f color_background, color_background2, color_line, color_proxy;
 
@@ -284,6 +306,16 @@ private:
 	    bShowAxes = true;
 	    bOrthoView = false;
 
+		bShowXYTranslateArrows = 0;
+		iPosXTranslateArrowEnabled = 0;
+		iNegXTranslateArrowEnabled = 0;
+		iPosYTranslateArrowEnabled = 0;
+		iNegYTranslateArrowEnabled = 0;
+        posXTranslateBB = 0;
+        negXTranslateBB = 0;
+        posYTranslateBB = 0;
+        negYTranslateBB = 0;
+
 	    bShowCSline = true;
 	    bShowFSline = true;
 	    bXSlice = bYSlice = bZSlice = true;
@@ -323,10 +355,6 @@ private:
 	    xClip0 = yClip0 = zClip0 = -1000000; // no clip
 	    xClip1 = yClip1 = zClip1 = 1000000;  // no clip
 	    viewClip = 1000000;  // no clip
-	    renderMode = rmMaxIntensityProjection;
-	    selectMode = smObject;
-
-         refineMode = smCurveRefine_fm;
 
 		//// perspective view frustum
 		screenW = screenH = 0;
@@ -345,6 +373,15 @@ private:
 		{
 		    sampleScale[i]=1; bufSize[i]=0;
 		}
+
+
+		renderMode = rmMaxIntensityProjection;
+	    selectMode = smObject;
+
+        refineMode = smCurveRefine_fm;
+
+        ui3dviewMode = Vaa3d;
+
 	}
 
 };
@@ -647,6 +684,58 @@ template <class T> float sampling3dAllTypesatBounding(T* data, V3DLONG dim1, V3D
 }
 
 
+
+
+//Need a list to store this <- which does it's own initialization upon insert and delete
+//The following classes are data structures used to calculate level information in the neuron tree
+class DoublyLinkedNeuronNode{
+public:
+    DoublyLinkedNeuronNode* upstream;
+    DoublyLinkedNeuronNode* downstream;
+    XYZ position;
+    V3DLONG seg_id;
+    DoublyLinkedNeuronNode(V3DLONG segId, XYZ pos):
+        seg_id(segId),
+        downstream(NULL),
+        upstream(NULL),
+        position(pos)
+        {}
+    bool isHead(){return (upstream == NULL);}
+    bool isTail(){return (downstream == NULL);}
+};
+
+class DoublyLinkedNeuronsList{
+public:
+    int length;
+    DoublyLinkedNeuronNode* head;
+    DoublyLinkedNeuronNode* tail;
+    DoublyLinkedNeuronsList(): head(NULL), tail(NULL), length(0){}
+    void append(V3DLONG segId, XYZ pos){
+        length++;
+        DoublyLinkedNeuronNode* toAdd = new DoublyLinkedNeuronNode(segId, pos);
+        if(head == NULL){
+            head = toAdd;
+            tail = toAdd;
+            toAdd->downstream = NULL;
+            toAdd->upstream = NULL;
+        }else{
+            tail->downstream = toAdd;
+            toAdd->upstream = tail;
+            toAdd->downstream = NULL;
+            tail = toAdd;
+        }
+    }
+    ~DoublyLinkedNeuronsList(){
+        //cout << "calling deleting" << endl;
+        DoublyLinkedNeuronNode* current = head;
+        while( current != NULL ) {
+            //cout << "deleting" << endl;
+            DoublyLinkedNeuronNode* next = current->downstream;
+            delete current;
+            current = next;
+        }
+    }
+};
 
 
 #endif //V3D_RENDERER_H

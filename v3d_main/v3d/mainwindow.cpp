@@ -68,6 +68,8 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "../terafly/src/control/CPlugin.h"
 #endif
 
+#include "../mozak/MozakUI.h";
+
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
 MainWindow::MainWindow()
@@ -260,6 +262,10 @@ MainWindow::MainWindow()
     connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
     cl_plugin = false; // init
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
+
+#define __AUTOLAUNCH_OPEN_NEURON_GAME___
+	/// RZC 20170620: disable auto launch
+    // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 }
 //void MainWindow::postClose() //090812 RZC
 //{
@@ -2124,6 +2130,11 @@ void MainWindow::updateProcessingMenu()
     QAction* open_teraconverter_action = new QAction(tr("TeraConverter"), this);
     proc_terafly_menu->addAction(open_teraconverter_action);
     connect(open_teraconverter_action, SIGNAL(triggered()), this, SLOT(func_open_teraconverter()));
+
+#define __MENU_OPEN_MOZAK__
+    QAction* open_mozak_action = new QAction(tr("Kazom's Mozak"), this);
+    advancedProcMenu->addAction(open_mozak_action);  /// RZC 20070620: move menu entry proc_terafly_menu form to advancedProcMenu
+    connect(open_mozak_action, SIGNAL(triggered()), this, SLOT(func_open_neuron_game()));
 #endif
     //
 #ifdef _ALLOW_IMGSTD_MENU_
@@ -2284,6 +2295,7 @@ void MainWindow::createActions()
     proc3DViewer = new QAction(tr("3D viewer for entire image"), this);
     proc3DViewer->setShortcut(tr("Ctrl+V"));
     connect(proc3DViewer, SIGNAL(triggered()), this, SLOT(func_proc3DViewer()));
+
     proc3DLocalRoiViewer = new QAction(tr("3D viewer for Region of Interest (ROI)"), this);
     proc3DLocalRoiViewer->setShortcut(tr("Shift+V"));
     connect(proc3DLocalRoiViewer, SIGNAL(triggered()), this, SLOT(func_proc3DLocalRoiViewer()));
@@ -2523,7 +2535,7 @@ void MainWindow::createActions()
     procModeDefault->setCheckable(true);
     procModeDefault->setChecked(true);
     connect(procModeDefault, SIGNAL(triggered()), this, SLOT(func_procModeDefault()));
-    procModeNeuronAnnotator = new QAction(tr("Neuron Annotator"), this);
+    procModeNeuronAnnotator = new QAction(tr("Janelia FlyWorkstation Annotator"), this);
     procModeNeuronAnnotator->setCheckable(true);
     procModeNeuronAnnotator->setChecked(false);
     connect(procModeNeuronAnnotator, SIGNAL(triggered()), this, SLOT(func_procModeNeuronAnnotator()));
@@ -2936,6 +2948,13 @@ void MainWindow::func_open_teraconverter()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
     terafly::TeraFly::domenu("TeraConverter", *pl, this);
+}
+
+void MainWindow::func_open_neuron_game()
+{
+	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+    qRegisterMetaType<itm::integer_array>("itm::integer_array");
+	mozak::MozakUI::init(pl);
 }
 #endif
 

@@ -47,7 +47,8 @@ class terafly::PMain : public QWidget
 {
     Q_OBJECT
 
-    private:
+	protected: //20170623 RZC: change from private for merging mozak
+	//private:
 
         /*********************************************************************************
         * Singleton design pattern: this class can have one instance only,  which must be
@@ -188,6 +189,9 @@ class terafly::PMain : public QWidget
         QSpinBox* Ddim_sbox;
         QSpinBox* Tdim_sbox;
         QComboBox* resolution_cbox;
+#ifdef __ALLOW_VR_FUNCS__
+		QPushButton* teraflyVRView;
+#endif
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
         QSlider* cacheSens;
@@ -196,7 +200,7 @@ class terafly::PMain : public QWidget
         QPushButton* controlsResetButton;
         QComboBox* zoomInMethod;
         /* ------- global coord panel widgets ------- */
-        QGroupBox* globalCoord_panel;
+        QGroupBox* VOI_panel;
         QArrowButton* traslXpos;
         QLabel* traslXlabel;
         QArrowButton* traslXneg;
@@ -252,6 +256,7 @@ class terafly::PMain : public QWidget
         V3DPluginCallback2* getV3D_env(){return V3D_env;}
         QProgressBar* getProgressBar(){return progressBar;}
         QStatusBar* getStatusBar(){return statusBar;}
+        std::string getAnnotationPathRLU(){return annotationsPathLRU;}
 
         //resets progress bar, start/stop buttons and tab bar
         void resetGUI();
@@ -347,6 +352,8 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void saveAnnotations();
         void saveAnnotationsAs();
+        void autosaveAnnotations();
+
 
         /**********************************************************************************
         * Called when "Clear annotations" menu action is triggered.
@@ -477,6 +484,11 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void markersSizeSpinBoxChanged(int value);
 
+        /**********************************************************************************
+        * Called when annotations (markers, neuron trees, etc.) have changed
+        ***********************************************************************************/
+        void annotationsChanged();
+
         void tabIndexChanged(int value);
 
         void showDialogVtk2APO();
@@ -491,7 +503,9 @@ class terafly::PMain : public QWidget
         void showDialogGenerateTimeSeriesInterpolation();
         void showDialogGenerateTimeSeriesReplication();
         void showAnoOctree();
-
+#ifdef __ALLOW_VR_FUNCS__
+		void doTeraflyVRView();
+#endif
 
     signals:
 

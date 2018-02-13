@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #endif //test_main_cpp
 
-
+bool Renderer_gl1::rightClickMenuDisabled = false; //added by TDP 201602 - way of using buttons/keystrokes rather than right click menu to select render modes
 double total_etime; //added by PHC, 20120412, as a convenient way to know the total elipsed time for a lengthy operation
 //#define _IMAGING_MENU_
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +95,7 @@ double total_etime; //added by PHC, 20120412, as a convenient way to know the to
 //}
 int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
+
 	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
@@ -218,7 +219,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0 // MK, 2017 April
+			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0; // MK, 2017 April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -245,7 +246,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             actMarkerCreate1->setIcon(QIcon(":/icons/click1.png"));
             actMarkerCreate1->setVisible(true);
             actMarkerCreate1->setIconVisibleInMenu(true);
-            listAct.append(actMarkerCreate1Stroke = new QAction("1-right-stroke to define a marker (starting locus will be the output marker)", w));
+            listAct.append(actMarkerCreate1Stroke = new QAction("1-right-stroke to define a marker (starting locus will be the output marker, Esc to finish)", w));
 
             actMarkerCreate1Stroke->setIcon(QIcon(":/icons/click1.png"));
             actMarkerCreate1Stroke->setVisible(true);
@@ -446,8 +447,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-						// MK, MK 2017 April
+						// MK, 2017 April
 						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+
+						// MK, 2017 June
+						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
 
                         //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                         //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
@@ -555,12 +559,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 }
 #endif
 
-                QDir pluginsDir1 = pluginsDir;
-                if (pluginsDir1.cd("plugins/teramanager")==true)
-                {
-                    listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
-                }
-
+                listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
@@ -722,6 +721,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				// MK, 2017 April
 				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
 
+				// MK, 2017 June
+				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
+
                 //listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
                 //listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w)); //disable as of 20140630 for further dev. PHC
 				if (curImg->tracedNeuron.isJointed()==false)
@@ -778,9 +780,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		// do menu
 		//###############################################################
 		QMenu menu;
-		foreach (QAction* a, listAct) {  menu.addAction(a); }
-		//menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
-		act = menu.exec(QCursor::pos());
+		if (!Renderer_gl1::rightClickMenuDisabled)
+		{
+			foreach (QAction* a, listAct) {  menu.addAction(a); }
+			//menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
+			act = menu.exec(QCursor::pos());
+		}
 	}
 	// have selected a menu action, then make highlight off
 	LIST_SELECTED(listMarker, names[2]-1, false);
@@ -1806,6 +1811,19 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}
 	}
 	/*************************************************/
+
+	/*** Neuron cutting functionalities. MK, 2017 June ***/
+	else if (act == actNeuronCut)
+	{
+		if (NEURON_CONDITION)
+		{
+            selectMode = smCutNeurons;
+            b_addthiscurve = false;
+            if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	/*****************************************************/
+
 	else if (act==actBreakNeuronSegNearestNeuronNode)
 	{
 		if (NEURON_CONDITION)
@@ -2111,7 +2129,7 @@ void Renderer_gl1::endSelectMode()
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (selectMode == smCurveCreate_pointclick)
+	if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -2155,6 +2173,7 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
 	MarkerPos pos;
 	pos.x = x;
 	pos.y = y;
+	pos.drawn = false;
 	for (int i=0; i<4; i++)
 		pos.view[i] = viewport[i];
 	for (int i=0; i<16; i++)
@@ -2172,9 +2191,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || 
-		selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons 
-		|| selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker)
+//<<<<<<< HEAD
+//    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
+//    	selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
+////=======
+    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
+		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
+		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker	|| selectMode == smCutNeurons)
+//>>>>>>> master
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2188,8 +2212,17 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker
-			|| selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons)? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+//<<<<<<< HEAD
+//        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
+//					selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
+//					? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+//=======
+//        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons ||
+//        		 selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
+//        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons) //20170731 smBreakTwoNeurons used in mozak
+//        		 ? 1 : (selectMode == smCurveCreate2)? 2 : 3;
+		int N = (selectMode == smCurveCreate3)? 3 : (selectMode == smCurveCreate2)? 2 : 1; //20170731 RZC: more simple expression for less bugs
+//>>>>>>> master
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -2216,6 +2249,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             {
                 breakMultiNeuronsByStroke();
             }
+            else if (selectMode == smBreakTwoNeurons)
+            {
+                //breakMultiNeuronsByStroke(true);
+                breakTwoNeuronsByStroke(); //20170731 RZC: make a separate function for mozak to prevent confusion and interference
+            }
             // @ADDED by Alessandro on 2015-09-30. Select multiple markers with one-mouse stroke
             else if( selectMode == smSelectMultiMarkers)
             {
@@ -2225,6 +2263,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
+			// MK, 2017 June ----------------------------------------------------------
+			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
 
 			list_listCurvePos.clear();
@@ -2239,7 +2279,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
 			selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
 			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest ||
-             selectMode == smMarkerCreate1Curve) //by PHC 20121011
+             selectMode == smMarkerCreate1Curve || selectMode == smCurveEditExtend || //by PHC 20121011
+            selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2289,6 +2330,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				refineMode = smCurveRefine_fm;
 				solveCurveRefineLast();
 			}
+            else if (selectMode == smCurveEditExtend ) // edit with fm
+            {
+                refineMode = smCurveRefine_fm;
+                solveCurveExtendGlobal();
+            }
 			else if(selectMode == smCurveDirectionInter)
 			{
 				vector <XYZ> loc_vec_input;
@@ -2297,7 +2343,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
 			}
 			else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox ||
-                    selectMode == smMarkerCreate1Curve) //by PHC 20121011
+                    selectMode == smMarkerCreate1Curve || //by PHC 20121011
+                    selectMode == smCurveEditExtendTwoNode || selectMode == smCurveEditExtendOneNode) //by ZMS 20151203
 			{
 				// using two marker lists for fast marching to get a curve
 				vector <XYZ> loc_vec_input;
@@ -2314,10 +2361,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                         addMarker(loc);
                     }
                 }
-				if(selectMode == smCurveFrom1Marker_fm ||
-                   selectMode == smMarkerCreate1Curve) //by PHC 20121011
+                if(selectMode == smCurveFrom1Marker_fm) //by PHC 20121011
 				{
-					endSelectMode();
+                    endSelectMode(); //disable the option for 1-right-stroke to define a marker function
 				}
 			}
 			else if(selectMode == smCurveCreateMarkerGD)
@@ -2842,7 +2888,7 @@ int Renderer_gl1::hitPen(int x, int y)
 		_appendMarkerPos(x, y);
 		return 1;
 	}
-	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm) //091226
+	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm || selectMode == smCurveCreate_pointclickAutoZ) //091226
 	{
 		_appendMarkerPos(x,y);
 		int N = 1;
@@ -2850,7 +2896,14 @@ int Renderer_gl1::hitPen(int x, int y)
 		{
 			qDebug("\t click ( %i, %i ) for Markers to Curve", x,y);
 			b_addthismarker = true; // by ZJL 20120203 for prohibitting displaying a 3d local view window
-			solveMarkerCenter();
+			if (selectMode == smCurveCreate_pointclickAutoZ) // TDP 20160204
+			{
+				solveMarkerCenterMaxIntensity();
+			}
+			else
+			{
+				solveMarkerCenter();
+			}
 			cntCur3DCurveMarkers++;
 			listMarkerPos.clear();
 			//			if (selectMode != smCurveCreate_pointclick) // make 1-click continue selected mode
@@ -3838,6 +3891,85 @@ double Renderer_gl1::solveMarkerCenter()
     }
     return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
 }
+double Renderer_gl1::solveMarkerCenterMaxIntensity()
+{
+    int chno = 0;
+    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+	clipplane[3] = viewClip;
+    QTime t;
+    t.start();
+	if (listMarkerPos.size()<1)  return t.elapsed();
+	const MarkerPos & pos = listMarkerPos.at(0);
+	XYZ loc = getCenterOfMarkerPos(pos);
+	vector <XYZ> loc_vec;
+	if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
+		dataViewProcBox.clamp(loc); //100722 RZC
+	// Find max intensity along z (dataViewProcBox.z0 -> dataViewProcBox.z1)
+    
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = v3dr_getImage4d(_idep);
+    float max_val = 0.0f;
+    XYZ max_loc;
+	if (curImg && data4dp)
+	{
+        unsigned char* vp = 0;
+        switch (curImg->getDatatype())
+        {
+            case V3D_UINT8:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+                break;
+            case V3D_UINT16:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+                break;
+            case V3D_FLOAT32:
+                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+                break;
+            default:
+                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                return 0;
+        }
+        const V3DLONG RAD = 3;
+        float value;
+        for (V3DLONG zz=dataViewProcBox.z0; zz <= dataViewProcBox.z1; zz++)
+        {
+            for (V3DLONG dy=-RAD; dy<=RAD; dy++)
+            {
+                for (V3DLONG dx=-RAD; dx<=RAD; dx++)
+                {
+                    // Only process points within the desired radius
+                    if (dx*dx + dy*dy > RAD*RAD)
+                        continue;
+                    XYZ P = XYZ(loc.x + dx, loc.y + dy, zz);
+                    switch (curImg->getDatatype())
+                    {
+                        case V3D_UINT8:
+                            value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        case V3D_UINT16:
+                            value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        case V3D_FLOAT32:
+                            value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                            break;
+                        default:
+                            v3d_msg("Unsupported data type found. You should never see this.", 0);
+                            return 0;
+                    }
+                    if (value > max_val)
+                    {
+                        max_val = value;
+                        max_loc = P;
+                    }
+                }
+            }
+        }
+        if (max_val > 0.0f)
+        {
+            addMarker(max_loc);
+        }
+    }
+    return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
+}
 void Renderer_gl1::solveMarkerViews()
 {
 	if (listMarkerPos.size()<2)  return;
@@ -4643,4 +4775,479 @@ LandmarkList * Renderer_gl1::getHandleLandmark() //by Hanbo Chen, 20141018
     }else{
         return 0;
     }
+}
+
+void Renderer_gl1::setHandleLandmark(LandmarkList & landmark_list)
+{
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d){
+        image4d->listLandmarks = landmark_list;
+    }else{
+        return;
+    }
+}
+
+QString XYZtoQString(XYZ pos){
+    return QString::number(pos.x) + " " + QString::number(pos.y) + " " + QString::number(pos.z);
+}
+//
+////Need a list to store this <- which does it's own initialization upon insert and delete
+////The following classes are data structures used to calculate level information in the neuron tree
+//class DoublyLinkedNeuronNode{
+//public:
+//    DoublyLinkedNeuronNode* upstream;
+//    DoublyLinkedNeuronNode* downstream;
+//    XYZ position;
+//    V3DLONG seg_id;
+//    DoublyLinkedNeuronNode(V3DLONG segId, XYZ pos):
+//        seg_id(segId),
+//        downstream(NULL),
+//        upstream(NULL),
+//        position(pos)
+//        {}
+//    bool isHead(){return (upstream == NULL);}
+//    bool isTail(){return (downstream == NULL);}
+//};
+//
+//class DoublyLinkedNeuronsList{
+//public:
+//    int length;
+//    DoublyLinkedNeuronNode* head;
+//    DoublyLinkedNeuronNode* tail;
+//    DoublyLinkedNeuronsList(): head(NULL), tail(NULL), length(0){}
+//    void append(V3DLONG segId, XYZ pos){
+//        length++;
+//        DoublyLinkedNeuronNode* toAdd = new DoublyLinkedNeuronNode(segId, pos);
+//        if(head == NULL){
+//            head = toAdd;
+//            tail = toAdd;
+//            toAdd->downstream = NULL;
+//            toAdd->upstream = NULL;
+//        }else{
+//            tail->downstream = toAdd;
+//            toAdd->upstream = tail;
+//            toAdd->downstream = NULL;
+//            tail = toAdd;
+//        }
+//    }
+//    ~DoublyLinkedNeuronsList(){
+//        //cout << "calling deleting" << endl;
+//        DoublyLinkedNeuronNode* current = head;
+//        while( current != NULL ) {
+//            //cout << "deleting" << endl;
+//            DoublyLinkedNeuronNode* next = current->downstream;
+//            delete current;
+//            current = next;
+//        }
+//    }
+//};
+
+//This list stores all nodes in the same temporal location. The list should only be visited once, otherwise a loop exists.
+class SamePointList{
+public:
+    SamePointList(): visited(false), firstVisitSegId(-1){}
+    void insert(DoublyLinkedNeuronNode* dln){
+        list.push_back(dln);
+    }
+    int length(){
+        return list.length();
+    }
+    bool hasVisited(){
+        return visited;
+    }
+    QList<DoublyLinkedNeuronNode*> markAsVisitedAndGetConnections(V3DLONG id){
+        visited = true;
+        firstVisitSegId = id;
+        return list;
+    }
+    int getFirstVisitSegId(){
+        return firstVisitSegId;
+    }
+private:
+    QList<DoublyLinkedNeuronNode*> list;
+    bool visited;
+    int firstVisitSegId;
+};
+
+class PointCloudHash{
+public:
+    QHash<QString, SamePointList*> hash;
+    PointCloudHash(){}
+    void Hash(DoublyLinkedNeuronNode* dln){
+        QHash<QString, SamePointList*>::iterator i = hash.find(XYZtoQString(dln->position));
+        if(i == hash.end()){
+            SamePointList* spl = new SamePointList;
+            hash.insert(XYZtoQString(dln->position), spl);
+            spl->insert(dln);
+        }else{
+            i.value()->insert(dln);
+        }
+    }
+    ~PointCloudHash(){
+        QHash<QString, SamePointList*>::const_iterator i = hash.constBegin();
+        while (i != hash.constEnd()) {
+            delete i.value();
+            ++i;
+        }
+    }
+};
+
+class FringeNode{
+public:
+    DoublyLinkedNeuronNode* node;
+    bool isGoingUpstream;
+    V3DLONG level;
+    V3DLONG parent;
+    FringeNode(DoublyLinkedNeuronNode*n, bool up, V3DLONG lvl, V3DLONG p): node(n), isGoingUpstream(up), level(lvl), parent(p){}
+};
+
+
+
+
+void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secondVisitSegId, V3DLONG violatingSegId){
+
+    QList<V3DLONG> segsInFirstVisitNode;
+    QList<V3DLONG> segsInRepeatVisitNode;
+
+    /*
+    V3DLONG firstVisitSegId = (pch.hash.value(XYZtoQString(tvs.node->position)))->getFirstVisitSegId();
+    V3DLONG secondVisitSegId = tvs.node->seg_id;
+    */
+
+    /*
+    if(segmentLevelDict[firstVisitSegId] == 1){
+        do {
+            cout << "Pushed second " << firstVisitSegId << endl;
+            segsInFirstVisitNode.push_back(firstVisitSegId);
+            firstVisitSegId = segmentParentDict[firstVisitSegId];
+        } while (segmentParentDict[firstVisitSegId] != firstVisitSegId);
+
+    }else{
+        cout << "error: coincident point not at root " << endl;
+    }
+    */
+    
+    QHash<V3DLONG, bool> loopVisitDict;
+    // loopVisitDict is needed to avoid a case where segmentParentDict points from
+    // seg A -> seg B -> seg A, etc
+    loopVisitDict.clear();
+    segsInFirstVisitNode.push_back(violatingSegId); // The violating segment will always be highlighted
+    do {
+        qDebug() << "Pushed first " << firstVisitSegId;
+        segsInFirstVisitNode.push_back(firstVisitSegId);
+        loopVisitDict.insert(firstVisitSegId, true);
+        firstVisitSegId = segmentParentDict[firstVisitSegId];
+        qDebug() << "New firstVisitSegId: " << firstVisitSegId;
+    } while (segmentParentDict[firstVisitSegId] != firstVisitSegId &&
+             !loopVisitDict.contains(firstVisitSegId));
+
+    QList<V3DLONG>::iterator it;
+    loopVisitDict.clear();
+    do {
+        //cout << "Pushed second " << secondVisitSegId << endl;
+        segsInRepeatVisitNode.push_back(secondVisitSegId);
+        loopVisitDict.insert(secondVisitSegId, true);
+        secondVisitSegId = segmentParentDict[secondVisitSegId];
+        it = std::find(segsInFirstVisitNode.begin(), segsInFirstVisitNode.end(), secondVisitSegId);
+        //Update this second list until we coincide with the first list
+    } while (segmentParentDict[secondVisitSegId] != secondVisitSegId && it == segsInFirstVisitNode.end() &&
+             !loopVisitDict.contains(secondVisitSegId));
+
+    segsInRepeatVisitNode.push_back(secondVisitSegId);
+
+    segsInFirstVisitNode.erase(it, segsInFirstVisitNode.end());
+    for(it = segsInFirstVisitNode.begin(); it != segsInFirstVisitNode.end(); it++){
+        loopSegs.push_back(*it);
+    }
+    for(it = segsInRepeatVisitNode.begin(); it != segsInRepeatVisitNode.end(); it++){
+        loopSegs.push_back(*it);
+    }
+        /*
+    }else{
+        cout << "error: loop in second segment not found in first segment " << endl;
+    }*/
+
+}
+
+
+
+void Renderer_gl1::addToListOfChildSegs(V3DLONG segID){
+	childSegs.clear();
+
+
+	// use the segment parent hash calculated in setColorAncestryInfo...
+
+	if (segmentParentDict.isEmpty()) setColorAncestryInfo();
+
+	QList<V3DLONG> lookingList;
+	QList<V3DLONG> nextList;
+	lookingList.clear();
+	lookingList.append(segID);
+
+
+// I'm just going to try searching the segmentParentDict every time... we'll see how slow it is.
+	QTime startTime = QTime::currentTime();
+
+	while (!lookingList.isEmpty()){
+		nextList.clear();
+		for (V3DLONG i = 0; i<lookingList.length() ; i++){
+			childSegs.append(lookingList.at(i));
+			
+
+			QHash<V3DLONG, V3DLONG>::const_iterator j = segmentParentDict.constBegin();
+			while (j != segmentParentDict.constEnd()) {
+				if (j.value()==lookingList.at(i)) nextList.append(j.key());
+				++j;
+			}
+
+		}
+		lookingList=nextList;
+
+	}
+	QTime endTime = QTime::currentTime();
+
+	qDebug()<<"elapsed time to find descendents :"<< startTime.msecsTo(endTime); // this is fast enough.
+}
+
+
+//Assigns each segment neuron list a level (corresponding to the segment'slevel in the neuron tree), given that a soma is present
+//The coloring effects of this function will only be availible when the ColorByLevel bool is toggled to true
+//Returns false if a loop esists, and sets color of all segments to purple. Otherwise, sets the segmentParentsList and segmentLevelList correctly
+
+//Level 0 Is reserved for the soma
+//-1 Indicats a segment removed from the main tree
+//-2 Indicates the prescence of a loop
+bool Renderer_gl1::setColorAncestryInfo(){
+
+    segmentParentDict.clear();
+    segmentLevelDict.clear();
+    segmentLengthDict.clear();
+    loopSegs.clear();
+
+    QList<FringeNode> f; //A list of nodes to traverse next, in a depth-first search fashion
+    QList<NeuronSWC> somas; //List of soma nodes
+    PointCloudHash pch; //Hashes the location of the nodes to a list containing all nodes occupying the same point
+    //QHash<V3DLONG, DoublyLinkedNeuronsList*> dict_dlnh; //A list of segments, hases seg_id  to doubly-linked segments
+	dict_dlnh.clear();
+
+
+
+    QList<NeuronTree>::iterator it;
+    if(listNeuronTree.length() > 0){
+        //There seems to sometimes be two trees storing the exact same contents?
+        it = listNeuronTree.end();
+        --it;
+
+        QList <NeuronSWC> p_listneuron = it->listNeuron;
+
+        for (int i=0; i<p_listneuron.size(); i++)
+        {
+            NeuronSWC node = p_listneuron.at(i);
+
+            if(node.type == 1){ //This is a soma
+                somas.push_back(node);
+            }
+
+            QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator j = dict_dlnh.find(node.seg_id);
+            if(j == dict_dlnh.end()){
+                //cout << "created new segment list " << endl;
+                DoublyLinkedNeuronsList* dln = new DoublyLinkedNeuronsList();
+                dict_dlnh.insert(node.seg_id, dln);
+                dln->append(node.seg_id, XYZ(node));
+                pch.Hash(dln->tail);
+                segmentLengthDict.insert(node.seg_id, 1);
+            }else{
+                //cout << "added to old segment list " << endl;
+                j.value()->append(node.seg_id, XYZ(node));
+                pch.Hash(j.value()->tail);
+                segmentLengthDict.insert(node.seg_id, j.value()->length);
+            }
+
+            segmentParentDict.insert(node.seg_id, -1);
+            segmentLevelDict.insert(node.seg_id, -1);
+        }
+    }
+        //Initialize all values to -1, this is also the expected return value of the case without soma
+    //}
+
+    //If fringe not empty, then we insert all the points connected to the soma into
+    //the fringe and do depth-first traversal around the entire neuron tree, in addition marking the soma as visited
+	if(somas.length() != 0){
+
+        segmentParentDict.insert(somas.at(0).seg_id, somas.at(0).seg_id); //If a segment's parent is itself, then its the soma
+        segmentLevelDict.insert(somas.at(0).seg_id, 0); //Soma has level 0
+
+        QList<NeuronSWC>::iterator soma_iter;
+
+        for(soma_iter = somas.begin(); soma_iter != somas.end(); soma_iter++){
+            QList<DoublyLinkedNeuronNode*> l = ((pch.hash.value(XYZtoQString(XYZ(*soma_iter))))->markAsVisitedAndGetConnections( soma_iter->seg_id ));
+            //Note that this particular spacial location has already been visited
+
+            QList<DoublyLinkedNeuronNode*>::iterator it;
+            for (it = (l.begin()); it != (l.end()); ++it){
+                //cout << "Exist element in samePointList x:" << (*it)->position.x << endl;
+
+                if((*it)->seg_id != (*soma_iter).seg_id){
+                    //cout << "Exist non-root element in samePointList" << endl;
+                    bool isHead = (*it)->upstream == NULL;
+                    bool isTail = (*it)->downstream == NULL;
+
+                    //Propigate from all segments list either upstream or downstream from that location
+                    if(!isHead)
+                        f.push_back( FringeNode((*it)->upstream, true, 1, (*soma_iter).seg_id) );
+                    if(!isTail)
+                        f.push_back( FringeNode((*it)->downstream, false, 1, (*soma_iter).seg_id) );
+
+                    segmentParentDict.insert((*it)->seg_id, (*soma_iter).seg_id);
+                    segmentLevelDict.insert((*it)->seg_id, 1);
+                }
+            }
+        }
+	}
+
+    while(!f.isEmpty()){
+
+        //QHash<QString, SamePointList*>::iterator s;
+
+        //cout << "Processing fringe" << endl;
+        FringeNode tvs = f.takeFirst();
+        //cout << "Taking node from seg: " << tvs.node->seg_id << "with x: " << tvs.node->position.x << " y: "
+        //     << tvs.node->position.y << " z: " << tvs.node->position.z << endl;
+        QList<DoublyLinkedNeuronNode*> l;
+        if(!(pch.hash.value(XYZtoQString(tvs.node->position))->hasVisited())){
+            l = ((pch.hash.value(XYZtoQString(tvs.node->position)))->markAsVisitedAndGetConnections(tvs.node->seg_id));
+        }else{
+            //Each spacial location should only be visited once, otherwise there is a loop
+            //This means a loop exists, so we choose not to expand
+
+            continue; //abandon attempts to continue this loop
+        }
+
+        //
+        // Here is the truth table that decides the branching policy of each scenario
+        // etb = is this the end of the current segment?
+        // eob = is this the end of the other segment? (only applicatble when there's exactly 1 other segment)
+        // otr = number of other segments that uses this point
+        //
+        // etb|eob| otr | policy
+        //  T |N/A|  0 | do nothing
+        //  T | T |  1 | connect this branch to other branch (treat it as the same branch and give same parent #)
+        //  T | F |  1 | consider this point a branching point
+        //  T |N/A| 1+ | consider this point a branching point
+        //  F |N/A|  0 | continue along this branch
+        //  F |TvF| 0+ | Branch out for all other branches and continue along this branch
+        //
+
+        QList<DoublyLinkedNeuronNode*>::iterator it;
+        bool loopExists = false;
+        bool etb = (tvs.node->downstream == NULL || tvs.node->upstream == NULL);
+        V3DLONG otr = l.length() - 1;
+        if(etb){
+            for (it = (l.begin()); it != (l.end()); ++it){
+                if((*it)->seg_id != tvs.node->seg_id){
+                    bool isHead = (*it)->isHead();
+                    bool isTail = (*it)->isTail();
+                    bool eob = isHead || isTail;
+                    if(segmentParentDict[(*it)->seg_id] == -1){
+                        if(otr == 1 && eob){
+                                //connect this branch to other branch (treat it as the same branch and give same parent #)
+                                if(!isHead){
+                                    f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.node->seg_id) );
+                                    //cout << "route 1" << endl;
+                                }
+                                else if(!isTail){
+                                    f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.node->seg_id) );
+                                    //cout << "route 2" << endl;
+                                }
+                                //cout << "Added pair p: " << tvs.parent << " c: " << (*it)->seg_id;
+                                segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                                segmentLevelDict.insert((*it)->seg_id, tvs.level);
+                        }else{
+                            //consider this point a branching point
+                            if(!isHead){
+                                f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 3" << endl;
+                            }
+                            if(!isTail){
+                                f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 4" << endl;
+                            }
+                            //cout << "Added pair p: " << tvs.node->seg_id << " c: " << (*it)->seg_id << endl;
+                            segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                            segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
+                       }
+                    }else{
+                          //Someone else has visited this segment already! Do not expand.
+                          addToListOfLoopingSegs(segmentParentDict[(*it)->seg_id], tvs.node->seg_id, (*it)->seg_id);
+                    }
+                }
+            }
+        }else{
+            for (it = (l.begin()); it != (l.end()); ++it){
+                bool isHead = (*it)->isHead();
+                bool isTail = (*it)->isTail();
+                    if((*it)->seg_id == tvs.node->seg_id){
+                        //continue along this seg
+                        if(tvs.isGoingUpstream){
+                            f.push_back( FringeNode((*it)->upstream, true, tvs.level, tvs.parent) );
+                            //cout << "route 5" << endl;
+                        }
+                        else{
+                            f.push_back( FringeNode((*it)->downstream, false, tvs.level, tvs.parent) );
+                            //cout << "route 6" << endl;
+                        }
+                    }else{
+                        if(segmentParentDict[(*it)->seg_id] == -1){
+                        //consider this point a branching point
+                            if(!isHead){
+                                f.push_back( FringeNode((*it)->upstream, true, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 7" << endl;
+                            }
+                            if(!isTail){
+                                f.push_back( FringeNode((*it)->downstream, false, tvs.level + 1, tvs.node->seg_id) );
+                                //cout << "route 8" << endl;
+                            }
+                            //cout << "Added pair p: " << tvs.node->seg_id << " c: " << (*it)->seg_id << endl;
+                            segmentParentDict.insert((*it)->seg_id, tvs.node->seg_id);
+                            segmentLevelDict.insert((*it)->seg_id, tvs.level + 1);
+                        }else{
+                              //Someone else has visited this segment already! Do not expand.
+                              addToListOfLoopingSegs(segmentParentDict[(*it)->seg_id], tvs.node->seg_id, (*it)->seg_id);
+                        }
+                    }
+            }
+        }
+
+
+    }
+
+    QList<V3DLONG>::iterator iter;
+    for (iter = (loopSegs.begin()); iter != (loopSegs.end()); ++iter){
+        //cout << "digging from loopsegs and get " << *iter << endl;
+        segmentParentDict.insert(*iter, -2);
+        segmentLevelDict.insert(*iter, -2);
+    }
+
+
+    //For debugging
+
+    /*
+    QHash<V3DLONG, V3DLONG>::iterator i;
+    for (i = segmentParentDict.begin(); i != segmentParentDict.end(); ++i){
+        cout << "parent key" << i.key() << endl;
+        cout << "parent value" << i.value() << endl;
+    }
+
+	QHash<V3DLONG, V3DLONG>::iterator i;
+    for (i = segmentLevelDict.begin(); i != segmentLevelDict.end(); ++i){
+        cout << "level key " << i.key() << endl;
+        cout << "level value " << i.value() << endl;
+    }
+        QHash<V3DLONG, DoublyLinkedNeuronsList*>::iterator dit;
+    for (dit = (dict_dlnh.begin()); dit != (dict_dlnh.end()); ++dit){
+        delete (dit.value());
+    }
+	*/
+    //We're done.
+    return true;
 }

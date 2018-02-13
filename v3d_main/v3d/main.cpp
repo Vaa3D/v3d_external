@@ -157,7 +157,6 @@ int main(int argc, char **argv)
                 if(!parser.i_v3d.hideV3D)
                 {
                     mainWin->show();
-
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
 #ifdef _ALLOW_WORKMODE_MENU_
@@ -271,11 +270,16 @@ int main(int argc, char **argv)
                 v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(mainWin);
                 //if (versionChecker->shouldCheckNow()) {
                     // v3d_msg("It is time to check for software updates...",0);
-                    versionChecker->checkForLatestVersion(false); //turn on 20130831. PHC
+                    //versionChecker->checkForLatestVersion(false); // turn on 20130831. PHC  turn OFF 2017.03.28 BRL
                 //}
             }
 #endif
 
+#define __AUTOLAUNCH_OPEN_NEURON_GAME___
+#ifdef CGS_AUTOLAUNCH
+            /// RZC 20170620: disable auto launch
+            // mainWin->func_open_neuron_game();
+#endif
 			// launch v3d
 			try
 			{

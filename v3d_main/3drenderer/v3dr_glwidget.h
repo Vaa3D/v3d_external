@@ -47,6 +47,10 @@ class Renderer;
 class V3dR_MainWindow;
 class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
+class V3dR_Communicator;
+#ifdef __ALLOW_VR_FUNCS__
+	class VR_MainWindow;
+#endif
 //class SurfaceObjGeometryDialog;
 typedef void(*PluginMouseFunc)(QGLWidget*); // May 29, 2012 by Hang
 
@@ -66,6 +70,8 @@ public:
 
 	void handleKeyPressEvent(QKeyEvent * event); //for hook to MainWindow
 	void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
+    static bool disableUndoRedo;
+    static bool skipFormat;
 	QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset); //tool tip function for real dimension of image
 
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
@@ -90,7 +96,12 @@ public:
     void setNeuronIndex(int index) {neuronIndex = index;}
     int getNeuronIndex() {return neuronIndex;}
     virtual void preparingRenderer();
-    
+ 
+#ifdef __ALLOW_VR_FUNCS__
+	bool VRClientON;
+	VR_MainWindow * myvrwin;
+	V3dR_Communicator * myclient;
+#endif
 //protected:
 	virtual void choiceRenderer();
 	virtual void settingRenderer(); // for setting the default renderer state when initialize
@@ -250,6 +261,11 @@ public slots:
 	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void absoluteRotPose();
+#ifdef __ALLOW_VR_FUNCS__
+    virtual void doimageVRView(bool bCanCoMode = true);
+	virtual void doclientView(bool check_flag=false);
+	virtual void OnVRSocketDisConnected();
+#endif
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
 	virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
 
@@ -300,6 +316,7 @@ public slots:
     virtual void enableClipBoundingBox(bool b);  //141013 Hanbo Chen
 	virtual void enableOrthoView(bool b);
 	virtual void setBackgroundColor();
+    virtual void switchBackgroundColor();
 	virtual void setBright();
 
 	virtual void setShowMarkers(int s);
@@ -333,6 +350,7 @@ public slots:
 
      virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
     virtual void callCurveLineDetector(int option); // for quick curve line structure detection, by PHC, 20170531
+    virtual void callLoadNewStack(); // for loading new stack, by ZZ, 02012018
 
 
      virtual void setDragWinSize(int csize); // ZJL 110927
@@ -457,6 +475,8 @@ public:
     bool _showAxes, _showBoundingBox, _absRot, _orthoView, _clipBoxEnable;
 	bool _volCompress, _volFilter;
 
+    RGBA8 backgroundColor; // record current non-black backgroundColor
+
 	int _volumeTimePoint; float volumeTimPoint_fraction;
 
 	void init_members()
@@ -495,6 +515,11 @@ public:
 
 		_volumeTimePoint=0;
 		volumeTimPoint_fraction=0;
+#ifdef __ALLOW_VR_FUNCS__
+		VRClientON=false;
+		myvrwin = 0;
+		myclient = 0;
+#endif
 	}
 };
 

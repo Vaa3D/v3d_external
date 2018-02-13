@@ -30,11 +30,13 @@
 #include "v3d_interface.h"
 #include "../presentation/PMain.h"
 #include "../presentation/PConverter.h"
+#include "VirtualVolume.h"
 #include "v3d_message.h"
 #include "CPlugin.h"
 #include "CViewer.h"
 #include "QUndoMarkerCreate.h"
 #include "PAnoToolBar.h"
+#include "CAnnotations.h"
 
 using namespace terafly;
 
@@ -47,7 +49,7 @@ namespace terafly
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.5.2";          // software version
+    std::string version = "2.5.9";          // software version
     int DEBUG = LEV_MAX;                    // debug level
     debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
     std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
@@ -59,6 +61,8 @@ namespace terafly
     ---------------------------------------------------------------------------------------------------------------------------*/
     QMutex updateGraphicsInProgress;
     /*-------------------------------------------------------------------------------------------------------------------------*/
+
+    static std::map < std::string, iim::VirtualVolume* > volumes_opened = std::map< std::string, iim::VirtualVolume* >();
 }
 
 // 4 - Call the functions corresponding to the domenu items. 
@@ -164,5 +168,304 @@ bool TeraFly::checkVersion(std::string version, std::string min_required_version
     }
 }
 
+
+// access the 3D curve set for the whole image at the given resolution (default: highest resolution)
+NeuronTree tf::PluginInterface::getSWC(int resolution)
+{
+    try
+    {
+        // set default parameter
+        if(resolution == infp<int>())
+            resolution = CImport::instance()->getResolutions() - 1;
+
+        // check preconditions
+        if(resolution != CImport::instance()->getResolutions() - 1)
+            throw tf::RuntimeException(tf::strprintf("Accessing curve/marker structures at lower resolutions (res index = %d) not yet implemented", resolution));
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // store last changes made on the viewer to the octree
+        CViewer::getCurrent()->storeAnnotations();
+
+        // get entire octree content
+        NeuronTree nt;
+        interval_t x_range(0, std::numeric_limits<int>::max());
+        interval_t y_range(0, std::numeric_limits<int>::max());
+        interval_t z_range(0, std::numeric_limits<int>::max());
+        CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, nt.listNeuron);
+
+        return nt;
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
+{
+    try
+    {
+        // set default parameter
+        if(resolution == infp<int>())
+            resolution = CImport::instance()->getResolutions() - 1;
+
+        // check preconditions
+        if(resolution != CImport::instance()->getResolutions() - 1)
+            throw tf::RuntimeException(tf::strprintf("Accessing curve/marker structures at lower resolutions (res index = %d) not yet implemented", resolution));
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // set entire octree content
+        interval_t x_range(0, std::numeric_limits<int>::max());
+        interval_t y_range(0, std::numeric_limits<int>::max());
+        interval_t z_range(0, std::numeric_limits<int>::max());
+        CAnnotations::getInstance()->addCurves(x_range, y_range, z_range, nt);
+
+        // push content to viewer
+        CViewer::getCurrent()->loadAnnotations();
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// access the 3D landmark list defined for the whole image at the given resolution (default: highest resolution)
+LandmarkList tf::PluginInterface::getLandmark(int resolution)
+{
+    LandmarkList markers;
+
+    try
+    {
+        // set default parameter
+        if(resolution == infp<int>())
+            resolution = CImport::instance()->getResolutions() - 1;
+
+        // check preconditions
+        if(resolution != CImport::instance()->getResolutions() - 1)
+            throw tf::RuntimeException(tf::strprintf("Accessing curve/marker structures at lower resolutions (res index = %d) not yet implemented", resolution));
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // store last changes made on the viewer to the octree
+        CViewer::getCurrent()->storeAnnotations();
+
+        // get entire octree content
+        interval_t x_range(0, std::numeric_limits<int>::max());
+        interval_t y_range(0, std::numeric_limits<int>::max());
+        interval_t z_range(0, std::numeric_limits<int>::max());
+        CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, markers);
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+
+    return markers;
+}
+
+bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resolution)
+{
+    try
+    {
+        // set default parameter
+        if(resolution == infp<int>())
+            resolution = CImport::instance()->getResolutions() - 1;
+
+        // check preconditions
+        if(resolution != CImport::instance()->getResolutions() - 1)
+            throw tf::RuntimeException(tf::strprintf("Accessing curve/marker structures at lower resolutions (res index = %d) not yet implemented", resolution));
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // set entire octree content
+        interval_t x_range(0, std::numeric_limits<int>::max());
+        interval_t y_range(0, std::numeric_limits<int>::max());
+        interval_t z_range(0, std::numeric_limits<int>::max());
+        CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, landmark_list);
+
+        // push content to viewer
+        CViewer::getCurrent()->loadAnnotations();
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// get path of the image volume at the given resolution (default: highest resolution)
+std::string tf::PluginInterface::getPath(int resolution)
+{
+    try
+    {
+        // set default parameter
+        if(resolution == infp<int>())
+            resolution = CImport::instance()->getResolutions() - 1;
+
+        // check preconditions
+        if(CImport::instance()->getVolume(resolution) == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access image volume at resolution \"%d\"", resolution));
+
+        return CImport::instance()->getVolume(resolution)->getROOT_DIR();
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// get currently displayed image (readonly)
+const Image4DSimple* tf::PluginInterface::getImage()
+{
+    try
+    {
+        // check preconditions
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // get and return image
+        return CViewer::getCurrent()->getImage();
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// get image metadata from the given image file/folder path
+size_t tf::PluginInterface::getXDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_H());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+size_t tf::PluginInterface::getYDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_V());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+size_t tf::PluginInterface::getZDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_D());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+size_t tf::PluginInterface::getCDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_C());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+size_t tf::PluginInterface::getTDim(const std::string & path)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        return size_t(volumes_opened[path]->getDIM_T());
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// get image subvolume from the given image file/folder path
+// x = horizontal axis, y = vertical axis, z = depth axis, t = time axis
+// intervals are open at right, e.g. [x0, x1)
+unsigned char* tf::PluginInterface::getSubVolume(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1, size_t t0, size_t t1)
+{
+    try
+    {
+        if(volumes_opened.find(path) == volumes_opened.end())
+            volumes_opened[path] = iim::VirtualVolume::instance(path.c_str());
+
+        volumes_opened[path]->setActiveFrames(int(t0), int(t1));
+        return volumes_opened[path]->loadSubvolume_to_UINT8(y0, y1, x0, x1, z0, z1);
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
+
+// release memory allocated for opened volumes
+void tf::PluginInterface::releaseOpenedVolumes()
+{
+    try
+    {
+        for(std::map <std::string, iim::VirtualVolume*>::iterator it = volumes_opened.begin(); it != volumes_opened.end(); it++)
+            delete it->second;
+        volumes_opened.clear();
+    }
+    catch (iom::exception & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    catch (iim::IOException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}
 
 

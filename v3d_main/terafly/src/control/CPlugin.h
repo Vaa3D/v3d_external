@@ -26,8 +26,12 @@
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
 
-#ifndef __TERAMANAGER_C_PLUGIN_H__
-#define __TERAMANAGER_C_PLUGIN_H__
+// 20170623 RZC: change __TERAMANAGER_C_PLUGIN_H__ to __TERAFLY_C_PLUGIN_H__ for merging mozak/terafly
+//#ifndef __TERAMANAGER_C_PLUGIN_H__
+//#define __TERAMANAGER_C_PLUGIN_H__
+#ifndef __TERAFLY_C_PLUGIN_H__
+#define __TERAFLY_C_PLUGIN_H__
+
 
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 #include <QWidget>
@@ -40,6 +44,7 @@
 #include <QThread>
 #include "v3d_core.h"
 #include <cmath>
+#include "v3d_interface.h"
 
 class V3DPluginCallback2;
 
@@ -93,6 +98,7 @@ namespace terafly
     class myV3dR_GLWidget;      //Vaa3D-inhrerited class
     class myV3dR_MainWindow;    //Vaa3D-inhrerited class
     class myImage4DSimple;      //Vaa3D-inhrerited class
+    class PluginInterface;
     struct annotation;          //base class for annotations
     struct volume_format;       //enum-like class to distinguish different volume formats
     /*-------------------------------------------------------------------------------------------------------------------------*/
@@ -885,6 +891,42 @@ class terafly::TeraFly : public QObject
 
         // returns true if version >= min_required_version, where version format is version.major.minor
         static bool checkVersion(std::string version, std::string min_required_version);
+};
+
+class terafly::PluginInterface
+{
+    public:
+
+        // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
+        static NeuronTree getSWC(int resolution = infp<int>());
+        static bool setSWC(NeuronTree & nt, int resolution = infp<int>());
+
+        // access the 3D landmark list defined for the whole image at the given resolution (default: highest resolution)
+        static LandmarkList getLandmark(int resolution = infp<int>());
+        static bool setLandmark(LandmarkList & landmark_list, int resolution = infp<int>());
+
+        // get path of the image volume at the given resolution (default: highest resolution)
+        static std::string getPath(int resolution = infp<int>());
+
+        // get currently displayed image (readonly)
+        static const Image4DSimple* getImage();
+
+        // get image metadata from the given image file/folder path
+        static size_t getXDim(const std::string & path);
+        static size_t getYDim(const std::string & path);
+        static size_t getZDim(const std::string & path);
+        static size_t getCDim(const std::string & path);
+        static size_t getTDim(const std::string & path);
+
+        // get image subvolume from the given image file/folder path
+        // x = horizontal axis, y = vertical axis, z = depth axis, t = time axis
+        // intervals are open at right, e.g. [x0, x1)
+        static unsigned char* getSubVolume(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1, size_t t0=0, size_t t1=std::numeric_limits<size_t>::max());
+
+        // release memory allocated for storing volume objects used in the get...(path) methods
+        static void releaseOpenedVolumes();
+
+        static std::string version(){ return "1.1.0"; }
 };
 
 #endif

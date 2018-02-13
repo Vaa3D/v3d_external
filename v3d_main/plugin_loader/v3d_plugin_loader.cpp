@@ -47,6 +47,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include "../v3d/v3d_core.h"
 #include "v3d_plugin_loader.h"
 #include "pluginDialog.h"
+#include "../terafly/src/control/CPlugin.h"
+#include <QtGlobal>
 
 
 void pumpEvents(int loops=100)
@@ -210,6 +212,8 @@ QList<QDir> V3d_PluginLoader::getPluginsDirList()
 #if defined(Q_OS_WIN)
     if (testPluginsDir.dirName().toLower() == "debug" || testPluginsDir.dirName().toLower() == "release")
         testPluginsDir.cdUp();
+
+	qDebug() << testPluginsDir.absolutePath();
 #elif defined(Q_OS_MAC)
     // In a Mac app bundle, plugins directory could be either
     //  a - below the actual executable i.e. v3d.app/Contents/MacOS/plugins/
@@ -466,8 +470,12 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     	return;
     }
 	
-    loader->unload(); ///
-    QObject *plugin = loader->instance();
+
+#if QT_VERSION < 0x040806 // MK, 09242017, attempting to solve plugin issue on Windows with Qt4.8 and higher. Still not sure why it's ok with Qt4.7.
+	loader->unload();
+#endif
+
+	QObject *plugin = loader->instance();
     if (!plugin)
     {
     	v3d_msg("ERROR in Vaa3D_PluginLoader::runPlugin: loader->instance()");
@@ -526,7 +534,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	//
     if (!done)  {v3d_msg("No interface found.",0);}
 
-
+	
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
 	//    if (loader->isLoaded())
@@ -1239,6 +1247,15 @@ void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
     }
 }
 
+QString V3d_PluginLoader::getWindowDataTitle(V3dR_MainWindow * w)
+{
+    if (v3d_mainwindow )
+    {
+      return w->getDataTitle();
+    }
+}
+
+
 
 void V3d_PluginLoader::pushObjectIn3DWindow(v3dhandle image_window)
 {
@@ -1329,6 +1346,25 @@ LandmarkList * V3d_PluginLoader::getHandleLandmarkList_Any3DViewer(V3dR_MainWind
             return 0;
         else
             return (gp->getHandleLandmark());
+    }
+}
+
+bool V3d_PluginLoader::setHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w, LandmarkList & landmark_list)//Aug. 2, 2017 by Zhi Zhou
+{
+    if (!w) return false;
+    V3dR_GLWidget * vi = w->getGLWidget();
+    if (!vi) return false;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return false;
+        else
+        {
+            gp->setHandleLandmark(landmark_list);
+            gp->updateLandmark();
+            return true;
+        }
     }
 }
 
@@ -1569,4 +1605,86 @@ bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <L
 //    rescanPlugins();
 //}
 
+//added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
+NeuronTree V3d_PluginLoader::getSWCTeraFly()
+{
+    return terafly::PluginInterface::getSWC();
+}
 
+bool V3d_PluginLoader::setSWCTeraFly(NeuronTree & nt)
+{
+    return terafly::PluginInterface::setSWC(nt);
+}
+
+LandmarkList V3d_PluginLoader::getLandmarkTeraFly()
+{
+    return terafly::PluginInterface::getLandmark();
+}
+
+bool V3d_PluginLoader::setLandmarkTeraFly(LandmarkList & landmark_list)
+{
+    return terafly::PluginInterface::setLandmark(landmark_list);
+}
+
+QString V3d_PluginLoader::getPathTeraFly()
+{
+    return QString(terafly::PluginInterface::getPath().c_str());
+}
+
+const Image4DSimple * V3d_PluginLoader::getImageTeraFly()
+{
+    return terafly::PluginInterface::getImage();
+}
+
+QString V3d_PluginLoader::versionTeraFly()
+{
+    return QString(terafly::PluginInterface::version().c_str());
+}
+
+bool V3d_PluginLoader::getDimTeraFly(const std::string & path, V3DLONG * & sz)
+{
+    sz = new V3DLONG [5];
+    if (!sz)
+    {
+        return false;
+    }
+    sz[0] = terafly::PluginInterface::getXDim(path);
+    sz[1] = terafly::PluginInterface::getYDim(path);
+    sz[2] = terafly::PluginInterface::getZDim(path);
+    sz[3] = terafly::PluginInterface::getCDim(path);
+    sz[4] = terafly::PluginInterface::getTDim(path);
+    return true;
+}
+
+unsigned char* V3d_PluginLoader::getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1)
+{
+    return terafly::PluginInterface::getSubVolume(path,x0,x1,y0,y1,z0,z1);
+}
+
+
+void V3d_PluginLoader::releaseOpenedVolumesTeraFly()
+{
+    terafly::PluginInterface::releaseOpenedVolumes();
+}
+
+void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
+{
+	qDebug("V3d_PluginLoader::openVRWindow ");
+    if (w)
+    {
+		qDebug("V3d_PluginLoader::openVRWindow ----if w");
+        V3dR_GLWidget * v = w->getGLWidget();
+        if (v)
+		{
+			qDebug("V3d_PluginLoader::openVRWindow ----if v");
+            v->doimageVRView(bOnlineMode); 
+		}
+    }
+}
+
+void V3d_PluginLoader::openVRWindowV2(v3dhandle image_window, bool bOnlineMode)
+{
+	qDebug("V3d_PluginLoader::openVRWindow version 2");
+	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
+    if(vi) vi->doimageVRView(bOnlineMode); 
+}

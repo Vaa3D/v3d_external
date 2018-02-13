@@ -147,7 +147,7 @@ protected:
 
 	QPushButton *okButton, *cancelButton, *undoButton,
 				*selectAllButton, *deselectAllButton, *inverseSelectButton,
-				*onSelectButton, *offSelectButton, *colorSelectButton,
+                *onSelectButton, *offSelectButton, *colorSelectButton,
                 *editNameCommentButton, *markerLocalView,
                 *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
 

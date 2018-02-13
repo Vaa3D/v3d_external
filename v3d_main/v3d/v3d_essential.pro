@@ -114,6 +114,8 @@ win32 { # platform: win32-command-mingw
     CONFIG += console
 LIBS += -L$$MINGW_DIR/lib \
 	-L$$LOCAL_DIR/lib_win32
+    DEFINES += __ALLOW_VR_FUNCS__
+
 }
 
 
@@ -190,8 +192,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_landmark.h \
     ../basic_c_fun/v3d_interface.h \
     ../basic_c_fun/v3d_global_preference.h \
-	../basic_c_fun/customary_structs/v3d_imaging_para.h \
-	../basic_c_fun/basic_thread.h \
+    ../basic_c_fun/customary_structs/v3d_imaging_para.h \
+    ../basic_c_fun/basic_thread.h \
+    ../basic_c_fun/basic_view3d.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \
@@ -256,6 +259,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_actions.h \
     v3d_commandlineparser.h \
     pluginfunchandler.h \
+    vr_vaa3d_call.h \
     ../worm_straighten_c/bdb_minus.h \
     ../worm_straighten_c/mst_prim_c.h \
     ../worm_straighten_c/bfs.h \
@@ -275,6 +279,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../terafly/src/presentation/theader.h
 #    ./painting/shared/arthurstyle.h \
 #    ./painting/shared/arthurwidgets.h
+
 
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h
@@ -313,9 +318,10 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
+    ../3drenderer/v3dr_control_signal.cpp \
  \ #    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
-	../imaging/v3d_imaging.cpp \
+        ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
@@ -344,6 +350,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     v3d_actions.cpp \
     v3d_commandlineparser.cpp \
     pluginfunchandler.cpp \
+    vr_vaa3d_call.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
@@ -358,6 +365,34 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
+
+win32 {
+INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
+
+HEADERS += \
+    ../vrrenderer/v3dr_gl_vr.h \
+    ../vrrenderer/Cylinder.h \
+    ../vrrenderer/Sphere.h \
+    ../vrrenderer/Matrices.h \
+    ../vrrenderer/lodepng.h \
+    ../vrrenderer/RenderableObject.h \
+    ../vrrenderer/VRFinger.h \
+    ../vrrenderer/V3dR_Communicator.h \
+    ../vrrenderer/VR_MainWindow.h 
+
+SOURCES += \
+    ../vrrenderer/v3dr_gl_vr.cpp \
+    ../vrrenderer/Cylinder.cpp \
+    ../vrrenderer/Sphere.cpp \
+    ../vrrenderer/Matrices.cpp \
+    ../vrrenderer/lodepng.cpp \
+    ../vrrenderer/RenderableObject.cpp \
+    ../vrrenderer/VRFinger.cpp \
+    ../vrrenderer/V3dR_Communicator.cpp \
+    ../vrrenderer/VR_MainWindow.cpp
+}
 
 FORMS += landmark_property.ui \
     surface_obj_annotation.ui \
@@ -379,6 +414,8 @@ FORMS += landmark_property.ui \
     dialog_update_options.ui \
     dialog_update_downloading.ui \
     dialog_update_checking.ui
+
+
 
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc

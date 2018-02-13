@@ -92,58 +92,6 @@
 #define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
 #endif
 
-//#define INSERT_NEIGHBOR(nei) {if (dataViewProcBox.isInner(nei, 0.5)) neibs_loci.push_back(nei);}
-
-#define GET_DIRECTED_INTERSEC_POINT(loc0, loc1, hit_loc, success) \
-{ \
-/* qDebug() << dataViewProcBox.x0 << " " <<  dataViewProcBox.x1 << " " << dataViewProcBox.y0 << " " <<  dataViewProcBox.y1 << " " <<dataViewProcBox.z0 << " " <<  dataViewProcBox.z1 << " " ; */ \
-    if (dataViewProcBox.isInner(loc0, 0)) \
-    { \
-       success = true; hit_loc = loc0;\
-     } \
-    else \
-    { \
-     XYZ v_1_0 = loc1-loc0; \
-     XYZ D = v_1_0; normalize(D); \
-     XYZ loci; \
-     float length=dist_L2(loc0, loc1); \
-    success = false; \
-     for(int ii=0; ii< length; ii++) \
-     { \
-          loci = loc0 + D*ii; \
-          if (dataViewProcBox.isInner(loci, 0)) \
-          { \
-               hit_loc = loci; \
-               success = true; \
-               break; \
-          } \
-     } \
-  }\
-}
-
-#define INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1) \
-{ \
-     bool success0 = false; \
-     bool success1 = false; \
-     GET_DIRECTED_INTERSEC_POINT(loc0_t, loc1_t, loc0, success0); \
-     if(!success0) loc0=loc0_t; \
-     GET_DIRECTED_INTERSEC_POINT(loc1_t, loc0_t, loc1, success1); \
-     if(!success1) loc1=loc1_t; \
-}
-
-
-#define MARKERPOS_TO_NEAR_FAR_LOCS(i, loc0, loc1) \
-{ \
-     const MarkerPos & pos = list_listCurvePos.at(index).at(i); \
-     double clipplane[4] = { 0.0,  0.0, -1.0,  0 }; \
-     clipplane[3] = viewClip; \
-     ViewPlaneToModel(pos.MV, clipplane); \
-     XYZ loc0_t, loc1_t; \
-     _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t); \
-     INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1); \
-}
-
-
 #define PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i) \
 { \
      if(!outswc.empty()) \
@@ -166,9 +114,9 @@
                locj.x=outswc.at(j)->x + sub_orig.x; \
                locj.y=outswc.at(j)->y + sub_orig.y; \
                locj.z=outswc.at(j)->z + sub_orig.z; \
-			{    cout<<"before push j="<<j<< " "<< locj.x << " "<<locj.y << " " << locj.z <<endl;}\
+            {    ;}\
                if (loc_vec.size()<=0 || loc_vec.back().x != locj.x || loc_vec.back().y != locj.y || loc_vec.back().z != locj.z)  \
-               {   loc_vec.push_back(locj); cout<<"push j="<<j<< " "<< locj.x << " "<<locj.y << " " << locj.z <<endl;}\
+               {   loc_vec.push_back(locj); ;}\
             } \
           }\
      } \
@@ -183,6 +131,15 @@ struct nodeInfo
 	vector<V_NeuronSWC_unit>::iterator nodeAddress;
 	bool front, back;
 	long segID, frontSegID, backSegID, nodeNum, x, y, z;
+};
+
+struct cutNode
+{
+	V_NeuronSWC_unit node;
+	double distance;
+	vector<V_NeuronSWC_unit>::iterator nodeAddress;
+	long segID;
+	long nodeinSegId;
 };
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
@@ -655,8 +612,7 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           _MarkerPos_to_NearFarPoint(pos.at(i), loc0_t, loc1_t);
 
           // get intersection point of (loc0,loc1) with data volume
-          XYZ loc0, loc1;
-          INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
+		  IntersectResult<2> intersect = intersectPointsWithData(loc0_t, loc1_t);
 
           // XYZ loc0_t, loc1_t;
           // _MarkerPos_to_NearFarPoint(pos.at(i), loc0_t, loc1_t);
@@ -674,22 +630,25 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           //      minx=maxx=loc0.x; miny=maxy=loc0.y; minz=maxz=loc0.z;
           // }
           // else
-          {
-               if(minx>loc0.x) minx=loc0.x;
-               if(miny>loc0.y) miny=loc0.y;
-               if(minz>loc0.z) minz=loc0.z;
+          if (intersect.success[0] && intersect.success[1]) 
+		  {
+			  XYZ loc0 = intersect.hit_locs[0], loc1 = intersect.hit_locs[1];
 
-               if(maxx<loc0.x) maxx=loc0.x;
-               if(maxy<loc0.y) maxy=loc0.y;
-               if(maxz<loc0.z) maxz=loc0.z;
+              if(minx>loc0.x) minx=loc0.x;
+              if(miny>loc0.y) miny=loc0.y;
+              if(minz>loc0.z) minz=loc0.z;
+			  
+			  if(maxx<loc0.x) maxx=loc0.x;
+              if(maxy<loc0.y) maxy=loc0.y;
+              if(maxz<loc0.z) maxz=loc0.z;
 
-               if(minx>loc1.x) minx=loc1.x;
-               if(miny>loc1.y) miny=loc1.y;
-               if(minz>loc1.z) minz=loc1.z;
+              if(minx>loc1.x) minx=loc1.x;
+              if(miny>loc1.y) miny=loc1.y;
+              if(minz>loc1.z) minz=loc1.z;
 
-               if(maxx<loc1.x) maxx=loc1.x;
-               if(maxy<loc1.y) maxy=loc1.y;
-               if(maxz<loc1.z) maxz=loc1.z;
+              if(maxx<loc1.x) maxx=loc1.x;
+              if(maxy<loc1.y) maxy=loc1.y;
+              if(maxz<loc1.z) maxz=loc1.z;
           }
      }
 
@@ -739,76 +698,73 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
 // get bounding volume from two stroke points
 // chno is channel
 void Renderer_gl1::getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
-     XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz)
+    XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz)
 {
-     XYZ minloc, maxloc;
+    XYZ minloc, maxloc;
 
-     // get intersection point of (loc0,loc1) with data volume
-     XYZ hit_loc0, hit_loc1;
-     INTERSET_POINTS_WITH_DATA(loc0, loc1, hit_loc0, hit_loc1);
+    // get intersection point of (loc0,loc1) with data volume
+	IntersectResult<2> intersect = intersectPointsWithData(loc0, loc1);
+	XYZ hit_loc0 = intersect.hit_locs[0], hit_loc1 = intersect.hit_locs[1];
 
+	// find min-max of x y z in loc_veci
+    float minx, miny, minz, maxx, maxy, maxz;
 
-     // find min-max of x y z in loc_veci
-     float minx, miny, minz, maxx, maxy, maxz;
+    minx=maxx=hit_loc0.x; miny=maxy=hit_loc0.y; minz=maxz=hit_loc0.z;
 
-     minx=maxx=hit_loc0.x; miny=maxy=hit_loc0.y; minz=maxz=hit_loc0.z;
+    if(minx>hit_loc1.x) minx=hit_loc1.x;
+    if(miny>hit_loc1.y) miny=hit_loc1.y;
+    if(minz>hit_loc1.z) minz=hit_loc1.z;
 
-     if(minx>hit_loc1.x) minx=hit_loc1.x;
-     if(miny>hit_loc1.y) miny=hit_loc1.y;
-     if(minz>hit_loc1.z) minz=hit_loc1.z;
+    if(maxx<hit_loc1.x) maxx=hit_loc1.x;
+    if(maxy<hit_loc1.y) maxy=hit_loc1.y;
+    if(maxz<hit_loc1.z) maxz=hit_loc1.z;
 
-     if(maxx<hit_loc1.x) maxx=hit_loc1.x;
-     if(maxy<hit_loc1.y) maxy=hit_loc1.y;
-     if(maxz<hit_loc1.z) maxz=hit_loc1.z;
+    if(minx>loc0_last.x) minx=loc0_last.x;
+    if(miny>loc0_last.y) miny=loc0_last.y;
+    if(minz>loc0_last.z) minz=loc0_last.z;
 
-     if(minx>loc0_last.x) minx=loc0_last.x;
-     if(miny>loc0_last.y) miny=loc0_last.y;
-     if(minz>loc0_last.z) minz=loc0_last.z;
+    if(maxx<loc0_last.x) maxx=loc0_last.x;
+    if(maxy<loc0_last.y) maxy=loc0_last.y;
+    if(maxz<loc0_last.z) maxz=loc0_last.z;
+	
+    int boundary = 5;
 
-     if(maxx<loc0_last.x) maxx=loc0_last.x;
-     if(maxy<loc0_last.y) maxy=loc0_last.y;
-     if(maxz<loc0_last.z) maxz=loc0_last.z;
+    minloc.x = minx - boundary;
+    minloc.y = miny - boundary;
+    minloc.z = minz - boundary;
 
+    maxloc.x = maxx + boundary;
+    maxloc.y = maxy + boundary;
+    maxloc.z = maxz + boundary;
 
-     int boundary = 5;
+    if (!dataViewProcBox.isInner(minloc, 0.1))
+        dataViewProcBox.clamp(minloc);
+    if (!dataViewProcBox.isInner(maxloc, 0.1))
+        dataViewProcBox.clamp(maxloc);
 
-     minloc.x = minx - boundary;
-     minloc.y = miny - boundary;
-     minloc.z = minz - boundary;
+    // get data buffer
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;
+    if (w)
+        curImg = v3dr_getImage4d(_idep);
 
-     maxloc.x = maxx + boundary;
-     maxloc.y = maxy + boundary;
-     maxloc.z = maxz + boundary;
+    // The data is from minloc to maxloc
+    sub_szx=abs(maxloc.x-minloc.x)+1;
+    sub_szy=abs(maxloc.y-minloc.y)+1;
+    sub_szz=abs(maxloc.z-minloc.z)+1;
 
-     if (!dataViewProcBox.isInner(minloc, 0.1))
-          dataViewProcBox.clamp(minloc);
-     if (!dataViewProcBox.isInner(maxloc, 0.1))
-          dataViewProcBox.clamp(maxloc);
+    sub_orig = minloc;
 
-     // get data buffer
-     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-     My4DImage* curImg = 0;
-     if (w)
-          curImg = v3dr_getImage4d(_idep);
+    //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
-     // The data is from minloc to maxloc
-     sub_szx=abs(maxloc.x-minloc.x)+1;
-     sub_szy=abs(maxloc.y-minloc.y)+1;
-     sub_szz=abs(maxloc.z-minloc.z)+1;
-
-     sub_orig = minloc;
-
-     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
-
-     pSubdata = new double [sub_szx*sub_szy*sub_szz];
-     for(V3DLONG k=0; k<sub_szz; k++)
-          for(V3DLONG j=0; j<sub_szy; j++)
-               for(V3DLONG i=0; i<sub_szx; i++)
-               {
-                    V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
-                    pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
-               }
-
+    pSubdata = new double [sub_szx*sub_szy*sub_szz];
+    for(V3DLONG k=0; k<sub_szz; k++)
+        for(V3DLONG j=0; j<sub_szy; j++)
+            for(V3DLONG i=0; i<sub_szx; i++)
+            {
+                V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
+                pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
+            }
 }
 
 
@@ -1280,6 +1236,82 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
      loc_vec_resampled.push_back(loc_vec.back());
 }
 
+void Renderer_gl1::adaptiveCurveResamplingRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, float epsilon)
+{
+     int N = loc_vec.size();
+     if (N<=0) return;
+
+     recursiveRamerDouglasPeucker(loc_vec, loc_vec_resampled, 0, N-1, epsilon);
+}
+
+void Renderer_gl1::recursiveRamerDouglasPeucker(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int start_i, int end_i, float epsilon)
+{
+     // Recursive Ramer–Douglas–Peucker algorithm
+     loc_vec_resampled.clear();
+     XYZ & loc_start = loc_vec.at(start_i);
+     XYZ & loc_final = loc_vec.at(end_i);
+
+     if (start_i >= end_i)
+     {
+          loc_vec_resampled.push_back(loc_start);
+          return;
+     }
+     else if (end_i - start_i == 1)
+     {
+          loc_vec_resampled.push_back(loc_start);
+          loc_vec_resampled.push_back(loc_final);
+          return;
+     }
+
+     float dx = loc_final.x-loc_start.x;
+     float dy = loc_final.y-loc_start.y;
+     float dz = loc_final.z-loc_start.z;
+     // To be used in distance from point to line calculation below
+     float dd = std::sqrt(dx*dx + dy*dy + dz*dz);
+     // Find point with max distance between it and v1
+     float max_dist_squared = -1.0f;
+     int max_ind = -1;
+     for (int j=start_i+1; j<end_i; j++)
+     {
+          XYZ & loc_this = loc_vec.at(j);
+          // Compute distance from point at j to line between loc_start and loc_final
+          Vector3D v1 = Vector3D(loc_this.x-loc_start.x, loc_this.y-loc_start.y, loc_this.z-loc_start.z);
+          Vector3D v2 = Vector3D(loc_this.x-loc_final.x, loc_this.y-loc_final.y, loc_this.z-loc_final.z);
+          Vector3D v3 = v1.cross(v2);
+          float this_dist_sqaured = v3.normSquared();
+          if (this_dist_sqaured > max_dist_squared)
+          {
+               max_dist_squared = this_dist_sqaured;
+               max_ind = j;
+          }
+     }
+     // Calculate actual max distance and compare to epsilon
+     bool within_epsilon = false;
+     if (dd > 0) // avoid divide by zero
+     {
+          float max_dist = std::sqrt(max_dist_squared) / dd;
+          within_epsilon = (max_dist <= epsilon);
+     }
+     if (within_epsilon)
+     {
+          // If within epsilon, we can safely skip the points in between. Just return first and last points.
+          loc_vec_resampled.push_back(loc_start);
+          loc_vec_resampled.push_back(loc_final);
+     }
+     else
+     {
+          // If outside of epsilon, sample recursively between the two segments: start_i -> max_ind and max_indx -> end_i
+          vector <XYZ> loc_vec_resampled1, loc_vec_resampled2;
+          recursiveRamerDouglasPeucker(loc_vec, loc_vec_resampled1, start_i, max_ind, epsilon);
+          recursiveRamerDouglasPeucker(loc_vec, loc_vec_resampled2, max_ind, end_i, epsilon);
+          // Quickly join the two vectors, removing last element of vec1 (which would be duplicated)
+          loc_vec_resampled1.pop_back();
+          loc_vec_resampled.reserve(loc_vec_resampled1.size() + loc_vec_resampled2.size());
+          loc_vec_resampled.insert(loc_vec_resampled.end(), loc_vec_resampled1.begin(), loc_vec_resampled1.end());
+          loc_vec_resampled.insert(loc_vec_resampled.end(), loc_vec_resampled2.begin(), loc_vec_resampled2.end());
+     }
+     
+}
 
 /**
  * @brief This function is based on findNearestNeuronNode_WinXY(int cx, int cy,
@@ -1417,13 +1449,14 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
      }
 
      if(selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox 
-        || selectMode==smMarkerCreate1Curve) //by PHC 20121012
+        || selectMode==smMarkerCreate1Curve //by PHC 20121012
+        || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
      {
           b_useTiltedBB = true;
           b_useStrokeBB = false;
           b_use2PointsBB = false;
 
-         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox || selectMode==smMarkerCreate1Curve)? //PHC 20121012
+         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox || selectMode==smMarkerCreate1Curve || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode)? //PHC 20121012
             true : false;
      }
 
@@ -1442,289 +1475,351 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 	else //then use the moving mouse location, otherwise using the preset loc_vec_input (which is set by the 3d-curve-by-point-click function)
 	{
 		N = list_listCurvePos.at(index).size(); // change from 0 to index for different curves, ZJL
+		int firstPointIndex = 0;
 
-          // resample curve strokes
-          vector<int> inds; // reserved stroke index
-          resampleCurveStrokes(0, chno, inds);
+        // resample curve strokes
+        vector<int> inds; // reserved stroke index
+        resampleCurveStrokes(0, chno, inds);
 
-          if(b_useTiltedBB)
-          {
-               XYZ loci0, loci1;
-               MARKERPOS_TO_NEAR_FAR_LOCS(0, loci0, loci1);
-               nearpos_vec.push_back(MyMarker(loci0.x, loci0.y, loci0.z));
-               farpos_vec.push_back(MyMarker(loci1.x, loci1.y, loci1.z));
-          }
+        if(b_useTiltedBB)
+        {
+			for (firstPointIndex = 0; firstPointIndex < N; firstPointIndex++)
+			{
+				NearFarPoints pts = markerPosToNearFarLocs(index, firstPointIndex);
 
-          int last_i; // used for computing 2points_bb
-          for (int i=1; i<N; i++) // 0 must be in
-          {
-               // check whether i is in inds
-               bool b_inds=false;
+				if (pts.valid)
+				{
+					// marker pos was inside the image volume, start here
+					nearpos_vec.push_back(MyMarker(pts.near_pt.x, pts.near_pt.y, 
+						pts.near_pt.z));
+					farpos_vec.push_back(MyMarker(pts.far_pt.x, pts.far_pt.y,
+						pts.far_pt.z));
 
-               if(inds.empty())
-               {
-                    b_inds=true;
-               }
-               else
-               {
-                    for(int ii=1; ii<inds.size(); ii++)
-                    {
-                         if(i == inds.at(ii))
-                         {
-                              b_inds=true;
-                              break;
+					break;
+				}
+				else
+				{
+					// marker pos wasn't inside the image value, skip it
+					continue;
+				}
+			}
+        }
+
+        int last_i; // used for computing 2points_bb
+        for (int i=firstPointIndex + 1; i<N; i++) // 0 must be in
+        {
+			// check whether i is in inds
+			bool b_inds=false;
+
+			if(inds.empty())
+			{
+				b_inds=true;
+			}
+			else
+			{
+				for(int ii=1; ii<inds.size(); ii++)
+				{
+					if(i == inds.at(ii))
+					{
+						b_inds=true;
+						break;
+					}
+				}
+			}
+
+			// only process resampled strokes
+			if(i==1 || i==(N-1) || b_inds) // make sure to include the last N-1 pos
+			{
+				const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
+				double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+				clipplane[3] = viewClip;
+				ViewPlaneToModel(pos.MV, clipplane);
+
+				// this is intersection points with view volume
+				XYZ loc0_t, loc1_t;
+				_MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+
+				//get intersection points with data volume
+				IntersectResult<2> intersect = intersectPointsWithData(loc0_t, loc1_t);
+				
+				if (!intersect.success[0] || !intersect.success[1])
+				{
+					// marker position is outside the image volume; skip this point
+					continue;
+				}
+
+				XYZ &loc0 = intersect.hit_locs[0], &loc1 = intersect.hit_locs[1];
+
+				// near/far pos locs for b_useTitltedBB
+				if(b_useTiltedBB) // still not finished
+				{
+					nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
+					farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
+				}
+				else// beginning of non b_useTitltedBB
+				{
+					float length01 = dist_L2(loc0, loc1);
+					// preparing the two-markerpos decided boundingbox
+
+					int last_j = loc_vec.size()-1;
+
+					vector<MarkerPos> pos_vec;
+					double* pSubdata2;
+					XYZ sub_orig2;
+					V3DLONG sub_szx2, sub_szy2, sub_szz2;
+					BoundingBox bb_2Points;
+					XYZ loci0; //meanshift point for i==0
+					if(i==1) //only do this for the first point
+					{
+						//the logic of this section need change. no need to use meanshift before the testing of the potential intersection point with existing curves
+
+						const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0); //get the first point, note that already check list_listCurvePos.at(index) has at least one node
+						XYZ nearest_loc;
+						if( pickSeedpointFromExistingCurves(pos_0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
+						{
+							loci0 = nearest_loc;
+							v3d_msg("Use the existing curve point as starting location.\n",0);
+						}
+						else //use mean-shift
+						{
+							NearFarPoints pts = markerPosToNearFarLocs(index, 0);
+
+							assert(pts.valid);
+
+							loci0 = getCenterOfLineProfile(pts.near_pt, pts.far_pt, clipplane, chno);
+						}
+
+						last_i=0; // for the first time run
+					}
+
+					if(b_use2PointsBB)
+					{
+						// using 2 points on stroke to get BB
+						pos_vec.clear();
+						MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
+						pos_vec.push_back(pos_last);
+						pos_vec.push_back(pos);
+
+						XYZ max_loc2;
+						getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
+						bb_2Points = BoundingBox(sub_orig2, max_loc2);
+
+						// update last_i for the next loop
+						last_i = i;
+					}
+
+					XYZ lastpos;
+					vector<MyMarker> sub_markers; sub_markers.clear();
+					vector<MyMarker> tar_markers; tar_markers.clear();
+					vector<MyMarker*> outswc;     outswc.clear();
+
+					if (i==1)//
+					{
+						XYZ loci = loci0;
+
+						if(b_useStrokeBB)
+							loci = loci-sub_orig;
+						else if(b_use2PointsBB)
+						{
+							if(selectMode == smCurveFrom1Marker_fm)
+							{
+								loci.x = curveStartMarker.x-1; loci.y = curveStartMarker.y-1; loci.z = curveStartMarker.z-1;
+								loci = loci-sub_orig2;
+							}
+							else
+							{
+								loci = loci-sub_orig2;
+							}
+						}
+						sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+
+						// get the loc with a random middle loc
+						//getMidRandomLoc(pos, chno, loc);
+						//middle_vec.push_back(loc);
+					}
+					else
+					{
+						lastpos = loc_vec.at(last_j);
+						// sub_markers is the lastpos
+						if(b_useStrokeBB) // use stroke bounding box
+							lastpos = lastpos-sub_orig;
+						else if(b_use2PointsBB)
+							lastpos = lastpos-sub_orig2;
+
+						sub_markers.push_back(MyMarker(lastpos.x, lastpos.y, lastpos.z));
+					} // end of preparing sub_markers
+
+					// preparing tar_markers
+					float length = dist_L2(loc0, loc1);
+					if (length<1.0)
+					{
+						XYZ loci=(loc0+loc1)/2.0;
+						if(b_useStrokeBB) // use stroke bounding box
+							loci = loci-sub_orig;
+						else if(b_use2PointsBB)
+							loci = loci-sub_orig2;
+
+						tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+					}
+					else
+					{
+						XYZ v_1_0 = loc1-loc0;
+						XYZ D = v_1_0; normalize(D);
+						for(int ii=0; ii<(int)(length+0.5); ii++)
+						{
+							XYZ loci = loc0 + D*ii; // incease 1 each step
+
+							if(b_useStrokeBB)
+							{
+								loci = loci-sub_orig; // use stroke bounding box
+								tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+							}
+							else if(b_use2PointsBB)
+							{
+								if(bb_2Points.isInner(loci, 0))
+								{
+									loci = loci-sub_orig2;
+									tar_markers.push_back( MyMarker(loci.x, loci.y, loci.z));
+								}
+							}
+							else
+							{
+								tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+							}
+
+						}
+
+					} // end of tar_markers
+
+
+					// call fastmarching
+					// using time spent on each step to decide whether the tracing in this step is acceptable.
+					// if time is over time_thresh, then break and use center method
+					// I found that the result is not so good when using this time limit
+					XYZ loc;
+					if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
+					{
+						fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz);
+						PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
+					}
+					else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
+					{
+						fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2);
+						PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2, i);
+					}
+					else  // This version uses full image as the bounding box
+					{
+						fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
+						XYZ sub_orig = XYZ(0,0,0);
+						PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
+					}
+
+					//always remember to free the potential-memory-problematic fastmarching_linker return value
+					CLEAN_FM_MARKER_VECTOR(outswc);
+
+					if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
+				} // end of non b_useTitltedBB
+			} // end of if(i==1 || i==(N-1) || b_inds)
+        } // end of for (int i=1; i<N; i++)
+        // clean pSubdata of subvolume boundingbox
+        if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
+
+        // using titled BB for curve
+        if(b_useTiltedBB)
+        {
+             vector<MyMarker *> outswc;
+             bool b_res;
+
+             //ZMS 20160208 fake a vector to insert to the beginning and the end of the fastmarcher for extend/connect
+             QList<NeuronTree>::iterator j;
+             NeuronSWC cur_node;
+
+             if(selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode){
+                 for ( j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                     QList <NeuronSWC> p_listneuron = j->listNeuron;
+
+                     for (int i=0; i<p_listneuron.size(); i++)
+                     {
+                         if(i == highlightedNode){
+                             cur_node = p_listneuron.at(i);
+                             XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                             nearpos_vec.insert(nearpos_vec.begin(), MyMarker(cur_node.x, cur_node.y, cur_node.z + 1));
+                             farpos_vec.insert(farpos_vec.begin(), MyMarker(cur_node.x, cur_node.y, cur_node.z - 1));
                          }
-                    }
-               }
+                     }
+                 }
+             }
 
-               // only process resampled strokes
-               if(i==1 || i==(N-1) || b_inds) // make sure to include the last N-1 pos
-               {
-                    const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
-                    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-                    clipplane[3] = viewClip;
-                    ViewPlaneToModel(pos.MV, clipplane);
+             if(selectMode == smCurveEditExtendTwoNode){
+                 for ( j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                     QList <NeuronSWC> p_listneuron = j->listNeuron;
 
-                    // this is intersection points with view volume
-                    XYZ loc0_t, loc1_t;
-                    _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
-
-                    //get intersection points with data volume
-                    XYZ loc0, loc1;
-                    INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
-
-                    // near/far pos locs for b_useTitltedBB
-                    if(b_useTiltedBB) // still not finished
-                    {
-                         nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
-                         farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
-                    }
-                    else// beginning of non b_useTitltedBB
-                    {
-                         float length01 = dist_L2(loc0, loc1);
-                         // preparing the two-markerpos decided boundingbox
-
-                         int last_j = loc_vec.size()-1;
-
-                         vector<MarkerPos> pos_vec;
-                         double* pSubdata2;
-                         XYZ sub_orig2;
-                         V3DLONG sub_szx2, sub_szy2, sub_szz2;
-                         BoundingBox bb_2Points;
-                         XYZ loci0; //meanshift point for i==0
-                         if(i==1) //only do this for the first point
-                         {
-                             //the logic of this section need change. no need to use meanshift before the testing of the potential intersection point with existing curves
-
-                             const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0); //get the first point, note that already check list_listCurvePos.at(index) has at least one node
-                             XYZ nearest_loc;
-                             if( pickSeedpointFromExistingCurves(pos_0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
-                             {
-                                 loci0 = nearest_loc;
-                                 v3d_msg("Use the existing curve point as starting location.\n",0);
-                             }
-                             else //use mean-shift
-                             {
-                                 XYZ loc00, loc01;
-                                 MARKERPOS_TO_NEAR_FAR_LOCS(0, loc00, loc01);
-                                 loci0 = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
-                             }
-
-                             last_i=0; // for the first time run
+                     for (int i=0; i<p_listneuron.size(); i++)
+                     {
+                         if(i == highlightedEndNode){
+                             cur_node = p_listneuron.at(i);
+                             XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                             nearpos_vec.push_back(MyMarker(cur_node.x, cur_node.y, cur_node.z + 1));
+                             farpos_vec.push_back(MyMarker(cur_node.x, cur_node.y, cur_node.z - 1));
                          }
+                     }
+                 }
+             }
 
-                         if(b_use2PointsBB)
-                         {
-                              // using 2 points on stroke to get BB
-                              pos_vec.clear();
-                              MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
-                              pos_vec.push_back(pos_last);
-                              pos_vec.push_back(pos);
+             // all pImg are unsigned char now
+             b_res = (b_useSerialBBox) ?
+                  fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
+                  : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
 
-                              XYZ max_loc2;
-                              getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
-                              bb_2Points = BoundingBox(sub_orig2, max_loc2);
+             // delete pImg created for two datatypes
+             if(datatype == V3D_UINT16 || datatype == V3D_FLOAT32)
+             {
+                  if(pImg) {delete [] pImg; pImg=0;}
+             }
 
-                              // update last_i for the next loop
-                              last_i = i;
-                         }
+             // switch (datatype)
+             // {
+             //      case V3D_UINT8:
+             //           b_res = (b_useSerialBBox) ?
+             //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
+             //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
+             //           break;
+             //      case V3D_UINT16:
+             //           b_res = (b_useSerialBBox) ?
+             //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5)
+             //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5);
+             //           break;
+             //      case V3D_FLOAT32:
+             //           b_res = (b_useSerialBBox) ?
+             //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5)
+             //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5);
+             //           break;
+             //      default:
+             //           v3d_msg("Unsupported data type found. You should never see this.", 0);
+             //           return t.elapsed();
+             // }
 
-                         XYZ lastpos;
-                         vector<MyMarker> sub_markers; sub_markers.clear();
-                         vector<MyMarker> tar_markers; tar_markers.clear();
-                         vector<MyMarker*> outswc;     outswc.clear();
+            //  b_res = (b_useSerialBBox) ?
+            //       fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
+            //     //fastmarching_drawing5(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
+            // : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5); // 20120405, PHC
 
-                         if (i==1)//
-                         {
-                              XYZ loci = loci0;
+            if (!b_res)
+            {
+                  v3d_msg("Error in creating the curve", 0);
+             }
 
-                              if(b_useStrokeBB)
-                                   loci = loci-sub_orig;
-                              else if(b_use2PointsBB)
-                              {
-                                   if(selectMode == smCurveFrom1Marker_fm)
-                                   {
-                                        loci.x = curveStartMarker.x-1; loci.y = curveStartMarker.y-1; loci.z = curveStartMarker.z-1;
-                                        loci = loci-sub_orig2;
-                                   }
-                                   else
-                                   {
-                                        loci = loci-sub_orig2;
-                                   }
-                              }
-                              sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+            //if fail, should not add curve? 120405, PHC?
+             XYZ sub_orig = XYZ(0,0,0);
+             PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
+             //always remember to free the potential-memory-problematic fastmarching_linker return value
+             CLEAN_FM_MARKER_VECTOR(outswc);
+        }// end of b_useTitltedBB
+        //clean pSubdata of subvolume boundingbox
+        if(b_useStrokeBB) {if(pSubdata) {delete [] pSubdata; pSubdata=0;}}
+    }
 
-                              // get the loc with a random middle loc
-                              //getMidRandomLoc(pos, chno, loc);
-                              //middle_vec.push_back(loc);
-                         }
-                         else
-                         {
-                              lastpos = loc_vec.at(last_j);
-                              // sub_markers is the lastpos
-                              if(b_useStrokeBB) // use stroke bounding box
-                                   lastpos = lastpos-sub_orig;
-                              else if(b_use2PointsBB)
-                                   lastpos = lastpos-sub_orig2;
-
-                              sub_markers.push_back(MyMarker(lastpos.x, lastpos.y, lastpos.z));
-                         } // end of preparing sub_markers
-
-                         // preparing tar_markers
-                         float length = dist_L2(loc0, loc1);
-                         if (length<1.0)
-                         {
-                              XYZ loci=(loc0+loc1)/2.0;
-                              if(b_useStrokeBB) // use stroke bounding box
-                                   loci = loci-sub_orig;
-                              else if(b_use2PointsBB)
-                                   loci = loci-sub_orig2;
-
-                              tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                         }
-                         else
-                         {
-                              XYZ v_1_0 = loc1-loc0;
-                              XYZ D = v_1_0; normalize(D);
-                              for(int ii=0; ii<(int)(length+0.5); ii++)
-                              {
-                                   XYZ loci = loc0 + D*ii; // incease 1 each step
-
-                                   if(b_useStrokeBB)
-                                   {
-                                        loci = loci-sub_orig; // use stroke bounding box
-                                        tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                                   }
-                                   else if(b_use2PointsBB)
-                                   {
-                                        if(bb_2Points.isInner(loci, 0))
-                                        {
-                                             loci = loci-sub_orig2;
-                                             tar_markers.push_back( MyMarker(loci.x, loci.y, loci.z));
-                                        }
-                                   }
-                                   else
-                                   {
-                                        tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                                   }
-
-                              }
-
-                         } // end of tar_markers
-
-
-                         // call fastmarching
-                         // using time spent on each step to decide whether the tracing in this step is acceptable.
-                         // if time is over time_thresh, then break and use center method
-                         // I found that the result is not so good when using this time limit
-                         XYZ loc;
-                         if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
-                         {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
-                         }
-                         else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
-                         {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2, i);
-                         }
-                         else  // This version uses full image as the bounding box
-                         {
-                              fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
-                              XYZ sub_orig = XYZ(0,0,0);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
-                         }
-
-                         //always remember to free the potential-memory-problematic fastmarching_linker return value
-                         clean_fm_marker_vector(outswc);
-
-                         if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
-                    } // end of non b_useTitltedBB
-               } // end of if(i==1 || i==(N-1) || b_inds)
-          } // end of for (int i=1; i<N; i++)
-          // clean pSubdata of subvolume boundingbox
-          if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
-
-          // using titled BB for curve
-          if(b_useTiltedBB)
-          {
-               vector<MyMarker *> outswc;
-               bool b_res;
-
-               // all pImg are unsigned char now
-               b_res = (b_useSerialBBox) ?
-                    fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
-                    : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
-
-               // delete pImg created for two datatypes
-               if(datatype == V3D_UINT16 || datatype == V3D_FLOAT32)
-               {
-                    if(pImg) {delete [] pImg; pImg=0;}
-               }
-
-               // switch (datatype)
-               // {
-               //      case V3D_UINT8:
-               //           b_res = (b_useSerialBBox) ?
-               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
-               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
-               //           break;
-               //      case V3D_UINT16:
-               //           b_res = (b_useSerialBBox) ?
-               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5)
-               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (short int*)pImg, outswc, szx, szy, szz, 1, 5);
-               //           break;
-               //      case V3D_FLOAT32:
-               //           b_res = (b_useSerialBBox) ?
-               //                fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5)
-               //                : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (float*)pImg, outswc, szx, szy, szz, 1, 5);
-               //           break;
-               //      default:
-               //           v3d_msg("Unsupported data type found. You should never see this.", 0);
-               //           return t.elapsed();
-               // }
-
-              //  b_res = (b_useSerialBBox) ?
-              //       fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
-              //     //fastmarching_drawing5(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
-              // : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5); // 20120405, PHC
-
-              if (!b_res)
-              {
-                    v3d_msg("Error in creating the curve", 0);
-               }
-
-              //if fail, should not add curve? 120405, PHC?
-               XYZ sub_orig = XYZ(0,0,0);
-               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
-               //always remember to free the potential-memory-problematic fastmarching_linker return value
-               clean_fm_marker_vector(outswc);
-          }// end of b_useTitltedBB
-          //clean pSubdata of subvolume boundingbox
-          if(b_useStrokeBB) {if(pSubdata) {delete [] pSubdata; pSubdata=0;}}
-     }
-
-     // Save near/far locs for testing:
+    // Save near/far locs for testing:
 if (0)
 {
      v3d_msg("Write near/far marker to files.");
@@ -1747,7 +1842,8 @@ if (0)
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
 	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false &&
           (selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
-               selectMode == smCurveUseStrokeBB_fm || selectMode == smCurveTiltedBB_fm || selectMode==smCurveTiltedBB_fm_sbbox) )
+               selectMode == smCurveUseStrokeBB_fm || selectMode == smCurveTiltedBB_fm || selectMode==smCurveTiltedBB_fm_sbbox
+           || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) ) //ZMS 20151203
 	{
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
@@ -1762,31 +1858,79 @@ if (0)
 				double th_merge = 5;
 
 				bool b_start_merged=false, b_end_merged=false;
-				NeuronSWC cur_node;
+                NeuronSWC cur_node;
 				if (n_id_start>=0)
 				{
-					cur_node = p_tree->listNeuron.at(n_id_start);
-					qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-					XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-					if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
-					{
-						loc_vec.at(0) = cur_node_xyz;
-						b_start_merged = true;
-						qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-					}
+                    if(selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode){
+                        QList<NeuronTree>::iterator j;
+                        for (j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                            QList <NeuronSWC> p_listneuron = j->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
+
+                            for (int i=0; i<p_listneuron.size(); i++)
+                            {
+                                if(i == highlightedNode){
+                                    cur_node = p_listneuron.at(i);
+                                    XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                                    loc_vec.at(0) = cur_node_xyz;
+                                    b_start_merged = true;
+                                    qDebug()<<"force set the first point of this curve to the above neuron node due to extend mode.";
+                                }
+                            }
+                        }
+                    }else{
+                        cur_node = p_tree->listNeuron.at(n_id_start);
+                        qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                        XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                        if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge) //Last two conditions ZMS 20151203
+                        {
+                            loc_vec.at(0) = cur_node_xyz;
+                            b_start_merged = true;
+                            qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                        }
+                    }
 				}
+
 				if (n_id_end>=0)
 				{
-					cur_node = p_tree->listNeuron.at(n_id_end);
-					qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-					XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-					if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
-					{
-						loc_vec.at(N-1) = cur_node_xyz;
-						b_end_merged = true;
-						qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+                    if(selectMode == smCurveEditExtendTwoNode){
+                        QList<NeuronTree>::iterator j;
+                        for (j = listNeuronTree.begin(); j != listNeuronTree.end(); ++j){
+                            QList <NeuronSWC> p_listneuron = j->listNeuron;//curr_renderer->listNeuronTree.at(0).listNeuron;//&(ptree->listNeuron);
 
-					}
+                            for (int i=0; i<p_listneuron.size(); i++)
+                            {
+                                if(i == highlightedEndNode){
+                                    cur_node = p_listneuron.at(i);
+                                    // If connecting to an undefined node, give that segment this type if defined
+                                    if (cur_node.type == 0)
+                                    {
+                                        int type_to_check = (highlightedNodeType >= 0) ? highlightedNodeType : currentTraceType;
+                                        if (type_to_check > 0) // type is defined, retype the undefined segment
+                                        {
+                                            change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, cur_node.seg_id, type_to_check);
+                                            // TODO: recurse, any addional segments extending from this seg_id that have unknown type should be typed too
+                                        }
+                                    }
+                                    XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                                    loc_vec.at(N-1) = cur_node_xyz;
+                                    b_start_merged = true;
+                                    highlightedEndNode = -1; //Prevent this node from being highlighted
+                                    qDebug()<<"force set the first point of this curve to the above neuron node due to extend mode.";
+                                }
+                            }
+                        }
+                    }else{
+                        cur_node = p_tree->listNeuron.at(n_id_end);
+                        qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                        XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                        if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge) //Last condition ZMS20151203
+                        {
+                            loc_vec.at(N-1) = cur_node_xyz;
+                            b_end_merged = true;
+                            qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+
+                        }
+                    }
 				}
 
 				//a special operation is that if the end point is merged, but the start point is not merged,
@@ -1807,22 +1951,36 @@ if (0)
 
      // adaptive curve simpling
      vector <XYZ> loc_vec_resampled;
+#ifdef DEBUG_RESAMPLING
+     vector <XYZ> loc_vec_resampled_old;
      int stepsize = 7; // sampling stepsize 5
-     loc_vec_resampled.clear();
-     adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
-	//	loc_vec_resampled = loc_vec;
+     adaptiveCurveResampling(loc_vec, loc_vec_resampled_old, stepsize); //this function should be the source of the redundant intermediate points
+#endif
+     // TODO: investigate best value for epsilon, perhaps based on current voxel size. For now, use 0.2
+     adaptiveCurveResamplingRamerDouglasPeucker(loc_vec, loc_vec_resampled, 0.2f);
+     //loc_vec_resampled = loc_vec;
 
 	//the intensity-based resampled method could lead to totally wrong path (especially for binary image).
 	//Need to use a better and more evenly spaced method. by PHC, 20120330.
 
      if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
-          selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveUseStrokeBB_fm)
+          selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveUseStrokeBB_fm
+             || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
      {
           if (b_addthiscurve)
           {
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
+#ifdef DEBUG_RESAMPLING
+               addCurveSWC(loc_vec_resampled_old, chno);
+               vecToNeuronTree(testNeuronTree, loc_vec_resampled_old);
+               addCurveSWC(loc_vec, chno);
+               vecToNeuronTree(testNeuronTree, loc_vec);
+               qDebug() << "Unsampled: " << loc_vec.size() << " points";
+               qDebug() << "Old sampling: " << loc_vec_resampled_old.size() << " points";
+               qDebug() << "New sampling: " << loc_vec_resampled.size() << " points";
+#endif
           }
           else
           {
@@ -2945,7 +3103,7 @@ void Renderer_gl1::selectMultiMarkersByStroke()
     // contour mode := Qt::Key_Shift pressed := delete markers intersecting the line, otherwise delete all markers within the contour
     bool contour_mode = !QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
-    float tolerance = 10; // tolerance distance from the backprojected marker to the curve point
+    const float tolerance_squared = 10; // tolerance distance (squared for faster dist computation) from the backprojected marker to the curve point
 
     // back-project the 3D points and label hitted markers
     for(QList<ImageMarker>::iterator i=listMarker.begin(); i!=listMarker.end(); i++)
@@ -2969,7 +3127,7 @@ void Renderer_gl1::selectMultiMarkersByStroke()
                     for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                     {
                         QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                        if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
+                        if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )
                         {
                            i->selected = true;
                            break;   // found intersection with marker: no more need to continue on this inner loop
@@ -2988,70 +3146,97 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 // @ADDED by Alessandro on 2015-05-07.
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-    //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
-    float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+	//v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
+	const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
 
-    // contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
-    bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+	// contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
+    int contour_mode = 0;
+    if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+        contour_mode = 1; //press "shift"
+    else if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+        contour_mode = 2; //press "ctrl"
 
-    // contour 2 polygon
-    QPolygon poly;
-    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
-        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
 
-    // back-project the node curve points and mark segments to be deleted
-    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
-    {
-        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-        if (p_tree
-            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
-        {
-            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
-            if (!p_listneuron)
-                continue;
-            for (V3DLONG i=0;i<p_listneuron->size();i++)
-            {
-                GLdouble px, py, pz, ix, iy, iz;
-                ix = p_listneuron->at(i).x;
-                iy = p_listneuron->at(i).y;
-                iz = p_listneuron->at(i).z;
-                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+	// contour 2 polygon
+	QPolygon poly;
+	for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+		poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+
+	const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
+	for (V3DLONG s=0; s<nsegs; s++)
+	{
+		if (s >= curImg->tracedNeuron.seg.size())
+		{
+			qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
+			break;
+		}
+		if (curImg->tracedNeuron.seg[s].to_be_deleted)
+			continue;
+
+
+		V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(s);
+		const V3DLONG nrows = this_seg.row.size();
+
+
+		bool allUnitsOutsideZCut = false;
+		for (V3DLONG i=0;i<nrows;i++)
+		{
+
+			GLdouble px, py, pz, ix, iy, iz;
+			V_NeuronSWC_unit this_unit = this_seg.row.at(i);
+			ix = this_unit.x;
+			iy = this_unit.y;
+			iz = this_unit.z;
+			allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
+			
+			if (curImg->tracedNeuron.seg[s].to_be_deleted)
+				break;
+
+
+			if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+			{
+				py = viewport[3]-py; //the Y axis is reversed
+				QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+                if(contour_mode == 1)
+				{
+                    if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+						curImg->tracedNeuron.seg[s].to_be_deleted = true;
+                }else if (contour_mode == 2)
                 {
-                    py = viewport[3]-py; //the Y axis is reversed
-                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
-
-                    if(contour_mode)
-                    {
-                        if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
-                            curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
-                    }
-                    else
-                    {
-                        for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
-                        {
-                            QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                            if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
-                            {
-                               curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_deleted = true;
-                               break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                            }
-                        }
-                    }
+                    if(!poly.boundingRect().contains(p) || !pointInPolygon(p.x(), p.y(), poly))
+                        curImg->tracedNeuron.seg[s].to_be_deleted = true;
                 }
-            }
-
-            // display a new neuron tree w/o the segments previously marked
-            // @WARNING: this only changes the displayed neuron, not the underlying tracedNeuron structure!
-            //           commit on the tracedNeuron structure is made when the user presses the "Esc" key
-            curImg->update_3drenderer_neuron_view(w, this);
-            curImg->proj_trace_history_append();
-        }
-    }
+				else
+				{
+					for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+					{
+						QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+						if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )
+						{
+							if (s >= curImg->tracedNeuron.seg.size())
+							{
+								qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
+								break;
+							}
+							curImg->tracedNeuron.seg[s].to_be_deleted = true;
+							break;   // found intersection with neuron segment: no more need to continue on this inner loop
+						}
+					}
+				}
+			}
+		}
+		if (this->cuttingZ)		{
+			curImg->tracedNeuron.seg[s].to_be_deleted = curImg->tracedNeuron.seg[s].to_be_deleted && !allUnitsOutsideZCut;
+		}
+	}
+	curImg->update_3drenderer_neuron_view(w, this);
+	curImg->proj_trace_history_append();
 }
 
 // ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------
@@ -3136,7 +3321,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 							{
 								if (nodeOnStroke.at(j).x==it->data[2] && nodeOnStroke.at(j).y==it->data[3] && nodeOnStroke.at(j).z==it->data[4]) 
 								{
-									if (it->data[6]==2 || it->data[6]==-1)
+									if (it->data[6]==2 || it->data[6]==-1) // only allows heads or tails
 									{
 										//---------------------- Get seg IDs
 										//qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
@@ -3795,12 +3980,196 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 }
 // ---- END of [segment/points could/marker connecting tool, by MK 2017 April ------------------------------]
 
+// ---- neuron chopping tool, by MK 2017 June --------------------------------------------------------------
+void Renderer_gl1::cutNeuronsByStroke()
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
+    float tolerance = 100; // tolerance distance from the backprojected neuron to the curve point
+	
+    // back-project the node curve points and mark segments to be chopped
+    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+    {
+        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+        if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+        {
+            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+            if (!p_listneuron) continue;
+			//for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
+			
+			/* ============== Get all segments and nodes information included in the movePen trajectory. ============== */
+			  /* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
+			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+			for (size_t i=0; i<list_listCurvePos.at(0).size(); ++i)
+			{
+				if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+				if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
+			}
+			minX = minX - 5; maxX = maxX + 5;
+			minY = minY - 5; maxY = maxY + 5;
+			//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+			QList<NeuronSWC> nodeOnStroke;
+			for (size_t i=0; i<p_listneuron->size(); ++i)
+			{
+				GLdouble px, py, pz, ix, iy, iz;
+				ix = p_listneuron->at(i).x;
+				iy = p_listneuron->at(i).y;
+				iz = p_listneuron->at(i).z;
+				if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+				{
+					py = viewport[3]-py; //the Y axis is reversed
+					QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+					if ((p.x()>=minX && p.x()<=maxX) && (p.y()>=minY && p.y()<=maxY))
+					{
+						nodeOnStroke.push_back(p_listneuron->at(i));
+						//cout << p.x() << " " << p.y() << endl;
+					}
+				}
+			}
+			//for (QList<NeuronSWC>::iterator strokeIt=nodeOnStroke.begin(); strokeIt!=nodeOnStroke.end(); ++strokeIt) cout << strokeIt->n << " " << strokeIt->parent << endl;
+			  /* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
+			
+			/* ==== Group nodes with same segID ========================================================= */
+			vector< vector<cutNode> > sameSegList;
+			vector<cutNode> dummyList;
+			sameSegList.push_back(dummyList);
+			cutNode dummyNode;
+			dummyNode.segID = 0;
+			sameSegList[0].push_back(dummyNode);
+			for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); ++i)
+			{
+				for (V3DLONG j=0; j<nodeOnStroke.size(); ++j)
+				{
+					GLdouble px, py, pz, ix, iy, iz;
+					ix = nodeOnStroke.at(j).x;
+					iy = nodeOnStroke.at(j).y;
+					iz = nodeOnStroke.at(j).z;
+					if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+					{
+						py = viewport[3]-py; //the Y axis is reversed
+						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+                        QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+						double dist = 0;
+						dist = std::sqrt( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) );
+						if( dist <= tolerance )
+                        {
+							for (vector<V_NeuronSWC_unit>::iterator it=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
+								it!=curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); ++it)
+							{
+								if (nodeOnStroke.at(j).x==it->data[2] && nodeOnStroke.at(j).y==it->data[3] && nodeOnStroke.at(j).z==it->data[4]) 
+								{
+									vector< vector<cutNode> >::iterator segCheck;
+									for (segCheck=sameSegList.begin(); segCheck!=sameSegList.end(); ++segCheck)
+									{
+										if (nodeOnStroke.at(j).seg_id == segCheck->at(0).segID)
+										{
+											cutNode cut;
+											cut.node = *it;
+											cut.distance = dist;
+											cut.nodeAddress = it;
+											cut.segID = nodeOnStroke.at(j).seg_id;
+											cut.nodeinSegId = nodeOnStroke.at(j).nodeinseg_id;
+											segCheck->push_back(cut);
+											//cout << cut.segID << " " << cut.node.data[0] << " " << endl; 
+											break;
+										}
+									}
+									if (segCheck == sameSegList.end())
+									{
+										vector<cutNode> newSameSegCluster;
+										cutNode cut;
+										cut.node = *it;
+										cut.distance = dist;
+										cut.nodeAddress = it;
+										cut.segID = nodeOnStroke.at(j).seg_id;
+										cut.nodeinSegId = nodeOnStroke.at(j).nodeinseg_id;
+										newSameSegCluster.push_back(cut);
+										sameSegList.push_back(newSameSegCluster);
+										//cout << cut.segID << " " << cut.node.data[0] << " " << endl;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			/* ==== END of [Group nodes with same segID ] ================================================ */
+
+			/* ==== Cut the original segment short, append the remnant segment ============================ */
+			double smallest;
+			vector<V_NeuronSWC_unit>::iterator cutAddress;
+			vector<cutNode>::iterator cutIt;
+			for (vector< vector<cutNode> >::iterator listCheck=sameSegList.begin()+1; listCheck!=sameSegList.end(); ++listCheck)
+			{
+				smallest = listCheck->at(0).distance;
+				for (vector<cutNode>::iterator cutCheck=listCheck->begin(); cutCheck!=listCheck->end(); ++cutCheck)
+				{
+					if (cutCheck->distance <= smallest) 
+					{
+						smallest = cutCheck->distance;
+						cutAddress = cutCheck->nodeAddress;
+						cutIt = cutCheck;
+					}
+					//cout << cutCheck->segID << " " << cutCheck->node.data[0] << " " << cutCheck->distance << endl;
+				}
+
+				V_NeuronSWC newSeg;
+				vector<V_NeuronSWC_unit>::const_iterator newSegStart = curImg->tracedNeuron.seg[cutIt->segID].row.begin();
+				vector<V_NeuronSWC_unit>::const_iterator newSegEnd = cutAddress + 1;
+				vector<V_NeuronSWC_unit> newRow(newSegStart, newSegEnd);
+				newSeg.row = newRow;
+				(newSeg.row.end()-1)->data[6] = -1;
+
+				//cout << curImg->tracedNeuron.seg[cutIt->segID].row.size() << endl;
+				size_t i;
+				for (i=0; i<newSeg.row.size(); ++i) 
+					curImg->tracedNeuron.seg[cutIt->segID].row.erase(curImg->tracedNeuron.seg[cutIt->segID].row.begin());
+				//cout << curImg->tracedNeuron.seg[cutIt->segID].row.size() << endl;
+				curImg->tracedNeuron.append(newSeg);
+				/* ==== END of [Cut the original segment short, append the remnant segment] ================= */
+			}		
+		}
+
+		curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+	}
+
+	return;
+}
+// ---- END of [neuron cutting tool, by MK 2017 June -------------------------------------------------------]
+
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {
     int node_type = 0;
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
+//<<<<<<< HEAD
+    if (useCurrentTraceTypeForRetyping)
+    {
+        node_type = currentTraceType;
+    }
+    else
+    {
+//#ifdef USE_Qt5
+//        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+//                                  QObject::tr("SWC type: "
+//                                            "\n 0 -- undefined (white)"
+//                                            "\n 1 -- soma (black)"
+//                                            "\n 2 -- axon (red)"
+//                                            "\n 3 -- dendrite (blue)"
+//                                            "\n 4 -- apical dendrite (purple)"
+//                                            "\n else -- custom \n"),
+//                                          node_type, 0, 100, 1, &ok);
+////=======
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
     node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
                               QObject::tr("SWC type: "
@@ -3811,17 +4180,19 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                         "\n 4 -- apical dendrite (purple)"
                                         "\n else -- custom \n"),
                                       node_type, 0, 100, 1, &ok);
+//>>>>>>> master
 #else
-    node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
-                              QObject::tr("SWC type: "
-                                        "\n 0 -- undefined (white)"
-                                        "\n 1 -- soma (black)"
-                                        "\n 2 -- axon (red)"
-                                        "\n 3 -- dendrite (blue)"
-                                        "\n 4 -- apical dendrite (purple)"
-                                        "\n else -- custom \n"),
-                                      node_type, 0, 100, 1, &ok);
+        node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+                                  QObject::tr("SWC type: "
+                                            "\n 0 -- undefined (white)"
+                                            "\n 1 -- soma (black)"
+                                            "\n 2 -- axon (red)"
+                                            "\n 3 -- dendrite (blue)"
+                                            "\n 4 -- apical dendrite (purple)"
+                                            "\n else -- custom \n"),
+                                          node_type, 0, 100, 1, &ok);
 #endif
+    }
 
     if(!ok) return;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -3830,7 +4201,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
     //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
-    float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+    const float tolerance_squared = 100; // tolerance distance from the backprojected neuron to the curve point (squared for faster dist computation)
 
     // contour 2 polygon
     QPolygon poly;
@@ -3847,19 +4218,22 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
                 continue;
+			bool allUnitsOutsideZCut = false;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
                 iy = p_listneuron->at(i).y;
                 iz = p_listneuron->at(i).z;
+				allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
+
                 if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
                     py = viewport[3]-py; //the Y axis is reversed
                     QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
                     if(contour_mode)
                     {
-                        if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+                        if(   (poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)) && !allUnitsOutsideZCut)
                         {
                             change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
                         }
@@ -3869,8 +4243,9 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                         {
                             QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                            if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance  )
+                            if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
                             {
+								
                                change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
@@ -3902,7 +4277,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
     My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
     XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-    float tolerance = 10; // tolerance distance from the backprojected neuron to the curve point
+    const float tolerance_squared = 10*10; // tolerance distance (squared for faster dist computation) from the backprojected neuron to the curve point
 
     // contour 2 polygon
     QPolygon poly;
@@ -3933,27 +4308,113 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                     for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                     {
                         QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-                        if( std::sqrt((p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y())) <= tolerance)
+						float dist2d_squared = (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y());
+                        if(dist2d_squared <= tolerance_squared)
                        //     && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
                         {
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
-                            curImg->update_3drenderer_neuron_view(w, this);
+							curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);
                             break;   // found intersection with neuron segment: no more need to continue on this inner loop
-
+                            //}
+//>>>>>>> master
                         }
                     }
 
                 }
-            }
+            } // for listneuron,size
             curImg->proj_trace_history_append();
-        }
-    }
-
+        } // if editable
+    } // for listneurontree.size
 }
+
+void Renderer_gl1::breakTwoNeuronsByStroke() //(bool forceSingleCut)
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    const float tolerance_squared = 100; // tolerance distance (squared for faster dist computation) from the backprojected neuron to the curve point
+	float bestCutDist_squared = -1.0f; // for single cut, track closest cut dist squared
+	V3DLONG bestCutTreeIndx = -1; // for single cut, track closest neuron tree index
+	V3DLONG bestCutNeurIndx = -1; // for single cut, track closest index within neuron tree
+
+    // contour 2 polygon
+    QPolygon poly;
+    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+
+    // back-project the node curve points and mark segments to be deleted
+    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+    {
+        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+        if (p_tree
+            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+        {
+            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+            if (!p_listneuron)
+                continue;
+            V3DLONG p_listneuron_num = p_listneuron->size();
+            for (V3DLONG i=0;i<p_listneuron_num;i++)
+            {
+                GLdouble px, py, pz, ix, iy, iz;
+                ix = p_listneuron->at(i).x;
+                iy = p_listneuron->at(i).y;
+                iz = p_listneuron->at(i).z;
+                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+                {
+                    py = viewport[3]-py; //the Y axis is reversed
+                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+                    for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+                    {
+                        QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+						float dist2d_squared = (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y());
+                        if(dist2d_squared <= tolerance_squared)
+                       //     && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
+                        {
+                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
+                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+//<<<<<<< HEAD
+                           // if (forceSingleCut) {
+                                if (bestCutDist_squared < 0 || dist2d_squared < bestCutDist_squared)
+                                {
+                                    bestCutDist_squared = dist2d_squared;
+                                    bestCutTreeIndx = j;
+                                    bestCutNeurIndx = i;
+                                }
+//                            }
+//                            else
+//                            {
+//                                curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
+//                                curImg->update_3drenderer_neuron_view(w, this);
+//
+//                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
+//                            }
+                        }
+                    }
+
+                }
+            } // for listneuron,size
+           // curImg->proj_trace_history_append(); // TDP 20160127: This seems to be redundant, it is adding to the undo/redo stack BEFORE splitting which isn't useful
+        } // if editable
+    } // for listnerontree.size
+    if (//forceSingleCut &&
+    		bestCutDist_squared > 0)
+    {
+        NeuronTree *p_tree_to_split = (NeuronTree *)(&(listNeuronTree.at(bestCutTreeIndx)));
+        QList <NeuronSWC> *p_listneuron_to_split = &(p_tree_to_split->listNeuron);
+        curImg->tracedNeuron.split(p_listneuron_to_split->at(bestCutNeurIndx).seg_id,p_listneuron_to_split->at(bestCutNeurIndx).nodeinseg_id);
+        curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+    }
+}
+
+
 // func of converting kernel
 template <class Tpre, class Tpost>
 void converting_to_8bit(void *pre1d, Tpost *pPost, V3DLONG imsz)

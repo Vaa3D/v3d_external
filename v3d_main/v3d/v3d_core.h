@@ -403,9 +403,10 @@ public:
 	bool proj_trace_smooth_downsample_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end);
 	bool proj_trace_shortestpath_rgnaroundcurve(CurveTracePara & trace_para, int seg_begin, int seg_end);
 	bool proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end, float myzthickness);
-	bool proj_trace_add_curve_segment(vector<XYZ> &loc_list, int chno);
-    NeuronTree proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited); //150523
-
+//<<<<<<< HEAD
+	bool proj_trace_add_curve_segment(vector<XYZ> &loc_list, int chno, double default_type=3);
+    NeuronTree proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type=3); //150523
+//>>>>>>> master
 	bool proj_trace_deformNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_select_para=true);
 	bool proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_dispfig);
 
@@ -461,6 +462,7 @@ public:
 
 signals:
 	void focusFeatureViewTextUpdated();
+	void signal_trace_history_append(); //20170801 RZC add
 
 public slots:
 	void setText2FocusPointFeatureWidget();

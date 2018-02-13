@@ -15,9 +15,9 @@ You will ***have to agree*** the following terms, *before* downloading/using/run
 
 2. You agree to appropriately cite this work in your related studies and publications.
 
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) ?œV3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,??Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) ?ï¿½V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,??Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
 
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?œAutomatic reconstruction of 3D neuron structures using a graph-augmented deformable model,??Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?ï¿½Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,??Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
 
 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 
@@ -122,6 +122,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?œAutomatic reconstructio
 #define QEvent_DropFiles (QEvent::User +3)
 #define QEvent_InitControlValue (QEvent::User +4)
 #define QEvent_OpenLocal3DView (QEvent::User +5)
+#define QEvent_HistoryChanged (QEvent::User +6) //20170801 RZC: a notify after Undo Histoty changed
 
 
 //========================================================================================================================
@@ -137,8 +138,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?œAutomatic reconstructio
 #endif
 
 
-#define POST_EVENT(pQ, eventType) {	if (pQ!=NULL) QCoreApplication::postEvent(pQ, new QEvent(eventType)); }
-#define SEND_EVENT(pQ, eventType) {	if (pQ!=NULL) QCoreApplication::sendEvent(pQ, new QEvent(eventType)); }
+#define POST_EVENT(pQ, eventType) {	if (pQ!=NULL) QCoreApplication::postEvent(pQ, new QEvent( QEvent::Type(eventType) )); }
+#define SEND_EVENT(pQ, eventType) {	if (pQ!=NULL) QCoreApplication::sendEvent(pQ, new QEvent( QEvent::Type(eventType) )); }
 #define POST_CLOSE(pQ)	POST_EVENT(pQ, QEvent::Close)
 #define ACTIVATE(w)	  { if(w) {QWidget* pQ=(QWidget*)w; pQ->raise(); POST_EVENT(pQ, QEvent::MouseButtonPress);} }
 
@@ -228,13 +229,13 @@ extern QProgressDialog progress;
 //Note: When QObjects are created on the stack, the C++ language standard (ISO/IEC 14882:2003) specifies that
 //     destructors of local objects are called in the reverse order of their constructors.
 //
-//____Ôdelete?vs deleteLater()
+//____ï¿½delete?vs deleteLater()
 //QObject supports being deleted while signaling. In order to take advantage of it
 //you just have to be sure your object does not try to access any of its own members after being deleted.
 //However, most Qt objects are not written this way, and there is no requirement for them to be either.
 //For this reason, it is recommended that you always call deleteLater() if you need to delete an object during one of its signals,
-//because odds are that Ôdelete?will just crash the application.
-//That is, it is not always obvious that a code path has a signal source. Often, you might have a block of code that uses Ôdelete?on some objects that is safe today,
+//because odds are that ï¿½delete?will just crash the application.
+//That is, it is not always obvious that a code path has a signal source. Often, you might have a block of code that uses ï¿½delete?on some objects that is safe today,
 //but at some point in the future this same block of code ends up getting invoked from a signal source and now suddenly your application is crashing.
 //The only general solution to this problem is to use deleteLater() all the time, even if at a glance it seems unnecessary.
 //

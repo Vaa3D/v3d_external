@@ -2,6 +2,7 @@
 #include "../control/CViewer.h"
 #include "v3dr_glwidget.h"
 #include "../presentation/PAnoToolBar.h"
+#include "PMain.h"
 
 tf::QUndoMarkerDeleteROI::QUndoMarkerDeleteROI(tf::CViewer* _source, QList<LocationSimple> _markers) :  QUndoCommand()
 {
@@ -9,10 +10,13 @@ tf::QUndoMarkerDeleteROI::QUndoMarkerDeleteROI(tf::CViewer* _source, QList<Locat
     markers = _markers;
     redoFirstTime = true;
 
-    printf("QUndoMarkerDeleteROI created with markers ");
+    // tell main GUI that annotations have been changed
+    PMain::getInstance()->annotationsChanged();
+
+   /* printf("QUndoMarkerDeleteROI created with markers ");
     for(int i=0; i<markers.size(); i++)
         printf("(%.1f, %.1f, %.1f) ", markers[i].x, markers[i].y, markers[i].z);
-    printf("\n");
+    printf("\n");*/
 }
 
 // undo and redo methods
@@ -34,6 +38,8 @@ void tf::QUndoMarkerDeleteROI::undo()
     //update visible markers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
+    // tell main GUI that annotations have been changed
+    PMain::getInstance()->annotationsChanged();
 
     //QMessageBox::information(0, "Info", tf::strprintf("QUndoMarkerDeleteROI::undo()\n\nAdded %d markers", markers.size()).c_str());
     // end select mode
@@ -79,6 +85,9 @@ void tf::QUndoMarkerDeleteROI::redo()
 
         // end select mode
         //source->view3DWidget->getRenderer()->endSelectMode();
+
+        // tell main GUI that annotations have been changed
+        PMain::getInstance()->annotationsChanged();
     }
     else
         redoFirstTime = false;

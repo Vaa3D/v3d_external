@@ -46,10 +46,18 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
 
+#include "../vrrenderer/VR_MainWindow.h"
+#include "../vrrenderer/V3dR_Communicator.h"
+#include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
 #include "renderer_gl2.h"
+#include <QtGui>
+
+bool V3dR_GLWidget::disableUndoRedo = false;
+bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
+
 
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
@@ -152,7 +160,8 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 		//f.setAccumBufferSize(16);
 		//f.setStereo(true);    // 081126, for glDrawBuffers, QGLFormat do NOT support AUX_BUFFER !!!, will cause system DEAD
 	}
-	setFormat(f);
+    if (!skipFormat)
+	    setFormat(f);
 
 	///////////////////////////////////////////////////////////////
 	//makeCurrent(); //090729: this make sure created GL context
@@ -217,7 +226,7 @@ void V3dR_GLWidget::choiceRenderer()
 	{
 		renderer = new Renderer(this);
 	}
-
+    if (renderer) renderer->selectMode = Renderer::defaultSelectMode;
 	//if (renderer) renderer->widget = (void*)this; //081025 //100827 move to constructor parameter
 }
 
@@ -486,6 +495,12 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 		}
 	}
 
+	int i = int(e->type())-QEvent::User;
+	if (i>0)
+	{
+		qDebug() << "++++++++++++ customEvent: " << i;
+	}
+
 	return QGLWidget::event(e);
 }
 
@@ -676,6 +691,17 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 {
+	//20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+	//-1 : scrolldown zoomin
+	//+1 : scrollup zoomin
+	int zoomin_sign = -1;  //default
+#ifndef test_main_cpp
+	if (_idep && _idep->V3Dmainwindow)
+	{
+		zoomin_sign = (_idep->V3Dmainwindow->global_setting.b_scrollupZoomin)? +1 : -1;
+	}
+#endif
+
 	setFocus(); // accept KeyPressEvent, by RZC 081028
 
 	float d = (event->delta())/100;  // ~480
@@ -697,7 +723,9 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     else // default
     {
         (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
-        setZoom((-zoomStep) + _zoom); // scroll down to zoom in
+
+
+        setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
     }
 
 	event->accept();
@@ -934,6 +962,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	updateImageData();
 			}
+            else
+            {
+                callLoadNewStack();//by ZZ 02012018
+            }
 	  		break;
 
 	  		///// surface object operation //////////////////////////////////////////////////////
@@ -1011,7 +1043,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             // @ADDED by Alessandro on 2015-05-23. Also allow redo with CTRL+SHIFT+Z
             if (KM.testFlag(Qt::ShiftModifier) && (KM.testFlag(Qt::ControlModifier) || KM.testFlag(Qt::MetaModifier)))
             {
-                if (v3dr_getImage4d(_idep) && renderer)
+                if (!V3dR_GLWidget::disableUndoRedo && v3dr_getImage4d(_idep) && renderer)
                 {
                     v3dr_getImage4d(_idep)->proj_trace_history_redo();
                     v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
@@ -1020,7 +1052,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             //undo the last tracing step if possible. by PHC, 090120
             else if (IS_CTRL_MODIFIER)
 		    {
-		    	if (v3dr_getImage4d(_idep) && renderer)
+		    	if (!V3dR_GLWidget::disableUndoRedo && v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_undo();
 		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
@@ -1031,7 +1063,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		case Qt::Key_X: //090924 RZC: redo
 		    if (IS_CTRL_MODIFIER)
 		    {
-		    	if (v3dr_getImage4d(_idep) && renderer)
+		    	if (!V3dR_GLWidget::disableUndoRedo && v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_redo();
 		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
@@ -1532,6 +1564,105 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
+#ifdef __ALLOW_VR_FUNCS__
+void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
+{
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+
+	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+
+    this->getMainWindow()->hide();
+    QMessageBox::StandardButton reply;
+	if(bCanCoMode)
+		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+	else 
+		reply = QMessageBox::No;
+	if (reply == QMessageBox::Yes)
+	{
+		if(VRClientON==false)
+		{
+			VRClientON = true;
+			if(myvrwin) 
+				delete myvrwin;
+			myvrwin = 0;
+			myvrwin = new VR_MainWindow();
+			myvrwin->setWindowTitle("VR MainWindow");
+			bool linkerror = myvrwin->SendLoginRequest();
+			VRClientON = linkerror;
+			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
+
+			myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror);
+		}
+		else
+		{
+			v3d_msg("The ** client is running.Failed to start VR client.");
+			this->getMainWindow()->show();
+		}
+	}
+	else
+	{
+		bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+		this->getMainWindow()->show();
+		if(_Call_ZZ_Plugin)
+		{
+			call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		}
+	}
+}
+void V3dR_GLWidget::doclientView(bool check_flag)
+{
+	
+	if(check_flag)
+	{
+		qDebug()<<"run true.";
+		if(VRClientON==false)
+		{
+			v3d_msg("Now start Collaboration.");
+			VRClientON = true;
+			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+			if(myclient) 
+				delete myclient;
+			myclient = 0;
+			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+			bool linkerror = myclient->SendLoginRequest();
+			if(!linkerror)
+			{
+				v3d_msg("Error!Cannot link to server!");
+				myclient = 0;
+				VRClientON = false;
+			}
+			else
+				v3d_msg("Successed linking to server! ");
+		}
+		else
+		{
+			v3d_msg("The VR client is running.Failed to start ** client.");
+		}
+	}
+	else
+	{
+		qDebug()<<"run false.";
+		if(myclient)
+		{
+			qDebug()<<"run disc.";
+			delete myclient;
+			myclient = 0;
+		}
+		VRClientON=false;
+	}
+}
+
+void V3dR_GLWidget::OnVRSocketDisConnected()
+{
+	qDebug()<<"V3dR_GLWidget::OnVRSocketDisConnected()";
+	VRClientON=false;
+}
+
+
+
+#endif
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {
@@ -2135,6 +2266,27 @@ void V3dR_GLWidget::setBackgroundColor()
 	POST_updateGL();
 }
 
+void V3dR_GLWidget::switchBackgroundColor()
+{
+    RGBA8 c;
+    c = XYZW(renderer->color_background)*255;
+    QColor qcolor = QColorFromRGBA8(c);
+
+    int diff = qcolor.red() + qcolor.green() + qcolor.blue();
+
+    if(diff == 0) // black
+    {
+        renderer->color_background = backgroundColor/255.f;
+    }
+    else // non-black
+    {
+        backgroundColor = c;
+        renderer->color_background = XYZW(0.f)/255.f;
+    }
+
+    POST_updateGL();
+}
+
 void V3dR_GLWidget::enableShowAxes(bool s)
 {
 	//qDebug("V3dR_GLWidget::setShowAxes = %i",s);
@@ -2597,13 +2749,29 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
 // For curveline detection , by PHC 20170531
 void V3dR_GLWidget::callCurveLineDetector(int option)
 {
-    if (renderer && v3dr_getImage4d(_idep))
+    if (renderer && _idep && v3dr_getImage4d(_idep))
     {
-        if (option==0)
-            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
-        else
-            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline infinite"));
-        POST_updateGL();
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            if (option==0)
+                v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline"));
+            else
+                v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- GD Curveline infinite"));
+            POST_updateGL();
+        }
+    }
+}
+
+//For load new stack, by ZZ 01212018
+void V3dR_GLWidget::callLoadNewStack()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Load New Stack"));
+            POST_updateGL();
+        }
     }
 }
 

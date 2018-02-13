@@ -631,7 +631,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
         const char* filepath = ba.constData();
         if ( (fid=fopen(filepath, "rb"))==0) {
             qDebug() << "Could not open file " << filepath << " to read";
-            return false;
+            return NULL;
         }
 
         long chanVoxels=0L;
@@ -667,7 +667,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
                 } else {
                     if (cdim!=chanChannelCount) {
                         qDebug() << "Expected channel counts to match between mask files, cdim=" << cdim << " chanChannelCount=" << chanChannelCount;
-                        return false;
+                        return NULL;
                     }
                 }
             }
@@ -719,7 +719,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
                 outputStack->loadImage(xdim, ydim, zdim, cdim, V3D_UINT16);
             } else {
                 qDebug() << "Do not understand chanBytesPerChannel=" << chanBytesPerChannel;
-                return false;
+                return NULL;
             }
         }
 
@@ -752,7 +752,7 @@ My4DImage* MaskChan::createImageFromMaskFiles(QStringList& maskFilePaths)
 
         if (chanVoxels>0L && chanVoxels!=totalVoxels) {
             qDebug() << "Mask and Chan totalVoxel counts do not match";
-            return false;
+            return NULL;
         }
 
         unsigned char axis;

@@ -277,10 +277,10 @@ bool simplify_V_NeuronSWC_nodeindex(V_NeuronSWC & my_swc); //map the node index 
 
 
 template <class T> //should be a struct at least included members (x,y,z)
-void set_simple_path_unit (V_NeuronSWC_unit & v, V3DLONG base_n, vector<T> & mUnit, V3DLONG i, bool link_order, double r=1)
+void set_simple_path_unit (V_NeuronSWC_unit & v, V3DLONG base_n, vector<T> & mUnit, V3DLONG i, bool link_order, double r=1, double default_type=3)
 {
 	V3DLONG N = mUnit.size();
-		v.type	= 3; //use 3 for convenience. need to change later
+		v.type	= default_type;
 		v.x 	= mUnit[i].x;
 		v.y 	= mUnit[i].y;
 		v.z 	= mUnit[i].z;
@@ -297,13 +297,13 @@ void set_simple_path_unit (V_NeuronSWC_unit & v, V3DLONG base_n, vector<T> & mUn
 	}
 }
 template <class T> //should be a struct at least included members (x,y,z)
-void set_simple_path (V_NeuronSWC & cur_seg, V3DLONG base_n, vector<T> & mUnit, bool link_order, double r=1)
+void set_simple_path (V_NeuronSWC & cur_seg, V3DLONG base_n, vector<T> & mUnit, bool link_order, double r=1, double default_type=3)
 {
 	cur_seg.clear();
 	for (V3DLONG i=0;i<mUnit.size();i++)
 	{
 		V_NeuronSWC_unit v;
-        set_simple_path_unit(v, base_n, mUnit, i, link_order, r);
+        set_simple_path_unit(v, base_n, mUnit, i, link_order, r, default_type);
 		cur_seg.append(v);
 		//qDebug("%d ", cur_seg.nnodes());
 	}

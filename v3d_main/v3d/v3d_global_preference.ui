@@ -239,6 +239,13 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
+          <widget class="QCheckBox" name="checkBox_scrollupZoomin">
+           <property name="text">
+            <string>Mouse wheel scroll-up/down for zoom-in/out</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="checkBox_autoOpenImg3DViewer">
            <property name="text">
             <string>Automatic launch 3D viewer when open an image</string>

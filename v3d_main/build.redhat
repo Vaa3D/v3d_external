@@ -126,5 +126,5 @@ done;
 cd bin
 echo "Now run Vaa3D..."
 export LD_LIBRARY_PATH=../v3d_main/common_lib/lib
-./vaa3d
+#./vaa3d
 

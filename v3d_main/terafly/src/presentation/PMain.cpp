@@ -571,9 +571,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomInMethod->installEventFilter(this);
     zoomInMethod->setCurrentIndex(1);
 
-    //"Global coordinates" widgets
+    //"Volume Of Interest (VOI)" panel widgets
     /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
-    globalCoord_panel = new QGroupBox("Volume Of Interest (VOI)'s coordinates");
+    VOI_panel = new QGroupBox("Volume Of Interest (VOI)'s coordinates");
     traslXpos = new QArrowButton(this, QColor(255,0,0), 15, 6, 0, Qt::LeftToRight, true);
     traslXneg = new QArrowButton(this, QColor(255,0,0), 15, 6, 0, Qt::RightToLeft, true);
     traslXlabel = new QLabel("");
@@ -654,9 +654,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //****LAYOUT SECTIONS****
     /**/tf::debug(tf::LEV3, "Layouting", __itm__current__function__);
 
-    // "Global coordinates" panel layout
-    QGridLayout* global_coordinates_layout = new QGridLayout();
-    global_coordinates_layout->setVerticalSpacing(2);
+    //"Volume Of Interest (VOI)" panel layout
+    QGridLayout* VOI_layout = new QGridLayout();
+    VOI_layout->setVerticalSpacing(1);
     /* ------------- fix left block elements size ---------------- */
     QWidget* refSysContainer = new QWidget();
     refSysContainer->setFixedWidth(marginLeft);
@@ -749,28 +749,30 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tGlobalCoordLayout->addWidget(T0_sbox, 1);
     tGlobalCoordLayout->addWidget(to_label_4, 0);
     tGlobalCoordLayout->addWidget(T1_sbox, 1);
+#if QT_VERSION < 0x040806 // MK, 12082017: Qt4.8+ seemed to disallow visible property of QLayout class. Need to comment out this part for Qt4.8.
     QVBoxLayout *rightBlockLayout = new QVBoxLayout();
     rightBlockLayout->setContentsMargins(0,0,0,0);
     rightBlockLayout->addLayout(xGlobalCoordLayout, 0);
     rightBlockLayout->addLayout(yGlobalCoordLayout, 0);
     rightBlockLayout->addLayout(zGlobalCoordLayout, 0);
-    rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
+	rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
+#endif
     /* -------------- put elements into 4x4 grid ----------------- */
-    global_coordinates_layout->addWidget(refSysContainer,   0, 0, 3, 1);
-    global_coordinates_layout->addWidget(frameCoord,        3, 0, 1, 1);
-    global_coordinates_layout->addWidget(xShiftWidget,      0, 1, 1, 1);
-    global_coordinates_layout->addWidget(yShiftWidget,      1, 1, 1, 1);
-    global_coordinates_layout->addWidget(zShiftWidget,      2, 1, 1, 1);
-    global_coordinates_layout->addWidget(tShiftWidget,      3, 1, 1, 1);
-    global_coordinates_layout->addLayout(xGlobalCoordLayout,0, 2, 1, 2);
-    global_coordinates_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
-    global_coordinates_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
-    global_coordinates_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
+    VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
+    VOI_layout->addWidget(frameCoord,        3, 0, 1, 1);
+    VOI_layout->addWidget(xShiftWidget,      0, 1, 1, 1);
+    VOI_layout->addWidget(yShiftWidget,      1, 1, 1, 1);
+    VOI_layout->addWidget(zShiftWidget,      2, 1, 1, 1);
+    VOI_layout->addWidget(tShiftWidget,      3, 1, 1, 1);
+    VOI_layout->addLayout(xGlobalCoordLayout,0, 2, 1, 2);
+    VOI_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
+    VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
+    VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
     /* ------------- FINALIZATION -------------- */
-    global_coordinates_layout->setContentsMargins(10,5,10,5);
-    globalCoord_panel->setLayout(global_coordinates_layout);
+    VOI_layout->setContentsMargins(10,5,10,5);
+    VOI_panel->setLayout(VOI_layout);
     #ifdef Q_OS_LINUX
-    globalCoord_panel->setStyle(new QWindowsStyle());
+    VOI_panel->setStyle(new QWindowsStyle());
     #endif
 
     // "Proofreading" panel layout
@@ -821,6 +823,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     localviewer_panel_layout->addLayout(resolutionSelection_layout, 0);
     localviewer_panel_layout->addLayout(resolutionBar_layout, 0);
     localviewer_panel_layout->addLayout(VOImaxsize_layout, 0);
+#ifdef __ALLOW_VR_FUNCS__
+	/* --------------------- forth row ---------------------- */
+	teraflyVRView = new QPushButton("See in VR",0);
+	teraflyVRView->setToolTip("You can see current image in VR environment.");
+	localviewer_panel_layout->addWidget(teraflyVRView,0);
+#endif
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
     localViewer_panel->setLayout(localviewer_panel_layout);
     #ifdef Q_OS_LINUX
@@ -877,7 +885,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     QVBoxLayout* controlsLayout = new QVBoxLayout(controls_page);
     controlsLayout->addWidget(localViewer_panel, 0);
     controlsLayout->addWidget(zoom_panel, 0);
-    controlsLayout->addWidget(globalCoord_panel, 0);
+    controlsLayout->addWidget(VOI_panel, 0);
     controlsLayout->addWidget(PR_panel, 0);
     controlsLayout->addStretch(1);
     #ifdef Q_OS_MAC
@@ -939,6 +947,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(traslTpos, SIGNAL(clicked()), this, SLOT(traslTposClicked()));
     connect(traslTneg, SIGNAL(clicked()), this, SLOT(traslTnegClicked()));
     connect(controlsResetButton, SIGNAL(clicked()), this, SLOT(resetMultiresControls()));
+#ifdef __ALLOW_VR_FUNCS__
+    if(teraflyVRView)
+	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
+#endif
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
@@ -1035,7 +1047,7 @@ void PMain::reset()
     resetMultiresControls();
 
     //resetting subvol panel widgets
-    globalCoord_panel->setEnabled(false);
+    VOI_panel->setEnabled(false);
     PR_panel->setEnabled(false);
     V0_sbox->setValue(0);
     V1_sbox->setValue(0);
@@ -1054,7 +1066,7 @@ void PMain::reset()
     refSys->setDims(1,1,1);
     refSys->setFilled(true);
     refSys->resetZoom();
-    frameCoord->setPalette(globalCoord_panel->palette());
+    frameCoord->setPalette(VOI_panel->palette());
 
     //reset PR panel widgets
     PR_button->setText("Start");
@@ -1416,7 +1428,7 @@ void PMain::loadAnnotations()
 
                 // load
                 cur_win->loadAnnotations();
-                saveAnnotationsAction->setEnabled(true);                
+                saveAnnotationsAction->setEnabled(true);
                 virtualSpaceSizeMenu->setEnabled(false);
 
                 // reset saved cursor
@@ -1469,6 +1481,9 @@ void PMain::saveAnnotations()
             CViewer::setCursor(cursor);
             if(PAnoToolBar::isInstantiated())
                 PAnoToolBar::instance()->setCursor(cursor);
+
+            // disable save button
+            saveAnnotationsAction->setEnabled(false);
         }
     }
     catch(RuntimeException &ex)
@@ -1476,6 +1491,53 @@ void PMain::saveAnnotations()
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
 }
+
+
+void PMain::autosaveAnnotations()
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    CViewer *cur_win = CViewer::getCurrent();
+
+    try
+    {
+        if(cur_win)
+        {
+            // save current cursor and set wait cursor
+            QCursor cursor = cur_win->view3DWidget->cursor();
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+            CViewer::setCursor(Qt::WaitCursor);
+
+            // save
+            cur_win->storeAnnotations();
+            QDateTime mytime = QDateTime::currentDateTime();
+            QDir dir(QDir::currentPath());
+            dir.mkdir(QString("autosave"));
+
+            QString autosavePath;
+            if(annotationsPathLRU.compare("")==0)
+                autosavePath = "./autosave/annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+            else
+            {
+                QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+                autosavePath = "./autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+            }
+
+            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str());
+
+            // reset saved cursor
+            CViewer::setCursor(cursor);
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(cursor);
+        }
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
 void PMain::saveAnnotationsAs()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
@@ -1655,7 +1717,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         }
 //        T1_sbox->setMinimum(0);
 //        T1_sbox->setMaximum(CImport::instance()->getVMapTDim()-1);
-        globalCoord_panel->setEnabled(true);
+        VOI_panel->setEnabled(true);
         PR_panel->setEnabled(true);
 
         //updating menu items
@@ -1849,7 +1911,7 @@ void PMain::resolutionIndexChanged(int i)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         resetGUI();
-        globalCoord_panel->setEnabled(true);
+        VOI_panel->setEnabled(true);
         resolution_cbox->setCurrentIndex(CViewer::getCurrent()->getResIndex());
     }
 }
@@ -2061,14 +2123,14 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
         displayToolTip(cacheSens, event, QString::number(cacheSens->value()).append("%").toStdString());
 
     }
-    else if ((object == traslXpos || object == traslYpos || object == traslZpos || object == traslTpos) && globalCoord_panel->isEnabled())
+    else if ((object == traslXpos || object == traslYpos || object == traslZpos || object == traslTpos) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTtraslatePos);
         else if(event->type() == QEvent::Leave)
             helpBox->setText(HTbase);
     }
-    else if ((object == traslXneg || object == traslYneg || object == traslZneg || object == traslTneg) && globalCoord_panel->isEnabled())
+    else if ((object == traslXneg || object == traslYneg || object == traslZneg || object == traslTneg) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTtraslateNeg);
@@ -2078,14 +2140,14 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
     else if ((object == V0_sbox || object == V1_sbox ||
               object == H0_sbox || object == H1_sbox ||
               object == D0_sbox || object == D1_sbox ||
-              object == T0_sbox || object == T1_sbox ) && globalCoord_panel->isEnabled())
+              object == T0_sbox || object == T1_sbox ) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTvolcuts);
         else if(event->type() == QEvent::Leave)
             helpBox->setText(HTbase);
     }
-    else if((object == refSys) && globalCoord_panel->isEnabled())
+    else if((object == refSys) && VOI_panel->isEnabled())
     {
         if(event->type() == QEvent::Enter)
             helpBox->setText(HTrefsys);
@@ -2181,6 +2243,24 @@ void PMain::resetMultiresControls()
     zoomOutSens->setValue(0);
 }
 
+#ifdef __ALLOW_VR_FUNCS__
+void PMain::doTeraflyVRView()
+{
+	qDebug()<<"PMain::doTeraflyVRView()";
+	
+	CViewer *cur_win = CViewer::getCurrent();
+	if(cur_win&&cur_win->view3DWidget)
+	{
+		this->hide();
+		//qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
+
+		cur_win->view3DWidget->doimageVRView(false);
+		cur_win->storeAnnotations();
+		this->show();
+	}
+}
+#endif
+
 //very useful (not included in Qt): disables the given item of the given combobox
 void PMain::setEnabledComboBoxItem(QComboBox* cbox, int _index, bool enabled)
 {
@@ -2208,6 +2288,8 @@ void PMain::debugAction1Triggered()
 {
     /**/tf::debug(tf::NO_DEBUG, 0, __itm__current__function__);
 
+
+    //tf::PluginInterface::getSubVolume("/Users/Administrator/Campus BioMedico/Data/tomo300511.raw.RGB/RES(800x800x512)", 0, 500, 0, 500, 0, 1000);
     try
     {
 //        unsigned int src_dims[5]   = { 19, 17,  1,  1,  1 };
@@ -2307,13 +2389,49 @@ void PMain::debugAction1Triggered()
 
 
 
-        CViewer* viewer = CViewer::getCurrent();
+        /*CViewer* viewer = CViewer::getCurrent();
         size_t dims = size_t(viewer->volV1-viewer->volV0) * (viewer->volH1-viewer->volH0) * (viewer->volD1-viewer->volD0) * viewer->nchannels;
         size_t empty = 0;
         for(size_t i=0; i<dims; i++)
             if(!viewer->imgData[i])
                 empty++;
-        v3d_msg(tf::strprintf("%.2f", (1 - empty/(float)dims)*100).c_str());
+        v3d_msg(tf::strprintf("%.2f", (1 - empty/(float)dims)*100).c_str());*/
+        //v3d_msg(QString("path = ") + QString(tf::TeraFly::getPath().c_str()) + QString("\n"));
+
+//        NeuronTree l = terafly::PluginInterface::getSWC();
+//        if(l.listNeuron.empty())
+//        {
+//            NeuronSWC n;
+//            n.x = rand()%200;
+//            n.y = rand()%200;
+//            n.z = rand()%200;
+//            n.parent = -1;
+//            l.listNeuron.append(n);
+//        }
+//        else
+//        {
+//            for(int i=0; i<2; i++)
+//            {
+//                NeuronSWC n;
+//                n.x = rand()%200;
+//                n.y = rand()%200;
+//                n.z = rand()%200;
+//                n.parent = l.listNeuron.back().n;
+//                l.listNeuron.append(n);
+//            }
+//        }
+//        {
+//            //for(int i=0; i<2; i++)
+//            /*{
+//                NeuronSWC n;
+//                n.x = l.listNeuron.back().x + 10;//(rand()%2 ? +rand()%10+1 : rand()%10+1);
+//                n.y = l.listNeuron.back().y + 10; //(rand()%2 ? +rand()%10+1 : rand()%10+1);
+//                n.z = l.listNeuron.back().z + 10; //(rand()%2 ? +rand()%10+1 : rand()%10+1);
+//                n.parent = l.listNeuron.back().n;
+//                l.listNeuron.append(n);
+//            }*/
+//        }
+//        terafly::PluginInterface::setSWC(l);
     }
     catch(tf::RuntimeException &e)
     {
@@ -2711,6 +2829,15 @@ void PMain::markersSizeSpinBoxChanged(int value)
         cur_win->view3DWidget->updateTool();
         cur_win->view3DWidget->update();
     }
+}
+
+/**********************************************************************************
+* Called when annotations (markers, neuron trees, etc.) have changed
+***********************************************************************************/
+void PMain::annotationsChanged()
+{
+    if(!annotationsPathLRU.empty())
+        saveAnnotationsAction->setEnabled(true);
 }
 
 void PMain::showDialogVtk2APO()

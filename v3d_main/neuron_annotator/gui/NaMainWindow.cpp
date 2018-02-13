@@ -2086,7 +2086,7 @@ bool NaMainWindow::createNewDataFlowModel()
 
 
 void NaMainWindow::setTitle(QString title) {
-    setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(title));
+    setWindowTitle(QString("%1 - Vaa3D Neuron Annotator").arg(title));
 }
 
 /* slot */
