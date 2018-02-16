@@ -1,6 +1,6 @@
 set(CMAKE_AUTOMOC ON)
 
-include(cmake/utils.cmake)
+include(src/terarepo/cmake/Utils.cmake)
 include(cmake/TeraStitcher_Version.cmake)
 
 # enable TeraFly code in Vaa3D

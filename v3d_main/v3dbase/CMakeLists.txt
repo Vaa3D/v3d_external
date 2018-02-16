@@ -33,6 +33,7 @@ else()
   QT5_WRAP_CPP(QT_MOC_SRCS ${V3DBASE_MOC_SRCS})
 endif()
 
+include_directories(BEFORE ../basic_c_fun )
 include_directories(BEFORE ${V3D_BINARY_DIR}/v3d)
 include_directories(BEFORE ${V3D_BINARY_DIR}/v3dbase)
 include_directories(${TIFF_INCLUDE_DIR})

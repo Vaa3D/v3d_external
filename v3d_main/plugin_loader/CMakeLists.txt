@@ -20,6 +20,7 @@ else()
 endif()
 
 include_directories( ${V3D_BINARY_DIR}/v3dbase )
+include_directories( ../basic_c_fun )
 
 add_library(v3d_plugin_loader ${QT_UI_SRCS} ${QT_MOC_SRCS} ${PluginLoader_SRCS})
 add_dependencies(v3d_plugin_loader v3dbase1)

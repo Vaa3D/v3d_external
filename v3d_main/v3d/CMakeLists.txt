@@ -124,7 +124,13 @@ include_directories( BEFORE
   "${CMAKE_CURRENT_BINARY_DIR}/../v3dbase"
   "${CMAKE_CURRENT_BINARY_DIR}"
   "${CMAKE_CURRENT_BINARY_DIR}/../neuron_annotator"
+  ../basic_c_fun
+  ../basic_c_fun/customary_structs
+  ../3drenderer
   ../neuron_annotator
+  ../mozak/terafly/src/core/imagemanager
+  ../mozak/terafly/src/presentation
+  ../\mozak/m_terafly/src/control
   "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
