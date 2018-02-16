@@ -1667,6 +1667,7 @@ void V3d_PluginLoader::releaseOpenedVolumesTeraFly()
     terafly::PluginInterface::releaseOpenedVolumes();
 }
 
+#ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {
 	qDebug("V3d_PluginLoader::openVRWindow ");
@@ -1688,3 +1689,4 @@ void V3d_PluginLoader::openVRWindowV2(v3dhandle image_window, bool bOnlineMode)
 	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
     if(vi) vi->doimageVRView(bOnlineMode); 
 }
+#endif

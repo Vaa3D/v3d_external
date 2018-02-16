@@ -226,10 +226,11 @@ public:
     virtual void moveWindow(V3dR_MainWindow *w, int x, int y) = 0 ;
     virtual void resizeWindow(V3dR_MainWindow *w, int x, int y) = 0 ;
 
-
+#ifdef __ALLOW_VR_FUNCS__
 	virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
 	virtual void openVRWindowV2(v3dhandle image_window, bool bOnlineMode = false) = 0;
-
+#endif
+	
     //added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
     virtual NeuronTree getSWCTeraFly() = 0;
     virtual bool setSWCTeraFly(NeuronTree & nt) = 0;
