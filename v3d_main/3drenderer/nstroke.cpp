@@ -1291,7 +1291,7 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
-        if(listNeuronTree.at(0).editable==true)
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             selectMode = smRetypeMultiNeurons;
             b_addthiscurve = false;
@@ -1306,7 +1306,7 @@ void Renderer_gl1::callStrokeDeleteMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
-        if(listNeuronTree.at(0).editable==true)
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             selectMode = smDeleteMultiNeurons;
             b_addthiscurve = false;
@@ -1321,7 +1321,7 @@ void Renderer_gl1::callStrokeSplitMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
-        if(listNeuronTree.at(0).editable==true)
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             selectMode = smBreakMultiNeurons;
             b_addthiscurve = false;
@@ -1337,7 +1337,7 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
-        if(listNeuronTree.at(0).editable==true)
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             selectMode = smConnectNeurons;
             b_addthiscurve = false;
