@@ -372,6 +372,13 @@ public slots:
 	virtual void reloadData();
 	virtual void cancelSelect();
 
+    //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
+    virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
+    virtual void callStrokeRetypeMultiNeurons();//  call multiple segments retyping
+    virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
+    virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
+    virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+
 //----------------------------------------------------------------------------------------
 // end View3DControl interface
 //----------------------------------------------------------------------------------------

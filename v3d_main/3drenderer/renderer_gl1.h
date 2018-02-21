@@ -210,6 +210,13 @@ public:
     virtual int zoomview_wheel_event();//by PHC, 20130424
     virtual int zoomview_currentviewport();//by PHC, 20130701
 
+    //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
+    virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
+    virtual void callStrokeRetypeMultiNeurons();//  call multiple segments retyping
+    virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
+    virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
+    virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
 

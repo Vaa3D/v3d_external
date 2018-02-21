@@ -877,7 +877,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			if (IS_CTRL_MODIFIER)
 		    {
 		    	setBright();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeCurveDrawingBBoxes();//For serial BBoxes curve drawing shortcut, by ZZ,02212018
+            }
 	  		break;
 		case Qt::Key_R:
 			if (IS_CTRL_MODIFIER)
@@ -931,21 +934,39 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	toggleTexFilter();
 			}
 	  		break;
-		case Qt::Key_T:
+        case Qt::Key_T:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
 		    		WITH_CTRL_MODIFIER
 				)
 		    {
 		    	toggleTex2D3D();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018
+            }
 	  		break;
+        case Qt::Key_D:
+            if (IS_ALT_MODIFIER)
+            {
+                callStrokeDeleteMultiNeurons();//For multiple segments deleting shortcut, by ZZ,02212018
+            }
+            break;
+        case Qt::Key_S:
+            if (IS_ALT_MODIFIER)
+            {
+                callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
+            }
+            break;
 		case Qt::Key_C:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
 		    		WITH_CTRL_MODIFIER
 				)
 		    {
 		    	toggleTexCompression();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
+            }
 	  		break;
 		case Qt::Key_V:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
@@ -2745,6 +2766,57 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
 		POST_updateGL();
 	}
 }
+
+// five shortcuts, by ZZ,02212018
+void V3dR_GLWidget::callStrokeCurveDrawingBBoxes()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callStrokeCurveDrawingBBoxes();
+            POST_updateGL();
+        }
+    }
+}
+
+void V3dR_GLWidget::callStrokeRetypeMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeRetypeMultiNeurons();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callStrokeDeleteMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeDeleteMultiNeurons();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callStrokeSplitMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeSplitMultiNeurons();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callStrokeConnectMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeConnectMultiNeurons();
+        POST_updateGL();
+    }
+}
+//end five shortcuts
+
 
 // For curveline detection , by PHC 20170531
 void V3dR_GLWidget::callCurveLineDetector(int option)

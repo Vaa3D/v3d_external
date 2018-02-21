@@ -238,8 +238,15 @@ public:
 	virtual void updateVolShadingOption() {};
 	virtual void updateObjShadingOption() {};
 
-     virtual void toggleNStrokeCurveDrawing() {}; // For n-right-strokes curve shortcut ZJL 110920
-     virtual void setDragWinSize(int csize) {}; // ZJL 110927
+    virtual void toggleNStrokeCurveDrawing() {}; // For n-right-strokes curve shortcut ZJL 110920
+    virtual void setDragWinSize(int csize) {}; // ZJL 110927
+
+    //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
+    virtual void callStrokeCurveDrawingBBoxes() {}; // serial BBoxes curve drawing shortcut
+    virtual void callStrokeRetypeMultiNeurons() {};//  multiple segments retyping shortcut
+    virtual void callStrokeDeleteMultiNeurons() {};//  multiple segments deleting shortcut
+    virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
+    virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
 
 
 public:

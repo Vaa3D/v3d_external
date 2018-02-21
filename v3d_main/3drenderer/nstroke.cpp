@@ -1264,6 +1264,89 @@ void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool 
      }
 }
 
+
+/**
+ * @brief keyboard short-cuts for a number of drawing and editing functions
+ * Alt+B: serial Bboxes curve drawing
+ * Alt+T: multiple segments reTyping
+ * Alt+D: multiple segments Deleting
+ * Alt+S: multiple segments Spliting
+ * Alt+C: multiple segments Connection
+*/
+void Renderer_gl1::callStrokeCurveDrawingBBoxes()
+{
+    selectMode = smCurveTiltedBB_fm_sbbox;
+    b_addthiscurve = true;
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
+    }
+
+}
+
+void Renderer_gl1::callStrokeRetypeMultiNeurons()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        if(listNeuronTree.at(0).editable==true)
+        {
+            selectMode = smRetypeMultiNeurons;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
+void Renderer_gl1::callStrokeDeleteMultiNeurons()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        if(listNeuronTree.at(0).editable==true)
+        {
+            selectMode = smDeleteMultiNeurons;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
+void Renderer_gl1::callStrokeSplitMultiNeurons()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        if(listNeuronTree.at(0).editable==true)
+        {
+            selectMode = smBreakMultiNeurons;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
+
+void Renderer_gl1::callStrokeConnectMultiNeurons()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        if(listNeuronTree.at(0).editable==true)
+        {
+            selectMode = smConnectNeurons;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
 /**
  * @brief This is used for keyboard short-cut for n-right-strokes curve drawing
  * short-cut: Shift-L
