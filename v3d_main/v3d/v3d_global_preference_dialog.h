@@ -38,6 +38,8 @@ v3d_global_preference_dialog.h
  2010-06-01
  2010-06-02
  2010-09-04: by PHC. add b_UseMylibTiff
+ 2018-03-01: by ZZ. add b_BlendColor
+
 **
 ****************************************************************************/
 
@@ -91,6 +93,7 @@ public:
 		spinBox_autoVideoCardStreamMode->setRange(-1,2); spinBox_autoVideoCardStreamMode->setValue(p->autoVideoCardStreamMode);
 		
 		checkBox_libTiff_Mylib->setChecked(!(p->b_UseMylibTiff));
+        checkBox_blendColor->setChecked(p->b_BlendColor);
 
 
 		//image analysis
@@ -143,6 +146,7 @@ public:
 		p->b_autoVideoCardNPTTex = checkBox_autoVideoCardNPTTex->isChecked();
 		p->autoVideoCardStreamMode = spinBox_autoVideoCardStreamMode->value();
 		p->b_UseMylibTiff = !(checkBox_libTiff_Mylib->isChecked());
+        p->b_BlendColor = !(checkBox_blendColor->isChecked());
 
 		//image analysis
 		p->GPara_landmarkMatchingMethod = comboBox_reg_markermatch_method->currentIndex(); //100601, by PHC: (PointMatchMethodType)comboBox_reg_markermatch_method->currentIndex();
@@ -172,6 +176,7 @@ public:
 		global_setting.default_rightshift_bits = settings.value("default_rightshift_bits", def.default_rightshift_bits).toInt();
 		global_setting.default_lookglass_size = settings.value("default_lookglass_size", def.default_lookglass_size).toInt();
 		global_setting.default_marker_radius = settings.value("default_marker_radius", def.default_marker_radius).toInt();
+        global_setting.b_BlendColor = settings.value("b_BlendColor", def.b_BlendColor).toBool();
 
 		//3D viewer tab
 		global_setting.b_scrollupZoomin = settings.value("b_scrollupZoomin", def.b_scrollupZoomin).toBool();
@@ -185,7 +190,7 @@ public:
 		global_setting.b_autoVideoCard3DTex = settings.value("b_autoVideoCard3DTex", def.b_autoVideoCard3DTex).toBool();
 		global_setting.b_autoVideoCardNPTTex = settings.value("b_autoVideoCardNPTTex", def.b_autoVideoCardNPTTex).toBool();
 		global_setting.autoVideoCardStreamMode = settings.value("autoVideoCardStreamMode",def.autoVideoCardStreamMode).toInt();
-		global_setting.b_UseMylibTiff = settings.value("b_UseMylibTiff", def.b_autoVideoCardCompress).toBool();
+        global_setting.b_UseMylibTiff = settings.value("b_UseMylibTiff", def.b_UseMylibTiff).toBool();
 
 		//image analysis tab
 		global_setting.GPara_landmarkMatchingMethod = settings.value("GPara_landmarkMatchingMethod", def.GPara_landmarkMatchingMethod).toInt(); //by PHC, 100601: (PointMatchMethodType)
@@ -213,6 +218,7 @@ public:
 		settings.setValue("default_rightshift_bits", global_setting.default_rightshift_bits);
 		settings.setValue("default_lookglass_size", global_setting.default_lookglass_size);
 		settings.setValue("default_marker_radius", global_setting.default_marker_radius);
+        settings.setValue("b_BlendColor", global_setting.b_BlendColor);
 
 		//3D viewer tab
 		settings.setValue("b_scrollupZoomin", global_setting.b_scrollupZoomin);
