@@ -3834,7 +3834,6 @@ void XFormWidget::updateViews()
 
 void XFormWidget::connectColorGUI()
 {
-    v3d_msg(QString("%1").arg(V3dApplication::getMainWindow()->global_setting.b_BlendColor));
     if(V3dApplication::getMainWindow()->global_setting.b_BlendColor)
     {
         //110722 RZC, connect signal for ChannelTabWidget::updateXFormWidget(int plane)

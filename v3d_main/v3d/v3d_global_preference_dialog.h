@@ -72,6 +72,7 @@ public:
 		checkBox_yaxis_up->setChecked(p->b_yaxis_up);
 		checkBox_autoConvert2_8bit->setChecked(p->b_autoConvert2_8bit);
 		spinBox_defaultRightShiftBits->setValue(p->default_rightshift_bits);
+        checkBox_blendColor->setChecked(p->b_BlendColor);
 
 		checkBox_autoRescale16bitDisplay->setChecked(p->b_autoRescale16bitDisplay);
 		checkBox_autoRescale16bitDisplay->hide();
@@ -93,7 +94,6 @@ public:
 		spinBox_autoVideoCardStreamMode->setRange(-1,2); spinBox_autoVideoCardStreamMode->setValue(p->autoVideoCardStreamMode);
 		
 		checkBox_libTiff_Mylib->setChecked(!(p->b_UseMylibTiff));
-        checkBox_blendColor->setChecked(p->b_BlendColor);
 
 
 		//image analysis
@@ -132,6 +132,7 @@ public:
 		p->b_autoRescale16bitDisplay = checkBox_autoRescale16bitDisplay->isChecked();
 		p->default_lookglass_size = spinBox_lookGlassSize->value();
 		p->default_marker_radius = spinBox_markerSize->value();
+        p->b_BlendColor = checkBox_blendColor->isChecked();
 
 		//3d viewer
 		p->b_scrollupZoomin = checkBox_scrollupZoomin->isChecked();
@@ -146,7 +147,6 @@ public:
 		p->b_autoVideoCardNPTTex = checkBox_autoVideoCardNPTTex->isChecked();
 		p->autoVideoCardStreamMode = spinBox_autoVideoCardStreamMode->value();
 		p->b_UseMylibTiff = !(checkBox_libTiff_Mylib->isChecked());
-        p->b_BlendColor = !(checkBox_blendColor->isChecked());
 
 		//image analysis
 		p->GPara_landmarkMatchingMethod = comboBox_reg_markermatch_method->currentIndex(); //100601, by PHC: (PointMatchMethodType)comboBox_reg_markermatch_method->currentIndex();
