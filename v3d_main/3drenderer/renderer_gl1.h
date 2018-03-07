@@ -217,6 +217,9 @@ public:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 
+    virtual void toggleEditMode();
+
+
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
 

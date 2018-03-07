@@ -379,6 +379,9 @@ public slots:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 
+    virtual void toggleEditMode();
+
+
 //----------------------------------------------------------------------------------------
 // end View3DControl interface
 //----------------------------------------------------------------------------------------

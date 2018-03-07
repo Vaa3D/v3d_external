@@ -1769,10 +1769,52 @@ void Renderer_gl1::finishEditingNeuronTree()
     realCurEditingNeuron_inNeuronTree = -1;//150523
 
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-
 	//090929
 	if (w)	w->updateTool();
 }
+
+void Renderer_gl1::toggleEditMode()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    if(listNeuronTree.size()>=1 && w && curImg)
+    {
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            finishEditingNeuronTree();
+            endSelectMode();
+        }else
+        {
+            listNeuronTree_old = listNeuronTree;
+
+            NeuronTree *p_tree = 0;
+
+            if (listNeuronTree.size()==1)
+            {
+                p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
+                curEditingNeuron = 1;
+                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+            }
+
+            curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
+            if (listNeuronTree[realCurEditingNeuron_inNeuronTree].name!="vaa3d_traced_neuron" ||
+                    listNeuronTree[realCurEditingNeuron_inNeuronTree].file!="vaa3d_traced_neuron")
+            {
+                b_editDroppedNeuron = true;
+            }
+
+            curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+            curImg->tracedNeuron.name = "vaa3d_traced_neuron";
+            curImg->tracedNeuron.file = "vaa3d_traced_neuron";
+            listNeuronTree.clear();
+            qDebug("	listNeuronTree.size() = %d!!!!!", listNeuronTree.size());
+
+            curImg->proj_trace_history_append();
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+    }
+}
+
 #endif
 void Renderer_gl1::toggleLineType()
 {

@@ -934,6 +934,13 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	toggleTexFilter();
 			}
 	  		break;
+         case Qt::Key_E:
+            if (IS_ALT_MODIFIER)
+            {
+                toggleEditMode();
+            }
+            break;
+
         case Qt::Key_T:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
 		    		WITH_CTRL_MODIFIER
@@ -2864,6 +2871,16 @@ void V3dR_GLWidget::toggleLineType()
 		renderer->toggleLineType();
 		POST_updateGL();
 	}
+}
+
+void V3dR_GLWidget::toggleEditMode()
+{
+    //qDebug("V3dR_GLWidget::toggleEditMode");
+    if (renderer)
+    {
+        renderer->toggleEditMode();
+        POST_updateGL();
+    }
 }
 
 void V3dR_GLWidget::toggleTexFilter()

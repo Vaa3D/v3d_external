@@ -248,6 +248,7 @@ public:
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
 
+    virtual void toggleEditMode()       {};
 
 public:
 	int sShowTrack, curChannel;
