@@ -180,8 +180,8 @@ void CViewer::show()
                 }
             }
 
-            if(changed_cmap)
-                curr_renderer->applyColormapToImage();
+//            if(changed_cmap)
+//                curr_renderer->applyColormapToImage();
 
             //positioning the current 3D window exactly at the previous window position
             QPoint location = prev->pos();
