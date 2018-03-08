@@ -240,6 +240,7 @@ public slots:
 	virtual void setRenderMode_Cs3d(bool b);
 
 	virtual void setCSTransparent(int);
+    virtual void setContrast(int);
 	virtual void setThickness(double);
 	virtual void setCurChannel(int);
 

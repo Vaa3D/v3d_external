@@ -111,6 +111,8 @@ void V3dR_MainWindow::createControlWidgets()
     //QLabel *labelline = new QLabel; labelline->setFrameStyle(QFrame::HLine | QFrame::Raised); labelline->setLineWidth(1);
 
     transparentSlider = createTranparentSlider();
+    contrastSlider = createContrastSlider();
+
     zthicknessBox = createThicknessSpinBox();
     comboBox_channel = createChannelComboBox();
     zthicknessBox->setToolTip("more thick more Slow!");
@@ -134,18 +136,21 @@ void V3dR_MainWindow::createControlWidgets()
 	//layout_mainDisplayOptGroup->addWidget(labelline, 2, 0, 1, 21);
 
 	layout_mainDisplayOptGroup->addWidget(transparentSlider_Label = new QLabel("Transparency"), 2, 0, 1, 9);
-	layout_mainDisplayOptGroup->addWidget(transparentSlider,       2, 9-1, 1, 13);
+    layout_mainDisplayOptGroup->addWidget(transparentSlider,       2, 9-1, 1, 13);
 
-	layout_mainDisplayOptGroup->addWidget(new QLabel("Z-thick"), 3, 0, 1, 8);
-	layout_mainDisplayOptGroup->addWidget(zthicknessBox,         3, 5, 1, 7);
+    layout_mainDisplayOptGroup->addWidget(new QLabel("Z-thick"), 3, 0, 1, 8);
+    layout_mainDisplayOptGroup->addWidget(zthicknessBox,         3, 5, 1, 7);
 
-	layout_mainDisplayOptGroup->addWidget(new QLabel("M-chan"), 3, 12, 1, 8);
-	layout_mainDisplayOptGroup->addWidget(comboBox_channel,    3, 12+5, 1, 5);
+    layout_mainDisplayOptGroup->addWidget(new QLabel("M-chan"), 3, 12, 1, 8);
+    layout_mainDisplayOptGroup->addWidget(comboBox_channel,    3, 12+5, 1, 5);
 
-	layout_mainDisplayOptGroup->addWidget(checkBox_channelR,      4, 0, 1, 4);
-	layout_mainDisplayOptGroup->addWidget(checkBox_channelG,      4, 0+4, 1, 4);
-	layout_mainDisplayOptGroup->addWidget(checkBox_channelB,      4, 0+4+4, 1, 4);
-	layout_mainDisplayOptGroup->addWidget(checkBox_volCompress, 4, 12+1, 1, 9);
+    layout_mainDisplayOptGroup->addWidget(checkBox_channelR,      4, 0, 1, 4);
+    layout_mainDisplayOptGroup->addWidget(checkBox_channelG,      4, 0+4, 1, 4);
+    layout_mainDisplayOptGroup->addWidget(checkBox_channelB,      4, 0+4+4, 1, 4);
+    layout_mainDisplayOptGroup->addWidget(checkBox_volCompress, 4, 12+1, 1, 9);
+
+    layout_mainDisplayOptGroup->addWidget(contrastSlider_Label = new QLabel("Contrast"), 5, 0, 1, 9);
+    layout_mainDisplayOptGroup->addWidget(contrastSlider,       5, 9-1, 1, 13);
 
 
 //	layout_mainDisplayOptGroup->setRowStretch( 1, 21 );
@@ -685,6 +690,9 @@ void V3dR_MainWindow::createControlWidgets()
 	SliderTipFilter *CsliderTip = new SliderTipFilter(this, "", "%", 0);
 	transparentSlider->installEventFilter(CsliderTip);
 
+    SliderTipFilter *CosliderTip = new SliderTipFilter(this, "", "%", 0);
+    contrastSlider->installEventFilter(CosliderTip);
+
 	SliderTipFilter *SsliderTip = new SliderTipFilter(this, "", "%", 0);
 	fcutSlider->installEventFilter(SsliderTip);
 	fCSSlider->installEventFilter(SsliderTip);
@@ -755,6 +763,11 @@ void V3dR_MainWindow::connectSignal()
 		connect(transparentSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setCSTransparent(int)));
 		//connect(glWidget, SIGNAL(enableTransparentSlider(bool)), transparentSlider, SLOT(setEnabled(bool)));
 	}
+
+    if (contrastSlider) {
+        connect(contrastSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setContrast(int)));
+    }
+
 	if (thicknessSlider) {
 		connect(thicknessSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setThickness(int)));
 		//connect(glWidget, SIGNAL(enableThicknessSlider(bool)), thicknessSlider_Label, SLOT(setEnabled(bool)));
@@ -1087,7 +1100,8 @@ void V3dR_MainWindow::initControlValue()
 	// volume tab
 	///////////////////////////////////////////////////////////
 	if (dispType_maxip) dispType_maxip->setChecked(true);
-	if (transparentSlider) transparentSlider->setValue(0); //10. max=100
+    if (transparentSlider) transparentSlider->setValue(0); //10. max=100
+    if (contrastSlider) contrastSlider->setValue(0);
 	//if (thicknessSlider) thicknessSlider->setValue(1);    //1, max=10
 	if (zthicknessBox)
 	{
@@ -1492,6 +1506,16 @@ QAbstractSlider *V3dR_MainWindow::createTranparentSlider(Qt::Orientation hv)
     slider->setSingleStep(1);
     slider->setPageStep(10);
 
+    //slider->setValue(0);
+    return slider;
+}
+
+QAbstractSlider *V3dR_MainWindow::createContrastSlider(Qt::Orientation hv)
+{
+    QScrollBar *slider = new QScrollBar(hv);
+    slider->setRange(-100, 100);
+    slider->setSingleStep(1);
+    slider->setPageStep(10);
     //slider->setValue(0);
     return slider;
 }

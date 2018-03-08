@@ -165,6 +165,8 @@ void CViewer::show()
             // apply the same color map only if it differs from the previous one
             Renderer_gl2* prev_renderer = (Renderer_gl2*)(prev->view3DWidget->getRenderer());
             Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+            curr_renderer->currentTraceType = prev_renderer->currentTraceType;
+
             bool changed_cmap = false;
             for(int k=0; k<3; k++)
             {
@@ -2544,6 +2546,7 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->zthicknessBox->setValue(src->zthicknessBox->value());
     dst->comboBox_channel->setCurrentIndex(src->comboBox_channel->currentIndex());
     dst->transparentSlider->setValue(src->transparentSlider->value());
+    dst->contrastSlider->setValue(src->contrastSlider->value());
     dst->fcutSlider->setValue(src->fcutSlider->value());
     if(dst->displayControlsHidden != src->displayControlsHidden)
         dst->hideDisplayControls();

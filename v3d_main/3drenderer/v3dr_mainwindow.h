@@ -164,7 +164,8 @@ public:
 	QAbstractSlider *createZoomSlider(Qt::Orientation hv = Qt::Horizontal);
 	QAbstractSlider *createRangeSlider(int znear, int zfar, Qt::Orientation hv = Qt::Horizontal);
 	QAbstractSlider *createTranparentSlider(Qt::Orientation hv = Qt::Horizontal);
-	QAbstractSlider *createThicknessSlider(Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createContrastSlider(Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createThicknessSlider(Qt::Orientation hv = Qt::Horizontal);
 	QDoubleSpinBox *createThicknessSpinBox();
 	QComboBox *createChannelComboBox();
 	QSpinBox *createMarkerSizeSpinBox();
@@ -190,9 +191,13 @@ public:
     // volume display control
 	QRadioButton *dispType_maxip, *dispType_minip, *dispType_alpha, *dispType_cs3d;
 	QLabel *thicknessSlider_Label, *transparentSlider_Label; //for disable, by RZC 080822
+    QLabel *contrastSlider_Label; //by ZZ 03072018
+
 	QDoubleSpinBox *zthicknessBox; //by PHC, 090215
 	QComboBox *comboBox_channel;
     QAbstractSlider *thicknessSlider, *transparentSlider;
+    QAbstractSlider *contrastSlider;
+
     QCheckBox *checkBox_channelR, *checkBox_channelG, *checkBox_channelB, *checkBox_channelA, *checkBox_volCompress;
     QPushButton *volumeColormapButton;
 
@@ -258,8 +263,8 @@ public:
 	    timeSlider=0;
 
 	    dispType_minip=dispType_maxip=dispType_alpha=dispType_cs3d=0;
-		thicknessSlider_Label=transparentSlider_Label=0;
-		transparentSlider=0;
+        thicknessSlider_Label=transparentSlider_Label=contrastSlider_Label=0;
+        transparentSlider=contrastSlider=0;
 	    thicknessSlider=0; zthicknessBox=0;
 	    comboBox_channel=0;
 		checkBox_channelR=checkBox_channelG=checkBox_channelB=checkBox_channelA=checkBox_volCompress=0;
