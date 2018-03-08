@@ -1605,7 +1605,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
         //// Vaa3d || Terafly
         else
         {
-            curImg->proj_trace_add_curve_segment(loc_list, chno);
+            curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
@@ -1677,7 +1677,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			count++;
 			NeuronSWC S;
 			S.n 	= seg.row.at(k).data[0];
-			S.type 	= seg.row.at(k).data[1];
+            S.type 	= seg.row.at(k).data[1];
 			S.x 	= seg.row.at(k).data[2];
 			S.y 	= seg.row.at(k).data[3];
 			S.z 	= seg.row.at(k).data[4];

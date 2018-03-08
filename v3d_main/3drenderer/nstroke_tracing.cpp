@@ -3571,7 +3571,7 @@ void Renderer_gl1::connectNeuronsByStroke()
 					reID!=curImg->tracedNeuron.seg[segInfo[0].segID].row.end(); ++reID) 
 				{
 					reID->seg_id = segInfo[0].segID;
-					reID->type = 3;
+                    reID->type = 3;
 				}
 			}
 			/* ============================== END of [Connet segments] ============================== */
@@ -3678,7 +3678,7 @@ void Renderer_gl1::connectPointCloudByStroke()
 	for (vector<V_NeuronSWC_unit>::iterator itSort=newSeg.row.begin(); itSort!=newSeg.row.end(); itSort++)
 	{
 		itSort->seg_id = segNum;
-		itSort->type = 3;
+        itSort->type = 3;
 		itSort->data[0] = nodeLabel;
 		itSort->data[6] = nodeLabel + 1;
 		++nodeLabel;
@@ -3796,7 +3796,7 @@ void Renderer_gl1::connectMarkerByStroke()
 	for (vector<V_NeuronSWC_unit>::iterator itSort=newSeg.row.begin(); itSort!=newSeg.row.end(); itSort++)
 	{
 		itSort->seg_id = segNum;
-		itSort->type = 3;
+        itSort->type = 3;
 		itSort->data[0] = nodeLabel;
 		itSort->data[6] = nodeLabel + 1;
 		++nodeLabel;
@@ -4179,7 +4179,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                         "\n 3 -- dendrite (blue)"
                                         "\n 4 -- apical dendrite (purple)"
                                         "\n else -- custom \n"),
-                                      node_type, 0, 100, 1, &ok);
+                                      currentTraceType, 0, 100, 1, &ok);
 //>>>>>>> master
 #else
         node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
@@ -4190,11 +4190,12 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                             "\n 3 -- dendrite (blue)"
                                             "\n 4 -- apical dendrite (purple)"
                                             "\n else -- custom \n"),
-                                          node_type, 0, 100, 1, &ok);
+                                          currentTraceType, 0, 100, 1, &ok);
 #endif
     }
 
     if(!ok) return;
+    currentTraceType = node_type;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
