@@ -1934,6 +1934,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         //applying the same color map only if it differs from the source one
         Renderer_gl2* source_renderer = (Renderer_gl2*)(source->view3DWidget->getRenderer());
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+        curr_renderer->currentTraceType = source_renderer->currentTraceType;
         bool changed_cmap = false;
         for(int k=0; k<3; k++)
         {
@@ -1946,8 +1947,8 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
                 curr_cmap[i] = source_cmap[i];
             }
         }
-        if(changed_cmap)
-            curr_renderer->applyColormapToImage();
+//        if(changed_cmap)
+//            curr_renderer->applyColormapToImage();
 
         //storing annotations done in the source view
         source->storeAnnotations();
