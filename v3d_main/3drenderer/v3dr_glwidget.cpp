@@ -1283,22 +1283,23 @@ void V3dR_GLWidget::setContrast(int t)
         float exp_val = pow(10.0f, t/100.0f);
         for(int j=0; j<255; j++)
         {
-            (curr_renderer->colormap[0][j]).r = (unsigned char)255;
-            (curr_renderer->colormap[0][j]).g = (unsigned char)255;
-            (curr_renderer->colormap[0][j]).b = (unsigned char)255;
             // This is the value being manipulated
             int val= (int)(pow(j/255.0f, exp_val) * 255.0f);
+
+            (curr_renderer->colormap[0][j]).r = (unsigned char)255;
+            (curr_renderer->colormap[0][j]).g = (unsigned char)0;
+            (curr_renderer->colormap[0][j]).b = (unsigned char)0;
             (curr_renderer->colormap[0][j]).a = (unsigned char)val;
 
             (curr_renderer->colormap[1][j]).r = (unsigned char)0;
             (curr_renderer->colormap[1][j]).g = (unsigned char)255;
             (curr_renderer->colormap[1][j]).b = (unsigned char)0;
-            (curr_renderer->colormap[1][j]).a = (unsigned char)0;
+            (curr_renderer->colormap[1][j]).a = (unsigned char)val;
 
             (curr_renderer->colormap[2][j]).r = (unsigned char)0;
             (curr_renderer->colormap[2][j]).g = (unsigned char)0;
             (curr_renderer->colormap[2][j]).b = (unsigned char)255;
-            (curr_renderer->colormap[2][j]).a = (unsigned char)0;
+            (curr_renderer->colormap[2][j]).a = (unsigned char)val;
 
             (curr_renderer->colormap[3][j]).r = (unsigned char)205;
             (curr_renderer->colormap[3][j]).g = (unsigned char)205;
