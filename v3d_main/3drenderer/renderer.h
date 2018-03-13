@@ -274,10 +274,10 @@ public:
 	int polygonMode, tryObjShader;
 	int tryTexNPT, tryTex3D, tryTexCompress, tryVolShader, tryTexStream;
 	const char* try_vol_state();
-
+    int editinput;
 // internal state
 //protected:
-	int volTimePoint, volTimeOffset;
+    int volTimePoint, volTimeOffset;
 	BoundingBox boundingBox, surfBoundingBox;
 	double thickness; //changed from int to double, PHC, 090215
 	V3DLONG xCut0,xCut1, yCut0,yCut1, zCut0,zCut1;            // for volume
@@ -297,7 +297,6 @@ public:
 	V3DLONG bufSize[5]; //(x,y,z,c,t) 090731: add time dim
 
      XYZ curveStartMarker; // ZJL
-     int editinput;
 
 private:
 	void init_members()
