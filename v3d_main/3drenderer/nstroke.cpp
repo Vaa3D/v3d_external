@@ -1280,6 +1280,7 @@ void Renderer_gl1::callStrokeCurveDrawingBBoxes()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w)
     {
+        editinput = 1;
         oldCursor = QCursor(Qt::ArrowCursor);
         w->setCursor(QCursor(Qt::PointingHandCursor));
     }
@@ -1293,6 +1294,7 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
     {
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
+            editinput = 2;
             selectMode = smRetypeMultiNeurons;
             b_addthiscurve = false;
             oldCursor = QCursor(Qt::ArrowCursor);
@@ -1308,6 +1310,7 @@ void Renderer_gl1::callStrokeDeleteMultiNeurons()
     {
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
+            editinput = 3;
             selectMode = smDeleteMultiNeurons;
             b_addthiscurve = false;
             oldCursor = QCursor(Qt::ArrowCursor);
@@ -1323,6 +1326,7 @@ void Renderer_gl1::callStrokeSplitMultiNeurons()
     {
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
+            editinput = 4;
             selectMode = smBreakMultiNeurons;
             b_addthiscurve = false;
             oldCursor = QCursor(Qt::ArrowCursor);

@@ -2167,6 +2167,7 @@ void Renderer_gl1::endSelectMode()
 		selectMode = smObject;
 		if (w) { w->setCursor(oldCursor); }
 	}
+    editinput = 0;
 }
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {

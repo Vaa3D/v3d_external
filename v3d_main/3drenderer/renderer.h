@@ -172,7 +172,8 @@ public:
 	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
 
     virtual void drawVaa3DInfo(int fontsize=30);
-	
+    virtual void drawEditInfo();
+
 	virtual void drawSegInfo();
 	vector<size_t> segInfoShow;
     virtual void drawScaleBar(float AlineWidth=3);
@@ -296,6 +297,7 @@ public:
 	V3DLONG bufSize[5]; //(x,y,z,c,t) 090731: add time dim
 
      XYZ curveStartMarker; // ZJL
+     int editinput;
 
 private:
 	void init_members()
@@ -389,6 +391,7 @@ private:
         refineMode = smCurveRefine_fm;
 
         ui3dviewMode = Vaa3d;
+        editinput=0;
 
 	}
 
