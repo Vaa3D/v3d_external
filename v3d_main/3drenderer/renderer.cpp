@@ -658,10 +658,11 @@ void Renderer::drawEditInfo()
         string editdisplay;
         switch (editinput)
         {
-             case 1:  editdisplay = "Drawing";break;
+             case 1:  editdisplay = "Drawing BBox";break;
              case 2:  editdisplay = "Retyping";break;
              case 3:  editdisplay = "Deleting";break;
              case 4:  editdisplay = "Splitting";break;
+             case 5:  editdisplay = "Drawing Global";break;
         }
 
         sprintf(str, "%s", editdisplay.c_str());

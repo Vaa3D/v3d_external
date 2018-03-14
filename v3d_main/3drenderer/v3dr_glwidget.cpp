@@ -924,7 +924,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				)
 		    {
 		    	toggleShader();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
+            }
 	  		break;
 
 	  		///// volume texture operation //////////////////////////////////////////////////////
@@ -2828,6 +2831,18 @@ void V3dR_GLWidget::callStrokeCurveDrawingBBoxes()
         if (v3dr_getImage4d(_idep)->get_xy_view())
         {
             renderer->callStrokeCurveDrawingBBoxes();
+            POST_updateGL();
+        }
+    }
+}
+
+void V3dR_GLWidget::callStrokeCurveDrawingGlobal()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callStrokeCurveDrawingGlobal();
             POST_updateGL();
         }
     }

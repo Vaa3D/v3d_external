@@ -1287,6 +1287,20 @@ void Renderer_gl1::callStrokeCurveDrawingBBoxes()
 
 }
 
+void Renderer_gl1::callStrokeCurveDrawingGlobal()
+{
+    selectMode = smCurveTiltedBB_fm;
+    b_addthiscurve = true;
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        editinput = 5;
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
+    }
+
+}
+
 void Renderer_gl1::callStrokeRetypeMultiNeurons()
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;

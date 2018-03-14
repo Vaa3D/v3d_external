@@ -55,7 +55,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(3.448);
+    VersionInfo thisVersionOfV3D(3.449);
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -194,6 +194,7 @@ void v3d_aboutinfo()
         "<H3>For neuron tracing/editing short keys</H3>"
         "<br><table border=\"1\">"
         "<tr><td>Alt-B </td><td>invoke the curve drawing function using serial BBoxes.</td></tr>"
+        "<tr><td>Alt-G </td><td>invoke the curve drawing function using Global optimal.</td></tr>"
         "<tr><td>Alt-E </td><td>toggle Edit/non-edit mode.</td></tr>"
         "<tr><td>Alt-T </td><td>invoke the multiple neuron-segments reTyping function.</td></tr>"
         "<tr><td>Alt-D </td><td>invoke the multiple neuron-segments Deleting function.</td></tr>"

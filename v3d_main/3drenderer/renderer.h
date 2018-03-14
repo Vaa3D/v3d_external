@@ -248,6 +248,7 @@ public:
     virtual void callStrokeDeleteMultiNeurons() {};//  multiple segments deleting shortcut
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
+    virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
 
     virtual void toggleEditMode()       {};
 
