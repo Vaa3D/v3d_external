@@ -1057,14 +1057,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smCurveTiltedBB_fm;
 		b_addthiscurve = true;
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        if (w) { editinput = 5; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         total_etime = 0; //reset the timer
 	}
 	else if (act == actCurveTiltedBB_fm_sbbox) // 20120124 ZJL
 	{
 		selectMode = smCurveTiltedBB_fm_sbbox;
 		b_addthiscurve = true;
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        if (w) { editinput = 1; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         total_etime = 0; //reset the timer
 	}
 	else if (act == actMarkerCreate1Stroke) // 20121011 PHC
@@ -1685,7 +1685,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
        {
               selectMode = smRetypeMultiNeurons;
               b_addthiscurve = false;
-              if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+              if (w) { editinput = 2; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
        }
    }
     else if (act==actBreakMultiNeuronSeg) // Zhi Zhou
@@ -1694,7 +1694,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
        {
               selectMode = smBreakMultiNeurons;
               b_addthiscurve = false;
-              if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+              if (w) { editinput = 4; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
        }
    }
 	else if (act==actChangeNeuronSegRadius)
@@ -1765,7 +1765,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
                selectMode = smDeleteMultiNeurons;
                b_addthiscurve = false;
-               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+               if (w) { editinput = 3; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
 	else if (act==actDeleteNeuronSeg)
@@ -1792,7 +1792,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
             selectMode = smConnectNeurons;
             b_addthiscurve = false;
-            if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+            if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
 	else if (act == actPointCloudConnect)
@@ -2165,7 +2165,7 @@ void Renderer_gl1::endSelectMode()
 	if (selectMode != smObject)
 	{
 		selectMode = smObject;
-		if (w) { w->setCursor(oldCursor); }
+        if (w) { w->setCursor(oldCursor); }
 	}
     editinput = 0;
 }

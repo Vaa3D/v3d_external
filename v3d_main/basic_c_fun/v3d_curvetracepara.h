@@ -36,6 +36,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 struct CurveTracePara
 {
+    double  false_th;
 	double image_force_weight;
 	double grident_force_weight;
 	double internal_force_weight;

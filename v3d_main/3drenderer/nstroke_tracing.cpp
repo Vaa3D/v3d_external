@@ -3081,7 +3081,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
-    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
     curImg->tracedNeuron.deleteMultiSeg();
     //curImg->proj_trace_history_append();          // no need to update the history
     curImg->update_3drenderer_neuron_view(w, this);

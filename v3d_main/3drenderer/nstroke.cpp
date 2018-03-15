@@ -1357,6 +1357,7 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
     {
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
+            editinput = 6;
             selectMode = smConnectNeurons;
             b_addthiscurve = false;
             oldCursor = QCursor(Qt::ArrowCursor);
