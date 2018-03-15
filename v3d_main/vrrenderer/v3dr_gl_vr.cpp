@@ -972,7 +972,7 @@ bool CMainApplication::BInitGL()
 			NTL curNTL;
 			NeuronTree curNT = loadedNTList->at(i);
 			curNTL.push_back(curNT);
-			qDebug()<<"loadedNTList->size()"<<curNTL.size();
+			qDebug()<<"curNTL->size()"<<curNTL.size();
 			MergeNeuronTrees(loadedNT_merged,&curNTL);
 			curNTL.clear();
 		}
@@ -1071,7 +1071,7 @@ void CMainApplication::Shutdown()
 			{
 				contained = true;
 				SS.n = 1+i;
-				//SS = loadedNTList->at(i);
+				SS = loadedNTList->at(i);
 				MergeNeuronTrees(SS,&sketchedNTList);
 				loadedNTList->replace(i, SS); 
 				break;
@@ -2597,6 +2597,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
 			QString name = qsl.back();
 			QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
+			//shift the neuron nodes to get global coordinates
 			writeSWC_file(filename, sketchedNT_merged);	
 			qDebug("Successfully writeSWC_file");
 		}
