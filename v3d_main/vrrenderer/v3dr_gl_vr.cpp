@@ -714,6 +714,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, _call_assemble_plugin(false)
 	, fContrast(1)
 	, fBrightness(0)
+	, iLineWid(1)
 	//, font_VR (NULL)
 
 {
@@ -958,7 +959,7 @@ bool CMainApplication::BInitGL()
 		return false;
 	loadedNT_merged.listNeuron.clear();
 	loadedNT_merged.hashNeuron.clear();
-	
+
 	//merge all loaded Neuron and vaa3d_traced_neuron into one single NeuronTree 
 	//MergeNeuronTrees(loadedNT_merged,loadedNTList);
 	qDebug()<<"loadedNTList->size()"<<loadedNTList->size();
@@ -2090,25 +2091,25 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			m_modeGrip_L = _donothing;
 			break;
 		case 1:
-			m_modeGrip_L = _Surface;
+			m_modeGrip_L = _Contrast;
 			break;
 		case 2:
-			m_modeGrip_L = _VirtualFinger;
+			m_modeGrip_L = _UndoRedo;
 			break;
 		case 3:
-			m_modeGrip_L = _Freeze;
+			m_modeGrip_L = _Surface;
 			break;
 		case 4:
-			m_modeGrip_L = _Search1;
+			m_modeGrip_L = _VirtualFinger;
 			break;
 		case 5:
-			m_modeGrip_L = _Search2;
+			m_modeGrip_L = _Freeze;
 			break;
 		case 6:
-			m_modeGrip_L = _Clear;
+			m_modeGrip_L = _Search1;
 			break;
 		case 7:
-			m_modeGrip_L = _UndoRedo;
+			m_modeGrip_L = _Search2;
 		default:
 			break;
 		}
@@ -2161,7 +2162,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					qDebug()<<"Freeze View OFF";
 				break;
 			}
-		case _Clear:
+		case _Contrast:
 			{
 				qDebug()<<"Clear all sketch Neuron";
 				if(temp_x>0)
@@ -2211,6 +2212,24 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					//if(fBrightness<0)
 					//	fBrightness = 0;
 				}
+				break;
+			}
+		case _Search1:
+			{
+				qDebug()<<"Clear all sketch Neuron";
+				if(temp_x>0)
+				{
+					iLineWid+=1;
+					if (iLineWid>10)
+						iLineWid = 10;
+				}
+				else
+				{
+					iLineWid-=1;
+					if (iLineWid<1)
+						iLineWid = 1;
+				}
+				break;
 			}
 		default:
 			break;
@@ -3113,7 +3132,7 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _Search1:
 		case _Search2:
-		case _Clear:
+		case _Contrast:
 			{
 				AddVertex(point_E.x,point_E.y,point_E.z,0.5,0.125f,vcVerts);
 				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.125f,vcVerts);
@@ -3217,8 +3236,8 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,1,0,vcVerts);
 				break;
 			}
-		case _Clear:
-			{//clear
+		case _Contrast:
+			{//_Contrast
 				AddVertex(point_M.x,point_M.y,point_M.z,0,0.125f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.125f,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0,0.25f,vcVerts);
@@ -3920,16 +3939,17 @@ void CMainApplication::RenderControllerAxes() //note: note render, actually setu
 			m_uiControllerVertcount += 2;
 		}
 
-		Vector4 start = mat * Vector4( 0, 0, -0.02f, 1 );
-		Vector4 end = mat * Vector4( 0, 0, -39.f, 1 );
-		Vector3 color( .92f, .92f, .71f );
+		// prepare the shooting ray
+		//Vector4 start = mat * Vector4( 0, 0, -0.02f, 1 );
+		//Vector4 end = mat * Vector4( 0, 0, -39.f, 1 );
+		//Vector3 color( .92f, .92f, .71f );
 
-		vertdataarray.push_back( start.x );vertdataarray.push_back( start.y );vertdataarray.push_back( start.z );//note: ray?
-		vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
+		//vertdataarray.push_back( start.x );vertdataarray.push_back( start.y );vertdataarray.push_back( start.z );//note: ray?
+		//vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
 
-		vertdataarray.push_back( end.x );vertdataarray.push_back( end.y );vertdataarray.push_back( end.z );
-		vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
-		m_uiControllerVertcount += 2;
+		//vertdataarray.push_back( end.x );vertdataarray.push_back( end.y );vertdataarray.push_back( end.z );
+		//vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
+		//m_uiControllerVertcount += 2;
 	}
 
 	// Setup the VAO the first time through.
@@ -4545,7 +4565,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 		// .get() is a const float * m[16], globalmatrix must be a glm::mat4  
 		glBindVertexArray(m_unMorphologyLineModeVAO);
-		//glLineWidth(2);
+		glLineWidth(iLineWid);
 		glDrawElements(GL_LINES, m_uiMorphologyLineModeVertcount, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 

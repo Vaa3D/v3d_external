@@ -41,14 +41,14 @@ enum ModelControlR
 };
 enum ModeControlSettings
 {
-	_donothing=0,
-	_Surface=1,
+	_donothing = 0,
+	_Contrast = 1,
+	_UndoRedo,
+	_Surface,
 	_VirtualFinger,	
 	_Freeze,
 	_Search1,
-	_Search2,
-	_Clear,
-	_UndoRedo
+	_Search2
 };
 
 typedef QList<NeuronTree> NTL;
@@ -424,6 +424,8 @@ private:
 
 	float fBrightness;
 	float fContrast;
+
+	float iLineWid;
 };
 
 
