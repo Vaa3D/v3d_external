@@ -694,6 +694,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_translationMode (false)
 	, m_rotateMode (false)
 	, m_zoomMode (false)
+	, m_autoRotateON (false)
 	, m_TouchFirst (true)
 	, m_fTouchOldX( 0 )
 	, m_fTouchOldY( 0 )
@@ -2231,6 +2232,36 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+		case _Search2: //actually for auto-rotation
+			{
+				qDebug()<<"Auto rotation";
+				if (m_autoRotateON)
+				{
+					m_autoRotateON = false;
+				}
+				else 
+				{
+					m_autoRotateON = true;
+
+					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
+					glm::mat4 mat = glm::mat4();
+					for (size_t i = 0; i < 4; i++)
+					{
+						for (size_t j = 0; j < 4; j++)
+						{
+							mat[i][j] = *(mat_M.get() + i * 4 + j);
+						}
+					}
+					mat=glm::inverse(m_globalMatrix) * mat;
+					glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
+
+					autoRotationCenter.x = ctrlLeftPos.x;
+					autoRotationCenter.y = ctrlLeftPos.y;
+					autoRotationCenter.z = ctrlLeftPos.z;
+				}
+								
+				break;
+			}
 		default:
 			break;
 		}
@@ -2704,6 +2735,14 @@ void CMainApplication::RenderFrame()
 		}//for all (synchronized) sketched strokes
 		//SetupMorphologySurface(currentNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
+
+		if (m_autoRotateON) //auto rotation is on
+		{
+			m_globalMatrix = glm::translate(m_globalMatrix,autoRotationCenter);
+			m_globalMatrix = glm::rotate(m_globalMatrix,0.01f,glm::vec3(1,0,0));
+			m_globalMatrix = glm::rotate(m_globalMatrix,0.01f,glm::vec3(0,1,0));
+			m_globalMatrix = glm::translate(m_globalMatrix,-autoRotationCenter);
+		}
 
 		RenderStereoTargets();
 		RenderCompanionWindow();

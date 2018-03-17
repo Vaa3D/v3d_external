@@ -236,6 +236,7 @@ private: // OpenGL bookkeeping
 	bool m_translationMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
+	bool m_autoRotateON;
 	bool m_TouchFirst;
 	bool m_pickUpState;
 	/////store the pos every first time touch on the touchpad
@@ -248,6 +249,7 @@ private: // OpenGL bookkeeping
 	float detY;
 	
 	glm::vec3 loadedNTCenter;
+	glm::vec3 autoRotationCenter;
 	long int vertexcount, swccount;
 
 	std::string m_strPoseClasses;                            // what classes we saw poses for this frame
