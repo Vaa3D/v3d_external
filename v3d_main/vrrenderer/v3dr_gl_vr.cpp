@@ -1657,14 +1657,14 @@ bool CMainApplication::HandleInput()
 				else if(m_rotateMode==true)//into ratate mode
 				{
 					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/300,glm::vec3(1,0,0));
-					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/300,glm::vec3(0,1,0));
+					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/100,glm::vec3(1,0,0));
+					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/100,glm::vec3(0,1,0));
 					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 				}
 				else if(m_zoomMode==true)//into zoom mode
 				{
 					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-					m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/300,1+m_fTouchPosY/300,1+m_fTouchPosY/300));
+					m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/150,1+m_fTouchPosY/150,1+m_fTouchPosY/150));
 					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 				}
 			}
