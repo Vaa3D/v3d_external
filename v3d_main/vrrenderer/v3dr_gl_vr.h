@@ -47,8 +47,8 @@ enum ModeControlSettings
 	_Surface,
 	_VirtualFinger,	
 	_Freeze,
-	_Search1,
-	_Search2
+	_LineWidth,
+	_AutoRotate
 };
 
 typedef QList<NeuronTree> NTL;

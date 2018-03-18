@@ -2107,10 +2107,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			m_modeGrip_L = _Freeze;
 			break;
 		case 6:
-			m_modeGrip_L = _Search1;
+			m_modeGrip_L = _LineWidth;
 			break;
 		case 7:
-			m_modeGrip_L = _Search2;
+			m_modeGrip_L = _AutoRotate;
 		default:
 			break;
 		}
@@ -2215,7 +2215,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
-		case _Search1:
+		case _LineWidth: //line width
 			{
 				qDebug()<<"Clear all sketch Neuron";
 				if(temp_x>0)
@@ -2232,7 +2232,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
-		case _Search2: //actually for auto-rotation
+		case _AutoRotate: //actually for auto-rotation
 			{
 				qDebug()<<"Auto rotation";
 				if (m_autoRotateON)
@@ -3169,8 +3169,7 @@ void CMainApplication::SetupControllerTexture()
 				}
 				break;
 			}
-		case _Search1:
-		case _Search2:
+		case _LineWidth:
 		case _Contrast:
 			{
 				AddVertex(point_E.x,point_E.y,point_E.z,0.5,0.125f,vcVerts);
@@ -3179,6 +3178,29 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_G.x,point_G.y,point_G.z,0.5,0.25f,vcVerts);
 				AddVertex(point_H.x,point_H.y,point_H.z,0.67f,0.25f,vcVerts);
 				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.125f,vcVerts);
+				break;
+			}
+		case _AutoRotate:
+			{
+				if(m_autoRotateON)
+				{
+					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.17f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+				}
+				else
+				{
+					AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.33f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
+
+				}
 				break;
 			}
 		case _UndoRedo:
@@ -3255,8 +3277,8 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.125f,vcVerts);
 				break;
 			}
-		case _Search1:
-			{//search1
+		case _LineWidth:
+			{
 				AddVertex(point_M.x,point_M.y,point_M.z,0.67f,0,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.125f,vcVerts);
@@ -3265,8 +3287,8 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0,vcVerts);
 				break;
 			}
-		case _Search2:
-			{//search2
+		case _AutoRotate:
+			{
 				AddVertex(point_M.x,point_M.y,point_M.z,0.84f,0,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,1,0,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.125f,vcVerts);
