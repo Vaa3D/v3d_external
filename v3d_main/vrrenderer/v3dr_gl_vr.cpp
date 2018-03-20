@@ -65,7 +65,7 @@ int checkForOpenGLError(const char* file, int line)
 
 
 #define dist_thres 0.01
-#define default_radius 0.5
+#define default_radius 0.618
 
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
@@ -653,8 +653,8 @@ void dprintf( const char *fmt, ... )
 CMainApplication::CMainApplication( int argc, char *argv[] )
 	: m_pCompanionWindow(NULL)
 	, m_pContext(NULL)
-	, m_nCompanionWindowWidth( 1600 )//(640)//
-	, m_nCompanionWindowHeight(800)//( 320 )//
+	, m_nCompanionWindowWidth(3200)//( 1600 )//(640)//
+	, m_nCompanionWindowHeight(1600)//(800)//( 320 )//
 	, morphologyShader ( NULL )
 	, raycastingShader ( NULL )
 	, clipPatchShader (NULL)
@@ -2487,6 +2487,12 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					currentNT = InputNT;
 					tempNT.listNeuron.clear();
 					tempNT.hashNeuron.clear();	
+
+					//change radius to mark the curved traced in VR.
+					for(int i=0;i<currentNT.listNeuron.size();i++)
+					{
+						currentNT.listNeuron[i].r = 0.666;
+					}
 				}
 				if(isOnline==false)
 				{
