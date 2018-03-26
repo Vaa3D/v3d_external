@@ -987,7 +987,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_addthiscurve = true;
 		cntCur3DCurveMarkers=0; //reset
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
+        if (w) { editinput = 7; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
         total_etime = 0; //reset the timer
 	}
 

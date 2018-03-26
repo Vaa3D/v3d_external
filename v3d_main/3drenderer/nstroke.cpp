@@ -1272,6 +1272,8 @@ void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool 
  * Alt+D: multiple segments Deleting
  * Alt+S: multiple segments Spliting
  * Alt+C: multiple segments Connection
+ * Alt+P: 3D polYline defining
+
 */
 void Renderer_gl1::callStrokeCurveDrawingBBoxes()
 {
@@ -1363,6 +1365,20 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
             oldCursor = QCursor(Qt::ArrowCursor);
             w->setCursor(QCursor(Qt::PointingHandCursor));
         }
+    }
+}
+
+void Renderer_gl1::callDefine3DPolyline()
+{
+    selectMode = smCurveCreate_pointclick;
+    b_addthiscurve = true;
+    cntCur3DCurveMarkers=0; //reset
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        editinput = 7;
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
     }
 }
 

@@ -377,9 +377,10 @@ public slots:
     virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
     virtual void callStrokeRetypeMultiNeurons();//  call multiple segments retyping
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
-    virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
+    virtual void callStrokeSplitMultiNeurons();//  call multiple segments splitting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
+    virtual void callDefine3DPolyline(); // call 3D polyline defining
 
     virtual void toggleEditMode();
 

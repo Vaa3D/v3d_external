@@ -217,6 +217,7 @@ public:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
+    virtual void callDefine3DPolyline(); // call 3D polyline defining
 
     virtual void toggleEditMode();
 

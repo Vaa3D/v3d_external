@@ -664,6 +664,7 @@ void Renderer::drawEditInfo()
         case 4:  editdisplay = "Splitting";break;
         case 5:  editdisplay = "Drawing Global";break;
         case 6:  editdisplay = "Connecting";break;
+        case 7:  editdisplay = "Defining Polyline";break;
         }
 
         sprintf(str, "%s", editdisplay.c_str());

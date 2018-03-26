@@ -1017,6 +1017,13 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 	  		break;
 
+        case Qt::Key_Y:
+            if (IS_ALT_MODIFIER)
+            {
+                callDefine3DPolyline();//For 3D polyline shortcut, by ZZ,03262018
+            }
+            break;
+
 	  		///// marker operation //////////////////////////////////////////////////////
 		case Qt::Key_Escape:
 			{
@@ -2881,6 +2888,18 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
     {
         renderer->callStrokeConnectMultiNeurons();
         POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callDefine3DPolyline()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callDefine3DPolyline();
+            POST_updateGL();
+        }
     }
 }
 //end five shortcuts
