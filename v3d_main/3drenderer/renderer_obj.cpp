@@ -1531,9 +1531,9 @@ void Renderer_gl1::setBBZ(float zMinIn, float zMaxIn){
 }
 
 void Renderer_gl1::setBBZcutFlag(bool cuttingZ){
-	this->cuttingZ = cuttingZ;
+    this->cuttingZ = cuttingZ;
 	updateNeuronBoundingBox();
-	updateBoundingBox();
+    updateBoundingBox();
 }
 
 void Renderer_gl1::updateNeuronBoundingBoxWithZCut(float zMin, float zMax)

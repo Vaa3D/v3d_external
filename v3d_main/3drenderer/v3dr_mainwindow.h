@@ -202,7 +202,7 @@ public:
     QPushButton *volumeColormapButton;
 
     // surface display control
-    QCheckBox *checkBox_displayMarkers, *checkBox_displaySurf, *checkBox_markerLabel, *checkBox_surfStretch;
+    QCheckBox *checkBox_displayMarkers, *checkBox_displaySurf, *checkBox_markerLabel, *checkBox_surfStretch, *checkBox_surfZLock;
     QSpinBox * spinBox_markerSize; // 090422 RZC
     QPushButton *updateLandmarkButton, *loadSaveObjectsButton;
     QPushButton *surfobjManagerButton; //or Object Manager button

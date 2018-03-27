@@ -322,9 +322,11 @@ public slots:
 
 	virtual void setShowMarkers(int s);
 	virtual void setShowSurfObjects(int s);
+    virtual void setZSurfure(bool);
 	virtual void enableMarkerLabel(bool);
 	virtual void setMarkerSize(int s);
 	virtual void enableSurfStretch(bool);
+    virtual void enableSurfZLock(bool);
 	virtual void toggleCellName();
 	virtual void toggleMarkerName();// by Lei Qu, 110425
 

@@ -177,6 +177,8 @@ void V3dR_MainWindow::createControlWidgets()
     spinBox_markerSize = createMarkerSizeSpinBox(); //marker size is related with voxel size
     checkBox_markerLabel = new QCheckBox("Label");
     checkBox_surfStretch = new QCheckBox("Stretch with Volume");
+    checkBox_surfZLock = new QCheckBox("Z-Lock with Volume");
+
 
     surfDisplayOptLayout->addWidget(checkBox_displayMarkers, 1, 0, 1, 7);
     surfDisplayOptLayout->addWidget(updateLandmarkButton, 1, 7, 1, 20-6);
@@ -187,6 +189,7 @@ void V3dR_MainWindow::createControlWidgets()
     surfDisplayOptLayout->addWidget(checkBox_displaySurf, 3, 0, 1, 7);
     surfDisplayOptLayout->addWidget(loadSaveObjectsButton, 3, 7, 1, 20-6);
     surfDisplayOptLayout->addWidget(checkBox_surfStretch, 4, 2, 1, 20-2);
+    surfDisplayOptLayout->addWidget(checkBox_surfZLock, 5, 2, 1, 20-2);
 
 
 //    surfDisplayOptLayout->setRowStretch( 1, 21 );
@@ -836,6 +839,11 @@ void V3dR_MainWindow::connectSignal()
 		connect(surfobjManagerButton, SIGNAL(clicked()), glWidget, SLOT(surfaceSelectDialog()));
 		//surfobjManagerButton->setEnabled(false);
 	}
+
+    if (checkBox_surfZLock)
+    {
+        connect(checkBox_surfZLock, SIGNAL(toggled(bool)), glWidget, SLOT(enableSurfZLock(bool)));
+    }
 
 #define __connect_rotation__
 	//rotation group //////////////////////////////////////////////////

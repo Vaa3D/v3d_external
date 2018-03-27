@@ -183,6 +183,7 @@ public:
 	virtual void enableMarkerLabel(bool) =0;
 	virtual void setMarkerSize(int s) =0;
 	virtual void enableSurfStretch(bool) =0;
+    virtual void enableSurfZLock(bool) =0;
 	virtual void toggleCellName() =0;
 
 	virtual void createSurfCurrentR() =0;

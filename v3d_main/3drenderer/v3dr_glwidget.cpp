@@ -45,6 +45,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
+#include "v3dr_mainwindow.h"
+
 
 #include "../vrrenderer/VR_MainWindow.h"
 #include "../vrrenderer/V3dR_Communicator.h"
@@ -2118,7 +2120,9 @@ void V3dR_GLWidget::setZCut0(int s)
 		if (renderer) renderer->setZCut0(s);
 
 		if (_zCut0+dzCut>_zCut1)	setZCut1(_zCut0+dzCut);
-		if (lockZ && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
+        if (lockZ && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
+        setZSurfure(renderer->b_surfZLock);
+
 		emit changeZCut0(_zCut0);
 		POST_updateGL();
 	}
@@ -2134,15 +2138,27 @@ void V3dR_GLWidget::setZCut1(int s)
 
 		if (_zCut0>_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
 		if (lockZ && _zCut0<_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
+        setZSurfure(renderer->b_surfZLock);
+
 		emit changeZCut1(_zCut1);
 		POST_updateGL();
 	}
 }
 
+void V3dR_GLWidget::setZSurfure(bool b)
+{
+    if(b)
+    {
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
+        curr_renderer->setBBZ((float) _idep->window3D->zcminSlider->value()-2, (float) _idep->window3D->zcmaxSlider->value()+2);
+    }
+}
+
+
 void V3dR_GLWidget::setXCutLock(bool b)
 {
-	if (b)	dxCut = _xCut1-_xCut0;
-	else    dxCut = 0;
+    if (b)  dxCut = _xCut1-_xCut0;
+    else    dxCut = 0;
 	lockX = b? 1:0;  //110714
 }
 void V3dR_GLWidget::setYCutLock(bool b)
@@ -2474,6 +2490,28 @@ void V3dR_GLWidget::enableSurfStretch(bool s)
 		POST_updateGL();
 	}
 }
+
+void V3dR_GLWidget::enableSurfZLock(bool s)
+{
+    if (renderer)
+    {
+        renderer->b_surfZLock = s;
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
+        if(curr_renderer->zMin == -1.0 && curr_renderer->zMax == 1.0)
+        {
+            Renderer_gl1* curr_renderer = (Renderer_gl1*)(getRenderer());
+            curr_renderer->cuttingZ = true;
+            return;
+        }
+
+        curr_renderer->setBBZcutFlag(s);
+        _idep->window3D->zcminSlider->setValue(_idep->window3D->zcminSlider->value());
+        _idep->window3D->zcmaxSlider->setValue(_idep->window3D->zcmaxSlider->value());
+        setZSurfure(s);
+        POST_updateGL();
+    }
+}
+
 void V3dR_GLWidget::toggleCellName()
 {
 	if (renderer)

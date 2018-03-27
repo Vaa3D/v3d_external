@@ -270,7 +270,7 @@ public:
 	RGBA32f color_background, color_background2, color_line, color_proxy;
 
 	int sShowMarkers, sShowSurfObjects, markerSize;
-	bool b_showMarkerLabel, b_showMarkerName, b_showCellName, b_surfStretch;
+    bool b_showMarkerLabel, b_showMarkerName, b_showCellName, b_surfStretch, b_surfZLock;
 
 	int lineType, lineWidth, nodeSize, rootSize;
 	int polygonMode, tryObjShader;
