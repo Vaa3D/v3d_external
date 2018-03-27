@@ -688,6 +688,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_bShowMorphologySurface(false)
 	, m_bFrozen (false)
 	, m_bVirtualFingerON(true)
+	, m_bControllerModelON(true)
 	, m_modeControlTouchPad_R(0)
 	, m_modeControlGrip_R(0)
 	, m_modeControlGrip_L(0)
@@ -2154,13 +2155,19 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					qDebug()<<"virtual finger OFF";
 				break;
 			}
-		case _Freeze:
+		case _Freeze: // now temporarily used for controller model show/hide
 			{
-				m_bFrozen = !m_bFrozen;
-				if(m_bFrozen)
-					qDebug()<<"Freeze View ON";
-				else
-					qDebug()<<"Freeze View OFF";
+				m_bControllerModelON = !m_bControllerModelON;
+				
+				
+				//m_bFrozen = !m_bFrozen;
+				//if(m_bFrozen)
+				//	qDebug()<<"Freeze View ON";
+				//else
+				//	qDebug()<<"Freeze View OFF";
+
+
+
 				break;
 			}
 		case _Contrast:
@@ -4661,6 +4668,9 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glBindVertexArray( 0 );
 	}
 	//=================== Render Model rendering ======================
+	if (m_bControllerModelON) 
+	{
+	
 	glUseProgram( m_unRenderModelProgramID );
 
 	for( uint32_t unTrackedDevice = 0; unTrackedDevice < vr::k_unMaxTrackedDeviceCount; unTrackedDevice++ )
@@ -4694,6 +4704,9 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glBindVertexArray( 0 );
 		glDisable(GL_BLEND);
 	}
+
+	}//if (m_bControllerModelON) 
+
 	glUseProgram( 0 );
 }
 

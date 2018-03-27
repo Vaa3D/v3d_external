@@ -183,6 +183,7 @@ private:
 	bool m_bGlFinishHack;
 	bool m_bShowMorphologyLine;
 	bool m_bShowMorphologySurface;
+	bool m_bControllerModelON;
 	bool bUpdateFlag;
 	
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
