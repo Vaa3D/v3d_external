@@ -2557,6 +2557,7 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->checkBox_displayBoundingBox->setChecked(src->checkBox_displayBoundingBox->isChecked());
     dst->checkBox_OrthoView->setChecked(src->checkBox_OrthoView->isChecked());
 
+    dst->checkBox_surfZLock->setChecked(src->checkBox_surfZLock->isChecked());
     //propagating skeleton mode and line width
     dst->getGLWidget()->getRenderer()->lineType = src->getGLWidget()->getRenderer()->lineType;
     dst->getGLWidget()->getRenderer()->lineWidth = src->getGLWidget()->getRenderer()->lineWidth;
