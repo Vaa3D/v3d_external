@@ -2501,6 +2501,7 @@ void V3dR_GLWidget::enableSurfZLock(bool s)
         {
             Renderer_gl1* curr_renderer = (Renderer_gl1*)(getRenderer());
             curr_renderer->cuttingZ = true;
+            setZSurfure(s);
             return;
         }
 
