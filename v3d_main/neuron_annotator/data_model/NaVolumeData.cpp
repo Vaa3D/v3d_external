@@ -712,39 +712,48 @@ bool NaVolumeData::Writer::setSingleImageVolume( My4DImage* img )
 // Convert two-channel image to three channels to avoid crash
 My4DImage* ensureThreeChannel( My4DImage* input )
 {
-    if ( NULL == input )
-        return input;
-    if ( 3 == input->getCDim() )
-        return input;
-    // qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
-    My4DImage* volImg = new My4DImage();
-    volImg->createImage(
-        input->getXDim(),
-        input->getYDim(),
-        input->getZDim(),
-        3, // three color channels
-        input->getDatatype() ); // 1 => 8 bits per value
-    size_t channelBytes = volImg->getXDim() * volImg->getYDim() * volImg->getZDim() * volImg->getUnitBytes();
-    bool haveMinMax = ( NULL != input->p_vmin );
-    if (haveMinMax) {
-        volImg->p_vmin = new double[3];
-        volImg->p_vmax = new double[3];
-    }
-    for ( int c = 0; c < 3; ++c )
-    {
-        int c_in = c;
-        if ( c_in >= input->getCDim() )
-            c_in = input->getCDim() - 1; // fill other channels with final channel
-        memcpy( volImg->getRawData() + c * channelBytes,
-                input->getRawData() + c_in * channelBytes,
-                channelBytes );
+   if ( NULL == input )
+      return input;
+   if ( 3 == input->getCDim() )
+      return input;
+   // qDebug() << "converting image to 3 channels" << __FILE__ << __LINE__;
+   My4DImage *volImg = new My4DImage();
+   volImg->createImage( input->getXDim(), input->getYDim(), input->getZDim(),
+                        3,                      // three color channels
+                        input->getDatatype() ); // 1 => 8 bits per value
+   size_t channelBytes =
+       volImg->getXDim() * volImg->getYDim() * volImg->getZDim() * volImg->getUnitBytes();
+   bool haveMinMax = ( NULL != input->p_vmin );
+   if ( haveMinMax )
+   {
+      volImg->p_vmin = new double[ 3 ];
+      volImg->p_vmax = new double[ 3 ];
+   }
+
+   for ( int c = 0; c < 3; ++c )
+   {
+      if ( c > input->getCDim() - 1 )
+      {
+        bzero( volImg->getRawData() + c * channelBytes, channelBytes );
+
+         if ( haveMinMax )
+         {
+            volImg->p_vmin[ c ] = 0;
+            volImg->p_vmax[ c ] = 0;
+         }
+      }
+      else
+      {
+         memcpy( volImg->getRawData() + c * channelBytes,
+                 input->getRawData() + c * channelBytes, channelBytes );
         if (haveMinMax) {
-            volImg->p_vmin[c] = input->p_vmin[c_in];
-            volImg->p_vmax[c] = input->p_vmax[c_in];
+            volImg->p_vmin[c] = input->p_vmin[c];
+            volImg->p_vmax[c] = input->p_vmax[c];
         }
-    }
-    delete input;
-    return volImg;
+      }
+   }
+   delete input;
+   return volImg;
 }
 
 // Convert 8-bit truncated, gamma corrected stack to linear 16-bit,
