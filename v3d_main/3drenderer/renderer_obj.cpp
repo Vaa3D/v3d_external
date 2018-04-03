@@ -1228,8 +1228,8 @@ void Renderer_gl1::drawMarkerList()
 	if (sShowMarkers==0) return;
 	float maxD = boundingBox.Dmax();
 				//MAX(dim1,MAX(dim2,dim3));//090726: this will be 0 when no image
-	float marker_size = float(markerSize) * zoomRatio * 0.75; // //20160203 TDP: make size independent of zoom level 090423 RZC
-					//maxD * markerSize/1000.f;
+//	float marker_size = float(markerSize) * zoomRatio * 0.75; // //20160203 TDP: make size independent of zoom level 090423 RZC
+    float marker_size = maxD * markerSize/1000.f;  //change is back: marker size is associated with zoom level by ZZ 04032018
 	for (int pass=0; pass<numPassFloatDraw(sShowMarkers); pass++)
 	{
 		setFloatDrawOp(pass, sShowMarkers);
