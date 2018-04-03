@@ -1553,9 +1553,48 @@ void Renderer_gl1::updateNeuronBoundingBoxWithZCut(float zMin, float zMax)
 	swcBB.z1 =zMax;
 }
 
+void Renderer_gl1::setBBXYZ(float xMinIn, float xMaxIn,float yMinIn, float yMaxIn, float zMinIn, float zMaxIn){
+    xMin = xMinIn;
+    xMax = xMaxIn;
+    yMin = yMinIn;
+    yMax = yMaxIn;
+    zMin = zMinIn;
+    zMax = zMaxIn;
+    updateNeuronBoundingBox();
+    updateBoundingBox();
+}
+
+void Renderer_gl1::setBBcutFlag(bool cuttingXYZ){
+    this->cuttingXYZ = cuttingXYZ;
+    updateNeuronBoundingBox();
+    updateBoundingBox();
+}
+
+void Renderer_gl1::updateNeuronBoundingBoxWithXYZCut(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax)
+{
+    swcBB = NULL_BoundingBox;
+    if (showingGrid) swcBB.expand(boundingBox);
+    foreach(NeuronTree SS, listNeuronTree)
+    {
+        foreach(NeuronSWC S, SS.listNeuron)
+        {
+            float d = S.r *2;
+            swcBB.expand(BoundingBox(XYZ(S)-d, XYZ(S)+d));
+        }
+    }
+
+    swcBB.x0= xMin;
+    swcBB.x1 =xMax;
+    swcBB.y0= yMin;
+    swcBB.y1 =yMax;
+    swcBB.z0= zMin;
+    swcBB.z1 =zMax;
+}
+
 void Renderer_gl1::updateNeuronBoundingBox()
 {
-	if (cuttingZ){	updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
+    if (cuttingZ){updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
+    if (cuttingXYZ){updateNeuronBoundingBoxWithXYZCut(xMin, xMax, yMin, yMax, zMin, zMax); return;}
 
     swcBB = NULL_BoundingBox;
 	if (showingGrid) swcBB.expand(boundingBox);

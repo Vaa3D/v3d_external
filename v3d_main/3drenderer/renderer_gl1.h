@@ -374,6 +374,13 @@ public:
 	void setBBZ(float zMinIn, float zMaxIn);
 	float zMin, zMax;
 
+    bool cuttingXYZ;
+    void setBBcutFlag(bool cuttingXYZ);
+    void updateNeuronBoundingBoxWithXYZCut(float xMin, float xMax,float yMin, float yMax, float zMin, float zMax);
+    void setBBXYZ(float xMinIn, float xMaxIn,float yMinIn, float yMaxIn,float zMinIn, float zMaxIn);
+    float xMin, xMax, yMin, yMax;
+
+
 	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
 	// this will call setColorByAncestry if needed.
 	void setNeuronReviewColors(NeuronSWC s); // review mode

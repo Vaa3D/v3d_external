@@ -2059,6 +2059,8 @@ void V3dR_GLWidget::setXCut0(int s)
 
 		if (_xCut0+dxCut>_xCut1)	setXCut1(_xCut0+dxCut); //081029,100913
 		if (lockX && _xCut0+dxCut<_xCut1)	setXCut1(_xCut0+dxCut); //100913, 110713
+        setXYZSurfure(renderer->b_surfZLock);
+
 		emit changeXCut0(s);
 		POST_updateGL();
 	}
@@ -2074,6 +2076,8 @@ void V3dR_GLWidget::setXCut1(int s)
 
 		if (_xCut0>_xCut1-dxCut)	setXCut0(_xCut1-dxCut);
 		if (lockX && _xCut0<_xCut1-dxCut)	setXCut0(_xCut1-dxCut); //100913,110713
+        setXYZSurfure(renderer->b_surfZLock);
+
 		emit changeXCut1(s);
 		POST_updateGL();
 	}
@@ -2090,6 +2094,7 @@ void V3dR_GLWidget::setYCut0(int s)
 
 		if (_yCut0+dyCut>_yCut1)	setYCut1(_yCut0+dyCut);
 		if (lockY && _yCut0+dyCut<_yCut1)	setYCut1(_yCut0+dyCut);
+        setXYZSurfure(renderer->b_surfZLock);
 		emit changeYCut0(s);
 		POST_updateGL();
 	}
@@ -2105,6 +2110,7 @@ void V3dR_GLWidget::setYCut1(int s)
 
 		if (_yCut0>_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
 		if (lockY && _yCut0<_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
+        setXYZSurfure(renderer->b_surfZLock);
 		emit changeYCut1(s);
 		POST_updateGL();
 	}
@@ -2121,7 +2127,7 @@ void V3dR_GLWidget::setZCut0(int s)
 
 		if (_zCut0+dzCut>_zCut1)	setZCut1(_zCut0+dzCut);
         if (lockZ && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
-        setZSurfure(renderer->b_surfZLock);
+        setXYZSurfure(renderer->b_surfZLock);
 
 		emit changeZCut0(_zCut0);
 		POST_updateGL();
@@ -2138,19 +2144,21 @@ void V3dR_GLWidget::setZCut1(int s)
 
 		if (_zCut0>_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
 		if (lockZ && _zCut0<_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
-        setZSurfure(renderer->b_surfZLock);
+        setXYZSurfure(renderer->b_surfZLock);
 
 		emit changeZCut1(_zCut1);
 		POST_updateGL();
 	}
 }
 
-void V3dR_GLWidget::setZSurfure(bool b)
+void V3dR_GLWidget::setXYZSurfure(bool b)
 {
     if(b)
     {
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
-        curr_renderer->setBBZ((float) _idep->window3D->zcminSlider->value()-2, (float) _idep->window3D->zcmaxSlider->value()+2);
+        curr_renderer->setBBXYZ((float) _idep->window3D->xcminSlider->value()-2, (float) _idep->window3D->xcmaxSlider->value()+2,
+                                (float) _idep->window3D->ycminSlider->value()-2, (float) _idep->window3D->ycmaxSlider->value()+2,
+                                (float) _idep->window3D->zcminSlider->value()-2, (float) _idep->window3D->zcmaxSlider->value()+2);
     }
 }
 
@@ -2500,15 +2508,17 @@ void V3dR_GLWidget::enableSurfZLock(bool s)
         if(curr_renderer->zMin == -1.0 && curr_renderer->zMax == 1.0)
         {
             Renderer_gl1* curr_renderer = (Renderer_gl1*)(getRenderer());
-            curr_renderer->cuttingZ = true;
-            setZSurfure(s);
+            curr_renderer->cuttingXYZ = true;
+            setXYZSurfure(s);
             return;
         }
 
-        curr_renderer->setBBZcutFlag(s);
+        curr_renderer->setBBcutFlag(s);
         _idep->window3D->zcminSlider->setValue(_idep->window3D->zcminSlider->value());
         _idep->window3D->zcmaxSlider->setValue(_idep->window3D->zcmaxSlider->value());
-        setZSurfure(s);
+        _idep->window3D->xcminSlider->setValue(_idep->window3D->xcminSlider->value());
+        _idep->window3D->xcmaxSlider->setValue(_idep->window3D->xcmaxSlider->value());
+        setXYZSurfure(s);
         POST_updateGL();
     }
 }
