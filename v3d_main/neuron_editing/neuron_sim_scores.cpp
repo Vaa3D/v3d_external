@@ -142,7 +142,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 	for (i=0;i<p1->listNeuron.size();i++)
 	{
 		//first find the two ends of a line seg
-		tp1 = (NeuronSWC *)(&(p1->listNeuron.at(i)));
+        tp1 = (NeuronSWC *)(&(p1->listNeuron.at(i)));
 		if (tp1->pn < 0 || tp1->pn >= p1sz)
 			continue;
 		tp2 = (NeuronSWC *)(&(p1->listNeuron.at(h1.value(tp1->pn)))); //use hash table
@@ -316,8 +316,8 @@ NeuronMorphoInfo neuron_morpho_features(const NeuronTree *p) //collect the morph
 	{
 		//first find the two ends of a line seg
 		tp1 = (NeuronSWC *)(&(p->listNeuron.at(i)));
-		if (tp1->pn < 0 || tp1->pn >= n_node)
-			continue;
+        if (tp1->pn < 0)
+			continue;                              
 		tp2 = (NeuronSWC *)(&(p->listNeuron.at(h.value(tp1->pn)))); //use hash table
 
 		nchildren[h.value(tp1->pn)]++; //update the parent node's children number
