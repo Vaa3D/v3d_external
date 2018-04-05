@@ -39,6 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "neuron_sim_scores.h"
 #include "v_neuronswc.h"
 #include <iostream>
+#include "global_feature_compute.h"
 
 V_NeuronSWC get_v_neuron_swc(const NeuronTree *p);
 vector<V_NeuronSWC> get_neuron_segments(const NeuronTree *p);
@@ -410,14 +411,35 @@ NeuronMorphoInfo neuron_morpho_features(const NeuronTree *p) //collect the morph
 
 QString get_neuron_morpho_features_str(const NeuronTree *p)
 {
-	QString tmpstr, ts2;
-	NeuronMorphoInfo tmp_info = neuron_morpho_features(p);
-	tmpstr += "total length = "; ts2.setNum(tmp_info.total_length); tmpstr += ts2 + "<br>";
-	tmpstr += "total nodes = "; ts2.setNum(tmp_info.n_node); tmpstr += ts2 + "<br>";
-	tmpstr += "total segments = "; ts2.setNum(tmp_info.n_segment); tmpstr += ts2 + "<br>";
-    tmpstr += "total branch points = "; ts2.setNum(tmp_info.n_branch); tmpstr += ts2 + "<br>";
-	tmpstr += "total tips = "; ts2.setNum(tmp_info.n_tip); tmpstr += ts2 + "<br>";
-	return tmpstr;
+    QString tmpstr, ts2;
+    double * features = new double[22];
+    computeFeature(*p,features);
+
+    tmpstr += "number of nodes = "; ts2.setNum(features[0]); tmpstr += ts2 + "<br>";
+    tmpstr += "soma surface = "; ts2.setNum(features[1]); tmpstr += ts2 + "<br>";
+    tmpstr += "number of stems = "; ts2.setNum(features[2]); tmpstr += ts2 + "<br>";
+    tmpstr += "number of bifurcations = "; ts2.setNum(features[3]); tmpstr += ts2 + "<br>";
+    tmpstr += "number of branches = "; ts2.setNum(features[4]); tmpstr += ts2 + "<br>";
+    tmpstr += "number of tips = "; ts2.setNum(features[5]); tmpstr += ts2 + "<br>";
+    tmpstr += "overall width = "; ts2.setNum(features[6]); tmpstr += ts2 + "<br>";
+    tmpstr += "overall height = "; ts2.setNum(features[7]); tmpstr += ts2 + "<br>";
+    tmpstr += "overall depth = "; ts2.setNum(features[8]); tmpstr += ts2 + "<br>";
+    tmpstr += "average diameter = "; ts2.setNum(features[9]); tmpstr += ts2 + "<br>";
+    tmpstr += "total length = "; ts2.setNum(features[10]); tmpstr += ts2 + "<br>";
+    tmpstr += "total surface = "; ts2.setNum(features[11]); tmpstr += ts2 + "<br>";
+    tmpstr += "total volume = "; ts2.setNum(features[12]); tmpstr += ts2 + "<br>";
+    tmpstr += "max euclidean distance = "; ts2.setNum(features[13]); tmpstr += ts2 + "<br>";
+    tmpstr += "max path distance = "; ts2.setNum(features[14]); tmpstr += ts2 + "<br>";
+    tmpstr += "max branch order = "; ts2.setNum(features[15]); tmpstr += ts2 + "<br>";
+    tmpstr += "average contraction = "; ts2.setNum(features[16]); tmpstr += ts2 + "<br>";
+    tmpstr += "average fragmentation = "; ts2.setNum(features[17]); tmpstr += ts2 + "<br>";
+    tmpstr += "average parent-daughter ratio = "; ts2.setNum(features[18]); tmpstr += ts2 + "<br>";
+    tmpstr += "average bifurcation angle local = "; ts2.setNum(features[19]); tmpstr += ts2 + "<br>";
+    tmpstr += "average bifurcation angle remote = "; ts2.setNum(features[20]); tmpstr += ts2 + "<br>";
+    tmpstr += "Hausdorff dimension = "; ts2.setNum(features[21]); tmpstr += ts2 + "<br>";
+    if(features) {delete []features; features=0;}
+
+    return tmpstr;
 }
 
 V_NeuronSWC get_v_neuron_swc(const NeuronTree *p)
