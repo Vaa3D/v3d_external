@@ -695,6 +695,7 @@ private:
           currentTraceType=3;
           useCurrentTraceTypeForRetyping = false;
         cuttingZ = false;
+        cuttingXYZ = false;
 		zMin =-1.0;
 		zMax = 1.0;
 		initColorMaps();
