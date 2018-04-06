@@ -657,9 +657,11 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             has_double_clicked = true;
 
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
-
+		
             XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+
             newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);
+		
             return true;
         }
 
@@ -1801,7 +1803,9 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("obtaining the annotations within the current window").c_str(), __itm__current__function__);
     CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, vaa3dMarkers);
     CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, vaa3dCurves.listNeuron);
-
+	this->treeGlobalCoords.listNeuron.clear();
+	this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;
+	
     //converting global coordinates to local coordinates
     timer.restart();
     /**/tf::debug(tf::LEV3, strprintf("converting global coordinates to local coordinates").c_str(), __itm__current__function__);
@@ -1824,6 +1828,7 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     vaa3dCurves.color.g = 0;
     vaa3dCurves.color.b = 0;
     vaa3dCurves.color.a = 0;
+	this->convertedTreeCoords.listNeuron = vaa3dCurves.listNeuron;
 
     PLog::instance()->appendOperation(new AnnotationOperation(QString("load annotations: convert coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
     /* @debug */ //printf("\n\n");
@@ -2090,8 +2095,50 @@ XYZ CViewer::getRenderer3DPoint(int x, int y)  throw (RuntimeException)
 
     //view3DWidget->getRenderer()->selectObj(x,y, false);
 
-    return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	if (thisRenderer->listNeuronTree.empty()) return thisRenderer->get3DPoint(x, y);
+	else
+	{
+		XYZ localMouse = thisRenderer->get3DPoint(x, y);
+		XYZ convertedSWC;
+		convertedSWC.x = 0; convertedSWC.y = 0;
+		QList<NeuronSWC> nodeList = this->convertedTreeCoords.listNeuron;
+		QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
+		float distSqr = 100;
+		float selectedSWCX = 0, selectedSWCY = 0;
+		for (QList<NeuronSWC>::iterator it = nodeList.begin(); it != nodeList.end(); ++it)
+		{
+			//cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
+			//cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl;
+			float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
+			if (currDistSqr < distSqr)
+			{
+				distSqr = currDistSqr;
+				convertedSWC.x = it->x;
+				convertedSWC.y = it->y;
+				selectedSWCX = globalSWCIt->x;
+				selectedSWCY = globalSWCIt->y;
+			}
 
+			++globalSWCIt;
+		}
+		cout << " === local coords x:" << localMouse.x << " y:" << localMouse.y << endl;
+		cout << " === selected node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
+		cout << " === converted node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
+
+		if (distSqr > 25)
+		{
+			cout << "out of range" << endl;
+			return localMouse;
+		}
+		else
+		{
+			cout << "using nearest SWC node" << endl;
+			return convertedSWC;
+		}
+	}
+    
+	//return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
 
 //    Renderer_gl1* rend = static_cast<Renderer_gl1*>(view3DWidget->getRenderer());
 

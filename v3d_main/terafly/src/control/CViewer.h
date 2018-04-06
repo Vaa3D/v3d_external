@@ -159,6 +159,8 @@ class terafly::CViewer : public QWidget
         * the 3D volume at different resolutions without changing Vaa3D code.
         ***********************************************************************************/
         bool eventFilter(QObject *object, QEvent *event);
+		NeuronTree treeGlobalCoords;
+		NeuronTree convertedTreeCoords;
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.
