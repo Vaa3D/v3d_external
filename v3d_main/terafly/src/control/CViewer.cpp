@@ -675,13 +675,18 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
 				float distSqr = 100;
 				float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
+				cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
+
+				long int count = 0;
 				for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
 				{
+					++count;
+					if (count % 1000 == 0) cout << ".";
 					float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
 					if (currDistSqr < distSqr)
 					{
-						cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
-						cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
+						//cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
+						//cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
 						distSqr = currDistSqr;
 						convertedSWC.x = it->x;
 						convertedSWC.y = it->y;
@@ -693,6 +698,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
 					++globalSWCIt;
 				}
+				cout << endl << "  SWC node examination done." << endl;
 				cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
 				cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
 				cout << " === converted SWC local x:" << convertedSWC.x << " y:" << convertedSWC.y << " z:" << convertedSWC.z << endl;
