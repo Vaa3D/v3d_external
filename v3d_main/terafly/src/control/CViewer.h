@@ -373,6 +373,7 @@ class terafly::CViewer : public QWidget
         void Vaa3D_changeZCut0(int s);
         void Vaa3D_changeZCut1(int s);
         void Vaa3D_changeTSlider(int s, bool editingFinished = false);
+        void ShiftToAnotherDirection(int direction);
 
         /**********************************************************************************
         * Linked to PMain GUI VOI's widgets.

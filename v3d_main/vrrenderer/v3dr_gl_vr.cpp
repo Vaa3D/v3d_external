@@ -45,6 +45,10 @@ typedef vector<Point*> Segment;
 typedef vector<Point*> Tree;
 #define MAX_UNDO_COUNT 5
 
+#ifndef MAX
+#define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
+#endif
+
 int checkForOpenGLError(const char* file, int line)
 {
     // return 1 if an OpenGL error occured, 0 otherwise.
@@ -714,6 +718,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, bIsUndoEnable (false)
 	, bIsRedoEnable (false)
 	, _call_assemble_plugin(false)
+	, postVRFunctionCallMode (0)
 	, fContrast(1)
 	, fBrightness(0)
 	, iLineWid(1)
@@ -920,6 +925,10 @@ bool CMainApplication::BInit()
 	//font_VR->cacheCharacters("1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,./;'[]\\<>?:\"{}|-=_+");
 
 
+	ctrSphere = new Sphere(0.01f);
+	ctrSphereColor = glm::vec3(1,1,0);
+	teraflyPOS = 0;
+
 	SDL_StartTextInput();
 	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
@@ -1125,7 +1134,7 @@ void CMainApplication::Shutdown()
 		//if (m_bHasImage4D)  mainwindow->setSWC(img4d->getXWidget(),tempNT);
 		//for (int i=0; i<loadedNTList->size(); i++)
 		//	(*loadedNTList)[i].editable = false; //090928
-		mainwindow->update();
+		//mainwindow->update();
 		//mainwindow->getROI();
 		//qDebug()<<"tracedNeuron.size()"<<img4d->tracedNeuron.nsegs();
 	}
@@ -1141,7 +1150,6 @@ void CMainApplication::Shutdown()
 				img4d->listLandmarks.append(S_tmp);		
 			}
 			qDebug()<<"QUIT! NOW listLandmarks.size is "<<img4d->listLandmarks.size();
-			mainwindow->update();
 		}
 	}
 
@@ -1281,6 +1289,8 @@ void CMainApplication::Shutdown()
 				j++;
 		}
 
+		if(ctrSphere)
+			delete ctrSphere;
 
 		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
@@ -1414,9 +1424,14 @@ bool CMainApplication::HandleInput()
 	while( m_pHMD->PollNextEvent( &event, sizeof( event ) ) )
 	{
 		ProcessVREvent( event );
-		if(_call_assemble_plugin)
+		// if(_call_assemble_plugin)
+		// {
+		// 	qDebug()<<"run here";
+		// 	return true;
+		// }
+		if(postVRFunctionCallMode!=0)
 		{
-			qDebug()<<"run here";
+			qDebug()<<"there is a post-VR function call "<<postVRFunctionCallMode;
 			return true;
 		}
 		if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu))
@@ -1496,7 +1511,11 @@ bool CMainApplication::HandleInput()
 										tempNT.hashNeuron.insert(S_node.n, tempNT.listNeuron.size()-1);
 									}
 									else if(i==0)
+									{
+										vertexcount=swccount=0;
 										break;
+									}
+										
 								}
 								qDebug()<<"charge isAnyNodeOutBBox done  goto virtual finger";
 								// improve curve shape
@@ -1972,32 +1991,6 @@ void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 
 }
 
-
-void CMainApplication::SetupMarkerSurface()
-{
-	//if(drawnMarkerList.size()<1) return;//no consideration for deletion
-	//for (int i=0;i<drawnMarkerList.size();i++) delete Agents_spheres[i];
-	//Markers_spheres.clear();//clear old spheres
-	//Markers_spheresPos.clear();//clear old spheres pos
-	//Markers_spheresColor.clear();//clear old spheres color
-	//
-	//for(int i=0;i<drawnMarkerList.size();i++)
-	//{
-	//	Markers_spheres.push_back(new Sphere(drawnMarkerList.at(i).radius,10,10));
-
-	//	int type =drawnMarkerList.at(i).type;//the color of sphere's surface should be the same as Agent's colortype
-	//	glm::vec3 agentclr=glm::vec3();
-	//	agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-	//	agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-	//	agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-	//	for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
-	//	Markers_spheresColor.push_back(agentclr);
-
-	//	Markers_spheresPos.push_back(glm::vec3(drawnMarkerList.at(i).x,drawnMarkerList.at(i).y,drawnMarkerList.at(i).z));
-
-	//}
-
-}
 void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type)
 {
 	ImageMarker mk(x,y,z);
@@ -2086,32 +2079,40 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_Grip))
 	{	
 		m_modeControlGrip_L++;
-		m_modeControlGrip_L%=8;
+		m_modeControlGrip_L%=10;
 		switch(m_modeControlGrip_L)
 		{
 		case 0:
 			m_modeGrip_L = _donothing;
 			break;
 		case 1:
-			m_modeGrip_L = _Contrast;
+			m_modeGrip_L = _TeraShift;
 			break;
 		case 2:
-			m_modeGrip_L = _UndoRedo;
+			m_modeGrip_L = _TeraZoom;
 			break;
 		case 3:
-			m_modeGrip_L = _Surface;
+			m_modeGrip_L = _Contrast;
 			break;
 		case 4:
-			m_modeGrip_L = _VirtualFinger;
+			m_modeGrip_L = _UndoRedo;
 			break;
 		case 5:
-			m_modeGrip_L = _Freeze;
+			m_modeGrip_L = _Surface;
 			break;
 		case 6:
-			m_modeGrip_L = _LineWidth;
+			m_modeGrip_L = _VirtualFinger;
 			break;
 		case 7:
+			m_modeGrip_L = _Freeze;
+			break;
+		case 8:
+			m_modeGrip_L = _LineWidth;
+			break;
+		case 9:
 			m_modeGrip_L = _AutoRotate;
+			break;
+
 		default:
 			break;
 		}
@@ -2157,10 +2158,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _Freeze: // now temporarily used for controller model show/hide
 			{
-				m_bControllerModelON = !m_bControllerModelON;
+				//m_bControllerModelON = !m_bControllerModelON;
 				
 				
-				//m_bFrozen = !m_bFrozen;
+				m_bFrozen = !m_bFrozen;
 				//if(m_bFrozen)
 				//	qDebug()<<"Freeze View ON";
 				//else
@@ -2268,6 +2269,63 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 								
 				break;
+			}
+		case _TeraShift:
+			{
+				// if(temp_x>0)
+				// {
+				// 	postVRFunctionCallMode = 1;
+				// }
+				// else
+				// 	postVRFunctionCallMode = 2;
+
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
+					}
+				}
+				mat=glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
+
+				float _deltaX = fabs(ctrlLeftPos.x - loadedNTCenter.x);
+				float _deltaY = fabs(ctrlLeftPos.y - loadedNTCenter.y);
+				float _deltaZ = fabs(ctrlLeftPos.z - loadedNTCenter.z);
+				float _maxDelta = MAX(MAX(_deltaX,_deltaY),_deltaZ);
+				if(_maxDelta == _deltaX)
+					postVRFunctionCallMode = (ctrlLeftPos.x - loadedNTCenter.x)>0?1:2;
+				else if(_maxDelta == _deltaY)
+					postVRFunctionCallMode = (ctrlLeftPos.y - loadedNTCenter.y)>0?3:4;
+				else if(_maxDelta == _deltaZ)
+					postVRFunctionCallMode = (ctrlLeftPos.z - loadedNTCenter.z)>0?5:6;
+				else
+					qDebug()<<"oh no! Something wrong!Please check!";
+			}
+		case _TeraZoom:
+			{
+				if(temp_x>0)
+				{
+					// zoom in
+
+					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
+					glm::mat4 mat = glm::mat4();
+					for (size_t i = 0; i < 4; i++)
+					{
+						for (size_t j = 0; j < 4; j++)
+						{
+							mat[i][j] = *(mat_M.get() + i * 4 + j);
+						}
+					}
+					mat=glm::inverse(m_globalMatrix) * mat;
+					glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
+					teraflyPOS = XYZ(ctrlLeftPos.x,ctrlLeftPos.y,ctrlLeftPos.z);
+					postVRFunctionCallMode = 7;
+				}
+				else // zoom out
+					postVRFunctionCallMode = 8;				
 			}
 		default:
 			break;
@@ -2475,52 +2533,58 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							break;
 					}
 
-					// improve curve shape
-					NeuronTree InputNT;
-					InputNT = tempNT;
-					int iter_number=3;
-					bool convergent = false;//todo:future may add this convergent func
-					for(int i=0;(convergent==false)&&(i<iter_number);i++)
+					if (tempNT.listNeuron.size()>0)
 					{
-						NeuronTree OutputNT;
-						RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
-						//convergent = CompareDist(InputNT, OutputNT);
-						InputNT.listNeuron.clear();
-						InputNT.hashNeuron.clear();
-						InputNT = OutputNT;
-					}
-					currentNT.listNeuron.clear();
-					currentNT.hashNeuron.clear();
-					currentNT = InputNT;
-					tempNT.listNeuron.clear();
-					tempNT.hashNeuron.clear();	
+						// improve curve shape
+						NeuronTree InputNT;
+						InputNT = tempNT;
+						int iter_number=3;
+						bool convergent = false;//todo:future may add this convergent func
+						for(int i=0;(convergent==false)&&(i<iter_number);i++)
+						{
+							NeuronTree OutputNT;
+							RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
+							//convergent = CompareDist(InputNT, OutputNT);
+							InputNT.listNeuron.clear();
+							InputNT.hashNeuron.clear();
+							InputNT = OutputNT;
+						}
+						currentNT.listNeuron.clear();
+						currentNT.hashNeuron.clear();
+						currentNT = InputNT;
+						tempNT.listNeuron.clear();
+						tempNT.hashNeuron.clear();	
 
-					//change radius to mark the curved traced in VR.
-					for(int i=0;i<currentNT.listNeuron.size();i++)
-					{
-						currentNT.listNeuron[i].r = 0.666;
+						//change radius to mark the curved traced in VR.
+						for(int i=0;i<currentNT.listNeuron.size();i++)
+						{
+							currentNT.listNeuron[i].r = 0.666;
+						}
 					}
 				}
-				if(isOnline==false)
+				if (isOnline==false)
 				{
-					bIsUndoEnable = true;
-					if(vUndoList.size()==MAX_UNDO_COUNT)
+					if(currentNT.listNeuron.size()>0)
 					{
-						vUndoList.erase(vUndoList.begin());
-					}
-					vUndoList.push_back(sketchedNTList);
-					if (vRedoList.size()> 0)
+						bIsUndoEnable = true;
+						if(vUndoList.size()==MAX_UNDO_COUNT)
+						{
+							vUndoList.erase(vUndoList.begin());
+						}
+						vUndoList.push_back(sketchedNTList);
+						if (vRedoList.size()> 0)
+							vRedoList.clear();
+						bIsRedoEnable = false;
 						vRedoList.clear();
-					bIsRedoEnable = false;
-					vRedoList.clear();
 
-					currentNT.name = "sketch_"+QString("%1").arg(sketchNum++);
-					qDebug()<<currentNT.name;
-					sketchedNTList.push_back(currentNT);
-					currentNT.listNeuron.clear();
-					currentNT.hashNeuron.clear();
+						currentNT.name = "sketch_"+QString("%1").arg(sketchNum++);
+						qDebug()<<currentNT.name;
+						sketchedNTList.push_back(currentNT);
+						currentNT.listNeuron.clear();
+						currentNT.hashNeuron.clear();		
+						MergeNeuronTrees();
+					}
 					swccount=0;
-					MergeNeuronTrees();
 				}
 				break;
 			}
@@ -2681,7 +2745,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// qDebug("before call");
 		// if(!call_neuron_assembler_live_plugin(mainwindow)) return;
 		// qDebug("after call");
-		_call_assemble_plugin = true;
+		// _call_assemble_plugin = true;
+		// postVRFunctionCallMode = 1;
 	}
 	//////////////////
 }
@@ -3069,6 +3134,10 @@ void CMainApplication::SetupControllerTexture()
 
 	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
 	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
+	// save the right controller position to ctrSpherePos
+	Vector4 ctrPOS = mat_R * Vector4(0,0,0,1);
+	ctrSpherePos = glm::vec3(ctrPOS.x,ctrPOS.y,ctrPOS.z);
+
 	//left controller
 	{
 		Vector4 point_A(-0.023f,-0.009f,0.065f,1);//grip no.1 dispaly "Mode Switch"
@@ -3159,6 +3228,16 @@ void CMainApplication::SetupControllerTexture()
 				}
 				break;
 			}
+		case _TeraShift:
+			{//_TeraShift
+				AddVertex(point_E.x,point_E.y,point_E.z,0.34f,0.5f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.34f,0.625f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.34f,0.625f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,0.625f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.5f,vcVerts);
+				break;
+			}	
 		case _Freeze:
 			{
 				if(m_bFrozen)
@@ -3182,6 +3261,7 @@ void CMainApplication::SetupControllerTexture()
 				}
 				break;
 			}
+		case _TeraZoom:
 		case _LineWidth:
 		case _Contrast:
 			{
@@ -3270,6 +3350,16 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.34f,0.125f,vcVerts);
 				break;
 			}
+		case _TeraShift:
+			{//_TeraShift
+				AddVertex(point_M.x,point_M.y,point_M.z,0.84f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,1,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0.125f,vcVerts);
+				break;
+			}
 		case _VirtualFinger:
 			{//virtual finger
 				AddVertex(point_M.x,point_M.y,point_M.z,0.34f,0,vcVerts);
@@ -3320,6 +3410,16 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.125f,vcVerts);
 				break;
 			}
+		case _TeraZoom:
+			{//_TeraZoom
+				AddVertex(point_M.x,point_M.y,point_M.z,0.84f,0.5f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.625f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,1,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5f,vcVerts);
+				break;
+			}		
 		case _UndoRedo:
 		default:
 			break;
@@ -4414,6 +4514,20 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			sphr->Render();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
+		// draw a sphere on right controller center
+		{
+			glm::mat4 model;
+			model = glm::translate(glm::mat4(), ctrSpherePos);
+
+			morphologyShader->setMat4("model", model);
+			morphologyShader->setVec3("objectColor", ctrSphereColor);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			ctrSphere->Render();
+			morphologyShader->setVec3("objectColor", surfcolor);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			ctrSphere->Render();
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 	}
 	//=================== draw markers with sphere ====================
 	{
@@ -4931,10 +5045,11 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
 	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
 	NeuronSWC S_temp;
-	tempNT.listNeuron.clear();
-	tempNT.hashNeuron.clear();
+	NeuronTree newTempNT;
+	newTempNT.listNeuron.clear();
+	newTempNT.hashNeuron.clear();
 	//each segment has a unique ID storing as its name
-	tempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
+	newTempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
 	for(int i=0;i<str_size;i++)
 	{
 		qsl[i].truncate(99);
@@ -4972,12 +5087,12 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 		{
 			S_temp.pn = qsl[i].toInt();
 
-			tempNT.listNeuron.append(S_temp);
-			tempNT.hashNeuron.insert(S_temp.n, tempNT.listNeuron.size()-1);
+			newTempNT.listNeuron.append(S_temp);
+			newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
 		}
 	}//*/
-	sketchedNTList.push_back(tempNT);
-	qDebug()<<"receieved nt name is "<<tempNT.name;
+	sketchedNTList.push_back(newTempNT);
+	qDebug()<<"receieved nt name is "<<newTempNT.name;
 	MergeNeuronTrees(); 
 	//updateremoteNT
 }

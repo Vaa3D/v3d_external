@@ -1688,12 +1688,26 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	}
 	else
 	{
-		bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-		this->getMainWindow()->show();
-		if(_Call_ZZ_Plugin)
+		// bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+		int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
+		qDebug()<<"result is "<<_call_that_func;
+		qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+		updateWithTriView();
+		if (_call_that_func > 0) 
+		{
+			emit(signalCallTerafly(_call_that_func));
+		}
+		else if(_call_that_func == -1)
 		{
 			call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
 		}
+
+		//this->getMainWindow()->show();
+		// if(_Call_ZZ_Plugin)
+		// {
+		// 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		// 	emit(signalCallTerafly());
+		// }
 	}
 }
 void V3dR_GLWidget::doclientView(bool check_flag)

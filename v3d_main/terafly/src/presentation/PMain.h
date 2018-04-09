@@ -316,6 +316,7 @@ class terafly::PMain : public QWidget
         static string HTproofreading;
         static string HTquickscan;
 
+		bool resumeVR;
 
     public slots:
 
@@ -505,6 +506,7 @@ class terafly::PMain : public QWidget
         void showAnoOctree();
 #ifdef __ALLOW_VR_FUNCS__
 		void doTeraflyVRView();
+        void teraflyShiftClickedinVR(int _direction);
 #endif
 
     signals:

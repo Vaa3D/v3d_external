@@ -42,7 +42,9 @@ enum ModelControlR
 enum ModeControlSettings
 {
 	_donothing = 0,
-	_Contrast = 1,
+	_TeraShift,
+	_TeraZoom,
+	_Contrast,
 	_UndoRedo,
 	_Surface,
 	_VirtualFinger,	
@@ -122,7 +124,6 @@ public:
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
 
-	void SetupMarkerSurface();
 	void SetupMarkerandSurface(double x,double y,double z,int type =3);
 
 	void RemoveMarkerandSurface(double x,double y,double z,int type=3);
@@ -172,6 +173,9 @@ public:
 	QString delmarkerPOS;
 	QString dragnodePOS;
 	bool _call_assemble_plugin;
+	int postVRFunctionCallMode;
+	
+	XYZ teraflyPOS;
 
 private: 
 	std::string current_agent_color;
@@ -212,6 +216,7 @@ private:
 	bool bIsRedoEnable;
 	vector<NTL> vUndoList;
 	vector<NTL> vRedoList;
+
 
 private: // SDL bookkeeping
 	SDL_Window *m_pCompanionWindow;
@@ -261,7 +266,7 @@ private: // OpenGL bookkeeping
 	float m_fNearClip;
 
 	float m_fFarClip;
-	//wwbmark
+
 	GLuint m_iTexture;
 	GLuint m_ControllerTexVAO;
 	GLuint m_ControllerTexVBO;
@@ -288,6 +293,10 @@ private: // OpenGL bookkeeping
 	vector<Sphere*> Markers_spheres;
 	vector<glm::vec3> Markers_spheresPos;
 	vector<glm::vec3> Markers_spheresColor;
+
+	Sphere* ctrSphere; // indicate the origin for curve drawing
+	glm::vec3 ctrSpherePos;
+	glm::vec3 ctrSphereColor;
 
 	GLuint m_unMorphologyLineModeVAO;
 	GLuint m_glMorphologyLineModeVertBuffer;

@@ -307,6 +307,8 @@ void CViewer::show()
         connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
         connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
         connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+        connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
+
         connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
         //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
         //connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -903,6 +905,13 @@ void CViewer::receiveData(
 
                 // refresh annotation toolbar
                 PAnoToolBar::instance()->refreshTools();
+
+				// back to VR, if desired.
+				if (PMain::getInstance()->resumeVR)
+				{
+					PMain::getInstance()->resumeVR = false;
+					QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+				}
             }
         }
         catch(RuntimeException &ex)
@@ -1102,6 +1111,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         disconnect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
         disconnect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
         disconnect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+        disconnect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
         disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
         //disconnect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
         //disconnect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -1930,6 +1940,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         source->disconnect(source->view3DWidget, SIGNAL(changeYCut1(int)), source, SLOT(Vaa3D_changeYCut1(int)));
         source->disconnect(source->view3DWidget, SIGNAL(changeZCut0(int)), source, SLOT(Vaa3D_changeZCut0(int)));
         source->disconnect(source->view3DWidget, SIGNAL(changeZCut1(int)), source, SLOT(Vaa3D_changeZCut1(int)));
+        source->disconnect(source->view3DWidget, SIGNAL(signalCallTerafly(int)), source, SLOT(ShiftToAnotherDirection(int)));
         source->connect(source->window3D->timeSlider, SIGNAL(valueChanged(int)), source, SLOT(Vaa3D_changeTSlider(int)));
         //source->disconnect(source->view3DWidget, SIGNAL(xRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
         //source->disconnect(source->view3DWidget, SIGNAL(yRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
@@ -2052,6 +2063,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
         connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
         connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+        connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
         connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
         //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
         //connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -2127,6 +2139,11 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         // zoom-out on Virtual Pyramid requires image refresh
         if(source->volResIndex > volResIndex && CImport::instance()->isVirtualPyramid())
             refresh();
+        if (PMain::getInstance()->resumeVR)
+        {
+            PMain::getInstance()->resumeVR = false;
+            QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));           
+        }
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
 
@@ -2355,6 +2372,46 @@ void CViewer::Vaa3D_changeXCut0(int s)
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
 }
+void CViewer::ShiftToAnotherDirection(int _direction)
+{
+    // slot func related to VR shift signal
+	// qDebug()<<"o yeah the _direction is"<<_direction;
+    if(_direction<7)
+        PMain::getInstance()->teraflyShiftClickedinVR(_direction);  
+    else if(_direction == 7)
+    {
+        // forcezoomin
+        if(view3DWidget)
+        {
+            PMain::getInstance()->resumeVR = true;
+            XYZ point = view3DWidget->teraflyZoomInPOS;
+            qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
+            newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);    
+        }    
+    }
+    else if(_direction == 8)
+    {
+        // auto zoom out
+        if(prev                                                                    &&  //the previous resolution exists
+        !toBeClosed)                                                         //the current resolution does not have to be closed
+        // isZoomDerivativeNeg())                                                     //zoom derivative is negative
+        {
+            // if window is not ready for "switch view" events, reset zoom-out and ignore this event
+            if(!_isReady)
+            {
+                resetZoomHistory();
+            }
+            else
+            {
+                PMain::getInstance()->resumeVR = true;
+                setActive(false);
+                resetZoomHistory();
+                prev->restoreViewerFrom(this);
+            }
+        }       
+    }
+}
+
 void CViewer::Vaa3D_changeXCut1(int s)
 {
     #ifdef terafly_enable_debug_max_level

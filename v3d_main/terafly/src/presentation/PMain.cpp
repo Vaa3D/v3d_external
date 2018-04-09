@@ -144,6 +144,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
+	resumeVR = false;
+
     //initializing members
     V3D_env = callback;
     parentWidget = parent;
@@ -2247,17 +2249,47 @@ void PMain::resetMultiresControls()
 void PMain::doTeraflyVRView()
 {
 	qDebug()<<"PMain::doTeraflyVRView()";
-	
-	CViewer *cur_win = CViewer::getCurrent();
-	if(cur_win&&cur_win->view3DWidget)
-	{
-		this->hide();
-		//qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
+	try
+    {
+        CViewer *cur_win = CViewer::getCurrent();
+        if(cur_win&&cur_win->view3DWidget)
+        {
+            this->hide();
+            //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
-		cur_win->view3DWidget->doimageVRView(false);
-		cur_win->storeAnnotations();
-		this->show();
-	}
+            cur_win->view3DWidget->doimageVRView(false);
+            //cur_win->storeAnnotations();
+            this->show();		
+
+        }
+    }
+    catch(...)
+    {
+        qDebug()<<"???doTeraflyVRView()";
+    }
+}
+
+void PMain::teraflyShiftClickedinVR(int _direction)
+{
+ 	resumeVR = true;
+
+    switch(_direction)
+    {
+        case 1:
+            traslXposClicked();break;
+        case 2:
+            traslXnegClicked();break; 
+        case 3:
+            traslYposClicked();break;
+        case 4:
+            traslYnegClicked();break; 
+        case 5:
+            traslZposClicked();break;
+        case 6:
+            traslZnegClicked();break; 
+        default:
+            break;
+    }
 }
 #endif
 
