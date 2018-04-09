@@ -675,11 +675,11 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
 				for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
 				{
-					cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
-					cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
 					float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
 					if (currDistSqr < distSqr)
 					{
+						cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
+						cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
 						distSqr = currDistSqr;
 						convertedSWC.x = it->x;
 						convertedSWC.y = it->y;
