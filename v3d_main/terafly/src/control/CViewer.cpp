@@ -701,7 +701,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				cout << endl << "  SWC node examination done." << endl;
 				cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
 				cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
-				cout << " === converted SWC local x:" << convertedSWC.x << " y:" << convertedSWC.y << " z:" << convertedSWC.z << endl;
 
 				if (distSqr >= 100)
 				{
