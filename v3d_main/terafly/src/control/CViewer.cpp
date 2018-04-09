@@ -657,11 +657,60 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             has_double_clicked = true;
 
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
-		
-            XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+			
+			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+			if (thisRenderer->listNeuronTree.empty())
+			{
+				XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+				newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+			}
+			else
+			{
+				XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+				XYZ convertedSWC;
+				convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
+				QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
+				QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
+				float distSqr = 100;
+				float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
+				for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
+				{
+					cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
+					cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
+					float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
+					if (currDistSqr < distSqr)
+					{
+						distSqr = currDistSqr;
+						convertedSWC.x = it->x;
+						convertedSWC.y = it->y;
+						convertedSWC.z = it->z;
+						selectedSWCX = globalSWCIt->x;
+						selectedSWCY = globalSWCIt->y;
+						selectedSWCZ = globalSWCIt->z;
+					}
 
-            newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);
-		
+					++globalSWCIt;
+				}
+				cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
+				cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
+				cout << " === converted SWC local x:" << convertedSWC.x << " y:" << convertedSWC.y << " z:" << convertedSWC.z << endl;
+
+				if (distSqr >= 100)
+				{
+					cout << "out of nearest SWC search range" << endl;
+					XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+					newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+				}
+				else
+				{
+					cout << "using nearest SWC node:" << endl;
+					cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
+					XYZ loc;
+					loc.x = convertedSWC.x; loc.y = convertedSWC.y; loc.z = convertedSWC.z;
+					newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
+				}
+			}
+            	
             return true;
         }
 
@@ -2094,51 +2143,8 @@ XYZ CViewer::getRenderer3DPoint(int x, int y)  throw (RuntimeException)
 
 
     //view3DWidget->getRenderer()->selectObj(x,y, false);
-
-	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-	if (thisRenderer->listNeuronTree.empty()) return thisRenderer->get3DPoint(x, y);
-	else
-	{
-		XYZ localMouse = thisRenderer->get3DPoint(x, y);
-		XYZ convertedSWC;
-		convertedSWC.x = 0; convertedSWC.y = 0;
-		QList<NeuronSWC> nodeList = this->convertedTreeCoords.listNeuron;
-		QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
-		float distSqr = 100;
-		float selectedSWCX = 0, selectedSWCY = 0;
-		for (QList<NeuronSWC>::iterator it = nodeList.begin(); it != nodeList.end(); ++it)
-		{
-			//cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
-			//cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl;
-			float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
-			if (currDistSqr < distSqr)
-			{
-				distSqr = currDistSqr;
-				convertedSWC.x = it->x;
-				convertedSWC.y = it->y;
-				selectedSWCX = globalSWCIt->x;
-				selectedSWCY = globalSWCIt->y;
-			}
-
-			++globalSWCIt;
-		}
-		cout << " === local coords x:" << localMouse.x << " y:" << localMouse.y << endl;
-		cout << " === selected node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
-		cout << " === converted node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
-
-		if (distSqr > 25)
-		{
-			cout << "out of range" << endl;
-			return localMouse;
-		}
-		else
-		{
-			cout << "using nearest SWC node" << endl;
-			return convertedSWC;
-		}
-	}
     
-	//return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
+	return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
 
 //    Renderer_gl1* rend = static_cast<Renderer_gl1*>(view3DWidget->getRenderer());
 
