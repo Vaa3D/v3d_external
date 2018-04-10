@@ -2322,10 +2322,16 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					mat=glm::inverse(m_globalMatrix) * mat;
 					glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
 					teraflyPOS = XYZ(ctrlLeftPos.x,ctrlLeftPos.y,ctrlLeftPos.z);
-					postVRFunctionCallMode = 7;
+
+					if((teraflyPOS.x<swcBB.x0)||(teraflyPOS.y<swcBB.y0)||(teraflyPOS.z<swcBB.z0)
+						||(teraflyPOS.x>swcBB.x1)||(teraflyPOS.y>swcBB.y1)||(teraflyPOS.z>swcBB.z1))
+						qDebug()<<"Out of the bounding box.Ignored!";
+					else
+						postVRFunctionCallMode = 7;
 				}
 				else // zoom out
-					postVRFunctionCallMode = 8;				
+					postVRFunctionCallMode = 8;	
+				break;
 			}
 		default:
 			break;

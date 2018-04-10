@@ -2379,6 +2379,7 @@ void CViewer::Vaa3D_changeXCut0(int s)
 }
 void CViewer::ShiftToAnotherDirection(int _direction)
 {
+#ifdef __ALLOW_VR_FUNCS__
     // slot func related to VR shift signal
 	// qDebug()<<"o yeah the _direction is"<<_direction;
     if(_direction<7)
@@ -2415,6 +2416,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             }
         }       
     }
+#endif
 }
 
 void CViewer::Vaa3D_changeXCut1(int s)

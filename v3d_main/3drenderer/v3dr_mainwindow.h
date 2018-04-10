@@ -295,6 +295,7 @@ public:
 
 #ifdef __ALLOW_VR_FUNCS__
         rotVRView=0;
+		rotCView=0;
 #endif
 
 		tabRotZoom=0;
