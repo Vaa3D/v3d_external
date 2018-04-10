@@ -2303,6 +2303,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					postVRFunctionCallMode = (ctrlLeftPos.z - loadedNTCenter.z)>0?5:6;
 				else
 					qDebug()<<"oh no! Something wrong!Please check!";
+
+				break;
 			}
 		case _TeraZoom:
 			{

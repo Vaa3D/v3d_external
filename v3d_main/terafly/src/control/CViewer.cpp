@@ -2381,7 +2381,12 @@ void CViewer::ShiftToAnotherDirection(int _direction)
 {
 #ifdef __ALLOW_VR_FUNCS__
     // slot func related to VR shift signal
-	// qDebug()<<"o yeah the _direction is"<<_direction;
+	
+	if (volResIndex == 0 &&(_direction<7 || _direction == 8) )//at lowerest level, do not allow shift and zoom-out.
+	{
+		QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+		return;
+	}
     if(_direction<7)
         PMain::getInstance()->teraflyShiftClickedinVR(_direction);  
     else if(_direction == 7)
