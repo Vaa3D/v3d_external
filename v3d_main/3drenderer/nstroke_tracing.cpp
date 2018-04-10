@@ -288,7 +288,7 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(N-1).x, list_listCurvePos.at(index).at(N-1).y, p_tree, best_dist);
                                 qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-				double th_merge = 5;
+                double th_merge = 10;
 
 				bool b_start_merged=false, b_end_merged=false;
 				NeuronSWC cur_node;
@@ -1082,7 +1082,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                          V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
                          qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-                         double th_merge = 5;
+                         double th_merge = 10;
 
                          bool b_start_merged=false, b_end_merged=false;
                          NeuronSWC cur_node;
@@ -1855,7 +1855,7 @@ if (0)
                     V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
                     qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-				double th_merge = 5;
+                double th_merge = 10;
 
 				bool b_start_merged=false, b_end_merged=false;
                 NeuronSWC cur_node;
@@ -2422,7 +2422,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
                          V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
                          qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-                         double th_merge = 5;
+                         double th_merge = 10;
 
                          bool b_start_merged=false, b_end_merged=false;
                          NeuronSWC cur_node;

@@ -946,7 +946,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 b_grabhighrez = true;
                 produceZoomViewOf3DRoi(loc_vec,
-                                       1  //one means from non-wheel event
+                                       0  //one means from non-wheel event
                                        );
 			}
 		}
@@ -3431,7 +3431,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(0).x, list_listCurvePos.at(0).at(0).y, p_tree, best_dist);
 				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(N-1).x, list_listCurvePos.at(0).at(N-1).y, p_tree, best_dist);
 				qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
-				double th_merge = 5;
+                double th_merge = 10;
 				bool b_start_merged=false, b_end_merged=false;
 				NeuronSWC cur_node;
 				if (n_id_start>=0)
@@ -3541,12 +3541,12 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			if (curpos.z < mz) mz = curpos.z;
 			else if (curpos.z > Mz) Mz = curpos.z;
 		}
-		qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
+        qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
 		V3DLONG margin=5; //the default margin is small
         if (loc_vec.size()==1) margin=61; //for marker then define a bigger margin
-		mx -= margin; Mx += margin; if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
-		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
-		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
+        mx -= margin; Mx += margin; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
+        my -= margin; My += margin; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
+        mz -= margin; Mz += margin; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
 		//by PHC 101008
 		if (b_imaging && curXWidget)
 		{
@@ -3570,7 +3570,7 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			myimagingp.ze = Mz; //ending coordinates (in pixel space)
 			myimagingp.xrez = curImg->getRezX() / 2.0;
 			myimagingp.yrez = curImg->getRezY() / 2.0;
-			myimagingp.zrez = curImg->getRezZ() / 2.0;
+            myimagingp.zrez = curImg->getRezZ() / 2.0;
 			//do imaging
             return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
