@@ -448,6 +448,7 @@ public:
      void deleteMultiNeuronsByStroke();
 
 	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
+	 void simpleConnect();
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
 	 void connectMarkerByStroke();

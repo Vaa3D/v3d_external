@@ -219,7 +219,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0; // MK, 2017 April
+			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0, // MK, 2017 April
+			*simpleConnect=0 // MK, 2018, April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -447,8 +448,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-						// MK, 2017 April
-						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+						// MK, 2017 April, 2018 April
+						listAct.append(simpleConnect = new QAction("simple connection", w));
+						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smooth)", w));
 
 						// MK, 2017 June
 						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -718,8 +720,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                 listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-				// MK, 2017 April
-				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+				// MK, 2017 April, 2018 April
+				listAct.append(simpleConnect = new QAction("simple connection", w));
+				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smooth)", w));
 
 				// MK, 2017 June
 				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -1810,6 +1813,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
+	else if (act == simpleConnect)
+	{
+		if (NEURON_CONDITION)
+		{
+			selectMode = smSimpleConnect;
+			b_addthiscurve = false;
+			if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
 	/*************************************************/
 
 	/*** Neuron cutting functionalities. MK, 2017 June ***/
@@ -2192,14 +2204,13 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-//<<<<<<< HEAD
 //    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 //    	selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
 ////=======
+
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
-		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker	|| selectMode == smCutNeurons)
-//>>>>>>> master
+		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2213,7 +2224,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-//<<<<<<< HEAD
+
 //        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
 //					selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
 //					? 1 : (selectMode == smCurveCreate2)? 2 : 3;
@@ -2223,7 +2234,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 //        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons) //20170731 smBreakTwoNeurons used in mozak
 //        		 ? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		int N = (selectMode == smCurveCreate3)? 3 : (selectMode == smCurveCreate2)? 2 : 1; //20170731 RZC: more simple expression for less bugs
-//>>>>>>> master
+
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -2264,6 +2275,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
+			else if (selectMode == smSimpleConnect) simpleConnect();
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
