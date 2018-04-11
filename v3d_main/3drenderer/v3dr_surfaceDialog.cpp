@@ -384,12 +384,21 @@ void V3dr_surfaceDialog::createMenuOfColor()
     connect(Act, SIGNAL(triggered()), this, SLOT(selectedColor()));
     menuColor.addAction(Act);
 
+
     Act = new QAction(tr("Hanchuan's Color Mapping"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(mapHanchuanColor()));
     menuColor.addAction(Act);
-
     Act = new QAction(tr("Random Color Mapping"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(mapRandomColor()));
+    menuColor.addAction(Act);
+
+    //180412 RZC
+    menuColor.addSeparator();
+    Act = new QAction(tr("Neuron Segment Colorful"), this);
+    connect(Act, SIGNAL(triggered()), this, SLOT(mapSegmentColor()));
+    menuColor.addAction(Act);
+    Act = new QAction(tr("Multi-neuron Colorful"), this);
+    connect(Act, SIGNAL(triggered()), this, SLOT(mapMultiNeuronColor()));
     menuColor.addAction(Act);
 }
 
@@ -716,7 +725,7 @@ void V3dr_surfaceDialog::selectedColor(int map)
 	QTableWidget* t = currentTableWidget();
 	if (! t) return;
 
-	QColor qcolor0(255,255,255);
+	QColor qcolor0(255,255,255,255);
 	if (map==0)
 	{
 		//qcolor0 = QColorDialog::getColor(QColor());
@@ -733,19 +742,29 @@ void V3dr_surfaceDialog::selectedColor(int map)
 		PROGRESS_PERCENT(i*100/n_row);
 
 		QTableWidgetItem * curItem = t->item(i,1);
+		if (! curItem->isSelected()) continue; // skip un-selected
+
 		QColor qcolor = qcolor0;
 
 		if (map==-1)      //random color
 		{
 			qcolor = QCOLOR(random_rgba8());
 		}
-		else if (map==1)  //hanchuan' color table
+		else if (map==-2)  //hanchuan' color table
 		{
 			int j = i%hanchuan_colortable_size();
 			qcolor = QColor(hanchuan_colortable[j][0],hanchuan_colortable[j][1],hanchuan_colortable[j][2]);
 		}
-		else //map==0
-			if (! curItem->isSelected()) continue; // skip un-selected
+
+		//180412 RZC
+		else if (map==2)  //multi-neuron colorful
+		{
+			qcolor = QColor(0,0,0,2);
+		}
+		else if (map==1)  //neuron segment colorful
+		{
+			qcolor = QColor(0,0,0,1);
+		}
 
 		curItem->setData(0, qVariantFromValue(qcolor));
 		//UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()

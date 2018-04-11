@@ -326,6 +326,7 @@ const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----
 { 10.608 , 0.0 , 0.0 } // black
 };
 //>>>>>>> master
+#define ____neuron_color_table____
 const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
 		{255, 255, 255},  // white,   0-undefined
 		{20,  20,  20 },  // black,   1-soma
@@ -1610,7 +1611,7 @@ void Renderer_gl1::updateNeuronBoundingBox()
 }
 
 
-#define ___add_curve_SWC_with_default_type___
+#define __add_curve_SWC_with_default_type___
 void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 {
 #define CURVE_NAME "curve_segment"
@@ -1868,7 +1869,7 @@ void Renderer_gl1::toggleLineType()
 	//qDebug("    Renderer_gl1::toggleLineType = %d", lineType);
 	//compileNeuronTreeList();
 }
-#define _______2_______
+
 //void Renderer_gl1::compileNeuronTreeList()
 //{
 //	if (compiledNeuron)
@@ -2354,15 +2355,21 @@ void Renderer_gl1::drawNeuronTree(int index)
 		glPushMatrix();
 		{
 			//qDebug("%i-%i  (%g %g %g) - (%g %g %g)", i,j,  S1.x,S1.y,S1.z, S0.x,S0.y,S0.z);
-			//if (rgba.a==0 || lineType==1)
-			if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
+			//if (lineType==1)
+			//if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
+			if (rgba.a==0 || rgba.a==1 || rgba.a==2) //180411 RZC: 0--default, 1--segment colorful, 2--multi-neuron colorful
 			{
 				int type = S1.type; 			 // 090925
-				if (editable)
+				//if (editable)
+				if (rgba.a==1 || rgba.a==2) //180411 RZC
 				{
 					int ncolorused = neuron_type_color_num; if (neuron_type_color_num>19) ncolorused = 19; //added by PHC, 20120330
-					type = S1.seg_id %(ncolorused -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
+					if (rgba.a==1)
+						type = S1.seg_id %(ncolorused -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
+					if (rgba.a==2)
+						type = index %(ncolorused -5)+5; //180411 RZC: multi-neuron color using hanchuan's neuron_type_color
 				}
+
 				if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
 				{
 					neuronColor[0] =  neuron_type_color_heat[ type - 300][0];
@@ -2375,6 +2382,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 					neuronColor[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
 					neuronColor[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
 				}
+
 				glColor3ubv(neuronColor); // 081230, 090331
 			}
 			else
@@ -2384,6 +2392,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				neuronColor[1] = rgba.c[1];
 				neuronColor[2] = rgba.c[2];
 			}
+
 			// (0,0,0)--(0,0,1) ==> S0--S1
 			XYZ D = S0 - S1;
 			float length = norm(D);
@@ -2393,6 +2402,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 			float rf = 2;
 			r1 *= rf;
 			r0 *= rf;
+
 			if (cur_lineType==0)
 			{
 				GLfloat m[4][4];
