@@ -386,6 +386,7 @@ public slots:
     virtual void callDefine3DPolyline(); // call 3D polyline defining
 
     virtual void toggleEditMode();
+    virtual void setEditMode();
 
 
 //----------------------------------------------------------------------------------------

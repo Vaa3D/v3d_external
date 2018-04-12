@@ -250,6 +250,8 @@ public:
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
 
     virtual void toggleEditMode()       {};
+    virtual void setEditMode()       {};
+
 
 public:
 	int sShowTrack, curChannel;

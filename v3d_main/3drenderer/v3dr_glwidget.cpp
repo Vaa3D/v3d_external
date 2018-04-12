@@ -3026,6 +3026,15 @@ void V3dR_GLWidget::toggleEditMode()
     }
 }
 
+void V3dR_GLWidget::setEditMode()
+{
+    if (renderer)
+    {
+        renderer->setEditMode();
+        POST_updateGL();
+    }
+}
+
 void V3dR_GLWidget::toggleTexFilter()
 {
 	//qDebug("V3dR_GLWidget::toggleTexFilter");

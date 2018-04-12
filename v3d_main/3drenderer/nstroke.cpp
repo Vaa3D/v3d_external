@@ -1308,6 +1308,7 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
+        w->setEditMode();
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             editinput = 2;
@@ -1324,6 +1325,7 @@ void Renderer_gl1::callStrokeDeleteMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
+        w->setEditMode();
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             editinput = 3;
@@ -1340,6 +1342,7 @@ void Renderer_gl1::callStrokeSplitMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
+        w->setEditMode();
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             editinput = 4;
@@ -1357,6 +1360,7 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
+        w->setEditMode();
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
             editinput = 6;
