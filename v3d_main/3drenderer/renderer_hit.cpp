@@ -449,8 +449,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
 						// MK, 2017 April, 2018 April
-						listAct.append(simpleConnect = new QAction("simple connection", w));
-						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smooth)", w));
+						listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
+						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
 
 						// MK, 2017 June
 						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -721,8 +721,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
 				// MK, 2017 April, 2018 April
-				listAct.append(simpleConnect = new QAction("simple connection", w));
-				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smooth)", w));
+				listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
+				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
 
 				// MK, 2017 June
 				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
