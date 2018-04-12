@@ -1780,7 +1780,8 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 		for (int i=0; i<listNeuronTree.size(); i++)
 		{
 			listNeuronTree[i].editable = (1+i==SS.n); //090923
-		}
+            listNeuronTree[i].on = (1+i==SS.n);  //hide the original one //ZZ 04122018
+        }
 		curEditingNeuron = SS.n;
 
         if (listNeuronTree.size()==1 && listNeuronTree[0].file=="vaa3d_traced_neuron" && listNeuronTree[0].name=="vaa3d_traced_neuron")
