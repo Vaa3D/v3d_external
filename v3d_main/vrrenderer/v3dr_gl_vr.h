@@ -46,6 +46,7 @@ enum ModeControlSettings
 	_TeraZoom,
 	_Contrast,
 	_UndoRedo,
+	_ColorChange,
 	_Surface,
 	_VirtualFinger,	
 	_Freeze,
@@ -125,6 +126,7 @@ public:
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
 
 	void SetupMarkerandSurface(double x,double y,double z,int type =3);
+	void SetupMarkerandSurface(double x,double y,double z,int colorR,int colorG,int colorB);
 
 	void RemoveMarkerandSurface(double x,double y,double z,int type=3);
 
@@ -217,6 +219,7 @@ private:
 	vector<NTL> vUndoList;
 	vector<NTL> vRedoList;
 
+	static int m_curMarkerColorType;
 
 private: // SDL bookkeeping
 	SDL_Window *m_pCompanionWindow;
@@ -230,14 +233,14 @@ private: // OpenGL bookkeeping
 	int m_iTrackedControllerCount_Last;
 	int m_iValidPoseCount;
 	int m_iValidPoseCount_Last;
-	bool m_bFrozen; //freeze the view
-	bool m_bVirtualFingerON;
+	static bool m_bFrozen; //freeze the view
+	static bool m_bVirtualFingerON;
 
 	//control main functions in right controller
 	int  m_modeControlTouchPad_R;
 	int m_modeControlGrip_R;
 	//control other functions in left controller
-	int m_modeControlGrip_L;
+	static int m_modeControlGrip_L;
 	ModeControlSettings m_modeGrip_L;
 	bool m_translationMode;
 	bool m_rotateMode;
@@ -434,10 +437,10 @@ private:
 	GLuint g_texHeight;
 	GLuint g_volTexObj;
 
-	float fBrightness;
-	float fContrast;
+	static float fBrightness;
+	static float fContrast;
 
-	float iLineWid;
+	static float iLineWid;
 };
 
 
