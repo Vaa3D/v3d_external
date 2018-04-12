@@ -3193,7 +3193,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			iy = this_unit.y;
 			iz = this_unit.z;
 			allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
-			
+
 			if (curImg->tracedNeuron.seg[s].to_be_deleted)
 				break;
 
@@ -3205,11 +3205,11 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 
                 if(contour_mode == 1)
 				{
-                    if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly))
+                    if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)&& !allUnitsOutsideZCut)
 						curImg->tracedNeuron.seg[s].to_be_deleted = true;
                 }else if (contour_mode == 2)
                 {
-                    if(!poly.boundingRect().contains(p) || !pointInPolygon(p.x(), p.y(), poly))
+                    if(!poly.boundingRect().contains(p) || !pointInPolygon(p.x(), p.y(), poly)&& !allUnitsOutsideZCut)
                         curImg->tracedNeuron.seg[s].to_be_deleted = true;
                 }
 				else
@@ -3217,7 +3217,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 					for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
 					{
 						QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
-						if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )
+                        if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  && !allUnitsOutsideZCut)
 						{
 							if (s >= curImg->tracedNeuron.seg.size())
 							{
@@ -3229,14 +3229,14 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 						}
 					}
 				}
-			}
+            }
 		}
 		if (this->cuttingZ)		{
 			curImg->tracedNeuron.seg[s].to_be_deleted = curImg->tracedNeuron.seg[s].to_be_deleted && !allUnitsOutsideZCut;
 		}
 	}
-	curImg->update_3drenderer_neuron_view(w, this);
-	curImg->proj_trace_history_append();
+    curImg->update_3drenderer_neuron_view(w, this);
+    curImg->proj_trace_history_append();
 }
 
 // --------- Simple connecting tool (no geometrical analysis), MK, April, 2018 ---------
@@ -4579,6 +4579,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
                 continue;
+            bool allUnitsOutsideZCut = false;
             V3DLONG p_listneuron_num = p_listneuron->size();
             for (V3DLONG i=0;i<p_listneuron_num;i++)
             {
@@ -4586,6 +4587,9 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                 ix = p_listneuron->at(i).x;
                 iy = p_listneuron->at(i).y;
                 iz = p_listneuron->at(i).z;
+                allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
+
+
                 if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
                     py = viewport[3]-py; //the Y axis is reversed
@@ -4594,7 +4598,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                     {
                         QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
 						float dist2d_squared = (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y());
-                        if(dist2d_squared <= tolerance_squared)
+                        if(dist2d_squared <= tolerance_squared && !allUnitsOutsideZCut)
                        //     && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
                         {
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
