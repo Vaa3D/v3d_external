@@ -3470,7 +3470,7 @@ void Renderer_gl1::simpleConnect()
 					reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
 				{
 					reID->seg_id = mainSeg.segID;
-					reID->type = assignedType;
+					//reID->type = assignedType;
 				}
 			}
 			//////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
@@ -3537,7 +3537,7 @@ void Renderer_gl1::simpleConnect()
 					reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
 				{
 					reID->seg_id = mainSeg.segID;
-					reID->type = assignedType;
+					//reID->type = assignedType;
 				}
 			}
 		}
