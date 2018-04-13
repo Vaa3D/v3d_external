@@ -3396,8 +3396,9 @@ void Renderer_gl1::simpleConnect()
 					cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
 				}
 
+				double assignedType;
+				assignedType = curImg->tracedNeuron.seg[mainSeg.segID].row[0].type;
 				curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
-
 				if (mainSeg.head_tail == -1)
 				{
 					if (branchSeg.head_tail == -1)
@@ -3469,7 +3470,7 @@ void Renderer_gl1::simpleConnect()
 					reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
 				{
 					reID->seg_id = mainSeg.segID;
-					reID->type = 3;
+					reID->type = assignedType;
 				}
 			}
 			//////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
@@ -3493,6 +3494,9 @@ void Renderer_gl1::simpleConnect()
 					cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
 				}
 
+				double assignedType;
+				assignedType = curImg->tracedNeuron.seg[mainSeg.segID].row[0].type;
+				curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
 				if (branchSeg.head_tail == 2)
 				{
 					std::reverse(curImg->tracedNeuron.seg[branchSeg.segID].row.begin(), curImg->tracedNeuron.seg[branchSeg.segID].row.end());
@@ -3527,6 +3531,13 @@ void Renderer_gl1::simpleConnect()
 					}
 					(curImg->tracedNeuron.seg[mainSeg.segID].row.end() - 1)->parent = (curImg->tracedNeuron.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
 					curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
+				}
+
+				for (vector<V_NeuronSWC_unit>::iterator reID = curImg->tracedNeuron.seg[mainSeg.segID].row.begin();
+					reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
+				{
+					reID->seg_id = mainSeg.segID;
+					reID->type = assignedType;
 				}
 			}
 		}
