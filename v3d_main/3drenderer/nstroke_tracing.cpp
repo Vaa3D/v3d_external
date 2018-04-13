@@ -3314,6 +3314,19 @@ void Renderer_gl1::simpleConnect()
 						QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
 						if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance)
 						{
+							if (curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->data[6] != 2) // Sort the node numbers of involved segments
+							{
+								int nodeNo = 1;
+								for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
+									it != curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
+								{
+									it->data[0] = nodeNo;
+									it->data[6] = nodeNo + 1;
+									++nodeNo;
+								}
+								(curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end() - 1)->data[6] = -1;
+							}
+
 							for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
 								it != curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
 							{
@@ -3599,6 +3612,19 @@ void Renderer_gl1::connectNeuronsByStroke()
 					iz = nodeOnStroke.at(j).z;
 					if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
 					{
+						if (curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->data[6] != 2) // Sort the node numbers of involved segments
+						{
+							int nodeNo = 1;
+							for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
+								it != curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
+							{
+								it->data[0] = nodeNo;
+								it->data[6] = nodeNo + 1;
+								++nodeNo;
+							}
+							(curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end() - 1)->data[6] = -1;
+						}
+
 						py = viewport[3]-py; //the Y axis is reversed
 						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
 
