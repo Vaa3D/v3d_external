@@ -3239,7 +3239,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     curImg->proj_trace_history_append();
 }
 
-// --------- Simple connecting tool (no geometrical analysis), MK, April, 2018 ---------
+// --------- Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018 ---------
 void Renderer_gl1::simpleConnect()
 {
 	connectEdit = segmentEdit;
@@ -3358,12 +3358,13 @@ void Renderer_gl1::simpleConnect()
 				}
 				if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
 			}
-			//for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
-				//cout << segInfoIt->segID << " head tail: " << segInfoIt->head_tail << endl;
+			for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
+				cout << segInfoIt->segID << " head tail: " << segInfoIt->head_tail << endl;
 			/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
 
 			/* ========= Connect segments ========= */
 			if (segInfo.size() < 2) return;
+			//////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
 			if ((segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2) && (segInfo.at(1).head_tail == -1 || segInfo.at(1).head_tail == 2))
 			{
 				segInfoUnit mainSeg, branchSeg;
@@ -3371,19 +3372,20 @@ void Renderer_gl1::simpleConnect()
 				{
 					mainSeg = segInfo.at(0);
 					branchSeg = segInfo.at(1);
-					//cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-					//cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+					cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
+					cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
 				}
 				else
 				{
 					mainSeg = segInfo.at(1);
 					branchSeg = segInfo.at(0);
-					//cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-					//cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+					cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
+					cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
 				}
 
 				curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
-				if (mainSeg.head_tail == -1) // ---------> head tail connection
+
+				if (mainSeg.head_tail == -1)
 				{
 					if (branchSeg.head_tail == -1)
 					{
@@ -3457,23 +3459,25 @@ void Renderer_gl1::simpleConnect()
 					reID->type = 3;
 				}
 			}
-
-			if ((segInfo.at(0).head_tail != -1 && segInfo.at(0).head_tail != 2) ^ (segInfo.at(1).head_tail != -1 && segInfo.at(1).head_tail != 2)) // ---------> branching connection
+			//////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
+			
+			//////////////////////////////////////////// BRANCHING CONNECTION ////////////////////////////////////////////
+			if ((segInfo.at(0).head_tail != -1 && segInfo.at(0).head_tail != 2) ^ (segInfo.at(1).head_tail != -1 && segInfo.at(1).head_tail != 2))
 			{
 				segInfoUnit mainSeg, branchSeg;
 				if (segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2)
 				{
 					mainSeg = segInfo.at(1);
 					branchSeg = segInfo.at(0);
-					//cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-					//cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+					cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
+					cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
 				}
 				else
 				{
 					mainSeg = segInfo.at(0);
 					branchSeg = segInfo.at(1);
-					//cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-					//cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+					cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
+					cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
 				}
 
 				if (branchSeg.head_tail == 2)
@@ -3513,6 +3517,7 @@ void Renderer_gl1::simpleConnect()
 				}
 			}
 		}
+		//////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
 		/* ========= END of [Connect segments] ========= */
 	
 		curImg->update_3drenderer_neuron_view(w, this);
@@ -3521,6 +3526,7 @@ void Renderer_gl1::simpleConnect()
 
 	return;
 }
+// --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
 // ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------
 void Renderer_gl1::connectNeuronsByStroke()
