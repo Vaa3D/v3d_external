@@ -1277,6 +1277,9 @@ void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool 
 */
 void Renderer_gl1::callStrokeCurveDrawingBBoxes()
 {
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
     selectMode = smCurveTiltedBB_fm_sbbox;
     b_addthiscurve = true;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -1291,6 +1294,9 @@ void Renderer_gl1::callStrokeCurveDrawingBBoxes()
 
 void Renderer_gl1::callStrokeCurveDrawingGlobal()
 {
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
     selectMode = smCurveTiltedBB_fm;
     b_addthiscurve = true;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -1305,6 +1311,9 @@ void Renderer_gl1::callStrokeCurveDrawingGlobal()
 
 void Renderer_gl1::callStrokeRetypeMultiNeurons()
 {
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
@@ -1339,6 +1348,9 @@ void Renderer_gl1::callStrokeDeleteMultiNeurons()
 
 void Renderer_gl1::callStrokeSplitMultiNeurons()
 {
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
@@ -1357,6 +1369,9 @@ void Renderer_gl1::callStrokeSplitMultiNeurons()
 
 void Renderer_gl1::callStrokeConnectMultiNeurons()
 {
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
@@ -1374,6 +1389,9 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
 
 void Renderer_gl1::callDefine3DPolyline()
 {
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
     selectMode = smCurveCreate_pointclick;
     b_addthiscurve = true;
     cntCur3DCurveMarkers=0; //reset
