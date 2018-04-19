@@ -43,6 +43,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <stdio.h>
 #include <math.h>
 
+#include <iostream>
+
+using namespace std;
 
 //V_NeuronSWC:: /////////////////////////////////////////////////
 
@@ -387,7 +390,7 @@ Link_Map get_link_map(const V_NeuronSWC & in_swc)
             }
         }
     }
-
+	
 	return link_map;
 }
 
@@ -397,6 +400,8 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 	// map swc's index --> vector's index & in/out link
 	Link_Map link_map = get_link_map(in_swc);
 	qDebug("link_map is created.");
+
+	cout << in_swc.row.size() << endl;
 
 	vector <V_NeuronSWC> out_swc_segs;
 	out_swc_segs.clear();
@@ -410,6 +415,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		//qDebug("#%d nlink = %d, in %d, out %d", V3DLONG(cur_node.n), nodelink.nlink, nodelink.in_link.size(), nodelink.out_link.size());
 	}
 
+	int branchID = 1;
 	for (;;)
 	{
 		// check is all nodes processed
@@ -471,6 +477,8 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		//qDebug("decompose_V_NeuronSWC_segs: segment from node #%d", j);
 
 		V3DLONG inext = istart;
+		cout << istart << endl;
+		//cout << " " << in_swc.row[istart].n << " " << in_swc.row[istart].x << " " << in_swc.row[istart].y << " " << in_swc.row[istart].n << endl;
 		for (V3DLONG n=1; inext>=0; n++)
 		{
 			V_NeuronSWC_unit & cur_node = in_swc.row[inext];
@@ -484,13 +492,33 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 			if(cur_node.parent <0)    // root point ////////////////////////////
 			{
-				//qDebug("decompose_V_NeuronSWC_segs: segment end at root #%d", V3DLONG(cur_node.n));
+				(new_seg.row.end() - 1)->branchingProfile.isBranch = true;
+				(new_seg.row.end() - 1)->branchingProfile.ID = branchID;
+				(new_seg.row.end() - 1)->branchingProfile.hierarchy = 1;
+				(new_seg.row.end() - 1)->branchingProfile.x = cur_node.x;
+				(new_seg.row.end() - 1)->branchingProfile.y = cur_node.y;
+				(new_seg.row.end() - 1)->branchingProfile.z = cur_node.z;
+				qDebug("decompose_V_NeuronSWC_segs: segment end at root #%d", V3DLONG(cur_node.n));
 				cur_node.nchild --;
 				break; //over, a simple segment
 			}
 			else if (n>1 && nodelink.nlink >2)  // branch point (in link_map) ///////////
 			{
-				//qDebug("decompose_V_NeuronSWC_segs: segment end at branch #%d", V3DLONG(cur_node.n));
+				(new_seg.row.end() - 1)->branchingProfile.isBranch = true;
+				(new_seg.row.end() - 1)->branchingProfile.x = cur_node.x;
+				(new_seg.row.end() - 1)->branchingProfile.y = cur_node.y;
+				(new_seg.row.end() - 1)->branchingProfile.z = cur_node.z;
+				++branchID;
+				for (vector<V_NeuronSWC>::iterator newSegIt = out_swc_segs.begin(); newSegIt != out_swc_segs.end(); ++newSegIt)
+				{
+					if (newSegIt->row.begin()->x == cur_node.x && newSegIt->row.begin()->y == cur_node.y && newSegIt->row.begin()->z == cur_node.z)
+					{
+						(new_seg.row.end() - 1)->branchingProfile.ID = branchID;
+						(new_seg.row.end() - 1)->branchingProfile.hierarchy = (newSegIt->row.end() - 1)->branchingProfile.hierarchy + 1;
+					}
+				}
+
+				qDebug("decompose_V_NeuronSWC_segs: segment end at branch #%d", V3DLONG(cur_node.n));
 				cur_node.nchild --;
 				break; //over, a simple segment
 			}
@@ -511,6 +539,17 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 		if (new_seg.row.size()>0)//>=2)//? single point
 		{
+			int curBrID = (new_seg.row.end() - 1)->branchingProfile.ID;
+			int curBrHi = (new_seg.row.end() - 1)->branchingProfile.hierarchy;
+			new_seg.row.begin()->branchingProfile.x = new_seg.row.begin()->x;
+			new_seg.row.begin()->branchingProfile.y = new_seg.row.begin()->y;
+			new_seg.row.begin()->branchingProfile.z = new_seg.row.begin()->z;
+			for (vector<V_NeuronSWC_unit>::iterator it = new_seg.row.begin(); it != new_seg.row.end(); ++it) 
+			{
+				it->branchingProfile.ID = curBrID;
+				it->branchingProfile.hierarchy = curBrHi;
+				cout << it->seg_id << " " << it->branchingProfile.ID << " " << it->branchingProfile.hierarchy << endl;
+			}
 			new_seg.row[new_seg.row.size()-1].parent = -1; // set segment end
 			char buf[10];
 			new_seg.name = sprintf(buf,"%d", out_swc_segs.size()+1);
@@ -518,7 +557,9 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			out_swc_segs.push_back(new_seg);
 		}
 	}
-
+	long int nodeCount = 0;
+	for (vector<V_NeuronSWC>::iterator it = out_swc_segs.begin(); it != out_swc_segs.end(); ++it) nodeCount = nodeCount + it->row.size();
+	cout << nodeCount << endl;
 	return out_swc_segs;
 }
 

@@ -77,6 +77,15 @@ inline double distL2square(const V_NeuronSWC_coord & a, const V_NeuronSWC_coord 
 			(a.z-b.z)*(a.z-b.z) );
 }
 
+struct V_BranchUnit
+{
+	V_BranchUnit() { isBranch = false; x = 0; y = 0; z = 0; }
+	bool isBranch;
+	float x, y, z;
+	int ID;
+	int hierarchy;
+};
+
 struct V_NeuronSWC_unit
 {
 	union {
@@ -94,6 +103,8 @@ struct V_NeuronSWC_unit
 	void set(double x1, double y1, double z1, double r1, double p1) {x=x1; y=y1;z=z1;r=r1;parent=p1;}
 	void set(double x1, double y1, double z1, double r1) {x=x1; y=y1;z=z1;r=r1;}
 	void set(double x1, double y1, double z1) {x=x1; y=y1;z=z1;}
+
+	V_BranchUnit branchingProfile;
 };
 
 inline double distL2square(const V_NeuronSWC_unit & a, const V_NeuronSWC_unit & b)

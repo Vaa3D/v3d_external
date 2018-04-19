@@ -1902,7 +1902,6 @@ void Renderer_gl1::setEditMode()
             curImg->tracedNeuron.name = "vaa3d_traced_neuron";
             curImg->tracedNeuron.file = "vaa3d_traced_neuron";
             listNeuronTree.clear();
-
             curImg->proj_trace_history_append();
             curImg->update_3drenderer_neuron_view(w, this);
         }
