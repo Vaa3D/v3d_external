@@ -3339,6 +3339,9 @@ void Renderer_gl1::simpleConnect()
 									curSeg.segID = nodeOnStroke.at(j).seg_id;
 									curSeg.nodeCount = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.size();
 									curSeg.refine = false;
+									curSeg.branchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->branchingProfile.ID;
+									curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->branchingProfile.paID;
+									curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->branchingProfile.hierarchy;
 									vector<segInfoUnit>::iterator chkIt = segInfo.end();
 									if (segInfo.begin() == segInfo.end())
 									{
@@ -3372,11 +3375,17 @@ void Renderer_gl1::simpleConnect()
 				if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
 			}
 			for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
-				cout << segInfoIt->segID << " head tail: " << segInfoIt->head_tail << endl;
+				cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 			/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
 
 			/* ========= Connect segments ========= */
 			if (segInfo.size() < 2) return;
+			int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo);
+			if (loop == 1)
+			{
+				v3d_msg("Oops! You're about to make this mouse a retard by introducing a neuronal short circuit. *\\(^O^)/*  \n\nNote: This loop safety guard is in beta phase. Please collect feedbacks and report to MK. Thank you.");
+				return;
+			}
 			//////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
 			if ((segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2) && (segInfo.at(1).head_tail == -1 || segInfo.at(1).head_tail == 2))
 			{
@@ -3551,6 +3560,106 @@ void Renderer_gl1::simpleConnect()
 	return;
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
+
+
+int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr)
+{
+	cout << "--> real-time loop check.." << endl;
+
+	int returnValue = 0;
+	
+	segInfoUnit longSeg;
+	segInfoUnit shortSeg;
+	if (involvedSegsInfoPtr->at(0).hierarchy <= involvedSegsInfoPtr->at(1).hierarchy)
+	{
+		longSeg = involvedSegsInfoPtr->at(1);
+		shortSeg = involvedSegsInfoPtr->at(0); 
+	}
+	else 
+	{
+		longSeg = involvedSegsInfoPtr->at(0);
+		shortSeg = involvedSegsInfoPtr->at(1);
+	}
+
+	int longHi = longSeg.hierarchy;
+	int longID = longSeg.branchID;
+	int longPaID = longSeg.paBranchID;
+	int shortHi = shortSeg.hierarchy;
+	int shortID = shortSeg.branchID;
+	int shortPaID = shortSeg.paBranchID;
+
+	if (longHi != shortHi)
+	{
+		bool sameHi = false;
+		while (!sameHi)
+		{
+			//cout << shortHi << " " << longHi << endl;
+			if (shortHi == longHi)
+			{
+				sameHi = true;
+				break;
+			}
+
+			for (vector<V_NeuronSWC>::const_iterator it = curImgSegsPtr->cbegin(); it != curImgSegsPtr->cend(); ++it)
+			{
+				if (it->row.begin()->branchingProfile.ID == longPaID)
+				{
+					if (shortHi < longHi)
+					{
+						longHi = it->row.begin()->branchingProfile.hierarchy;
+						longID = it->row.begin()->branchingProfile.ID;
+						longPaID = it->row.begin()->branchingProfile.paID;
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	bool loop = false;
+	bool root = false;
+	while (!loop && !root)
+	{
+		cout << "	short: " << shortID << " " << shortHi << " || ";
+		cout << "long: " << longID << " " << longHi << endl;
+		if (shortID == longID)
+		{
+			cout << "Back to the same segment. Loop formed." << endl;
+			returnValue = 1;
+			loop = true;
+		}
+		else
+		{
+			int count = 0;
+			for (vector<V_NeuronSWC>::const_iterator it = curImgSegsPtr->cbegin(); it != curImgSegsPtr->cend(); ++it)
+			{
+				if (it->row.begin()->branchingProfile.ID == longPaID)
+				{
+					longHi = it->row.begin()->branchingProfile.hierarchy;
+					longID = it->row.begin()->branchingProfile.ID;
+					longPaID = it->row.begin()->branchingProfile.paID;
+					++count;
+				}
+				if (it->row.begin()->branchingProfile.ID == shortPaID)
+				{
+					shortHi = it->row.begin()->branchingProfile.hierarchy;
+					shortID = it->row.begin()->branchingProfile.ID;
+					shortPaID = it->row.begin()->branchingProfile.paID;
+					++count;
+				}
+			}
+
+			if (count == 0)
+			{
+				cout << "Back to the different root segment." << endl;
+				returnValue = 0;
+				root = true;
+			}
+		}
+	}
+
+	return returnValue;
+}
 
 // ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------
 void Renderer_gl1::connectNeuronsByStroke()
@@ -4479,7 +4588,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
-//<<<<<<< HEAD
     if (useCurrentTraceTypeForRetyping)
     {
         node_type = currentTraceType;
@@ -4507,7 +4615,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                         "\n 4 -- apical dendrite (purple)"
                                         "\n else -- custom \n"),
                                       currentTraceType, 0, 100, 1, &ok);
-//>>>>>>> master
 #else
         node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
                                   QObject::tr("SWC type: "

@@ -455,13 +455,19 @@ public:
 	 void connectMarkerByStroke();
 	 struct segInfoUnit
 	 {
+		 segInfoUnit() { hierarchy = 0; }
 		long segID;
 		long head_tail;
 		long nodeCount;
 		bool refine;
+
+		int branchID, paBranchID;
+		int hierarchy;
 	 };
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
 	 void cutNeuronsByStroke();
+
+	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
 	 // ---------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
