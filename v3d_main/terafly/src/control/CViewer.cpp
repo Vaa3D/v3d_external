@@ -661,7 +661,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			
 			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-			if (thisRenderer->listNeuronTree.empty())
+			if (thisRenderer->listNeuronTree.isEmpty())
 			{
 				XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
 				newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);

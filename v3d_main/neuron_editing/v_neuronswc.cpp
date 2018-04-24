@@ -475,7 +475,6 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		//qDebug("decompose_V_NeuronSWC_segs: segment from node #%d", j);
 
 		V3DLONG inext = istart;
-		//cout << "segment head: " << istart << endl;
 		for (V3DLONG n=1; inext>=0; n++)
 		{
 			V_NeuronSWC_unit & cur_node = in_swc.row[inext];
@@ -555,40 +554,43 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 	int curHi = 1;
 	bool allHiAssigned = false;
-	while (!allHiAssigned)
+	if (!out_swc_segs.empty())
 	{
-		for (vector<V_NeuronSWC>::iterator outSegIt = out_swc_segs.begin(); outSegIt != out_swc_segs.end(); ++outSegIt)
+		while (!allHiAssigned)
 		{
-			if ((outSegIt->row.end() - 1)->branchingProfile.hierarchy == curHi)
+			for (vector<V_NeuronSWC>::iterator outSegIt = out_swc_segs.begin(); outSegIt != out_swc_segs.end(); ++outSegIt)
 			{
-				int paHi = curHi;
-				int paID = outSegIt->row.begin()->branchingProfile.ID;
-				float chkX = outSegIt->row.begin()->x;
-				float chkY = outSegIt->row.begin()->y;
-				float chkZ = outSegIt->row.begin()->z;
-				for (vector<V_NeuronSWC>::iterator outSegIt2 = out_swc_segs.begin(); outSegIt2 != out_swc_segs.end(); ++outSegIt2)
+				if ((outSegIt->row.end() - 1)->branchingProfile.hierarchy == curHi)
 				{
-					if ((outSegIt2->row.end() - 1)->branchingProfile.x == chkX && (outSegIt2->row.end() - 1)->branchingProfile.y == chkY && (outSegIt2->row.end() - 1)->branchingProfile.z == chkZ)
+					int paHi = curHi;
+					int paID = outSegIt->row.begin()->branchingProfile.ID;
+					float chkX = outSegIt->row.begin()->x;
+					float chkY = outSegIt->row.begin()->y;
+					float chkZ = outSegIt->row.begin()->z;
+					for (vector<V_NeuronSWC>::iterator outSegIt2 = out_swc_segs.begin(); outSegIt2 != out_swc_segs.end(); ++outSegIt2)
 					{
-						for (vector<V_NeuronSWC_unit>::iterator brIt = outSegIt2->row.begin(); brIt != outSegIt2->row.end(); ++brIt)
+						if ((outSegIt2->row.end() - 1)->branchingProfile.x == chkX && (outSegIt2->row.end() - 1)->branchingProfile.y == chkY && (outSegIt2->row.end() - 1)->branchingProfile.z == chkZ)
 						{
-							brIt->branchingProfile.paID = paID;
-							brIt->branchingProfile.hierarchy = paHi + 1;
+							for (vector<V_NeuronSWC_unit>::iterator brIt = outSegIt2->row.begin(); brIt != outSegIt2->row.end(); ++brIt)
+							{
+								brIt->branchingProfile.paID = paID;
+								brIt->branchingProfile.hierarchy = paHi + 1;
+							}
 						}
 					}
 				}
 			}
-		}
-		++curHi;
+			++curHi;
 
-		for (vector<V_NeuronSWC>::iterator chkIt = out_swc_segs.begin(); chkIt != out_swc_segs.end(); ++chkIt)
-		{
-			if (chkIt->row.begin()->branchingProfile.hierarchy == 0)
+			for (vector<V_NeuronSWC>::iterator chkIt = out_swc_segs.begin(); chkIt != out_swc_segs.end(); ++chkIt)
 			{
-				allHiAssigned = false;
-				break;
+				if (chkIt->row.begin()->branchingProfile.hierarchy == 0)
+				{
+					allHiAssigned = false;
+					break;
+				}
+				else allHiAssigned = true;
 			}
-			else allHiAssigned = true;
 		}
 	}
 
