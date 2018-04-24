@@ -3380,12 +3380,12 @@ void Renderer_gl1::simpleConnect()
 
 			/* ========= Connect segments ========= */
 			if (segInfo.size() < 2) return;
-			int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo);
+			/*int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo);
 			if (loop == 1)
 			{
 				v3d_msg("Oops! You're about to make this mouse a retard by introducing a neuronal short circuit. *\\(^O^)/*  \n\nNote: This loop safety guard is in beta phase. Please collect feedbacks and report to MK. Thank you.");
 				return;
-			}
+			}*/
 			//////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
 			if ((segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2) && (segInfo.at(1).head_tail == -1 || segInfo.at(1).head_tail == 2))
 			{
@@ -3406,7 +3406,7 @@ void Renderer_gl1::simpleConnect()
 				}
 
 				double assignedType;
-				assignedType = curImg->tracedNeuron.seg[mainSeg.segID].row[0].type;
+				assignedType = curImg->tracedNeuron.seg[segInfo.at(0).segID].row[0].type;
 				curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
 				if (mainSeg.head_tail == -1)
 				{
@@ -3479,7 +3479,7 @@ void Renderer_gl1::simpleConnect()
 					reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
 				{
 					reID->seg_id = mainSeg.segID;
-					//reID->type = assignedType;
+					reID->type = assignedType;
 				}
 			}
 			//////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
@@ -3504,7 +3504,7 @@ void Renderer_gl1::simpleConnect()
 				}
 
 				double assignedType;
-				assignedType = curImg->tracedNeuron.seg[mainSeg.segID].row[0].type;
+				assignedType = curImg->tracedNeuron.seg[segInfo.at(0).segID].row[0].type;
 				curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
 				if (branchSeg.head_tail == 2)
 				{
@@ -3546,7 +3546,7 @@ void Renderer_gl1::simpleConnect()
 					reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
 				{
 					reID->seg_id = mainSeg.segID;
-					//reID->type = assignedType;
+					reID->type = assignedType;
 				}
 			}
 		}
