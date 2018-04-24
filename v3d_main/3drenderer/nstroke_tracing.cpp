@@ -3600,7 +3600,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 				break;
 			}
 
-			for (vector<V_NeuronSWC>::const_iterator it = curImgSegsPtr->cbegin(); it != curImgSegsPtr->cend(); ++it)
+			for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
 			{
 				if (it->row.begin()->branchingProfile.ID == longPaID)
 				{
@@ -3631,7 +3631,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 		else
 		{
 			int count = 0;
-			for (vector<V_NeuronSWC>::const_iterator it = curImgSegsPtr->cbegin(); it != curImgSegsPtr->cend(); ++it)
+			for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
 			{
 				if (it->row.begin()->branchingProfile.ID == longPaID)
 				{
