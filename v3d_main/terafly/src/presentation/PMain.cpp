@@ -1612,12 +1612,16 @@ void PMain::saveAnnotationsAs()
 void PMain::clearAnnotations()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-
     try
     {
         CViewer *cur_win = CViewer::getCurrent();
         if(cur_win)
         {
+            int reply;
+            reply=QMessageBox::warning(NULL,"Attention","Are you sure to clear all annotations ?",QMessageBox::Ok,QMessageBox::Cancel);
+            if(reply==QMessageBox::Cancel)
+                return;
+            cout<<"Clear all annotations"<<endl;
             CAnnotations::getInstance()->clear();
             cur_win->undoStack.clear();
             cur_win->loadAnnotations();
