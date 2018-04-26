@@ -335,8 +335,13 @@ void CViewer::show()
 
 
         // updating reference system
-        if(!pMain->isPRactive())
-            pMain->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+        if(!PMain::getInstance()->isPRactive())
+        {
+            if(!PMain::getInstance()->isOverviewActive)
+                PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+            else
+                PMain::getInstance()->setOverview(true);
+        }
         this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
         Vaa3D_rotationchanged(0);
 
@@ -2137,8 +2142,12 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
         // update reference system dimension
         if(!PMain::getInstance()->isPRactive())
-            PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
-
+        {
+            if(!PMain::getInstance()->isOverviewActive)
+                PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+            else
+                PMain::getInstance()->setOverview(true);
+        }
         // refresh annotation toolbar
         PAnoToolBar::instance()->refreshTools();
 

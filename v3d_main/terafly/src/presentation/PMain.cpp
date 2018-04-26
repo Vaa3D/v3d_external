@@ -145,6 +145,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
 	resumeVR = false;
+    isOverviewActive = true;
 
     //initializing members
     V3D_env = callback;
@@ -759,6 +760,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     rightBlockLayout->addLayout(zGlobalCoordLayout, 0);
 	rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
 #endif
+
+    checkBox_overview = new QCheckBox("Overview");
+    checkBox_overview->setChecked(isOverviewActive);
+
     /* -------------- put elements into 4x4 grid ----------------- */
     VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
     VOI_layout->addWidget(frameCoord,        3, 0, 1, 1);
@@ -770,6 +775,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
     VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
     VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
+    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
+
     /* ------------- FINALIZATION -------------- */
     VOI_layout->setContentsMargins(10,5,10,5);
     VOI_panel->setLayout(VOI_layout);
@@ -957,6 +964,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
+
+    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -2563,6 +2572,47 @@ void PMain::PRbuttonClicked()
         PRsetActive(false);
     else
         PDialogProofreading::instance()->show();
+}
+
+void PMain::setOverview(bool enabled)
+{
+    refSys->setFilled(!enabled);
+    PR_button->setEnabled(!enabled);
+    PR_spbox->setEnabled(!enabled);
+    if(enabled)
+    {
+        isOverviewActive = true;
+        refSys->setZoom(-8.0);
+
+        int num_res = CImport::instance()->volumes.size();
+        int dimX    = CImport::instance()->volumes[num_res-1]->getDIM_H();
+        int dimY    = CImport::instance()->volumes[num_res-1]->getDIM_V();
+        int dimZ    = CImport::instance()->volumes[num_res-1]->getDIM_D();
+
+
+        CSettings::instance()->setVOIdimV(Vdim_sbox->value());
+        CSettings::instance()->setVOIdimH(Hdim_sbox->value());
+        CSettings::instance()->setVOIdimD(Ddim_sbox->value());
+        CSettings::instance()->setVOIdimT(Tdim_sbox->value());
+        CSettings::instance()->setTraslX(xShiftSBox->value());
+        CSettings::instance()->setTraslY(yShiftSBox->value());
+        CSettings::instance()->setTraslZ(zShiftSBox->value());
+
+        int ROIxS   = H0_sbox->value();
+        int ROIxDim = H1_sbox->value()- H0_sbox->value(); if (ROIxDim < 512) ROIxDim = 512;
+        int ROIyS   = V0_sbox->value();
+        int ROIyDim = V1_sbox->value() - V0_sbox->value();if (ROIyDim < 512) ROIyDim = 512;
+        int ROIzS   = D0_sbox->value();
+        int ROIzDim = D1_sbox->value() - D0_sbox->value();if (ROIyDim < 512) ROIyDim = 512;
+
+        refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
+    }else
+    {
+        isOverviewActive = false;
+        resetMultiresControls();
+        refSys->setDims(H1_sbox->value()-H0_sbox->value()+1, V1_sbox->value()-V0_sbox->value()+1, D1_sbox->value()-D0_sbox->value()+1);
+
+    }
 }
 
 void PMain::PRsetActive(bool active)

@@ -250,7 +250,7 @@ void QGLRefSys::paintGL()
         glEnd();
 
         // ROI contour
-        glColor3f(0.0,0.0,0.0);
+        glColor3f(255.0,0.0,0.0);
         glLineWidth(1.0);
         glBegin(GL_LINES);
             //-------top lines---------//
@@ -365,9 +365,9 @@ void QGLRefSys::paintGL()
 
 
         if(isEnabled())
-            glColor3f(1.0,0.0,0.0);
+            (1.0,0.0,0.0);
         else
-            glColor3f(0.6,0.6,0.6);
+            (0.6,0.6,0.6);
         //----------------------------------X-head----------------------------------//
         glBegin(GL_TRIANGLE_FAN);
             glVertex3f(shift+height+headHeight, 0, 0);  /* center */

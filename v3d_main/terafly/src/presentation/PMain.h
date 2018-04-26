@@ -237,6 +237,8 @@ class terafly::PMain : public QWidget
         QProgressBar* progressBar;      //progress bar
         QStatusBar* statusBar;          //status bar
 
+        QCheckBox *checkBox_overview;  //added an overview checkbox by ZZ 04262018
+
         //layout
         int marginLeft;                 //width of first column containing labels only
 
@@ -317,6 +319,8 @@ class terafly::PMain : public QWidget
         static string HTquickscan;
 
 		bool resumeVR;
+        bool isOverviewActive;
+
 
     public slots:
 
@@ -508,7 +512,7 @@ class terafly::PMain : public QWidget
 		void doTeraflyVRView();
         void teraflyShiftClickedinVR(int _direction);
 #endif
-
+        void setOverview(bool enable);
     signals:
 
         /*********************************************************************************
