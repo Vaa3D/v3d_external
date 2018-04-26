@@ -1702,7 +1702,7 @@ void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
     PAnoToolBar::instance()->buttonUndo->setEnabled(true);
 
     // all markers have the same color when they are created
-    vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
+    if(vaa3dMarkers.size()==1) vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
     V3D_env->setLandmark(window, vaa3dMarkers);
     V3D_env->pushObjectIn3DWindow(window);
 
@@ -1728,7 +1728,7 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
         PAnoToolBar::instance()->buttonUndo->setEnabled(true);
 
         // all markers have the same color when they are created
-        vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
+        if(vaa3dMarkers.size()==1)  vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
         V3D_env->setLandmark(window, vaa3dMarkers);
         V3D_env->pushObjectIn3DWindow(window);
 
