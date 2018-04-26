@@ -3380,7 +3380,7 @@ void Renderer_gl1::simpleConnect()
 
 			/* ========= Connect segments ========= */
 			if (segInfo.size() < 2) return;
-			/*int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo);
+			/*int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo); // =======> loop check 
 			if (loop == 1)
 			{
 				v3d_msg("Oops! You're about to make this mouse a retard by introducing a neuronal short circuit. *\\(^O^)/*  \n\nNote: This loop safety guard is in beta phase. Please collect feedbacks and report to MK. Thank you.");
@@ -3624,7 +3624,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 		cout << "long: " << longID << " " << longHi << endl;
 		if (shortID == longID)
 		{
-			cout << "Back to the same segment. Loop formed." << endl;
+			cout << "Back to the same segment. Loop formed. Connecting prohibited." << endl;
 			returnValue = 1;
 			loop = true;
 		}
@@ -3651,7 +3651,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 
 			if (count == 0)
 			{
-				cout << "Back to the different root segment." << endl;
+				cout << "Back to the different root segment. Connecting allowed." << endl;
 				returnValue = 0;
 				root = true;
 			}

@@ -413,6 +413,8 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		//qDebug("#%d nlink = %d, in %d, out %d", V3DLONG(cur_node.n), nodelink.nlink, nodelink.in_link.size(), nodelink.out_link.size());
 	}
 
+	int rootCount = 0;
+	int branchCount = 0;
 	int branchID = 0;
 	for (;;)
 	{
@@ -488,6 +490,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 			if(cur_node.parent <0)    // root point ////////////////////////////
 			{
+				++rootCount;
 				++branchID;
 				(new_seg.row.end() - 1)->branchingProfile.isBranch = true;
 				(new_seg.row.end() - 1)->branchingProfile.paID = -1;
@@ -503,6 +506,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			}
 			else if (n>1 && nodelink.nlink >2)  // branch point (in link_map) ///////////
 			{
+				++branchCount;
 				++branchID;
 				(new_seg.row.end() - 1)->branchingProfile.isBranch = true;
 				(new_seg.row.end() - 1)->branchingProfile.x = cur_node.x;
@@ -517,7 +521,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			}
 			else if (n>1 && inext==istart)  // i_left point (a loop) ///////////
 			{
-				qDebug("decompose_V_NeuronSWC_segs: segment end at branch #%d", V3DLONG(cur_node.n));
+				//qDebug("decompose_V_NeuronSWC_segs: segment end at branch #%d", V3DLONG(cur_node.n));
 				cur_node.nchild --;
 				break; //over, a simple segment
 			}
@@ -551,9 +555,11 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			out_swc_segs.push_back(new_seg);
 		}
 	}
+	cout << "	root point: " << rootCount << " || " << "branch point: " << branchCount << endl;
 
 	int curHi = 1;
 	bool allHiAssigned = false;
+	int hiCount = 0;
 	if (!out_swc_segs.empty())
 	{
 		while (!allHiAssigned)
@@ -562,6 +568,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			{
 				if ((outSegIt->row.end() - 1)->branchingProfile.hierarchy == curHi)
 				{
+					++hiCount;
 					int paHi = curHi;
 					int paID = outSegIt->row.begin()->branchingProfile.ID;
 					float chkX = outSegIt->row.begin()->x;
@@ -580,6 +587,8 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 					}
 				}
 			}
+			//cout << "hierarchy " << curHi << ": " << hiCount << endl;
+			hiCount = 0;
 			++curHi;
 
 			for (vector<V_NeuronSWC>::iterator chkIt = out_swc_segs.begin(); chkIt != out_swc_segs.end(); ++chkIt)

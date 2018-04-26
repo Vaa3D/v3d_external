@@ -103,7 +103,7 @@ V_NeuronSWC_list NeuronTree__2__V_NeuronSWC_list(NeuronTree * nt)           //co
 {
 	if (!nt) 
 		return V_NeuronSWC_list();
-	
+
 	V_NeuronSWC cur_seg;	cur_seg.clear();
 	QList<NeuronSWC> & qlist = nt->listNeuron;
 	

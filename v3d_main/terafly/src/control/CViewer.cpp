@@ -661,11 +661,12 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			
 			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-			if (thisRenderer->listNeuronTree.isEmpty())
+			if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
 			{
 				XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
 				newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
 			}
+			// --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
 			else
 			{
 				XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
@@ -673,7 +674,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
 				QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
 				QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
-				float distSqr = 100;
+				float distSqr = 100; // <======= change distance threshold parameter here
 				float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
 				cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
 
@@ -717,7 +718,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
 				}
 			}
-            	
+			// --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
+
             return true;
         }
 
@@ -1867,9 +1869,12 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("obtaining the annotations within the current window").c_str(), __itm__current__function__);
     CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, vaa3dMarkers);
     CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, vaa3dCurves.listNeuron);
+	
+	// MK, April, 25, 2018 /////////////////////////////////////
 	this->treeGlobalCoords.listNeuron.clear();
 	this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;
-	
+	////////////////////////////////////////////////////////////
+
     //converting global coordinates to local coordinates
     timer.restart();
     /**/tf::debug(tf::LEV3, strprintf("converting global coordinates to local coordinates").c_str(), __itm__current__function__);
@@ -1906,7 +1911,6 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
     view3DWidget->getRenderer()->endSelectMode();
-
 
     //end curve editing mode
     QList<NeuronTree>* listNeuronTree = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->getHandleNeuronTrees();
