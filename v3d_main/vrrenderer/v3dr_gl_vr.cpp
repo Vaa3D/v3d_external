@@ -2605,6 +2605,87 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						}
 					}
 				}
+
+				// if one of the endpoints of the newly drawn curve are near some existing curve with the given threshold,
+				// change the endpoint position slightly so that the new curve connects with the existing curve.
+				if(currentNT.listNeuron.size()>0)
+				{
+					NeuronSWC* beginNode = &currentNT.listNeuron.first();
+					NeuronSWC* endNode = &currentNT.listNeuron.last();
+					// qDebug()<<"found begin&end node";
+					// float endPointThres = 0.01;
+					bool bNodeChanged = false;
+
+					// try to match begin node
+					for(int i = 0; i<sketchedNTList.size();i++)
+					{
+						NeuronTree nt0 = sketchedNTList.at(i);
+						float dist = 0;
+						float min_dist = 999999;
+						NeuronSWC SS0;
+						NeuronSWC min_node;
+
+						//find the nearest point on the current curve
+						//there could be more than one p on the curve, such that dist(p, begin)<thres. we always want to find the closest p to connect.
+						for (int j=0;j<nt0.listNeuron.size();j++)
+						{
+							
+							SS0 = nt0.listNeuron.at(j);
+							dist = glm::sqrt((beginNode->x-SS0.x)*(beginNode->x-SS0.x)+(beginNode->y-SS0.y)*(beginNode->y-SS0.y)+(beginNode->z-SS0.z)*(beginNode->z-SS0.z));
+						
+							if(dist < min_dist)
+							{
+								min_dist = dist;
+								min_node = SS0;
+							}
+						}
+
+						//check if the candidate is qualified
+						if (min_dist < (dist_thres/m_globalScale*5) || 
+							((min_dist < 4*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+						{
+							bNodeChanged = true; //no need to try to match end node
+							beginNode->x = min_node.x;
+							beginNode->y = min_node.y;
+							beginNode->z = min_node.z;
+							break;
+						}
+					}
+
+					// try to match end node
+					if (bNodeChanged == false)
+					{
+						// qDebug()<<"start to find begin nearest node";
+						for(int i = 0; i<sketchedNTList.size();i++)
+						{
+							NeuronTree nt0 = sketchedNTList.at(i);
+							float dist = 0;
+							float min_dist = 999999;
+							NeuronSWC SS0;
+							NeuronSWC min_node;
+						
+							for (int j=0;j<nt0.listNeuron.size();j++)
+							{
+								SS0 = nt0.listNeuron.at(j);
+								dist = glm::sqrt((endNode->x-SS0.x)*(endNode->x-SS0.x)+(endNode->y-SS0.y)*(endNode->y-SS0.y)+(endNode->z-SS0.z)*(endNode->z-SS0.z));
+								if(dist < min_dist)
+								{
+									min_dist = dist;
+									min_node = SS0;
+								}
+							}
+
+							if (min_dist < (dist_thres/m_globalScale*5) || 
+								((min_dist < 4*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+							{
+								endNode->x = min_node.x;
+								endNode->y = min_node.y;
+								endNode->z = min_node.z;
+								break;
+							}
+						}						
+					}					
+				}
 				if (isOnline==false)
 				{
 					if(currentNT.listNeuron.size()>0)
