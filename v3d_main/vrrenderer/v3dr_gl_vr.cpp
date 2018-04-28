@@ -69,7 +69,7 @@ int checkForOpenGLError(const char* file, int line)
 
 float CMainApplication::fContrast = 1;
 bool CMainApplication::m_bFrozen = false;
-bool CMainApplication::m_bVirtualFingerON = true;
+bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
 float CMainApplication::fBrightness = 0;
 int CMainApplication::m_curMarkerColorType = 3;
@@ -2642,7 +2642,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 						//check if the candidate is qualified
 						if (min_dist < (dist_thres/m_globalScale*5) || 
-							((min_dist < 4*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+							((min_dist < 5*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
 						{
 							bNodeChanged = true; //no need to try to match end node
 							beginNode->x = min_node.x;
@@ -2676,7 +2676,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							}
 
 							if (min_dist < (dist_thres/m_globalScale*5) || 
-								((min_dist < 4*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+								((min_dist < 5*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
 							{
 								endNode->x = min_node.x;
 								endNode->y = min_node.y;
