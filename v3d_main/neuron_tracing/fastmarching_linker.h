@@ -931,7 +931,16 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	if(state) {delete [] state; state = 0;}
 	return true;
 }
-
+/*template<class T> void Intensity_De(T *inimg1d,int sz0,int sz1,int sz2)
+{
+    long sz01=sz0*sz1;
+    T *outimg1d;
+}
+*/
+#define Intensity_dynamic_de 0.8 //Intensity_*_de plus one must bigger than Intensity_*_up
+#define Intensity_dynamic_up 1.2
+#define Intensity_bbox_de 0.8
+#define Intensity_bbox_up 1.2
 // marching with bounding box
 // Please make sure
 // 1. sub_markers are located between nm1 and fm1
@@ -1046,6 +1055,8 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	long bsz01 = bsz0 * bsz1;
 	long btol_sz = bsz01 * bsz2;
 	unsigned char * outimg1d = new unsigned char[btol_sz]; for(long i = 0; i < btol_sz; i++) outimg1d[i] = 0;
+    double max_int = 0; // maximum intensity
+    double min_int = INF;
 	for(long k = 0; k < bsz2; k++)
 	{
 		for(long j = 0; j < bsz1; j++)
@@ -1057,13 +1068,40 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 				long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
 				if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
 				{
-					long ind1 = k * bsz01 + j * bsz0 + i;
+                    //long ind1 = k * bsz01 + j * bsz0 + i;
 					long ind2 = kk * sz01 + jj * sz0 + ii;
-					outimg1d[ind1] = inimg1d[ind2];
+                    if(inimg1d[ind2]>max_int) max_int=inimg1d[ind2];
+                    if(inimg1d[ind2]<min_int) min_int=inimg1d[ind2];
+                    //outimg1d[ind1] = inimg1d[ind2];
 				}
 			}
 		}
 	}
+    cout<<"max intensity is "<<max_int<<endl;
+    cout<<"min intensity is "<<min_int<<endl;
+    if(Intensity_dynamic_de+1<=Intensity_dynamic_up)
+    {
+        cout<<"Max Intensity is lower than Min Intensity in this way, Intensity _dynamic_de (plus 1) must bigger than Intensity_dynamic_up!"<<endl;
+    }
+    for(long k = 0; k < bsz2; k++)
+    {
+        for(long j = 0; j < bsz1; j++)
+        {
+            for(long i = 0; i < bsz0; i++)
+            {
+                long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
+                long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
+                long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
+                if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
+                {
+                    long ind1 = k * bsz01 + j * bsz0 + i;
+                    long ind2 = kk * sz01 + jj * sz0 + ii;
+                    if(inimg1d[ind2]<=max_int*Intensity_dynamic_de&&inimg1d[ind2]>=min_int*Intensity_dynamic_up)
+                        outimg1d[ind1] = inimg1d[ind2];
+                }
+            }
+        }
+    }
 
 	// 3. get new_sub_markers and new_tar_markers
 	for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++)
@@ -1403,6 +1441,8 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
     V3DLONG msz01 = msz0 * msz1;
     V3DLONG mtol_sz = msz2 * msz01;
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
+    double max_int = 0; // maximum intensity
+    double min_int = INF;
 
 	// mask off edges of image
 	for (V3DLONG z = 0; z < msz2; z++)
@@ -1412,12 +1452,32 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 			for (V3DLONG x = 0; x < msz0; x++)
 			{
 				MyMarker marker = MyMarker(mx + x, my + y, mz + z);
-				MyMarker m_marker = MyMarker(x, y, z);
-
-				mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
+                //MyMarker m_marker = MyMarker(x, y, z);
+                if(inimg1d[marker.ind(sz0, sz01)]>max_int) max_int=inimg1d[marker.ind(sz0, sz01)];
+                if(inimg1d[marker.ind(sz0, sz01)]<min_int) min_int=inimg1d[marker.ind(sz0, sz01)];
+                //mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
 			}
 		}
 	}
+    cout<<"max intensity is "<<max_int<<endl;
+    cout<<"min intensity is "<<min_int<<endl;
+    if(Intensity_bbox_de+1<=Intensity_bbox_up)
+    {
+        cout<<"Max Intensity is lower than Min Intensity in this way, Intensity _bbox_de (plus 1) must bigger than Intensity_bbox_up!"<<endl;
+    }
+    for (V3DLONG z = 0; z < msz2; z++)
+    {
+        for (V3DLONG y = 0; y < msz1; y++)
+        {
+            for (V3DLONG x = 0; x < msz0; x++)
+            {
+                MyMarker marker = MyMarker(mx + x, my + y, mz + z);
+                MyMarker m_marker = MyMarker(x, y, z);
+                if(inimg1d[marker.ind(sz0,sz01)]<=max_int*Intensity_bbox_de&&inimg1d[marker.ind(sz0,sz01)]>=min_int*Intensity_bbox_de)
+                    mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
+            }
+        }
+    }
 
 	nm1 = near_markers[0]; fm1 = far_markers[0];
 	nm2 = *near_markers.rbegin(); fm2 = *far_markers.rbegin();

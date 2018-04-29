@@ -648,6 +648,20 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_spbox->setAlignment(Qt::AlignCenter);
     PR_spbox->installEventFilter(this);
     PR_spbox->setPrefix("Block ");
+    /* ------- Intensity Adjustment panel widgets ------- */
+    IA_panel=new QGroupBox("Intensity Adjustment for annotation");
+    IA_enable_CheckBox=new QCheckBox("IntensityAdjustmentEnable");
+    IA_enable_CheckBox->setChecked(isEnableIAActive);
+    IA_Max_ratio_spinbox=new QDoubleSpinBox();
+    IA_Max_ratio_spinbox->setAlignment(Qt::AlignCenter);
+    IA_Max_ratio_spinbox->installEventFilter(this);
+    IA_min_ratio_spinbox=new QDoubleSpinBox();
+    IA_min_ratio_spinbox->setAlignment(Qt::AlignCenter);
+    IA_min_ratio_spinbox->installEventFilter(this);
+    IA_Intensity_Max_ratio_label=new QLabel("Max Intensity ratio");
+    IA_Intensity_Max_ratio_label->setAlignment(Qt::AlignCenter);
+    IA_Intensity_Min_ratio_label=new QLabel("Min Intensity ratio");
+    IA_Intensity_Min_ratio_label->setAlignment(Qt::AlignCenter);
 
     //other widgets
     helpBox = new QHelpBox(this);
@@ -794,6 +808,22 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #ifdef Q_OS_LINUX
     PR_panel->setStyle(new QWindowsStyle());
     #endif
+    //"Intensity Adjustment" panel layout
+    QVBoxLayout *localViewer_panel_IntensityA_layout=new QVBoxLayout();
+    QHBoxLayout *IntensityAdjustment_layout=new QHBoxLayout();
+    IntensityAdjustment_layout->setContentsMargins(0,0,0,0);
+    IntensityAdjustment_layout->addWidget(IA_Intensity_Max_ratio_label,0);
+    IntensityAdjustment_layout->addWidget(IA_Max_ratio_spinbox,1);
+    QHBoxLayout *IntensityAdjustmen_layout_min=new QHBoxLayout();
+    IntensityAdjustmen_layout_min->addWidget(IA_Intensity_Min_ratio_label,0);
+    IntensityAdjustmen_layout_min->addWidget(IA_Min_ratio_spinbox,1);
+    localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustment_layout,0);
+    localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustmen_layout_min,0);
+    localViewer_panel_IntensityA_layout->setContentsMargins(10,5,10,5);
+    IA_panel->setLayout(localViewer_panel_IntensityA_layout);
+    #ifdef Q_OS_LINUX
+    IA_panel->setStyle(new QWindowsStyle());
+    #endif
 
     //local viewer panel
     QVBoxLayout* localviewer_panel_layout= new QVBoxLayout();
@@ -896,6 +926,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(zoom_panel, 0);
     controlsLayout->addWidget(VOI_panel, 0);
     controlsLayout->addWidget(PR_panel, 0);
+    controlsLayout->addWidget(IA_panel,0);
     controlsLayout->addStretch(1);
     #ifdef Q_OS_MAC
     controlsLayout->setContentsMargins(10,0,10,10);
@@ -966,6 +997,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
     connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
+
+    connect(IA_enable_CheckBox,SIGNAL(toggled(bool)),this,SLOT(setIAenable(bool));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -1086,6 +1119,17 @@ void PMain::reset()
     PR_spbox->setMinimum(0);
     PR_spbox->setValue(0);
     PR_spbox->setEnabled(false);
+
+    IA_Max_ratio_spinbox->setRange(0,1);
+    IA_Max_ratio_spinbox->setDecimals(2);
+    IA_Max_ratio_spinbox->setValue(0.80);
+    IA_Max_ratio_spinbox->setSingleStep(0.01);
+    IA_Max_ratio_spinbox->setEnabled(false);
+    IA_min_ratio_spinbox->setRange(1,2);
+    IA_min_ratio_spinbox->setDecimals(2);
+    IA_min_ratio_spinbox->setValue(1.20);
+    IA_min_ratio_spinbox->setSingleStep(0.01);
+    IA_min_ratio_spinbox->setEnabled(false);
 
     //resetting progress bar and text
     progressBar->setEnabled(false);
@@ -2169,6 +2213,13 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
         else if(event->type() == QEvent::Leave)
             helpBox->setText(HTbase);
     }
+    else if(object==IA_Max_ratio_spinbox||object==IA_min_ratio_spinbox&&IA_enable_CheckBox->isEnabled()&&IA_panel->isEnabled())
+    {
+        if(event->type() == QEvent::Enter)
+            helpBox->setText(HTrefsys);
+        else if(event->type() == QEvent::Leave)
+            helpBox->setText(HTbase);
+    }
     else if(object == PR_button && PR_button->isEnabled() && PR_button->text().compare("Start") == 0)
     {
         if(event->type() == QEvent::Enter)
@@ -2613,6 +2664,11 @@ void PMain::setOverview(bool enabled)
         refSys->setDims(H1_sbox->value()-H0_sbox->value()+1, V1_sbox->value()-V0_sbox->value()+1, D1_sbox->value()-D0_sbox->value()+1);
 
     }
+}
+
+void PMain::setIAenable(bool enable)
+{
+
 }
 
 void PMain::PRsetActive(bool active)
