@@ -12,6 +12,7 @@
 #include <set>
 //#include <time.h>
 #include "heap.h"
+#include <QtGui>
 
 using namespace std;
 
@@ -618,7 +619,7 @@ template<class T> bool fastmarching_linker(MyMarker nm1, MyMarker fm1, MyMarker 
 	// 3. get sub_markers and tar_markers
 	MyMarker new_nm1(margin + dist(nm1, rect[0]), margin, margin);
 	MyMarker new_fm1(margin + dist(fm1, rect[0]), margin, margin);
-	MyMarker new_nm2(margin + dist(nm2, rect[1]), margin + dist(rect[0], rect[1]), margin);
+    MyMarker new_nm2(margin something+ dist(nm2, rect[1]), margin + dist(rect[0], rect[1]), margin);
 	MyMarker new_fm2(margin + dist(fm2, rect[1]), margin + dist(rect[0], rect[1]), margin);
 	vector<MyMarker> sub_markers, tar_markers;
 	GET_LINE_MARKERS(new_nm1, new_fm1, sub_markers);
@@ -937,9 +938,9 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
     T *outimg1d;
 }
 */
-#define Intensity_dynamic_de 0.8 //Intensity_*_de plus one must bigger than Intensity_*_up
+//#define Intensity_dynamic_de 0.8 //Intensity_*_de plus one must bigger than Intensity_*_up
 #define Intensity_dynamic_up 1.2
-#define Intensity_bbox_de 0.8
+//#define Intensity_bbox_de 0.8
 #define Intensity_bbox_up 1.2
 // marching with bounding box
 // Please make sure
@@ -961,7 +962,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 		rt[0] = tx1 / dst1;
 		rt[1] = ty1 / dst1;
 		rt[2] = tz1 / dst1;
-	}
+    }
 	else if(nm2 != fm2)
 	{
 		double tx2 = fm2.x - nm2.x;
@@ -979,7 +980,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	}
 	// 2. calc different vectors
 	double n1n2[3] = {nm2.x - nm1.x, nm2.y - nm1.y, nm2.z - nm1.z};
-	MAKE_UNIT(n1n2);
+    MAKE_UNIT(n1n2);
 	double n2n1[3] = {-n1n2[0], -n1n2[1], -n1n2[2]};
 
 	double f1f2[3] = {fm2.x - fm1.x, fm2.y - fm1.y, fm2.z - fm1.z};
@@ -1055,6 +1056,17 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	long bsz01 = bsz0 * bsz1;
 	long btol_sz = bsz01 * bsz2;
 	unsigned char * outimg1d = new unsigned char[btol_sz]; for(long i = 0; i < btol_sz; i++) outimg1d[i] = 0;
+    bool miok;
+    double Intensity_dynamic_de=1.0;
+    double d=QInputDialog::getDouble(this,tr("test ratio"),tr("please input your number"),0.8,0.1,1,0.05,&miok);
+    if(miok)
+    {
+        cout<<"input number is "<<d<<endl;
+        Intensity_dynamic_de=d;
+    }
+    else{
+        cout<<"something went worng.by jsd"<<endl;
+    }
     double max_int = 0; // maximum intensity
     double min_int = INF;
 	for(long k = 0; k < bsz2; k++)
@@ -1194,7 +1206,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 
 
-template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
+template<class T> bool fastmarchingmiok_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
 {
      long sz01 = (long)sz0*sz1;
 	cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
@@ -1248,7 +1260,7 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 	double min_score = 0;
     	MyMarker * min_marker = 0;
 	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++)
-	{
+    {
 		MyMarker * marker = it->first;
 		double score = it->second;
 		if(min_marker == 0 || score < min_score)
@@ -1268,8 +1280,7 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 		child_marker = new_marker;
 		if(p->parent == 0) break;
           p = p->parent;
-	}
-
+    }
 
      bool ret = (start_ray.find(p) != start_ray.end());
 
@@ -1326,7 +1337,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		{
 			double tx2 = fm2.x - nm2.x;
 			double ty2 = fm2.y - nm2.y;
-			double tz2 = fm2.z - nm2.z;
+            double tz2 = fm2.z - nmmiok2.z;
 			double dst2 = sqrt(tx2 * tx2 + ty2 * ty2 + tz2 * tz2);
 			rt[0] = tx2 / dst2;
 			rt[1] = ty2 / dst2;
@@ -1443,6 +1454,16 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
     double max_int = 0; // maximum intensity
     double min_int = INF;
+    double d;bool bbok;double Intensity_bbox_de=1.0;
+    d=QInputDialog::QInputDialog::getDouble(this,tr("test ratio"),tr("please input your number"),0.8,0.1,1,0.05,&bbok);
+    if(bbok)
+    {
+        cout<<"input number is "<<d<<endl;
+        Intensity_dynamic_de=d;
+    }
+    else{
+        cout<<"something went worng bb.by jsd"<<endl;
+    }
 
 	// mask off edges of image
 	for (V3DLONG z = 0; z < msz2; z++)
