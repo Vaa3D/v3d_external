@@ -816,7 +816,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     IntensityAdjustment_layout->addWidget(IA_Max_ratio_spinbox,1);
     QHBoxLayout *IntensityAdjustmen_layout_min=new QHBoxLayout();
     IntensityAdjustmen_layout_min->addWidget(IA_Intensity_Min_ratio_label,0);
-    IntensityAdjustmen_layout_min->addWidget(IA_Min_ratio_spinbox,1);
+    IntensityAdjustmen_layout_min->addWidget(IA_min_ratio_spinbox,1);
     localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustment_layout,0);
     localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustmen_layout_min,0);
     localViewer_panel_IntensityA_layout->setContentsMargins(10,5,10,5);
@@ -998,7 +998,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
 
-    connect(IA_enable_CheckBox,SIGNAL(toggled(bool)),this,SLOT(setIAenable(bool));
+    connect(IA_enable_CheckBox,SIGNAL(toggled(bool)),this,SLOT(setIAenable(bool)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());

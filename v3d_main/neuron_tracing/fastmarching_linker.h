@@ -619,7 +619,7 @@ template<class T> bool fastmarching_linker(MyMarker nm1, MyMarker fm1, MyMarker 
 	// 3. get sub_markers and tar_markers
 	MyMarker new_nm1(margin + dist(nm1, rect[0]), margin, margin);
 	MyMarker new_fm1(margin + dist(fm1, rect[0]), margin, margin);
-    MyMarker new_nm2(margin something+ dist(nm2, rect[1]), margin + dist(rect[0], rect[1]), margin);
+    MyMarker new_nm2(margin + dist(nm2, rect[1]), margin + dist(rect[0], rect[1]), margin);
 	MyMarker new_fm2(margin + dist(fm2, rect[1]), margin + dist(rect[0], rect[1]), margin);
 	vector<MyMarker> sub_markers, tar_markers;
 	GET_LINE_MARKERS(new_nm1, new_fm1, sub_markers);
@@ -1058,11 +1058,11 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	unsigned char * outimg1d = new unsigned char[btol_sz]; for(long i = 0; i < btol_sz; i++) outimg1d[i] = 0;
     bool miok;
     double Intensity_dynamic_de=1.0;
-    double d=QInputDialog::getDouble(this,tr("test ratio"),tr("please input your number"),0.8,0.1,1,0.05,&miok);
+    double d=QInputDialog::getDouble(0,"test ratio","please input your number",80,20,100,5,&miok);
     if(miok)
     {
         cout<<"input number is "<<d<<endl;
-        Intensity_dynamic_de=d;
+        Intensity_dynamic_de=d*0.01;
     }
     else{
         cout<<"something went worng.by jsd"<<endl;
@@ -1206,7 +1206,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 
 
-template<class T> bool fastmarchingmiok_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
+template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
 {
      long sz01 = (long)sz0*sz1;
 	cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
@@ -1254,8 +1254,7 @@ template<class T> bool fastmarchingmiok_drawing_dynamic(vector<MyMarker> & near_
 		fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, stop_num, cnn_type, margin);
 		all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
 		for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
-	}
-
+    }
 	// extract the best trajectory
 	double min_score = 0;
     	MyMarker * min_marker = 0;
@@ -1267,7 +1266,7 @@ template<class T> bool fastmarchingmiok_drawing_dynamic(vector<MyMarker> & near_
 		{
 			min_score = score;
 			min_marker = marker;
-		}
+        }
 	}
 	MyMarker * p = min_marker;
 	MyMarker * new_marker = new MyMarker(p->x, p->y, p->z); outswc.push_back(new_marker);
@@ -1337,7 +1336,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		{
 			double tx2 = fm2.x - nm2.x;
 			double ty2 = fm2.y - nm2.y;
-            double tz2 = fm2.z - nmmiok2.z;
+            double tz2 = fm2.z - nm2.z;
 			double dst2 = sqrt(tx2 * tx2 + ty2 * ty2 + tz2 * tz2);
 			rt[0] = tx2 / dst2;
 			rt[1] = ty2 / dst2;
@@ -1397,7 +1396,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		double la = sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 		a[0] /= la; a[1] /= la; a[2] /= la;
 
-		double b[3];
+        double b[3];
 		b[0] = rect[1].x - rect[0].x;
 		b[1] = rect[1].y - rect[0].y;
 		b[2] = rect[1].z - rect[0].z;
@@ -1430,7 +1429,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
                     V3DLONG jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
                     V3DLONG kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
 
-					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
+                    if(ii >= 0 && ii < sz0 && jj >= 0&& jj < sz1 && kk >= 0 && kk < sz2)
 					{
 						// create bounding box
 						mx = MIN(mx, ii);
@@ -1455,11 +1454,11 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
     double max_int = 0; // maximum intensity
     double min_int = INF;
     double d;bool bbok;double Intensity_bbox_de=1.0;
-    d=QInputDialog::QInputDialog::getDouble(this,tr("test ratio"),tr("please input your number"),0.8,0.1,1,0.05,&bbok);
+    d=QInputDialog::QInputDialog::getDouble(0,"test ratio","please input your number",80,20,100,5,&bbok);
     if(bbok)
     {
         cout<<"input number is "<<d<<endl;
-        Intensity_dynamic_de=d;
+        Intensity_bbox_de=d*0.01;
     }
     else{
         cout<<"something went worng bb.by jsd"<<endl;
@@ -1500,7 +1499,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
         }
     }
 
-	nm1 = near_markers[0]; fm1 = far_markers[0];
+    nm1 = near_markers[0]; fm1 = far_markers[0];
 	nm2 = *near_markers.rbegin(); fm2 = *far_markers.rbegin();
 
 	nm1 = MyMarker(nm1.x - mx, nm1.y - my, nm1.z - mz);
@@ -1516,7 +1515,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	{
 		outswc[i]->x += mx;
 		outswc[i]->y += my;
-		outswc[i]->z += mz;
+        outswc[i]->z += mz;
 	}
 	return true;
 
