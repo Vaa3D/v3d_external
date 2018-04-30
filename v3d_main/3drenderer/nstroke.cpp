@@ -1098,8 +1098,7 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
                     V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(N-1).x, list_listCurvePos.at(index).at(N-1).y, p_tree, best_dist);
                     qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-                    double th_merge = 10;
-
+                    double th_merge = 5;
                     bool b_start_merged=false, b_end_merged=false;
                     NeuronSWC cur_node;
                     if (n_id_start>=0)
