@@ -32,13 +32,13 @@
        <attribute name="title">
         <string>Main TriView Window</string>
        </attribute>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>12</x>
           <y>30</y>
           <width>501</width>
-          <height>211</height>
+          <height>231</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -131,6 +131,16 @@
           <widget class="QCheckBox" name="checkBox_libTiff_Mylib">
            <property name="text">
             <string>Use Libtiff (ON) (for &lt;2G file) or MYLib (OFF) (for &gt;2G file) for TIFF/LSM file</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_blendColor">
+           <property name="text">
+            <string>Blend multi-channel's color</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -234,7 +244,7 @@
           <x>30</x>
           <y>10</y>
           <width>359</width>
-          <height>126</height>
+          <height>142</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">

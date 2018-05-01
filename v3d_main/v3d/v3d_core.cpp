@@ -163,9 +163,8 @@ using namespace std;
 #include "../3drenderer/v3dr_glwidget.h" //090710 by RZC for XFormWidget::doImage3DView
 #include "../3drenderer/renderer_gl1.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
 
-
+#include "v3d_application.h"
 #include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
-#define USE_CHANNEL_TABLE  1
 inline bool isIndexColor(ImageDisplayColorType c) { return (c>=colorPseudoMaskColor); }
 
 
@@ -890,30 +889,30 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 #define __copy_slice_from_volume__
 template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype, V3DLONG cpos, ImagePlaneDisplayType disType, bool bIntensityRescale, double *p_vmax, double *p_vmin)
 {
-#if ! USE_CHANNEL_TABLE
-	switch (disType)
-	{
-		case imgPlaneX:
-			return copyRaw2QPixmap_xPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
-			break;
+    if(!V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+    {
+        switch (disType)
+        {
+        case imgPlaneX:
+            return copyRaw2QPixmap_xPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
+            break;
 
-		case imgPlaneY:
-			return copyRaw2QPixmap_yPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
-			break;
+        case imgPlaneY:
+            return copyRaw2QPixmap_yPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
+            break;
 
-		case imgPlaneZ:
-			return copyRaw2QPixmap_zPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
-			break;
+        case imgPlaneZ:
+            return copyRaw2QPixmap_zPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
+            break;
 
-		default:
-			printf("Undefined ImagePlaneDisplayType. Check your code.\n");
-			return QPixmap(0,0); //return an empty image for this prohibited case
-			break;
-	}
-#else
-	//110718 RZC, test function for 4-channel volume data without indexed colormap
-	return copyRaw2QPixmap_Slice(disType, cpos, p4d, sz0, sz1, sz2, sz3, Ctype, bIntensityRescale, p_vmax, p_vmin);
-#endif
+        default:
+            printf("Undefined ImagePlaneDisplayType. Check your code.\n");
+            return QPixmap(0,0); //return an empty image for this prohibited case
+            break;
+        }
+    }else
+        //110718 RZC, test function for 4-channel volume data without indexed colormap
+        return copyRaw2QPixmap_Slice(disType, cpos, p4d, sz0, sz1, sz2, sz3, Ctype, bIntensityRescale, p_vmax, p_vmin);
 }
 
 QPixmap copyRaw2QPixmap_colormap(const void **** p4d, ImagePixelType dtype, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cpos, const ColorMap *pc, ImagePlaneDisplayType disType)
@@ -1312,24 +1311,24 @@ bool XFormView::internal_only_imgplane_op()
 	if (!p4d) return false;
 
 
-	//qDebug("XFormView::internal_only_imgplane_op(), colorChanged(%d)", this->Ptype);
-#if USE_CHANNEL_TABLE
-	bool glass_on = (imgData->getFlagLookingGlass());
-	if (this->_for_index_only == false)
-	{
-		// signal indirectly connected to ChannelTabWidget::updateXFormWidget(int plane)
-		{
-			emit colorChanged(this->Ptype);  //if isIndexColor(Ctype)), it will iterate back with (_for_index_only=true)
-		}
-		if (glass_on)
-		{
-			emit colorChangedGlass(this->Ptype); //if isIndexColor(Ctype_glass)), it will iterate back with (_for_index_only=true)
-		}
-		return true;   //has painted, skip old code
-	}
-	//follows only for (_for_index_only)
-#endif
-
+    //qDebug("XFormView::internal_only_imgplane_op(), colorChanged(%d)", this->Ptype);
+    if(V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+    {
+        bool glass_on = (imgData->getFlagLookingGlass());
+        if (this->_for_index_only == false)
+        {
+            // signal indirectly connected to ChannelTabWidget::updateXFormWidget(int plane)
+            {
+                emit colorChanged(this->Ptype);  //if isIndexColor(Ctype)), it will iterate back with (_for_index_only=true)
+            }
+            if (glass_on)
+            {
+                emit colorChangedGlass(this->Ptype); //if isIndexColor(Ctype_glass)), it will iterate back with (_for_index_only=true)
+            }
+            return true;   //has painted, skip old code
+        }
+        //follows only for (_for_index_only)
+    }
 
 	if (dtype==V3D_UINT8)
 	{
@@ -2925,12 +2924,9 @@ void XFormView::drawLookingGlassMap(QPainter *painter, QPoint *curPt)
 		focusPosInHeight = curPt->y();
 	}
 
-#if USE_CHANNEL_TABLE
 	QPixmap& buf = pixmap_glass;
 	//if (Ctype>=colorPseudoMaskColor) buf = pixmap; //switch in XFormView::changColorType instead
-#else
-	QPixmap& buf = pixmap;
-#endif
+    if(!V3dApplication::getMainWindow()->global_setting.b_BlendColor) buf = pixmap;
 	QPixmap myrgn = buf.copy(QRect(QPoint(qMin(qMax(focusPosInWidth-glassRadius,0), buf.width()-1),
 	                                         qMin(qMax(0,focusPosInHeight-glassRadius), buf.height()-1)),
 									  QPoint(qMax(qMin(focusPosInWidth+glassRadius,buf.width()-1), 0),
@@ -3835,191 +3831,190 @@ void XFormWidget::updateViews()
 
 
 #define __channel_table_gui__
-#if USE_CHANNEL_TABLE // switch code path
 
 void XFormWidget::connectColorGUI()
 {
-	//110722 RZC, connect signal for ChannelTabWidget::updateXFormWidget(int plane)
-	connect(xy_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
-	connect(yz_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
-	connect(zx_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
-	//110803 RZC
-	connect(xy_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
-	connect(yz_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
-	connect(zx_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
+    if(V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+    {
+        //110722 RZC, connect signal for ChannelTabWidget::updateXFormWidget(int plane)
+        connect(xy_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+        connect(yz_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+        connect(zx_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+        //110803 RZC
+        connect(xy_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
+        connect(yz_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
+        connect(zx_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
+    }else
+    {
+        connect(colorRedType, SIGNAL(clicked()), this, SLOT(setColorRedType()));
+        connect(colorGreenType, SIGNAL(clicked()), this, SLOT(setColorGreenType()));
+        connect(colorBlueType, SIGNAL(clicked()), this, SLOT(setColorBlueType()));
+        connect(colorAllType, SIGNAL(clicked()), this, SLOT(setColorAllType()));
+
+        connect(colorRed2GrayType, SIGNAL(clicked()), this, SLOT(setColorRed2GrayType()));
+        connect(colorGreen2GrayType, SIGNAL(clicked()), this, SLOT(setColorGreen2GrayType()));
+        connect(colorBlue2GrayType, SIGNAL(clicked()), this, SLOT(setColorBlue2GrayType()));
+        connect(colorAll2GrayType, SIGNAL(clicked()), this, SLOT(setColorAll2GrayType()));
+
+        connect(colorMapDispType, SIGNAL(clicked()), this, SLOT(setColorMapDispType()));
+        connect(imgValScaleDisplayCheckBox, SIGNAL(clicked()), this, SLOT(toggleImgValScaleDisplay()));
+    }
 }
 void XFormWidget::disconnectColorGUI()
 {
+    if(!V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+    {
+        disconnect(colorRedType, 0, this, 0);
+        disconnect(colorGreenType, 0, this, 0);
+        disconnect(colorBlueType, 0, this, 0);
+        disconnect(colorAllType, 0, this, 0);
+
+        disconnect(colorRed2GrayType, 0, this, 0);
+        disconnect(colorGreen2GrayType, 0, this, 0);
+        disconnect(colorBlue2GrayType, 0, this, 0);
+        disconnect(colorAll2GrayType, 0, this, 0);
+
+        disconnect(colorMapDispType, 0, this, 0);
+        disconnect(imgValScaleDisplayCheckBox, 0, this, 0);
+    }
 }
 void XFormWidget::setColorGUI()
 {
-	if (channelTabXView)  channelTabXView->linkXFormWidgetChannel();
+    if(V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+    {
+        if (channelTabXView)  channelTabXView->linkXFormWidgetChannel();
+    }else
+    {
+        if (imgData)
+        {
+            colorRedType->setEnabled(true);
+            colorBlueType->setEnabled(true);
+            colorGreenType->setEnabled(true);
+            colorAllType->setEnabled(true);
+            colorRed2GrayType->setEnabled(true);
+            colorGreen2GrayType->setEnabled(true);
+            colorBlue2GrayType->setEnabled(true);
+            colorAll2GrayType->setEnabled(true);
+            colorMapDispType->setEnabled(true);
+
+            imgValScaleDisplayCheckBox->setEnabled(true);
+            if (imgData->getDatatype()==V3D_UINT16 || imgData->getDatatype()==V3D_FLOAT32)
+                imgValScaleDisplayCheckBox->setCheckState(Qt::Checked); //100814. PHC. set 16/32bit data default to rescale for triview display
+            //imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //100814: PHC. move to here to avoid potential error
+
+            if (imgData->getCDim()>=3) //081124
+            {
+                setColorAllType();
+            }
+
+            if (imgData->getCDim()<3)
+            {
+                colorBlueType->setEnabled(false);
+                colorBlue2GrayType->setEnabled(false);
+            }
+
+            if (imgData->getCDim()<2)
+            {
+                colorGreenType->setEnabled(false);
+                colorGreen2GrayType->setEnabled(false);
+            }
+
+            colorMapDispType->setEnabled(imgData->getCDim()==1);
+
+            if (imgData->getCDim()<=1) //100815
+                colorRed2GrayType->setChecked(true);
+            else
+                colorAllType->setChecked(true);
+
+        }
+        else // no imgData
+        {
+
+            colorRedType->setEnabled(false);
+            colorBlueType->setEnabled(false);
+            colorGreenType->setEnabled(false);
+            colorAllType->setEnabled(false);
+            colorRed2GrayType->setEnabled(false);
+            colorGreen2GrayType->setEnabled(false);
+            colorBlue2GrayType->setEnabled(false);
+            colorAll2GrayType->setEnabled(false);
+            colorMapDispType->setEnabled(false);
+
+            imgValScaleDisplayCheckBox->setEnabled(false);
+
+            colorAllType->setChecked(true);
+
+        }
+
+    }
 }
 QWidget* XFormWidget::createColorGUI()
 {
-	(colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
+    if(V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+    {
+        (colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
 
-	if (channelTabXView = new ChannelTabWidget(this, 3)) //3 tabs for XFormView
-	{
-		connect(this, SIGNAL(colorChanged(int)), channelTabXView, SLOT(updateXFormWidget(int)));
+        if (channelTabXView = new ChannelTabWidget(this, 3)) //3 tabs for XFormView
+        {
+            connect(this, SIGNAL(colorChanged(int)), channelTabXView, SLOT(updateXFormWidget(int)));
 
-		channelTabXView->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
-		channelTabXView->setFixedHeight(200); //200 is best for 4 rows
-	}
-	return channelTabXView;;
+            channelTabXView->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
+            channelTabXView->setFixedHeight(200); //200 is best for 4 rows
+        }
+        return channelTabXView;
+    }else
+    {
+
+        QGroupBox *typeGroup = new QGroupBox(this);
+        //typeGroup->setAttribute(Qt::WA_ContentsPropagated);
+        typeGroup->setTitle("Color Channels");
+
+        colorRedType = new QRadioButton(typeGroup);
+        colorGreenType = new QRadioButton(typeGroup);
+        colorBlueType = new QRadioButton(typeGroup);
+        colorAllType = new QRadioButton(typeGroup);
+        colorRed2GrayType = new QRadioButton(typeGroup);
+        colorGreen2GrayType = new QRadioButton(typeGroup);
+        colorBlue2GrayType = new QRadioButton(typeGroup);
+        colorAll2GrayType = new QRadioButton(typeGroup);
+        colorMapDispType = new QRadioButton(typeGroup);
+
+        colorRedType->setText("Red (Chan 1)");
+        colorGreenType->setText("Green (Chan 2)");
+        colorBlueType->setText("Blue (Chan 3)");
+        colorAllType->setText("RGB (All)");
+        colorRed2GrayType->setText("Red (gray)");
+        colorGreen2GrayType->setText("Green (gray)");
+        colorBlue2GrayType->setText("Blue (gray)");
+        colorAll2GrayType->setText("RGB (gray)");
+        colorMapDispType->setText("Colormap (for indexed image)");
+
+        imgValScaleDisplayCheckBox = new QCheckBox("I(Voxel) rescale: m->0, M->255");
+        imgValScaleDisplayCheckBox->setCheckState(Qt::Unchecked);
+
+
+        typeGroupLayout = new QGridLayout(typeGroup);
+        typeGroupLayout->addWidget(colorAllType, 0, 0);
+        typeGroupLayout->addWidget(colorRedType, 1, 0);
+        typeGroupLayout->addWidget(colorGreenType, 2, 0);
+        typeGroupLayout->addWidget(colorBlueType, 3, 0);
+        typeGroupLayout->addWidget(colorAll2GrayType, 0, 1);
+        typeGroupLayout->addWidget(colorRed2GrayType, 1, 1);
+        typeGroupLayout->addWidget(colorGreen2GrayType, 2, 1);
+        typeGroupLayout->addWidget(colorBlue2GrayType, 3, 1);
+        typeGroupLayout->addWidget(colorMapDispType, 4, 0, 1, 2);
+
+        typeGroupLayout->addWidget(imgValScaleDisplayCheckBox, 5, 0, 1, 2);
+
+
+        //put all in a QWidget
+        QWidget* colorForm = new QWidget(this);
+        QVBoxLayout* colorFormLayout = new QVBoxLayout(colorForm);
+        colorFormLayout->setContentsMargins(0,0,0,0); //remove margins
+        colorFormLayout->addWidget(typeGroup);
+        return colorForm;
+    }
 }
-
-#else // old code
-
-void XFormWidget::connectColorGUI()
-{
-    connect(colorRedType, SIGNAL(clicked()), this, SLOT(setColorRedType()));
-    connect(colorGreenType, SIGNAL(clicked()), this, SLOT(setColorGreenType()));
-    connect(colorBlueType, SIGNAL(clicked()), this, SLOT(setColorBlueType()));
-    connect(colorAllType, SIGNAL(clicked()), this, SLOT(setColorAllType()));
-
-    connect(colorRed2GrayType, SIGNAL(clicked()), this, SLOT(setColorRed2GrayType()));
-    connect(colorGreen2GrayType, SIGNAL(clicked()), this, SLOT(setColorGreen2GrayType()));
-    connect(colorBlue2GrayType, SIGNAL(clicked()), this, SLOT(setColorBlue2GrayType()));
-    connect(colorAll2GrayType, SIGNAL(clicked()), this, SLOT(setColorAll2GrayType()));
-
-	connect(colorMapDispType, SIGNAL(clicked()), this, SLOT(setColorMapDispType()));
-    connect(imgValScaleDisplayCheckBox, SIGNAL(clicked()), this, SLOT(toggleImgValScaleDisplay()));
-}
-void XFormWidget::disconnectColorGUI()
-{
-    disconnect(colorRedType, 0, this, 0);
-    disconnect(colorGreenType, 0, this, 0);
-    disconnect(colorBlueType, 0, this, 0);
-    disconnect(colorAllType, 0, this, 0);
-
-    disconnect(colorRed2GrayType, 0, this, 0);
-    disconnect(colorGreen2GrayType, 0, this, 0);
-    disconnect(colorBlue2GrayType, 0, this, 0);
-    disconnect(colorAll2GrayType, 0, this, 0);
-
-    disconnect(colorMapDispType, 0, this, 0);
-    disconnect(imgValScaleDisplayCheckBox, 0, this, 0);
-}
-
-void XFormWidget::setColorGUI()
-{
-	if (imgData)
-	{
-		colorRedType->setEnabled(true);
-		colorBlueType->setEnabled(true);
-		colorGreenType->setEnabled(true);
-		colorAllType->setEnabled(true);
-		colorRed2GrayType->setEnabled(true);
-		colorGreen2GrayType->setEnabled(true);
-		colorBlue2GrayType->setEnabled(true);
-		colorAll2GrayType->setEnabled(true);
-		colorMapDispType->setEnabled(true);
-
-		imgValScaleDisplayCheckBox->setEnabled(true);
-		if (imgData->getDatatype()==V3D_UINT16 || imgData->getDatatype()==V3D_FLOAT32)
-			imgValScaleDisplayCheckBox->setCheckState(Qt::Checked); //100814. PHC. set 16/32bit data default to rescale for triview display
-		//imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //100814: PHC. move to here to avoid potential error
-
-		if (imgData->getCDim()>=3) //081124
-		{
-			setColorAllType();
-		}
-
-		if (imgData->getCDim()<3)
-		{
-			colorBlueType->setEnabled(false);
-			colorBlue2GrayType->setEnabled(false);
-		}
-
-		if (imgData->getCDim()<2)
-		{
-			colorGreenType->setEnabled(false);
-			colorGreen2GrayType->setEnabled(false);
-		}
-
-		colorMapDispType->setEnabled(imgData->getCDim()==1);
-
-		if (imgData->getCDim()<=1) //100815
-			colorRed2GrayType->setChecked(true);
-		else
-			colorAllType->setChecked(true);
-
-	}
-	else // no imgData
-	{
-
-		colorRedType->setEnabled(false);
-		colorBlueType->setEnabled(false);
-		colorGreenType->setEnabled(false);
-		colorAllType->setEnabled(false);
-		colorRed2GrayType->setEnabled(false);
-		colorGreen2GrayType->setEnabled(false);
-		colorBlue2GrayType->setEnabled(false);
-		colorAll2GrayType->setEnabled(false);
-		colorMapDispType->setEnabled(false);
-
-		imgValScaleDisplayCheckBox->setEnabled(false);
-
-		colorAllType->setChecked(true);
-
-	}
-}
-
-QWidget* XFormWidget::createColorGUI()
-{
-    QGroupBox *typeGroup = new QGroupBox(this);
-    //typeGroup->setAttribute(Qt::WA_ContentsPropagated);
-    typeGroup->setTitle("Color Channels");
-
-    colorRedType = new QRadioButton(typeGroup);
-    colorGreenType = new QRadioButton(typeGroup);
-    colorBlueType = new QRadioButton(typeGroup);
-    colorAllType = new QRadioButton(typeGroup);
-    colorRed2GrayType = new QRadioButton(typeGroup);
-    colorGreen2GrayType = new QRadioButton(typeGroup);
-    colorBlue2GrayType = new QRadioButton(typeGroup);
-    colorAll2GrayType = new QRadioButton(typeGroup);
-	colorMapDispType = new QRadioButton(typeGroup);
-
-    colorRedType->setText("Red (Chan 1)");
-    colorGreenType->setText("Green (Chan 2)");
-    colorBlueType->setText("Blue (Chan 3)");
-    colorAllType->setText("RGB (All)");
-    colorRed2GrayType->setText("Red (gray)");
-    colorGreen2GrayType->setText("Green (gray)");
-    colorBlue2GrayType->setText("Blue (gray)");
-    colorAll2GrayType->setText("RGB (gray)");
-	colorMapDispType->setText("Colormap (for indexed image)");
-
-	imgValScaleDisplayCheckBox = new QCheckBox("I(Voxel) rescale: m->0, M->255");
-	imgValScaleDisplayCheckBox->setCheckState(Qt::Unchecked);
-
-
-    typeGroupLayout = new QGridLayout(typeGroup);
-    typeGroupLayout->addWidget(colorAllType, 0, 0);
-    typeGroupLayout->addWidget(colorRedType, 1, 0);
-    typeGroupLayout->addWidget(colorGreenType, 2, 0);
-    typeGroupLayout->addWidget(colorBlueType, 3, 0);
-    typeGroupLayout->addWidget(colorAll2GrayType, 0, 1);
-    typeGroupLayout->addWidget(colorRed2GrayType, 1, 1);
-    typeGroupLayout->addWidget(colorGreen2GrayType, 2, 1);
-    typeGroupLayout->addWidget(colorBlue2GrayType, 3, 1);
-    typeGroupLayout->addWidget(colorMapDispType, 4, 0, 1, 2);
-
-    typeGroupLayout->addWidget(imgValScaleDisplayCheckBox, 5, 0, 1, 2);
-
-
-	//put all in a QWidget
-    QWidget* colorForm = new QWidget(this);
-    QVBoxLayout* colorFormLayout = new QVBoxLayout(colorForm);
-    colorFormLayout->setContentsMargins(0,0,0,0); //remove margins
-    colorFormLayout->addWidget(typeGroup);
-	return colorForm;
-}
-
-#endif
-
 
 void XFormWidget::createGUI()
 {
@@ -5344,29 +5339,30 @@ void XFormWidget::toggleLookingGlassCheckBox()
 				zScaleSlider->setValue(4);
 				zScaleSlider->setEnabled(false);
 
-#if USE_CHANNEL_TABLE
-				if (channelTabGlass==NULL)
-				{
-					if (channelTabGlass = new ChannelTabWidget(this, 2, true)) //2 tabs for Looking glass
-					{
-						connect(this, SIGNAL(colorChangedGlass(int)), channelTabGlass, SLOT(updateXFormWidget(int)));
+                if(V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+                {
+                    if (channelTabGlass==NULL)
+                    {
+                        if (channelTabGlass = new ChannelTabWidget(this, 2, true)) //2 tabs for Looking glass
+                        {
+                            connect(this, SIGNAL(colorChangedGlass(int)), channelTabGlass, SLOT(updateXFormWidget(int)));
 
-						channelTabGlass->setFixedWidth(270); //270 is same width as channelTabXView
-						channelTabGlass->setFixedHeight(200); //200 is best for 4 rows
-						channelTabGlass->setWindowFlags( Qt::Widget
-								| Qt::Tool
-								| Qt::CustomizeWindowHint | Qt::WindowTitleHint  //only title bar, disable buttons on title bar
-								//| Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint  //only close buttons on title bar
-								);
-						channelTabGlass->setWindowTitle("For Looking Glass");
+                            channelTabGlass->setFixedWidth(270); //270 is same width as channelTabXView
+                            channelTabGlass->setFixedHeight(200); //200 is best for 4 rows
+                            channelTabGlass->setWindowFlags( Qt::Widget
+                                                             | Qt::Tool
+                                                             | Qt::CustomizeWindowHint | Qt::WindowTitleHint  //only title bar, disable buttons on title bar
+                                                             //| Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint  //only close buttons on title bar
+                                                             );
+                            channelTabGlass->setWindowTitle("For Looking Glass");
 
-						emit colorChangedGlass(-1); //110804
-					}
-					channelTabGlass->move(QCursor::pos() + QPoint(10,10));
-				}
-				channelTabGlass->show();
-#endif
-			}
+                            emit colorChangedGlass(-1); //110804
+                        }
+                        channelTabGlass->move(QCursor::pos() + QPoint(10,10));
+                    }
+                    channelTabGlass->show();
+                }
+            }
 			else
 			{
 				xScaleSlider->setEnabled(true);
@@ -5581,9 +5577,11 @@ void XFormWidget::switchMaskColormap() //080824
 //		zx_view->changeColorType(cc);
 		//qDebug("Ctype=%d Ctype_glass=%d colormap->Ctype=%d", Ctype, Ctype_glass, cc);
 		if (isIndexColor(Ctype))  		setColorMapDispType(Ctype, false); //110804 RZC, copyRaw2QPixmap_colormap only use imgData->ColorMap->Ctype
-#if USE_CHANNEL_TABLE
-		if (isIndexColor(Ctype_glass))	setColorMapDispType(Ctype_glass, true);
-#endif
+        if(V3dApplication::getMainWindow()->global_setting.b_BlendColor)
+        {
+            if (isIndexColor(Ctype_glass))	setColorMapDispType(Ctype_glass, true);
+        }
+
 
 		update();
 	}

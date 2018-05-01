@@ -45,6 +45,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
+#include "v3dr_mainwindow.h"
+
 
 #include "../vrrenderer/VR_MainWindow.h"
 #include "../vrrenderer/V3dR_Communicator.h"
@@ -877,7 +879,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			if (IS_CTRL_MODIFIER)
 		    {
 		    	setBright();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeCurveDrawingBBoxes();//For serial BBoxes curve drawing shortcut, by ZZ,02212018
+            }
 	  		break;
 		case Qt::Key_R:
 			if (IS_CTRL_MODIFIER)
@@ -921,7 +926,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				)
 		    {
 		    	toggleShader();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
+            }
 	  		break;
 
 	  		///// volume texture operation //////////////////////////////////////////////////////
@@ -931,21 +939,46 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	toggleTexFilter();
 			}
 	  		break;
-		case Qt::Key_T:
+         case Qt::Key_E:
+            if (IS_ALT_MODIFIER)
+            {
+                toggleEditMode();
+            }
+            break;
+
+        case Qt::Key_T:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
 		    		WITH_CTRL_MODIFIER
 				)
 		    {
 		    	toggleTex2D3D();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018
+            }
 	  		break;
+        case Qt::Key_D:
+            if (IS_ALT_MODIFIER)
+            {
+                callStrokeDeleteMultiNeurons();//For multiple segments deleting shortcut, by ZZ,02212018
+            }
+            break;
+        case Qt::Key_S:
+            if (IS_ALT_MODIFIER)
+            {
+                callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
+            }
+            break;
 		case Qt::Key_C:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
 		    		WITH_CTRL_MODIFIER
 				)
 		    {
 		    	toggleTexCompression();
-			}
+            }else if (IS_ALT_MODIFIER)
+            {
+                callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
+            }
 	  		break;
 		case Qt::Key_V:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
@@ -985,6 +1018,13 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	changeObjShadingOption();
 			}
 	  		break;
+
+        case Qt::Key_Y:
+            if (IS_ALT_MODIFIER)
+            {
+                callDefine3DPolyline();//For 3D polyline shortcut, by ZZ,03262018
+            }
+            break;
 
 	  		///// marker operation //////////////////////////////////////////////////////
 		case Qt::Key_Escape:
@@ -1244,6 +1284,52 @@ void V3dR_GLWidget::setCSTransparent(int t)
 		if (renderer) renderer->CSbeta = CLAMP(0,1, float(t)/TRANSPARENT_RANGE);
 		POST_updateGL();
 	}
+}
+
+void V3dR_GLWidget::setContrast(int t)
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
+
+    if (curr_renderer)
+    {
+        float exp_val = pow(10.0f, t/100.0f);
+        for(int j=0; j<255; j++)
+        {
+            // This is the value being manipulated
+            int val= (int)(pow(j/255.0f, exp_val) * 255.0f);
+
+            (curr_renderer->colormap[0][j]).r = (unsigned char)255;
+            (curr_renderer->colormap[0][j]).g = (unsigned char)0;
+            (curr_renderer->colormap[0][j]).b = (unsigned char)0;
+            (curr_renderer->colormap[0][j]).a = (unsigned char)val;
+
+            (curr_renderer->colormap[1][j]).r = (unsigned char)0;
+            (curr_renderer->colormap[1][j]).g = (unsigned char)255;
+            (curr_renderer->colormap[1][j]).b = (unsigned char)0;
+            (curr_renderer->colormap[1][j]).a = (unsigned char)val;
+
+            (curr_renderer->colormap[2][j]).r = (unsigned char)0;
+            (curr_renderer->colormap[2][j]).g = (unsigned char)0;
+            (curr_renderer->colormap[2][j]).b = (unsigned char)255;
+            (curr_renderer->colormap[2][j]).a = (unsigned char)val;
+
+            (curr_renderer->colormap[3][j]).r = (unsigned char)205;
+            (curr_renderer->colormap[3][j]).g = (unsigned char)205;
+            (curr_renderer->colormap[3][j]).b = (unsigned char)205;
+            (curr_renderer->colormap[3][j]).a = (unsigned char)205;
+        }
+        for (int ch=0; ch<3; ch++)
+        {
+            for (int j=0; j<4; j++) // RGBA
+            {
+                curr_renderer->colormap_curve[ch][j].clear();
+                int y;
+                y = curr_renderer->colormap[ch][0].c[j];	set_colormap_curve(curr_renderer->colormap_curve[ch][j],  0.0,  y);
+                y = curr_renderer->colormap[ch][255].c[j];	set_colormap_curve(curr_renderer->colormap_curve[ch][j],  1.0,  y);
+            }
+        }
+        POST_updateGL();
+    }
 }
 
 void V3dR_GLWidget::setThickness(double t) //added by PHC, 090215
@@ -1602,12 +1688,26 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	}
 	else
 	{
-		bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-		this->getMainWindow()->show();
-		if(_Call_ZZ_Plugin)
+		// bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+		int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
+		qDebug()<<"result is "<<_call_that_func;
+		qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+		updateWithTriView();
+		if (_call_that_func > 0) 
+		{
+			emit(signalCallTerafly(_call_that_func));
+		}
+		else if(_call_that_func == -1)
 		{
 			call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
 		}
+
+		//this->getMainWindow()->show();
+		// if(_Call_ZZ_Plugin)
+		// {
+		// 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		// 	emit(signalCallTerafly());
+		// }
 	}
 }
 void V3dR_GLWidget::doclientView(bool check_flag)
@@ -1973,6 +2073,8 @@ void V3dR_GLWidget::setXCut0(int s)
 
 		if (_xCut0+dxCut>_xCut1)	setXCut1(_xCut0+dxCut); //081029,100913
 		if (lockX && _xCut0+dxCut<_xCut1)	setXCut1(_xCut0+dxCut); //100913, 110713
+        setXYZSurfure(renderer->b_surfZLock);
+
 		emit changeXCut0(s);
 		POST_updateGL();
 	}
@@ -1988,6 +2090,8 @@ void V3dR_GLWidget::setXCut1(int s)
 
 		if (_xCut0>_xCut1-dxCut)	setXCut0(_xCut1-dxCut);
 		if (lockX && _xCut0<_xCut1-dxCut)	setXCut0(_xCut1-dxCut); //100913,110713
+        setXYZSurfure(renderer->b_surfZLock);
+
 		emit changeXCut1(s);
 		POST_updateGL();
 	}
@@ -2004,6 +2108,7 @@ void V3dR_GLWidget::setYCut0(int s)
 
 		if (_yCut0+dyCut>_yCut1)	setYCut1(_yCut0+dyCut);
 		if (lockY && _yCut0+dyCut<_yCut1)	setYCut1(_yCut0+dyCut);
+        setXYZSurfure(renderer->b_surfZLock);
 		emit changeYCut0(s);
 		POST_updateGL();
 	}
@@ -2019,6 +2124,7 @@ void V3dR_GLWidget::setYCut1(int s)
 
 		if (_yCut0>_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
 		if (lockY && _yCut0<_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
+        setXYZSurfure(renderer->b_surfZLock);
 		emit changeYCut1(s);
 		POST_updateGL();
 	}
@@ -2034,7 +2140,9 @@ void V3dR_GLWidget::setZCut0(int s)
 		if (renderer) renderer->setZCut0(s);
 
 		if (_zCut0+dzCut>_zCut1)	setZCut1(_zCut0+dzCut);
-		if (lockZ && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
+        if (lockZ && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
+        setXYZSurfure(renderer->b_surfZLock);
+
 		emit changeZCut0(_zCut0);
 		POST_updateGL();
 	}
@@ -2050,15 +2158,29 @@ void V3dR_GLWidget::setZCut1(int s)
 
 		if (_zCut0>_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
 		if (lockZ && _zCut0<_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
+        setXYZSurfure(renderer->b_surfZLock);
+
 		emit changeZCut1(_zCut1);
 		POST_updateGL();
 	}
 }
 
+void V3dR_GLWidget::setXYZSurfure(bool b)
+{
+    if(b)
+    {
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
+        curr_renderer->setBBXYZ((float) _idep->window3D->xcminSlider->value()-2, (float) _idep->window3D->xcmaxSlider->value()+2,
+                                (float) _idep->window3D->ycminSlider->value()-2, (float) _idep->window3D->ycmaxSlider->value()+2,
+                                (float) _idep->window3D->zcminSlider->value()-2, (float) _idep->window3D->zcmaxSlider->value()+2);
+    }
+}
+
+
 void V3dR_GLWidget::setXCutLock(bool b)
 {
-	if (b)	dxCut = _xCut1-_xCut0;
-	else    dxCut = 0;
+    if (b)  dxCut = _xCut1-_xCut0;
+    else    dxCut = 0;
 	lockX = b? 1:0;  //110714
 }
 void V3dR_GLWidget::setYCutLock(bool b)
@@ -2390,6 +2512,31 @@ void V3dR_GLWidget::enableSurfStretch(bool s)
 		POST_updateGL();
 	}
 }
+
+void V3dR_GLWidget::enableSurfZLock(bool s)
+{
+    if (renderer)
+    {
+        renderer->b_surfZLock = s;
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
+        if(curr_renderer->zMin == -1.0 && curr_renderer->zMax == 1.0)
+        {
+            Renderer_gl1* curr_renderer = (Renderer_gl1*)(getRenderer());
+            curr_renderer->cuttingXYZ = true;
+            setXYZSurfure(s);
+            return;
+        }
+
+        curr_renderer->setBBcutFlag(s);
+        _idep->window3D->zcminSlider->setValue(_idep->window3D->zcminSlider->value());
+        _idep->window3D->zcmaxSlider->setValue(_idep->window3D->zcmaxSlider->value());
+        _idep->window3D->xcminSlider->setValue(_idep->window3D->xcminSlider->value());
+        _idep->window3D->xcmaxSlider->setValue(_idep->window3D->xcmaxSlider->value());
+        setXYZSurfure(s);
+        POST_updateGL();
+    }
+}
+
 void V3dR_GLWidget::toggleCellName()
 {
 	if (renderer)
@@ -2746,6 +2893,81 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
 	}
 }
 
+// five shortcuts, by ZZ,02212018
+void V3dR_GLWidget::callStrokeCurveDrawingBBoxes()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callStrokeCurveDrawingBBoxes();
+            POST_updateGL();
+        }
+    }
+}
+
+void V3dR_GLWidget::callStrokeCurveDrawingGlobal()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callStrokeCurveDrawingGlobal();
+            POST_updateGL();
+        }
+    }
+}
+
+void V3dR_GLWidget::callStrokeRetypeMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeRetypeMultiNeurons();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callStrokeDeleteMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeDeleteMultiNeurons();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callStrokeSplitMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeSplitMultiNeurons();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callStrokeConnectMultiNeurons()
+{
+    if (renderer)
+    {
+        renderer->callStrokeConnectMultiNeurons();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::callDefine3DPolyline()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callDefine3DPolyline();
+            POST_updateGL();
+        }
+    }
+}
+//end five shortcuts
+
+
 // For curveline detection , by PHC 20170531
 void V3dR_GLWidget::callCurveLineDetector(int option)
 {
@@ -2792,6 +3014,25 @@ void V3dR_GLWidget::toggleLineType()
 		renderer->toggleLineType();
 		POST_updateGL();
 	}
+}
+
+void V3dR_GLWidget::toggleEditMode()
+{
+    //qDebug("V3dR_GLWidget::toggleEditMode");
+    if (renderer)
+    {
+        renderer->toggleEditMode();
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::setEditMode()
+{
+    if (renderer)
+    {
+        renderer->setEditMode();
+        POST_updateGL();
+    }
 }
 
 void V3dR_GLWidget::toggleTexFilter()

@@ -101,6 +101,7 @@ public:
 	bool VRClientON;
 	VR_MainWindow * myvrwin;
 	V3dR_Communicator * myclient;
+	XYZ teraflyZoomInPOS;
 #endif
 //protected:
 	virtual void choiceRenderer();
@@ -240,6 +241,7 @@ public slots:
 	virtual void setRenderMode_Cs3d(bool b);
 
 	virtual void setCSTransparent(int);
+    virtual void setContrast(int);
 	virtual void setThickness(double);
 	virtual void setCurChannel(int);
 
@@ -321,9 +323,11 @@ public slots:
 
 	virtual void setShowMarkers(int s);
 	virtual void setShowSurfObjects(int s);
+    virtual void setXYZSurfure(bool);
 	virtual void enableMarkerLabel(bool);
 	virtual void setMarkerSize(int s);
 	virtual void enableSurfStretch(bool);
+    virtual void enableSurfZLock(bool);
 	virtual void toggleCellName();
 	virtual void toggleMarkerName();// by Lei Qu, 110425
 
@@ -371,6 +375,19 @@ public slots:
     virtual void updateImageData();
 	virtual void reloadData();
 	virtual void cancelSelect();
+
+    //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
+    virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
+    virtual void callStrokeRetypeMultiNeurons();//  call multiple segments retyping
+    virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
+    virtual void callStrokeSplitMultiNeurons();//  call multiple segments splitting
+    virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+    virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
+    virtual void callDefine3DPolyline(); // call 3D polyline defining
+
+    virtual void toggleEditMode();
+    virtual void setEditMode();
+
 
 //----------------------------------------------------------------------------------------
 // end View3DControl interface
@@ -439,6 +456,7 @@ signals:
         void neuronClearAll();
         void neuronIndexChanged(int index);
         void neuronClearAllSelections();
+		void signalCallTerafly(int nDirect);
 
 public:
 	bool _still, _stillpaint_need, _stillpaint_pending;
@@ -519,6 +537,7 @@ public:
 		VRClientON=false;
 		myvrwin = 0;
 		myclient = 0;
+		teraflyZoomInPOS = 0;
 #endif
 	}
 };

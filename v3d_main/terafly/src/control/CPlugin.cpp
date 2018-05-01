@@ -172,6 +172,8 @@ bool TeraFly::checkVersion(std::string version, std::string min_required_version
 // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
 NeuronTree tf::PluginInterface::getSWC(int resolution)
 {
+    NeuronTree nt;
+
     try
     {
         // set default parameter
@@ -188,7 +190,6 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
         CViewer::getCurrent()->storeAnnotations();
 
         // get entire octree content
-        NeuronTree nt;
         interval_t x_range(0, std::numeric_limits<int>::max());
         interval_t y_range(0, std::numeric_limits<int>::max());
         interval_t z_range(0, std::numeric_limits<int>::max());
@@ -200,6 +201,8 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+
+    return nt;
 }
 
 bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
@@ -313,6 +316,7 @@ std::string tf::PluginInterface::getPath(int resolution)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
 }
 
 // get currently displayed image (readonly)
@@ -331,6 +335,8 @@ const Image4DSimple* tf::PluginInterface::getImage()
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
+
 }
 
 // get image metadata from the given image file/folder path
@@ -351,6 +357,8 @@ size_t tf::PluginInterface::getXDim(const std::string & path)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
+
 }
 
 size_t tf::PluginInterface::getYDim(const std::string & path)
@@ -370,6 +378,8 @@ size_t tf::PluginInterface::getYDim(const std::string & path)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
+
 }
 size_t tf::PluginInterface::getZDim(const std::string & path)
 {
@@ -388,6 +398,8 @@ size_t tf::PluginInterface::getZDim(const std::string & path)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
+
 }
 size_t tf::PluginInterface::getCDim(const std::string & path)
 {
@@ -406,6 +418,8 @@ size_t tf::PluginInterface::getCDim(const std::string & path)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
+
 }
 size_t tf::PluginInterface::getTDim(const std::string & path)
 {
@@ -424,6 +438,8 @@ size_t tf::PluginInterface::getTDim(const std::string & path)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
+
 }
 
 // get image subvolume from the given image file/folder path
@@ -447,6 +463,8 @@ unsigned char* tf::PluginInterface::getSubVolume(const std::string & path, size_
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    return NULL;
+
 }
 
 // release memory allocated for opened volumes

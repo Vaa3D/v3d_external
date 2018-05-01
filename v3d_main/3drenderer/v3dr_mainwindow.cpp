@@ -661,6 +661,19 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
 #ifdef WIN32
             url.remove(0,1); // remove the first '/' of "/C:/...", 081102
 #endif
+
+#ifdef Q_OS_MAC
+            //Added by Zhi on 2018-03-01
+            if (urlList.at(i).path().startsWith("/.file/id=")) {
+                QProcess process;
+                QStringList arguments;
+                arguments << "-e" << "get posix path of posix file \""+urlList.at(i).path()+"\"";
+                process.start("osascript", arguments);
+                process.waitForFinished(-1); // will wait forever until finished
+                url = process.readAllStandardOutput();
+                url = url.remove(url.length()-1,1);
+            }
+#endif
             if (glWidget) glWidget->loadObjectFromFile(url);
             //setDataTitle(url);
         }

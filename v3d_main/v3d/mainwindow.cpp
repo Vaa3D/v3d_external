@@ -595,7 +595,16 @@ void MainWindow::dropEvent(QDropEvent *event)
 
 // @FIXED by Alessandro on 2015-05-09. Call method to fix the file-based URL (if any)
 #ifdef Q_OS_MAC
-
+            //Added by Zhi on 2018-03-01
+            if (urlList.at(i).path().startsWith("/.file/id=")) {
+                QProcess process;
+                QStringList arguments;
+                arguments << "-e" << "get posix path of posix file \""+urlList.at(i).path()+"\"";
+                process.start("osascript", arguments);
+                process.waitForFinished(-1); // will wait forever until finished
+                url = process.readAllStandardOutput();
+                url = url.remove(url.length()-1,1);
+            }
 #ifdef __TEST_DROP_QT5_MAC_
             if (urlList.at(i).path().startsWith("file:///.file/id=")) {
                     QUrl url(urlList.at(i).path());

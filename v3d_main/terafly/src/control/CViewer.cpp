@@ -165,6 +165,8 @@ void CViewer::show()
             // apply the same color map only if it differs from the previous one
             Renderer_gl2* prev_renderer = (Renderer_gl2*)(prev->view3DWidget->getRenderer());
             Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+            curr_renderer->currentTraceType = prev_renderer->currentTraceType;
+
             bool changed_cmap = false;
             for(int k=0; k<3; k++)
             {
@@ -178,8 +180,8 @@ void CViewer::show()
                 }
             }
 
-            if(changed_cmap)
-                curr_renderer->applyColormapToImage();
+//            if(changed_cmap)
+//                curr_renderer->applyColormapToImage();
 
             //positioning the current 3D window exactly at the previous window position
             QPoint location = prev->pos();
@@ -305,6 +307,8 @@ void CViewer::show()
         connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
         connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
         connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+        connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
+
         connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
         //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
         //connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -331,8 +335,13 @@ void CViewer::show()
 
 
         // updating reference system
-        if(!pMain->isPRactive())
-            pMain->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+        if(!PMain::getInstance()->isPRactive())
+        {
+            if(!PMain::getInstance()->isOverviewActive)
+                PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+            else
+                PMain::getInstance()->setOverview(true);
+        }
         this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
         Vaa3D_rotationchanged(0);
 
@@ -655,9 +664,67 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             has_double_clicked = true;
 
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
+			
+			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+			if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
+			{
+				XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+				newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+			}
+			// --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
+			else
+			{
+				XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+				XYZ convertedSWC;
+				convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
+				QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
+				QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
+				float distSqr = 100; // <======= change distance threshold parameter here
+				float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
+				cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
 
-            XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
-            newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);
+				long int count = 0;
+				for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
+				{
+					++count;
+					if (count % 1000 == 0) cout << ".";
+					float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
+					if (currDistSqr < distSqr)
+					{
+						//cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
+						//cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
+						distSqr = currDistSqr;
+						convertedSWC.x = it->x;
+						convertedSWC.y = it->y;
+						convertedSWC.z = it->z;
+						selectedSWCX = globalSWCIt->x;
+						selectedSWCY = globalSWCIt->y;
+						selectedSWCZ = globalSWCIt->z;
+					}
+
+					++globalSWCIt;
+				}
+				cout << endl << "  SWC node examination done." << endl;
+				cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
+				cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
+
+				if (distSqr >= 100)
+				{
+					cout << "out of nearest SWC search range" << endl;
+					XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+					newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+				}
+				else
+				{
+					cout << "using nearest SWC node:" << endl;
+					cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
+					XYZ loc;
+					loc.x = convertedSWC.x; loc.y = convertedSWC.y; loc.z = convertedSWC.z;
+					newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
+				}
+			}
+			// --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
+
             return true;
         }
 
@@ -850,6 +917,13 @@ void CViewer::receiveData(
 
                 // refresh annotation toolbar
                 PAnoToolBar::instance()->refreshTools();
+
+				// back to VR, if desired.
+				if (PMain::getInstance()->resumeVR)
+				{
+					PMain::getInstance()->resumeVR = false;
+					QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+				}
             }
         }
         catch(RuntimeException &ex)
@@ -1049,6 +1123,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         disconnect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
         disconnect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
         disconnect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+        disconnect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
         disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
         //disconnect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
         //disconnect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -1632,7 +1707,7 @@ void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
     PAnoToolBar::instance()->buttonUndo->setEnabled(true);
 
     // all markers have the same color when they are created
-    vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
+    if(vaa3dMarkers.size()==1) vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
     V3D_env->setLandmark(window, vaa3dMarkers);
     V3D_env->pushObjectIn3DWindow(window);
 
@@ -1658,7 +1733,7 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
         PAnoToolBar::instance()->buttonUndo->setEnabled(true);
 
         // all markers have the same color when they are created
-        vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
+        if(vaa3dMarkers.size()==1)  vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
         V3D_env->setLandmark(window, vaa3dMarkers);
         V3D_env->pushObjectIn3DWindow(window);
 
@@ -1799,6 +1874,11 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("obtaining the annotations within the current window").c_str(), __itm__current__function__);
     CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, vaa3dMarkers);
     CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, vaa3dCurves.listNeuron);
+	
+	// MK, April, 25, 2018 /////////////////////////////////////
+	this->treeGlobalCoords.listNeuron.clear();
+	this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;
+	////////////////////////////////////////////////////////////
 
     //converting global coordinates to local coordinates
     timer.restart();
@@ -1822,6 +1902,7 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     vaa3dCurves.color.g = 0;
     vaa3dCurves.color.b = 0;
     vaa3dCurves.color.a = 0;
+	this->convertedTreeCoords.listNeuron = vaa3dCurves.listNeuron;
 
     PLog::instance()->appendOperation(new AnnotationOperation(QString("load annotations: convert coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
     /* @debug */ //printf("\n\n");
@@ -1835,7 +1916,6 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
     view3DWidget->getRenderer()->endSelectMode();
-
 
     //end curve editing mode
     QList<NeuronTree>* listNeuronTree = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->getHandleNeuronTrees();
@@ -1874,6 +1954,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         source->disconnect(source->view3DWidget, SIGNAL(changeYCut1(int)), source, SLOT(Vaa3D_changeYCut1(int)));
         source->disconnect(source->view3DWidget, SIGNAL(changeZCut0(int)), source, SLOT(Vaa3D_changeZCut0(int)));
         source->disconnect(source->view3DWidget, SIGNAL(changeZCut1(int)), source, SLOT(Vaa3D_changeZCut1(int)));
+        source->disconnect(source->view3DWidget, SIGNAL(signalCallTerafly(int)), source, SLOT(ShiftToAnotherDirection(int)));
         source->connect(source->window3D->timeSlider, SIGNAL(valueChanged(int)), source, SLOT(Vaa3D_changeTSlider(int)));
         //source->disconnect(source->view3DWidget, SIGNAL(xRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
         //source->disconnect(source->view3DWidget, SIGNAL(yRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
@@ -1932,6 +2013,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         //applying the same color map only if it differs from the source one
         Renderer_gl2* source_renderer = (Renderer_gl2*)(source->view3DWidget->getRenderer());
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+        curr_renderer->currentTraceType = source_renderer->currentTraceType;
         bool changed_cmap = false;
         for(int k=0; k<3; k++)
         {
@@ -1944,8 +2026,8 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
                 curr_cmap[i] = source_cmap[i];
             }
         }
-        if(changed_cmap)
-            curr_renderer->applyColormapToImage();
+//        if(changed_cmap)
+//            curr_renderer->applyColormapToImage();
 
         //storing annotations done in the source view
         source->storeAnnotations();
@@ -1995,6 +2077,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
         connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
         connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+        connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
         connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
         //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
         //connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -2059,8 +2142,12 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
         // update reference system dimension
         if(!PMain::getInstance()->isPRactive())
-            PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
-
+        {
+            if(!PMain::getInstance()->isOverviewActive)
+                PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+            else
+                PMain::getInstance()->setOverview(true);
+        }
         // refresh annotation toolbar
         PAnoToolBar::instance()->refreshTools();
 
@@ -2070,6 +2157,11 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         // zoom-out on Virtual Pyramid requires image refresh
         if(source->volResIndex > volResIndex && CImport::instance()->isVirtualPyramid())
             refresh();
+        if (PMain::getInstance()->resumeVR)
+        {
+            PMain::getInstance()->resumeVR = false;
+            QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));           
+        }
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
 
@@ -2086,9 +2178,8 @@ XYZ CViewer::getRenderer3DPoint(int x, int y)  throw (RuntimeException)
 
 
     //view3DWidget->getRenderer()->selectObj(x,y, false);
-
-    return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
-
+    
+	return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
 
 //    Renderer_gl1* rend = static_cast<Renderer_gl1*>(view3DWidget->getRenderer());
 
@@ -2299,6 +2390,53 @@ void CViewer::Vaa3D_changeXCut0(int s)
     PDialogProofreading::instance()->updateBlocks(0);
     connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
 }
+void CViewer::ShiftToAnotherDirection(int _direction)
+{
+#ifdef __ALLOW_VR_FUNCS__
+    // slot func related to VR shift signal
+	
+	if (volResIndex == 0 &&(_direction<7 || _direction == 8) )//at lowerest level, do not allow shift and zoom-out.
+	{
+		QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+		return;
+	}
+    if(_direction<7)
+        PMain::getInstance()->teraflyShiftClickedinVR(_direction);  
+    else if(_direction == 7)
+    {
+        // forcezoomin
+        if(view3DWidget)
+        {
+            PMain::getInstance()->resumeVR = true;
+            XYZ point = view3DWidget->teraflyZoomInPOS;
+            qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
+            newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);    
+        }    
+    }
+    else if(_direction == 8)
+    {
+        // auto zoom out
+        if(prev                                                                    &&  //the previous resolution exists
+        !toBeClosed)                                                         //the current resolution does not have to be closed
+        // isZoomDerivativeNeg())                                                     //zoom derivative is negative
+        {
+            // if window is not ready for "switch view" events, reset zoom-out and ignore this event
+            if(!_isReady)
+            {
+                resetZoomHistory();
+            }
+            else
+            {
+                PMain::getInstance()->resumeVR = true;
+                setActive(false);
+                resetZoomHistory();
+                prev->restoreViewerFrom(this);
+            }
+        }       
+    }
+#endif
+}
+
 void CViewer::Vaa3D_changeXCut1(int s)
 {
     #ifdef terafly_enable_debug_max_level
@@ -2544,6 +2682,7 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->zthicknessBox->setValue(src->zthicknessBox->value());
     dst->comboBox_channel->setCurrentIndex(src->comboBox_channel->currentIndex());
     dst->transparentSlider->setValue(src->transparentSlider->value());
+    dst->contrastSlider->setValue(src->contrastSlider->value());
     dst->fcutSlider->setValue(src->fcutSlider->value());
     if(dst->displayControlsHidden != src->displayControlsHidden)
         dst->hideDisplayControls();
@@ -2553,6 +2692,7 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->checkBox_displayBoundingBox->setChecked(src->checkBox_displayBoundingBox->isChecked());
     dst->checkBox_OrthoView->setChecked(src->checkBox_OrthoView->isChecked());
 
+    dst->checkBox_surfZLock->setChecked(src->checkBox_surfZLock->isChecked());
     //propagating skeleton mode and line width
     dst->getGLWidget()->getRenderer()->lineType = src->getGLWidget()->getRenderer()->lineType;
     dst->getGLWidget()->getRenderer()->lineWidth = src->getGLWidget()->getRenderer()->lineWidth;

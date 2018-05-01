@@ -1099,7 +1099,6 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
                     qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
                     double th_merge = 5;
-
                     bool b_start_merged=false, b_end_merged=false;
                     NeuronSWC cur_node;
                     if (n_id_start>=0)
@@ -1262,6 +1261,146 @@ void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool 
                }
           }
      }
+}
+
+
+/**
+ * @brief keyboard short-cuts for a number of drawing and editing functions
+ * Alt+B: serial Bboxes curve drawing
+ * Alt+T: multiple segments reTyping
+ * Alt+D: multiple segments Deleting
+ * Alt+S: multiple segments Spliting
+ * Alt+C: multiple segments Connection
+ * Alt+P: 3D polYline defining
+
+*/
+void Renderer_gl1::callStrokeCurveDrawingBBoxes()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    selectMode = smCurveTiltedBB_fm_sbbox;
+    b_addthiscurve = true;
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        editinput = 1;
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
+    }
+
+}
+
+void Renderer_gl1::callStrokeCurveDrawingGlobal()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    selectMode = smCurveTiltedBB_fm;
+    b_addthiscurve = true;
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        editinput = 5;
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
+    }
+
+}
+
+void Renderer_gl1::callStrokeRetypeMultiNeurons()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        w->setEditMode();
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            editinput = 2;
+            selectMode = smRetypeMultiNeurons;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
+void Renderer_gl1::callStrokeDeleteMultiNeurons()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        w->setEditMode();
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            editinput = 3;
+            selectMode = smDeleteMultiNeurons;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
+void Renderer_gl1::callStrokeSplitMultiNeurons()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        w->setEditMode();
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            editinput = 4;
+            selectMode = smBreakMultiNeurons;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
+
+void Renderer_gl1::callStrokeConnectMultiNeurons()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        w->setEditMode();
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            editinput = 6;
+            selectMode = smSimpleConnect;
+            b_addthiscurve = false;
+            oldCursor = QCursor(Qt::ArrowCursor);
+            w->setCursor(QCursor(Qt::PointingHandCursor));
+        }
+    }
+}
+
+void Renderer_gl1::callDefine3DPolyline()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    selectMode = smCurveCreate_pointclick;
+    b_addthiscurve = true;
+    cntCur3DCurveMarkers=0; //reset
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        editinput = 7;
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
+    }
 }
 
 /**

@@ -504,7 +504,8 @@ void VR_MainWindow::RunVRMainloop()
 //-----------------------------------------------------------------------------
 // Purpose: for standalone VR.
 //-----------------------------------------------------------------------------
-bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
+int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS)
+// bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
 
 	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
@@ -542,12 +543,17 @@ bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindo
 
 	pMainApplication->Shutdown();
 
-	bool _call_that_plugin = pMainApplication->_call_assemble_plugin;
-
+	// bool _call_that_plugin = pMainApplication->_call_assemble_plugin;
+	int _call_that_function = pMainApplication->postVRFunctionCallMode;
+	zoomPOS->x = pMainApplication->teraflyPOS.x;
+	zoomPOS->y = pMainApplication->teraflyPOS.y;
+	zoomPOS->z = pMainApplication->teraflyPOS.z;
+	
 	delete pMainApplication;
 	pMainApplication = NULL;
 
-	return _call_that_plugin;
+	// return _call_that_plugin;
+	return _call_that_function;
 }
 
 

@@ -219,7 +219,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0; // MK, 2017 April
+			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0, // MK, 2017 April
+			*simpleConnect=0 // MK, 2018, April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -447,8 +448,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                         listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-						// MK, 2017 April
-						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+						// MK, 2017 April, 2018 April
+						listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
+						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
 
 						// MK, 2017 June
 						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -718,8 +720,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
                 listAct.append(actDeleteMultiNeuronSeg = new QAction("delete multiple neuron-segments by a stroke", w));
 
-				// MK, 2017 April
-				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke", w));
+				// MK, 2017 April, 2018 April
+				listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
+				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
 
 				// MK, 2017 June
 				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -946,7 +949,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 b_grabhighrez = true;
                 produceZoomViewOf3DRoi(loc_vec,
-                                       1  //one means from non-wheel event
+                                       0  //one means from non-wheel event
                                        );
 			}
 		}
@@ -987,7 +990,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_addthiscurve = true;
 		cntCur3DCurveMarkers=0; //reset
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
+        if (w) { editinput = 7; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
         total_etime = 0; //reset the timer
 	}
 
@@ -1057,14 +1060,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smCurveTiltedBB_fm;
 		b_addthiscurve = true;
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        if (w) { editinput = 5; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         total_etime = 0; //reset the timer
 	}
 	else if (act == actCurveTiltedBB_fm_sbbox) // 20120124 ZJL
 	{
 		selectMode = smCurveTiltedBB_fm_sbbox;
 		b_addthiscurve = true;
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        if (w) { editinput = 1; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         total_etime = 0; //reset the timer
 	}
 	else if (act == actMarkerCreate1Stroke) // 20121011 PHC
@@ -1685,7 +1688,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
        {
               selectMode = smRetypeMultiNeurons;
               b_addthiscurve = false;
-              if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+              if (w) { editinput = 2; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
        }
    }
     else if (act==actBreakMultiNeuronSeg) // Zhi Zhou
@@ -1694,7 +1697,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
        {
               selectMode = smBreakMultiNeurons;
               b_addthiscurve = false;
-              if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+              if (w) { editinput = 4; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
        }
    }
 	else if (act==actChangeNeuronSegRadius)
@@ -1765,7 +1768,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
                selectMode = smDeleteMultiNeurons;
                b_addthiscurve = false;
-               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+               if (w) { editinput = 3; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
 	else if (act==actDeleteNeuronSeg)
@@ -1792,7 +1795,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
             selectMode = smConnectNeurons;
             b_addthiscurve = false;
-            if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+            if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
 	else if (act == actPointCloudConnect)
@@ -1808,6 +1811,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			selectMode = smConnectMarker;
 			b_addthismarker = false;
 			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	else if (act == simpleConnect)
+	{
+		if (NEURON_CONDITION)
+		{
+			selectMode = smSimpleConnect;
+			b_addthiscurve = false;
+			if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
 	/*************************************************/
@@ -2067,7 +2079,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	}
 	else if (act==actDispNeuronMorphoInfo)
 	{
-		QString tmpstr = "Neuron ", ts2;
+        QString tmpstr = "Neuron ", ts2;
         ts2.setNum(names[2]);
 
         if (listNeuronTree.size()==1)
@@ -2075,9 +2087,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
         else
             tmpstr += ts2 + "<br>" + get_neuron_morpho_features_str(&(listNeuronTree.at(names[2]-1)));
 
-		QMessageBox::information(0, "neuron info", tmpstr);
-		qDebug() << tmpstr;
-	}
+        QMessageBox::information(0, "neuron info", tmpstr);
+        qDebug() << tmpstr;
+    }
 	else if (act==actDoNeuronToolBoxPlugin) //still testing. 20120413, PHC
 	{
 		vaa3d_neurontoolbox_paras* np = new vaa3d_neurontoolbox_paras;
@@ -2165,8 +2177,9 @@ void Renderer_gl1::endSelectMode()
 	if (selectMode != smObject)
 	{
 		selectMode = smObject;
-		if (w) { w->setCursor(oldCursor); }
+        if (w) { w->setCursor(oldCursor); }
 	}
+    editinput = 0;
 }
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
@@ -2191,14 +2204,13 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 	// define a curve //091023
-//<<<<<<< HEAD
 //    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 //    	selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
 ////=======
+
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
-		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker	|| selectMode == smCutNeurons)
-//>>>>>>> master
+		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2212,7 +2224,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
-//<<<<<<< HEAD
+
 //        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
 //					selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
 //					? 1 : (selectMode == smCurveCreate2)? 2 : 3;
@@ -2222,7 +2234,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 //        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons) //20170731 smBreakTwoNeurons used in mozak
 //        		 ? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		int N = (selectMode == smCurveCreate3)? 3 : (selectMode == smCurveCreate2)? 2 : 1; //20170731 RZC: more simple expression for less bugs
-//>>>>>>> master
+
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
@@ -2263,6 +2275,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
+			else if (selectMode == smSimpleConnect) simpleConnect();
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
@@ -3430,7 +3443,8 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(0).x, list_listCurvePos.at(0).at(0).y, p_tree, best_dist);
 				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(N-1).x, list_listCurvePos.at(0).at(N-1).y, p_tree, best_dist);
 				qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
-				double th_merge = 5;
+                double th_merge = 5;
+
 				bool b_start_merged=false, b_end_merged=false;
 				NeuronSWC cur_node;
 				if (n_id_start>=0)
@@ -3540,12 +3554,12 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			if (curpos.z < mz) mz = curpos.z;
 			else if (curpos.z > Mz) Mz = curpos.z;
 		}
-		qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
+        qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
 		V3DLONG margin=5; //the default margin is small
         if (loc_vec.size()==1) margin=61; //for marker then define a bigger margin
-		mx -= margin; Mx += margin; if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
-		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
-		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
+        mx -= margin; Mx += margin; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
+        my -= margin; My += margin; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
+        mz -= margin; Mz += margin; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
 		//by PHC 101008
 		if (b_imaging && curXWidget)
 		{
@@ -3569,7 +3583,7 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			myimagingp.ze = Mz; //ending coordinates (in pixel space)
 			myimagingp.xrez = curImg->getRezX() / 2.0;
 			myimagingp.yrez = curImg->getRezY() / 2.0;
-			myimagingp.zrez = curImg->getRezZ() / 2.0;
+            myimagingp.zrez = curImg->getRezZ() / 2.0;
 			//do imaging
             return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}

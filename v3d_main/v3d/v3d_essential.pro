@@ -300,6 +300,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_editing/neuron_sim_scores.cpp \
     ../neuron_editing/v_neuronswc.cpp \
     ../neuron_editing/neuron_format_converter.cpp \
+    ../neuron_editing/global_feature_compute.cpp \
     ../neuron_tracing/dij_bgl.cpp \
     ../gmm/fit_gmm.cpp \
     ../cellseg/template_matching_seg.cpp \
@@ -360,6 +361,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
     ../io/v3d_nrrd.cpp
+
 #    ./painting/shared/arthurstyle.cpp \
 #    ./painting/shared/arthurwidgets.cpp
 

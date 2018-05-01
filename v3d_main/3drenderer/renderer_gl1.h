@@ -210,6 +210,19 @@ public:
     virtual int zoomview_wheel_event();//by PHC, 20130424
     virtual int zoomview_currentviewport();//by PHC, 20130701
 
+    //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
+    virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
+    virtual void callStrokeRetypeMultiNeurons();//  call multiple segments retyping
+    virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
+    virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
+    virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+    virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
+    virtual void callDefine3DPolyline(); // call 3D polyline defining
+
+    virtual void toggleEditMode();
+    virtual void setEditMode();
+
+
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -362,6 +375,13 @@ public:
 	void setBBZ(float zMinIn, float zMaxIn);
 	float zMin, zMax;
 
+    bool cuttingXYZ;
+    void setBBcutFlag(bool cuttingXYZ);
+    void updateNeuronBoundingBoxWithXYZCut(float xMin, float xMax,float yMin, float yMax, float zMin, float zMax);
+    void setBBXYZ(float xMinIn, float xMaxIn,float yMinIn, float yMaxIn,float zMinIn, float zMaxIn);
+    float xMin, xMax, yMin, yMax;
+
+
 	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
 	// this will call setColorByAncestry if needed.
 	void setNeuronReviewColors(NeuronSWC s); // review mode
@@ -429,18 +449,25 @@ public:
      void deleteMultiNeuronsByStroke();
 
 	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
+	 void simpleConnect();
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
 	 void connectMarkerByStroke();
 	 struct segInfoUnit
 	 {
+		 segInfoUnit() { hierarchy = 0; }
 		long segID;
 		long head_tail;
 		long nodeCount;
 		bool refine;
+
+		int branchID, paBranchID;
+		int hierarchy;
 	 };
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
 	 void cutNeuronsByStroke();
+
+	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
 	 // ---------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
@@ -676,6 +703,7 @@ private:
           currentTraceType=3;
           useCurrentTraceTypeForRetyping = false;
         cuttingZ = false;
+        cuttingXYZ = false;
 		zMin =-1.0;
 		zMax = 1.0;
 		initColorMaps();

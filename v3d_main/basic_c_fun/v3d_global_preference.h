@@ -50,6 +50,7 @@ struct V3D_GlobalSetting
 	int default_lookglass_size;
 	int default_marker_radius;
 	bool b_UseMylibTiff;
+    bool b_BlendColor;
 
 	//3D viewer tab
 	bool b_scrollupZoomin;
@@ -88,6 +89,7 @@ struct V3D_GlobalSetting
 		b_autoRescale16bitDisplay = false;
 		default_lookglass_size = 7;
 		default_marker_radius = 5;
+        b_BlendColor = true;
 
 		//3D viewer tab
 		b_autoOpenImg3DViewer = false;
@@ -99,7 +101,7 @@ struct V3D_GlobalSetting
 		b_autoVideoCard3DTex = false;
 		b_autoVideoCardNPTTex = false;
 		autoVideoCardStreamMode = 0;//1 for adaptive stream mode, 0 for 512x512x256 downsample. for others see dialog info
-		b_UseMylibTiff = false;
+        b_UseMylibTiff = false;
 
 		//image analysis tab
 		GPara_landmarkMatchingMethod = 0; //MATCH_MI; //(PointMatchMethodType)0;

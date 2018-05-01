@@ -90,7 +90,9 @@ public slots:
 
 	void doMenuOfColor();
 	void selectedColor(int map=0);
-	void mapHanchuanColor() {selectedColor(1);}
+	void mapSegmentColor() {selectedColor(1);}
+	void mapMultiNeuronColor() {selectedColor(2);}
+	void mapHanchuanColor() {selectedColor(-2);}
 	void mapRandomColor()   {selectedColor(-1);}
 
     void doMenuOfDisplayMode();

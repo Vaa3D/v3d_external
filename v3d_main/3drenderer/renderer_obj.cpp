@@ -326,6 +326,7 @@ const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----
 { 10.608 , 0.0 , 0.0 } // black
 };
 //>>>>>>> master
+#define ____neuron_color_table____
 const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
 		{255, 255, 255},  // white,   0-undefined
 		{20,  20,  20 },  // black,   1-soma
@@ -1228,8 +1229,8 @@ void Renderer_gl1::drawMarkerList()
 	if (sShowMarkers==0) return;
 	float maxD = boundingBox.Dmax();
 				//MAX(dim1,MAX(dim2,dim3));//090726: this will be 0 when no image
-	float marker_size = float(markerSize) * zoomRatio * 0.75; // //20160203 TDP: make size independent of zoom level 090423 RZC
-					//maxD * markerSize/1000.f;
+//	float marker_size = float(markerSize) * zoomRatio * 0.75; // //20160203 TDP: make size independent of zoom level 090423 RZC
+    float marker_size = maxD * markerSize/1000.f;  //change is back: marker size is associated with zoom level by ZZ 04032018
 	for (int pass=0; pass<numPassFloatDraw(sShowMarkers); pass++)
 	{
 		setFloatDrawOp(pass, sShowMarkers);
@@ -1531,9 +1532,9 @@ void Renderer_gl1::setBBZ(float zMinIn, float zMaxIn){
 }
 
 void Renderer_gl1::setBBZcutFlag(bool cuttingZ){
-	this->cuttingZ = cuttingZ;
+    this->cuttingZ = cuttingZ;
 	updateNeuronBoundingBox();
-	updateBoundingBox();
+    updateBoundingBox();
 }
 
 void Renderer_gl1::updateNeuronBoundingBoxWithZCut(float zMin, float zMax)
@@ -1553,9 +1554,48 @@ void Renderer_gl1::updateNeuronBoundingBoxWithZCut(float zMin, float zMax)
 	swcBB.z1 =zMax;
 }
 
+void Renderer_gl1::setBBXYZ(float xMinIn, float xMaxIn,float yMinIn, float yMaxIn, float zMinIn, float zMaxIn){
+    xMin = xMinIn;
+    xMax = xMaxIn;
+    yMin = yMinIn;
+    yMax = yMaxIn;
+    zMin = zMinIn;
+    zMax = zMaxIn;
+    updateNeuronBoundingBox();
+    updateBoundingBox();
+}
+
+void Renderer_gl1::setBBcutFlag(bool cuttingXYZ){
+    this->cuttingXYZ = cuttingXYZ;
+    updateNeuronBoundingBox();
+    updateBoundingBox();
+}
+
+void Renderer_gl1::updateNeuronBoundingBoxWithXYZCut(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax)
+{
+    swcBB = NULL_BoundingBox;
+    if (showingGrid) swcBB.expand(boundingBox);
+    foreach(NeuronTree SS, listNeuronTree)
+    {
+        foreach(NeuronSWC S, SS.listNeuron)
+        {
+            float d = S.r *2;
+            swcBB.expand(BoundingBox(XYZ(S)-d, XYZ(S)+d));
+        }
+    }
+
+    swcBB.x0= xMin;
+    swcBB.x1 =xMax;
+    swcBB.y0= yMin;
+    swcBB.y1 =yMax;
+    swcBB.z0= zMin;
+    swcBB.z1 =zMax;
+}
+
 void Renderer_gl1::updateNeuronBoundingBox()
 {
-	if (cuttingZ){	updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
+    if (cuttingZ){updateNeuronBoundingBoxWithZCut(zMin, zMax); return;}
+    if (cuttingXYZ){updateNeuronBoundingBoxWithXYZCut(xMin, xMax, yMin, yMax, zMin, zMax); return;}
 
     swcBB = NULL_BoundingBox;
 	if (showingGrid) swcBB.expand(boundingBox);
@@ -1571,7 +1611,7 @@ void Renderer_gl1::updateNeuronBoundingBox()
 }
 
 
-#define ___add_curve_SWC_with_default_type___
+#define __add_curve_SWC_with_default_type___
 void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 {
 #define CURVE_NAME "curve_segment"
@@ -1605,7 +1645,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
         //// Vaa3d || Terafly
         else
         {
-            curImg->proj_trace_add_curve_segment(loc_list, chno);
+            curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
@@ -1677,7 +1717,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			count++;
 			NeuronSWC S;
 			S.n 	= seg.row.at(k).data[0];
-			S.type 	= seg.row.at(k).data[1];
+            S.type 	= seg.row.at(k).data[1];
 			S.x 	= seg.row.at(k).data[2];
 			S.y 	= seg.row.at(k).data[3];
 			S.z 	= seg.row.at(k).data[4];
@@ -1740,7 +1780,8 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 		for (int i=0; i<listNeuronTree.size(); i++)
 		{
 			listNeuronTree[i].editable = (1+i==SS.n); //090923
-		}
+            listNeuronTree[i].on = (1+i==SS.n);  //hide the original one //ZZ 04122018
+        }
 		curEditingNeuron = SS.n;
 
         if (listNeuronTree.size()==1 && listNeuronTree[0].file=="vaa3d_traced_neuron" && listNeuronTree[0].name=="vaa3d_traced_neuron")
@@ -1769,10 +1810,104 @@ void Renderer_gl1::finishEditingNeuronTree()
     realCurEditingNeuron_inNeuronTree = -1;//150523
 
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-
 	//090929
 	if (w)	w->updateTool();
 }
+
+void Renderer_gl1::toggleEditMode()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    if(listNeuronTree.size()>=1 && w && curImg)
+    {
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            finishEditingNeuronTree();
+            endSelectMode();
+        }else
+
+        {
+            listNeuronTree_old = listNeuronTree;
+
+            NeuronTree *p_tree = 0;
+
+            if (listNeuronTree.size()==1)
+            {
+                p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
+                curEditingNeuron = 1;
+                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+            }
+            else
+            {
+                p_tree = (NeuronTree *)(&(listNeuronTree.at(1)));
+                curEditingNeuron = 2;
+                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+            }
+
+            curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
+            if (listNeuronTree[realCurEditingNeuron_inNeuronTree].name!="vaa3d_traced_neuron" ||
+                    listNeuronTree[realCurEditingNeuron_inNeuronTree].file!="vaa3d_traced_neuron")
+            {
+                b_editDroppedNeuron = true;
+            }
+
+            curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+            curImg->tracedNeuron.name = "vaa3d_traced_neuron";
+            curImg->tracedNeuron.file = "vaa3d_traced_neuron";
+            listNeuronTree.clear();
+
+            curImg->proj_trace_history_append();
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+    }
+}
+
+void Renderer_gl1::setEditMode()
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    if(listNeuronTree.size()>=1 && w && curImg)
+    {
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            return;
+        }else
+
+        {
+            listNeuronTree_old = listNeuronTree;
+
+            NeuronTree *p_tree = 0;
+
+            if (listNeuronTree.size()==1)
+            {
+                p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
+                curEditingNeuron = 1;
+                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+            }
+            else
+            {
+                p_tree = (NeuronTree *)(&(listNeuronTree.at(1)));
+                curEditingNeuron = 2;
+                realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+            }
+
+            curImg->tracedNeuron_old = curImg->tracedNeuron; //150523, by PHC
+            if (listNeuronTree[realCurEditingNeuron_inNeuronTree].name!="vaa3d_traced_neuron" ||
+                    listNeuronTree[realCurEditingNeuron_inNeuronTree].file!="vaa3d_traced_neuron")
+            {
+                b_editDroppedNeuron = true;
+            }
+
+            curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+            curImg->tracedNeuron.name = "vaa3d_traced_neuron";
+            curImg->tracedNeuron.file = "vaa3d_traced_neuron";
+            listNeuronTree.clear();
+            curImg->proj_trace_history_append();
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+    }
+}
+
 #endif
 void Renderer_gl1::toggleLineType()
 {
@@ -1781,7 +1916,7 @@ void Renderer_gl1::toggleLineType()
 	//qDebug("    Renderer_gl1::toggleLineType = %d", lineType);
 	//compileNeuronTreeList();
 }
-#define _______2_______
+
 //void Renderer_gl1::compileNeuronTreeList()
 //{
 //	if (compiledNeuron)
@@ -2267,15 +2402,21 @@ void Renderer_gl1::drawNeuronTree(int index)
 		glPushMatrix();
 		{
 			//qDebug("%i-%i  (%g %g %g) - (%g %g %g)", i,j,  S1.x,S1.y,S1.z, S0.x,S0.y,S0.z);
-			//if (rgba.a==0 || lineType==1)
-			if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
+			//if (lineType==1)
+			//if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
+			if (rgba.a==0 || rgba.a==1 || rgba.a==2) //180411 RZC: 0--default, 1--segment colorful, 2--multi-neuron colorful
 			{
 				int type = S1.type; 			 // 090925
-				if (editable)
+				//if (editable)
+				if (rgba.a==1 || rgba.a==2) //180411 RZC
 				{
 					int ncolorused = neuron_type_color_num; if (neuron_type_color_num>19) ncolorused = 19; //added by PHC, 20120330
-					type = S1.seg_id %(ncolorused -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
+					if (rgba.a==1)
+						type = S1.seg_id %(ncolorused -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
+					if (rgba.a==2)
+						type = index %(ncolorused -5)+5; //180411 RZC: multi-neuron color using hanchuan's neuron_type_color
 				}
+
 				if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
 				{
 					neuronColor[0] =  neuron_type_color_heat[ type - 300][0];
@@ -2288,6 +2429,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 					neuronColor[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
 					neuronColor[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
 				}
+
 				glColor3ubv(neuronColor); // 081230, 090331
 			}
 			else
@@ -2297,6 +2439,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				neuronColor[1] = rgba.c[1];
 				neuronColor[2] = rgba.c[2];
 			}
+
 			// (0,0,0)--(0,0,1) ==> S0--S1
 			XYZ D = S0 - S1;
 			float length = norm(D);
@@ -2306,6 +2449,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 			float rf = 2;
 			r1 *= rf;
 			r0 *= rf;
+
 			if (cur_lineType==0)
 			{
 				GLfloat m[4][4];

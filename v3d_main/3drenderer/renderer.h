@@ -86,15 +86,14 @@ public:
                       smSelectMultiMarkers, // @ADDED by Alessandro on 2015-09-30 to select multiple markers with one-mouse stroke
                       smRetypeMultiNeurons,
                       smBreakMultiNeurons,
-//<<<<<<< HEAD
                       smBreakTwoNeurons, // Same function as smBreakMultiNeurons, but only one break is created TDP 201512
                       smJoinTwoNodes, // Straight line connect, joining two nodes without tracing TDP 201601
-                     smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
-                     smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
-                     smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
+                      smCurveEditExtendOneNode, //Extends just the starting point of the node by ZMS 20151205
+                      smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
+                      smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
 
-					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons,//MK
-//>>>>>>> master
+					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons, smSimpleConnect,//MK
+
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
 					};
 	enum editMode {segmentEdit, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
@@ -102,13 +101,12 @@ public:
 //protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
-//<<<<<<< HEAD
 	static SelectMode defaultSelectMode;
     SelectMode refineMode;
 
     editMode connectEdit;
-    UI3dViewMode  ui3dviewMode;
-//>>>>>>> master
+    
+	UI3dViewMode  ui3dviewMode;
 	void* widget;
 
 public:
@@ -172,7 +170,8 @@ public:
 	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
 
     virtual void drawVaa3DInfo(int fontsize=30);
-	
+    virtual void drawEditInfo();
+
 	virtual void drawSegInfo();
 	vector<size_t> segInfoShow;
     virtual void drawScaleBar(float AlineWidth=3);
@@ -238,8 +237,20 @@ public:
 	virtual void updateVolShadingOption() {};
 	virtual void updateObjShadingOption() {};
 
-     virtual void toggleNStrokeCurveDrawing() {}; // For n-right-strokes curve shortcut ZJL 110920
-     virtual void setDragWinSize(int csize) {}; // ZJL 110927
+    virtual void toggleNStrokeCurveDrawing() {}; // For n-right-strokes curve shortcut ZJL 110920
+    virtual void setDragWinSize(int csize) {}; // ZJL 110927
+
+    //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
+    virtual void callStrokeCurveDrawingBBoxes() {}; // serial BBoxes curve drawing shortcut
+    virtual void callStrokeRetypeMultiNeurons() {};//  multiple segments retyping shortcut
+    virtual void callStrokeDeleteMultiNeurons() {};//  multiple segments deleting shortcut
+    virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
+    virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
+    virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
+    virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
+
+    virtual void toggleEditMode()       {};
+    virtual void setEditMode()       {};
 
 
 public:
@@ -259,16 +270,16 @@ public:
 	RGBA32f color_background, color_background2, color_line, color_proxy;
 
 	int sShowMarkers, sShowSurfObjects, markerSize;
-	bool b_showMarkerLabel, b_showMarkerName, b_showCellName, b_surfStretch;
+    bool b_showMarkerLabel, b_showMarkerName, b_showCellName, b_surfStretch, b_surfZLock;
 
 	int lineType, lineWidth, nodeSize, rootSize;
 	int polygonMode, tryObjShader;
 	int tryTexNPT, tryTex3D, tryTexCompress, tryVolShader, tryTexStream;
 	const char* try_vol_state();
-
+    int editinput;
 // internal state
 //protected:
-	int volTimePoint, volTimeOffset;
+    int volTimePoint, volTimeOffset;
 	BoundingBox boundingBox, surfBoundingBox;
 	double thickness; //changed from int to double, PHC, 090215
 	V3DLONG xCut0,xCut1, yCut0,yCut1, zCut0,zCut1;            // for volume
@@ -381,6 +392,7 @@ private:
         refineMode = smCurveRefine_fm;
 
         ui3dviewMode = Vaa3d;
+        editinput=0;
 
 	}
 

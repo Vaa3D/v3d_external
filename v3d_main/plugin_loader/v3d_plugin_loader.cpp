@@ -1670,23 +1670,23 @@ void V3d_PluginLoader::releaseOpenedVolumesTeraFly()
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {
-	qDebug("V3d_PluginLoader::openVRWindow ");
+    qDebug("V3d_PluginLoader::openVRWindow ");
     if (w)
     {
-		qDebug("V3d_PluginLoader::openVRWindow ----if w");
+        qDebug("V3d_PluginLoader::openVRWindow ----if w");
         V3dR_GLWidget * v = w->getGLWidget();
         if (v)
-		{
-			qDebug("V3d_PluginLoader::openVRWindow ----if v");
-            v->doimageVRView(bOnlineMode); 
-		}
+        {
+            qDebug("V3d_PluginLoader::openVRWindow ----if v");
+            v->doimageVRView(bOnlineMode);
+        }
     }
 }
 
 void V3d_PluginLoader::openVRWindowV2(v3dhandle image_window, bool bOnlineMode)
 {
-	qDebug("V3d_PluginLoader::openVRWindow version 2");
-	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
-    if(vi) vi->doimageVRView(bOnlineMode); 
+    qDebug("V3d_PluginLoader::openVRWindow version 2");
+    V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
+    if(vi) vi->doimageVRView(bOnlineMode);
 }
 #endif
