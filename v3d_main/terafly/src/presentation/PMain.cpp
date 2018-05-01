@@ -55,7 +55,7 @@
 #include "iomanager.config.h"
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
-#include "../neuron_tracing/fastmarching_linker.h"
+//#include "../neuron_tracing/fastmarching_linker.h"
 
 using namespace terafly;
 using namespace iim;
@@ -2682,13 +2682,15 @@ void PMain::setIAenable(bool enable)
     IA_min_ratio_spinbox->setEnabled(enable);
     if(!enable)
     {
-        Intensity_dynamic_de=1.0;
+        //Intensity_dynamic_de=1.0;
+        //set_Intensitythreshold(1.0);
         cout<<"exit Intensity adjustment mode"<<endl;
     }
     else
     {
-        Intensity_dynamic_de=IA_Max_ratio_spinbox->value();
-        cout<<"enter Intensity adjustment mode"<<endl;
+        double d=IA_Max_ratio_spinbox->value();
+        //set_Intensitythreshold(d);
+        cout<<"enter Intensity adjustment mode"<<d<<endl;
     }
 
 }
@@ -2699,7 +2701,8 @@ void PMain::IA_MaxSpinBoxChanged(double d)
         return;
     }
     //double mratio=IA_Max_ratio_spinbox->value();
-    Intensity_dynamic_de=IA_Max_ratio_spinbox->value();
+    //double d=IA_Max_ratio_spinbox->value();
+    //set_Intensitythreshold(IA_Max_ratio_spinbox->value());
     //cout<<"the max ratio spinbox is "<<mratio<<endl;
     //read input of Max ratio
 }

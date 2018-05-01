@@ -941,7 +941,13 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 */
 //#define Intensity_dynamic_de 0.8 //Intensity_*_de plus one must bigger than Intensity_*_up
 #define Intensity_dynamic_up 1.0
-double Intensity_dynamic_de;
+static double Intensity_dynamic_de=1.0;
+/*void set_Intensitythreshold(double d)
+{
+    Intensity_dynamic_de=d;
+    cout<<"test func set intensity threshold"<<endl;
+}*/
+
 //#define Intensity_bbox_de 0.8
 //#define Intensity_bbox_up 1.0
 // marching with bounding box
@@ -1062,8 +1068,8 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
     //double Intensity_dynamic_de=1.0;
     if(Intensity_dynamic_de>=1)
     {
-        Intensity_dynamic_de=1.0;
-        /*bool miok;
+        //Intensity_dynamic_de=1.0;
+        bool miok;
         double d=QInputDialog::getDouble(0,"test ratio","please input your number",80,20,100,5,&miok);
         if(miok)
         {
@@ -1074,7 +1080,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
         {
             cout<<"something went worng.by jsd"<<endl;
             Intensity_dynamic_de=1.0;
-        }*/
+        }
     }
     double max_int = 0; // maximum intensity
     double min_int = INF;
@@ -1302,8 +1308,6 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 
      return ret;
 }
-
-
 // calculate the bounding box containing all near_markers and far_markers and margin
 // then do fastmarching from the first ray to last ray
 template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
@@ -1463,20 +1467,20 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
     double max_int = 0; // maximum intensity
     double min_int = INF;
-    /*double d;bool bbok;double Intensity_bbox_de=1.0;
+    double d;bool bbok;//double Intensity_bbox_de=1.0;
     d=QInputDialog::QInputDialog::getDouble(0,"test ratio","please input your number",80,20,100,5,&bbok);
     if(bbok)
     {
         cout<<"input number is "<<d<<endl;
-        Intensity_bbox_de=d*0.01;
+        Intensity_dynamic_de=d*0.01;
     }
     else{
         cout<<"something went worng bb.by jsd"<<endl;
-    }*/
-    if(Intensity_dynamic_de>=1.0)
+    }
+    /*if(Intensity_dynamic_de>=1.0)
     {
         Intensity_dynamic_de=1.0;
-    }
+    }*/
 	// mask off edges of image
 	for (V3DLONG z = 0; z < msz2; z++)
 	{
