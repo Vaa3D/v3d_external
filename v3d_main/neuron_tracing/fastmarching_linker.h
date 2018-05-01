@@ -14,6 +14,7 @@
 #include "heap.h"
 #include <QtGui>
 
+
 using namespace std;
 
 #define INF 3.4e+38             // float INF
@@ -939,9 +940,10 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 }
 */
 //#define Intensity_dynamic_de 0.8 //Intensity_*_de plus one must bigger than Intensity_*_up
-#define Intensity_dynamic_up 1.2
+#define Intensity_dynamic_up 1.0
+double Intensity_dynamic_de;
 //#define Intensity_bbox_de 0.8
-#define Intensity_bbox_up 1.2
+//#define Intensity_bbox_up 1.0
 // marching with bounding box
 // Please make sure
 // 1. sub_markers are located between nm1 and fm1
@@ -1056,16 +1058,23 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	long bsz01 = bsz0 * bsz1;
 	long btol_sz = bsz01 * bsz2;
 	unsigned char * outimg1d = new unsigned char[btol_sz]; for(long i = 0; i < btol_sz; i++) outimg1d[i] = 0;
-    bool miok;
-    double Intensity_dynamic_de=1.0;
-    double d=QInputDialog::getDouble(0,"test ratio","please input your number",80,20,100,5,&miok);
-    if(miok)
+
+    //double Intensity_dynamic_de=1.0;
+    if(Intensity_dynamic_de>=1)
     {
-        cout<<"input number is "<<d<<endl;
-        Intensity_dynamic_de=d*0.01;
-    }
-    else{
-        cout<<"something went worng.by jsd"<<endl;
+        Intensity_dynamic_de=1.0;
+        /*bool miok;
+        double d=QInputDialog::getDouble(0,"test ratio","please input your number",80,20,100,5,&miok);
+        if(miok)
+        {
+            cout<<"input number is "<<d<<endl;
+            Intensity_dynamic_de=d*0.01;
+        }
+        else
+        {
+            cout<<"something went worng.by jsd"<<endl;
+            Intensity_dynamic_de=1.0;
+        }*/
     }
     double max_int = 0; // maximum intensity
     double min_int = INF;
@@ -1131,7 +1140,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 		tar_marker->y = margin + dst_rect01;
 		tar_marker->z = margin;
 	}
-	fastmarching_linker(sub_markers, tar_markers, outimg1d, par_tree, bsz0, bsz1, bsz2, stop_num, cnn_type);
+    fastmarching_linker(sub_markers, tar_markers, outimg1d, par_tree, bsz0, bsz1, bsz2, stop_num, cnn_type);
 	for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++)
 	{
 		MyMarker * sub_marker = it->first;
@@ -1255,6 +1264,7 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 		all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
 		for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
     }
+    Intensity_dynamic_de=1.0;
 	// extract the best trajectory
 	double min_score = 0;
     	MyMarker * min_marker = 0;
@@ -1453,7 +1463,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
     double max_int = 0; // maximum intensity
     double min_int = INF;
-    double d;bool bbok;double Intensity_bbox_de=1.0;
+    /*double d;bool bbok;double Intensity_bbox_de=1.0;
     d=QInputDialog::QInputDialog::getDouble(0,"test ratio","please input your number",80,20,100,5,&bbok);
     if(bbok)
     {
@@ -1462,8 +1472,11 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
     }
     else{
         cout<<"something went worng bb.by jsd"<<endl;
+    }*/
+    if(Intensity_dynamic_de>=1.0)
+    {
+        Intensity_dynamic_de=1.0;
     }
-
 	// mask off edges of image
 	for (V3DLONG z = 0; z < msz2; z++)
 	{
@@ -1479,12 +1492,11 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 			}
 		}
 	}
-    cout<<"max intensity is "<<max_int<<endl;
-    cout<<"min intensity is "<<min_int<<endl;
-    if(Intensity_bbox_de+1<=Intensity_bbox_up)
+    cout<<"current Intensity de ratio is "<<Intensity_dynamic_de<<endl;
+    /*if(Intensity_bbox_de+1<=Intensity_bbox_up)
     {
         cout<<"Max Intensity is lower than Min Intensity in this way, Intensity _bbox_de (plus 1) must bigger than Intensity_bbox_up!"<<endl;
-    }
+    }*/
     for (V3DLONG z = 0; z < msz2; z++)
     {
         for (V3DLONG y = 0; y < msz1; y++)
@@ -1493,7 +1505,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
             {
                 MyMarker marker = MyMarker(mx + x, my + y, mz + z);
                 MyMarker m_marker = MyMarker(x, y, z);
-                if(inimg1d[marker.ind(sz0,sz01)]<=max_int*Intensity_bbox_de&&inimg1d[marker.ind(sz0,sz01)]>=min_int*Intensity_bbox_de)
+                if(inimg1d[marker.ind(sz0,sz01)]<=max_int*Intensity_dynamic_de&&inimg1d[marker.ind(sz0,sz01)]>=min_int*Intensity_dynamic_up)
                     mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
             }
         }
@@ -1511,6 +1523,8 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	GET_LINE_MARKERS(nm1, fm1, sub_markers);
 	GET_LINE_MARKERS(nm2, fm2, tar_markers);
 	fastmarching_linker(sub_markers, tar_markers, mskimg1d, outswc, msz0, msz1, msz2, cnn_type);
+    cout<<"after fastmarching bbox, Intensity de back to 1.0"<<Intensity_dynamic_de<<endl;
+    Intensity_dynamic_de=1.0;//
     for(V3DLONG i = 0; i < outswc.size(); i++)
 	{
 		outswc[i]->x += mx;

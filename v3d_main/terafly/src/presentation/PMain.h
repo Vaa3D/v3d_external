@@ -523,6 +523,7 @@ class terafly::PMain : public QWidget
 #endif
         void setOverview(bool enable);
         void setIAenable(bool enable);
+        void IA_MaxSpinBoxChanged(double d);
     signals:
 
         /*********************************************************************************

@@ -55,6 +55,7 @@
 #include "iomanager.config.h"
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
+#include "../neuron_tracing/fastmarching_linker.h"
 
 using namespace terafly;
 using namespace iim;
@@ -649,6 +650,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_spbox->installEventFilter(this);
     PR_spbox->setPrefix("Block ");
     /* ------- Intensity Adjustment panel widgets ------- */
+    isEnableIAActive=false;
     IA_panel=new QGroupBox("Intensity Adjustment for annotation");
     IA_enable_CheckBox=new QCheckBox("IntensityAdjustmentEnable");
     IA_enable_CheckBox->setChecked(isEnableIAActive);
@@ -809,6 +811,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_panel->setStyle(new QWindowsStyle());
     #endif
     //"Intensity Adjustment" panel layout
+    QGridLayout *IA_layout=new QGridLayout();
+    IA_layout->setVerticalSpacing(1);
     QVBoxLayout *localViewer_panel_IntensityA_layout=new QVBoxLayout();
     QHBoxLayout *IntensityAdjustment_layout=new QHBoxLayout();
     IntensityAdjustment_layout->setContentsMargins(0,0,0,0);
@@ -819,8 +823,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     IntensityAdjustmen_layout_min->addWidget(IA_min_ratio_spinbox,1);
     localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustment_layout,0);
     localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustmen_layout_min,0);
-    localViewer_panel_IntensityA_layout->setContentsMargins(10,5,10,5);
-    IA_panel->setLayout(localViewer_panel_IntensityA_layout);
+    IA_layout->addLayout(localViewer_panel_IntensityA_layout,0,0,1,1);
+    IA_layout->addWidget(IA_enable_CheckBox,1,0,1,1);
+    //localViewer_panel_IntensityA_layout->addWidget(IA_enable_CheckBox,2,0,1,1);
+    IA_layout->setContentsMargins(10,5,10,5);
+    IA_panel->setLayout(IA_layout);
     #ifdef Q_OS_LINUX
     IA_panel->setStyle(new QWindowsStyle());
     #endif
@@ -999,6 +1006,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
 
     connect(IA_enable_CheckBox,SIGNAL(toggled(bool)),this,SLOT(setIAenable(bool)));
+    connect(IA_Max_ratio_spinbox,SIGNAL(valueChanged(double)),this,SLOT(IA_MaxSpinBoxChanged(double)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -1130,6 +1138,7 @@ void PMain::reset()
     IA_min_ratio_spinbox->setValue(1.20);
     IA_min_ratio_spinbox->setSingleStep(0.01);
     IA_min_ratio_spinbox->setEnabled(false);
+    IA_panel->setEnabled(false);
 
     //resetting progress bar and text
     progressBar->setEnabled(false);
@@ -1778,6 +1787,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 //        T1_sbox->setMaximum(CImport::instance()->getVMapTDim()-1);
         VOI_panel->setEnabled(true);
         PR_panel->setEnabled(true);
+        IA_panel->setEnabled(true);
 
         //updating menu items
         /**/tf::debug(tf::LEV3, "updating menu items", __itm__current__function__);
@@ -2463,7 +2473,7 @@ void PMain::debugAction1Triggered()
 //        for(size_t z = 0; z < dst_dims[2]; z++)
 //        {
 //            printf("z%d:\n", z);
-//            size_t stride_z = z * dst_dims[1] * dst_dims[0];
+//            size_t stride_z = z * dsfastmarching_linkert_dims[1] * dst_dims[0];
 //            printf("    ");
 //            for(size_t x = 0; x < dst_dims[0]; x++)
 //                printf("x%02d ", x);
@@ -2668,7 +2678,30 @@ void PMain::setOverview(bool enabled)
 
 void PMain::setIAenable(bool enable)
 {
+    IA_Max_ratio_spinbox->setEnabled(enable);
+    IA_min_ratio_spinbox->setEnabled(enable);
+    if(!enable)
+    {
+        Intensity_dynamic_de=1.0;
+        cout<<"exit Intensity adjustment mode"<<endl;
+    }
+    else
+    {
+        Intensity_dynamic_de=IA_Max_ratio_spinbox->value();
+        cout<<"enter Intensity adjustment mode"<<endl;
+    }
 
+}
+void PMain::IA_MaxSpinBoxChanged(double d)
+{
+    if(d==0||!IA_Max_ratio_spinbox->isEnabled())
+    {
+        return;
+    }
+    //double mratio=IA_Max_ratio_spinbox->value();
+    Intensity_dynamic_de=IA_Max_ratio_spinbox->value();
+    //cout<<"the max ratio spinbox is "<<mratio<<endl;
+    //read input of Max ratio
 }
 
 void PMain::PRsetActive(bool active)
