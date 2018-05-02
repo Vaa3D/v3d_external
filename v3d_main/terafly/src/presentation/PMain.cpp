@@ -914,7 +914,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(zoom_panel, 0);
     controlsLayout->addWidget(VOI_panel, 0);
     controlsLayout->addWidget(PR_panel, 0);
+    #ifndef Q_OS_MAC
     controlsLayout->addWidget(Overview_panel, 0);
+    #endif
     controlsLayout->addStretch(1);
     #ifdef Q_OS_MAC
     controlsLayout->setContentsMargins(10,0,10,10);
