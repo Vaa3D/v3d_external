@@ -799,7 +799,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_panel->setStyle(new QWindowsStyle());
     #endif
 
-    // Overview panel layout
+#ifndef Q_OS_MAC
+      // Overview panel layout
     QWidget* refSysContainer2 = new QWidget();
     refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
     QHBoxLayout* refSysContainerLayout2 = new QHBoxLayout();
@@ -807,9 +808,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     refSysContainerLayout2->addWidget(refSys, 1);
     refSysContainer2->setLayout(refSysContainerLayout2);
     QGridLayout* Overview_layout = new QGridLayout();
-    Overview_layout->addWidget(refSysContainer2,   0, 0, 3, 1);
-    Overview_layout->setContentsMargins(10,30,10,30);
+    Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
+    Overview_layout->setContentsMargins(1,1,1,1);
     Overview_panel->setLayout(Overview_layout);
+#endif
 
     //local viewer panel
     QVBoxLayout* localviewer_panel_layout= new QVBoxLayout();
@@ -2616,17 +2618,46 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setTraslZ(zShiftSBox->value());
 
         int ROIxS   = H0_sbox->value();
-        int ROIxDim = H1_sbox->value()- H0_sbox->value(); if (ROIxDim < 512) ROIxDim = 512;
+        int ROIxDim = H1_sbox->value()- H0_sbox->value();
         int ROIyS   = V0_sbox->value();
-        int ROIyDim = V1_sbox->value() - V0_sbox->value();if (ROIyDim < 512) ROIyDim = 512;
+        int ROIyDim = V1_sbox->value() - V0_sbox->value();
         int ROIzS   = D0_sbox->value();
-        int ROIzDim = D1_sbox->value() - D0_sbox->value();if (ROIyDim < 512) ROIyDim = 512;
+        int ROIzDim = D1_sbox->value() - D0_sbox->value();
+
+        float xRatio = static_cast<float>(ROIxDim)/dimX;
+        float yRatio = static_cast<float>(ROIyDim)/dimY;
+        float zRatio = static_cast<float>(ROIzDim)/dimZ;
+        int factorXYZ;
+        if(xRatio<0.04 || yRatio<0.04 || zRatio<0.04)
+        {
+            if(xRatio <= yRatio && xRatio <= zRatio)
+            {
+                factorXYZ = (0.04*dimX)/ROIxDim;
+            }
+            else if(yRatio <= xRatio && yRatio <= zRatio)
+            {
+                factorXYZ = (0.04*dimY)/ROIyDim;
+            }
+            else if (zRatio <= xRatio && zRatio <= yRatio)
+            {
+                factorXYZ = (0.04*dimZ)/ROIzDim;
+            }
+
+            int centerX = ROIxS + (ROIxDim-1)/2; ROIxS = centerX + (ROIxS-centerX)*factorXYZ;
+            int centerY = ROIyS + (ROIyDim-1)/2; ROIyS = centerY + (ROIyS-centerY)*factorXYZ;
+            int centerZ = ROIzS + (ROIzDim-1)/2; ROIzS = centerZ + (ROIzS-centerZ)*factorXYZ;
+
+            ROIxDim *= factorXYZ;
+            ROIyDim *= factorXYZ;
+            ROIzDim *= factorXYZ;
+        }
 
         refSys->nt = PluginInterface::getSWC();
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
 
     }else
     {
+        PRsetActive(false);
         refSys->nt.listNeuron.clear();
         isOverviewActive = false;
         resetMultiresControls();
