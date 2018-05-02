@@ -649,6 +649,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_spbox->installEventFilter(this);
     PR_spbox->setPrefix("Block ");
 
+    /* ------- overview panel widgets ------- */
+    Overview_panel = new QGroupBox("Overview");
+
+
     //other widgets
     helpBox = new QHelpBox(this);
     progressBar = new QProgressBar(this);
@@ -795,6 +799,18 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_panel->setStyle(new QWindowsStyle());
     #endif
 
+    // Overview panel layout
+    QWidget* refSysContainer2 = new QWidget();
+    refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
+    QHBoxLayout* refSysContainerLayout2 = new QHBoxLayout();
+    refSysContainerLayout2->setContentsMargins(1,1,1,1);
+    refSysContainerLayout2->addWidget(refSys, 1);
+    refSysContainer2->setLayout(refSysContainerLayout2);
+    QGridLayout* Overview_layout = new QGridLayout();
+    Overview_layout->addWidget(refSysContainer2,   0, 0, 3, 1);
+    Overview_layout->setContentsMargins(10,30,10,30);
+    Overview_panel->setLayout(Overview_layout);
+
     //local viewer panel
     QVBoxLayout* localviewer_panel_layout= new QVBoxLayout();
     /* --------------------- first row ---------------------- */
@@ -896,6 +912,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(zoom_panel, 0);
     controlsLayout->addWidget(VOI_panel, 0);
     controlsLayout->addWidget(PR_panel, 0);
+    controlsLayout->addWidget(Overview_panel, 0);
     controlsLayout->addStretch(1);
     #ifdef Q_OS_MAC
     controlsLayout->setContentsMargins(10,0,10,10);
@@ -1060,6 +1077,7 @@ void PMain::reset()
     //resetting subvol panel widgets
     VOI_panel->setEnabled(false);
     PR_panel->setEnabled(false);
+    Overview_panel->setEnabled(false);
     V0_sbox->setValue(0);
     V1_sbox->setValue(0);
     H0_sbox->setValue(0);
@@ -1734,7 +1752,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 //        T1_sbox->setMaximum(CImport::instance()->getVMapTDim()-1);
         VOI_panel->setEnabled(true);
         PR_panel->setEnabled(true);
-
+        Overview_panel->setEnabled(true);
         //updating menu items
         /**/tf::debug(tf::LEV3, "updating menu items", __itm__current__function__);
         openTeraFlyVolumeAction->setEnabled(false);
@@ -2582,13 +2600,12 @@ void PMain::setOverview(bool enabled)
     if(enabled)
     {
         isOverviewActive = true;
-        refSys->setZoom(-8.0);
+        refSys->setZoom(-6.0);
 
         int num_res = CImport::instance()->volumes.size();
         int dimX    = CImport::instance()->volumes[num_res-1]->getDIM_H();
         int dimY    = CImport::instance()->volumes[num_res-1]->getDIM_V();
         int dimZ    = CImport::instance()->volumes[num_res-1]->getDIM_D();
-
 
         CSettings::instance()->setVOIdimV(Vdim_sbox->value());
         CSettings::instance()->setVOIdimH(Hdim_sbox->value());
@@ -2605,9 +2622,12 @@ void PMain::setOverview(bool enabled)
         int ROIzS   = D0_sbox->value();
         int ROIzDim = D1_sbox->value() - D0_sbox->value();if (ROIyDim < 512) ROIyDim = 512;
 
+        refSys->nt = PluginInterface::getSWC();
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
+
     }else
     {
+        refSys->nt.listNeuron.clear();
         isOverviewActive = false;
         resetMultiresControls();
         refSys->setDims(H1_sbox->value()-H0_sbox->value()+1, V1_sbox->value()-V0_sbox->value()+1, D1_sbox->value()-D0_sbox->value()+1);

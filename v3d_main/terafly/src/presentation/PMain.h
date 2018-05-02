@@ -232,6 +232,10 @@ class terafly::PMain : public QWidget
         QPushButton* PR_button;
         QSpinBox* PR_spbox;
 
+        /* ------- Overview panel widgets ------- */
+        QGroupBox* Overview_panel;
+
+
         //other widgets
         QHelpBox* helpBox;              //help box
         QProgressBar* progressBar;      //progress bar

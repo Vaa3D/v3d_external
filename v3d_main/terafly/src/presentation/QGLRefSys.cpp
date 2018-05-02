@@ -95,6 +95,16 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         ROIzDim   = (_ROIzDim   * zDim) / dimZ;
         ROIzShift = (_ROIzShift * zDim) / dimZ;
     }
+
+    if(nt.listNeuron.size()>0)
+    {
+        for(int i=0; i<nt.listNeuron.size();i++)
+        {
+            nt.listNeuron[i].x = nt.listNeuron[i].x / dimX;
+            nt.listNeuron[i].y = (dimY-nt.listNeuron[i].y)  / dimY;
+            nt.listNeuron[i].z = (dimZ-nt.listNeuron[i].z) / dimZ;
+        }
+    }
     updateGL();
 }
 
@@ -481,6 +491,20 @@ void QGLRefSys::paintGL()
 
     }
     glEnd();
+
+
+    if(nt.listNeuron.size()>0)
+    {
+        glDisable(GL_DEPTH_TEST);
+        glColor3f(0.0,0.0,255.0);
+        glPointSize(2);
+        glBegin(GL_POINTS);
+        for(int i=0; i<nt.listNeuron.size();i+=10)
+        {
+            glVertex3f(2*xDim*nt.listNeuron[i].x-xDim,2*yDim*nt.listNeuron[i].y-yDim,2*zDim*nt.listNeuron[i].z-zDim);
+        }
+        glEnd();
+    }
 
 }
 
