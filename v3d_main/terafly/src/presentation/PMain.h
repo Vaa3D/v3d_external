@@ -231,14 +231,10 @@ class terafly::PMain : public QWidget
         QGroupBox* PR_panel;
         QPushButton* PR_button;
         QSpinBox* PR_spbox;
-        /* ------- Intensity Adjustment panel widgets ------- *///added by jsd to adjust intensity 04282018
-        QGroupBox* IA_panel;
-        QLabel* IA_enable_label;
-        QCheckBox* IA_enable_CheckBox;
-        QLabel* IA_Intensity_Max_ratio_label;
-        QDoubleSpinBox* IA_Max_ratio_spinbox;
-        QLabel* IA_Intensity_Min_ratio_label;
-        QDoubleSpinBox* IA_min_ratio_spinbox;
+
+        /* ------- Overview panel widgets ------- */
+        QGroupBox* Overview_panel;
+
 
         //other widgets
         QHelpBox* helpBox;              //help box
@@ -328,7 +324,6 @@ class terafly::PMain : public QWidget
 
 		bool resumeVR;
         bool isOverviewActive;
-        bool isEnableIAActive;
 
 
     public slots:
@@ -522,8 +517,6 @@ class terafly::PMain : public QWidget
         void teraflyShiftClickedinVR(int _direction);
 #endif
         void setOverview(bool enable);
-        void setIAenable(bool enable);
-        void IA_MaxSpinBoxChanged(double d);
     signals:
 
         /*********************************************************************************

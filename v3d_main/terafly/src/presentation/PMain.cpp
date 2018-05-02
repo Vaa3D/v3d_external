@@ -55,7 +55,6 @@
 #include "iomanager.config.h"
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
-//#include "../neuron_tracing/fastmarching_linker.h"
 
 using namespace terafly;
 using namespace iim;
@@ -649,21 +648,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_spbox->setAlignment(Qt::AlignCenter);
     PR_spbox->installEventFilter(this);
     PR_spbox->setPrefix("Block ");
-    /* ------- Intensity Adjustment panel widgets ------- */
-    isEnableIAActive=false;
-    IA_panel=new QGroupBox("Intensity Adjustment for annotation");
-    IA_enable_CheckBox=new QCheckBox("IntensityAdjustmentEnable");
-    IA_enable_CheckBox->setChecked(isEnableIAActive);
-    IA_Max_ratio_spinbox=new QDoubleSpinBox();
-    IA_Max_ratio_spinbox->setAlignment(Qt::AlignCenter);
-    IA_Max_ratio_spinbox->installEventFilter(this);
-    IA_min_ratio_spinbox=new QDoubleSpinBox();
-    IA_min_ratio_spinbox->setAlignment(Qt::AlignCenter);
-    IA_min_ratio_spinbox->installEventFilter(this);
-    IA_Intensity_Max_ratio_label=new QLabel("Max Intensity ratio");
-    IA_Intensity_Max_ratio_label->setAlignment(Qt::AlignCenter);
-    IA_Intensity_Min_ratio_label=new QLabel("Min Intensity ratio");
-    IA_Intensity_Min_ratio_label->setAlignment(Qt::AlignCenter);
+
+    /* ------- overview panel widgets ------- */
+    Overview_panel = new QGroupBox("Overview");
+
 
     //other widgets
     helpBox = new QHelpBox(this);
@@ -810,27 +798,18 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #ifdef Q_OS_LINUX
     PR_panel->setStyle(new QWindowsStyle());
     #endif
-    //"Intensity Adjustment" panel layout
-    QGridLayout *IA_layout=new QGridLayout();
-    IA_layout->setVerticalSpacing(1);
-    QVBoxLayout *localViewer_panel_IntensityA_layout=new QVBoxLayout();
-    QHBoxLayout *IntensityAdjustment_layout=new QHBoxLayout();
-    IntensityAdjustment_layout->setContentsMargins(0,0,0,0);
-    IntensityAdjustment_layout->addWidget(IA_Intensity_Max_ratio_label,0);
-    IntensityAdjustment_layout->addWidget(IA_Max_ratio_spinbox,1);
-    QHBoxLayout *IntensityAdjustmen_layout_min=new QHBoxLayout();
-    IntensityAdjustmen_layout_min->addWidget(IA_Intensity_Min_ratio_label,0);
-    IntensityAdjustmen_layout_min->addWidget(IA_min_ratio_spinbox,1);
-    localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustment_layout,0);
-    localViewer_panel_IntensityA_layout->addLayout(IntensityAdjustmen_layout_min,0);
-    IA_layout->addLayout(localViewer_panel_IntensityA_layout,0,0,1,1);
-    IA_layout->addWidget(IA_enable_CheckBox,1,0,1,1);
-    //localViewer_panel_IntensityA_layout->addWidget(IA_enable_CheckBox,2,0,1,1);
-    IA_layout->setContentsMargins(10,5,10,5);
-    IA_panel->setLayout(IA_layout);
-    #ifdef Q_OS_LINUX
-    IA_panel->setStyle(new QWindowsStyle());
-    #endif
+
+    // Overview panel layout
+    QWidget* refSysContainer2 = new QWidget();
+    refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
+    QHBoxLayout* refSysContainerLayout2 = new QHBoxLayout();
+    refSysContainerLayout2->setContentsMargins(1,1,1,1);
+    refSysContainerLayout2->addWidget(refSys, 1);
+    refSysContainer2->setLayout(refSysContainerLayout2);
+    QGridLayout* Overview_layout = new QGridLayout();
+    Overview_layout->addWidget(refSysContainer2,   0, 0, 3, 1);
+    Overview_layout->setContentsMargins(10,30,10,30);
+    Overview_panel->setLayout(Overview_layout);
 
     //local viewer panel
     QVBoxLayout* localviewer_panel_layout= new QVBoxLayout();
@@ -933,7 +912,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(zoom_panel, 0);
     controlsLayout->addWidget(VOI_panel, 0);
     controlsLayout->addWidget(PR_panel, 0);
-    controlsLayout->addWidget(IA_panel,0);
+    controlsLayout->addWidget(Overview_panel, 0);
     controlsLayout->addStretch(1);
     #ifdef Q_OS_MAC
     controlsLayout->setContentsMargins(10,0,10,10);
@@ -1004,9 +983,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
     connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
-
-    connect(IA_enable_CheckBox,SIGNAL(toggled(bool)),this,SLOT(setIAenable(bool)));
-    connect(IA_Max_ratio_spinbox,SIGNAL(valueChanged(double)),this,SLOT(IA_MaxSpinBoxChanged(double)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -1101,6 +1077,7 @@ void PMain::reset()
     //resetting subvol panel widgets
     VOI_panel->setEnabled(false);
     PR_panel->setEnabled(false);
+    Overview_panel->setEnabled(false);
     V0_sbox->setValue(0);
     V1_sbox->setValue(0);
     H0_sbox->setValue(0);
@@ -1127,18 +1104,6 @@ void PMain::reset()
     PR_spbox->setMinimum(0);
     PR_spbox->setValue(0);
     PR_spbox->setEnabled(false);
-
-    IA_Max_ratio_spinbox->setRange(0,1);
-    IA_Max_ratio_spinbox->setDecimals(2);
-    IA_Max_ratio_spinbox->setValue(0.80);
-    IA_Max_ratio_spinbox->setSingleStep(0.01);
-    IA_Max_ratio_spinbox->setEnabled(false);
-    IA_min_ratio_spinbox->setRange(1,2);
-    IA_min_ratio_spinbox->setDecimals(2);
-    IA_min_ratio_spinbox->setValue(1.20);
-    IA_min_ratio_spinbox->setSingleStep(0.01);
-    IA_min_ratio_spinbox->setEnabled(false);
-    IA_panel->setEnabled(false);
 
     //resetting progress bar and text
     progressBar->setEnabled(false);
@@ -1787,8 +1752,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 //        T1_sbox->setMaximum(CImport::instance()->getVMapTDim()-1);
         VOI_panel->setEnabled(true);
         PR_panel->setEnabled(true);
-        IA_panel->setEnabled(true);
-
+        Overview_panel->setEnabled(true);
         //updating menu items
         /**/tf::debug(tf::LEV3, "updating menu items", __itm__current__function__);
         openTeraFlyVolumeAction->setEnabled(false);
@@ -2223,13 +2187,6 @@ bool PMain::eventFilter(QObject *object, QEvent *event)
         else if(event->type() == QEvent::Leave)
             helpBox->setText(HTbase);
     }
-    else if(object==IA_Max_ratio_spinbox||object==IA_min_ratio_spinbox&&IA_enable_CheckBox->isEnabled()&&IA_panel->isEnabled())
-    {
-        if(event->type() == QEvent::Enter)
-            helpBox->setText(HTrefsys);
-        else if(event->type() == QEvent::Leave)
-            helpBox->setText(HTbase);
-    }
     else if(object == PR_button && PR_button->isEnabled() && PR_button->text().compare("Start") == 0)
     {
         if(event->type() == QEvent::Enter)
@@ -2473,7 +2430,7 @@ void PMain::debugAction1Triggered()
 //        for(size_t z = 0; z < dst_dims[2]; z++)
 //        {
 //            printf("z%d:\n", z);
-//            size_t stride_z = z * dsfastmarching_linkert_dims[1] * dst_dims[0];
+//            size_t stride_z = z * dst_dims[1] * dst_dims[0];
 //            printf("    ");
 //            for(size_t x = 0; x < dst_dims[0]; x++)
 //                printf("x%02d ", x);
@@ -2643,13 +2600,12 @@ void PMain::setOverview(bool enabled)
     if(enabled)
     {
         isOverviewActive = true;
-        refSys->setZoom(-8.0);
+        refSys->setZoom(-6.0);
 
         int num_res = CImport::instance()->volumes.size();
         int dimX    = CImport::instance()->volumes[num_res-1]->getDIM_H();
         int dimY    = CImport::instance()->volumes[num_res-1]->getDIM_V();
         int dimZ    = CImport::instance()->volumes[num_res-1]->getDIM_D();
-
 
         CSettings::instance()->setVOIdimV(Vdim_sbox->value());
         CSettings::instance()->setVOIdimH(Hdim_sbox->value());
@@ -2666,45 +2622,17 @@ void PMain::setOverview(bool enabled)
         int ROIzS   = D0_sbox->value();
         int ROIzDim = D1_sbox->value() - D0_sbox->value();if (ROIyDim < 512) ROIyDim = 512;
 
+        refSys->nt = PluginInterface::getSWC();
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
+
     }else
     {
+        refSys->nt.listNeuron.clear();
         isOverviewActive = false;
         resetMultiresControls();
         refSys->setDims(H1_sbox->value()-H0_sbox->value()+1, V1_sbox->value()-V0_sbox->value()+1, D1_sbox->value()-D0_sbox->value()+1);
 
     }
-}
-
-void PMain::setIAenable(bool enable)
-{
-    IA_Max_ratio_spinbox->setEnabled(enable);
-    IA_min_ratio_spinbox->setEnabled(enable);
-    if(!enable)
-    {
-        //Intensity_dynamic_de=1.0;
-        //set_Intensitythreshold(1.0);
-        cout<<"exit Intensity adjustment mode"<<endl;
-    }
-    else
-    {
-        double d=IA_Max_ratio_spinbox->value();
-        //set_Intensitythreshold(d);
-        cout<<"enter Intensity adjustment mode"<<d<<endl;
-    }
-
-}
-void PMain::IA_MaxSpinBoxChanged(double d)
-{
-    if(d==0||!IA_Max_ratio_spinbox->isEnabled())
-    {
-        return;
-    }
-    //double mratio=IA_Max_ratio_spinbox->value();
-    //double d=IA_Max_ratio_spinbox->value();
-    //set_Intensitythreshold(IA_Max_ratio_spinbox->value());
-    //cout<<"the max ratio spinbox is "<<mratio<<endl;
-    //read input of Max ratio
 }
 
 void PMain::PRsetActive(bool active)
