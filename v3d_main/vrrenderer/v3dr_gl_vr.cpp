@@ -4074,13 +4074,13 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 		if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
 		{
 			int type = S1.type;
-			if (editable)
-			{
-				int ncolorused = neuron_type_color_num;
-				if (neuron_type_color_num>19)
-					ncolorused = 19;
-				type = S0.seg_id %(ncolorused -5)+5; //segment color using hanchuan's neuron_type_color
-			}
+			//if (editable) //yw 2018-05-03, this code block assigns single color (pink) to editable neuron, now disabled.
+			//{
+			//	int ncolorused = neuron_type_color_num;
+			//	if (neuron_type_color_num>19)
+			//		ncolorused = 19;
+			//	type = S0.seg_id %(ncolorused -5)+5; //segment color using hanchuan's neuron_type_color
+			//}
 			if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
 			{
 				vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
