@@ -2655,6 +2655,7 @@ void PMain::setOverview(bool enabled)
         }
 
         refSys->nt = PluginInterface::getSWC();
+        refSys->markList = PluginInterface::getLandmark();
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
 
     }else

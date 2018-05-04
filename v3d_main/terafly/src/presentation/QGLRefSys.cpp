@@ -105,6 +105,21 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             nt.listNeuron[i].z = (dimZ-nt.listNeuron[i].z) / dimZ;
         }
     }
+
+    xSoma=ySoma=zSoma=0;
+    if(markList.size()>0)
+    {
+        for(int i=0; i< markList.size();i++)
+        {
+            if(markList.at(i).comments == "soma")
+            {
+                xSoma = (markList.at(i).x * xDim) / dimX;
+                ySoma = (markList.at(i).y * yDim) / dimY;
+                zSoma = (markList.at(i).z * zDim) / dimZ;
+            }
+        }
+    }
+
     updateGL();
 }
 
@@ -291,6 +306,79 @@ void QGLRefSys::paintGL()
             glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift);
             glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
         glEnd(); // GL_LINES
+
+        if(xSoma && ySoma && zSoma)
+        {
+            glDisable(GL_DEPTH_TEST);
+            // Soma faces
+            glColor3f(1.00,1.00,1.00);
+            glBegin(GL_QUADS);
+                //---------front-----------//
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,            zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma,            zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma-0.04,       zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04,       zDim-2*zSoma);
+                //---------back----------//
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,            zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma,            zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma-0.04,       zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04,       zDim-2*zSoma-0.04);
+                //---------top-----------//
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma,            zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,            zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,            zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma,            zDim-2*zSoma-0.04);
+                //-------bottom----------//
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04,       zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04,       zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma-0.04,       zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma+0.04,      yDim-2*ySoma-0.04,       zDim-2*zSoma);
+                //--------right----------//
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,            zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04,       zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04,       zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,            zDim-2*zSoma-0.04);
+                //---------left----------//
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,            zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04,       zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04,       zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,            zDim-2*zSoma-0.04);
+            glEnd();
+
+            // Soma contour
+            glColor3f(0.0,0.0,0.0);
+            glLineWidth(1.0);
+            glBegin(GL_LINES);
+                //-------top lines---------//
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,           zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,           zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,           zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,           zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,           zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,           zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,           zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,           zDim-2*zSoma-0.04);
+                //------bottom lines-------//
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04, zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04, zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04, zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04, zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04, zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04, zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04, zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04, zDim-2*zSoma-0.04);
+                //--------side lines-------//
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,           zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04, zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,           zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04, zDim-2*zSoma-0.04);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma,           zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma,           yDim-2*ySoma-0.04, zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,           zDim-2*zSoma);
+                glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04, zDim-2*zSoma);
+            glEnd(); // GL_LINES
+        }
+
     }
 
     // CUBE CONTOUR
@@ -375,9 +463,9 @@ void QGLRefSys::paintGL()
 
 
         if(isEnabled())
-            (1.0,0.0,0.0);
+            glColor3f(1.0,0.0,0.0);
         else
-            (0.6,0.6,0.6);
+            glColor3f(0.6,0.6,0.6);
         //----------------------------------X-head----------------------------------//
         glBegin(GL_TRIANGLE_FAN);
             glVertex3f(shift+height+headHeight, 0, 0);  /* center */
