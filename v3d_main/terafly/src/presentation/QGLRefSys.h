@@ -25,6 +25,9 @@ class terafly::QGLRefSys : public QGLWidget
         QPoint lastPos;         //previous location of the mouse cursor to determine how much the object in the scene should be rotated, and in which direction
         double zoom;
         bool filled;            //equivalent to draw parallelepipedon faces (=true) or lines only (=false)
+        float xSoma;           //First soma x location (between 0.0 and 1.0)
+        float ySoma;           //First soma y location (between 0.0 and 1.0)
+        float zSoma;           //First soma z location (between 0.0 and 1.0)
     public:
 
         QGLRefSys(QWidget *parent = 0);
@@ -36,11 +39,11 @@ class terafly::QGLRefSys : public QGLWidget
         int getYRot(){return yRot;}
         int getZRot(){return zRot;}
         void setDims(int dimX, int dimY, int dimZ, int _ROIxDim=0, int _ROIyDim=0, int _ROIzDim=0, int _ROIxShift=0, int _ROIyShift=0, int _ROIzShift=0);
-        void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear();updateGL();}
+        void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); markList.clear();updateGL();}
         void setZoom(double _zoom){zoom = _zoom;}
         void resetZoom(){zoom = -15.0; updateGL();}
         NeuronTree nt;
-
+        LandmarkList markList;
 
     public slots:
 
