@@ -1216,7 +1216,10 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5,bool intensityThresholdmode=false)
 {
      long sz01 = (long)sz0*sz1;
-    cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
+     if(intensityThresholdmode)
+         cout<<"welcome to fastmarching_drawing_dynamicly (intensity threshold mode)"<<endl;
+     else
+         cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
 	assert(near_markers.size() == far_markers.size() && near_markers.size() >= 2);
 
 	MyMarker near_marker1;// = near_markers[0];
@@ -1307,7 +1310,10 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 // then do fastmarching from the first ray to last ray
 template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5,bool intensityThresholdmode=false)
 {
-    cout<<"welcome to fastmarching_drawing4"<<endl;
+    if(intensityThresholdmode)
+        cout<<"welcome to fastmarching_drawing4 (intensity threshold adjust mode)"<<endl;
+    else
+        cout<<"welcome to fastmarching_drawing4"<<endl;
 	assert(near_markers.size() == far_markers.size());
 
 	if (near_markers.empty())
