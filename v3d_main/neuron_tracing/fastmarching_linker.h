@@ -1474,7 +1474,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
     if(intensityThresholdmode)
     {
         double d;bool bbok;
-        d=QInputDialog::QInputDialog::getDouble(0,"Intensity Threshold 1%-100%","please input your number",60,1,100,5,&bbok);
+        d=QInputDialog::getDouble(0,"Intensity Threshold 1%-100%","please input your number",60,1,100,5,&bbok);
         if(bbok)
         {
             cout<<"input number is "<<d<<endl;
