@@ -77,6 +77,7 @@ int CMainApplication::m_modeControlGrip_L = 0;
 
 #define dist_thres 0.01
 #define default_radius 0.618
+#define drawing_step_size 10  //the larger, the fewer SWC nodes
 
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
@@ -708,16 +709,15 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_fTouchOldX( 0 )
 	, m_fTouchOldY( 0 )
 	, m_pickUpState(false)
-	, pick_point (-1)
+	, pick_point_index_A (-1)
+	, pick_point_index_B (-1)
 	, m_ControllerTexVAO( 0 )
 	, m_nCtrTexMatrixLocation( -1 )
 	, m_unCtrTexProgramID( 0 )
-	, m_bHasImage4D( false)//!img4d->isEmpty() )
+	, m_bHasImage4D( false)
 	, mainwindow(NULL)
 	, img4d(NULL)
 	, READY_TO_SEND(false)
-	, m_unRemoteMorphologyLineModeVAO(0)
-	, m_uiRemoteMorphologyLineModeVertcount(0)
 	, sketchNum(0)
 	, bIsUndoEnable (false)
 	, bIsRedoEnable (false)
@@ -899,9 +899,8 @@ bool CMainApplication::BInit()
 
 	loadedNTCenter = glm::vec3(0);
 	vertexcount = swccount = 0;
+	pick_node = 0;
 
-// 		m_MillisecondsTimer.start(1, this);
-// 		m_SecondsTimer.start(1000, this);
 	
 	if (!BInitGL())
 	{
@@ -977,43 +976,42 @@ bool CMainApplication::BInitGL()
 	loadedNT_merged.listNeuron.clear();
 	loadedNT_merged.hashNeuron.clear();
 
-	//merge all loaded Neuron and vaa3d_traced_neuron into one single NeuronTree 
-	//MergeNeuronTrees(loadedNT_merged,loadedNTList);
-	qDebug()<<"loadedNTList->size()"<<loadedNTList->size();
-	if( loadedNTList->size()>0) 
-		loadedNT_merged = loadedNTList->at(0); //because the first loaded NeuronTree may be not in order, so just push it into loadedNT_merged
-	if(loadedNTList->size()>1)
+	//merge all loaded Neuron (as non-editable Neuron) into one single NeuronTree ,then display
+	qDebug()<<"loadedNTList->size()"<<loadedNTList->size()<<"  editableNTL size is"<<this->editableLoadedNTL.size()<<" non editable NTL size is "<<this->nonEditableLoadedNTL.size();
+	 if( nonEditableLoadedNTL.size()>0) 
+	 	loadedNT_merged =  nonEditableLoadedNTL.at(0); //because the first loaded NeuronTree may be not in order, so just push it into loadedNT_merged
+	 if( nonEditableLoadedNTL.size()>1)
+	 {
+	 	for(int i=1;i< nonEditableLoadedNTL.size();i++)
+	 	{
+	 		NTL curNTL;
+	 		NeuronTree curNT =  nonEditableLoadedNTL.at(i);
+	 		curNTL.push_back(curNT);
+	 		qDebug()<<"curNTL->size()"<<curNTL.size();
+	 		MergeNeuronTrees(loadedNT_merged,&curNTL);
+	 		curNTL.clear();
+	 	}
+	 }
+
+	//convert vaa3d_traced_neuron (as editable neuron) to V_NeuronSWC_list with all segments
+	for(int j=0;j<editableLoadedNTL.size();j++)
 	{
-		qDebug()<<"loadedNTList->size()"<<loadedNTList->size();
-		for(int i=1;i<loadedNTList->size();i++)
+		NeuronTree SingleTree = editableLoadedNTL.at(j);
+		V_NeuronSWC_list testVNL = NeuronTree__2__V_NeuronSWC_list(SingleTree);
+		for(int i= 0;i<testVNL.seg.size();i++)
 		{
-			NTL curNTL;
-			NeuronTree curNT = loadedNTList->at(i);
-			curNTL.push_back(curNT);
-			qDebug()<<"curNTL->size()"<<curNTL.size();
-			MergeNeuronTrees(loadedNT_merged,&curNTL);
-			curNTL.clear();
+			NeuronTree SS;
+			//convert each segment to NeuronTree with one single path
+			V_NeuronSWC seg_temp =  testVNL.seg.at(i);
+			SS = V_NeuronSWC__2__NeuronTree(seg_temp);
+			//append to editable sketchedNTList
+			SS.name = "loaded_" + QString("%1").arg(i);
+			if (SS.listNeuron.size()>0)
+				sketchedNTList.push_back(SS);
 		}
 	}
-
-	//convert NeuronTree loadedNT_merged to V_NeuronSWC_list with all segments
-	//for(int j=0;j<loadedNTList->size();j++)
-	//{
-	//	NeuronTree SingleTree = loadedNTList->at(j);
-	//	V_NeuronSWC_list testVNL = NeuronTree__2__V_NeuronSWC_list(SingleTree);
-	//	for(int i= 0;i<testVNL.seg.size();i++)
-	//	{
-	//		NeuronTree SS;
-	//		//convert each segment to NeuronTree with one single path
-	//		V_NeuronSWC seg_temp =  testVNL.seg.at(i);
-	//		SS = V_NeuronSWC__2__NeuronTree(seg_temp);
-	//		//append to editable sketchedNTList
-	//		SS.name = "loaded_" + QString("%1").arg(i);
-	//		if (SS.listNeuron.size()>0)
-	//			sketchedNTList.push_back(SS);
-	//	}
-	//}
-	//MergeNeuronTrees();
+	// set up each NT in sketchedNTList morphology line VAO&VBO
+	SetupAllMorphologyLine();
 
 	SetupGlobalMatrix();
 	
@@ -1089,7 +1087,7 @@ void CMainApplication::Shutdown()
 			{
 				contained = true;
 				SS.n = 1+i;
-				SS = loadedNTList->at(i);
+				//SS = loadedNTList->at(i);
 				MergeNeuronTrees(SS,&sketchedNTList);
 				loadedNTList->replace(i, SS); 
 				break;
@@ -1097,6 +1095,7 @@ void CMainApplication::Shutdown()
 		}
 		if (!contained ) 
 		{
+			// no this file then add it
 			SS.n = 1+loadedNTList->size();
 			MergeNeuronTrees(SS,&sketchedNTList);
 			loadedNTList->append(SS);
@@ -1107,42 +1106,8 @@ void CMainApplication::Shutdown()
 		img4d->tracedNeuron.name = "vaa3d_traced_neuron";
 		img4d->tracedNeuron.file = "vaa3d_traced_neuron";
 		img4d->proj_trace_history_append();
-		img4d->update_3drenderer_neuron_view();
-		//merge all curves in loadedNTlist & sketchNTlist into "vaa3d_traced_neuron"
-		//if(m_bHasImage4D)
-		//{
-		//	NeuronTree SS;
-		//	SS.n = -1;
-		//	//SS.color = XYZW(seg.color_uc[0],seg.color_uc[1],seg.color_uc[2],seg.color_uc[3]);
-		//	SS.on = true;
-		//	SS.name = "vaa3d_traced_neuron";
-		//	SS.file = "vaa3d_traced_neuron";
-		//	// add or replace into listNeuronTree
-		//	MergeNeuronTrees(SS,loadedNTList);
-		//	MergeNeuronTrees(SS,&sketchedNTList);
-		//	loadedNTList->clear();
-		//	loadedNTList->append(SS);
-		//	////////update image4d->tracedneuron
-		//	img4d->tracedNeuron_old = img4d->tracedNeuron; 
-		//	img4d->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(SS);
-		//	img4d->tracedNeuron.name = "vaa3d_traced_neuron";
-		//	img4d->tracedNeuron.file = "vaa3d_traced_neuron";
-		//	img4d->proj_trace_history_append();
-		//}
+		// img4d->update_3drenderer_neuron_view();
 
-
-
-
-		//loadedNTList->append(tempNT);
-
-		//MergeNeuronTrees(tempNT,loadedNTList);
-		//qDebug()<<"tempNT.size()"<<tempNT.listNeuron.size();
-		//if (m_bHasImage4D)  mainwindow->setSWC(img4d->getXWidget(),tempNT);
-		//for (int i=0; i<loadedNTList->size(); i++)
-		//	(*loadedNTList)[i].editable = false; //090928
-		//mainwindow->update();
-		//mainwindow->getROI();
-		//qDebug()<<"tracedNeuron.size()"<<img4d->tracedNeuron.nsegs();
 	}
 	if(drawnMarkerList.size()>0)
 	{
@@ -1246,6 +1211,20 @@ void CMainApplication::Shutdown()
 			glDeleteProgram( m_unCtrTexProgramID );
 		}
 
+		
+		if (iSketchNTLMorphologyVAO.size()>0)
+		{
+			for(int i=0;i<iSketchNTLMorphologyVAO.size();i++)
+			{
+				glDeleteVertexArrays( 1, &iSketchNTLMorphologyVAO.at(i) );
+				glDeleteBuffers(1, &iSketchNTLMorphologyVertBuffer.at(i));
+				glDeleteBuffers(1, &iSketchNTLMorphologyIndexBuffer.at(i));
+			}
+			iSketchNTLMorphologyVAO.clear();
+			iSketchNTLMorphologyVertBuffer.clear();
+			iSketchNTLMorphologyIndexBuffer.clear();
+			iSketchNTLMorphologyVertcount.clear();
+		}
 
 		//for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
 		//{
@@ -1298,7 +1277,6 @@ void CMainApplication::Shutdown()
 
 		if(ctrSphere)
 			delete ctrSphere;
-
 		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
 		//for (int i=0;i<sketch_spheres.size();i++) delete sketch_spheres[i];
@@ -1326,9 +1304,8 @@ void CMainApplication::Shutdown()
 
 		sketchedNTList.clear();
 		drawnMarkerList.clear();
-		
-		
 
+		if(pick_node)  pick_node = 0;
 		if( m_unMorphologyLineModeVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unMorphologyLineModeVAO );
@@ -1343,12 +1320,6 @@ void CMainApplication::Shutdown()
 			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
 		}
 
-		if( m_unRemoteMorphologyLineModeVAO != 0 )
-		{
-			glDeleteVertexArrays( 1, &m_unRemoteMorphologyLineModeVAO );
-			glDeleteBuffers(1, &m_glRemoteMorphologyLineModeVertBuffer);
-			glDeleteBuffers(1, &m_glRemoteMorphologyLineModeIndexBuffer);
-		}
 		if( m_VolumeImageVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
@@ -1461,7 +1432,8 @@ bool CMainApplication::HandleInput()
 				if(m_modeGrip_R==m_drawMode)
 				{
 					//this part is for building a neuron tree to further save as SWC file
-					if (vertexcount%10 ==0)//use vertexcount to control point counts in a single line
+					if (vertexcount%drawing_step_size ==0)//use vertexcount to control point counts in a single line
+					//each #drawing_step_size frames render a SWC node
 					{
 						const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 						glm::mat4 mat = glm::mat4();
@@ -1475,7 +1447,7 @@ bool CMainApplication::HandleInput()
 						mat=glm::inverse(m_globalMatrix) * mat;
 						glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
 
-						swccount++;//for every 10 frames we store a point as a neuronswc point,control with swccount
+						swccount++;//for every 10(#drawing_step_size) frames we store a point as a neuronswc point,control with swccount
 						NeuronSWC SL0;
 						SL0.x = m_v4DevicePose.x ;
 						SL0.y = m_v4DevicePose.y ;
@@ -1483,14 +1455,9 @@ bool CMainApplication::HandleInput()
 						SL0.r = default_radius; //set default radius 1
 						SL0.type = m_curMarkerColorType;//set default type 11:ice
 						SL0.n = currentNT.listNeuron.size()+1;
-						if(swccount==1)
+						if((swccount==1)||(vertexcount == 0))
 						{
-							SL0.pn = -1;//for the first point , it's parent must be -1
-							//qDebug("Successfully run here.SL0.pn=%d\n",SL0.pn);	
-						}
-						else if(vertexcount == 0)
-						{
-							SL0.pn = -1;//for the first point of each lines, it's parent must be -1	
+							SL0.pn = -1;//for the first point of each lines , it's parent must be -1	
 						}
 						else
 						{
@@ -1500,7 +1467,7 @@ bool CMainApplication::HandleInput()
 						currentNT.hashNeuron.insert(SL0.n, currentNT.listNeuron.size()-1);//store NeuronSWC SL0 into currentNT
 						if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawing
 						{
-							//wwbmark
+							// for each 10 nodes/points, call virtual finger once aiming to see the line's mid-result
 							if((currentNT.listNeuron.size()>0)&&(currentNT.listNeuron.size()%10==0))
 							{	
 								qDebug()<<"size%10==0 goto charge isAnyNodeOutBBox";
@@ -1567,52 +1534,46 @@ bool CMainApplication::HandleInput()
 					{
 						float dist = 0;
 						float minvalue = 10.f;
-						for(int i = 0; i<sketchedNT_merged.listNeuron.size();i++)
-						{
-							NeuronSWC SS0;
-							SS0 = sketchedNT_merged.listNeuron.at(i);
-							dist = glm::sqrt((ctrlRightPos.x-SS0.x)*(ctrlRightPos.x-SS0.x)+(ctrlRightPos.y-SS0.y)*(ctrlRightPos.y-SS0.y)+(ctrlRightPos.z-SS0.z)*(ctrlRightPos.z-SS0.z));
-							//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
-							if(dist > (dist_thres/m_globalScale*5))
-								continue;
-							minvalue = glm::min(minvalue,dist);
-							if(minvalue==dist)
-								pick_point = i;
-
-						}
-						if(pick_point!=-1){
-							m_pickUpState = true;
-							qDebug("pick up %d point.",pick_point);}
-					}
-					else if(pick_point!=-1)//when pick up a node
-					{
-						m_pickUpState = true;
-						NeuronSWC SS1;
-						SS1 = sketchedNT_merged.listNeuron.at(pick_point);//SS1 is the pick node in sketchedNT_merged
 						for(int i=0;i<sketchedNTList.size();i++)
 						{
 							NeuronTree nt = sketchedNTList.at(i);
 							for(int j=0;j<nt.listNeuron.size();j++)
 							{
-								NeuronSWC S1 = nt.listNeuron.at(j);
-								if((SS1.x==S1.x)&&(SS1.y==S1.y)&&(SS1.z==S1.z))//find the same node as the pick node in sketchedNTList
+								NeuronSWC SS0;
+								SS0 = nt.listNeuron.at(j);
+								dist = glm::sqrt((ctrlRightPos.x-SS0.x)*(ctrlRightPos.x-SS0.x)+(ctrlRightPos.y-SS0.y)*(ctrlRightPos.y-SS0.y)+(ctrlRightPos.z-SS0.z)*(ctrlRightPos.z-SS0.z));
+								//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
+								if(dist > (dist_thres/m_globalScale*5))
+									continue;
+								minvalue = glm::min(minvalue,dist);
+								if(minvalue==dist)
 								{
-									dragnodePOS="";
-									dragnodePOS = QString("%1 %2").arg(i).arg(j);
-									dragnodePOS += QString(" %1 %2 %3").arg(ctrlRightPos.x).arg(ctrlRightPos.y).arg(ctrlRightPos.z);
-									S1.x = ctrlRightPos.x;
-									S1.y = ctrlRightPos.y;
-									S1.z = ctrlRightPos.z;
-									sketchedNTList[i].listNeuron[j] = S1;//replace it
-									MergeNeuronTrees();
-									//no matter is online or not,  update node position in sketchedNT_merged&sketchedNTList, but set color as white for temp
-									//when receieve dragnode message , update node in sketchedNTList, and then color will be normal.
-									break;
+									pick_node = &sketchedNTList[i].listNeuron[j];
+									pick_point_index_A = i;
+									pick_point_index_B = j;
 								}
 							}
+
 						}
+						if(pick_point_index_B!=-1){
+							m_pickUpState = true;
+							qDebug("pick up %d, %d point.",pick_point_index_A,pick_point_index_B);}
+					}
+					else if(pick_point_index_B!=-1)//when pick up a node
+					{
+						dragnodePOS="";
+						dragnodePOS = QString("%1 %2").arg(pick_point_index_A).arg(pick_point_index_B);
+						dragnodePOS += QString(" %1 %2 %3").arg(ctrlRightPos.x).arg(ctrlRightPos.y).arg(ctrlRightPos.z);
+
+						pick_node->x = ctrlRightPos.x;
+						pick_node->y = ctrlRightPos.y;
+						pick_node->z = ctrlRightPos.z;
+
+						SetupSingleMorphologyLine(pick_point_index_A,1);
+
 						if(isOnline)
-							sketchedNT_merged.listNeuron[pick_point].type = 0;
+							pick_node->type = 0;
+							// sketchedNT_merged.listNeuron[pick_point].type = 0;
 						qDebug()<<"finish update nearest node location";
 					}
 				}
@@ -1621,7 +1582,8 @@ bool CMainApplication::HandleInput()
 			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
 			{
 				m_pickUpState = false;
-				pick_point = -1;
+				pick_point_index_A = -1;
+				pick_point_index_B = -1;
 			}//whenever the touchpad is unpressed, reset m_pickUpState and pick_point
 
 			//whenever touchpad is unpressed, set bool flag  m_TouchFirst = true;
@@ -1899,7 +1861,7 @@ void CMainApplication::RunMainLoop()
 	}
 	SDL_StopTextInput();
 }
-
+// using in VR_MainWindow.cpp
 bool CMainApplication::HandleOneIteration()
 {
 	bool bQuit = false;
@@ -2046,7 +2008,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 
 void CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type)
 {
-	bool deletedmarker=false;
+	// bool deletedmarker=false;
 	//remove the marker in list 
 	for(int i=0;i<drawnMarkerList.size();i++)
 	{
@@ -2061,7 +2023,7 @@ void CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
 			Markers_spheres.erase(Markers_spheres.begin()+i);
 			Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
 			Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
-			deletedmarker = true;
+			// deletedmarker = true;
 			break;
 		}
 	}
@@ -2142,7 +2104,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			m_modeGrip_L = _Freeze;
 			break;
 		case 9:
-			m_modeGrip_L = _LineWidth;_AutoRotate;
+			m_modeGrip_L = _LineWidth;
 			break;
 		case 10:
 			m_modeGrip_L = _AutoRotate;
@@ -2219,8 +2181,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				else
 				{
-					 //UndoLastSketchedNT();
-					 //MergeNeuronTrees();
 					fContrast-=1;
 					if (fContrast<1)
 						fContrast = 1;
@@ -2236,12 +2196,12 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				if(temp_x>0)
 				{
 					 RedoLastSketchedNT();
-					 MergeNeuronTrees();
+					 SetupAllMorphologyLine();
 				}
 				else
 				{
 					 UndoLastSketchedNT();
-					 MergeNeuronTrees();
+					 SetupAllMorphologyLine();
 				}
 				break;
 			}
@@ -2294,13 +2254,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _TeraShift:
 			{
-				// if(temp_x>0)
-				// {
-				// 	postVRFunctionCallMode = 1;
-				// }
-				// else
-				// 	postVRFunctionCallMode = 2;
-
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -2642,7 +2595,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 						//check if the candidate is qualified
 						if (min_dist < (dist_thres/m_globalScale*5) || 
-							((min_dist < 5*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+							((min_dist < 2*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
 						{
 							bNodeChanged = true; //no need to try to match end node
 							beginNode->x = min_node.x;
@@ -2676,7 +2629,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							}
 
 							if (min_dist < (dist_thres/m_globalScale*5) || 
-								((min_dist < 5*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+								((min_dist < 3*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
 							{
 								endNode->x = min_node.x;
 								endNode->y = min_node.y;
@@ -2704,9 +2657,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						currentNT.name = "sketch_"+QString("%1").arg(sketchNum++);
 						qDebug()<<currentNT.name;
 						sketchedNTList.push_back(currentNT);
+						int lIndex = sketchedNTList.size() - 1;
+						qDebug()<<"index = "<<lIndex;
+						SetupSingleMorphologyLine(lIndex,0);
 						currentNT.listNeuron.clear();
 						currentNT.hashNeuron.clear();		
-						MergeNeuronTrees();
 					}
 					swccount=0;
 				}
@@ -2748,7 +2703,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 					else
 						qDebug()<<"Cannot Find the Segment ";
-					MergeNeuronTrees();
 				}
 				break;
 			}
@@ -2810,9 +2764,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		READY_TO_SEND=true;
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_Grip)&&(event.eventType==vr::VREvent_ButtonUnpress))
-	{	//use grip button(right) to clear all the lines been drawn on the HMD
-		////is it necessary if there is delete mode?
-		//ClearSketchNT();
+	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
+
 		m_modeControlGrip_R++;
 		m_modeControlGrip_R%=5;
 		switch(m_modeControlGrip_R)
@@ -2840,7 +2793,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
 		////bool_ray = true;
-		if(!sketchedNT_merged.listNeuron.empty())
+		if(sketchedNTList.size()>0)
 		{   //save swc to file
 			QDateTime mytime = QDateTime::currentDateTime();
 			QString imageName = "FILE";
@@ -2849,7 +2802,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			QString name = qsl.back();
 			QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
 			//shift the neuron nodes to get global coordinates
-			writeSWC_file(filename, sketchedNT_merged);	
+			NeuronTree mergedSketchNTL;
+			MergeNeuronTrees(mergedSketchNTL,&sketchedNTList);
+			writeSWC_file(filename, mergedSketchNTL);	
 			qDebug("Successfully writeSWC_file");
 		}
 
@@ -2882,17 +2837,9 @@ bool CMainApplication::isAnyNodeOutBBox(NeuronSWC S_temp)
 	else
 		return false;
 }
-//merge Ntlist to one single neutontree sketchedNT_merged
-void CMainApplication::MergeNeuronTrees()
-{
-	sketchedNT_merged.listNeuron.clear();
-	sketchedNT_merged.hashNeuron.clear();
-	MergeNeuronTrees(sketchedNT_merged,&sketchedNTList);
-	bUpdateFlag = true;
-}
 
-//merge NTlist( from mainwindow->listneurontrees) to loadedNT_merged
-void CMainApplication::MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist)//or can be MergeNTList2remoteNT(QList<> ntlist, NeuronTree nt)
+//merge NTlist to Neuron Tree
+void CMainApplication::MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist)
 {
 
 
@@ -2928,13 +2875,9 @@ void CMainApplication::RenderFrame()
 		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();
 		SetupControllerTexture();
-		SetupMorphologyLine(1);//for currently drawn stroke
-		//qDebug()<<sketchedNT_merged.listNeuron.size();
-		if(bUpdateFlag) 
-		{
-			SetupMorphologyLine(2);
-			bUpdateFlag = false;
-		}//for all (synchronized) sketched strokes
+		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
+
+		//for all (synchronized) sketched strokes
 		//SetupMorphologySurface(currentNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
 
@@ -4010,14 +3953,15 @@ void CMainApplication::SetupMorphologyLine( int drawMode)//pass 3 parameters: &n
 	{
 		SetupMorphologyLine(loadedNT_merged,m_unMorphologyLineModeVAO,m_glMorphologyLineModeVertBuffer,m_glMorphologyLineModeIndexBuffer,m_uiMorphologyLineModeVertcount,drawMode);
 	}
-	else if(drawMode==1)//1 means drawmode = 1, which means this function is called in mainloop
+	else if(drawMode==1)//1 means drawmode = 1, set up currentNT's VAO&VBO
 	{
 		SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,drawMode);
 	}
-	else if(drawMode==2)// 2 for remote sketch swc
-	{
-		SetupMorphologyLine(sketchedNT_merged,m_unRemoteMorphologyLineModeVAO,m_glRemoteMorphologyLineModeVertBuffer,m_glRemoteMorphologyLineModeIndexBuffer,m_uiRemoteMorphologyLineModeVertcount,drawMode);
-	}
+	// else if(drawMode==2)// 2 for setting up sketchNTL's VAO&VBO
+	// {
+	// 	SetupMorphologyLine(sketchedNT_merged,m_unRemoteMorphologyLineModeVAO,m_glRemoteMorphologyLineModeVertBuffer,m_glRemoteMorphologyLineModeIndexBuffer,m_uiRemoteMorphologyLineModeVertcount,drawMode);
+	// }
+
 }//*/
 
 
@@ -4106,7 +4050,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 		//qDebug("color---- %f,%f,%f\n",vcolor_load[0],vcolor_load[1],vcolor_load[2]);
 
 		glm::vec3 vcolor_draw(0.5,0.5,0.5);// for locally drawn structures that has not been synchronized yet.
-		glm::vec3 vcolor_remote(1,0,0);//red
+		// glm::vec3 vcolor_remote(1,0,0);//red
 		//vertices[2*(S1.n-1)+1] = (drawMode==0) ? vcolor_load : vcolor_draw;
 		//vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
 		if(drawMode==0)
@@ -4882,7 +4826,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			}
 		}
 		Matrix4 model_M =  GetCurrentViewProjectionMatrix(nEye) * globalMatrix_M;//eaquls m_mat4ProjectionRight * m_mat4eyePosRight *  m_mat4HMDPose * global;
-		//draw loaded lines
+		//draw loaded lines (nonEditableLoadedNTL)
 		glUseProgram(m_unControllerTransformProgramID);
 		glUniformMatrix4fv(m_nControllerMatrixLocation, 1, GL_FALSE,model_M.get());//GetCurrentViewProjectionMatrix(nEye).get());// model = globalmatrix * model;?
 
@@ -4892,19 +4836,18 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glDrawElements(GL_LINES, m_uiMorphologyLineModeVertcount, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
-		//draw sketch lines
-		glUseProgram(m_unControllerTransformProgramID);
-		glUniformMatrix4fv(m_nControllerMatrixLocation, 1, GL_FALSE, model_M.get());//GetCurrentViewProjectionMatrix(nEye).get());// model = globalmatrix * model;?
+		//draw currently sketch lines(currentNT)
 		glBindVertexArray(m_unSketchMorphologyLineModeVAO);
 		glDrawElements(GL_LINES, m_uiSketchMorphologyLineModeVertcount, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
-		//draw remote sketch lines
-		glUseProgram(m_unControllerTransformProgramID);
-		glUniformMatrix4fv(m_nControllerMatrixLocation, 1, GL_FALSE, model_M.get());//GetCurrentViewProjectionMatrix(nEye).get());// model = globalmatrix * model;?
-		glBindVertexArray(m_unRemoteMorphologyLineModeVAO);
-		glDrawElements(GL_LINES, m_uiRemoteMorphologyLineModeVertcount, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+		//draw all sketch lines(sketchedNTList)
+		for(int i=0;i<sketchedNTList.size();i++)
+		{
+			glBindVertexArray(iSketchNTLMorphologyVAO.at(i));
+			glDrawElements(GL_LINES, iSketchNTLMorphologyVertcount.at(i), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+		}
 	}
 	//=================== draw the controller axis lines ======================
 	bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
@@ -5228,8 +5171,7 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 	}//*/
 	sketchedNTList.push_back(newTempNT);
 	qDebug()<<"receieved nt name is "<<newTempNT.name;
-	MergeNeuronTrees(); 
-	//updateremoteNT
+	SetupSingleMorphologyLine(sketchedNTList.size()-1,0);
 }
 void CMainApplication::ClearCurrentNT()
 {
@@ -5283,7 +5225,7 @@ void CMainApplication::UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,f
 	ss.z = nodez;
 	sketchedNTList[ntnum].listNeuron[swcnum]=ss;
 	qDebug()<<"Successfully update node location.";
-	MergeNeuronTrees();
+	SetupSingleMorphologyLine(ntnum,1);
 }
 
 bool CMainApplication::DeleteSegment(QString segName)
@@ -5298,6 +5240,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 		{
 			//delete the segment in NTList,then return
 			sketchedNTList.removeAt(i);
+			SetupSingleMorphologyLine(i,2);
 			return true;
 		}
 	}
@@ -6071,5 +6014,63 @@ void CGLRenderModel::Draw()
 	glBindVertexArray( 0 );
 }
 
+void CMainApplication::SetupSingleMorphologyLine(int ntIndex, int processMode)
+{
+	qDebug()<<"index = "<< ntIndex<<" and mode ="<<processMode;
+	if (processMode == 0)
+	// add a new VAO&VBO for new segment in sketchedNTList
+	{
+		iSketchNTLMorphologyVAO.push_back(0);
+		iSketchNTLMorphologyVertBuffer.push_back(0);
+		iSketchNTLMorphologyIndexBuffer.push_back(0);	
+		iSketchNTLMorphologyVertcount.push_back(0);
+		SetupMorphologyLine(sketchedNTList.at(ntIndex),iSketchNTLMorphologyVAO.at(ntIndex),iSketchNTLMorphologyVertBuffer.at(ntIndex),iSketchNTLMorphologyIndexBuffer.at(ntIndex),iSketchNTLMorphologyVertcount.at(ntIndex),2);
+	}
+	else if (processMode == 1)
+	// changed a node's pos in dragmode ,then reset the VAO&VBO at ntIndex 
+	{
+		SetupMorphologyLine(sketchedNTList.at(ntIndex),iSketchNTLMorphologyVAO.at(ntIndex),iSketchNTLMorphologyVertBuffer.at(ntIndex),iSketchNTLMorphologyIndexBuffer.at(ntIndex),iSketchNTLMorphologyVertcount.at(ntIndex),2);
+	}
+	else if (processMode == 2)
+	// deleted a segment in sketchedNTList, then delete the related VAO&VBO at ntIndex
+	{
+		if( iSketchNTLMorphologyVAO.at(ntIndex) != 0 )
+		{
+			
+			glDeleteVertexArrays( 1, &iSketchNTLMorphologyVAO.at(ntIndex) );
+			glDeleteBuffers(1, &iSketchNTLMorphologyVertBuffer.at(ntIndex));
+			glDeleteBuffers(1, &iSketchNTLMorphologyIndexBuffer.at(ntIndex));
 
+			iSketchNTLMorphologyVAO.erase(iSketchNTLMorphologyVAO.begin()+ntIndex);
+			iSketchNTLMorphologyVertBuffer.erase(iSketchNTLMorphologyVertBuffer.begin()+ntIndex);
+			iSketchNTLMorphologyIndexBuffer.erase(iSketchNTLMorphologyIndexBuffer.begin()+ntIndex);
+			iSketchNTLMorphologyVertcount.erase(iSketchNTLMorphologyVertcount.begin()+ntIndex);
+			qDebug()<<"Delete VAO done";
+		}
+	}
+}
 
+void CMainApplication::SetupAllMorphologyLine()
+{
+	if (iSketchNTLMorphologyVAO.size()>0)
+	// >0 means needs to reset all the buffers
+	{
+		for(int i=0;i<iSketchNTLMorphologyVAO.size();i++)
+		{
+			glDeleteVertexArrays( 1, &iSketchNTLMorphologyVAO.at(i) );
+			glDeleteBuffers(1, &iSketchNTLMorphologyVertBuffer.at(i));
+			glDeleteBuffers(1, &iSketchNTLMorphologyIndexBuffer.at(i));
+		}
+		iSketchNTLMorphologyVAO.clear();
+		iSketchNTLMorphologyVertBuffer.clear();
+		iSketchNTLMorphologyIndexBuffer.clear();
+		iSketchNTLMorphologyVertcount.clear();
+	}
+
+	// for each segment in sketchedNTL ,add its VAO&VBO
+	for(int i=0;i<sketchedNTList.size();i++)
+	{
+		SetupSingleMorphologyLine(i,0);
+	}
+	qDebug()<<"Set up all NTs' VAO&VBO done";
+}

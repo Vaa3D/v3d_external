@@ -103,7 +103,6 @@ public:
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
 	bool DeleteSegment(QString segName);
-	void MergeNeuronTrees();//merge NTlist to single neurontree
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);
 	void UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,float nodey,float nodez);
@@ -124,6 +123,8 @@ public:
 	void SetupMorphologyLine(int drawMode);
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
+	void SetupSingleMorphologyLine(int ntIndex, int procvessMode = 0);
+	void SetupAllMorphologyLine();
 
 	void SetupMarkerandSurface(double x,double y,double z,int type =3);
 	void SetupMarkerandSurface(double x,double y,double z,int colorR,int colorG,int colorB);
@@ -167,6 +168,8 @@ public:
 	MainWindow *mainwindow;
 	My4DImage *img4d;
 	QList<NeuronTree> *loadedNTList; // neuron trees brought to the VR view from the 3D view.	
+	NTL editableLoadedNTL;
+	NTL nonEditableLoadedNTL;
 	bool READY_TO_SEND;
 	bool isOnline;
 	ModelControlR  m_modeGrip_R;
@@ -190,13 +193,11 @@ private:
 	bool m_bShowMorphologyLine;
 	bool m_bShowMorphologySurface;
 	bool m_bControllerModelON;
-	bool bUpdateFlag;
-	
+
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
-	NeuronTree sketchedNT_merged;//merged result of sketchedNTList, sketchedNT_merged
 	NeuronTree currentNT;// currently drawn stroke of neuron
 	
 	NeuronTree tempNT;//used somewhere, can be change to a local variable
@@ -252,7 +253,9 @@ private: // OpenGL bookkeeping
 	float m_fTouchOldX;
 	float m_fTouchOldY;
 
-	int pick_point;
+	int pick_point_index_A;
+	int pick_point_index_B;
+	NeuronSWC * pick_node;
 
 	float detX;
 	float detY;
@@ -315,12 +318,6 @@ private: // OpenGL bookkeeping
 	GLuint m_glSketchMorphologyLineModeVertBuffer;
 	GLuint m_glSketchMorphologyLineModeIndexBuffer;
 	unsigned int m_uiSketchMorphologyLineModeVertcount;
-
-
-	GLuint m_unRemoteMorphologyLineModeVAO;//for remote Remote swc
-	GLuint m_glRemoteMorphologyLineModeVertBuffer;
-	GLuint m_glRemoteMorphologyLineModeIndexBuffer;
-	unsigned int m_uiRemoteMorphologyLineModeVertcount;
 
 
 
@@ -404,6 +401,12 @@ private: // OpenGL bookkeeping
 	std::vector< CGLRenderModel * > m_vecRenderModels; //note: a duplicated access to below. used in shutdown destroy, check existence routines;
 	CGLRenderModel *m_rTrackedDeviceToRenderModel[ vr::k_unMaxTrackedDeviceCount ]; //note: maintain all the render models for VR devices; used in drawing
 
+
+	//sketchNTL all NTs' VAO&VBO
+	vector<GLuint> iSketchNTLMorphologyVAO;
+	vector<GLuint> iSketchNTLMorphologyVertBuffer;
+	vector<GLuint> iSketchNTLMorphologyIndexBuffer; 
+	vector<unsigned int> iSketchNTLMorphologyVertcount;
 /***********************************
 ***    volume image rendering    ***
 ***********************************/
