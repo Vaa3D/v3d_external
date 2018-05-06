@@ -1441,12 +1441,17 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
      bool b_useTiltedBB  = false;             // use tilted BB
      bool b_useSerialBBox=false; //added by PHC 20120405
+     bool b_useTiltedBB_or_Global=false;//added by jsd 20180505. global and bbox mode for the adjustment of intensity threshold
 
      if(selectMode == smCurveUseStrokeBB_fm)
      {
           b_useStrokeBB = true;
           b_use2PointsBB = !b_useStrokeBB;
           b_useTiltedBB =  !b_useStrokeBB;
+     }
+     if(selectMode==smCurveTiltedBB_fm||selectMode==smCurveTiltedBB_fm_sbbox)
+     {
+         b_useTiltedBB_or_Global=true;
      }
 
      if(selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox 
@@ -1768,9 +1773,21 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
              }
 
              // all pImg are unsigned char now
-             b_res = (b_useSerialBBox) ?
+             int modetest=0;//by shengdianjiang.20180505.add a shortcut of intensity threshold adjustment
+             if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier)&&b_useTiltedBB_or_Global)
+             {
+                 modetest=1;
+             }
+             if(modetest==0)
+                 b_res = (b_useSerialBBox) ?
                   fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5)
                   : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5);
+             else if(modetest==1)
+             {
+                 b_res=(b_useSerialBBox)?
+                             fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5,true)
+                             : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, (unsigned char*)pImg, outswc, szx, szy, szz, 1, 5,true);
+             }
 
              // delete pImg created for two datatypes
              if(datatype == V3D_UINT16 || datatype == V3D_FLOAT32)
