@@ -1268,11 +1268,9 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 		for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
 
 	}
-
-    }
 	// extract the best trajectory
 	double min_score = 0;
-    	MyMarker * min_marker = 0;
+    MyMarker * min_marker = 0;
 	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++)
 	{
 		MyMarker * marker = it->first;
@@ -1282,7 +1280,7 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 			min_score = score;
 			min_marker = marker;
 		}
-	}
+    }
 	MyMarker * p = min_marker;
 	MyMarker * new_marker = new MyMarker(p->x, p->y, p->z); outswc.push_back(new_marker);
 	MyMarker * child_marker = new_marker;
