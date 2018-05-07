@@ -10,13 +10,9 @@
 #include "NeuronContextMenu.h"
 #include "Stereo3dMode.h"
 #include "../render/ActorGL.h"
+#include "ScaleBar.h"
 #include "boost/shared_ptr.hpp"
 #include <stdint.h>
-
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
-#include <GLES3\gl3.h>
-#include <GL\glew.h>
-#endif
 
 class RendererNeuronAnnotator;
 class DataColorModel;
@@ -126,14 +122,19 @@ public slots:
     void resetRotation();
     void translateImage(int dx, int dy);
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
+    void showScaleBar(bool b) {
+        if (bPaintScaleBar == b) return;
+        bPaintScaleBar = b;
+        update();
+    }
     void updateHighlightNeurons();
     void onMouseSingleClick(QPoint pos);
     void onNotSingleClick();
     void onPossibleSingleClickAlert();
     virtual void updateImageData();
-    void setXCutLock(int b);
-    void setYCutLock(int b);
-    void setZCutLock(int b);
+    void setXCutLock(bool b);
+    void setYCutLock(bool b);
+    void setZCutLock(bool b);
     void setStereoOff(bool);
     void setStereoLeftEye(bool);
     void setStereoRightEye(bool);
@@ -174,6 +175,8 @@ protected slots:
 
 public:
     QElapsedTimer widgetStopwatch;
+    float xVoxelSizeInMicrons;
+    bool bPaintScaleBar;
 
 protected:
     // bool tryUpdateFullVolume();
@@ -185,6 +188,7 @@ protected:
     static int round(double d);
     static bool anglesAreEqual(int a1, int a2); // in degrees
     virtual void paintGL();
+    virtual void paintEvent(QPaintEvent *event);
 
     // Nov 2012
     // Move paint functions from RendererNeuronAnnotator into Na3DWidget,
@@ -240,6 +244,8 @@ protected:
 
     mutable Vector3D cachedDefaultFocus;
     mutable bool cachedDefaultFocusIsDirty;
+
+    ScaleBar scaleBar;
 
     // Nov 2012 ActorGL architecture
 public:

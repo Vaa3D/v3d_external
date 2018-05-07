@@ -15,8 +15,7 @@
 #include "../utility/DataThread.h"
 #include "../utility/JacsUtil.h"
 #include <QModelIndex>
-
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#ifdef USE_Qt5
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -227,6 +226,10 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
     ui->annotatedBranchTreeView->resizeColumnToContents(0);
     if (openStack) {
         QString path = annotatedBranch->getFilePath();
+        QString li_path = annotatedBranch->getLosslessImage();
+        QString vli_path = annotatedBranch->getVisuallyLosslessImage();
+        QString ch_spec = annotatedBranch->getChannelSpecification();
+        naMainWindow->setAuxillaryImagery(li_path, vli_path, ch_spec);
         if (naMainWindow->openMulticolorImageStack(path)) {
             // Populate physical voxel size from entity model
             QString ores = annotatedBranch->entity()->getValueByAttributeName("Optical Resolution");
@@ -240,6 +243,7 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
                     if ((x > 0.0) && (z/x > 0.0)) {
                         naMainWindow->getDataFlowModel()->setZRatio(z/x);
                         naMainWindow->get3DWidget()->setThickness(z/x);
+                        naMainWindow->get3DWidget()->xVoxelSizeInMicrons = x;
                     }
                 }
             }
@@ -367,7 +371,7 @@ void AnnotationWidget::consoleConnect() {
     connect(consoleObserver, SIGNAL(selectEntityById(qint64,bool)), this, SLOT(selectEntityById(qint64,bool)));
     connect(consoleObserver, SIGNAL(communicationError(const QString&)), this, SLOT(communicationError(const QString&)));
     connect(consoleObserver, SIGNAL(updateCurrentSample(Entity*)), this, SLOT(updateCurrentSample(Entity*)));
-    connect(consoleObserver, SIGNAL(openStackWithVaa3d(QString)), naMainWindow, SLOT(loadSingleStack(QString)));
+    connect(consoleObserver, SIGNAL(openStackWithVaa3d(Entity*)), naMainWindow, SLOT(loadSingleStack(Entity*)));
 
     consoleObserverService = new obs::ConsoleObserverServiceImpl(naMainWindow->getConsoleURL());
 

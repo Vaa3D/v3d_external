@@ -43,6 +43,7 @@ else()
 endif()
 
 
+include_directories( ../basic_c_fun )
 include_directories( ${V3D_BINARY_DIR}/v3dbase )
 include_directories( ${CMAKE_BINARY_DIR}/cellseg )
 

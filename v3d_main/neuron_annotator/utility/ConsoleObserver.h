@@ -34,7 +34,7 @@ signals:
     void selectEntityById(const qint64 & entityId, const bool external);
     void communicationError(const QString & errorMessage);
     void updateCurrentSample(Entity *sample);
-    void openStackWithVaa3d(QString filename);
+    void openStackWithVaa3d(Entity* entity);
 
 public slots:
     // These slots implement the console observer interface.

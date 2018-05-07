@@ -146,29 +146,63 @@ protected:
     // ProgressiveLoadItem* latestFailedItem; // So we don't repeat our mistakes
 };
 
+struct ProgressiveFileElement
+{
+    QString file_name;
+    SignalChannel channel;
+    bool flipped_in_y;
+
+    ProgressiveFileElement(): file_name(""), channel(CHANNEL_RGB), flipped_in_y(false) {}
+    ProgressiveFileElement(QString name, SignalChannel ch, bool flipped): 
+    file_name(name), channel(ch), flipped_in_y(flipped) {}
+};
 // Each ProgressiveFileCandidate can contain a set of companion files that
 // should be loaded together
 class ProgressiveFileCompanion
     : public ProgressiveCompanion
-    , public QPair<QString, SignalChannel>
 {
 public:
-    ProgressiveFileCompanion(QString fileName, SignalChannel channel = CHANNEL_RGB)
-        : QPair<QString, SignalChannel>(fileName, channel)
-        , m_isFlippedY(false)
-    {}
-    virtual QUrl getFileUrl(QList<QUrl> foldersToSearch) const;
-    virtual bool isAvailable(QList<QUrl> foldersToSearch) const;
+    ProgressiveFileCompanion() {}
+    virtual QUrl getFileUrl(QList<QUrl> foldersToSearch, int& index_of_file) const = 0;
+    virtual bool isAvailable(QList<QUrl> foldersToSearch) const = 0;
     virtual bool isFileItem() const {return true;}
-    virtual bool isFlippedY() const {return m_isFlippedY;}
-    virtual bool isMpeg4Volume() const;
-    virtual ProgressiveFileCompanion& setFlippedY(bool b) {
-        m_isFlippedY = b;
-        return *this;
-    }
+    virtual int count() const = 0;
+    virtual bool isMpeg4Volume() const = 0;
+    virtual ProgressiveFileElement const& operator[](int i) const = 0;
 
+};
+
+
+class ProgressiveSingleFileCompanion
+    : public ProgressiveFileCompanion
+{
+public:
+    ProgressiveSingleFileCompanion(QString fileName, SignalChannel channel = CHANNEL_RGB)
+        : ProgressiveFileCompanion(), _element(fileName, channel, false)
+    {}
+    QUrl getFileUrl(QList<QUrl> foldersToSearch, int& index_of_file) const;
+    bool isAvailable(QList<QUrl> foldersToSearch) const;
+    int count() const { return 1; }
+    bool isMpeg4Volume() const;
+    ProgressiveFileElement const& operator[](int i) const { return _element; }
 protected:
-    bool m_isFlippedY;
+    ProgressiveFileElement _element;
+};
+
+
+// Each ProgressiveFileCandidate can contain a set of companion files that
+// should be loaded together
+class ProgressiveFileChoiceCompanion
+    : public ProgressiveFileCompanion
+    , public QList< ProgressiveFileElement* >
+{
+public:
+    ProgressiveFileChoiceCompanion(): ProgressiveFileCompanion() {}
+    QUrl getFileUrl(QList<QUrl> foldersToSearch, int& index_of_file) const;
+    bool isAvailable(QList<QUrl> foldersToSearch) const;
+    int count() const { return size(); }
+    bool isMpeg4Volume() const;
+    ProgressiveFileElement const& operator[](int i) const { return *((*this).QList< ProgressiveFileElement* >::operator[](i)); }
 };
 
 

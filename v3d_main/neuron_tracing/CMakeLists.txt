@@ -8,7 +8,7 @@ if(UNIX)
   include_directories(/usr/local/include)
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/common_lib/include)
+#include_directories(${CMAKE_SOURCE_DIR}/common_lib/include)
 
 SET(Boost_ADDITIONAL_VERSIONS "1.46.0" "1.57.0" "1.56.1" "1.56.0" "1.54" "1.54.0")
 find_package(Boost COMPONENTS)

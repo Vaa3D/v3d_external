@@ -68,7 +68,9 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "../terafly/src/control/CPlugin.h"
 #endif
 
+#ifdef __ALLOW_VR_FUNCS__
 #include "../mozak/MozakUI.h";
+#endif
 
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
@@ -2140,11 +2142,14 @@ void MainWindow::updateProcessingMenu()
     proc_terafly_menu->addAction(open_teraconverter_action);
     connect(open_teraconverter_action, SIGNAL(triggered()), this, SLOT(func_open_teraconverter()));
 
+#ifdef __ALLOW_VR_FUNCS__
 #define __MENU_OPEN_MOZAK__
     QAction* open_mozak_action = new QAction(tr("Kazom's Mozak"), this);
     advancedProcMenu->addAction(open_mozak_action);  /// RZC 20070620: move menu entry proc_terafly_menu form to advancedProcMenu
     connect(open_mozak_action, SIGNAL(triggered()), this, SLOT(func_open_neuron_game()));
 #endif
+#endif
+
     //
 #ifdef _ALLOW_IMGSTD_MENU_
     proc_standarization_menu->addAction(procElongated_randomSeeding);
@@ -2962,8 +2967,10 @@ void MainWindow::func_open_teraconverter()
 void MainWindow::func_open_neuron_game()
 {
 	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+#ifdef __ALLOW_VR_FUNCS__
     qRegisterMetaType<itm::integer_array>("itm::integer_array");
 	mozak::MozakUI::init(pl);
+#endif
 }
 #endif
 

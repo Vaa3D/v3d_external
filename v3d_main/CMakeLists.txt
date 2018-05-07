@@ -181,6 +181,7 @@ if(USE_FFMPEG)
       set(FFMPEG_PATCH_FILE "ffmpeg-2.5.4-windows.patch")
     endif()
 
+    set(PKG_CONFIG_PATH "${x265_dir}/install/lib/pkgconfig")
     ExternalProject_Add(
         FFMPEG-2.8
         DEPENDS Yasm-1-2-0 X265-1.7 PKG-CONFIG-0-28
@@ -197,6 +198,7 @@ if(USE_FFMPEG)
             --prefix=<INSTALL_DIR>
             --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
             --pkg-config=${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install/bin/pkg-config
+            --pkg-config-flags=--static
             --disable-vda
             --disable-iconv
             --disable-libxcb
@@ -227,24 +229,24 @@ if(USE_FFMPEG)
 
     find_package(Threads)
   else()
-    set(AVCODEC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/include")
-    set(av_dir "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/")
+    set(AVCODEC_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/include")
+    set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/")
     if (MINGW)
-      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavformat${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswresample{CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavformat${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswresample{CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
     else()
-      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avdevice.lib CACHE INTERNAL "path to a library")
-      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avformat.lib CACHE INTERNAL "path to a library")
-      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avfilter.lib CACHE INTERNAL "path to a library")
-      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avcodec.lib CACHE INTERNAL "path to a library")
-      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/swscale.lib CACHE INTERNAL "path to a library")
-      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/swresample.lib CACHE INTERNAL "path to a library")
-      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avutil.lib CACHE INTERNAL "path to a library")
+      set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avdevice.lib CACHE INTERNAL "path to a library")
+      set(AVFORMAT_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avformat.lib CACHE INTERNAL "path to a library")
+      set(AVFILTER_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avfilter.lib CACHE INTERNAL "path to a library")
+      set(AVCODEC_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avcodec.lib CACHE INTERNAL "path to a library")
+      set(SWSCALE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/swscale.lib CACHE INTERNAL "path to a library")
+      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/swresample.lib CACHE INTERNAL "path to a library")
+      set(AVUTIL_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avutil.lib CACHE INTERNAL "path to a library")
     endif()
   endif()
 
@@ -257,8 +259,10 @@ if(USE_HDF5)
     set(hdf_dir "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(
         HDF5
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.8.16.tar.gz
-        CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=OFF
+        #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/hdf5-1.10.1.tar.gz
+        URL https://www.hdfgroup.org/package/gzip/?wpdmdl=4301&refresh=59dd1c8be460b1507662987
+        DOWNLOAD_NAME hdf-1.8.20.tar.gz
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DBUILD_SHARED_LIBS:BOOL=OFF
                    -DCMAKE_INSTALL_PREFIX:PATH=${hdf_dir}/install -DHDF5_BUILD_CPP_LIB:BOOL=ON
                    -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_BUILD_TOOLS:BOOL=ON
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
@@ -266,15 +270,17 @@ if(USE_HDF5)
     )
 
     set(HDF5_INCLUDE_DIR "${hdf_dir}/install/include")
-    if (MINGW)
+    if (WIN32)
       # MINGW mangles the librariy names to be doubly prefixed with lib
-      set(HDF5_LIBRARY ${hdf_dir}/install/lib/hdf5.lib CACHE INTERNAL "path to a library")
-      set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/hdf5_cpp.lib CACHE INTERNAL "path to a library")
-      set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/hdf5_hl_cpp.lib CACHE INTERNAL "path to a library")
+      set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_HL_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp$<$<CONFIG:Debug>:_D>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
     else()
-      set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-      set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
-      set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_LIBRARY ${hdf_dir}/install/lib/libhdf5$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_HL_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_cpp$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+      set(HDF5_HL_CPP_LIBRARY ${hdf_dir}/install/lib/libhdf5_hl_cpp$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
     endif()
 
     include_directories(${HDF5_INCLUDE_DIR})

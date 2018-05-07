@@ -6,6 +6,9 @@
 #include <utility>
 #include <vector>
 
+#include <QBuffer>
+#include <QUrl>
+
 #ifdef USE_FFMPEG
 
 #include "../../v3d/v3d_core.h" // Image4DSimple
@@ -19,10 +22,14 @@ bool codec_lookup( std::string codec_name, AVCodecID* codec, std::string* defaul
 void generate_codec_mapping( Codec_Mapping& mapping, int num_channels );
 
 bool loadStackFFMpeg( const char* fileName, Image4DSimple& image );
+bool loadStackFFMpeg( QUrl url, Image4DSimple& image );
+
 bool loadStackHDF5( const char* fileName, Image4DSimple& image );
+bool loadStackHDF5( QUrl url, Image4DSimple& image );
+bool loadStackHDF5( QBuffer& fileStream, Image4DSimple& image );
+
 bool loadStackFFMpegAsGray( const char* fileName, Image4DSimple& img );
 
-bool loadStackFFMpeg( QUrl url, Image4DSimple& image );
 bool loadIndexedStackFFMpeg( QByteArray* buffer, Image4DSimple& img, int channel, int num_channels,
                              long width, long height );
 bool loadStackFFMpegAsGray( QUrl url, Image4DSimple& img );

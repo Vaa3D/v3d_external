@@ -216,7 +216,7 @@ struct BoundingBox {
 	BoundingBox() 					{ *this = NULL_BoundingBox; }
 	BoundingBox(float a) 			{x0=y0=z0=x1=y1=z1 = a;}
         BoundingBox(float px0, float py0, float pz0, float px1, float py1, float pz1)
-                                                                        {this->x0=px0; this->y0=py0; this->z0=pz0;  this->x1=px1; this->y1=py1; this->z1=pz1;}
+                             {x0=px0; y0=py0; z0=pz0;  x1=px1; y1=py1; z1=pz1;}
         BoundingBox(XYZ pV0, XYZ pV1)		{x0=pV0.x; y0=pV0.y; z0=pV0.z;  x1=pV1.x; y1=pV1.y; z1=pV1.z;}
         float Dx() const		{return (x1-x0); }
         float Dy() const		{return (y1-y0); }

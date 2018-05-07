@@ -491,6 +491,11 @@ ColorMapTexture::ColorMapTexture()
     }
 }
 
+ColorMapTexture::ColorMapTexture( ColorMapTexture const& rhs ):
+    dataColorModel( rhs.dataColorModel ), colors( rhs.colors )
+    {}
+
+
 bool ColorMapTexture::update()
 {
     if (NULL == dataColorModel) {

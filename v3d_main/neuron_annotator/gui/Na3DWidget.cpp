@@ -40,6 +40,8 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , bSignalTextureIsDirty(false)
         , globalScreenPosX(0)
         , globalScreenPosY(0)
+        , xVoxelSizeInMicrons(0)
+        , bPaintScaleBar(true)
 {
     if (renderer) {
         delete renderer;
@@ -50,6 +52,8 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     _idep->image4d = NULL;
     resetView();
     setVolCompress(false); // might look nicer?
+
+    setAutoFillBackground(false); // needed for combining 2D and 3D rendering in paintEvent()
 
     // This method for eliminating tearing artifacts works but is supposedly obsolete;
     // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
@@ -1829,6 +1833,19 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
     glEnd();
 }
 
+/* virtual */
+void Na3DWidget::paintEvent(QPaintEvent *event)
+{
+    // 3D rendering
+    updateGL();
+
+    // 2D rendering overlay
+    QPainter painter(this);
+    if (bPaintScaleBar)
+        scaleBar.paint(xVoxelSizeInMicrons, getZoomScale(), width(), height(), painter);
+    painter.end();
+}
+
 void Na3DWidget::paintGL()
 {
     makeCurrent();
@@ -2254,19 +2271,19 @@ bool Na3DWidget::screenShot(QString filename)
     }
 }
 
-void Na3DWidget::setXCutLock(int b)
+void Na3DWidget::setXCutLock(bool b)
 {
     if (b)	dxCut = _xCut1-_xCut0;
     else    dxCut = 0;
     lockX = b? 1:0;
 }
-void Na3DWidget::setYCutLock(int b)
+void Na3DWidget::setYCutLock(bool b)
 {
     if (b)	dyCut = _yCut1-_yCut0;
     else    dyCut = 0;
     lockY = b? 1:0;
 }
-void Na3DWidget::setZCutLock(int b)
+void Na3DWidget::setZCutLock(bool b)
 {
     if (b)	dzCut = _zCut1-_zCut0;
     else    dzCut = 0;

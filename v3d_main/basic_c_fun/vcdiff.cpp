@@ -34,10 +34,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "vcdiff.h"
 
-double round(double x)
-{
-	return x < 0 ? -floor(fabs(x) + .5) : floor(x + .5);
-}
 V3DLONG floor(V3DLONG x)
 {
 	return (V3DLONG)floorl((double)x);
@@ -68,10 +64,19 @@ V3DLONG lround(V3DLONG x)
 //	return strcmpi(str1, str2);
 //}
 
+#if defined(_MSC_VER)
+	#if (_MSC_VER < 1700)
+		double round(double x)
+		{
+			return x < 0 ? -floor(fabs(x) + .5) : floor(x + .5);
+		}
+
 double log2(double x)
 {
 	return log(x)/log(2.0);
 }
+	#endif
+#endif
 
 double pow(V3DLONG a, V3DLONG b)
 {

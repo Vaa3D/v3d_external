@@ -30,6 +30,8 @@
 #include "PreferencesDialog.h"
 #include "../utility/FooDebug.h"
 #include "../utility/url_tools.h"
+#include "../entity_model/Entity.h"
+
 #include <cstdlib> // getenv
 
 using namespace std;
@@ -308,9 +310,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     connect(ui->v3dr_glwidget, SIGNAL(changeZCut1(int)), ui->ZcmaxSlider, SLOT(setValue(int)));
     connect(ui->ZcmaxSlider, SIGNAL(valueChanged(int)), ui->v3dr_glwidget, SLOT(setZCut1(int)));
 
-    connect(ui->XCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setXCutLock(int)));
-    connect(ui->YCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setYCutLock(int)));
-    connect(ui->ZCutCB, SIGNAL(stateChanged(int)), ui->v3dr_glwidget, SLOT(setZCutLock(int)));
+    connect(ui->XCutCB, SIGNAL(toggled(bool)), ui->v3dr_glwidget, SLOT(setXCutLock(bool)));
+    connect(ui->YCutCB, SIGNAL(toggled(bool)), ui->v3dr_glwidget, SLOT(setYCutLock(bool)));
+    connect(ui->ZCutCB, SIGNAL(toggled(bool)), ui->v3dr_glwidget, SLOT(setZCutLock(bool)));
 
     connect(ui->slabThicknessSlider, SIGNAL(valueChanged(int)),
             ui->v3dr_glwidget, SLOT(setSlabThickness(int)));
@@ -333,6 +335,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     // show axes
     connect(ui->actionShow_Axes, SIGNAL(toggled(bool)),
             ui->v3dr_glwidget, SLOT(setShowCornerAxes(bool)));
+    // show scale bar
+    connect(ui->actionShow_Scale_Bar, SIGNAL(toggled(bool)),
+            ui->v3dr_glwidget, SLOT(showScaleBar(bool)));
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui->actionLink_viewers, SIGNAL(toggled(bool)),
@@ -1016,10 +1021,29 @@ void NaMainWindow::loadSingleStack(QUrl url)
 }
 
 /* slot */
+void NaMainWindow::loadSingleStack(Entity* entity)
+{
+    QString filepath = entity->getValueByAttributeName("File Path");
+    channel_spec = entity->getValueByAttributeName("Channel Specification");
+    if (channel_spec.isEmpty()) {
+        channel_spec = QString();
+    }
+
+    loadSingleStack( filepath );
+}
+
 void NaMainWindow::loadSingleStack(QString fileName)
 {
-    QUrl url = QUrl::fromLocalFile(fileName);
-    loadSingleStack(url, true); // default to classic mode
+    QUrl url( fileName );
+    bool local = url.scheme().isEmpty();
+
+    if ( local )
+    {
+        QUrl local_url = QUrl::fromLocalFile( fileName );
+        loadSingleStack( local_url, true ); // default to classic mode
+    }
+    else
+        loadSingleStack( url, false ); // default to classic mode
 }
 
 /* slot */
@@ -1045,6 +1069,10 @@ void NaMainWindow::loadSingleStack(QUrl url, bool useVaa3dClassic)
         setViewMode(VIEW_SINGLE_STACK);
         onDataLoadStarted();
         createNewDataFlowModel();
+
+        // All of these may be empty, but under certain cases (for Janelia)
+        // the channel_spec will be valid
+        dataFlowModel->getVolumeData().setAuxillaryImagery(losslessImage, visuallyLosslessImage, channel_spec);
 
         VolumeTexture& volumeTexture = dataFlowModel->getVolumeTexture();
         volumeTexture.queueVolumeData();
@@ -1603,7 +1631,7 @@ bool NaMainWindow::openMulticolorImageStack(QUrl url)
     fileUrl.setPath(path + "ConsolidatedLabel");
     multiColorImageStackNode->setPathToMulticolorLabelMaskFile(fileUrl.toString());
     dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
-
+    dataFlowModel->getVolumeData().setAuxillaryImagery(losslessImage, visuallyLosslessImage, channel_spec);
     if (! dataFlowModel->getVolumeData().queueSeparationFolder(url)) {
         onDataLoadFinished();
         return false;
@@ -1650,7 +1678,8 @@ bool NaMainWindow::loadSeparationDirectoryV1Pbd(QUrl imageInputDirectory)
     dataFlowModel->setNeuronAnnotatorResultNode(resultNode);
 
     // Opposite of fast loading behavior
-    dataFlowModel->getVolumeData().doFlipY = true;
+    dataFlowModel->getVolumeData().doFlipY_mask = true;
+    dataFlowModel->getVolumeData().doFlipY_image = true;
     dataFlowModel->getVolumeData().bDoUpdateSignalTexture = true;
     // fooDebug() << __FILE__ << __LINE__;
 
@@ -1941,6 +1970,9 @@ void NaMainWindow::setDataFlowModel(DataFlowModel* dataFlowModelParam)
         ui->naLargeMIPWidget->setMipMergedData(NULL);
         return;
     }
+
+    connect(dataFlowModel, SIGNAL(zRatioChanged(double)),
+            ui->zThicknessDoubleSpinBox, SLOT(setValue(double)));
 
     connect(this, SIGNAL(subsampleLabelPbdFileNamed(QUrl)),
             &dataFlowModel->getVolumeTexture(), SLOT(setLabelPbdFileUrl(QUrl)));

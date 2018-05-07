@@ -129,7 +129,7 @@ if(USE_FFMPEG)
         ${AVFORMAT_LIBRARY}
         ${AVCODEC_LIBRARY}
         ${AVUTIL_LIBRARY}
-        ${BZIP2_LIBRARIES}
+        ${BZ2_LIB}
         ${ZLIB_LIBRARY}
 #        ${ICONV_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
@@ -144,8 +144,9 @@ if(USE_FFMPEG)
         endif()
         target_link_libraries(NeuronAnnotatorLib
             ${HDF5_CPP_LIBRARY}
+            ${HDF5_HL_LIBRARY}
             ${HDF5_LIBRARY}
-	    ${CMAKE_DL_LIBS}
+	        ${CMAKE_DL_LIBS}
             ${Boost_LIBRARIES}
         )
     endif()

@@ -495,7 +495,7 @@ bool NeuronFragmentEditor::reverseLabel()
             for (long x=0;x<xdim;x++) {
                 long offset=z*ydim*xdim + y*xdim + x;
                 int labelValue=-1;
-                if (label8>(v3d_uint8 *)0L) {
+                if (label8 != 0L) {
                     labelValue=label8[offset];
                 } else {
                     labelValue=label16[offset];

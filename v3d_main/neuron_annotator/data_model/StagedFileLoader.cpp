@@ -174,7 +174,7 @@ void ProgressiveLoader::addLoneFile(QString fileName, SignalChannel channel)
 {
     ProgressiveLoadItem* item = new ProgressiveLoadItem();
     ProgressiveLoadCandidate* candidate = new ProgressiveLoadCandidate();
-    ProgressiveFileCompanion* companion = new ProgressiveFileCompanion(fileName, channel);
+    ProgressiveFileCompanion* companion = new ProgressiveSingleFileCompanion(fileName, channel);
     *candidate << companion;
     *item << candidate;
     *this << item;
@@ -297,12 +297,26 @@ void ProgressiveLoader::reset()
 
 ///////////////////////////////////////
 
-// ProgressiveFileCompanion methods
+/* virtual */
+bool ProgressiveSingleFileCompanion::isMpeg4Volume() const
+{
+#ifdef USE_FFMPEG
+    QString fileName = _element.file_name;
+    QString extension = QFileInfo(fileName).suffix().toUpper();
+        if (extension == "MP4")
+            return true;
+#endif
+    return false;
+}
+
+
+// ProgressiveSingleFileCompanion methods
 
 /* virtual */
-bool ProgressiveFileCompanion::isAvailable(QList<QUrl> foldersToSearch) const
+bool ProgressiveSingleFileCompanion::isAvailable(QList<QUrl> foldersToSearch) const
 {
-    QUrl fileUrl = getFileUrl(foldersToSearch);
+    int index = 0;
+    QUrl fileUrl = getFileUrl(foldersToSearch, index);
     if (fileUrl.isEmpty())
         return false;
     if (! fileUrl.isValid())
@@ -313,25 +327,77 @@ bool ProgressiveFileCompanion::isAvailable(QList<QUrl> foldersToSearch) const
 }
 
 /* virtual */
-QUrl ProgressiveFileCompanion::getFileUrl(QList<QUrl> foldersToSearch) const
+QUrl ProgressiveSingleFileCompanion::getFileUrl(QList<QUrl> foldersToSearch, int& index_of_file) const
 {
-    QString fileName = first;
-    for (int f = 0; f < foldersToSearch.size(); ++f) {
-        QUrl fileUrl = appendPath(foldersToSearch[f], fileName);
-        if (exists(fileUrl))
-            return fileUrl;
-    }
-    return QUrl();
+   QString fileName = _element.file_name;
+   for ( int f = 0; f < foldersToSearch.size(); ++f )
+   {
+      QUrl fileUrl = appendPath( foldersToSearch[ f ], fileName );
+      if ( exists( fileUrl ) )
+      {
+         index_of_file = 0;
+         return fileUrl;
+      }
+   }
+   return QUrl();
+}
+
+///////////////////
+
+///////////////////////////////////////
+
+// ProgressiveFileChoiceCompanion methods
+
+/* virtual */
+bool ProgressiveFileChoiceCompanion::isAvailable(QList<QUrl> foldersToSearch) const
+{
+    int index = 0;
+    QUrl fileUrl = getFileUrl(foldersToSearch, index);
+    if (fileUrl.isEmpty())
+        return false;
+    if (! fileUrl.isValid())
+        return false;
+    if (! exists(fileUrl))
+        return false;
+    return true;
 }
 
 /* virtual */
-bool ProgressiveFileCompanion::isMpeg4Volume() const
+QUrl ProgressiveFileChoiceCompanion::getFileUrl(QList<QUrl> foldersToSearch, int& index_of_file) const
+{
+    int index = 0;
+   for ( QList< ProgressiveFileElement* >::const_iterator it = begin(); it != end(); it++ )
+   {
+      if ( index >= index_of_file )
+      {
+         QString fileName = ( *it )->file_name;
+         for ( int f = 0; f < foldersToSearch.size(); ++f )
+         {
+            QUrl fileUrl = appendPath( foldersToSearch[ f ], fileName );
+            if ( exists( fileUrl ) )
+            {
+               index_of_file = index;
+               return fileUrl;
+            }
+         }
+      }
+
+      index++;
+   }
+   return QUrl();
+}
+
+/* virtual */
+bool ProgressiveFileChoiceCompanion::isMpeg4Volume() const
 {
 #ifdef USE_FFMPEG
-    QString fileName = first;
-    QString extension = QFileInfo(fileName).suffix().toUpper();
-        if (extension == "MP4")
-            return true;
+   for ( QList< ProgressiveFileElement* >::const_iterator it = begin(); it != end(); it++ )
+   {
+      QString fileName = (*it)->file_name;
+      QString extension = QFileInfo( fileName ).suffix().toUpper();
+      if ( extension == "MP4" )
+         return true;
+   }
 #endif
     return false;
 }

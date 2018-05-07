@@ -80,6 +80,33 @@ QString AnnotatedBranch::getFilePath() const
     return QString();
 }
 
+QString AnnotatedBranch::getVisuallyLosslessImage() const
+{
+    QString filepath = _entity->getValueByAttributeName("Visually Lossless Image");
+    if (!filepath.isEmpty()) {
+        return filepath;
+    }
+    return QString();
+}
+
+QString AnnotatedBranch::getLosslessImage() const
+{
+    QString filepath = _entity->getValueByAttributeName("Lossless Image");
+    if (!filepath.isEmpty()) {
+        return filepath;
+    }
+    return QString();
+}
+
+QString AnnotatedBranch::getChannelSpecification() const
+{
+    QString filepath = _entity->getValueByAttributeName("Channel Specification");
+    if (!filepath.isEmpty()) {
+        return filepath;
+    }
+    return QString();
+}
+
 Entity * AnnotatedBranch::findEntityById(Entity *entity, const qint64 & entityId) const
 {
     if (entity==0) return 0;

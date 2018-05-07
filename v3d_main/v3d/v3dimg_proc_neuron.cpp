@@ -49,7 +49,9 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
 #include "../terafly/src/control/CPlugin.h"
+#ifdef __ALLOW_VR_FUNCS__
 #include "../mozak/MozakUI.h"
+#endif
 
 //------------------------------------------------------------------------------------------
 
@@ -947,10 +949,11 @@ void My4DImage::proj_trace_history_append()
     // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
     tf::TeraFly::doaction("neuron edit");
 
-
+#ifdef __ALLOW_VR_FUNCS__
     //20170803 RZC
     mozak::MozakUI::onImageTraceHistoryChanged();
-
+#endif
+    
     emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
 	SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
 }

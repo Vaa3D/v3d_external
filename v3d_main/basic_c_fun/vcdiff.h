@@ -46,8 +46,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define isnan(x) ((x) != (x))
 #endif
 
-double round(double x);
-
 V3DLONG floor(V3DLONG x);
 
 int fabs(int x);
@@ -60,7 +58,12 @@ V3DLONG lround(V3DLONG x);
 
 //bool strcasecmp(const char * str1, const char * str2);
 
-double log2(double x);
+#if defined(_MSC_VER)
+	#if (_MSC_VER < 1700)
+		double log2(double x);
+		double round(double x);
+	#endif
+#endif
 
 double pow(V3DLONG a, V3DLONG b);
 
