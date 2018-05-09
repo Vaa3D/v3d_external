@@ -3688,7 +3688,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 
 			if (count == 0)
 			{
-				cout << "Back to the different root segment. Connecting allowed." << endl;
+				cout << "Back to different root segments. Connecting allowed." << endl;
 				returnValue = 0;
 				root = true;
 			}
