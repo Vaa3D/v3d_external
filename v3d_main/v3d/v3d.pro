@@ -159,6 +159,7 @@ HEADERS += \
     ../neuron_annotator/gui/DynamicRangeTool.h \
     ../neuron_annotator/gui/ColorRangeSliderWidget.h \
     ../neuron_annotator/gui/Stereo3DMode.h \
+    ../neuron_annotator/gui/ScaleBar.h \
     ../neuron_annotator/microCT/CutPlanner.h \
     ../neuron_annotator/microCT/SingleCut.h \
     ../neuron_annotator/render/ActorGL.h \
@@ -315,6 +316,7 @@ SOURCES += \
     ../neuron_annotator/gui/DynamicRangeTool.cpp \
     ../neuron_annotator/gui/ColorRangeSliderWidget.cpp \
     ../neuron_annotator/gui/Stereo3DMode.cpp \
+    ../neuron_annotator/gui/ScaleBar.cpp \
     ../neuron_annotator/microCT/CutPlanner.cpp \
     ../neuron_annotator/microCT/SingleCut.cpp \
     ../neuron_annotator/NeuronSelector.cpp \
@@ -345,7 +347,6 @@ SOURCES += \
     ../webservice/impl/EntityAdapter.cpp \
     ../cell_counter/CellCounter3D.cpp \
     CommandManager.cpp
-
 
 FORMS += \
     ../neuron_annotator/gui/NaMainWindow.ui \
