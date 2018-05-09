@@ -2792,6 +2792,9 @@ const Image4DSimple* CViewer::getImage() throw (tf::RuntimeException)
     image->setOriginX((double)H0_sbox_min);
     image->setOriginY((double)V0_sbox_min);
     image->setOriginZ((double)D0_sbox_min);
+    image->setRezX((double(H1_sbox_max-H0_sbox_min+1)));
+    image->setRezY((double(V1_sbox_max-V0_sbox_min+1)));
+    image->setRezZ((double(D1_sbox_max-D0_sbox_min+1)));
     image->setTimePackType(TIME_PACK_C);
     return image;
 }
