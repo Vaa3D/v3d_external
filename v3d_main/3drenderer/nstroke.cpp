@@ -1135,12 +1135,6 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
                          for (int i=0;i<N;i++)
                               loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
                     }
-                    if (b_start_merged || b_end_merged)
-                    {
-                        if (cur_node.seg_id>=0 && cur_node.seg_id< curImg->tracedNeuron.seg.size())
-                            if(curImg->tracedNeuron.seg[cur_node.seg_id].row.size() >0)
-                                currentTraceType = curImg->tracedNeuron.seg[cur_node.seg_id].row[0].type;
-                    }
                }
           }
      }
