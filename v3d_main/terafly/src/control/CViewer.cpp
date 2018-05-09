@@ -2789,9 +2789,9 @@ const Image4DSimple* CViewer::getImage() throw (tf::RuntimeException)
     image->setFileName(title.c_str());
     image->setData(imgData, volH1-volH0, volV1-volV0, volD1-volD0, nchannels*(volT1-volT0+1), V3D_UINT8);
     image->setTDim(volT1-volT0+1);
-    image->setOriginX(volH0);
-    image->setOriginY(volV0);
-    image->setOriginZ(volD0);
+    image->setOriginX((double)H0_sbox_min);
+    image->setOriginY((double)V0_sbox_min);
+    image->setOriginZ((double)D0_sbox_min);
     image->setTimePackType(TIME_PACK_C);
     return image;
 }
