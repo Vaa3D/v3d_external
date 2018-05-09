@@ -1654,7 +1654,8 @@ bool CMainApplication::HandleInput()
 				else if(m_zoomMode==true)//into zoom mode
 				{
 					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-					m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/150,1+m_fTouchPosY/150,1+m_fTouchPosY/150));
+                    //m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/150,1+m_fTouchPosY/150,1+m_fTouchPosY/150));
+                    m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/150)); //todo: testing only scaling up the z dimension
 					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 				}
 			}
