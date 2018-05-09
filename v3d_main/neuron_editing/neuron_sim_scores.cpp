@@ -144,7 +144,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 	{
 		//first find the two ends of a line seg
         tp1 = (NeuronSWC *)(&(p1->listNeuron.at(i)));
-		if (tp1->pn < 0 || tp1->pn >= p1sz)
+        if (tp1->pn < 0)
 			continue;
 		tp2 = (NeuronSWC *)(&(p1->listNeuron.at(h1.value(tp1->pn)))); //use hash table
 		//qDebug() << "i="<< i << " pn="<<tp1->pn - 1;
@@ -215,7 +215,7 @@ double dist_pt_to_swc(const XYZ & pt, const NeuronTree * p_tree)
 	{
 		//first find the two ends of a line seg
 		tp1 = (NeuronSWC *)(&(p_tree->listNeuron.at(i)));
-		if (tp1->pn < 0 || tp1->pn >= p_tree_sz)
+        if (tp1->pn < 0)
 			continue;
 		tp2 = (NeuronSWC *)(&(p_tree->listNeuron.at(h.value(tp1->pn)))); //use hash table
 
