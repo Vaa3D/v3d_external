@@ -455,7 +455,7 @@ public:
 	 void connectMarkerByStroke();
 	 struct segInfoUnit
 	 {
-		 segInfoUnit() { hierarchy = 0; }
+		segInfoUnit() { hierarchy = 0; }
 		long segID;
 		long head_tail;
 		long nodeCount;
