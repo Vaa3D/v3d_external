@@ -37,7 +37,7 @@ void ScaleBar::paint(float xVoxelSizeInMicrons, float screenPixelsPerImageVoxel,
     float barMicrons = 0;
     Q_FOREACH(const float& rounded, roundNumbers) {
         int exponent = (int) std::floor(std::log10(maxBarMicrons/rounded));
-        float testBarMicrons = rounded * std::pow(10, exponent);
+        float testBarMicrons = rounded * std::pow(10, (double)exponent);
         if (testBarMicrons > barMicrons) {
             barMicrons = testBarMicrons;
         }
