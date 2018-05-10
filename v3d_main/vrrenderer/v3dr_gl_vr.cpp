@@ -72,12 +72,12 @@ bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
 float CMainApplication::fBrightness = 0;
-int CMainApplication::m_curMarkerColorType = 3;
+int CMainApplication::m_curMarkerColorType = 0;
 int CMainApplication::m_modeControlGrip_L = 0;
 
 #define dist_thres 0.01
 #define default_radius 0.618
-#define drawing_step_size 10  //the larger, the fewer SWC nodes
+#define drawing_step_size 6  //the larger, the fewer SWC nodes
 
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
@@ -1432,10 +1432,10 @@ bool CMainApplication::HandleInput()
 				if(m_modeGrip_R==m_drawMode)
 				{
 					//this part is for building a neuron tree to further save as SWC file
-					if (vertexcount%drawing_step_size ==0)//use vertexcount to control point counts in a single line
+					if (vertexcount%drawing_step_size ==0)//use vertexcount to control point counts in a single line 
 					//each #drawing_step_size frames render a SWC node
 					{
-						const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+						const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos 
 						glm::mat4 mat = glm::mat4();
 						for (size_t i = 0; i < 4; i++)
 						{
@@ -1516,7 +1516,7 @@ bool CMainApplication::HandleInput()
 					}	
 					vertexcount++;
 				}
-				else if(m_modeGrip_R==m_dragMode)
+				else if(m_modeGrip_R==m_dragMode) 
 				{
 					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 					glm::mat4 mat = glm::mat4();
@@ -1654,8 +1654,7 @@ bool CMainApplication::HandleInput()
 				else if(m_zoomMode==true)//into zoom mode
 				{
 					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-                    //m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/150,1+m_fTouchPosY/150,1+m_fTouchPosY/150));
-                    m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/150)); //todo: testing only scaling up the z dimension
+					m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/15));
 					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 				}
 			}
@@ -2562,6 +2561,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				// if one of the endpoints of the newly drawn curve are near some existing curve with the given threshold,
 				// change the endpoint position slightly so that the new curve connects with the existing curve.
+				int autoConnected = -1;
 				if(currentNT.listNeuron.size()>0)
 				{
 					NeuronSWC* beginNode = &currentNT.listNeuron.first();
@@ -2595,13 +2595,15 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						}
 
 						//check if the candidate is qualified
-						if (min_dist < (dist_thres/m_globalScale*5) || 
-							((min_dist < 2*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+						if (min_dist < (dist_thres/m_globalScale*5)
+							//|| ((min_dist < 2*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    )
+							)//todo: threshold to be refined
 						{
 							bNodeChanged = true; //no need to try to match end node
 							beginNode->x = min_node.x;
 							beginNode->y = min_node.y;
 							beginNode->z = min_node.z;
+							autoConnected = min_node.type;
 							break;
 						}
 					}
@@ -2629,17 +2631,28 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 								}
 							}
 
-							if (min_dist < (dist_thres/m_globalScale*5) || 
-								((min_dist < 3*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    ) )//todo: threshold to be refined
+							if (min_dist < (dist_thres/m_globalScale*5) 
+							//	|| ((min_dist < 3*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    )
+								)//todo: threshold to be refined
 							{
 								endNode->x = min_node.x;
 								endNode->y = min_node.y;
 								endNode->z = min_node.z;
+								autoConnected = min_node.type;
 								break;
 							}
 						}						
 					}					
 				}
+
+				if (autoConnected != -1 && m_curMarkerColorType == 0) //current color is white, allow auto color change after auto connection
+				{
+					for(int i=0;i<currentNT.listNeuron.size();i++)
+					{
+						currentNT.listNeuron[i].type = autoConnected;
+					}
+				}
+
 				if (isOnline==false)
 				{
 					if(currentNT.listNeuron.size()>0)
@@ -2867,7 +2880,7 @@ void CMainApplication::MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTre
 //-----------------------------------------------------------------------------
 void CMainApplication::RenderFrame()
 {
-	// for now as fast as possible
+	// for now as fast as possible 
 	if ( m_pHMD )
 	{
 		QString AgentsNum = QString("%1").arg(Agents_spheres.size()+1);
@@ -5430,7 +5443,7 @@ void CMainApplication::RefineSketchCurve(int direction, NeuronTree &oldNTree, Ne
 		C = img4d->getCDim();
 	}
 	vector<MyMarker*> outswc_final;
-	V3DLONG siz = oldNTree.listNeuron.size();
+	V3DLONG siz = oldNTree.listNeuron.size(); 
 	Tree tree;
 	for (V3DLONG i=0;i<siz;i++)
 	{
