@@ -72,12 +72,13 @@ bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
 float CMainApplication::fBrightness = 0;
-int CMainApplication::m_curMarkerColorType = 0;
+int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 
 #define dist_thres 0.01
+#define connection_rigourous 0.5
 #define default_radius 0.618
-#define drawing_step_size 6  //the larger, the fewer SWC nodes
+#define drawing_step_size 5  //the larger, the fewer SWC nodes
 
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
@@ -2313,8 +2314,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				if(isOnline == false)
 				{
-					// range 0 ~ 4  
-					m_curMarkerColorType = (++m_curMarkerColorType)%5;
+					// range 0 ~ 6  
+					m_curMarkerColorType = (++m_curMarkerColorType)%7;
 					int color_id = (m_curMarkerColorType>=0 && m_curMarkerColorType<neuron_type_color_num)? m_curMarkerColorType : 0;
 					ctrSphereColor[0] =  neuron_type_color[color_id][0] /255.0;
 					ctrSphereColor[1] =  neuron_type_color[color_id][1] /255.0;
@@ -2595,7 +2596,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						}
 
 						//check if the candidate is qualified
-						if (min_dist < (dist_thres/m_globalScale*5)
+						if (min_dist < connection_rigourous*(dist_thres/m_globalScale*5)
 							//|| ((min_dist < 2*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    )
 							)//todo: threshold to be refined
 						{
@@ -2631,7 +2632,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 								}
 							}
 
-							if (min_dist < (dist_thres/m_globalScale*5) 
+							if (min_dist < connection_rigourous*(dist_thres/m_globalScale*5) 
 							//	|| ((min_dist < 3*(dist_thres/m_globalScale*5) ) && (i == sketchedNTList.size()-1)    )
 								)//todo: threshold to be refined
 							{
