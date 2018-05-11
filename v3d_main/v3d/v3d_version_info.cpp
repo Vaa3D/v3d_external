@@ -202,6 +202,10 @@ void v3d_aboutinfo()
         "<tr><td>Alt-T </td><td>invoke the multiple neuron-segments reTyping function.</td></tr>"
         "<tr><td>Alt-Y </td><td>invoke 3D polYline defining function using series of right-clicks.</td></tr>"
         "</table><br>"
+        "Note:if drawing fuction can't work well where the weak branches are influenced by strong branches, you can try 'shift' shortcut to adjust the threshold of image intensity under drawing <br>"
+        "function using serial BBoxes(Alt+ B shortcut) or drawing function using Global optimal (Alt+G shortcut).Firstly,entering into 'Alt+B' or 'Alt+ G' drawing function.Then,pressing 'shift' <br>"
+        "when you are drawing lines.After that,a spinbox named 'Intensity Threshold 1%-100%' will be popped in your window and you can input a number between 1 to 100 (e.g. number 60 means that <br>"
+        "the intensity of the seaching area less than sixty percentage will be considered.                                                                                                        <br>"
 
         "<H3>Some known problems</H3>"
         "So far Vaa3D has been tested on hundreds of machines with different software/hardware environments; in most cases (Mac, Linux, Windows) the software has a nice performance. Yet the following are some known problems.<br>"
