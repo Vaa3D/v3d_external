@@ -488,7 +488,11 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 	if (event_tip && renderer)
 	{
+        qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
+
 		QPoint gpos = mapToGlobal(pos);
+        qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
+
 		tipBuf[0] = '\0';
 		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
 			{} //a switch to turn on/off hover tip, because processHit always return 0 for tipBuf!=0
@@ -1032,6 +1036,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             break;
 
+        case Qt::Key_Q:
+            {
+                callCreateMarkerNearestNode();
+            }
+            break;
+
 	  		///// marker operation //////////////////////////////////////////////////////
 		case Qt::Key_Escape:
 			{
@@ -1048,7 +1058,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    else if (IS_SHIFT_MODIFIER) // toggle marker name display. by Lei Qu, 110425
 		    {
 		    	toggleMarkerName();
-		    }
+            }
 	  		break;
 
 	  		///// neuron operation //////////////////////////////////////////////////////
@@ -2969,6 +2979,16 @@ void V3dR_GLWidget::callDefine3DPolyline()
             renderer->callDefine3DPolyline();
             POST_updateGL();
         }
+    }
+}
+
+void V3dR_GLWidget::callCreateMarkerNearestNode()
+{
+    if (renderer)
+    {
+        QPoint gpos = mapFromGlobal(cursor().pos());
+        renderer->callCreateMarkerNearestNode(gpos.x(),gpos.y());
+        POST_updateGL();
     }
 }
 //end five shortcuts

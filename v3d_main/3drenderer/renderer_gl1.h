@@ -218,6 +218,7 @@ public:
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
+    virtual void callCreateMarkerNearestNode(int x, int y); // call creating marker
 
     virtual void toggleEditMode();
     virtual void setEditMode();

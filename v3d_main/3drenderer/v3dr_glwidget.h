@@ -384,6 +384,7 @@ public slots:
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
+    virtual void callCreateMarkerNearestNode();
 
     virtual void toggleEditMode();
     virtual void setEditMode();

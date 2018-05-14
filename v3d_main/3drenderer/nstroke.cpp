@@ -1403,6 +1403,48 @@ void Renderer_gl1::callDefine3DPolyline()
     }
 }
 
+void Renderer_gl1::callCreateMarkerNearestNode(int x, int y)
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        w->setEditMode();
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
+            double best_dist;
+            V3DLONG n_id = findNearestNeuronNode_WinXY(x, y ,p_tree, best_dist);
+            NeuronSWC cur_node;
+            if (n_id>=0)
+            {
+                cur_node = p_tree->listNeuron.at(n_id);
+                qDebug()<<"cur_node.x="<<cur_node.x<<" "<<"cur_node.y="<<cur_node.y<<" "<<"cur_node.z="<<cur_node.z;
+                int ii;
+                ImageMarker *p_marker=0; bool b_exist_marker=false;
+                for (ii=0;ii<listMarker.size();ii++)
+                {
+                    p_marker = (ImageMarker *)(&(listMarker.at(ii)));
+                    qDebug()<<ii<<" "<<p_marker->x<<" "<<p_marker->y<<" "<<p_marker->z;
+                    if (cur_node.x==p_marker->x && cur_node.y==p_marker->y && cur_node.z==p_marker->z)
+                    {
+                        b_exist_marker=true;
+                        break;
+                    }
+                }
+                if (b_exist_marker) {qDebug("you select an existing marker [%d], - do nothing.", ii+1);}
+                else
+                {
+                    XYZ loc(cur_node.x, cur_node.y, cur_node.z);
+                    addMarker(loc);
+                }
+            }
+        }
+    }
+}
+
 /**
  * @brief This is used for keyboard short-cut for n-right-strokes curve drawing
  * short-cut: Shift-L
