@@ -96,6 +96,14 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
                 return false;
             }
         }
+        else if (p.OPS == "trace_APP2") //ZZ, 05142018
+        {
+            if (pluginsDir.cd("plugins/neuron_tracing/segment_maker")==false)
+            {
+                v3d_msg("Cannot find ./plugins/neuron_tracing/segment_maker!",0);
+                return false;
+            }
+        }
         else if (p.OPS == "Fetch Highrez Image Data from File")
         {
             // @FIXED by Alessandro on 2015-09-30.

@@ -1001,6 +1001,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
 	  		break;
 
+        case Qt::Key_A:
+            {
+                callAutoTracers();//by ZZ 05142018
+            }
+            break;
+
 	  		///// surface object operation //////////////////////////////////////////////////////
 		case Qt::Key_P:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
@@ -2984,7 +2990,7 @@ void V3dR_GLWidget::callCurveLineDetector(int option)
     }
 }
 
-//For load new stack, by ZZ 01212018
+//For new stack loading, by ZZ 01212018
 void V3dR_GLWidget::callLoadNewStack()
 {
     if (renderer && _idep && v3dr_getImage4d(_idep))
@@ -2992,6 +2998,19 @@ void V3dR_GLWidget::callLoadNewStack()
         if (v3dr_getImage4d(_idep)->get_xy_view())
         {
             v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Load New Stack"));
+            POST_updateGL();
+        }
+    }
+}
+
+//for calling different auto tracers in terafly, by ZZ, 05142018
+void V3dR_GLWidget::callAutoTracers()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Auto Tracers"));
             POST_updateGL();
         }
     }
