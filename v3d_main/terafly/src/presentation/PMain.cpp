@@ -2620,13 +2620,13 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setTraslZ(zShiftSBox->value());
 
         int ROIxS   = H0_sbox->value();
-        int ROIxDim = H1_sbox->value()- H0_sbox->value();
+        int ROIxDim = H1_sbox->value()- H0_sbox->value();if(ROIxDim<512) ROIxDim=512;
         int ROIyS   = V0_sbox->value();
-        int ROIyDim = V1_sbox->value() - V0_sbox->value();
+        int ROIyDim = V1_sbox->value() - V0_sbox->value();if(ROIyDim<512) ROIyDim=512;
         int ROIzS   = D0_sbox->value();
-        int ROIzDim = D1_sbox->value() - D0_sbox->value();
+        int ROIzDim = D1_sbox->value() - D0_sbox->value();if(ROIzDim<512) ROIzDim=512;
 
-        float xRatio = static_cast<float>(ROIxDim)/dimX;
+        /*float xRatio = static_cast<float>(ROIxDim)/dimX;
         float yRatio = static_cast<float>(ROIyDim)/dimY;
         float zRatio = static_cast<float>(ROIzDim)/dimZ;
         int factorXYZ;
@@ -2653,7 +2653,7 @@ void PMain::setOverview(bool enabled)
             ROIyDim *= factorXYZ;
             ROIzDim *= factorXYZ;
         }
-
+*/
         refSys->nt = PluginInterface::getSWC();
         refSys->markList = PluginInterface::getLandmark();
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
