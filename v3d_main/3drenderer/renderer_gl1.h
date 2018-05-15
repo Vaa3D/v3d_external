@@ -643,6 +643,8 @@ public:
 	double currentTraceType;
 	bool useCurrentTraceTypeForRetyping;
 
+    RGBA8 currentMarkerColor;//added by ZZ 05142018
+
 private:
 	void init_members()
 	{
@@ -709,6 +711,9 @@ private:
 		zMax = 1.0;
 		initColorMaps();
 		gridSpacing = 10.0;
+        currentMarkerColor.r=255;
+        currentMarkerColor.g=0;
+        currentMarkerColor.b=0;
      }
 
 

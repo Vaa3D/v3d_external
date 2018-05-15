@@ -4029,22 +4029,23 @@ void Renderer_gl1::addMarker(XYZ &loc)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* image4d = v3dr_getImage4d(_idep);
 	MainWindow* V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
-	if (image4d)
+    if (image4d)
 	{
 		QList <LocationSimple> & listLoc = image4d->listLandmarks;
 		LocationSimple S;
-
         if (listLoc.size()>0)
         {
             S.inputProperty = listLoc.last().inputProperty;
             S.comments = listLoc.last().comments;
             S.category = listLoc.last().category;
             S.color = listLoc.last().color;
+            currentMarkerColor = listLoc.last().color;;
         }
         else
         {
             S.inputProperty = pxLocaUseful;
-            S.color = random_rgba8(255);
+            //S.color = random_rgba8(255);
+            S.color = currentMarkerColor;
         }
         S.x = pt.x;
 		S.y = pt.y;
@@ -4060,7 +4061,7 @@ void Renderer_gl1::addMarker(XYZ &loc)
 	memset(&S, 0, sizeof(S));
 	S.x = pt.x;
 	S.y = pt.y;
-	S.z = pt.z;
+    S.z = pt.z;
     if (listMarker.size()>0)
     {
         S.color = listMarker.last().color;

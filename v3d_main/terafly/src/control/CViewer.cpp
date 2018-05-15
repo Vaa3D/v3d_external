@@ -166,6 +166,7 @@ void CViewer::show()
             Renderer_gl2* prev_renderer = (Renderer_gl2*)(prev->view3DWidget->getRenderer());
             Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
             curr_renderer->currentTraceType = prev_renderer->currentTraceType;
+            curr_renderer->currentMarkerColor = prev_renderer->currentMarkerColor;
 
             bool changed_cmap = false;
             for(int k=0; k<3; k++)
@@ -2014,6 +2015,8 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         Renderer_gl2* source_renderer = (Renderer_gl2*)(source->view3DWidget->getRenderer());
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
         curr_renderer->currentTraceType = source_renderer->currentTraceType;
+        curr_renderer->currentMarkerColor = source_renderer->currentMarkerColor;
+
         bool changed_cmap = false;
         for(int k=0; k<3; k++)
         {
