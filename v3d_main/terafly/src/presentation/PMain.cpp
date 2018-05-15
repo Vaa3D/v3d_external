@@ -1545,16 +1545,19 @@ void PMain::autosaveAnnotations()
             // save
             cur_win->storeAnnotations();
             QDateTime mytime = QDateTime::currentDateTime();
-            QDir dir(QDir::currentPath());
-            dir.mkdir(QString("autosave"));
+
+//            QDir dir(QDir::currentPath());
+            QString qappDirPath = QCoreApplication::applicationDirPath();
+            QDir dir(qappDirPath);
+            dir.mkdir("autosave");
 
             QString autosavePath;
             if(annotationsPathLRU.compare("")==0)
-                autosavePath = "./autosave/annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+                autosavePath = qappDirPath+"/autosave/annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             else
             {
                 QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-                autosavePath = "./autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+                autosavePath = qappDirPath+"./autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             }
 
             CAnnotations::getInstance()->save(autosavePath.toStdString().c_str());
