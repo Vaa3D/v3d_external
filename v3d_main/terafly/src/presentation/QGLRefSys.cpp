@@ -28,6 +28,14 @@ QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers),
     ROIzShift = 0.0f;
     filled = true;
     zoom = -15.0;
+    miniMapCurBox=false;
+    alreadyLoadSwc=false;
+    miniROIxDim = 0.0f;
+    miniROIyDim = 0.0f;
+    miniROIzDim = 0.0f;
+    miniROIxShift = 0.0f;
+    miniROIyShift = 0.0f;
+    miniROIzShift = 0.0f;
 
     setAttribute(Qt::WA_TranslucentBackground,true);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint );
@@ -85,7 +93,6 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         yDim = static_cast<float>(dimY)/dimZ;
         xDim = static_cast<float>(dimX)/dimZ;
     }
-
     if(_ROIxDim && _ROIyDim && _ROIzDim)
     {
         ROIxDim   = (_ROIxDim   * xDim) / dimX;
@@ -96,16 +103,142 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         ROIzShift = (_ROIzShift * zDim) / dimZ;
     }
 
+    float dimMin[]={1,1,1};
+    float dimMax[]={1,1,1};
+    float dimSm[]={1,1,1};
+    bool dimGlEnable[]={false,false,false};
     if(nt.listNeuron.size()>0)
     {
+        alreadyLoadSwc=true;
+        dimMin[0]=nt.listNeuron[0].x;
+        dimMax[0]=nt.listNeuron[0].x;
+        dimMin[1]=nt.listNeuron[0].y;
+        dimMax[1]=nt.listNeuron[0].y;
+        dimMin[2]=nt.listNeuron[0].z;
+        dimMax[2]=nt.listNeuron[0].z;
+        for(int i=1;i<nt.listNeuron.size();i=i+5)
+        {
+            if(dimMin[0]>nt.listNeuron[i].x)
+                dimMin[0]=nt.listNeuron[i].x;
+            if(dimMax[0]<nt.listNeuron[i].x)
+                dimMax[0]=nt.listNeuron[i].x;
+            if(dimMin[1]>nt.listNeuron[i].y)
+                dimMin[1]=nt.listNeuron[i].y;
+            if(dimMax[1]<nt.listNeuron[i].y)
+                dimMax[1]=nt.listNeuron[i].y;
+            if(dimMin[2]>nt.listNeuron[i].z)
+                dimMin[2]=nt.listNeuron[i].z;
+            if(dimMax[2]<nt.listNeuron[i].z)
+                dimMax[2]=nt.listNeuron[i].z;
+        }
+        for(int i=0;i<3;i++)
+        {
+            dimSm[i]=dimMax[i]-dimMin[i];
+        }
         for(int i=0; i<nt.listNeuron.size();i++)
         {
-            nt.listNeuron[i].x = nt.listNeuron[i].x / dimX;
+            nt.listNeuron[i].x=(nt.listNeuron[i].x-dimMin[0])/dimSm[0];
+            nt.listNeuron[i].y=(dimMax[1]-nt.listNeuron[i].y)/dimSm[1];
+            nt.listNeuron[i].z=(dimMax[2]-nt.listNeuron[i].z)/dimSm[2];
+            /*nt.listNeuron[i].x = nt.listNeuron[i].x / dimX;
             nt.listNeuron[i].y = (dimY-nt.listNeuron[i].y)  / dimY;
-            nt.listNeuron[i].z = (dimZ-nt.listNeuron[i].z) / dimZ;
-        }
-    }
+            nt.listNeuron[i].z = (dimZ-nt.listNeuron[i].z) / dimZ;*/
 
+        }
+        //update RoiDim and RoiShift for miniMap.added by shengdian 20180513
+        if(_ROIxShift<=dimMin[0]&&(_ROIxShift+_ROIxDim)>=dimMin[0]&&(_ROIxShift+_ROIxDim)<=dimMax[0])
+        {
+            dimGlEnable[0]=true;
+            _ROIxDim=_ROIxDim-(dimMin[0]-_ROIxShift);
+            _ROIxShift=dimMin[0];
+        }
+        else if(_ROIxShift>=dimMin[0]&&(_ROIxShift+_ROIxDim)<=dimMax[0])
+        {
+            dimGlEnable[0]=true;
+        }
+        else if(_ROIxShift<dimMin[0]&&(_ROIxDim+_ROIxShift)>dimMax[0])
+        {
+            dimGlEnable[0]=true;
+            _ROIxDim=dimSm[0];
+            _ROIxShift=dimMin[0];
+        }
+        else if(_ROIxShift<=dimMax[0]&&(_ROIxShift+_ROIxDim)>dimMax[0])
+        {
+            dimGlEnable[0]=true;
+            _ROIxDim=_ROIxDim-(_ROIxShift+_ROIxDim-dimMax[0]);
+        }
+        else
+        {
+            dimGlEnable[0]=false;
+        }
+        //RoiyDim
+        if(_ROIyShift<=dimMin[1]&&(_ROIyShift+_ROIyDim)>dimMin[1]&&(_ROIyShift+_ROIyDim)<=dimMax[1])
+        {
+            dimGlEnable[1]=true;
+            _ROIyDim=_ROIyDim-(dimMin[1]-_ROIyShift);
+            _ROIyShift=dimMin[1];
+            qDebug()<<"roiydim"<<_ROIyDim<<","<<_ROIyShift;
+        }
+        else if(_ROIyShift>=dimMin[1]&&(_ROIyShift+_ROIyDim)<=dimMax[1])
+        {
+            dimGlEnable[1]=true;
+        }
+        else if(_ROIyShift<dimMin[1]&&(_ROIyDim+_ROIyShift)>dimMax[1])
+        {
+            dimGlEnable[1]=true;
+            _ROIyDim=dimSm[1];
+            _ROIyShift=dimMin[1];
+        }
+        else if(_ROIyShift<dimMax[1]&&(_ROIyShift+_ROIyDim)>dimMax[1])
+        {
+            dimGlEnable[1]=true;
+            _ROIyDim=_ROIyDim-(_ROIyShift+_ROIyDim-dimMax[1]);
+        }
+        else
+        {
+            dimGlEnable[1]=false;
+        }
+        //RoizDim
+        if(_ROIzShift<=dimMin[2]&&(_ROIzShift+_ROIzDim)>=dimMin[2]&&(_ROIzShift+_ROIzDim)<=dimMax[2])
+        {
+            dimGlEnable[2]=true;
+            _ROIzDim=_ROIzDim-(dimMin[2]-_ROIzShift);
+            _ROIzShift=dimMin[2];
+        }
+        else if(_ROIzShift>=dimMin[2]&&(_ROIzShift+_ROIzDim)<=dimMax[2])
+        {
+            dimGlEnable[2]=true;
+        }
+        else if(_ROIzShift<dimMin[2]&&(_ROIzDim+_ROIzShift)>dimMax[2])
+        {
+            dimGlEnable[2]=true;
+            _ROIzDim=dimSm[2];
+            _ROIzShift=dimMin[2];
+        }
+        else if(_ROIzShift<=dimMax[2]&&(_ROIzShift+_ROIzDim)>dimMax[2])
+        {
+            dimGlEnable[2]=true;
+            _ROIzDim=_ROIzDim-(_ROIzShift+_ROIzDim-dimMax[2]);
+        }
+        else
+        {
+            dimGlEnable[2]=false;
+        }
+        if(dimGlEnable[0]&&dimGlEnable[1]&&dimGlEnable[2])
+        {
+            miniMapCurBox=true;
+            miniROIxDim   = (_ROIxDim) / dimSm[0];
+            miniROIxShift = ((_ROIxShift-dimMin[0])) / dimSm[0];
+            miniROIyDim   = ((_ROIyDim  ) / dimSm[1]);
+            miniROIyShift = ((-dimMin[1]+_ROIyShift)) / dimSm[1];
+            miniROIzDim   = (_ROIzDim   ) / dimSm[2];
+            miniROIzShift = ((-dimMin[2]+_ROIzShift)) / dimSm[2];
+        }
+        else
+            miniMapCurBox=false;
+    }
+    else
+        alreadyLoadSwc=false;
     xSoma=ySoma=zSoma=0;
     if(markList.size()>0)
     {
@@ -113,9 +246,9 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         {
             if(markList.at(i).comments == "soma")
             {
-                xSoma = (markList.at(i).x * xDim) / dimX;
-                ySoma = (markList.at(i).y * yDim) / dimY;
-                zSoma = (markList.at(i).z * zDim) / dimZ;
+                xSoma = ((markList.at(i).x-dimMin[0]) * xDim) / dimSm[0];
+                ySoma = ((markList.at(i).y-dimMin[1]) * yDim) / dimSm[1];
+                zSoma = ((markList.at(i).z-dimMin[2]) * zDim) / dimSm[2];
             }
         }
     }
@@ -237,77 +370,149 @@ void QGLRefSys::paintGL()
             glVertex3f(-xDim,yDim,-zDim);
         glEnd();
     }
-    else if(ROIxDim && ROIyDim && ROIzDim)
+    else if(miniROIxDim && miniROIyDim && miniROIzDim)
     {
-        // ROI faces
-        glColor3f(1.00,1.00,1.00);
-        glBegin(GL_QUADS);
-            //---------front-----------//
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
-            //---------back----------//
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
-            //---------top-----------//
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
-            //-------bottom----------//
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
-            //--------right----------//
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
-            //---------left----------//
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
-        glEnd();
+        // ROI facesdimX
+        if(miniMapCurBox&&alreadyLoadSwc)
+        {
+            glColor3f(1.00,1.00,1.00);
+            glBegin(GL_QUADS);
+                //---------front-----------//
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*yDim*miniROIyShift+yDim,            -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*yDim*miniROIyShift+yDim,            -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*(miniROIyShift+miniROIyDim)*yDim+yDim,  -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*miniROIxShift-xDim,          -2*(miniROIyShift+miniROIyDim)*yDim+yDim,  -2*zDim*miniROIzShift+zDim);
+                //---------back----------//
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*yDim*miniROIyShift+yDim,            -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*yDim*miniROIyShift+yDim,            -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*(miniROIyShift+miniROIyDim)*yDim+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*miniROIxShift-xDim,          -2*(miniROIyShift+miniROIyDim)*yDim+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                //---------top-----------//
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*yDim*miniROIyShift+yDim,            -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*yDim*miniROIyShift+yDim,            -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim,-2*yDim*miniROIyShift+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*yDim*miniROIyShift+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                //-------bottom----------//
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*(miniROIyShift+miniROIyDim)*yDim+yDim,            -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*(miniROIyShift+miniROIyDim)*yDim+yDim,          -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*(miniROIyShift+miniROIyDim)*yDim+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*miniROIxShift-xDim,          -2*(miniROIyShift+miniROIyDim)*yDim+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                //--------right----------//
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*yDim*miniROIyShift+yDim,            -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*yDim*miniROIyShift+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*(miniROIyShift+miniROIyDim)*yDim+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*miniROIxShift-xDim,           -2*(miniROIyShift+miniROIyDim)*yDim+yDim,            -2*zDim*miniROIzShift+zDim);
+                //---------left----------//
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*yDim*miniROIyShift+yDim,            -2*zDim*miniROIzShift+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim,-2*yDim*miniROIyShift+yDim,  -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim, -2*(miniROIyShift+miniROIyDim)*yDim+yDim, -2*zDim*(miniROIzDim+miniROIzShift)+zDim);
+                glVertex3f(2*xDim*(miniROIxShift+miniROIxDim)-xDim,-2*(miniROIyShift+miniROIyDim)*yDim+yDim,            -2*zDim*miniROIzShift+zDim);
+            glEnd();
 
-        // ROI contour
-        glColor3f(255.0,0.0,0.0);
-        glLineWidth(1.0);
-        glBegin(GL_LINES);
-            //-------top lines---------//
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
-            //------bottom lines-------//
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
-            //--------side lines-------//
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift);
-            glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
-        glEnd(); // GL_LINES
+            // ROI contour
+            glColor3f(255.0,0.0,0.0);
+            glLineWidth(1.0);
+            glBegin(GL_LINES);
+                //-------top lines---------//
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*yDim*miniROIyShift,           zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*yDim*miniROIyShift,           zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*yDim*miniROIyShift,           zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*yDim*miniROIyShift,           zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*yDim*miniROIyShift,           zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*yDim*miniROIyShift,           zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*yDim*miniROIyShift,           zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*yDim*miniROIyShift,           zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                //------bottom lines-------//
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                //--------side lines-------//
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*yDim*miniROIyShift,           zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*yDim*miniROIyShift,           zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*zDim*(miniROIzDim+miniROIzShift));
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*yDim*miniROIyShift,           zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*miniROIxShift,           yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*yDim*miniROIyShift,           zDim-2*miniROIzShift*zDim);
+                glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*(miniROIyShift+miniROIyDim)*yDim, zDim-2*miniROIzShift*zDim);
+            glEnd(); // GL_LINES
+        }
+        else if(!alreadyLoadSwc)
+        {
+            // ROI faces
+                    glColor3f(1.00,1.00,1.00);
+                    glBegin(GL_QUADS);
+                        //---------front-----------//
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
+                        //---------back----------//
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
+                        //---------top-----------//
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
+                        //-------bottom----------//
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
+                        //--------right----------//
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
+                        //---------left----------//
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim,  zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,            zDim-2*ROIzShift-2*ROIzDim);
+                    glEnd();
 
-        if(xSoma && ySoma && zSoma)
+                    // ROI contour
+                    glColor3f(255.0,0.0,0.0);
+                    glLineWidth(1.0);
+                    glBegin(GL_LINES);
+                        //-------top lines---------//
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
+                        //------bottom lines-------//
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
+                        //--------side lines-------//
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift-2*ROIzDim);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift,           zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift,           yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift,           zDim-2*ROIzShift);
+                        glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
+            glEnd(); // GL_LINES
+        }
+        if(xSoma && ySoma && zSoma&&alreadyLoadSwc)
         {
             glDisable(GL_DEPTH_TEST);
             // Soma faces
@@ -584,14 +789,49 @@ void QGLRefSys::paintGL()
     if(nt.listNeuron.size()>0)
     {
         glDisable(GL_DEPTH_TEST);
-        glColor3f(0.0,0.0,255.0);
+        for(int i=0; i<nt.listNeuron.size();i+=3)
+        {
+            //color info need to complete
+            /*"\n 0 -- undefined (white)"
+              "\n 1 -- soma (black)"
+              "\n 2 -- axon (red)"
+              "\n 3 -- dendrite (blue)"
+              "\n 4 -- apical dendrite (purple)"
+              "\n else -- custom \n"),*/
+            switch(nt.listNeuron[i].type)
+            {
+            case 0:
+                glColor3f(255.0,255.0,255.0);
+                break;
+            case 1:
+                glColor3f(0,0,0);
+                break;
+            case 2:
+                glColor3f(255,0,0);
+                break;
+            case 3:
+                glColor3f(0.0,0.0,255);
+                break;
+            case 4:
+                glColor3f(128,0,128);
+                break;
+            default:
+                glColor3f(255.0,255.0,0);
+            }
+            glPointSize(2);
+            glBegin(GL_POINTS);
+            glVertex3f(2*xDim*nt.listNeuron[i].x-xDim,2*yDim*nt.listNeuron[i].y-yDim,2*zDim*nt.listNeuron[i].z-zDim);
+            glEnd();
+        }
+        /*glColor3f(0.0,0.0,255.0);
         glPointSize(2);
         glBegin(GL_POINTS);
-        for(int i=0; i<nt.listNeuron.size();i+=10)
+        for(int i=0; i<nt.listNeuron.size();i+=5)
         {
+            nt.listNeuron[i].color.r;
             glVertex3f(2*xDim*nt.listNeuron[i].x-xDim,2*yDim*nt.listNeuron[i].y-yDim,2*zDim*nt.listNeuron[i].z-zDim);
         }
-        glEnd();
+        glEnd();*/
     }
 
 }

@@ -28,6 +28,16 @@ class terafly::QGLRefSys : public QGLWidget
         float xSoma;           //First soma x location (between 0.0 and 1.0)
         float ySoma;           //First soma y location (between 0.0 and 1.0)
         float zSoma;           //First soma z location (between 0.0 and 1.0)
+        //for miniMap.added by shengdian.20180513
+        bool miniMapCurBox;
+        bool alreadyLoadSwc;
+        float miniROIxDim;          //ROI x dimension (between 0.0 and 1.0)
+        float miniROIyDim;          //ROI y dimension (between 0.0 and 1.0)
+        float miniROIzDim;          //ROI z dimension (between 0.0 and 1.0)
+        float miniROIxShift;        //ROI x shift (between 0.0 and 1.0)
+        float miniROIyShift;        //ROI y shift (between 0.0 and 1.0)
+        float miniROIzShift;        //ROI z shift (between 0.0 and 1.0)
+
     public:
 
         QGLRefSys(QWidget *parent = 0);
