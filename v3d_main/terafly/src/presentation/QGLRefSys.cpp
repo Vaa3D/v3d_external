@@ -789,7 +789,7 @@ void QGLRefSys::paintGL()
     if(nt.listNeuron.size()>0)
     {
         glDisable(GL_DEPTH_TEST);
-        for(int i=0; i<nt.listNeuron.size();i+=3)
+        for(int i=0; i<nt.listNeuron.size();i+=2)
         {
             //color info need to complete
             /*"\n 0 -- undefined (white)"
