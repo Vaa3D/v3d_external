@@ -93,6 +93,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         yDim = static_cast<float>(dimY)/dimZ;
         xDim = static_cast<float>(dimX)/dimZ;
     }
+    qDebug()<<"xyzDim="<<xDim<<","<<yDim<<","<<zDim<<"before";
     if(_ROIxDim && _ROIyDim && _ROIzDim)
     {
         ROIxDim   = (_ROIxDim   * xDim) / dimX;
@@ -135,6 +136,26 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         {
             dimSm[i]=dimMax[i]-dimMin[i];
         }
+        if(dimSm[0]>dimSm[1]&&dimSm[0]>dimSm[2])
+        {
+            xDim=1.0;
+            yDim=static_cast<float> (dimSm[1])/dimSm[0];
+            zDim=static_cast<float> (dimSm[2])/dimSm[0];
+        }
+        if(dimSm[1]>dimSm[0]&&dimSm[1]>dimSm[2])
+        {
+            yDim=1.0;
+            xDim=static_cast<float> (dimSm[0])/dimSm[1];
+            zDim=static_cast<float> (dimSm[2])/dimSm[1];
+        }
+        if(dimSm[2]>dimSm[1]&&dimSm[2]>dimSm[0])
+        {
+            zDim=1.0;
+            yDim=static_cast<float> (dimSm[1])/dimSm[2];
+            xDim=static_cast<float> (dimSm[0])/dimSm[2];
+        }
+        qDebug()<<"xyzDim="<<xDim<<","<<yDim<<","<<zDim<<"after";
+
         for(int i=0; i<nt.listNeuron.size();i++)
         {
             nt.listNeuron[i].x=(nt.listNeuron[i].x-dimMin[0])/dimSm[0];
@@ -226,6 +247,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         }
         if(dimGlEnable[0]&&dimGlEnable[1]&&dimGlEnable[2])
         {
+
             miniMapCurBox=true;
             miniROIxDim   = (_ROIxDim) / dimSm[0];
             miniROIxShift = ((_ROIxShift-dimMin[0])) / dimSm[0];
