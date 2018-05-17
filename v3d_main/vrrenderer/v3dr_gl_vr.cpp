@@ -2807,7 +2807,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2))
 				{
 					qDebug()<<"split node in hear/end or neuron is too short";
-					return;
+					break;
 				}
 				//delete NT first
 				if(isOnline==false)	
@@ -2860,6 +2860,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					 	}
 					 }
 				}
+
 				//create NT2's Topology
 				for(int j=splitNT2beginindex,k=1;j<nearestNT.listNeuron.size();j++,k++)
 				{
@@ -2886,17 +2887,15 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
         			splitNT2.hashNeuron.insert(tempSWC.n, splitNT2.listNeuron.size()-1);
 					splitNT2size++;
 				}
+
 				//copy data from second half into NT2
 				for(int j=splitNT2beginindex,k=0;j<nearestNT.listNeuron.size();j++,k++)
 				{
 					if(j==splitNT2beginindex)
 					{	
-						splitNT2.listNeuron[k].x=nearestNode.x;
-						splitNT2.listNeuron[k].y=nearestNode.y;
-						splitNT2.listNeuron[k].z=nearestNode.z;
-						splitNT2.listNeuron[k].x-=directionsplit.x;
-						splitNT2.listNeuron[k].y-=directionsplit.y;
-						splitNT2.listNeuron[k].z-=directionsplit.z;
+						splitNT2.listNeuron[k].x=nearestNode.x - directionsplit.x;
+						splitNT2.listNeuron[k].y=nearestNode.y - directionsplit.y;
+						splitNT2.listNeuron[k].z=nearestNode.z - directionsplit.z;
 						splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
 						splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
 						continue;
@@ -2907,6 +2906,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
 					splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
 				}
+
+				//add the two new NTs to NTList
 				splitNT1.name = "sketch_"+QString("%1").arg(sketchNum++);
 				qDebug()<<splitNT1.name;
 				sketchedNTList.push_back(splitNT1);
