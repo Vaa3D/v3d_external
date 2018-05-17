@@ -9,6 +9,24 @@
 #endif
 
 using namespace terafly;
+// from renderer_obj.cpp
+const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
+        {255, 255, 255},  // white,   0-undefined
+        {20,  20,  0 },  // black,   1-soma
+        {200, 20,  0  },  // red,     2-axon
+        {0,   20,  200},  // blue,    3-dendrite
+        {200, 0,   200},  // purple,  4-apical dendrite
+        //the following is Hanchuan's extended color. 090331
+        {0,   200, 200},  // cyan,    5
+        {220, 200, 0  },  // yellow,  6
+        {0,   200, 20 },  // green,   7
+        {188, 94,  37 },  // coffee,  8
+        {180, 200, 120},  // asparagus,	9
+        {250, 100, 120},  // salmon,	10
+        {120, 200, 200},  // ice,		11
+        {100, 120, 200},  // orchid,	12
+        };//////////////////////////////////////////////////////////////////////////////////
+const int neuron_type_color_num = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
 QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
@@ -93,7 +111,6 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         yDim = static_cast<float>(dimY)/dimZ;
         xDim = static_cast<float>(dimX)/dimZ;
     }
-    qDebug()<<"xyzDim="<<xDim<<","<<yDim<<","<<zDim<<"before";
     if(_ROIxDim && _ROIyDim && _ROIzDim)
     {
         ROIxDim   = (_ROIxDim   * xDim) / dimX;
@@ -154,7 +171,6 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             yDim=static_cast<float> (dimSm[1])/dimSm[2];
             xDim=static_cast<float> (dimSm[0])/dimSm[2];
         }
-        qDebug()<<"xyzDim="<<xDim<<","<<yDim<<","<<zDim<<"after";
 
         for(int i=0; i<nt.listNeuron.size();i++)
         {
@@ -198,7 +214,6 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             dimGlEnable[1]=true;
             _ROIyDim=_ROIyDim-(dimMin[1]-_ROIyShift);
             _ROIyShift=dimMin[1];
-            qDebug()<<"roiydim"<<_ROIyDim<<","<<_ROIyShift;
         }
         else if(_ROIyShift>=dimMin[1]&&(_ROIyShift+_ROIyDim)<=dimMax[1])
         {
@@ -261,7 +276,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
     }
     else
         alreadyLoadSwc=false;
-    xSoma=ySoma=zSoma=0;
+    /*xSoma=ySoma=zSoma=0;
     if(markList.size()>0)
     {
         for(int i=0; i< markList.size();i++)
@@ -273,7 +288,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
                 zSoma = ((markList.at(i).z-dimMin[2]) * zDim) / dimSm[2];
             }
         }
-    }
+    }*/
 
     updateGL();
 }
@@ -432,8 +447,8 @@ void QGLRefSys::paintGL()
             glEnd();
 
             // ROI contour
-            glColor3f(255.0,0.0,0.0);
-            glLineWidth(1.0);
+            glColor3f(0,0.0,0.0);
+            glLineWidth(2.0);
             glBegin(GL_LINES);
                 //-------top lines---------//
                 glVertex3f(-xDim+2*xDim*(miniROIxShift+miniROIxDim), yDim-2*yDim*miniROIyShift,           zDim-2*zDim*(miniROIzDim+miniROIzShift));
@@ -534,7 +549,7 @@ void QGLRefSys::paintGL()
                         glVertex3f(-xDim+2*ROIxShift+2*ROIxDim, yDim-2*ROIyShift-2*ROIyDim, zDim-2*ROIzShift);
             glEnd(); // GL_LINES
         }
-        if(xSoma && ySoma && zSoma&&alreadyLoadSwc)
+        /*if(xSoma && ySoma && zSoma&&alreadyLoadSwc)
         {
             glDisable(GL_DEPTH_TEST);
             // Soma faces
@@ -604,7 +619,7 @@ void QGLRefSys::paintGL()
                 glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma,           zDim-2*zSoma);
                 glVertex3f(-xDim+2*xSoma+0.04, yDim-2*ySoma-0.04, zDim-2*zSoma);
             glEnd(); // GL_LINES
-        }
+        }*/
 
     }
 
@@ -811,49 +826,17 @@ void QGLRefSys::paintGL()
     if(nt.listNeuron.size()>0)
     {
         glDisable(GL_DEPTH_TEST);
-        for(int i=0; i<nt.listNeuron.size();i+=2)
+        for(int i=0; i<nt.listNeuron.size();i++)
         {
-            //color info need to complete
-            /*"\n 0 -- undefined (white)"
-              "\n 1 -- soma (black)"
-              "\n 2 -- axon (red)"
-              "\n 3 -- dendrite (blue)"
-              "\n 4 -- apical dendrite (purple)"
-              "\n else -- custom \n"),*/
-            switch(nt.listNeuron[i].type)
-            {
-            case 0:
-                glColor3f(255.0,255.0,255.0);
-                break;
-            case 1:
-                glColor3f(0,0,0);
-                break;
-            case 2:
-                glColor3f(255,0,0);
-                break;
-            case 3:
-                glColor3f(0.0,0.0,255);
-                break;
-            case 4:
-                glColor3f(128,0,128);
-                break;
-            default:
-                glColor3f(255.0,255.0,0);
-            }
+            GLfloat ntr=neuron_type_color[(nt.listNeuron[i].type>=0&&nt.listNeuron[i].type<=neuron_type_color_num)? (nt.listNeuron[i].type):0][0];
+            GLfloat ntg=neuron_type_color[(nt.listNeuron[i].type>=0&&nt.listNeuron[i].type<=neuron_type_color_num)? (nt.listNeuron[i].type):0][1];
+            GLfloat ntb=neuron_type_color[(nt.listNeuron[i].type>=0&&nt.listNeuron[i].type<=neuron_type_color_num)? (nt.listNeuron[i].type):0][2];
+            glColor3f(ntr/255,ntg/255,ntb/255);
             glPointSize(2);
             glBegin(GL_POINTS);
             glVertex3f(2*xDim*nt.listNeuron[i].x-xDim,2*yDim*nt.listNeuron[i].y-yDim,2*zDim*nt.listNeuron[i].z-zDim);
             glEnd();
         }
-        /*glColor3f(0.0,0.0,255.0);
-        glPointSize(2);
-        glBegin(GL_POINTS);
-        for(int i=0; i<nt.listNeuron.size();i+=5)
-        {
-            nt.listNeuron[i].color.r;
-            glVertex3f(2*xDim*nt.listNeuron[i].x-xDim,2*yDim*nt.listNeuron[i].y-yDim,2*zDim*nt.listNeuron[i].z-zDim);
-        }
-        glEnd();*/
     }
 
 }

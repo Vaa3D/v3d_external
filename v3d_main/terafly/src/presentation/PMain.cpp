@@ -2623,11 +2623,29 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setTraslZ(zShiftSBox->value());
 
         int ROIxS   = H0_sbox->value();
-        int ROIxDim = H1_sbox->value()- H0_sbox->value();if(ROIxDim<512) ROIxDim=512;
+        int ROIxDim = H1_sbox->value()- H0_sbox->value();
+        if(ROIxDim<512)
+        {
+            int centerRoiXs=ROIxS+(ROIxDim-1)/2;
+            ROIxDim=512;
+            ROIxS=centerRoiXs-ROIxDim/2;
+        }
         int ROIyS   = V0_sbox->value();
-        int ROIyDim = V1_sbox->value() - V0_sbox->value();if(ROIyDim<512) ROIyDim=512;
+        int ROIyDim = V1_sbox->value() - V0_sbox->value();
+        if(ROIyDim<512)
+        {
+            int centerRoiYs=ROIyS+(ROIyDim-1)/2;
+            ROIyDim=512;
+            ROIyS=centerRoiYs-ROIyDim/2;
+        }
         int ROIzS   = D0_sbox->value();
-        int ROIzDim = D1_sbox->value() - D0_sbox->value();if(ROIzDim<512) ROIzDim=512;
+        int ROIzDim = D1_sbox->value() - D0_sbox->value();
+        if(ROIzDim<512)
+        {
+            int centerRoiZs=ROIzS+(ROIzDim-1)/2;
+            ROIzDim=512;
+            ROIzS=centerRoiZs-ROIzDim/2;
+        }
 
         /*float xRatio = static_cast<float>(ROIxDim)/dimX;
         float yRatio = static_cast<float>(ROIyDim)/dimY;
