@@ -1004,6 +1004,7 @@ bool CMainApplication::BInitGL()
 			NeuronTree SS;
 			//convert each segment to NeuronTree with one single path
 			V_NeuronSWC seg_temp =  testVNL.seg.at(i);
+			seg_temp.reverse();
 			SS = V_NeuronSWC__2__NeuronTree(seg_temp);
 			//append to editable sketchedNTList
 			SS.name = "loaded_" + QString("%1").arg(i);
@@ -2770,6 +2771,156 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+		case m_splitMode:
+			{	
+				qDebug()<<"splitmode come in";
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
+					}
+				}
+				mat=glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
+				delName = "";
+				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+				NeuronTree nearestNT;
+				NeuronSWC nearestNode;
+				if (delName == "") break; //segment not found
+
+				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
+				{
+					QString NTname="";
+					NTname = sketchedNTList.at(i).name;
+					if(NTname==delName)
+					{
+						nearestNT=sketchedNTList.at(i);
+						nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+						break;
+					}
+				}
+				qDebug()<<"get node and nt";
+				//special situation for splitnode in head or end
+				if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2))
+				{
+					qDebug()<<"split node in hear/end or neuron is too short";
+					return;
+				}
+				//delete NT first
+				if(isOnline==false)	
+				{
+					NTL temp_NTL = sketchedNTList;
+					bool delerror = DeleteSegment(delName);
+					if(delerror==true)
+					{
+						bIsUndoEnable = true;
+						if(vUndoList.size()==MAX_UNDO_COUNT)
+						{
+							vUndoList.erase(vUndoList.begin());
+						}
+						vUndoList.push_back(temp_NTL);
+						if (vRedoList.size()> 0)
+							vRedoList.clear();
+						bIsRedoEnable = false;
+						vRedoList.clear();					
+						qDebug()<<"Segment Deleted.";
+					}
+					else
+						qDebug()<<"Cannot Find the Segment ";
+				}
+				//add two NT
+				NeuronTree splitNT1,splitNT2;
+				glm::vec3 directionsplit;
+				//split first half get splitdirection
+				int splitNT2beginindex=0;
+				int splitNT2size=1;
+				for(int k=0;k<nearestNT.listNeuron.size();k++)
+				{
+					 if(nearestNT.listNeuron.at(k).n<=nearestNode.n)
+					 { 
+					 	splitNT1.listNeuron.append(nearestNT.listNeuron.at(k));
+        			 	splitNT1.hashNeuron.insert(nearestNT.listNeuron.at(k).n, splitNT1.listNeuron.size()-1);
+					 }
+					 else
+					 {	
+						qDebug()<<"splitNT1 completed";
+						NeuronSWC secnode=nearestNT.listNeuron.at(k);
+					 	if(nearestNT.listNeuron.at(k).n==nearestNode.n+1)
+					 	{	
+							splitNT2beginindex=k-1;
+							splitNT2size=nearestNT.listNeuron.size()-k+1;
+					 		NeuronSWC secHeadNS=nearestNode;
+							glm::vec3 tempdirection(secHeadNS.x-secnode.x,secHeadNS.y-secnode.y,secHeadNS.z-secnode.z);
+							tempdirection=glm::normalize(tempdirection);
+							directionsplit=tempdirection;
+							break;
+					 	}
+					 }
+				}
+				//create NT2's Topology
+				for(int j=splitNT2beginindex,k=1;j<nearestNT.listNeuron.size();j++,k++)
+				{
+					NeuronSWC tempSWC;
+					if(j==splitNT2beginindex)
+						{
+							tempSWC.n=1;
+							tempSWC.pn=-1;
+							tempSWC.x=0;
+							tempSWC.y=0;
+							tempSWC.z=0;
+							tempSWC.type=2;
+							splitNT2.listNeuron.append(tempSWC);
+        					splitNT2.hashNeuron.insert(tempSWC.n, splitNT2.listNeuron.size()-1);
+							continue;
+						}
+					tempSWC.n=k;
+					tempSWC.pn=splitNT2.listNeuron.back().n;
+					tempSWC.x=0;
+					tempSWC.y=0;
+					tempSWC.z=0;
+					tempSWC.type=2;
+					splitNT2.listNeuron.append(tempSWC);
+        			splitNT2.hashNeuron.insert(tempSWC.n, splitNT2.listNeuron.size()-1);
+					splitNT2size++;
+				}
+				//copy data from second half into NT2
+				for(int j=splitNT2beginindex,k=0;j<nearestNT.listNeuron.size();j++,k++)
+				{
+					if(j==splitNT2beginindex)
+					{	
+						splitNT2.listNeuron[k].x=nearestNode.x;
+						splitNT2.listNeuron[k].y=nearestNode.y;
+						splitNT2.listNeuron[k].z=nearestNode.z;
+						splitNT2.listNeuron[k].x-=directionsplit.x;
+						splitNT2.listNeuron[k].y-=directionsplit.y;
+						splitNT2.listNeuron[k].z-=directionsplit.z;
+						splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
+						splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
+						continue;
+					}
+					splitNT2.listNeuron[k].x=nearestNT.listNeuron[j].x;
+					splitNT2.listNeuron[k].y=nearestNT.listNeuron[j].y;
+					splitNT2.listNeuron[k].z=nearestNT.listNeuron[j].z;
+					splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
+					splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
+				}
+				splitNT1.name = "sketch_"+QString("%1").arg(sketchNum++);
+				qDebug()<<splitNT1.name;
+				sketchedNTList.push_back(splitNT1);
+				int lIndex = sketchedNTList.size() - 1;
+				qDebug()<<"index = "<<lIndex;
+				SetupSingleMorphologyLine(lIndex,0);
+				splitNT2.name = "sketch_"+QString("%1").arg(sketchNum++);
+				qDebug()<<splitNT2.name;
+				sketchedNTList.push_back(splitNT2);
+				lIndex = sketchedNTList.size() - 1;
+				qDebug()<<"index = "<<lIndex;
+				SetupSingleMorphologyLine(lIndex,0);
+				break;
+			}
 		default :
 			break;
 		}
@@ -2782,7 +2933,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
 
 		m_modeControlGrip_R++;
-		m_modeControlGrip_R%=5;
+		m_modeControlGrip_R%=6;
 		switch(m_modeControlGrip_R)
 		{
 		case 0:
@@ -2799,6 +2950,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			break;
 		case 4:
 			m_modeGrip_R = m_delmarkMode;
+			break;
+		case 5:
+			m_modeGrip_R = m_splitMode;
 			break;
 		default:
 			break;
@@ -3683,6 +3837,15 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_P.x,point_P.y,point_P.z,0.67,0.125f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.67,0,vcVerts);
 				break;
+			}
+		case m_splitMode:
+			{
+				AddVertex(point_M.x,point_M.y,point_M.z,0.0,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.16,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.0,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.0,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.16,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.16,0.625f,vcVerts);
 			}
 		default:
 			break;
@@ -5229,7 +5392,22 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 	//if cannot find any matches, return ""
 	return ntnametofind;
 }
+NeuronSWC CMainApplication::FindNearestNode(NeuronTree NT,glm::vec3 dPOS)//lq
+{		
+	NeuronSWC SS0;
+	for(int i=0;i<NT.listNeuron.size();i++)
+	{
 
+		SS0 = NT.listNeuron.at(i);
+		float dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+		//cal the dist between pos & current node'position, then compare with the threshold
+		if(dist < (dist_thres/m_globalScale*5))
+		{
+			//once dist between pos & node < threshold, return the the node
+			return SS0;
+		}
+	}
+}
 void CMainApplication::UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,float nodey,float nodez)
 {
 	if((ntnum<0)||(ntnum>=sketchedNTList.size())) return;
