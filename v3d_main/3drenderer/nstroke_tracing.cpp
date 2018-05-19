@@ -3285,6 +3285,21 @@ void Renderer_gl1::simpleConnect()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
+	if (this->isTera)
+	{
+		// In terafly mode, the number of segments carried by curImg->->tracedNeuron.seg only includes those within the annotation space.
+		// See CAnnotations::findCurves for more information.
+		cout << "number of editable segments:" << curImg->tracedNeuron.seg.size() << endl;
+
+		simpleConnectExecutor(w, curImg, curXWidget);
+	}
+	else if (!this->isTera) simpleConnectExecutor(w, curImg, curXWidget);
+
+	return;
+}
+
+void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, XFormWidget* curXWidget)
+{
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
 	for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
@@ -3294,14 +3309,14 @@ void Renderer_gl1::simpleConnect()
 		{
 			QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
 			if (!p_listneuron) continue;
-			//for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
+			// for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
 
 			vector<segInfoUnit> segInfo;
 			long segCheck = 0;
 			long cummNodeNum = 0;
 
 			/* ============== Get all segments information included in the movePen trajectory, and then decide where to connect ============== */
-			  /* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
+			/* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
 			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
 			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
 			for (size_t i = 0; i<list_listCurvePos.at(0).size(); ++i)
@@ -3332,7 +3347,7 @@ void Renderer_gl1::simpleConnect()
 					}
 				}
 			}
-			  /* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
+			/* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
 
 			/* ========= Acquire the 1st 2 and only the 1st 2 segments touched by stroke ========= */
 			for (V3DLONG i = 0; i<list_listCurvePos.at(0).size(); i++)
@@ -3417,12 +3432,12 @@ void Renderer_gl1::simpleConnect()
 
 			/* ========= Connect segments ========= */
 			if (segInfo.size() < 2) return;
-			/*int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo); // =======> loop check 
+			int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo); // =======> loop check 
 			if (loop == 1)
 			{
 				v3d_msg("Oops! You're about to make this mouse a retard by introducing a neuronal short circuit. *\\(^O^)/*  \n\nNote: This loop safety guard is in beta phase. Please collect feedbacks and report to MK. Thank you.");
 				return;
-			}*/
+			}
 			//////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
 			if ((segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2) && (segInfo.at(1).head_tail == -1 || segInfo.at(1).head_tail == 2))
 			{
@@ -3449,7 +3464,7 @@ void Renderer_gl1::simpleConnect()
 				{
 					if (branchSeg.head_tail == -1)
 					{
-						for(vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.end() - 1;
+						for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.end() - 1;
 							itNextSeg >= curImg->tracedNeuron.seg[branchSeg.segID].row.begin(); --itNextSeg)
 						{
 							itNextSeg->seg_id = branchSeg.segID;
@@ -3520,7 +3535,7 @@ void Renderer_gl1::simpleConnect()
 				}
 			}
 			//////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
-			
+
 			//////////////////////////////////////////// BRANCHING CONNECTION ////////////////////////////////////////////
 			if ((segInfo.at(0).head_tail != -1 && segInfo.at(0).head_tail != 2) ^ (segInfo.at(1).head_tail != -1 && segInfo.at(1).head_tail != 2))
 			{
@@ -3567,7 +3582,7 @@ void Renderer_gl1::simpleConnect()
 					size_t mainSegLength = curImg->tracedNeuron.seg[mainSeg.segID].row.size();
 					curImg->tracedNeuron.seg[mainSeg.segID].row.insert(curImg->tracedNeuron.seg[mainSeg.segID].row.end(), curImg->tracedNeuron.seg[branchSeg.segID].row.begin(), curImg->tracedNeuron.seg[branchSeg.segID].row.end());
 					size_t branchN = mainSegLength + 1;
-					for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[mainSeg.segID].row.end() - 1; 
+					for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[mainSeg.segID].row.end() - 1;
 						itNextSeg != curImg->tracedNeuron.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSegLength - 1); --itNextSeg)
 					{
 						itNextSeg->n = branchN;
@@ -3589,22 +3604,36 @@ void Renderer_gl1::simpleConnect()
 		}
 		//////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
 		/* ========= END of [Connect segments] ========= */
-	
+
 		curImg->update_3drenderer_neuron_view(w, this);
 		curImg->proj_trace_history_append();
 	}
 
 	return;
 }
+
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
 
 int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr)
 {
 	cout << "--> real-time loop check.." << endl;
+	
+	/*int delSegNum = 0;
+	for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
+	{
+		if (it->to_be_deleted)
+		{
+			cout << "To_be_deleted seg ID: " << it->row.begin()->seg_id << endl;
+			++delSegNum;
+		}
+	}
+	cout << "Segs not showing: " << delSegNum << endl;*/
 
 	int returnValue = 0;
 	
+	// Determining the long path segment and short path segment with their hierarchies. 
+	// Short segment = higher hierarchy; long segment = lower hierarchy.
 	segInfoUnit longSeg;
 	segInfoUnit shortSeg;
 	if (involvedSegsInfoPtr->at(0).hierarchy <= involvedSegsInfoPtr->at(1).hierarchy)
@@ -3618,12 +3647,16 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 		shortSeg = involvedSegsInfoPtr->at(1);
 	}
 
+	// --------- Moving the lower segment upward, until the same hierarchy as the higher segment ---------
 	int longHi = longSeg.hierarchy;
 	int longID = longSeg.branchID;
 	int longPaID = longSeg.paBranchID;
 	int shortHi = shortSeg.hierarchy;
 	int shortID = shortSeg.branchID;
 	int shortPaID = shortSeg.paBranchID;
+
+	cout << "	Segment ID/hierarchy ===> short: " << shortID << "/" << shortHi << " || ";
+	cout << "long: " << longID << "/" << longHi << endl;
 
 	if (longHi != shortHi)
 	{
@@ -3652,13 +3685,15 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 			}
 		}
 	}
+	// --------- END of [Moving the lower segment upward, until the same hierarchy as the higher segment] ---------
 	
+	// --------- Starting from the same hierarchy level, both moving upward at the same time, see if they end up the same parental branch ID ---------
 	bool loop = false;
 	bool root = false;
 	while (!loop && !root)
 	{
-		cout << "	short: " << shortID << " " << shortHi << " || ";
-		cout << "long: " << longID << " " << longHi << endl;
+		cout << "		After moving the lower segment upward to the same hierarchy, ancestor segment ID/hierarchy  ===> short: " << shortID << " " << shortHi << " || ";
+		cout << "long: " << longID << " " << longHi << endl << endl;
 		if (shortID == longID)
 		{
 			cout << "Back to the same segment. Loop formed. Connecting prohibited." << endl;
@@ -3694,6 +3729,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 			}
 		}
 	}
+	// --------- END of [Starting from the same hierarchy level, both moving upward at the same time, see if they end up the same parental branch ID] ---------
 
 	return returnValue;
 }
@@ -4298,6 +4334,10 @@ void Renderer_gl1::connectMarkerByStroke()
 
 void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& segInfoPtr)
 {
+	// When using the connecting tool other than 'simple connecting', the connected segments will be passed here to be smoothed.
+	// This smoothing algorithm is an iterative process based on the geometrical profile of the whole segment.
+	// ------- MK, Jun, 2017
+
 	if (inputSeg.size() <= 3) return;
 
 #define PI 3.1415926
@@ -4451,9 +4491,9 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 		
 	return;
 }
-// ---- END of [segment/points could/marker connecting tool, by MK 2017 April ------------------------------]
+// --------- END of [segment/points could/marker connecting tool, by MK 2017 April ------------------------------]
 
-// ---- neuron chopping tool, by MK 2017 June --------------------------------------------------------------
+// --------- neuron chopping tool, by MK 2017 June --------------------------------------------------------------
 void Renderer_gl1::cutNeuronsByStroke()
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -4617,7 +4657,7 @@ void Renderer_gl1::cutNeuronsByStroke()
 
 	return;
 }
-// ---- END of [neuron cutting tool, by MK 2017 June -------------------------------------------------------]
+// ----------- END of [neuron cutting tool, by MK 2017 June -------------------------------------------------------]
 
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {

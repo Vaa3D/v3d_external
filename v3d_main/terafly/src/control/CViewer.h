@@ -162,6 +162,8 @@ class terafly::CViewer : public QWidget
 		NeuronTree treeGlobalCoords;    // preserving global coordinates of SWC, MK, April, 2018
 		NeuronTree convertedTreeCoords; // local coordinates of SWC, used for computing the distance from the place where double-click happens, MK, April, 2018
 
+
+
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.
         * Called by the next(prev) <CExplorerWindow>  when the user  zooms out(in) and  the

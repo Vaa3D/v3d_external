@@ -1853,6 +1853,8 @@ void CViewer::updateAnnotationSpace() throw (tf::RuntimeException)
 
 void CViewer::loadAnnotations() throw (RuntimeException)
 {
+	myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
+
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
     // where to put vaa3d annotations
@@ -1879,6 +1881,7 @@ void CViewer::loadAnnotations() throw (RuntimeException)
 	// MK, April, 25, 2018 /////////////////////////////////////
 	this->treeGlobalCoords.listNeuron.clear();
 	this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;
+	//cout << "Node number: " << this->treeGlobalCoords.listNeuron.size() << endl;
 	////////////////////////////////////////////////////////////
 
     //converting global coordinates to local coordinates
@@ -1913,6 +1916,7 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("assigning annotations").c_str(), __itm__current__function__);
     timer.restart();
     V3D_env->setLandmark(window, vaa3dMarkers);
+
     V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);

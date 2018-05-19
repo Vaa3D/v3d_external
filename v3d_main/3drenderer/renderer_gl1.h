@@ -451,6 +451,7 @@ public:
 
 	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
 	 void simpleConnect();
+	 void simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, XFormWidget* curXWidget);
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
 	 void connectMarkerByStroke();
@@ -468,8 +469,10 @@ public:
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
 	 void cutNeuronsByStroke();
 
+	 // --------- loop safe guard for both 3D view and terafly editing mode, MK 2018 May ---------
+	 bool isTera;
 	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
-	 // ---------------------------------------------------------------------------------
+	 
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();

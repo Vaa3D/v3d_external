@@ -77,7 +77,7 @@ inline double distL2square(const V_NeuronSWC_coord & a, const V_NeuronSWC_coord 
 			(a.z-b.z)*(a.z-b.z) );
 }
 
-struct V_BranchUnit
+struct V_BranchUnit // for ranking segment hierarchy, used in loop detection
 {
 	V_BranchUnit() { isBranch = false; x = 0; y = 0; z = 0; paID = 0; hierarchy = 0; }
 	bool isBranch;

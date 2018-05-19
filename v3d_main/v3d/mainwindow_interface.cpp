@@ -217,7 +217,26 @@ bool MainWindow::setSWC(void* window, NeuronTree & nt)
 	if (w)
 	{
 		qDebug()<<"MainWindow set SWC: "<< w << &nt;
+		
+		int rootNum = 0;
+		int duplicateNum = 0;
+		for (QList<NeuronSWC>::iterator it = nt.listNeuron.begin(); it != nt.listNeuron.end(); ++it)
+		{
+			if (it->parent == -1)
+			{
+				++rootNum;
+				for (QList<NeuronSWC>::iterator itCheck = nt.listNeuron.begin(); itCheck != nt.listNeuron.end(); ++itCheck)
+					if (itCheck->n == it->n) continue;
+					else if (itCheck->x == it->x && itCheck->y == it->y && itCheck->z == it->z) ++duplicateNum;
+			}
+		}
+		cout << "ROOT NUMBER: " << rootNum << endl;
+		cout << "DUPLICATE NUMBER: " << duplicateNum << endl;
+		cout << "TOTAL NUMBER OF NODE: " << nt.listNeuron.size() << endl;
+		
 		w->getImageData()->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(nt);
+
+	
 		//missing update?, by Hanchuan Peng, 100602 //updateImageWindow
 		//no need of updateImageWindow, because SWC is only displayed in 3d view, by RZC 110711
 
