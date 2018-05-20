@@ -1883,6 +1883,8 @@ if (0)
 
                 bool b_start_merged=false, b_end_merged=false;
                 NeuronSWC cur_node;
+                NeuronSWC selected_node;
+
 				if (n_id_start>=0)
 				{
                     if(selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode){
@@ -1909,6 +1911,7 @@ if (0)
                         {
                             loc_vec.at(0) = cur_node_xyz;
                             b_start_merged = true;
+                            selected_node = cur_node;
                             qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
                         }
                     }
@@ -1951,6 +1954,7 @@ if (0)
                         {
                             loc_vec.at(N-1) = cur_node_xyz;
                             b_end_merged = true;
+                            selected_node = cur_node;
                             qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
 
                         }
@@ -1968,9 +1972,9 @@ if (0)
 
                 if (b_start_merged || b_end_merged)
                 {
-                    if (cur_node.seg_id>=0 && cur_node.seg_id< curImg->tracedNeuron.seg.size())
-                        if(curImg->tracedNeuron.seg[cur_node.seg_id].row.size() >0)
-                            currentTraceType = curImg->tracedNeuron.seg[cur_node.seg_id].row[0].type;
+                    if (selected_node.seg_id>=0 && selected_node.seg_id< curImg->tracedNeuron.seg.size())
+                        if(curImg->tracedNeuron.seg[selected_node.seg_id].row.size() >0)
+                            currentTraceType = curImg->tracedNeuron.seg[selected_node.seg_id].row[0].type;
                 }
 			}
 		}
