@@ -49,6 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "ItemEditor.h"
 
 
+
 class V3dr_surfaceDialog: public SharedToolDialog
 {
     Q_OBJECT;
@@ -122,6 +123,8 @@ public slots:
 	void findAllHighlight();
 
 	void onMarkerLocalView();
+
+    void zoomMarkerLocation();
 
 protected:
 	void clearTables_fromTab();
