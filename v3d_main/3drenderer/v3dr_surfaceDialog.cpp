@@ -1601,13 +1601,9 @@ void V3dr_surfaceDialog::onMarkerLocalView()
 void V3dr_surfaceDialog::zoomMarkerLocation()
 {
     qDebug()<<"zoom in to this select marker location";
-    //Renderer_gl1 *r=renderer;
-    if (! r)  return;
-    if (last_marker < 0 || last_marker >= r->listMarker.size()) return;
     if (glwidget)
     {
-        My4DImage* curImg = 0;         curImg = v3dr_getImage4d(r->_idep);
-        //XFormWidget* curXWidget = 0;   curXWidget = v3dr_getXWidget(r->_idep);
+        My4DImage* curImg = 0;         curImg = v3dr_getImage4d(renderer->_idep);
 
         if (curImg) curImg->cur_hit_landmark = last_marker;
         LocationSimple makerPo=curImg->listLandmarks.at(last_marker);
@@ -1616,25 +1612,7 @@ void V3dr_surfaceDialog::zoomMarkerLocation()
         loc.x=makerPo.x;loc.y=makerPo.y;loc.z=makerPo.z;
         loc_vec.push_back(loc);
         v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
-        qDebug()<<"marker position="<<makerPo.x<<","<<makerPo.y<<","<<makerPo.z;
-        qDebug()<<"marker number="<<last_marker;
-        r->produceZoomViewOf3DRoi(loc_vec,0);
-        _
-        //Renderer_gl1::produceZoomViewOf3DRoi(loc_vec,0);
-        //glwidget->lookAlong(1,1,1);
-    }
-
-    /*if (w && curImg)
-    {
-        LocationSimple mk = curImg->listLandmarks.at(tmpind); //get the specified landmark
-
-        v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
-        vector <XYZ> loc_vec;
-        XYZ loc; loc.x = mk.x; loc.y = mk.y; loc.z = mk.z;
-        loc_vec.push_back(loc);
-        Renderer_gl1::produceZoomViewOf3DRoi(loc_vec,0);
-        //produceZoomViewOf3DRoi(loc_vec,0);
-    }*/
-
+        renderer->b_grabhighrez=true;
+        renderer->produceZoomViewOf3DRoi(loc_vec,0);
 }
 
