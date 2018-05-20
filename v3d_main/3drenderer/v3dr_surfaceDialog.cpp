@@ -1614,5 +1614,6 @@ void V3dr_surfaceDialog::zoomMarkerLocation()
         v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
         renderer->b_grabhighrez=true;
         renderer->produceZoomViewOf3DRoi(loc_vec,0);
+    }
 }
 
