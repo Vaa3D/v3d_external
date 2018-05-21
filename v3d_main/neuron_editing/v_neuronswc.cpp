@@ -609,7 +609,6 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		nodeCount = nodeCount + it->row.size();
 		//cout << it->row.begin()->branchingProfile.ID << " " << it->row.begin()->branchingProfile.paID << " " << it->row.begin()->branchingProfile.hierarchy << " size: " << it->row.size() << endl;
 	}
-	cout << "Total node number after decompose: " << nodeCount << endl;
 
 	return out_swc_segs;
 }

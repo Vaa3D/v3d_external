@@ -1929,7 +1929,6 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     view3DWidget->updateTool();
     view3DWidget->update();
 
-
     //update visible markers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
