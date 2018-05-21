@@ -665,6 +665,8 @@ void Renderer::drawEditInfo()
         case 5:  editdisplay = "Drawing Global";break;
         case 6:  editdisplay = "Connecting";break;
         case 7:  editdisplay = "Defining Polyline";break;
+        case 8:  editdisplay = "GD Tracing";break;
+
         }
 
         sprintf(str, "%s", editdisplay.c_str());

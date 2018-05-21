@@ -869,7 +869,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
       int chno = checkCurChannel();
           if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 
-     if (selectMode == smCurveCreate_pointclick_fm)
+     if (selectMode == smCurveCreate_pointclick_fm || selectMode == smCurveCreate_MarkerCreate1_fm)
      {
           if (curImg)
           {
@@ -1462,13 +1462,15 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 
      if(selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox 
         || selectMode==smMarkerCreate1Curve //by PHC 20121012
-        || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
+        || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode
+        || selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //by ZMS 20151203
      {
           b_useTiltedBB = true;
           b_useStrokeBB = false;
           b_use2PointsBB = false;
 
-         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox || selectMode==smMarkerCreate1Curve || selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode)? //PHC 20121012
+         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox || selectMode==smMarkerCreate1Curve || selectMode == smCurveEditExtendOneNode
+                            || selectMode == smCurveEditExtendTwoNode || selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1)? //PHC 20121012
             true : false;
      }
 

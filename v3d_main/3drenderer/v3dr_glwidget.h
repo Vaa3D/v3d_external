@@ -385,6 +385,7 @@ public slots:
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode();
+    virtual void callGDTracing();
 
     virtual void toggleEditMode();
     virtual void setEditMode();

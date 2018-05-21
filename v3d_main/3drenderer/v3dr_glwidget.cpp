@@ -925,16 +925,19 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 	  		break;
 		case Qt::Key_G:
-		    if ( WITH_SHIFT_MODIFIER && //advanced
-		    		WITH_CTRL_MODIFIER
-				)
-		    {
-		    	toggleShader();
+            if ( WITH_SHIFT_MODIFIER && //advanced
+                 WITH_CTRL_MODIFIER
+                 )
+            {
+                toggleShader();
             }else if (IS_ALT_MODIFIER)
             {
                 callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
+            }else
+            {
+                callGDTracing();
             }
-	  		break;
+            break;
 
 	  		///// volume texture operation //////////////////////////////////////////////////////
 		case Qt::Key_F:
@@ -1007,7 +1010,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
         case Qt::Key_A:
             {
-                callAutoTracers();//by ZZ 05142018
+                callAutoTracers();
             }
             break;
 
@@ -1492,10 +1495,10 @@ void V3dR_GLWidget::surfaceSelectDialog(int curTab)
 //	PROGRESS_DIALOG("collecting data for table", 0);
 //	PROGRESS_PERCENT(20);
 
-	if (! surfaceDlg)
-		surfaceDlg = new V3dr_surfaceDialog(this); //, mainwindow);
-	else
-		surfaceDlg->linkTo(this);  //except isHidden, linkTo in updateTool triggered by ActivationChange event
+    if (! surfaceDlg)
+        surfaceDlg = new V3dr_surfaceDialog(this); //, mainwindow);
+    else
+        surfaceDlg->linkTo(this);  //except isHidden, linkTo in updateTool triggered by ActivationChange event
 
 
 	if (surfaceDlg)
@@ -2977,6 +2980,18 @@ void V3dR_GLWidget::callDefine3DPolyline()
         if (v3dr_getImage4d(_idep)->get_xy_view())
         {
             renderer->callDefine3DPolyline();
+            POST_updateGL();
+        }
+    }
+}
+
+void V3dR_GLWidget::callGDTracing()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callGDTracing();
             POST_updateGL();
         }
     }

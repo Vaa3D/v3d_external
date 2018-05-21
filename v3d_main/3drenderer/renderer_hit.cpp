@@ -2141,7 +2141,7 @@ void Renderer_gl1::endSelectMode()
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ)
+    if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ || selectMode == smCurveCreate_MarkerCreate1)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -2150,8 +2150,8 @@ void Renderer_gl1::endSelectMode()
 		}
 	}
 
-#ifndef test_main_cpp    //140211
-    if (selectMode == smCurveCreate_pointclick_fm)
+//#ifndef test_main_cpp    //140211
+    if (selectMode == smCurveCreate_pointclick_fm || selectMode == smCurveCreate_MarkerCreate1_fm)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -2159,7 +2159,7 @@ void Renderer_gl1::endSelectMode()
 			solveCurveFromMarkersFastMarching(); //////////
 		}
 	}
-#endif
+//#endif
 
     // @ADDED by Alessandro on 2015-05-23. Called when the operation is finalized (i.e. "Esc" key is pressed) and
     // neuron segments have to be deleted also from the underlying tracedNeuron structure (and not only from the display)
@@ -2293,7 +2293,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
 			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest ||
              selectMode == smMarkerCreate1Curve || selectMode == smCurveEditExtend || //by PHC 20121011
-            selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
+            selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode ||
+            selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //by ZMS 20151203
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2357,14 +2358,15 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			}
 			else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox ||
                     selectMode == smMarkerCreate1Curve || //by PHC 20121011
-                    selectMode == smCurveEditExtendTwoNode || selectMode == smCurveEditExtendOneNode) //by ZMS 20151203
+                    selectMode == smCurveEditExtendTwoNode || selectMode == smCurveEditExtendOneNode ||
+                    selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //by ZMS 20151203
 			{
 				// using two marker lists for fast marching to get a curve
 				vector <XYZ> loc_vec_input;
 				vector <XYZ> loc_vec0;
 				loc_vec0.clear();
 				total_etime += solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-                if (selectMode == smMarkerCreate1Curve) //PHC 20121011
+                if (selectMode == smMarkerCreate1Curve || selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //PHC 20121011
                 {
                     XYZ & loc = loc_vec0.at(0);
                                         if (dataViewProcBox.isInner(loc, 0.5)) //keep this for now? PHC 121011. 100725 RZC
@@ -2372,6 +2374,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     if (1)
                     {
                         addMarker(loc);
+                        cntCur3DCurveMarkers++;
                     }
                 }
                 if(selectMode == smCurveFrom1Marker_fm) //by PHC 20121011

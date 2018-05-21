@@ -1391,7 +1391,7 @@ void Renderer_gl1::callDefine3DPolyline()
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
 
-    selectMode = smCurveCreate_pointclick;
+    selectMode = smCurveCreate_MarkerCreate1;
     b_addthiscurve = true;
     cntCur3DCurveMarkers=0; //reset
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -1442,6 +1442,23 @@ void Renderer_gl1::callCreateMarkerNearestNode(int x, int y)
                 }
             }
         }
+    }
+}
+
+void Renderer_gl1::callGDTracing()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    selectMode = smCurveCreate_MarkerCreate1_fm;
+    b_addthiscurve = true;
+    cntCur3DCurveMarkers=0; //reset
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        editinput = 8;
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
     }
 }
 
