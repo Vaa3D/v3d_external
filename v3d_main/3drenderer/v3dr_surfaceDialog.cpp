@@ -1017,18 +1017,18 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	if (! r)  return 0;
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
-	V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
+    V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
 
 	QStringList qsl;
 	qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file";
-	int row;	
+    int row;
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
         if (r->listNeuronTree[i].editable) flag = true;
-    if (r->listNeuronTree.size() !=0 && !flag)
+    if ((r->listNeuronTree.size() !=0 && !flag) || ! curImg)
 		row = 0;
-	else row =tracedNeuron->nsegs();
+    else row =tracedNeuron->nsegs();
 
 	int col = qsl.size();
 
@@ -1039,14 +1039,14 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	{
 		int j=0;
 		QTableWidgetItem *curItem;
-		V_NeuronSWC curSeg = tracedNeuron->seg[i];
+        V_NeuronSWC curSeg = tracedNeuron->seg[i];
 
 		ADD_ONOFF(curSeg.on);
 
 		RGBA8 color;
 		color.r = curSeg.color_uc[0];
 		color.g = curSeg.color_uc[1];
-		color.g = curSeg.color_uc[2];
+        color.b = curSeg.color_uc[2];
 		color.a = curSeg.color_uc[3];
 		ADD_QCOLOR(color);
 
