@@ -451,25 +451,22 @@ public:
      void deleteMultiNeuronsByStroke();
 
 	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
-	 struct segInfoUnit
-	 {
-		 segInfoUnit() { hierarchy = 0; }
-		 long segID;
-		 long head_tail;
-		 long nodeCount;
-		 bool refine;
-
-		 int branchID, paBranchID;
-		 int hierarchy;
-	 };
-	 
 	 void simpleConnect();
-	 void simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, vector<segInfoUnit>& segInfo);
-	 
+	 void simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, XFormWidget* curXWidget);
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
 	 void connectMarkerByStroke();
-	
+	 struct segInfoUnit
+	 {
+		segInfoUnit() { hierarchy = 0; }
+		long segID;
+		long head_tail;
+		long nodeCount;
+		bool refine;
+
+		int branchID, paBranchID;
+		int hierarchy;
+	 };
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
 	 void cutNeuronsByStroke();
 
