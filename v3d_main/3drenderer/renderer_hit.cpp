@@ -219,8 +219,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0, // MK, 2017 April
-			*simpleConnect=0 // MK, 2018, April
+			*actNeuronConnect = 0, *actPointCloudConnect = 0, *actMarkerConnect = 0, *actNeuronCut = 0, // MK, 2017 April
+			*simpleConnect = 0, *simpleConnect_loopSafe = 0 // MK, 2018, April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -451,6 +451,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 						// MK, 2017 April, 2018 April
 						listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
 						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
+						listAct.append(simpleConnect_loopSafe = new QAction("SWC simple connecting with loop detection (only 2 segments at a time)", w));
 
 						// MK, 2017 June
 						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -723,6 +724,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				// MK, 2017 April, 2018 April
 				listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
 				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
+				listAct.append(simpleConnect_loopSafe = new QAction("SWC simple connecting with loop detection (only 2 segments at a time)", w));
 
 				// MK, 2017 June
 				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -1822,6 +1824,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
+	else if (act == simpleConnect_loopSafe)
+	{
+		if (NEURON_CONDITION)
+		{
+			selectMode = smSimpleConnectLoopSafe;
+			b_addthiscurve = false;
+			if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
 	/*************************************************/
 
 	/*** Neuron cutting functionalities. MK, 2017 June ***/
@@ -2210,7 +2221,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
-		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect)
+		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect || selectMode == smSimpleConnectLoopSafe)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2275,7 +2286,16 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
-			else if (selectMode == smSimpleConnect) simpleConnect();
+			else if (selectMode == smSimpleConnect)
+			{
+				this->connectEdit = segmentEdit;
+				simpleConnect();
+			}
+			else if (selectMode == smSimpleConnectLoopSafe)
+			{
+				this->connectEdit = segmentEditLoopSafe;
+				simpleConnect();
+			}
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------

@@ -986,6 +986,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
+			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
+			{
+				callStrokeConnectMultiNeurons_loopSafe();
+			}
 	  		break;
 		case Qt::Key_V:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
@@ -2971,6 +2975,15 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
         renderer->callStrokeConnectMultiNeurons();
         POST_updateGL();
     }
+}
+
+void V3dR_GLWidget::callStrokeConnectMultiNeurons_loopSafe()
+{
+	if (renderer)
+	{
+		renderer->callStrokeConnectMultiNeurons_loopSafe();
+		POST_updateGL();
+	}
 }
 
 void V3dR_GLWidget::callDefine3DPolyline()

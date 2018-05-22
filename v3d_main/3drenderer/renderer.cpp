@@ -666,6 +666,7 @@ void Renderer::drawEditInfo()
         case 6:  editdisplay = "Connecting";break;
         case 7:  editdisplay = "Defining Polyline";break;
         case 8:  editdisplay = "GD Tracing";break;
+		case 9:  editdisplay = "Connecting (Loop Safe)"; break;
 
         }
 

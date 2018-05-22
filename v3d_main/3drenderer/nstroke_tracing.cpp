@@ -3285,8 +3285,6 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 // --------- Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018 ---------
 void Renderer_gl1::simpleConnect()
 {
-	connectEdit = segmentEdit;
-
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -3433,11 +3431,14 @@ void Renderer_gl1::simpleConnect()
 				if (segInfo.size() < 2) return;
 				/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
 				
-				int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo); // =======> loop check 
-				if (loop == 1)
+				if (this->connectEdit == segmentEditLoopSafe)
 				{
-					v3d_msg("Oops! You're about to make this mouse a retard by introducing a neuronal short circuit. *\\(^O^)/*  \n\nNote: This loop safety guard is in beta phase. Please collect feedbacks and report to MK. Thank you.");
-					return;
+					int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo); // =======> loop check 
+					if (loop == 1)
+					{
+						v3d_msg("Oops! You're about to make this mouse a retard by introducing a neuronal short circuit. *\\(^O^)/*  \n\nNote: This loop safety guard is in beta phase. Please collect feedbacks and report to MK. Thank you.");
+						return;
+					}
 				}
 
 				simpleConnectExecutor(w, curImg, segInfo);

@@ -216,6 +216,7 @@ public:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode(int x, int y); // call creating marker
