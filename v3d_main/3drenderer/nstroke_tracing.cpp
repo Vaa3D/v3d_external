@@ -3291,16 +3291,16 @@ void Renderer_gl1::simpleConnect()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-	if (this->isTera)
-	{
+	//if (this->isTera)
+	//{
 		// In terafly mode, the number of segments carried by curImg->->tracedNeuron.seg only includes those within the annotation space.
 		// See CAnnotations::findCurves for more information.
-		cout << "number of editable segments:" << curImg->tracedNeuron.seg.size() << endl;
+		//cout << "number of editable segments:" << curImg->tracedNeuron.seg.size() << endl;
 
 		//simpleConnectExecutor(w, curImg, curXWidget);
-	}
-	else if (!this->isTera)
-	{
+	//}
+	//else if (!this->isTera)
+	//{
 		float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
 		for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
@@ -3450,7 +3450,7 @@ void Renderer_gl1::simpleConnect()
 			curImg->update_3drenderer_neuron_view(w, this);
 			curImg->proj_trace_history_append();
 		}
-	}
+	//}
 
 	return;
 }
