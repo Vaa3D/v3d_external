@@ -1452,6 +1452,7 @@ void PMain::loadAnnotations()
             {
                 annotationsPathLRU = path.toStdString();
                 CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
+				NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
 
                 // save current cursor and set wait cursor
                 QCursor cursor = cur_win->view3DWidget->cursor();
@@ -1463,6 +1464,7 @@ void PMain::loadAnnotations()
                 cur_win->loadAnnotations();
                 saveAnnotationsAction->setEnabled(true);
                 virtualSpaceSizeMenu->setEnabled(false);
+				myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
 
                 // reset saved cursor
                 CViewer::setCursor(cursor);

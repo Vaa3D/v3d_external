@@ -3301,13 +3301,22 @@ void Renderer_gl1::simpleConnect()
 	//{
 		float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
-		for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
-		{
-			NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+		//for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
+		//{
+			this->treeOnTheFly = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
+			this->treeOnTheFly.editable = true;
+			
+			if (!this->isLoadFromFile)
+			{
+				curImg->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(&(this->treeOnTheFly));
+				cout << "Annotation loaded from file? " << this->isLoadFromFile << endl;
+			}
+
+			NeuronTree* p_tree = (NeuronTree*)(&(this->treeOnTheFly)); //curEditingNeuron-1
 			if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
 			{
 				QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
-				if (!p_listneuron) continue;
+				if (!p_listneuron) return;
 				// for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
 
 				vector<segInfoUnit> segInfo;
@@ -3426,7 +3435,7 @@ void Renderer_gl1::simpleConnect()
 					if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
 				}
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
-					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
+					cout << endl << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 				
 				if (segInfo.size() < 2) return;
 				/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
@@ -3442,15 +3451,15 @@ void Renderer_gl1::simpleConnect()
 				}
 
 				simpleConnectExecutor(w, curImg, segInfo);
+				this->treeOnTheFly = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
+				
+				V_NeuronSWC_list newSegList = NeuronTree__2__V_NeuronSWC_list(this->treeOnTheFly);
+				curImg->tracedNeuron.clear();
+				curImg->tracedNeuron = newSegList;
+				curImg->update_3drenderer_neuron_view(w, this);
+				curImg->proj_trace_history_append();
 			}
-
-			NeuronTree mergedTree = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
-			V_NeuronSWC_list newSegList = NeuronTree__2__V_NeuronSWC_list(&mergedTree);
-			curImg->tracedNeuron.clear();
-			curImg->tracedNeuron = newSegList;
-			curImg->update_3drenderer_neuron_view(w, this);
-			curImg->proj_trace_history_append();
-		}
+		//}
 	//}
 
 	return;

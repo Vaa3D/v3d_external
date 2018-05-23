@@ -1336,7 +1336,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         else if(tokens[0].compare("SWCFILE") == 0)
         {
             NeuronTree nt = readSWC_file(dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str()));
-
+			
             std::map<int, annotation*> annotationsMap;
             std::map<int, NeuronSWC*> swcMap;
             for(QList <NeuronSWC>::iterator i = nt.listNeuron.begin(); i!= nt.listNeuron.end(); i++)

@@ -464,6 +464,8 @@ public:
 		 int hierarchy;
 	 };
 	 
+	 NeuronTree treeOnTheFly;
+	 bool isLoadFromFile;
 	 void simpleConnect();
 	 void simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 
