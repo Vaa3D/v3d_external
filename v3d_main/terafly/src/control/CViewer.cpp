@@ -669,7 +669,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
 			if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
 			{
-				XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+                XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
 				newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
 			}
 			// --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
@@ -2804,5 +2804,14 @@ const Image4DSimple* CViewer::getImage() throw (tf::RuntimeException)
     image->setRezZ((double(D1_sbox_max-D0_sbox_min+1)));
     image->setTimePackType(TIME_PACK_C);
     return image;
+}
+
+void CViewer::setImage(int x, int y, int z) throw (tf::RuntimeException)
+{
+    int current_x = (x-H0_sbox_min)/((H1_sbox_max-H0_sbox_min+1)/(volH1-volH0));
+    int current_y = (y-V0_sbox_min)/((V1_sbox_max-V0_sbox_min+1)/(volV1-volV0));
+    int current_z = (z-D0_sbox_min)/((D1_sbox_max-D0_sbox_min+1)/(volD1-volD0));
+    setActive(true);
+    newViewer(current_x,current_y,current_z,volResIndex,volT0,volT1);
 }
 

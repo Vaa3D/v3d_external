@@ -580,6 +580,9 @@ class terafly::CViewer : public QWidget
 
         // return Vaa3D image
         const Image4DSimple* getImage() throw (tf::RuntimeException);
+
+        void  setImage(int x, int y, int z) throw (tf::RuntimeException);
+
 };
 
 #endif // CEXPLORERWINDOW_H

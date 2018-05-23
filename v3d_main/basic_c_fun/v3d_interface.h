@@ -239,6 +239,9 @@ public:
     virtual unsigned char* getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1) = 0;
     virtual void releaseOpenedVolumesTeraFly() = 0;
 
+    virtual bool setImageTeraFly(size_t x, size_t y, size_t z) = 0;
+
+
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
     virtual void openVRWindowV2(v3dhandle image_window, bool bOnlineMode = false) = 0;

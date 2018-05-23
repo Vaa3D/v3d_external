@@ -221,6 +221,9 @@ public:
     virtual bool getDimTeraFly(const std::string & path, V3DLONG * & sz);
     virtual unsigned char* getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1);
     virtual void releaseOpenedVolumesTeraFly();
+
+    virtual bool setImageTeraFly(size_t x, size_t y, size_t z);
+
 };
 
 #endif

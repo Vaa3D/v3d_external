@@ -487,3 +487,18 @@ void tf::PluginInterface::releaseOpenedVolumes()
 }
 
 
+bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
+{
+    try
+    {
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // set image based on global x, y, z
+        CViewer::getCurrent()->setImage(x,y,z);
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}

@@ -927,6 +927,8 @@ class terafly::PluginInterface
         static void releaseOpenedVolumes();
 
         static std::string version(){ return "1.1.0"; }
+        static bool setImage(size_t x, size_t y, size_t z);
+
 };
 
 #endif
