@@ -3452,16 +3452,38 @@ void Renderer_gl1::simpleConnect()
 				}
 
 				simpleConnectExecutor(w, curImg, segInfo);
+				if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted)
+				{
+					vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[1].segID]);
+					if (connectedSegDecomposed.size() > 1)
+					{
+						for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
+							curImg->tracedNeuron.seg.push_back(*itNew);
+
+						curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted = true;
+					}
+				}
+				else if (curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted)
+				{
+					vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[0].segID]);
+					if (connectedSegDecomposed.size() > 1)
+					{
+						for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
+							curImg->tracedNeuron.seg.push_back(*itNew);
+
+						curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted = true;
+					}
+				}
 				/*(curImg->tracedNeuron.seg.end() - 1)->to_be_deleted = true;
 				vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(*(curImg->tracedNeuron.seg.end() - 1));
 				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
 				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));*/
 				
-				this->treeOnTheFly.listNeuron.clear();
-				this->treeOnTheFly = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
+				//this->treeOnTheFly.listNeuron.clear();
+				//this->treeOnTheFly = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
 				
-				curImg->tracedNeuron.clear();
-				curImg->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(this->treeOnTheFly);
+				//curImg->tracedNeuron.clear();
+				//curImg->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(this->treeOnTheFly);
 				curImg->update_3drenderer_neuron_view(w, this);
 				curImg->proj_trace_history_append();
 			}
