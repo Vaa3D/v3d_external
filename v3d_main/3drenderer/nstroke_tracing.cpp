@@ -3301,18 +3301,19 @@ void Renderer_gl1::simpleConnect()
 	//{
 		float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
-		//for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
-		//{
+		for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
+		{
 			this->treeOnTheFly = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
 			this->treeOnTheFly.editable = true;
+			//cout << this->treeOnTheFly.listNeuron.size() << endl;
 			
-			if (!this->isLoadFromFile)
+			/*if (!this->isLoadFromFile)
 			{
 				curImg->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(&(this->treeOnTheFly));
 				cout << "Annotation loaded from file? " << this->isLoadFromFile << endl;
-			}
+			}*/
 
-			NeuronTree* p_tree = (NeuronTree*)(&(this->treeOnTheFly)); //curEditingNeuron-1
+			NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
 			if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
 			{
 				QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
@@ -3435,12 +3436,12 @@ void Renderer_gl1::simpleConnect()
 					if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
 				}
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
-					cout << endl << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
+					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 				
 				if (segInfo.size() < 2) return;
 				/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
 				
-				if (this->connectEdit == segmentEditLoopSafe)
+				if (selectMode == smSimpleConnectLoopSafe)
 				{
 					int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo); // =======> loop check 
 					if (loop == 1)
@@ -3451,15 +3452,20 @@ void Renderer_gl1::simpleConnect()
 				}
 
 				simpleConnectExecutor(w, curImg, segInfo);
+				/*(curImg->tracedNeuron.seg.end() - 1)->to_be_deleted = true;
+				vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(*(curImg->tracedNeuron.seg.end() - 1));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));*/
+				
+				this->treeOnTheFly.listNeuron.clear();
 				this->treeOnTheFly = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
 				
-				V_NeuronSWC_list newSegList = NeuronTree__2__V_NeuronSWC_list(this->treeOnTheFly);
 				curImg->tracedNeuron.clear();
-				curImg->tracedNeuron = newSegList;
+				curImg->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(this->treeOnTheFly);
 				curImg->update_3drenderer_neuron_view(w, this);
 				curImg->proj_trace_history_append();
 			}
-		//}
+		}
 	//}
 
 	return;
@@ -3677,8 +3683,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	int shortID = shortSeg.branchID;
 	int shortPaID = shortSeg.paBranchID;
 
-	cout << "	Segment ID/hierarchy ===> short: " << shortID << "/" << shortHi << " || ";
-	cout << "long: " << longID << "/" << longHi << endl;
+	cout << "  Segment ID/hierarchy ===> short: " << shortID << "/" << shortHi << " || " << "long: " << longID << "/" << longHi << endl;
 
 	if (longHi != shortHi)
 	{
@@ -3714,7 +3719,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	bool root = false;
 	while (!loop && !root)
 	{
-		cout << "		After moving the lower segment upward to the same hierarchy, ancestor segment ID/hierarchy  ===> short: " << shortID << " " << shortHi << " || ";
+		cout << "    Moving the lower segment upward 1 level, ancestor segment ID/hierarchy  ===> short: " << shortID << " " << shortHi << " || ";
 		cout << "long: " << longID << " " << longHi << endl << endl;
 		if (shortID == longID)
 		{

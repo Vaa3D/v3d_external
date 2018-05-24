@@ -1830,7 +1830,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			selectMode = smSimpleConnectLoopSafe;
 			b_addthiscurve = false;
-			if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+			if (w) { editinput = 9; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
 	/*************************************************/
@@ -2286,16 +2286,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectNeurons) connectNeuronsByStroke();
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
-			else if (selectMode == smSimpleConnect)
-			{
-				this->connectEdit = segmentEdit;
-				simpleConnect();
-			}
-			else if (selectMode == smSimpleConnectLoopSafe)
-			{
-				this->connectEdit = segmentEditLoopSafe;
-				simpleConnect();
-			}
+			else if (selectMode == smSimpleConnect) simpleConnect();
+			else if (selectMode == smSimpleConnectLoopSafe) simpleConnect();
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
