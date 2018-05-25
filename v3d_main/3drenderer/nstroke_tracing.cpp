@@ -3705,7 +3705,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	int shortID = shortSeg.branchID;
 	int shortPaID = shortSeg.paBranchID;
 
-	cout << "  Segment ID/hierarchy ===> short: " << shortID << "/" << shortHi << " || " << "long: " << longID << "/" << longHi << endl;
+	cout << "  Segment ID/hierarchy ---> short: " << shortID << "/" << shortHi << " || " << "long: " << longID << "/" << longHi << endl;
 
 	if (longHi != shortHi)
 	{
@@ -3741,11 +3741,11 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	bool root = false;
 	while (!loop && !root)
 	{
-		cout << "    Moving the lower segment upward 1 level, ancestor segment ID/hierarchy  ===> short: " << shortID << " " << shortHi << " || ";
+		cout << "    Moving the lower segment upward 1 level, ancestor segment ID/hierarchy  ---> short: " << shortID << " " << shortHi << " || ";
 		cout << "long: " << longID << " " << longHi << endl << endl;
 		if (shortID == longID)
 		{
-			cout << "Back to the same segment. Loop formed. Connecting prohibited." << endl;
+			cout << "===> Back to the same segment. Loop formed. Connecting prohibited." << endl;
 			returnValue = 1;
 			loop = true;
 		}
@@ -3772,7 +3772,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 
 			if (count == 0)
 			{
-				cout << "Back to different root segments. Connecting allowed." << endl;
+				cout << "===> Back to different root segments. Connecting allowed." << endl;
 				returnValue = 0;
 				root = true;
 			}

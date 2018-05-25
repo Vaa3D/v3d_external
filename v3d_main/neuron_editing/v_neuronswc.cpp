@@ -449,7 +449,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 			if ((nodelink.nlink ==1 && nodelink.in_link.size()==0) // tip point (include single point)
 			 || (nodelink.nlink >2 && nodelink.out_link.size() >0) // out-branch point
-			 || (nodelink.nlink ==2 && nodelink.in_link.size()==0)) // pure-out point
+			 || (nodelink.nlink ==2 && nodelink.in_link.size()==0)) // pure-out point (root)
 			{
 				istart = i;
 				if (0)
@@ -476,7 +476,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		new_seg.clear();
 		//qDebug("decompose_V_NeuronSWC_segs: segment from node #%d", j);
 
-		V3DLONG inext = istart;
+		V3DLONG inext = istart; // critical node
 		for (V3DLONG n=1; inext>=0; n++)
 		{
 			V_NeuronSWC_unit & cur_node = in_swc.row[inext];
@@ -485,8 +485,8 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 			V_NeuronSWC_unit new_node = cur_node;
 			new_node.n = n;
-			new_node.parent = n+1; // link order as original order
-			new_seg.row.push_back(new_node);
+			new_node.parent = n+1; // link order as original order ==> this is why in V_NeuronSWC the order is reversed
+			new_seg.row.push_back(new_node); // This is where all those critical nodes duplicate.
 
 			if(cur_node.parent <0)    // root point ////////////////////////////
 			{
@@ -500,6 +500,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				(new_seg.row.end() - 1)->branchingProfile.y = cur_node.y;
 				(new_seg.row.end() - 1)->branchingProfile.z = cur_node.z;
 				new_seg.row.begin()->branchingProfile.isBranch = true;
+				
 				//qDebug("decompose_V_NeuronSWC_segs: segment end at root #%d", V3DLONG(cur_node.n));
 				cur_node.nchild --;
 				break; //over, a simple segment
@@ -537,7 +538,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		if (new_seg.row.size()>0)//>=2)//? single point
 		{
 			int curBrID = (new_seg.row.end() - 1)->branchingProfile.ID;
-			int curBrHi = (new_seg.row.end() - 1)->branchingProfile.hierarchy;
+			int curBrHi = (new_seg.row.end() - 1)->branchingProfile.hierarchy; // in constructor, the default value is 0
 			new_seg.row.begin()->branchingProfile.x = new_seg.row.begin()->x;
 			new_seg.row.begin()->branchingProfile.y = new_seg.row.begin()->y;
 			new_seg.row.begin()->branchingProfile.z = new_seg.row.begin()->z;
