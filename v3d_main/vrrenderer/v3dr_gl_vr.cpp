@@ -74,6 +74,7 @@ float CMainApplication::iLineWid = 1;
 float CMainApplication::fBrightness = 0;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
+glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
 
 #define dist_thres 0.01
 #define connection_rigourous 0.5
@@ -891,7 +892,8 @@ bool CMainApplication::BInit()
  	m_fFarClip = 30.0f;
 	m_iTexture = 0;
 	m_uiControllerTexIndexSize = 0;
-	m_globalMatrix = m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
+	//m_globalMatrix = m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
+	m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
 
 	m_modeGrip_R = m_drawMode;
 	m_modeGrip_L = ModeControlSettings(m_modeControlGrip_L);
@@ -1071,6 +1073,15 @@ bool CMainApplication::BInitCompositor()//note: VRCompositor is responsible for 
 //-----------------------------------------------------------------------------
 void CMainApplication::Shutdown()
 {
+	float trans_x = 0.6 ;
+	float trans_y = 1.5 ;
+	float trans_z = 0.4 ;
+	
+	//reverse the normalization (so that the next VR session can normalize correctly)
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z) ); 
+	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1.0f/m_globalScale,1.0f/m_globalScale,1.0f/m_globalScale));
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(-trans_x,-trans_y,-trans_z) ); //fine tune
+	
 	//replace "vaa3d_traced_neuron" with VR_drawn_curves
 	////////update glwidget->listneurontree
 	if(m_bHasImage4D&&(sketchedNTList.size()>0))
@@ -4498,12 +4509,13 @@ void CMainApplication::SetupGlobalMatrix()
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); //fine tune
 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(m_globalScale,m_globalScale,m_globalScale));
-	//glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
-	//qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+		//glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+		//qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
 
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(- loadedNTCenter.x,- loadedNTCenter.y,- loadedNTCenter.z) ); 
-	//cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
-	//qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+		//cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
+		//qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+	
 }
 
 

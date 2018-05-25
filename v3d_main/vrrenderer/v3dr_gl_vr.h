@@ -350,7 +350,7 @@ private: // OpenGL bookkeeping
 	glm::mat4 m_ProjTransRight;
 
 	float m_globalScale; // m_globalScale is consistent with m_globalMatrix, and is required somewhere
-	glm::mat4 m_globalMatrix;
+	static glm::mat4 m_globalMatrix;
 	glm::mat4 m_oldGlobalMatrix;
 	glm::mat4 m_ctrlChangeMatrix;
 	glm::mat4 m_oldCtrlMatrix;
