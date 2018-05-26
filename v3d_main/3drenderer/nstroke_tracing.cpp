@@ -3400,9 +3400,9 @@ void Renderer_gl1::simpleConnect()
 										curSeg.segID = nodeOnStroke.at(j).seg_id;
 										curSeg.nodeCount = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.size();
 										curSeg.refine = false;
-										curSeg.branchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->branchingProfile.ID;
-										curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->branchingProfile.paID;
-										curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->branchingProfile.hierarchy;
+										curSeg.branchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.ID;
+										curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.paID;
+										curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.hierarchy;
 										vector<segInfoUnit>::iterator chkIt = segInfo.end();
 										if (segInfo.begin() == segInfo.end())
 										{
@@ -3435,6 +3435,7 @@ void Renderer_gl1::simpleConnect()
 					}
 					if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
 				}
+				cout << endl;
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
 					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 				
@@ -3451,29 +3452,10 @@ void Renderer_gl1::simpleConnect()
 					}
 				}
 
-				simpleConnectExecutor(w, curImg, segInfo);
-				if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted)
-				{
-					vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[1].segID]);
-					if (connectedSegDecomposed.size() > 1)
-					{
-						for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
-							curImg->tracedNeuron.seg.push_back(*itNew);
-
-						curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted = true;
-					}
-				}
-				else if (curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted)
-				{
-					vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[0].segID]);
-					if (connectedSegDecomposed.size() > 1)
-					{
-						for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
-							curImg->tracedNeuron.seg.push_back(*itNew);
-
-						curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted = true;
-					}
-				}
+				simpleConnectExecutor(curImg, segInfo);
+				if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted) this->hierarchyReprofile(curImg, segInfo[1].segID, segInfo[0].segID);
+				else if (curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted) this->hierarchyReprofile(curImg, segInfo[0].segID, segInfo[1].segID);
+				
 				/*(curImg->tracedNeuron.seg.end() - 1)->to_be_deleted = true;
 				vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(*(curImg->tracedNeuron.seg.end() - 1));
 				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
@@ -3493,7 +3475,7 @@ void Renderer_gl1::simpleConnect()
 	return;
 }
 
-void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, vector<segInfoUnit>& segInfo)
+void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo)
 {
 	// This method is the "executor" of Renderer_gl1::simpleConnect(), MK, May, 2018
 
@@ -3521,16 +3503,16 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 		curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
 		if (mainSeg.head_tail == -1)
 		{
-			if (branchSeg.head_tail == -1)
+			if (branchSeg.head_tail == -1) // head to head
 			{
 				for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.end() - 1;
 					itNextSeg >= curImg->tracedNeuron.seg[branchSeg.segID].row.begin(); --itNextSeg)
 				{
-					itNextSeg->seg_id = branchSeg.segID;
+					itNextSeg->seg_id = branchSeg.segID; 
 					curImg->tracedNeuron.seg[mainSeg.segID].row.push_back(*itNextSeg);
 				}
 			}
-			else if (branchSeg.head_tail == 2)
+			else if (branchSeg.head_tail == 2) // head to tail
 			{
 				for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.begin();
 					itNextSeg != curImg->tracedNeuron.seg[branchSeg.segID].row.end(); ++itNextSeg)
@@ -3541,6 +3523,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 			}
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
 
+			// sorting the new segment here, and reassign the root node to the new tail
 			size_t nextSegNo = 1;
 			for (vector<V_NeuronSWC_unit>::iterator itSort = curImg->tracedNeuron.seg[mainSeg.segID].row.begin();
 				itSort != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++itSort)
@@ -3554,7 +3537,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 		else if (mainSeg.head_tail == 2)
 		{
 			std::reverse(curImg->tracedNeuron.seg[mainSeg.segID].row.begin(), curImg->tracedNeuron.seg[mainSeg.segID].row.end());
-			if (branchSeg.head_tail == -1)
+			if (branchSeg.head_tail == -1) // tail to head
 			{
 				for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.end() - 1;
 					itNextSeg >= curImg->tracedNeuron.seg[branchSeg.segID].row.begin(); itNextSeg--)
@@ -3563,7 +3546,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 					curImg->tracedNeuron.seg[mainSeg.segID].row.push_back(*itNextSeg);
 				}
 			}
-			else if (branchSeg.head_tail == 2)
+			else if (branchSeg.head_tail == 2) // tail to tail
 			{
 				for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.begin();
 					itNextSeg != curImg->tracedNeuron.seg[branchSeg.segID].row.end(); itNextSeg++)
@@ -3574,6 +3557,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 			}
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
 
+			// sorting the new segment here, and reassign the root node to the new tail
 			std::reverse(curImg->tracedNeuron.seg[mainSeg.segID].row.begin(), curImg->tracedNeuron.seg[mainSeg.segID].row.end());
 			size_t nextSegNo = 1;
 			for (vector<V_NeuronSWC_unit>::iterator itSort = curImg->tracedNeuron.seg[mainSeg.segID].row.begin();
@@ -3586,6 +3570,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 			(curImg->tracedNeuron.seg[mainSeg.segID].row.end() - 1)->data[6] = -1;
 		}
 
+		// correcting types, based on the main segment type
 		for (vector<V_NeuronSWC_unit>::iterator reID = curImg->tracedNeuron.seg[mainSeg.segID].row.begin();
 			reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
 		{
@@ -3617,7 +3602,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 		double assignedType;
 		assignedType = curImg->tracedNeuron.seg[segInfo.at(0).segID].row[0].type;
 		curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
-		if (branchSeg.head_tail == 2)
+		if (branchSeg.head_tail == 2) // branch to tail
 		{
 			std::reverse(curImg->tracedNeuron.seg[branchSeg.segID].row.begin(), curImg->tracedNeuron.seg[branchSeg.segID].row.end());
 			size_t branchSegLength = curImg->tracedNeuron.seg[branchSeg.segID].row.size();
@@ -3635,7 +3620,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 			(curImg->tracedNeuron.seg[mainSeg.segID].row.end() - 1)->parent = (curImg->tracedNeuron.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
 		}
-		else if (branchSeg.head_tail == -1)
+		else if (branchSeg.head_tail == -1) // branch to head
 		{
 			size_t branchSegLength = curImg->tracedNeuron.seg[branchSeg.segID].row.size();
 			size_t mainSegLength = curImg->tracedNeuron.seg[mainSeg.segID].row.size();
@@ -3653,6 +3638,7 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
 		}
 
+		// correcting types, based on the main segment type
 		for (vector<V_NeuronSWC_unit>::iterator reID = curImg->tracedNeuron.seg[mainSeg.segID].row.begin();
 			reID != curImg->tracedNeuron.seg[mainSeg.segID].row.end(); ++reID)
 		{
@@ -3667,6 +3653,8 @@ void Renderer_gl1::simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, ve
 
 int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr)
 {
+	// This method checks if there is any loop about to form when connecting 2 segments, MK, May, 2018.
+
 	cout << "--> real-time loop check.." << endl;
 	
 	/*int delSegNum = 0;
@@ -3721,13 +3709,13 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 
 			for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
 			{
-				if (it->row.begin()->branchingProfile.ID == longPaID)
+				if (it->branchingProfile.ID == longPaID)
 				{
 					if (shortHi < longHi)
 					{
-						longHi = it->row.begin()->branchingProfile.hierarchy;
-						longID = it->row.begin()->branchingProfile.ID;
-						longPaID = it->row.begin()->branchingProfile.paID;
+						longHi = it->branchingProfile.hierarchy;
+						longID = it->branchingProfile.ID;
+						longPaID = it->branchingProfile.paID;
 						break;
 					}
 				}
@@ -3741,8 +3729,8 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	bool root = false;
 	while (!loop && !root)
 	{
-		cout << "    Moving the lower segment upward 1 level, ancestor segment ID/hierarchy  ---> short: " << shortID << " " << shortHi << " || ";
-		cout << "long: " << longID << " " << longHi << endl << endl;
+		cout << "    Moving up 1 level, ancestor segment ID/hierarchy  ---> short: " << shortID << " " << shortHi << " || ";
+		cout << "long: " << longID << " " << longHi  << endl;
 		if (shortID == longID)
 		{
 			cout << "===> Back to the same segment. Loop formed. Connecting prohibited." << endl;
@@ -3754,18 +3742,18 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 			int count = 0;
 			for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
 			{
-				if (it->row.begin()->branchingProfile.ID == longPaID)
+				if (it->branchingProfile.ID == longPaID)
 				{
-					longHi = it->row.begin()->branchingProfile.hierarchy;
-					longID = it->row.begin()->branchingProfile.ID;
-					longPaID = it->row.begin()->branchingProfile.paID;
+					longHi = it->branchingProfile.hierarchy;
+					longID = it->branchingProfile.ID;
+					longPaID = it->branchingProfile.paID;
 					++count;
 				}
-				if (it->row.begin()->branchingProfile.ID == shortPaID)
+				if (it->branchingProfile.ID == shortPaID)
 				{
-					shortHi = it->row.begin()->branchingProfile.hierarchy;
-					shortID = it->row.begin()->branchingProfile.ID;
-					shortPaID = it->row.begin()->branchingProfile.paID;
+					shortHi = it->branchingProfile.hierarchy;
+					shortID = it->branchingProfile.ID;
+					shortPaID = it->branchingProfile.paID;
 					++count;
 				}
 			}
@@ -3781,6 +3769,49 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	// --------- END of [Starting from the same hierarchy level, both moving upward at the same time, see if they end up the same parental branch ID] ---------
 
 	return returnValue;
+}
+
+void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID)
+{
+	vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[mainSegID]);
+	if (connectedSegDecomposed.size() > 1)
+	{
+		for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
+			curImg->tracedNeuron.seg.push_back(*itNew);
+
+		curImg->tracedNeuron.seg[mainSegID].to_be_deleted = true;
+	}
+	else if (connectedSegDecomposed.size() <= 1)
+	{
+		/*size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+		curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy = curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy + 1;
+		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
+		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
+		{
+			if (this->branchSegIDmap[*it] == branchSegID) continue;
+			else
+			{	
+				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
+				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+			}
+		}*/
+	}
+}
+
+void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
+{
+	int childSegCount = 1;
+	do
+	{
+		vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
+		childSegCount = nextLevelBranchIDs.size();
+
+		for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
+		{
+			curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
+			this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+		}
+	} while (childSegCount != 0);
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 

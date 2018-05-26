@@ -84,6 +84,8 @@ struct V_BranchUnit // for ranking segment hierarchy, used in loop detection
 	float x, y, z;
 	int ID, paID;
 	int hierarchy;
+
+	vector<int> childIDs;
 };
 
 struct V_NeuronSWC_unit
@@ -103,8 +105,6 @@ struct V_NeuronSWC_unit
 	void set(double x1, double y1, double z1, double r1, double p1) {x=x1; y=y1;z=z1;r=r1;parent=p1;}
 	void set(double x1, double y1, double z1, double r1) {x=x1; y=y1;z=z1;r=r1;}
 	void set(double x1, double y1, double z1) {x=x1; y=y1;z=z1;}
-
-	V_BranchUnit branchingProfile;
 };
 
 inline double distL2square(const V_NeuronSWC_unit & a, const V_NeuronSWC_unit & b)
@@ -153,6 +153,8 @@ struct V_NeuronSWC
         to_be_broken = false;
 		on = true;
 	}
+
+	V_BranchUnit branchingProfile;
 
 	void printInfo();
 

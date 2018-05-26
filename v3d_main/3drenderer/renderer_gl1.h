@@ -53,6 +53,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer.h"
 #include "marchingcubes.h"
 #include <time.h>
+#include <map>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -467,7 +468,7 @@ public:
 	 NeuronTree treeOnTheFly;
 	 bool isLoadFromFile;
 	 void simpleConnect();
-	 void simpleConnectExecutor(V3dR_GLWidget* w, My4DImage* curImg, vector<segInfoUnit>& segInfo);
+	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
@@ -478,8 +479,10 @@ public:
 
 	 // --------- loop safe guard for both 3D view and terafly editing mode, MK 2018 May ---------
 	 bool isTera;
+	 map<size_t, size_t> branchSegIDmap;
 	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
-	 
+	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
+	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
