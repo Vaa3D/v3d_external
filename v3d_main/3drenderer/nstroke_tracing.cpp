@@ -3783,31 +3783,34 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 	}
 	else if (connectedSegDecomposed.size() <= 1)
 	{
-		/*size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+		size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
 		curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy = curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy + 1;
 		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
 		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
 		{
+
 			if (this->branchSegIDmap[*it] == branchSegID) continue;
 			else
 			{	
 				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
-				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+				//this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
 			}
-		}*/
+		}
 	}
 }
 
 void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
 {
-	int childSegCount = 1;
+	int childSegCount;
 	do
 	{
 		vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
 		childSegCount = nextLevelBranchIDs.size();
+		cout << "child seg number: " << childSegCount << endl;
 
 		for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
 		{
+			cout << *it << ", " << this->branchSegIDmap[*it] << endl;
 			curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
 			this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
 		}
