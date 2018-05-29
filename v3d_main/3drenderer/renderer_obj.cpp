@@ -1899,6 +1899,12 @@ void Renderer_gl1::setEditMode()
             }
 
             curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+			/*for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+			{
+				this->branchSegIDmap.insert(std::pair<int, double>(segIt->branchingProfile.ID, segIt->row.begin()->seg_id));
+				cout << segIt->branchingProfile.ID << " " << this->branchSegIDmap[segIt->branchingProfile.ID] << "|";
+			}*/
+
 			curImg->tracedNeuron.name = "vaa3d_traced_neuron";
             curImg->tracedNeuron.file = "vaa3d_traced_neuron";
             listNeuronTree.clear();

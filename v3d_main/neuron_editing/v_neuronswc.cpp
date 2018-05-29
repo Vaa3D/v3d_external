@@ -188,7 +188,7 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 
 		// segment id & color type
 		int seg_id = k;
-
+		
 		//now merge
 		V3DLONG n0=n;
 		for (j=0;j<row.size();j++)

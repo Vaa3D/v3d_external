@@ -479,7 +479,7 @@ public:
 
 	 // --------- loop safe guard for both 3D view and terafly editing mode, MK 2018 May ---------
 	 bool isTera;
-	 map<int, double> branchSegIDmap;
+	 map<size_t, size_t> branchSegIDmap;
 	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
 	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
