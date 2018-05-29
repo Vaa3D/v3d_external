@@ -1899,9 +1899,7 @@ void Renderer_gl1::setEditMode()
             }
 
             curImg->tracedNeuron = copyToEditableNeuron(p_tree);
-			for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
-				this->branchSegIDmap.insert({ segIt->branchingProfile.ID, segIt->row.begin()->seg_id });
-            curImg->tracedNeuron.name = "vaa3d_traced_neuron";
+			curImg->tracedNeuron.name = "vaa3d_traced_neuron";
             curImg->tracedNeuron.file = "vaa3d_traced_neuron";
             listNeuronTree.clear();
             curImg->proj_trace_history_append();

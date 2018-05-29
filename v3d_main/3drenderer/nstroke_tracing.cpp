@@ -3784,6 +3784,8 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 	else if (connectedSegDecomposed.size() <= 1)
 	{
 		size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+		cout << "parental branch ID: " << curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID << endl;
+		cout << "parental segment ID: " << paSegID << endl;
 		curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy = curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy + 1;
 		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
 		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
@@ -3802,19 +3804,20 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
 {
 	int childSegCount;
-	do
-	{
-		vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
-		childSegCount = nextLevelBranchIDs.size();
-		cout << "child seg number: " << childSegCount << endl;
+	
+	vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
+	childSegCount = nextLevelBranchIDs.size();
+	cout << "child seg number: " << childSegCount << endl;
+	if (childSegCount == 0) return;
 
-		for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
-		{
-			cout << *it << ", " << this->branchSegIDmap[*it] << endl;
-			curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
-			this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
-		}
-	} while (childSegCount != 0);
+	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
+	{
+		cout << *it << "," << this->branchSegIDmap[*it] << endl;
+		curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
+		this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+	}
+	
+	return;
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 

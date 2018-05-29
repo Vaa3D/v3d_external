@@ -1591,9 +1591,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     b_editDroppedNeuron = true;
                 }
 
-                curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+				curImg->tracedNeuron = copyToEditableNeuron(p_tree);
 				for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+				{
 					this->branchSegIDmap.insert({ segIt->branchingProfile.ID, segIt->row.begin()->seg_id });
+					cout << segIt->branchingProfile.ID << " " << this->branchSegIDmap[segIt->branchingProfile.ID] << "|";
+				}
+				cout << endl;
                 curImg->tracedNeuron.name = "vaa3d_traced_neuron";
                 curImg->tracedNeuron.file = "vaa3d_traced_neuron";
                 listNeuronTree.clear();
