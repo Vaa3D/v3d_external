@@ -2174,6 +2174,12 @@ void Renderer_gl1::endSelectMode()
 		{
 			qDebug("\t %i markers to solve Curve", cntCur3DCurveMarkers);
 			solveCurveFromMarkersFastMarching(); //////////
+            if(selectMode == smCurveCreate_MarkerCreate1_fm)
+            {
+                b_addthiscurve = true;
+                cntCur3DCurveMarkers=0; //reset
+                return;
+            }
 		}
 	}
 //#endif
