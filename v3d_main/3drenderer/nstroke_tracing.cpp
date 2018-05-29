@@ -3470,7 +3470,7 @@ void Renderer_gl1::simpleConnect()
 				curImg->update_3drenderer_neuron_view(w, this);
 				curImg->proj_trace_history_append();
 
-				size_t to_be_deletedCount = 0;
+				/*size_t to_be_deletedCount = 0;
 				for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 				{
 					if (it->to_be_deleted)
@@ -3478,7 +3478,7 @@ void Renderer_gl1::simpleConnect()
 						++to_be_deletedCount;
 						cout << this->branchSegIDmap[it->branchingProfile.ID] << ", " << it->branchingProfile.ID << endl;
 					}
-				}
+				}*/
 			}
 		}
 	//}
@@ -3806,7 +3806,7 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 			else
 			{	
 				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
-				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+				//this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
 			}
 		}
 	}
