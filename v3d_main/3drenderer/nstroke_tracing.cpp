@@ -3470,7 +3470,7 @@ void Renderer_gl1::simpleConnect()
 				curImg->update_3drenderer_neuron_view(w, this);
 				curImg->proj_trace_history_append();
 
-				/*size_t to_be_deletedCount = 0;
+				size_t to_be_deletedCount = 0;
 				for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 				{
 					if (it->to_be_deleted)
@@ -3478,7 +3478,7 @@ void Renderer_gl1::simpleConnect()
 						++to_be_deletedCount;
 						cout << this->branchSegIDmap[it->branchingProfile.ID] << ", " << it->branchingProfile.ID << endl;
 					}
-				}*/
+				}
 			}
 		}
 	//}
@@ -3784,6 +3784,7 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 
 void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID)
 {
+	cout << " ---> main seg hierarchy: " << curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy << endl;
 	vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[mainSegID]);
 	if (connectedSegDecomposed.size() > 1)
 	{
@@ -3801,13 +3802,16 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
 		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
 		{
-
-			if (this->branchSegIDmap[*it] == branchSegID) this->branchSegIDmap.erase(*it);
-			else
-			{	
-				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
-				//this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+			if (this->branchSegIDmap[*it] == branchSegID)
+			{
+				this->branchSegIDmap.erase(*it);
 			}
+			else
+			{
+				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
+				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+			}
+			cout << " ---> new immediate child seg hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
 		}
 	}
 }
@@ -3823,9 +3827,10 @@ void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
 
 	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
 	{
-		cout << "  child segID: " << *it << ", child branchID: " << this->branchSegIDmap[*it] << endl;
+		cout << "  child segID: " << this->branchSegIDmap[*it] << ", child branchID: " << *it << ", original hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
 		curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
 		this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+		cout << "  child segID: " << this->branchSegIDmap[*it] << ", child branchID: " << *it << ", original hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
 	}
 	
 	return;
