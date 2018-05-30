@@ -3484,7 +3484,7 @@ void Renderer_gl1::simpleConnect()
 					if (it->to_be_deleted)
 					{
 						++to_be_deletedCount;
-						cout << this->branchSegIDmap[it->branchingProfile.ID] << ", " << it->branchingProfile.ID << endl;
+						//cout << this->branchSegIDmap[it->branchingProfile.ID] << ", " << it->branchingProfile.ID << endl;
 					}
 				}
 			}
@@ -3506,15 +3506,15 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 		{
 			mainSeg = segInfo.at(0);
 			branchSeg = segInfo.at(1);
-			cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-			cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+			cout << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail << endl;
+			cout << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail << endl;
 		}
 		else
 		{
 			mainSeg = segInfo.at(1);
 			branchSeg = segInfo.at(0);
-			cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-			cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+			cout << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail << endl;
+			cout << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail << endl;
 		}
 
 		double assignedType;
@@ -3607,15 +3607,15 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 		{
 			mainSeg = segInfo.at(1);
 			branchSeg = segInfo.at(0);
-			cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-			cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+			cout << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail << endl;
+			cout << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail << endl;
 		}
 		else
 		{
 			mainSeg = segInfo.at(0);
 			branchSeg = segInfo.at(1);
-			cout << "main seg length:" << mainSeg.nodeCount << "   branch seg length:" << branchSeg.nodeCount << endl;
-			cout << "main seg orient:" << mainSeg.head_tail << "   branch seg orient:" << branchSeg.head_tail << endl;
+			cout << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail << endl;
+			cout << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail << endl;
 		}
 
 		double assignedType;
@@ -3666,6 +3666,81 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 		}
 	}	
 	//////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
+
+	return;
+}
+
+void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID)
+{
+	cout << " ---> primary seg hierarchy: " << curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy << endl;
+	vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[mainSegID]);
+	if (connectedSegDecomposed.size() > 1)
+	{
+		for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
+			curImg->tracedNeuron.seg.push_back(*itNew);
+
+		curImg->tracedNeuron.seg[mainSegID].to_be_deleted = true;
+	}
+	else if (connectedSegDecomposed.size() <= 1)
+	{
+		size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+		cout << endl << "-- segment ID of the secondary segment: " << paSegID;
+		cout << "    branch ID: " << curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID << endl;
+		curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy = curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy + 1;
+		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
+
+		cout << "immediate children segment ID-branchID-hierarchy: ";
+		for (vector<int>::iterator chkIt = curStemChildBranchIDs.begin(); chkIt != curStemChildBranchIDs.end(); ++chkIt)
+			cout << this->branchSegIDmap[*chkIt] << "-" << *chkIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << ", ";
+
+		int ancestorBranchID;
+		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
+		{
+			if (this->branchSegIDmap[*it] == branchSegID) this->branchSegIDmap.erase(*it);
+			else
+			{
+				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
+				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+			}
+		}
+
+		cout << endl << "new immediate children segment ID-branchID-hierarchy: ";
+		for (vector<int>::iterator chkIt = curStemChildBranchIDs.begin(); chkIt != curStemChildBranchIDs.end(); ++chkIt)
+			cout << this->branchSegIDmap[*chkIt] << "-" << *chkIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << ", ";
+		cout << endl;
+
+		int ancestorBranchID = curImg->tracedNeuron.seg[paSegID].branchingProfile.paID;
+		while (ancestorBranchID != -1)
+		{
+			vector<int> thisLevelBranches = curImg->tracedNeuron.seg[ancestorBranchID].branchingProfile.childIDs;
+
+		}
+	}
+}
+
+void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
+{
+	int childSegCount;
+
+	vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
+	childSegCount = nextLevelBranchIDs.size();
+	cout << endl << "current seg number: " << curPaSegID << "  child seg number: " << childSegCount << " ";
+	if (childSegCount == 0)
+	{
+		cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
+		return;
+	}
+	for (vector<int>::iterator childIt = nextLevelBranchIDs.begin(); childIt != nextLevelBranchIDs.end(); ++childIt)
+		cout << this->branchSegIDmap[*childIt] << "-" << *childIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*childIt]].branchingProfile.hierarchy << ", ";
+	cout << endl;
+
+	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
+	{
+		cout << "  current child segID: " << this->branchSegIDmap[*it] << ", branchID: " << *it << ", original hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
+		curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
+		cout << "  current child segID: " << this->branchSegIDmap[*it] << ", branchID: " << *it << ", adjusted hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
+		this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+	}
 
 	return;
 }
@@ -3788,60 +3863,6 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	// --------- END of [Starting from the same hierarchy level, both moving upward at the same time, see if they end up the same parental branch ID] ---------
 
 	return returnValue;
-}
-
-void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID)
-{
-	cout << " ---> main seg hierarchy: " << curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy << endl;
-	vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[mainSegID]);
-	if (connectedSegDecomposed.size() > 1)
-	{
-		for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
-			curImg->tracedNeuron.seg.push_back(*itNew);
-
-		curImg->tracedNeuron.seg[mainSegID].to_be_deleted = true;
-	}
-	else if (connectedSegDecomposed.size() <= 1)
-	{
-		size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
-		cout << "-- parental branch ID: " << curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID << endl;
-		cout << "-- parental segment ID: " << paSegID << endl;
-		curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy = curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy + 1;
-		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
-		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
-		{
-			if (this->branchSegIDmap[*it] == branchSegID)
-			{
-				this->branchSegIDmap.erase(*it);
-			}
-			else
-			{
-				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
-				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
-			}
-			cout << " ---> new immediate child seg hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
-		}
-	}
-}
-
-void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
-{
-	int childSegCount;
-	
-	vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
-	childSegCount = nextLevelBranchIDs.size();
-	cout << "child seg number: " << childSegCount << endl;
-	if (childSegCount == 0) return;
-
-	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
-	{
-		cout << "  child segID: " << this->branchSegIDmap[*it] << ", child branchID: " << *it << ", original hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
-		curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
-		this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
-		cout << "  child segID: " << this->branchSegIDmap[*it] << ", child branchID: " << *it << ", original hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
-	}
-	
-	return;
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
