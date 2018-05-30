@@ -969,7 +969,15 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                tar_markers.push_back(mloc1);
 
                // call fastmarching
-               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
+               if(selectMode == smCurveCreate_MarkerCreate1_fm)
+               {
+                   if(!fastmarching_linker_timer(sub_markers, tar_markers, pImg, outswc, szx, szy, szz))
+                   {
+                       return;
+                   }
+               }
+               else
+                   fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
                XYZ sub_orig = XYZ(0,0,0);
                PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, ii+1);
 

@@ -469,6 +469,236 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         return true;
 }
 
+// added fastmarching_linker_timer by ZZ 05302018
+template<class T> bool fastmarching_linker_timer(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers,
+     T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2) //float time,
+{
+        int ALIVE = -1;
+        int TRIAL = 0;
+        int FARST = 1;
+
+        clock_t t1=clock(); // start time
+        V3DLONG tol_sz = sz0 * sz1 * sz2;
+        V3DLONG sz01 = sz0 * sz1;
+
+        if (tol_sz<=0) {cout << "wrong size info in fastmarching_linker"<< endl; return false;}
+
+        //int cnn_type = 2;  // ?
+        cout<<"cnn_type = "<<cnn_type<<endl;
+        cout<<"fastmarching_linker";
+
+        V3DLONG i;
+        float * phi = new float[tol_sz];
+        for(i = 0; i < tol_sz; i++){phi[i] = INF;}
+        map<V3DLONG, MyMarker> sub_map, tar_map;
+        for(i = 0; i < tar_markers.size(); i++)
+        {
+                V3DLONG x = tar_markers[i].x + 0.5;
+                V3DLONG y = tar_markers[i].y + 0.5;
+                V3DLONG z = tar_markers[i].z + 0.5;
+                V3DLONG ind = z*sz01 + y*sz0 + x;
+                //assert(x >= 0 && x <=sz0-1 && y >= 0 && y <=sz1-1 && z >= 0 && z <=sz2-1); //Hang indicated that this is the problem why there would be crashing, 120405.
+                if (x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2)
+                    tar_map[ind] = tar_markers[i];
+        }
+
+        for(i = 0; i < sub_markers.size(); i++)
+        {
+                V3DLONG x = sub_markers[i].x + 0.5;
+                V3DLONG y = sub_markers[i].y + 0.5;
+                V3DLONG z = sub_markers[i].z + 0.5;
+                V3DLONG ind = z*sz01 + y*sz0 + x;
+                //assert(x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2);
+                if (x >= 0 && x <= sz0-1 && y >= 0 && y <= sz1-1 && z >= 0 && z <= sz2-1)
+                    sub_map[ind] = sub_markers[i];
+        }
+
+        // GI parameter min_int, max_int, li
+        double max_int = 0; // maximum intensity, used in GI
+        double min_int = INF;
+        for(i = 0; i < tol_sz; i++)
+        {
+                if(inimg1d[i] > max_int) max_int = inimg1d[i];
+                if(inimg1d[i] < min_int) min_int = inimg1d[i];
+        }
+        max_int -= min_int;
+        if (max_int == 0.0) return false; // no image data, avoid divide by zero in GI
+        double li = 10;
+
+        // initialization
+        char * state = new char[tol_sz];
+        for(i = 0; i < tol_sz; i++) state[i] = FARST;
+
+        vector<V3DLONG> submarker_inds;
+        for(V3DLONG s = 0; s < sub_markers.size(); s++) {
+                V3DLONG ii = (V3DLONG)(sub_markers[s].x + 0.5);
+                V3DLONG jj = (V3DLONG)(sub_markers[s].y + 0.5);
+                V3DLONG kk = (V3DLONG)(sub_markers[s].z + 0.5);
+                V3DLONG ind = kk*sz01 + jj*sz0 + ii;
+                submarker_inds.push_back(ind);
+                state[ind] = ALIVE;
+                phi[ind] = 0.0;
+        }
+        cout << "totalsize=" << tol_sz <<endl;
+        V3DLONG * parent = new V3DLONG[tol_sz]; for(V3DLONG ind = 0; ind < tol_sz; ind++) parent[ind] = ind;
+
+        BasicHeap<HeapElemX> heap;
+        map<V3DLONG, HeapElemX*> elems;
+
+        // init heap
+        for(V3DLONG s = 0; s < submarker_inds.size(); s++)
+        {
+                V3DLONG index = submarker_inds[s];
+                HeapElemX *elem = new HeapElemX(index, phi[index]);
+                elem->prev_ind = index;
+                heap.insert(elem);
+                elems[index] = elem;
+        }
+        // loop
+        int time_counter = sub_markers.size();
+        double process1 = time_counter*1000.0/tol_sz;
+        V3DLONG stop_ind = -1;
+        cout << "now prepare test heap";
+        while(!heap.empty())
+        {
+               // double process2 = (time_counter++)*1000.0/tol_sz;
+               // if(process2 - process1 >= 1){cout<<"\r"<<((int)process2)/10.0<<"%";cout.flush(); process1 = process2;}
+                // time consuming until this pos
+                //if((time!=0)&&(((clock()-t1) > time*CLOCKS_PER_SEC) ))
+                //{
+                //     return false;
+                // }
+                if(clock()-t1 > 3*CLOCKS_PER_SEC) //if longer than 3 sec, then return;
+                {
+                    if(!elems.empty()) for(map<V3DLONG, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
+                    if(phi) {delete [] phi; phi = 0;}
+                    if(parent) {delete [] parent; parent = 0;}
+                    if(state) {delete [] state; state = 0;}
+                    return false;
+
+                }
+
+                HeapElemX* min_elem = heap.delete_min();
+                elems.erase(min_elem->img_ind);
+
+                V3DLONG min_ind = min_elem->img_ind;
+                parent[min_ind] = min_elem->prev_ind;
+                if(tar_map.find(min_ind) != tar_map.end()){stop_ind = min_ind; break;}
+
+                delete min_elem;
+
+                state[min_ind] = ALIVE;
+                V3DLONG i = min_ind % sz0;
+                V3DLONG j = (min_ind/sz0) % sz1;
+                V3DLONG k = (min_ind/sz01) % sz2;
+                V3DLONG w, h, d;
+
+                for(V3DLONG kk = -1; kk <= 1; kk++)
+                {
+                        d = k+kk;
+                        if(d < 0 || d >= sz2) continue;
+                        for(V3DLONG jj = -1; jj <= 1; jj++)
+                        {
+                                h = j+jj;
+                                if(h < 0 || h >= sz1) continue;
+                                for(V3DLONG ii = -1; ii <= 1; ii++)
+                                {
+                                        w = i+ii;
+                                        if(w < 0 || w >= sz0) continue;
+                                        V3DLONG offset = ABS(ii) + ABS(jj) + ABS(kk);
+                                        if(offset == 0 || offset > cnn_type) continue;
+                                        double factor = (offset == 1) ? 1.0 : ((offset == 2) ? 1.414214 : ((offset == 3) ? 1.732051 : 0.0));
+                                        V3DLONG index = d*sz01 + h*sz0 + w;
+
+                                        if(state[index] != ALIVE)
+                                        {
+                                                double new_dist = phi[min_ind] + (GI(index) + GI(min_ind))*factor*0.5;
+                                                V3DLONG prev_ind = min_ind;
+
+                                                if(state[index] == FARST)
+                                                {
+                                                        phi[index] = new_dist;
+                                                        HeapElemX * elem = new HeapElemX(index, phi[index]);
+                                                        elem->prev_ind = prev_ind;
+                                                        heap.insert(elem);
+                                                        elems[index] = elem;
+                                                        state[index] = TRIAL;
+                                                }
+                                                else if(state[index] == TRIAL)
+                                                {
+                                                        if(phi[index] > new_dist)
+                                                        {
+                                                                phi[index] = new_dist;
+                                                                HeapElemX * elem = elems[index];
+                                                                heap.adjust(elem->heap_id, phi[index]);
+                                                                elem->prev_ind = prev_ind;
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+                // assert(!mask_values.empty());
+        }
+
+        V3DLONG in_sz[4] = {sz0, sz1, sz2, 1};
+        double thresh = 20;
+        cout<<"set thres=20";
+        // connect markers according to disjoint set
+        {
+                // add tar_marker
+                V3DLONG ind = stop_ind;
+                MyMarker tar_marker = tar_map[stop_ind];
+                MyMarker * new_marker = new MyMarker(tar_marker.x, tar_marker.y, tar_marker.z);
+                //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
+                new_marker->parent = 0; //tar_marker;
+
+                outswc.push_back(new_marker);
+
+                MyMarker * par_marker = new_marker;
+                ind = parent[ind];
+                while(sub_map.find(ind) == sub_map.end())
+                {
+                        V3DLONG i = ind % sz0;
+                        V3DLONG j = ind/sz0 % sz1;
+                        V3DLONG k = ind/sz01 % sz2;
+                        new_marker = new MyMarker(i,j,k);
+                        new_marker->parent = par_marker;
+                        //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
+                        outswc.push_back(new_marker);
+                        par_marker = new_marker;
+                        if (ind >= 0 && ind < tol_sz)
+                        {
+                            if (ind == parent[ind])
+                            {
+                                cout<<"[WARNING][VIRTUAL FINGER]: a self-loop exists. Abort!\n";
+                                break;
+                            }
+                            ind = parent[ind];
+                        } else {
+                            break;
+                        }
+                }
+                // add sub_marker
+                MyMarker sub_marker = sub_map[ind];
+                new_marker = new MyMarker(sub_marker.x, sub_marker.y, sub_marker.z);
+                new_marker->parent = par_marker;
+                //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
+                outswc.push_back(new_marker);
+        }
+        reverse(outswc.begin(), outswc.end());
+
+        cout<<outswc.size()<<" markers linked"<<endl;
+        //for(int i = 0; i < sub_markers.size(); i++) outswc.push_back(sub_markers[i]);
+        //for(int i = 0; i < tar_markers.size(); i++) outswc.push_back(tar_markers[i]);
+
+
+        if(!elems.empty()) for(map<V3DLONG, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
+        if(phi) {delete [] phi; phi = 0;}
+        if(parent) {delete [] parent; parent = 0;}
+        if(state) {delete [] state; state = 0;}
+        return true;
+}
 
 /******************************************************************************
  * Fast marching based curve drawing 1 , will draw a line between a bounch of rays
