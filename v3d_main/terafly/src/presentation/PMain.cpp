@@ -1606,9 +1606,12 @@ void PMain::saveAnnotationsAs()
 
             #else
             //tf::setWidgetOnTop(cur_win->window3D, false);
-            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath(), tr("annotation files (*.ano)"));
+            QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
             //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
+
+
 
             if(!path.isEmpty())
             {
