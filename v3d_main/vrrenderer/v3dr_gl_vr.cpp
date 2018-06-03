@@ -1091,7 +1091,7 @@ void CMainApplication::Shutdown()
 		SS.on = true;
 		SS.name = "vaa3d_traced_neuron";
 		SS.file = "vaa3d_traced_neuron";
-		SS.color = XYZW(0,0,255,255);
+		SS.color = XYZW(0,0,0,0);
 		// add or replace into listNeuronTree
 		bool contained = false;
 		for (int i=0; i<loadedNTList->size(); i++)
@@ -6222,7 +6222,7 @@ void CGLRenderModel::Draw()
 
 void CMainApplication::SetupSingleMorphologyLine(int ntIndex, int processMode)
 {
-	qDebug()<<"index = "<< ntIndex<<" and mode ="<<processMode;
+	//qDebug()<<"index = "<< ntIndex<<" and mode ="<<processMode;
 	if (processMode == 0)
 	// add a new VAO&VBO for new segment in sketchedNTList
 	{
