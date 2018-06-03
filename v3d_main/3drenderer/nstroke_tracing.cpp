@@ -3693,7 +3693,6 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 		for (vector<int>::iterator chkIt = curStemChildBranchIDs.begin(); chkIt != curStemChildBranchIDs.end(); ++chkIt)
 			cout << this->branchSegIDmap[*chkIt] << "-" << *chkIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << ", ";
 
-//		int ancestorBranchID;
 		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
 		{
 			if (this->branchSegIDmap[*it] == branchSegID) this->branchSegIDmap.erase(*it);
@@ -3710,11 +3709,11 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 		cout << endl;
 
 		int ancestorBranchID = curImg->tracedNeuron.seg[paSegID].branchingProfile.paID;
-		while (ancestorBranchID != -1)
+		/*while (ancestorBranchID != -1)
 		{
 			vector<int> thisLevelBranches = curImg->tracedNeuron.seg[ancestorBranchID].branchingProfile.childIDs;
 
-		}
+		}*/
 	}
 }
 
