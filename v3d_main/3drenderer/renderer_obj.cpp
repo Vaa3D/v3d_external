@@ -63,6 +63,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 ////////////////////////////////////////////////////////////////////
 //<<<<<<< HEAD
 
+#define default_radius_gd 0.815  //assign a radius value to gd tracing using shortcut "G" by ZZ 06042018
+
+
 // this is a no-no?  neuron_type_color is a global here...
 
 //>>>>>>> 80abd961fbb56aa528c1d7e054dd32ceef38d966
@@ -1645,7 +1648,10 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
         //// Vaa3d || Terafly
         else
         {
-            curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
+            if(selectMode == smCurveCreate_MarkerCreate1_fm)
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd);
+            else
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
