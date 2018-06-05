@@ -3673,11 +3673,126 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID)
 {
 	cout << " ---> primary seg hierarchy: " << curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy << endl;
+	
 	vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[mainSegID]);
+	
 	if (connectedSegDecomposed.size() > 1)
 	{
-		for (vector<V_NeuronSWC>::iterator itNew = connectedSegDecomposed.begin(); itNew != connectedSegDecomposed.end(); ++itNew)
-			curImg->tracedNeuron.seg.push_back(*itNew);
+		cout << "new segment breaks into " << connectedSegDecomposed.size() << " subsegments." << endl << endl;
+
+		size_t primaryPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[mainSegID].branchingProfile.paID];
+		V_NeuronSWC_unit oldPrimaryHead = *(curImg->tracedNeuron.seg[mainSegID].row.end() - 1);
+		V_NeuronSWC_unit oldPrimaryTail = *(curImg->tracedNeuron.seg[mainSegID].row.begin());
+		cout << "Old primary tail coords:" << oldPrimaryTail.x << " " << oldPrimaryTail.y << " " << oldPrimaryTail.z << endl;
+		cout << "Old primary head coords:" << oldPrimaryHead.x << " " << oldPrimaryHead.y << " " << oldPrimaryHead.z << endl << endl;
+		
+		bool allAdded = false;
+		if (connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(1).row.end() - 1)->x && connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(2).row.end() - 1)->x)
+		{
+			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
+			{
+				if (it->x == (connectedSegDecomposed.at(1).row.begin() + 1)->x)
+				{
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+					allAdded = true;
+					break;
+				}
+			}
+			if (!allAdded)
+			{
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+			}
+		}
+		else if (connectedSegDecomposed.at(1).row.begin()->x == (connectedSegDecomposed.at(0).row.end() - 1)->x && connectedSegDecomposed.at(1).row.begin()->x == (connectedSegDecomposed.at(2).row.end() - 1)->x)
+		{
+			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
+			{
+				if (it->x == (connectedSegDecomposed.at(0).row.begin() + 1)->x)
+				{
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+					allAdded = true;
+					break;
+				}
+			}
+			if (!allAdded)
+			{
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+			}
+		}
+		else if (connectedSegDecomposed.at(2).row.begin()->x == (connectedSegDecomposed.at(0).row.end() - 1)->x && connectedSegDecomposed.at(2).row.begin()->x == (connectedSegDecomposed.at(1).row.end() - 1)->x)
+		{
+			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
+			{
+				if (it->x == (connectedSegDecomposed.at(1).row.begin() + 1)->x)
+				{
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+					allAdded = true;
+					break;
+				}
+			}
+			if (!allAdded)
+			{
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+			}
+		}
+
+		vector<V_NeuronSWC>::iterator newSegIt = curImg->tracedNeuron.seg.end() - 3;
+		for (ptrdiff_t i = 0; i < 3; ++i)
+		{
+			++newSegIt;
+			newSegIt->branchingProfile.ID = curImg->tracedNeuron.seg.size();
+			int segNums = curImg->tracedNeuron.seg.size() - 1;
+			
+			if (i == 0)
+			{
+				newSegIt->branchingProfile.paID = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.ID;
+				newSegIt->branchingProfile.hierarchy = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.hierarchy + 1;
+				newSegIt->branchingProfile.childIDs.clear();
+				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
+				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID);
+				for (vector<int>::iterator childIt = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.childIDs.begin(); childIt != curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.childIDs.end(); ++childIt)
+					if (*childIt == curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID) *childIt = newSegIt->branchingProfile.ID;		
+			}
+			else if (i == 1)
+			{
+				newSegIt->branchingProfile.paID = (newSegIt - 1)->branchingProfile.ID;
+				newSegIt->branchingProfile.hierarchy = (newSegIt - 1)->branchingProfile.hierarchy + 1;
+				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
+				cout << "segID:" << segNums << " branchID:" << newSegIt->branchingProfile.ID << endl;
+				newSegIt->branchingProfile.childIDs.clear();
+				for (vector<int>::iterator childIt = curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.begin(); childIt != curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.end(); ++childIt)
+				{
+					cout << "child segID: " << *childIt << endl;
+					int childBranchID = *childIt;
+					newSegIt->branchingProfile.childIDs.push_back(childBranchID);
+					curImg->tracedNeuron.seg[this->branchSegIDmap[*childIt]].branchingProfile.paID = newSegIt->branchingProfile.ID;
+				}
+				(newSegIt - 1)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
+				this->rc_downstreamRelabel(curImg, segNums);
+			}
+			else if (i == 2)
+			{
+				newSegIt->branchingProfile.paID = (newSegIt - 2)->branchingProfile.ID;
+				newSegIt->branchingProfile.hierarchy = (newSegIt - 2)->branchingProfile.hierarchy + 1;
+				(newSegIt - 2)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
+				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
+				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID);
+
+				V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[segNums]);
+				int oldPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+				V_NeuronSWC* curSegPtr = &(curImg->tracedNeuron.seg[oldPaSegID]);
+				upstreamRelabel(curImg, curSegPtr, newPaSegPtr);
+			}
+		}
 
 		curImg->tracedNeuron.seg[mainSegID].to_be_deleted = true;
 	}
