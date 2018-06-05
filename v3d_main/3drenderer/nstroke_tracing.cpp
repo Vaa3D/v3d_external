@@ -3683,8 +3683,8 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 		size_t primaryPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[mainSegID].branchingProfile.paID];
 		V_NeuronSWC_unit oldPrimaryHead = *(curImg->tracedNeuron.seg[mainSegID].row.end() - 1);
 		V_NeuronSWC_unit oldPrimaryTail = *(curImg->tracedNeuron.seg[mainSegID].row.begin());
-		cout << "Old primary tail coords:" << oldPrimaryTail.x << " " << oldPrimaryTail.y << " " << oldPrimaryTail.z << endl;
-		cout << "Old primary head coords:" << oldPrimaryHead.x << " " << oldPrimaryHead.y << " " << oldPrimaryHead.z << endl << endl;
+		//cout << "Old primary tail coords:" << oldPrimaryTail.x << " " << oldPrimaryTail.y << " " << oldPrimaryTail.z << endl;
+		//cout << "Old primary head coords:" << oldPrimaryHead.x << " " << oldPrimaryHead.y << " " << oldPrimaryHead.z << endl << endl;
 		
 		bool allAdded = false;
 		if (connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(1).row.end() - 1)->x && connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(2).row.end() - 1)->x)
@@ -3767,16 +3767,17 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 				newSegIt->branchingProfile.paID = (newSegIt - 1)->branchingProfile.ID;
 				newSegIt->branchingProfile.hierarchy = (newSegIt - 1)->branchingProfile.hierarchy + 1;
 				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
-				cout << "segID:" << segNums << " branchID:" << newSegIt->branchingProfile.ID << endl;
+				//cout << "segID:" << segNums << " branchID:" << newSegIt->branchingProfile.ID << endl;
 				newSegIt->branchingProfile.childIDs.clear();
 				for (vector<int>::iterator childIt = curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.begin(); childIt != curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.end(); ++childIt)
 				{
-					cout << "child segID: " << *childIt << endl;
+					//cout << "child branchID: " << *childIt << endl;
 					int childBranchID = *childIt;
 					newSegIt->branchingProfile.childIDs.push_back(childBranchID);
 					curImg->tracedNeuron.seg[this->branchSegIDmap[*childIt]].branchingProfile.paID = newSegIt->branchingProfile.ID;
 				}
 				(newSegIt - 1)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
+				cout << "=======> recursive downstream relabeling" << endl;
 				this->rc_downstreamRelabel(curImg, segNums);
 			}
 			else if (i == 2)
@@ -3785,12 +3786,22 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 				newSegIt->branchingProfile.hierarchy = (newSegIt - 2)->branchingProfile.hierarchy + 1;
 				(newSegIt - 2)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
 				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
-				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID);
+
+				int oldPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+				for (vector<int>::iterator oldPaChildIt = curImg->tracedNeuron.seg[oldPaSegID].branchingProfile.childIDs.begin(); oldPaChildIt != curImg->tracedNeuron.seg[oldPaSegID].branchingProfile.childIDs.end(); ++oldPaChildIt)
+				{
+					if (*oldPaChildIt == curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID)
+					{	
+						cout << this->branchSegIDmap[*oldPaChildIt] << " " << this->branchSegIDmap[newSegIt->branchingProfile.ID] << endl;
+						*oldPaChildIt = newSegIt->branchingProfile.ID;
+					}
+				}
 
 				V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[segNums]);
-				int oldPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
-				V_NeuronSWC* curSegPtr = &(curImg->tracedNeuron.seg[oldPaSegID]);
+				int curSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+				V_NeuronSWC* curSegPtr = &(curImg->tracedNeuron.seg[curSegID]);
 				upstreamRelabel(curImg, curSegPtr, newPaSegPtr);
+				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID);
 			}
 		}
 
