@@ -3461,8 +3461,32 @@ void Renderer_gl1::simpleConnect()
 				}
 
 				simpleConnectExecutor(curImg, segInfo);
-				if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted) this->hierarchyReprofile(curImg, segInfo[1].segID, segInfo[0].segID);
-				else if (curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted) this->hierarchyReprofile(curImg, segInfo[0].segID, segInfo[1].segID);
+				this->hierarchyRelabel = false;
+				if (this->hierarchyRelabel)
+				{
+					if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted) this->hierarchyReprofile(curImg, segInfo[1].segID, segInfo[0].segID);
+					else if (curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted) this->hierarchyReprofile(curImg, segInfo[0].segID, segInfo[1].segID);
+				}
+				else
+				{
+					if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted)
+					{
+						vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[1].segID]);
+						for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
+							curImg->tracedNeuron.seg.push_back(*addedIt);
+
+						curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted;
+					}
+					else if (curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted)
+					{
+						vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[0].segID]);
+						for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
+							curImg->tracedNeuron.seg.push_back(*addedIt);
+
+						curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted;
+					}
+					
+				}
 				
 				/*(curImg->tracedNeuron.seg.end() - 1)->to_be_deleted = true;
 				vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(*(curImg->tracedNeuron.seg.end() - 1));

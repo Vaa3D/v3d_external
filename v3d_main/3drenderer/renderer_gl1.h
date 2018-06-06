@@ -468,6 +468,7 @@ public:
 	 
 	 NeuronTree treeOnTheFly;
 	 bool isLoadFromFile;
+	 bool hierarchyRelabel;
 	 void simpleConnect();
 	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 void showSubtree();
