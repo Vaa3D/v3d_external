@@ -284,8 +284,21 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
     in->seekg(0, ios::beg);
 
     ret[0]=ret[1]=ret[2]=ret[3]=ret[4]=-999999999;
-
+    string soma_last="";
+    bool somaNew = true;
     while (!in->fail()) {
+        string soma_current;
+        if (lookFor("(\"Soma", in)) {
+            *in >> soma_current;
+            if(soma_current==soma_last)
+                somaNew = false;
+            else
+            {
+                somaNew = true;
+                soma_last = soma_current;
+            }
+        }
+
         if (lookFor("(Closed)", in)) {
             getValues(in, ret);
         }
@@ -293,8 +306,9 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
         //adding the centroid point of each contour to the coverted file
         //insert soma. modified the code because soma insertion is failing hence checking on the ret[] array to add soma sri 07/22/2010
         if((ret[0]!=-999999999) && (ret[1]!=-999999999)){
+            if(somaNew) pid = -1;else pid = id-1;
             add(nt, id,1,ret[0],ret[1],ret[2],ret[3],pid);
-            pid = id;id = id+1;
+            id = id+1;
             cellBody_cnt++;
         }
 
