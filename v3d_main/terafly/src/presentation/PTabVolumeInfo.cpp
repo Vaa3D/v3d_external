@@ -57,7 +57,7 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_panel->setStyle(new QWindowsStyle());
 #endif
     vp_path = new QLineEdit(this);
-    vp_path->setReadOnly(true);
+    //vp_path->setReadOnly(true);
     vp_path->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     vp_path->setTextMargins(5, 0, 0, 0);
     vp_open = new QPushButton("Open", this);
@@ -294,6 +294,7 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     connect(vp_refill_auto_checkbox, SIGNAL(toggled(bool)), this, SLOT(vp_refill_auto_checkbox_changed(bool)));
     connect(vp_refill_stop_combobox, SIGNAL(currentIndexChanged(int)), this, SLOT(vp_refill_stop_combobox_changed(int)));
     connect(vp_refill_coverage_spinbox, SIGNAL(valueChanged(int)), this, SLOT(vp_refill_coverage_spinbox_changed(int)));
+    connect(vp_path, SIGNAL(textChanged(QString)), this, SLOT(vp_change_path(QString)));
 
     for(size_t i=0; i<vp_ram_clear_buttons.size(); i++)
         connect(vp_ram_clear_buttons[i], SIGNAL(clicked()), this, SLOT(clear_button_clicked()));
@@ -432,7 +433,18 @@ void tf::PTabVolumeInfo::init()
 
         std::reverse(layers.begin(), layers.end());
 
-        vp_path->setText(virtualPyramid->path().c_str());
+        // vp_path->setText(virtualPyramid->path().c_str());
+
+        std::cout << "vp_path: " << vp_path->text().toStdString() << endl;
+
+        if(vp_path->text().trimmed().isEmpty())
+        {
+            vp_path->setText(virtualPyramid->path().c_str());
+        }
+        else
+        {
+            virtualPyramid->setPath(vp_path->text().toStdString());
+        }
 
         std::string resampling_factors;
         for(size_t i=0; i<layers.size(); i++)
@@ -843,4 +855,9 @@ void tf::PTabVolumeInfo::vp_refill_stop_combobox_changed(int v)
     vp_refill_times_spinbox->setVisible(!v);
 
     CSettings::instance()->setVpRefillStopCondition(v);
+}
+
+void  tf::PTabVolumeInfo::vp_change_path(const QString& str)
+{
+    vp_path->setText(str);
 }

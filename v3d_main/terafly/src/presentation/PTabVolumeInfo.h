@@ -128,6 +128,7 @@ class terafly::PTabVolumeInfo : public QWidget
         void vp_refill_auto_checkbox_changed(bool v);
         void vp_refill_stop_combobox_changed(int v);
         void vp_refill_coverage_spinbox_changed(int v);
+        void vp_change_path(const QString& str);
 
 };
 

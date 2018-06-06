@@ -80,7 +80,7 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, ii
     storage_group->addButton(local_radiobutton);
     storage_group->addButton(storage_radiobutton);
     volumepath_line = new QLineEdit(this);
-    volumepath_line->setReadOnly(true);
+    //volumepath_line->setReadOnly(true);
     block_format_combobox = new QComboBox(this);
     block_format_combobox->addItem(".tif");
     block_format_combobox->addItem(".v3draw");
@@ -202,6 +202,7 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, ii
     // signals and slots
     connect(qbuttons, SIGNAL(accepted()), this, SLOT(ok_button_clicked()));
     connect(qbuttons, SIGNAL(rejected()), this, SLOT(close()));
+    connect(volumepath_line, SIGNAL(textChanged(QString)), this, SLOT(setText(QString)));
     connect(local_radiobutton, SIGNAL(clicked()), this, SLOT(storage_radiobutton_changed()));
     connect(storage_radiobutton, SIGNAL(clicked()), this, SLOT(storage_radiobutton_changed()));
     connect(auto_radiobutton, SIGNAL(clicked()), this, SLOT(subsampling_radiobutton_changed()));
@@ -365,9 +366,30 @@ void PDialogVirtualPyramid::browse_button_clicked()
 void PDialogVirtualPyramid::storage_radiobutton_changed()
 {
     if(QObject::sender() == storage_radiobutton)
-        volumepath_line->setText(tf::VirtualPyramid::pathRemote(volumePath).c_str());
+    {
+        qDebug()<<"volumepath: "<<volumepath_line->text();
+        if(volumepath_line->text().trimmed().isEmpty())
+        {
+            volumepath_line->setText(tf::VirtualPyramid::pathRemote(volumePath).c_str());
+        }
+        else
+        {
+
+        }
+    }
     else
-        volumepath_line->setText(tf::VirtualPyramid::pathLocal(volumePath).c_str());
+    {
+        qDebug()<<"volumepath: "<<volumepath_line->text();
+        if(volumepath_line->text().trimmed().isEmpty())
+        {
+            volumepath_line->setText(tf::VirtualPyramid::pathLocal(volumePath).c_str());
+        }
+        else
+        {
+
+        }
+        qDebug()<<"volumepath is changed to: "<<volumePath.c_str();
+    }
 }
 
 void PDialogVirtualPyramid::subsampling_radiobutton_changed()

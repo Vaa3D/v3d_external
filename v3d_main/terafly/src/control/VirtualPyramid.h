@@ -100,6 +100,7 @@ class terafly::VirtualPyramid
         // GET methods
         std::vector<iim::VirtualVolume*> virtualPyramid();
         std::string path(){return _path;}
+        void setPath(std::string path) {_path = path;}
         std::vector <tf::HyperGridCache*> cachePyramid(){return _cachePyramid;}
 
 
