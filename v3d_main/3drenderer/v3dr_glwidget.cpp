@@ -963,6 +963,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018
             }
+			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
+			{
+				callShowSubtree();
+			}
 	  		break;
         case Qt::Key_D:
             if (IS_ALT_MODIFIER)
@@ -2982,6 +2986,15 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons_loopSafe()
 	if (renderer)
 	{
 		renderer->callStrokeConnectMultiNeurons_loopSafe();
+		POST_updateGL();
+	}
+}
+
+void V3dR_GLWidget::callShowSubtree()
+{
+	if (renderer)
+	{
+		renderer->callShowSubtree();
 		POST_updateGL();
 	}
 }

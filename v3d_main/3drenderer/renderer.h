@@ -92,7 +92,7 @@ public:
                       smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
                       smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
 
-					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons, smSimpleConnect, smSimpleConnectLoopSafe,//MK
+					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons, smSimpleConnect, smSimpleConnectLoopSafe, smShowSubtree,//MK
 
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
         smCurveCreate_MarkerCreate1_fm, smCurveCreate_MarkerCreate1,//by ZZ 09202018
@@ -248,6 +248,7 @@ public:
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
 	virtual void callStrokeConnectMultiNeurons_loopSafe() {}; // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
+	virtual void callShowSubtree() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
     virtual void callCreateMarkerNearestNode(int x, int y) {};

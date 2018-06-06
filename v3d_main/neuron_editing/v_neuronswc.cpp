@@ -537,18 +537,6 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 		if (new_seg.row.size()>0)//>=2)//? single point
 		{
-			//int curBrID = (new_seg.row.end() - 1)->branchingProfile.ID;
-			//int curBrHi = (new_seg.row.end() - 1)->branchingProfile.hierarchy; // in constructor, the default value is 0
-			//new_seg.row.begin()->branchingProfile.x = new_seg.row.begin()->x;
-			//new_seg.row.begin()->branchingProfile.y = new_seg.row.begin()->y;
-			//new_seg.row.begin()->branchingProfile.z = new_seg.row.begin()->z;
-			//for (vector<V_NeuronSWC_unit>::iterator it = new_seg.row.begin(); it != new_seg.row.end(); ++it) 
-			//{
-			//	it->branchingProfile.ID = curBrID;
-			//	it->branchingProfile.hierarchy = curBrHi;
-			//	//cout << it->branchingProfile.ID << " " << it->branchingProfile.hierarchy << endl;
-			//}
-			////cout << endl;
 			new_seg.row[new_seg.row.size()-1].parent = -1; // set segment end
 			char buf[10];
 			new_seg.name = sprintf(buf,"%d", out_swc_segs.size()+1);

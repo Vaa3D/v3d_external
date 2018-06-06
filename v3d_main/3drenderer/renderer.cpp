@@ -42,13 +42,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <sstream>
 #include <string>
 
-//<<<<<<< HEAD
 Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
 
 using namespace std;
-
-//>>>>>>> master
-////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(void* widget)
 	: widget(widget)
@@ -667,6 +663,7 @@ void Renderer::drawEditInfo()
         case 7:  editdisplay = "Defining Polyline";break;
         case 8:  editdisplay = "GD Tracing";break;
 		case 9:  editdisplay = "Connecting (Loop Safe)"; break;
+		case 10: editdisplay = "Highlight Subtree"; break;
 
         }
 

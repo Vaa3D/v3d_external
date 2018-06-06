@@ -383,6 +383,7 @@ public slots:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments splitting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
+	virtual void callShowSubtree();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode();

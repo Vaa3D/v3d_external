@@ -2227,7 +2227,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
-		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect || selectMode == smSimpleConnectLoopSafe)
+		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect || selectMode == smSimpleConnectLoopSafe ||
+		selectMode == smShowSubtree)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2294,6 +2295,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
 			else if (selectMode == smSimpleConnect) simpleConnect();
 			else if (selectMode == smSimpleConnectLoopSafe) simpleConnect();
+			else if (selectMode == smShowSubtree) showSubtree();
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------

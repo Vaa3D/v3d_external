@@ -1405,6 +1405,25 @@ void Renderer_gl1::callStrokeConnectMultiNeurons_loopSafe()
 	}
 }
 
+void Renderer_gl1::callShowSubtree()
+{
+	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	if (w && listNeuronTree.size()>0)
+	{
+		w->setEditMode();
+		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
+		{
+			editinput = 10;
+			selectMode = smShowSubtree;
+			b_addthiscurve = false;
+			oldCursor = QCursor(Qt::ArrowCursor);
+			w->setCursor(QCursor(Qt::PointingHandCursor));
+		}
+	}
+}
+
 void Renderer_gl1::callDefine3DPolyline()
 {
     if(editinput == 3)

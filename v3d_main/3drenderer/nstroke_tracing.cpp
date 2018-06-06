@@ -3800,6 +3800,7 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 				V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[segNums]);
 				int curSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
 				V_NeuronSWC* curSegPtr = &(curImg->tracedNeuron.seg[curSegID]);
+				cout << "=======> upstream relabeling" << endl;
 				upstreamRelabel(curImg, curSegPtr, newPaSegPtr);
 				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID);
 			}
@@ -3841,7 +3842,6 @@ void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long br
 		V_NeuronSWC* upstreamStartSegPtr = &(curImg->tracedNeuron.seg[paSegID]);
 		V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[mainSegID]);
 		this->upstreamRelabel(curImg, upstreamStartSegPtr, newPaSegPtr);
-
 	}
 }
 
@@ -4039,6 +4039,156 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 	return returnValue;
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
+
+// --------- Highlight the selected segment with its downstream subtree ---------
+void Renderer_gl1::showSubtree()
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
+
+	for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
+	{
+		NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+		if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+		{
+			QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
+			if (!p_listneuron) return;
+			// for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
+
+			/* ============== Get segment information included in the movePen trajectory ============== */
+			/* ======== Only take in the nodes within the rectangle that contains the stroke ======== */
+			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+			for (size_t i = 0; i < list_listCurvePos.at(0).size(); ++i)
+			{
+				if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+				if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
+			}
+			minX = minX - 5; maxX = maxX + 5;
+			minY = minY - 5; maxY = maxY + 5;
+			//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+			QList<NeuronSWC> nodeOnStroke;
+			for (size_t i = 0; i < p_listneuron->size(); ++i)
+			{
+				GLdouble px, py, pz, ix, iy, iz;
+				ix = p_listneuron->at(i).x;
+				iy = p_listneuron->at(i).y;
+				iz = p_listneuron->at(i).z;
+				if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+				{
+					py = viewport[3] - py; //the Y axis is reversed
+					QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+					if ((p.x() >= minX && p.x() <= maxX) && (p.y() >= minY && p.y() <= maxY))
+					{
+						nodeOnStroke.push_back(p_listneuron->at(i));
+						//cout << p.x() << " " << p.y() << endl;
+					}
+				}
+			}
+			if (nodeOnStroke.size() == 0) return;
+			/* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
+
+			/* ========= Acquire the segment touched by stroke ========= */
+			vector<size_t> involvedSegs;
+			float nearestDist = 1000;
+			NeuronSWC nearestNode;
+			for (V3DLONG i = 0; i < list_listCurvePos.at(0).size(); i++)
+			{
+				for (V3DLONG j = 0; j < nodeOnStroke.size(); j++)
+				{
+					GLdouble px, py, pz, ix, iy, iz;
+					ix = nodeOnStroke.at(j).x;
+					iy = nodeOnStroke.at(j).y;
+					iz = nodeOnStroke.at(j).z;
+					if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+					{
+						py = viewport[3] - py; //the Y axis is reversed
+						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+						QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+						float dist = std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y()));
+						if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance) // p: global coordinates; p2: view port coordinates
+						{
+							if (dist < nearestDist)
+							{
+								nearestDist = dist;
+								nearestNode = nodeOnStroke.at(j);
+							}
+							involvedSegs.push_back(nodeOnStroke.at(j).seg_id);
+						}
+					}
+				}
+			}
+			map<size_t, int> segIDCountMap;
+			for (vector<size_t>::iterator segIt = involvedSegs.begin(); segIt != involvedSegs.end(); ++segIt)
+				++segIDCountMap.insert(pair<size_t, int>(*segIt, 0)).first->second;
+			int segCount = segIDCountMap.begin()->second;
+			size_t startingSegID = segIDCountMap.begin()->first;
+			for (map<size_t, int>::iterator mapIt = segIDCountMap.begin(); mapIt != segIDCountMap.end(); ++mapIt)
+			{
+				if (mapIt->second > segCount)
+				{
+					segCount = mapIt->second;
+					startingSegID = mapIt->first;
+				}
+			}
+				
+			this->subtreeSegs.clear();
+			this->subtreeSegs.push_back(startingSegID);
+			this->rc_downstreamSeg(curImg, startingSegID);
+			for (vector<V_NeuronSWC_unit>::iterator firstSegIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); firstSegIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++firstSegIt)
+			{
+				if (firstSegIt->x == nearestNode.x && firstSegIt->y == nearestNode.y && firstSegIt->z == nearestNode.z)
+				{
+					firstSegIt->type = 0;
+					break;
+				}
+				firstSegIt->type = 0;
+			}
+			for (vector<size_t>::iterator segIt = this->subtreeSegs.begin() + 1; segIt != this->subtreeSegs.end(); ++segIt)
+			{
+				cout << *segIt << " ";
+				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
+					unitIt->type = 0;
+			}
+			cout << endl;
+
+			curImg->update_3drenderer_neuron_view(w, this);
+			curImg->proj_trace_history_append();
+		}
+	}
+}
+
+void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
+{
+	int childSegCount;
+
+	vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[segID].branchingProfile.childIDs;
+	childSegCount = nextLevelBranchIDs.size();
+	//cout << endl << "starting seg number: " << segID << "  child seg number: " << childSegCount << " ";
+	if (childSegCount == 0)
+	{
+		//cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
+		return;
+	}
+	/*for (vector<int>::iterator childIt = nextLevelBranchIDs.begin(); childIt != nextLevelBranchIDs.end(); ++childIt)
+		cout << this->branchSegIDmap[*childIt] << "-" << *childIt << ", ";
+	cout << endl;*/
+
+	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
+	{
+		//cout << "  current child segID: " << this->branchSegIDmap[*it] << ", branchID: " << *it << endl;
+		this->subtreeSegs.push_back(this->branchSegIDmap[*it]);
+		this->rc_downstreamSeg(curImg, this->branchSegIDmap[*it]);
+	}
+
+	return;
+}
 
 // ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------
 void Renderer_gl1::connectNeuronsByStroke()

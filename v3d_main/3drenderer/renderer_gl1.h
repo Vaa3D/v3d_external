@@ -218,6 +218,7 @@ public:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
+	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode(int x, int y); // call creating marker
@@ -469,6 +470,7 @@ public:
 	 bool isLoadFromFile;
 	 void simpleConnect();
 	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
+	 void showSubtree();
 	 
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
@@ -484,6 +486,8 @@ public:
 	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
 	 void upstreamRelabel(My4DImage* curImg, V_NeuronSWC* startingSegPtr, V_NeuronSWC* newPaSegPtr);
+	 void rc_downstreamSeg(My4DImage* curImg, size_t segID);
+	 vector<size_t> subtreeSegs;
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
