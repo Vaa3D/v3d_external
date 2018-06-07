@@ -3347,7 +3347,7 @@ void Renderer_gl1::simpleConnect()
 				}
 				minX = minX - 5; maxX = maxX + 5;
 				minY = minY - 5; maxY = maxY + 5;
-				cout << endl << "hovered rectangle area: " << minX << " " << maxX << " " << minY << " " << maxY << endl << endl;
+				//cout << endl << "hovered rectangle area: " << minX << " " << maxX << " " << minY << " " << maxY << endl << endl;
 				QList<NeuronSWC> nodeOnStroke;
 				for (size_t i = 0; i < p_listneuron->size(); ++i)
 				{
@@ -3362,17 +3362,20 @@ void Renderer_gl1::simpleConnect()
 						if ((p.x() >= minX && p.x() <= maxX) && (p.y() >= minY && p.y() <= maxY))
 						{
 							nodeOnStroke.push_back(p_listneuron->at(i));
-							cout << p.x() << " " << p.y() << endl;
-							cout << p_listneuron->at(i).x << " " << p_listneuron->at(i).y << " " << p_listneuron->at(i).z << endl;
-							cout << p_listneuron->at(i).seg_id << endl << endl;
+							//cout << p.x() << " " << p.y() << endl;
+							//cout << p_listneuron->at(i).x << " " << p_listneuron->at(i).y << " " << p_listneuron->at(i).z << endl;
+							//cout << p_listneuron->at(i).seg_id << endl << endl;
 						}
 					}
 				}
 				/* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
 
 				/* ========= Acquire the 1st 2 and only the 1st 2 segments touched by stroke ========= */
-				if ( ((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY)) <= 2000)
+				if ( ((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY)) <= 2000) 
 				{
+					// When the connecting points on the 2 segments are very close to each other
+					// This issue might be from openGL gluProject, in which the lowest mouse hoovered coordinates tend to be missed after projection.
+
 					map<size_t, NeuronSWC> pickedNodes;
 					set<size_t> pickedNodeSegIDs;
 					for (QList<NeuronSWC>::iterator nodeIt = nodeOnStroke.begin(); nodeIt != nodeOnStroke.end(); ++nodeIt)
@@ -3416,11 +3419,13 @@ void Renderer_gl1::simpleConnect()
 				}
 				else 
 				{
+					// Normal mouse hoovering comes here.
+
 					for (V3DLONG i = 0; i < list_listCurvePos.at(0).size(); i++)
 					{
 						for (V3DLONG j = 0; j < nodeOnStroke.size(); j++)
 						{
-							qDebug() << nodeOnStroke.at(j).seg_id;
+							//qDebug() << nodeOnStroke.at(j).seg_id;
 							GLdouble px, py, pz, ix, iy, iz;
 							ix = nodeOnStroke.at(j).x;
 							iy = nodeOnStroke.at(j).y;
@@ -3433,7 +3438,7 @@ void Renderer_gl1::simpleConnect()
 								QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
 								if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance)
 								{
-									qDebug() << nodeOnStroke.at(j).seg_id << " " << nodeOnStroke.at(j).parent << " " << p.x() << " " << p.y();
+									//qDebug() << nodeOnStroke.at(j).seg_id << " " << nodeOnStroke.at(j).parent << " " << p.x() << " " << p.y();
 									if (curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->data[6] != 2) // Sort the node numbers of involved segments
 									{
 										int nodeNo = 1;
@@ -3453,7 +3458,7 @@ void Renderer_gl1::simpleConnect()
 										if (nodeOnStroke.at(j).x == it->data[2] && nodeOnStroke.at(j).y == it->data[3] && nodeOnStroke.at(j).z == it->data[4])
 										{
 											//---------------------- Get seg IDs
-											qDebug() << nodeOnStroke.at(j).seg_id << " " << nodeOnStroke.at(j).parent << " " << p.x() << " " << p.y() << endl;
+											//qDebug() << nodeOnStroke.at(j).seg_id << " " << nodeOnStroke.at(j).parent << " " << p.x() << " " << p.y() << endl;
 											segInfoUnit curSeg;
 											curSeg.head_tail = it->data[6];
 											curSeg.segID = nodeOnStroke.at(j).seg_id;
