@@ -3290,7 +3290,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     curImg->proj_trace_history_append();
 }
 
-// --------- Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018 ---------
+// ================= Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018 =================
 void Renderer_gl1::simpleConnect()
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -3329,6 +3329,8 @@ void Renderer_gl1::simpleConnect()
 				// for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
 
 				vector<segInfoUnit> segInfo;
+				segInfo.clear();
+
 				long segCheck = 0;
 				long cummNodeNum = 0;
 
@@ -3345,7 +3347,7 @@ void Renderer_gl1::simpleConnect()
 				}
 				minX = minX - 5; maxX = maxX + 5;
 				minY = minY - 5; maxY = maxY + 5;
-				//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+				cout << endl << "hovered rectangle area: " << minX << " " << maxX << " " << minY << " " << maxY << endl << endl;
 				QList<NeuronSWC> nodeOnStroke;
 				for (size_t i = 0; i < p_listneuron->size(); ++i)
 				{
@@ -3360,90 +3362,141 @@ void Renderer_gl1::simpleConnect()
 						if ((p.x() >= minX && p.x() <= maxX) && (p.y() >= minY && p.y() <= maxY))
 						{
 							nodeOnStroke.push_back(p_listneuron->at(i));
-							//cout << p.x() << " " << p.y() << endl;
+							cout << p.x() << " " << p.y() << endl;
+							cout << p_listneuron->at(i).x << " " << p_listneuron->at(i).y << " " << p_listneuron->at(i).z << endl;
+							cout << p_listneuron->at(i).seg_id << endl << endl;
 						}
 					}
 				}
 				/* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
 
 				/* ========= Acquire the 1st 2 and only the 1st 2 segments touched by stroke ========= */
-				for (V3DLONG i = 0; i < list_listCurvePos.at(0).size(); i++)
+				if ( ((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY)) <= 2000)
 				{
-					for (V3DLONG j = 0; j < nodeOnStroke.size(); j++)
+					map<size_t, NeuronSWC> pickedNodes;
+					set<size_t> pickedNodeSegIDs;
+					for (QList<NeuronSWC>::iterator nodeIt = nodeOnStroke.begin(); nodeIt != nodeOnStroke.end(); ++nodeIt)
 					{
-						GLdouble px, py, pz, ix, iy, iz;
-						ix = nodeOnStroke.at(j).x;
-						iy = nodeOnStroke.at(j).y;
-						iz = nodeOnStroke.at(j).z;
-						if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+						if (nodeIt->parent == -1 || nodeIt->parent == 2)
 						{
-							py = viewport[3] - py; //the Y axis is reversed
-							QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+							pickedNodeSegIDs.insert(nodeIt->seg_id);
+							pickedNodes[nodeIt->seg_id] = *nodeIt;
+						}
+						
+						if (pickedNodeSegIDs.find(nodeIt->seg_id) != pickedNodeSegIDs.end()) continue;
+						else
+						{
+							pickedNodes.insert(pair<size_t, NeuronSWC>(nodeIt->seg_id, *nodeIt));
+							pickedNodeSegIDs.insert(nodeIt->seg_id);
+						}
 
-							QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
-							if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance)
+						if (pickedNodeSegIDs.size() == 2) break;
+					}
+					if (pickedNodeSegIDs.size() < 2) return;
+
+					for (map<size_t, NeuronSWC>::iterator pickedIt = pickedNodes.begin(); pickedIt != pickedNodes.end(); ++pickedIt)
+					{
+						for (vector<V_NeuronSWC_unit>::iterator rowIt = curImg->tracedNeuron.seg[pickedIt->second.seg_id].row.begin();
+							rowIt != curImg->tracedNeuron.seg[pickedIt->second.seg_id].row.end(); rowIt++)
+						{
+							if (pickedIt->second.x == rowIt->data[2] && pickedIt->second.y == rowIt->data[3] && pickedIt->second.z == rowIt->data[4])
 							{
-								if (curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->data[6] != 2) // Sort the node numbers of involved segments
+								segInfoUnit curSeg;
+								curSeg.head_tail = rowIt->data[6];
+								curSeg.segID = pickedIt->second.seg_id;
+								curSeg.nodeCount = curImg->tracedNeuron.seg[pickedIt->second.seg_id].row.size();
+								curSeg.refine = false;
+								curSeg.branchID = curImg->tracedNeuron.seg[pickedIt->second.seg_id].branchingProfile.ID;
+								curSeg.paBranchID = curImg->tracedNeuron.seg[pickedIt->second.seg_id].branchingProfile.paID;
+								curSeg.hierarchy = curImg->tracedNeuron.seg[pickedIt->second.seg_id].branchingProfile.hierarchy;
+								segInfo.push_back(curSeg);
+							}
+						}
+					}
+				}
+				else 
+				{
+					for (V3DLONG i = 0; i < list_listCurvePos.at(0).size(); i++)
+					{
+						for (V3DLONG j = 0; j < nodeOnStroke.size(); j++)
+						{
+							qDebug() << nodeOnStroke.at(j).seg_id;
+							GLdouble px, py, pz, ix, iy, iz;
+							ix = nodeOnStroke.at(j).x;
+							iy = nodeOnStroke.at(j).y;
+							iz = nodeOnStroke.at(j).z;
+							if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+							{
+								py = viewport[3] - py; //the Y axis is reversed
+								QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+								QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+								if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance)
 								{
-									int nodeNo = 1;
+									qDebug() << nodeOnStroke.at(j).seg_id << " " << nodeOnStroke.at(j).parent << " " << p.x() << " " << p.y();
+									if (curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin()->data[6] != 2) // Sort the node numbers of involved segments
+									{
+										int nodeNo = 1;
+										for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
+											it != curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
+										{
+											it->data[0] = nodeNo;
+											it->data[6] = nodeNo + 1;
+											++nodeNo;
+										}
+										(curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end() - 1)->data[6] = -1;
+									}
+
 									for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
 										it != curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
 									{
-										it->data[0] = nodeNo;
-										it->data[6] = nodeNo + 1;
-										++nodeNo;
-									}
-									(curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end() - 1)->data[6] = -1;
-								}
-
-								for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.begin();
-									it != curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
-								{
-									if (nodeOnStroke.at(j).x == it->data[2] && nodeOnStroke.at(j).y == it->data[3] && nodeOnStroke.at(j).z == it->data[4])
-									{
-										//---------------------- Get seg IDs
-										//qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
-										segInfoUnit curSeg;
-										curSeg.head_tail = it->data[6];
-										curSeg.segID = nodeOnStroke.at(j).seg_id;
-										curSeg.nodeCount = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.size();
-										curSeg.refine = false;
-										curSeg.branchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.ID;
-										curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.paID;
-										curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.hierarchy;
-										vector<segInfoUnit>::iterator chkIt = segInfo.end();
-										if (segInfo.begin() == segInfo.end())
+										if (nodeOnStroke.at(j).x == it->data[2] && nodeOnStroke.at(j).y == it->data[3] && nodeOnStroke.at(j).z == it->data[4])
 										{
-											segInfo.push_back(curSeg);
-											segCheck = it->data[6];
-										}
-										else
-										{
-											bool repeat = false;
-											while (chkIt >= segInfo.begin())
-											{
-												if (chkIt->segID == curSeg.segID)
-												{
-													repeat = true;
-													break;
-												}
-												else --chkIt;
-											}
-											if (repeat == false)
+											//---------------------- Get seg IDs
+											qDebug() << nodeOnStroke.at(j).seg_id << " " << nodeOnStroke.at(j).parent << " " << p.x() << " " << p.y() << endl;
+											segInfoUnit curSeg;
+											curSeg.head_tail = it->data[6];
+											curSeg.segID = nodeOnStroke.at(j).seg_id;
+											curSeg.nodeCount = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.size();
+											curSeg.refine = false;
+											curSeg.branchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.ID;
+											curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.paID;
+											curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.hierarchy;
+											vector<segInfoUnit>::iterator chkIt = segInfo.end();
+											if (segInfo.begin() == segInfo.end())
 											{
 												segInfo.push_back(curSeg);
 												segCheck = it->data[6];
 											}
+											else
+											{
+												bool repeat = false;
+												while (chkIt >= segInfo.begin())
+												{
+													if (chkIt->segID == curSeg.segID)
+													{
+														repeat = true;
+														break;
+													}
+													else --chkIt;
+												}
+												if (repeat == false)
+												{
+													segInfo.push_back(curSeg);
+													segCheck = it->data[6];
+												}
+											}
 										}
 									}
+									break;
 								}
-								break;
 							}
 						}
+						if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
 					}
-					if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
 				}
 				cout << endl;
+				
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
 					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 				
@@ -4062,9 +4115,9 @@ int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUn
 
 	return returnValue;
 }
-// --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
+// ================= END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] =================
 
-// --------- Highlight the selected segment with its downstream subtree ---------
+// ================= Highlight the selected segment with its downstream subtree, MK, June, 2018 =================
 void Renderer_gl1::showSubtree()
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -4213,6 +4266,7 @@ void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
 
 	return;
 }
+// ================= END of [Highlight the selected segment with its downstream subtree, MK, June, 2018] =================
 
 // ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------
 void Renderer_gl1::connectNeuronsByStroke()
