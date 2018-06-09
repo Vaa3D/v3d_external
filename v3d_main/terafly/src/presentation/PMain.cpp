@@ -854,7 +854,15 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	/* --------------------- forth row ---------------------- */
 	teraflyVRView = new QPushButton("See in VR",0);
 	teraflyVRView->setToolTip("You can see current image in VR environment.");
-	localviewer_panel_layout->addWidget(teraflyVRView,0);
+	collaborationVRView = new QPushButton("Collaborate in VR",0);
+	collaborationVRView->setToolTip("Start collaboration mode with VR.");
+	
+	QWidget* VR_buttons = new QWidget();
+	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
+	VR_buttons_layout->addWidget(teraflyVRView, 1);
+    VR_buttons_layout->addWidget(collaborationVRView, 1);
+	VR_buttons->setLayout(VR_buttons_layout);
+	localviewer_panel_layout->addWidget(VR_buttons,0);
 #endif
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
     localViewer_panel->setLayout(localviewer_panel_layout);
@@ -980,6 +988,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 #ifdef __ALLOW_VR_FUNCS__
     if(teraflyVRView)
 	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
+	if(collaborationVRView)
+	    connect(collaborationVRView, SIGNAL(clicked()), this, SLOT(doCollaborationVRView()));
 #endif
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
@@ -2309,6 +2319,31 @@ void PMain::doTeraflyVRView()
     catch(...)
     {
         qDebug()<<"???doTeraflyVRView()";
+    }
+}
+
+void PMain::doCollaborationVRView()
+{
+	qDebug()<<"PMain::doCollaborationVRView()";
+	try
+    {
+        CViewer *cur_win = CViewer::getCurrent();
+        if(cur_win&&cur_win->view3DWidget)
+        {
+ 
+			this->setWindowState(Qt::WindowMinimized);
+			//this->hide();
+            //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
+
+            cur_win->view3DWidget->doimageVRView(true);
+            //cur_win->storeAnnotations();
+            //this->show();		
+
+        }
+    }
+    catch(...)
+    {
+        qDebug()<<"???doCollaborationVRView()";
     }
 }
 

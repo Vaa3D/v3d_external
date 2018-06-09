@@ -191,6 +191,7 @@ class terafly::PMain : public QWidget
         QComboBox* resolution_cbox;
 #ifdef __ALLOW_VR_FUNCS__
 		QPushButton* teraflyVRView;
+		QPushButton* collaborationVRView;
 #endif
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
@@ -514,6 +515,7 @@ class terafly::PMain : public QWidget
         void showAnoOctree();
 #ifdef __ALLOW_VR_FUNCS__
 		void doTeraflyVRView();
+		void doCollaborationVRView();
         void teraflyShiftClickedinVR(int _direction);
 #endif
         void setOverview(bool enable);
