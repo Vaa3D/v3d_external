@@ -4197,10 +4197,12 @@ void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg)
 
 	for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 	{
-		string coordsKeyTail = to_string(it->row.begin()->x);
-		coordsKeyTail = coordsKeyTail + to_string(it->row.begin()->y) + to_string(it->row.begin()->z);
-		string coordsKeyHead = to_string((it->row.end() - 1)->x);
-		coordsKeyHead = coordsKeyHead + to_string((it->row.end() - 1)->y) + to_string((it->row.end() - 1)->z);
+		QString coordsKeyTailQ = QString::number(it->row.begin()->x);
+		coordsKeyTailQ = coordsKeyTailQ + QString::number(it->row.begin()->y) + QString::number(it->row.begin()->z);
+		string coordsKeyTail = coordsKeyTailQ.toStdString();
+		QString coordsKeyHeadQ = QString::number((it->row.end() - 1)->x);
+		coordsKeyHeadQ = coordsKeyHeadQ + QString::number((it->row.end() - 1)->y) + QString::number((it->row.end() - 1)->z);
+		string coordsKeyHead = coordsKeyTailQ.toStdString();
 
 		this->tail2segIDmap.insert(pair<string, size_t>(coordsKeyTail, size_t(it - curImg->tracedNeuron.seg.begin())));
 		this->head2segIDmap.insert(pair<string, size_t>(coordsKeyHead, size_t(it - curImg->tracedNeuron.seg.begin())));
