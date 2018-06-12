@@ -484,10 +484,14 @@ public:
 	 bool isTera;
 	 map<size_t, size_t> branchSegIDmap;
 	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
+	 map<string, size_t> tail2segIDmap;
+	 multimap<string, size_t> head2segIDmap;
+
 	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
 	 void upstreamRelabel(My4DImage* curImg, V_NeuronSWC* startingSegPtr, V_NeuronSWC* newPaSegPtr);
 	 void rc_downstreamSeg(My4DImage* curImg, size_t segID);
+	 void segTreeFastReprofile(My4DImage* curImg);
 	 vector<size_t> subtreeSegs;
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.

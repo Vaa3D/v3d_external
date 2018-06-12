@@ -84,8 +84,10 @@ struct V_BranchUnit // for ranking segment hierarchy, used in loop detection
 	float x, y, z;
 	int ID, paID;
 	int hierarchy;
-
 	vector<int> childIDs;
+
+	int segLoc, segPaLoc;
+	vector<int> childSegLocs;
 };
 
 struct V_NeuronSWC_unit
