@@ -351,6 +351,13 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fdPreviewAction->setChecked(CSettings::instance()->getPreviewMode());
     fdDirectAction->setChecked(!fdPreviewAction->isChecked());
     connect(fdPreviewAction, SIGNAL(changed()), this, SLOT(fetchAndDisplayChanged()));
+    /**/
+    /* ------------------------- "Options" menu: Virtual Pyramid ------------------ */
+    virtualPyramidMenu = optionsMenu->addMenu("Virtual Pyramid");
+    virtualPyramidCacheHighestResAction = new QAction("Convert/Save/Cache the highest res", this);
+    virtualPyramidCacheHighestResAction->setCheckable(true);
+    virtualPyramidMenu->addAction(virtualPyramidCacheHighestResAction);
+    connect(virtualPyramidCacheHighestResAction, SIGNAL(changed()), this, SLOT(virtualPyramidCacheHighestResChanged()));
 
 
 
@@ -1133,6 +1140,10 @@ void PMain::reset()
         tabs->removeTab(1);
         tabs->setCurrentIndex(tab_selected);
     }
+
+    // set Virtual Pyramid permament settings
+    terafly::VirtualPyramid::cache_highest_res = CSettings::instance()->getVpCacheHighestRes();
+    virtualPyramidCacheHighestResAction->setChecked(terafly::VirtualPyramid::cache_highest_res);
 }
 
 
@@ -2398,159 +2409,20 @@ void PMain::debugAction1Triggered()
 {
     /**/tf::debug(tf::NO_DEBUG, 0, __itm__current__function__);
 
-
-    //tf::PluginInterface::getSubVolume("/Users/Administrator/Campus BioMedico/Data/tomo300511.raw.RGB/RES(800x800x512)", 0, 500, 0, 500, 0, 1000);
-    try
-    {
-//        unsigned int src_dims[5]   = { 19, 17,  1,  1,  1 };
-//        unsigned int src_offset[5] = {  0,  0,  0,  0,  0 };
-//        unsigned int src_count[5]  = { 19, 17,  1,  1,  1 };
-//        unsigned int dst_dims[5]   = {  5,  5,  1,  1,  1 };
-//        unsigned int dst_offset[5] = {  0,  0,  0,  0,  0 };
-//        tf::xyz<int> scaling = tf::xyz<int>(4,4,4);
-//        size_t src_size = src_dims[0]*src_dims[1]*src_dims[2]*src_dims[3]*src_dims[4];
-//        size_t dst_size = dst_dims[0]*dst_dims[1]*dst_dims[2]*dst_dims[3]*dst_dims[4];
-//        unsigned char * src = new unsigned char[src_size];
-//        unsigned char * dst = new unsigned char[dst_size];
-
-//        for(size_t i=0; i<src_size; i++)
-//            src[i] = 0;
-//        for(size_t i=0; i<dst_size; i++)
-//            dst[i] = 0;
-
-//        for(size_t t = src_offset[4]; t < src_offset[4] + src_count[4]; t++)
-//        {
-//            size_t stride_t = t * src_dims[3] * src_dims[2] * src_dims[1] * src_dims[0];
-//            for(size_t c = src_offset[3]; c < src_offset[3] + src_count[3]; c++)
-//            {
-//                size_t stride_c = stride_t + c * src_dims[2] * src_dims[1] * src_dims[0];
-//                for(size_t z = src_offset[2]; z < src_offset[2] + src_count[2]; z++)
-//                {
-//                    size_t stride_z = stride_c + z * src_dims[1] * src_dims[0];
-//                    for(size_t y = src_offset[1]; y < src_offset[1] + src_count[1]; y++)
-//                    {
-//                        size_t stride_y = stride_z + y * src_dims[0];
-//                        for(size_t x = src_offset[0]; x < src_offset[0] + src_count[0]; x++)
-//                        {
-//                            if( (x-src_offset[0]) < (src_count[0]/scaling.x)*scaling.x &&
-//                                (y-src_offset[1]) < (src_count[1]/scaling.y)*scaling.y)
-//                               src[stride_y + x] = 255;
-//                            else if((x-src_offset[0]) < (src_count[0]/scaling.x)*scaling.x)
-//                               src[stride_y + x] = (x-src_offset[0])/scaling.x;
-//                            else if((y-src_offset[1]) < (src_count[1]/scaling.y)*scaling.y)
-//                               src[stride_y + x] = (src_count[0]/scaling.x) + (y-src_offset[1])/scaling.y;
-//                            else
-//                               src[stride_y + x] = (src_count[0]/scaling.x) + (src_count[1]/scaling.y);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-//        tf::CImageUtils::downscaleVOI(src, src_dims, src_offset, src_count, dst, dst_dims, dst_offset, scaling);
-
-//        printf("SOURCE:\n");
-//        for(size_t z = 0; z < src_dims[2]; z++)
-//        {
-//            printf("z%d:\n", z);
-//            size_t stride_z = z * src_dims[1] * src_dims[0];
-//            printf("    ");
-//            for(size_t x = 0; x < src_dims[0]; x++)
-//                printf("x%02d ", x);
-//            printf("\n");
-//            for(size_t y = 0; y < src_dims[1]; y++)
-//            {
-//                printf("y%02d ", y);
-//                size_t stride_y = stride_z + y * src_dims[0];
-//                for(size_t x = 0; x < src_dims[0]; x++)
-//                    printf("%03d ", src[stride_y + x]);
-//                printf("y%02d\n", y);
-//            }
-//            printf("    ");
-//            for(size_t x = 0; x < src_dims[0]; x++)
-//                printf("x%02d ", x);
-//            printf("\n");
-//        }
-//        printf("\n");
-
-//        printf("DEST:\n");
-//        for(size_t z = 0; z < dst_dims[2]; z++)
-//        {
-//            printf("z%d:\n", z);
-//            size_t stride_z = z * dst_dims[1] * dst_dims[0];
-//            printf("    ");
-//            for(size_t x = 0; x < dst_dims[0]; x++)
-//                printf("x%02d ", x);
-//            printf("\n");
-//            for(size_t y = 0; y < dst_dims[1]; y++)
-//            {
-//                printf("y%02d ", y);
-//                size_t stride_y = stride_z + y * dst_dims[0];
-//                for(size_t x = 0; x < dst_dims[0]; x++)
-//                    printf("%03d ", dst[stride_y + x]);
-//                printf("y%02d\n", y);
-//            }
-//            printf("    ");
-//            for(size_t x = 0; x < dst_dims[0]; x++)
-//                printf("x%02d ", x);
-//            printf("\n");
-//        }
-//        printf("\n");
+    // checks
+    CViewer* viewer = CViewer::getCurrent();
+    if(!viewer)
+        return;
+    if(!viewer->isInSafeState())
+        return;
+    tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
+    if(!virtualPyramid)
+        return;
 
 
-
-        /*CViewer* viewer = CViewer::getCurrent();
-        size_t dims = size_t(viewer->volV1-viewer->volV0) * (viewer->volH1-viewer->volH0) * (viewer->volD1-viewer->volD0) * viewer->nchannels;
-        size_t empty = 0;
-        for(size_t i=0; i<dims; i++)
-            if(!viewer->imgData[i])
-                empty++;
-        v3d_msg(tf::strprintf("%.2f", (1 - empty/(float)dims)*100).c_str());*/
-        //v3d_msg(QString("path = ") + QString(tf::TeraFly::getPath().c_str()) + QString("\n"));
-
-//        NeuronTree l = terafly::PluginInterface::getSWC();
-//        if(l.listNeuron.empty())
-//        {
-//            NeuronSWC n;
-//            n.x = rand()%200;
-//            n.y = rand()%200;
-//            n.z = rand()%200;
-//            n.parent = -1;
-//            l.listNeuron.append(n);
-//        }
-//        else
-//        {
-//            for(int i=0; i<2; i++)
-//            {
-//                NeuronSWC n;
-//                n.x = rand()%200;
-//                n.y = rand()%200;
-//                n.z = rand()%200;
-//                n.parent = l.listNeuron.back().n;
-//                l.listNeuron.append(n);
-//            }
-//        }
-//        {
-//            //for(int i=0; i<2; i++)
-//            /*{
-//                NeuronSWC n;
-//                n.x = l.listNeuron.back().x + 10;//(rand()%2 ? +rand()%10+1 : rand()%10+1);
-//                n.y = l.listNeuron.back().y + 10; //(rand()%2 ? +rand()%10+1 : rand()%10+1);
-//                n.z = l.listNeuron.back().z + 10; //(rand()%2 ? +rand()%10+1 : rand()%10+1);
-//                n.parent = l.listNeuron.back().n;
-//                l.listNeuron.append(n);
-//            }*/
-//        }
-//        terafly::PluginInterface::setSWC(l);
-    }
-    catch(tf::RuntimeException &e)
-    {
-        v3d_msg(e.what());
-    }
-    catch(iim::IOException &e)
-    {
-        v3d_msg(e.what());
-    }
+    v3d_msg(tf::strprintf("\n\ncompleteness 0 = %.2f\n\n",virtualPyramid->cachePyramid()[0]->completeness()).c_str());
+    v3d_msg(tf::strprintf("\n\ncompleteness 1 = %.2f\n\n",virtualPyramid->cachePyramid()[1]->completeness()).c_str());
+    v3d_msg(tf::strprintf("\n\ncompleteness 2 = %.2f\n\n",virtualPyramid->cachePyramid()[2]->completeness()).c_str());
 }
 
 void PMain::showLogTriggered()
@@ -2605,6 +2477,19 @@ void PMain::fetchAndDisplayChanged()
 
     CSettings::instance()->setPreviewMode(fdPreviewAction->isChecked());
 }
+
+/**********************************************************************************
+* Called when the corresponding Options->Virtual Pyramid->Convert... action is triggered
+***********************************************************************************/
+void PMain::virtualPyramidCacheHighestResChanged()
+{
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+    terafly::VirtualPyramid::cache_highest_res = virtualPyramidCacheHighestResAction->isChecked();
+    CSettings::instance()->setVpCacheHighestRes(virtualPyramidCacheHighestResAction->isChecked());
+}
+
+
 
 /**********************************************************************************
 * Called when the corresponding Options->3D annotation->Virtual space size actions are triggered

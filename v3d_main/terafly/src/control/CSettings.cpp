@@ -92,6 +92,7 @@ void CSettings::loadDefaultSettings()
     vpRefillAuto = true;
     vpRefillCoverage = 10;
     vpRefillStopCondition = 0;
+    vpCacheHighestRes = false;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -153,6 +154,8 @@ void CSettings::writeSettings()
     settings.setValue("vpRefillAuto", vpRefillAuto);
     settings.setValue("vpRefillCoverage", vpRefillCoverage);
     settings.setValue("vpRefillStopCondition", vpRefillStopCondition);
+    settings.setValue("vpCacheHighestRes", vpCacheHighestRes);
+
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
     settings.setValue("volumeConverterOutputPathLRU", QString(volumeConverterOutputPathLRU.c_str()));
@@ -235,6 +238,10 @@ void CSettings::readSettings()
         vpRefillCoverage = settings.value("vpRefillCoverage").toInt();
     if(settings.contains("vpRefillStopCondition"))
         vpRefillStopCondition = settings.value("vpRefillStopCondition").toInt();
+    if(settings.contains("vpCacheHighestRes"))
+        vpCacheHighestRes = settings.value("vpCacheHighestRes").toBool();
+
+
 
 
 

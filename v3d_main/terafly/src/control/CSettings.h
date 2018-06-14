@@ -81,6 +81,7 @@ class terafly::CSettings
         bool vpRefillAuto;
         int vpRefillCoverage;
         int vpRefillStopCondition;
+        bool vpCacheHighestRes;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -138,6 +139,7 @@ class terafly::CSettings
         int getVpRefillAuto(){return vpRefillAuto;}
         int getVpRefillCoverage(){return vpRefillCoverage;}
         int getVpRefillStopCondition(){return vpRefillStopCondition;}
+        bool getVpCacheHighestRes(){return vpCacheHighestRes;}
 
 
 
@@ -189,6 +191,7 @@ class terafly::CSettings
         void setVpRefillAuto(bool newval){vpRefillAuto = newval; writeSettings();}
         void setVpRefillCoverage(int newval){vpRefillCoverage = newval; writeSettings();}
         void setVpRefillStopCondition(int newval){vpRefillStopCondition = newval; writeSettings();}
+        void setVpCacheHighestRes(bool newval){vpCacheHighestRes = newval; writeSettings();}
 
 
 

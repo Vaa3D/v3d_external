@@ -239,6 +239,8 @@ namespace terafly
     inline int round05(float x)  { return x - int(x) > 0.5 ? round(x) : int(x);}
     inline int round05(double x) { return x - int(x) > 0.5 ? round(x) : int(x);}
 
+    inline int absint(int x){ return x < 0 ? -x : x;}
+
     // positive and negative infinity
     template<typename T>
     T infp()

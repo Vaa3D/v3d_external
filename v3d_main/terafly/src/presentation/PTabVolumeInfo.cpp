@@ -231,7 +231,7 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     block_layout->addWidget(vp_block_dimY);
     block_layout->addWidget(vp_block_dimZ);
     expl_panel_layout->addLayout(block_layout,                  5,1,1,1);
-    QLabel *vp_refill_time_spent_label = new QLabel("Refill time:");
+    QLabel *vp_refill_time_spent_label = new QLabel("Avg refill time:");
     vp_refill_time_spent_label->setFixedWidth(firstColumnWidth);
     expl_panel_layout->addWidget(vp_refill_time_spent_label,    6,0,1,1);
     expl_panel_layout->addWidget(vp_refill_time_spent,          6,1,1,1);
@@ -334,7 +334,7 @@ void tf::PTabVolumeInfo::reset()
 
 
     // get empty visualization flags
-    tf::VirtualPyramid::empty_viz_mode empty_viz_method = tf::VirtualPyramid::empty_viz_mode(CSettings::instance()->getVpEmptyVizMethod());
+    tf::VirtualPyramid::empty_filling empty_viz_method = tf::VirtualPyramid::empty_filling(CSettings::instance()->getVpEmptyVizMethod());
     float empty_viz_salt_pepper_perc = CSettings::instance()->getVpEmptyVizSaltPepperPercentage();
     vp_empty_viz_intensity->setValue(CSettings::instance()->getVpEmptyVizIntensity());
     if(empty_viz_method == tf::VirtualPyramid::RAW)
@@ -367,14 +367,12 @@ void tf::PTabVolumeInfo::reset()
     vp_refill_auto_checkbox->setChecked(CSettings::instance()->getVpRefillAuto());
     vp_refill_auto_checkbox_changed(vp_refill_auto_checkbox->isChecked());
 
-
-    vp_refill_coverage_spinbox->setValue(CSettings::instance()->getVpRefillCoverage());
+    int vp_refill_value = CSettings::instance()->getVpRefillCoverage();
     vp_refill_coverage_spinbox->setMinimum(1);
     vp_refill_coverage_spinbox->setMaximum(100);
-    vp_refill_coverage_spinbox_changed(vp_refill_coverage_spinbox->value());
+    vp_refill_coverage_spinbox->setValue(vp_refill_value);
     vp_refill_stop_combobox->setCurrentIndex(CSettings::instance()->getVpRefillStopCondition());
     vp_refill_stop_combobox_changed(vp_refill_stop_combobox->currentIndex());
-
 }
 
 void tf::PTabVolumeInfo::init()
@@ -596,13 +594,14 @@ void tf::PTabVolumeInfo::update()
     iim::voi3D<> voi( iim::xyz<size_t>(viewer->volH0, viewer->volV0, viewer->volD0), iim::xyz<size_t>(viewer->volH1, viewer->volV1, viewer->volD1) );
     float completeness_local  = viewer->volResIndex == cache.size() - 1 ? 1.0f : cache[cache.size()-1-viewer->volResIndex]->completeness(voi);
     float completeness_global = cache[cache.size()-1]->completeness();
+
     vp_exploration_bar_local->setStep(tf::round(completeness_local*10000));
     vp_exploration_bar_global->setStep(tf::round(completeness_global*10000));
     vp_exploration_bar_local->setText(tf::strprintf( "Current VOI: %.2f %%", completeness_local*100));
     vp_exploration_bar_global->setText(tf::strprintf("Whole image: %.2f %%", completeness_global*100));
 
     // update refill time elapsed
-    vp_refill_time_spent->setText(tf::strprintf(" %.1f seconds / %d blocks", refill_time_total ? refill_time_total/refill_blocks_total : refill_time_total, refill_blocks_total).c_str());
+    vp_refill_time_spent->setText(tf::strprintf(" %.2f seconds / %d blocks", refill_time_total ? refill_time_total/refill_blocks_total : refill_time_total, refill_blocks_total).c_str());
 
     // refill in background after 3 seconds inactivity
     if(vp_refill_auto_checkbox->isChecked() && inactivityDetector.timer.elapsed() >= 3000)
@@ -628,6 +627,7 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
     tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
     if(!virtualPyramid)
         return;
+    std::vector <tf::HyperGridCache*> cache = virtualPyramid->cachePyramid();
     if(vp_exploration_bar_local->finished())
     {
         if(!in_background) // need to be "quiet" if refill is done in background
@@ -656,14 +656,24 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
     viewer->window3D->setCursor(Qt::BusyCursor);
     pMain.setCursor(Qt::BusyCursor);
 
-    // prepare progress bar
-    int maximum = in_background ? 1 : vp_refill_stop_combobox->currentIndex() == 0? vp_refill_times_spinbox->value() : vp_refill_coverage_spinbox->value()*100 - vp_exploration_bar_local->step() ;
-    QProgressDialog progress("Refill...", "Cancel", 0, maximum, this);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setMinimumDuration(0);
-    progress.setLabelText("Refill...");
+    // determine the number of refills
+    int n_refills = 0;
+    // background refill mode: 1 refill at the time
+    if(in_background)
+        QMessageBox::information(this, "title", "do one refill");
+    // refill stop condition: do exactly 'n' refills with 'n' set by user
+    else if (vp_refill_stop_combobox->currentIndex() == 0)
+        n_refills = vp_refill_times_spinbox->value();
+    // refill stop condition: we must reach a user-defined local exploration coverage
+    // we can't calculate in advance exactly how many refills are needed
+    else
+        n_refills = -1; // <-- means 'we don't know'
+    int refill_coverage = vp_refill_coverage_spinbox->value();
 
-    tf::xyz<size_t> block_dim = tf::xyz<size_t>::biggest();
+    // determine block dim
+    // - automatic refill --> will be optimized by Virtual Pyramid code
+    // - manual refill    --> user defined
+    tf::xyz<size_t> block_dim = tf::xyz<size_t>::biggest(); // will tell Virtual Pyramdid to do on its own
     if( ! vp_refill_auto_checkbox->isChecked())
     {
         block_dim.x = vp_block_dimX->value();
@@ -671,12 +681,17 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
         block_dim.z = vp_block_dimZ->value();
     }
 
-    // do as many times as requested by user
+    // display endless progress bar
+    QProgressDialog progress("Refill...", "Cancel", 0, 0, this);
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(0);
+    progress.show();
+
+    // refill
     try
     {
-        std::vector <tf::HyperGridCache*> cache = virtualPyramid->cachePyramid();
-        int value = 0;
-        while(value < maximum)
+        bool stop = false;
+        for(int i=1; stop == false; i++)
         {
             // refill here
             // @TODO: use a separate thread
@@ -686,20 +701,23 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
             iim::voi3D<> voi( iim::xyz<size_t>(viewer->volH0, viewer->volV0, viewer->volD0), iim::xyz<size_t>(viewer->volH1, viewer->volV1, viewer->volD1) );
             virtualPyramid->refill(cache.size()-1-viewer->volResIndex, voi, tf::VirtualPyramid::refill_strategy(vp_refill_strategy_combobox->currentIndex()), block_dim);
             QApplication::processEvents();
-            refill_time_total += timer.elapsed() / 1000;
+            refill_time_total += timer.elapsed() / 1000.0f;
             refill_blocks_total++;
 
             // update GUI (otherwise it will freeze: we are blocking the event-loop thread)
-           // update();
+            update();
+            QApplication::processEvents();
 
-            // show/update progress
-            value = vp_refill_stop_combobox->currentIndex() == 0 || in_background ? value+1 : vp_exploration_bar_local->step() - vp_refill_coverage_spinbox->value()*100 + maximum;
-            progress.setValue(value);
+            // update stop condition
+            if(n_refills > 0)
+                stop = i == n_refills;
+            else
+                stop = (viewer->volResIndex == cache.size() - 1 ? 1.0f : cache[cache.size()-1-viewer->volResIndex]->completeness(voi)) * 100 >= refill_coverage;
 
-            // refresh
+            // refresh viewer image data
             viewer->refresh();
 
-            // terminate now if requested by the user
+            // terminate immediately if requested by the user
             if (progress.wasCanceled())
                 break;
         }
@@ -716,7 +734,7 @@ void tf::PTabVolumeInfo::vp_refill_button_clicked(bool in_background)
     {
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
     }
-    progress.setValue(progress.maximum());
+    progress.close();
 
     // release mutex
     refill_mutex.unlock();

@@ -52,6 +52,7 @@
 #include "QUndoMarkerDelete.h"
 #include "QUndoMarkerDeleteROI.h"
 #include "v3d_application.h"
+#include <cmath>
 
 using namespace tf;
 
@@ -1260,16 +1261,16 @@ void CViewer::close()
 * achievable scaling method. The image currently shown is used as data source.
 ***********************************************************************************/
 tf::uint8* CViewer::getVOI(int x0, int x1,              // VOI [x0, x1) in the local reference sys
-                               int y0, int y1,              // VOI [y0, y1) in the local reference sys
-                               int z0, int z1,              // VOI [z0, z1) in the local reference sys
-                               int t0, int t1,              // VOI [t0, t1] in the local reference sys
-                               int xDimInterp,              // interpolated VOI dimension along X
-                               int yDimInterp,              // interpolated VOI dimension along Y
-                               int zDimInterp,              // interpolated VOI dimension along Z
-                               int& x0m, int& x1m,          // black-filled VOI [x0m, x1m) in the local rfsys
-                               int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
-                               int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
-                               int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
+                           int y0, int y1,              // VOI [y0, y1) in the local reference sys
+                           int z0, int z1,              // VOI [z0, z1) in the local reference sys
+                           int t0, int t1,              // VOI [t0, t1] in the local reference sys
+                           int xDimInterp,              // interpolated VOI dimension along X
+                           int yDimInterp,              // interpolated VOI dimension along Y
+                           int zDimInterp,              // interpolated VOI dimension along Z
+                           int& x0m, int& x1m,          // black-filled VOI [x0m, x1m) in the local rfsys
+                           int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
+                           int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
+                           int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
 throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, xDim = %d, yDim = %d, zDim = %d",
@@ -1372,16 +1373,22 @@ throw (RuntimeException)
     }
 
 
-    //fast scaling by pixel replication
-    // - NOTE: interpolated image is allowed to be slightly larger (or even smaller) than the source image resulting after scaling.
-    if( ( (xDimInterp % (x1-x0) <= 1) || (xDimInterp % (x1-x0+1) <= 1) || (xDimInterp % (x1-x0-1) <= 1)) &&
-        ( (yDimInterp % (y1-y0) <= 1) || (yDimInterp % (y1-y0+1) <= 1) || (yDimInterp % (y1-y0-1) <= 1)) &&
-        ( (zDimInterp % (z1-z0) <= 1) || (zDimInterp % (z1-z0+1) <= 1) || (zDimInterp % (z1-z0-1) <= 1)))
+    // compute integer-ratio scaling
+    uint scalx = static_cast<uint>(static_cast<float>(xDimInterp) / (x1-x0) +0.5f);
+    uint scaly = static_cast<uint>(static_cast<float>(yDimInterp) / (y1-y0) +0.5f);
+    uint scalz = static_cast<uint>(static_cast<float>(zDimInterp) / (z1-z0) +0.5f);
+
+    // check scaling:
+    // integer-ratio scaling
+    //  --> fast scaling by pixel replication
+    if( tf::absint(xDimInterp - (x1-x0)*scalx) < scalx &&
+        tf::absint(yDimInterp - (y1-y0)*scaly) < scaly &&
+        tf::absint(zDimInterp - (z1-z0)*scalz) < scalz)
+//    if( ( (xDimInterp % (x1-x0) <= 1) || (xDimInterp % (x1-x0+1) <= 1) || (xDimInterp % (x1-x0-1) <= 1)) &&
+//        ( (yDimInterp % (y1-y0) <= 1) || (yDimInterp % (y1-y0+1) <= 1) || (yDimInterp % (y1-y0-1) <= 1)) &&
+//        ( (zDimInterp % (z1-z0) <= 1) || (zDimInterp % (z1-z0+1) <= 1) || (zDimInterp % (z1-z0-1) <= 1)))
     {
         //checking for uniform scaling along the three axes
-        uint scalx = static_cast<uint>(static_cast<float>(xDimInterp) / (x1-x0) +0.5f);
-        uint scaly = static_cast<uint>(static_cast<float>(yDimInterp) / (y1-y0) +0.5f);
-        uint scalz = static_cast<uint>(static_cast<float>(zDimInterp) / (z1-z0) +0.5f);
         if(scalx != scaly || scaly != scalz || scalx != scalz)
         {
             uint scaling = std::min(std::min(scalx, scaly), scalz);
@@ -1398,9 +1405,11 @@ throw (RuntimeException)
         CImageUtils::upscaleVOI(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), buf_data_dims, buf_data_offset, buf_data_count, img, img_dims, img_offset, tf::xyz<int>(scalx, scaly, scalz));
     }
 
-    //interpolation
+    // float-ratio scaling
+    //  --> interpolation (not implemented: we return a black image)
     else
-        tf::warning("Interpolation of the pre-buffered image not yet implemented");
+        tf::warning(tf::strprintf("Float-ratio scaling detected ( |%d -%d*%d| < %d  &&  |%d -%d*%d| < %d  &&  |%d -%d*%d| < %dis false) --> interpolation of the pre-buffered image not yet implemented",
+                                  xDimInterp, x1-x0, scalx, scalx, yDimInterp, y1-y0, scaly, scaly, zDimInterp, z1-z0, scalz, scalz).c_str());
 
 
     return img;
