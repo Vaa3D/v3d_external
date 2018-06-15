@@ -4188,7 +4188,13 @@ void Renderer_gl1::showSubtree()
 				this->grid2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
 			}
 
-			this->subtreeSegs.push_back(startingSegID);
+			this->subtreeSegs.insert(startingSegID);
+			int xStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->x / gridLength;
+			int yStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->y / gridLength;
+			int zStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->z / gridLength;
+			QString startKeyTailQ = QString::number(xStartTail) + "_" + QString::number(yStartTail) + "_" + QString::number(zStartTail);
+			string startKeyTail = startKeyTailQ.toStdString();
+			
 
 
 			//rc_findDownstreamSegs(curImg, startingSegID);
@@ -4221,11 +4227,9 @@ void Renderer_gl1::showSubtree()
 	}
 }
 
-void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t segID, int gridLength)
+void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, string gridKey, int gridLength)
 {
-	int childSegCount;
-
-	int xCurTail = curImg->tracedNeuron.seg[segID].row.begin()->x / gridLength;
+	/*int xCurTail = curImg->tracedNeuron.seg[segID].row.begin()->x / gridLength;
 	int yCurTail = curImg->tracedNeuron.seg[segID].row.begin()->y / gridLength;
 	int zCurTail = curImg->tracedNeuron.seg[segID].row.begin()->z / gridLength;
 	int xCurHead = (curImg->tracedNeuron.seg[segID].row.end() - 1)->x / gridLength;
@@ -4234,18 +4238,20 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t segID, int gr
 	QString curKeyTailQ = QString::number(xCurTail) + "_" + QString::number(yCurTail) + "_" + QString::number(zCurTail);
 	string curKeyTail = curKeyTailQ.toStdString();
 	QString curKeyHeadQ = QString::number(xCurHead) + "_" + QString::number(yCurHead) + "_" + QString::number(zCurHead);
-	string curKeyHead = curKeyHeadQ.toStdString();
+	string curKeyHead = curKeyHeadQ.toStdString();*/
 
-	pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> range = grid2segIDmap.equal_range(curKeyTail);
-
+	pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> range = grid2segIDmap.equal_range(gridKey);
 	for (multimap<string, size_t>::iterator rangeIt = range.first; rangeIt != range.second; ++rangeIt)
 	{
-		if (rangeIt->second == segID) continue;
-		
+		size_t curSegID = rangeIt->second;
+		size_t curSegNum = this->subtreeSegs.size();
+		this->subtreeSegs.insert(rangeIt->second);
+		if (this->subtreeSegs.size() == curSegNum) continue;
+		else
+		{
+
+		}
 	}
-
-
-
 }
 
 void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg)
@@ -4288,31 +4294,31 @@ void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg)
 	cout << connectedCount << endl;
 }
 
-void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
-{
-	int childSegCount;
-
-	vector<int> nextLevelSegIDs = curImg->tracedNeuron.seg[segID].branchingProfile.childSegLocs;
-	childSegCount = nextLevelSegIDs.size();
-	cout << endl << "starting seg number: " << segID << "  child seg number: " << childSegCount << " ";
-	if (childSegCount == 0)
-	{
-		cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
-		return;
-	}
-	/*for (vector<int>::iterator childIt = nextLevelSegIDs.begin(); childIt != nextLevelSegIDs.end(); ++childIt)
-		cout << this->branchSegIDmap[*childIt] << "-" << *childIt << ", ";
-	cout << endl;*/
-
-	for (vector<int>::iterator it = nextLevelSegIDs.begin(); it != nextLevelSegIDs.end(); ++it)
-	{
-		cout << "  current child segID: " << *it << endl;
-		this->subtreeSegs.push_back(*it);
-		this->rc_downstreamSeg(curImg, *it);
-	}
-
-	return;
-}
+//void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
+//{
+//	int childSegCount;
+//
+//	vector<int> nextLevelSegIDs = curImg->tracedNeuron.seg[segID].branchingProfile.childSegLocs;
+//	childSegCount = nextLevelSegIDs.size();
+//	cout << endl << "starting seg number: " << segID << "  child seg number: " << childSegCount << " ";
+//	if (childSegCount == 0)
+//	{
+//		cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
+//		return;
+//	}
+//	/*for (vector<int>::iterator childIt = nextLevelSegIDs.begin(); childIt != nextLevelSegIDs.end(); ++childIt)
+//		cout << this->branchSegIDmap[*childIt] << "-" << *childIt << ", ";
+//	cout << endl;*/
+//
+//	for (vector<int>::iterator it = nextLevelSegIDs.begin(); it != nextLevelSegIDs.end(); ++it)
+//	{
+//		cout << "  current child segID: " << *it << endl;
+//		this->subtreeSegs.push_back(*it);
+//		this->rc_downstreamSeg(curImg, *it);
+//	}
+//
+//	return;
+//}
 // ----------------- END of [Highlight the selected segment with its downstream subtree, MK, June, 2018] -----------------
 
 // ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------

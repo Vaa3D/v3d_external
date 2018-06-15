@@ -54,6 +54,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "marchingcubes.h"
 #include <time.h>
 #include <map>
+#include <set>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -493,8 +494,9 @@ public:
 	 void upstreamRelabel(My4DImage* curImg, V_NeuronSWC* startingSegPtr, V_NeuronSWC* newPaSegPtr);
 	 void rc_downstreamSeg(My4DImage* curImg, size_t segID);
 	 void segTreeFastReprofile(My4DImage* curImg);
-	 void rc_findDownstreamSegs(My4DImage* curImg, size_t segID, int gridLength);
-	 vector<size_t> subtreeSegs;
+	 void rc_findDownstreamSegs(My4DImage* curImg, string gridKey, int gridLength);
+	 //vector<size_t> subtreeSegs;
+	 set<size_t> subtreeSegs;
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
