@@ -131,9 +131,6 @@ class terafly::PMain : public QWidget
         QMenu* fetchDisplayMenu;        //"Fetch-and-display" menu level 3
         QAction* fdPreviewAction;       //"Preview/streaming" checkbox
         QAction* fdDirectAction;        //"Direct" action
-        // ---- virtual pyramid menu level ---------- 2
-        QMenu* virtualPyramidMenu;      //"Virtual Pyramid" menu level 2
-        QAction* virtualPyramidCacheHighestResAction; //"Cache " action
 
         // "Utility" menu widgets
         QMenu* utilityMenu;
@@ -442,11 +439,6 @@ class terafly::PMain : public QWidget
         * Called when the corresponding Options->Navigation->Fetch-and-Display actions are triggered
         ***********************************************************************************/
         void fetchAndDisplayChanged();
-
-        /**********************************************************************************
-        * Called when the corresponding Options->Virtual Pyramid->Convert... action is triggered
-        ***********************************************************************************/
-        void virtualPyramidCacheHighestResChanged();
 
         /**********************************************************************************
         * Linked to verbosity combobox

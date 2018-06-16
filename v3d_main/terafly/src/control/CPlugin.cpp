@@ -49,7 +49,7 @@ namespace terafly
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.5.10";          // software version
+    std::string version = "2.5.11";          // software version
     int DEBUG = LEV_MAX;                    // debug level
     debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
     std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information

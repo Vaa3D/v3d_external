@@ -10,18 +10,12 @@
 *   VIRTUAL PYRAMID definitions *
 *********************************
 ---------------------------------------------------------------------------------------------------------------------------*/
+tf::VirtualPyramid::empty_filling tf::VirtualPyramid::_unexploredFillingMethod = tf::VirtualPyramid::RAW;
+unsigned char tf::VirtualPyramid::_unexploredIntensityVal = 128;
+float tf::VirtualPyramid::_unexploredSaltAndPepperPerc = 0.001;
+bool tf::VirtualPyramid::_cacheHighestRes = false;
+bool tf::VirtualPyramid::_freezeHighestRes = false;
 
-// empty image space visualization: method
-tf::VirtualPyramid::empty_filling tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::RAW;
-
-// empty image space visualization: intensity level of empty voxels
-unsigned char tf::VirtualPyramid::empty_viz_intensity = 128;
-
-// empty image space visualization: salt & pepper percentage
-float tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.001;
-
-// whether to enable caching (from/to RAM and disk) of the highest res layer
-bool tf::VirtualPyramid::cache_highest_res = true;
 
 // VirtualPyramid constructor 1
 tf::VirtualPyramid::VirtualPyramid(
@@ -254,7 +248,9 @@ tf::VirtualPyramid::~VirtualPyramid() throw(iim::IOException)
     for(int i=0; i<_cachePyramid.size(); i++)
         delete _cachePyramid[i];
 
-    delete _vol;
+    // release highest res volume
+    if(_vol)
+        delete _vol;
 }
 
 // get pyramid method
@@ -557,9 +553,11 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     // highest-res layer = THE image or the lowest virtual layer
     if(level == 0)
     {
+        // no data can be fethed (_freezeHighestRes = true)
+        // OR
         // cache highest res option is ON and the VOI is available (either from cache or converted file)
         //  --> read data from lowest virtual pyramid layer
-        if(cache_highest_res && _cachePyramid[0]->completeness(voi) >= 1)
+        if( _freezeHighestRes || (_cacheHighestRes && _cachePyramid[0]->completeness(voi) >= 1))
         {
             data = _cachePyramid[0]->readData(
                         voi4D<int>(
@@ -581,7 +579,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
              data[i] = std::max(iim::uint8(1), data[i]);
 
             // propagate data
-            for(size_t l = !cache_highest_res; l <_cachePyramid.size(); l++)
+            for(size_t l = !_cacheHighestRes; l <_cachePyramid.size(); l++)
                  _cachePyramid[l]->putData
                  (
                      tf::image5D<uint8>
@@ -594,78 +592,11 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
                      _virtualPyramid[l]->_resamplingFactor * (-1)
                  );
         }
-
-//        if(cache_highest_res)
-//        {
-//            // incomplete VOI
-//            //  --> fetch data and propagate
-//            if (_cachePyramid[0]->completeness(voi) < 1)
-//            {
-//                 data = _vol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
-
-//                 // replace perfect 0 with 1 ('0' value is reserved for empty/nonloaded voxels)
-//                 // ***WARNING*** : here, we are deliberately changing the meaning of the data for efficient representation, counting, and access of empty/nonloaded voxels
-//                 size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
-//                 for(size_t i=0; i<data_dim; i++)
-//                     data[i] = std::max(iim::uint8(1), data[i]);
-
-//                 for(size_t l = 0; l <_cachePyramid.size(); l++)
-//                     _cachePyramid[l]->putData
-//                     (
-//                         tf::image5D<uint8>
-//                         (
-//                             data,
-//                             xyzt<size_t>(end.x - start.x, end.y - start.y, end.z - start.z, _vol->getNActiveFrames()),
-//                             active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())
-//                         ),
-//                         tf::xyzt<size_t>( start.x, start.y, start.z, _vol->getT0()),
-//                         _virtualPyramid[l]->_resamplingFactor * (-1)
-//                     );
-//            }
-//            // complete VOI
-//            //  --> just return data
-//            else
-//                data = _cachePyramid[0]->readData(
-//                            voi4D<int>(
-//                                xyzt<int>(start.x, start.y, start.z, _vol->getT0()),
-//                                xyzt<int>(end.x, end.y, end.z, _vol->getT1()+1)),
-//                            active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())).data;
-//        }
-//        else
-//        {
-//            // fetch data
-//            data = _vol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
-
-//            // replace perfect 0 with 1 ('0' value is reserved for empty/nonloaded voxels)
-//            // ***WARNING*** : here, we are deliberately changing the meaning of the data for efficient representation, counting, and access of empty/nonloaded voxels
-//            size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
-//            for(size_t i=0; i<data_dim; i++)
-//                data[i] = std::max(iim::uint8(1), data[i]);
-
-//            // propagate data to higher layers
-//            //size_t l = _cachePyramid.size()-1;
-//            //             |
-//            //             |
-//            //            \ /
-//            //             °   CRUCIAL : in this version, we decided not to cache the highest-res layer (too RAM / disk space expensive)
-//            for(size_t l = 1; l <_cachePyramid.size(); l++)
-//                _cachePyramid[l]->putData
-//                (
-//                    tf::image5D<uint8>
-//                    (
-//                        data,
-//                        xyzt<size_t>(end.x - start.x, end.y - start.y, end.z - start.z, _vol->getNActiveFrames()),
-//                        active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())
-//                    ),
-//                    tf::xyzt<size_t>( start.x, start.y, start.z, _vol->getT0()),
-//                    _virtualPyramid[l]->_resamplingFactor * (-1)
-//                );
-//        }
     }
     // lower-res layers = virtual layers
     else
     {
-        // fetch data
+        // read data
         data = _cachePyramid[level]->readData(
                     voi4D<int>(
                         xyzt<int>(start.x, start.y, start.z, _vol->getT0()),
@@ -673,19 +604,19 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
                     active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())).data;
 
         // if required, replace empty voxels (0s) with the chosen visualization method for empty image regions
-        if(empty_viz_method == tf::VirtualPyramid::SALT_AND_PEPPER)
+        if(_unexploredFillingMethod == tf::VirtualPyramid::SALT_AND_PEPPER)
         {
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
-                if(!data[i] && ((double)rand() / RAND_MAX) < empty_viz_salt_pepper_percentage)
-                    data[i] = empty_viz_intensity;
+                if(!data[i] && ((double)rand() / RAND_MAX) < _unexploredSaltAndPepperPerc)
+                    data[i] = _unexploredIntensityVal;
         }
-        if(empty_viz_method == tf::VirtualPyramid::SOLID)
+        if(_unexploredFillingMethod == tf::VirtualPyramid::SOLID)
         {
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
                 if(!data[i])
-                    data[i] = empty_viz_intensity;
+                    data[i] = _unexploredIntensityVal;
         }
     }
     return tf::image5D<uint8>(
@@ -710,6 +641,8 @@ tf::VirtualPyramid::refill(
         throw tf::RuntimeException("in VirtualPyramid::refill(): volume has not been initialized yet");
     if(_cachePyramid.empty())
         throw tf::RuntimeException("in VirtualPyramid::refill(): cache pyramid has not been initialized yet");
+    if(_freezeHighestRes)
+        return false;
 
     // check / adjust optional inputs
     if (cache_level < 0)

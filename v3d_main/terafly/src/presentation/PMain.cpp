@@ -352,12 +352,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fdDirectAction->setChecked(!fdPreviewAction->isChecked());
     connect(fdPreviewAction, SIGNAL(changed()), this, SLOT(fetchAndDisplayChanged()));
     /**/
-    /* ------------------------- "Options" menu: Virtual Pyramid ------------------ */
-    virtualPyramidMenu = optionsMenu->addMenu("Virtual Pyramid");
-    virtualPyramidCacheHighestResAction = new QAction("Convert/Save/Cache the highest res", this);
-    virtualPyramidCacheHighestResAction->setCheckable(true);
-    virtualPyramidMenu->addAction(virtualPyramidCacheHighestResAction);
-    connect(virtualPyramidCacheHighestResAction, SIGNAL(changed()), this, SLOT(virtualPyramidCacheHighestResChanged()));
 
 
 
@@ -1140,10 +1134,6 @@ void PMain::reset()
         tabs->removeTab(1);
         tabs->setCurrentIndex(tab_selected);
     }
-
-    // set Virtual Pyramid permament settings
-    terafly::VirtualPyramid::cache_highest_res = CSettings::instance()->getVpCacheHighestRes();
-    virtualPyramidCacheHighestResAction->setChecked(terafly::VirtualPyramid::cache_highest_res);
 }
 
 
@@ -2476,17 +2466,6 @@ void PMain::fetchAndDisplayChanged()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setPreviewMode(fdPreviewAction->isChecked());
-}
-
-/**********************************************************************************
-* Called when the corresponding Options->Virtual Pyramid->Convert... action is triggered
-***********************************************************************************/
-void PMain::virtualPyramidCacheHighestResChanged()
-{
-    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
-
-    terafly::VirtualPyramid::cache_highest_res = virtualPyramidCacheHighestResAction->isChecked();
-    CSettings::instance()->setVpCacheHighestRes(virtualPyramidCacheHighestResAction->isChecked());
 }
 
 

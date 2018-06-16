@@ -11,27 +11,7 @@
 // Virtual Pyramid class: builds a virtual image pyramid on top of real (unconverted) image data
 class terafly::VirtualPyramid
 {
-    private:
-
-        // object members
-        iim::VirtualVolume*                 _vol;                   // volume: multi-dimensional (unconverted) image
-        std::string                         _volPath;               // volume path
-        std::string                         _path;                  // where files should be stored
-        std::vector< tf::VirtualPyramidLayer* > _virtualPyramid;    // virtual (=do NOT contain any data) pyramid layers (ordered by descending resolution)
-        std::vector< tf::HyperGridCache*>  _cachePyramid;           // actual (=do contain data) pyramid 'cache' layers: cache data from/to disk and RAM at all resolution layers (ordered by descending resolution)
-
-        // disable default constructor
-        VirtualPyramid(){}
-
-        // object utility methods
-        void initPath(bool local = true) throw (iim::IOException, iom::exception, tf::RuntimeException);
-        void initVolume() throw (iim::IOException, iom::exception, tf::RuntimeException);
-        void initPyramid(
-                tf::xyz<size_t> block_dim	= tf::xyz<size_t>(256), // block dimensions
-                const std::string block_format = ".tif"             // block file format
-        ) throw (iim::IOException, iom::exception, tf::RuntimeException);
-
-
+    // new types used by this class
     public:
 
         // different initializations for first-time open
@@ -55,6 +35,30 @@ class terafly::VirtualPyramid
             REFILL_ZYX,                                     // sequential z-y-x blocks
             REFILL_CENTER                                   // center blocks first
         };
+
+
+    private:
+
+        // object members
+        iim::VirtualVolume*                 _vol;                   // volume: multi-dimensional (unconverted) image
+        std::string                         _volPath;               // volume path
+        std::string                         _path;                  // where files should be stored
+        std::vector< tf::VirtualPyramidLayer* > _virtualPyramid;    // virtual (=do NOT contain any data) pyramid layers (ordered by descending resolution)
+        std::vector< tf::HyperGridCache*>  _cachePyramid;           // actual (=do contain data) pyramid 'cache' layers: cache data from/to disk and RAM at all resolution layers (ordered by descending resolution)
+
+        // disable default constructor
+        VirtualPyramid(){}
+
+        // object utility methods
+        void initPath(bool local = true) throw (iim::IOException, iom::exception, tf::RuntimeException);
+        void initVolume() throw (iim::IOException, iom::exception, tf::RuntimeException);
+        void initPyramid(
+                tf::xyz<size_t> block_dim	= tf::xyz<size_t>(256), // block dimensions
+                const std::string block_format = ".tif"             // block file format
+        ) throw (iim::IOException, iom::exception, tf::RuntimeException);
+
+
+    public:
 
         // constructor 1 (first time instance / Virtual Pyramid files do not exist)
         VirtualPyramid(
@@ -161,11 +165,12 @@ class terafly::VirtualPyramid
         ) throw (tf::RuntimeException);
 
 
-        // class options / static attributes
-        static empty_filling empty_viz_method;          // determines appearance of unexplored image space
-        static unsigned char empty_viz_intensity;       // intensity level of unexplored voxels
-        static float empty_viz_salt_pepper_percentage;  // salt & pepper percentage
-        static bool cache_highest_res;                  // whether to enable caching (from/to RAM and disk) of the highest res layer
+        // class options
+        static empty_filling _unexploredFillingMethod;  // determines appearance of unexplored image space
+        static unsigned char _unexploredIntensityVal;   // intensity level of unexplored voxels
+        static float _unexploredSaltAndPepperPerc;      // salt & pepper percentage for salt & pepper filling of unexplored space
+        static bool _freezeHighestRes;                  // if true, no new data are loaded/propagated from the highest res
+        static bool _cacheHighestRes;                   // if true, also the highest res data are cached and saved
 
         friend class VirtualPyramidLayer;
 };

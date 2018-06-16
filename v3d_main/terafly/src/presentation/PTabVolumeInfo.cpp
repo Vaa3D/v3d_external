@@ -134,6 +134,8 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_block_dimZ->setMaximum(999);
     vp_refill_time_spent = new QLineEdit(this);
     vp_refill_time_spent->setReadOnly(true);
+    vp_highest_res_cache = new QCheckBox("Enable caching/saving", this);
+    vp_highest_res_freeze = new QCheckBox("Freeze", this);
 
     // virtual pyramid RAM panel
     vp_ram_panel = new QGroupBox("RAM usage", this);
@@ -206,7 +208,7 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     /* ----------- virtual pyramid exploration panel ------------- */
     QGridLayout* expl_panel_layout = new QGridLayout();
     expl_panel_layout->setContentsMargins(5,5,5,5);
-    expl_panel_layout->setSpacing(5);
+    expl_panel_layout->setSpacing(6);
     expl_panel_layout->addWidget(new QLabel("Unexplored:"),     0,0,1,1);
     expl_panel_layout->addWidget(vp_empty_viz_method_combobox,  0,1,1,1);
     vp_empty_viz_intensity->setFixedWidth(lastColumnWidth);
@@ -235,6 +237,11 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     vp_refill_time_spent_label->setFixedWidth(firstColumnWidth);
     expl_panel_layout->addWidget(vp_refill_time_spent_label,    6,0,1,1);
     expl_panel_layout->addWidget(vp_refill_time_spent,          6,1,1,1);
+    QLabel *vp_highest_res_label = new QLabel("Highest res:");
+    vp_highest_res_label->setFixedWidth(firstColumnWidth);
+    expl_panel_layout->addWidget(vp_highest_res_label,          7,0,1,1);
+    expl_panel_layout->addWidget(vp_highest_res_cache,          7,1,1,1);
+    expl_panel_layout->addWidget(vp_highest_res_freeze,         8,1,1,1);
     vp_exploration_panel->setLayout(expl_panel_layout);
     /* ----------- allocated RAM panel --------------- */
     QGridLayout* vp_RAM_layout = new QGridLayout();
@@ -294,6 +301,8 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     connect(vp_refill_auto_checkbox, SIGNAL(toggled(bool)), this, SLOT(vp_refill_auto_checkbox_changed(bool)));
     connect(vp_refill_stop_combobox, SIGNAL(currentIndexChanged(int)), this, SLOT(vp_refill_stop_combobox_changed(int)));
     connect(vp_refill_coverage_spinbox, SIGNAL(valueChanged(int)), this, SLOT(vp_refill_coverage_spinbox_changed(int)));
+    connect(vp_highest_res_cache, SIGNAL(toggled(bool)), this, SLOT(vp_highest_res_cache_checkbox_changed(bool)));
+    connect(vp_highest_res_freeze, SIGNAL(toggled(bool)), this, SLOT(vp_highest_res_freeze_checkbox_changed(bool)));
 
     for(size_t i=0; i<vp_ram_clear_buttons.size(); i++)
         connect(vp_ram_clear_buttons[i], SIGNAL(clicked()), this, SLOT(clear_button_clicked()));
@@ -350,9 +359,9 @@ void tf::PTabVolumeInfo::reset()
         else if(empty_viz_salt_pepper_perc == 0.001f)
             vp_empty_viz_method_combobox->setCurrentIndex(4);
     }
-    tf::VirtualPyramid::empty_viz_method = empty_viz_method;
-    tf::VirtualPyramid::empty_viz_intensity = CSettings::instance()->getVpEmptyVizIntensity();
-    tf::VirtualPyramid::empty_viz_salt_pepper_percentage = empty_viz_salt_pepper_perc;
+    tf::VirtualPyramid::_unexploredFillingMethod = empty_viz_method;
+    tf::VirtualPyramid::_unexploredIntensityVal = CSettings::instance()->getVpEmptyVizIntensity();
+    tf::VirtualPyramid::_unexploredSaltAndPepperPerc = empty_viz_salt_pepper_perc;
 
 
     vp_exploration_bar_local->setNSteps(10000);
@@ -373,6 +382,11 @@ void tf::PTabVolumeInfo::reset()
     vp_refill_coverage_spinbox->setValue(vp_refill_value);
     vp_refill_stop_combobox->setCurrentIndex(CSettings::instance()->getVpRefillStopCondition());
     vp_refill_stop_combobox_changed(vp_refill_stop_combobox->currentIndex());
+
+    terafly::VirtualPyramid::_cacheHighestRes = CSettings::instance()->getVpCacheHighestRes();
+    vp_highest_res_cache->setChecked(terafly::VirtualPyramid::_cacheHighestRes);
+    terafly::VirtualPyramid::_freezeHighestRes = CSettings::instance()->getVpFreezeHighestRes();
+    vp_highest_res_freeze->setChecked(terafly::VirtualPyramid::_cacheHighestRes);
 }
 
 void tf::PTabVolumeInfo::init()
@@ -762,28 +776,28 @@ void tf::PTabVolumeInfo::empty_combobox_index_changed(int v)
     vp_empty_viz_intensity->setEnabled(v);
 
     if(v == 0)          // 100% black
-        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::RAW;
+        tf::VirtualPyramid::_unexploredFillingMethod = tf::VirtualPyramid::RAW;
     else if(v == 1)     // 100% intensity
-        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SOLID;
+        tf::VirtualPyramid::_unexploredFillingMethod = tf::VirtualPyramid::SOLID;
     else if(v == 2)     // black + 10% salt
     {
-        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SALT_AND_PEPPER;
-        tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.1;
+        tf::VirtualPyramid::_unexploredFillingMethod = tf::VirtualPyramid::SALT_AND_PEPPER;
+        tf::VirtualPyramid::_unexploredSaltAndPepperPerc = 0.1;
     }
     else if(v == 3)     // black + 1% salt
     {
-        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SALT_AND_PEPPER;
-        tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.01;
+        tf::VirtualPyramid::_unexploredFillingMethod = tf::VirtualPyramid::SALT_AND_PEPPER;
+        tf::VirtualPyramid::_unexploredSaltAndPepperPerc = 0.01;
     }
     else if(v == 4)     // black + 0.1% salt
     {
-        tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::SALT_AND_PEPPER;
-        tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.001;
+        tf::VirtualPyramid::_unexploredFillingMethod = tf::VirtualPyramid::SALT_AND_PEPPER;
+        tf::VirtualPyramid::_unexploredSaltAndPepperPerc = 0.001;
     }
 
     // store new settings
-    CSettings::instance()->setVpEmptyVizMethod(tf::VirtualPyramid::empty_viz_method);
-    CSettings::instance()->setVpEmptyVizSaltPepperPercentage(tf::VirtualPyramid::empty_viz_salt_pepper_percentage);
+    CSettings::instance()->setVpEmptyVizMethod(tf::VirtualPyramid::_unexploredFillingMethod);
+    CSettings::instance()->setVpEmptyVizSaltPepperPercentage(tf::VirtualPyramid::_unexploredSaltAndPepperPerc);
 
     // refresh 3D viewer
     viewer->refresh();
@@ -805,7 +819,7 @@ void tf::PTabVolumeInfo::empty_intensity_value_changed(int v)
         return;
 
     // store new settings
-    tf::VirtualPyramid::empty_viz_intensity = v;
+    tf::VirtualPyramid::_unexploredIntensityVal = v;
     CSettings::instance()->setVpEmptyVizIntensity(v);
 
     // refresh 3D viewer
@@ -861,4 +875,28 @@ void tf::PTabVolumeInfo::vp_refill_stop_combobox_changed(int v)
     vp_refill_times_spinbox->setVisible(!v);
 
     CSettings::instance()->setVpRefillStopCondition(v);
+}
+
+
+void tf::PTabVolumeInfo::vp_highest_res_cache_checkbox_changed(bool v)
+{
+    terafly::VirtualPyramid::_cacheHighestRes = v;
+    CSettings::instance()->setVpCacheHighestRes(v);
+}
+
+void tf::PTabVolumeInfo::vp_highest_res_freeze_checkbox_changed(bool v)
+{
+    terafly::VirtualPyramid::_freezeHighestRes = v;
+    CSettings::instance()->setVpFreezeHighestRes(v);
+
+    vp_refill_auto_checkbox->setEnabled(!v);
+    vp_refill_button->setEnabled(!v);
+    vp_refill_strategy_combobox->setEnabled(!v);
+    vp_refill_stop_combobox->setEnabled(!v);
+    vp_refill_time_spent->setEnabled(!v);
+    vp_highest_res_cache->setEnabled(!v);
+    vp_refill_coverage_spinbox->setEnabled(!v);
+    vp_block_dimX->setEnabled(!v);
+    vp_block_dimY->setEnabled(!v);
+    vp_block_dimZ->setEnabled(!v);
 }
