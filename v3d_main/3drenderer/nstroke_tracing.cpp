@@ -69,9 +69,12 @@
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../v3d/dialog_curve_trace_para.h"
+#include <sstream>
 #include <map>
 #include <set>
 #include <time.h>
+
+#include <boost/algorithm/string.hpp>
 #endif //test_main_cpp
 
 #include "../neuron_tracing/fastmarching_linker.h"
@@ -4186,22 +4189,23 @@ void Renderer_gl1::showSubtree()
 
 				this->grid2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
 				this->grid2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+				//this->segID2gridMap.insert(pair<size_t, string>(size_t(it - curImg->tracedNeuron.seg.begin()), key1));
+				//this->segID2gridMap.insert(pair<size_t, string>(size_t(it - curImg->tracedNeuron.seg.begin()), key2));
 			}
 
+			this->subtreeSegs.clear();
 			this->subtreeSegs.insert(startingSegID);
 			int xStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->x / gridLength;
 			int yStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->y / gridLength;
 			int zStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->z / gridLength;
 			QString startKeyTailQ = QString::number(xStartTail) + "_" + QString::number(yStartTail) + "_" + QString::number(zStartTail);
 			string startKeyTail = startKeyTailQ.toStdString();
-			
+			this->rc_findDownstreamSegs(curImg, startKeyTail, gridLength);
 
+			/*for (set<size_t>::iterator segIDit = this->subtreeSegs.begin(); segIDit != this->subtreeSegs.end(); ++segIDit)
+				cout << *segIDit << " ";
+			cout << endl;*/
 
-			//rc_findDownstreamSegs(curImg, startingSegID);
-
-			/*this->subtreeSegs.clear();
-			this->subtreeSegs.push_back(startingSegID);
-			this->rc_downstreamSeg(curImg, startingSegID);
 			for (vector<V_NeuronSWC_unit>::iterator firstSegIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); firstSegIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++firstSegIt)
 			{
 				if (firstSegIt->x == nearestNode.x && firstSegIt->y == nearestNode.y && firstSegIt->z == nearestNode.z)
@@ -4211,47 +4215,144 @@ void Renderer_gl1::showSubtree()
 				}
 				firstSegIt->type = 0;
 			}
-			for (vector<size_t>::iterator segIt = this->subtreeSegs.begin() + 1; segIt != this->subtreeSegs.end(); ++segIt)
+			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
 			{
-				cout << *segIt << " ";
-				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
-					unitIt->type = 0;
+				for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*segIt].row.begin(); nodeIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++nodeIt)
+					nodeIt->type = 0;
 			}
-			cout << endl;
 
 			curImg->update_3drenderer_neuron_view(w, this);
-			curImg->proj_trace_history_append();*/
+			curImg->proj_trace_history_append();
 
-			
 		}
+		this->subtreeSegs.clear();
 	}
 }
 
 void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, string gridKey, int gridLength)
 {
-	/*int xCurTail = curImg->tracedNeuron.seg[segID].row.begin()->x / gridLength;
-	int yCurTail = curImg->tracedNeuron.seg[segID].row.begin()->y / gridLength;
-	int zCurTail = curImg->tracedNeuron.seg[segID].row.begin()->z / gridLength;
-	int xCurHead = (curImg->tracedNeuron.seg[segID].row.end() - 1)->x / gridLength;
-	int yCurHead = (curImg->tracedNeuron.seg[segID].row.end() - 1)->y / gridLength;
-	int zCurHead = (curImg->tracedNeuron.seg[segID].row.end() - 1)->z / gridLength;
-	QString curKeyTailQ = QString::number(xCurTail) + "_" + QString::number(yCurTail) + "_" + QString::number(zCurTail);
-	string curKeyTail = curKeyTailQ.toStdString();
-	QString curKeyHeadQ = QString::number(xCurHead) + "_" + QString::number(yCurHead) + "_" + QString::number(zCurHead);
-	string curKeyHead = curKeyHeadQ.toStdString();*/
+	//cout << "Current gridKey:" << gridKey << endl;
+
+	size_t curSegNum = this->subtreeSegs.size();
 
 	pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> range = grid2segIDmap.equal_range(gridKey);
+	if (range.first == range.second) return;
+
 	for (multimap<string, size_t>::iterator rangeIt = range.first; rangeIt != range.second; ++rangeIt)
 	{
 		size_t curSegID = rangeIt->second;
-		size_t curSegNum = this->subtreeSegs.size();
-		this->subtreeSegs.insert(rangeIt->second);
-		if (this->subtreeSegs.size() == curSegNum) continue;
+		//cout << "  Finding subtree --> current segID:" << curSegID << endl;
+		this->subtreeSegs.insert(curSegID);
+		
+		if (this->subtreeSegs.size() == curSegNum)
+		{
+			//cout << "    Seg already picked up, move to the next." << endl;
+			continue;
+		}
 		else
 		{
+			curSegNum = this->subtreeSegs.size();
+			
+			for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[curSegID].row.begin() + 1; unitIt != curImg->tracedNeuron.seg[curSegID].row.end() - 1; ++unitIt)
+			{
+				int middleX = unitIt->x;
+				int middleY = unitIt->y;
+				int middleZ = unitIt->z;
+				QString middleGridKeyQ = QString::number(middleX) + "_" + QString::number(middleY) + "_" + QString::number(middleZ);
+				string middleGridKey = middleGridKeyQ.toStdString();
 
+				pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> middleRange = grid2segIDmap.equal_range(middleGridKey);
+				if (middleRange.first == middleRange.second) continue;
+				else
+				{
+					//cout << "  Found a segment in the middle of the route, adding it to the recursive searching process." << endl;
+					for (multimap<string, size_t>::iterator middleIt = middleRange.first; middleIt != middleRange.second; ++middleIt)
+					{
+						this->subtreeSegs.insert(middleIt->second);
+						curSegNum = this->subtreeSegs.size();
+						this->rc_findDownstreamSegs(curImg, middleGridKey, gridLength);
+					}
+				}
+			}
+
+			int xCurHead = (curImg->tracedNeuron.seg[rangeIt->second].row.end() - 1)->x / gridLength;
+			int yCurHead = (curImg->tracedNeuron.seg[rangeIt->second].row.end() - 1)->y / gridLength;
+			int zCurHead = (curImg->tracedNeuron.seg[rangeIt->second].row.end() - 1)->z / gridLength;
+			QString curKeyHeadQ = QString::number(xCurHead) + "_" + QString::number(yCurHead) + "_" + QString::number(zCurHead);
+			string curKeyHead = curKeyHeadQ.toStdString();
+			
+			if (!curKeyHead.compare(gridKey))
+			{
+				int xCurTail = curImg->tracedNeuron.seg[rangeIt->second].row.begin()->x / gridLength;
+				int yCurTail = curImg->tracedNeuron.seg[rangeIt->second].row.begin()->y / gridLength;
+				int zCurTail = curImg->tracedNeuron.seg[rangeIt->second].row.begin()->z / gridLength;
+				QString curKeyTailQ = QString::number(xCurTail) + "_" + QString::number(yCurTail) + "_" + QString::number(zCurTail);
+				string curKeyTail = curKeyTailQ.toStdString();
+				this->rc_findDownstreamSegs(curImg, curKeyTail, gridLength);
+			}
+			else this->rc_findDownstreamSegs(curImg, curKeyHead, gridLength);
 		}
 	}
+
+	vector<string> gridCoords;
+	boost::split(gridCoords, gridKey, boost::is_any_of("_"));
+	int curX, curY, curZ;
+	istringstream strmX(gridCoords[0]); strmX >> curX;
+	istringstream strmY(gridCoords[1]); strmY >> curY;
+	istringstream strmZ(gridCoords[2]); strmZ >> curZ;
+	for (int i = -1; i < 2; ++i)
+	{
+		for (int j = -1; j < 2; ++j)
+		{
+			for (int k = -1; k < 2; ++k)
+			{
+				if (i == 0 && j == 0 && k == 0) continue;
+
+				int neighborX = curX + i;
+				int neighborY = curY + j;
+				int neighborZ = curZ + k;
+				QString neighborKeyQ = QString::number(neighborX) + "_" + QString::number(neighborY) + "_" + QString::number(neighborZ);
+				string neighborKey = neighborKeyQ.toStdString();
+
+				pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> neighborRange = grid2segIDmap.equal_range(neighborKey);
+				if (neighborRange.first == neighborRange.second) continue;
+
+				for (multimap<string, size_t>::iterator nRangeIt = neighborRange.first; nRangeIt != neighborRange.second; ++nRangeIt)
+				{
+					size_t curSegID = nRangeIt->second;
+					//cout << "  gridKeys from neighborhood->" << neighborKey << " ";
+					//cout << "segID:" << curSegID << endl;
+					this->subtreeSegs.insert(curSegID);
+
+					if (this->subtreeSegs.size() == curSegNum) continue;
+					else
+					{
+						curSegNum = this->subtreeSegs.size();
+
+						int xCurHead = (curImg->tracedNeuron.seg[nRangeIt->second].row.end() - 1)->x / gridLength;
+						int yCurHead = (curImg->tracedNeuron.seg[nRangeIt->second].row.end() - 1)->y / gridLength;
+						int zCurHead = (curImg->tracedNeuron.seg[nRangeIt->second].row.end() - 1)->z / gridLength;
+						QString curKeyHeadQ = QString::number(xCurHead) + "_" + QString::number(yCurHead) + "_" + QString::number(zCurHead);
+						string curKeyHead = curKeyHeadQ.toStdString();
+
+						if (!curKeyHead.compare(gridKey))
+						{
+							int xCurTail = curImg->tracedNeuron.seg[nRangeIt->second].row.begin()->x / gridLength;
+							int yCurTail = curImg->tracedNeuron.seg[nRangeIt->second].row.begin()->y / gridLength;
+							int zCurTail = curImg->tracedNeuron.seg[nRangeIt->second].row.begin()->z / gridLength;
+							QString curKeyTailQ = QString::number(xCurTail) + "_" + QString::number(yCurTail) + "_" + QString::number(zCurTail);
+							string curKeyTail = curKeyTailQ.toStdString();
+							this->rc_findDownstreamSegs(curImg, curKeyTail, gridLength);
+						}
+						else this->rc_findDownstreamSegs(curImg, curKeyHead, gridLength);
+					}
+				}
+			}
+		}
+	}
+	cout << endl;
+
+	if (this->subtreeSegs.size() == curSegNum) return;
 }
 
 void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg)

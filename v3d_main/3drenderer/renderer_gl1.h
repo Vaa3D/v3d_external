@@ -488,6 +488,7 @@ public:
 	 map<string, size_t> tail2segIDmap;
 	 multimap<string, size_t> head2segIDmap;
 	 multimap<string, size_t> grid2segIDmap;
+	 multimap<size_t, string> segID2gridMap;
 
 	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
