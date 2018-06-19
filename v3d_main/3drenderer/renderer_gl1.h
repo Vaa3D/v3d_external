@@ -494,8 +494,9 @@ public:
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
 	 void upstreamRelabel(My4DImage* curImg, V_NeuronSWC* startingSegPtr, V_NeuronSWC* newPaSegPtr);
 	 void rc_downstreamSeg(My4DImage* curImg, size_t segID);
+	 void rc_downstream_segID(My4DImage* curImg, size_t segID);
 	 void segTreeFastReprofile(My4DImage* curImg);
-	 void rc_findDownstreamSegs(My4DImage* curImg, string gridKey, int gridLength);
+	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);
 	 //vector<size_t> subtreeSegs;
 	 set<size_t> subtreeSegs;
 
