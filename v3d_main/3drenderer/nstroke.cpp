@@ -1410,6 +1410,26 @@ void Renderer_gl1::callShowSubtree()
 	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       
+	if (w) curImg = v3dr_getImage4d(_idep);
+
+	if (this->pressedShowSubTree == true)
+	{
+		cout << "restoring" << endl;
+
+		if (this->originalSegMap.empty()) return;
+
+		for (map<size_t, vector<V_NeuronSWC_unit>>::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
+			curImg->tracedNeuron.seg[it->first].row = it->second;
+
+		curImg->update_3drenderer_neuron_view(w, this);
+		curImg->proj_trace_history_append();
+
+		this->pressedShowSubTree = false;
+
+		return;
+	}
+
 	if (w && listNeuronTree.size()>0)
 	{
 		w->setEditMode();

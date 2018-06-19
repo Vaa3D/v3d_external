@@ -497,8 +497,11 @@ public:
 	 void rc_downstream_segID(My4DImage* curImg, size_t segID);
 	 void segTreeFastReprofile(My4DImage* curImg);
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);
-	 //vector<size_t> subtreeSegs;
 	 set<size_t> subtreeSegs;
+	 map<size_t, vector<V_NeuronSWC_unit>> originalSegMap;
+	 map<size_t, vector<V_NeuronSWC_unit>> highlightedSegMap;
+	 bool pressedShowSubTree;
+	 // -----------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();

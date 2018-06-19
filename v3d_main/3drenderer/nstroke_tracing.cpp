@@ -4073,7 +4073,7 @@ void Renderer_gl1::showSubtree()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-	this->segTreeFastReprofile(curImg);
+	//this->segTreeFastReprofile(curImg);
 
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
@@ -4207,6 +4207,9 @@ void Renderer_gl1::showSubtree()
 			this->rc_downstreamSeg(curImg, startingSegID);
 			//this->rc_downstream_segID(curImg, startingSegID);
 			
+			this->originalSegMap.clear();
+			this->highlightedSegMap.clear();
+			this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
 			for (vector<V_NeuronSWC_unit>::iterator firstSegIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); firstSegIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++firstSegIt)
 			{
 				if (firstSegIt->x == nearestNode.x && firstSegIt->y == nearestNode.y && firstSegIt->z == nearestNode.z)
@@ -4216,26 +4219,33 @@ void Renderer_gl1::showSubtree()
 				}
 				firstSegIt->type = 0;
 			}
+			this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
+
 			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
 			{
 				if (*segIt == startingSegID) continue;
 
-				cout << *segIt << " ";
+				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+				//cout << *segIt << " ";
 				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
 					unitIt->type = 0;
+				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(*segIt, curImg->tracedNeuron.seg[*segIt].row));
 			}
-			cout << endl;
+			//cout << endl;
 
 			curImg->update_3drenderer_neuron_view(w, this);
 			curImg->proj_trace_history_append();
-
 		}
-		this->subtreeSegs.clear();
 	}
+
+	this->pressedShowSubTree = true;
 }
 
 void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength)
 {
+	// This method finds all sebsequent segments following a given starting segment. 
+	// The approach is geometrical by employing an endpoint-grid map.
+
 	//cout << endl << "Current gridKey:" << gridKey << " Input segID:" << inputSegID;
 
 	size_t curSegNum = this->subtreeSegs.size();
@@ -4362,8 +4372,10 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, s
 	if (this->subtreeSegs.size() == curSegNum) return;
 }
 
-void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg)
+void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg) 
 {
+	// This method profiles the topology with endpoint-segID map. Currently prone to be buggy, not in use.
+
 	this->tail2segIDmap.clear();
 	this->head2segIDmap.clear();
 
@@ -4407,6 +4419,8 @@ void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg)
 
 void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
 {
+	// This method finds out the subsequent segments from a given segment [branch ID] recursively.
+
 	int childSegCount;
 
 	vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[segID].branchingProfile.childIDs;
@@ -4431,16 +4445,18 @@ void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
 	return;
 }
 
-void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID)
+void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID) 
 {
+	// This method finds out the subsequent segments from a given [segment ID] recursively.
+
 	int childSegCount;
 
 	vector<int> nextLevelSegLocs = curImg->tracedNeuron.seg[segID].branchingProfile.childSegLocs;
 	childSegCount = nextLevelSegLocs.size();
-	cout << endl << "starting seg number: " << segID << "  child seg number: " << childSegCount << " ";
+	//cout << endl << "starting seg number: " << segID << "  child seg number: " << childSegCount << " ";
 	if (childSegCount == 0)
 	{
-		cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
+		//cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
 		return;
 	}
 	/*for (vector<int>::iterator childIt = nextLevelBranchIDs.begin(); childIt != nextLevelBranchIDs.end(); ++childIt)
@@ -4449,7 +4465,7 @@ void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID)
 
 	for (vector<int>::iterator it = nextLevelSegLocs.begin(); it != nextLevelSegLocs.end(); ++it)
 	{
-		cout << "  current child segID: " << *it << endl;
+		//cout << "  current child segID: " << *it << endl;
 		this->subtreeSegs.insert(size_t(*it));
 		this->rc_downstream_segID(curImg, size_t(*it));
 	}
