@@ -945,11 +945,11 @@ void QGLRefSys::mouseMoveEvent(QMouseEvent *event)
     int dy = event->y() - lastPos.y();
 
     if (event->buttons() & Qt::LeftButton) {
-        setXRotation(xRot + 8 * dy);
-        setYRotation(yRot + 8 * dx);
+        setXRotation(xRot + 4 * dy);
+        setYRotation(yRot + 4 * dx);
     } else if (event->buttons() & Qt::RightButton) {
-        setXRotation(xRot + 8 * dy);
-        setZRotation(zRot + 8 * dx);
+        setXRotation(xRot + 4 * dy);
+        setZRotation(zRot + 4 * dx);
     }
     lastPos = event->pos();
 }
