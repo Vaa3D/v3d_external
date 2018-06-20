@@ -993,7 +993,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
 				callStrokeConnectMultiNeurons_loopSafe();
-			}
+            }else
+            {
+                neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
+                updateColorMode(neuronColorMode);
+            }
 	  		break;
 		case Qt::Key_V:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
@@ -1070,7 +1074,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	toggleMarkerName();
             }
-	  		break;
+            break;
 
 	  		///// neuron operation //////////////////////////////////////////////////////
 		case Qt::Key_L:
@@ -2609,6 +2613,14 @@ void V3dR_GLWidget::createSurfCurrentB()
 		renderer->createSurfCurrent(2);
 		POST_updateGL();
 	}
+}
+
+void V3dR_GLWidget::updateColorMode(int colorMode){
+
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)getRenderer();
+    curr_renderer->neuronColorMode = colorMode;
+    POST_updateGL();
+
 }
 
 

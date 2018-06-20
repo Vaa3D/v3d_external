@@ -168,6 +168,8 @@ void CViewer::show()
             Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
             curr_renderer->currentTraceType = prev_renderer->currentTraceType;
             curr_renderer->currentMarkerColor = prev_renderer->currentMarkerColor;
+            curr_renderer->neuronColorMode = prev_renderer->neuronColorMode;
+
 
             bool changed_cmap = false;
             for(int k=0; k<3; k++)
@@ -2029,6 +2031,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
         curr_renderer->currentTraceType = source_renderer->currentTraceType;
         curr_renderer->currentMarkerColor = source_renderer->currentMarkerColor;
+        curr_renderer->neuronColorMode = source_renderer->neuronColorMode;
 
         bool changed_cmap = false;
         for(int k=0; k<3; k++)

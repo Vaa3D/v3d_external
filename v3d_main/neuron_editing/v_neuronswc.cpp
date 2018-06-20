@@ -181,7 +181,7 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 		V3DLONG min_ind = row[0].n;
 		for (j=1;j<row.size();j++)
 		{
-			if (row[j].n < min_ind)  min_ind = row[j].n;
+            if (row[j].n < min_ind)  min_ind = row[j].n;
 			if (min_ind<0) v3d_msg("Found illeagal neuron node index which is less than 0 in merge_V_NeuronSWC_list()!");
 		}
 		//qDebug()<<min_ind;
@@ -195,7 +195,7 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 		{
             v.seg_id = seg_id;
             v.nodeinseg_id = j;
-
+            v.level = row[j].level;
 			v.n = (n0+1) + row[j].n-min_ind;
 			for (i=1;i<=5;i++)	v.data[i] = row[j].data[i];
 			v.parent = (row[j].parent<0)? -1 : ((n0+1) + row[j].parent-min_ind); //change row[j].parent<=0 to row[j].parent<0, PHC 091123.

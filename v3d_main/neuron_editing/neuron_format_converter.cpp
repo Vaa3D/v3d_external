@@ -63,6 +63,8 @@ NeuronTree V_NeuronSWC__2__NeuronTree(V_NeuronSWC & seg) // convert V_NeuronSWC 
 			//for hit & editing
 			S.seg_id       = seg.row.at(k).seg_id;
 			S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
+
+            S.level = seg.row.at(k).level;
 			
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			
@@ -90,8 +92,7 @@ NeuronTree V_NeuronSWC__2__NeuronTree(V_NeuronSWC & seg) // convert V_NeuronSWC 
 NeuronTree V_NeuronSWC_list__2__NeuronTree(V_NeuronSWC_list & tracedNeuron) //convert to Vaa3D's external neuron structure
 {	
 	//first conversion
-	
-	V_NeuronSWC seg = merge_V_NeuronSWC_list(tracedNeuron);
+    V_NeuronSWC seg = merge_V_NeuronSWC_list(tracedNeuron);
 	seg.name = tracedNeuron.name;
 	seg.file = tracedNeuron.file;
 	
@@ -117,6 +118,7 @@ V_NeuronSWC_list NeuronTree__2__V_NeuronSWC_list(NeuronTree * nt)           //co
 		v.z 	= qlist[i].z;
 		v.r 	= qlist[i].r;
 		v.parent = qlist[i].pn;
+        v.level = qlist[i].level;
 		
 		cur_seg.append(v);
         //qDebug("%d ", cur_seg.nnodes());

@@ -391,6 +391,7 @@ public slots:
 
     virtual void toggleEditMode();
     virtual void setEditMode();
+    virtual void updateColorMode(int mode);
 
 
 //----------------------------------------------------------------------------------------
@@ -500,6 +501,7 @@ public:
     RGBA8 backgroundColor; // record current non-black backgroundColor
 
 	int _volumeTimePoint; float volumeTimPoint_fraction;
+    int neuronColorMode;
 
 	void init_members()
 	{
@@ -537,6 +539,8 @@ public:
 
 		_volumeTimePoint=0;
 		volumeTimPoint_fraction=0;
+
+        neuronColorMode=0;
 #ifdef __ALLOW_VR_FUNCS__
 		VRClientON=false;
 		myvrwin = 0;

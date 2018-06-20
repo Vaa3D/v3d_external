@@ -97,7 +97,8 @@ struct V_NeuronSWC_unit
 		struct {
 			double n, type, x, y, z, r, parent,
 			nchild,
-			seg_id, nodeinseg_id;
+            seg_id, nodeinseg_id,
+            level;
 		};
 	};
         V_NeuronSWC_unit() {for (V3DLONG i=0;i<V3DLONG(sizeof(data)/sizeof(double));i++) data[i]=0; r=0.5;}

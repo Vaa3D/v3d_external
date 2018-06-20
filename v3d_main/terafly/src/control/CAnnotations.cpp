@@ -77,8 +77,8 @@ void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
     p.y = node->y;
     p.z = node->z;
     p.r = node->r;
+    p.level = node->level;
     p.pn = node->parent ? node->parent->ID : -1;
-
     // add node to list
     #ifdef terafly_enable_debug_annotations
     tf::debug(tf::LEV_MAX, strprintf("Add node %lld(%.0f, %.0f, %.0f) to list", p.n, p.x, p.y, p.z).c_str(), 0, true);
@@ -1103,6 +1103,7 @@ void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf:
         ann->x = nt.listNeuron[i].x;
         ann->y = nt.listNeuron[i].y;
         ann->z = nt.listNeuron[i].z;
+        ann->level = nt.listNeuron[i].level;
 
         #ifdef terafly_enable_debug_annotations
         tf::debug(tf::LEV_MAX, strprintf("inserting curve point %lld(%.1f,%.1f,%.1f), n=(%d), pn(%d)\n", ann->ID, ann->x, ann->y, ann->z, nt.listNeuron[i].n, nt.listNeuron[i].pn).c_str(), 0, true);
@@ -1351,6 +1352,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 ann->x = i->x;
                 ann->y = i->y;
                 ann->z = i->z;
+                ann->level = i->level;
                 ann->vaa3d_n = i->n;
                 octree->insert(*ann);
                 annotationsMap[i->n] = ann;

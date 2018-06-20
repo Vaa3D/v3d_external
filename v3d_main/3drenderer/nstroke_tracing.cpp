@@ -4209,7 +4209,7 @@ void Renderer_gl1::showSubtree()
 			
 			this->originalSegMap.clear();
 			this->highlightedSegMap.clear();
-			this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
+            this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
 			for (vector<V_NeuronSWC_unit>::iterator firstSegIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); firstSegIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++firstSegIt)
 			{
 				if (firstSegIt->x == nearestNode.x && firstSegIt->y == nearestNode.y && firstSegIt->z == nearestNode.z)
@@ -4219,17 +4219,17 @@ void Renderer_gl1::showSubtree()
 				}
 				firstSegIt->type = 0;
 			}
-			this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
+            this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
 
 			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
 			{
 				if (*segIt == startingSegID) continue;
 
-				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+                this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
 				//cout << *segIt << " ";
 				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
 					unitIt->type = 0;
-				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+                this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
 			}
 			//cout << endl;
 

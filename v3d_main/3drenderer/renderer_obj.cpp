@@ -1708,7 +1708,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 #ifndef test_main_cpp
 void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 {
-	qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
+    qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
 //	PROGRESS_DIALOG("Updating Neuron structure", widget);
 //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 	QList <NeuronSWC> listNeuron;
@@ -1732,12 +1732,14 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			//for hit & editing
 			S.seg_id       = seg.row.at(k).seg_id;
 			S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
+
+            S.level = seg.row.at(k).level;
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			//if (! listNeuron.contains(S)) // 081024
 			{
 				listNeuron.append(S);
 				hashNeuron.insert(S.n, listNeuron.size()-1);
-			}
+            }
 		}
 		qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
 		if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
@@ -1963,12 +1965,12 @@ void Renderer_gl1::setNeuronColor(NeuronSWC s, time_t seconds){
 	switch (neuronColorMode){
 case 0:	break;
 case 1:
-	glColor3ub(255, 255, 0);
-	setColorByAncestry(s, seconds);
-	if (childHighlightMode && !childSegs.contains( s.seg_id)) {
-		glColor3ub(128,128,128);
-	}
-	break;
+    glColor3ub(255, 255, 0);
+    setColorByAncestry(s, seconds);
+    if (childHighlightMode && !childSegs.contains( s.seg_id)) {
+       glColor3ub(128,128,128);
+    }
+    break;
 case 2:
 	glColor3ub(255, 255, 0);
 	setNeuronReviewColors(s);
@@ -1989,20 +1991,29 @@ case 4:
 	if (segmentParentDict.value(s.seg_id)==-1){
 	glColor3ub(240,230,10);
 	}
+case 5:
+    setConfidenceLevelColors(s);
+    break;
 }
 }
 	
-
-
-
 void Renderer_gl1::setBasicNeuronColors(NeuronSWC s){
 	if (s.type>9) return;
-	GLubyte rVal = neuron_type_color[s.type][0];
-	GLubyte gVal = neuron_type_color[s.type][1];
-	GLubyte bVal = neuron_type_color[s.type][2];
+    GLubyte rVal = neuron_type_color[s.type][0];
+    GLubyte gVal = neuron_type_color[s.type][1];
+    GLubyte bVal = neuron_type_color[s.type][2];
 
 	glColor3ub(rVal, gVal, bVal);
 	}
+
+void Renderer_gl1::setConfidenceLevelColors(NeuronSWC s)
+{
+    GLubyte rVal = neuron_type_color_heat[s.level][0];
+    GLubyte gVal = neuron_type_color_heat[s.level][1];
+    GLubyte bVal = neuron_type_color_heat[s.level][2];
+
+    glColor3ub(rVal, gVal, bVal);
+}
 
 
 void Renderer_gl1::setNeuronReviewColors(NeuronSWC s){
@@ -2377,7 +2388,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 //	glEnd(); ////////////////////////////
 	for (int i=0; i<listNeuron.size(); i++)
 	{
-		S1 = listNeuron.at(i);   // at(i) faster than [i]
+        S1 = listNeuron.at(i);   // at(i) faster than [i]
 		//if (S1.pn <1)	continue; 	// skip the first point
 		bool valid = false;
 		if (S1.pn == -1) // root end, 081105

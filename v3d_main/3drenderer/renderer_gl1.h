@@ -393,6 +393,7 @@ public:
 	void setNeuronReviewColors(NeuronSWC s); // review mode
 	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
 	void setBasicNeuronColors(NeuronSWC s);
+    void setConfidenceLevelColors(NeuronSWC s); //confidence level mode by ZZ 06192018
 	bool childHighlightMode;
 
 
@@ -498,8 +499,8 @@ public:
 	 void segTreeFastReprofile(My4DImage* curImg);
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);
 	 set<size_t> subtreeSegs;
-	 map<size_t, vector<V_NeuronSWC_unit>> originalSegMap;
-	 map<size_t, vector<V_NeuronSWC_unit>> highlightedSegMap;
+     map<size_t, vector<V_NeuronSWC_unit> > originalSegMap;
+     map<size_t, vector<V_NeuronSWC_unit> > highlightedSegMap;
 	 bool pressedShowSubTree;
 	 // -----------------------------------------------------------------------------------------
 

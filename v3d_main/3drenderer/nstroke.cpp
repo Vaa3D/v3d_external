@@ -1419,7 +1419,7 @@ void Renderer_gl1::callShowSubtree()
 
 		if (this->originalSegMap.empty()) return;
 
-		for (map<size_t, vector<V_NeuronSWC_unit>>::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
+        for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
 			curImg->tracedNeuron.seg[it->first].row = it->second;
 
 		curImg->update_3drenderer_neuron_view(w, this);
