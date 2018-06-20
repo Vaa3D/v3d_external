@@ -303,7 +303,8 @@ public:
 	float sampleScale[5];
 	V3DLONG bufSize[5]; //(x,y,z,c,t) 090731: add time dim
 
-     XYZ curveStartMarker; // ZJL
+    XYZ curveStartMarker; // ZJL
+    int neuronColorMode;
 
 private:
 	void init_members()

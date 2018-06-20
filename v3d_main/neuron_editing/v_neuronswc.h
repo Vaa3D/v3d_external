@@ -272,6 +272,7 @@ V_NeuronSWC join_V_NeuronSWC_vec(vector <V_NeuronSWC> & in_swc_vec);
 bool reverse_V_NeuronSWC_inplace(V_NeuronSWC & in_swc);
 bool change_type_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, int type);
 bool change_radius_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, double radius);
+bool change_level_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, int level);
 
 V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list);
 bool delete_seg_in_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id); //delete a seg in the V_NeuronSWC_list

@@ -1249,7 +1249,7 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     if(!f)
         throw RuntimeException(strprintf("in CAnnotations::save(): cannot save to path \"%s\"", filepath));
     fprintf(f, "APOFILE=%s\n",anoFile.dirName().toStdString().append(".apo").c_str());
-    fprintf(f, "SWCFILE=%s\n",anoFile.dirName().toStdString().append(".swc").c_str());
+    fprintf(f, "SWCFILE=%s\n",anoFile.dirName().toStdString().append(".eswc").c_str());
     fclose(f);
 
     //saving apo (point cloud) file
@@ -1271,14 +1271,14 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     writeAPO_file(QString(filepath).append(".apo"), points);
 
     //saving SWC file
-    f = fopen(QString(filepath).append(".swc").toStdString().c_str(), "w");
+    f = fopen(QString(filepath).append(".eswc").toStdString().c_str(), "w");
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
     fprintf(f, "#n type x y z radius parent\n");
 	cout << "Annotation size: " << annotations.size() << endl;
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level);
 
     //file closing
     fclose(f);

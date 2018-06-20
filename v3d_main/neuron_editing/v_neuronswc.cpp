@@ -813,6 +813,18 @@ bool change_type_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG
 	return true;
 }
 
+bool change_level_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, int level)
+{
+    if (seg_id<0 || seg_id>= swc_list.seg.size())	return false;
+
+    vector <V_NeuronSWC_unit> & row = (swc_list.seg[seg_id].row);
+    for (V3DLONG j=0;j<row.size();j++)
+    {
+        row[j].level = level;
+    }
+    return true;
+}
+
 bool change_radius_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, double radius)
 {
 	if (seg_id<0 || seg_id>= swc_list.seg.size())	return false;
