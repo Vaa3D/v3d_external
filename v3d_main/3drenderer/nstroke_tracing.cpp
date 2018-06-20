@@ -4173,7 +4173,7 @@ void Renderer_gl1::showSubtree()
 			double rangeLength = 1;
 			double sqrdRange = rangeLength * rangeLength * 3;
 			int gridLength = 3;
-
+			this->grid2segIDmap.clear();
 			for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 			{
 				int xLabelTail = it->row.begin()->x / gridLength;
@@ -4189,27 +4189,37 @@ void Renderer_gl1::showSubtree()
 
 				this->grid2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
 				this->grid2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
-				//this->segID2gridMap.insert(pair<size_t, string>(size_t(it - curImg->tracedNeuron.seg.begin()), key1));
-				//this->segID2gridMap.insert(pair<size_t, string>(size_t(it - curImg->tracedNeuron.seg.begin()), key2));
 			}
 
+			V_NeuronSWC originalStartingSeg = curImg->tracedNeuron.seg[startingSegID];
+			vector<V_NeuronSWC_unit> cutStartingSeg;
+			cutStartingSeg.clear();
 			int xStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->x / gridLength;
 			int yStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->y / gridLength;
 			int zStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->z / gridLength;
 			QString startKeyTailQ = QString::number(xStartTail) + "_" + QString::number(yStartTail) + "_" + QString::number(zStartTail);
 			string startKeyTail = startKeyTailQ.toStdString();
+			for (vector<V_NeuronSWC_unit>::iterator cutIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); cutIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++cutIt)
+			{
+				cutStartingSeg.push_back(*cutIt);
+				if (cutIt->x == nearestNode.x && cutIt->y == nearestNode.y && cutIt->z == nearestNode.z)
+				{
+					(cutStartingSeg.end() - 1)->parent = -1;
+					break;
+				}
+			}
+			curImg->tracedNeuron.seg[startingSegID].row = cutStartingSeg;
 			this->rc_findDownstreamSegs(curImg, startingSegID, startKeyTail, gridLength);
 
 			/*for (set<size_t>::iterator segIDit = this->subtreeSegs.begin(); segIDit != this->subtreeSegs.end(); ++segIDit)
 				cout << *segIDit << " ";
 			cout << endl;*/
 
-			this->rc_downstreamSeg(curImg, startingSegID);
+			//this->rc_downstreamSeg(curImg, startingSegID);
 			//this->rc_downstream_segID(curImg, startingSegID);
 			
-			this->originalSegMap.clear();
-			this->highlightedSegMap.clear();
-            this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
+			curImg->tracedNeuron.seg[startingSegID] = originalStartingSeg;
+			this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
 			for (vector<V_NeuronSWC_unit>::iterator firstSegIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); firstSegIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++firstSegIt)
 			{
 				if (firstSegIt->x == nearestNode.x && firstSegIt->y == nearestNode.y && firstSegIt->z == nearestNode.z)
@@ -4219,17 +4229,17 @@ void Renderer_gl1::showSubtree()
 				}
 				firstSegIt->type = 0;
 			}
-            this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
+			this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
 
 			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
 			{
 				if (*segIt == startingSegID) continue;
 
-                this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(*segIt, curImg->tracedNeuron.seg[*segIt].row));
 				//cout << *segIt << " ";
 				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
 					unitIt->type = 0;
-                this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit>>(*segIt, curImg->tracedNeuron.seg[*segIt].row));
 			}
 			//cout << endl;
 
@@ -4247,6 +4257,8 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, s
 	// The approach is geometrical by employing an endpoint-grid map.
 
 	//cout << endl << "Current gridKey:" << gridKey << " Input segID:" << inputSegID;
+
+	if (curImg->tracedNeuron.seg[inputSegID].to_be_deleted) return;
 
 	size_t curSegNum = this->subtreeSegs.size();
 

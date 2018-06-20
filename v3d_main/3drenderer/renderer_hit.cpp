@@ -2149,9 +2149,34 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #define __interaction__
 void Renderer_gl1::endSelectMode()
 {
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	if (selectMode == smShowSubtree)
+	{
+		if (this->pressedShowSubTree == true)
+		{
+			My4DImage* curImg = 0;
+			if (w) curImg = v3dr_getImage4d(_idep);
+			//cout << "restoring" << endl;
+
+			if (this->originalSegMap.empty()) return;
+
+			for (map<size_t, vector<V_NeuronSWC_unit>>::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
+				curImg->tracedNeuron.seg[it->first].row = it->second;
+
+			curImg->update_3drenderer_neuron_view(w, this);
+			curImg->proj_trace_history_append();
+
+			this->pressedShowSubTree = false;
+			this->originalSegMap.clear();
+			this->highlightedSegMap.clear();
+
+			return;
+		}
+	}
+
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ || selectMode == smCurveCreate_MarkerCreate1)
 	{
 		if (cntCur3DCurveMarkers >=2)
