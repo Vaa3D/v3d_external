@@ -3023,6 +3023,13 @@ void V3dR_GLWidget::callShowSubtree()
 	}
 }
 
+void V3dR_GLWidget::subtreeHighlightModeMonitor()
+{
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+	if (thisRenderer->selectMode != Renderer::smShowSubtree) thisRenderer->escPressed_subtree();
+	else QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
+}
+
 void V3dR_GLWidget::callDefine3DPolyline()
 {
     if (renderer && _idep && v3dr_getImage4d(_idep))

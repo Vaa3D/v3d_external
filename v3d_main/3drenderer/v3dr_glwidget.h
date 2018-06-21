@@ -463,6 +463,9 @@ signals:
         void neuronClearAllSelections();
 		void signalCallTerafly(int nDirect);
 
+public slots:
+	void subtreeHighlightModeMonitor();
+
 public:
 	bool _still, _stillpaint_need, _stillpaint_pending;
     QTimer still_timer;

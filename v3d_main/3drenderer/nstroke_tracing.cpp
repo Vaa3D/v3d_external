@@ -4072,7 +4072,7 @@ void Renderer_gl1::showSubtree()
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
-
+	w->subtreeHighlightModeMonitor();
 	//this->segTreeFastReprofile(curImg);
 
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
