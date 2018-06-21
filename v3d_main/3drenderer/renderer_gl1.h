@@ -368,7 +368,7 @@ public:
     bool colorByAncestry;
     bool colorByTypeOnlyMode; //This is only checked if colorByAncestry is enabled
     bool setColorAncestryInfo();
-	int neuronColorMode;
+
     void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
     void setColorByAncestry(NeuronSWC s, time_t seconds); // colorByAncestry mode
     // end ZMS

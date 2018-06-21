@@ -5433,51 +5433,73 @@ void Renderer_gl1::cutNeuronsByStroke()
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {
     int node_type = 0;
+    int node_level = 0;
+
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
-    if (useCurrentTraceTypeForRetyping)
+    if(neuronColorMode==0)
     {
-        node_type = currentTraceType;
-    }
-    else
-    {
-//#ifdef USE_Qt5
-//        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-//                                  QObject::tr("SWC type: "
-//                                            "\n 0 -- undefined (white)"
-//                                            "\n 1 -- soma (black)"
-//                                            "\n 2 -- axon (red)"
-//                                            "\n 3 -- dendrite (blue)"
-//                                            "\n 4 -- apical dendrite (purple)"
-//                                            "\n else -- custom \n"),
-//                                          node_type, 0, 100, 1, &ok);
-////=======
+        if (useCurrentTraceTypeForRetyping)
+        {
+            node_type = currentTraceType;
+        }
+        else
+        {
+            //#ifdef USE_Qt5
+            //        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+            //                                  QObject::tr("SWC type: "
+            //                                            "\n 0 -- undefined (white)"
+            //                                            "\n 1 -- soma (black)"
+            //                                            "\n 2 -- axon (red)"
+            //                                            "\n 3 -- dendrite (blue)"
+            //                                            "\n 4 -- apical dendrite (purple)"
+            //                                            "\n else -- custom \n"),
+            //                                          node_type, 0, 100, 1, &ok);
+            ////=======
 #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
-    node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-                              QObject::tr("SWC type: "
-                                        "\n 0 -- undefined (white)"
-                                        "\n 1 -- soma (black)"
-                                        "\n 2 -- axon (red)"
-                                        "\n 3 -- dendrite (blue)"
-                                        "\n 4 -- apical dendrite (purple)"
-                                        "\n else -- custom \n"),
-                                      currentTraceType, 0, 100, 1, &ok);
+            node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+                                             QObject::tr("SWC type: "
+                                                         "\n 0 -- undefined (white)"
+                                                         "\n 1 -- soma (black)"
+                                                         "\n 2 -- axon (red)"
+                                                         "\n 3 -- dendrite (blue)"
+                                                         "\n 4 -- apical dendrite (purple)"
+                                                         "\n else -- custom \n"),
+                                             currentTraceType, 0, 100, 1, &ok);
 #else
-        node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
-                                  QObject::tr("SWC type: "
-                                            "\n 0 -- undefined (white)"
-                                            "\n 1 -- soma (black)"
-                                            "\n 2 -- axon (red)"
-                                            "\n 3 -- dendrite (blue)"
-                                            "\n 4 -- apical dendrite (purple)"
-                                            "\n else -- custom \n"),
-                                          currentTraceType, 0, 100, 1, &ok);
+            node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+                                                 QObject::tr("SWC type: "
+                                                             "\n 0 -- undefined (white)"
+                                                             "\n 1 -- soma (black)"
+                                                             "\n 2 -- axon (red)"
+                                                             "\n 3 -- dendrite (blue)"
+                                                             "\n 4 -- apical dendrite (purple)"
+                                                             "\n else -- custom \n"),
+                                                 currentTraceType, 0, 100, 1, &ok);
 #endif
-    }
+        }
 
-    if(!ok) return;
-    currentTraceType = node_type;
+        if(!ok) return;
+        currentTraceType = node_type;
+    }else if(neuronColorMode == 5)
+    {
+        int inputlevel = QInputDialog::getInt(0, QObject::tr("Change node confidence level in segment"),
+                                              QObject::tr("Confidence level: "
+                                                          "\n 0 -- confidence"
+                                                          "\n 1 -- uncertainty"
+                                                          "\n 2 -- error"),
+                                              0, 0, 2, 1, &ok);
+        if(!ok) return;
+        switch (inputlevel)
+        {
+        case 0:  node_level = 20;break;
+        case 1:  node_level = 150;break;
+        case 2:  node_level = 275;break;
+        }
+
+    }else
+        return;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
@@ -5496,19 +5518,19 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
         if (p_tree
-            && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+                && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
         {
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
                 continue;
-			bool allUnitsOutsideZCut = false;
+            bool allUnitsOutsideZCut = false;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
                 iy = p_listneuron->at(i).y;
                 iz = p_listneuron->at(i).z;
-				allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
+                allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
 
                 if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
@@ -5518,7 +5540,11 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     {
                         if(   (poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)) && !allUnitsOutsideZCut)
                         {
-                            change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                            if(neuronColorMode==0)
+                                change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                            else
+                                change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
+
                         }
                     }
                     else
@@ -5528,9 +5554,12 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                             QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
                             if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
                             {
-								
-                               change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
-                               break;   // found intersection with neuron segment: no more need to continue on this inner loop
+                                if(neuronColorMode==0)
+                                    change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                                else
+                                    change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
+
+                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
                         }
                     }
@@ -5540,7 +5569,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             curImg->proj_trace_history_append();
         }
     }
-
 }
 
 void Renderer_gl1::breakMultiNeuronsByStrokeCommit()
