@@ -368,6 +368,7 @@ public:
     bool colorByAncestry;
     bool colorByTypeOnlyMode; //This is only checked if colorByAncestry is enabled
     bool setColorAncestryInfo();
+	int neuronColorMode;
     void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
     void setColorByAncestry(NeuronSWC s, time_t seconds); // colorByAncestry mode
     // end ZMS
@@ -501,6 +502,7 @@ public:
      map<size_t, vector<V_NeuronSWC_unit> > originalSegMap;
      map<size_t, vector<V_NeuronSWC_unit> > highlightedSegMap;
 	 bool pressedShowSubTree;
+	 void escPressed_subtree();
 	 // -----------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.

@@ -678,6 +678,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 			// --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
 			else
 			{
+				if (thisRenderer->pressedShowSubTree) thisRenderer->escPressed_subtree();
+
 				XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
 				XYZ convertedSWC;
 				convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
