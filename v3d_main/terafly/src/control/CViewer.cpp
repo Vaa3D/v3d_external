@@ -218,7 +218,7 @@ void CViewer::show()
             syncWindows(prev->window3D, window3D);
 
             //storing annotations done in the previous view and loading annotations of the current view
-            prev->storeAnnotations();
+			prev->storeAnnotations();
 			prev->clearAnnotations();
 			this->loadAnnotations();
         }
@@ -678,8 +678,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 			// --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
 			else
 			{
-				if (thisRenderer->pressedShowSubTree) thisRenderer->escPressed_subtree();
-
 				XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
 				XYZ convertedSWC;
 				convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
@@ -1531,6 +1529,11 @@ void CViewer::restoreSubvolSpinboxState()
 void CViewer::storeAnnotations() throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+
+	// MK, June, 2018, Restore neuron display color if highlighting subtree has been triggered
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	if (thisRenderer->pressedShowSubTree) thisRenderer->escPressed_subtree();
+	//////////////////////////////////////////////////////////////////////////////////////////
 
     QElapsedTimer timer;
 
