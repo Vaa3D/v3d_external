@@ -978,6 +978,18 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
+            }else
+            {
+                if(_idep && _idep->window3D)
+                {
+                    int sShowSurf = (renderer->sShowSurfObjects==0)?2:0;
+                    setShowSurfObjects(sShowSurf);
+                    switch(sShowSurf)
+                    {
+                    case 0: _idep->window3D->checkBox_displaySurf->setCheckState(Qt::Unchecked);break;
+                    case 2: _idep->window3D->checkBox_displaySurf->setChecked(Qt::Checked);break;
+                    }
+                }
             }
             break;
 		case Qt::Key_C:
@@ -1026,7 +1038,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             break;
 
-	  		///// surface object operation //////////////////////////////////////////////////////
+            /////  object operation //////////////////////////////////////////////////////
 		case Qt::Key_P:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
 		    		WITH_CTRL_MODIFIER
@@ -2500,16 +2512,16 @@ void V3dR_GLWidget::setShowMarkers(int s)
 void V3dR_GLWidget::setShowSurfObjects(int s)
 {
 	//qDebug("V3dR_GLWidget::setShowSurfObjects = %i",s);
-	if (renderer)
+    if (renderer)
 	{
 		switch(s)
 		{
-		case Qt::Unchecked: 		s = 0; break;
-		case Qt::PartiallyChecked:	s = 1; break;
-		default: s = 2; break;
+        case Qt::Unchecked: 		s = 0; break;
+        case Qt::PartiallyChecked:	s = 1; break;
+        default: s = 2; break;
 		}
-		renderer->sShowSurfObjects = s;
-		POST_updateGL();
+        renderer->sShowSurfObjects = s;
+        POST_updateGL();
 	}
 }
 
@@ -2530,7 +2542,7 @@ void V3dR_GLWidget::setMarkerSize(int s)
 	if (_markerSize != s) {
 		_markerSize = s;
 		if (renderer)	renderer->markerSize = s;
-		emit changeMarkerSize(s);
+        emit changeMarkerSize(s);
 		POST_updateGL();
 	}
 }
@@ -2546,7 +2558,7 @@ void V3dR_GLWidget::enableSurfStretch(bool s)
 
 void V3dR_GLWidget::enableSurfZLock(bool s)
 {
-    if (renderer)
+    if (renderer && _idep && _idep->window3D)
     {
         renderer->b_surfZLock = s;
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
@@ -2886,7 +2898,7 @@ void V3dR_GLWidget::changeObjShadingOption()
 				"Note: transparent & outline mode may cause object selection difficult\n due to no depth information."
 				));
 		d.setLayout(formLayout);
-		d.setWindowTitle(QString("Surface/Object Advanced Options "));
+        d.setWindowTitle(QString("/Object Advanced Options "));
 
 		d.connect(ok,     SIGNAL(clicked()), &d, SLOT(accept()));
 		d.connect(cancel, SIGNAL(clicked()), &d, SLOT(reject()));
