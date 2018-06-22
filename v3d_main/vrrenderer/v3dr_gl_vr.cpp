@@ -725,6 +725,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, bIsRedoEnable (false)
 	, _call_assemble_plugin(false)
 	, postVRFunctionCallMode (0)
+	, curveDrawingTestStatus (-1)
 	//, font_VR (NULL)
 
 {
@@ -1036,6 +1037,7 @@ bool CMainApplication::BInitGL()
 		QList <LocationSimple> & listLoc = img4d->listLandmarks;
 		qDebug()<<"Init! NOW listLandmarks.size is "<<img4d->listLandmarks.size();
 		drawnMarkerList.clear();
+		markerVisibility.clear();
 		for(int i=0;i<listLoc.size();i++)
 		{
 			LocationSimple S_tmp = listLoc.at(i);
@@ -1317,6 +1319,7 @@ void CMainApplication::Shutdown()
 
 		sketchedNTList.clear();
 		drawnMarkerList.clear();
+		markerVisibility.clear();
 
 		if(pick_node)  pick_node = 0;
 		if( m_unMorphologyLineModeVAO != 0 )
@@ -1988,6 +1991,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type
 	mk.color.g = agentclr[1];
 	mk.color.b = agentclr[2];
 	drawnMarkerList.push_back(mk);
+	markerVisibility.push_back(1);
 
 	Markers_spheres.push_back(new Sphere(mk.radius,10,10));
 	Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
@@ -2007,6 +2011,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 	mk.color.g = colorG;
 	mk.color.b = colorB;
 	drawnMarkerList.push_back(mk);
+	markerVisibility.push_back(1);
 
 	Markers_spheres.push_back(new Sphere(mk.radius,10,10));
 	Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
@@ -2031,6 +2036,7 @@ void CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
 		if(dist < (dist_thres/m_globalScale*5))
 		{
 			drawnMarkerList.removeAt(i);
+			markerVisibility.erase(markerVisibility.begin()+i);
 			qDebug()<<"remove marker at "<<i;
 			if(Markers_spheres[i]) delete Markers_spheres[i];
 			Markers_spheres.erase(Markers_spheres.begin()+i);
@@ -2974,39 +2980,84 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
 		////bool_ray = true;
-		if(sketchedNTList.size()>0)
-		{   //save swc to file
-			QDateTime mytime = QDateTime::currentDateTime();
-			QString imageName = "FILE";
-			if (img4d) imageName = img4d->getFileName();
-			QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
-			QString name = qsl.back();
-			QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
-			//shift the neuron nodes to get global coordinates
-			NeuronTree mergedSketchNTL;
-			MergeNeuronTrees(mergedSketchNTL,&sketchedNTList);
-			writeSWC_file(filename, mergedSketchNTL);	
-			qDebug("Successfully writeSWC_file");
-		}
 
-		if(!drawnMarkerList.empty())
-		{
-			//save marker to file
-			QDateTime mytime = QDateTime::currentDateTime();
-			QString imageName = "FILE";
-			if (img4d) imageName = img4d->getFileName();
-			QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
-			QString name = qsl.back();
-			QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".marker";
+		//save swc
+		//if(sketchedNTList.size()>0)
+		//{   //save swc to file
+		//	QDateTime mytime = QDateTime::currentDateTime();
+		//	QString imageName = "FILE";
+		//	if (img4d) imageName = img4d->getFileName();
+		//	QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+		//	QString name = qsl.back();
+		//	QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
+		//	//shift the neuron nodes to get global coordinates
+		//	NeuronTree mergedSketchNTL;
+		//	MergeNeuronTrees(mergedSketchNTL,&sketchedNTList);
+		//	writeSWC_file(filename, mergedSketchNTL);	
+		//	qDebug("Successfully writeSWC_file");
+		//}
 
-			writeMarker_file(filename,drawnMarkerList);
-			qDebug("Successfully writeMarker_file");
-		}
+		//save markers
+		//if(!drawnMarkerList.empty())
+		//{
+		//	//save marker to file
+		//	QDateTime mytime = QDateTime::currentDateTime();
+		//	QString imageName = "FILE";
+		//	if (img4d) imageName = img4d->getFileName();
+		//	QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+		//	QString name = qsl.back();
+		//	QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".marker";
+
+		//	writeMarker_file(filename,drawnMarkerList);
+		//	qDebug("Successfully writeMarker_file");
+		//}
 		// qDebug("before call");
 		// if(!call_neuron_assembler_live_plugin(mainwindow)) return;
 		// qDebug("after call");
 		// _call_assemble_plugin = true;
 		// postVRFunctionCallMode = 1;
+
+
+		//2018-06-22 now this button is used for showing next two markers in sequence.
+		if (curveDrawingTestStatus == -1) //test not started;
+		{
+			if (markerVisibility.size() >= 2)
+			{
+				for(int i=2; i<markerVisibility.size();i++) markerVisibility[i] = 0;
+				curveDrawingTestStatus = 1;//test started. //id of the second current visible marker.
+				elapsedTimes.clear();
+				timer1.start();
+			}
+		}
+		else
+		{
+			qint64 etime = timer1.elapsed();
+			elapsedTimes.push_back(etime);
+			timer1.restart();
+			markerVisibility[curveDrawingTestStatus] = markerVisibility[curveDrawingTestStatus-1] = 0;
+			if (markerVisibility.size() > curveDrawingTestStatus+2)
+			{
+				curveDrawingTestStatus += 2;
+				markerVisibility[curveDrawingTestStatus] = markerVisibility[curveDrawingTestStatus-1] = 1;
+			}
+			else // no more enough markers, test termination
+			{
+				for(int i=0; i<markerVisibility.size();i++) markerVisibility[i] = 1;
+				curveDrawingTestStatus = -1;//test not started;
+				for(int i=0; i<elapsedTimes.size();i++) qDebug()<<elapsedTimes[i]<< " milliseconds";
+
+				QDateTime mytime = QDateTime::currentDateTime();
+				QString imageName = "FILE";
+				if (img4d) imageName = img4d->getFileName();
+				QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+				QString name = qsl.back();
+				QString filename = QCoreApplication::applicationDirPath()+"/IMG_"+ name +  "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt";
+				ofstream outFile(filename.toStdString(), ofstream::out);
+				for(int i=0; i<elapsedTimes.size();i++) outFile << elapsedTimes[i] << endl;
+				outFile.close();
+			}
+		}
+
 	}
 	//////////////////
 }
@@ -4825,6 +4876,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		
 		for(int i = 0;i<Markers_spheres.size();i++)// sketch neuron tree
 		{	//draw sphere
+			if (!markerVisibility[i]) continue;
 			glm::mat4 model;
 			Sphere* sphr = Markers_spheres[i];
 			glm::vec3 sPos = Markers_spheresPos[i];

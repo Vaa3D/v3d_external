@@ -205,6 +205,10 @@ private:
 	NeuronTree tempNT;//used somewhere, can be change to a local variable
 	BoundingBox swcBB;
 	QList<ImageMarker> drawnMarkerList;
+	vector<int> markerVisibility; //control the visibility of individual markers. temporarily used for VR experiment.
+	vector<qint64> elapsedTimes;
+	QElapsedTimer timer1;
+	int curveDrawingTestStatus;
 
 	vr::IVRSystem *m_pHMD;
 	vr::IVRRenderModels *m_pRenderModels;
