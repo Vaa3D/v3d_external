@@ -2485,6 +2485,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				glMultMatrixf(&m[0][0]);
                 if (length > 0)
 				{
+                    setNeuronColor(S1, seconds);
                     //v3d_msg(QString("").setNum(i).prepend("swc node = "), 0);
                     glPushMatrix();
 					//					float s,a,b,c;
