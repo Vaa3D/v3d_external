@@ -4239,7 +4239,7 @@ void Renderer_gl1::showSubtree()
 			//cout << endl;
 
 			curImg->update_3drenderer_neuron_view(w, this);
-			curImg->proj_trace_history_append();
+			//curImg->proj_trace_history_append();
 		}
 	}
 
