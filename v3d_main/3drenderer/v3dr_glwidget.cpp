@@ -3025,6 +3025,8 @@ void V3dR_GLWidget::callShowSubtree()
 
 void V3dR_GLWidget::subtreeHighlightModeMonitor()
 {
+	if (!this->getRenderer()) return;
+
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 	if (thisRenderer->selectMode != Renderer::smShowSubtree) thisRenderer->escPressed_subtree();
 	else QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
