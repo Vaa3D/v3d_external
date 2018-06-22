@@ -4239,7 +4239,7 @@ void Renderer_gl1::showSubtree()
 			//cout << endl;
 
 			curImg->update_3drenderer_neuron_view(w, this);
-			//curImg->proj_trace_history_append();
+			//curImg->proj_trace_history_append(); // -> Highlighting is for temporary checking purpose, should not be appended to the history.
 		}
 	}
 
@@ -4496,7 +4496,6 @@ void Renderer_gl1::escPressed_subtree()
 			curImg->tracedNeuron.seg[it->first].row = it->second;
 
 		curImg->update_3drenderer_neuron_view(w, this);
-		curImg->proj_trace_history_append();
 
 		this->pressedShowSubTree = false;
 		this->originalSegMap.clear();

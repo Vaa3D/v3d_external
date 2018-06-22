@@ -3029,7 +3029,34 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 	if (thisRenderer->selectMode != Renderer::smShowSubtree) thisRenderer->escPressed_subtree();
-	else QTimer::singleShot(5, this, SLOT(subtreeHighlightModeMonitor()));
+	else
+	{
+		int pressedNumber = this->getNumKeyHolding();
+		if (pressedNumber > -1)
+		{
+			cout << pressedNumber << " " << endl;
+			My4DImage* curImg = 0;
+			if (this) curImg = v3dr_getImage4d(_idep);
+			if (thisRenderer->originalSegMap.empty()) return;
+
+			for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+			{
+				
+				//for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = thisRenderer->originalSegMap.begin(); it != thisRenderer->originalSegMap.end(); ++it)
+				//{
+				for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)
+						nodeIt->type = pressedNumber;
+
+				curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
+				//}
+			}
+
+			curImg->update_3drenderer_neuron_view(this, thisRenderer);
+			curImg->proj_trace_history_append();
+		}
+
+		QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
+	}
 }
 
 void V3dR_GLWidget::callDefine3DPolyline()
