@@ -4172,7 +4172,7 @@ void Renderer_gl1::showSubtree()
 			this->subtreeSegs.clear();
 			double rangeLength = 1;
 			double sqrdRange = rangeLength * rangeLength * 3;
-			int gridLength = 3;
+			int gridLength = 1;
 			this->grid2segIDmap.clear();
 			for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 			{
@@ -4244,6 +4244,11 @@ void Renderer_gl1::showSubtree()
 	}
 
 	this->pressedShowSubTree = true;
+}
+
+void Renderer_gl1::showConnectedSegs()
+{
+	//cout << "haha" << endl;
 }
 
 void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength)

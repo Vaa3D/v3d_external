@@ -249,6 +249,7 @@ public:
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
 	virtual void callStrokeConnectMultiNeurons_loopSafe() {}; // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree() {};
+	virtual void callShowConnectedSegs() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
     virtual void callCreateMarkerNearestNode(int x, int y) {};

@@ -1005,7 +1005,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
 				callStrokeConnectMultiNeurons_loopSafe();
-            }else
+            }
+			else
             {
                 neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
                 updateColorMode(neuronColorMode);
@@ -1086,6 +1087,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	toggleMarkerName();
             }
+			else if (IS_ALT_MODIFIER)
+			{
+				callShowConnectedSegs();
+			}
             break;
 
 	  		///// neuron operation //////////////////////////////////////////////////////
@@ -3023,8 +3028,21 @@ void V3dR_GLWidget::callShowSubtree()
 	}
 }
 
+void V3dR_GLWidget::callShowConnectedSegs()
+{
+	if (renderer)
+	{
+		renderer->callShowConnectedSegs();
+		POST_updateGL();
+	}
+}
+
 void V3dR_GLWidget::subtreeHighlightModeMonitor()
 {
+	// This method fires signal to check if the renderer is in [highlighting subtree] mode every 50 ms.
+	// If yes, do nothing; if no, restore the highlited color to its original color and call to Renderer_gl1::escPressed_subtree() to exit [highlighting subtree] mode. 
+	// -- MK, June, 2018
+
 	if (!this->getRenderer()) return;
 
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
@@ -3041,7 +3059,6 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 
 			for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
 			{
-				
 				//for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = thisRenderer->originalSegMap.begin(); it != thisRenderer->originalSegMap.end(); ++it)
 				//{
 				for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)

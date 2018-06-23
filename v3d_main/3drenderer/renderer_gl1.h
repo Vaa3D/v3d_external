@@ -220,6 +220,7 @@ public:
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
+	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode(int x, int y); // call creating marker
@@ -474,6 +475,7 @@ public:
 	 void simpleConnect();
 	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 void showSubtree();
+	 void showConnectedSegs();
 	 
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();

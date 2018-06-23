@@ -2320,7 +2320,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
 			else if (selectMode == smSimpleConnect) simpleConnect();
 			else if (selectMode == smSimpleConnectLoopSafe) simpleConnect();
-			else if (selectMode == smShowSubtree) showSubtree();
+			else if (selectMode == smShowSubtree)
+			{
+				if (editinput == 10) showSubtree();
+				else if (editinput == 11) showConnectedSegs();
+			}
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
