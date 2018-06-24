@@ -3054,9 +3054,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                     if (img4d) imageName = img4d->getFileName();
                     QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
                     QString name = qsl.back();
-                    QString filename = QCoreApplication::applicationDirPath()+"/["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt";
+                    QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt";
+                    //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt"; //QCoreApplication::applicationDirPath()+
                     ofstream outFile(filename.toStdString(), ofstream::out);
-                    for(int i=0; i<elapsedTimes.size();i++) outFile << elapsedTimes[i] << endl;
+                    for(int i=0; i<elapsedTimes.size();i++) outFile << elapsedTimes[i] / 1000 << endl;
                     outFile.close();
                 }
 
@@ -3068,7 +3069,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                     if (img4d) imageName = img4d->getFileName();
                     QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
                     QString name = qsl.back();
-                    QString filename = QCoreApplication::applicationDirPath()+"/["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
+                    QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
+                    //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc"; //QCoreApplication::applicationDirPath()+
                     //shift the neuron nodes to get global coordinates
                     NeuronTree mergedSketchNTL;
                     MergeNeuronTrees(mergedSketchNTL,&sketchedNTList);
