@@ -966,7 +966,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
 				callShowSubtree();
-			}
+            }else
+                callAutoTracers();
 	  		break;
         case Qt::Key_D:
             if (IS_ALT_MODIFIER)
@@ -1032,13 +1033,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 callLoadNewStack();//by ZZ 02012018
             }
 	  		break;
-
-        case Qt::Key_A:
-            {
-                callAutoTracers();
-            }
-            break;
-
             /////  object operation //////////////////////////////////////////////////////
 		case Qt::Key_P:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
