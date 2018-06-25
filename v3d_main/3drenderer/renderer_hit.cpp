@@ -2151,8 +2151,8 @@ void Renderer_gl1::endSelectMode()
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
-	if (selectMode == smShowSubtree)
-	{
+	if (selectMode == smShowSubtree) // This part is needed for restoring neuron color yet staying in the highlighting mode.
+	{                                // -- MK, June, 2018
 		if (this->pressedShowSubTree == true)
 		{
 			My4DImage* curImg = 0;

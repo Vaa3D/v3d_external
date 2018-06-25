@@ -4168,7 +4168,7 @@ void Renderer_gl1::showSubtree()
 			/* ------- END of [Acquire the starting segment] ------- */
 			/***************** END of [Get segment information included in the movePen trajectory] *****************/
 			
-			/***************** Produce gridID - segID map *****************/
+			/******************** Produce gridID - segID map ********************/
 			this->subtreeSegs.clear();
 			double rangeLength = 1;
 			double sqrdRange = rangeLength * rangeLength * 3;
@@ -4190,6 +4190,7 @@ void Renderer_gl1::showSubtree()
 				this->grid2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
 				this->grid2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
 			}
+			/***************** END of [Produce gridID - segID map] *****************/
 
 			V_NeuronSWC originalStartingSeg = curImg->tracedNeuron.seg[startingSegID];
 			vector<V_NeuronSWC_unit> cutStartingSeg;
@@ -4248,7 +4249,302 @@ void Renderer_gl1::showSubtree()
 
 void Renderer_gl1::showConnectedSegs()
 {
-	//cout << "haha" << endl;
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+	w->subtreeHighlightModeMonitor();
+	//this->segTreeFastReprofile(curImg);
+
+	/*for (vector<V_NeuronSWC_unit>::iterator tempIt = curImg->tracedNeuron.seg.at(686).row.begin(); tempIt != curImg->tracedNeuron.seg.at(686).row.end(); ++tempIt)
+		tempIt->type = 9;
+
+	for (vector<V_NeuronSWC_unit>::iterator tempIt = curImg->tracedNeuron.seg.at(639).row.begin(); tempIt != curImg->tracedNeuron.seg.at(639).row.end(); ++tempIt)
+		tempIt->type = 9;
+
+	curImg->update_3drenderer_neuron_view(w, this);*/
+
+	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
+
+	for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
+	{
+		NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+		if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+		{
+			QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
+			if (!p_listneuron) return;
+			// for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
+
+			/***************** Get segment information included in the movePen trajectory *****************/
+			/* ------- Only take in the nodes within the rectangle that contains the stroke ------- */
+			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+			for (size_t i = 0; i < list_listCurvePos.at(0).size(); ++i)
+			{
+				if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+				if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
+			}
+			minX = minX - 5; maxX = maxX + 5;
+			minY = minY - 5; maxY = maxY + 5;
+			//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+			QList<NeuronSWC> nodeOnStroke;
+			for (size_t i = 0; i < p_listneuron->size(); ++i)
+			{
+				GLdouble px, py, pz, ix, iy, iz;
+				ix = p_listneuron->at(i).x;
+				iy = p_listneuron->at(i).y;
+				iz = p_listneuron->at(i).z;
+				if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+				{
+					py = viewport[3] - py; //the Y axis is reversed
+					QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+					if ((p.x() >= minX && p.x() <= maxX) && (p.y() >= minY && p.y() <= maxY))
+					{
+						nodeOnStroke.push_back(p_listneuron->at(i));
+						//cout << p.x() << " " << p.y() << endl;
+					}
+				}
+			}
+			if (nodeOnStroke.size() == 0) return;
+			/* ------- END of [Only take in the nodes within the rectangle that contains the stroke] ------- */
+
+			/* ------- Acquire the starting segment ------- */
+			vector<size_t> involvedSegs;
+			float nearestDist = 1000;
+			NeuronSWC nearestNode;
+			for (V3DLONG i = 0; i < list_listCurvePos.at(0).size(); i++)
+			{
+				for (V3DLONG j = 0; j < nodeOnStroke.size(); j++)
+				{
+					GLdouble px, py, pz, ix, iy, iz;
+					ix = nodeOnStroke.at(j).x;
+					iy = nodeOnStroke.at(j).y;
+					iz = nodeOnStroke.at(j).z;
+					if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+					{
+						py = viewport[3] - py; //the Y axis is reversed
+						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+						QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+						float dist = std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y()));
+						if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance) // p: global coordinates; p2: view port coordinates
+						{
+							if (dist < nearestDist)
+							{
+								nearestDist = dist;
+								nearestNode = nodeOnStroke.at(j);
+							}
+							involvedSegs.push_back(nodeOnStroke.at(j).seg_id);
+						}
+					}
+				}
+			}
+			map<size_t, int> segIDCountMap;
+			for (vector<size_t>::iterator segIt = involvedSegs.begin(); segIt != involvedSegs.end(); ++segIt)
+				++segIDCountMap.insert(pair<size_t, int>(*segIt, 0)).first->second;
+			int segCount = segIDCountMap.begin()->second;
+			size_t startingSegID = segIDCountMap.begin()->first;
+			for (map<size_t, int>::iterator mapIt = segIDCountMap.begin(); mapIt != segIDCountMap.end(); ++mapIt)
+			{
+				if (mapIt->second > segCount)
+				{
+					segCount = mapIt->second;
+					startingSegID = mapIt->first; // <-- This is the starting point of the subtree to be highlighted.
+				}
+			}
+			/* ------- END of [Acquire the starting segment] ------- */
+			/***************** END of [Get segment information included in the movePen trajectory] *****************/
+
+			this->segEnd2SegIDmapping(curImg);
+			
+			this->subtreeSegs.clear();
+			this->subtreeSegs.insert(startingSegID);
+			this->rc_findConnectedSegs(curImg, startingSegID);
+			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
+			{
+				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+				//cout << *segIt << " ";
+				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
+					unitIt->type = 0;
+				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+			}
+			//cout << endl;
+
+			curImg->update_3drenderer_neuron_view(w, this);
+			//curImg->proj_trace_history_append(); // -> Highlighting is for temporary checking purpose, should not be appended to the history.
+		}
+	}
+
+	this->pressedShowSubTree = true;
+}
+
+void Renderer_gl1::segEnd2SegIDmapping(My4DImage* curImg)
+{
+	this->segEnd2segIDmap.clear();
+	this->head2segIDmap.clear();
+	this->tail2SegIDmap.clear();
+	for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
+	{
+		double xLabelTail = it->row.begin()->x;
+		double yLabelTail = it->row.begin()->y;
+		double zLabelTail = it->row.begin()->z;
+		double xLabelHead = (it->row.end() - 1)->x;
+		double yLabelHead = (it->row.end() - 1)->y;
+		double zLabelHead = (it->row.end() - 1)->z;
+		QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
+		string key1 = key1Q.toStdString();
+		QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
+		string key2 = key2Q.toStdString();
+
+		this->segEnd2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
+		this->segEnd2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+		this->head2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
+		this->tail2SegIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+	}
+}
+
+void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
+{
+	if (curImg->tracedNeuron.seg[inputSegID].to_be_deleted) return;
+
+	size_t curSegNum = this->subtreeSegs.size();
+
+	double xLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->x;
+	double yLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->y;
+	double zLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->z;
+	double xLabelHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x;
+	double yLabelHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y;
+	double zLabelHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z;
+	QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
+	string key1 = key1Q.toStdString();
+	QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
+	string key2 = key2Q.toStdString();
+	//cout << xLabelHead << " " << yLabelHead << " " << zLabelHead << endl;
+	//cout << xLabelTail << " " << yLabelTail << " " << zLabelTail << endl << endl;
+
+	for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[inputSegID].row.begin() + 1; unitIt != curImg->tracedNeuron.seg[inputSegID].row.end() - 1; ++unitIt)
+	{
+		double middleX = unitIt->x;
+		double middleY = unitIt->y;
+		double middleZ = unitIt->z;
+		QString middleNodeKeyQ = QString::number(middleX) + "_" + QString::number(middleY) + "_" + QString::number(middleZ);
+		string middleNodeKey = middleNodeKeyQ.toStdString();
+
+		pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> middleRange = this->segEnd2segIDmap.equal_range(middleNodeKey);
+		for (multimap<string, size_t>::iterator middleIt = middleRange.first; middleIt != middleRange.second; ++middleIt)
+		{
+			if (middleIt->second == inputSegID) continue;
+			else if (this->subtreeSegs.find(middleIt->second) != this->subtreeSegs.end()) continue;
+			else if (middleIt->first == middleNodeKey)
+			{
+				//cout << "  Found a segment in the middle of the route, adding it to the recursive searching process:" << middleNodeKey << " " << middleIt->second << endl;
+				this->subtreeSegs.insert(middleIt->second);
+				this->rc_findConnectedSegs(curImg, middleIt->second);
+			}
+		}
+	}
+
+	pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> headRange = this->segEnd2segIDmap.equal_range(key1);
+	pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> tailRange = this->segEnd2segIDmap.equal_range(key2);
+	for (multimap<string, size_t>::iterator headIt = headRange.first; headIt != headRange.second; ++headIt)
+	{
+		size_t curSegID = headIt->second;
+		//cout << "  Finding connected segments at the head end --> current segID:" << curSegID << endl;
+		
+		this->subtreeSegs.insert(curSegID);
+
+		if (this->subtreeSegs.size() == curSegNum)
+		{
+			//cout << "    Seg already picked up, move to the next." << endl;
+			continue;
+		}
+		else this->rc_findConnectedSegs(curImg, curSegID);
+	}
+	for (multimap<string, size_t>::iterator tailIt = tailRange.first; tailIt != tailRange.second; ++tailIt)
+	{
+		size_t curSegID = tailIt->second;
+		//cout << "  Finding connected segments at the tail end --> current segID:" << curSegID << endl;
+
+		this->subtreeSegs.insert(curSegID);
+
+		if (this->subtreeSegs.size() == curSegNum)
+		{
+			//cout << "    Seg already picked up, move to the next." << endl;
+			continue;
+		}
+		else this->rc_findConnectedSegs(curImg, curSegID);
+	}
+
+	set<size_t> curSegEndRegionSegs;
+	curSegEndRegionSegs.clear();
+	curSegEndRegionSegs = this->segEndRegionCheck(curImg, inputSegID);
+	//cout << curSegEndRegionSegs.size() << endl;
+	if (!curSegEndRegionSegs.empty())
+	{
+		for (set<size_t>::iterator regionSegIt = curSegEndRegionSegs.begin(); regionSegIt != curSegEndRegionSegs.end(); ++regionSegIt)
+		{	
+			//cout << "  testing segs at the end region:" << *regionSegIt << endl;
+			if (*regionSegIt == inputSegID) continue;
+			else if (this->subtreeSegs.find(*regionSegIt) != this->subtreeSegs.end()) continue;
+			else
+			{
+				//cout << "    segs at the end region:" << *regionSegIt << endl;
+				this->subtreeSegs.insert(*regionSegIt);
+				this->rc_findConnectedSegs(curImg, *regionSegIt);
+			}
+		}
+	}
+
+	if (this->subtreeSegs.size() == curSegNum) return;
+}
+
+set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID)
+{
+	//cout << endl << " input segID:" << inputSegID << endl;
+
+	set<size_t> otherConnectedSegs;
+	otherConnectedSegs.clear();
+
+	int xHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x / this->gridLength;
+	int yHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y / this->gridLength;
+	int zHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z / this->gridLength;
+	int xTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->x / this->gridLength;
+	int yTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->y / this->gridLength;
+	int zTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->z / this->gridLength;
+	QString gridKeyHeadQ = QString::number(xHead) + "_" + QString::number(yHead) + "_" + QString::number(zHead);
+	string gridKeyHead = gridKeyHeadQ.toStdString();
+	QString gridKeyTailQ = QString::number(xTail) + "_" + QString::number(yTail) + "_" + QString::number(zTail);
+	string gridKeyTail = gridKeyTailQ.toStdString();
+
+	set<size_t> headRegionSegs = this->wholeGrid2segIDmap[gridKeyHead];
+	set<size_t> tailRegionSegs = this->wholeGrid2segIDmap[gridKeyTail];
+
+	//cout << " Head region segs:";
+	for (set<size_t>::iterator headIt = headRegionSegs.begin(); headIt != headRegionSegs.end(); ++headIt)
+	{
+		if (*headIt == inputSegID) continue;
+		//cout << *headIt << " ";
+		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*headIt].row.begin() + 1; nodeIt != curImg->tracedNeuron.seg[*headIt].row.end() - 1; ++nodeIt)
+		{
+			if (nodeIt->x == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x && nodeIt->y == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y && nodeIt->z == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z)
+				otherConnectedSegs.insert(*headIt);
+		}
+	}
+	//cout << endl << " Tail region segs:";
+	for (set<size_t>::iterator tailIt = tailRegionSegs.begin(); tailIt != tailRegionSegs.end(); ++tailIt)
+	{
+		if (*tailIt == inputSegID) continue;
+		//cout << *tailIt << " ";
+		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*tailIt].row.begin() + 1; nodeIt != curImg->tracedNeuron.seg[*tailIt].row.end() - 1; ++nodeIt)
+		{
+			if (nodeIt->x == curImg->tracedNeuron.seg[inputSegID].row.begin()->x && nodeIt->y == curImg->tracedNeuron.seg[inputSegID].row.begin()->y && nodeIt->z == curImg->tracedNeuron.seg[inputSegID].row.begin()->z)
+				otherConnectedSegs.insert(*tailIt);
+		}
+	}
+	//cout << endl;
+
+	return otherConnectedSegs;
 }
 
 void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength)
@@ -4295,7 +4591,6 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, s
 
 					if (middleIt->first == middleGridKey)
 					{
-						//this->subtreeSegs.insert(middleIt->second);
 						//cout << "  Found a segment in the middle of the route, adding it to the recursive searching process:" << middleGridKey << " " << middleIt->second << endl;
 						curSegNum = this->subtreeSegs.size();
 						this->rc_findDownstreamSegs(curImg, middleIt->second, middleGridKey, gridLength);

@@ -3044,9 +3044,10 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 	else
 	{
 		int pressedNumber = this->getNumKeyHolding();
+		//cout << pressedNumber << " ";
 		if (pressedNumber > -1)
 		{
-			cout << pressedNumber << " " << endl;
+			cout << "  --> assigned color(type) to highlighted neuron:" << pressedNumber << " " << endl;
 			My4DImage* curImg = 0;
 			if (this) curImg = v3dr_getImage4d(_idep);
 			if (thisRenderer->originalSegMap.empty()) return;

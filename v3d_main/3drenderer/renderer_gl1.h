@@ -489,9 +489,23 @@ public:
 	 map<size_t, size_t> branchSegIDmap;
 	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
 	 map<string, size_t> tail2segIDmap;
-	 multimap<string, size_t> head2segIDmap;
-	 multimap<string, size_t> grid2segIDmap;
 	 multimap<size_t, string> segID2gridMap;
+
+	 int gridLength;
+	 multimap<string, size_t> grid2segIDmap;
+	 map<string, set<size_t> > wholeGrid2segIDmap;
+	 multimap<string, size_t> segEnd2segIDmap; 
+	 multimap<string, size_t> head2segIDmap;
+	 multimap<string, size_t> tail2SegIDmap;
+	 
+	 multimap<double, size_t> minX2segMap;
+	 multimap<double, size_t> maxX2segMap;
+	 multimap<double, size_t> minY2segMap;
+	 multimap<double, size_t> maxY2segMap;
+	 multimap<double, size_t> minZ2segMap;
+	 multimap<double, size_t> maxZ2segMap;
+	 void segEnd2SegIDmapping(My4DImage* curImg);
+	 void segMinMaxMapping(My4DImage* curImg);
 
 	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
@@ -500,6 +514,8 @@ public:
 	 void rc_downstream_segID(My4DImage* curImg, size_t segID);
 	 void segTreeFastReprofile(My4DImage* curImg);
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);
+	 void rc_findConnectedSegs(My4DImage* curImg, size_t startSegID);
+	 set<size_t> segEndRegionCheck(My4DImage* curImg, size_t inputSegID);
 	 set<size_t> subtreeSegs;
      map<size_t, vector<V_NeuronSWC_unit> > originalSegMap;
      map<size_t, vector<V_NeuronSWC_unit> > highlightedSegMap;

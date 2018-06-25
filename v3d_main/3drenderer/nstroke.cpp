@@ -1434,6 +1434,9 @@ void Renderer_gl1::callShowConnectedSegs()
 		w->setEditMode();
 		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
 		{
+			My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(_idep);
+			this->segMinMaxMapping(curImg);
+
 			editinput = 11;
 			selectMode = smShowSubtree;
 			b_addthiscurve = false;
@@ -1441,6 +1444,25 @@ void Renderer_gl1::callShowConnectedSegs()
 			w->setCursor(QCursor(Qt::PointingHandCursor));
 		}
 	}
+}
+
+void Renderer_gl1::segMinMaxMapping(My4DImage* curImg)
+{
+	this->gridLength = 50;
+	for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+	{
+		for (vector<V_NeuronSWC_unit>::iterator nodeIt = segIt->row.begin(); nodeIt != segIt->row.end(); ++nodeIt)
+		{
+			int xLabel = nodeIt->x / this->gridLength;
+			int yLabel = nodeIt->y / this->gridLength;
+			int zLabel = nodeIt->z / this->gridLength;
+			QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+			string gridKey = gridKeyQ.toStdString();
+			this->wholeGrid2segIDmap[gridKey].insert(size_t(segIt - curImg->tracedNeuron.seg.begin()));
+		}
+	}
+
+	//cout << this->wholeGrid2segIDmap.size() << endl;
 }
 
 void Renderer_gl1::callDefine3DPolyline()
