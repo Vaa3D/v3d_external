@@ -3,6 +3,7 @@
 
 #include <QGLWidget>
 #include "../control/CPlugin.h"
+#include "renderer_gl1.h"
 
 class terafly::QGLRefSys : public QGLWidget
 {
@@ -37,6 +38,13 @@ class terafly::QGLRefSys : public QGLWidget
         float miniROIxShift;        //ROI x shift (between 0.0 and 1.0)
         float miniROIyShift;        //ROI y shift (between 0.0 and 1.0)
         float miniROIzShift;        //ROI z shift (between 0.0 and 1.0)
+        float dimMin[3];
+        float dimMax[3];
+        float dimSm[3];
+        //for miniMap zoom (double click)
+        double zoomNear;            //init zoom near
+        double zoomFar;             //init zoom far
+
 
     public:
 
@@ -49,11 +57,18 @@ class terafly::QGLRefSys : public QGLWidget
         int getYRot(){return yRot;}
         int getZRot(){return zRot;}
         void setDims(int dimX, int dimY, int dimZ, int _ROIxDim=0, int _ROIyDim=0, int _ROIzDim=0, int _ROIxShift=0, int _ROIyShift=0, int _ROIzShift=0);
+        void setRender(Renderer_gl1* _gl1){renderer=_gl1;}
         void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); markList.clear();updateGL();}
         void setZoom(double _zoom){zoom = _zoom;}
         void resetZoom(){zoom = -15.0; updateGL();}
-        NeuronTree nt;
+        Renderer_gl1 *renderer;
+        NeuronTree nt,nt_init;
         LandmarkList markList;
+        int dimXCenter;
+        int dimYCenter;
+        int dimZCenter;
+        int curRes;
+        int num_res;
 
     public slots:
 
