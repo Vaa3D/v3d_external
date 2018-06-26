@@ -984,6 +984,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
 						curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
 
+					thisRenderer->escPressed_subtree();
+
 					curImg->update_3drenderer_neuron_view(this, thisRenderer);
 					curImg->proj_trace_history_append();
 				}
