@@ -996,15 +996,15 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
 //                        renderer->b_grabhighrez = true;
 //                        renderer->produceZoomViewOf3DRoi(loc_vec,0);
                         //qDebug("nt listNeuron size is %d",nt.listNeuron.size());
-                        V3DLONG i;
+                        V3DLONG i;double pow_x=2;double pow_xy=pow(pow_x,curRes+1-num_res);
                         for(i=0;i<nt_init.listNeuron.size();i++)
                         {
                             NeuronSWC tempNeuron=nt_init.listNeuron.at(i);
                             if((abs(tempNeuron.x-curSwcPosx)+abs(tempNeuron.y-curSwcPosy))<100)
                             {
-                                XYZ cur_node_xyz = XYZ((V3DLONG)tempNeuron.x*pow(2,curRes+1-num_res)-dimXCenter*pow(2,curRes+1-num_res),
-                                                       (V3DLONG)tempNeuron.y*pow(2,curRes+1-num_res)-dimYCenter*pow(2,curRes+1-num_res),
-                                                       (V3DLONG)tempNeuron.z*pow(2,curRes+1-num_res)-dimZCenter*pow(2,curRes+1-num_res));
+                                XYZ cur_node_xyz = XYZ((V3DLONG)tempNeuron.x*pow_xy-dimXCenter*pow_xy,
+                                                       (V3DLONG)tempNeuron.y*pow_xy-dimYCenter*pow_xy,
+                                                       (V3DLONG)tempNeuron.z*pow_xy-dimZCenter*pow_xy);
                                 qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z<<"cur node";
                                 vector <XYZ> loc_vec;
                                 loc_vec.push_back(cur_node_xyz);
