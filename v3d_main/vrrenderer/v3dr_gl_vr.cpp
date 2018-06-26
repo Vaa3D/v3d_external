@@ -71,7 +71,7 @@ float CMainApplication::fContrast = 1;
 bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
-float CMainApplication::fBrightness = 0;
+float CMainApplication::fBrightness = 0.9;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
@@ -2171,12 +2171,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					qDebug()<<"virtual finger OFF";
 				break;
 			}
-		case _Freeze: // now temporarily used for controller model show/hide
+		case _Freeze: // now temporarily used for brightness supression
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
 				
+				if (fBrightness > 0.5) fBrightness = 0.1;
+				else fBrightness = 0.9;
 				
-				m_bFrozen = !m_bFrozen;
+				//m_bFrozen = !m_bFrozen;
 				//if(m_bFrozen)
 				//	qDebug()<<"Freeze View ON";
 				//else
@@ -2188,7 +2190,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _Contrast:
 			{
-				qDebug()<<"Clear all sketch Neuron";
 				if(temp_x>0)
 				{
 					fContrast+=1;
@@ -2207,6 +2208,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					//if(fBrightness<0)
 					//	fBrightness = 0;
 				}
+				qDebug()<<"Constrast is "<<fContrast;
 				break;
 			}
 		case _UndoRedo:
