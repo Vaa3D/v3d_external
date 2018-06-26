@@ -63,9 +63,12 @@ void main()
 	//brightness supression
 	if (ImageSettings.y < 0.5) // temporarily use ImageSettings.y for this
 	{
-		if(colorAcum.r>0.8) colorAcum.r *= 0.6;
-		if(colorAcum.g>0.8) colorAcum.g *= 0.6;
-		if(colorAcum.b>0.8) colorAcum.b *= 0.6;
+		if(colorAcum.r>0.4) colorAcum.r = 0.4;
+		//else if(colorAcum.r>0.2) colorAcum.r *= 1.5;
+		if(colorAcum.g>0.4) colorAcum.g = 0.4;
+		//else if(colorAcum.g>0.2) colorAcum.g *= 1.5;
+		if(colorAcum.b>0.4) colorAcum.b = 0.4;
+		//else if(colorAcum.b>0.2) colorAcum.b *= 1.5;
 	}
     
     FragColor = colorAcum;   
