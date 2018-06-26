@@ -4252,12 +4252,12 @@ void Renderer_gl1::showConnectedSegs()
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+	
 	w->subtreeHighlightModeMonitor();
 
 	//for (vector<V_NeuronSWC_unit>::iterator tempIt = curImg->tracedNeuron.seg.at(517).row.begin(); tempIt != curImg->tracedNeuron.seg.at(517).row.end(); ++tempIt)
-	//	tempIt->type = 0;
-
-	//curImg->update_3drenderer_neuron_view(w, this);
+	//	tempIt->type = 0; // --> this is for debug purpose
+	//curImg->update_3drenderer_neuron_view(w, this); 
 
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
@@ -4375,31 +4375,6 @@ void Renderer_gl1::showConnectedSegs()
 	this->pressedShowSubTree = true;
 }
 
-void Renderer_gl1::segEnd2SegIDmapping(My4DImage* curImg)
-{
-	this->segEnd2segIDmap.clear();
-	this->head2segIDmap.clear();
-	this->tail2SegIDmap.clear();
-	for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
-	{
-		double xLabelTail = it->row.begin()->x;
-		double yLabelTail = it->row.begin()->y;
-		double zLabelTail = it->row.begin()->z;
-		double xLabelHead = (it->row.end() - 1)->x;
-		double yLabelHead = (it->row.end() - 1)->y;
-		double zLabelHead = (it->row.end() - 1)->z;
-		QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
-		string key1 = key1Q.toStdString();
-		QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
-		string key2 = key2Q.toStdString();
-
-		this->segEnd2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
-		this->segEnd2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
-		this->head2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
-		this->tail2SegIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
-	}
-}
-
 void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 {
 	//cout << endl << "INPUT SEGID:" << inputSegID << endl;
@@ -4508,6 +4483,9 @@ void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 
 set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID)
 {
+	// This method picks up any segments that run through the head or tail of the input segment using grid-seg approach.
+	// -- MK, June 2018
+
 	set<size_t> otherConnectedSegs;
 	otherConnectedSegs.clear();
 

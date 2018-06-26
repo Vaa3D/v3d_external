@@ -484,7 +484,7 @@ public:
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
 	 void cutNeuronsByStroke();
 
-	 // --------- loop safe guard for both 3D view and terafly editing mode, MK 2018 May ---------
+	 // --------- loop safe guard and hilighting [subtree/connected segs] for both 3D view and terafly editing mode, MK 2018 May ---------
 	 bool isTera;
 	 map<size_t, size_t> branchSegIDmap;
 	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
@@ -492,20 +492,15 @@ public:
 	 multimap<size_t, string> segID2gridMap;
 
 	 int gridLength;
-	 multimap<string, size_t> grid2segIDmap;
 	 map<string, set<size_t> > wholeGrid2segIDmap;
+	 
+	 multimap<string, size_t> grid2segIDmap;
 	 multimap<string, size_t> segEnd2segIDmap; 
 	 multimap<string, size_t> head2segIDmap;
 	 multimap<string, size_t> tail2SegIDmap;
-	 
-	 multimap<double, size_t> minX2segMap;
-	 multimap<double, size_t> maxX2segMap;
-	 multimap<double, size_t> minY2segMap;
-	 multimap<double, size_t> maxY2segMap;
-	 multimap<double, size_t> minZ2segMap;
-	 multimap<double, size_t> maxZ2segMap;
+
 	 void segEnd2SegIDmapping(My4DImage* curImg);
-	 void segMinMaxMapping(My4DImage* curImg);
+	 void seg2GridMapping(My4DImage* curImg);
 
 	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
@@ -521,7 +516,7 @@ public:
      map<size_t, vector<V_NeuronSWC_unit> > highlightedSegMap;
 	 bool pressedShowSubTree;
 	 void escPressed_subtree();
-	 // -----------------------------------------------------------------------------------------
+	 // -----------------------------------------------------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();

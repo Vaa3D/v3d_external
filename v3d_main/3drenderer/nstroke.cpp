@@ -1435,7 +1435,7 @@ void Renderer_gl1::callShowConnectedSegs()
 		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
 		{
 			My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(_idep);
-			this->segMinMaxMapping(curImg);
+			this->seg2GridMapping(curImg);
 
 			editinput = 11;
 			selectMode = smShowSubtree;
@@ -1446,8 +1446,12 @@ void Renderer_gl1::callShowConnectedSegs()
 	}
 }
 
-void Renderer_gl1::segMinMaxMapping(My4DImage* curImg)
+void Renderer_gl1::seg2GridMapping(My4DImage* curImg)
 {
+	// This method profiles the geometrical information of every segment in Cartesian grids with selected grid length.
+	// Each grid is mapped to segments that run through it. set<segments run through the grid> = Renderer_gl1::wholeGrid2segIDmap(grid).
+	// -- MK, June, 2018
+
 	this->gridLength = 50;
 	for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
 	{
@@ -1463,6 +1467,34 @@ void Renderer_gl1::segMinMaxMapping(My4DImage* curImg)
 	}
 
 	//cout << this->wholeGrid2segIDmap.size() << endl;
+}
+
+void Renderer_gl1::segEnd2SegIDmapping(My4DImage* curImg)
+{
+	// This method creates segment end -> segment ID map. Used in finding any segment end that is attached in the middle of input segment. (See Renderer_gl1::rc_findConnectedSegs)
+	// -- MK, June, 2018
+
+	this->segEnd2segIDmap.clear();
+	this->head2segIDmap.clear();
+	this->tail2SegIDmap.clear();
+	for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
+	{
+		double xLabelTail = it->row.begin()->x;
+		double yLabelTail = it->row.begin()->y;
+		double zLabelTail = it->row.begin()->z;
+		double xLabelHead = (it->row.end() - 1)->x;
+		double yLabelHead = (it->row.end() - 1)->y;
+		double zLabelHead = (it->row.end() - 1)->z;
+		QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
+		string key1 = key1Q.toStdString();
+		QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
+		string key2 = key2Q.toStdString();
+
+		this->segEnd2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
+		this->segEnd2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+		//this->head2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
+		//this->tail2SegIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+	}
 }
 
 void Renderer_gl1::callDefine3DPolyline()

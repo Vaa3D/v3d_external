@@ -751,8 +751,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		case Qt::Key_8:		_holding_num[8] = true; 	break;
 		case Qt::Key_9:		_holding_num[9] = true; 	break;
 
-
-
 		case Qt::Key_BracketLeft:
 		    {
 		        if (IS_MODEL_MODIFIER) // alt-mouse to control model space rotation, 081104
@@ -974,6 +972,22 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeDeleteMultiNeurons();//For multiple segments deleting shortcut, by ZZ,02212018
             }
+			else
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->selectMode == Renderer::smShowSubtree)
+				{
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+					if (thisRenderer->originalSegMap.empty()) return;
+
+					for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+						curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
+
+					curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+			}
             break;
         case Qt::Key_S:
             if (IS_ALT_MODIFIER)
@@ -3065,7 +3079,7 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 
 			curImg->update_3drenderer_neuron_view(this, thisRenderer);
 			curImg->proj_trace_history_append();
-		}
+		} 
 
 		QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
 	}
