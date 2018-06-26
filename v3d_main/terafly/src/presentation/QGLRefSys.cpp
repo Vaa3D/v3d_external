@@ -3,6 +3,7 @@
 #include <QtGui>
 #endif
 #include "QGLRefSys.h"
+//#include "renderer_gl1.h"
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
@@ -147,6 +148,18 @@ QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers),
     miniROIxShift = 0.0f;
     miniROIyShift = 0.0f;
     miniROIzShift = 0.0f;
+    dimXCenter=dimYCenter=dimZCenter=0;
+    for(int i=0;i<3;i++)
+    {
+        dimSm[i]=1;
+        dimMax[i]=1;
+        dimMin[i]=1;
+    }
+
+    zoomFar=30.0;
+    zoomNear=5.0;
+    num_res=1;
+    curRes=0;
 
     setAttribute(Qt::WA_TranslucentBackground,true);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint );
@@ -214,9 +227,6 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         ROIzShift = (_ROIzShift * zDim) / dimZ;
     }
 
-    float dimMin[]={1,1,1};
-    float dimMax[]={1,1,1};
-    float dimSm[]={1,1,1};
     bool dimGlEnable[]={false,false,false};
     if(nt.listNeuron.size()>0)
     {
@@ -245,6 +255,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         for(int i=0;i<3;i++)
         {
             dimSm[i]=dimMax[i]-dimMin[i];
+//            qDebug("dimSm %f and dimMax %f and dimmin %f",dimSm[i],dimMax[i],dimMin[i]);
         }
         if(dimSm[0]>dimSm[1]&&dimSm[0]>dimSm[2])
         {
@@ -276,6 +287,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
 
         }
         //update RoiDim and RoiShift for miniMap.added by shengdian 20180513
+        {
         if(_ROIxShift<=dimMin[0]&&(_ROIxShift+_ROIxDim)>=dimMin[0]&&(_ROIxShift+_ROIxDim)<=dimMax[0])
         {
             dimGlEnable[0]=true;
@@ -353,6 +365,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         {
             dimGlEnable[2]=false;
         }
+        }
         if(dimGlEnable[0]&&dimGlEnable[1]&&dimGlEnable[2])
         {
 
@@ -382,7 +395,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             }
         }
     }*/
-
+    //qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
     updateGL();
 }
 
@@ -444,7 +457,7 @@ void QGLRefSys::resizeGL (int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum( -1.0, 1.0, -1.0, 1.0, 5.0, 30.0);
+    glFrustum( -1.0, 1.0, -1.0, 1.0, zoomNear, zoomFar);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -936,7 +949,89 @@ void QGLRefSys::paintGL()
 
 void QGLRefSys::mousePressEvent(QMouseEvent *event)
 {
+
+    //const double PI = 3.1415926535897;
     lastPos = event->pos();
+    QRect parentWidgetRect= this->geometry();
+    int centerWidth=parentWidgetRect.width()/2;
+    int centerHeight=parentWidgetRect.height()/2;
+    float curClickPosx,curClickPosy,curProjectionPosx,curProjectionPosy,curSwcPosx,curSwcPosy;
+    //NeuronSWC cur_node;
+    if(event->type()==QEvent::MouseButtonDblClick)
+    {
+        if(event->button()==Qt::LeftButton&&miniMapCurBox&&alreadyLoadSwc)
+        {
+            if(xRot%360==0&&yRot==0&&zRot==0)
+            {
+                qDebug("mouse position %d and y %d",lastPos.x(),lastPos.y());
+                curClickPosx=(float)(lastPos.x()-centerWidth)/centerWidth;
+                curClickPosy=(float)(-lastPos.y()+centerHeight)/centerHeight;
+                qDebug("cur mouse position %6f and y %6f",curClickPosx,curClickPosy);
+                if(nt.listNeuron.size()>0&&nt_init.listNeuron.size()>0)
+                {
+                    //curProjectionPosx=-(zoom/6)*curClickPosx*(cos(yRot*PI/180)>0?1:(-1));
+                    //curProjectionPosy=-(zoom/6)*curClickPosy*(cos(xRot*PI/180)>0?1:(-1));
+                    curProjectionPosx=-(zoom/zoomNear)*curClickPosx;//(cos(yRot*PI/180));
+                    curProjectionPosy=-(zoom/zoomNear)*curClickPosy;//(cos(xRot*PI/180));
+                    qDebug("cur mouse projection position %6f and y %6f",curProjectionPosx,curProjectionPosy);
+                    if(abs(curProjectionPosx)<xDim&&abs(curProjectionPosy)<yDim)
+                    {
+                        curSwcPosx=dimMin[0]+dimSm[0]*(xDim+curProjectionPosx)/(2*xDim);
+                        curSwcPosy=dimMin[1]+dimSm[1]*(yDim-curProjectionPosy)/(2*yDim);
+                        qDebug("cur swc projection position %6f and y %6f",curSwcPosx,curSwcPosy);
+//                        NeuronTree *p_tree = (NeuronTree *)(&nt_init);
+//                        //Renderer_gl1::findNearestNeuronNode_WinXY((int)curSwcPosx,(int)curSwcPosy,p_tree,best_dist);
+//                        double best_dist;V3DLONG n_id;
+//                        if(renderer&&p_tree)
+//                            n_id =renderer->findNearestNeuronNode_WinXY(curSwcPosx,curSwcPosy, p_tree, best_dist);//findNearestNeuronNode_WinXY((int)curSwcPosx,(int)curSwcPosy, nt, best_dist);
+//                        cur_node = p_tree->listNeuron.at(n_id);
+//                        qDebug("cur id is %d",n_id);
+//                        qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+//                        XYZ cur_node_xyz = XYZ(cur_node.x-dimXCenter, cur_node.y-dimYCenter, cur_node.z-dimZCenter);
+                        qDebug("dimxyz center is %d and %d and %d",dimXCenter,dimYCenter,dimZCenter);
+//                        qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z;
+////                        XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+//                        vector <XYZ> loc_vec;
+//                        loc_vec.push_back(cur_node_xyz);
+//                        renderer->b_grabhighrez = true;
+//                        renderer->produceZoomViewOf3DRoi(loc_vec,0);
+                        //qDebug("nt listNeuron size is %d",nt.listNeuron.size());
+                        V3DLONG i;
+                        for(i=0;i<nt_init.listNeuron.size();i++)
+                        {
+                            NeuronSWC tempNeuron=nt_init.listNeuron.at(i);
+                            if((abs(tempNeuron.x-curSwcPosx)+abs(tempNeuron.y-curSwcPosy))<100)
+                            {
+                                XYZ cur_node_xyz = XYZ((V3DLONG)tempNeuron.x*pow(2,curRes+1-num_res)-dimXCenter*pow(2,curRes+1-num_res),
+                                                       (V3DLONG)tempNeuron.y*pow(2,curRes+1-num_res)-dimYCenter*pow(2,curRes+1-num_res),
+                                                       (V3DLONG)tempNeuron.z*pow(2,curRes+1-num_res)-dimZCenter*pow(2,curRes+1-num_res));
+                                qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z<<"cur node";
+                                vector <XYZ> loc_vec;
+                                loc_vec.push_back(cur_node_xyz);
+                                renderer->b_grabhighrez = true;
+                                renderer->produceZoomViewOf3DRoi(loc_vec,0);
+                                break;
+                            }
+                        }
+                        qDebug("the number of i is %d",i);
+
+                    }
+                    else
+                        qDebug("worng position");
+
+                }
+
+            }
+            else
+            {
+                xRot=0;
+                yRot=0;
+                zRot=0;
+                zoom=-6;
+                updateGL();
+            }
+        }
+    }
 }
 
 void QGLRefSys::mouseMoveEvent(QMouseEvent *event)
@@ -945,11 +1040,11 @@ void QGLRefSys::mouseMoveEvent(QMouseEvent *event)
     int dy = event->y() - lastPos.y();
 
     if (event->buttons() & Qt::LeftButton) {
-        setXRotation(xRot + 8 * dy);
-        setYRotation(yRot + 8 * dx);
+        setXRotation(xRot + 4 * dy);
+        setYRotation(yRot + 4 * dx);
     } else if (event->buttons() & Qt::RightButton) {
-        setXRotation(xRot + 8 * dy);
-        setZRotation(zRot + 8 * dx);
+        setXRotation(xRot + 4 * dy);
+        setZRotation(zRot + 4 * dx);
     }
     lastPos = event->pos();
 }
@@ -963,6 +1058,7 @@ void QGLRefSys::mouseReleaseEvent(QMouseEvent *event)
 
 void QGLRefSys::wheelEvent(QWheelEvent *event)
 {
+
     zoom += event->delta() < 0 ? 1.0 : -1.0;
     zoom = std::max(zoom, -29.0);
     zoom = std::min(zoom, -6.0);

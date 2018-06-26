@@ -2505,9 +2505,12 @@ void PMain::PRbuttonClicked()
 
 void PMain::setOverview(bool enabled)
 {
+    CViewer *cur_win = CViewer::getCurrent();
     refSys->setFilled(!enabled);
     PR_button->setEnabled(!enabled);
     PR_spbox->setEnabled(!enabled);
+    Renderer_gl1* renderer;
+    bool set_render_flag=false;
     if(enabled)
     {
         isOverviewActive = true;
@@ -2517,6 +2520,10 @@ void PMain::setOverview(bool enabled)
         int dimX    = CImport::instance()->volumes[num_res-1]->getDIM_H();
         int dimY    = CImport::instance()->volumes[num_res-1]->getDIM_V();
         int dimZ    = CImport::instance()->volumes[num_res-1]->getDIM_D();
+        refSys->num_res=CImport::instance()->volumes.size();
+        refSys->curRes=cur_win->getResIndex();
+        qDebug("num res is %d",num_res);
+        qDebug("reseltiton is %d.",cur_win->getResIndex());
 
         CSettings::instance()->setVOIdimV(Vdim_sbox->value());
         CSettings::instance()->setVOIdimH(Hdim_sbox->value());
@@ -2527,26 +2534,32 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setTraslZ(zShiftSBox->value());
 
         int ROIxS   = H0_sbox->value();
+        refSys->dimXCenter=ROIxS;
         int ROIxDim = H1_sbox->value()- H0_sbox->value();
         if(ROIxDim<512)
         {
             int centerRoiXs=ROIxS+(ROIxDim-1)/2;
+            //refSys->dimXCenter=centerRoiXs;
             ROIxDim=512;
             ROIxS=centerRoiXs-ROIxDim/2;
         }
         int ROIyS   = V0_sbox->value();
+        refSys->dimYCenter=ROIyS;
         int ROIyDim = V1_sbox->value() - V0_sbox->value();
         if(ROIyDim<512)
         {
             int centerRoiYs=ROIyS+(ROIyDim-1)/2;
+            //refSys->dimYCenter=centerRoiYs;
             ROIyDim=512;
             ROIyS=centerRoiYs-ROIyDim/2;
         }
         int ROIzS   = D0_sbox->value();
+        refSys->dimZCenter=ROIzS;
         int ROIzDim = D1_sbox->value() - D0_sbox->value();
         if(ROIzDim<512)
         {
             int centerRoiZs=ROIzS+(ROIzDim-1)/2;
+            //refSys->dimZCenter=centerRoiZs;
             ROIzDim=512;
             ROIzS=centerRoiZs-ROIzDim/2;
         }
@@ -2580,11 +2593,24 @@ void PMain::setOverview(bool enabled)
         }
 */
         refSys->nt = PluginInterface::getSWC();
+        refSys->nt_init=PluginInterface::getSWC();
         refSys->markList = PluginInterface::getLandmark();
+        qDebug("dimXYZ is %d and %d and %d",dimX,dimY,dimZ);
+        qDebug("swc size is %d",PluginInterface::getSWC().listNeuron.size());
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
+        if(cur_win)
+        {
+            renderer=myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()));//static_cast<Renderer_gl1*>(cur_win->view3DWidget->getRenderer());
+            //myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()));
+            qDebug("set renderer");
+            set_render_flag=true;
+        }
+        if(set_render_flag&&renderer)
+            refSys->setRender(renderer);
 
     }else
     {
+        qDebug("move to this");
         PRsetActive(false);
         refSys->nt.listNeuron.clear();
         isOverviewActive = false;
