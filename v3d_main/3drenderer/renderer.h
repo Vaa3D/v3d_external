@@ -400,6 +400,7 @@ private:
 
         ui3dviewMode = Vaa3d;
         editinput=0;
+        neuronColorMode=0;
 
 	}
 

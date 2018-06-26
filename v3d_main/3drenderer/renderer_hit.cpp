@@ -872,7 +872,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 				break;
 		}
-	}
+        curImg->proj_trace_history_append();
+    }
 #ifndef test_main_cpp    //140211
 	else if (act == actSaveSurfaceObj)
 	{

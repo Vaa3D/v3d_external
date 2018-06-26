@@ -1520,6 +1520,9 @@ void Renderer_gl1::callCreateMarkerNearestNode(int x, int y)
                     addMarker(loc);
                 }
             }
+            My4DImage* curImg = 0;
+            if(w) curImg = v3dr_getImage4d(_idep);
+            curImg->proj_trace_history_append();
         }
     }
 }
