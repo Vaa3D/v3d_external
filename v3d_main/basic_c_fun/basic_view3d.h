@@ -170,6 +170,7 @@ public:
 	virtual void setXClip1(int s) =0;
 	virtual void setYClip1(int s) =0;
 	virtual void setZClip1(int s) =0;
+    virtual void setConfCut(int s) =0;
 
 	virtual void enableShowAxes(bool b) =0;
 	virtual void enableShowBoundingBox(bool b) =0;

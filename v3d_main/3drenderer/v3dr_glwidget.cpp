@@ -2351,6 +2351,14 @@ void V3dR_GLWidget::setZClip1(int s)
 	}
 }
 
+void V3dR_GLWidget::setConfCut(int s)
+{
+    Renderer_gl1* curr_renderer = (Renderer_gl1*)(getRenderer());
+    curr_renderer-> dispConfLevel = (255*(200-s)/200)+20;
+    emit changeConfCut(s);
+    POST_updateGL();
+}
+
 void V3dR_GLWidget::setBright()
 {
 	QString qtitle = "Brighten/Darken the whole view";

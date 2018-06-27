@@ -452,7 +452,6 @@ void V3dR_MainWindow::createControlWidgets()
 		yCSSlider = createCutPlaneSlider(d2);
 		zCSSlider = createCutPlaneSlider(d3);
 		fCSSlider = createRangeSlider(0, CLIP_RANGE);
-
 		cutPlaneRgnLayout[i] = new QGridLayout(cutPlaneGroup[i]);
 
 		cutPlaneRgnLayout[i]->addWidget(checkBox_xCS = new QCheckBox("X-slice"), 1, 0, 1, 5);
@@ -475,8 +474,7 @@ void V3dR_MainWindow::createControlWidgets()
 		ySmaxSlider = createCutPlaneSlider(CLIP_RANGE);
 		zSminSlider = createCutPlaneSlider(CLIP_RANGE);
 		zSmaxSlider = createCutPlaneSlider(CLIP_RANGE);
-
-
+        confSlider = createRangeSlider(0,CLIP_RANGE);
 
 		cutPlaneRgnLayout[i] = new QGridLayout(cutPlaneGroup[i]);
 
@@ -497,6 +495,11 @@ void V3dR_MainWindow::createControlWidgets()
 
 		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-max"), 6, 0, 1, 5);
 		cutPlaneRgnLayout[i]->addWidget(zSmaxSlider, 6, 6, 1, 15);
+
+        QLabel* confidence_label=0;
+        cutPlaneRgnLayout[i]->addWidget(confidence_label = new QLabel("Confidence"), 7, 0, 1, 5);
+        cutPlaneRgnLayout[i]->addWidget(confSlider, 7, 6, 1, 15);
+        confidence_label->setToolTip("Confidence level.");
 
 	}break;
 	}
@@ -705,7 +708,7 @@ void V3dR_MainWindow::createControlWidgets()
 	ySmaxSlider->installEventFilter(SsliderTip);
 	zSminSlider->installEventFilter(SsliderTip);
 	zSmaxSlider->installEventFilter(SsliderTip);
-
+    confSlider->installEventFilter(SsliderTip);
 
 	createMenuOfAnimate();  // Animation menu
 	createMenuOfSurfFile(); // Load/Save Surface menu
@@ -1027,6 +1030,11 @@ void V3dR_MainWindow::connectSignal()
 		connect(glWidget, SIGNAL(changeZClip1(int)), zSmaxSlider, SLOT(setValue(int)));
 		connect(zSmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setZClip1(int)));
 	}
+    if (confSlider) {
+        connect(glWidget, SIGNAL(changeConfCut(int)), confSlider, SLOT(setValue(int)));
+        connect(confSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setConfCut(int)));
+    }
+
 
 //	if (tabCutPlane) {
 //		connect(glWidget, SIGNAL(switchTabCutPlane(int)), tabCutPlane, SLOT(setCurrentIndex(int)));

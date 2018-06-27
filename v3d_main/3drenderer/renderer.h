@@ -306,6 +306,8 @@ public:
 
     XYZ curveStartMarker; // ZJL
     int neuronColorMode;
+    int dispConfLevel;
+
 
 private:
 	void init_members()
@@ -401,7 +403,7 @@ private:
         ui3dviewMode = Vaa3d;
         editinput=0;
         neuronColorMode=0;
-
+        dispConfLevel=275;
 	}
 
 };

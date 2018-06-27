@@ -2390,6 +2390,8 @@ void Renderer_gl1::drawNeuronTree(int index)
 	{
         S1 = listNeuron.at(i);   // at(i) faster than [i]
 		//if (S1.pn <1)	continue; 	// skip the first point
+        if(S1.level>dispConfLevel) continue;
+
 		bool valid = false;
 		if (S1.pn == -1) // root end, 081105
 		{

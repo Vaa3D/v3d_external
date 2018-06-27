@@ -240,7 +240,7 @@ public:
     QAbstractButton *xcLock, *ycLock, *zcLock;
     QCheckBox *checkBox_xCS, *checkBox_yCS, *checkBox_zCS, *checkBox_fCS;
     QAbstractSlider *xCSSlider, *yCSSlider, *zCSSlider, *fCSSlider;
-    QAbstractSlider *xSminSlider, *xSmaxSlider, *ySminSlider, *ySmaxSlider, *zSminSlider, *zSmaxSlider;
+    QAbstractSlider *xSminSlider, *xSmaxSlider, *ySminSlider, *ySmaxSlider, *zSminSlider, *zSmaxSlider, *confSlider;
     QStackedLayout *stackedCutPlane;
 
     QTabWidget *tabCutPlane;

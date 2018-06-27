@@ -308,6 +308,8 @@ public slots:
 	virtual void setXClip1(int s);
 	virtual void setYClip1(int s);
 	virtual void setZClip1(int s);
+    virtual void setConfCut(int s);
+
 
 	virtual void setXCutLock(bool);
 	virtual void setYCutLock(bool);
@@ -455,6 +457,8 @@ signals:
 	void changeYClip1(int s);
     void changeZClip0(int s);
 	void changeZClip1(int s);
+    void changeConfCut(int s);
+
 
 	void changeOrthoView(bool b);
         void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
