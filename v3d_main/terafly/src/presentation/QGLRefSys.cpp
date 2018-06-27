@@ -996,6 +996,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
 //                        renderer->b_grabhighrez = true;
 //                        renderer->produceZoomViewOf3DRoi(loc_vec,0);
                         //qDebug("nt listNeuron size is %d",nt.listNeuron.size());
+
                         V3DLONG i;double pow_x=2;double pow_xy=pow(pow_x,curRes+1-num_res);
                         for(i=0;i<nt_init.listNeuron.size();i++)
                         {
