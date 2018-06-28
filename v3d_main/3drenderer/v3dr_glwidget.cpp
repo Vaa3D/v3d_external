@@ -948,7 +948,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 toggleEditMode();
-            }
+            }else
+                confidenceDialog();
             break;
 
         case Qt::Key_T:
@@ -2351,10 +2352,43 @@ void V3dR_GLWidget::setZClip1(int s)
 	}
 }
 
+void V3dR_GLWidget::confidenceDialog()
+{
+    QString qtitle = "Confidence level";
+
+    QDialog d(this);
+    QGridLayout *formLayout = new QGridLayout;
+    QScrollBar* confSlider = new QScrollBar(Qt::Horizontal,0);
+    confSlider->setRange(0, 100);
+    confSlider->setSingleStep(1);
+    confSlider->setValue(100-(100*(renderer->dispConfLevel-20)/255));
+    confSlider->setPageStep(10);
+    formLayout->addWidget(new QLabel("Confidence scores\n(range 0%~100%:)"), 1, 0, 1, 5);
+    formLayout->addWidget(confSlider, 1, 5, 1, 15);
+    QPushButton* cancel = new QPushButton("Close");
+    formLayout->addWidget(cancel, 2, 15, 1, 5);
+    d.setLayout(formLayout);
+    d.setWindowTitle(qtitle);
+
+    d.connect(cancel, SIGNAL(clicked()), &d, SLOT(reject()));
+    d.connect(this, SIGNAL(changeConfCut(int)), confSlider, SLOT(setValue(int)));
+    d.connect(confSlider, SIGNAL(valueChanged(int)), this, SLOT(setConfCut(int)));
+
+    do
+    {
+        int ret = d.exec();
+        if (ret==QDialog::Rejected)
+            break;
+        DO_updateGL();
+
+    }
+    while (true);
+    POST_updateGL();
+}
+
 void V3dR_GLWidget::setConfCut(int s)
 {
-    Renderer_gl1* curr_renderer = (Renderer_gl1*)(getRenderer());
-    curr_renderer-> dispConfLevel = (255*(200-s)/200)+20;
+    renderer->dispConfLevel = (255*(100-s)/100)+20;
     emit changeConfCut(s);
     POST_updateGL();
 }
