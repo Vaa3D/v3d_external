@@ -637,11 +637,25 @@ void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 		    connect(Act, SIGNAL(triggered()), this, SLOT(onMarkerLocalView()) );
             QAction* ZoomAct;
             ZoomAct=new QAction(tr("Zoom-in to this select marker location"),this);
-            connect(ZoomAct,SIGNAL(triggered()),this,SLOT(zoomMarkerLocation()));
-            menu.addAction(ZoomAct);
+			
+#if defined (Q_OS_WIN32)
+			connect(ZoomAct, SIGNAL(triggered()), this, SLOT(menuExecBuffer()));
+#elif
+			connect(ZoomAct, SIGNAL(triggered()), this, SLOT(zoomMarkerLocation()));
+#endif
+			//zoomMarkerLocation();
+			menu.addAction(ZoomAct);
 		    menu.addAction(Act);
 			menu.exec(QCursor::pos());
 		}
+	}
+}
+
+void V3dr_surfaceDialog::menuExecBuffer()
+{
+	if (last_marker != -1)
+	{
+		QTimer::singleShot(10, this, SLOT(zoomMarkerLocation()));
 	}
 }
 

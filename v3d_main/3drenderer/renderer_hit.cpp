@@ -3683,7 +3683,10 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			myimagingp.yrez = curImg->getRezY() / 2.0;
 			myimagingp.zrez = curImg->getRezZ() / 2.0;
 			//do imaging
-            return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+			//bool v3d_imaging_return_value = v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+			//cout << "v3d_imaging_return_value:" << v3d_imaging_return_value << endl;
+			//return v3d_imaging_return_value;
+			return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
 		else //b_imaging does not open 3D Viewer here
 		{

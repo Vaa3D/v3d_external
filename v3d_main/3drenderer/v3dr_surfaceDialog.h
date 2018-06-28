@@ -125,6 +125,7 @@ public slots:
 	void onMarkerLocalView();
 
     void zoomMarkerLocation();
+	void menuExecBuffer();
 
 protected:
 	void clearTables_fromTab();
