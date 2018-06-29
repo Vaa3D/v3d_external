@@ -1435,7 +1435,7 @@ void Renderer_gl1::callShowConnectedSegs()
 		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
 		{
 			My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(_idep);
-			this->seg2GridMapping(curImg);
+			this->seg2GridMapping(curImg); 
 
 			editinput = 11;
 			selectMode = smShowSubtree;

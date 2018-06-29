@@ -125,7 +125,9 @@ public slots:
 	void onMarkerLocalView();
 
     void zoomMarkerLocation();
-	void menuExecBuffer();
+
+	// -- MK, June, 2018
+	void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).  
 
 protected:
 	void clearTables_fromTab();

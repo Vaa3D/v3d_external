@@ -4073,7 +4073,6 @@ void Renderer_gl1::showSubtree()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 	w->subtreeHighlightModeMonitor();
-	//this->segTreeFastReprofile(curImg);
 
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
@@ -4253,7 +4252,7 @@ void Renderer_gl1::showConnectedSegs()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 	
-	w->subtreeHighlightModeMonitor();
+	w->subtreeHighlightModeMonitor(); // Switch on subtree highlighting mode monitor in v3dr_glwidget.
 
 	//for (vector<V_NeuronSWC_unit>::iterator tempIt = curImg->tracedNeuron.seg.at(517).row.begin(); tempIt != curImg->tracedNeuron.seg.at(517).row.end(); ++tempIt)
 	//	tempIt->type = 0; // --> this is for debug purpose
@@ -4352,6 +4351,7 @@ void Renderer_gl1::showConnectedSegs()
 			/* ------- END of [Acquire the starting segment] ------- */
 			/***************** END of [Get segment information included in the movePen trajectory] *****************/
 
+			/* --------------------- Start finding connected segments --------------------- */
 			this->segEnd2SegIDmapping(curImg);
 			
 			this->subtreeSegs.clear();
@@ -4366,6 +4366,7 @@ void Renderer_gl1::showConnectedSegs()
 				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
 			}
 			//cout << endl;
+			/* ----------------- END of [Start finding connected segments] ----------------- */
 
 			curImg->update_3drenderer_neuron_view(w, this);
 			//curImg->proj_trace_history_append(); // -> Highlighting is for temporary checking purpose, should not be appended to the history.
@@ -4377,12 +4378,16 @@ void Renderer_gl1::showConnectedSegs()
 
 void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 {
+	// This method recursively finds segments that are connected with given input segment ID.
+	// -- MK, June, 2018
+
 	//cout << endl << "INPUT SEGID:" << inputSegID << endl;
 
 	if (curImg->tracedNeuron.seg[inputSegID].to_be_deleted) return;
 
 	size_t curSegNum = this->subtreeSegs.size();
 
+	// -- obtaining inputSegID head gridKey and tail gridKey
 	double xLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->x;
 	double yLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->y;
 	double zLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->z;
@@ -4394,6 +4399,7 @@ void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 	QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
 	string key2 = key2Q.toStdString();
 
+	/* --------- Find segments that are connected in the middle of input segment --------- */
 	if (curImg->tracedNeuron.seg[inputSegID].row.size() > 2)
 	{
 		for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[inputSegID].row.begin() + 1; unitIt != curImg->tracedNeuron.seg[inputSegID].row.end() - 1; ++unitIt)
@@ -4422,38 +4428,9 @@ void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 			}
 		}
 	}
+	/* ------- END of [Find segments that are connected in the middle of input segment] ------- */
 
-	/*pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> headRange = this->segEnd2segIDmap.equal_range(key1);
-	pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> tailRange = this->segEnd2segIDmap.equal_range(key2);
-	for (multimap<string, size_t>::iterator headIt = headRange.first; headIt != headRange.second; ++headIt)
-	{
-		size_t curSegID = headIt->second;
-		//cout << "  Finding connected segments at the head end --> current segID:" << curSegID << endl;
-		
-		this->subtreeSegs.insert(curSegID);
-
-		if (this->subtreeSegs.size() == curSegNum)
-		{
-			//cout << "    Seg already picked up, move to the next." << endl;
-			continue;
-		}
-		else this->rc_findConnectedSegs(curImg, curSegID);
-	}
-	for (multimap<string, size_t>::iterator tailIt = tailRange.first; tailIt != tailRange.second; ++tailIt)
-	{
-		size_t curSegID = tailIt->second;
-		//cout << "  Finding connected segments at the tail end --> current segID:" << curSegID << endl;
-
-		this->subtreeSegs.insert(curSegID);
-
-		if (this->subtreeSegs.size() == curSegNum)
-		{
-			//cout << "    Seg already picked up, move to the next." << endl;
-			continue;
-		}
-		else this->rc_findConnectedSegs(curImg, curSegID);
-	}*/
-
+	/* --------- Find segments that are connected to the head or tail of input segment --------- */
 	set<size_t> curSegEndRegionSegs;
 	curSegEndRegionSegs.clear();
 	curSegEndRegionSegs = this->segEndRegionCheck(curImg, inputSegID);
@@ -4477,13 +4454,14 @@ void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 			}
 		}
 	}
+	/* ------- END of [Find segments that are connected to the head or tail of input segment] ------- */
 
 	if (this->subtreeSegs.size() == curSegNum) return;
 }
 
 set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID)
 {
-	// This method picks up any segments that run through the head or tail of the input segment using grid-seg approach.
+	// This method picks up any segments that run through the head or tail of input segment using grid-seg approach.
 	// -- MK, June 2018
 
 	set<size_t> otherConnectedSegs;

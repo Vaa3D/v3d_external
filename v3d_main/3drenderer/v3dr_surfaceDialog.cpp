@@ -647,6 +647,11 @@ void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 
 void V3dr_surfaceDialog::menuExecBuffer()
 {
+	//  By using a QTimer::singleshot to call V3dr_surfaceDialog::zoomMarkerLocation, 
+	//  it makes V3dr_surfaceDialog::pressedClickHandler finish menu.exec() once the signal is fired, so that the main thread can move on.
+	//  This is an ad hoc solution for a known bug on Windows platform, where a crash happens when "zoom-in to this select marker" is called from object manager in terafly.
+	// -- MK, June, 2018
+
 	if (last_marker != -1)
 	{
 		QTimer::singleShot(50, this, SLOT(zoomMarkerLocation()));
