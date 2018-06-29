@@ -403,7 +403,7 @@ private:
         ui3dviewMode = Vaa3d;
         editinput=0;
         neuronColorMode=0;
-        dispConfLevel=275;
+        dispConfLevel=INT_MAX;
 	}
 
 };

@@ -2361,7 +2361,10 @@ void V3dR_GLWidget::confidenceDialog()
     QScrollBar* confSlider = new QScrollBar(Qt::Horizontal,0);
     confSlider->setRange(0, 100);
     confSlider->setSingleStep(1);
-    confSlider->setValue(100-(100*(renderer->dispConfLevel-20)/255));
+    if(renderer->dispConfLevel==INT_MAX)
+        confSlider->setValue(0);
+    else
+        confSlider->setValue(100-(100*(renderer->dispConfLevel-20)/255));
     confSlider->setPageStep(10);
     formLayout->addWidget(new QLabel("Confidence scores\n(range 0%~100%:)"), 1, 0, 1, 5);
     formLayout->addWidget(confSlider, 1, 5, 1, 15);
@@ -2388,7 +2391,10 @@ void V3dR_GLWidget::confidenceDialog()
 
 void V3dR_GLWidget::setConfCut(int s)
 {
-    renderer->dispConfLevel = (255*(100-s)/100)+20;
+    if(s==0)
+        renderer->dispConfLevel=INT_MAX;
+    else
+        renderer->dispConfLevel=(255*(100-s)/100)+20;
     emit changeConfCut(s);
     POST_updateGL();
 }

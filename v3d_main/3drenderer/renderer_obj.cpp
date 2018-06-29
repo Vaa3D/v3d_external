@@ -2008,9 +2008,18 @@ void Renderer_gl1::setBasicNeuronColors(NeuronSWC s){
 
 void Renderer_gl1::setConfidenceLevelColors(NeuronSWC s)
 {
-    GLubyte rVal = neuron_type_color[s.level][0];
-    GLubyte gVal = neuron_type_color[s.level][1];
-    GLubyte bVal = neuron_type_color[s.level][2];
+    GLubyte rVal, gVal, bVal;
+    if(s.level<=275)
+    {
+        rVal = neuron_type_color[s.level][0];
+        gVal = neuron_type_color[s.level][1];
+        bVal = neuron_type_color[s.level][2];
+    }else
+    {
+        rVal = neuron_type_color[275][0];
+        gVal = neuron_type_color[275][1];
+        bVal = neuron_type_color[275][2];
+    }
 
     glColor3ub(rVal, gVal, bVal);
 }
