@@ -485,22 +485,34 @@ public:
 	 void cutNeuronsByStroke();
 
 	 // --------- loop safe guard and hilighting [subtree/connected segs] for both 3D view and terafly editing mode, MK 2018 May ---------
+	 int gridLength;
+	 map<string, set<size_t> > wholeGrid2segIDmap;
+	 multimap<string, size_t> segEnd2segIDmap;
+
+	 set<size_t> subtreeSegs;
+	 map<size_t, vector<V_NeuronSWC_unit> > originalSegMap;
+	 map<size_t, vector<V_NeuronSWC_unit> > highlightedSegMap;
+
+	 void segEnd2SegIDmapping(My4DImage* curImg);
+	 void seg2GridMapping(My4DImage* curImg);
+	 void rc_findConnectedSegs(My4DImage* curImg, size_t startSegID);
+	 set<size_t> segEndRegionCheck(My4DImage* curImg, size_t inputSegID);
+	 bool pressedShowSubTree;
+	 void escPressed_subtree();
+
+	 set<vector<size_t> > detectedLoops;
+	 void loopDetection();
+
+
 	 bool isTera;
 	 map<size_t, size_t> branchSegIDmap;
 	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
 	 map<string, size_t> tail2segIDmap;
 	 multimap<size_t, string> segID2gridMap;
 
-	 int gridLength;
-	 map<string, set<size_t> > wholeGrid2segIDmap;
-	 
 	 multimap<string, size_t> grid2segIDmap;
-	 multimap<string, size_t> segEnd2segIDmap; 
 	 multimap<string, size_t> head2segIDmap;
-	 multimap<string, size_t> tail2SegIDmap;
-
-	 void segEnd2SegIDmapping(My4DImage* curImg);
-	 void seg2GridMapping(My4DImage* curImg);
+	 multimap<string, size_t> tail2SegIDmap; 
 
 	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
 	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
@@ -508,14 +520,7 @@ public:
 	 void rc_downstreamSeg(My4DImage* curImg, size_t segID);
 	 void rc_downstream_segID(My4DImage* curImg, size_t segID);
 	 void segTreeFastReprofile(My4DImage* curImg);
-	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);
-	 void rc_findConnectedSegs(My4DImage* curImg, size_t startSegID);
-	 set<size_t> segEndRegionCheck(My4DImage* curImg, size_t inputSegID);
-	 set<size_t> subtreeSegs;
-     map<size_t, vector<V_NeuronSWC_unit> > originalSegMap;
-     map<size_t, vector<V_NeuronSWC_unit> > highlightedSegMap;
-	 bool pressedShowSubTree;
-	 void escPressed_subtree();
+	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
 	 // -----------------------------------------------------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.

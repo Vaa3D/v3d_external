@@ -4248,6 +4248,9 @@ void Renderer_gl1::showSubtree()
 
 void Renderer_gl1::showConnectedSegs()
 {
+	// This method highlighs all connected segments with regard to the stroked segment when [alt + N] is pressed.
+	// -- MK, June, 2018
+
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -4508,6 +4511,66 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
 	return otherConnectedSegs;
 }
 
+void Renderer_gl1::loopDetection()
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+	for (set<size_t>::iterator it = subtreeSegs.begin(); it != subtreeSegs.end(); ++it)
+	{
+		cout << *it << ":";
+		set<size_t> connectedSegs;
+		connectedSegs.clear();
+		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*it].row.begin(); nodeIt != curImg->tracedNeuron.seg[*it].row.end(); ++nodeIt)
+		{
+			int xLabel = nodeIt->x / this->gridLength;
+			int yLabel = nodeIt->y / this->gridLength;
+			int zLabel = nodeIt->z / this->gridLength;
+			QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+			string gridKey = gridKeyQ.toStdString();
+
+			set<size_t> scannedSegs = this->wholeGrid2segIDmap[gridKey];
+			if (!scannedSegs.empty())
+			{
+				for (set<size_t>::iterator scannedIt = scannedSegs.begin(); scannedIt != scannedSegs.end(); ++scannedIt)
+				{
+					int connectedSegsSize = connectedSegs.size();
+					connectedSegs.insert(*scannedIt);
+					if (connectedSegs.size() != connectedSegsSize)
+					{	
+						cout << *scannedIt << " ";
+					}
+				}
+			}
+		}
+		cout << endl;
+	}
+}
+
+void Renderer_gl1::escPressed_subtree()
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	if (this->pressedShowSubTree == true)
+	{
+		My4DImage* curImg = 0;
+		if (w) curImg = v3dr_getImage4d(_idep);
+		//cout << "restoring" << endl;
+
+		if (this->originalSegMap.empty()) return;
+
+		for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
+			curImg->tracedNeuron.seg[it->first].row = it->second;
+
+		curImg->update_3drenderer_neuron_view(w, this);
+
+		this->pressedShowSubTree = false;
+		this->originalSegMap.clear();
+		this->highlightedSegMap.clear();
+	}
+}
+
 void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength)
 {
 	// This method finds all sebsequent segments following a given starting segment. 
@@ -4739,29 +4802,6 @@ void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID)
 	}
 
 	return;
-}
-
-void Renderer_gl1::escPressed_subtree()
-{
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-
-	if (this->pressedShowSubTree == true)
-	{
-		My4DImage* curImg = 0;
-		if (w) curImg = v3dr_getImage4d(_idep);
-		//cout << "restoring" << endl;
-
-		if (this->originalSegMap.empty()) return;
-
-        for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
-			curImg->tracedNeuron.seg[it->first].row = it->second;
-
-		curImg->update_3drenderer_neuron_view(w, this);
-
-		this->pressedShowSubTree = false;
-		this->originalSegMap.clear();
-		this->highlightedSegMap.clear();
-	}
 }
 // ----------------- END of [Highlight the selected segment with its downstream subtree, MK, June, 2018] -----------------
 

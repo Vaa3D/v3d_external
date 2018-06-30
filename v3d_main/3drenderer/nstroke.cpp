@@ -1475,8 +1475,8 @@ void Renderer_gl1::segEnd2SegIDmapping(My4DImage* curImg)
 	// -- MK, June, 2018
 
 	this->segEnd2segIDmap.clear();
-	this->head2segIDmap.clear();
-	this->tail2SegIDmap.clear();
+	//this->head2segIDmap.clear();
+	//this->tail2SegIDmap.clear();
 	for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 	{
 		double xLabelTail = it->row.begin()->x;
