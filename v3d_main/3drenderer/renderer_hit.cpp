@@ -3593,7 +3593,7 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);    
     //qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);\
     //curImg->getXDim();
-    qDebug("xxxx dim is %d and %d and %d",curImg->getXDim(),curImg->getYDim(),curImg->getZDim());
+    //qDebug("xxxx dim is %d and %d and %d",curImg->getXDim(),curImg->getYDim(),curImg->getZDim());
     //qDebug("get xxx %d and %d and %d",curImg->getRezX(),curImg->getRezY(),curImg->getRezZ());
 	if (w && curImg && curXWidget && loc_vec.size()>0)
 	{
@@ -3612,17 +3612,11 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			else if (curpos.z > Mz) Mz = curpos.z;
 		}
         qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
-        V3DLONG marginx,marginy,marginz; //the default margin is small
-        marginx=marginy=marginz=5;
-        if (loc_vec.size()==1)
-        {
-            marginx=curImg->getXDim()/2; //for marker then define a bigger margin
-            marginy=curImg->getYDim()/2;
-            marginz=curImg->getZDim()/2;
-        }
-        mx -= marginx; Mx += marginx; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
-        my -= marginy; My += marginy; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
-        mz -= marginz; Mz += marginz; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
+        V3DLONG margin=5; //the default margin is small
+        if (loc_vec.size()==1) margin=61; //for marker then define a bigger margin
+        mx -= margin; Mx += margin; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
+        my -= margin; My += margin; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
+        mz -= margin; Mz += margin; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
 		//by PHC 101008
 		if (b_imaging && curXWidget)
 		{
