@@ -4517,9 +4517,10 @@ void Renderer_gl1::loopDetection()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
+	this->seg2SegsMap.clear();
 	for (set<size_t>::iterator it = subtreeSegs.begin(); it != subtreeSegs.end(); ++it)
 	{
-		cout << *it << ":";
+		//cout << *it << ":";
 		set<size_t> connectedSegs;
 		connectedSegs.clear();
 		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*it].row.begin(); nodeIt != curImg->tracedNeuron.seg[*it].row.end(); ++nodeIt)
@@ -4536,16 +4537,112 @@ void Renderer_gl1::loopDetection()
 				for (set<size_t>::iterator scannedIt = scannedSegs.begin(); scannedIt != scannedSegs.end(); ++scannedIt)
 				{
 					int connectedSegsSize = connectedSegs.size();
-					connectedSegs.insert(*scannedIt);
-					if (connectedSegs.size() != connectedSegsSize)
-					{	
-						cout << *scannedIt << " ";
-					}
+					if (*scannedIt == *it) continue;
+
+					if (curImg->tracedNeuron.seg[*scannedIt].row.begin()->x == nodeIt->x && curImg->tracedNeuron.seg[*scannedIt].row.begin()->y == nodeIt->y && curImg->tracedNeuron.seg[*scannedIt].row.begin()->z == nodeIt->z)
+						connectedSegs.insert(*scannedIt);
+					else if ((curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->x == nodeIt->x && (curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->y == nodeIt->y && (curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->z == nodeIt->z)
+						connectedSegs.insert(*scannedIt);
 				}
+			}
+		}
+		this->seg2SegsMap.insert(pair<size_t, set<size_t> >(*it, connectedSegs));
+	}
+
+	for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
+	{
+		cout << seg2SegsIt->first << ":";
+		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
+			cout << *it << " ";
+
+		cout << endl;
+	}
+
+	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
+	{
+		if (it->second.empty()) continue;
+
+		vector<size_t> loops2ThisSeg;
+		loops2ThisSeg.clear();
+		this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
+	}
+
+	cout << this->detectedLoops.size() << " loops found" << endl;
+	for (set<vector<size_t> >::iterator loopIt = detectedLoops.begin(); loopIt != detectedLoops.end(); ++loopIt)
+	{
+		vector<size_t> thisLoop = *loopIt;
+		for (vector<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+		{
+			cout << *it << " ";
+			for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+			{
+				unitIt->type = 9;
 			}
 		}
 		cout << endl;
 	}
+
+	curImg->update_3drenderer_neuron_view(w, this);
+	curImg->proj_trace_history_append();
+}
+
+void Renderer_gl1::rc_loopPathCheck(size_t startSegID, vector<size_t> curLoopPath, My4DImage* curImg)
+{
+	if (curLoopPath.size() >= 2)
+		if (startSegID == *(curLoopPath.end() - 2)) return;
+
+	curLoopPath.push_back(startSegID);
+	for (set<size_t>::iterator it = this->seg2SegsMap[startSegID].begin(); it != this->seg2SegsMap[startSegID].end(); ++it)
+	{
+		if (curLoopPath.size() >= 2)
+			if (*it == *(curLoopPath.end() - 2)) continue;
+
+		if (find(curLoopPath.begin(), curLoopPath.end(), *it) == curLoopPath.end())
+		{
+			this->rc_loopPathCheck(*it, curLoopPath, curImg);
+		}
+		else
+		{
+			vector<size_t> detectedLoopPath;
+			detectedLoopPath.clear();
+			set<size_t> detectedLoopPathSet;
+			detectedLoopPathSet.clear();
+			for (vector<size_t>::iterator loopIt = find(curLoopPath.begin(), curLoopPath.end(), *it); loopIt != curLoopPath.end(); ++loopIt)
+			{
+				detectedLoopPath.push_back(*loopIt);
+				detectedLoopPathSet.insert(*loopIt);
+			}
+			
+			if (this->detectedLoopsSet.insert(detectedLoopPathSet).second)
+			{
+				for (vector<V_NeuronSWC_unit>::iterator psuedoLoopCheckIt = curImg->tracedNeuron.seg[detectedLoopPath.at(0)].row.begin(); psuedoLoopCheckIt != curImg->tracedNeuron.seg[detectedLoopPath.at(0)].row.end(); ++psuedoLoopCheckIt)
+				{
+					int xLabel = psuedoLoopCheckIt->x / this->gridLength;
+					int yLabel = psuedoLoopCheckIt->y / this->gridLength;
+					int zLabel = psuedoLoopCheckIt->z / this->gridLength;
+					QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+					string gridKey = gridKeyQ.toStdString();
+					set<size_t> regionSegs = this->wholeGrid2segIDmap[gridKey];
+
+					if (regionSegs.size() >= 3)
+					{
+						int count = 0;
+						for (set<size_t>::iterator pathIt = detectedLoopPathSet.begin(); pathIt != detectedLoopPathSet.end(); ++pathIt)
+							if (regionSegs.find(*pathIt) != regionSegs.end()) ++count;
+
+						if (count == 3)
+						{
+							cout << "3 seg intersection detected, exluded from loop candidates." << endl;
+							return;
+						}
+					}
+				}
+				this->detectedLoops.insert(detectedLoopPath);
+			}
+		}
+	}
+
+	curLoopPath.pop_back();
 }
 
 void Renderer_gl1::escPressed_subtree()
