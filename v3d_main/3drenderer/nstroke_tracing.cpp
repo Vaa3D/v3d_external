@@ -3477,7 +3477,8 @@ void Renderer_gl1::simpleConnect()
 						for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
 							curImg->tracedNeuron.seg.push_back(*addedIt);
 
-						curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted;
+						curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted = true;
+						curImg->tracedNeuron.seg[segInfo[1].segID].on = false;
 					}
 					else if (curImg->tracedNeuron.seg[segInfo[1].segID].to_be_deleted)
 					{
@@ -3485,34 +3486,26 @@ void Renderer_gl1::simpleConnect()
 						for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
 							curImg->tracedNeuron.seg.push_back(*addedIt);
 
-						curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted;
+						curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted = true;
+						curImg->tracedNeuron.seg[segInfo[0].segID].on = false;
 					}
-					
 				}
-				
-				/*(curImg->tracedNeuron.seg.end() - 1)->to_be_deleted = true;
-				vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(*(curImg->tracedNeuron.seg.end() - 1));
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));*/
-				
-				/*this->treeOnTheFly.listNeuron.clear();
-				this->treeOnTheFly = V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron);
-				
-				curImg->tracedNeuron.clear();
-				curImg->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(this->treeOnTheFly);*/
 				
 				curImg->update_3drenderer_neuron_view(w, this);
 				curImg->proj_trace_history_append();
 
 				size_t to_be_deletedCount = 0;
+				cout << "segment to be deleted:";
 				for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 				{
 					if (it->to_be_deleted)
 					{
 						++to_be_deletedCount;
+						cout << size_t(it - curImg->tracedNeuron.seg.begin()) << " ";
 						//cout << this->branchSegIDmap[it->branchingProfile.ID] << ", " << it->branchingProfile.ID << endl;
 					}
 				}
+				cout << endl;
 			}
 		}
 	//}
@@ -3567,6 +3560,7 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 				}
 			}
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
+			curImg->tracedNeuron.seg[branchSeg.segID].on = false;
 
 			// sorting the new segment here, and reassign the root node to the new tail
 			size_t nextSegNo = 1;
@@ -3601,6 +3595,7 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 				}
 			}
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
+			curImg->tracedNeuron.seg[branchSeg.segID].on = false;
 
 			// sorting the new segment here, and reassign the root node to the new tail
 			std::reverse(curImg->tracedNeuron.seg[mainSeg.segID].row.begin(), curImg->tracedNeuron.seg[mainSeg.segID].row.end());
@@ -3664,6 +3659,7 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 			}
 			(curImg->tracedNeuron.seg[mainSeg.segID].row.end() - 1)->parent = (curImg->tracedNeuron.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
+			curImg->tracedNeuron.seg[branchSeg.segID].on = false;
 		}
 		else if (branchSeg.head_tail == -1) // branch to head
 		{
@@ -3681,6 +3677,7 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 			}
 			(curImg->tracedNeuron.seg[mainSeg.segID].row.end() - 1)->parent = (curImg->tracedNeuron.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
 			curImg->tracedNeuron.seg[branchSeg.segID].to_be_deleted = true;
+			curImg->tracedNeuron.seg[branchSeg.segID].on = false;
 		}
 
 		// correcting types, based on the main segment type
@@ -4425,6 +4422,7 @@ void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 				else if (middleIt->first == middleNodeKey)
 				{
 					//cout << "  Found a segment in the middle of the route, adding it to the recursive searching process:" << middleNodeKey << " " << middleIt->second << endl;
+					if (curImg->tracedNeuron.seg[middleIt->second].to_be_deleted) continue;
 					this->subtreeSegs.insert(middleIt->second);
 					this->rc_findConnectedSegs(curImg, middleIt->second);
 				}
@@ -4452,6 +4450,8 @@ void Renderer_gl1::rc_findConnectedSegs(My4DImage* curImg, size_t inputSegID)
 			else
 			{
 				//cout << "    ==> segs at the end region added:" << *regionSegIt << endl;
+				if (curImg->tracedNeuron.seg[*regionSegIt].to_be_deleted) continue;
+				
 				this->subtreeSegs.insert(*regionSegIt);
 				this->rc_findConnectedSegs(curImg, *regionSegIt);
 			}
@@ -4487,7 +4487,7 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
 	//cout << " Head region segs:";
 	for (set<size_t>::iterator headIt = headRegionSegs.begin(); headIt != headRegionSegs.end(); ++headIt)
 	{
-		if (*headIt == inputSegID) continue;
+		if (*headIt == inputSegID || curImg->tracedNeuron.seg[*headIt].to_be_deleted) continue;
 		//cout << *headIt << " ";
 		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*headIt].row.begin(); nodeIt != curImg->tracedNeuron.seg[*headIt].row.end(); ++nodeIt)
 		{
@@ -4498,7 +4498,7 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
 	//cout << endl << " Tail region segs:";
 	for (set<size_t>::iterator tailIt = tailRegionSegs.begin(); tailIt != tailRegionSegs.end(); ++tailIt)
 	{
-		if (*tailIt == inputSegID) continue;
+		if (*tailIt == inputSegID || curImg->tracedNeuron.seg[*tailIt].to_be_deleted) continue;
 		//cout << *tailIt << " ";
 		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*tailIt].row.begin(); nodeIt != curImg->tracedNeuron.seg[*tailIt].row.end(); ++nodeIt)
 		{
@@ -4537,26 +4537,40 @@ void Renderer_gl1::loopDetection()
 				for (set<size_t>::iterator scannedIt = scannedSegs.begin(); scannedIt != scannedSegs.end(); ++scannedIt)
 				{
 					int connectedSegsSize = connectedSegs.size();
-					if (*scannedIt == *it) continue;
+					if (*scannedIt == *it || curImg->tracedNeuron.seg[*scannedIt].to_be_deleted) continue;
 
 					if (curImg->tracedNeuron.seg[*scannedIt].row.begin()->x == nodeIt->x && curImg->tracedNeuron.seg[*scannedIt].row.begin()->y == nodeIt->y && curImg->tracedNeuron.seg[*scannedIt].row.begin()->z == nodeIt->z)
+					{
 						connectedSegs.insert(*scannedIt);
+						set<size_t> reversed;
+						reversed.insert(*it);
+						if (!this->seg2SegsMap.insert(pair<size_t, set<size_t> >(*scannedIt, reversed)).second) this->seg2SegsMap[*scannedIt].insert(*it);
+					}
 					else if ((curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->x == nodeIt->x && (curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->y == nodeIt->y && (curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->z == nodeIt->z)
+					{
 						connectedSegs.insert(*scannedIt);
+						set<size_t> reversed;
+						reversed.insert(*it);
+						if (!this->seg2SegsMap.insert(pair<size_t, set<size_t> >(*scannedIt, reversed)).second) this->seg2SegsMap[*scannedIt].insert(*it);
+					}
 				}
 			}
 		}
-		this->seg2SegsMap.insert(pair<size_t, set<size_t> >(*it, connectedSegs));
+		if (!this->seg2SegsMap.insert(pair<size_t, set<size_t> >(*it, connectedSegs)).second)
+		{
+			for (set<size_t>::iterator otherSegIt = connectedSegs.begin(); otherSegIt != connectedSegs.end(); ++otherSegIt)
+				this->seg2SegsMap[*it].insert(*otherSegIt);
+		}
 	}
 
-	for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
+	/*for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
 	{
 		cout << seg2SegsIt->first << ":";
 		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
 			cout << *it << " ";
 
 		cout << endl;
-	}
+	}*/
 
 	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 	{
@@ -4567,29 +4581,27 @@ void Renderer_gl1::loopDetection()
 		this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
 	}
 
-	cout << this->detectedLoops.size() << " loops found" << endl;
+	//cout << this->detectedLoops.size() << " loops found" << endl;
 	for (set<vector<size_t> >::iterator loopIt = detectedLoops.begin(); loopIt != detectedLoops.end(); ++loopIt)
 	{
 		vector<size_t> thisLoop = *loopIt;
 		for (vector<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
 		{
-			cout << *it << " ";
+			//cout << *it << " ";
 			for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
 			{
-				unitIt->type = 9;
+				unitIt->type = 15;
 			}
 		}
-		cout << endl;
+		//cout << endl;
 	}
 
 	curImg->update_3drenderer_neuron_view(w, this);
-	curImg->proj_trace_history_append();
 }
 
 void Renderer_gl1::rc_loopPathCheck(size_t startSegID, vector<size_t> curLoopPath, My4DImage* curImg)
 {
-	if (curLoopPath.size() >= 2)
-		if (startSegID == *(curLoopPath.end() - 2)) return;
+	if (curLoopPath.size() >= 2 && startSegID == *(curLoopPath.end() - 2)) return;
 
 	curLoopPath.push_back(startSegID);
 	for (set<size_t>::iterator it = this->seg2SegsMap[startSegID].begin(); it != this->seg2SegsMap[startSegID].end(); ++it)
@@ -4632,7 +4644,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t startSegID, vector<size_t> curLoopPat
 
 						if (count == 3)
 						{
-							cout << "3 seg intersection detected, exluded from loop candidates." << endl;
+							//cout << "3 seg intersection detected, exluded from loop candidates." << endl;
 							return;
 						}
 					}
