@@ -4572,6 +4572,7 @@ void Renderer_gl1::loopDetection()
 		cout << endl;
 	}
 
+	this->detectedLoops.clear();
 	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 	{
 		if (it->second.empty()) continue;
@@ -4586,7 +4587,7 @@ void Renderer_gl1::loopDetection()
 		this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
 	}
 
-	//cout << this->detectedLoops.size() << " loops found" << endl;
+	cout << this->detectedLoops.size() << " loops found" << endl;
 	for (set<vector<size_t> >::iterator loopIt = detectedLoops.begin(); loopIt != detectedLoops.end(); ++loopIt)
 	{
 		vector<size_t> thisLoop = *loopIt;
