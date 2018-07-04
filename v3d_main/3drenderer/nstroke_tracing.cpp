@@ -4563,14 +4563,14 @@ void Renderer_gl1::loopDetection()
 		}
 	}
 
-	/*for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
+	for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
 	{
 		cout << seg2SegsIt->first << ":";
 		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
 			cout << *it << " ";
 
 		cout << endl;
-	}*/
+	}
 
 	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 	{
@@ -4578,6 +4578,11 @@ void Renderer_gl1::loopDetection()
 
 		vector<size_t> loops2ThisSeg;
 		loops2ThisSeg.clear();
+
+		if (it->second.size() <= 2) continue;
+
+		cout << it->first << "..." << endl;
+		this->visitedSegs.insert(it->first);
 		this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
 	}
 
@@ -4593,7 +4598,7 @@ void Renderer_gl1::loopDetection()
 				unitIt->type = 15;
 			}
 		}
-		//cout << endl;
+		//cout << endl << endl;
 	}
 
 	curImg->update_3drenderer_neuron_view(w, this);
@@ -4602,6 +4607,8 @@ void Renderer_gl1::loopDetection()
 void Renderer_gl1::rc_loopPathCheck(size_t startSegID, vector<size_t> curLoopPath, My4DImage* curImg)
 {
 	if (curLoopPath.size() >= 2 && startSegID == *(curLoopPath.end() - 2)) return;
+
+	//if (this->visitedSegs.find(startSegID) != this->visitedSegs.end()) return;
 
 	curLoopPath.push_back(startSegID);
 	for (set<size_t>::iterator it = this->seg2SegsMap[startSegID].begin(); it != this->seg2SegsMap[startSegID].end(); ++it)
