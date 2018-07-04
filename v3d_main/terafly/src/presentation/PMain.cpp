@@ -2594,15 +2594,13 @@ void PMain::setOverview(bool enabled)
 */
         refSys->nt = PluginInterface::getSWC();
         refSys->nt_init=PluginInterface::getSWC();
-        refSys->markList = PluginInterface::getLandmark();
-        qDebug("dimXYZ is %d and %d and %d",dimX,dimY,dimZ);
-        qDebug("swc size is %d",PluginInterface::getSWC().listNeuron.size());
+        refSys->markList = PluginInterface::getLandmark();        
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
         if(cur_win)
         {
             renderer=myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()));//static_cast<Renderer_gl1*>(cur_win->view3DWidget->getRenderer());
             //myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()));
-            qDebug("set renderer");
+            //qDebug("set renderer");
             set_render_flag=true;
         }
         if(set_render_flag&&renderer)
