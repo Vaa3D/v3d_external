@@ -69,9 +69,12 @@
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../v3d/dialog_curve_trace_para.h"
+#include <time.h>
+
 #include <sstream>
 #include <map>
-#include <time.h>
+#include <algorithm>
+#include <ctime>
 
 #include <boost/algorithm/string.hpp>
 #endif //test_main_cpp
@@ -4563,31 +4566,33 @@ void Renderer_gl1::loopDetection()
 		}
 	}
 
-	for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
+	/*for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
 	{
 		cout << seg2SegsIt->first << ":";
 		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
 			cout << *it << " ";
 
-		cout << endl;
-	}
+		cout << endl << endl;
+	}*/
 
+	clock_t begin = clock();
 	this->detectedLoops.clear();
 	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 	{
-		if (it->second.empty()) continue;
+		if (it->second.empty() || it->second.size() <= 2) continue;
 
 		vector<size_t> loops2ThisSeg;
 		loops2ThisSeg.clear();
 
-		if (it->second.size() <= 2) continue;
-
-		cout << it->first << "..." << endl;
-		this->visitedSegs.insert(it->first);
+		cout << endl << it->first << ": ";
+		int loopCount = this->detectedLoops.size();
 		this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
+
+		if (this->detectedLoops.size() - loopCount == 0) cout << "no loops detected with this starting seg." << endl;
+		else cout << this->detectedLoops.size() - loopCount << " loops detected" << endl;
 	}
 
-	cout << this->detectedLoops.size() << " loops found" << endl;
+	//cout << this->detectedLoops.size() << " loops found" << endl;
 	for (set<vector<size_t> >::iterator loopIt = detectedLoops.begin(); loopIt != detectedLoops.end(); ++loopIt)
 	{
 		vector<size_t> thisLoop = *loopIt;
@@ -4601,33 +4606,35 @@ void Renderer_gl1::loopDetection()
 		}
 		//cout << endl << endl;
 	}
+	clock_t end = clock();
+	float elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	cout << "TIME ELAPSED: " << elapsed_secs << " SECS" << endl;
 
 	curImg->update_3drenderer_neuron_view(w, this);
 }
 
-void Renderer_gl1::rc_loopPathCheck(size_t startSegID, vector<size_t> curLoopPath, My4DImage* curImg)
+void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWalk, My4DImage* curImg)
 {
-	if (curLoopPath.size() >= 2 && startSegID == *(curLoopPath.end() - 2)) return;
+	if (this->seg2SegsMap[inputSegID].size() < 2) return;
 
-	//if (this->visitedSegs.find(startSegID) != this->visitedSegs.end()) return;
+	curPathWalk.push_back(inputSegID);
 
-	curLoopPath.push_back(startSegID);
-	for (set<size_t>::iterator it = this->seg2SegsMap[startSegID].begin(); it != this->seg2SegsMap[startSegID].end(); ++it)
+	for (set<size_t>::iterator it = this->seg2SegsMap[inputSegID].begin(); it != this->seg2SegsMap[inputSegID].end(); ++it)
 	{
-		if (curLoopPath.size() >= 2)
-			if (*it == *(curLoopPath.end() - 2)) continue;
+		if (curPathWalk.size() >= 2 && *it == *(curPathWalk.end() - 2)) continue;
 
-		if (find(curLoopPath.begin(), curLoopPath.end(), *it) == curLoopPath.end())
+		if (find(curPathWalk.begin(), curPathWalk.end(), *it) == curPathWalk.end())
 		{
-			this->rc_loopPathCheck(*it, curLoopPath, curImg);
+			this->rc_loopPathCheck(*it, curPathWalk, curImg);
 		}
 		else
 		{
+			// a loop is found
 			vector<size_t> detectedLoopPath;
 			detectedLoopPath.clear();
 			set<size_t> detectedLoopPathSet;
 			detectedLoopPathSet.clear();
-			for (vector<size_t>::iterator loopIt = find(curLoopPath.begin(), curLoopPath.end(), *it); loopIt != curLoopPath.end(); ++loopIt)
+			for (vector<size_t>::iterator loopIt = find(curPathWalk.begin(), curPathWalk.end(), *it); loopIt != curPathWalk.end(); ++loopIt)
 			{
 				detectedLoopPath.push_back(*loopIt);
 				detectedLoopPathSet.insert(*loopIt);
@@ -4635,34 +4642,24 @@ void Renderer_gl1::rc_loopPathCheck(size_t startSegID, vector<size_t> curLoopPat
 			
 			if (this->detectedLoopsSet.insert(detectedLoopPathSet).second)
 			{
-				for (vector<V_NeuronSWC_unit>::iterator psuedoLoopCheckIt = curImg->tracedNeuron.seg[detectedLoopPath.at(0)].row.begin(); psuedoLoopCheckIt != curImg->tracedNeuron.seg[detectedLoopPath.at(0)].row.end(); ++psuedoLoopCheckIt)
+				// pusedoloop by 3-way intersection check
+
+				if (*(curPathWalk.end() - 3) == *it)
 				{
-					int xLabel = psuedoLoopCheckIt->x / this->gridLength;
-					int yLabel = psuedoLoopCheckIt->y / this->gridLength;
-					int zLabel = psuedoLoopCheckIt->z / this->gridLength;
-					QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
-					string gridKey = gridKeyQ.toStdString();
-					set<size_t> regionSegs = this->wholeGrid2segIDmap[gridKey];
-
-					if (regionSegs.size() >= 3)
+					if (this->seg2SegsMap[*(curPathWalk.end() - 2)].find(*it) != this->seg2SegsMap[*(curPathWalk.end() - 2)].end())
 					{
-						int count = 0;
-						for (set<size_t>::iterator pathIt = detectedLoopPathSet.begin(); pathIt != detectedLoopPathSet.end(); ++pathIt)
-							if (regionSegs.find(*pathIt) != regionSegs.end()) ++count;
-
-						if (count == 3)
-						{
-							//cout << "3 seg intersection detected, exluded from loop candidates." << endl;
-							return;
-						}
+						//cout << "3 seg intersection detected, exluded from loop candidates." << endl;
+						continue;
 					}
 				}
+
 				this->detectedLoops.insert(detectedLoopPath);
 			}
+			else return;
 		}
 	}
 
-	curLoopPath.pop_back();
+	curPathWalk.pop_back();
 }
 
 void Renderer_gl1::escPressed_subtree()
