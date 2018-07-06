@@ -964,7 +964,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
-				callShowSubtree();
+				//callShowSubtree(); // temporarily disabled, MK, July 2018
             }else
                 callAutoTracers();
 	  		break;
