@@ -1128,8 +1128,27 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				{
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
+					
 					if (thisRenderer->subtreeSegs.empty()) return;
-					else thisRenderer->loopDetection();
+					else
+					{
+						thisRenderer->loopDetection();
+						if (thisRenderer->detectedLoops.empty()) return;
+
+						for (set<vector<size_t> >::iterator loopIt = thisRenderer->detectedLoops.begin(); loopIt != thisRenderer->detectedLoops.end(); ++loopIt)
+						{
+							vector<size_t> thisLoop = *loopIt;
+							for (vector<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+							{
+								for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*it].begin(); nodeIt != thisRenderer->originalSegMap[*it].end(); ++nodeIt)
+									nodeIt->type = 15;
+								
+								for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+									unitIt->type = 15;
+							}
+						}
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					}
 				}
             }
             break;
