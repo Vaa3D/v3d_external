@@ -411,7 +411,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             }
         }
     }*/
-    //qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
+    qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
     updateGL();
 }
 
@@ -987,13 +987,20 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                 curClickPosy=(float)(-lastPos.y()+centerHeight)/centerHeight;
                 findSWCNode=false;
                 qDebug("cur mouse position %6f and y %6f",curClickPosx,curClickPosy);
+//                curClickPosx/=xDim;
+//                curClickPosy/=yDim;
+//                qDebug("cur mouse position 2 %6f and y %6f",curClickPosx,curClickPosy);
                 if(nt.listNeuron.size()>0&&nt_init.listNeuron.size()>0)
                 {
-                    minProjectionx=(zoomNear/((abs(zoom)+zDim)*xDim))*curClickPosx;//*(yRot==180?(-1):1);
-                    minProjectiony=((abs(zoom)-zDim)/(abs(zoom)*yDim))*curClickPosy;//*(xRot==180?(-1):1);
-                    maxProjectionx=(zoomNear/((abs(zoom)-zDim)*xDim))*curClickPosx;
+                    minProjectionx=(abs(zoom)-zDim)*curClickPosx/(zoomNear);
+                    maxProjectionx=(abs(zoom)+zDim)*curClickPosx/(zoomNear);
+                    //minProjectionx=((abs(zoom)-zDim)/(abs(zoom)*xDim))*curClickPosx;
+                    minProjectiony=((abs(zoom)-zDim)*curClickPosy/((zoomNear)));
+                    maxProjectiony=((abs(zoom)+zDim)*curClickPosy/((zoomNear)));
+                    //minProjectiony=(zoomNear/((abs(zoom)+zDim)*yDim))*curClickPosy;
+                    //maxProjectionx=((abs(zoom)+zDim)/(abs(zoom)*xDim))*curClickPosx;
                     maxProjectionx=(abs(maxProjectionx)<=xDim)?maxProjectionx:((maxProjectionx>=0?1:(-1))*xDim);
-                    maxProjectiony=((abs(zoom)+zDim)/(abs(zoom)*yDim))*curClickPosy;
+                    //maxProjectiony=(zoomNear/((abs(zoom)-zDim)*yDim))*curClickPosy;
                     maxProjectiony=(abs(maxProjectiony)<=yDim)?maxProjectiony:((maxProjectiony>=0?1:(-1))*yDim);
                     //curProjectionPosx=-(zoom/zoomNear)*curClickPosx;//(cos(yRot*PI/180));
                     //curProjectionPosy=-(zoom/zoomNear)*curClickPosy;//(cos(xRot*PI/180));
@@ -1004,10 +1011,10 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                             abs(maxProjectionx)<=xDim&&
                             abs(maxProjectiony)<=yDim)//
                     {
-                        for(float ix=abs(maxProjectionx-minProjectionx)/3;ix<abs(maxProjectionx-minProjectionx);ix=ix+abs(maxProjectionx-minProjectionx)/3)
+                        for(float ix=abs(maxProjectionx-minProjectionx)/5;ix<abs(maxProjectionx-minProjectionx);ix=ix+abs(maxProjectionx-minProjectionx)/5)
                         {
                             //if(findSWCNode) break;
-                            for(float iy=abs(maxProjectiony-minProjectiony)/4;iy<abs(maxProjectiony-minProjectiony);iy=iy+abs(maxProjectiony-minProjectiony)/4)
+                            for(float iy=abs(maxProjectiony-minProjectiony)/5;iy<abs(maxProjectiony-minProjectiony);iy=iy+abs(maxProjectiony-minProjectiony)/5)
                             {
                                 //if(findSWCNode)break;
                                 curProjectionPosx=maxProjectionx-ix;
@@ -1020,7 +1027,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                                 for(V3DLONG i=0;i<nt_init.listNeuron.size();i++)
                                 {
                                     NeuronSWC tempNeuron=nt_init.listNeuron.at(i);
-                                    if((abs(tempNeuron.x-curSwcPosx)+abs(tempNeuron.y-curSwcPosy))<20)
+                                    if((abs(tempNeuron.x-curSwcPosx)+abs(tempNeuron.y-curSwcPosy))<50)
                                     {
                                         qDebug("cur swc projection position %6f and y %6f",curSwcPosx,curSwcPosy);
                                         XYZ cur_node_xyz = XYZ((V3DLONG)tempNeuron.x*pow_xy-dimXCenter*pow_xy,
@@ -1030,7 +1037,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                                         vector <XYZ> loc_vec;
                                         loc_vec.push_back(cur_node_xyz);
                                         findSWCNode=true;
-                                        //qDebug("find one");
+                                        qDebug("find one");
                                         renderer->b_grabhighrez = true;
                                         renderer->produceZoomViewOf3DRoi(loc_vec,0);
                                         break;
