@@ -4526,6 +4526,12 @@ void Renderer_gl1::loopDetection()
 		//cout << *it << ":";
 		set<size_t> connectedSegs;
 		connectedSegs.clear();
+		if (curImg->tracedNeuron.seg[*it].row.size() <= 1)
+		{
+			curImg->tracedNeuron.seg[*it].to_be_deleted = true;
+			continue;
+		}
+
 		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*it].row.begin(); nodeIt != curImg->tracedNeuron.seg[*it].row.end(); ++nodeIt)
 		{
 			int xLabel = nodeIt->x / this->gridLength;
@@ -4541,6 +4547,7 @@ void Renderer_gl1::loopDetection()
 				{
 					int connectedSegsSize = connectedSegs.size();
 					if (*scannedIt == *it || curImg->tracedNeuron.seg[*scannedIt].to_be_deleted) continue;
+					if (curImg->tracedNeuron.seg[*scannedIt].row.size() == 1) continue;
 
 					if (curImg->tracedNeuron.seg[*scannedIt].row.begin()->x == nodeIt->x && curImg->tracedNeuron.seg[*scannedIt].row.begin()->y == nodeIt->y && curImg->tracedNeuron.seg[*scannedIt].row.begin()->z == nodeIt->z)
 					{
@@ -4572,7 +4579,7 @@ void Renderer_gl1::loopDetection()
 		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
 			cout << *it << " ";
 
-		cout << endl << endl;
+		cout << endl;
 	}*/
 
 	w->progressBarPtr = new QProgressBar;
@@ -4585,7 +4592,9 @@ void Renderer_gl1::loopDetection()
 	
 	cout << endl << "Starting loop detection.. ";
 	clock_t begin = clock();
-	this->detectedLoops.clear();
+	//this->detectedLoops.clear();
+	this->finalizedLoopsSet.clear();
+	this->nonLoopErrors.clear();
 	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 	{
 		double progressBarValue = (double(it->first) / segSize) * 100;
@@ -4594,7 +4603,8 @@ void Renderer_gl1::loopDetection()
 		if (it->second.empty()) continue;
 		else if (it->second.size() <= 2)
 		{
-			for (set<size_t>::iterator childSegIt = it->second.begin(); childSegIt != it->second.end(); ++childSegIt)
+			// self loop
+			/*for (set<size_t>::iterator childSegIt = it->second.begin(); childSegIt != it->second.end(); ++childSegIt)
 			{
 				if (this->seg2SegsMap[*childSegIt].size() == 1 && *(this->seg2SegsMap[*childSegIt].begin()) == it->first)
 				{
@@ -4610,13 +4620,14 @@ void Renderer_gl1::loopDetection()
 					
 					if (selfLoopHead && selfLoopTail)
 					{
-						vector<size_t> selfLoop;
-						selfLoop.push_back(it->first);
-						selfLoop.push_back(*childSegIt);
-						this->detectedLoops.insert(selfLoop);
+						set<size_t> selfLoopSet;
+						selfLoopSet.insert(it->first);
+						selfLoopSet.insert(*childSegIt);
+						//this->finalizedLoopsSet.insert(selfLoopSet);
+						this->nonLoopErrors.insert(selfLoopSet);
 					}
 				}
-			}
+			}*/
 			continue;
 		}
 
@@ -4677,7 +4688,9 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 
 				if (this->detectedLoopsSet.insert(detectedLoopPathSet).second)
 				{
-					this->detectedLoops.insert(detectedLoopPath);
+					//this->detectedLoops.insert(detectedLoopPath);
+					//this->finalizedLoopsSet.insert(detectedLoopPathSet);
+					this->nonLoopErrors.insert(detectedLoopPathSet);
 					continue;
 				}
 				else return;
@@ -4699,7 +4712,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 			for (vector<size_t>::iterator loopIt = find(curPathWalk.begin(), curPathWalk.end(), *it); loopIt != curPathWalk.end(); ++loopIt)
 			{
 				//cout << *loopIt << " ";
-				detectedLoopPath.push_back(*loopIt);
+				//detectedLoopPath.push_back(*loopIt);
 				detectedLoopPathSet.insert(*loopIt);
 			}
 			//cout << endl << endl;
@@ -4756,7 +4769,13 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 						}
 					}
 				}
-				else this->detectedLoops.insert(detectedLoopPath);
+				else
+				{				
+					this->finalizedLoopsSet.insert(detectedLoopPathSet);
+
+					//sort(detectedLoopPath.begin(), detectedLoopPath.end());
+					//this->detectedLoops.insert(detectedLoopPath);
+				}
 			}
 			else return;
 		}

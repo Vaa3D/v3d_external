@@ -1133,20 +1133,45 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					else
 					{
 						thisRenderer->loopDetection();
-						if (thisRenderer->detectedLoops.empty()) return;
-
-						for (set<vector<size_t> >::iterator loopIt = thisRenderer->detectedLoops.begin(); loopIt != thisRenderer->detectedLoops.end(); ++loopIt)
+						if (thisRenderer->finalizedLoopsSet.empty()) return;
+						else
 						{
-							vector<size_t> thisLoop = *loopIt;
-							for (vector<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+							for (set<set<size_t> >::iterator loopIt = thisRenderer->finalizedLoopsSet.begin(); loopIt != thisRenderer->finalizedLoopsSet.end(); ++loopIt)
 							{
-								for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*it].begin(); nodeIt != thisRenderer->originalSegMap[*it].end(); ++nodeIt)
-									nodeIt->type = 15;
-								
-								for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
-									unitIt->type = 15;
+								set<size_t> thisLoop = *loopIt;
+								for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+								{
+									//cout << *it << " ";
+									for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*it].begin(); nodeIt != thisRenderer->originalSegMap[*it].end(); ++nodeIt)
+										nodeIt->type = 15;
+
+									for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+										unitIt->type = 15;
+								}
+								//cout << endl << endl;
 							}
+							//cout << "LOOPS NUMBER (set): " << thisRenderer->finalizedLoopsSet.size() << endl << endl;
+
+							if (!thisRenderer->nonLoopErrors.empty())
+							{
+								for (set<set<size_t> >::iterator loopIt = thisRenderer->nonLoopErrors.begin(); loopIt != thisRenderer->nonLoopErrors.end(); ++loopIt)
+								{
+									set<size_t> thisLoop = *loopIt;
+									for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+									{
+										//cout << *it << " ";
+										for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*it].begin(); nodeIt != thisRenderer->originalSegMap[*it].end(); ++nodeIt)
+											nodeIt->type = 20;
+
+										for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+											unitIt->type = 20;
+									}
+									//cout << endl << endl;
+								}
+							}
+							//cout << "non LOOPS ERROR NUMBER (set): " << thisRenderer->nonLoopErrors.size() << endl << endl;
 						}
+
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 					}
 				}
