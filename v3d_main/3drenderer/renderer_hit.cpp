@@ -2169,6 +2169,8 @@ void Renderer_gl1::endSelectMode()
 			curImg->proj_trace_history_append();
 
 			this->pressedShowSubTree = false;
+			this->connectEdit = connectEdit_none;
+
 			this->originalSegMap.clear();
 			this->highlightedSegMap.clear();
 
