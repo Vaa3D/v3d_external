@@ -980,13 +980,13 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
         {
             if(xRot%180==0&&yRot%180==0&&zRot%180==0)
             {
-                qDebug("mouse position %d and y %d",lastPos.x(),lastPos.y());
+                //qDebug("mouse position %d and y %d",lastPos.x(),lastPos.y());
 //                XYZ mousepostiontest=get3Dpoint(lastPos.x(),lastPos.y());
 //                qDebug("test 3d point of mouse position %d and %d and %d",mousepostiontest.x,mousepostiontest.y,mousepostiontest.z);
                 curClickPosx=(float)(lastPos.x()-centerWidth)/centerWidth;
                 curClickPosy=(float)(-lastPos.y()+centerHeight)/centerHeight;
                 findSWCNode=false;
-                qDebug("cur mouse position %6f and y %6f",curClickPosx,curClickPosy);
+                //qDebug("cur mouse position %6f and y %6f",curClickPosx,curClickPosy);
 //                curClickPosx/=xDim;
 //                curClickPosy/=yDim;
 //                qDebug("cur mouse position 2 %6f and y %6f",curClickPosx,curClickPosy);
@@ -1004,13 +1004,14 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                     maxProjectiony=(abs(maxProjectiony)<=yDim)?maxProjectiony:((maxProjectiony>=0?1:(-1))*yDim);
                     //curProjectionPosx=-(zoom/zoomNear)*curClickPosx;//(cos(yRot*PI/180));
                     //curProjectionPosy=-(zoom/zoomNear)*curClickPosy;//(cos(xRot*PI/180));
-                    qDebug("cur mouse projection position min %6f and y %6f,and max %6f, %6f",minProjectionx,minProjectiony,maxProjectionx,maxProjectiony);
+                    //qDebug("cur mouse projection position min %6f and y %6f,and max %6f, %6f",minProjectionx,minProjectiony,maxProjectionx,maxProjectiony);
 
                     if(abs(minProjectionx)<=xDim&&
                             abs(minProjectiony)<=yDim&&
                             abs(maxProjectionx)<=xDim&&
                             abs(maxProjectiony)<=yDim)//
                     {
+                        if(!renderer)return;
                         for(float ix=abs(maxProjectionx-minProjectionx)/5;ix<abs(maxProjectionx-minProjectionx);ix=ix+abs(maxProjectionx-minProjectionx)/5)
                         {
                             //if(findSWCNode) break;
@@ -1029,7 +1030,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                                     NeuronSWC tempNeuron=nt_init.listNeuron.at(i);
                                     if((abs(tempNeuron.x-curSwcPosx)+abs(tempNeuron.y-curSwcPosy))<50)
                                     {
-                                        qDebug("cur swc projection position %6f and y %6f",curSwcPosx,curSwcPosy);
+                                        //qDebug("cur swc projection position %6f and y %6f",curSwcPosx,curSwcPosy);
                                         XYZ cur_node_xyz = XYZ((V3DLONG)tempNeuron.x*pow_xy-dimXCenter*pow_xy,
                                                                (V3DLONG)tempNeuron.y*pow_xy-dimYCenter*pow_xy,
                                                                (V3DLONG)tempNeuron.z*pow_xy-dimZCenter*pow_xy);
@@ -1037,7 +1038,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                                         vector <XYZ> loc_vec;
                                         loc_vec.push_back(cur_node_xyz);
                                         findSWCNode=true;
-                                        qDebug("find one");
+                                        //qDebug("find one");
                                         renderer->b_grabhighrez = true;
                                         renderer->produceZoomViewOf3DRoi(loc_vec,0);
                                         break;
