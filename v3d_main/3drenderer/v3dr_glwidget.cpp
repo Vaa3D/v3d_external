@@ -1000,7 +1000,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
-				callShowSubtree();
+				//callShowSubtree(); // temporarily disabled, MK, July 2018
             }else
                 callAutoTracers();
 	  		break;
@@ -1011,6 +1011,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
 			else
 			{
+				// delete connected segments that have been highlighted, MK, July, 2018
 				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 				if (thisRenderer->selectMode == Renderer::smShowSubtree)
 				{
@@ -1164,8 +1165,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				{
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
-					if (thisRenderer->subtreeSegs.empty()) return;
-					else thisRenderer->loopDetection();
+					
+					thisRenderer->loopDetection();
 				}
             }
             break;
@@ -3166,27 +3167,71 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 	{
 		int pressedNumber = this->getNumKeyHolding();
 		//cout << pressedNumber << " ";
-		if (pressedNumber > -1)
-		{
-			cout << "  --> assigned color(type) to highlighted neuron:" << pressedNumber << " " << endl;
-			My4DImage* curImg = 0;
-			if (this) curImg = v3dr_getImage4d(_idep);
-			if (thisRenderer->originalSegMap.empty()) return;
 
-			for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+		if (thisRenderer->connectEdit == Renderer::loopEdit)
+		{
+			if (pressedNumber > -1)
 			{
-				//for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = thisRenderer->originalSegMap.begin(); it != thisRenderer->originalSegMap.end(); ++it)
-				//{
-				for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)
+				cout << "  --> assigned color(type) to looped segments:" << pressedNumber << " " << endl;
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				if (thisRenderer->finalizedLoopsSet.empty()) return;
+				for (set<set<size_t> >::iterator loopIt = thisRenderer->finalizedLoopsSet.begin(); loopIt != thisRenderer->finalizedLoopsSet.end(); ++loopIt)
+				{
+					set<size_t> thisLoop = *loopIt;
+					for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+					{
+						for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+							unitIt->type = pressedNumber;
+
+						thisRenderer->originalSegMap.erase(*it);
+					}
+				}
+
+				if (!thisRenderer->nonLoopErrors.empty())
+				{
+					for (set<set<size_t> >::iterator loopIt = thisRenderer->nonLoopErrors.begin(); loopIt != thisRenderer->nonLoopErrors.end(); ++loopIt)
+					{
+						set<size_t> thisLoop = *loopIt;
+						for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+						{
+							for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+								unitIt->type = 20;
+
+							thisRenderer->originalSegMap.erase(*it);
+						}
+					}
+				}
+
+				curImg->update_3drenderer_neuron_view(this, thisRenderer);
+				curImg->proj_trace_history_append();
+			}
+		}
+		else
+		{
+			if (pressedNumber > -1)
+			{
+				cout << "  --> assigned color(type) to highlighted neuron:" << pressedNumber << " " << endl;
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+				if (thisRenderer->originalSegMap.empty()) return;
+
+				for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+				{
+					//for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = thisRenderer->originalSegMap.begin(); it != thisRenderer->originalSegMap.end(); ++it)
+					//{
+					for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)
 						nodeIt->type = pressedNumber;
 
-				curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
-				//}
-			}
+					curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
+					//}
+				}
 
-			curImg->update_3drenderer_neuron_view(this, thisRenderer);
-			curImg->proj_trace_history_append();
-		} 
+				curImg->update_3drenderer_neuron_view(this, thisRenderer);
+				curImg->proj_trace_history_append();
+			}
+		}
 
 		QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
 	}

@@ -69,6 +69,7 @@ class terafly::QGLRefSys : public QGLWidget
         int dimZCenter;
         int curRes;
         int num_res;
+        double zoomInit;
 
     public slots:
 
@@ -98,6 +99,8 @@ class terafly::QGLRefSys : public QGLWidget
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void wheelEvent(QWheelEvent *event);
+        //XYZ get3Dpoint(int x,int y);
+
 
         int heightForWidth( int w ) { return w; }
 };

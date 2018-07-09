@@ -97,7 +97,7 @@ public:
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
         smCurveCreate_MarkerCreate1_fm, smCurveCreate_MarkerCreate1,//by ZZ 09202018
 					};
-	enum editMode {segmentEdit, segmentEditLoopSafe, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
+	enum editMode {connectEdit_none, segmentEdit, segmentEditLoopSafe, pointCloudEdit, markerEdit, loopEdit}; // MK, for different segment connecting mode.
 	enum UI3dViewMode {Vaa3d, Terafly, Mozak};     //20170804 RZC: diffrent code path in Renderer_gl1::addCurveSWC()
 //protected:
 	RenderMode renderMode;
