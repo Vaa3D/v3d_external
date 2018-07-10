@@ -1021,10 +1021,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
-			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
-			{
-				callStrokeConnectMultiNeurons_loopSafe();
-            }
 			else
             {
                 neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
@@ -3076,15 +3072,6 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
         renderer->callStrokeConnectMultiNeurons();
         POST_updateGL();
     }
-}
-
-void V3dR_GLWidget::callStrokeConnectMultiNeurons_loopSafe()
-{
-	if (renderer)
-	{
-		renderer->callStrokeConnectMultiNeurons_loopSafe();
-		POST_updateGL();
-	}
 }
 
 void V3dR_GLWidget::callShowSubtree()

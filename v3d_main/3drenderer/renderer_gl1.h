@@ -218,7 +218,6 @@ public:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
-	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
 	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
@@ -511,7 +510,6 @@ public:
 
 	 bool isTera;
 	 map<size_t, size_t> branchSegIDmap;
-	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
 	 map<string, size_t> tail2segIDmap;
 	 multimap<size_t, string> segID2gridMap;
 
