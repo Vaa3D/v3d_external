@@ -357,12 +357,7 @@ public:
 //static const 
 //int neuron_type_color_num;// = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
-
-
-
-
-
-
+    void updateMarkerList(QList <ImageMarker> markers, int i); // sync markers with object_manager
 
 	void initColorMaps();
     bool colorByAncestry;

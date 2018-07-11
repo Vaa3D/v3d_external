@@ -126,6 +126,8 @@ public slots:
 
     void zoomMarkerLocation();
 
+    void updateMarkerList(QList <ImageMarker> markers); // sync object_manager with renderer
+
 	// -- MK, June, 2018
 	void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).  
 
