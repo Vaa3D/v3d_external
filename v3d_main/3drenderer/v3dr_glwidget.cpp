@@ -404,33 +404,35 @@ void V3dR_GLWidget::paintGL()
 		double s = 1.4/(float)SHIFT_RANGE;  // 1.4 ~ sqrt(2);
 		T = T*s;
 
-		// alternate rotation center is a fixed point
-		if (alt_rotation)
-		{
-			// shift position as alternate rotation center
-			//vAltC[0]=T.x; vAltC[1]=T.y; vAltC[2]=T.z;
-			//vAltC[0]=-1; vAltC[1]=-1; vAltC[2]=-1;
-
-			double aR[4][4];
-			for (int i=0; i<4; i++)
-				for (int j=0; j<4; j++)
-				{
-					int k = i*4 +j;
-					aR[i][j] = ((i==j)? 1-mRot[k] : -mRot[k]);
-				}
-			XYZ aT;
-			aT.x = mAltC[0]*aR[0][0] + mAltC[1]*aR[1][0] + mAltC[2]*aR[2][0];
-			aT.y = mAltC[0]*aR[0][1] + mAltC[1]*aR[1][1] + mAltC[2]*aR[2][1];
-			aT.z = mAltC[0]*aR[0][2] + mAltC[1]*aR[1][2] + mAltC[2]*aR[2][2];
-
-			T = T + aT; //merge translation
-		}
+//		// alternate rotation center is a fixed point
+//		if (alt_rotation)
+//		{
+//			// shift position as alternate rotation center
+//			//vAltC[0]=T.x; vAltC[1]=T.y; vAltC[2]=T.z;
+//			//vAltC[0]=-1; vAltC[1]=-1; vAltC[2]=-1;
+//
+//			double aR[4][4];
+//			for (int i=0; i<4; i++)
+//				for (int j=0; j<4; j++)
+//				{
+//					int k = i*4 +j;
+//					aR[i][j] = ((i==j)? 1-mRot[k] : -mRot[k]);
+//				}
+//			XYZ aT;
+//			aT.x = mAltC[0]*aR[0][0] + mAltC[1]*aR[1][0] + mAltC[2]*aR[2][0];
+//			aT.y = mAltC[0]*aR[0][1] + mAltC[1]*aR[1][1] + mAltC[2]*aR[2][1];
+//			aT.z = mAltC[0]*aR[0][2] + mAltC[1]*aR[1][2] + mAltC[2]*aR[2][2];
+//
+//			T = T + aT; //merge translation
+//		}
 
 		glTranslated( T.x, T.y, T.z );
 	}
 
-	//SET current absolute rotation pose
+	//SET current absolute rotation pose at alternate rotation center
+	if (alt_rotation)	glTranslated( mAltC[0]*flip_X, mAltC[1]*flip_Y, mAltC[2]*flip_Z );
 	glMultMatrixd(mRot);
+	if (alt_rotation)	glTranslated( -mAltC[0]*flip_X, -mAltC[1]*flip_Y, -mAltC[2]*flip_Z );
 
 
 	glScaled(flip_X,flip_Y,flip_Z); // make y-axis downward conformed with image coordinate

@@ -1388,13 +1388,27 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     		{
     			const ImageMarker & m = listMarker.at(tmpind);
     			XYZ p = XYZ(m);
+    			p.x = p.x*thicknessX -strat1;
+    			p.y = p.y*thicknessY -strat2;
+    			p.z = p.z*thicknessZ -strat3;
 
-     			float DX = curImg->getXDim();
-    			float DY = curImg->getYDim();
-    			float DZ = curImg->getZDim();
-    			p.x = p.x/DX*2 -1;
-    			p.y = p.y/DY*2 -1;
-    			p.z = p.z/DZ*2 -1;
+    			BoundingBox & BB = boundingBox;
+    			float DX = BB.Dx();
+    			float DY = BB.Dy();
+    			float DZ = BB.Dz();
+    			float maxD = BB.Dmax();
+    			double s[3];
+    			s[0] = 1/maxD *2;
+    			s[1] = 1/maxD *2;
+    			s[2] = 1/maxD *2;
+    			double t[3];
+    			t[0] = -BB.x0 -DX /2;
+    			t[1] = -BB.y0 -DY /2;
+    			t[2] = -BB.z0 -DZ /2;
+
+    			p.x = s[0]*(p.x +t[0]);
+    			p.y = s[1]*(p.y +t[1]);
+    			p.z = s[2]*(p.z +t[2]);
     			qDebug("normalized alt rotation center: (%f %f %f)", p.x, p.y, p.z);
 
     			w->setAltCenter(p.x, p.y, p.z);
