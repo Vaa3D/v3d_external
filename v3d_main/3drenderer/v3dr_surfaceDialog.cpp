@@ -1370,6 +1370,8 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 				{
 					r->listMarker[i].name = realobj_name;
 					r->listMarker[i].comment = realobj_comment;
+
+                    qDebug()<<"sync with renderer's name and comment";
 				}
 				else if (t==table[stLabelSurface])
 				{

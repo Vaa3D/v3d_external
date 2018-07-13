@@ -233,6 +233,17 @@ class terafly::PMain : public QWidget
         QPushButton* PR_button;
         QSpinBox* PR_spbox;
 
+        // voxel size
+        QGroupBox* VoxelSize;
+        QDoubleSpinBox* x_dsb;
+        QDoubleSpinBox* y_dsb;
+        QDoubleSpinBox* z_dsb;
+        QLabel* x_vs_label;
+        QLabel* y_vs_label;
+        QLabel* z_vs_label;
+        QLabel* z_vs_label_unit;
+
+
         /* ------- Overview panel widgets ------- */
         QGroupBox* Overview_panel;
 
@@ -375,7 +386,7 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void exit();
 
-        /**********************************************************************************
+        /********************************Overview_panel**************************************************
         * Called when "Help->About" menu action is triggered
         ***********************************************************************************/
         void about();

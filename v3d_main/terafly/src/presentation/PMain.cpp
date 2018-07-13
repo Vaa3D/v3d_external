@@ -650,6 +650,31 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_spbox->installEventFilter(this);
     PR_spbox->setPrefix("Block ");
 
+    VoxelSize = new QGroupBox("Raw Image Voxelsize");
+    x_dsb = new QDoubleSpinBox();
+    x_dsb->setAlignment(Qt::AlignCenter);
+    x_dsb->setValue(CSettings::instance()->getVoxelSizeX());
+    x_dsb->setSingleStep(0.1);
+    x_dsb->setPrefix("x: ");
+    x_dsb->setSuffix(" um");
+    x_dsb->installEventFilter(this);
+
+    y_dsb = new QDoubleSpinBox();
+    y_dsb->setAlignment(Qt::AlignCenter);
+    y_dsb->setValue(CSettings::instance()->getVoxelSizeY());
+    y_dsb->setSingleStep(0.1);
+    y_dsb->setPrefix("y: ");
+    y_dsb->setSuffix(" um");
+    y_dsb->installEventFilter(this);
+
+    z_dsb = new QDoubleSpinBox();
+    z_dsb->setAlignment(Qt::AlignCenter);
+    z_dsb->setValue(CSettings::instance()->getVoxelSizeZ());
+    z_dsb->setSingleStep(0.1);
+    z_dsb->setPrefix("z: ");
+    z_dsb->setSuffix(" um");
+    z_dsb->installEventFilter(this);
+
     /* ------- overview panel widgets ------- */
     Overview_panel = new QGroupBox("Overview");
 
@@ -789,6 +814,19 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_panel->setStyle(new QWindowsStyle());
     #endif
 
+    // Voxel Size
+    QGridLayout* voxelsize_layout = new QGridLayout();
+    voxelsize_layout->setVerticalSpacing(1);
+
+    voxelsize_layout->addWidget(x_dsb, 0,0);
+    voxelsize_layout->addWidget(y_dsb, 0,1);
+    voxelsize_layout->addWidget(z_dsb, 0,2);
+
+    VoxelSize->setLayout(voxelsize_layout);
+    #ifdef Q_OS_LINUX
+    VoxelSize->setStyle(new QWindowsStyle());
+    #endif
+
     // "Proofreading" panel layout
     QHBoxLayout* esPanelLayout = new QHBoxLayout();
     PR_button->setFixedWidth(marginLeft);
@@ -804,14 +842,20 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
       // Overview panel layout
     QWidget* refSysContainer2 = new QWidget();
     refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
-    QHBoxLayout* refSysContainerLayout2 = new QHBoxLayout();
+    QLabel* dispInfo = new QLabel();
+    QVBoxLayout* refSysContainerLayout2 = new QVBoxLayout();
     refSysContainerLayout2->setContentsMargins(1,1,1,1);
+    refSysContainerLayout2->addWidget(dispInfo, 0);
     refSysContainerLayout2->addWidget(refSys, 1);
     refSysContainer2->setLayout(refSysContainerLayout2);
     QGridLayout* Overview_layout = new QGridLayout();
     Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
     Overview_layout->setContentsMargins(1,1,1,1);
     Overview_panel->setLayout(Overview_layout);
+    #ifdef Q_OS_LINUX
+    Overview_panel->setStyle(new QWindowsStyle());
+    #endif
+    connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 #endif
 
     //local viewer panel
@@ -922,6 +966,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(localViewer_panel, 0);
     controlsLayout->addWidget(zoom_panel, 0);
     controlsLayout->addWidget(VOI_panel, 0);
+    controlsLayout->addWidget(VoxelSize, 0);
     controlsLayout->addWidget(PR_panel, 0);
     #ifndef Q_OS_MAC
     controlsLayout->addWidget(Overview_panel, 0);
@@ -986,6 +1031,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(traslTpos, SIGNAL(clicked()), this, SLOT(traslTposClicked()));
     connect(traslTneg, SIGNAL(clicked()), this, SLOT(traslTnegClicked()));
     connect(controlsResetButton, SIGNAL(clicked()), this, SLOT(resetMultiresControls()));
+    connect(x_dsb,SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
+    connect(y_dsb,SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
+    connect(z_dsb,SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
+
 #ifdef __ALLOW_VR_FUNCS__
     if(teraflyVRView)
 	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
@@ -1088,6 +1137,10 @@ void PMain::reset()
     gradientBar->setNSteps(-1);
     gradientBar->setStep(0);
     resetMultiresControls();
+
+    x_dsb->setValue(CSettings::instance()->getVoxelSizeX());
+    y_dsb->setValue(CSettings::instance()->getVoxelSizeY());
+    z_dsb->setValue(CSettings::instance()->getVoxelSizeZ());
 
     //resetting subvol panel widgets
     VOI_panel->setEnabled(false);
@@ -1916,6 +1969,10 @@ void PMain::settingsChanged(int)
     CSettings::instance()->setTraslY(yShiftSBox->value());
     CSettings::instance()->setTraslZ(zShiftSBox->value());
     CSettings::instance()->setTraslT(tShiftSBox->value());
+    CSettings::instance()->setVoxelSizeX(x_dsb->value());
+    CSettings::instance()->setVoxelSizeY(y_dsb->value());
+    CSettings::instance()->setVoxelSizeZ(z_dsb->value());
+
     if(PDialogProofreading::isActive())
         PDialogProofreading::instance()->updateBlocks(0);
 }
@@ -2532,6 +2589,9 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setTraslX(xShiftSBox->value());
         CSettings::instance()->setTraslY(yShiftSBox->value());
         CSettings::instance()->setTraslZ(zShiftSBox->value());
+        CSettings::instance()->setVoxelSizeX(x_dsb->value());
+        CSettings::instance()->setVoxelSizeY(y_dsb->value());
+        CSettings::instance()->setVoxelSizeZ(z_dsb->value());
 
         int ROIxS   = H0_sbox->value();
         refSys->dimXCenter=ROIxS;
@@ -2594,8 +2654,10 @@ void PMain::setOverview(bool enabled)
 */
         refSys->nt = PluginInterface::getSWC();
         refSys->nt_init=PluginInterface::getSWC();
-        refSys->markList = PluginInterface::getLandmark();        
+        refSys->markList = PluginInterface::getLandmark();
+        refSys->setVoxelSize(CSettings::instance()->getVoxelSizeX(), CSettings::instance()->getVoxelSizeY(), CSettings::instance()->getVoxelSizeZ());
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
+
         if(cur_win)
         {
             renderer=myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()));//static_cast<Renderer_gl1*>(cur_win->view3DWidget->getRenderer());
@@ -2606,7 +2668,8 @@ void PMain::setOverview(bool enabled)
         if(set_render_flag&&renderer)
             refSys->setRender(renderer);
 
-    }else
+    }
+    else
     {
         qDebug("move to this");
         PRsetActive(false);
