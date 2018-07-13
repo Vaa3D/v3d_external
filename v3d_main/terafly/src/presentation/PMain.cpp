@@ -841,8 +841,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 #ifndef Q_OS_MAC
       // Overview panel layout
     QWidget* refSysContainer2 = new QWidget();
-    refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
+    //refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
+    refSysContainer2->setStyleSheet("border: 0px;");
     QLabel* dispInfo = new QLabel();
+    dispInfo->setStyleSheet("border: 0px;");
     QVBoxLayout* refSysContainerLayout2 = new QVBoxLayout();
     refSysContainerLayout2->setContentsMargins(1,1,1,1);
     refSysContainerLayout2->addWidget(dispInfo, 0);
