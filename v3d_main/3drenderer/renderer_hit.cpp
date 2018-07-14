@@ -5360,3 +5360,15 @@ bool Renderer_gl1::setColorAncestryInfo(){
     //We're done.
     return true;
 }
+
+void Renderer_gl1::updateMarkerList(QList <ImageMarker> markers, int i)
+{
+    listMarker[i] = markers[i];
+
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d)
+    {
+        LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks[i]));
+        s->color = listMarker[i].color;
+    }
+}

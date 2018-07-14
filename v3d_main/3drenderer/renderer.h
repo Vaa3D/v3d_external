@@ -247,7 +247,6 @@ public:
     virtual void callStrokeDeleteMultiNeurons() {};//  multiple segments deleting shortcut
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
-	virtual void callStrokeConnectMultiNeurons_loopSafe() {}; // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree() {};
 	virtual void callShowConnectedSegs() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut

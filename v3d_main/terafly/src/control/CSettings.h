@@ -83,6 +83,7 @@ class terafly::CSettings
         int vpRefillStopCondition;
         bool vpCacheHighestRes;
         bool vpFreezeHighestRes;
+        double voxelsizeX, voxelsizeY, voxelsizeZ;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -121,6 +122,9 @@ class terafly::CSettings
         int getTraslY(){return traslY;}
         int getTraslZ(){return traslZ;}
         int getTraslT(){return traslT;}
+        double getVoxelSizeX(){return voxelsizeX;}
+        double getVoxelSizeY(){return voxelsizeY;}
+        double getVoxelSizeZ(){return voxelsizeZ;}
         bool getAnnotationSpaceUnlimited(){return annotationSpaceUnlimited;}
         int getAnnotationCurvesDims(){return annotationCurvesDims;}
         bool getAnnotationCurvesAspectTube(){return annotationCurvesAspectTube;}
@@ -170,6 +174,9 @@ class terafly::CSettings
         void setVOIdimH(int _VOIdimH){VOIdimH = _VOIdimH; writeSettings();}
         void setVOIdimD(int _VOIdimD){VOIdimD = _VOIdimD; writeSettings();}
         void setVOIdimT(int _VOIdimT){VOIdimT = _VOIdimT; writeSettings();}
+        void setVoxelSizeX(double x){voxelsizeX = x; writeSettings();}
+        void setVoxelSizeY(double y){voxelsizeY = y; writeSettings();}
+        void setVoxelSizeZ(double z){voxelsizeZ = z; writeSettings();}
         void setTraslX(int _traslX){traslX = _traslX; writeSettings();}
         void setTraslY(int _traslY){traslY = _traslY; writeSettings();}
         void setTraslZ(int _traslZ){traslZ = _traslZ; writeSettings();}

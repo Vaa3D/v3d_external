@@ -181,6 +181,10 @@ class terafly::PMain : public QWidget
 
         //Page "Controls": contains navigation controls
         QWidget* controls_page;
+
+        // mini-map page
+        QWidget* minimap_page;
+
         /* ------- local viewer panel widgets ------- */
         QGroupBox* localViewer_panel;
         QGradientBar* gradientBar;
@@ -232,6 +236,12 @@ class terafly::PMain : public QWidget
         QGroupBox* PR_panel;
         QPushButton* PR_button;
         QSpinBox* PR_spbox;
+
+        // voxel size
+        QGroupBox* VoxelSize;
+        QDoubleSpinBox* x_dsb;
+        QDoubleSpinBox* y_dsb;
+        QDoubleSpinBox* z_dsb;
 
         /* ------- Overview panel widgets ------- */
         QGroupBox* Overview_panel;
@@ -375,7 +385,7 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void exit();
 
-        /**********************************************************************************
+        /********************************Overview_panel**************************************************
         * Called when "Help->About" menu action is triggered
         ***********************************************************************************/
         void about();
