@@ -181,6 +181,10 @@ class terafly::PMain : public QWidget
 
         //Page "Controls": contains navigation controls
         QWidget* controls_page;
+
+        // mini-map page
+        QWidget* minimap_page;
+
         /* ------- local viewer panel widgets ------- */
         QGroupBox* localViewer_panel;
         QGradientBar* gradientBar;
@@ -238,11 +242,6 @@ class terafly::PMain : public QWidget
         QDoubleSpinBox* x_dsb;
         QDoubleSpinBox* y_dsb;
         QDoubleSpinBox* z_dsb;
-        QLabel* x_vs_label;
-        QLabel* y_vs_label;
-        QLabel* z_vs_label;
-        QLabel* z_vs_label_unit;
-
 
         /* ------- Overview panel widgets ------- */
         QGroupBox* Overview_panel;

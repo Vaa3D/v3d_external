@@ -675,10 +675,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     z_dsb->setSuffix(" um");
     z_dsb->installEventFilter(this);
 
-    /* ------- overview panel widgets ------- */
-    Overview_panel = new QGroupBox("Overview");
-
-
     //other widgets
     helpBox = new QHelpBox(this);
     progressBar = new QProgressBar(this);
@@ -838,6 +834,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_panel->setStyle(new QWindowsStyle());
     #endif
 
+
+
+    /* ------- overview panel widgets ------- */
+    Overview_panel = new QGroupBox("Overview");
+
 #ifndef Q_OS_MAC
       // Overview panel layout
     QWidget* refSysContainer2 = new QWidget();
@@ -971,7 +972,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(VoxelSize, 0);
     controlsLayout->addWidget(PR_panel, 0);
     #ifndef Q_OS_MAC
-    controlsLayout->addWidget(Overview_panel, 0);
+    controlsLayout->addWidget(Overview_panel, 0); // need to be changed
     #endif
     controlsLayout->addStretch(1);
     #ifdef Q_OS_MAC
@@ -1536,6 +1537,9 @@ void PMain::loadAnnotations()
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(cursor);
+
+                //
+                annotationsChanged();
             }
             else
                 return;
@@ -2991,7 +2995,12 @@ void PMain::markersSizeSpinBoxChanged(int value)
 void PMain::annotationsChanged()
 {
     if(!annotationsPathLRU.empty())
+    {
         saveAnnotationsAction->setEnabled(true);
+    }
+
+    // update mini-map
+    setOverview(true);
 }
 
 void PMain::showDialogVtk2APO()

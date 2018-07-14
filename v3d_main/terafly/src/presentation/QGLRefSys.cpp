@@ -249,6 +249,12 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
     }
 
     bool dimGlEnable[]={false,false,false};
+
+    //
+    lenVoxel = 0;
+    lenMicron = 0;
+
+    //
     if(nt.listNeuron.size()>0)
     {
         alreadyLoadSwc=true;
@@ -298,8 +304,6 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         }
 
         //
-        lenVoxel = 0;
-        lenMicron = 0;
         double vx2 = vx*vx;
         double vy2 = vy*vy;
         double vz2 = vz*vz;
@@ -987,15 +991,15 @@ void QGLRefSys::paintGL()
             glVertex3f(2*xDim*nt.listNeuron[i].x-xDim,2*yDim*nt.listNeuron[i].y-yDim,2*zDim*nt.listNeuron[i].z-zDim);
             glEnd();
         }
-
-        // display total length of swc
-        V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
-        numSegments = nt_decomposed.nsegs();
-
-        char str[256];
-        sprintf(str, "total length: %0.2lf voxels / %0.2lf um \nnumber of segments: %d", lenVoxel, lenMicron, numSegments);
-        emit neuronInfoChanged(QString(str));
     }
+
+    // display total length of swc
+    V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
+    numSegments = nt_decomposed.nsegs();
+
+    char str[256];
+    sprintf(str, "total length: %0.2lf voxels / %0.2lf um \nnumber of segments: %d", lenVoxel, lenMicron, numSegments);
+    emit neuronInfoChanged(QString(str));
 }
 
 void QGLRefSys::mousePressEvent(QMouseEvent *event)
