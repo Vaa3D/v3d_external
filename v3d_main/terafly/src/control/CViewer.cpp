@@ -2271,7 +2271,25 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
     // @ADDED by Alessandro on 2017-06-26: zoom-in around marker or ROI to the highest resolution
     else if(roi->ops_type == 0 && !forceZoomIn)
+    {
+        CViewer* cur_win=CViewer::getCurrent();
+        if(cur_win)
+        {
+            int now_res=cur_win->getResIndex();
+            if(now_res+1<CImport::instance()->getResolutions())
+            {
+                qDebug("move to reset margin");
+                roi->xe=roiCenterX+61;
+                roi->ye=roiCenterY+61;
+                roi->ze=roiCenterZ+61;
+                roi->xs=roiCenterX-61;
+                roi->ys=roiCenterY-61;
+                roi->zs=roiCenterZ-61;
+            }
+            qDebug("move to cviewer ,and now resolution is %d and now %d",CImport::instance()->getResolutions(),now_res);
+        }
         newViewer(roi->xe, roi->ye, roi->ze, CImport::instance()->getResolutions()-1, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
+    }
 
     // zoom-in around marker or ROI to the higher resolution
     else if(roi->ops_type == 1 && !forceZoomIn)
