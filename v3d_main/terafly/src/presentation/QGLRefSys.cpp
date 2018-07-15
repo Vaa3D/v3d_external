@@ -424,6 +424,9 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             miniROIyShift = ((-dimMin[1]+_ROIyShift)) / dimSm[1];
             miniROIzDim   = (_ROIzDim   ) / dimSm[2];
             miniROIzShift = ((-dimMin[2]+_ROIzShift)) / dimSm[2];
+            // display total length of swc
+            V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
+            numSegments = nt_decomposed.nsegs();
         }
         else
             miniMapCurBox=false;
@@ -993,9 +996,9 @@ void QGLRefSys::paintGL()
         }
     }
 
-    // display total length of swc
-    V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
-    numSegments = nt_decomposed.nsegs();
+//    // display total length of swc
+//    V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
+//    numSegments = nt_decomposed.nsegs();
 
     char str[256];
     sprintf(str, "total length: %0.2lf voxels / %0.2lf um \nnumber of segments: %d", lenVoxel, lenMicron, numSegments);
