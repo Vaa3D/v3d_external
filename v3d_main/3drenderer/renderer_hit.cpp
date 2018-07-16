@@ -3591,11 +3591,7 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
-    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);//CImport::instance()->getResolutions();
-    //qDebug("now volume is %d ",CImport::instance()->getResolutions());
-	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);    
-    //qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);\
-    //qDebug("xxxx dim is %d and %d and %d",curImg->getXDim(),curImg->getYDim(),curImg->getZDim());    
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 	if (w && curImg && curXWidget && loc_vec.size()>0)
 	{
 		double mx, Mx, my, My, mz, Mz;
@@ -3617,39 +3613,11 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
         marginx=marginy=marginz=5;
         if (loc_vec.size()==1)
         {
-            qDebug("move to this");
-            marginx=curImg->getXDim()/2; //for marker then define a bigger margin
-            marginy=curImg->getYDim()/2;
-            marginz=curImg->getZDim()/2;
+            marginx=marginy=marginz=61;
         }
-       /*  qDebug("now rezxyx is %f and %f and %f",curImg->getRezX(),curImg->getRezY(),curImg->getRezZ());
-        if(curImg->getRezX()==1&&curImg->getRezY()==1&&curImg->getRezZ()==1)
-        {
-
-        }
-        else
-        {
-            if (loc_vec.size()==1)
-            {
-                qDebug("move to that");
-                marginx=marginy=marginz=61; //for marker then define a bigger margin
-            }
-        }*/
-
-//        V3DLONG marginx,marginy,marginz; //the default margin is small
-//        marginx=marginy=marginz=5;
-//        if (loc_vec.size()==1)
-//        {
-//            marginx=curImg->getXDim()/2; //for marker then define a bigger margin
-//            marginy=curImg->getYDim()/2;
-//            marginz=curImg->getZDim()/2;
-//        }
         mx -= marginx; Mx += marginx; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
         my -= marginy; My += marginy; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
         mz -= marginz; Mz += marginz; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
-//        mx -= margin; Mx += margin; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
-//        my -= margin; My += margin; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
-//        mz -= margin; Mz += margin; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
 //        by PHC 101008
 		if (b_imaging && curXWidget)
 		{
