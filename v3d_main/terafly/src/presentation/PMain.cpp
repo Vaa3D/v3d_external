@@ -2585,8 +2585,8 @@ void PMain::setOverview(bool enabled)
         int dimZ    = CImport::instance()->volumes[num_res-1]->getDIM_D();
         refSys->num_res=CImport::instance()->volumes.size();
         refSys->curRes=cur_win->getResIndex();
-        qDebug("num res is %d",num_res);
-        qDebug("reseltiton is %d.",cur_win->getResIndex());
+//        qDebug("num res is %d",num_res);
+//        qDebug("reseltiton is %d.",cur_win->getResIndex());
 
         CSettings::instance()->setVOIdimV(Vdim_sbox->value());
         CSettings::instance()->setVOIdimH(Hdim_sbox->value());
@@ -2677,7 +2677,6 @@ void PMain::setOverview(bool enabled)
     }
     else
     {
-        qDebug("move to this");
         PRsetActive(false);
         refSys->nt.listNeuron.clear();
         isOverviewActive = false;

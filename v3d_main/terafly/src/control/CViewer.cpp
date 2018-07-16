@@ -1112,8 +1112,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-            qDebug("vfnedsiufhnu %d and %d and %d and %d and %d and %d",y-dy,y+dy,x-dx,x+dx,z-dz,z+dz);
-            qDebug("vfnedsiufhdsddsnu %d and %d and %d and %d and %d and %d",y0,y,x0,x,z0,z);
             if(dx != -1 && dy != -1 && dz != -1)
                 cVolume->setVoi(0, resolution, y-dy, y+dy, x-dx, x+dx, z-dz, z+dz, t0, t1);
             else
