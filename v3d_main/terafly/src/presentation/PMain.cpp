@@ -2599,6 +2599,13 @@ void PMain::PRbuttonClicked()
 
 void PMain::setOverview(bool enabled)
 {
+    if(CImport::instance()->volumes.size()<1)
+    {
+        qDebug()<<"No volume is loaded!";
+        return;
+    }
+
+    //
     CViewer *cur_win = CViewer::getCurrent();
     refSys->setFilled(!enabled);
     PR_button->setEnabled(!enabled);
@@ -2689,6 +2696,7 @@ void PMain::setOverview(bool enabled)
             ROIzDim *= factorXYZ;
         }
 */
+
         refSys->nt = PluginInterface::getSWC();
         refSys->nt_init=PluginInterface::getSWC();
         refSys->markList = PluginInterface::getLandmark();

@@ -1169,10 +1169,7 @@ void QGLRefSys::wheelEvent(QWheelEvent *event)
 
 void QGLRefSys::enterEvent(QEvent *event)
 {
-    if(nt.listNeuron.size()>0)
-    {
-        emit reset();
-    }
+    emit reset();
 }
 
 
