@@ -91,6 +91,7 @@ class terafly::QGLRefSys : public QGLWidget
 
         void mouseReleased();
         void neuronInfoChanged(QString str);
+        void reset();
 
     protected:
 
@@ -104,6 +105,7 @@ class terafly::QGLRefSys : public QGLWidget
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void wheelEvent(QWheelEvent *event);
+        void enterEvent(QEvent *event);
         //XYZ get3Dpoint(int x,int y);
 
 

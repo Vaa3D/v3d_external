@@ -1153,19 +1153,23 @@ void QGLRefSys::mouseMoveEvent(QMouseEvent *event)
     lastPos = event->pos();
 }
 
-
 void QGLRefSys::mouseReleaseEvent(QMouseEvent *event)
 {
     emit mouseReleased();
 }
 
-
 void QGLRefSys::wheelEvent(QWheelEvent *event)
 {
-
     zoom += event->delta() < 0 ? 1.0 : -1.0;
     zoom = std::max(zoom, -29.0);
     zoom = std::min(zoom, -zoomInit);
 //    printf("zoomFactor = %.0f\n", zoom);
     updateGL();
 }
+
+void QGLRefSys::enterEvent(QEvent *event)
+{
+    emit reset();
+}
+
+

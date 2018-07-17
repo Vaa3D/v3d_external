@@ -411,6 +411,7 @@ class terafly::PMain : public QWidget
         * This is used to manage persistent platform-independent application settings.
         ***********************************************************************************/
         void settingsChanged(int);
+        void voxelSizeChanged(double);
 
         /**********************************************************************************
         * Linked to resolution combobox
@@ -532,6 +533,7 @@ class terafly::PMain : public QWidget
         void teraflyShiftClickedinVR(int _direction);
 #endif
         void setOverview(bool enable);
+        void updateOverview();
 
     signals:
 

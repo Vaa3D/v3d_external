@@ -937,27 +937,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoom_panel->setStyle(new QWindowsStyle());
     #endif
 
-    // Page "Controls" layout
-    QVBoxLayout* controlsLayout = new QVBoxLayout(controls_page);
-    controlsLayout->addWidget(localViewer_panel, 0);
-    controlsLayout->addWidget(zoom_panel, 0);
-    controlsLayout->addWidget(VOI_panel, 0);
-    controlsLayout->addWidget(VoxelSize, 0);
-    controlsLayout->addWidget(PR_panel, 0);
-//    #ifndef Q_OS_MAC
-//    controlsLayout->addWidget(Overview_panel, 0); // need to be changed
-//    #endif
-    controlsLayout->addStretch(1);
-//    #ifdef Q_OS_MAC
-//    controlsLayout->setContentsMargins(10,0,10,10);
-//    #endif
-    controls_page->setLayout(controlsLayout);
-
-    // minimap
-    minimap_page = new QWidget();
-
-    QVBoxLayout* minimapLayout = new QVBoxLayout(minimap_page);
-
     /* ------- overview panel widgets ------- */
     Overview_panel = new QGroupBox("Overview");
 
@@ -971,7 +950,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     refSysContainerLayout2 = new QVBoxLayout();
     refSysContainerLayout2->setContentsMargins(1,1,1,1);
     refSysContainerLayout2->addWidget(dispInfo, 0);
-    //refSysContainerLayout2->addWidget(refSys, 1);
+    #ifndef Q_OS_MAC
+    refSysContainerLayout2->addWidget(refSys, 1);
+    #endif
     refSysContainerLayout2->addStretch();
     refSysContainer2->setLayout(refSysContainerLayout2);
     QGridLayout* Overview_layout = new QGridLayout();
@@ -982,15 +963,33 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     Overview_panel->setStyle(new QWindowsStyle());
     #endif
 
+    // Page "Controls" layout
+    QVBoxLayout* controlsLayout = new QVBoxLayout(controls_page);
+    controlsLayout->addWidget(localViewer_panel, 0);
+    controlsLayout->addWidget(zoom_panel, 0);
+    controlsLayout->addWidget(VOI_panel, 0);
+    controlsLayout->addWidget(VoxelSize, 0);
+    controlsLayout->addWidget(PR_panel, 0);
+    #ifdef Q_OS_MAC
+    // minimap tab
+    minimap_page = new QWidget();
+    QVBoxLayout* minimapLayout = new QVBoxLayout(minimap_page);
     minimapLayout->addWidget(Overview_panel, 0);
     minimap_page->setLayout(minimapLayout);
+    #else
+    controlsLayout->addWidget(Overview_panel, 0);
+    #endif
+    controlsLayout->addStretch(1);
+    controls_page->setLayout(controlsLayout);
 
     connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Others");
+    #ifdef Q_OS_MAC
     tabs->addTab(minimap_page, "Overview");
+    #endif
 
     //overall
     QVBoxLayout* layout = new QVBoxLayout();
@@ -1020,7 +1019,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
-
     // signals and slots
     /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);
     connect(CImport::instance(), SIGNAL(sendOperationOutcome(tf::RuntimeException*, qint64)), this, SLOT(importDone(tf::RuntimeException*, qint64)), Qt::QueuedConnection);
@@ -1042,9 +1040,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(traslTpos, SIGNAL(clicked()), this, SLOT(traslTposClicked()));
     connect(traslTneg, SIGNAL(clicked()), this, SLOT(traslTnegClicked()));
     connect(controlsResetButton, SIGNAL(clicked()), this, SLOT(resetMultiresControls()));
-    connect(x_dsb,SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
-    connect(y_dsb,SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
-    connect(z_dsb,SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
+    connect(x_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(y_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(z_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(refSys, SIGNAL(reset()), this, SLOT(updateOverview()));
 
 #ifdef __ALLOW_VR_FUNCS__
     if(teraflyVRView)
@@ -1073,8 +1072,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     // move to center(vertical)-right(horizontal)
     move(qApp->desktop()->availableGeometry().width() - width(), 0);
-
-
 
 
     // register this as event filter
@@ -1192,12 +1189,22 @@ void PMain::reset()
     helpBox->setText(HTwelcome);
 
     // @ADDED Vaa3D-controls-within-TeraFly feature.
+    #ifdef Q_OS_MAC
     if(tabs->count() == 4)
+    {
+        int tab_selected = tabs->currentIndex();
+        tabs->removeTab(3);
+        tabs->removeTab(1);
+        tabs->setCurrentIndex(tab_selected);
+    }
+    #else
+    if(tabs->count() == 3)
     {
         int tab_selected = tabs->currentIndex();
         tabs->removeTab(1);
         tabs->setCurrentIndex(tab_selected);
     }
+    #endif
 }
 
 
@@ -1547,7 +1554,7 @@ void PMain::loadAnnotations()
                     PAnoToolBar::instance()->setCursor(cursor);
 
                 //
-                annotationsChanged();
+                updateOverview();
             }
             else
                 return;
@@ -1983,12 +1990,21 @@ void PMain::settingsChanged(int)
     CSettings::instance()->setTraslY(yShiftSBox->value());
     CSettings::instance()->setTraslZ(zShiftSBox->value());
     CSettings::instance()->setTraslT(tShiftSBox->value());
+
+    if(PDialogProofreading::isActive())
+        PDialogProofreading::instance()->updateBlocks(0);
+}
+
+void PMain::voxelSizeChanged(double)
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
     CSettings::instance()->setVoxelSizeX(x_dsb->value());
     CSettings::instance()->setVoxelSizeY(y_dsb->value());
     CSettings::instance()->setVoxelSizeZ(z_dsb->value());
 
-    if(PDialogProofreading::isActive())
-        PDialogProofreading::instance()->updateBlocks(0);
+    //
+    updateOverview();
 }
 
 /**********************************************************************************
@@ -3006,8 +3022,8 @@ void PMain::annotationsChanged()
         saveAnnotationsAction->setEnabled(true);
     }
 
-    // update mini-map
-    setOverview(true);
+    // update mini-map, realtime update is slow
+    // updateOverview();
 }
 
 void PMain::showDialogVtk2APO()
@@ -3382,6 +3398,7 @@ void PMain::tabIndexChanged(int value)
 {
     helpBox->setVisible(value == 0);
 
+    #ifdef Q_OS_MAC
     if(value==3)
     {
         refSysContainerLayout2->addWidget(refSys, 1);
@@ -3393,5 +3410,12 @@ void PMain::tabIndexChanged(int value)
         refSysContainerLayout->addWidget(refSys, 1);
         //setOverview(false);
     }
+    #endif
 }
+
+void PMain::updateOverview()
+{
+    setOverview(true);
+}
+
 
