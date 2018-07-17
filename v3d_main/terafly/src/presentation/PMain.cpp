@@ -987,9 +987,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Others");
-    #ifdef Q_OS_MAC
-    tabs->addTab(minimap_page, "Overview");
-    #endif
+//    #ifdef Q_OS_MAC
+//    tabs->addTab(minimap_page, "Overview");
+//    #endif
 
     //overall
     QVBoxLayout* layout = new QVBoxLayout();
@@ -1552,6 +1552,13 @@ void PMain::loadAnnotations()
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(cursor);
+
+                #ifdef Q_OS_MAC
+                if(tabs->count() < 4)
+                {
+                    tabs->insertTab(3, minimap_page, "Overview");
+                }
+                #endif
 
                 //
                 updateOverview();
@@ -3024,6 +3031,13 @@ void PMain::annotationsChanged()
 
     // update mini-map, realtime update is slow
     // updateOverview();
+
+    #ifdef Q_OS_MAC
+    if(tabs->count() < 4)
+    {
+        tabs->insertTab(3, minimap_page, "Overview");
+    }
+    #endif
 }
 
 void PMain::showDialogVtk2APO()
