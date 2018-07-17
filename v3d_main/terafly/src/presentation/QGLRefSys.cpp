@@ -177,6 +177,10 @@ QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers),
 QGLRefSys::~QGLRefSys()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    lenVoxel = 0;
+    lenMicron = 0;
+    numSegments = 0;
 }
 
 QSize QGLRefSys::minimumSizeHint() const
@@ -253,6 +257,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
     //
     lenVoxel = 0;
     lenMicron = 0;
+    numSegments = 0;
 
     //
     if(nt.listNeuron.size()>0)
@@ -424,7 +429,8 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             miniROIyShift = ((-dimMin[1]+_ROIyShift)) / dimSm[1];
             miniROIzDim   = (_ROIzDim   ) / dimSm[2];
             miniROIzShift = ((-dimMin[2]+_ROIzShift)) / dimSm[2];
-            // display total length of swc
+
+            // calculate neuron stroks
             V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
             numSegments = nt_decomposed.nsegs();
         }
@@ -959,7 +965,7 @@ void QGLRefSys::paintGL()
             glColor3f(0.6,0.6,0.6);
         glVertex3f(-xDim, yDim,  zDim);
         glVertex3f(-xDim, -yDim-delta, zDim);
-        //----------------X-axis--------------//numSegments
+        //----------------X-axis--------------//
         if(isEnabled())
             glColor3f(1.0,0.0,0.0);
         else
@@ -996,10 +1002,7 @@ void QGLRefSys::paintGL()
         }
     }
 
-//    // display total length of swc
-//    V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
-//    numSegments = nt_decomposed.nsegs();
-
+    // display total length of swc
     char str[256];
     sprintf(str, "total length: %0.2lf voxels / %0.2lf um \nnumber of segments: %d", lenVoxel, lenMicron, numSegments);
     emit neuronInfoChanged(QString(str));

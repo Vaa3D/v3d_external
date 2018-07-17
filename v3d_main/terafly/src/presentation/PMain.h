@@ -246,6 +246,9 @@ class terafly::PMain : public QWidget
         /* ------- Overview panel widgets ------- */
         QGroupBox* Overview_panel;
 
+        QHBoxLayout* refSysContainerLayout;
+        QVBoxLayout* refSysContainerLayout2;
+
 
         //other widgets
         QHelpBox* helpBox;              //help box
@@ -529,6 +532,7 @@ class terafly::PMain : public QWidget
         void teraflyShiftClickedinVR(int _direction);
 #endif
         void setOverview(bool enable);
+
     signals:
 
         /*********************************************************************************

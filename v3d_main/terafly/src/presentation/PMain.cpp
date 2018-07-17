@@ -690,7 +690,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     QWidget* refSysContainer = new QWidget();
     refSysContainer->setFixedWidth(marginLeft);
     refSysContainer->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
-    QHBoxLayout* refSysContainerLayout = new QHBoxLayout();
+    refSysContainerLayout = new QHBoxLayout();
     refSysContainerLayout->setContentsMargins(1,1,1,1);
     refSysContainerLayout->addWidget(refSys, 1);
     refSysContainer->setLayout(refSysContainerLayout);
@@ -787,8 +787,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
 #endif
 
-    checkBox_overview = new QCheckBox("Overview");
-    checkBox_overview->setChecked(isOverviewActive);
+//    checkBox_overview = new QCheckBox("Overview");
+//    checkBox_overview->setChecked(isOverviewActive);
 
     /* -------------- put elements into 4x4 grid ----------------- */
     VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
@@ -801,7 +801,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
     VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
     VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
-    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
+//    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
 
     /* ------------- FINALIZATION -------------- */
     VOI_layout->setContentsMargins(10,5,10,5);
@@ -833,33 +833,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #ifdef Q_OS_LINUX
     PR_panel->setStyle(new QWindowsStyle());
     #endif
-
-
-
-    /* ------- overview panel widgets ------- */
-    Overview_panel = new QGroupBox("Overview");
-
-#ifndef Q_OS_MAC
-      // Overview panel layout
-    QWidget* refSysContainer2 = new QWidget();
-    //refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
-    refSysContainer2->setStyleSheet("border: 0px;");
-    QLabel* dispInfo = new QLabel();
-    dispInfo->setStyleSheet("border: 0px;");
-    QVBoxLayout* refSysContainerLayout2 = new QVBoxLayout();
-    refSysContainerLayout2->setContentsMargins(1,1,1,1);
-    refSysContainerLayout2->addWidget(dispInfo, 0);
-    refSysContainerLayout2->addWidget(refSys, 1);
-    refSysContainer2->setLayout(refSysContainerLayout2);
-    QGridLayout* Overview_layout = new QGridLayout();
-    Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
-    Overview_layout->setContentsMargins(1,1,1,1);
-    Overview_panel->setLayout(Overview_layout);
-    #ifdef Q_OS_LINUX
-    Overview_panel->setStyle(new QWindowsStyle());
-    #endif
-    connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
-#endif
 
     //local viewer panel
     QVBoxLayout* localviewer_panel_layout= new QVBoxLayout();
@@ -971,18 +944,53 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(VOI_panel, 0);
     controlsLayout->addWidget(VoxelSize, 0);
     controlsLayout->addWidget(PR_panel, 0);
-    #ifndef Q_OS_MAC
-    controlsLayout->addWidget(Overview_panel, 0); // need to be changed
-    #endif
+//    #ifndef Q_OS_MAC
+//    controlsLayout->addWidget(Overview_panel, 0); // need to be changed
+//    #endif
     controlsLayout->addStretch(1);
-    #ifdef Q_OS_MAC
-    controlsLayout->setContentsMargins(10,0,10,10);
-    #endif
+//    #ifdef Q_OS_MAC
+//    controlsLayout->setContentsMargins(10,0,10,10);
+//    #endif
     controls_page->setLayout(controlsLayout);
+
+    // minimap
+    minimap_page = new QWidget();
+
+    QVBoxLayout* minimapLayout = new QVBoxLayout(minimap_page);
+
+    /* ------- overview panel widgets ------- */
+    Overview_panel = new QGroupBox("Overview");
+
+    // Overview panel layout
+    QWidget* refSysContainer2 = new QWidget();
+    //refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
+    refSysContainer2->setStyleSheet("border: 0px;");
+    QLabel* dispInfo = new QLabel();
+    dispInfo->setStyleSheet("border: 0px;");
+    // QVBoxLayout* refSysContainerLayout2 = new QVBoxLayout();
+    refSysContainerLayout2 = new QVBoxLayout();
+    refSysContainerLayout2->setContentsMargins(1,1,1,1);
+    refSysContainerLayout2->addWidget(dispInfo, 0);
+    //refSysContainerLayout2->addWidget(refSys, 1);
+    refSysContainerLayout2->addStretch();
+    refSysContainer2->setLayout(refSysContainerLayout2);
+    QGridLayout* Overview_layout = new QGridLayout();
+    Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
+    Overview_layout->setContentsMargins(1,1,1,1);
+    Overview_panel->setLayout(Overview_layout);
+    #ifdef Q_OS_LINUX
+    Overview_panel->setStyle(new QWindowsStyle());
+    #endif
+
+    minimapLayout->addWidget(Overview_panel, 0);
+    minimap_page->setLayout(minimapLayout);
+
+    connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Others");
+    tabs->addTab(minimap_page, "Overview");
 
     //overall
     QVBoxLayout* layout = new QVBoxLayout();
@@ -1049,7 +1057,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
-    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
+//    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -1163,8 +1171,8 @@ void PMain::reset()
     refSys->setXRotation(200);
     refSys->setYRotation(50);
     refSys->setZRotation(0);
-    refSys->setDims(1,1,1);
     refSys->setFilled(true);
+    refSys->setDims(1,1,1);
     refSys->resetZoom();
     frameCoord->setPalette(VOI_panel->palette());
 
@@ -1184,7 +1192,7 @@ void PMain::reset()
     helpBox->setText(HTwelcome);
 
     // @ADDED Vaa3D-controls-within-TeraFly feature.
-    if(tabs->count() == 3)
+    if(tabs->count() == 4)
     {
         int tab_selected = tabs->currentIndex();
         tabs->removeTab(1);
@@ -3373,4 +3381,17 @@ void PMain::showAnoOctree()
 void PMain::tabIndexChanged(int value)
 {
     helpBox->setVisible(value == 0);
+
+    if(value==3)
+    {
+        refSysContainerLayout2->addWidget(refSys, 1);
+        refSysContainerLayout2->addStretch();
+        //setOverview(true);
+    }
+    else if(value==0)
+    {
+        refSysContainerLayout->addWidget(refSys, 1);
+        //setOverview(false);
+    }
 }
+
