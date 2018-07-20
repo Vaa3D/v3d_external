@@ -604,13 +604,21 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
     container->oformat = fmt;
 
     fmt->video_codec = codec_id;
-    // fmt->video_codec = AV_CODEC_ID_H264; // fails to write
+    
+    AVCodec * codec = avcodec_find_encoder(codec_id);
+    if (NULL == codec)
+        throw std::runtime_error("Unable to find Mpeg4 codec");
 
-    AVStream * video_st = avformat_new_stream(container, NULL);
+    video_st = avformat_new_stream(container, codec);
+    if (!video_st) {
+        fprintf(stderr, "Could not allocate stream\n");
+        exit(1);
+    }
+    video_st->id = container->nb_streams-1;
 
     pCtx = video_st->codec;
     pCtx->codec_id = fmt->video_codec;
-    pCtx->codec_type = AVMEDIA_TYPE_VIDEO;
+    //pCtx->codec_type = AVMEDIA_TYPE_VIDEO;
     // resolution must be a multiple of two
     pCtx->width = width;
     pCtx->height = height;
@@ -619,35 +627,9 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
     pCtx->bit_rate = width * height * 4; // ?
     // pCtx->qmax = 50; // no effect?
 
-    // "high quality" parameters from http://www.cs.ait.ac.th/~on/mplayer/pl/menc-feat-enc-libavcodec.html
-    // vcodec=mpeg4:mbd=2:mv0:trell:v4mv:cbp:last_pred=3:predia=2:dia=2:vmax_b_frames=2:vb_strategy=1:precmp=2:cmp=2:subcmp=2:preme=2:vme=5:naq:qns=2
-    if (false) // does not help
-    // if (pCtx->codec_id == AV_CODEC_ID_MPEG4)
-    {
-        pCtx->mb_decision = 2;
-        pCtx->last_predictor_count = 3;
-        pCtx->pre_dia_size = 2;
-        pCtx->dia_size = 2;
-        pCtx->max_b_frames = 2;
-        pCtx->b_frame_strategy = 2;
-        pCtx->trellis = 2;
-        pCtx->compression_level = 2;
-        pCtx->global_quality = 300;
-        pCtx->pre_me = 2;
-        pCtx->mv0_threshold = 1;
-        // pCtx->quantizer_noise_shaping = 2; // deprecated
-        // TODO
-    }
-
-#if (defined(_MSC_VER) && (_MSC_VER <= 1800) )
-	video_st->time_base.num = 1;
-	video_st->time_base.den = 25;
-	pCtx->time_base.num = 1;
-	pCtx->time_base.den = 25;
-#else
     video_st->time_base = (AVRational){1, 25};
-    pCtx->time_base = (AVRational){1, 25};
-#endif
+    pCtx->time_base = video_st->time_base;
+
 	// pCtx->time_base = (AVRational){1, 10};
     pCtx->gop_size = 12; // emit one intra frame every twelve frames
     // pCtx->max_b_frames = 0;
@@ -659,62 +641,64 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
     {
         case AV_CODEC_ID_H264:
         {
-        // http://stackoverflow.com/questions/3553003/encoding-h-264-with-libavcodec-x264
-        pCtx->coder_type = 1;  // coder = 1
-        pCtx->flags|=CODEC_FLAG_LOOP_FILTER;   // flags=+loop
-        pCtx->me_cmp|= 1;  // cmp=+chroma, where CHROMA = 1
-        // pCtx->partitions|=X264_PART_I8X8+X264_PART_I4X4+X264_PART_P8X8+X264_PART_B8X8; // partitions=+parti8x8+parti4x4+partp8x8+partb8x8
-        pCtx->me_method=ME_HEX;    // me_method=hex
-        pCtx->me_subpel_quality = 7;   // subq=7
-        pCtx->me_range = 16;   // me_range=16
-        pCtx->gop_size = 250;  // g=250
-        pCtx->keyint_min = 25; // keyint_min=25
-        pCtx->scenechange_threshold = 40;  // sc_threshold=40
-        pCtx->i_quant_factor = 0.71; // i_qfactor=0.71
-        pCtx->b_frame_strategy = 1;  // b_strategy=1
-        pCtx->qcompress = 0.6; // qcomp=0.6
-        pCtx->qmin = 10;   // qmin=10
-        pCtx->qmax = 51;   // qmax=51
-        pCtx->max_qdiff = 4;   // qdiff=4
-        pCtx->max_b_frames = 3;    // bf=3
-        pCtx->refs = 3;    // refs=3
-        // pCtx->directpred = 1;  // directpred=1
-        pCtx->trellis = 1; // trellis=1
-        // pCtx->flags2|=CODEC_FLAG2_BPYRAMID+CODEC_FLAG2_MIXED_REFS+CODEC_FLAG2_WPRED+CODEC_FLAG2_8X8DCT+CODEC_FLAG2_FASTPSKIP;  // flags2=+bpyramid+mixed_refs+wpred+dct8x8+fastpskip
-        // pCtx->weighted_p_pred = 2; // wpredp=2
-        // libx264-main.ffpreset preset
-        // pCtx->flags2|=CODEC_FLAG2_8X8DCT;
-        // pCtx->flags2^=CODEC_FLAG2_8X8DCT;    // flags2=-dct8x8
-            pCtx->pix_fmt = AV_PIX_FMT_YUV420P;
-            break;
-    }
+           // http://stackoverflow.com/questions/3553003/encoding-h-264-with-libavcodec-x264
+           pCtx->coder_type = 1;                  // coder = 1
+           pCtx->flags |= CODEC_FLAG_LOOP_FILTER; // flags=+loop
+           pCtx->me_cmp |= 1;                     // cmp=+chroma, where CHROMA = 1
+           // pCtx->partitions|=X264_PART_I8X8+X264_PART_I4X4+X264_PART_P8X8+X264_PART_B8X8;
+           // // partitions=+parti8x8+parti4x4+partp8x8+partb8x8
+           pCtx->me_method = ME_HEX;         // me_method=hex
+           pCtx->me_subpel_quality = 7;      // subq=7
+           pCtx->me_range = 16;              // me_range=16
+           pCtx->gop_size = 250;             // g=250
+           pCtx->keyint_min = 25;            // keyint_min=25
+           pCtx->scenechange_threshold = 40; // sc_threshold=40
+           pCtx->i_quant_factor = 0.71;      // i_qfactor=0.71
+           pCtx->b_frame_strategy = 1;       // b_strategy=1
+           pCtx->qcompress = 0.6;            // qcomp=0.6
+           pCtx->qmin = 10;                  // qmin=10
+           pCtx->qmax = 51;                  // qmax=51
+           pCtx->max_qdiff = 4;              // qdiff=4
+           pCtx->max_b_frames = 3;           // bf=3
+           pCtx->refs = 3;                   // refs=3
+           // pCtx->directpred = 1;  // directpred=1
+           pCtx->trellis = 1; // trellis=1
+                              // pCtx->flags2|=CODEC_FLAG2_BPYRAMID+CODEC_FLAG2_MIXED_REFS+CODEC_FLAG2_WPRED+CODEC_FLAG2_8X8DCT+CODEC_FLAG2_FASTPSKIP;
+                              // // flags2=+bpyramid+mixed_refs+wpred+dct8x8+fastpskip
+                              // pCtx->weighted_p_pred = 2; // wpredp=2
+                              // libx264-main.ffpreset preset
+                              // pCtx->flags2|=CODEC_FLAG2_8X8DCT;
+                              // pCtx->flags2^=CODEC_FLAG2_8X8DCT;    // flags2=-dct8x8
+           pCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+           break;
+        }
         case AV_CODEC_ID_HEVC:
-    {
-        av_dict_set( &codec_options, "preset", "medium", 0 );
-            av_dict_set( &codec_options, "x265-params", options.c_str(), 0 );
-        pCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
-        pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
-            break;
-    }
+        {
+           av_dict_set( &codec_options, "preset", "medium", 0 );
+           av_dict_set( &codec_options, "x265-params", options.c_str(), 0 );
+           pCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+           pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
+           break;
+        }
         case AV_CODEC_ID_FFV1:
         {
-            boost::regex re2( "\\:" );
-            boost::sregex_token_iterator ii( options.begin(), options.end(), re2, -1 );
-            boost::sregex_token_iterator it_end;
-            while ( ii != it_end )
-            {
-                std::string param( *ii++ );
-                std::string value( *ii++ );
-                av_dict_set( &codec_options, param.c_str(), value.c_str(), 0 );
-            }
-            pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
-            break;
+           boost::regex re2( "\\:" );
+           boost::sregex_token_iterator ii( options.begin(), options.end(), re2, -1 );
+           boost::sregex_token_iterator it_end;
+           while ( ii != it_end )
+           {
+              std::string param( *ii++ );
+              std::string value( *ii++ );
+              av_dict_set( &codec_options, param.c_str(), value.c_str(), 0 );
+           }
+           pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
+           break;
         }
+        default:
+           pCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+           break;
     }
 
-    AVCodec * codec = avcodec_find_encoder(pCtx->codec_id);
-    if (NULL == codec)
-        throw std::runtime_error("Unable to find Mpeg4 codec");
 //    if (codec->pix_fmts)
 //        pCtx->pix_fmt = codec->pix_fmts[0];
     {
@@ -766,7 +750,7 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
         else if ( avio_open( &container->pb, file_name, AVIO_FLAG_WRITE ) < 0 )
                  throw std::runtime_error("Error opening output video file");
     }
-    avformat_write_header(container, NULL);
+    avformat_write_header(container, &codec_options);
 }
 
 void FFMpegEncoder::setPixelIntensity(int x, int y, int c, uint8_t value)
@@ -793,12 +777,10 @@ void FFMpegEncoder::write_frame()
 
 void FFMpegEncoder::encode( AVFrame* picture )
 {
-    AVPacket packet;
+    AVPacket packet = {0};
     av_init_packet(&packet);
-    packet.data = NULL;
-    packet.size = 0;
 
-    if ( pCtx->codec_id == AV_CODEC_ID_HEVC && picture )
+    if ( picture )
         picture->pts = _frame_count;
 
     int got_packet;
@@ -812,15 +794,10 @@ void FFMpegEncoder::encode( AVFrame* picture )
     {
         _encoded_frames++;
 
-        if ( pCtx->codec_id == AV_CODEC_ID_HEVC )
-        {
-            if (packet.pts == AV_NOPTS_VALUE && !(pCtx->codec->capabilities & CODEC_CAP_DELAY))
-                packet.pts = _frame_count;
-
-            av_packet_rescale_ts(&packet, pCtx->time_base, pCtx->time_base);
-        }
-
-        int result = av_write_frame(container, &packet);
+        av_packet_rescale_ts(&packet, pCtx->time_base, video_st->time_base);
+        packet.stream_index = video_st->index;
+        
+        int result = av_interleaved_write_frame(container, &packet);
         av_destruct_packet(&packet);
     }
 

@@ -130,7 +130,7 @@ include_directories( BEFORE
   ../neuron_annotator
   ../mozak/terafly/src/core/imagemanager
   ../mozak/terafly/src/presentation
-  ../\mozak/m_terafly/src/control
+  ../mozak/m_terafly/src/control
   "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 

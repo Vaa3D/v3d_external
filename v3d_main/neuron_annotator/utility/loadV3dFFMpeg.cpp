@@ -56,54 +56,73 @@ generate_codec_mapping( Codec_Mapping& mapping, int num_channels )
     }
 }
 
+int roundUp(int numToRound, int multiple) 
+{
+    assert(multiple);
+    return ((numToRound + multiple - 1) / multiple) * multiple;
+}
+
 bool saveStackFFMpeg( const char* file_name, const My4DImage& img, AVCodecID codec_id )
 {
     try
     {
         Image4DProxy<My4DImage> proxy( const_cast<My4DImage*>( &img ) );
-        double default_irange = 1.0; // assumes data range is 0-255.0
-        if ( proxy.su > 1 )
+
+        long scaledHeight = roundUp( proxy.sy, 2 );
+        long scaledWidth = roundUp( proxy.sx, 2 );
+
+        for ( int c = 0; c < proxy.sc; ++c )
         {
-            default_irange = 1.0 / 16.0; // 0-4096, like our microscope images
-        }
-        std::vector<double> imin( proxy.sc, 0.0 );
-        std::vector<double> irange2( proxy.sc, default_irange );
-        // rescale if converting from 16 bit to 8 bit
-        if ( proxy.su > 1 )
-        {
-            if ( img.p_vmin && img.p_vmax )
-                proxy.set_minmax( img.p_vmin, img.p_vmax );
-            if ( proxy.has_minmax() )
+            double default_irange = 1.0; // assumes data range is 0-255.0
+            if ( proxy.su > 1 )
             {
-                for ( int c = 0; c < proxy.sc; ++c )
+                default_irange = 1.0 / 16.0; // 0-4096, like our microscope images
+            }
+            std::vector<double> imin( proxy.sc, 0.0 );
+            std::vector<double> irange2( proxy.sc, default_irange );
+            // rescale if converting from 16 bit to 8 bit
+            if ( proxy.su > 1 )
+            {
+                if ( img.p_vmin && img.p_vmax )
+                    proxy.set_minmax( img.p_vmin, img.p_vmax );
+                if ( proxy.has_minmax() )
                 {
                     imin[c] = proxy.vmin[c];
                     irange2[c] = 255.0 / ( proxy.vmax[c] - proxy.vmin[c] );
                 }
             }
-        }
-        FFMpegEncoder encoder( file_name, proxy.sx, proxy.sy, codec_id );
-        for ( int z = 0; z < proxy.sz; ++z )
-        {
-            for ( int y = 0; y < proxy.sy; ++y )
+
+            FFMpegEncoder encoder( file_name, scaledWidth, scaledHeight, codec_id );
+
+            // If the image needs padding, fill the expanded border regions with black
+            for ( int z = 0; z < proxy.sz; ++z )
             {
-                for ( int x = 0; x < proxy.sx; ++x )
+                for ( int y = 0; y < scaledHeight; ++y )
                 {
-                    for ( int c = 0; c < 3; ++c )
+                    for ( int x = 0; x < scaledWidth; ++x )
                     {
-                        int ic = c;
-                        if ( c >= proxy.sc ) ic = 0; // single channel volume to gray RGB movie
-                        double val = proxy.value_at( x, y, z, ic );
-                        val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
-                        encoder.setPixelIntensity( x, y, c, ( int )val );
+                        // If inside the area with valid data
+                        if ( x < proxy.sx && y < proxy.sy )
+                        {
+                            int ic = c;
+                            double val = proxy.value_at( x, y, z, ic );
+                            val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
+                            for ( int cc = 0; cc < 3; ++cc )
+                                encoder.setPixelIntensity( x, y, cc, ( int )val );
+                        }
+                        else
+                            for ( int cc = 0; cc < 3; ++cc )
+                                encoder.setPixelIntensity( x, y, cc, 0 );
                     }
                 }
+                encoder.write_frame();
             }
-            encoder.write_frame();
+
+            for ( int rem = encoder.encoded_frames(); rem < proxy.sz; rem++ )
+                encoder.encode();
+
+            encoder.close();
         }
-
-        encoder.close();
-
         return true;
     }
     catch ( ... ) {}

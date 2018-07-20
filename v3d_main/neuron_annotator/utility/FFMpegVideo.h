@@ -127,6 +127,7 @@ public:
 protected:
     AVFormatContext *container;
     AVCodecContext *pCtx;
+    AVStream *video_st;
     AVFrame *picture_yuv;
     AVFrame *picture_rgb;
     struct SwsContext *Sctx;
