@@ -102,10 +102,12 @@ if(Qt5Core_FOUND)
   set(ARTHUR_MOC_HEADERS
       ${arthurwidgets_path}/arthurwidgets.h
       ${arthurwidgets_path}/arthurstyle.h
+      ${arthurwidgets_path}/hoverpoints.h
   )
   set(ARTHUR_SRCS
       ${arthurwidgets_path}/arthurwidgets.cpp
       ${arthurwidgets_path}/arthurstyle.cpp
+      ${arthurwidgets_path}/hoverpoints.cpp
   )
 endif()
 
@@ -135,7 +137,7 @@ include_directories( BEFORE
   )
 
 if(Qt5Core_FOUND)
-  add_library(arthurwidgets ${ARTHUR_MOC_SRCS} ${ARTHUR_SRCS} )
+add_library(arthurwidgets ${ARTHUR_MOC_SRCS} ${ARTHUR_SRCS} )
 endif()
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})

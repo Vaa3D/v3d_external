@@ -33,6 +33,7 @@ include(CTest)
 find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" ON )
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version" FORCE)
 
 # Movie loading required libavcodec from ffmpeg
 # FFMpeg requires YASM
@@ -342,68 +343,85 @@ if(FORCE_QT4 OR NOT Qt5Core_FOUND)
   include_directories( ${QT_INCLUDES} )
 endif()
 
-find_program(QT_QMAKE_EXECUTABLE qmake)
-execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
-                 OUTPUT_VARIABLE QT_DEMO_PREFIX
-                 OUTPUT_STRIP_TRAILING_WHITESPACE )
-if (Qt5Core_FOUND)
-  message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
-else()
-  message("QTVERSION = ${QTVERSION}")
-endif()
-message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
+set(BUILD_QT_DEMO_LIBRARY ON CACHE BOOL "Build rather than search for the qt shared demo library")
 
-find_path(QT_DEMOS_INCLUDE_DIR
-  arthurwidgets.h
-  PATHS
-        ${QT_DEMO_PREFIX}
-  PATH_SUFFIXES
-      	shared
-      	widgets/painting/shared
+if (BUILD_QT_DEMO_LIBRARY)
+  set(arthurwidgets_path "${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install")
+  ExternalProject_Add(
+      ARTHURWIDGETS
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/src_packages/qt_shared_demos.tgz
+      SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/src
+      INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install
+      UPDATE_COMMAND ""
+      CONFIGURE_COMMAND ${QT_QMAKE_EXECUTABLE}
+      BUILD_IN_SOURCE 1
   )
-
-if(NOT Qt5Core_FOUND)
-  find_library(QT4_DEMOS_LIBRARY_RELEASE
-    demo_shared
-    HINTS
-          ${QT_LIBRARY_DIR}/..
-          /Developer/Examples/Qt
-    /usr/lib/qt4
-    /usr/local/Trolltech/Qt-${QTVERSION}
-    "C:/Qt/${QTVERSION}"
-    PATH_SUFFIXES
-    demos/shared
-    Demos/shared
-    demos/shared/release # Windows
-    )
-  find_library(QT4_DEMOS_LIBRARY_DEBUG
-    demo_shared
-    HINTS
-          ${QT_LIBRARY_DIR}/..
-          /Developer/Examples/Qt
-    /usr/lib/qt4
-    /usr/local/Trolltech/Qt-${QTVERSION}
-    "C:/Qt/${QTVERSION}"
-    PATH_SUFFIXES
-    demos/shared
-    Demos/shared
-    demos/shared/debug # Windows
-    )
-
-  set(QT4_DEMOS_LIBRARY "${QT4_DEMOS_LIBRARY_RELEASE}" CACHE PATH "")
-  if (MSVC AND QT4_DEMOS_LIBRARY_RELEASE AND QT4_DEMOS_LIBRARY_DEBUG)
-    set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
+  include_directories(${arthurwidgets_path})
+  set(QT4_DEMOS_LIBRARY ${arthurwidgets_path}/libdemo_shared${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path")
+else()
+  find_program(QT_QMAKE_EXECUTABLE qmake)
+  execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
+                   OUTPUT_VARIABLE QT_DEMO_PREFIX
+                   OUTPUT_STRIP_TRAILING_WHITESPACE )
+  if (Qt5Core_FOUND)
+    message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
+  else()
+    message("QTVERSION = ${QTVERSION}")
   endif()
-else()
-  set(arthurwidgets_path "${QT_DEMOS_INCLUDE_DIR}/")
-endif()
+  message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
 
-message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
+  find_path(QT_DEMOS_INCLUDE_DIR
+    arthurwidgets.h
+    PATHS
+          ${QT_DEMO_PREFIX}
+    PATH_SUFFIXES
+        	shared
+        	widgets/painting/shared
+    )
 
-if(NOT QT_DEMOS_INCLUDE_DIR)
-  message(FATAL "You need to install the Qt demo files")
-else()
-  include_directories(${QT_DEMOS_INCLUDE_DIR} ${QT_DEMO_PREFIX})
+  if(NOT Qt5Core_FOUND)
+    find_library(QT4_DEMOS_LIBRARY_RELEASE
+      demo_shared
+      HINTS
+            ${QT_LIBRARY_DIR}/..
+            /Developer/Examples/Qt
+      /usr/lib/qt4
+      /usr/local/Trolltech/Qt-${QTVERSION}
+      "C:/Qt/${QTVERSION}"
+      PATH_SUFFIXES
+      demos/shared
+      Demos/shared
+      demos/shared/release # Windows
+      )
+    find_library(QT4_DEMOS_LIBRARY_DEBUG
+      demo_shared
+      HINTS
+            ${QT_LIBRARY_DIR}/..
+            /Developer/Examples/Qt
+      /usr/lib/qt4
+      /usr/local/Trolltech/Qt-${QTVERSION}
+      "C:/Qt/${QTVERSION}"
+      PATH_SUFFIXES
+      demos/shared
+      Demos/shared
+      demos/shared/debug # Windows
+      )
+
+    set(QT4_DEMOS_LIBRARY "${QT4_DEMOS_LIBRARY_RELEASE}" CACHE PATH "")
+    if (MSVC AND QT4_DEMOS_LIBRARY_RELEASE AND QT4_DEMOS_LIBRARY_DEBUG)
+      set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
+    endif()
+  else()
+    set(arthurwidgets_path "${QT_DEMOS_INCLUDE_DIR}/")
+  endif()
+
+  message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
+
+  if(NOT QT_DEMOS_INCLUDE_DIR)
+    message(FATAL "You need to install the Qt demo files")
+  else()
+    include_directories(${QT_DEMOS_INCLUDE_DIR} ${QT_DEMO_PREFIX})
+  endif()
 endif()
 
 # Define __NAWEBSERVICE__ symbol -D__NAWEBSERVICE__
