@@ -215,6 +215,10 @@ void CImport::run()
             // activate VP mode
             vp = true;
 
+            // set bits remap/conversion
+            setBitsRemap(CSettings::instance()->getBitsRemap());
+            setBitsConversion(CSettings::instance()->getBitsConversion());
+
             // load image data from lowest-res pyramid layer
             vmapXDim = volumes[0]->getDIM_H();
             vmapYDim = volumes[0]->getDIM_V();
@@ -340,6 +344,11 @@ void CImport::run()
         }
         else
             throw tf::RuntimeException(tf::strprintf("Cannot recognize format of image at \"%s\" [stored format is \"%s\"].", path.c_str(), format.c_str()));
+
+
+        // set bits remap/conversion
+        setBitsRemap(CSettings::instance()->getBitsRemap());
+        setBitsConversion(CSettings::instance()->getBitsConversion());
 
 
         /**************** 3) GENERATING / LOADING VOLUME 3D MAP *****************
@@ -560,4 +569,19 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
 
     // all checks passed: no need to regenerate volume map
     return false;
+}
+
+void CImport::setBitsRemap(int id)
+{
+    // bits remap can only be applied to 8-bits (1 byte) images
+    for(int i=0; i<this->volumes.size(); i++)
+        if(volumes[i]->getBYTESxCHAN() == 1)
+            volumes[i]->setDEPTH_CONV_ALGO(id);
+}
+void CImport::setBitsConversion(int id)
+{
+    // bits conversions can only be applied to 16-bits (1 byte) images
+    for(int i=0; i<this->volumes.size(); i++)
+        if(volumes[i]->getBYTESxCHAN() == 2)
+            volumes[i]->setDEPTH_CONV_ALGO(id);
 }
