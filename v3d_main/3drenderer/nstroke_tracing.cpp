@@ -3455,18 +3455,9 @@ void Renderer_gl1::simpleConnect()
 				if (segInfo.size() < 2) return;
 				/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
 				
-				if (selectMode == smSimpleConnectLoopSafe)
-				{
-					int loop = loopCheck(&(curImg->tracedNeuron.seg), &segInfo); // =======> loop check 
-					if (loop == 1)
-					{
-						v3d_msg("Oops! You're about to make this mouse a retard by introducing a neuronal short circuit. *\\(^O^)/*  \n\nNote: This loop safety guard is in beta phase. Please collect feedbacks and report to MK. Thank you.");
-						return;
-					}
-				}
-
 				simpleConnectExecutor(curImg, segInfo);
-				this->hierarchyRelabel = false;
+				this->hierarchyRelabel = false; // Editing neuron structure rarely starts with a sorted swc. Thus this switch is disabled for now.
+												//  -- MK, July, 2018
 				if (this->hierarchyRelabel)
 				{
 					if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted) this->hierarchyReprofile(curImg, segInfo[1].segID, segInfo[0].segID);
@@ -3695,557 +3686,9 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 
 	return;
 }
-
-void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID)
-{
-	cout << " ---> primary seg hierarchy: " << curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy << endl;
-	
-	vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[mainSegID]);
-	
-	if (connectedSegDecomposed.size() > 1)
-	{
-		cout << "new segment breaks into " << connectedSegDecomposed.size() << " subsegments." << endl << endl;
-
-		size_t primaryPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[mainSegID].branchingProfile.paID];
-		V_NeuronSWC_unit oldPrimaryHead = *(curImg->tracedNeuron.seg[mainSegID].row.end() - 1);
-		V_NeuronSWC_unit oldPrimaryTail = *(curImg->tracedNeuron.seg[mainSegID].row.begin());
-		//cout << "Old primary tail coords:" << oldPrimaryTail.x << " " << oldPrimaryTail.y << " " << oldPrimaryTail.z << endl;
-		//cout << "Old primary head coords:" << oldPrimaryHead.x << " " << oldPrimaryHead.y << " " << oldPrimaryHead.z << endl << endl;
-		
-		bool allAdded = false;
-		if (connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(1).row.end() - 1)->x && connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(2).row.end() - 1)->x)
-		{
-			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
-			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
-			{
-				if (it->x == (connectedSegDecomposed.at(1).row.begin() + 1)->x)
-				{
-					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
-					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
-					allAdded = true;
-					break;
-				}
-			}
-			if (!allAdded)
-			{
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
-			}
-		}
-		else if (connectedSegDecomposed.at(1).row.begin()->x == (connectedSegDecomposed.at(0).row.end() - 1)->x && connectedSegDecomposed.at(1).row.begin()->x == (connectedSegDecomposed.at(2).row.end() - 1)->x)
-		{
-			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
-			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
-			{
-				if (it->x == (connectedSegDecomposed.at(0).row.begin() + 1)->x)
-				{
-					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
-					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
-					allAdded = true;
-					break;
-				}
-			}
-			if (!allAdded)
-			{
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
-			}
-		}
-		else if (connectedSegDecomposed.at(2).row.begin()->x == (connectedSegDecomposed.at(0).row.end() - 1)->x && connectedSegDecomposed.at(2).row.begin()->x == (connectedSegDecomposed.at(1).row.end() - 1)->x)
-		{
-			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
-			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
-			{
-				if (it->x == (connectedSegDecomposed.at(1).row.begin() + 1)->x)
-				{
-					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
-					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
-					allAdded = true;
-					break;
-				}
-			}
-			if (!allAdded)
-			{
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
-				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
-			}
-		}
-
-		vector<V_NeuronSWC>::iterator newSegIt = curImg->tracedNeuron.seg.end() - 3;
-		for (ptrdiff_t i = 0; i < 3; ++i)
-		{
-			++newSegIt;
-			newSegIt->branchingProfile.ID = curImg->tracedNeuron.seg.size();
-			int segNums = curImg->tracedNeuron.seg.size() - 1;
-			
-			if (i == 0)
-			{
-				newSegIt->branchingProfile.paID = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.ID;
-				newSegIt->branchingProfile.hierarchy = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.hierarchy + 1;
-				newSegIt->branchingProfile.childIDs.clear();
-				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
-				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID);
-				for (vector<int>::iterator childIt = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.childIDs.begin(); childIt != curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.childIDs.end(); ++childIt)
-					if (*childIt == curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID) *childIt = newSegIt->branchingProfile.ID;		
-			}
-			else if (i == 1)
-			{
-				newSegIt->branchingProfile.paID = (newSegIt - 1)->branchingProfile.ID;
-				newSegIt->branchingProfile.hierarchy = (newSegIt - 1)->branchingProfile.hierarchy + 1;
-				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
-				//cout << "segID:" << segNums << " branchID:" << newSegIt->branchingProfile.ID << endl;
-				newSegIt->branchingProfile.childIDs.clear();
-				for (vector<int>::iterator childIt = curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.begin(); childIt != curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.end(); ++childIt)
-				{
-					//cout << "child branchID: " << *childIt << endl;
-					int childBranchID = *childIt;
-					newSegIt->branchingProfile.childIDs.push_back(childBranchID);
-					curImg->tracedNeuron.seg[this->branchSegIDmap[*childIt]].branchingProfile.paID = newSegIt->branchingProfile.ID;
-				}
-				(newSegIt - 1)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
-				cout << "=======> recursive downstream relabeling" << endl;
-				this->rc_downstreamRelabel(curImg, segNums);
-			}
-			else if (i == 2)
-			{
-				newSegIt->branchingProfile.paID = (newSegIt - 2)->branchingProfile.ID;
-				newSegIt->branchingProfile.hierarchy = (newSegIt - 2)->branchingProfile.hierarchy + 1;
-				(newSegIt - 2)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
-				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
-
-				int oldPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
-				for (vector<int>::iterator oldPaChildIt = curImg->tracedNeuron.seg[oldPaSegID].branchingProfile.childIDs.begin(); oldPaChildIt != curImg->tracedNeuron.seg[oldPaSegID].branchingProfile.childIDs.end(); ++oldPaChildIt)
-				{
-					if (*oldPaChildIt == curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID)
-					{	
-						cout << this->branchSegIDmap[*oldPaChildIt] << " " << this->branchSegIDmap[newSegIt->branchingProfile.ID] << endl;
-						*oldPaChildIt = newSegIt->branchingProfile.ID;
-					}
-				}
-
-				V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[segNums]);
-				int curSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
-				V_NeuronSWC* curSegPtr = &(curImg->tracedNeuron.seg[curSegID]);
-				cout << "=======> upstream relabeling" << endl;
-				upstreamRelabel(curImg, curSegPtr, newPaSegPtr);
-				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID);
-			}
-		}
-
-		curImg->tracedNeuron.seg[mainSegID].to_be_deleted = true;
-	}
-	else if (connectedSegDecomposed.size() <= 1)
-	{
-		size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
-		cout << endl << "-- parent segment ID of the secondary segment: " << paSegID;
-		cout << "    parent branch ID: " << curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID << endl;
-		curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy = curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy + 1;
-		
-		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
-
-		cout << "old immediate children segment ID-branchID-hierarchy: ";
-		for (vector<int>::iterator chkIt = curStemChildBranchIDs.begin(); chkIt != curStemChildBranchIDs.end(); ++chkIt)
-			cout << this->branchSegIDmap[*chkIt] << "-" << *chkIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << ", ";
-
-		curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.clear();
-		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
-		{
-			if (this->branchSegIDmap[*it] == branchSegID) this->branchSegIDmap.erase(*it);
-			else
-			{
-				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
-				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
-				curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.push_back(*it);
-				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.paID = curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID;
-			}
-		}
-
-		cout << endl << "new immediate children segment ID-branchID-hierarchy: ";
-		for (vector<int>::iterator chkIt = curStemChildBranchIDs.begin(); chkIt != curStemChildBranchIDs.end(); ++chkIt)
-			cout << this->branchSegIDmap[*chkIt] << "-" << *chkIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << ", ";
-		cout << endl;
-
-		V_NeuronSWC* upstreamStartSegPtr = &(curImg->tracedNeuron.seg[paSegID]);
-		V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[mainSegID]);
-		this->upstreamRelabel(curImg, upstreamStartSegPtr, newPaSegPtr);
-	}
-}
-
-void Renderer_gl1::upstreamRelabel(My4DImage* curImg, V_NeuronSWC* curSegPtr, V_NeuronSWC* newPaSegPtr)
-{
-	cout << endl << "curent segID: " << this->branchSegIDmap[curSegPtr->branchingProfile.ID] << ", new parent segID: " << this->branchSegIDmap[newPaSegPtr->branchingProfile.ID] << endl;
-	cout << "start upstream relabeling..." << endl;
-	while (1)
-	{
-		int curBranchID = curSegPtr->branchingProfile.ID;
-		int curPaBranchID = curSegPtr->branchingProfile.paID;
-		size_t curSegID = this->branchSegIDmap[curBranchID];
-		size_t curPaSegID = this->branchSegIDmap[curPaBranchID];
-		curSegPtr->branchingProfile.hierarchy = newPaSegPtr->branchingProfile.hierarchy + 1;
-
-		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
-		curSegPtr->branchingProfile.childIDs.clear();
-		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
-		{
-			if (this->branchSegIDmap[*it] == curSegID)
-			{
-				curSegPtr->branchingProfile.paID = newPaSegPtr->branchingProfile.ID;
-				newPaSegPtr->branchingProfile.childIDs.push_back(*it);
-
-				cout << "  stem segID:" << this->branchSegIDmap[newPaSegPtr->branchingProfile.ID] << endl;
-				for (vector<int>::iterator chkIt = newPaSegPtr->branchingProfile.childIDs.begin(); chkIt != newPaSegPtr->branchingProfile.childIDs.end(); ++chkIt)
-					cout << "    child segID:" << this->branchSegIDmap[*chkIt] << " adjusted hierarchy:" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << endl;
-				cout << endl;
-			}
-			else
-			{
-				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curSegPtr->branchingProfile.hierarchy + 1;
-				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
-				curSegPtr->branchingProfile.childIDs.push_back(*it);
-				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.paID = curBranchID;
-			}
-		}
-		
-		newPaSegPtr = curSegPtr;
-		curSegPtr = &(curImg->tracedNeuron.seg[curPaSegID]);
-		if (curSegPtr->branchingProfile.paID == -1)
-		{
-			curSegPtr->branchingProfile.paID = newPaSegPtr->branchingProfile.ID;
-			newPaSegPtr->branchingProfile.childIDs.push_back(curSegPtr->branchingProfile.ID);
-			curSegPtr->branchingProfile.hierarchy = newPaSegPtr->branchingProfile.hierarchy + 1;
-			break;
-		}
-	}
-}
-
-void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
-{
-	int childSegCount;
-
-	vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
-	childSegCount = nextLevelBranchIDs.size();
-	cout << endl << "current seg number: " << curPaSegID << "  child seg number: " << childSegCount << " ";
-	if (childSegCount == 0)
-	{
-		cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
-		return;
-	}
-	for (vector<int>::iterator childIt = nextLevelBranchIDs.begin(); childIt != nextLevelBranchIDs.end(); ++childIt)
-		cout << this->branchSegIDmap[*childIt] << "-" << *childIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*childIt]].branchingProfile.hierarchy << ", ";
-	cout << endl;
-
-	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
-	{
-		cout << "  current child segID: " << this->branchSegIDmap[*it] << ", branchID: " << *it << ", original hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
-		curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
-		cout << "  current child segID: " << this->branchSegIDmap[*it] << ", branchID: " << *it << ", adjusted hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
-		this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
-	}
-
-	return;
-}
-
-int Renderer_gl1::loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr)
-{
-	// This method checks if there is any loop about to form when connecting 2 segments, MK, May, 2018.
-
-	cout << "--> real-time loop check.." << endl;
-	
-	/*int delSegNum = 0;
-	for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
-	{
-		if (it->to_be_deleted)
-		{
-			cout << "To_be_deleted seg ID: " << it->row.begin()->seg_id << endl;
-			++delSegNum;
-		}
-	}
-	cout << "Segs not showing: " << delSegNum << endl;*/
-
-	int returnValue = 0;
-	
-	// Determining the long path segment and short path segment with their hierarchies. 
-	// Short segment = higher hierarchy; long segment = lower hierarchy.
-	segInfoUnit longSeg;
-	segInfoUnit shortSeg;
-	if (involvedSegsInfoPtr->at(0).hierarchy <= involvedSegsInfoPtr->at(1).hierarchy)
-	{
-		longSeg = involvedSegsInfoPtr->at(1);
-		shortSeg = involvedSegsInfoPtr->at(0); 
-	}
-	else 
-	{
-		longSeg = involvedSegsInfoPtr->at(0);
-		shortSeg = involvedSegsInfoPtr->at(1);
-	}
-
-	// --------- Moving the lower segment upward, until the same hierarchy as the higher segment ---------
-	int longHi = longSeg.hierarchy;
-	int longID = longSeg.branchID;
-	int longPaID = longSeg.paBranchID;
-	int shortHi = shortSeg.hierarchy;
-	int shortID = shortSeg.branchID;
-	int shortPaID = shortSeg.paBranchID;
-
-	cout << "  Segment ID/hierarchy ---> short: " << shortID << "/" << shortHi << " || " << "long: " << longID << "/" << longHi << endl;
-
-	if (longHi != shortHi)
-	{
-		bool sameHi = false;
-		while (!sameHi)
-		{
-			//cout << shortHi << " " << longHi << endl;
-			if (shortHi == longHi)
-			{
-				sameHi = true;
-				break;
-			}
-
-			for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
-			{
-				if (it->branchingProfile.ID == longPaID)
-				{
-					if (shortHi < longHi)
-					{
-						longHi = it->branchingProfile.hierarchy;
-						longID = it->branchingProfile.ID;
-						longPaID = it->branchingProfile.paID;
-						break;
-					}
-				}
-			}
-		}
-	}
-	// --------- END of [Moving the lower segment upward, until the same hierarchy as the higher segment] ---------
-	
-	// --------- Starting from the same hierarchy level, both moving upward at the same time, see if they end up the same parental branch ID ---------
-	bool loop = false;
-	bool root = false;
-	while (!loop && !root)
-	{
-		cout << "    Moving up 1 level, ancestor segment ID/hierarchy  ---> short: " << shortID << " " << shortHi << " || ";
-		cout << "long: " << longID << " " << longHi  << endl;
-		if (shortID == longID)
-		{
-			cout << "===> Back to the same segment. Loop formed. Connecting prohibited." << endl;
-			returnValue = 1;
-			loop = true;
-		}
-		else
-		{
-			int count = 0;
-			for (vector<V_NeuronSWC>::iterator it = curImgSegsPtr->begin(); it != curImgSegsPtr->end(); ++it)
-			{
-				if (it->branchingProfile.ID == longPaID)
-				{
-					longHi = it->branchingProfile.hierarchy;
-					longID = it->branchingProfile.ID;
-					longPaID = it->branchingProfile.paID;
-					++count;
-				}
-				if (it->branchingProfile.ID == shortPaID)
-				{
-					shortHi = it->branchingProfile.hierarchy;
-					shortID = it->branchingProfile.ID;
-					shortPaID = it->branchingProfile.paID;
-					++count;
-				}
-			}
-
-			if (count == 0)
-			{
-				cout << "===> Back to different root segments. Connecting allowed." << endl;
-				returnValue = 0;
-				root = true;
-			}
-		}
-	}
-	// --------- END of [Starting from the same hierarchy level, both moving upward at the same time, see if they end up the same parental branch ID] ---------
-
-	return returnValue;
-}
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
 // --------- Highlight the selected segment with its downstream subtree, MK, June, 2018 ---------
-void Renderer_gl1::showSubtree()
-{
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
-	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
-	w->subtreeHighlightModeMonitor();
-
-	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
-
-	for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
-	{
-		NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-		if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
-		{
-			QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
-			if (!p_listneuron) return;
-			// for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
-
-			/***************** Get segment information included in the movePen trajectory *****************/
-			/* ------- Only take in the nodes within the rectangle that contains the stroke ------- */
-			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
-			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
-			for (size_t i = 0; i < list_listCurvePos.at(0).size(); ++i)
-			{
-				if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
-				if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
-				if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
-				if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
-			}
-			minX = minX - 5; maxX = maxX + 5;
-			minY = minY - 5; maxY = maxY + 5;
-			//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
-			QList<NeuronSWC> nodeOnStroke;
-			for (size_t i = 0; i < p_listneuron->size(); ++i)
-			{
-				GLdouble px, py, pz, ix, iy, iz;
-				ix = p_listneuron->at(i).x;
-				iy = p_listneuron->at(i).y;
-				iz = p_listneuron->at(i).z;
-				if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
-				{
-					py = viewport[3] - py; //the Y axis is reversed
-					QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
-					if ((p.x() >= minX && p.x() <= maxX) && (p.y() >= minY && p.y() <= maxY))
-					{
-						nodeOnStroke.push_back(p_listneuron->at(i));
-						//cout << p.x() << " " << p.y() << endl;
-					}
-				}
-			}
-			if (nodeOnStroke.size() == 0) return;
-			/* ------- END of [Only take in the nodes within the rectangle that contains the stroke] ------- */
-
-			/* ------- Acquire the starting segment ------- */
-			vector<size_t> involvedSegs;
-			float nearestDist = 1000;
-			NeuronSWC nearestNode;
-			for (V3DLONG i = 0; i < list_listCurvePos.at(0).size(); i++)
-			{
-				for (V3DLONG j = 0; j < nodeOnStroke.size(); j++)
-				{
-					GLdouble px, py, pz, ix, iy, iz;
-					ix = nodeOnStroke.at(j).x;
-					iy = nodeOnStroke.at(j).y;
-					iz = nodeOnStroke.at(j).z;
-					if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
-					{
-						py = viewport[3] - py; //the Y axis is reversed
-						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
-
-						QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
-						float dist = std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y()));
-						if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance) // p: global coordinates; p2: view port coordinates
-						{
-							if (dist < nearestDist)
-							{
-								nearestDist = dist;
-								nearestNode = nodeOnStroke.at(j);
-							}
-							involvedSegs.push_back(nodeOnStroke.at(j).seg_id);
-						}
-					}
-				}
-			}
-			map<size_t, int> segIDCountMap;
-			for (vector<size_t>::iterator segIt = involvedSegs.begin(); segIt != involvedSegs.end(); ++segIt)
-				++segIDCountMap.insert(pair<size_t, int>(*segIt, 0)).first->second;
-			int segCount = segIDCountMap.begin()->second;
-			size_t startingSegID = segIDCountMap.begin()->first;
-			for (map<size_t, int>::iterator mapIt = segIDCountMap.begin(); mapIt != segIDCountMap.end(); ++mapIt)
-			{
-				if (mapIt->second > segCount)
-				{
-					segCount = mapIt->second;
-					startingSegID = mapIt->first; // <-- This is the starting point of the subtree to be highlighted.
-				}
-			}
-			/* ------- END of [Acquire the starting segment] ------- */
-			/***************** END of [Get segment information included in the movePen trajectory] *****************/
-			
-			/******************** Produce gridID - segID map ********************/
-			this->subtreeSegs.clear();
-			double rangeLength = 1;
-			double sqrdRange = rangeLength * rangeLength * 3;
-			int gridLength = 1;
-			this->grid2segIDmap.clear();
-			for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
-			{
-				int xLabelTail = it->row.begin()->x / gridLength;
-				int yLabelTail = it->row.begin()->y / gridLength;
-				int zLabelTail = it->row.begin()->z / gridLength;
-				int xLabelHead = (it->row.end() - 1)->x / gridLength;
-				int yLabelHead = (it->row.end() - 1)->y / gridLength;
-				int zLabelHead = (it->row.end() - 1)->z / gridLength;
-				QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
-				string key1 = key1Q.toStdString();
-				QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
-				string key2 = key2Q.toStdString();
-
-				this->grid2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
-				this->grid2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
-			}
-			/***************** END of [Produce gridID - segID map] *****************/
-
-			V_NeuronSWC originalStartingSeg = curImg->tracedNeuron.seg[startingSegID];
-			vector<V_NeuronSWC_unit> cutStartingSeg;
-			cutStartingSeg.clear();
-			int xStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->x / gridLength;
-			int yStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->y / gridLength;
-			int zStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->z / gridLength;
-			QString startKeyTailQ = QString::number(xStartTail) + "_" + QString::number(yStartTail) + "_" + QString::number(zStartTail);
-			string startKeyTail = startKeyTailQ.toStdString();
-			for (vector<V_NeuronSWC_unit>::iterator cutIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); cutIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++cutIt)
-			{
-				cutStartingSeg.push_back(*cutIt);
-				if (cutIt->x == nearestNode.x && cutIt->y == nearestNode.y && cutIt->z == nearestNode.z)
-				{
-					(cutStartingSeg.end() - 1)->parent = -1;
-					break;
-				}
-			}
-			curImg->tracedNeuron.seg[startingSegID].row = cutStartingSeg;
-			this->rc_findDownstreamSegs(curImg, startingSegID, startKeyTail, gridLength);
-			//this->rc_downstreamSeg(curImg, startingSegID);
-			//this->rc_downstream_segID(curImg, startingSegID);
-			
-			curImg->tracedNeuron.seg[startingSegID] = originalStartingSeg;
-            this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
-			for (vector<V_NeuronSWC_unit>::iterator firstSegIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); firstSegIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++firstSegIt)
-			{
-				if (firstSegIt->x == nearestNode.x && firstSegIt->y == nearestNode.y && firstSegIt->z == nearestNode.z)
-				{
-					firstSegIt->type = 0;
-					break;
-				}
-				firstSegIt->type = 0;
-			}
-            this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
-
-			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
-			{
-				if (*segIt == startingSegID) continue;
-
-                this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
-				//cout << *segIt << " ";
-				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
-					unitIt->type = 0;
-                this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
-			}
-			//cout << endl;
-
-			curImg->update_3drenderer_neuron_view(w, this);
-			//curImg->proj_trace_history_append(); // -> Highlighting is for temporary checking purpose, should not be appended to the history.
-		}
-	}
-
-	this->pressedShowSubTree = true;
-}
-
 void Renderer_gl1::showConnectedSegs()
 {
 	// This method highlighs all connected segments with regard to the stroked segment when [alt + N] is pressed.
@@ -4516,6 +3959,8 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
 
 void Renderer_gl1::loopDetection()
 {
+	this->connectEdit = loopEdit;
+
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -4526,6 +3971,13 @@ void Renderer_gl1::loopDetection()
 		//cout << *it << ":";
 		set<size_t> connectedSegs;
 		connectedSegs.clear();
+		if (curImg->tracedNeuron.seg[*it].row.size() <= 1)
+		{
+			curImg->tracedNeuron.seg[*it].to_be_deleted = true;
+			continue;
+		}
+		else if (curImg->tracedNeuron.seg[*it].to_be_deleted) continue;
+
 		for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*it].row.begin(); nodeIt != curImg->tracedNeuron.seg[*it].row.end(); ++nodeIt)
 		{
 			int xLabel = nodeIt->x / this->gridLength;
@@ -4541,6 +3993,7 @@ void Renderer_gl1::loopDetection()
 				{
 					int connectedSegsSize = connectedSegs.size();
 					if (*scannedIt == *it || curImg->tracedNeuron.seg[*scannedIt].to_be_deleted) continue;
+					if (curImg->tracedNeuron.seg[*scannedIt].row.size() == 1) continue;
 
 					if (curImg->tracedNeuron.seg[*scannedIt].row.begin()->x == nodeIt->x && curImg->tracedNeuron.seg[*scannedIt].row.begin()->y == nodeIt->y && curImg->tracedNeuron.seg[*scannedIt].row.begin()->z == nodeIt->z)
 					{
@@ -4572,7 +4025,7 @@ void Renderer_gl1::loopDetection()
 		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
 			cout << *it << " ";
 
-		cout << endl << endl;
+		cout << endl;
 	}*/
 
 	w->progressBarPtr = new QProgressBar;
@@ -4583,55 +4036,36 @@ void Renderer_gl1::loopDetection()
 	w->progressBarPtr->setFixedWidth(350);
 	double segSize = curImg->tracedNeuron.seg.size();
 	
-	cout << endl << "Starting loop detection.. ";
+	cout << endl << "Starting loop detection.. " << endl;
 	clock_t begin = clock();
-	this->detectedLoops.clear();
+	this->detectedLoopsSet.clear();
+	this->finalizedLoopsSet.clear();
+	this->nonLoopErrors.clear();
 	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 	{
 		double progressBarValue = (double(it->first) / segSize) * 100;
 		int progressBarValueInt = floor(progressBarValue);
 
 		if (it->second.empty()) continue;
-		else if (it->second.size() <= 2)
-		{
-			for (set<size_t>::iterator childSegIt = it->second.begin(); childSegIt != it->second.end(); ++childSegIt)
-			{
-				if (this->seg2SegsMap[*childSegIt].size() == 1 && *(this->seg2SegsMap[*childSegIt].begin()) == it->first)
-				{
-					bool selfLoopHead = false;
-					bool selfLoopTail = false;
-					for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[it->first].row.begin(); nodeIt != curImg->tracedNeuron.seg[it->first].row.end(); ++nodeIt)
-					{
-						if (nodeIt->x == curImg->tracedNeuron.seg[*childSegIt].row.begin()->x && nodeIt->y == curImg->tracedNeuron.seg[*childSegIt].row.begin()->y && nodeIt->z == curImg->tracedNeuron.seg[*childSegIt].row.begin()->z)
-							selfLoopTail = true;
-						if (nodeIt->x == (curImg->tracedNeuron.seg[*childSegIt].row.end() - 1)->x && nodeIt->y == (curImg->tracedNeuron.seg[*childSegIt].row.end() - 1)->y && nodeIt->z == (curImg->tracedNeuron.seg[*childSegIt].row.end() - 1)->z)
-							selfLoopHead = true;
-					}
-					
-					if (selfLoopHead && selfLoopTail)
-					{
-						vector<size_t> selfLoop;
-						selfLoop.push_back(it->first);
-						selfLoop.push_back(*childSegIt);
-						this->detectedLoops.insert(selfLoop);
-					}
-				}
-			}
-			continue;
-		}
+		else if (it->second.size() <= 2) continue;
 
 		vector<size_t> loops2ThisSeg;
 		loops2ThisSeg.clear();
 
-		//cout << endl << it->first << ": ";
-		int loopCount = this->detectedLoops.size();
+		cout << "Starting segment: " << it->first << " ==> ";
+		for (set<size_t>::iterator seg2SegsIt = this->seg2SegsMap[it->first].begin(); seg2SegsIt != this->seg2SegsMap[it->first].end(); ++seg2SegsIt)
+			cout << *seg2SegsIt << " ";
+		cout << endl;
+
+		int loopCount = this->finalizedLoopsSet.size();
+
 		this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
 
 		w->progressBarPtr->setValue(progressBarValueInt);
 		w->progressBarPtr->setFormat("detecting loops.. " + QString::number(progressBarValueInt) + "%");
 
-		//if (this->detectedLoops.size() - loopCount == 0) cout << "no loops detected with this starting seg." << endl;
-		//else cout << this->detectedLoops.size() - loopCount << " loops detected" << endl;
+		if (this->finalizedLoopsSet.size() - loopCount == 0) cout << " -- no loops detected with this starting seg." << endl;
+		else cout << this->finalizedLoopsSet.size() - loopCount << " loops detected with seg " << it->first << endl << endl;
 	}
 	w->progressBarPtr->setValue(100);
 	w->progressBarPtr->setFormat(QString::number(100) + "%");
@@ -4640,6 +4074,41 @@ void Renderer_gl1::loopDetection()
 	clock_t end = clock();
 	float elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	cout << "TIME ELAPSED: " << elapsed_secs << " SECS" << endl << endl;
+
+	if (this->finalizedLoopsSet.empty()) return;
+	else
+	{
+		for (set<set<size_t> >::iterator loopIt = this->finalizedLoopsSet.begin(); loopIt != this->finalizedLoopsSet.end(); ++loopIt)
+		{
+			set<size_t> thisLoop = *loopIt;
+			for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+			{
+				//cout << *it << " ";
+				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+					unitIt->type = 15;
+			}
+			//cout << endl << endl;
+		}
+		cout << "LOOPS NUMBER (set): " << this->finalizedLoopsSet.size() << endl << endl;
+
+		if (!this->nonLoopErrors.empty())
+		{
+			for (set<set<size_t> >::iterator loopIt = this->nonLoopErrors.begin(); loopIt != this->nonLoopErrors.end(); ++loopIt)
+			{
+				set<size_t> thisLoop = *loopIt;
+				for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+				{
+					//cout << *it << " ";
+					for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+						unitIt->type = 20;
+				}
+				//cout << endl << endl;
+			}
+		}
+		//cout << "non LOOPS ERROR NUMBER (set): " << thisRenderer->nonLoopErrors.size() << endl << endl;
+	}
+
+	curImg->update_3drenderer_neuron_view(w, this);
 }
 
 void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWalk, My4DImage* curImg)
@@ -4648,6 +4117,9 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 
 	//cout << "  input seg num: " << inputSegID << " ";
 	curPathWalk.push_back(inputSegID);
+	/*for (vector<size_t>::iterator curPathIt = curPathWalk.begin(); curPathIt != curPathWalk.end(); ++curPathIt)
+		cout << *curPathIt << " ";
+	cout << endl << endl;*/
 
 	for (set<size_t>::iterator it = this->seg2SegsMap[inputSegID].begin(); it != this->seg2SegsMap[inputSegID].end(); ++it)
 	{
@@ -4665,19 +4137,14 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 
 			if (headCheck == true && tailCheck == true)
 			{
-				vector<size_t> detectedLoopPath;
-				detectedLoopPath.clear();
 				set<size_t> detectedLoopPathSet;
 				detectedLoopPathSet.clear();
 				for (vector<size_t>::iterator loopIt = find(curPathWalk.begin(), curPathWalk.end(), *it); loopIt != curPathWalk.end(); ++loopIt)
-				{
-					detectedLoopPath.push_back(*loopIt);
 					detectedLoopPathSet.insert(*loopIt);
-				}
 
 				if (this->detectedLoopsSet.insert(detectedLoopPathSet).second)
 				{
-					this->detectedLoops.insert(detectedLoopPath);
+					this->nonLoopErrors.insert(detectedLoopPathSet);
 					continue;
 				}
 				else return;
@@ -4692,21 +4159,15 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 		else
 		{
 			// a loop is found
-			vector<size_t> detectedLoopPath;
-			detectedLoopPath.clear();
 			set<size_t> detectedLoopPathSet;
 			detectedLoopPathSet.clear();
 			for (vector<size_t>::iterator loopIt = find(curPathWalk.begin(), curPathWalk.end(), *it); loopIt != curPathWalk.end(); ++loopIt)
-			{
-				//cout << *loopIt << " ";
-				detectedLoopPath.push_back(*loopIt);
 				detectedLoopPathSet.insert(*loopIt);
-			}
-			//cout << endl << endl;
 
 			if (this->detectedLoopsSet.insert(detectedLoopPathSet).second)
 			{
 				// pusedoloop by fork intersection check
+				cout << "pusedoloop check.." << endl;
 
 				if (*(curPathWalk.end() - 3) == *it)
 				{
@@ -4734,8 +4195,20 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 
 						if (!(headConnectedCount == 1 && tailConnectedCount == 1))
 						{
-							//cout << "3 seg intersection detected, exluded from loop candidates." << endl;
+							cout << "  -> 3 seg intersection detected, exluded from loop candidates. (" << *it << ") ";
+							for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
+								cout << *thisLoopIt << " ";
+							cout << endl;
 							continue;
+						}
+						else
+						{
+							this->finalizedLoopsSet.insert(detectedLoopPathSet);
+							cout << "  Loop from 3 way detected ----> (" << *it << ") ";
+							for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
+								cout << *thisLoopIt << " ";
+							cout << endl;
+							return;
 						}
 					}
 				}
@@ -4750,13 +4223,20 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 								this->seg2SegsMap[*(curPathWalk.end() - 3)].find(*(curPathWalk.end() - 2)) != this->seg2SegsMap[*(curPathWalk.end() - 3)].end() &&
 								this->seg2SegsMap[*(curPathWalk.end() - 4)].find(*(curPathWalk.end() - 3)) != this->seg2SegsMap[*(curPathWalk.end() - 4)].end())
 							{
-								//cout << "4 seg intersection detected, exluded from loop candidates." << endl;
+								cout << "  -> 4 seg intersection detected, exluded from loop candidates. (" << *it << ")" << endl;
 								continue;
 							}
 						}
 					}
 				}
-				else this->detectedLoops.insert(detectedLoopPath);
+				else
+				{
+					this->finalizedLoopsSet.insert(detectedLoopPathSet);
+					cout << "  Loop detected ----> (" << *it << ") ";
+					for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
+						cout << *thisLoopIt << " ";
+					cout << endl;
+				}
 			}
 			else return;
 		}
@@ -4784,9 +4264,441 @@ void Renderer_gl1::escPressed_subtree()
 		curImg->update_3drenderer_neuron_view(w, this);
 
 		this->pressedShowSubTree = false;
+		this->connectEdit = connectEdit_none;
+
 		this->originalSegMap.clear();
 		this->highlightedSegMap.clear();
 	}
+}
+// ----------------- END of [Highlight the selected segment with its downstream subtree, MK, June, 2018] -----------------
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ subtree highlighting functions [DEPRICATED] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+void Renderer_gl1::showSubtree()
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+	w->subtreeHighlightModeMonitor();
+
+	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
+
+	for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
+	{
+		NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+		if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+		{
+			QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
+			if (!p_listneuron) return;
+			// for (int testi=0; testi<list_listCurvePos.at(0).size(); testi++) qDebug() << list_listCurvePos.at(0).at(testi).x << " " << list_listCurvePos.at(0).at(testi).y;
+
+			/***************** Get segment information included in the movePen trajectory *****************/
+			/* ------- Only take in the nodes within the rectangle that contains the stroke ------- */
+			long minX = list_listCurvePos.at(0).at(0).x, maxX = list_listCurvePos.at(0).at(0).x;
+			long minY = list_listCurvePos.at(0).at(0).y, maxY = list_listCurvePos.at(0).at(0).y;
+			for (size_t i = 0; i < list_listCurvePos.at(0).size(); ++i)
+			{
+				if (list_listCurvePos.at(0).at(i).x <= minX) minX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).x >= maxX) maxX = list_listCurvePos.at(0).at(i).x;
+				if (list_listCurvePos.at(0).at(i).y <= minY) minY = list_listCurvePos.at(0).at(i).y;
+				if (list_listCurvePos.at(0).at(i).y >= maxY) maxY = list_listCurvePos.at(0).at(i).y;
+			}
+			minX = minX - 5; maxX = maxX + 5;
+			minY = minY - 5; maxY = maxY + 5;
+			//cout << minX << " " << maxX << " " << minY << " " << maxY << endl;
+			QList<NeuronSWC> nodeOnStroke;
+			for (size_t i = 0; i < p_listneuron->size(); ++i)
+			{
+				GLdouble px, py, pz, ix, iy, iz;
+				ix = p_listneuron->at(i).x;
+				iy = p_listneuron->at(i).y;
+				iz = p_listneuron->at(i).z;
+				if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+				{
+					py = viewport[3] - py; //the Y axis is reversed
+					QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+					if ((p.x() >= minX && p.x() <= maxX) && (p.y() >= minY && p.y() <= maxY))
+					{
+						nodeOnStroke.push_back(p_listneuron->at(i));
+						//cout << p.x() << " " << p.y() << endl;
+					}
+				}
+			}
+			if (nodeOnStroke.size() == 0) return;
+			/* ------- END of [Only take in the nodes within the rectangle that contains the stroke] ------- */
+
+			/* ------- Acquire the starting segment ------- */
+			vector<size_t> involvedSegs;
+			float nearestDist = 1000;
+			NeuronSWC nearestNode;
+			for (V3DLONG i = 0; i < list_listCurvePos.at(0).size(); i++)
+			{
+				for (V3DLONG j = 0; j < nodeOnStroke.size(); j++)
+				{
+					GLdouble px, py, pz, ix, iy, iz;
+					ix = nodeOnStroke.at(j).x;
+					iy = nodeOnStroke.at(j).y;
+					iz = nodeOnStroke.at(j).z;
+					if (gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+					{
+						py = viewport[3] - py; //the Y axis is reversed
+						QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+
+						QPointF p2(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y);
+						float dist = std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y()));
+						if (std::sqrt((p.x() - p2.x())*(p.x() - p2.x()) + (p.y() - p2.y())*(p.y() - p2.y())) <= tolerance) // p: global coordinates; p2: view port coordinates
+						{
+							if (dist < nearestDist)
+							{
+								nearestDist = dist;
+								nearestNode = nodeOnStroke.at(j);
+							}
+							involvedSegs.push_back(nodeOnStroke.at(j).seg_id);
+						}
+					}
+				}
+			}
+			map<size_t, int> segIDCountMap;
+			for (vector<size_t>::iterator segIt = involvedSegs.begin(); segIt != involvedSegs.end(); ++segIt)
+				++segIDCountMap.insert(pair<size_t, int>(*segIt, 0)).first->second;
+			int segCount = segIDCountMap.begin()->second;
+			size_t startingSegID = segIDCountMap.begin()->first;
+			for (map<size_t, int>::iterator mapIt = segIDCountMap.begin(); mapIt != segIDCountMap.end(); ++mapIt)
+			{
+				if (mapIt->second > segCount)
+				{
+					segCount = mapIt->second;
+					startingSegID = mapIt->first; // <-- This is the starting point of the subtree to be highlighted.
+				}
+			}
+			/* ------- END of [Acquire the starting segment] ------- */
+			/***************** END of [Get segment information included in the movePen trajectory] *****************/
+
+			/******************** Produce gridID - segID map ********************/
+			this->subtreeSegs.clear();
+			double rangeLength = 1;
+			double sqrdRange = rangeLength * rangeLength * 3;
+			int gridLength = 1;
+			this->grid2segIDmap.clear();
+			for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
+			{
+				int xLabelTail = it->row.begin()->x / gridLength;
+				int yLabelTail = it->row.begin()->y / gridLength;
+				int zLabelTail = it->row.begin()->z / gridLength;
+				int xLabelHead = (it->row.end() - 1)->x / gridLength;
+				int yLabelHead = (it->row.end() - 1)->y / gridLength;
+				int zLabelHead = (it->row.end() - 1)->z / gridLength;
+				QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
+				string key1 = key1Q.toStdString();
+				QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
+				string key2 = key2Q.toStdString();
+
+				this->grid2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
+				this->grid2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+			}
+			/***************** END of [Produce gridID - segID map] *****************/
+
+			V_NeuronSWC originalStartingSeg = curImg->tracedNeuron.seg[startingSegID];
+			vector<V_NeuronSWC_unit> cutStartingSeg;
+			cutStartingSeg.clear();
+			int xStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->x / gridLength;
+			int yStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->y / gridLength;
+			int zStartTail = curImg->tracedNeuron.seg[startingSegID].row.begin()->z / gridLength;
+			QString startKeyTailQ = QString::number(xStartTail) + "_" + QString::number(yStartTail) + "_" + QString::number(zStartTail);
+			string startKeyTail = startKeyTailQ.toStdString();
+			for (vector<V_NeuronSWC_unit>::iterator cutIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); cutIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++cutIt)
+			{
+				cutStartingSeg.push_back(*cutIt);
+				if (cutIt->x == nearestNode.x && cutIt->y == nearestNode.y && cutIt->z == nearestNode.z)
+				{
+					(cutStartingSeg.end() - 1)->parent = -1;
+					break;
+				}
+			}
+			curImg->tracedNeuron.seg[startingSegID].row = cutStartingSeg;
+			this->rc_findDownstreamSegs(curImg, startingSegID, startKeyTail, gridLength);
+			//this->rc_downstreamSeg(curImg, startingSegID);
+			//this->rc_downstream_segID(curImg, startingSegID);
+
+			curImg->tracedNeuron.seg[startingSegID] = originalStartingSeg;
+			this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
+			for (vector<V_NeuronSWC_unit>::iterator firstSegIt = curImg->tracedNeuron.seg[startingSegID].row.begin(); firstSegIt != curImg->tracedNeuron.seg[startingSegID].row.end(); ++firstSegIt)
+			{
+				if (firstSegIt->x == nearestNode.x && firstSegIt->y == nearestNode.y && firstSegIt->z == nearestNode.z)
+				{
+					firstSegIt->type = 0;
+					break;
+				}
+				firstSegIt->type = 0;
+			}
+			this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(startingSegID, curImg->tracedNeuron.seg[startingSegID].row));
+
+			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
+			{
+				if (*segIt == startingSegID) continue;
+
+				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+				//cout << *segIt << " ";
+				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
+					unitIt->type = 0;
+				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
+			}
+			//cout << endl;
+
+			curImg->update_3drenderer_neuron_view(w, this);
+			//curImg->proj_trace_history_append(); // -> Highlighting is for temporary checking purpose, should not be appended to the history.
+		}
+	}
+
+	this->pressedShowSubTree = true;
+}
+
+void Renderer_gl1::hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID)
+{
+	cout << " ---> primary seg hierarchy: " << curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy << endl;
+
+	vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[mainSegID]);
+
+	if (connectedSegDecomposed.size() > 1)
+	{
+		cout << "new segment breaks into " << connectedSegDecomposed.size() << " subsegments." << endl << endl;
+
+		size_t primaryPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[mainSegID].branchingProfile.paID];
+		V_NeuronSWC_unit oldPrimaryHead = *(curImg->tracedNeuron.seg[mainSegID].row.end() - 1);
+		V_NeuronSWC_unit oldPrimaryTail = *(curImg->tracedNeuron.seg[mainSegID].row.begin());
+		//cout << "Old primary tail coords:" << oldPrimaryTail.x << " " << oldPrimaryTail.y << " " << oldPrimaryTail.z << endl;
+		//cout << "Old primary head coords:" << oldPrimaryHead.x << " " << oldPrimaryHead.y << " " << oldPrimaryHead.z << endl << endl;
+
+		bool allAdded = false;
+		if (connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(1).row.end() - 1)->x && connectedSegDecomposed.at(0).row.begin()->x == (connectedSegDecomposed.at(2).row.end() - 1)->x)
+		{
+			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
+			{
+				if (it->x == (connectedSegDecomposed.at(1).row.begin() + 1)->x)
+				{
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+					allAdded = true;
+					break;
+				}
+			}
+			if (!allAdded)
+			{
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+			}
+		}
+		else if (connectedSegDecomposed.at(1).row.begin()->x == (connectedSegDecomposed.at(0).row.end() - 1)->x && connectedSegDecomposed.at(1).row.begin()->x == (connectedSegDecomposed.at(2).row.end() - 1)->x)
+		{
+			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
+			{
+				if (it->x == (connectedSegDecomposed.at(0).row.begin() + 1)->x)
+				{
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+					allAdded = true;
+					break;
+				}
+			}
+			if (!allAdded)
+			{
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+			}
+		}
+		else if (connectedSegDecomposed.at(2).row.begin()->x == (connectedSegDecomposed.at(0).row.end() - 1)->x && connectedSegDecomposed.at(2).row.begin()->x == (connectedSegDecomposed.at(1).row.end() - 1)->x)
+		{
+			curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(2));
+			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[mainSegID].row.begin(); it != curImg->tracedNeuron.seg[mainSegID].row.end(); ++it)
+			{
+				if (it->x == (connectedSegDecomposed.at(1).row.begin() + 1)->x)
+				{
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+					curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+					allAdded = true;
+					break;
+				}
+			}
+			if (!allAdded)
+			{
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(0));
+				curImg->tracedNeuron.seg.push_back(connectedSegDecomposed.at(1));
+			}
+		}
+
+		vector<V_NeuronSWC>::iterator newSegIt = curImg->tracedNeuron.seg.end() - 3;
+		for (ptrdiff_t i = 0; i < 3; ++i)
+		{
+			++newSegIt;
+			newSegIt->branchingProfile.ID = curImg->tracedNeuron.seg.size();
+			int segNums = curImg->tracedNeuron.seg.size() - 1;
+
+			if (i == 0)
+			{
+				newSegIt->branchingProfile.paID = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.ID;
+				newSegIt->branchingProfile.hierarchy = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.hierarchy + 1;
+				newSegIt->branchingProfile.childIDs.clear();
+				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
+				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID);
+				for (vector<int>::iterator childIt = curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.childIDs.begin(); childIt != curImg->tracedNeuron.seg[primaryPaSegID].branchingProfile.childIDs.end(); ++childIt)
+					if (*childIt == curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID) *childIt = newSegIt->branchingProfile.ID;
+			}
+			else if (i == 1)
+			{
+				newSegIt->branchingProfile.paID = (newSegIt - 1)->branchingProfile.ID;
+				newSegIt->branchingProfile.hierarchy = (newSegIt - 1)->branchingProfile.hierarchy + 1;
+				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
+				//cout << "segID:" << segNums << " branchID:" << newSegIt->branchingProfile.ID << endl;
+				newSegIt->branchingProfile.childIDs.clear();
+				for (vector<int>::iterator childIt = curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.begin(); childIt != curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.end(); ++childIt)
+				{
+					//cout << "child branchID: " << *childIt << endl;
+					int childBranchID = *childIt;
+					newSegIt->branchingProfile.childIDs.push_back(childBranchID);
+					curImg->tracedNeuron.seg[this->branchSegIDmap[*childIt]].branchingProfile.paID = newSegIt->branchingProfile.ID;
+				}
+				(newSegIt - 1)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
+				cout << "=======> recursive downstream relabeling" << endl;
+				this->rc_downstreamRelabel(curImg, segNums);
+			}
+			else if (i == 2)
+			{
+				newSegIt->branchingProfile.paID = (newSegIt - 2)->branchingProfile.ID;
+				newSegIt->branchingProfile.hierarchy = (newSegIt - 2)->branchingProfile.hierarchy + 1;
+				(newSegIt - 2)->branchingProfile.childIDs.push_back(newSegIt->branchingProfile.ID);
+				this->branchSegIDmap[newSegIt->branchingProfile.ID] = segNums;
+
+				int oldPaSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+				for (vector<int>::iterator oldPaChildIt = curImg->tracedNeuron.seg[oldPaSegID].branchingProfile.childIDs.begin(); oldPaChildIt != curImg->tracedNeuron.seg[oldPaSegID].branchingProfile.childIDs.end(); ++oldPaChildIt)
+				{
+					if (*oldPaChildIt == curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID)
+					{
+						cout << this->branchSegIDmap[*oldPaChildIt] << " " << this->branchSegIDmap[newSegIt->branchingProfile.ID] << endl;
+						*oldPaChildIt = newSegIt->branchingProfile.ID;
+					}
+				}
+
+				V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[segNums]);
+				int curSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+				V_NeuronSWC* curSegPtr = &(curImg->tracedNeuron.seg[curSegID]);
+				cout << "=======> upstream relabeling" << endl;
+				upstreamRelabel(curImg, curSegPtr, newPaSegPtr);
+				this->branchSegIDmap.erase(curImg->tracedNeuron.seg[branchSegID].branchingProfile.ID);
+			}
+		}
+
+		curImg->tracedNeuron.seg[mainSegID].to_be_deleted = true;
+	}
+	else if (connectedSegDecomposed.size() <= 1)
+	{
+		size_t paSegID = this->branchSegIDmap[curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID];
+		cout << endl << "-- parent segment ID of the secondary segment: " << paSegID;
+		cout << "    parent branch ID: " << curImg->tracedNeuron.seg[branchSegID].branchingProfile.paID << endl;
+		curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy = curImg->tracedNeuron.seg[mainSegID].branchingProfile.hierarchy + 1;
+
+		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[paSegID].branchingProfile.childIDs;
+
+		cout << "old immediate children segment ID-branchID-hierarchy: ";
+		for (vector<int>::iterator chkIt = curStemChildBranchIDs.begin(); chkIt != curStemChildBranchIDs.end(); ++chkIt)
+			cout << this->branchSegIDmap[*chkIt] << "-" << *chkIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << ", ";
+
+		curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.clear();
+		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
+		{
+			if (this->branchSegIDmap[*it] == branchSegID) this->branchSegIDmap.erase(*it);
+			else
+			{
+				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[paSegID].branchingProfile.hierarchy;
+				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+				curImg->tracedNeuron.seg[mainSegID].branchingProfile.childIDs.push_back(*it);
+				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.paID = curImg->tracedNeuron.seg[mainSegID].branchingProfile.ID;
+			}
+		}
+
+		cout << endl << "new immediate children segment ID-branchID-hierarchy: ";
+		for (vector<int>::iterator chkIt = curStemChildBranchIDs.begin(); chkIt != curStemChildBranchIDs.end(); ++chkIt)
+			cout << this->branchSegIDmap[*chkIt] << "-" << *chkIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << ", ";
+		cout << endl;
+
+		V_NeuronSWC* upstreamStartSegPtr = &(curImg->tracedNeuron.seg[paSegID]);
+		V_NeuronSWC* newPaSegPtr = &(curImg->tracedNeuron.seg[mainSegID]);
+		this->upstreamRelabel(curImg, upstreamStartSegPtr, newPaSegPtr);
+	}
+}
+
+void Renderer_gl1::upstreamRelabel(My4DImage* curImg, V_NeuronSWC* curSegPtr, V_NeuronSWC* newPaSegPtr)
+{
+	cout << endl << "curent segID: " << this->branchSegIDmap[curSegPtr->branchingProfile.ID] << ", new parent segID: " << this->branchSegIDmap[newPaSegPtr->branchingProfile.ID] << endl;
+	cout << "start upstream relabeling..." << endl;
+	while (1)
+	{
+		int curBranchID = curSegPtr->branchingProfile.ID;
+		int curPaBranchID = curSegPtr->branchingProfile.paID;
+		size_t curSegID = this->branchSegIDmap[curBranchID];
+		size_t curPaSegID = this->branchSegIDmap[curPaBranchID];
+		curSegPtr->branchingProfile.hierarchy = newPaSegPtr->branchingProfile.hierarchy + 1;
+
+		vector<int> curStemChildBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
+		curSegPtr->branchingProfile.childIDs.clear();
+		for (vector<int>::iterator it = curStemChildBranchIDs.begin(); it != curStemChildBranchIDs.end(); ++it)
+		{
+			if (this->branchSegIDmap[*it] == curSegID)
+			{
+				curSegPtr->branchingProfile.paID = newPaSegPtr->branchingProfile.ID;
+				newPaSegPtr->branchingProfile.childIDs.push_back(*it);
+
+				cout << "  stem segID:" << this->branchSegIDmap[newPaSegPtr->branchingProfile.ID] << endl;
+				for (vector<int>::iterator chkIt = newPaSegPtr->branchingProfile.childIDs.begin(); chkIt != newPaSegPtr->branchingProfile.childIDs.end(); ++chkIt)
+					cout << "    child segID:" << this->branchSegIDmap[*chkIt] << " adjusted hierarchy:" << curImg->tracedNeuron.seg[this->branchSegIDmap[*chkIt]].branchingProfile.hierarchy << endl;
+				cout << endl;
+			}
+			else
+			{
+				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curSegPtr->branchingProfile.hierarchy + 1;
+				this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+				curSegPtr->branchingProfile.childIDs.push_back(*it);
+				curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.paID = curBranchID;
+			}
+		}
+
+		newPaSegPtr = curSegPtr;
+		curSegPtr = &(curImg->tracedNeuron.seg[curPaSegID]);
+		if (curSegPtr->branchingProfile.paID == -1)
+		{
+			curSegPtr->branchingProfile.paID = newPaSegPtr->branchingProfile.ID;
+			newPaSegPtr->branchingProfile.childIDs.push_back(curSegPtr->branchingProfile.ID);
+			curSegPtr->branchingProfile.hierarchy = newPaSegPtr->branchingProfile.hierarchy + 1;
+			break;
+		}
+	}
+}
+
+void Renderer_gl1::rc_downstreamRelabel(My4DImage* curImg, size_t curPaSegID)
+{
+	int childSegCount;
+
+	vector<int> nextLevelBranchIDs = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.childIDs;
+	childSegCount = nextLevelBranchIDs.size();
+	cout << endl << "current seg number: " << curPaSegID << "  child seg number: " << childSegCount << " ";
+	if (childSegCount == 0)
+	{
+		cout << " ---> terminal leaf reached, return and move to the next sibling branch." << endl;
+		return;
+	}
+	for (vector<int>::iterator childIt = nextLevelBranchIDs.begin(); childIt != nextLevelBranchIDs.end(); ++childIt)
+		cout << this->branchSegIDmap[*childIt] << "-" << *childIt << "-" << curImg->tracedNeuron.seg[this->branchSegIDmap[*childIt]].branchingProfile.hierarchy << ", ";
+	cout << endl;
+
+	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
+	{
+		cout << "  current child segID: " << this->branchSegIDmap[*it] << ", branchID: " << *it << ", original hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
+		curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy = curImg->tracedNeuron.seg[curPaSegID].branchingProfile.hierarchy + 1;
+		cout << "  current child segID: " << this->branchSegIDmap[*it] << ", branchID: " << *it << ", adjusted hierarchy: " << curImg->tracedNeuron.seg[this->branchSegIDmap[*it]].branchingProfile.hierarchy << endl;
+		this->rc_downstreamRelabel(curImg, this->branchSegIDmap[*it]);
+	}
+
+	return;
 }
 
 void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength)
@@ -4808,7 +4720,7 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, s
 		size_t curSegID = rangeIt->second;
 		//cout << "  Finding subtree --> current segID:" << curSegID << endl;
 		this->subtreeSegs.insert(curSegID);
-		
+
 		if (this->subtreeSegs.size() == curSegNum)
 		{
 			//cout << "    Seg already picked up, move to the next." << endl;
@@ -4817,7 +4729,7 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, s
 		else
 		{
 			curSegNum = this->subtreeSegs.size();
-			
+
 			for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[curSegID].row.begin() + 1; unitIt != curImg->tracedNeuron.seg[curSegID].row.end() - 1; ++unitIt)
 			{
 				int middleX = unitIt->x / gridLength;
@@ -4846,7 +4758,7 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, s
 			QString curKeyHeadQ = QString::number(xCurHead) + "_" + QString::number(yCurHead) + "_" + QString::number(zCurHead);
 			string curKeyHead = curKeyHeadQ.toStdString();
 			//cout << curKeyHead << " " << curSegID << endl;
-			
+
 			if (curKeyHead == gridKey)
 			{
 				//cout << "tail to next head" << endl;
@@ -4861,67 +4773,10 @@ void Renderer_gl1::rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, s
 		}
 	}
 
-	/*vector<string> gridCoords;
-	boost::split(gridCoords, gridKey, boost::is_any_of("_"));
-	int curX, curY, curZ;
-	istringstream strmX(gridCoords[0]); strmX >> curX;
-	istringstream strmY(gridCoords[1]); strmY >> curY;
-	istringstream strmZ(gridCoords[2]); strmZ >> curZ;
-	for (int i = -1; i < 2; ++i)
-	{
-		for (int j = -1; j < 2; ++j)
-		{
-			for (int k = -1; k < 2; ++k)
-			{
-				if (i == 0 && j == 0 && k == 0) continue;
-
-				int neighborX = curX + i;
-				int neighborY = curY + j;
-				int neighborZ = curZ + k;
-				QString neighborKeyQ = QString::number(neighborX) + "_" + QString::number(neighborY) + "_" + QString::number(neighborZ);
-				string neighborKey = neighborKeyQ.toStdString();
-
-				pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> neighborRange = grid2segIDmap.equal_range(neighborKey);
-				if (neighborRange.first == neighborRange.second) continue;
-
-				for (multimap<string, size_t>::iterator nRangeIt = neighborRange.first; nRangeIt != neighborRange.second; ++nRangeIt)
-				{
-					size_t curSegID = nRangeIt->second;
-					//cout << "  gridKeys from neighborhood->" << neighborKey << " ";
-					//cout << "segID:" << curSegID << endl;
-					this->subtreeSegs.insert(curSegID);
-
-					if (this->subtreeSegs.size() == curSegNum) continue;
-					else
-					{
-						curSegNum = this->subtreeSegs.size();
-
-						int xCurHead = (curImg->tracedNeuron.seg[nRangeIt->second].row.end() - 1)->x / gridLength;
-						int yCurHead = (curImg->tracedNeuron.seg[nRangeIt->second].row.end() - 1)->y / gridLength;
-						int zCurHead = (curImg->tracedNeuron.seg[nRangeIt->second].row.end() - 1)->z / gridLength;
-						QString curKeyHeadQ = QString::number(xCurHead) + "_" + QString::number(yCurHead) + "_" + QString::number(zCurHead);
-						string curKeyHead = curKeyHeadQ.toStdString();
-
-						if (!curKeyHead.compare(gridKey))
-						{
-							int xCurTail = curImg->tracedNeuron.seg[nRangeIt->second].row.begin()->x / gridLength;
-							int yCurTail = curImg->tracedNeuron.seg[nRangeIt->second].row.begin()->y / gridLength;
-							int zCurTail = curImg->tracedNeuron.seg[nRangeIt->second].row.begin()->z / gridLength;
-							QString curKeyTailQ = QString::number(xCurTail) + "_" + QString::number(yCurTail) + "_" + QString::number(zCurTail);
-							string curKeyTail = curKeyTailQ.toStdString();
-							this->rc_findDownstreamSegs(curImg, curKeyTail, gridLength);
-						}
-						else this->rc_findDownstreamSegs(curImg, curKeyHead, gridLength);
-					}
-				}
-			}
-		}
-	}*/
-
 	if (this->subtreeSegs.size() == curSegNum) return;
 }
 
-void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg) 
+void Renderer_gl1::segTreeFastReprofile(My4DImage* curImg)
 {
 	// This method profiles the topology with endpoint-segID map. Currently prone to be buggy, not in use.
 
@@ -4981,7 +4836,7 @@ void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
 		return;
 	}
 	/*for (vector<int>::iterator childIt = nextLevelBranchIDs.begin(); childIt != nextLevelBranchIDs.end(); ++childIt)
-		cout << this->branchSegIDmap[*childIt] << "-" << *childIt << ", ";
+	cout << this->branchSegIDmap[*childIt] << "-" << *childIt << ", ";
 	cout << endl;*/
 
 	for (vector<int>::iterator it = nextLevelBranchIDs.begin(); it != nextLevelBranchIDs.end(); ++it)
@@ -4994,7 +4849,7 @@ void Renderer_gl1::rc_downstreamSeg(My4DImage* curImg, size_t segID)
 	return;
 }
 
-void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID) 
+void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID)
 {
 	// This method finds out the subsequent segments from a given [segment ID] recursively.
 
@@ -5021,9 +4876,9 @@ void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID)
 
 	return;
 }
-// ----------------- END of [Highlight the selected segment with its downstream subtree, MK, June, 2018] -----------------
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ subtree highlighting functions [DEPRICATED] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-// ---- segment/points could/marker connecting tool, by MK 2017 April ------------------------------
+// --------------------- segment/points could/marker connecting tool, by MK 2017 April --------------------------
 void Renderer_gl1::connectNeuronsByStroke()
 {
 	connectEdit = segmentEdit;
@@ -5780,9 +5635,9 @@ void Renderer_gl1::segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DIma
 		
 	return;
 }
-// --------- END of [segment/points could/marker connecting tool, by MK 2017 April ------------------------------]
+// ---------------- END of [segment/points could/marker connecting tool, by MK 2017 April] ---------------------
 
-// --------- neuron chopping tool, by MK 2017 June --------------------------------------------------------------
+// ------------------------ neuron chopping tool, by MK 2017 June ----------------------------
 void Renderer_gl1::cutNeuronsByStroke()
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -5946,7 +5801,7 @@ void Renderer_gl1::cutNeuronsByStroke()
 
 	return;
 }
-// ----------- END of [neuron cutting tool, by MK 2017 June -------------------------------------------------------]
+// --------------------- END of [neuron cutting tool, by MK 2017 June] -----------------------
 
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {
