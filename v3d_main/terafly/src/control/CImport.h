@@ -192,6 +192,8 @@ class terafly::CImport : public QThread
         void setRegenerateVolumeMap(bool _regenerateVolMap){regenerateVMap = _regenerateVolMap;}
         void setFormat(string _format){format = _format;}
         void setTimeSeries(bool _isTimeSeries){isTimeSeries = _isTimeSeries;}
+        void setBitsRemap(int id);
+        void setBitsConversion(int id);
 
         // reset method
         void reset();
