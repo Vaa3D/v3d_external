@@ -131,14 +131,6 @@ class terafly::PMain : public QWidget
         QMenu* fetchDisplayMenu;        //"Fetch-and-display" menu level 3
         QAction* fdPreviewAction;       //"Preview/streaming" checkbox
         QAction* fdDirectAction;        //"Direct" action
-        // ---- conversions menu level -------------- 2
-        QMenu* conversionsMenu;         //"Conversions" menu level 2
-        QMenu* from8bitsdataMenu;       //"from 8 bits data" menu level 3
-        QMenu* from16bitsdataMenu;      //"from 16 bits data" menu level 3
-        QWidgetAction* from8bitsdataActionWidget;   // "from 8 bits data" action
-        QComboBox *from8bitsdataCBox;               // "from 8 bits data" combobox
-        QWidgetAction* from16bitsdataActionWidget;  // "from 16 bits data" action
-        QComboBox *from16bitsdataCBox;              // "from 16 bits data" combobox
 
         // "Utility" menu widgets
         QMenu* utilityMenu;
@@ -506,12 +498,6 @@ class terafly::PMain : public QWidget
         * Called when annotations (markers, neuron trees, etc.) have changed
         ***********************************************************************************/
         void annotationsChanged();
-
-        /**********************************************************************************
-        * Called when bit conversion menu options have changed
-        ***********************************************************************************/
-        void from8bitsdataChanged(int);
-        void from16bitsdataChanged(int);
 
         void tabIndexChanged(int value);
 

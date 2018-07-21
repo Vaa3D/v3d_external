@@ -83,8 +83,6 @@ class terafly::CSettings
         int vpRefillStopCondition;
         bool vpCacheHighestRes;
         bool vpFreezeHighestRes;
-        int bitsRemap;
-        int bitsConversion;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -144,8 +142,6 @@ class terafly::CSettings
         int getVpRefillStopCondition(){return vpRefillStopCondition;}
         bool getVpCacheHighestRes(){return vpCacheHighestRes;}
         bool getVpFreezeHighestRes(){return vpFreezeHighestRes;}
-        int getBitsRemap(){return bitsRemap;}
-        int getBitsConversion(){return bitsConversion;}
 
 
 
@@ -199,8 +195,6 @@ class terafly::CSettings
         void setVpRefillStopCondition(int newval){vpRefillStopCondition = newval; writeSettings();}
         void setVpCacheHighestRes(bool newval){vpCacheHighestRes = newval; writeSettings();}
         void setVpFreezeHighestRes(bool newval){vpFreezeHighestRes = newval; writeSettings();}
-        void setBitsRemap(int newval){bitsRemap = newval; writeSettings();}
-        void setBitsConversion(int newval){bitsConversion = newval; writeSettings();}
 
 
 
