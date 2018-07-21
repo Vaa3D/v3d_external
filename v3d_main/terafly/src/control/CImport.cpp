@@ -575,12 +575,12 @@ void CImport::setBitsRemap(int id)
     // bits remap can only be applied to 8-bits (1 byte) images
     for(int i=0; i<this->volumes.size(); i++)
         if(volumes[i]->getBYTESxCHAN() == 1)
-            volumes[i]->setDEPTH_CONV_ALGO(id);
+            volumes[i]->setDEPTH_CONV_ALGO(iim::remap_algorithms_IDs[id]);
 }
 void CImport::setBitsConversion(int id)
 {
     // bits conversions can only be applied to 16-bits (1 byte) images
     for(int i=0; i<this->volumes.size(); i++)
         if(volumes[i]->getBYTESxCHAN() == 2)
-            volumes[i]->setDEPTH_CONV_ALGO(id);
+            volumes[i]->setDEPTH_CONV_ALGO(iim::conversion_algorithms_IDs[id]);
 }
