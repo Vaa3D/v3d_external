@@ -94,6 +94,8 @@ void CSettings::loadDefaultSettings()
     vpRefillStopCondition = 0;
     vpCacheHighestRes = false;
     vpFreezeHighestRes = false;
+    bitsRemap = 0;
+    bitsConversion = 1;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -164,6 +166,8 @@ void CSettings::writeSettings()
     settings.setValue("voxelsizeX", voxelsizeX);
     settings.setValue("voxelsizeY", voxelsizeY);
     settings.setValue("voxelsizeZ", voxelsizeZ);
+    settings.setValue("bitsRemap", bitsRemap);
+    settings.setValue("bitsConversion", bitsConversion);
 
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
@@ -251,6 +255,10 @@ void CSettings::readSettings()
         vpCacheHighestRes = settings.value("vpCacheHighestRes").toBool();
     if(settings.contains("vpFreezeHighestRes"))
         vpFreezeHighestRes = settings.value("vpFreezeHighestRes").toBool();
+    if(settings.contains("bitsRemap"))
+        bitsRemap = settings.value("bitsRemap").toInt();
+    if(settings.contains("bitsConversion"))
+        bitsConversion = settings.value("bitsConversion").toInt();
 
 
 

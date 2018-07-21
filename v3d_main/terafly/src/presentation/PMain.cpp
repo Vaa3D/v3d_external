@@ -352,7 +352,28 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fdDirectAction->setChecked(!fdPreviewAction->isChecked());
     connect(fdPreviewAction, SIGNAL(changed()), this, SLOT(fetchAndDisplayChanged()));
     /**/
-
+    /* ------------------------- "Options" menu: Conversions ---------------------- */
+    conversionsMenu = optionsMenu->addMenu("Conversions");
+    /* ------------------------- "Options->Conversions" menu: "from 8 bits data" -- */
+    from8bitsdataMenu = conversionsMenu->addMenu("from 8 bits data");
+    from8bitsdataActionWidget = new QWidgetAction(from8bitsdataMenu);
+    from8bitsdataCBox = new QComboBox();
+    for (int i=0; i<iim::N_REMAP_ALGORITHMS; i++)
+        from8bitsdataCBox->addItem(iim::remap_algorithms_strings[i]);
+    from8bitsdataCBox->setCurrentIndex(CSettings::instance()->getBitsRemap());
+    from8bitsdataActionWidget->setDefaultWidget(from8bitsdataCBox);
+    from8bitsdataMenu->addAction(from8bitsdataActionWidget);
+    connect(from8bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from8bitsdataChanged(int)));
+    /* ------------------------- "Options->Conversions" menu: "from 16 bits data" - */
+    from16bitsdataMenu = conversionsMenu->addMenu("from 16 bits data");
+    from16bitsdataActionWidget = new QWidgetAction(from16bitsdataMenu);
+    from16bitsdataCBox = new QComboBox();
+    for (int i=0; i<iim::N_CONVERSION_ALGORITHMS; i++)
+        from16bitsdataCBox->addItem(std::string(iim::conversion_algorithms_strings[i]).c_str());
+    from16bitsdataCBox->setCurrentIndex(CSettings::instance()->getBitsConversion());
+    from16bitsdataActionWidget->setDefaultWidget(from16bitsdataCBox);
+    from16bitsdataMenu->addAction(from16bitsdataActionWidget);
+    connect(from16bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from16bitsdataChanged(int)));
 
 
     // "Utility" Menu
@@ -2560,6 +2581,26 @@ void PMain::fetchAndDisplayChanged()
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
     CSettings::instance()->setPreviewMode(fdPreviewAction->isChecked());
+}
+
+/**********************************************************************************
+* Called when bit conversion menu options have changed
+***********************************************************************************/
+void PMain::from8bitsdataChanged(int newval)
+{
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+    CSettings::instance()->setBitsRemap(newval);
+
+    CImport::instance()->setBitsRemap(newval);
+}
+void PMain::from16bitsdataChanged(int newval)
+{
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+    CSettings::instance()->setBitsConversion(newval);
+
+    CImport::instance()->setBitsConversion(newval);
 }
 
 
