@@ -352,28 +352,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fdDirectAction->setChecked(!fdPreviewAction->isChecked());
     connect(fdPreviewAction, SIGNAL(changed()), this, SLOT(fetchAndDisplayChanged()));
     /**/
-    /* ------------------------- "Options" menu: Conversions ---------------------- */
-    conversionsMenu = optionsMenu->addMenu("Conversions");
-    /* ------------------------- "Options->Conversions" menu: "from 8 bits data" -- */
-    from8bitsdataMenu = conversionsMenu->addMenu("from 8 bits data");
-    from8bitsdataActionWidget = new QWidgetAction(from8bitsdataMenu);
-    from8bitsdataCBox = new QComboBox();
-    for (int i=0; i<iim::N_REMAP_ALGORITHMS; i++)
-        from8bitsdataCBox->addItem(iim::remap_algorithms_strings[i]);
-    from8bitsdataCBox->setCurrentIndex(CSettings::instance()->getBitsRemap());
-    from8bitsdataActionWidget->setDefaultWidget(from8bitsdataCBox);
-    from8bitsdataMenu->addAction(from8bitsdataActionWidget);
-    connect(from8bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from8bitsdataChanged(int)));
-    /* ------------------------- "Options->Conversions" menu: "from 16 bits data" - */
-    from16bitsdataMenu = conversionsMenu->addMenu("from 16 bits data");
-    from16bitsdataActionWidget = new QWidgetAction(from16bitsdataMenu);
-    from16bitsdataCBox = new QComboBox();
-    for (int i=0; i<iim::N_CONVERSION_ALGORITHMS; i++)
-        from16bitsdataCBox->addItem(std::string(iim::conversion_algorithms_strings[i]).c_str());
-    from16bitsdataCBox->setCurrentIndex(CSettings::instance()->getBitsConversion());
-    from16bitsdataActionWidget->setDefaultWidget(from16bitsdataCBox);
-    from16bitsdataMenu->addAction(from16bitsdataActionWidget);
-    connect(from16bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from16bitsdataChanged(int)));
 
 
 
@@ -672,9 +650,30 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_spbox->installEventFilter(this);
     PR_spbox->setPrefix("Block ");
 
-    /* ------- overview panel widgets ------- */
-    Overview_panel = new QGroupBox("Overview");
+    VoxelSize = new QGroupBox("Raw Image Voxelsize");
+    x_dsb = new QDoubleSpinBox();
+    x_dsb->setAlignment(Qt::AlignCenter);
+    x_dsb->setValue(CSettings::instance()->getVoxelSizeX());
+    x_dsb->setSingleStep(0.1);
+    x_dsb->setPrefix("x: ");
+    x_dsb->setSuffix(" um");
+    x_dsb->installEventFilter(this);
 
+    y_dsb = new QDoubleSpinBox();
+    y_dsb->setAlignment(Qt::AlignCenter);
+    y_dsb->setValue(CSettings::instance()->getVoxelSizeY());
+    y_dsb->setSingleStep(0.1);
+    y_dsb->setPrefix("y: ");
+    y_dsb->setSuffix(" um");
+    y_dsb->installEventFilter(this);
+
+    z_dsb = new QDoubleSpinBox();
+    z_dsb->setAlignment(Qt::AlignCenter);
+    z_dsb->setValue(CSettings::instance()->getVoxelSizeZ());
+    z_dsb->setSingleStep(0.1);
+    z_dsb->setPrefix("z: ");
+    z_dsb->setSuffix(" um");
+    z_dsb->installEventFilter(this);
 
     //other widgets
     helpBox = new QHelpBox(this);
@@ -691,7 +690,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     QWidget* refSysContainer = new QWidget();
     refSysContainer->setFixedWidth(marginLeft);
     refSysContainer->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
-    QHBoxLayout* refSysContainerLayout = new QHBoxLayout();
+    refSysContainerLayout = new QHBoxLayout();
     refSysContainerLayout->setContentsMargins(1,1,1,1);
     refSysContainerLayout->addWidget(refSys, 1);
     refSysContainer->setLayout(refSysContainerLayout);
@@ -788,8 +787,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
 #endif
 
-    checkBox_overview = new QCheckBox("Overview");
-    checkBox_overview->setChecked(isOverviewActive);
+//    checkBox_overview = new QCheckBox("Overview");
+//    checkBox_overview->setChecked(isOverviewActive);
 
     /* -------------- put elements into 4x4 grid ----------------- */
     VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
@@ -802,13 +801,26 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
     VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
     VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
-    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
+//    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
 
     /* ------------- FINALIZATION -------------- */
     VOI_layout->setContentsMargins(10,5,10,5);
     VOI_panel->setLayout(VOI_layout);
     #ifdef Q_OS_LINUX
     VOI_panel->setStyle(new QWindowsStyle());
+    #endif
+
+    // Voxel Size
+    QGridLayout* voxelsize_layout = new QGridLayout();
+    voxelsize_layout->setVerticalSpacing(1);
+
+    voxelsize_layout->addWidget(x_dsb, 0,0);
+    voxelsize_layout->addWidget(y_dsb, 0,1);
+    voxelsize_layout->addWidget(z_dsb, 0,2);
+
+    VoxelSize->setLayout(voxelsize_layout);
+    #ifdef Q_OS_LINUX
+    VoxelSize->setStyle(new QWindowsStyle());
     #endif
 
     // "Proofreading" panel layout
@@ -821,20 +833,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #ifdef Q_OS_LINUX
     PR_panel->setStyle(new QWindowsStyle());
     #endif
-
-#ifndef Q_OS_MAC
-      // Overview panel layout
-    QWidget* refSysContainer2 = new QWidget();
-    refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
-    QHBoxLayout* refSysContainerLayout2 = new QHBoxLayout();
-    refSysContainerLayout2->setContentsMargins(1,1,1,1);
-    refSysContainerLayout2->addWidget(refSys, 1);
-    refSysContainer2->setLayout(refSysContainerLayout2);
-    QGridLayout* Overview_layout = new QGridLayout();
-    Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
-    Overview_layout->setContentsMargins(1,1,1,1);
-    Overview_panel->setLayout(Overview_layout);
-#endif
 
     //local viewer panel
     QVBoxLayout* localviewer_panel_layout= new QVBoxLayout();
@@ -939,24 +937,59 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoom_panel->setStyle(new QWindowsStyle());
     #endif
 
+    /* ------- overview panel widgets ------- */
+    Overview_panel = new QGroupBox("Overview");
+
+    // Overview panel layout
+    QWidget* refSysContainer2 = new QWidget();
+    //refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
+    refSysContainer2->setStyleSheet("border: 0px;");
+    QLabel* dispInfo = new QLabel();
+    dispInfo->setStyleSheet("border: 0px;");
+    // QVBoxLayout* refSysContainerLayout2 = new QVBoxLayout();
+    refSysContainerLayout2 = new QVBoxLayout();
+    refSysContainerLayout2->setContentsMargins(1,1,1,1);
+    refSysContainerLayout2->addWidget(dispInfo, 0);
+    #ifndef Q_OS_MAC
+    refSysContainerLayout2->addWidget(refSys, 1);
+    #endif
+    refSysContainerLayout2->addStretch();
+    refSysContainer2->setLayout(refSysContainerLayout2);
+    QGridLayout* Overview_layout = new QGridLayout();
+    Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
+    Overview_layout->setContentsMargins(1,1,1,1);
+    Overview_panel->setLayout(Overview_layout);
+    #ifdef Q_OS_LINUX
+    Overview_panel->setStyle(new QWindowsStyle());
+    #endif
+
     // Page "Controls" layout
     QVBoxLayout* controlsLayout = new QVBoxLayout(controls_page);
     controlsLayout->addWidget(localViewer_panel, 0);
     controlsLayout->addWidget(zoom_panel, 0);
     controlsLayout->addWidget(VOI_panel, 0);
+    controlsLayout->addWidget(VoxelSize, 0);
     controlsLayout->addWidget(PR_panel, 0);
-    #ifndef Q_OS_MAC
+    #ifdef Q_OS_MAC
+    // minimap tab
+    minimap_page = new QWidget();
+    QVBoxLayout* minimapLayout = new QVBoxLayout(minimap_page);
+    minimapLayout->addWidget(Overview_panel, 0);
+    minimap_page->setLayout(minimapLayout);
+    #else
     controlsLayout->addWidget(Overview_panel, 0);
     #endif
     controlsLayout->addStretch(1);
-    #ifdef Q_OS_MAC
-    controlsLayout->setContentsMargins(10,0,10,10);
-    #endif
     controls_page->setLayout(controlsLayout);
+
+    connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Others");
+//    #ifdef Q_OS_MAC
+//    tabs->addTab(minimap_page, "Overview");
+//    #endif
 
     //overall
     QVBoxLayout* layout = new QVBoxLayout();
@@ -986,7 +1019,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
-
     // signals and slots
     /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);
     connect(CImport::instance(), SIGNAL(sendOperationOutcome(tf::RuntimeException*, qint64)), this, SLOT(importDone(tf::RuntimeException*, qint64)), Qt::QueuedConnection);
@@ -1008,6 +1040,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(traslTpos, SIGNAL(clicked()), this, SLOT(traslTposClicked()));
     connect(traslTneg, SIGNAL(clicked()), this, SLOT(traslTnegClicked()));
     connect(controlsResetButton, SIGNAL(clicked()), this, SLOT(resetMultiresControls()));
+    connect(x_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(y_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(z_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(refSys, SIGNAL(reset()), this, SLOT(updateOverview()));
+
 #ifdef __ALLOW_VR_FUNCS__
     if(teraflyVRView)
 	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
@@ -1019,7 +1056,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
-    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
+//    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -1035,8 +1072,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     // move to center(vertical)-right(horizontal)
     move(qApp->desktop()->availableGeometry().width() - width(), 0);
-
-
 
 
     // register this as event filter
@@ -1111,6 +1146,10 @@ void PMain::reset()
     gradientBar->setStep(0);
     resetMultiresControls();
 
+    x_dsb->setValue(CSettings::instance()->getVoxelSizeX());
+    y_dsb->setValue(CSettings::instance()->getVoxelSizeY());
+    z_dsb->setValue(CSettings::instance()->getVoxelSizeZ());
+
     //resetting subvol panel widgets
     VOI_panel->setEnabled(false);
     PR_panel->setEnabled(false);
@@ -1129,8 +1168,8 @@ void PMain::reset()
     refSys->setXRotation(200);
     refSys->setYRotation(50);
     refSys->setZRotation(0);
-    refSys->setDims(1,1,1);
     refSys->setFilled(true);
+    refSys->setDims(1,1,1);
     refSys->resetZoom();
     frameCoord->setPalette(VOI_panel->palette());
 
@@ -1150,12 +1189,22 @@ void PMain::reset()
     helpBox->setText(HTwelcome);
 
     // @ADDED Vaa3D-controls-within-TeraFly feature.
+    #ifdef Q_OS_MAC
+    if(tabs->count() == 4)
+    {
+        int tab_selected = tabs->currentIndex();
+        tabs->removeTab(3);
+        tabs->removeTab(1);
+        tabs->setCurrentIndex(tab_selected);
+    }
+    #else
     if(tabs->count() == 3)
     {
         int tab_selected = tabs->currentIndex();
         tabs->removeTab(1);
         tabs->setCurrentIndex(tab_selected);
     }
+    #endif
 }
 
 
@@ -1503,6 +1552,16 @@ void PMain::loadAnnotations()
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(cursor);
+
+                #ifdef Q_OS_MAC
+                if(tabs->count() < 4)
+                {
+                    tabs->insertTab(3, minimap_page, "Overview");
+                }
+                #endif
+
+                //
+                updateOverview();
             }
             else
                 return;
@@ -1938,8 +1997,21 @@ void PMain::settingsChanged(int)
     CSettings::instance()->setTraslY(yShiftSBox->value());
     CSettings::instance()->setTraslZ(zShiftSBox->value());
     CSettings::instance()->setTraslT(tShiftSBox->value());
+
     if(PDialogProofreading::isActive())
         PDialogProofreading::instance()->updateBlocks(0);
+}
+
+void PMain::voxelSizeChanged(double)
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    CSettings::instance()->setVoxelSizeX(x_dsb->value());
+    CSettings::instance()->setVoxelSizeY(y_dsb->value());
+    CSettings::instance()->setVoxelSizeZ(z_dsb->value());
+
+    //
+    updateOverview();
 }
 
 /**********************************************************************************
@@ -2490,25 +2562,7 @@ void PMain::fetchAndDisplayChanged()
     CSettings::instance()->setPreviewMode(fdPreviewAction->isChecked());
 }
 
-/**********************************************************************************
-* Called when bit conversion menu options have changed
-***********************************************************************************/
-void PMain::from8bitsdataChanged(int newval)
-{
-    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
-    CSettings::instance()->setBitsRemap(newval);
-
-    CImport::instance()->setBitsRemap(newval);
-}
-void PMain::from16bitsdataChanged(int newval)
-{
-    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
-
-    CSettings::instance()->setBitsConversion(newval);
-
-    CImport::instance()->setBitsConversion(newval);
-}
 
 /**********************************************************************************
 * Called when the corresponding Options->3D annotation->Virtual space size actions are triggered
@@ -2545,6 +2599,13 @@ void PMain::PRbuttonClicked()
 
 void PMain::setOverview(bool enabled)
 {
+    if(CImport::instance()->volumes.size()<1)
+    {
+        qDebug()<<"No volume is loaded!";
+        return;
+    }
+
+    //
     CViewer *cur_win = CViewer::getCurrent();
     refSys->setFilled(!enabled);
     PR_button->setEnabled(!enabled);
@@ -2562,8 +2623,8 @@ void PMain::setOverview(bool enabled)
         int dimZ    = CImport::instance()->volumes[num_res-1]->getDIM_D();
         refSys->num_res=CImport::instance()->volumes.size();
         refSys->curRes=cur_win->getResIndex();
-        qDebug("num res is %d",num_res);
-        qDebug("reseltiton is %d.",cur_win->getResIndex());
+//        qDebug("num res is %d",num_res);
+//        qDebug("reseltiton is %d.",cur_win->getResIndex());
 
         CSettings::instance()->setVOIdimV(Vdim_sbox->value());
         CSettings::instance()->setVOIdimH(Hdim_sbox->value());
@@ -2572,6 +2633,9 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setTraslX(xShiftSBox->value());
         CSettings::instance()->setTraslY(yShiftSBox->value());
         CSettings::instance()->setTraslZ(zShiftSBox->value());
+        CSettings::instance()->setVoxelSizeX(x_dsb->value());
+        CSettings::instance()->setVoxelSizeY(y_dsb->value());
+        CSettings::instance()->setVoxelSizeZ(z_dsb->value());
 
         int ROIxS   = H0_sbox->value();
         refSys->dimXCenter=ROIxS;
@@ -2632,10 +2696,13 @@ void PMain::setOverview(bool enabled)
             ROIzDim *= factorXYZ;
         }
 */
+
         refSys->nt = PluginInterface::getSWC();
         refSys->nt_init=PluginInterface::getSWC();
-        refSys->markList = PluginInterface::getLandmark();        
+        refSys->markList = PluginInterface::getLandmark();
+        refSys->setVoxelSize(CSettings::instance()->getVoxelSizeX(), CSettings::instance()->getVoxelSizeY(), CSettings::instance()->getVoxelSizeZ());
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
+
         if(cur_win)
         {
             renderer=myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()));//static_cast<Renderer_gl1*>(cur_win->view3DWidget->getRenderer());
@@ -2646,9 +2713,9 @@ void PMain::setOverview(bool enabled)
         if(set_render_flag&&renderer)
             refSys->setRender(renderer);
 
-    }else
+    }
+    else
     {
-        qDebug("move to this");
         PRsetActive(false);
         refSys->nt.listNeuron.clear();
         isOverviewActive = false;
@@ -2966,7 +3033,19 @@ void PMain::markersSizeSpinBoxChanged(int value)
 void PMain::annotationsChanged()
 {
     if(!annotationsPathLRU.empty())
+    {
         saveAnnotationsAction->setEnabled(true);
+    }
+
+    // update mini-map, realtime update is slow
+    // updateOverview();
+
+    #ifdef Q_OS_MAC
+    if(tabs->count() < 4)
+    {
+        tabs->insertTab(3, minimap_page, "Overview");
+    }
+    #endif
 }
 
 void PMain::showDialogVtk2APO()
@@ -3340,4 +3419,25 @@ void PMain::showAnoOctree()
 void PMain::tabIndexChanged(int value)
 {
     helpBox->setVisible(value == 0);
+
+    #ifdef Q_OS_MAC
+    if(value==3)
+    {
+        refSysContainerLayout2->addWidget(refSys, 1);
+        refSysContainerLayout2->addStretch();
+        //setOverview(true);
+    }
+    else if(value==0)
+    {
+        refSysContainerLayout->addWidget(refSys, 1);
+        //setOverview(false);
+    }
+    #endif
 }
+
+void PMain::updateOverview()
+{
+    setOverview(true);
+}
+
+

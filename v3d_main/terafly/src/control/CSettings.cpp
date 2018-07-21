@@ -104,6 +104,10 @@ void CSettings::loadDefaultSettings()
     volumeConverterStacksHeightLRU = 256;
     volumeConverterStacksDepthLRU = 256;
     volumeConverterTimeSeries = false;
+
+    voxelsizeX = 0.2;
+    voxelsizeY = 0.2;
+    voxelsizeZ = 1.0;
 }
 
 void CSettings::writeSettings()
@@ -157,6 +161,9 @@ void CSettings::writeSettings()
     settings.setValue("vpRefillStopCondition", vpRefillStopCondition);
     settings.setValue("vpCacheHighestRes", vpCacheHighestRes);
     settings.setValue("vpFreezeHighestRes", vpFreezeHighestRes);
+    settings.setValue("voxelsizeX", voxelsizeX);
+    settings.setValue("voxelsizeY", voxelsizeY);
+    settings.setValue("voxelsizeZ", voxelsizeZ);
 
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
