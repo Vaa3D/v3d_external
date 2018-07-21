@@ -97,7 +97,7 @@ public:
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
         smCurveCreate_MarkerCreate1_fm, smCurveCreate_MarkerCreate1,//by ZZ 09202018
 					};
-	enum editMode {connectEdit_none, segmentEdit, segmentEditLoopSafe, pointCloudEdit, markerEdit, loopEdit}; // MK, for different segment connecting mode.
+	enum editMode {segmentEdit, segmentEditLoopSafe, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
 	enum UI3dViewMode {Vaa3d, Terafly, Mozak};     //20170804 RZC: diffrent code path in Renderer_gl1::addCurveSWC()
 //protected:
 	RenderMode renderMode;
@@ -247,6 +247,7 @@ public:
     virtual void callStrokeDeleteMultiNeurons() {};//  multiple segments deleting shortcut
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
+	virtual void callStrokeConnectMultiNeurons_loopSafe() {}; // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree() {};
 	virtual void callShowConnectedSegs() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut

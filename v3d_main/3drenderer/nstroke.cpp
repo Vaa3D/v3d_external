@@ -1386,6 +1386,25 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
     }
 }
 
+void Renderer_gl1::callStrokeConnectMultiNeurons_loopSafe()
+{
+	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	if (w && listNeuronTree.size() > 0)
+	{
+		w->setEditMode();
+		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
+		{
+			editinput = 9;
+			selectMode = smSimpleConnectLoopSafe;
+			b_addthiscurve = false;
+			oldCursor = QCursor(Qt::ArrowCursor);
+			w->setCursor(QCursor(Qt::PointingHandCursor));
+		}
+	}
+}
+
 void Renderer_gl1::callShowSubtree()
 {
 	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
@@ -1416,7 +1435,7 @@ void Renderer_gl1::callShowConnectedSegs()
 		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
 		{
 			My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(_idep);
-			this->seg2GridMapping(curImg);
+			this->seg2GridMapping(curImg); 
 
 			editinput = 11;
 			selectMode = smShowSubtree;

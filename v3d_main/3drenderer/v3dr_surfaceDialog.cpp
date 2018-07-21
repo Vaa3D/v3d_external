@@ -628,8 +628,6 @@ void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 
 		if (t==table[stImageMarker])
 		{
-            t->setSortingEnabled(true); // sort
-
 			qDebug("  marker #%d", i+1);
 			last_marker = i;
 
@@ -934,10 +932,7 @@ void V3dr_surfaceDialog::pickMarker(int i, int j)
 		r->listMarker[i].on = CHECKED_TO_BOOL(curItem->checkState());
 		break;
 	case 1:
-        //r->listMarker[i].color = RGBA8V(curItem->data(0));
-        listMarker[i].color = RGBA8V(curItem->data(0)); // sync
-        r->updateMarkerList(listMarker, i);
-
+		r->listMarker[i].color = RGBA8V(curItem->data(0));
 		UPATE_ITEM_ICON(curItem);
 		break;
 	}
@@ -1370,8 +1365,6 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 				{
 					r->listMarker[i].name = realobj_name;
 					r->listMarker[i].comment = realobj_comment;
-
-                    qDebug()<<"sync with renderer's name and comment";
 				}
 				else if (t==table[stLabelSurface])
 				{
@@ -1634,14 +1627,6 @@ void V3dr_surfaceDialog::zoomMarkerLocation()
         v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
         renderer->b_grabhighrez=true;
         renderer->produceZoomViewOf3DRoi(loc_vec,0);
-    }
-}
-
-void V3dr_surfaceDialog::updateMarkerList(QList <ImageMarker> markers)
-{
-    for(int i=0; i<markers.size(); i++)
-    {
-        listMarker[i] = markers[i];
     }
 }
 

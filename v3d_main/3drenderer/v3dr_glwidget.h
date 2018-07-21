@@ -145,7 +145,7 @@ public:
     // Be sure to set to 'true' by default when you subclass (or, simplier, just call the base-constructor).
     bool show_progress_bar;
 
-	QProgressBar* progressBarPtr; 
+	QProgressBar* progressBarPtr;
 
 	int currentPluginState;                              // May 29, 2012 by Hang
 	map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
@@ -386,6 +386,7 @@ public slots:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments splitting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree();
 	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing

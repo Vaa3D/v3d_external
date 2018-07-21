@@ -965,6 +965,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
         return;
     }
+
     // check precondition #2: valid resolution
     if(resolution >= CImport::instance()->getResolutions())
         resolution = volResIndex;
@@ -1006,11 +1007,9 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         window3D->setCursor(Qt::BusyCursor);
         pMain.setCursor(Qt::BusyCursor);
 
-
         // scale VOI coordinates to the reference system of the target resolution
         if(scale_coords)
         {
-
             float ratioX = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_H())/CImport::instance()->getVolume(volResIndex)->getDIM_H();
             float ratioY = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_V())/CImport::instance()->getVolume(volResIndex)->getDIM_V();
             float ratioZ = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_D())/CImport::instance()->getVolume(volResIndex)->getDIM_D();
@@ -1064,36 +1063,24 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             else
             {
                 /**/tf::debug(tf::LEV3, strprintf("title = %s, cropping bbox dims from [%d,%d) [%d,%d) [%d,%d) [%d,%d] to...", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
-                float marginx = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
-                x  = round(x  - marginx);
-                x0 = round(x0 + marginx);
-
-                float marginy = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
-                y  = round(y  - marginy);
-                y0 = round(y0 + marginy);
-
-                float marginz = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
-                z  = round(z  - marginz);
-                z0 = round(z0 + marginz);
-
-//                if(x - x0 >= pMain.Hdim_sbox->value())
-//                {
-//                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
-//                    x  = round(x  - margin);
-//                    x0 = round(x0 + margin);
-//                }
-//                if(y - y0 >= pMain.Vdim_sbox->value())
-//                {
-//                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
-//                    y  = round(y  - margin);
-//                    y0 = round(y0 + margin);
-//                }
-//                if(z - z0 > pMain.Ddim_sbox->value())
-//                {
-//                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
-//                    z  = round(z  - margin);
-//                    z0 = round(z0 + margin);
-//                }
+                if(x - x0 > pMain.Hdim_sbox->value())
+                {
+                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
+                    x  = round(x  - margin);
+                    x0 = round(x0 + margin);
+                }
+                if(y - y0 > pMain.Vdim_sbox->value())
+                {
+                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
+                    y  = round(y  - margin);
+                    y0 = round(y0 + margin);
+                }
+                if(z - z0 > pMain.Ddim_sbox->value())
+                {
+                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
+                    z  = round(z  - margin);
+                    z0 = round(z0 + margin);
+                }
                 t0 = std::max(0, std::min(t0,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 if(CImport::instance()->is5D() && (t1-t0+1 > pMain.Tdim_sbox->value()))
@@ -2284,9 +2271,7 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
     // @ADDED by Alessandro on 2017-06-26: zoom-in around marker or ROI to the highest resolution
     else if(roi->ops_type == 0 && !forceZoomIn)
-    {
         newViewer(roi->xe, roi->ye, roi->ze, CImport::instance()->getResolutions()-1, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
-    }
 
     // zoom-in around marker or ROI to the higher resolution
     else if(roi->ops_type == 1 && !forceZoomIn)
