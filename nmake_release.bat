@@ -8,6 +8,8 @@ cd ..\..\..
 cd v3d_main\v3d
 call ..\..\qmake -v
 call ..\..\qmake  vaa3d_msvc.pro
+
+copy/b v3d_version_info.cpp+,,
 nmake -f Makefile.Release
 
 cd release

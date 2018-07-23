@@ -397,8 +397,8 @@ void V3dR_GLWidget::paintGL()
 	//SET translation
 	{
 		//absolute translation
-		//XYZ T(_xShift, _yShift, _zShift);  				//qDebug("T= %f %f %f", T.x, T.y, T.z);
-		XYZ T(_xShift, _yShift, 0); // force zShift=0
+		XYZ T(_xShift, _yShift, _zShift);  				//qDebug("T= %f %f %f", T.x, T.y, T.z);
+		//XYZ T(_xShift, _yShift, 0); // force zShift=0
 		dxShift=dyShift=dzShift=0;  // clear relative shift step
 
 		double s = 1.4/(float)SHIFT_RANGE;  // 1.4 ~ sqrt(2);

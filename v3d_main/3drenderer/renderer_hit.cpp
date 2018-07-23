@@ -1388,27 +1388,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     		{
     			const ImageMarker & m = listMarker.at(tmpind);
     			XYZ p = XYZ(m);
-    			p.x = p.x*thicknessX -strat1;
-    			p.y = p.y*thicknessY -strat2;
-    			p.z = p.z*thicknessZ -strat3;
 
-    			BoundingBox & BB = boundingBox;
-    			float DX = BB.Dx();
-    			float DY = BB.Dy();
-    			float DZ = BB.Dz();
-    			float maxD = BB.Dmax();
-    			double s[3];
-    			s[0] = 1/maxD *2;
-    			s[1] = 1/maxD *2;
-    			s[2] = 1/maxD *2;
-    			double t[3];
-    			t[0] = -BB.x0 -DX /2;
-    			t[1] = -BB.y0 -DY /2;
-    			t[2] = -BB.z0 -DZ /2;
-
-    			p.x = s[0]*(p.x +t[0]);
-    			p.y = s[1]*(p.y +t[1]);
-    			p.z = s[2]*(p.z +t[2]);
+    			MarkerSpaceToNormalizeSpace(p);
     			qDebug("normalized alt rotation center: (%f %f %f)", p.x, p.y, p.z);
 
     			w->setAltCenter(p.x, p.y, p.z);
@@ -4270,6 +4251,7 @@ void Renderer_gl1::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, 
 	loc0 = XYZ(Z0(1), Z0(2), Z0(3));
 	loc1 = XYZ(Z1(1), Z1(2), Z1(3));
 }
+
 double Renderer_gl1::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
 {
 	XYZ Y1, Y2;
@@ -4303,6 +4285,7 @@ double Renderer_gl1::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos
 	//	double dist = fabs(x0*L.x + y0*L.y + L.z)/sqrt(L.x*L.x + L.y*L.y);
 	//	return dist;
 }
+
 XYZ Renderer_gl1::getLocationOfListMarkerPos()
 {
 	int N = listMarkerPos.size();
@@ -4339,6 +4322,7 @@ XYZ Renderer_gl1::getLocationOfListMarkerPos()
 	XYZ loc(X(1), X(2), X(3));
 	return loc;
 }
+
 XYZ Renderer_gl1::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 {
 	//         A*N + d
@@ -4349,6 +4333,7 @@ XYZ Renderer_gl1::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 	XYZ loc = P1 + t*(P2-P1);
 	return loc;
 }
+
 // in Image space (model space)
 XYZ Renderer_gl1::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
 {
@@ -4359,47 +4344,48 @@ XYZ Renderer_gl1::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
 	loc = getPointOnPlane(P1,P2, plane); \
 	if (dist_L2(loc,P2) > dist_L2(P,P2) && dataViewProcBox.isInner(loc, 0.5)) \
 	P = loc; \
-}
-	//qDebug("  P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
-if (bXSlice)
-{
-	plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);
-	REPLACE_NEAR( plane );
-	//qDebug("  X-(%g %g %g)", loc.x,loc.y,loc.z);
-}
-if (bYSlice)
-{
-	plane[0] = 0; plane[1] = -1; plane[2] = 0; plane[3] = start2+ VOL_Y0*(size2-1);
-	REPLACE_NEAR( plane );
-	//qDebug("  Y-(%g %g %g)", loc.x,loc.y,loc.z);
-}
-if (bZSlice)
-{
-	plane[0] = 0; plane[1] = 0; plane[2] = -1; plane[3] = start3+ VOL_Z0*(size3-1);
-	REPLACE_NEAR( plane );
-	//qDebug("  Z-(%g %g %g)", loc.x,loc.y,loc.z);
-}
-if (bFSlice)
-{
-	if (F_plane)
-		for (int i=0; i<4; i++) plane[i] = F_plane[i];
-	else
-	{
-		////////////////////////////////////////////////////////////////////////
-		//100730 RZC, in View space, keep for dot(clip, pos)>=0
-		double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-		clipplane[3] = viewClip;
-		ViewPlaneToModel(markerViewMatrix, clipplane);
-		//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-		////////////////////////////////////////////////////////////////////////
-		for (int i=0; i<4; i++) plane[i] = clipplane[i];
 	}
-	REPLACE_NEAR( plane );
-	//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
+	//qDebug("  P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
+	if (bXSlice)
+	{
+		plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);
+		REPLACE_NEAR( plane );
+		//qDebug("  X-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	if (bYSlice)
+	{
+		plane[0] = 0; plane[1] = -1; plane[2] = 0; plane[3] = start2+ VOL_Y0*(size2-1);
+		REPLACE_NEAR( plane );
+		//qDebug("  Y-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	if (bZSlice)
+	{
+		plane[0] = 0; plane[1] = 0; plane[2] = -1; plane[3] = start3+ VOL_Z0*(size3-1);
+		REPLACE_NEAR( plane );
+		//qDebug("  Z-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	if (bFSlice)
+	{
+		if (F_plane)
+			for (int i=0; i<4; i++) plane[i] = F_plane[i];
+		else
+		{
+			////////////////////////////////////////////////////////////////////////
+			//100730 RZC, in View space, keep for dot(clip, pos)>=0
+			double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+			clipplane[3] = viewClip;
+			ViewPlaneToModel(markerViewMatrix, clipplane);
+			//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+			////////////////////////////////////////////////////////////////////////
+			for (int i=0; i<4; i++) plane[i] = clipplane[i];
+		}
+		REPLACE_NEAR( plane );
+		//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	//qDebug("  P(%g %g %g)", P.x,P.y,P.z);
+	return P;
 }
-//qDebug("  P(%g %g %g)", P.x,P.y,P.z);
-return P;
-}
+
 // in Image space (model space)
 XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
 		double clipplane[4],	//clipplane==0 means no clip plane
@@ -4552,6 +4538,7 @@ int Renderer_gl1::getVolumeXsectPosOfMarkerLine(XYZ & locA, XYZ & locB, const Ma
 
     return 1;
 }
+
 // in Image space (model space), by PHC 20130425
 int Renderer_gl1::getVolumeXsectPosOfMarkerLine(XYZ P1, XYZ P2,
         double clipplane[4],	//clipplane==0 means no clip plane
