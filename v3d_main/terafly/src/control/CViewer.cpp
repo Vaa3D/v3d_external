@@ -428,6 +428,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     T0_sbox_min = T0_sbox_val = T1_sbox_max = T1_sbox_val = -1;
     slidingViewerBlockID = _slidingViewerBlockID;
     forceZoomIn = false;
+    insituZoomOut = false; // test new zoom out approach
 
     try
     {
@@ -652,7 +653,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             return false;
         }
 
-        /****************** INTERCEPTING DOUBLE CLICK EVENTS ***********************
+        /****************** INTERCEPTING DOUBLE CLICK printf("title = %s, ...to [%d,%d) [%d,%d) [%d,%d) [%d,%d]", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1)EVENTS ***********************
         Double click events are intercepted to switch to the higher resolution.
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick)
@@ -959,12 +960,14 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
+
     // check precondition #1: active window
     if(!_isActive || toBeClosed)
     {
         QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
         return;
     }
+
     // check precondition #2: valid resolution
     if(resolution >= CImport::instance()->getResolutions())
         resolution = volResIndex;
@@ -975,7 +978,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         tf::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
         return;
     }
-
 
     // deactivate current window and processing all pending events
     setActive(false);
@@ -1290,6 +1292,10 @@ throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, xDim = %d, yDim = %d, zDim = %d",
                                         titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp).c_str(), __itm__current__function__);
+
+
+    printf("\n getVOI: title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, xDim = %d, yDim = %d, zDim = %d",
+                                            titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp);
 
     // allocate image data and initializing to zero (black)
     /**/tf::debug(tf::LEV3, "Allocate image data", __itm__current__function__);
@@ -1981,223 +1987,594 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
     if(source)
     {
-        //signal disconnections
-        source->disconnect(source->view3DWidget, SIGNAL(changeXCut0(int)), source, SLOT(Vaa3D_changeXCut0(int)));
-        source->disconnect(source->view3DWidget, SIGNAL(changeXCut1(int)), source, SLOT(Vaa3D_changeXCut1(int)));
-        source->disconnect(source->view3DWidget, SIGNAL(changeYCut0(int)), source, SLOT(Vaa3D_changeYCut0(int)));
-        source->disconnect(source->view3DWidget, SIGNAL(changeYCut1(int)), source, SLOT(Vaa3D_changeYCut1(int)));
-        source->disconnect(source->view3DWidget, SIGNAL(changeZCut0(int)), source, SLOT(Vaa3D_changeZCut0(int)));
-        source->disconnect(source->view3DWidget, SIGNAL(changeZCut1(int)), source, SLOT(Vaa3D_changeZCut1(int)));
-        source->disconnect(source->view3DWidget, SIGNAL(signalCallTerafly(int)), source, SLOT(ShiftToAnotherDirection(int)));
-        source->connect(source->window3D->timeSlider, SIGNAL(valueChanged(int)), source, SLOT(Vaa3D_changeTSlider(int)));
-        //source->disconnect(source->view3DWidget, SIGNAL(xRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
-        //source->disconnect(source->view3DWidget, SIGNAL(yRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
-        //source->disconnect(source->view3DWidget, SIGNAL(zRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
-        source->disconnect(PMain::getInstance()->refSys, SIGNAL(mouseReleased()), source, SLOT(PMain_rotationchanged()));
-        source->disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeV0sbox(int)));
-        source->disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeV1sbox(int)));
-        source->disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeH0sbox(int)));
-        source->disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeH1sbox(int)));
-        source->disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeD0sbox(int)));
-        source->disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeD1sbox(int)));
-
-        source->view3DWidget->removeEventFilter(source);
-        source->window3D->removeEventFilter(source);
-        window3D->timeSlider->removeEventFilter(source);
-
-        //saving source spinbox state
-        source->saveSubvolSpinboxState();
-
-        //activating current view
-        setActive(true);
-
-        //registrating views: ---- Alessandro 2013-04-18 fixed: determining unique triple of rotation angles and assigning absolute rotation
-        source->view3DWidget->absoluteRotPose();
-        view3DWidget->doAbsoluteRot(source->view3DWidget->xRot(), source->view3DWidget->yRot(), source->view3DWidget->zRot());
-
-        //setting zoom only if user has zoomed in
-        if(source->volResIndex < volResIndex)
+        //
+        if(insituZoomOut)
         {
-            float ratio = CImport::instance()->getVolume(volResIndex)->getDIM_D()/CImport::instance()->getVolume(source->volResIndex)->getDIM_D();
-            view3DWidget->setZoom(source->view3DWidget->zoom()/ratio);
-        }
-        if(source->volResIndex > volResIndex)
-        {
-//            float ratio = CImport::instance()->getVolume(volResIndex)->getDIM_D()/CImport::instance()->getVolume(source->volResIndex)->getDIM_D();
-            if(this != first)
-                view3DWidget->setZoom(16);
-            else
-                view3DWidget->setZoom(30);
-        }
+            // newViewer((source->volH0 + source->volH1)/4, (source->volV0 + source->volV1)/4, (source->volD0 + source->volD1)/4, source->volResIndex-1, source->volT0, source->volT1);
+
+            //can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
+            int x = (source->volH0 + source->volH1)/4;
+            int y = (source->volV0 + source->volV1)/4;
+            int z = (source->volD0 + source->volD1)/4;
+
+            qDebug()<<"x y z "<<x<<y<<z;
+
+            int resolution = source->volResIndex-1;
+
+            int t0 = source->volT0;
+            int t1 = source->volT1;
+            int dx = -1, dy = -1, dz=-1;    //VOI [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
+            int x0 = -1, y0 = -1, z0=-1;    //VOI [x0, x), [y0, y), [z0, z), [t0, t1]
+            bool auto_crop = false;                    //whether to crop the VOI to the max dims
+            bool scale_coords = false;                 //whether to scale VOI coords to the target res
+            int sliding_viewer_block_ID = -1;         //block ID in "Sliding viewer" mode
+
+            printf("\nnewViewer: title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+                                                    titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID);
+
+            // deactivate current window and processing all pending events
+            setActive(false);
+            QApplication::processEvents();
+
+            // after processEvents(), it might be that this windows is no longer valid, then terminating
+            if(toBeClosed)
+                return;
+
+            // restart timer (measures the time needed to switch to a new view)
+            newViewerTimer.restart();
+
+            // create new macro-group for NewViewerOperation
+            tf::NewViewerOperation::newGroup();
 
 
-        //showing current view (with triViewWidget minimized)
-        triViewWidget->setWindowState(Qt::WindowMinimized);
-
-        //positioning the current 3D window exactly at the <source> window position
-        QPoint location = source->window3D->pos();
-        resize(source->window3D->size());
-        move(location);
-
-        //hiding <source>
-        source->window3D->setVisible(false);
-        //source->triViewWidget->setVisible(false);       //---- Alessandro 2013-09-04 fixed: this causes Vaa3D's setCurHiddenSelectedWindow() to fail
-        source->view3DWidget->setCursor(Qt::ArrowCursor);
-
-        //applying the same color map only if it differs from the source one
-        Renderer_gl2* source_renderer = (Renderer_gl2*)(source->view3DWidget->getRenderer());
-        Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
-        curr_renderer->currentTraceType = source_renderer->currentTraceType;
-        curr_renderer->currentMarkerColor = source_renderer->currentMarkerColor;
-        curr_renderer->neuronColorMode = source_renderer->neuronColorMode;
-
-        bool changed_cmap = false;
-        for(int k=0; k<3; k++)
-        {
-            RGBA8* source_cmap = source_renderer->colormap[k];
-            RGBA8* curr_cmap = curr_renderer->colormap[k];
-            for(int i=0; i<256; i++)
+            try
             {
-                if(curr_cmap[i].i != source_cmap[i].i)
-                    changed_cmap = true;
-                curr_cmap[i] = source_cmap[i];
+                // set GUI to waiting state
+                QElapsedTimer timer;
+                timer.start();
+                PMain& pMain = *(PMain::getInstance());
+                pMain.progressBar->setEnabled(true);
+                pMain.progressBar->setMinimum(0);
+                pMain.progressBar->setMaximum(0);
+                pMain.statusBar->showMessage("Switching view...");
+                view3DWidget->setCursor(Qt::BusyCursor);
+                window3D->setCursor(Qt::BusyCursor);
+                pMain.setCursor(Qt::BusyCursor);
+
+                // scale VOI coordinates to the reference system of the target resolution
+                if(scale_coords)
+                {
+                    float ratioX = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_H())/CImport::instance()->getVolume(volResIndex)->getDIM_H();
+                    float ratioY = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_V())/CImport::instance()->getVolume(volResIndex)->getDIM_V();
+                    float ratioZ = static_cast<float>(CImport::instance()->getVolume(resolution)->getDIM_D())/CImport::instance()->getVolume(volResIndex)->getDIM_D();
+                    x = coord2global<int>(x, iim::horizontal, true, resolution, false, false, __itm__current__function__);
+                    y = coord2global<int>(y, iim::vertical,   true, resolution, false, false, __itm__current__function__);
+                    z = coord2global<int>(z, iim::depth,      true, resolution, false, false, __itm__current__function__);
+
+                    qDebug()<<"x y z "<<x<<y<<z;
+
+                    if(x0 != -1)
+                        x0 = coord2global<int>(x0, iim::horizontal, true,  resolution, false, false, __itm__current__function__);
+                    else
+                        dx = dx == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dx*ratioX+0.5f);
+                    if(y0 != -1)
+                        y0 = coord2global<int>(y0, iim::vertical,   true,  resolution, false, false, __itm__current__function__);
+                    else
+                        dy = dy == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dy*ratioY+0.5f);
+                    if(z0 != -1)
+                        z0 = coord2global<int>(z0, iim::depth,      true,  resolution, false, false, __itm__current__function__);
+                    else
+                        dz = dz == -1 ? std::numeric_limits<int>::max() : static_cast<int>(dz*ratioZ+0.5f);
+                }
+
+
+                // adjust time size so as to use all the available frames set by the user
+                if(CImport::instance()->is5D() && ((t1 - t0 +1) != pMain.Tdim_sbox->value()))
+                {
+                    t1 = t0 + (pMain.Tdim_sbox->value()-1);
+                    /**/tf::debug(tf::LEV1, strprintf("mismatch between |[t0,t1]| (%d) and max T dims (%d), adjusting it to [%d,%d]", t1-t0+1, pMain.Tdim_sbox->value(), t0, t1).c_str(), __itm__current__function__);
+                }
+
+
+                // crop VOI if its larger than the maximum allowed
+                if(auto_crop)
+                {
+                    // modality #1: VOI = [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
+                    if(dx != -1 && dy != -1 && dz != -1)
+                    {
+                        /**/tf::debug(tf::LEV3, strprintf("title = %s, cropping bbox dims from (%d,%d,%d) t[%d,%d] to...", titleShort.c_str(),  dx, dy, dz, t0, t1).c_str(), __itm__current__function__);
+                        dx = std::min(dx, round(pMain.Hdim_sbox->value()/2.0f));
+                        dy = std::min(dy, round(pMain.Vdim_sbox->value()/2.0f));
+                        dz = std::min(dz, round(pMain.Ddim_sbox->value()/2.0f));
+                        t0 = std::max(0, std::min(t0,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
+                        t1 = std::max(0, std::min(t1,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
+                        if(CImport::instance()->is5D() && (t1-t0+1 > pMain.Tdim_sbox->value()))
+                            t1 = t0 + pMain.Tdim_sbox->value();
+                        if(CImport::instance()->is5D() && (t1 >= CImport::instance()->getTDim()-1))
+                            t0 = t1 - (pMain.Tdim_sbox->value()-1);
+                        if(CImport::instance()->is5D() && (t0 == 0))
+                            t1 = pMain.Tdim_sbox->value()-1;
+                        /**/tf::debug(tf::LEV3, strprintf("title = %s, ...to (%d,%d,%d)", titleShort.c_str(),  dx, dy, dz).c_str(), __itm__current__function__);
+                    }
+                    // modality #2: VOI = [x0, x), [y0, y), [z0, z), [t0, t1]
+                    else
+                    {
+                        /**/tf::debug(tf::LEV3, strprintf("title = %s, cropping bbox dims from [%d,%d) [%d,%d) [%d,%d) [%d,%d] to...", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
+                        float marginx = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
+                        x  = round(x  - marginx);
+                        x0 = round(x0 + marginx);
+
+                        float marginy = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
+                        y  = round(y  - marginy);
+                        y0 = round(y0 + marginy);
+
+                        float marginz = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
+                        z  = round(z  - marginz);
+                        z0 = round(z0 + marginz);
+
+        //                if(x - x0 >= pMain.Hdim_sbox->value())
+        //                {
+        //                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
+        //                    x  = round(x  - margin);
+        //                    x0 = round(x0 + margin);
+        //                }
+        //                if(y - y0 >= pMain.Vdim_sbox->value())
+        //                {
+        //                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
+        //                    y  = round(y  - margin);
+        //                    y0 = round(y0 + margin);
+        //                }
+        //                if(z - z0 > pMain.Ddim_sbox->value())
+        //                {
+        //                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
+        //                    z  = round(z  - margin);
+        //                    z0 = round(z0 + margin);
+        //                }
+                        t0 = std::max(0, std::min(t0,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
+                        t1 = std::max(0, std::min(t1,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
+                        if(CImport::instance()->is5D() && (t1-t0+1 > pMain.Tdim_sbox->value()))
+                            t1 = t0 + pMain.Tdim_sbox->value();
+                        if(CImport::instance()->is5D() && (t1 >= CImport::instance()->getTDim()-1))
+                            t0 = t1 - (pMain.Tdim_sbox->value()-1);
+                        if(CImport::instance()->is5D() && (t0 == 0))
+                            t1 = pMain.Tdim_sbox->value()-1;
+                        /**/tf::debug(tf::LEV3, strprintf("title = %s, ...to [%d,%d) [%d,%d) [%d,%d) [%d,%d]", titleShort.c_str(),  x0, x, y0, y, z0, z, t0, t1).c_str(), __itm__current__function__);
+                    }
+                }
+
+                // ask CVolume to check (and correct) for a valid VOI
+                CVolume* cVolume = CVolume::instance();
+                try
+                {
+//                    if(dx != -1 && dy != -1 && dz != -1)
+//                        cVolume->setVoi(0, resolution, y-dy, y+dy, x-dx, x+dx, z-dz, z+dz, t0, t1);
+//                    else
+//                        cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
+
+                    cVolume->setVoi(0, resolution, y-128, y+128, x-128, x+128, z-128, z+128, t0, t1);
+
+                    qDebug()<<"cVolume setVoi ... ... "<<volH0<<volH1<<volV0<<volV1<<volD0<<volD1;
+
+                }
+                catch(RuntimeException &ex)
+                {
+                    /**/tf::warning(strprintf("Exception thrown when setting VOI: \"%s\". Aborting newView", ex.what()).c_str(), __itm__current__function__);
+
+                    setActive(true);
+                    view3DWidget->setCursor(Qt::ArrowCursor);
+                    window3D->setCursor(Qt::ArrowCursor);
+                    PMain::getInstance()->resetGUI();
+                    return;
+                }
+
+                qDebug()<<"setVOI ... ..."<<volResIndex<<resolution<<volH0<<volH1;
+
+
+                // save the state of PMain GUI VOI's widgets
+//                saveSubvolSpinboxState();
+
+
+                // disconnect current window from GUI's listeners and event filters
+//                disconnect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
+//                disconnect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
+//                disconnect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
+//                disconnect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
+//                disconnect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
+//                disconnect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+//                disconnect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
+//                disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
+                //disconnect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+                //disconnect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+                //disconnect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+//                disconnect(PMain::getInstance()->refSys,  SIGNAL(mouseReleased()),   this, SLOT(PMain_rotationchanged()));
+//                disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
+//                disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
+//                disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
+//                disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
+//                disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
+//                disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
+//                view3DWidget->removeEventFilter(this);
+//                window3D->removeEventFilter(this);
+//                window3D->timeSlider->removeEventFilter(this);
+
+                source->disconnect(source->view3DWidget, SIGNAL(changeXCut0(int)), source, SLOT(Vaa3D_changeXCut0(int)));
+                source->disconnect(source->view3DWidget, SIGNAL(changeXCut1(int)), source, SLOT(Vaa3D_changeXCut1(int)));
+                source->disconnect(source->view3DWidget, SIGNAL(changeYCut0(int)), source, SLOT(Vaa3D_changeYCut0(int)));
+                source->disconnect(source->view3DWidget, SIGNAL(changeYCut1(int)), source, SLOT(Vaa3D_changeYCut1(int)));
+                source->disconnect(source->view3DWidget, SIGNAL(changeZCut0(int)), source, SLOT(Vaa3D_changeZCut0(int)));
+                source->disconnect(source->view3DWidget, SIGNAL(changeZCut1(int)), source, SLOT(Vaa3D_changeZCut1(int)));
+                source->disconnect(source->view3DWidget, SIGNAL(signalCallTerafly(int)), source, SLOT(ShiftToAnotherDirection(int)));
+                source->connect(source->window3D->timeSlider, SIGNAL(valueChanged(int)), source, SLOT(Vaa3D_changeTSlider(int)));
+                source->disconnect(PMain::getInstance()->refSys, SIGNAL(mouseReleased()), source, SLOT(PMain_rotationchanged()));
+                source->disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeV0sbox(int)));
+                source->disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeV1sbox(int)));
+                source->disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeH0sbox(int)));
+                source->disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeH1sbox(int)));
+                source->disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeD0sbox(int)));
+                source->disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeD1sbox(int)));
+                source->view3DWidget->removeEventFilter(source);
+                source->window3D->removeEventFilter(source);
+                window3D->timeSlider->removeEventFilter(source);
+
+                //saving source spinbox state
+                source->saveSubvolSpinboxState();
+
+
+                //
+                cVolume->setStreamingSteps(0);
+
+                // load data and instance new viewer
+                 this->next = new CViewer(V3D_env, resolution, CVolume::instance()->loadData(),
+                                                 cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+                                                 cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+
+                // show new viewer
+                // this->next->show();
+
+                // update new viewer as all data have been received
+                // this-next->receiveData(0,tf::integer_array(),tf::integer_array(), next, true);
+
+
+
+//                // PREVIEW+STREAMING mode - obtain low res data from current window to be displayed in a new window while the user waits for the new high res data
+//                if(CSettings::instance()->getPreviewMode())
+//                {
+//                    qDebug()<<"previewMode"<<volResIndex;
+
+//                    // get low res data
+//                    timer.restart();
+//                    int voiH0m=0, voiH1m=0, voiV0m=0, voiV1m=0,voiD0m=0, voiD1m=0, voiT0m=0, voiT1m=0;
+//                    int rVoiH0 = CVolume::scaleCoord<int>(cVolume->getVoiH0(), resolution, volResIndex, iim::horizontal, true);
+//                    int rVoiH1 = CVolume::scaleCoord<int>(cVolume->getVoiH1(), resolution, volResIndex, iim::horizontal, true);
+//                    int rVoiV0 = CVolume::scaleCoord<int>(cVolume->getVoiV0(), resolution, volResIndex, iim::vertical, true);
+//                    int rVoiV1 = CVolume::scaleCoord<int>(cVolume->getVoiV1(), resolution, volResIndex, iim::vertical, true);
+//                    int rVoiD0 = CVolume::scaleCoord<int>(cVolume->getVoiD0(), resolution, volResIndex, iim::depth, true);
+//                    int rVoiD1 = CVolume::scaleCoord<int>(cVolume->getVoiD1(), resolution, volResIndex, iim::depth, true);
+//                    uint8* lowresData = getVOI(rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(),
+//                                               cVolume->getVoiH1()-cVolume->getVoiH0(),
+//                                               cVolume->getVoiV1()-cVolume->getVoiV0(),
+//                                               cVolume->getVoiD1()-cVolume->getVoiD0(),
+//                                               voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
+//                    std::string message = tf::strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d] loaded from view %s, black-filled region is "
+//                                           "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
+//                            rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
+//                            voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
+//                    PLog::instance()->appendOperation(new NewViewerOperation(message, tf::CPU, timer.elapsed()));
+
+
+//                    qDebug()<<"crash here ... ..."<<QString(message.c_str());
+
+//                    // create new window
+//                    this->next = new CViewer(V3D_env, resolution, lowresData,
+//                                                     cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+//                                                     cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+
+//                    // update CVolume with the request of the actual missing VOI along t and the current selected frame
+//                    cVolume->setVoiT(voiT0m, voiT1m, window3D->timeSlider->value());
+
+//                    // set the number of streaming steps
+//                    cVolume->setStreamingSteps(PMain::getInstance()->debugStreamingStepsSBox->value());
+
+//                    // connect new window to data producer
+//                    cVolume->setSource(next);
+//                    connect(CVolume::instance(), SIGNAL(sendData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), next, SLOT(receiveData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
+
+
+//                    // update status bar message
+//                    pMain.statusBar->showMessage("Loading image data...");
+
+//                    // load new data in a separate thread. When done, the "receiveData" method of the new window will be called
+//                    cVolume->start();
+
+//                    // meanwhile, show the new window with preview data
+//                    next->show();
+
+//                    // enter "waiting for 5D data" state, if possible
+//                    next->setWaitingForData(true);
+
+//                    //if the resolution of the loaded voi is the same of the current one, this window will be closed
+//                    if(resolution == volResIndex)
+//                        this->close();
+
+//                }
+//                // DIRECT mode - just wait for image data to be loaded and THEN create the new window
+//                else
+//                {
+//                    // set the number of streaming steps to 0
+//                    cVolume->setStreamingSteps(0);
+
+//                    // load data and instance new viewer
+//                    this->next = new CViewer(V3D_env, resolution, CVolume::instance()->loadData(),
+//                                                     cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+//                                                     cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+
+//                    // show new viewer
+//                    next->show();
+
+//                    // update new viewer as all data have been received
+//                    next->receiveData(0,tf::integer_array(),tf::integer_array(), next, true);
+
+//                    // if new viewer has the same resolution, this window has to be closed
+//                    if(resolution == volResIndex)
+//                        this->close();
+//                }
             }
+            catch(RuntimeException &ex)
+            {
+                QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+                PMain::getInstance()->resetGUI();
+            }
+
+
+
+            //
+            qDebug()<<"zoom in/out ... ... "<<source->volResIndex << volResIndex;
+            qDebug()<<"source location ... ... "<<source->volH0<<source->volH1<<source->volV0<<source->volV1<<source->volD0<<source->volD1;
+            qDebug()<<"test ... ... "<<volH0<<volH1<<volV0<<volV1<<volD0<<volD1;
+
+    //        float xstart = coord2global<float>(static_cast<float>(source->volH0), iim::horizontal, false, source->volResIndex, false, true, __itm__current__function__);
+    //        float xend = coord2global<float>(static_cast<float>(source->volH1), iim::horizontal, false, source->volResIndex, false, true, __itm__current__function__);
+
+    //        qDebug()<<"local at res "<<source->volResIndex<<source->volH0<<source->volH1<<" global "<<xstart<<xend;
+
+
+    //        float xcenter = xstart + (xend - xstart)/2;
+
+    //        float xcenter_out = coord2local<float>(xcenter/2, iim::horizontal, true, true);
+
+    //        float xstart_out = coord2global<float>(static_cast<float>(128), iim::horizontal, false, volResIndex, false, true, __itm__current__function__);
+    //        float xend_out = coord2global<float>(static_cast<float>(128), iim::horizontal, false, volResIndex, false, true, __itm__current__function__);
+
+    //        qDebug()<<"local at res "<<volResIndex<<volH0<<volH1<<" global "<<xstart_out<<xend_out;
+    //        qDebug()<<"reverse ... "<<coord2local<float>(xstart_out, iim::horizontal, false)<<coord2local<float>(xend_out, iim::horizontal, false);
+
+
+    //        qDebug()<<"local ... "<<xcenter_out << " ... global ..."<< xcenter/2 << (xend_out + xstart_out)/2;
+
+            qDebug()<<"compare ... "<<(source->volH0 + source->volH1)/4<<(volH0+volH1)/2;
         }
-//        if(changed_cmap)
-//            curr_renderer->applyColormapToImage();
-
-        //storing annotations done in the source view
-        source->storeAnnotations();
-        source->clearAnnotations();
-
-        //registrating the current window as the current window of the multiresolution explorer windows chain
-        CViewer::current = this;
-
-        //selecting the current resolution in the PMain GUI and disabling previous resolutions
-        PMain* pMain = PMain::getInstance();
-        pMain->resolution_cbox->setCurrentIndex(volResIndex);
-        for(int i=0; i<pMain->resolution_cbox->count(); i++)
+        else
         {
-            // Get the index of the value to disable
-            QModelIndex index = pMain->resolution_cbox->model()->index(i,0);
+            //signal disconnections
+            source->disconnect(source->view3DWidget, SIGNAL(changeXCut0(int)), source, SLOT(Vaa3D_changeXCut0(int)));
+            source->disconnect(source->view3DWidget, SIGNAL(changeXCut1(int)), source, SLOT(Vaa3D_changeXCut1(int)));
+            source->disconnect(source->view3DWidget, SIGNAL(changeYCut0(int)), source, SLOT(Vaa3D_changeYCut0(int)));
+            source->disconnect(source->view3DWidget, SIGNAL(changeYCut1(int)), source, SLOT(Vaa3D_changeYCut1(int)));
+            source->disconnect(source->view3DWidget, SIGNAL(changeZCut0(int)), source, SLOT(Vaa3D_changeZCut0(int)));
+            source->disconnect(source->view3DWidget, SIGNAL(changeZCut1(int)), source, SLOT(Vaa3D_changeZCut1(int)));
+            source->disconnect(source->view3DWidget, SIGNAL(signalCallTerafly(int)), source, SLOT(ShiftToAnotherDirection(int)));
+            source->connect(source->window3D->timeSlider, SIGNAL(valueChanged(int)), source, SLOT(Vaa3D_changeTSlider(int)));
+            //source->disconnect(source->view3DWidget, SIGNAL(xRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
+            //source->disconnect(source->view3DWidget, SIGNAL(yRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
+            //source->disconnect(source->view3DWidget, SIGNAL(zRotationChanged(int)), source, SLOT(Vaa3D_rotationchanged(int)));
+            source->disconnect(PMain::getInstance()->refSys, SIGNAL(mouseReleased()), source, SLOT(PMain_rotationchanged()));
+            source->disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeV0sbox(int)));
+            source->disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeV1sbox(int)));
+            source->disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeH0sbox(int)));
+            source->disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeH1sbox(int)));
+            source->disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeD0sbox(int)));
+            source->disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), source, SLOT(PMain_changeD1sbox(int)));
 
-            // These are the effective 'disable/enable' flags
-            QVariant v1(Qt::NoItemFlags);
-            QVariant v2(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+            source->view3DWidget->removeEventFilter(source);
+            source->window3D->removeEventFilter(source);
+            window3D->timeSlider->removeEventFilter(source);
 
-            //the magic
-            if(i<volResIndex)
-                pMain->resolution_cbox->model()->setData( index, v1, Qt::UserRole -1);
-            else
-                pMain->resolution_cbox->model()->setData( index, v2, Qt::UserRole -1);
-        }        
-        pMain->gradientBar->setStep(volResIndex);
-        pMain->gradientBar->update();
+            //saving source spinbox state
+            source->saveSubvolSpinboxState();
 
-        //restoring min, max and value of PMain GUI VOI's widgets
-        restoreSubvolSpinboxState();
+            //activating current view
+            setActive(true);
 
-        //disabling translate buttons if needed
-        pMain->traslYneg->setEnabled(volV0 > 0);
-        pMain->traslYpos->setEnabled(volV1 < CImport::instance()->getVolume(volResIndex)->getDIM_V());
-        pMain->traslXneg->setEnabled(volH0 > 0);
-        pMain->traslXpos->setEnabled(volH1 < CImport::instance()->getVolume(volResIndex)->getDIM_H());
-        pMain->traslZneg->setEnabled(volD0 > 0);
-        pMain->traslZpos->setEnabled(volD1 < CImport::instance()->getVolume(volResIndex)->getDIM_D());
-        pMain->traslTneg->setEnabled(volT0 > 0);
-        pMain->traslTpos->setEnabled(volT1 < CImport::instance()->getVolume(volResIndex)->getDIM_T()-1);
-
-        //signal connections
-        connect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
-        connect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
-        connect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
-        connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
-        connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
-        connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
-        connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
-        connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
-        //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-        //connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-        //connect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-        connect(PMain::getInstance()->refSys,  SIGNAL(mouseReleased()),   this, SLOT(PMain_rotationchanged()));
-        connect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
-        connect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
-        connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
-        connect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
-        connect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
-        connect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
-
-        view3DWidget->installEventFilter(this);
-        window3D->installEventFilter(this);
-        window3D->timeSlider->installEventFilter(this);
-
-        //loading annotations of the current view
-        this->loadAnnotations();
-
-        // 5D data: select the same time frame (if available)
-        if(CImport::instance()->is5D())
-        {
-            int source_s = source->window3D->timeSlider->value();
-            if(source_s < volT0 || source_s > volT1)
-                window3D->timeSlider->setValue(volT0);
-            else
-                window3D->timeSlider->setValue(source_s);
-            view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-volT0);
-        }
-
-        //sync widgets
-        syncWindows(source->window3D, window3D);
-
-        // remove TeraFly's toolbar from source viewer and add to this viewer
-        source->window3D->centralLayout->takeAt(0);
-        PAnoToolBar::instance()->setParent(0);
-        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
-        // also reset undo/redo (which are referred to the source viewer)
-        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
-        source->undoStack.clear();
-        this->undoStack.clear();
-
-        // @ADDED Vaa3D-controls-within-TeraFly feature.
-        int tab_selected = PMain::getInstance()->tabs->currentIndex();
-        PMain::getInstance()->tabs->removeTab(1);
-        QWidget* vaa3d_controls = new QWidget();
-        QVBoxLayout* vaa3d_controls_layout = new QVBoxLayout();
-        vaa3d_controls_layout->addWidget(window3D->tabOptions);
-        vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
-        vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
-        vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
-        vaa3d_controls->setLayout(vaa3d_controls_layout);
-        PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
-        PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
+            //registrating views: ---- Alessandro 2013-04-18 fixed: determining unique triple of rotation angles and assigning absolute rotation
+            source->view3DWidget->absoluteRotPose();
+            view3DWidget->doAbsoluteRot(source->view3DWidget->xRot(), source->view3DWidget->yRot(), source->view3DWidget->zRot());
 
 
-        //showing window
-        this->window3D->raise();
-        this->window3D->activateWindow();
-        this->window3D->show();
+            //setting zoom only if user has zoomed in
+            if(source->volResIndex < volResIndex)
+            {
+                float ratio = CImport::instance()->getVolume(volResIndex)->getDIM_D()/CImport::instance()->getVolume(source->volResIndex)->getDIM_D();
+                view3DWidget->setZoom(source->view3DWidget->zoom()/ratio);
+            }
+            if(source->volResIndex > volResIndex)
+            {
+    //            float ratio = CImport::instance()->getVolume(volResIndex)->getDIM_D()/CImport::instance()->getVolume(source->volResIndex)->getDIM_D();
+                if(this != first)
+                    view3DWidget->setZoom(16);
+                else
+                    view3DWidget->setZoom(30);
+            }
 
-        // update reference system dimension
-        if(!PMain::getInstance()->isPRactive())
-        {
-            if(!PMain::getInstance()->isOverviewActive)
-                PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
-            else
-                PMain::getInstance()->setOverview(true);
-        }
-        // refresh annotation toolbar
-        PAnoToolBar::instance()->refreshTools();
+            //showing current view (with triViewWidget minimized)
+            triViewWidget->setWindowState(Qt::WindowMinimized);
 
-        //current windows now gets ready to user input
-        _isReady = true;
+            //positioning the current 3D window exactly at the <source> window position
+            QPoint location = source->window3D->pos();
+            resize(source->window3D->size());
+            move(location);
 
-        // zoom-out on Virtual Pyramid requires image refresh
-        if(source->volResIndex > volResIndex && CImport::instance()->isVirtualPyramid())
-            refresh();
-        if (PMain::getInstance()->resumeVR)
-        {
-            PMain::getInstance()->resumeVR = false;
-            QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));           
+            //hiding <source>
+            source->window3D->setVisible(false);
+            //source->triViewWidget->setVisible(false);       //---- Alessandro 2013-09-04 fixed: this causes Vaa3D's setCurHiddenSelectedWindow() to fail
+            source->view3DWidget->setCursor(Qt::ArrowCursor);
+
+            //applying the same color map only if it differs from the source one
+            Renderer_gl2* source_renderer = (Renderer_gl2*)(source->view3DWidget->getRenderer());
+            Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+            curr_renderer->currentTraceType = source_renderer->currentTraceType;
+            curr_renderer->currentMarkerColor = source_renderer->currentMarkerColor;
+            curr_renderer->neuronColorMode = source_renderer->neuronColorMode;
+
+            bool changed_cmap = false;
+            for(int k=0; k<3; k++)
+            {
+                RGBA8* source_cmap = source_renderer->colormap[k];
+                RGBA8* curr_cmap = curr_renderer->colormap[k];
+                for(int i=0; i<256; i++)
+                {
+                    if(curr_cmap[i].i != source_cmap[i].i)
+                        changed_cmap = true;
+                    curr_cmap[i] = source_cmap[i];
+                }
+            }
+    //        if(changed_cmap)
+    //            curr_renderer->applyColormapToImage();
+
+            //storing annotations done in the source view
+            source->storeAnnotations();
+            source->clearAnnotations();
+
+            //registrating the current window as the current window of the multiresolution explorer windows chain
+            CViewer::current = this;
+
+            //selecting the current resolution in the PMain GUI and disabling previous resolutions
+            PMain* pMain = PMain::getInstance();
+            pMain->resolution_cbox->setCurrentIndex(volResIndex);
+            for(int i=0; i<pMain->resolution_cbox->count(); i++)
+            {
+                // Get the index of the value to disable
+                QModelIndex index = pMain->resolution_cbox->model()->index(i,0);
+
+                // These are the effective 'disable/enable' flags
+                QVariant v1(Qt::NoItemFlags);
+                QVariant v2(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+                //the magic
+                if(i<volResIndex)
+                    pMain->resolution_cbox->model()->setData( index, v1, Qt::UserRole -1);
+                else
+                    pMain->resolution_cbox->model()->setData( index, v2, Qt::UserRole -1);
+            }
+            pMain->gradientBar->setStep(volResIndex);
+            pMain->gradientBar->update();
+
+            //restoring min, max and value of PMain GUI VOI's widgets
+            restoreSubvolSpinboxState();
+
+            //disabling translate buttons if needed
+            pMain->traslYneg->setEnabled(volV0 > 0);
+            pMain->traslYpos->setEnabled(volV1 < CImport::instance()->getVolume(volResIndex)->getDIM_V());
+            pMain->traslXneg->setEnabled(volH0 > 0);
+            pMain->traslXpos->setEnabled(volH1 < CImport::instance()->getVolume(volResIndex)->getDIM_H());
+            pMain->traslZneg->setEnabled(volD0 > 0);
+            pMain->traslZpos->setEnabled(volD1 < CImport::instance()->getVolume(volResIndex)->getDIM_D());
+            pMain->traslTneg->setEnabled(volT0 > 0);
+            pMain->traslTpos->setEnabled(volT1 < CImport::instance()->getVolume(volResIndex)->getDIM_T()-1);
+
+            //signal connections
+            connect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
+            connect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
+            connect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
+            connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
+            connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
+            connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+            connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
+            connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
+            //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+            //connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+            //connect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+            connect(PMain::getInstance()->refSys,  SIGNAL(mouseReleased()),   this, SLOT(PMain_rotationchanged()));
+            connect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
+            connect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
+            connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
+            connect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
+            connect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
+            connect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
+
+            view3DWidget->installEventFilter(this);
+            window3D->installEventFilter(this);
+            window3D->timeSlider->installEventFilter(this);
+
+            //loading annotations of the current view
+            this->loadAnnotations();
+
+            // 5D data: select the same time frame (if available)
+            if(CImport::instance()->is5D())
+            {
+                int source_s = source->window3D->timeSlider->value();
+                if(source_s < volT0 || source_s > volT1)
+                    window3D->timeSlider->setValue(volT0);
+                else
+                    window3D->timeSlider->setValue(source_s);
+                view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-volT0);
+            }
+
+            //sync widgets
+            syncWindows(source->window3D, window3D);
+
+            // remove TeraFly's toolbar from source viewer and add to this viewer
+            source->window3D->centralLayout->takeAt(0);
+            PAnoToolBar::instance()->setParent(0);
+            window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
+            // also reset undo/redo (which are referred to the source viewer)
+            PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+            PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+            source->undoStack.clear();
+            this->undoStack.clear();
+
+            // @ADDED Vaa3D-controls-within-TeraFly feature.
+            int tab_selected = PMain::getInstance()->tabs->currentIndex();
+            PMain::getInstance()->tabs->removeTab(1);
+            QWidget* vaa3d_controls = new QWidget();
+            QVBoxLayout* vaa3d_controls_layout = new QVBoxLayout();
+            vaa3d_controls_layout->addWidget(window3D->tabOptions);
+            vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
+            vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
+            vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
+            vaa3d_controls->setLayout(vaa3d_controls_layout);
+            PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
+            PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
+
+
+            //showing window
+            this->window3D->raise();
+            this->window3D->activateWindow();
+            this->window3D->show();
+
+
+
+            // update reference system dimension
+            if(!PMain::getInstance()->isPRactive())
+            {
+                if(!PMain::getInstance()->isOverviewActive)
+                    PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+                else
+                    PMain::getInstance()->setOverview(true);
+            }
+            // refresh annotation toolbar
+            PAnoToolBar::instance()->refreshTools();
+
+            //current windows now gets ready to user input
+            _isReady = true;
+
+            // zoom-out on Virtual Pyramid requires image refresh
+            if(source->volResIndex > volResIndex && CImport::instance()->isVirtualPyramid())
+                refresh();
+            if (PMain::getInstance()->resumeVR)
+            {
+                PMain::getInstance()->resumeVR = false;
+                QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+            }
         }
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
@@ -2237,6 +2614,9 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
         /**/tf::debug(tf::LEV1, strprintf("title = %s, params = [%d-%d] x [%d-%d] x [%d-%d]", titleShort.c_str(), params->xs, params->xe, params->ys, params->ye, params->zs, params->ze).c_str(), __itm__current__function__);
     else
         /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+
+    if(params)
+        printf("\ninvokedFromVaa3D: title = %s, params = [%d-%d] x [%d-%d] x [%d-%d]", titleShort.c_str(), params->xs, params->xe, params->ys, params->ye, params->zs, params->ze);
 
     //--- Alessandro 04/09/2013: added precondition checks to solve a bug which causes invokedFromVaa3D to be called without the customStructPointer available
     //                           in Vaa3D. This happens because Vaa3D someway bypasses TeraFly for handling the zoomin-in with mouse scroll or because TeraFly

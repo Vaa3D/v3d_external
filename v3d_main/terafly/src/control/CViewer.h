@@ -81,6 +81,7 @@ class terafly::CViewer : public QWidget
         QUndoStack undoStack;           //stack containing undo command actions
         int slidingViewerBlockID;
         bool forceZoomIn;
+        bool insituZoomOut;
         int anoV0, anoV1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along V (annotation VOI != VOI)
         int anoH0, anoH1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along H (annotation VOI != VOI)
         int anoD0, anoD1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along D (annotation VOI != VOI)
@@ -537,12 +538,16 @@ class terafly::CViewer : public QWidget
                                                 titleShort.c_str(), tf::num2str(global).c_str(), toVaa3D ? "true" : "false").c_str(), __itm__current__function__);
             #endif
 
+            printf("\ncoord2local ... title = %s, global = %s, toVaa3D = %s", titleShort.c_str(), tf::num2str(global).c_str(), toVaa3D ? "true" : "false");
+
             // special case: boundary coordinate
             if(global == CImport::instance()->getHighestResVolume()->getDIM(dir))
             {
                 #ifdef terafly_enable_debug_max_level
                 /**/tf::debug(tf::LEV3, strprintf("boundary coordinate, return %d", CImport::instance()->getVolume(volResIndex)->getDIM(dir)).c_str(), __itm__current__function__);
                 #endif
+
+                printf("\n ... boundary coordinate, return %d", CImport::instance()->getVolume(volResIndex)->getDIM(dir));
 
                 return CImport::instance()->getVolume(volResIndex)->getDIM(dir);
             }
@@ -564,6 +569,8 @@ class terafly::CViewer : public QWidget
             #ifdef terafly_enable_debug_max_level
             /**/tf::debug(tf::LEV3, strprintf("rescale = %f, local = %s", rescale, tf::num2str(local).c_str()).c_str(), __itm__current__function__);
             #endif
+
+            printf("\n ... rescale = %f, local = %s", rescale, tf::num2str(local).c_str());
 
             // map local coordinate to Vaa3D viewer coordinate
             if(toVaa3D && (dimension(dir) > vaa3dLimit<T>(dir)))
