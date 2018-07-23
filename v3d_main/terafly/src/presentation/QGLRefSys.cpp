@@ -956,7 +956,7 @@ void QGLRefSys::paintGL()
     }
     else
     {
-        float delta = 0.5;
+        float delta = 0.1;
         glLineWidth(4.0);
         //----------------Y-axis--------------//
         if(isEnabled())
