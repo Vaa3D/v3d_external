@@ -2001,6 +2001,8 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         bool isTranslate = false;
         if(insituZoomOut && volResIndex>0)
         {
+            int thresh = 5; // voxels
+
             insituZoomOut_x = (source->volH0 + source->volH1)/4;
             insituZoomOut_y = (source->volV0 + source->volV1)/4;
             insituZoomOut_z = (source->volD0 + source->volD1)/4;
@@ -2009,7 +2011,14 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
             if(insituZoomOut_res == volResIndex)
             {
-                isTranslate = true;
+                int centx = (volH0 + volH1)/2;
+                int centy = (volV0 + volV1)/2;
+                int centz = (volD0 + volD1)/2;
+
+                if(abs(centx-insituZoomOut_x)>thresh || abs(centy-insituZoomOut_y)>thresh || abs(centz-insituZoomOut_z)>thresh)
+                {
+                    isTranslate = true;
+                }
             }
         }
 
@@ -2107,6 +2116,13 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
         //selecting the current resolution in the PMain GUI and disabling previous resolutions
         PMain* pMain = PMain::getInstance();
+
+        int dx = round(pMain->Hdim_sbox->value()/2.0f);
+        int dy = round(pMain->Vdim_sbox->value()/2.0f);
+        int dz = round(pMain->Ddim_sbox->value()/2.0f);
+
+        qDebug()<<"block size: ... "<<dx<<dy<<dz;
+
         pMain->resolution_cbox->setCurrentIndex(volResIndex);
         for(int i=0; i<pMain->resolution_cbox->count(); i++)
         {
@@ -2236,7 +2252,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         if(isTranslate)
         {
             qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
-            newViewer(insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res, volT0, volT1, 128, 128, 128, -1, -1, -1, false, false); // in situ zoom out
+            newViewer(insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res, volT0, volT1, dx, dy, dz, -1, -1, -1, false, false); // in situ zoom out
         }
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
