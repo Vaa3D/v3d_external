@@ -1396,6 +1396,12 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
              v3d_msg("The original tri-view data has been removed. Thus this function is disabled.");
              return -1;
          }
+
+         if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+         {
+             deleteMultiNeuronsByStroke();
+             curImg->tracedNeuron.deleteMultiSeg();
+         }
      }
 
 #ifndef test_main_cpp
@@ -3215,7 +3221,10 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
         contour_mode = 1; //press "shift"
     else if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
-        contour_mode = 2; //press "ctrl"
+    {
+        if(editinput==3)
+            contour_mode = 2; //press "ctrl"
+    }
 
 
 	// contour 2 polygon
