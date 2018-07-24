@@ -85,6 +85,7 @@ class terafly::CViewer : public QWidget
         int anoV0, anoV1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along V (annotation VOI != VOI)
         int anoH0, anoH1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along H (annotation VOI != VOI)
         int anoD0, anoD1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along D (annotation VOI != VOI)
+        int insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res;
 
         //CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain

@@ -146,7 +146,8 @@ class terafly::CVolume : public QThread
             voiT0 = (_T0 >=0)                   ? _T0 : 0;
             voiT1 = (_T1 <  volume->getDIM_T()) ? _T1 : volume->getDIM_T()-1;
 
-            qDebug()<<"setVoi "<<voiV0<<voiV1;
+            qDebug()<<"testing bb ... "<<volume->getDIM_V()<<volume->getDIM_H()<<volume->getDIM_D();
+            qDebug()<<"testing voi ... "<<voiV1 - voiV0 << voiH1 - voiH0 << voiD1 - voiD0 << voiT1 - voiT0;
 
             //---- Alessandro 2013-09-03: added check to detect invalid VOI
             if(voiV1 - voiV0 <= 0 || voiH1 - voiH0 <= 0 || voiD1 - voiD0 <= 0 || voiT1 - voiT0 < 0)
