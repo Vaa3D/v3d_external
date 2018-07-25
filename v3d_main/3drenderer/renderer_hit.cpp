@@ -5010,11 +5010,11 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
     loopVisitDict.clear();
     segsInFirstVisitNode.push_back(violatingSegId); // The violating segment will always be highlighted
     do {
-        qDebug() << "Pushed first " << firstVisitSegId;
+       // qDebug() << "Pushed first " << firstVisitSegId;
         segsInFirstVisitNode.push_back(firstVisitSegId);
         loopVisitDict.insert(firstVisitSegId, true);
         firstVisitSegId = segmentParentDict[firstVisitSegId];
-        qDebug() << "New firstVisitSegId: " << firstVisitSegId;
+      //  qDebug() << "New firstVisitSegId: " << firstVisitSegId;
     } while (segmentParentDict[firstVisitSegId] != firstVisitSegId &&
              !loopVisitDict.contains(firstVisitSegId));
 
