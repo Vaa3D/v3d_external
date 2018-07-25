@@ -28,6 +28,10 @@ public:
 using namespace std;
 using namespace jfrc;
 
+#if defined(Q_OS_WIN)
+    #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
+#endif
+
 My4DImage* ensureThreeChannel( My4DImage* input );
 My4DImage* transformStackToLinear( My4DImage* img1, QUrl fileUrl );
 

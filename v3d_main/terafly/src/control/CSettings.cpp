@@ -92,6 +92,10 @@ void CSettings::loadDefaultSettings()
     vpRefillAuto = true;
     vpRefillCoverage = 10;
     vpRefillStopCondition = 0;
+    vpCacheHighestRes = false;
+    vpFreezeHighestRes = false;
+    bitsRemap = 0;
+    bitsConversion = 1;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -102,6 +106,10 @@ void CSettings::loadDefaultSettings()
     volumeConverterStacksHeightLRU = 256;
     volumeConverterStacksDepthLRU = 256;
     volumeConverterTimeSeries = false;
+
+    voxelsizeX = 0.2;
+    voxelsizeY = 0.2;
+    voxelsizeZ = 1.0;
 }
 
 void CSettings::writeSettings()
@@ -153,6 +161,14 @@ void CSettings::writeSettings()
     settings.setValue("vpRefillAuto", vpRefillAuto);
     settings.setValue("vpRefillCoverage", vpRefillCoverage);
     settings.setValue("vpRefillStopCondition", vpRefillStopCondition);
+    settings.setValue("vpCacheHighestRes", vpCacheHighestRes);
+    settings.setValue("vpFreezeHighestRes", vpFreezeHighestRes);
+    settings.setValue("voxelsizeX", voxelsizeX);
+    settings.setValue("voxelsizeY", voxelsizeY);
+    settings.setValue("voxelsizeZ", voxelsizeZ);
+    settings.setValue("bitsRemap", bitsRemap);
+    settings.setValue("bitsConversion", bitsConversion);
+
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
     settings.setValue("volumeConverterOutputPathLRU", QString(volumeConverterOutputPathLRU.c_str()));
@@ -235,6 +251,16 @@ void CSettings::readSettings()
         vpRefillCoverage = settings.value("vpRefillCoverage").toInt();
     if(settings.contains("vpRefillStopCondition"))
         vpRefillStopCondition = settings.value("vpRefillStopCondition").toInt();
+    if(settings.contains("vpCacheHighestRes"))
+        vpCacheHighestRes = settings.value("vpCacheHighestRes").toBool();
+    if(settings.contains("vpFreezeHighestRes"))
+        vpFreezeHighestRes = settings.value("vpFreezeHighestRes").toBool();
+    if(settings.contains("bitsRemap"))
+        bitsRemap = settings.value("bitsRemap").toInt();
+    if(settings.contains("bitsConversion"))
+        bitsConversion = settings.value("bitsConversion").toInt();
+
+
 
 
 

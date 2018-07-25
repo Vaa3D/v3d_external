@@ -53,6 +53,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer.h"
 #include "marchingcubes.h"
 #include <time.h>
+#include <map>
+#include <set>
 
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
@@ -216,8 +218,12 @@ public:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
+	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
+    virtual void callCreateMarkerNearestNode(int x, int y); // call creating marker
+    virtual void callGDTracing();
 
     virtual void toggleEditMode();
     virtual void setEditMode();
@@ -351,18 +357,13 @@ public:
 //static const 
 //int neuron_type_color_num;// = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
-
-
-
-
-
-
+    void updateMarkerList(QList <ImageMarker> markers, int i); // sync markers with object_manager
 
 	void initColorMaps();
     bool colorByAncestry;
     bool colorByTypeOnlyMode; //This is only checked if colorByAncestry is enabled
     bool setColorAncestryInfo();
-	int neuronColorMode;
+
     void addToListOfLoopingSegs(V3DLONG firstParent, V3DLONG secondParent, V3DLONG violationSeg);
     void setColorByAncestry(NeuronSWC s, time_t seconds); // colorByAncestry mode
     // end ZMS
@@ -387,6 +388,7 @@ public:
 	void setNeuronReviewColors(NeuronSWC s); // review mode
 	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
 	void setBasicNeuronColors(NeuronSWC s);
+    void setConfidenceLevelColors(NeuronSWC s); //confidence level mode by ZZ 06192018
 	bool childHighlightMode;
 
 
@@ -449,26 +451,75 @@ public:
      void deleteMultiNeuronsByStroke();
 
 	 // ------ Segment/points could/marker connecting/cutting tool, by MK 2017 April ------------
-	 void simpleConnect();
-	 void connectNeuronsByStroke();
-	 void connectPointCloudByStroke();
-	 void connectMarkerByStroke();
 	 struct segInfoUnit
 	 {
 		 segInfoUnit() { hierarchy = 0; }
-		long segID;
-		long head_tail;
-		long nodeCount;
-		bool refine;
+		 long segID;
+		 long head_tail;
+		 long nodeCount;
+		 bool refine;
 
-		int branchID, paBranchID;
-		int hierarchy;
+		 int branchID, paBranchID;
+		 int hierarchy;
 	 };
+	 
+	 NeuronTree treeOnTheFly;
+	 bool isLoadFromFile;
+	 bool hierarchyRelabel;
+	 void simpleConnect();
+	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
+	 void showSubtree();
+	 void showConnectedSegs();
+	 
+	 void connectNeuronsByStroke();
+	 void connectPointCloudByStroke();
+	 void connectMarkerByStroke();
+	
 	 void segmentStraighten(vector<V_NeuronSWC_unit>& inputSeg, My4DImage*& curImgPtr, vector<segInfoUnit>::iterator& refineIt);
 	 void cutNeuronsByStroke();
 
-	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
-	 // ---------------------------------------------------------------------------------
+	 // --------- loop safe guard and hilighting [subtree/connected segs] for both 3D view and terafly editing mode, MK 2018 May ---------
+	 int gridLength;
+	 map<string, set<size_t> > wholeGrid2segIDmap;
+	 multimap<string, size_t> segEnd2segIDmap;
+
+	 set<size_t> subtreeSegs;
+	 map<size_t, vector<V_NeuronSWC_unit> > originalSegMap;
+	 map<size_t, vector<V_NeuronSWC_unit> > highlightedSegMap;
+
+	 void segEnd2SegIDmapping(My4DImage* curImg);
+	 void seg2GridMapping(My4DImage* curImg);
+	 void rc_findConnectedSegs(My4DImage* curImg, size_t startSegID);
+	 set<size_t> segEndRegionCheck(My4DImage* curImg, size_t inputSegID);
+	 bool pressedShowSubTree;
+	 void escPressed_subtree();
+
+	 set<vector<size_t> > detectedLoops;
+	 set<set<size_t> > detectedLoopsSet;
+	 set<set<size_t> > finalizedLoopsSet;
+	 set<set<size_t> > nonLoopErrors;
+	 map<size_t, set<size_t> > seg2SegsMap;
+	 void loopDetection();
+	 void rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWalk, My4DImage* curImg);
+
+
+	 bool isTera;
+	 map<size_t, size_t> branchSegIDmap;
+	 map<string, size_t> tail2segIDmap;
+	 multimap<size_t, string> segID2gridMap;
+
+	 multimap<string, size_t> grid2segIDmap;
+	 multimap<string, size_t> head2segIDmap;
+	 multimap<string, size_t> tail2SegIDmap; 
+
+	 void hierarchyReprofile(My4DImage* curImg, long mainSegID, long branchSegID);
+	 void rc_downstreamRelabel(My4DImage* curImg, size_t curStemSegID);
+	 void upstreamRelabel(My4DImage* curImg, V_NeuronSWC* startingSegPtr, V_NeuronSWC* newPaSegPtr);
+	 void rc_downstreamSeg(My4DImage* curImg, size_t segID);
+	 void rc_downstream_segID(My4DImage* curImg, size_t segID);
+	 void segTreeFastReprofile(My4DImage* curImg);
+	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
+	 // -----------------------------------------------------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
@@ -642,6 +693,8 @@ public:
 	double currentTraceType;
 	bool useCurrentTraceTypeForRetyping;
 
+    RGBA8 currentMarkerColor;//added by ZZ 05142018
+
 private:
 	void init_members()
 	{
@@ -708,6 +761,9 @@ private:
 		zMax = 1.0;
 		initColorMaps();
 		gridSpacing = 10.0;
+        currentMarkerColor.r=255;
+        currentMarkerColor.g=0;
+        currentMarkerColor.b=0;
      }
 
 

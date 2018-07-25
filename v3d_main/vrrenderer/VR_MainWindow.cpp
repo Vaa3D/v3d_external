@@ -266,7 +266,7 @@ void VR_MainWindow::onReadyRead() {
 				qDebug()<<"Segment Deleted.";
 			else
 				qDebug()<<"Cannot Find the Segment ";
-			pMainApplication->MergeNeuronTrees();
+			// pMainApplication->MergeNeuronTrees();
         }
         else if (markerRex.indexIn(line) != -1) {
 			QStringList markerMSGs = markerRex.cap(1).split(" ");
@@ -405,6 +405,41 @@ void VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, Main
 	pMainApplication->isOnline = isLinkSuccess;
     //pMainApplication->loadedNT.listNeuron.clear();
     //pMainApplication->loadedNT.hashNeuron.clear();
+	if(ntlist != NULL)
+	{
+		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
+		{
+			// means there is only a reloaded annotation in terafly
+			// we rename it as vaa3d_traced_neuron
+			qDebug()<<"means this is terafly special condition.do something";
+			NeuronTree newS;
+			newS.color = XYZW(0,0,255,255);
+			newS = ntlist->at(0);
+			newS.n = 1;
+			newS.on = true;
+			newS.name = "vaa3d_traced_neuron";
+			newS.file = "vaa3d_traced_neuron";
+			pMainApplication->editableLoadedNTL.append(newS); 
+		}
+		else
+		{
+			for(int i=0;i<ntlist->size();i++)
+			{
+				if((ntlist->at(i).name == "vaa3d_traced_neuron")&&(ntlist->at(i).file == "vaa3d_traced_neuron"))
+				{
+					// means there is a NT named "vaa3d_traced_neuron", we only need to edit this NT.
+					pMainApplication->editableLoadedNTL.append(ntlist->at(i));
+				}
+				else if (!ntlist->at(0).name.isEmpty())
+				{
+					// means it is a loaded Neuron in 3D View,currently we do not allow to edit this neuron in VR
+					pMainApplication->nonEditableLoadedNTL.append(ntlist->at(i));
+				}
+				// else if (ntlist->at(0).name.isEmpty())
+				// means it is an reloaded annotation in terafly, currently we do not show this neuron in VR
+			}
+		}
+	}
     pMainApplication->loadedNTList = ntlist;
 	//if(pMainApplication->loadedNTList->size()>0)
 	//{
@@ -513,17 +548,40 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
 
-	if(ntlist != NULL&&(ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
+	if(ntlist != NULL)
 	{
-		qDebug()<<"means this is terafly special condition.do something";
-		NeuronTree newS;
-		newS.color = XYZW(0,0,255,255);
-		newS = ntlist->at(0);
-		newS.n = 1;
-		newS.on = true;
-		newS.name = "vaa3d_traced_neuron";
-		newS.file = "vaa3d_traced_neuron";
-		ntlist->append(newS); 
+		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
+		{
+			// means there is only a reloaded annotation in terafly
+			// we rename it as vaa3d_traced_neuron
+			qDebug()<<"means this is terafly special condition.do something";
+			NeuronTree newS;
+			newS.color = XYZW(0,0,255,255);
+			newS = ntlist->at(0);
+			newS.n = 1;
+			newS.on = true;
+			newS.name = "vaa3d_traced_neuron";
+			newS.file = "vaa3d_traced_neuron";
+			pMainApplication->editableLoadedNTL.append(newS); 
+		}
+		else
+		{
+			for(int i=0;i<ntlist->size();i++)
+			{
+				if((ntlist->at(i).name == "vaa3d_traced_neuron")&&(ntlist->at(i).file == "vaa3d_traced_neuron"))
+				{
+					// means there is a NT named "vaa3d_traced_neuron", we only need to edit this NT.
+					pMainApplication->editableLoadedNTL.append(ntlist->at(i));
+				}
+				else if (!ntlist->at(0).name.isEmpty())
+				{
+					// means it is a loaded Neuron in 3D View,currently we do not allow to edit this neuron in VR
+					pMainApplication->nonEditableLoadedNTL.append(ntlist->at(i));
+				}
+				// else if (ntlist->at(0).name.isEmpty())
+				// means it is an reloaded annotation in terafly, currently we do not show this neuron in VR
+			}
+		}
 	}
     pMainApplication->loadedNTList = ntlist;
 	

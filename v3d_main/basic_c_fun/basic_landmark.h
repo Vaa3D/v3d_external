@@ -119,7 +119,7 @@ struct LocationSimple
 
 		on=true;
 	}
-	LocationSimple(int xx, int yy, int zz)
+    LocationSimple(float xx, float yy, float zz)
 	{
 		init();
 		x = xx;

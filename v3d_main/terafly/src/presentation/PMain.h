@@ -131,6 +131,14 @@ class terafly::PMain : public QWidget
         QMenu* fetchDisplayMenu;        //"Fetch-and-display" menu level 3
         QAction* fdPreviewAction;       //"Preview/streaming" checkbox
         QAction* fdDirectAction;        //"Direct" action
+        // ---- conversions menu level -------------- 2
+        QMenu* conversionsMenu;         //"Conversions" menu level 2
+        QMenu* from8bitsdataMenu;       //"from 8 bits data" menu level 3
+        QMenu* from16bitsdataMenu;      //"from 16 bits data" menu level 3
+        QWidgetAction* from8bitsdataActionWidget;   // "from 8 bits data" action
+        QComboBox *from8bitsdataCBox;               // "from 8 bits data" combobox
+        QWidgetAction* from16bitsdataActionWidget;  // "from 16 bits data" action
+        QComboBox *from16bitsdataCBox;              // "from 16 bits data" combobox
 
         // "Utility" menu widgets
         QMenu* utilityMenu;
@@ -181,6 +189,10 @@ class terafly::PMain : public QWidget
 
         //Page "Controls": contains navigation controls
         QWidget* controls_page;
+
+        // mini-map page
+        QWidget* minimap_page;
+
         /* ------- local viewer panel widgets ------- */
         QGroupBox* localViewer_panel;
         QGradientBar* gradientBar;
@@ -191,6 +203,7 @@ class terafly::PMain : public QWidget
         QComboBox* resolution_cbox;
 #ifdef __ALLOW_VR_FUNCS__
 		QPushButton* teraflyVRView;
+		QPushButton* collaborationVRView;
 #endif
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
@@ -199,6 +212,7 @@ class terafly::PMain : public QWidget
         QSlider* zoomOutSens;
         QPushButton* controlsResetButton;
         QComboBox* zoomInMethod;
+        QComboBox* zoomOutMethod;
         /* ------- global coord panel widgets ------- */
         QGroupBox* VOI_panel;
         QArrowButton* traslXpos;
@@ -231,6 +245,19 @@ class terafly::PMain : public QWidget
         QGroupBox* PR_panel;
         QPushButton* PR_button;
         QSpinBox* PR_spbox;
+
+        // voxel size
+        QGroupBox* VoxelSize;
+        QDoubleSpinBox* x_dsb;
+        QDoubleSpinBox* y_dsb;
+        QDoubleSpinBox* z_dsb;
+
+        /* ------- Overview panel widgets ------- */
+        QGroupBox* Overview_panel;
+
+        QHBoxLayout* refSysContainerLayout;
+        QVBoxLayout* refSysContainerLayout2;
+
 
         //other widgets
         QHelpBox* helpBox;              //help box
@@ -370,7 +397,7 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void exit();
 
-        /**********************************************************************************
+        /********************************Overview_panel**************************************************
         * Called when "Help->About" menu action is triggered
         ***********************************************************************************/
         void about();
@@ -393,6 +420,7 @@ class terafly::PMain : public QWidget
         * This is used to manage persistent platform-independent application settings.
         ***********************************************************************************/
         void settingsChanged(int);
+        void voxelSizeChanged(double);
 
         /**********************************************************************************
         * Linked to resolution combobox
@@ -494,6 +522,12 @@ class terafly::PMain : public QWidget
         ***********************************************************************************/
         void annotationsChanged();
 
+        /**********************************************************************************
+        * Called when bit conversion menu options have changed
+        ***********************************************************************************/
+        void from8bitsdataChanged(int);
+        void from16bitsdataChanged(int);
+
         void tabIndexChanged(int value);
 
         void showDialogVtk2APO();
@@ -510,9 +544,12 @@ class terafly::PMain : public QWidget
         void showAnoOctree();
 #ifdef __ALLOW_VR_FUNCS__
 		void doTeraflyVRView();
+		void doCollaborationVRView();
         void teraflyShiftClickedinVR(int _direction);
 #endif
         void setOverview(bool enable);
+        void updateOverview();
+
     signals:
 
         /*********************************************************************************

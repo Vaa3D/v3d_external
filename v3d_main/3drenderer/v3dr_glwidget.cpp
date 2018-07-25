@@ -488,7 +488,11 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 	if (event_tip && renderer)
 	{
+        qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
+
 		QPoint gpos = mapToGlobal(pos);
+        qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
+
 		tipBuf[0] = '\0';
 		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
 			{} //a switch to turn on/off hover tip, because processHit always return 0 for tipBuf!=0
@@ -747,8 +751,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		case Qt::Key_8:		_holding_num[8] = true; 	break;
 		case Qt::Key_9:		_holding_num[9] = true; 	break;
 
-
-
 		case Qt::Key_BracketLeft:
 		    {
 		        if (IS_MODEL_MODIFIER) // alt-mouse to control model space rotation, 081104
@@ -921,16 +923,19 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 	  		break;
 		case Qt::Key_G:
-		    if ( WITH_SHIFT_MODIFIER && //advanced
-		    		WITH_CTRL_MODIFIER
-				)
-		    {
-		    	toggleShader();
+            if ( WITH_SHIFT_MODIFIER && //advanced
+                 WITH_CTRL_MODIFIER
+                 )
+            {
+                toggleShader();
             }else if (IS_ALT_MODIFIER)
             {
                 callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
+            }else
+            {
+                callGDTracing();
             }
-	  		break;
+            break;
 
 	  		///// volume texture operation //////////////////////////////////////////////////////
 		case Qt::Key_F:
@@ -943,7 +948,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 toggleEditMode();
-            }
+            }else
+                confidenceDialog();
             break;
 
         case Qt::Key_T:
@@ -956,17 +962,53 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018
             }
+			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
+			{
+				//callShowSubtree(); // temporarily disabled, MK, July 2018
+            }else
+                callAutoTracers();
 	  		break;
         case Qt::Key_D:
             if (IS_ALT_MODIFIER)
             {
                 callStrokeDeleteMultiNeurons();//For multiple segments deleting shortcut, by ZZ,02212018
             }
+			else
+			{
+				// delete connected segments that have been highlighted, MK, July, 2018
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->selectMode == Renderer::smShowSubtree)
+				{
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+					if (thisRenderer->originalSegMap.empty()) return;
+
+					for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+						curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
+
+					thisRenderer->escPressed_subtree();
+
+					curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+			}
             break;
         case Qt::Key_S:
             if (IS_ALT_MODIFIER)
             {
                 callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
+            }else
+            {
+                if(_idep && _idep->window3D)
+                {
+                    int sShowSurf = (renderer->sShowSurfObjects==0)?2:0;
+                    setShowSurfObjects(sShowSurf);
+                    switch(sShowSurf)
+                    {
+                    case 0: _idep->window3D->checkBox_displaySurf->setCheckState(Qt::Unchecked);break;
+                    case 2: _idep->window3D->checkBox_displaySurf->setChecked(Qt::Checked);break;
+                    }
+                }
             }
             break;
 		case Qt::Key_C:
@@ -978,6 +1020,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }else if (IS_ALT_MODIFIER)
             {
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
+            }
+			else
+            {
+                neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
+                updateColorMode(neuronColorMode);
             }
 	  		break;
 		case Qt::Key_V:
@@ -1000,8 +1047,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 callLoadNewStack();//by ZZ 02012018
             }
 	  		break;
-
-	  		///// surface object operation //////////////////////////////////////////////////////
+            /////  object operation //////////////////////////////////////////////////////
 		case Qt::Key_P:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
 		    		WITH_CTRL_MODIFIER
@@ -1026,6 +1072,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             break;
 
+        case Qt::Key_Q:
+            {
+                callCreateMarkerNearestNode();
+            }
+            break;
+
 	  		///// marker operation //////////////////////////////////////////////////////
 		case Qt::Key_Escape:
 			{
@@ -1042,8 +1094,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    else if (IS_SHIFT_MODIFIER) // toggle marker name display. by Lei Qu, 110425
 		    {
 		    	toggleMarkerName();
-		    }
-	  		break;
+            }
+			else if (IS_ALT_MODIFIER)
+			{
+				callShowConnectedSegs();
+			}
+            break;
 
 	  		///// neuron operation //////////////////////////////////////////////////////
 		case Qt::Key_L:
@@ -1063,6 +1119,15 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 //callCurveLineDetector(0); //the 0 option is for a fixed 32 window
                 callCurveLineDetector(1);//by PHC 20170531. // the 1 option is for calling the curveline detector using its infinite loop mode
+
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->selectMode == Renderer::smShowSubtree)
+				{
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+					
+					thisRenderer->loopDetection();
+				}
             }
             break;
 
@@ -1476,10 +1541,10 @@ void V3dR_GLWidget::surfaceSelectDialog(int curTab)
 //	PROGRESS_DIALOG("collecting data for table", 0);
 //	PROGRESS_PERCENT(20);
 
-	if (! surfaceDlg)
-		surfaceDlg = new V3dr_surfaceDialog(this); //, mainwindow);
-	else
-		surfaceDlg->linkTo(this);  //except isHidden, linkTo in updateTool triggered by ActivationChange event
+    if (! surfaceDlg)
+        surfaceDlg = new V3dr_surfaceDialog(this); //, mainwindow);
+    else
+        surfaceDlg->linkTo(this);  //except isHidden, linkTo in updateTool triggered by ActivationChange event
 
 
 	if (surfaceDlg)
@@ -2293,6 +2358,53 @@ void V3dR_GLWidget::setZClip1(int s)
 	}
 }
 
+void V3dR_GLWidget::confidenceDialog()
+{
+    QString qtitle = "Confidence level";
+
+    QDialog d(this);
+    QGridLayout *formLayout = new QGridLayout;
+    QScrollBar* confSlider = new QScrollBar(Qt::Horizontal,0);
+    confSlider->setRange(0, 100);
+    confSlider->setSingleStep(1);
+    if(renderer->dispConfLevel==INT_MAX)
+        confSlider->setValue(0);
+    else
+        confSlider->setValue(100-(100*(renderer->dispConfLevel-20)/255));
+    confSlider->setPageStep(10);
+    formLayout->addWidget(new QLabel("Confidence scores\n(range 0%~100%:)"), 1, 0, 1, 5);
+    formLayout->addWidget(confSlider, 1, 5, 1, 15);
+    QPushButton* cancel = new QPushButton("Close");
+    formLayout->addWidget(cancel, 2, 15, 1, 5);
+    d.setLayout(formLayout);
+    d.setWindowTitle(qtitle);
+
+    d.connect(cancel, SIGNAL(clicked()), &d, SLOT(reject()));
+    d.connect(this, SIGNAL(changeConfCut(int)), confSlider, SLOT(setValue(int)));
+    d.connect(confSlider, SIGNAL(valueChanged(int)), this, SLOT(setConfCut(int)));
+
+    do
+    {
+        int ret = d.exec();
+        if (ret==QDialog::Rejected)
+            break;
+        DO_updateGL();
+
+    }
+    while (true);
+    POST_updateGL();
+}
+
+void V3dR_GLWidget::setConfCut(int s)
+{
+    if(s==0)
+        renderer->dispConfLevel=INT_MAX;
+    else
+        renderer->dispConfLevel=(255*(100-s)/100)+20;
+    emit changeConfCut(s);
+    POST_updateGL();
+}
+
 void V3dR_GLWidget::setBright()
 {
 	QString qtitle = "Brighten/Darken the whole view";
@@ -2469,16 +2581,16 @@ void V3dR_GLWidget::setShowMarkers(int s)
 void V3dR_GLWidget::setShowSurfObjects(int s)
 {
 	//qDebug("V3dR_GLWidget::setShowSurfObjects = %i",s);
-	if (renderer)
+    if (renderer)
 	{
 		switch(s)
 		{
-		case Qt::Unchecked: 		s = 0; break;
-		case Qt::PartiallyChecked:	s = 1; break;
-		default: s = 2; break;
+        case Qt::Unchecked: 		s = 0; break;
+        case Qt::PartiallyChecked:	s = 1; break;
+        default: s = 2; break;
 		}
-		renderer->sShowSurfObjects = s;
-		POST_updateGL();
+        renderer->sShowSurfObjects = s;
+        POST_updateGL();
 	}
 }
 
@@ -2499,7 +2611,7 @@ void V3dR_GLWidget::setMarkerSize(int s)
 	if (_markerSize != s) {
 		_markerSize = s;
 		if (renderer)	renderer->markerSize = s;
-		emit changeMarkerSize(s);
+        emit changeMarkerSize(s);
 		POST_updateGL();
 	}
 }
@@ -2515,7 +2627,7 @@ void V3dR_GLWidget::enableSurfStretch(bool s)
 
 void V3dR_GLWidget::enableSurfZLock(bool s)
 {
-    if (renderer)
+    if (renderer && _idep && _idep->window3D)
     {
         renderer->b_surfZLock = s;
         Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
@@ -2582,6 +2694,14 @@ void V3dR_GLWidget::createSurfCurrentB()
 		renderer->createSurfCurrent(2);
 		POST_updateGL();
 	}
+}
+
+void V3dR_GLWidget::updateColorMode(int colorMode){
+
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)getRenderer();
+    curr_renderer->neuronColorMode = colorMode;
+    POST_updateGL();
+
 }
 
 
@@ -2847,7 +2967,7 @@ void V3dR_GLWidget::changeObjShadingOption()
 				"Note: transparent & outline mode may cause object selection difficult\n due to no depth information."
 				));
 		d.setLayout(formLayout);
-		d.setWindowTitle(QString("Surface/Object Advanced Options "));
+        d.setWindowTitle(QString("/Object Advanced Options "));
 
 		d.connect(ok,     SIGNAL(clicked()), &d, SLOT(accept()));
 		d.connect(cancel, SIGNAL(clicked()), &d, SLOT(reject()));
@@ -2954,6 +3074,108 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
     }
 }
 
+void V3dR_GLWidget::callShowSubtree()
+{
+	if (renderer)
+	{
+		renderer->callShowSubtree();
+		POST_updateGL();
+	}
+}
+
+void V3dR_GLWidget::callShowConnectedSegs()
+{
+	if (renderer)
+	{
+		renderer->callShowConnectedSegs();
+		POST_updateGL();
+	}
+}
+
+void V3dR_GLWidget::subtreeHighlightModeMonitor()
+{
+	// This method fires signal to check if the renderer is in [highlighting subtree] mode every 50 ms.
+	// If yes, do nothing; if no, restore the highlited color to its original color and call to Renderer_gl1::escPressed_subtree() to exit [highlighting subtree] mode. 
+	// -- MK, June, 2018
+
+	if (!this->getRenderer()) return;
+
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+	if (thisRenderer->selectMode != Renderer::smShowSubtree) thisRenderer->escPressed_subtree();
+	else
+	{
+		int pressedNumber = this->getNumKeyHolding();
+		//cout << pressedNumber << " ";
+
+		if (thisRenderer->connectEdit == Renderer::loopEdit)
+		{
+			if (pressedNumber > -1)
+			{
+				cout << "  --> assigned color(type) to looped segments:" << pressedNumber << " " << endl;
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				if (thisRenderer->finalizedLoopsSet.empty()) return;
+				for (set<set<size_t> >::iterator loopIt = thisRenderer->finalizedLoopsSet.begin(); loopIt != thisRenderer->finalizedLoopsSet.end(); ++loopIt)
+				{
+					set<size_t> thisLoop = *loopIt;
+					for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+					{
+						for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+							unitIt->type = pressedNumber;
+
+						thisRenderer->originalSegMap.erase(*it);
+					}
+				}
+
+				if (!thisRenderer->nonLoopErrors.empty())
+				{
+					for (set<set<size_t> >::iterator loopIt = thisRenderer->nonLoopErrors.begin(); loopIt != thisRenderer->nonLoopErrors.end(); ++loopIt)
+					{
+						set<size_t> thisLoop = *loopIt;
+						for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+						{
+							for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+								unitIt->type = 20;
+
+							thisRenderer->originalSegMap.erase(*it);
+						}
+					}
+				}
+
+				curImg->update_3drenderer_neuron_view(this, thisRenderer);
+				curImg->proj_trace_history_append();
+			}
+		}
+		else
+		{
+			if (pressedNumber > -1)
+			{
+				cout << "  --> assigned color(type) to highlighted neuron:" << pressedNumber << " " << endl;
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+				if (thisRenderer->originalSegMap.empty()) return;
+
+				for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+				{
+					//for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = thisRenderer->originalSegMap.begin(); it != thisRenderer->originalSegMap.end(); ++it)
+					//{
+					for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)
+						nodeIt->type = pressedNumber;
+
+					curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
+					//}
+				}
+
+				curImg->update_3drenderer_neuron_view(this, thisRenderer);
+				curImg->proj_trace_history_append();
+			}
+		}
+
+		QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
+	}
+}
+
 void V3dR_GLWidget::callDefine3DPolyline()
 {
     if (renderer && _idep && v3dr_getImage4d(_idep))
@@ -2963,6 +3185,28 @@ void V3dR_GLWidget::callDefine3DPolyline()
             renderer->callDefine3DPolyline();
             POST_updateGL();
         }
+    }
+}
+
+void V3dR_GLWidget::callGDTracing()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            renderer->callGDTracing();
+            POST_updateGL();
+        }
+    }
+}
+
+void V3dR_GLWidget::callCreateMarkerNearestNode()
+{
+    if (renderer)
+    {
+        QPoint gpos = mapFromGlobal(cursor().pos());
+        renderer->callCreateMarkerNearestNode(gpos.x(),gpos.y());
+        POST_updateGL();
     }
 }
 //end five shortcuts
@@ -2984,7 +3228,7 @@ void V3dR_GLWidget::callCurveLineDetector(int option)
     }
 }
 
-//For load new stack, by ZZ 01212018
+//For new stack loading, by ZZ 01212018
 void V3dR_GLWidget::callLoadNewStack()
 {
     if (renderer && _idep && v3dr_getImage4d(_idep))
@@ -2992,6 +3236,19 @@ void V3dR_GLWidget::callLoadNewStack()
         if (v3dr_getImage4d(_idep)->get_xy_view())
         {
             v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Load New Stack"));
+            POST_updateGL();
+        }
+    }
+}
+
+//for calling different auto tracers in terafly, by ZZ, 05142018
+void V3dR_GLWidget::callAutoTracers()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Auto Tracers"));
             POST_updateGL();
         }
     }

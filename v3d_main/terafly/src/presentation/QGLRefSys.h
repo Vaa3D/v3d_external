@@ -3,6 +3,7 @@
 
 #include <QGLWidget>
 #include "../control/CPlugin.h"
+#include "renderer_gl1.h"
 
 class terafly::QGLRefSys : public QGLWidget
 {
@@ -25,6 +26,26 @@ class terafly::QGLRefSys : public QGLWidget
         QPoint lastPos;         //previous location of the mouse cursor to determine how much the object in the scene should be rotated, and in which direction
         double zoom;
         bool filled;            //equivalent to draw parallelepipedon faces (=true) or lines only (=false)
+        float xSoma;           //First soma x location (between 0.0 and 1.0)
+        float ySoma;           //First soma y location (between 0.0 and 1.0)
+        float zSoma;           //First soma z location (between 0.0 and 1.0)
+        //for miniMap.added by shengdian.20180513
+        bool miniMapCurBox;
+        bool alreadyLoadSwc;
+        float miniROIxDim;          //ROI x dimension (between 0.0 and 1.0)
+        float miniROIyDim;          //ROI y dimension (between 0.0 and 1.0)
+        float miniROIzDim;          //ROI z dimension (between 0.0 and 1.0)
+        float miniROIxShift;        //ROI x shift (between 0.0 and 1.0)
+        float miniROIyShift;        //ROI y shift (between 0.0 and 1.0)
+        float miniROIzShift;        //ROI z shift (between 0.0 and 1.0)
+        float dimMin[3];
+        float dimMax[3];
+        float dimSm[3];
+        //for miniMap zoom (double click)
+        double zoomNear;            //init zoom near
+        double zoomFar;             //init zoom far
+        double vx, vy, vz;          // voxelsize
+
 
     public:
 
@@ -37,10 +58,22 @@ class terafly::QGLRefSys : public QGLWidget
         int getYRot(){return yRot;}
         int getZRot(){return zRot;}
         void setDims(int dimX, int dimY, int dimZ, int _ROIxDim=0, int _ROIyDim=0, int _ROIzDim=0, int _ROIxShift=0, int _ROIyShift=0, int _ROIzShift=0);
-        void setFilled(bool _filled){filled = _filled; updateGL();}
+        void setRender(Renderer_gl1* _gl1){renderer=_gl1;}
+        void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); markList.clear();updateGL();}
         void setZoom(double _zoom){zoom = _zoom;}
         void resetZoom(){zoom = -15.0; updateGL();}
-
+        void setVoxelSize(double x, double y, double z){vx = x; vy = y; vz = z;}
+        Renderer_gl1 *renderer;
+        NeuronTree nt,nt_init;
+        LandmarkList markList;
+        int dimXCenter;
+        int dimYCenter;
+        int dimZCenter;
+        int curRes;
+        int num_res;
+        double zoomInit;
+        double lenVoxel, lenMicron;
+        int numSegments;
 
     public slots:
 
@@ -57,6 +90,8 @@ class terafly::QGLRefSys : public QGLWidget
         void zRotationChanged(int angle);
 
         void mouseReleased();
+        void neuronInfoChanged(QString str);
+        void reset();
 
     protected:
 
@@ -70,6 +105,9 @@ class terafly::QGLRefSys : public QGLWidget
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void wheelEvent(QWheelEvent *event);
+        void enterEvent(QEvent *event);
+        //XYZ get3Dpoint(int x,int y);
+
 
         int heightForWidth( int w ) { return w; }
 };

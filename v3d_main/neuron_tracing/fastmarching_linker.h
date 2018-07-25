@@ -469,6 +469,236 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         return true;
 }
 
+// added fastmarching_linker_timer by ZZ 05302018
+template<class T> bool fastmarching_linker_timer(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers,
+     T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2) //float time,
+{
+        int ALIVE = -1;
+        int TRIAL = 0;
+        int FARST = 1;
+
+        clock_t t1=clock(); // start time
+        V3DLONG tol_sz = sz0 * sz1 * sz2;
+        V3DLONG sz01 = sz0 * sz1;
+
+        if (tol_sz<=0) {cout << "wrong size info in fastmarching_linker"<< endl; return false;}
+
+        //int cnn_type = 2;  // ?
+        cout<<"cnn_type = "<<cnn_type<<endl;
+        cout<<"fastmarching_linker";
+
+        V3DLONG i;
+        float * phi = new float[tol_sz];
+        for(i = 0; i < tol_sz; i++){phi[i] = INF;}
+        map<V3DLONG, MyMarker> sub_map, tar_map;
+        for(i = 0; i < tar_markers.size(); i++)
+        {
+                V3DLONG x = tar_markers[i].x + 0.5;
+                V3DLONG y = tar_markers[i].y + 0.5;
+                V3DLONG z = tar_markers[i].z + 0.5;
+                V3DLONG ind = z*sz01 + y*sz0 + x;
+                //assert(x >= 0 && x <=sz0-1 && y >= 0 && y <=sz1-1 && z >= 0 && z <=sz2-1); //Hang indicated that this is the problem why there would be crashing, 120405.
+                if (x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2)
+                    tar_map[ind] = tar_markers[i];
+        }
+
+        for(i = 0; i < sub_markers.size(); i++)
+        {
+                V3DLONG x = sub_markers[i].x + 0.5;
+                V3DLONG y = sub_markers[i].y + 0.5;
+                V3DLONG z = sub_markers[i].z + 0.5;
+                V3DLONG ind = z*sz01 + y*sz0 + x;
+                //assert(x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2);
+                if (x >= 0 && x <= sz0-1 && y >= 0 && y <= sz1-1 && z >= 0 && z <= sz2-1)
+                    sub_map[ind] = sub_markers[i];
+        }
+
+        // GI parameter min_int, max_int, li
+        double max_int = 0; // maximum intensity, used in GI
+        double min_int = INF;
+        for(i = 0; i < tol_sz; i++)
+        {
+                if(inimg1d[i] > max_int) max_int = inimg1d[i];
+                if(inimg1d[i] < min_int) min_int = inimg1d[i];
+        }
+        max_int -= min_int;
+        if (max_int == 0.0) return false; // no image data, avoid divide by zero in GI
+        double li = 10;
+
+        // initialization
+        char * state = new char[tol_sz];
+        for(i = 0; i < tol_sz; i++) state[i] = FARST;
+
+        vector<V3DLONG> submarker_inds;
+        for(V3DLONG s = 0; s < sub_markers.size(); s++) {
+                V3DLONG ii = (V3DLONG)(sub_markers[s].x + 0.5);
+                V3DLONG jj = (V3DLONG)(sub_markers[s].y + 0.5);
+                V3DLONG kk = (V3DLONG)(sub_markers[s].z + 0.5);
+                V3DLONG ind = kk*sz01 + jj*sz0 + ii;
+                submarker_inds.push_back(ind);
+                state[ind] = ALIVE;
+                phi[ind] = 0.0;
+        }
+        cout << "totalsize=" << tol_sz <<endl;
+        V3DLONG * parent = new V3DLONG[tol_sz]; for(V3DLONG ind = 0; ind < tol_sz; ind++) parent[ind] = ind;
+
+        BasicHeap<HeapElemX> heap;
+        map<V3DLONG, HeapElemX*> elems;
+
+        // init heap
+        for(V3DLONG s = 0; s < submarker_inds.size(); s++)
+        {
+                V3DLONG index = submarker_inds[s];
+                HeapElemX *elem = new HeapElemX(index, phi[index]);
+                elem->prev_ind = index;
+                heap.insert(elem);
+                elems[index] = elem;
+        }
+        // loop
+        int time_counter = sub_markers.size();
+        double process1 = time_counter*1000.0/tol_sz;
+        V3DLONG stop_ind = -1;
+        cout << "now prepare test heap";
+        while(!heap.empty())
+        {
+               // double process2 = (time_counter++)*1000.0/tol_sz;
+               // if(process2 - process1 >= 1){cout<<"\r"<<((int)process2)/10.0<<"%";cout.flush(); process1 = process2;}
+                // time consuming until this pos
+                //if((time!=0)&&(((clock()-t1) > time*CLOCKS_PER_SEC) ))
+                //{
+                //     return false;
+                // }
+                if(clock()-t1 > 3*CLOCKS_PER_SEC) //if longer than 3 sec, then return;
+                {
+                    if(!elems.empty()) for(map<V3DLONG, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
+                    if(phi) {delete [] phi; phi = 0;}
+                    if(parent) {delete [] parent; parent = 0;}
+                    if(state) {delete [] state; state = 0;}
+                    return false;
+
+                }
+
+                HeapElemX* min_elem = heap.delete_min();
+                elems.erase(min_elem->img_ind);
+
+                V3DLONG min_ind = min_elem->img_ind;
+                parent[min_ind] = min_elem->prev_ind;
+                if(tar_map.find(min_ind) != tar_map.end()){stop_ind = min_ind; break;}
+
+                delete min_elem;
+
+                state[min_ind] = ALIVE;
+                V3DLONG i = min_ind % sz0;
+                V3DLONG j = (min_ind/sz0) % sz1;
+                V3DLONG k = (min_ind/sz01) % sz2;
+                V3DLONG w, h, d;
+
+                for(V3DLONG kk = -1; kk <= 1; kk++)
+                {
+                        d = k+kk;
+                        if(d < 0 || d >= sz2) continue;
+                        for(V3DLONG jj = -1; jj <= 1; jj++)
+                        {
+                                h = j+jj;
+                                if(h < 0 || h >= sz1) continue;
+                                for(V3DLONG ii = -1; ii <= 1; ii++)
+                                {
+                                        w = i+ii;
+                                        if(w < 0 || w >= sz0) continue;
+                                        V3DLONG offset = ABS(ii) + ABS(jj) + ABS(kk);
+                                        if(offset == 0 || offset > cnn_type) continue;
+                                        double factor = (offset == 1) ? 1.0 : ((offset == 2) ? 1.414214 : ((offset == 3) ? 1.732051 : 0.0));
+                                        V3DLONG index = d*sz01 + h*sz0 + w;
+
+                                        if(state[index] != ALIVE)
+                                        {
+                                                double new_dist = phi[min_ind] + (GI(index) + GI(min_ind))*factor*0.5;
+                                                V3DLONG prev_ind = min_ind;
+
+                                                if(state[index] == FARST)
+                                                {
+                                                        phi[index] = new_dist;
+                                                        HeapElemX * elem = new HeapElemX(index, phi[index]);
+                                                        elem->prev_ind = prev_ind;
+                                                        heap.insert(elem);
+                                                        elems[index] = elem;
+                                                        state[index] = TRIAL;
+                                                }
+                                                else if(state[index] == TRIAL)
+                                                {
+                                                        if(phi[index] > new_dist)
+                                                        {
+                                                                phi[index] = new_dist;
+                                                                HeapElemX * elem = elems[index];
+                                                                heap.adjust(elem->heap_id, phi[index]);
+                                                                elem->prev_ind = prev_ind;
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+                // assert(!mask_values.empty());
+        }
+
+        V3DLONG in_sz[4] = {sz0, sz1, sz2, 1};
+        double thresh = 20;
+        cout<<"set thres=20";
+        // connect markers according to disjoint set
+        {
+                // add tar_marker
+                V3DLONG ind = stop_ind;
+                MyMarker tar_marker = tar_map[stop_ind];
+                MyMarker * new_marker = new MyMarker(tar_marker.x, tar_marker.y, tar_marker.z);
+                //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
+                new_marker->parent = 0; //tar_marker;
+
+                outswc.push_back(new_marker);
+
+                MyMarker * par_marker = new_marker;
+                ind = parent[ind];
+                while(sub_map.find(ind) == sub_map.end())
+                {
+                        V3DLONG i = ind % sz0;
+                        V3DLONG j = ind/sz0 % sz1;
+                        V3DLONG k = ind/sz01 % sz2;
+                        new_marker = new MyMarker(i,j,k);
+                        new_marker->parent = par_marker;
+                        //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
+                        outswc.push_back(new_marker);
+                        par_marker = new_marker;
+                        if (ind >= 0 && ind < tol_sz)
+                        {
+                            if (ind == parent[ind])
+                            {
+                                cout<<"[WARNING][VIRTUAL FINGER]: a self-loop exists. Abort!\n";
+                                break;
+                            }
+                            ind = parent[ind];
+                        } else {
+                            break;
+                        }
+                }
+                // add sub_marker
+                MyMarker sub_marker = sub_map[ind];
+                new_marker = new MyMarker(sub_marker.x, sub_marker.y, sub_marker.z);
+                new_marker->parent = par_marker;
+                //new_marker->radius = markerRadius(inimg1d, in_sz, *new_marker, thresh);
+                outswc.push_back(new_marker);
+        }
+        reverse(outswc.begin(), outswc.end());
+
+        cout<<outswc.size()<<" markers linked"<<endl;
+        //for(int i = 0; i < sub_markers.size(); i++) outswc.push_back(sub_markers[i]);
+        //for(int i = 0; i < tar_markers.size(); i++) outswc.push_back(tar_markers[i]);
+
+
+        if(!elems.empty()) for(map<V3DLONG, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
+        if(phi) {delete [] phi; phi = 0;}
+        if(parent) {delete [] parent; parent = 0;}
+        if(state) {delete [] state; state = 0;}
+        return true;
+}
 
 /******************************************************************************
  * Fast marching based curve drawing 1 , will draw a line between a bounch of rays
@@ -931,12 +1161,11 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	if(state) {delete [] state; state = 0;}
 	return true;
 }
-
 // marching with bounding box
 // Please make sure
 // 1. sub_markers are located between nm1 and fm1
 //
-template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, MyMarker nm1, MyMarker fm1, MyMarker nm2, MyMarker fm2, int stop_num, int cnn_type = 2, int margin = 5)
+template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, MyMarker nm1, MyMarker fm1, MyMarker nm2, MyMarker fm2, int stop_num, int cnn_type = 2, int margin = 5,double *intensityThreshold=0)
 {
 	assert(par_tree.empty());
 	long sz01 = sz0 * sz1;
@@ -987,7 +1216,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 	// 1. get initial rectangel
 	MyMarker rect[4] = {nm1, nm2, fm2, fm1};
-	double cos_n1, cos_n2, cos_f1, cos_f2;
+    double cos_n1, cos_n2, cos_f1, cos_f2;
 	if((cos_n1 = COS_THETA_UNIT(n1f1, n1n2)) < 0.0)
 	{
 		double d = dist(nm1, nm2) * (-cos_n1);
@@ -1046,25 +1275,81 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	long bsz01 = bsz0 * bsz1;
 	long btol_sz = bsz01 * bsz2;
 	unsigned char * outimg1d = new unsigned char[btol_sz]; for(long i = 0; i < btol_sz; i++) outimg1d[i] = 0;
-	for(long k = 0; k < bsz2; k++)
-	{
-		for(long j = 0; j < bsz1; j++)
-		{
-			for(long i = 0; i < bsz0; i++)
-			{
-				long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
-				long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
-				long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
-				if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
-				{
-					long ind1 = k * bsz01 + j * bsz0 + i;
-					long ind2 = kk * sz01 + jj * sz0 + ii;
-					outimg1d[ind1] = inimg1d[ind2];
-				}
-			}
-		}
-	}
+    if(*intensityThreshold==1)
+    {
+        bool miok;
+        double d=QInputDialog::getDouble(0,"Intensity Threshold 1%-99%","please input your number",60,1,99,5,&miok);
+        if(miok)
+        {
+            cout<<"input number is "<<d<<endl;
+            *intensityThreshold=d*0.01;
+        }
+    }
 
+    if(*intensityThreshold>0&&(*intensityThreshold<1))
+    {
+        double max_int = 0; // maximum intensity
+        double min_int = INF;
+        for(long k = 0; k < bsz2; k++)
+        {
+            for(long j = 0; j < bsz1; j++)
+            {
+                for(long i = 0; i < bsz0; i++)
+                {
+                    long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
+                    long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
+                    long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
+                    if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
+                    {
+                        long ind2 = kk * sz01 + jj * sz0 + ii;
+                        if(inimg1d[ind2]>max_int) max_int=inimg1d[ind2];
+                        if(inimg1d[ind2]<min_int) min_int=inimg1d[ind2];
+                    }
+                }
+            }
+        }
+        for(long k = 0; k < bsz2; k++)
+        {
+            for(long j = 0; j < bsz1; j++)
+            {
+                for(long i = 0; i < bsz0; i++)
+                {
+                    long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
+                    long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
+                    long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
+                    if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
+                    {
+                        long ind1 = k * bsz01 + j * bsz0 + i;
+                        long ind2 = kk * sz01 + jj * sz0 + ii;
+                        if(inimg1d[ind2]<=max_int*(*intensityThreshold))
+                            outimg1d[ind1] = inimg1d[ind2];
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        for(long k = 0; k < bsz2; k++)
+        {
+            for(long j = 0; j < bsz1; j++)
+            {
+                for(long i = 0; i < bsz0; i++)
+                {
+                    long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
+                    long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
+                    long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
+                    if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
+                    {
+                        long ind1 = k * bsz01 + j * bsz0 + i;
+                        long ind2 = kk * sz01 + jj * sz0 + ii;
+                        outimg1d[ind1] = inimg1d[ind2];
+                    }
+                }
+            }
+        }
+
+    }
 	// 3. get new_sub_markers and new_tar_markers
 	for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++)
 	{
@@ -1109,7 +1394,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 		double y = o.y + marker->x * a[1] + marker->y * b[1] + marker->z * c[1];
 		double z = o.z + marker->x * a[2] + marker->y * b[2] + marker->z * c[2];
 		marker->x = x;
-		marker->y = y;
+		marker->y = y;        
 		marker->z = z;
 	}
 	if(outimg1d){delete [] outimg1d; outimg1d = 0;}
@@ -1156,10 +1441,13 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 
 
-template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
+template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5,bool intensityThresholdmode=false)
 {
      long sz01 = (long)sz0*sz1;
-	cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
+     if(intensityThresholdmode)
+         cout<<"welcome to fastmarching_drawing_dynamicly (intensity threshold mode)"<<endl;
+     else
+         cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
 	assert(near_markers.size() == far_markers.size() && near_markers.size() >= 2);
 
 	MyMarker near_marker1;// = near_markers[0];
@@ -1182,6 +1470,9 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 	//all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
 	//for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++) all_markers.push_back(it->first);
 	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
+    double intensityThreshold=0;
+    if(intensityThresholdmode)
+        intensityThreshold=1.0;
 
 	for(int i = 1; i < near_markers.size(); i++)
 	{
@@ -1201,14 +1492,15 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 		sub_markers.clear(); sub_markers = tar_markers;
 		tar_markers.clear(); GET_LINE_MARKER_MAP(near_marker2, far_marker2, tar_markers);
           int stop_num = (i == (near_markers.size()-1))? 1 : (tar_markers.size()+1)/2;
-		fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, stop_num, cnn_type, margin);
+          fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, stop_num, cnn_type, margin,&intensityThreshold);
+
 		all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
 		for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
-	}
 
+	}
 	// extract the best trajectory
 	double min_score = 0;
-    	MyMarker * min_marker = 0;
+    MyMarker * min_marker = 0;
 	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++)
 	{
 		MyMarker * marker = it->first;
@@ -1218,7 +1510,7 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 			min_score = score;
 			min_marker = marker;
 		}
-	}
+    }
 	MyMarker * p = min_marker;
 	MyMarker * new_marker = new MyMarker(p->x, p->y, p->z); outswc.push_back(new_marker);
 	MyMarker * child_marker = new_marker;
@@ -1248,9 +1540,12 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 
 // calculate the bounding box containing all near_markers and far_markers and margin
 // then do fastmarching from the first ray to last ray
-template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
+template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5,bool intensityThresholdmode=false)
 {
-	cout<<"welcome to fastmarching_drawing4"<<endl;
+    if(intensityThresholdmode)
+        cout<<"welcome to fastmarching_drawing4 (intensity threshold adjust mode)"<<endl;
+    else
+        cout<<"welcome to fastmarching_drawing4"<<endl;
 	assert(near_markers.size() == far_markers.size());
 
 	if (near_markers.empty())
@@ -1403,21 +1698,66 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
     V3DLONG msz01 = msz0 * msz1;
     V3DLONG mtol_sz = msz2 * msz01;
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
+    double max_int = 0; // maximum intensity
+    double min_int = INF;
+    double intensityThreshold=0;
+    if(intensityThresholdmode)
+    {
+        double d;bool bbok;
+        d=QInputDialog::getDouble(0,"Intensity Threshold 1%-100%","please input your number",60,1,100,5,&bbok);
+        if(bbok)
+        {
+            cout<<"input number is "<<d<<endl;
+            intensityThreshold=d*0.01;
+        }
+        else{
+            cout<<"Input number is wrong."<<endl;
+        }
+        // mask off edges of image
+        for (V3DLONG z = 0; z < msz2; z++)
+        {
+            for (V3DLONG y = 0; y < msz1; y++)
+            {
+                for (V3DLONG x = 0; x < msz0; x++)
+                {
+                    MyMarker marker = MyMarker(mx + x, my + y, mz + z);
+                    //MyMarker m_marker = MyMarker(x, y, z);
+                    if(inimg1d[marker.ind(sz0, sz01)]>max_int) max_int=inimg1d[marker.ind(sz0, sz01)];
+                    if(inimg1d[marker.ind(sz0, sz01)]<min_int) min_int=inimg1d[marker.ind(sz0, sz01)];
+                    //mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
+                }
+            }
+        }
 
-	// mask off edges of image
-	for (V3DLONG z = 0; z < msz2; z++)
-	{
-		for (V3DLONG y = 0; y < msz1; y++)
-		{
-			for (V3DLONG x = 0; x < msz0; x++)
-			{
-				MyMarker marker = MyMarker(mx + x, my + y, mz + z);
-				MyMarker m_marker = MyMarker(x, y, z);
-
-				mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
-			}
-		}
-	}
+        for (V3DLONG z = 0; z < msz2; z++)
+        {
+            for (V3DLONG y = 0; y < msz1; y++)
+            {
+                for (V3DLONG x = 0; x < msz0; x++)
+                {
+                    MyMarker marker = MyMarker(mx + x, my + y, mz + z);
+                    MyMarker m_marker = MyMarker(x, y, z);
+                    if(inimg1d[marker.ind(sz0,sz01)]<=max_int*intensityThreshold)
+                        mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
+                }
+            }
+        }
+    }
+    else
+    {
+        for (V3DLONG z = 0; z < msz2; z++)
+        {
+            for (V3DLONG y = 0; y < msz1; y++)
+            {
+                for (V3DLONG x = 0; x < msz0; x++)
+                {
+                    MyMarker marker = MyMarker(mx + x, my + y, mz + z);
+                    MyMarker m_marker = MyMarker(x, y, z);
+                    mskimg1d[m_marker.ind(msz0, msz01)] = inimg1d[marker.ind(sz0, sz01)];
+                }
+            }
+        }
+    }
 
 	nm1 = near_markers[0]; fm1 = far_markers[0];
 	nm2 = *near_markers.rbegin(); fm2 = *far_markers.rbegin();
@@ -1430,7 +1770,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	vector<MyMarker> sub_markers, tar_markers;
 	GET_LINE_MARKERS(nm1, fm1, sub_markers);
 	GET_LINE_MARKERS(nm2, fm2, tar_markers);
-	fastmarching_linker(sub_markers, tar_markers, mskimg1d, outswc, msz0, msz1, msz2, cnn_type);
+    fastmarching_linker(sub_markers, tar_markers, mskimg1d, outswc, msz0, msz1, msz2, cnn_type);
     for(V3DLONG i = 0; i < outswc.size(); i++)
 	{
 		outswc[i]->x += mx;
@@ -1438,7 +1778,6 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		outswc[i]->z += mz;
 	}
 	return true;
-
 }
 
 // like drawing4, but the bound box is much smaller

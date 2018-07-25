@@ -404,7 +404,7 @@ public:
 	bool proj_trace_shortestpath_rgnaroundcurve(CurveTracePara & trace_para, int seg_begin, int seg_end);
 	bool proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end, float myzthickness);
 //<<<<<<< HEAD
-	bool proj_trace_add_curve_segment(vector<XYZ> &loc_list, int chno, double default_type=3);
+    bool proj_trace_add_curve_segment(vector<XYZ> &loc_list, int chno, double default_type=3, double default_radius=1);
     NeuronTree proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type=3); //150523
 //>>>>>>> master
 	bool proj_trace_deformNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_select_para=true);

@@ -77,8 +77,8 @@ void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
     p.y = node->y;
     p.z = node->z;
     p.r = node->r;
+    p.level = node->level;
     p.pn = node->parent ? node->parent->ID : -1;
-
     // add node to list
     #ifdef terafly_enable_debug_annotations
     tf::debug(tf::LEV_MAX, strprintf("Add node %lld(%.0f, %.0f, %.0f) to list", p.n, p.x, p.y, p.z).c_str(), 0, true);
@@ -1103,6 +1103,7 @@ void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf:
         ann->x = nt.listNeuron[i].x;
         ann->y = nt.listNeuron[i].y;
         ann->z = nt.listNeuron[i].z;
+        ann->level = nt.listNeuron[i].level;
 
         #ifdef terafly_enable_debug_annotations
         tf::debug(tf::LEV_MAX, strprintf("inserting curve point %lld(%.1f,%.1f,%.1f), n=(%d), pn(%d)\n", ann->ID, ann->x, ann->y, ann->z, nt.listNeuron[i].n, nt.listNeuron[i].pn).c_str(), 0, true);
@@ -1248,7 +1249,7 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     if(!f)
         throw RuntimeException(strprintf("in CAnnotations::save(): cannot save to path \"%s\"", filepath));
     fprintf(f, "APOFILE=%s\n",anoFile.dirName().toStdString().append(".apo").c_str());
-    fprintf(f, "SWCFILE=%s\n",anoFile.dirName().toStdString().append(".swc").c_str());
+    fprintf(f, "SWCFILE=%s\n",anoFile.dirName().toStdString().append(".eswc").c_str());
     fclose(f);
 
     //saving apo (point cloud) file
@@ -1270,13 +1271,14 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     writeAPO_file(QString(filepath).append(".apo"), points);
 
     //saving SWC file
-    f = fopen(QString(filepath).append(".swc").toStdString().c_str(), "w");
+    f = fopen(QString(filepath).append(".eswc").toStdString().c_str(), "w");
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
     fprintf(f, "#n type x y z radius parent\n");
+	cout << "Annotation size: " << annotations.size() << endl;
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level);
 
     //file closing
     fclose(f);
@@ -1335,7 +1337,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         else if(tokens[0].compare("SWCFILE") == 0)
         {
             NeuronTree nt = readSWC_file(dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str()));
-
+			
             std::map<int, annotation*> annotationsMap;
             std::map<int, NeuronSWC*> swcMap;
             for(QList <NeuronSWC>::iterator i = nt.listNeuron.begin(); i!= nt.listNeuron.end(); i++)
@@ -1350,6 +1352,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 ann->x = i->x;
                 ann->y = i->y;
                 ann->z = i->z;
+                ann->level = i->level;
                 ann->vaa3d_n = i->n;
                 octree->insert(*ann);
                 annotationsMap[i->n] = ann;

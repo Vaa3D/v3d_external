@@ -1667,6 +1667,11 @@ void V3d_PluginLoader::releaseOpenedVolumesTeraFly()
     terafly::PluginInterface::releaseOpenedVolumes();
 }
 
+bool V3d_PluginLoader::setImageTeraFly(size_t x, size_t y, size_t z)
+{
+    return terafly::PluginInterface::setImage(x,y,z);
+}
+
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {

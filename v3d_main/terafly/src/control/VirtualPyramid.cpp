@@ -10,15 +10,12 @@
 *   VIRTUAL PYRAMID definitions *
 *********************************
 ---------------------------------------------------------------------------------------------------------------------------*/
+tf::VirtualPyramid::empty_filling tf::VirtualPyramid::_unexploredFillingMethod = tf::VirtualPyramid::RAW;
+unsigned char tf::VirtualPyramid::_unexploredIntensityVal = 128;
+float tf::VirtualPyramid::_unexploredSaltAndPepperPerc = 0.001;
+bool tf::VirtualPyramid::_cacheHighestRes = false;
+bool tf::VirtualPyramid::_freezeHighestRes = false;
 
-// empty image space visualization: method
-tf::VirtualPyramid::empty_viz_mode tf::VirtualPyramid::empty_viz_method = tf::VirtualPyramid::RAW;
-
-// empty image space visualization: intensity level of empty voxels
-unsigned char tf::VirtualPyramid::empty_viz_intensity = 128;
-
-// empty image space visualization: salt & pepper percentage
-float tf::VirtualPyramid::empty_viz_salt_pepper_percentage = 0.001;
 
 // VirtualPyramid constructor 1
 tf::VirtualPyramid::VirtualPyramid(
@@ -247,10 +244,13 @@ tf::VirtualPyramid::~VirtualPyramid() throw(iim::IOException)
     if(_virtualPyramid.size())
         throw tf::RuntimeException("Cannot destroy VirtualPyramid: not all layers have been destroyed");
 
+    // delete cache layers
     for(int i=0; i<_cachePyramid.size(); i++)
         delete _cachePyramid[i];
 
-    delete _vol;
+    // release highest res volume
+    if(_vol)
+        delete _vol;
 }
 
 // get pyramid method
@@ -523,7 +523,7 @@ tf::image5D<tf::uint8>
 tf::VirtualPyramid::loadVOI(
         tf::xyz<size_t> start,  // xyz range [start, end)
         tf::xyz<size_t> end,    // xyz range [start, end)
-        int level)               // pyramid level (0=highest resolution, the higher the lower the resolution)
+        int level)              // pyramid level (0=highest resolution, the higher the lower the resolution)
 throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV1, tf::strprintf("VOI is x=[%d,%d) y=[%d,%d) z=[%d,%d), level = %d", start.x, end.x, start.y, end.y, start.z, end.z, level).c_str(), __itm__current__function__);
@@ -544,46 +544,59 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
     if(end.z > _virtualPyramid[level]->getDIM_D())
         end.z = _virtualPyramid[level]->getDIM_D();
 
+    // convert 3D interval to voi type
+    iim::voi3D<size_t> voi(iim::xyz<size_t>(start.x, start.y, start.z), iim::xyz<size_t>(end.x, end.y, end.z));
+
     // prepare output data array
     iim::uint8* data = 0;
 
-    // highest-res layer = THE image
+    // highest-res layer = THE image or the lowest virtual layer
     if(level == 0)
     {
-        // fetch data
-        data = _vol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
+        // no data can be fethed (_freezeHighestRes = true)
+        // OR
+        // cache highest res option is ON and the VOI is available (either from cache or converted file)
+        //  --> read data from lowest virtual pyramid layer
+        if( _freezeHighestRes || (_cacheHighestRes && _cachePyramid[0]->completeness(voi) >= 1))
+        {
+            data = _cachePyramid[0]->readData(
+                        voi4D<int>(
+                            xyzt<int>(start.x, start.y, start.z, _vol->getT0()),
+                            xyzt<int>(end.x, end.y, end.z, _vol->getT1()+1)),
+                        active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())).data;
+        }
+        // in all other cases
+        //  --> fetch data from unconverted image and propagate data to virtual pyramid
+        else
+        {
+            // fetch data
+            data = _vol->loadSubvolume_to_UINT8(start.y, end.y, start.x, end.x, start.z, end.z);
 
-        // replace perfect 0 with 1 ('0' value is reserved for empty/nonloaded voxels)
-        // ***WARNING*** : here, we are deliberately changing the meaning of the data for efficient representation, counting, and access of empty/nonloaded voxels
-        size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
-        //data = new uint8[data_dim];
-        for(size_t i=0; i<data_dim; i++)
-            data[i] = std::max(iim::uint8(1), data[i]);
-            //data[i] = 1;
+            // replace 0 with 1 ('0' value is reserved for empty/nonloaded voxels)
+            // ***WARNING*** : here, we are deliberately changing the meaning of the data for efficient representation, counting, and access of empty/nonloaded voxels
+            size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
+            for(size_t i=0; i<data_dim; i++)
+             data[i] = std::max(iim::uint8(1), data[i]);
 
-        // propagate data to higher layers
-        //size_t l = _cachePyramid.size()-1;
-        //             |
-        //             |
-        //            \ /
-        //             °   CRUCIAL : in this version, we decided not to cache the highest-res layer (too RAM / disk space expensive)
-        for(size_t l = 1; l <_cachePyramid.size(); l++)
-            _cachePyramid[l]->putData
-			(
-				tf::image5D<uint8>
-				(
-					data, 
-                    xyzt<size_t>(end.x - start.x, end.y - start.y, end.z - start.z, _vol->getNActiveFrames()),
-                    active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())
-				),
-                tf::xyzt<size_t>( start.x, start.y, start.z, _vol->getT0()),
-                _virtualPyramid[l]->_resamplingFactor * (-1)
-			);
+            // propagate data
+            for(size_t l = !_cacheHighestRes; l <_cachePyramid.size(); l++)
+                 _cachePyramid[l]->putData
+                 (
+                     tf::image5D<uint8>
+                     (
+                         data,
+                         xyzt<size_t>(end.x - start.x, end.y - start.y, end.z - start.z, _vol->getNActiveFrames()),
+                         active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())
+                     ),
+                     tf::xyzt<size_t>( start.x, start.y, start.z, _vol->getT0()),
+                     _virtualPyramid[l]->_resamplingFactor * (-1)
+                 );
+        }
     }
     // lower-res layers = virtual layers
     else
     {
-        // fetch data
+        // read data
         data = _cachePyramid[level]->readData(
                     voi4D<int>(
                         xyzt<int>(start.x, start.y, start.z, _vol->getT0()),
@@ -591,19 +604,19 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
                     active_channels<>(_vol->getActiveChannels(), _vol->getNACtiveChannels())).data;
 
         // if required, replace empty voxels (0s) with the chosen visualization method for empty image regions
-        if(empty_viz_method == tf::VirtualPyramid::SALT_AND_PEPPER)
+        if(_unexploredFillingMethod == tf::VirtualPyramid::SALT_AND_PEPPER)
         {
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
-                if(!data[i] && ((double)rand() / RAND_MAX) < empty_viz_salt_pepper_percentage)
-                    data[i] = empty_viz_intensity;
+                if(!data[i] && ((double)rand() / RAND_MAX) < _unexploredSaltAndPepperPerc)
+                    data[i] = _unexploredIntensityVal;
         }
-        if(empty_viz_method == tf::VirtualPyramid::SOLID)
+        if(_unexploredFillingMethod == tf::VirtualPyramid::SOLID)
         {
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
                 if(!data[i])
-                    data[i] = empty_viz_intensity;
+                    data[i] = _unexploredIntensityVal;
         }
     }
     return tf::image5D<uint8>(
@@ -628,6 +641,8 @@ tf::VirtualPyramid::refill(
         throw tf::RuntimeException("in VirtualPyramid::refill(): volume has not been initialized yet");
     if(_cachePyramid.empty())
         throw tf::RuntimeException("in VirtualPyramid::refill(): cache pyramid has not been initialized yet");
+    if(_freezeHighestRes)
+        return false;
 
     // check / adjust optional inputs
     if (cache_level < 0)
@@ -873,10 +888,8 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
 
     // clear all blocks
     for(int i=0; i<cachePyramid().size(); i++)
-    {
         if(layer == -1 || layer == i)
-            cachePyramid()[i]->clear();
-    }
+            _cachePyramid[i]->clear();
 }
 
 /*----END VIRTUAL PYRAMID section -----------------------------------------------------------------------------------------*/
@@ -1074,6 +1087,9 @@ tf::HyperGridCache::~HyperGridCache() throw (iim::IOException)
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
+    // save metadata
+    save();
+
     for(size_t t=0; t<_nBlocks.t; t++)
     {
         for(size_t c=0; c<_nBlocks.c; c++)
@@ -1177,7 +1193,7 @@ void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException, i
         throw iim::IOException("Cannot open .hypergrid file at \"%s\"", hypergridFilePath.c_str());
     std::string line;
     std::vector <std::string> tokens;
-    std::string visits_str;
+    std::string visits_str, emptycount_str;
     while(std::getline(f, line))
     {
         tokens = tf::parse(line, ":", 2, hypergridFilePath);
@@ -1215,6 +1231,8 @@ void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException, i
             _block_dim.t = tf::str2num<size_t>(tokens[1]);
         if(tokens[0].compare("blocks.visits") == 0)
             visits_str = tokens[1];
+        if(tokens[0].compare("blocks.emptycount") == 0)
+            emptycount_str = tokens[1];
     }
     f.close();
 
@@ -1233,6 +1251,20 @@ void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException, i
                 for(size_t y=0; y<_nBlocks.y; y++)
                     for(size_t x=0; x<_nBlocks.x; x++)
                         _hypergrid[t][c][z][y][x]->setVisits(tf::str2num<int>(visits[counter++]));
+
+    // parse empty counts
+    if(!emptycount_str.empty())
+    {
+        std::vector <std::string> emptycounts;
+        tf::parse(emptycount_str, ";", _nBlocks.x*_nBlocks.y*_nBlocks.z*_nBlocks.c*_nBlocks.t+1, hypergridFilePath, emptycounts);
+        size_t counter = 0;
+        for(size_t t=0; t<_nBlocks.t; t++)
+            for(size_t c=0; c<_nBlocks.c; c++)
+                for(size_t z=0; z<_nBlocks.z; z++)
+                    for(size_t y=0; y<_nBlocks.y; y++)
+                        for(size_t x=0; x<_nBlocks.x; x++)
+                            _hypergrid[t][c][z][y][x]->setEmptyCount(tf::str2num<int>(emptycounts[counter++]));
+    }
 }
 
 // save to disk
@@ -1268,6 +1300,14 @@ void tf::HyperGridCache::save() throw (iim::IOException, tf::RuntimeException, i
                 for(size_t y=0; y<_nBlocks.y; y++)
                     for(size_t x=0; x<_nBlocks.x; x++)
                         f << _hypergrid[t][c][z][y][x]->visits() << ";" ;
+    f << std::endl;
+    f << "blocks.emptycount:";
+    for(size_t t=0; t<_nBlocks.t; t++)
+        for(size_t c=0; c<_nBlocks.c; c++)
+            for(size_t z=0; z<_nBlocks.z; z++)
+                for(size_t y=0; y<_nBlocks.y; y++)
+                    for(size_t x=0; x<_nBlocks.x; x++)
+                        f << _hypergrid[t][c][z][y][x]->emptyCount() << ";" ;
     f.close();
 }
 
@@ -1496,7 +1536,7 @@ float tf::HyperGridCache::memoryMax()
 
 // completeness index between 0 (0% explored) and 1 (100% explored)
 // it is calculated by counting 'empty' voxels, i.e. that haven't been fetched yet
-float tf::HyperGridCache::completeness(iim::voi3D<> voi) throw (iim::IOException, iom::exception, tf::RuntimeException)
+float tf::HyperGridCache::completeness(iim::voi3D<> voi, bool force_load_image) throw (iim::IOException, iom::exception, tf::RuntimeException)
 {
     // adjust voi if it has not been provided
     if(voi == iim::voi3D<>::biggest())
@@ -1520,7 +1560,7 @@ float tf::HyperGridCache::completeness(iim::voi3D<> voi) throw (iim::IOException
                     for(size_t x=0; x<_nBlocks.x; x++)
                         if(_hypergrid[t][c][z][y][x]->intersection(voi).isValid())
                         {
-                            sum_empty += _hypergrid[t][c][z][y][x]->countEmpty(voi);
+                            sum_empty += _hypergrid[t][c][z][y][x]->emptyCountInVOI(voi, force_load_image);
                             sum_total += _hypergrid[t][c][z][y][x]->intersection(voi).size() * _hypergrid[t][c][z][y][x]->dims().c * _hypergrid[t][c][z][y][x]->dims().t;
                         }
     return 1.0f - float(sum_empty)/sum_total;
@@ -1554,7 +1594,7 @@ throw (iim::IOException, iom::exception)
     _imdata = 0;
     _index  = index;
     _visits = 0;
-    _emptycount = 0;
+    _emptycount = _dims.size();
     _hasChanged = false;
 
     _path = _parent->_path + "/" + tf::strprintf("t%s_c%s_z%s_y%s_x%s%s",
@@ -1602,31 +1642,49 @@ void tf::HyperGridCache::CacheBlock::updateEmptyCount()
 }
 
 // get empty voxel count within the given voi
-size_t tf::HyperGridCache::CacheBlock::countEmpty( iim::voi3D<> voi )
+// precondition 1: _emptycount is up-to-date
+size_t tf::HyperGridCache::CacheBlock::emptyCountInVOI(iim::voi3D<> voi , bool force_load_image)
 {
-    /**/tf::debug(tf::LEV1, strprintf("block(z,y,x) = [%d,%d) [%d,%d) [%d,%d), voi(z,y,x) = [%d,%d) [%d,%d) [%d,%d)",
+    /**/tf::debug(tf::LEV3, strprintf("block(z,y,x) = [%d,%d) [%d,%d) [%d,%d), voi(z,y,x) = [%d,%d) [%d,%d) [%d,%d)",
         _origin.z, _origin.z + _dims.z, _origin.y, _origin.y + _dims.y, _origin.x, _origin.x + _dims.x,
         voi.start.z, voi.end.z, voi.start.y, voi.end.y, voi.start.x, voi.end.x).c_str(), __itm__current__function__);
 
+    // no voi provided --> just return empty count in this block
     if(voi == iim::voi3D<>::biggest())
         return _emptycount;
     else
     {
         // get intersection with current block
         iim::voi3D<> ivoi = this->intersection(voi);
-//        printf("intersection = [%d,%d) [%d,%d) [%d,%d)\n", ivoi.start.x, ivoi.end.x, ivoi.start.y, ivoi.end.y, ivoi.start.z, ivoi.end.z);
 
-        // subtract origin --> get local image voi
-        ivoi.start.x -= _origin.x;
-        ivoi.start.y -= _origin.y;
-        ivoi.start.z -= _origin.z;
-        ivoi.end.x   -= _origin.x;
-        ivoi.end.y   -= _origin.y;
-        ivoi.end.z   -= _origin.z;
+        // empty intersection
+        //  --> just return 0
+        if(!ivoi.isValid())
+            return 0;
 
-        // count empty pixels in image voi, if image data are available
-        if(_imdata)
+        // intersection == current block
+        //  --> just return empty count (precondition 1: _emptycount is kept up-to-date) in this block
+        else if(ivoi.start.x == _origin.x && ivoi.end.x == _origin.x + _dims.x &&
+                ivoi.start.y == _origin.y && ivoi.end.y == _origin.y + _dims.y &&
+                ivoi.start.z == _origin.z && ivoi.end.z == _origin.z + _dims.z)
+            return _emptycount;
+
+        // intersection is a VOI of this block, and we have the image or we are forced to load the image
+        //  --> count empty pixels in the image VOI
+        else if(_imdata || force_load_image)
         {
+            // load the image if needed
+            if(!_imdata && force_load_image)
+                this->load();
+
+            // subtract origin --> get local image voi
+            ivoi.start.x -= _origin.x;
+            ivoi.start.y -= _origin.y;
+            ivoi.start.z -= _origin.z;
+            ivoi.end.x   -= _origin.x;
+            ivoi.end.y   -= _origin.y;
+            ivoi.end.z   -= _origin.z;
+
             size_t empty = 0;
             for(size_t t=0; t<_dims.t; t++)
             {
@@ -1647,15 +1705,22 @@ size_t tf::HyperGridCache::CacheBlock::countEmpty( iim::voi3D<> voi )
                     }
                 }
             }
-//            printf("return empty (%d)\n", empty);
             return empty;
         }
-        // otherwise return intersection size
+
+        // intersection is a VOI of this block, we don't have neither image or the block file
+        //  --> just return intersection size
+        else if(!iim::isFile(_path))
+            return ivoi.size() * _dims.c * _dims.t;
+
+        // all other cases
+        //  --> we make an estimate using the current _emptyCount and the ratio between the block size and the intersection VOI size
         else
         {
-//            printf("return intersection size (%d)\n", ivoi.size() * _dims.c * _dims.t);
-            return ivoi.size() * _dims.c * _dims.t;
+            //QMessageBox::information(0, "title", "you should never see this");
+            return tf::round(_emptycount * ivoi.size() / double(_dims.x*_dims.y*_dims.z));
         }
+
     }
 }
 
@@ -1679,7 +1744,6 @@ void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::except
     // try to load data from disk
     if(iim::isFile(_path))
     {
-        //int dimX = _dims.x, dimY=_dims.y, dimZ=_dims.z, dimC=_dims.c, bytes = 1;
         Image4DSimple img;
         img.loadImage(_path.c_str());
         if(!img.valid())
@@ -1687,29 +1751,6 @@ void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::except
         delete _imdata;
         _imdata = img.getRawData();
         img.setRawDataPointerToNull();
-        /*if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
-        {
-            tf::uint8 *interleaved = new tf::uint8[_dims.x*_dims.y*_dims.z*_dims.c];
-            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(_path, dimX, dimY, dimZ, bytes, dimC, interleaved);
-            tf::uint8 *iptr = interleaved;
-            size_t dims_zyx = _dims.z*_dims.y*_dims.x;
-            for(size_t z=0; z<_dims.z; z++)
-            {
-                size_t zyx = z*_dims.y*_dims.x;
-                for(size_t y=0; y<_dims.y; y++)
-                {
-                    size_t stride  = zyx + y*_dims.x;
-                    for(size_t x=0; x<_dims.x; x++)
-                    {
-                        for(size_t c=0; c<_dims.c; c++, iptr++)
-                            _imdata[c*dims_zyx + stride + x] = *iptr;
-                    }
-                }
-            }
-            delete[] interleaved;
-        }
-        else
-            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->readData(_path, dimX, dimY, dimZ, bytes, dimC, _imdata);*/
     }
     else // otherwise initialize to perfect black (0: value reserved for empty voxels)
     {
@@ -1750,31 +1791,6 @@ void tf::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::except
         img.setRawDataPointerToNull();
         if(!saved)
             throw iim::IOException(tf::strprintf("Cannot save image block at \"%s\"", _path.c_str()));
-//        if(!iim::isFile(_path))
-//            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->create3Dimage(_path, _dims.y, _dims.x, _dims.z, 1, _dims.c);
-//        if(iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->isChansInterleaved())
-//        {
-//            tf::uint8 *interleaved = new tf::uint8[_dims.x*_dims.y*_dims.z*_dims.c];
-//            tf::uint8 *write_ptr = interleaved;
-//            size_t dims_zyx = _dims.z*_dims.y*_dims.x;
-//            for(size_t z=0; z<_dims.z; z++)
-//            {
-//                size_t zyx = z*_dims.y*_dims.x;
-//                for(size_t y=0; y<_dims.y; y++)
-//                {
-//                    size_t stride  = zyx + y*_dims.x;
-//                    for(size_t x=0; x<_dims.x; x++)
-//                    {
-//                        for(size_t c=0; c<_dims.c; c++, write_ptr++)
-//                            *write_ptr = _imdata[c*dims_zyx + stride + x];
-//                    }
-//                }
-//            }
-//            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(_path, interleaved, _dims.y, _dims.x, _dims.z, 1, _dims.c);
-//            delete[] interleaved;
-//        }
-//        else
-//            iom::IOPluginFactory::instance()->getPlugin3D("tiff3D")->writeData(_path, _imdata, _dims.y, _dims.x, _dims.z, 1, _dims.c);
 
         _hasChanged = false;
     }

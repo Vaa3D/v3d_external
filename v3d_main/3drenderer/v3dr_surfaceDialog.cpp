@@ -39,6 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  */
 
 #include "v3dr_surfaceDialog.h"
+#include "renderer_gl1.h"
 #ifndef test_main_cpp
 #include "../v3d/surfaceobj_annotation_dialog.h"
 #endif
@@ -627,6 +628,8 @@ void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 
 		if (t==table[stImageMarker])
 		{
+            t->setSortingEnabled(true); // sort
+
 			qDebug("  marker #%d", i+1);
 			last_marker = i;
 
@@ -634,9 +637,26 @@ void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 			QAction* Act;
 		    Act = new QAction(tr("Local 3D View around this Marker"), this);
 		    connect(Act, SIGNAL(triggered()), this, SLOT(onMarkerLocalView()) );
+            QAction* ZoomAct;
+            ZoomAct=new QAction(tr("Zoom-in to this select marker location"),this);
+			connect(ZoomAct, SIGNAL(triggered()), this, SLOT(menuExecBuffer()));
+			menu.addAction(ZoomAct);
 		    menu.addAction(Act);
 			menu.exec(QCursor::pos());
 		}
+	}
+}
+
+void V3dr_surfaceDialog::menuExecBuffer()
+{
+	//  By using a QTimer::singleshot to call V3dr_surfaceDialog::zoomMarkerLocation, 
+	//  it makes V3dr_surfaceDialog::pressedClickHandler finish menu.exec() once the signal is fired, so that the main thread can move on.
+	//  This is an ad hoc solution for a known bug on Windows platform, where a crash happens when "zoom-in to this select marker" is called from object manager in terafly.
+	// -- MK, June, 2018
+
+	if (last_marker != -1)
+	{
+		QTimer::singleShot(50, this, SLOT(zoomMarkerLocation()));
 	}
 }
 
@@ -914,7 +934,10 @@ void V3dr_surfaceDialog::pickMarker(int i, int j)
 		r->listMarker[i].on = CHECKED_TO_BOOL(curItem->checkState());
 		break;
 	case 1:
-		r->listMarker[i].color = RGBA8V(curItem->data(0));
+        //r->listMarker[i].color = RGBA8V(curItem->data(0));
+        listMarker[i].color = RGBA8V(curItem->data(0)); // sync
+        r->updateMarkerList(listMarker, i);
+
 		UPATE_ITEM_ICON(curItem);
 		break;
 	}
@@ -1012,18 +1035,18 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	if (! r)  return 0;
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
-	V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(r->_idep);
+    V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
 
 	QStringList qsl;
 	qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file";
-	int row;	
+    int row;
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
         if (r->listNeuronTree[i].editable) flag = true;
-    if (r->listNeuronTree.size() !=0 && !flag)
+    if ((r->listNeuronTree.size() !=0 && !flag) || ! curImg)
 		row = 0;
-	else row =tracedNeuron->nsegs();
+    else row =tracedNeuron->nsegs();
 
 	int col = qsl.size();
 
@@ -1034,14 +1057,14 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	{
 		int j=0;
 		QTableWidgetItem *curItem;
-		V_NeuronSWC curSeg = tracedNeuron->seg[i];
+        V_NeuronSWC curSeg = tracedNeuron->seg[i];
 
 		ADD_ONOFF(curSeg.on);
 
 		RGBA8 color;
 		color.r = curSeg.color_uc[0];
 		color.g = curSeg.color_uc[1];
-		color.g = curSeg.color_uc[2];
+        color.b = curSeg.color_uc[2];
 		color.a = curSeg.color_uc[3];
 		ADD_QCOLOR(color);
 
@@ -1347,6 +1370,8 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 				{
 					r->listMarker[i].name = realobj_name;
 					r->listMarker[i].comment = realobj_comment;
+
+                    qDebug()<<"sync with renderer's name and comment";
 				}
 				else if (t==table[stLabelSurface])
 				{
@@ -1586,11 +1611,37 @@ void V3dr_surfaceDialog::onMarkerLocalView()
 		My4DImage* curImg = 0;         curImg = v3dr_getImage4d(r->_idep);
 		XFormWidget* curXWidget = 0;   curXWidget = v3dr_getXWidget(r->_idep);
 
-		if (curImg) curImg->cur_hit_landmark = last_marker;
+        if (curImg) curImg->cur_hit_landmark = last_marker;
 		if (curXWidget) curXWidget->doImage3DLocalMarkerView();
 
 		//glwidget->lookAlong(1,1,1);
 	}
 #endif
+}
+void V3dr_surfaceDialog::zoomMarkerLocation()
+{
+    qDebug()<<"zoom in to this select marker location";
+    if (glwidget)
+    {
+        My4DImage* curImg = 0;         curImg = v3dr_getImage4d(renderer->_idep);
+
+        if (curImg) curImg->cur_hit_landmark = last_marker;
+        LocationSimple makerPo=curImg->listLandmarks.at(last_marker);
+        vector <XYZ> loc_vec;
+        XYZ loc;
+        loc.x=makerPo.x;loc.y=makerPo.y;loc.z=makerPo.z;
+        loc_vec.push_back(loc);
+        v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
+        renderer->b_grabhighrez=true;
+        renderer->produceZoomViewOf3DRoi(loc_vec,0);
+    }
+}
+
+void V3dr_surfaceDialog::updateMarkerList(QList <ImageMarker> markers)
+{
+    for(int i=0; i<markers.size(); i++)
+    {
+        listMarker[i] = markers[i];
+    }
 }
 

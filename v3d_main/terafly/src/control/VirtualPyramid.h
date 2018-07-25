@@ -11,6 +11,32 @@
 // Virtual Pyramid class: builds a virtual image pyramid on top of real (unconverted) image data
 class terafly::VirtualPyramid
 {
+    // new types used by this class
+    public:
+
+        // different initializations for first-time open
+        enum init_mode{
+            DEFAULT,                                        // do nothing (default): all pyramid layers are initially empty (black)
+            GENERATE_LOW_RES_FROM_FILE,                     // generate lowest-res pyramid layer from image file
+            GENERATE_LOW_RES,                               // generate lowest-res pyramid layer from highest-res image
+            GENERATE_ALL                                    // generate all pyramid layers from highest-res image
+        };
+
+        // different methods for filling empty=unseen=unexplored regions at visualization time
+        enum empty_filling{
+            RAW,                                            // display raw (0s) values (default)
+            SALT_AND_PEPPER,                                // add salt and pepper
+            SOLID                                           // display solid color
+        };
+
+        // different refill strategies
+        enum refill_strategy{
+            REFILL_RANDOM,                                  // random blocks
+            REFILL_ZYX,                                     // sequential z-y-x blocks
+            REFILL_CENTER                                   // center blocks first
+        };
+
+
     private:
 
         // object members
@@ -19,7 +45,6 @@ class terafly::VirtualPyramid
         std::string                         _path;                  // where files should be stored
         std::vector< tf::VirtualPyramidLayer* > _virtualPyramid;    // virtual (=do NOT contain any data) pyramid layers (ordered by descending resolution)
         std::vector< tf::HyperGridCache*>  _cachePyramid;           // actual (=do contain data) pyramid 'cache' layers: cache data from/to disk and RAM at all resolution layers (ordered by descending resolution)
-
 
         // disable default constructor
         VirtualPyramid(){}
@@ -34,28 +59,6 @@ class terafly::VirtualPyramid
 
 
     public:
-
-        // different initializations for first-time open
-        enum init_mode{
-            DEFAULT,                                        // do nothing (default): all pyramid layers are initially empty (black)
-            GENERATE_LOW_RES_FROM_FILE,                     // generate lowest-res pyramid layer from image file
-            GENERATE_LOW_RES,                               // generate lowest-res pyramid layer from highest-res image
-            GENERATE_ALL                                    // generate all pyramid layers from highest-res image
-        };
-
-        // different methods for visualizing empty voxels / empty image regions (empty = unseen = not yet explored)
-        enum empty_viz_mode{
-            RAW,                                            // display raw (0s) values (default)
-            SALT_AND_PEPPER,                                // add salt and pepper
-            SOLID                                           // display solid color
-        };
-
-        // different refill strategies
-        enum refill_strategy{
-            REFILL_RANDOM,                                  // random blocks
-            REFILL_ZYX,                                     // sequential z-y-x blocks
-            REFILL_CENTER                                   // center blocks first
-        };
 
         // constructor 1 (first time instance / Virtual Pyramid files do not exist)
         VirtualPyramid(
@@ -104,7 +107,7 @@ class terafly::VirtualPyramid
 
 
         // load volume of interest from the given resolution layer
-        // - communicates with 'highresVol' (which contains highres data) and with 'pyramid' (which contain cached data)
+        // - communicates with 'highresVol' (which contains highres data) and with 'pyramid' (which contains cached data)
         tf::image5D<uint8>
         loadVOI(
                 xyz<size_t> start,  // xyz range [start, end)
@@ -162,10 +165,12 @@ class terafly::VirtualPyramid
         ) throw (tf::RuntimeException);
 
 
-        // class options / static attributes
-        static empty_viz_mode empty_viz_method;                // empty image space visualization: method
-        static unsigned char empty_viz_intensity;              // empty image space visualization: intensity level of empty voxels
-        static float empty_viz_salt_pepper_percentage;         // empty image space visualization: salt & pepper percentage
+        // class options
+        static empty_filling _unexploredFillingMethod;  // determines appearance of unexplored image space
+        static unsigned char _unexploredIntensityVal;   // intensity level of unexplored voxels
+        static float _unexploredSaltAndPepperPerc;      // salt & pepper percentage for salt & pepper filling of unexplored space
+        static bool _freezeHighestRes;                  // if true, no new data are loaded/propagated from the highest res
+        static bool _cacheHighestRes;                   // if true, also the highest res data are cached and saved
 
         friend class VirtualPyramidLayer;
 };
@@ -290,7 +295,8 @@ class terafly::HyperGridCache
         // completeness index between 0 (0% explored) and 1 (100% explored)
         // it is calculated by counting 'empty' voxels in the given VOI
         float completeness(
-                iim::voi3D<> voi = iim::voi3D<>::biggest()
+                iim::voi3D<> voi = iim::voi3D<>::biggest(),
+                bool force_load_image = false
         ) throw (iim::IOException, iom::exception, tf::RuntimeException);
 
 
@@ -363,6 +369,11 @@ class terafly::HyperGridCache
                 int visits()              {return _visits;}
                 void setVisits(int visits)  {_visits=visits;}
 
+                // get and set empty count
+                size_t emptyCount() { return _emptycount;}
+                size_t emptyCountInVOI( iim::voi3D<> voi = iim::voi3D<>::biggest(), bool force_load_image = false);
+                void setEmptyCount(size_t emptycount)  {_emptycount=emptycount;}
+
                 // whether this block has changed (contains new data) since the last data fetch
                 bool hasChanged(){return _hasChanged;}
 
@@ -374,10 +385,6 @@ class terafly::HyperGridCache
 
                 // get maximum RAM usage in Gigabytes
                 float memoryMax(){return _dims.size() * bytesPerPixel() * 1.0e-9;}
-
-                // get empty voxel count within the given voi
-                size_t countEmpty( iim::voi3D<> voi = iim::voi3D<>::biggest());
-
 
                 // 3D intersection
                 template <typename T>

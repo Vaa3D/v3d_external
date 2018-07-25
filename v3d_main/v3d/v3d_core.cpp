@@ -6558,6 +6558,12 @@ void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 	merged_neuron.name = curImg->tracedNeuron.name;
 	merged_neuron.file = curImg->tracedNeuron.file;
     curRen->updateNeuronTree(merged_neuron);
+
+	for (size_t i = 0; i < curImg->tracedNeuron.seg.size(); ++i) // Generate a branchID -> segID map, MK, May, 2018
+	{
+		curRen->branchSegIDmap.insert(std::pair<size_t, size_t>(curImg->tracedNeuron.seg.at(i).branchingProfile.ID, i));
+		//cout << i << ", " << curImg->tracedNeuron.seg.at(i).branchingProfile.ID << endl;
+	}
 }
 
 void My4DImage::

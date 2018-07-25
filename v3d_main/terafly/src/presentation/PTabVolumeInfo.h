@@ -85,6 +85,8 @@ class terafly::PTabVolumeInfo : public QWidget
         QSpinBox* vp_block_dimY;
         QSpinBox* vp_block_dimZ;
         QLineEdit* vp_refill_time_spent;
+        QCheckBox* vp_highest_res_cache;
+        QCheckBox* vp_highest_res_freeze;
 
         // virtual pyramid RAM panel
         QGroupBox* vp_ram_panel;
@@ -128,6 +130,8 @@ class terafly::PTabVolumeInfo : public QWidget
         void vp_refill_auto_checkbox_changed(bool v);
         void vp_refill_stop_combobox_changed(int v);
         void vp_refill_coverage_spinbox_changed(int v);
+        void vp_highest_res_cache_checkbox_changed(bool v);
+        void vp_highest_res_freeze_checkbox_changed(bool v);
 
 };
 

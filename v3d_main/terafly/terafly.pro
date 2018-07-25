@@ -186,6 +186,7 @@ HEADERS += ../terafly/src/terarepo/src/volumemanager/vmVirtualStack.h
 HEADERS += ../terafly/src/terarepo/src/volumemanager/vmVirtualVolume.h
 HEADERS += ../terafly/src/terarepo/src/volumemanager/vmCacheManager.h
 HEADERS += ../terafly/src/terarepo/src/volumemanager/volumemanager.config.h
+HEADERS += ../terafly/src/terarepo/src/volumemanager/vmMCVolume.h
 SOURCES += ../terafly/src/terarepo/src/volumemanager/vmBlock.cpp
 SOURCES += ../terafly/src/terarepo/src/volumemanager/vmBlockVolume.cpp
 SOURCES += ../terafly/src/terarepo/src/volumemanager/vmStack.cpp
@@ -194,6 +195,7 @@ SOURCES += ../terafly/src/terarepo/src/volumemanager/vmVirtualStack.cpp
 SOURCES += ../terafly/src/terarepo/src/volumemanager/vmVirtualVolume.cpp
 SOURCES += ../terafly/src/terarepo/src/volumemanager/vmCacheManager.cpp
 SOURCES += ../terafly/src/terarepo/src/volumemanager/volumemanager.config.cpp
+SOURCES += ../terafly/src/terarepo/src/volumemanager/vmMCVolume.cpp
 
 # set up crossmips
 INCLUDEPATH += ../terafly/src/terarepo/src/crossmips

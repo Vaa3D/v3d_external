@@ -1386,18 +1386,172 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
     }
 }
 
+void Renderer_gl1::callShowSubtree()
+{
+	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	if (w && listNeuronTree.size()>0)
+	{
+		w->setEditMode();
+		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
+		{
+			editinput = 10;
+			selectMode = smShowSubtree;
+			b_addthiscurve = false;
+			oldCursor = QCursor(Qt::ArrowCursor);
+			w->setCursor(QCursor(Qt::PointingHandCursor));
+		}
+	}
+}
+
+void Renderer_gl1::callShowConnectedSegs()
+{
+	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	if (w && listNeuronTree.size()>0)
+	{
+		w->setEditMode();
+		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
+		{
+			My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(_idep);
+			this->seg2GridMapping(curImg);
+
+			editinput = 11;
+			selectMode = smShowSubtree;
+			b_addthiscurve = false;
+			oldCursor = QCursor(Qt::ArrowCursor);
+			w->setCursor(QCursor(Qt::PointingHandCursor));
+		}
+	}
+}
+
+void Renderer_gl1::seg2GridMapping(My4DImage* curImg)
+{
+	// This method profiles the geometrical information of every segment in Cartesian grids with selected grid length.
+	// Each grid is mapped to segments that run through it. set<segments run through the grid> = Renderer_gl1::wholeGrid2segIDmap(grid).
+	// -- MK, June, 2018
+
+	this->gridLength = 50;
+	for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+	{
+		for (vector<V_NeuronSWC_unit>::iterator nodeIt = segIt->row.begin(); nodeIt != segIt->row.end(); ++nodeIt)
+		{
+			int xLabel = nodeIt->x / this->gridLength;
+			int yLabel = nodeIt->y / this->gridLength;
+			int zLabel = nodeIt->z / this->gridLength;
+			QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+			string gridKey = gridKeyQ.toStdString();
+			this->wholeGrid2segIDmap[gridKey].insert(size_t(segIt - curImg->tracedNeuron.seg.begin()));
+		}
+	}
+
+	//cout << this->wholeGrid2segIDmap.size() << endl;
+}
+
+void Renderer_gl1::segEnd2SegIDmapping(My4DImage* curImg)
+{
+	// This method creates segment end -> segment ID map. Used in finding any segment end that is attached in the middle of input segment. (See Renderer_gl1::rc_findConnectedSegs)
+	// -- MK, June, 2018
+
+	this->segEnd2segIDmap.clear();
+	//this->head2segIDmap.clear();
+	//this->tail2SegIDmap.clear();
+	for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
+	{
+		double xLabelTail = it->row.begin()->x;
+		double yLabelTail = it->row.begin()->y;
+		double zLabelTail = it->row.begin()->z;
+		double xLabelHead = (it->row.end() - 1)->x;
+		double yLabelHead = (it->row.end() - 1)->y;
+		double zLabelHead = (it->row.end() - 1)->z;
+		QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
+		string key1 = key1Q.toStdString();
+		QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
+		string key2 = key2Q.toStdString();
+
+		this->segEnd2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
+		this->segEnd2segIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+		//this->head2segIDmap.insert(pair<string, size_t>(key1, size_t(it - curImg->tracedNeuron.seg.begin())));
+		//this->tail2SegIDmap.insert(pair<string, size_t>(key2, size_t(it - curImg->tracedNeuron.seg.begin())));
+	}
+}
+
 void Renderer_gl1::callDefine3DPolyline()
 {
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
 
-    selectMode = smCurveCreate_pointclick;
+    selectMode = smCurveCreate_MarkerCreate1;
     b_addthiscurve = true;
     cntCur3DCurveMarkers=0; //reset
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w)
     {
         editinput = 7;
+        oldCursor = QCursor(Qt::ArrowCursor);
+        w->setCursor(QCursor(Qt::PointingHandCursor));
+    }
+}
+
+void Renderer_gl1::callCreateMarkerNearestNode(int x, int y)
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w && listNeuronTree.size()>0)
+    {
+        w->setEditMode();
+        if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
+        {
+            NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
+            double best_dist;
+            V3DLONG n_id = findNearestNeuronNode_WinXY(x, y ,p_tree, best_dist);
+            NeuronSWC cur_node;
+            if (n_id>=0)
+            {
+                cur_node = p_tree->listNeuron.at(n_id);
+                qDebug()<<"cur_node.x="<<cur_node.x<<" "<<"cur_node.y="<<cur_node.y<<" "<<"cur_node.z="<<cur_node.z;
+                int ii;
+                ImageMarker *p_marker=0; bool b_exist_marker=false;
+                for (ii=0;ii<listMarker.size();ii++)
+                {
+                    p_marker = (ImageMarker *)(&(listMarker.at(ii)));
+                    qDebug()<<ii<<" "<<p_marker->x<<" "<<p_marker->y<<" "<<p_marker->z;
+                    if (cur_node.x==p_marker->x && cur_node.y==p_marker->y && cur_node.z==p_marker->z)
+                    {
+                        b_exist_marker=true;
+                        break;
+                    }
+                }
+                if (b_exist_marker) {qDebug("you select an existing marker [%d], - do nothing.", ii+1);}
+                else
+                {
+                    XYZ loc(cur_node.x, cur_node.y, cur_node.z);
+                    addMarker(loc);
+                }
+            }
+            My4DImage* curImg = 0;
+            if(w) curImg = v3dr_getImage4d(_idep);
+            curImg->proj_trace_history_append();
+        }
+    }
+}
+
+void Renderer_gl1::callGDTracing()
+{
+    if(editinput == 3)
+        deleteMultiNeuronsByStrokeCommit();
+
+    selectMode = smCurveCreate_MarkerCreate1_fm;
+    b_addthiscurve = true;
+    cntCur3DCurveMarkers=0; //reset
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)
+    {
+        editinput = 8;
         oldCursor = QCursor(Qt::ArrowCursor);
         w->setCursor(QCursor(Qt::PointingHandCursor));
     }

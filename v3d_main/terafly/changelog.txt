@@ -11,7 +11,27 @@ ties names are:
 - Rem: a feature no longer available
 
 ============================================================================================
-TeraFly version 2.5.7
+TeraFly version 2.5.11
+June 16th, 2018
+--------------------------------------------------------------------------------------------
+- New: added 'Freeze' mode in Virtual Pyramid pane. If enabled, no new data will be loaded
+       from the highest res image.
+- New: added 'Enable caching/saving' option in Virtual Pyramid pane. This replaces the prev-
+       ious 'Convert/Save/Cache' menu option.
+--------------------------------------------------------------------------------------------
+
+
+TeraFly version 2.5.10
+June 14th, 2018
+--------------------------------------------------------------------------------------------
+- New: added 'Convert/Save/Cache the highest res' option of 'Options->Virtual Pyramid' menu
+- Fix: fixed incorrect average refill time displayed in the Virtual Pyramid GUI
+- Fix: fixed upscaling issues for scalings different than 2
+- Fix: fixed incorrect number of refills to reach a minimum exploration coverage
+--------------------------------------------------------------------------------------------
+
+
+TeraFly version 2.5.8
 October 13th, 2017
 --------------------------------------------------------------------------------------------
 - New: added average refill time to Virtual Pyramid tab

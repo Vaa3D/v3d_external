@@ -92,11 +92,12 @@ public:
                       smCurveEditExtendTwoNode, //Extends both the starting point and end point of the node by ZMS 20151205
                       smCurveEditExtend, //Finds the closest curve and extend it. By ZMS 20151106
 
-					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons, smSimpleConnect,//MK
+					  smConnectNeurons, smConnectPointCloud, smConnectMarker, smCutNeurons, smSimpleConnect, smSimpleConnectLoopSafe, smShowSubtree,//MK
 
         smMarkerCreate1Curve, //use curve definition to generate a marker accuractly. by PHC 20121011
+        smCurveCreate_MarkerCreate1_fm, smCurveCreate_MarkerCreate1,//by ZZ 09202018
 					};
-	enum editMode {segmentEdit, pointCloudEdit, markerEdit}; // MK, for different segment connecting mode.
+	enum editMode {connectEdit_none, segmentEdit, segmentEditLoopSafe, pointCloudEdit, markerEdit, loopEdit}; // MK, for different segment connecting mode.
 	enum UI3dViewMode {Vaa3d, Terafly, Mozak};     //20170804 RZC: diffrent code path in Renderer_gl1::addCurveSWC()
 //protected:
 	RenderMode renderMode;
@@ -246,8 +247,12 @@ public:
     virtual void callStrokeDeleteMultiNeurons() {};//  multiple segments deleting shortcut
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
+	virtual void callShowSubtree() {};
+	virtual void callShowConnectedSegs() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
+    virtual void callCreateMarkerNearestNode(int x, int y) {};
+    virtual void callGDTracing() {};
 
     virtual void toggleEditMode()       {};
     virtual void setEditMode()       {};
@@ -298,7 +303,10 @@ public:
 	float sampleScale[5];
 	V3DLONG bufSize[5]; //(x,y,z,c,t) 090731: add time dim
 
-     XYZ curveStartMarker; // ZJL
+    XYZ curveStartMarker; // ZJL
+    int neuronColorMode;
+    int dispConfLevel;
+
 
 private:
 	void init_members()
@@ -393,7 +401,8 @@ private:
 
         ui3dviewMode = Vaa3d;
         editinput=0;
-
+        neuronColorMode=0;
+        dispConfLevel=INT_MAX;
 	}
 
 };

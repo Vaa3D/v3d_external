@@ -77,13 +77,17 @@ inline double distL2square(const V_NeuronSWC_coord & a, const V_NeuronSWC_coord 
 			(a.z-b.z)*(a.z-b.z) );
 }
 
-struct V_BranchUnit
+struct V_BranchUnit // for ranking segment hierarchy, used in loop detection
 {
 	V_BranchUnit() { isBranch = false; x = 0; y = 0; z = 0; paID = 0; hierarchy = 0; }
 	bool isBranch;
 	float x, y, z;
 	int ID, paID;
 	int hierarchy;
+	vector<int> childIDs;
+
+	int segLoc, segPaLoc;
+	vector<int> childSegLocs;
 };
 
 struct V_NeuronSWC_unit
@@ -93,7 +97,8 @@ struct V_NeuronSWC_unit
 		struct {
 			double n, type, x, y, z, r, parent,
 			nchild,
-			seg_id, nodeinseg_id;
+            seg_id, nodeinseg_id,
+            level;
 		};
 	};
         V_NeuronSWC_unit() {for (V3DLONG i=0;i<V3DLONG(sizeof(data)/sizeof(double));i++) data[i]=0; r=0.5;}
@@ -103,8 +108,6 @@ struct V_NeuronSWC_unit
 	void set(double x1, double y1, double z1, double r1, double p1) {x=x1; y=y1;z=z1;r=r1;parent=p1;}
 	void set(double x1, double y1, double z1, double r1) {x=x1; y=y1;z=z1;r=r1;}
 	void set(double x1, double y1, double z1) {x=x1; y=y1;z=z1;}
-
-	V_BranchUnit branchingProfile;
 };
 
 inline double distL2square(const V_NeuronSWC_unit & a, const V_NeuronSWC_unit & b)
@@ -153,6 +156,8 @@ struct V_NeuronSWC
         to_be_broken = false;
 		on = true;
 	}
+
+	V_BranchUnit branchingProfile;
 
 	void printInfo();
 
@@ -267,6 +272,7 @@ V_NeuronSWC join_V_NeuronSWC_vec(vector <V_NeuronSWC> & in_swc_vec);
 bool reverse_V_NeuronSWC_inplace(V_NeuronSWC & in_swc);
 bool change_type_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, int type);
 bool change_radius_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, double radius);
+bool change_level_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, int level);
 
 V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list);
 bool delete_seg_in_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id); //delete a seg in the V_NeuronSWC_list

@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
-
+//#include "../terafly/src/control/CImport.h"
 #include "v3d_application.h"
 
 #endif //test_main_cpp
@@ -219,8 +219,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
 
-			*actNeuronConnect=0, *actPointCloudConnect=0, *actMarkerConnect=0, *actNeuronCut=0, // MK, 2017 April
-			*simpleConnect=0 // MK, 2018, April
+			*actNeuronConnect = 0, *actPointCloudConnect = 0, *actMarkerConnect = 0, *actNeuronCut = 0, // MK, 2017 April
+			*simpleConnect = 0, *simpleConnect_loopSafe = 0 // MK, 2018, April
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -451,6 +451,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 						// MK, 2017 April, 2018 April
 						listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
 						listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
+						listAct.append(simpleConnect_loopSafe = new QAction("SWC simple connecting with loop detection (only 2 segments at a time)", w));
 
 						// MK, 2017 June
 						listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -723,6 +724,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				// MK, 2017 April, 2018 April
 				listAct.append(simpleConnect = new QAction("SWC simple connecting (only 2 segments at a time)", w));
 				listAct.append(actNeuronConnect = new QAction("connect segments with one stroke (auto smoothing)", w));
+				listAct.append(simpleConnect_loopSafe = new QAction("SWC simple connecting with loop detection (only 2 segments at a time)", w));
 
 				// MK, 2017 June
 				listAct.append(actNeuronCut = new QAction("cut neurons with one stroke", w));
@@ -870,7 +872,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 				break;
 		}
-	}
+        curImg->proj_trace_history_append();
+    }
 #ifndef test_main_cpp    //140211
 	else if (act == actSaveSurfaceObj)
 	{
@@ -1589,7 +1592,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     b_editDroppedNeuron = true;
                 }
 
-                curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+				curImg->tracedNeuron = copyToEditableNeuron(p_tree);
                 curImg->tracedNeuron.name = "vaa3d_traced_neuron";
                 curImg->tracedNeuron.file = "vaa3d_traced_neuron";
                 listNeuronTree.clear();
@@ -1820,6 +1823,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			selectMode = smSimpleConnect;
 			b_addthiscurve = false;
 			if (w) { editinput = 6; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
+	}
+	else if (act == simpleConnect_loopSafe)
+	{
+		if (NEURON_CONDITION)
+		{
+			selectMode = smSimpleConnectLoopSafe;
+			b_addthiscurve = false;
+			if (w) { editinput = 9; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		}
 	}
 	/*************************************************/
@@ -2138,10 +2150,37 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #define __interaction__
 void Renderer_gl1::endSelectMode()
 {
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	if (selectMode == smShowSubtree) // This part is needed for restoring neuron color yet staying in the highlighting mode.
+	{                                // -- MK, June, 2018
+		if (this->pressedShowSubTree == true)
+		{
+			My4DImage* curImg = 0;
+			if (w) curImg = v3dr_getImage4d(_idep);
+			//cout << "restoring" << endl;
+
+			if (this->originalSegMap.empty()) return;
+
+            for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
+				curImg->tracedNeuron.seg[it->first].row = it->second;
+
+			curImg->update_3drenderer_neuron_view(w, this);
+			curImg->proj_trace_history_append();
+
+			this->pressedShowSubTree = false;
+			this->connectEdit = connectEdit_none;
+
+			this->originalSegMap.clear();
+			this->highlightedSegMap.clear();
+
+			return;
+		}
+	}
+
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ)
+    if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ || selectMode == smCurveCreate_MarkerCreate1)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -2150,16 +2189,22 @@ void Renderer_gl1::endSelectMode()
 		}
 	}
 
-#ifndef test_main_cpp    //140211
-    if (selectMode == smCurveCreate_pointclick_fm)
+//#ifndef test_main_cpp    //140211
+    if (selectMode == smCurveCreate_pointclick_fm || selectMode == smCurveCreate_MarkerCreate1_fm)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
 			qDebug("\t %i markers to solve Curve", cntCur3DCurveMarkers);
 			solveCurveFromMarkersFastMarching(); //////////
+            if(selectMode == smCurveCreate_MarkerCreate1_fm)
+            {
+                b_addthiscurve = true;
+                cntCur3DCurveMarkers=0; //reset
+                return;
+            }
 		}
 	}
-#endif
+//#endif
 
     // @ADDED by Alessandro on 2015-05-23. Called when the operation is finalized (i.e. "Esc" key is pressed) and
     // neuron segments have to be deleted also from the underlying tracedNeuron structure (and not only from the display)
@@ -2210,7 +2255,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
-		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect)
+		selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect || selectMode == smSimpleConnectLoopSafe ||
+		selectMode == smShowSubtree)
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2276,6 +2322,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			else if (selectMode == smConnectPointCloud) connectPointCloudByStroke();
 			else if (selectMode == smConnectMarker) connectMarkerByStroke();
 			else if (selectMode == smSimpleConnect) simpleConnect();
+			else if (selectMode == smSimpleConnectLoopSafe) simpleConnect();
+			else if (selectMode == smShowSubtree)
+			{
+				if (editinput == 10) showSubtree();
+				else if (editinput == 11) showConnectedSegs();
+			}
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
@@ -2293,7 +2345,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
 			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest ||
              selectMode == smMarkerCreate1Curve || selectMode == smCurveEditExtend || //by PHC 20121011
-            selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode) //by ZMS 20151203
+            selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode ||
+            selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //by ZMS 20151203
 	{
 		_appendMarkerPos(x,y);
 		if (b_move)
@@ -2357,14 +2410,15 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			}
 			else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox ||
                     selectMode == smMarkerCreate1Curve || //by PHC 20121011
-                    selectMode == smCurveEditExtendTwoNode || selectMode == smCurveEditExtendOneNode) //by ZMS 20151203
+                    selectMode == smCurveEditExtendTwoNode || selectMode == smCurveEditExtendOneNode ||
+                    selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //by ZMS 20151203
 			{
 				// using two marker lists for fast marching to get a curve
 				vector <XYZ> loc_vec_input;
 				vector <XYZ> loc_vec0;
 				loc_vec0.clear();
 				total_etime += solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-                if (selectMode == smMarkerCreate1Curve) //PHC 20121011
+                if (selectMode == smMarkerCreate1Curve || selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //PHC 20121011
                 {
                     XYZ & loc = loc_vec0.at(0);
                                         if (dataViewProcBox.isInner(loc, 0.5)) //keep this for now? PHC 121011. 100725 RZC
@@ -2372,6 +2426,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     if (1)
                     {
                         addMarker(loc);
+                        cntCur3DCurveMarkers++;
                     }
                 }
                 if(selectMode == smCurveFrom1Marker_fm) //by PHC 20121011
@@ -3479,6 +3534,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 					for (int i=0;i<N;i++)
 						loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
 				}
+
 			}
 		}
 	}
@@ -3535,9 +3591,7 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
-	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
-	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);
-	//qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 	if (w && curImg && curXWidget && loc_vec.size()>0)
 	{
 		double mx, Mx, my, My, mz, Mz;
@@ -3555,12 +3609,16 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			else if (curpos.z > Mz) Mz = curpos.z;
 		}
         qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
-		V3DLONG margin=5; //the default margin is small
-        if (loc_vec.size()==1) margin=61; //for marker then define a bigger margin
-        mx -= margin; Mx += margin; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
-        my -= margin; My += margin; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
-        mz -= margin; Mz += margin; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
-		//by PHC 101008
+        V3DLONG marginx,marginy,marginz; //the default margin is small
+        marginx=marginy=marginz=5;
+        if (loc_vec.size()==1)
+        {
+            marginx=marginy=marginz=61;
+        }
+        mx -= marginx; Mx += marginx; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
+        my -= marginy; My += marginy; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
+        mz -= marginz; Mz += marginz; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
+//        by PHC 101008
 		if (b_imaging && curXWidget)
 		{
 			b_imaging = false; //reset the status
@@ -3618,9 +3676,13 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			myimagingp.ze = Mz; //ending coordinates (in pixel space)
 			myimagingp.xrez = curImg->getRezX() / 2.0;
 			myimagingp.yrez = curImg->getRezY() / 2.0;
-			myimagingp.zrez = curImg->getRezZ() / 2.0;
+            myimagingp.zrez = curImg->getRezZ() / 2.0;
+            //qDebug("move to rexyz %f and %f and %f",myimagingp.xrez,myimagingp.yrez,myimagingp.zrez);
 			//do imaging
-            return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+			//bool v3d_imaging_return_value = v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+			//cout << "v3d_imaging_return_value:" << v3d_imaging_return_value << endl;
+			//return v3d_imaging_return_value;
+			return v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
 		else //b_imaging does not open 3D Viewer here
 		{
@@ -4028,22 +4090,23 @@ void Renderer_gl1::addMarker(XYZ &loc)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* image4d = v3dr_getImage4d(_idep);
 	MainWindow* V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
-	if (image4d)
+    if (image4d)
 	{
 		QList <LocationSimple> & listLoc = image4d->listLandmarks;
 		LocationSimple S;
-
         if (listLoc.size()>0)
         {
             S.inputProperty = listLoc.last().inputProperty;
             S.comments = listLoc.last().comments;
             S.category = listLoc.last().category;
             S.color = listLoc.last().color;
+            currentMarkerColor = listLoc.last().color;;
         }
         else
         {
             S.inputProperty = pxLocaUseful;
-            S.color = random_rgba8(255);
+            //S.color = random_rgba8(255);
+            S.color = currentMarkerColor;
         }
         S.x = pt.x;
 		S.y = pt.y;
@@ -4059,7 +4122,7 @@ void Renderer_gl1::addMarker(XYZ &loc)
 	memset(&S, 0, sizeof(S));
 	S.x = pt.x;
 	S.y = pt.y;
-	S.z = pt.z;
+    S.z = pt.z;
     if (listMarker.size()>0)
     {
         S.color = listMarker.last().color;
@@ -4947,11 +5010,11 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
     loopVisitDict.clear();
     segsInFirstVisitNode.push_back(violatingSegId); // The violating segment will always be highlighted
     do {
-        qDebug() << "Pushed first " << firstVisitSegId;
+       // qDebug() << "Pushed first " << firstVisitSegId;
         segsInFirstVisitNode.push_back(firstVisitSegId);
         loopVisitDict.insert(firstVisitSegId, true);
         firstVisitSegId = segmentParentDict[firstVisitSegId];
-        qDebug() << "New firstVisitSegId: " << firstVisitSegId;
+      //  qDebug() << "New firstVisitSegId: " << firstVisitSegId;
     } while (segmentParentDict[firstVisitSegId] != firstVisitSegId &&
              !loopVisitDict.contains(firstVisitSegId));
 
@@ -5264,4 +5327,16 @@ bool Renderer_gl1::setColorAncestryInfo(){
 	*/
     //We're done.
     return true;
+}
+
+void Renderer_gl1::updateMarkerList(QList <ImageMarker> markers, int i)
+{
+    listMarker[i] = markers[i];
+
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d)
+    {
+        LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks[i]));
+        s->color = listMarker[i].color;
+    }
 }

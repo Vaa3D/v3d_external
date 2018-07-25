@@ -42,13 +42,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <sstream>
 #include <string>
 
-//<<<<<<< HEAD
 Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
 
 using namespace std;
-
-//>>>>>>> master
-////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(void* widget)
 	: widget(widget)
@@ -659,12 +655,22 @@ void Renderer::drawEditInfo()
         switch (editinput)
         {
         case 1:  editdisplay = "Drawing BBox";break;
-        case 2:  editdisplay = "Retyping";break;
+        case 2:
+            if(neuronColorMode==0)
+                editdisplay = "Retyping";
+            else if (neuronColorMode==5)
+                editdisplay = "Confidence Level";
+            break;
         case 3:  editdisplay = "Deleting";break;
         case 4:  editdisplay = "Splitting";break;
         case 5:  editdisplay = "Drawing Global";break;
         case 6:  editdisplay = "Connecting";break;
         case 7:  editdisplay = "Defining Polyline";break;
+        case 8:  editdisplay = "GD Tracing";break;
+		case 9:  editdisplay = "Connecting (Loop Safe)"; break;
+		case 10: editdisplay = "Highlight Subtree"; break;
+		case 11: editdisplay = "Highlight Connected Segments"; break;
+
         }
 
         sprintf(str, "%s", editdisplay.c_str());

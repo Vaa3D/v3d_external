@@ -63,6 +63,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 ////////////////////////////////////////////////////////////////////
 //<<<<<<< HEAD
 
+#define default_radius_gd 0.815  //assign a radius value to gd tracing using shortcut "G" by ZZ 06042018
+
+
 // this is a no-no?  neuron_type_color is a global here...
 
 //>>>>>>> 80abd961fbb56aa528c1d7e054dd32ceef38d966
@@ -1645,7 +1648,10 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
         //// Vaa3d || Terafly
         else
         {
-            curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
+            if(selectMode == smCurveCreate_MarkerCreate1_fm)
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd);
+            else
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
@@ -1702,7 +1708,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 #ifndef test_main_cpp
 void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 {
-	qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
+    qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
 //	PROGRESS_DIALOG("Updating Neuron structure", widget);
 //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 	QList <NeuronSWC> listNeuron;
@@ -1726,12 +1732,14 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			//for hit & editing
 			S.seg_id       = seg.row.at(k).seg_id;
 			S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
+
+            S.level = seg.row.at(k).level;
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			//if (! listNeuron.contains(S)) // 081024
 			{
 				listNeuron.append(S);
 				hashNeuron.insert(S.n, listNeuron.size()-1);
-			}
+            }
 		}
 		qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
 		if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
@@ -1899,7 +1907,8 @@ void Renderer_gl1::setEditMode()
             }
 
             curImg->tracedNeuron = copyToEditableNeuron(p_tree);
-            curImg->tracedNeuron.name = "vaa3d_traced_neuron";
+
+			curImg->tracedNeuron.name = "vaa3d_traced_neuron";
             curImg->tracedNeuron.file = "vaa3d_traced_neuron";
             listNeuronTree.clear();
             curImg->proj_trace_history_append();
@@ -1956,12 +1965,12 @@ void Renderer_gl1::setNeuronColor(NeuronSWC s, time_t seconds){
 	switch (neuronColorMode){
 case 0:	break;
 case 1:
-	glColor3ub(255, 255, 0);
-	setColorByAncestry(s, seconds);
-	if (childHighlightMode && !childSegs.contains( s.seg_id)) {
-		glColor3ub(128,128,128);
-	}
-	break;
+    glColor3ub(255, 255, 0);
+    setColorByAncestry(s, seconds);
+    if (childHighlightMode && !childSegs.contains( s.seg_id)) {
+       glColor3ub(128,128,128);
+    }
+    break;
 case 2:
 	glColor3ub(255, 255, 0);
 	setNeuronReviewColors(s);
@@ -1982,20 +1991,38 @@ case 4:
 	if (segmentParentDict.value(s.seg_id)==-1){
 	glColor3ub(240,230,10);
 	}
+case 5:
+    setConfidenceLevelColors(s);
+    break;
 }
 }
 	
-
-
-
 void Renderer_gl1::setBasicNeuronColors(NeuronSWC s){
 	if (s.type>9) return;
-	GLubyte rVal = neuron_type_color[s.type][0];
-	GLubyte gVal = neuron_type_color[s.type][1];
-	GLubyte bVal = neuron_type_color[s.type][2];
+    GLubyte rVal = neuron_type_color[s.type][0];
+    GLubyte gVal = neuron_type_color[s.type][1];
+    GLubyte bVal = neuron_type_color[s.type][2];
 
 	glColor3ub(rVal, gVal, bVal);
 	}
+
+void Renderer_gl1::setConfidenceLevelColors(NeuronSWC s)
+{
+    GLubyte rVal, gVal, bVal;
+    if(s.level<=275)
+    {
+        rVal = neuron_type_color[s.level][0];
+        gVal = neuron_type_color[s.level][1];
+        bVal = neuron_type_color[s.level][2];
+    }else
+    {
+        rVal = neuron_type_color[275][0];
+        gVal = neuron_type_color[275][1];
+        bVal = neuron_type_color[275][2];
+    }
+
+    glColor3ub(rVal, gVal, bVal);
+}
 
 
 void Renderer_gl1::setNeuronReviewColors(NeuronSWC s){
@@ -2370,8 +2397,10 @@ void Renderer_gl1::drawNeuronTree(int index)
 //	glEnd(); ////////////////////////////
 	for (int i=0; i<listNeuron.size(); i++)
 	{
-		S1 = listNeuron.at(i);   // at(i) faster than [i]
+        S1 = listNeuron.at(i);   // at(i) faster than [i]
 		//if (S1.pn <1)	continue; 	// skip the first point
+        if(S1.level>dispConfLevel) continue;
+
 		bool valid = false;
 		if (S1.pn == -1) // root end, 081105
 		{
@@ -2467,6 +2496,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				glMultMatrixf(&m[0][0]);
                 if (length > 0)
 				{
+                    setNeuronColor(S1, seconds);
                     //v3d_msg(QString("").setNum(i).prepend("swc node = "), 0);
                     glPushMatrix();
 					//					float s,a,b,c;

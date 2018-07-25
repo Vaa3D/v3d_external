@@ -181,21 +181,21 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
 		V3DLONG min_ind = row[0].n;
 		for (j=1;j<row.size();j++)
 		{
-			if (row[j].n < min_ind)  min_ind = row[j].n;
+            if (row[j].n < min_ind)  min_ind = row[j].n;
 			if (min_ind<0) v3d_msg("Found illeagal neuron node index which is less than 0 in merge_V_NeuronSWC_list()!");
 		}
 		//qDebug()<<min_ind;
 
 		// segment id & color type
 		int seg_id = k;
-
+		
 		//now merge
 		V3DLONG n0=n;
 		for (j=0;j<row.size();j++)
 		{
             v.seg_id = seg_id;
             v.nodeinseg_id = j;
-
+            v.level = row[j].level;
 			v.n = (n0+1) + row[j].n-min_ind;
 			for (i=1;i<=5;i++)	v.data[i] = row[j].data[i];
 			v.parent = (row[j].parent<0)? -1 : ((n0+1) + row[j].parent-min_ind); //change row[j].parent<=0 to row[j].parent<0, PHC 091123.
@@ -449,7 +449,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 			if ((nodelink.nlink ==1 && nodelink.in_link.size()==0) // tip point (include single point)
 			 || (nodelink.nlink >2 && nodelink.out_link.size() >0) // out-branch point
-			 || (nodelink.nlink ==2 && nodelink.in_link.size()==0)) // pure-out point
+			 || (nodelink.nlink ==2 && nodelink.in_link.size()==0)) // pure-out point (root)
 			{
 				istart = i;
 				if (0)
@@ -476,7 +476,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		new_seg.clear();
 		//qDebug("decompose_V_NeuronSWC_segs: segment from node #%d", j);
 
-		V3DLONG inext = istart;
+		V3DLONG inext = istart; // critical node
 		for (V3DLONG n=1; inext>=0; n++)
 		{
 			V_NeuronSWC_unit & cur_node = in_swc.row[inext];
@@ -485,21 +485,22 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 			V_NeuronSWC_unit new_node = cur_node;
 			new_node.n = n;
-			new_node.parent = n+1; // link order as original order
-			new_seg.row.push_back(new_node);
+			new_node.parent = n+1; // link order as original order ==> this is why in V_NeuronSWC the order is reversed
+			new_seg.row.push_back(new_node); // This is where all those critical nodes duplicate.
 
 			if(cur_node.parent <0)    // root point ////////////////////////////
 			{
 				++rootCount;
 				++branchID;
-				(new_seg.row.end() - 1)->branchingProfile.isBranch = true;
-				(new_seg.row.end() - 1)->branchingProfile.paID = -1;
-				(new_seg.row.end() - 1)->branchingProfile.ID = branchID;
-				(new_seg.row.end() - 1)->branchingProfile.hierarchy = 1;
-				(new_seg.row.end() - 1)->branchingProfile.x = cur_node.x;
-				(new_seg.row.end() - 1)->branchingProfile.y = cur_node.y;
-				(new_seg.row.end() - 1)->branchingProfile.z = cur_node.z;
-				new_seg.row.begin()->branchingProfile.isBranch = true;
+				new_seg.branchingProfile.isBranch = true;
+				new_seg.branchingProfile.paID = -1;
+				new_seg.branchingProfile.ID = branchID;
+				new_seg.branchingProfile.hierarchy = 1;
+				new_seg.branchingProfile.x = cur_node.x;
+				new_seg.branchingProfile.y = cur_node.y;
+				new_seg.branchingProfile.z = cur_node.z;
+				new_seg.branchingProfile.isBranch = true;
+				
 				//qDebug("decompose_V_NeuronSWC_segs: segment end at root #%d", V3DLONG(cur_node.n));
 				cur_node.nchild --;
 				break; //over, a simple segment
@@ -508,12 +509,12 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			{
 				++branchCount;
 				++branchID;
-				(new_seg.row.end() - 1)->branchingProfile.isBranch = true;
-				(new_seg.row.end() - 1)->branchingProfile.x = cur_node.x;
-				(new_seg.row.end() - 1)->branchingProfile.y = cur_node.y;
-				(new_seg.row.end() - 1)->branchingProfile.z = cur_node.z;
-				(new_seg.row.end() - 1)->branchingProfile.ID = branchID;
-				new_seg.row.begin()->branchingProfile.isBranch = true;
+				new_seg.branchingProfile.isBranch = true;
+				new_seg.branchingProfile.x = cur_node.x;
+				new_seg.branchingProfile.y = cur_node.y;
+				new_seg.branchingProfile.z = cur_node.z;
+				new_seg.branchingProfile.ID = branchID;
+				new_seg.branchingProfile.isBranch = true;
 
 				//qDebug("decompose_V_NeuronSWC_segs: segment end at branch #%d", V3DLONG(cur_node.n));
 				cur_node.nchild --;
@@ -536,18 +537,6 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 		if (new_seg.row.size()>0)//>=2)//? single point
 		{
-			int curBrID = (new_seg.row.end() - 1)->branchingProfile.ID;
-			int curBrHi = (new_seg.row.end() - 1)->branchingProfile.hierarchy;
-			new_seg.row.begin()->branchingProfile.x = new_seg.row.begin()->x;
-			new_seg.row.begin()->branchingProfile.y = new_seg.row.begin()->y;
-			new_seg.row.begin()->branchingProfile.z = new_seg.row.begin()->z;
-			for (vector<V_NeuronSWC_unit>::iterator it = new_seg.row.begin(); it != new_seg.row.end(); ++it) 
-			{
-				it->branchingProfile.ID = curBrID;
-				it->branchingProfile.hierarchy = curBrHi;
-				//cout << it->branchingProfile.ID << " " << it->branchingProfile.hierarchy << endl;
-			}
-			//cout << endl;
 			new_seg.row[new_seg.row.size()-1].parent = -1; // set segment end
 			char buf[10];
 			new_seg.name = sprintf(buf,"%d", out_swc_segs.size()+1);
@@ -566,34 +555,32 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		{
 			for (vector<V_NeuronSWC>::iterator outSegIt = out_swc_segs.begin(); outSegIt != out_swc_segs.end(); ++outSegIt)
 			{
-				if ((outSegIt->row.end() - 1)->branchingProfile.hierarchy == curHi)
+				if (outSegIt->branchingProfile.hierarchy == curHi)
 				{
 					++hiCount;
 					int paHi = curHi;
-					int paID = outSegIt->row.begin()->branchingProfile.ID;
+					int paID = outSegIt->branchingProfile.ID;
 					float chkX = outSegIt->row.begin()->x;
 					float chkY = outSegIt->row.begin()->y;
 					float chkZ = outSegIt->row.begin()->z;
 					for (vector<V_NeuronSWC>::iterator outSegIt2 = out_swc_segs.begin(); outSegIt2 != out_swc_segs.end(); ++outSegIt2)
 					{
-						if ((outSegIt2->row.end() - 1)->branchingProfile.x == chkX && (outSegIt2->row.end() - 1)->branchingProfile.y == chkY && (outSegIt2->row.end() - 1)->branchingProfile.z == chkZ)
+						if (outSegIt2->branchingProfile.x == chkX && outSegIt2->branchingProfile.y == chkY && outSegIt2->branchingProfile.z == chkZ)
 						{
-							for (vector<V_NeuronSWC_unit>::iterator brIt = outSegIt2->row.begin(); brIt != outSegIt2->row.end(); ++brIt)
-							{
-								brIt->branchingProfile.paID = paID;
-								brIt->branchingProfile.hierarchy = paHi + 1;
-							}
+							outSegIt2->branchingProfile.paID = paID;
+							outSegIt2->branchingProfile.hierarchy = paHi + 1;
+
+							outSegIt->branchingProfile.childIDs.push_back(outSegIt2->branchingProfile.ID);
 						}
 					}
 				}
 			}
 			//cout << "hierarchy " << curHi << ": " << hiCount << endl;
-			hiCount = 0;
 			++curHi;
 
 			for (vector<V_NeuronSWC>::iterator chkIt = out_swc_segs.begin(); chkIt != out_swc_segs.end(); ++chkIt)
 			{
-				if (chkIt->row.begin()->branchingProfile.hierarchy == 0)
+				if (chkIt->branchingProfile.hierarchy == 0)
 				{
 					allHiAssigned = false;
 					break;
@@ -603,9 +590,14 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		}
 	}
 
-	//for (vector<V_NeuronSWC>::iterator it = out_swc_segs.begin(); it != out_swc_segs.end(); ++it)
+	/*size_t nodeCount = 0;
+	for (vector<V_NeuronSWC>::iterator it = out_swc_segs.begin(); it != out_swc_segs.end(); ++it)
+	{
+		nodeCount = nodeCount + it->row.size();
 		//cout << it->row.begin()->branchingProfile.ID << " " << it->row.begin()->branchingProfile.paID << " " << it->row.begin()->branchingProfile.hierarchy << " size: " << it->row.size() << endl;
-	
+	}
+	cout << "Total node number after decompose: " << nodeCount << endl;*/
+
 	return out_swc_segs;
 }
 
@@ -819,6 +811,18 @@ bool change_type_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG
         row[j].type = type;
 	}
 	return true;
+}
+
+bool change_level_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, int level)
+{
+    if (seg_id<0 || seg_id>= swc_list.seg.size())	return false;
+
+    vector <V_NeuronSWC_unit> & row = (swc_list.seg[seg_id].row);
+    for (V3DLONG j=0;j<row.size();j++)
+    {
+        row[j].level = level;
+    }
+    return true;
 }
 
 bool change_radius_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, double radius)

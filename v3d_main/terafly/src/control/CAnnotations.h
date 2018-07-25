@@ -23,7 +23,7 @@ struct terafly::annotation
     void* container;                //address of the container object
     int vaa3d_n;                    //Vaa3D's swc/apo index
     bool smart_delete;              // = true by default, enables "smart" deletion (see decontructor code)
-
+    long level;
     // constructor and deconstructor
     annotation() throw (tf::RuntimeException);
     annotation(const CellAPO & c)

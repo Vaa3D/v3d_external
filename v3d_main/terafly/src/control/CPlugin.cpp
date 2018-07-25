@@ -49,7 +49,7 @@ namespace terafly
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.5.9";          // software version
+    std::string version = "2.5.11";          // software version
     int DEBUG = LEV_MAX;                    // debug level
     debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
     std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
@@ -487,3 +487,18 @@ void tf::PluginInterface::releaseOpenedVolumes()
 }
 
 
+bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
+{
+    try
+    {
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // set image based on global x, y, z
+        CViewer::getCurrent()->setImage(x,y,z);
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+}

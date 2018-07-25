@@ -232,13 +232,13 @@ throw (tf::RuntimeException)
 ***********************************************************************************/
 void
     CImageUtils::upscaleVOI(
-        tf::uint8 const * src,		 //pointer to const data source
-        uint src_dims[5],           //dimensions of "src" along X, Y, Z, channels and T
-        uint src_offset[5],         //VOI's offset along X, Y, Z, <empty> and T
-        uint src_count[5],          //VOI's dimensions along X, Y, Z, <empty> and T
-        tf::uint8* dst,				//pointer to data destination
-        uint dst_dims[5],           //dimensions of "dst" along X, Y, Z, channels and T
-        uint dst_offset[5],         //offset of "dst" along X, Y, Z, <empty> and T
+        tf::uint8 const * src,		// pointer to const data source
+        uint src_dims[5],           // dimensions of "src" along X, Y, Z, channels and T
+        uint src_offset[5],         // VOI's offset along X, Y, Z, <empty> and T
+        uint src_count[5],          // VOI's dimensions along X, Y, Z, <empty> and T
+        tf::uint8* dst,				// pointer to data destination
+        uint dst_dims[5],           // dimensions of "dst" along X, Y, Z, channels and T
+        uint dst_offset[5],         // offset of "dst" along X, Y, Z, <empty> and T
          tf::xyz<int> scaling)		// upscaling factors along X,Y,Z (positive integers only)
 throw (RuntimeException)
 {
@@ -252,7 +252,7 @@ throw (RuntimeException)
 
 	// check scaling
 	if(scaling.x <= 0 || scaling.y <= 0 || scaling.z <= 0)
-		throw tf::RuntimeException(tf::strprintf("Can't downscale VOI to destination image: invalid scaling (%d,%d,%d)", scaling.x, scaling.y, scaling.z).c_str());
+        throw tf::RuntimeException(tf::strprintf("Can't upscale VOI to destination image: invalid scaling (%d,%d,%d)", scaling.x, scaling.y, scaling.z).c_str());
 
     // check preconditions
     if(src_dims[3] != dst_dims[3])
@@ -268,7 +268,7 @@ throw (RuntimeException)
             src_count[d] = (dst_dims[d] - dst_offset[d]) / scaling[d]; //it's ok to approximate this calculation to the floor.
 
 
-            tf::warning(strprintf("--------------------- teramanager plugin [thread *] !! WARNING in copyVOI !! VOI exceeded destination dimension along axis %d, then cutting VOI from %d to %d\n",
+            tf::warning(strprintf("VOI exceeded destination dimension along axis %d, then cutting VOI from %d to %d\n",
                    d, old, src_count[d]).c_str());
         }
     }

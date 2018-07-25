@@ -145,6 +145,8 @@ public:
     // Be sure to set to 'true' by default when you subclass (or, simplier, just call the base-constructor).
     bool show_progress_bar;
 
+	QProgressBar* progressBarPtr; 
+
 	int currentPluginState;                              // May 29, 2012 by Hang
 	map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
 
@@ -312,6 +314,8 @@ public slots:
 	virtual void setXCutLock(bool);
 	virtual void setYCutLock(bool);
 	virtual void setZCutLock(bool);
+    virtual void setConfCut(int s);
+    virtual void confidenceDialog();
 
 	virtual void enableShowAxes(bool b);
     virtual void enableShowBoundingBox(bool b);
@@ -352,10 +356,10 @@ public slots:
 
     //
 
-     virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+    virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
     virtual void callCurveLineDetector(int option); // for quick curve line structure detection, by PHC, 20170531
     virtual void callLoadNewStack(); // for loading new stack, by ZZ, 02012018
-
+    virtual void callAutoTracers(); // for calling different auto tracers in terafly, by ZZ, 05142018
 
      virtual void setDragWinSize(int csize); // ZJL 110927
 
@@ -382,11 +386,16 @@ public slots:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments splitting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
+	virtual void callShowSubtree();
+	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
+    virtual void callCreateMarkerNearestNode();
+    virtual void callGDTracing();
 
     virtual void toggleEditMode();
     virtual void setEditMode();
+    virtual void updateColorMode(int mode);
 
 
 //----------------------------------------------------------------------------------------
@@ -449,6 +458,7 @@ signals:
 	void changeYClip1(int s);
     void changeZClip0(int s);
 	void changeZClip1(int s);
+    void changeConfCut(int s);
 
 	void changeOrthoView(bool b);
         void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
@@ -457,6 +467,9 @@ signals:
         void neuronIndexChanged(int index);
         void neuronClearAllSelections();
 		void signalCallTerafly(int nDirect);
+
+public slots:
+	void subtreeHighlightModeMonitor();
 
 public:
 	bool _still, _stillpaint_need, _stillpaint_pending;
@@ -496,6 +509,7 @@ public:
     RGBA8 backgroundColor; // record current non-black backgroundColor
 
 	int _volumeTimePoint; float volumeTimPoint_fraction;
+    int neuronColorMode;
 
 	void init_members()
 	{
@@ -533,6 +547,8 @@ public:
 
 		_volumeTimePoint=0;
 		volumeTimPoint_fraction=0;
+
+        neuronColorMode=0;
 #ifdef __ALLOW_VR_FUNCS__
 		VRClientON=false;
 		myvrwin = 0;

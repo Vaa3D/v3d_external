@@ -81,9 +81,13 @@ class terafly::CViewer : public QWidget
         QUndoStack undoStack;           //stack containing undo command actions
         int slidingViewerBlockID;
         bool forceZoomIn;
+        bool insituZoomOut;
         int anoV0, anoV1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along V (annotation VOI != VOI)
         int anoH0, anoH1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along H (annotation VOI != VOI)
         int anoD0, anoD1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along D (annotation VOI != VOI)
+        int insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res;
+        int insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz;
+        bool isTranslate;
 
         //CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
@@ -161,6 +165,8 @@ class terafly::CViewer : public QWidget
         bool eventFilter(QObject *object, QEvent *event);
 		NeuronTree treeGlobalCoords;    // preserving global coordinates of SWC, MK, April, 2018
 		NeuronTree convertedTreeCoords; // local coordinates of SWC, used for computing the distance from the place where double-click happens, MK, April, 2018
+
+
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.
@@ -398,6 +404,13 @@ class terafly::CViewer : public QWidget
         ***********************************************************************************/
         void setZoom(int z);
 
+        // translate zoom out view at the same resolution
+        void translate();
+
+        void zoomOutMethodChanged(int value);
+
+        void inSituZoomOutTranslated();
+
     public:
 
         /**********************************************************************************
@@ -578,6 +591,9 @@ class terafly::CViewer : public QWidget
 
         // return Vaa3D image
         const Image4DSimple* getImage() throw (tf::RuntimeException);
+
+        void  setImage(int x, int y, int z) throw (tf::RuntimeException);
+
 };
 
 #endif // CEXPLORERWINDOW_H

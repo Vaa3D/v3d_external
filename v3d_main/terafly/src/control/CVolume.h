@@ -128,6 +128,9 @@ class terafly::CVolume : public QThread
             /**/tf::debug(tf::LEV1, strprintf("_voiResIndex = %d, _V0 = %d, _V1=%d, _H0 = %d, _H1=%d, _D0 = %d, _D1=%d, _T0 = %d, _T1=%d",
                                                 _voiResIndex, _V0, _V1, _H0, _H1, _D0, _D1, _T0, _T1).c_str(), __itm__current__function__);
 
+            printf("\nsetVoi: _voiResIndex = %d, _V0 = %d, _V1=%d, _H0 = %d, _H1=%d, _D0 = %d, _D1=%d, _T0 = %d, _T1=%d",
+                                                            _voiResIndex, _V0, _V1, _H0, _H1, _D0, _D1, _T0, _T1);
+
             source = _sourceObject;
             voiResIndex = _voiResIndex;
             iim::VirtualVolume* volume = CImport::instance()->getVolume(voiResIndex);
@@ -142,6 +145,9 @@ class terafly::CVolume : public QThread
             voiD1 = (_D1 <= volume->getDIM_D()) ? _D1 : volume->getDIM_D();
             voiT0 = (_T0 >=0)                   ? _T0 : 0;
             voiT1 = (_T1 <  volume->getDIM_T()) ? _T1 : volume->getDIM_T()-1;
+
+            qDebug()<<"testing bb ... "<<volume->getDIM_V()<<volume->getDIM_H()<<volume->getDIM_D();
+            qDebug()<<"testing voi ... "<<voiV1 - voiV0 << voiH1 - voiH0 << voiD1 - voiD0 << voiT1 - voiT0;
 
             //---- Alessandro 2013-09-03: added check to detect invalid VOI
             if(voiV1 - voiV0 <= 0 || voiH1 - voiH0 <= 0 || voiD1 - voiD0 <= 0 || voiT1 - voiT0 < 0)

@@ -91,6 +91,10 @@ RGBA8* Renderer_gl1::_safe3DBuf=0;
 Renderer_gl1::Renderer_gl1(void* widget)
 	: Renderer(widget)
 {
+	this->isTera = false; // added by MK, 2018 May, for arranging segments before entering Rnderer_gla::loopCheck
+	this->isLoadFromFile = false;
+	this->pressedShowSubTree = false;
+
 	qDebug("  Renderer_gl1::Renderer_gl1");
 	init_members();
 }
