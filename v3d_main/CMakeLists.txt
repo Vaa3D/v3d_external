@@ -33,7 +33,6 @@ include(CTest)
 find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" ON )
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version" FORCE)
 
 # Movie loading required libavcodec from ffmpeg
 # FFMpeg requires YASM
@@ -41,11 +40,6 @@ set(USE_FFMPEG OFF CACHE BOOL "Whether to load 3D volumes from movies using liba
 if(USE_FFMPEG)
     add_definitions(-DUSE_FFMPEG)
     set(USE_X265 OFF CACHE BOOL "Whether to build FFMeg with x265 codec")
-endif()
-
-set(HIGH_BIT_DEPTH OFF CACHE BOOL "Whether to build X265 with 16-bit pixel depth")
-if(HIGH_BIT_DEPTH)
-  add_definitions(-DHIGH_BIT_DEPTH)
 endif()
 
 # HDF5
@@ -137,83 +131,56 @@ if(USE_FFMPEG)
     set(extra_cflags "")
     set(extra_ldflags "")
     if(USE_X265)
-      set(bit_depth_flag "")
       set(X265_FLAGS "--enable-libx265")
-      if(HIGH_BIT_DEPTH)
-        set(bit_depth_flag "-DHIGH_BIT_DEPTH:BOOL=ON")
-      endif()
-      message("bit_depth_flag = ${bit_depth_flag}")
       ExternalProject_Add(
-          X265-1.7-extract
+          X265-2.7
           DEPENDS Yasm-1-2-0
-          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.7.tar.gz
+          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265-2.7.tar.gz
           SOURCE_DIR ${x265_dir}/src
           BINARY_DIR ${x265_dir}/build
           INSTALL_DIR ${x265_dir}/install
           UPDATE_COMMAND ""
-          BUILD_COMMAND ""
+          PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265.patch
           CONFIGURE_COMMAND ""
-          INSTALL_COMMAND ""
+          BUILD_COMMAND ""
       )
-      ExternalProject_Add(
-          X265-1.7
-          DEPENDS X265-1.7-extract
-          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.7.tar.gz
-          SOURCE_DIR ${x265_dir}/src/source
-          BINARY_DIR ${x265_dir}/build
-          INSTALL_DIR ${x265_dir}/install
-          CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF ${bit_depth_flag} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR} -DYASM_EXECUTABLE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm${CMAKE_EXECUTABLE_SUFFIX}
-          UPDATE_COMMAND ""
-          DOWNLOAD_COMMAND ""
+      ExternalProject_Add_Step(X265-2.7 multilib
+        DEPENDEES           build
+        COMMAND           <SOURCE_DIR>/build/linux/multilib.sh
+        WORKING_DIRECTORY <SOURCE_DIR>/build/linux
       )
+      ExternalProject_Add_StepTargets(X265-2.7 multilib)
+
     endif()
     if(APPLE)
-        # trying to avoid weird _posix_memalign link errors
-        set(AV_CONFIG_FLAGS --enable-memalign-hack)
         # Avoid ___sincos_stret link error on Mac
-        set(extra_cflags "-D__STDC_CONSTANT_MACROS -mmacosx-version-min=10.8")
+        set(extra_cflags "-D__STDC_CONSTANT_MACROS")
       	set(extra_ldflags "-Wl,-headerpad_max_install_names ")
     endif()
     set(extra_ldflags "")
-    set(FFMPEG_PATCH_FILE "ffmpeg-2.5.1.patch")
+    set(FFMPEG_PATCH_FILE "ffmpeg-4.0.patch")
     if(NOT WIN32)
       set(extra_libs "-lstdc++ -ldl")
     else()
       set(FFMPEG_PATCH_FILE "ffmpeg-2.5.4-windows.patch")
     endif()
 
-    set(PKG_CONFIG_PATH "${x265_dir}/install/lib/pkgconfig")
     ExternalProject_Add(
-        FFMPEG-2.8
-        DEPENDS Yasm-1-2-0 X265-1.7 PKG-CONFIG-0-28
-        # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
-        # Use the exact distribution I developed against
-        #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-2.8.tgz
+        FFMPEG-4.0
+        DEPENDS Yasm-1-2-0 X265-2.7 PKG-CONFIG-0-28
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-4.0.tgz
         SOURCE_DIR ${av_dir}/src
         BINARY_DIR ${av_dir}/build
         INSTALL_DIR ${av_dir}/install
         UPDATE_COMMAND ""
-        PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/${FFMPEG_PATCH_FILE}
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure
-            --prefix=<INSTALL_DIR>
-            --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
-            --pkg-config=${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install/bin/pkg-config
-            --pkg-config-flags=--static
-            --disable-vda
-            --disable-iconv
-            --disable-libxcb
-            --disable-outdev=sdl
-            --enable-shared
-            --enable-gpl
-            --enable-nonfree
-            --enable-version3
-            --enable-runtime-cpudetect
-            ${X265_FLAGS}
-            --extra-cflags=${extra_cflags}
-            --extra-ldflags=${extra_ldflags}
-            --extra-libs=${extra_libs}
-            ${AV_CONFIG_FLAGS}
+        #PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/${FFMPEG_PATCH_FILE}
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/build_ffmpeg.sh"
+                          --source_dir=<SOURCE_DIR> --install_dir=<INSTALL_DIR>
+                          --cmake_current_binary_dir=${CMAKE_CURRENT_BINARY_DIR}
+                          --x265_flags=${X265_FLAGS} --extra_cflags=${extra_cflags}
+                          --extra_ldflags=${extra_ldflags} --extra_libs=${extra_libs}
+                          --pkg_config_path=${x265_dir}/install/lib/pkgconfig
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
     set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
