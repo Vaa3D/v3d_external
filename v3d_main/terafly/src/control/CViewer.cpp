@@ -432,7 +432,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     T0_sbox_min = T0_sbox_val = T1_sbox_max = T1_sbox_val = -1;
     slidingViewerBlockID = _slidingViewerBlockID;
     forceZoomIn = false;
-    insituZoomOut = false; // test new zoom out approach
+    insituZoomOut = PMain::getInstance()->zoomOutMethod->currentIndex()==0?false:true;
     insituZoomOut_res = 0;
     insituZoomOut_x = 0;
     insituZoomOut_y = 0;
@@ -968,28 +968,22 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
 
-    if(insituZoomOut == false)
+    // check precondition #1: active window
+    if(!_isActive || toBeClosed)
     {
-        // check precondition #1: active window
-        if(!_isActive || toBeClosed)
-        {
-            QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
-            return;
-        }
+        QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
+        return;
     }
 
     // check precondition #2: valid resolution
     if(resolution >= CImport::instance()->getResolutions())
         resolution = volResIndex;
 
-    if(insituZoomOut == false)
+    // check precondition #3: window ready for "newView" events
+    if( !_isReady )
     {
-        // check precondition #3: window ready for "newView" events
-        if( !_isReady )
-        {
-            tf::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
-            return;
-        }
+        tf::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
+        return;
     }
 
     // deactivate current window and processing all pending events
@@ -1005,7 +999,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 
     // create new macro-group for NewViewerOperation
     tf::NewViewerOperation::newGroup();
-
 
     try
     {
@@ -1260,6 +1253,12 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         PMain::getInstance()->resetGUI();
     }
+
+    //
+//    if(isTranslate)
+//    {
+//        QTimer::singleShot(500, this, SLOT(inSituZoomOutTranslated()));
+//    }
 }
 
 //safely close this viewer
@@ -1990,6 +1989,8 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, source->title = %s", titleShort.c_str(), source->titleShort.c_str()).c_str(), __itm__current__function__);
 
+    qDebug()<<"call restoreViewerFrom "<<titleShort.c_str();
+
     // begin new group for RestoreViewerOperation
     tf::RestoreViewerOperation::newGroup();
     QElapsedTimer timer;
@@ -2251,6 +2252,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         if(isTranslate)
         {
             translate();
+            qDebug()<<"done translate ... start accepting new event ...";
             isTranslate = false;
         }
     }
@@ -2906,7 +2908,14 @@ void CViewer::setImage(int x, int y, int z) throw (tf::RuntimeException)
 void CViewer::translate()
 {
     qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
+
+    bool previewMode = CSettings::instance()->getPreviewMode();
+    if(previewMode)
+    {
+        CSettings::instance()->setPreviewMode(false);
+    }
     newViewer(insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res, volT0, volT1, insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz, -1, -1, -1, false, false); // in situ zoom out
+    CSettings::instance()->setPreviewMode(previewMode);
 }
 
 void CViewer::zoomOutMethodChanged(int value)
@@ -2921,4 +2930,9 @@ void CViewer::zoomOutMethodChanged(int value)
     {
         insituZoomOut = true;
     }
+}
+
+void CViewer::inSituZoomOutTranslated()
+{
+    isTranslate = false;
 }
