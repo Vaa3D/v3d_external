@@ -360,7 +360,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../custom_toolbar/v3d_custom_toolbar.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
-    ../io/v3d_nrrd.cpp
+    ../io/v3d_nrrd.cpp \
+    ../3drenderer/glsl_r.cpp
 
 #    ./painting/shared/arthurstyle.cpp \
 #    ./painting/shared/arthurwidgets.cpp

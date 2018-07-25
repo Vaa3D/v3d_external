@@ -595,6 +595,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomInMethod->addItem("Mean-shift of mean-shift (MSMS)");
     zoomInMethod->installEventFilter(this);
     zoomInMethod->setCurrentIndex(1);
+    zoomOutMethod = new QComboBox();
+    zoomOutMethod->addItem("By Default");
+    zoomOutMethod->addItem("In Situ");
+    zoomOutMethod->installEventFilter(this);
+    zoomOutMethod->setCurrentIndex(0);
 
     //"Volume Of Interest (VOI)" panel widgets
     /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
@@ -949,9 +954,17 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomControls_layout->addLayout(zoomControls_col1_layout, 0);
     zoomControls_layout->addLayout(zoomControls_col2_layout, 1);
     zoomControls_layout->addWidget(controlsResetButton, 0);
+    /* -------------------- third row ----------------------- */
+    QHBoxLayout *zoomOutMethod_layout = new QHBoxLayout();
+    zoomOutMethod_layout->setContentsMargins(0,0,0,0);
+    QLabel *zoomOutMethodLabel = new QLabel("Z/o method:");
+    zoomOutMethodLabel->setFixedWidth(marginLeft);
+    zoomOutMethod_layout->addWidget(zoomOutMethodLabel, 0);
+    zoomOutMethod_layout->addWidget(zoomOutMethod, 1);
     /* -------------------- FINALIZATION -------------------- */
     zoomOptions_panel_layout->addLayout(zoomInMethod_layout, 0);
     zoomOptions_panel_layout->addLayout(zoomControls_layout, 0);
+    zoomOptions_panel_layout->addLayout(zoomOutMethod_layout, 0);
     zoomOptions_panel_layout->setContentsMargins(10,5,10,5);
     zoom_panel->setLayout(zoomOptions_panel_layout);
     #ifdef Q_OS_LINUX

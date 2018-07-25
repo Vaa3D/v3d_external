@@ -86,6 +86,8 @@ class terafly::CViewer : public QWidget
         int anoH0, anoH1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along H (annotation VOI != VOI)
         int anoD0, anoD1;               // @ADDED by Alessandro on 2014-11-17. First and last global coordinates of the annotation space along D (annotation VOI != VOI)
         int insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res;
+        int insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz;
+        bool isTranslate;
 
         //CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
@@ -401,6 +403,11 @@ class terafly::CViewer : public QWidget
         * Linked to Vaa3D renderer slider
         ***********************************************************************************/
         void setZoom(int z);
+
+        // translate zoom out view at the same resolution
+        void translate();
+
+        void zoomOutMethodChanged(int value);
 
     public:
 

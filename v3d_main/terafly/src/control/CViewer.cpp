@@ -324,6 +324,7 @@ void CViewer::show()
         connect(pMain->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
         connect(pMain->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
         connect(pMain->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
+        connect(pMain->zoomOutMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(zoomOutMethodChanged(int)));
 
         disconnect(window3D->zoomSlider, SIGNAL(valueChanged(int)), view3DWidget, SLOT(setZoom(int)));
         connect(window3D->zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setZoom(int)));
@@ -436,6 +437,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     insituZoomOut_x = 0;
     insituZoomOut_y = 0;
     insituZoomOut_z = 0;
+    isTranslate = false;
 
     try
     {
@@ -540,7 +542,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
     try
     {
         //ignoring all events when window is not active
-        if(!_isActive)
+        if(!_isActive || isTranslate)
         {
             //printf("Ignoring event from CViewer[%s] cause it's not active\n", title.c_str());
             event->ignore();
@@ -1998,7 +2000,6 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         qDebug()<<"prev ? "<<volResIndex<<" == current ? "<<source->volResIndex;
 
         //
-        bool isTranslate = false;
         if(insituZoomOut && volResIndex>0)
         {
             int thresh = 5; // voxels
@@ -2117,11 +2118,9 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         //selecting the current resolution in the PMain GUI and disabling previous resolutions
         PMain* pMain = PMain::getInstance();
 
-        int dx = round(pMain->Hdim_sbox->value()/2.0f);
-        int dy = round(pMain->Vdim_sbox->value()/2.0f);
-        int dz = round(pMain->Ddim_sbox->value()/2.0f);
-
-        qDebug()<<"block size: ... "<<dx<<dy<<dz;
+        insituZoomOut_dx = round(pMain->Hdim_sbox->value()/2.0f);
+        insituZoomOut_dy = round(pMain->Vdim_sbox->value()/2.0f);
+        insituZoomOut_dz = round(pMain->Ddim_sbox->value()/2.0f);
 
         pMain->resolution_cbox->setCurrentIndex(volResIndex);
         for(int i=0; i<pMain->resolution_cbox->count(); i++)
@@ -2251,8 +2250,8 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         // in situ translation at the same resolution
         if(isTranslate)
         {
-            qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
-            newViewer(insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res, volT0, volT1, dx, dy, dz, -1, -1, -1, false, false); // in situ zoom out
+            translate();
+            isTranslate = false;
         }
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
@@ -2904,3 +2903,22 @@ void CViewer::setImage(int x, int y, int z) throw (tf::RuntimeException)
     newViewer(current_x,current_y,current_z,volResIndex,volT0,volT1);
 }
 
+void CViewer::translate()
+{
+    qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
+    newViewer(insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res, volT0, volT1, insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz, -1, -1, -1, false, false); // in situ zoom out
+}
+
+void CViewer::zoomOutMethodChanged(int value)
+{
+    qDebug()<<"zoom out method "<<value;
+
+    if(value == 0)
+    {
+        insituZoomOut = false;
+    }
+    else if(value == 1)
+    {
+        insituZoomOut = true;
+    }
+}
