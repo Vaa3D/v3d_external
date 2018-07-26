@@ -488,10 +488,10 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 	if (event_tip && renderer)
 	{
-        qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
+        //qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
 
 		QPoint gpos = mapToGlobal(pos);
-        qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
+        //qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
 
 		tipBuf[0] = '\0';
 		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
