@@ -52,8 +52,8 @@ class terafly::CViewer : public QWidget
         V3DPluginCallback2* V3D_env;    //handle of V3D environment
         v3dhandle window;               //generic (void *) handle of the tri-view image window
         XFormWidget* triViewWidget;     //the tri-view image window
-        //V3dR_GLWidget* view3DWidget;    //3D renderer widget associated to the image window
-        myV3dR_GLWidget* view3DWidget;
+        V3dR_GLWidget* view3DWidget;    //3D renderer widget associated to the image window
+        //myV3dR_GLWidget* view3DWidget;
         V3dR_MainWindow* window3D;      //the window enclosing <view3DWidget>
         CViewer *next, *prev;   //the next (higher resolution) and previous (lower resolution) <CExplorerWindow> objects
         int volResIndex;                //resolution index of the volume displayed in the current window (see member <volumes> of CImport)
@@ -90,6 +90,7 @@ class terafly::CViewer : public QWidget
         int insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res;
         int insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz;
         bool isTranslate;
+        QDialog *blockWheelEventDialog;
 
         //CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
@@ -139,7 +140,7 @@ class terafly::CViewer : public QWidget
                 first = p;
             }
             first=last=0;
-            current = 0; //20170804 RZC: add for bad pointer from getCurrent(), so many bad pointers!
+            current = 0; //20170804 RZC: QDialog *blockWheelEventadd for bad pointer from getCurrent(), so many bad pointers!
         }
 
         //performs all the operations needed to show 3D data (such as creating Vaa3D widgets)
@@ -152,8 +153,8 @@ class terafly::CViewer : public QWidget
         static CViewer* getCurrent(){return current;}
         int getResIndex(){return volResIndex;}
         V3dR_MainWindow* getWindow3D(){return window3D;}
-        // V3dR_GLWidget* getGLWidget(){return view3DWidget;}
-        myV3dR_GLWidget* getGLWidget(){return view3DWidget;}
+        V3dR_GLWidget* getGLWidget(){return view3DWidget;}
+        //myV3dR_GLWidget* getGLWidget(){return view3DWidget;}
         bool isHighestRes(){return volResIndex == CImport::instance()->getResolutions() -1;}
         bool isWaitingForData(){return waitingForData;} // waiting state
         bool isReady(){return _isReady;}                // ready for user input
@@ -413,6 +414,8 @@ class terafly::CViewer : public QWidget
         void zoomOutMethodChanged(int value);
 
         void inSituZoomOutTranslated();
+
+        void closeBlockWheelEventDialog();
 
     public:
 

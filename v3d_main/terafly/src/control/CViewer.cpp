@@ -87,8 +87,8 @@ void CViewer::show()
         // create 3D view window with postponed show()
         XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
         w->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
-        //view3DWidget = (V3dR_GLWidget*)(V3D_env->getView3DControl(window));
-        view3DWidget = (myV3dR_GLWidget*)(V3D_env->getView3DControl(window));
+        view3DWidget = (V3dR_GLWidget*)(V3D_env->getView3DControl(window));
+        //view3DWidget = (myV3dR_GLWidget*)(V3D_env->getView3DControl(window));
         if(!view3DWidget->getiDrawExternalParameter())
             QMessageBox::critical(pMain,QObject::tr("Error"), QObject::tr("Unable to get iDrawExternalParameter from Vaa3D's V3dR_GLWidget"),QObject::tr("Ok"));
         window3D = view3DWidget->getiDrawExternalParameter()->window3D;
@@ -334,8 +334,6 @@ void CViewer::show()
 //        window3D->setWindowFlags(Qt::Tool
 //                                 | Qt::WindowTitleHint
 //                                 | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint);
-
-        qDebug()<<"raise ... ...";
 
         this->window3D->raise();
         this->window3D->activateWindow();
@@ -602,12 +600,12 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         /******************** REDIRECTING MOUSE-WHEEL EVENTS *************************
         Mouse-wheel events are redirected to the customized wheelEvent handler
         ***************************************************************************/
-//        if ((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
-//        {
-//            QWheelEvent* wheelEvt = (QWheelEvent*)event;
-//            myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
-//            return true;
-//        }
+        if ((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
+        {
+            QWheelEvent* wheelEvt = (QWheelEvent*)event;
+            myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
+            return true;
+        }
 
         /****************** INTERCEPTING MOUSE CLICK EVENTS ***********************
         Mouse click events are intercepted for handling annotations tools
@@ -832,7 +830,7 @@ void CViewer::receiveData(
                                         !data_c.empty() ? strprintf("%d,%d,%d,%d,%d", data_c[0], data_c[1], data_c[2], data_c[3], data_c[4]).c_str() : "",
                                         finished ? "true" : "false").c_str(), __itm__current__function__);
 
-    view3DWidget->removeEventFilter(this);
+    // view3DWidget->removeEventFilter(this);
     qDebug()<<"newViewer: view3DWidget->removeEventFilter ... ... call receiveData ... ...";
 
     char message[1000];
@@ -957,7 +955,7 @@ void CViewer::receiveData(
     }
 
     qDebug()<<"newViewer: done receiveData ... ...";
-    view3DWidget->installEventFilter(this);
+    // view3DWidget->installEventFilter(this);
 
 //    QMessageBox::information(0, "Stop", "Wait...");
     /**/tf::debug(tf::LEV3, "method terminated", __itm__current__function__);
@@ -1268,9 +1266,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     }
 
     //
-    qDebug()<<"newViewer: view3DWidget->installEventFilter ... ...";
-
-    //
+    // qDebug()<<"newViewer: view3DWidget->installEventFilter ... ...";
     // view3DWidget->installEventFilter(this);
 
     //
@@ -2009,6 +2005,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
     /**/tf::debug(tf::LEV1, strprintf("title = %s, source->title = %s", titleShort.c_str(), source->titleShort.c_str()).c_str(), __itm__current__function__);
 
     qDebug()<<"call restoreViewerFrom "<<titleShort.c_str();
+    // QApplication::processEvents( QEventLoop::ExcludeUserInputEvents ); // should block further wheel event, not working
 
     // begin new group for RestoreViewerOperation
     tf::RestoreViewerOperation::newGroup();
@@ -2775,9 +2772,9 @@ void CViewer::setZoom(int z)
     /**/tf::debug(tf::LEV3, strprintf("title = %s, zoom = %d", titleShort.c_str(), z).c_str(), __itm__current__function__);
 
     //QMessageBox::information(this, "asd", QString("zoom ") + QString::number(z));
-    // myV3dR_GLWidget::cast(view3DWidget)->setZoomO(z);
+    myV3dR_GLWidget::cast(view3DWidget)->setZoomO(z);
 
-    view3DWidget->setZoomO(z);
+    //view3DWidget->setZoomO(z);
 }
 
 /**********************************************************************************
@@ -2930,6 +2927,15 @@ void CViewer::translate()
 {
     qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
 
+    blockWheelEventDialog = new QDialog(this);
+    blockWheelEventDialog->setMaximumSize(1,1);
+    blockWheelEventDialog->move(QPoint(0,0));
+    blockWheelEventDialog->show();
+    //blockWheelEvent->hide();
+    QTimer::singleShot(500,this,SLOT(closeBlockWheelEventDialog()));
+
+    // QApplication::processEvents( QEventLoop::ExcludeUserInputEvents );
+
     bool previewMode = CSettings::instance()->getPreviewMode();
     if(previewMode)
     {
@@ -2956,4 +2962,18 @@ void CViewer::zoomOutMethodChanged(int value)
 void CViewer::inSituZoomOutTranslated()
 {
     isTranslate = false;
+}
+
+void CViewer::closeBlockWheelEventDialog()
+{
+//    if(blockWheelEventDialog)
+//    {
+//        emit blockWheelEventDialog->accepted();
+//    }
+//    else
+//    {
+//        qDebug()<<"blockWheelEventDialog does not exist";
+//    }
+
+    blockWheelEventDialog->accept();
 }

@@ -45,7 +45,7 @@ class terafly::myV3dR_GLWidget : public V3dR_GLWidget
         //@Override
         void wheelEventO(QWheelEvent *event);
 
-        void wheelEvent(QWheelEvent *event) {qDebug()<<"myV3dR_GLWidget::wheelEvent ... ..."; wheelEventO(event);}
+        //void wheelEvent(QWheelEvent *event) {qDebug()<<"myV3dR_GLWidget::wheelEvent ... ..."; wheelEventO(event);}
 
         //zoomIn method(s)
         void zoomIn(const char* method);

@@ -57,7 +57,7 @@ namespace v3d {
     // Set current version here.
 
 
-    VersionInfo thisVersionOfV3D("3.554b");
+    VersionInfo thisVersionOfV3D("3.554c");
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
