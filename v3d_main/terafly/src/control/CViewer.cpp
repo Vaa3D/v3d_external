@@ -397,9 +397,6 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     /**/tf::debug(tf::LEV1, strprintf("_resIndex = %d, _V0 = %d, _V1 = %d, _H0 = %d, _H1 = %d, _D0 = %d, _D1 = %d, _T0 = %d, _T1 = %d, _nchannels = %d",
                                         _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels).c_str(), __itm__current__function__);
 
-    printf("\n CViewer: _resIndex = %d, _V0 = %d, _V1 = %d, _H0 = %d, _H1 = %d, _D0 = %d, _D1 = %d, _T0 = %d, _T1 = %d, _nchannels = %d",
-                                            _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels);
-
     //initializations
     ID = nTotalInstances++;
     resetZoomHistory();
@@ -487,8 +484,6 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
         QMessageBox::critical(PMain::getInstance(),QObject::tr("Error"), QObject::tr("Unknown error occurred"),QObject::tr("Ok"));
         PMain::getInstance()->closeVolume();
     }
-
-    qDebug()<<"new CViewer Object successfully constructed ... ...";
 
     /**/tf::debug(tf::LEV1, "Object successfully constructed", __itm__current__function__);
 }
@@ -607,7 +602,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if ((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
         {
-            qDebug()<<"CViewer: get a wheel event ... ...";
+            //qDebug()<<"CViewer: get a wheel event ... ...";
 
             QWheelEvent* wheelEvt = (QWheelEvent*)event;
             myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
@@ -2027,26 +2022,31 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         qDebug()<<"prev ? "<<volResIndex<<" == current ? "<<source->volResIndex;
 
         //
-        if(insituZoomOut && volResIndex>0)
+        if(insituZoomOut && volResIndex>0 && source->volResIndex > volResIndex)
         {
             int thresh = 5; // voxels
 
-            insituZoomOut_x = (source->volH0 + source->volH1)/4;
-            insituZoomOut_y = (source->volV0 + source->volV1)/4;
-            insituZoomOut_z = (source->volD0 + source->volD1)/4;
+            insituZoomOut_x = (source->volH0 + source->volH1)/2;
+            insituZoomOut_y = (source->volV0 + source->volV1)/2;
+            insituZoomOut_z = (source->volD0 + source->volD1)/2;
 
-            insituZoomOut_res = source->volResIndex-1;
+            insituZoomOut_res = volResIndex;
 
-            if(insituZoomOut_res == volResIndex)
+            float ratio = pow(2, source->volResIndex - volResIndex);
+
+            insituZoomOut_x /= ratio;
+            insituZoomOut_y /= ratio;
+            insituZoomOut_z /= ratio;
+
+            int centx = (volH0 + volH1)/2;
+            int centy = (volV0 + volV1)/2;
+            int centz = (volD0 + volD1)/2;
+
+            //qDebug()<<"translate? ... ... "<<ratio<<abs(centx-insituZoomOut_x)<<abs(centy-insituZoomOut_y)<<abs(centz-insituZoomOut_z);
+
+            if(abs(centx-insituZoomOut_x)>thresh || abs(centy-insituZoomOut_y)>thresh || abs(centz-insituZoomOut_z)>thresh)
             {
-                int centx = (volH0 + volH1)/2;
-                int centy = (volV0 + volV1)/2;
-                int centz = (volD0 + volD1)/2;
-
-                if(abs(centx-insituZoomOut_x)>thresh || abs(centy-insituZoomOut_y)>thresh || abs(centz-insituZoomOut_z)>thresh)
-                {
-                    isTranslate = true;
-                }
+                isTranslate = true;
             }
         }
 
@@ -2245,7 +2245,6 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
 
-
         //showing window
         this->window3D->raise();
         this->window3D->activateWindow();
@@ -2278,7 +2277,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         if(isTranslate)
         {
             translate();
-            qDebug()<<"done translate ... start accepting new event ...";
+            //qDebug()<<"done translate ... start accepting new event ...";
             isTranslate = false;
         }
     }

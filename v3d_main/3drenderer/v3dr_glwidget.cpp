@@ -697,7 +697,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 {
-    qDebug()<<"V3dR_GLWidget::wheelEvent ... ...";
+    //qDebug()<<"V3dR_GLWidget::wheelEvent ... ...";
 
 	//20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 	//-1 : scrolldown zoomin
@@ -731,9 +731,6 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     else // default
     {
         (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
-
-        qDebug()<<"zoom ... ... "<<(zoomin_sign * zoomStep) + _zoom;
-
         setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
     }
 

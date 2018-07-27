@@ -110,6 +110,8 @@ void CSettings::loadDefaultSettings()
     voxelsizeX = 0.2;
     voxelsizeY = 0.2;
     voxelsizeZ = 1.0;
+
+    zoomOutMethod = 0;
 }
 
 void CSettings::writeSettings()
@@ -168,7 +170,7 @@ void CSettings::writeSettings()
     settings.setValue("voxelsizeZ", voxelsizeZ);
     settings.setValue("bitsRemap", bitsRemap);
     settings.setValue("bitsConversion", bitsConversion);
-
+    settings.setValue("zoomOutMethod", zoomOutMethod);
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
     settings.setValue("volumeConverterOutputPathLRU", QString(volumeConverterOutputPathLRU.c_str()));
@@ -178,8 +180,6 @@ void CSettings::writeSettings()
     settings.setValue("volumeConverterStacksHeightLRU", volumeConverterStacksHeightLRU);
     settings.setValue("volumeConverterStacksDepthLRU", volumeConverterStacksDepthLRU);
     settings.setValue("volumeConverterTimeSeries", volumeConverterTimeSeries);
-
-
 
     settings.setValue("verbosity", tf::DEBUG);
 }
@@ -259,9 +259,14 @@ void CSettings::readSettings()
         bitsRemap = settings.value("bitsRemap").toInt();
     if(settings.contains("bitsConversion"))
         bitsConversion = settings.value("bitsConversion").toInt();
-
-
-
+    if(settings.contains("voxelsizeX"))
+        voxelsizeX = settings.value("voxelsizeX").toFloat();
+    if(settings.contains("voxelsizeY"))
+        voxelsizeY = settings.value("voxelsizeY").toFloat();
+    if(settings.contains("voxelsizeZ"))
+        voxelsizeZ = settings.value("voxelsizeZ").toFloat();
+    if(settings.contains("zoomOutMethod"))
+        zoomOutMethod = settings.value("zoomOutMethod").toInt();
 
 
     int size = settings.beginReadArray("recentImages");

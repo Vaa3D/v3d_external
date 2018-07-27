@@ -599,7 +599,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomOutMethod->addItem("By Default");
     zoomOutMethod->addItem("In Situ");
     zoomOutMethod->installEventFilter(this);
-    zoomOutMethod->setCurrentIndex(0);
+    zoomOutMethod->setCurrentIndex(CSettings::instance()->getZoomOutMethod());
 
     //"Volume Of Interest (VOI)" panel widgets
     /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
@@ -1078,6 +1078,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(y_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
     connect(z_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
     connect(refSys, SIGNAL(reset()), this, SLOT(updateOverview()));
+    connect(zoomOutMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged(int)));
 
 #ifdef __ALLOW_VR_FUNCS__
     if(teraflyVRView)
@@ -1206,6 +1207,8 @@ void PMain::reset()
     refSys->setDims(1,1,1);
     refSys->resetZoom();
     frameCoord->setPalette(VOI_panel->palette());
+
+    zoomOutMethod->setCurrentIndex(CSettings::instance()->getZoomOutMethod());
 
     //reset PR panel widgets
     PR_button->setText("Start");
@@ -2032,6 +2035,8 @@ void PMain::settingsChanged(int)
     CSettings::instance()->setTraslZ(zShiftSBox->value());
     CSettings::instance()->setTraslT(tShiftSBox->value());
 
+    CSettings::instance()->setZoomOutMethod(zoomOutMethod->currentIndex());
+
     if(PDialogProofreading::isActive())
         PDialogProofreading::instance()->updateBlocks(0);
 }
@@ -2691,6 +2696,8 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setVoxelSizeY(y_dsb->value());
         CSettings::instance()->setVoxelSizeZ(z_dsb->value());
 
+        CSettings::instance()->setZoomOutMethod(zoomOutMethod->currentIndex());
+
         int ROIxS   = H0_sbox->value();
         refSys->dimXCenter=ROIxS;
         int ROIxDim = H1_sbox->value()- H0_sbox->value();
@@ -2797,6 +2804,7 @@ void PMain::PRsetActive(bool active)
     Tdim_sbox->setEnabled(!active);
     /* -------------------- "Zoom in/out" panel ---------------------- */
     zoom_panel->setEnabled(!active);
+    zoomOutMethod->setEnabled(!active);
     if(active)
     {
         zoomInSens->setValue(zoomInSens->maximum());
