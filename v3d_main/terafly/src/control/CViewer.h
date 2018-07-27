@@ -90,7 +90,7 @@ class terafly::CViewer : public QWidget
         int insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res;
         int insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz;
         bool isTranslate;
-        QDialog *blockWheelEventDialog;
+        bool toRetrieveData;
 
         //CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
@@ -415,8 +415,6 @@ class terafly::CViewer : public QWidget
 
         void inSituZoomOutTranslated();
 
-        void closeBlockWheelEventDialog();
-
     public:
 
         /**********************************************************************************
@@ -565,7 +563,7 @@ class terafly::CViewer : public QWidget
             }
 
             // special case: 2D image
-            if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)
+            if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)QDialog *blockWheelEventDialog;
             {
                 #ifdef terafly_enable_debug_max_level
                 /**/tf::debug(tf::LEV3, strprintf("2D image, return %d", global ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : 0).c_str(), __itm__current__function__);

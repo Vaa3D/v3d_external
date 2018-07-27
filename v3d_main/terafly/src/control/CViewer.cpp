@@ -147,10 +147,11 @@ void CViewer::show()
         // show 3D viewer
         window3D->show();
 
-        qDebug()<<"view3DWidget->installEventFilter ... ";
-
         // install the event filter on the 3D renderer and on the 3D window
-        view3DWidget->installEventFilter(this);
+        if(!toRetrieveData)
+        {
+            view3DWidget->installEventFilter(this);
+        }
         window3D->installEventFilter(this);
         window3D->timeSlider->installEventFilter(this);
 
@@ -441,6 +442,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     insituZoomOut_y = 0;
     insituZoomOut_z = 0;
     isTranslate = false;
+    toRetrieveData = false;
 
     try
     {
@@ -1248,11 +1250,17 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                                              cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
+            //
+            toRetrieveData = true;
+
             // show new viewer
             next->show();
 
             // update new viewer as all data have been received
             next->receiveData(0,tf::integer_array(),tf::integer_array(), next, true);
+
+            //
+            toRetrieveData = false;
 
             // if new viewer has the same resolution, this window has to be closed
             if(resolution == volResIndex)
@@ -2927,15 +2935,6 @@ void CViewer::translate()
 {
     qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
 
-    blockWheelEventDialog = new QDialog(this);
-    blockWheelEventDialog->setMaximumSize(1,1);
-    blockWheelEventDialog->move(QPoint(0,0));
-    blockWheelEventDialog->show();
-    //blockWheelEvent->hide();
-    QTimer::singleShot(500,this,SLOT(closeBlockWheelEventDialog()));
-
-    // QApplication::processEvents( QEventLoop::ExcludeUserInputEvents );
-
     bool previewMode = CSettings::instance()->getPreviewMode();
     if(previewMode)
     {
@@ -2943,6 +2942,9 @@ void CViewer::translate()
     }
     newViewer(insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res, volT0, volT1, insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz, -1, -1, -1, false, false); // in situ zoom out
     CSettings::instance()->setPreviewMode(previewMode);
+
+    QApplication::processEvents( QEventLoop::ExcludeUserInputEvents );
+    QThread::sleep(1);
 }
 
 void CViewer::zoomOutMethodChanged(int value)
@@ -2964,16 +2966,3 @@ void CViewer::inSituZoomOutTranslated()
     isTranslate = false;
 }
 
-void CViewer::closeBlockWheelEventDialog()
-{
-//    if(blockWheelEventDialog)
-//    {
-//        emit blockWheelEventDialog->accepted();
-//    }
-//    else
-//    {
-//        qDebug()<<"blockWheelEventDialog does not exist";
-//    }
-
-    blockWheelEventDialog->accept();
-}
