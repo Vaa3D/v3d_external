@@ -140,7 +140,7 @@ class terafly::CViewer : public QWidget
                 first = p;
             }
             first=last=0;
-            current = 0; //20170804 RZC: QDialog *blockWheelEventadd for bad pointer from getCurrent(), so many bad pointers!
+            current = 0; //20170804 RZC: add for bad pointer from getCurrent(), so many bad pointers!
         }
 
         //performs all the operations needed to show 3D data (such as creating Vaa3D widgets)
@@ -563,7 +563,7 @@ class terafly::CViewer : public QWidget
             }
 
             // special case: 2D image
-            if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)QDialog *blockWheelEventDialog;
+            if(CImport::instance()->getVolume(volResIndex)->getDIM(dir) == 1)
             {
                 #ifdef terafly_enable_debug_max_level
                 /**/tf::debug(tf::LEV3, strprintf("2D image, return %d", global ? CImport::instance()->getVolume(volResIndex)->getDIM(dir) : 0).c_str(), __itm__current__function__);
