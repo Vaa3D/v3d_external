@@ -735,8 +735,6 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
         qDebug()<<"zoom ... ... "<<(zoomin_sign * zoomStep) + _zoom;
 
         setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
-
-
     }
 
 	event->accept();
