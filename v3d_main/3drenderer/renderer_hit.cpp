@@ -3893,7 +3893,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
     else
         chno = checkCurChannel();
 	////////////////////////////////////////////////////////////////////////
-	qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
+    //qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
 	////////////////////////////////////////////////////////////////////////
 	//100730 RZC, in View space, keep for dot(clip, pos)>=0
 	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };

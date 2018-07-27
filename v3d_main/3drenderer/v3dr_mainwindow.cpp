@@ -710,7 +710,7 @@ void V3dR_MainWindow::leaveEvent(QEvent*)
 QWidget* V3dR_MainWindow::lastActive = 0;
 void V3dR_MainWindow::changeEvent(QEvent* e)
 {
-	//qDebug() <<"V3dR_MainWindow::changeEvent" << e->type();
+    //qDebug() <<"V3dR_MainWindow::changeEvent" << e->type();
 	//if (e->type()==QEvent::WindowActivate) // no occur!!!
 	if (e->type()==QEvent::ActivationChange && isActiveWindow())
 	{

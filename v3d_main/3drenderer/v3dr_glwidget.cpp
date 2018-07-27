@@ -488,10 +488,10 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 	if (event_tip && renderer)
 	{
-        qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
+        //qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
 
 		QPoint gpos = mapToGlobal(pos);
-        qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
+        //qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
 
 		tipBuf[0] = '\0';
 		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
@@ -697,6 +697,8 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 {
+    qDebug()<<"V3dR_GLWidget::wheelEvent ... ...";
+
 	//20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 	//-1 : scrolldown zoomin
 	//+1 : scrollup zoomin
@@ -730,8 +732,11 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     {
         (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
 
+        qDebug()<<"zoom ... ... "<<(zoomin_sign * zoomStep) + _zoom;
 
         setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+
+
     }
 
 	event->accept();

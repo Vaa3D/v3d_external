@@ -58,7 +58,7 @@ Renderer::~Renderer()
 	qDebug(" Renderer::~Renderer <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 	cleanObj();
 	cleanData();
-	//qDebug(" ------------------------------------------------------ Renderer shutdown");
+    //qDebug(" ------------------------------------------------------ Renderer shutdown");
 }
 
 void Renderer::makeCurrent()

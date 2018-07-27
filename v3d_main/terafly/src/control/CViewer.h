@@ -40,6 +40,7 @@
 #include "renderer_gl2.h"
 #include "CImport.h"
 #include "v3d_imaging_para.h"
+#include "V3Dsubclasses.h"
 
 class terafly::CViewer : public QWidget
 {
@@ -51,7 +52,8 @@ class terafly::CViewer : public QWidget
         V3DPluginCallback2* V3D_env;    //handle of V3D environment
         v3dhandle window;               //generic (void *) handle of the tri-view image window
         XFormWidget* triViewWidget;     //the tri-view image window
-        V3dR_GLWidget* view3DWidget;    //3D renderer widget associated to the image window
+        //V3dR_GLWidget* view3DWidget;    //3D renderer widget associated to the image window
+        myV3dR_GLWidget* view3DWidget;
         V3dR_MainWindow* window3D;      //the window enclosing <view3DWidget>
         CViewer *next, *prev;   //the next (higher resolution) and previous (lower resolution) <CExplorerWindow> objects
         int volResIndex;                //resolution index of the volume displayed in the current window (see member <volumes> of CImport)
@@ -150,7 +152,8 @@ class terafly::CViewer : public QWidget
         static CViewer* getCurrent(){return current;}
         int getResIndex(){return volResIndex;}
         V3dR_MainWindow* getWindow3D(){return window3D;}
-        V3dR_GLWidget* getGLWidget(){return view3DWidget;}
+        // V3dR_GLWidget* getGLWidget(){return view3DWidget;}
+        myV3dR_GLWidget* getGLWidget(){return view3DWidget;}
         bool isHighestRes(){return volResIndex == CImport::instance()->getResolutions() -1;}
         bool isWaitingForData(){return waitingForData;} // waiting state
         bool isReady(){return _isReady;}                // ready for user input
