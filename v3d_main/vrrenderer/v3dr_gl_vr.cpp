@@ -4181,39 +4181,39 @@ void CMainApplication::SetupControllerRay()
 	// 	}
 	// }
 	//choose Right controllerFunction
-	if(panelpos_x >= 0.657)
-	{
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
-		{
+	// if(panelpos_x >= 0.657)
+	// {
+	// 	if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+	// 	{
 	
-			qDebug()<<"change right function to drawline in panel";
-		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
-		{
+	// 		qDebug()<<"change right function to drawline in panel";
+	// 	}
+	// 	else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+	// 	{
 	
-			qDebug()<<"change right function to deleteline in panel";
-		}
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
-		{
+	// 		qDebug()<<"change right function to deleteline in panel";
+	// 	}
+	// 	if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+	// 	{
 	
-			qDebug()<<"change right function to drawmaker in panel";
-		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
-		{
+	// 		qDebug()<<"change right function to drawmaker in panel";
+	// 	}
+	// 	else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+	// 	{
 	
-			qDebug()<<"change right function to deletemaker in panel";
-		}
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
-		{
+	// 		qDebug()<<"change right function to deletemaker in panel";
+	// 	}
+	// 	if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+	// 	{
 	
-			qDebug()<<"change right function to drag in panel";
-		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
-		{
+	// 		qDebug()<<"change right function to drag in panel";
+	// 	}
+	// 	else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+	// 	{
 	
-			qDebug()<<"change right function to splitline in panel";
-		}
-	}
+	// 		qDebug()<<"change right function to splitline in panel";
+	// 	}
+	// }
 	}
 	//update  red logo on where you choose
 
@@ -6669,7 +6669,6 @@ glm::vec2 CMainApplication::calculateshootingPadUV()
 	 if( det >0 )
     {
         T = shootingraystartPos - FuncPadPosV0;
-		qDebug()<<"det > 0";
     }
     else
      {
@@ -6677,14 +6676,14 @@ glm::vec2 CMainApplication::calculateshootingPadUV()
          det = -det;
      }
 	if(det < 0.0001f)
-		{qDebug()<<"det<0.001f";return glm::vec2(-1,-1);}
+		{return glm::vec2(-1,-1);}
 	float u = glm::dot(T, P);
 	if(u<0.0f||u>det)
-		{qDebug()<<"u<0\ u>1";return glm::vec2(-1,-1);}
+		{return glm::vec2(-1,-1);}
 	glm::vec3  Q = glm::cross(T,E1);
 	float v=glm::dot(shootingrayDir, Q);
 	if(v<0 || u>det || v>det)
-		{qDebug()<<"v<0 \u>1 v>1";return glm::vec2(-1,-1);}
+		{return glm::vec2(-1,-1);}
 	//t means shooting Distance from the starting point of the ray to the point of intersection
 	float t = glm::dot(E2, Q);
 	float fInvDet = 1.0f/det;
@@ -6709,52 +6708,42 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _TeraShift;
-			qDebug()<<"change left function to terashift in panel";
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
 		{
 			m_modeGrip_L = _TeraZoom;
-			qDebug()<<"change left function to terazoom in panel";
 		}
 		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _UndoRedo;
-			qDebug()<<"change left function to undo/redo in panel";
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _Contrast;
-			qDebug()<<"change left function to contrast in panel";
 		}
 		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _Surface;
-			qDebug()<<"change left function to surface in panel";
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _ColorChange;
-			qDebug()<<"change left function to change color in panel";
 		}
 		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _VirtualFinger;
-			qDebug()<<"change left function to virtual in panel";
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _Freeze;
-			qDebug()<<"change left function to freezee in panel";
 		}
 		else if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _LineWidth;
-			qDebug()<<"change left function to linewidth in panel";
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _AutoRotate;
-			qDebug()<<"change left function to autootate in panel";
 		}
 	}
 	//choose Right controllerFunction
@@ -6763,32 +6752,26 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
 		{
 			m_modeGrip_R = m_drawMode;
-			qDebug()<<"change right function to drawline in panel";
 		}
 		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
 		{
 			m_modeGrip_R = m_deleteMode;
-			qDebug()<<"change right function to deleteline in panel";
 		}
 		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
 			m_modeGrip_R = m_markMode;
-			qDebug()<<"change right function to drawmaker in panel";
 		}
 		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
 			m_modeGrip_R = m_delmarkMode;
-			qDebug()<<"change right function to deletemaker in panel";
 		}
 		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{
 			m_modeGrip_R = m_dragMode;
-			qDebug()<<"change right function to drag in panel";
 		}
 		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{
 			m_modeGrip_R = m_splitMode;
-			qDebug()<<"change right function to splitline in panel";
 		}
 	}
 }
