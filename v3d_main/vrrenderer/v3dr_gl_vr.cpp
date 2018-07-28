@@ -676,6 +676,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_unCompanionWindowProgramID( 0 )
 	, m_unControllerTransformProgramID( 0 )
 	, m_unRenderModelProgramID( 0 )
+	, m_unControllerRayProgramID( 0 )
 	, m_pHMD( NULL )
 	, m_pRenderModels( NULL )
 	, m_bDebugOpenGL( false )
@@ -692,6 +693,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_VolumeImageVAO (0)
 	, m_clipPatchVAO (0)
 	, m_nControllerMatrixLocation( -1 )
+	, m_nControllerRayMatrixLocation( -1 )
 	, m_nRenderModelMatrixLocation( -1 )
 	, m_iTrackedControllerCount( 0 )
 	, m_iTrackedControllerCount_Last( -1 )
@@ -714,6 +716,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, pick_point_index_A (-1)
 	, pick_point_index_B (-1)
 	, m_ControllerTexVAO( 0 )
+	, m_iControllerRayVAO( 0 )
 	, m_nCtrTexMatrixLocation( -1 )
 	, m_unCtrTexProgramID( 0 )
 	, m_bHasImage4D( false)
@@ -726,6 +729,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, _call_assemble_plugin(false)
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
+	,showshootingray(false)
 	//, font_VR (NULL)
 
 {
@@ -1194,6 +1198,10 @@ void CMainApplication::Shutdown()
 		{
 			glDeleteProgram( m_unCompanionWindowProgramID );
 		}
+		if ( m_unControllerRayProgramID )
+		{
+			glDeleteProgram( m_unControllerRayProgramID );
+		}
 
 		glDeleteRenderbuffers( 1, &leftEyeDesc.m_nDepthBufferId );
 		glDeleteTextures( 1, &leftEyeDesc.m_nRenderTextureId );
@@ -1443,7 +1451,7 @@ bool CMainApplication::HandleInput()
 		//if( (unDevice==m_iControllerIDRight)&&(m_pHMD->GetControllerState( unDevice, &state, sizeof(state) ) ))
 		if( m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state) ) )
 		{
-			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
+			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)&&(!showshootingray))
 			{
 				if(m_modeGrip_R==m_drawMode)
 				{
@@ -1609,7 +1617,7 @@ bool CMainApplication::HandleInput()
 			}//
 			//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
 			if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
-				!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
+				!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&!(showshootingray))
 			{
 				float m_fTouchPosY;
 				float m_fTouchPosX;
@@ -1680,7 +1688,7 @@ bool CMainApplication::HandleInput()
 	//inlcuding 
 	{
 		vr::VRControllerState_t state;
-		if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state) ) )
+		if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state) )&&(!showshootingray) )
 		{
 			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
 			{
@@ -2087,53 +2095,53 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}//*/
 	//if(event.data.controller.button==vr::k_ebutton_steamvr_trigger)
 
-
+	
 	////////////////////////////////LEFT
 	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_Grip))
 	{	
-		m_modeControlGrip_L++;
-		m_modeControlGrip_L%=11;
-		switch(m_modeControlGrip_L)
-		{
-		case 0:
-			m_modeGrip_L = _donothing;
-			break;
-		case 1:
-			m_modeGrip_L = _TeraShift;
-			break;
-		case 2:
-			m_modeGrip_L = _TeraZoom;
-			break;
-		case 3:
-			m_modeGrip_L = _Contrast;
-			break;
-		case 4:
-			m_modeGrip_L = _UndoRedo;
-			break;
-		case 5:
-			m_modeGrip_L = _ColorChange;
-			break;
-		case 6:
-			m_modeGrip_L = _Surface;
-			break;
-		case 7:
-			m_modeGrip_L = _VirtualFinger;
-			break;
-		case 8:
-			m_modeGrip_L = _Freeze;
-			break;
-		case 9:
-			m_modeGrip_L = _LineWidth;
-			break;
-		case 10:
-			m_modeGrip_L = _AutoRotate;
-			break;
-		default:
-			break;
-		}
+		// m_modeControlGrip_L++;
+		// m_modeControlGrip_L%=11;
+		// switch(m_modeControlGrip_L)
+		// {
+		// case 0:
+		// 	m_modeGrip_L = _donothing;
+		// 	break;
+		// case 1:
+		// 	m_modeGrip_L = _TeraShift;
+		// 	break;
+		// case 2:
+		// 	m_modeGrip_L = _TeraZoom;
+		// 	break;
+		// case 3:
+		// 	m_modeGrip_L = _Contrast;
+		// 	break;
+		// case 4:
+		// 	m_modeGrip_L = _UndoRedo;
+		// 	break;
+		// case 5:
+		// 	m_modeGrip_L = _ColorChange;
+		// 	break;
+		// case 6:
+		// 	m_modeGrip_L = _Surface;
+		// 	break;
+		// case 7:
+		// 	m_modeGrip_L = _VirtualFinger;
+		// 	break;
+		// case 8:
+		// 	m_modeGrip_L = _Freeze;
+		// 	break;
+		// case 9:
+		// 	m_modeGrip_L = _LineWidth;
+		// 	break;
+		// case 10:
+		// 	m_modeGrip_L = _AutoRotate;
+		// 	break;
+		// default:
+		// 	break;
+		// }
 	}
 
-	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad))
+	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(!showshootingray))
 	{	
 		vr::VRControllerState_t state;	
 		m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state));
@@ -2349,7 +2357,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		}
 	}
 
-    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
+    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(!showshootingray))
     {
 
             const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
@@ -2496,7 +2504,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	//	}
 	//}
 
-	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad))
+	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(!showshootingray))
 	{		//use touchpad press to change the processing mode for touchpad, nothing or translate or rotate or zoom mode
 		m_modeControlTouchPad_R++;
 		m_modeControlTouchPad_R%=4;
@@ -2522,8 +2530,23 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		}	
 		qDebug("m_modeControlTouchPad_R=%d,m_translationMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_translationMode,m_rotateMode,m_zoomMode);
 	}
-	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))
+		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&showshootingray)	//detect trigger when menu show
+		{
+				glm::vec2 texturePos = calculateshootingPadUV();
+				MenuFunctionChoose(texturePos);
+				if(texturePos.x>=0&&texturePos.y >=0)
+					{
+						qDebug()<<texturePos.x<<texturePos.y<<"\n";
+						qDebug()<<"shoot it!";
+					}
+				else if(texturePos.x==-1&&texturePos.y==-1)
+					qDebug()<< "didn't shoot the Pad";
+				qDebug()<<showshootingray;
+		}
+
+	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
 	{	
+
 		qDebug()<<"current mode is "<<m_modeGrip_R;
 		switch(m_modeGrip_R)
 		{
@@ -2761,6 +2784,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					ClearUndoRedoVectors();
 					SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
 				}
+
 				break;
 			}
 		case m_dragMode:
@@ -2792,7 +2816,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case m_splitMode:
 			{	
-				qDebug()<<"splitmode come in";
+
+
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -2939,6 +2964,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				lIndex = sketchedNTList.size() - 1;
 				qDebug()<<"index = "<<lIndex;
 				SetupSingleMorphologyLine(lIndex,0);
+
 				break;
 			}
 		default :
@@ -2952,35 +2978,39 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_Grip)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
 
-		m_modeControlGrip_R++;
-		m_modeControlGrip_R%=6;
-		switch(m_modeControlGrip_R)
-		{
-		case 0:
-			m_modeGrip_R = m_drawMode;
-			break;
-		case 1:
-			m_modeGrip_R = m_deleteMode;
-			break;
-		case 2:
-			m_modeGrip_R = m_dragMode;
-			break;
-		case 3:
-			m_modeGrip_R = m_markMode;
-			break;
-		case 4:
-			m_modeGrip_R = m_delmarkMode;
-			break;
-		case 5:
-			m_modeGrip_R = m_splitMode;
-			break;
-		default:
-			break;
-		}	
-		qDebug("m_modeGrip_R=%d",m_modeGrip_R);
+		// m_modeControlGrip_R++;
+		// m_modeControlGrip_R%=6;
+		// switch(m_modeControlGrip_R)
+		// {
+		// case 0:
+		// 	m_modeGrip_R = m_drawMode;
+		// 	break;
+		// case 1:
+		// 	m_modeGrip_R = m_deleteMode;
+		// 	break;
+		// case 2:
+		// 	m_modeGrip_R = m_dragMode;
+		// 	break;
+		// case 3:
+		// 	m_modeGrip_R = m_markMode;
+		// 	break;
+		// case 4:
+		// 	m_modeGrip_R = m_delmarkMode;
+		// 	break;
+		// case 5:
+		// 	m_modeGrip_R = m_splitMode;
+		// 	break;
+		// default:
+		// 	break;
+		// }	
+		// qDebug("m_modeGrip_R=%d",m_modeGrip_R);
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
+				//call virtual Pad
+				showshootingray =! showshootingray;//show virtualPad
+				//test trigger shooting ray func for now
+	}
 		////bool_ray = true;
 
 		//save swc
@@ -3021,68 +3051,71 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 
 		//2018-06-22 now this button is used for showing next two markers in sequence.
-		if (curveDrawingTestStatus == -1) //test not started;
-		{
-			if (markerVisibility.size() >= 2)
-			{
-				for(int i=2; i<markerVisibility.size();i++) markerVisibility[i] = 0;
-				curveDrawingTestStatus = 1;//test started. //id of the second current visible marker.
-				elapsedTimes.clear();
-				timer1.start();
-			}
-		}
-		else
-		{
-			qint64 etime = timer1.elapsed();
-			elapsedTimes.push_back(etime);
-			timer1.restart();
-			markerVisibility[curveDrawingTestStatus] = markerVisibility[curveDrawingTestStatus-1] = 0;
-			if (markerVisibility.size() > curveDrawingTestStatus+2)
-			{
-				curveDrawingTestStatus += 2;
-				markerVisibility[curveDrawingTestStatus] = markerVisibility[curveDrawingTestStatus-1] = 1;
-			}
-			else // no more enough markers, test termination
-			{
-				for(int i=0; i<markerVisibility.size();i++) markerVisibility[i] = 1;
-				curveDrawingTestStatus = -1;//test not started;
-				for(int i=0; i<elapsedTimes.size();i++) qDebug()<<elapsedTimes[i]<< " milliseconds";
+		//2018-07-27 now this button is used for virtual button
+		// if (curveDrawingTestStatus == -1) //test not started;
+		// {
+		// 	if (markerVisibility.size() >= 2)
+		// 	{
+		// 		for(int i=2; i<markerVisibility.size();i++) markerVisibility[i] = 0;
+		// 		curveDrawingTestStatus = 1;//test started. //id of the second current visible marker.
+		// 		elapsedTimes.clear();
+		// 		timer1.start();
+		// 	}
+		// }
+		// else
+		// {
+		// 	qint64 etime = timer1.elapsed();
+		// 	elapsedTimes.push_back(etime);
+		// 	timer1.restart();
+		// 	markerVisibility[curveDrawingTestStatus] = markerVisibility[curveDrawingTestStatus-1] = 0;
+		// 	if (markerVisibility.size() > curveDrawingTestStatus+2)
+		// 	{
+		// 		curveDrawingTestStatus += 2;
+		// 		markerVisibility[curveDrawingTestStatus] = markerVisibility[curveDrawingTestStatus-1] = 1;
+		// 	}
+		// 	else // no more enough markers, test termination
+		// 	{
+		// 		for(int i=0; i<markerVisibility.size();i++) markerVisibility[i] = 1;
+		// 		curveDrawingTestStatus = -1;//test not started;
+		// 		for(int i=0; i<elapsedTimes.size();i++) qDebug()<<elapsedTimes[i]<< " milliseconds";
 
-                //output time
-                if(1)
-                {
-                    QDateTime mytime = QDateTime::currentDateTime();
-                    QString imageName = "FILE";
-                    if (img4d) imageName = img4d->getFileName();
-                    QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
-                    QString name = qsl.back();
-                    QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt";
-                    //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt"; //QCoreApplication::applicationDirPath()+
-                    ofstream outFile(filename.toStdString(), ofstream::out);
-                    for(int i=0; i<elapsedTimes.size();i++) outFile << elapsedTimes[i] / 1000 << endl;
-                    outFile.close();
-                }
+        //         //output time
+        //         if(1)
+        //         {
+        //             QDateTime mytime = QDateTime::currentDateTime();
+        //             QString imageName = "FILE";
+        //             if (img4d) imageName = img4d->getFileName();
+        //             QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+        //             QString name = qsl.back();
+        //             QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt";
+        //             //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt"; //QCoreApplication::applicationDirPath()+
+        //             ofstream outFile(filename.toStdString(), ofstream::out);
+        //             for(int i=0; i<elapsedTimes.size();i++) outFile << elapsedTimes[i] / 1000 << endl;
+        //             outFile.close();
+        //         }
 
-                //output swc
-                if(sketchedNTList.size()>0)
-                {   //save swc to file
-                    QDateTime mytime = QDateTime::currentDateTime();
-                    QString imageName = "FILE";
-                    if (img4d) imageName = img4d->getFileName();
-                    QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
-                    QString name = qsl.back();
-                    QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
-                    //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc"; //QCoreApplication::applicationDirPath()+
-                    //shift the neuron nodes to get global coordinates
-                    NeuronTree mergedSketchNTL;
-                    MergeNeuronTrees(mergedSketchNTL,&sketchedNTList);
-                    writeSWC_file(filename, mergedSketchNTL);
-                    qDebug("Successfully writeSWC_file");
-                }
-			}
-		}
+        //         //output swc
+        //         if(sketchedNTList.size()>0)
+        //         {   //save swc to file
+        //             QDateTime mytime = QDateTime::currentDateTime();
+        //             QString imageName = "FILE";
+        //             if (img4d) imageName = img4d->getFileName();
+        //             QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+        //             QString name = qsl.back();
+        //             QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
+        //             //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc"; //QCoreApplication::applicationDirPath()+
+        //             //shift the neuron nodes to get global coordinates
+        //             NeuronTree mergedSketchNTL;
+        //             MergeNeuronTrees(mergedSketchNTL,&sketchedNTList);
+        //             writeSWC_file(filename, mergedSketchNTL);
+        //             qDebug("Successfully writeSWC_file");
+        //         }
+		// 	}
+		// }
 
-	}
+				
+
+	
 	//////////////////
 }
 bool CMainApplication::isAnyNodeOutBBox(NeuronSWC S_temp)
@@ -3131,6 +3164,7 @@ void CMainApplication::RenderFrame()
 		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();
 		SetupControllerTexture();
+		SetupControllerRay();
 		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
 
 		//for all (synchronized) sketched strokes
@@ -3384,9 +3418,41 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 		"}\n"
 		);
 
+		//for  shootingrayshader
+	m_unControllerRayProgramID = CompileGLShader(
+		"ControllerRay",
+		// vertex shader
+		"#version 410 core\n"
+		"uniform mat4 matrix;\n"
+		"layout(location = 0) in vec3 position;\n"
+		"layout(location = 1) in vec3 color ;\n"
+		"out vec4 fcolor;\n"
+		"void main()\n"
+		"{\n"
+		"	fcolor.xyz = color; fcolor.a = 1.0;\n"
+		"   vec4 middlepos = vec4(position,1.0);\n"
+		"	gl_Position = matrix * middlepos;\n"
+		"}\n",
+
+		// fragment shader
+		"#version 410 core\n"
+		"in vec4 fcolor;\n"
+		"out vec4 outputColor;\n"
+		"void main()\n"
+		"{\n"
+		"		outputColor = fcolor;\n"
+		"}\n"
+		);
+	m_nControllerRayMatrixLocation = glGetUniformLocation( m_unControllerRayProgramID, "matrix" );
+		if( m_nControllerRayMatrixLocation == -1 )
+	{
+		dprintf( "Unable to find matrix uniform in controllerRay shader\n" );
+		return false;
+	}
 	return m_unControllerTransformProgramID != 0
 		&& m_unRenderModelProgramID != 0
-		&& m_unCompanionWindowProgramID != 0;
+		&& m_unCompanionWindowProgramID != 0
+		&& m_unControllerRayProgramID!= 0;
 }
 bool CMainApplication::SetupTexturemaps()
 {
@@ -3395,6 +3461,7 @@ bool CMainApplication::SetupTexturemaps()
 	//qDebug()<<"current applicationDirPath: "<<QCoreApplication::applicationDirPath();  
 	//qDebug()<<"current currentPath: "<<QDir::currentPath();
 	QString qstrFullPath = QCoreApplication::applicationDirPath() +"/materials/controller_texture.png";
+
 	//std::string strFullPath ="../materials/controller_texture.png";//C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/
 	std::vector<unsigned char> imageRGBA;
 	unsigned nImageWidth, nImageHeight;
@@ -3471,12 +3538,13 @@ void CMainApplication::SetupControllerTexture()
 		point_B = mat_L * point_B;
 		point_C = mat_L * point_C;
 		point_D = mat_L * point_D;
-		AddVertex(point_A.x,point_A.y,point_A.z,0,0.25f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
-		AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
-		AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
-		AddVertex(point_D.x,point_D.y,point_D.z,0.34f,0.375f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
+		//Update PadFunc
+		// AddVertex(point_A.x,point_A.y,point_A.z,0,0.25f,vcVerts);
+		// AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
+		// AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
+		// AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
+		// AddVertex(point_D.x,point_D.y,point_D.z,0.34f,0.375f,vcVerts);
+		// AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
 
 		Vector4 point_A2(0.023f,-0.009f,0.065f,1);//grip no.2 dispaly "Mode Switch"
 		Vector4 point_B2(0.023f,-0.009f,0.105f,1);
@@ -3486,12 +3554,12 @@ void CMainApplication::SetupControllerTexture()
 		point_B2 = mat_L * point_B2;
 		point_C2 = mat_L * point_C2;
 		point_D2 = mat_L * point_D2;
-		AddVertex(point_A2.x,point_A2.y,point_A2.z,0.34f,0.25f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
-		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
+		// AddVertex(point_A2.x,point_A2.y,point_A2.z,0.34f,0.25f,vcVerts);
+		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);
+		// AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
+		// AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
+		// AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
+		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
 
 		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad dispaly "ON/OFF"
 		Vector4 point_F(0.02f,0.01f,0.03f,1);
@@ -3510,20 +3578,20 @@ void CMainApplication::SetupControllerTexture()
 				if(m_bShowMorphologySurface)
 				{
 					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 				}
 				else
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.33f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
+					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.165f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 
 				}
 				break;
@@ -3533,20 +3601,20 @@ void CMainApplication::SetupControllerTexture()
 				if(m_bVirtualFingerON)
 				{
 					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 				}
 				else
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.33f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
+					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.165f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 
 				}
 				break;
@@ -3554,12 +3622,12 @@ void CMainApplication::SetupControllerTexture()
 		case _ColorChange:// display "ok"
 		case _TeraShift:
 			{//_TeraShift
-				AddVertex(point_E.x,point_E.y,point_E.z,0.34f,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.34f,0.625f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.34f,0.625f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,0.625f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.5f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.5f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.625f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.625f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.25f,0.625f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.5f,vcVerts);
 				break;
 			}	
 		case _Freeze:
@@ -3567,20 +3635,20 @@ void CMainApplication::SetupControllerTexture()
 				if(m_bFrozen)
 				{
 					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 				}
 				else
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.33f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
+					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.165f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 
 				}
 				break;
@@ -3589,12 +3657,12 @@ void CMainApplication::SetupControllerTexture()
 		case _LineWidth:
 		case _Contrast:
 			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.5,0.125f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.125f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.5,0.25f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.5,0.25f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.67f,0.25f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.125f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.25,0.125f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.125f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25,0.25f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25,0.25f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.335f,0.25f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.125f,vcVerts);
 				break;
 			}
 		case _AutoRotate:
@@ -3602,32 +3670,32 @@ void CMainApplication::SetupControllerTexture()
 				if(m_autoRotateON)
 				{
 					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.17f,0.375f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 				}
 				else
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.33f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.33f,0.375f,vcVerts);
+					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.165f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 
 				}
 				break;
 			}
 		case _UndoRedo:
 			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.34f,0.125f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5,0.125f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.34f,0.25f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.34f,0.25f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.5,0.25f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5,0.125f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.125f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.125f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.25f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.17f,0.25f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.25,0.25f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.125f,vcVerts);
 				break;			
 			}
 		default:
@@ -3642,12 +3710,12 @@ void CMainApplication::SetupControllerTexture()
 		point_J = mat_L * point_J;
 		point_K = mat_L * point_K;
 		point_L = mat_L * point_L;
-		AddVertex(point_I.x,point_I.y,point_I.z,0.17f,0,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.34f,0,vcVerts);
-		AddVertex(point_K.x,point_K.y,point_K.z,0.17f,0.125f,vcVerts);
-		AddVertex(point_K.x,point_K.y,point_K.z,0.17f,0.125f,vcVerts);
-		AddVertex(point_L.x,point_L.y,point_L.z,0.34f,0.125f,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.34f,0,vcVerts);
+		AddVertex(point_I.x,point_I.y,point_I.z,0.085f,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.085f,0.125f,vcVerts);
+		AddVertex(point_K.x,point_K.y,point_K.z,0.085f,0.125f,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.17f,0.125f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
 
 
 		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current mode dispaly "Surface/line  Virtual finger  search ....."
@@ -3658,6 +3726,8 @@ void CMainApplication::SetupControllerTexture()
 		point_N = mat_L * point_N;
 		point_O = mat_L * point_O;
 		point_P = mat_L * point_P;
+
+
 		switch(m_modeGrip_L)
 		{
 		case _donothing:
@@ -3666,92 +3736,95 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _Surface:
 			{//surface
-				AddVertex(point_M.x,point_M.y,point_M.z,0.17f,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.34f,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.25f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.34f,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.34f,0.125f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.085f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.085f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.085f,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.17f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.125f,vcVerts);
 				break;
 			}
 		case _TeraShift:
 			{//_TeraShift
-				AddVertex(point_M.x,point_M.y,point_M.z,0.84f,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.25f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,1,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0.125f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.42f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42f,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.5,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.125f,vcVerts);
 				break;
 			}
 		case _VirtualFinger:
 			{//virtual finger
-				AddVertex(point_M.x,point_M.y,point_M.z,0.34f,0,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.125f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.17f,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25f,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.125f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.25f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25f,0,vcVerts);
 				break;
 			}
 		case _Freeze:
 			{//freeze
-				AddVertex(point_M.x,point_M.y,point_M.z,0.67f,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.25f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.84f,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.125f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.335f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.25f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.125f,vcVerts);
+
+
+				
 				break;
 			}
 		case _LineWidth:
 			{
-				AddVertex(point_M.x,point_M.y,point_M.z,0.67f,0,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.125f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.84f,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.335f,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.125f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0,vcVerts);
 				break;
 			}
 		case _AutoRotate:
 			{
-				AddVertex(point_M.x,point_M.y,point_M.z,0.84f,0,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.125f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,1,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.42f,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42f,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42f,0.125f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.5f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5f,0,vcVerts);
 				break;
 			}
 		case _Contrast:
 			{//_Contrast
 				AddVertex(point_M.x,point_M.y,point_M.z,0,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.085f,0.125f,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0,0.25f,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0,0.25f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.17f,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.17f,0.125f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.085f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.085f,0.125f,vcVerts);
 				break;
 			}
 		case _TeraZoom:
 			{//_TeraZoom
-				AddVertex(point_M.x,point_M.y,point_M.z,0.84f,0.5f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.625f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84f,0.625f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,1,0.625f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0.5f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.42f,0.5f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.5f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42f,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42f,0.625f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.5,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.5f,vcVerts);
 				break;
 			}	
 		case _ColorChange:
 			{//_ColorChange
-				AddVertex(point_M.x,point_M.y,point_M.z,0.67f,0.5f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.5f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.625f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.625f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.84f,0.625f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.5f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.335f,0.5f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.5f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.625f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.5f,vcVerts);
 				break;
 			}	
 		case _UndoRedo:
@@ -3771,12 +3844,12 @@ void CMainApplication::SetupControllerTexture()
 		point_C = mat_R * point_C;
 		point_D = mat_R * point_D;//*/
 
-		AddVertex(point_A.x,point_A.y,point_A.z,0,0.25f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
-		AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
-		AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
-		AddVertex(point_D.x,point_D.y,point_D.z,0.34f,0.375f,vcVerts);
-		AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
+		// AddVertex(point_A.x,point_A.y,point_A.z,0,0.25f,vcVerts);
+		// AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
+		// AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
+		// AddVertex(point_C.x,point_C.y,point_C.z,0,0.375f,vcVerts);
+		// AddVertex(point_D.x,point_D.y,point_D.z,0.34f,0.375f,vcVerts);
+		// AddVertex(point_B.x,point_B.y,point_B.z,0.34f,0.25f,vcVerts);
 
 		Vector4 point_A2(0.023f,-0.009f,0.065f,1);//grip no.2 display "Mode Switch: draw /delete /marker /pull"
 		Vector4 point_B2(0.023f,-0.009f,0.105f,1);
@@ -3787,12 +3860,12 @@ void CMainApplication::SetupControllerTexture()
 		point_C2 = mat_R * point_C2;
 		point_D2 = mat_R * point_D2;//*/
 
-		AddVertex(point_A2.x,point_A2.y,point_A2.z,0.34f,0.25f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
-		AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
-		AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
-		AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
+		// AddVertex(point_A2.x,point_A2.y,point_A2.z,0.34f,0.25f,vcVerts);
+		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);
+		// AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
+		// AddVertex(point_C2.x,point_C2.y,point_C2.z,0.34f,0.375f,vcVerts);
+		// AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
+		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
 
 		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad switch & display "translate /rotate /scale /nothing
 		Vector4 point_F(0.02f,0.01f,0.03f,1);
@@ -3806,42 +3879,42 @@ void CMainApplication::SetupControllerTexture()
 		{
 		case 0://nothing
 			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.84f,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,1,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.84f,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.84f,0.5f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,1,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,1,0.375f,vcVerts);
-				break;
-			}
-		case 1://translate
-			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.34,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.34,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.34,0.5f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.42f,0.375f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.375f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.42f,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.42f,0.5f,vcVerts);
 				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,0.5f,vcVerts);
 				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.375f,vcVerts);
 				break;
 			}
+		case 1://translate
+			{
+				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.375f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.17,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.17,0.5f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.25f,0.5f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.375f,vcVerts);
+				break;
+			}
 		case 2://rotate
 			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.5f,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.5f,0.5f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.67f,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.67f,0.375f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.25f,0.375f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.375f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,0.5f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.335f,0.5f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.375f,vcVerts);
 				break;
 			}
 		case 3://scale
 			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.67f,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.84f,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.67f,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.67f,0.5f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.84f,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.84f,0.375f,vcVerts);
+				AddVertex(point_E.x,point_E.y,point_E.z,0.335f,0.375f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.42f,0.375f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.335f,0.5f,vcVerts);
+				AddVertex(point_G.x,point_G.y,point_G.z,0.335f,0.5f,vcVerts);
+				AddVertex(point_H.x,point_H.y,point_H.z,0.42f,0.5f,vcVerts);
+				AddVertex(point_F.x,point_F.y,point_F.z,0.42f,0.375f,vcVerts);
 				break;
 			}
 		default:
@@ -3858,12 +3931,32 @@ void CMainApplication::SetupControllerTexture()
 		point_K = mat_R * point_K;
 		point_L = mat_R * point_L;
 		AddVertex(point_I.x,point_I.y,point_I.z,0,0,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.085f,0,vcVerts);
 		AddVertex(point_K.x,point_K.y,point_K.z,0,0.125f,vcVerts);
 		AddVertex(point_K.x,point_K.y,point_K.z,0,0.125f,vcVerts);
-		AddVertex(point_L.x,point_L.y,point_L.z,0.17f,0.125f,vcVerts);
-		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
+		AddVertex(point_L.x,point_L.y,point_L.z,0.085f,0.125f,vcVerts);
+		AddVertex(point_J.x,point_J.y,point_J.z,0.085f,0,vcVerts);
 
+
+		//For NewPadtest
+		Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
+		Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
+		Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
+		Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
+		point_lefttop = mat_L * point_lefttop;
+		point_righttop = mat_L * point_righttop;
+		point_leftbottom = mat_L * point_leftbottom;
+		point_rightbottom = mat_L * point_rightbottom;
+
+
+		if(showshootingray)
+		{		AddVertex(point_lefttop.x,point_lefttop.y,point_lefttop.z,0.5,0.0f,vcVerts);
+				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
+				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
+				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
+				AddVertex(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z,1.0,0.5f,vcVerts);
+				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
+		}
 
 		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
 		Vector4 point_N(0.02f,0.005f,0.1f,1);
@@ -3873,66 +3966,70 @@ void CMainApplication::SetupControllerTexture()
 		point_N = mat_R * point_N;
 		point_O = mat_R * point_O;
 		point_P = mat_R * point_P;
-		switch (m_modeControlGrip_R)
+
+
+		switch (m_modeGrip_R)
 		{
 		case m_drawMode:
 			{//draw line
-				AddVertex(point_M.x,point_M.y,point_M.z,0.34f,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.375f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.34f,0.375f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.5,0.375f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.25f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.17f,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.375f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.375f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.25,0.375f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.25f,vcVerts);
 				break;
 			}
 		case m_deleteMode:
 			{//delete segment
-				AddVertex(point_M.x,point_M.y,point_M.z,0.5,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.67f,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.5f,0.375f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.5f,0.375f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.67f,0.375f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.67f,0.25f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.25,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25f,0.375f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25f,0.375f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.335f,0.375f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335f,0.25f,vcVerts);
 				break;
 			}
 		case m_markMode:
 			{//draw marker
-				AddVertex(point_M.x,point_M.y,point_M.z,0.67,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.375f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.67f,0.375f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.84f,0.375f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.84f,0.25f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.335,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.375f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.375f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.375f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.25f,vcVerts);
 				break;
 			}
 		case m_dragMode:
 			{//pull node
-				AddVertex(point_M.x,point_M.y,point_M.z,0.84,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84,0.375f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.84,0.375f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,1,0.375f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,1,0.25f,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.42,0.25f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.25f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42,0.375f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.42,0.375f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.5,0.375f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.25f,vcVerts);
 				break;
 			}
 		case m_delmarkMode:
 			{//delete marker mode
-				AddVertex(point_M.x,point_M.y,point_M.z,0.5,0,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.67,0,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.5,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.5,0.125f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.67,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.67,0,vcVerts);
+				AddVertex(point_M.x,point_M.y,point_M.z,0.25,0,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25,0.125f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25,0.125f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.335,0.125f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0,vcVerts);
 				break;
 			}
 		case m_splitMode:
-			{
+			{//split line mode
 				AddVertex(point_M.x,point_M.y,point_M.z,0.0,0.625f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.16,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.08,0.625f,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0.0,0.75f,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0.0,0.75f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.16,0.75f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.16,0.625f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.08,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.08,0.625f,vcVerts);
+
+
 			}
 		default:
 			break;
@@ -3981,9 +4078,169 @@ void CMainApplication::SetupControllerTexture()
 	{
 		glBufferData(GL_ARRAY_BUFFER,  sizeof(float) * vcVerts.size(), &vcVerts[0], GL_STREAM_DRAW );
 	}	
-
 }
+void CMainApplication::AddrayVertex(float fl0, float fl1, float fl2, float fl3, float fl4,float fl5, std::vector<float> &vertdata)
+{
+	vertdata.push_back( fl0 );
+	vertdata.push_back( fl1 );
+	vertdata.push_back( fl2 );
+	vertdata.push_back( fl3 );
+	vertdata.push_back( fl4 );
+	vertdata.push_back( fl5 );
+}
+void CMainApplication::SetupControllerRay()
+{	
+	if ( !m_pHMD )
+		return;
 
+	std::vector<float> vcVerts;
+	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
+	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
+	std::vector<float> vertdataarray;
+
+	Vector4 start = mat_R * Vector4( 0, 0, -0.02f, 1 );
+	Vector4 end = mat_R * Vector4( 0, 0, -39.f, 1 );
+	Vector3 color( 1.0f, 0.0f, 0.0f );
+	m_uiControllerRayVertcount = 0;
+
+
+	//update ray endpos if ray intersect the pad
+	glm::vec2 UV = calculateshootingPadUV();// update shootingraycutPos
+	float panelpos_x = UV.x;
+	float panelpos_y = UV.y;		
+	Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
+	Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
+	Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
+	Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
+	point_lefttop = mat_L * point_lefttop;
+	point_righttop = mat_L * point_righttop;
+	point_leftbottom = mat_L * point_leftbottom;
+	point_rightbottom = mat_L * point_rightbottom;
+	glm::vec3 Edge1 = glm::vec3(point_righttop.x - point_lefttop.x,point_righttop.y - point_lefttop.y,point_righttop.z - point_lefttop.z);
+	glm::vec3 Edge2 = glm::vec3(point_leftbottom.x - point_lefttop.x,point_leftbottom.y - point_lefttop.y,point_leftbottom.z - point_lefttop.z);
+	if(showshootingray&&(UV.x> 0)&&(UV.y>0))
+	{
+		AddrayVertex(start.x,start.y,start.z,color.x,color.y,color.z,vertdataarray);
+		AddrayVertex(shootingraycutPos.x,shootingraycutPos.y,shootingraycutPos.z,color.x,color.y,color.z,vertdataarray);
+		m_uiControllerRayVertcount += 2;
+
+	// if(panelpos_x <= 0.436)
+	// {
+	// 	if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
+	// 	{
+	// 		glm::vec3 V0,V1,V2,V3;
+	// 		V0 = point_lefttop + 0.1* Edge1 + 0.2 * Edge2
+	// 		AddrayVertex(,point_lefttop.y+0.1,point_lefttop.z+0.1,color.x,color.y,color.z,vertdataarray);
+	// 		AddrayVertex(point_lefttop.x+0.1,point_lefttop.y+0.1,point_lefttop.z+0.1,color.x,color.y,color.z,vertdataarray);
+	// 		qDebug()<<"show red box terashift in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
+	// 	{
+	
+	// 		qDebug()<<"change left function to terazoom in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
+	// 	{
+	
+	// 		qDebug()<<"change left function to undo/redo in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
+	// 	{
+	
+	// 		qDebug()<<"change left function to contrast in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
+	// 	{
+
+	// 		qDebug()<<"change left function to surface in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
+	// 	{
+	
+	// 		qDebug()<<"change left function to change color in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
+	// 	{
+	
+	// 		qDebug()<<"change left function to virtual in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
+	// 	{
+	
+	// 		qDebug()<<"change left function to freezee in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
+	// 	{
+	
+	// 		qDebug()<<"change left function to linewidth in panel";
+	// 	}
+	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
+	// 	{
+	
+	// 		qDebug()<<"change left function to autootate in panel";
+	// 	}
+	// }
+	//choose Right controllerFunction
+	if(panelpos_x >= 0.657)
+	{
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		{
+	
+			qDebug()<<"change right function to drawline in panel";
+		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		{
+	
+			qDebug()<<"change right function to deleteline in panel";
+		}
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		{
+	
+			qDebug()<<"change right function to drawmaker in panel";
+		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		{
+	
+			qDebug()<<"change right function to deletemaker in panel";
+		}
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		{
+	
+			qDebug()<<"change right function to drag in panel";
+		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		{
+	
+			qDebug()<<"change right function to splitline in panel";
+		}
+	}
+	}
+	//update  red logo on where you choose
+
+	if(m_iControllerRayVAO == 0)
+	{
+		glGenVertexArrays(1, &m_iControllerRayVAO);
+
+		glGenBuffers(1, &m_iControllerRayVBO);
+
+		glBindVertexArray(m_iControllerRayVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_iControllerRayVBO);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void *)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void *)(3* sizeof(float)));
+		glBindVertexArray(0);
+		qDebug()<<"set up controllerray VAO ";
+	}
+		glBindBuffer(GL_ARRAY_BUFFER, m_iControllerRayVBO);
+
+	if( vertdataarray.size() > 0 )
+	{
+		glBufferData(GL_ARRAY_BUFFER,  sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STREAM_DRAW );
+	}	
+}
 //void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 //{
 //	NeuronSWC S0,S1;
@@ -4456,19 +4713,21 @@ void CMainApplication::RenderControllerAxes() //note: note render, actually setu
 		
 			m_uiControllerVertcount += 2;
 		}
+		
+		//prepare the shooting ray
+		
+		// if(showshootingray && (unTrackedDevice ==vr::k_unTrackedDeviceIndex_Hmd + 3))  //only right controller render ray
+		// {		Vector4 start = mat * Vector4( 0, 0, -0.02f, 1 );
+		// 		Vector4 end = mat * Vector4( 0, 0, -39.f, 1 );
+		// 		Vector3 color( .92f, .92f, .71f );
 
-		// prepare the shooting ray
-		//Vector4 start = mat * Vector4( 0, 0, -0.02f, 1 );
-		//Vector4 end = mat * Vector4( 0, 0, -39.f, 1 );
-		//Vector3 color( .92f, .92f, .71f );
+		// 		vertdataarray.push_back( start.x );vertdataarray.push_back( start.y );vertdataarray.push_back( start.z );//note: ray?
+		// 		vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
 
-		//vertdataarray.push_back( start.x );vertdataarray.push_back( start.y );vertdataarray.push_back( start.z );//note: ray?
-		//vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
-
-		//vertdataarray.push_back( end.x );vertdataarray.push_back( end.y );vertdataarray.push_back( end.z );
-		//vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
-		//m_uiControllerVertcount += 2;
-	}
+		// 		vertdataarray.push_back( end.x );vertdataarray.push_back( end.y );vertdataarray.push_back( end.z );
+		// 		vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
+		// 		m_uiControllerVertcount += 2;}
+		// }
 
 	// Setup the VAO the first time through.
 	if ( m_unControllerVAO == 0 )
@@ -4499,6 +4758,7 @@ void CMainApplication::RenderControllerAxes() //note: note render, actually setu
 	{
 		//$ TODO: Use glBufferSubData for this...
 		glBufferData( GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STREAM_DRAW );
+	}
 	}
 }
 
@@ -5124,6 +5384,17 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glUniformMatrix4fv( m_nControllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
 		glBindVertexArray( m_unControllerVAO );
 		glDrawArrays( GL_LINES, 0, m_uiControllerVertcount );
+		glBindVertexArray( 0 );
+	}
+	//=================== draw the controller shooting ray ======================
+	if( !bIsInputCapturedByAnotherProcess )
+	{
+		glUseProgram( m_unControllerRayProgramID );
+		glUniformMatrix4fv( m_nControllerRayMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+		glBindVertexArray( m_iControllerRayVAO );
+		glEnable(GL_DEPTH_TEST);
+		glLineWidth(6);
+		glDrawArrays( GL_LINES, 0, m_uiControllerRayVertcount );
 		glBindVertexArray( 0 );
 	}
 	//=================== Render Model rendering ======================
@@ -6355,4 +6626,169 @@ void CMainApplication::SetupAllMorphologyLine()
 		SetupSingleMorphologyLine(i,0);
 	}
 	qDebug()<<"Set up all NTs' VAO&VBO done";
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Detect if the ray intersects the function panel
+//-----------------------------------------------------------------------------
+glm::vec2 CMainApplication::calculateshootingPadUV()
+{
+
+	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
+	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
+	Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
+	Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
+	Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
+	Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
+	point_lefttop = mat_L * point_lefttop;
+	point_righttop = mat_L * point_righttop;
+	point_leftbottom = mat_L * point_leftbottom;
+	point_rightbottom = mat_L * point_rightbottom;
+
+
+	//update shootingray data and Pad pos
+	glm::vec3 FuncPadPosV1 = glm::vec3(point_lefttop.x,point_lefttop.y,point_lefttop.z);
+	glm::vec3 FuncPadPosV0 = glm::vec3(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z);
+	glm::vec3 FuncPadPosV2 = glm::vec3(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z);
+	Vector4 startpoint(0.0f,0.0f,-0.02f,1);
+	Vector4 shootingDir(0.0f,0.0f,-39.0f,1);
+	startpoint = mat_R * startpoint;
+	shootingDir = mat_R * shootingDir;
+	shootingraystartPos = glm::vec3(startpoint.x,startpoint.y,startpoint.z);
+	shootingrayDir = glm::vec3(shootingDir.x,shootingDir.y,shootingDir.z);
+
+
+
+
+	glm::vec3 E1 = FuncPadPosV1-FuncPadPosV0;
+	glm::vec3  E2 = FuncPadPosV2-FuncPadPosV0;
+	glm::vec3  P = glm::cross(shootingrayDir,E2);
+	
+	float det = glm::dot(E1, P);
+	glm::vec3  T;
+	 if( det >0 )
+    {
+        T = shootingraystartPos - FuncPadPosV0;
+		qDebug()<<"det > 0";
+    }
+    else
+     {
+         T = FuncPadPosV0 - shootingraystartPos;
+         det = -det;
+     }
+	if(det < 0.0001f)
+		{qDebug()<<"det<0.001f";return glm::vec2(-1,-1);}
+	float u = glm::dot(T, P);
+	if(u<0.0f||u>det)
+		{qDebug()<<"u<0\ u>1";return glm::vec2(-1,-1);}
+	glm::vec3  Q = glm::cross(T,E1);
+	float v=glm::dot(shootingrayDir, Q);
+	if(v<0 || u>det || v>det)
+		{qDebug()<<"v<0 \u>1 v>1";return glm::vec2(-1,-1);}
+	//t means shooting Distance from the starting point of the ray to the point of intersection
+	float t = glm::dot(E2, Q);
+	float fInvDet = 1.0f/det;
+	t *= fInvDet;
+	u *= fInvDet;
+	v *= fInvDet;
+
+	shootingraycutPos = FuncPadPosV0+u*E1 +v* E2;
+	return glm::vec2(v,1-u);
+}
+
+void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
+{
+	float panelpos_x=UV.x;
+	float panelpos_y=UV.y;
+	qDebug()<<"0\n";
+
+//choose left controllerFunction
+	if(panelpos_x <= 0.436)
+	{
+		qDebug()<<"1\n";
+		if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
+		{
+			m_modeGrip_L = _TeraShift;
+			qDebug()<<"change left function to terashift in panel";
+		}
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
+		{
+			m_modeGrip_L = _TeraZoom;
+			qDebug()<<"change left function to terazoom in panel";
+		}
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
+		{
+			m_modeGrip_L = _UndoRedo;
+			qDebug()<<"change left function to undo/redo in panel";
+		}
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
+		{
+			m_modeGrip_L = _Contrast;
+			qDebug()<<"change left function to contrast in panel";
+		}
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
+		{
+			m_modeGrip_L = _Surface;
+			qDebug()<<"change left function to surface in panel";
+		}
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
+		{
+			m_modeGrip_L = _ColorChange;
+			qDebug()<<"change left function to change color in panel";
+		}
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
+		{
+			m_modeGrip_L = _VirtualFinger;
+			qDebug()<<"change left function to virtual in panel";
+		}
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
+		{
+			m_modeGrip_L = _Freeze;
+			qDebug()<<"change left function to freezee in panel";
+		}
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
+		{
+			m_modeGrip_L = _LineWidth;
+			qDebug()<<"change left function to linewidth in panel";
+		}
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
+		{
+			m_modeGrip_L = _AutoRotate;
+			qDebug()<<"change left function to autootate in panel";
+		}
+	}
+	//choose Right controllerFunction
+	if(panelpos_x >= 0.657)
+	{
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		{
+			m_modeGrip_R = m_drawMode;
+			qDebug()<<"change right function to drawline in panel";
+		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		{
+			m_modeGrip_R = m_deleteMode;
+			qDebug()<<"change right function to deleteline in panel";
+		}
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		{
+			m_modeGrip_R = m_markMode;
+			qDebug()<<"change right function to drawmaker in panel";
+		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		{
+			m_modeGrip_R = m_delmarkMode;
+			qDebug()<<"change right function to deletemaker in panel";
+		}
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		{
+			m_modeGrip_R = m_dragMode;
+			qDebug()<<"change right function to drag in panel";
+		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		{
+			m_modeGrip_R = m_splitMode;
+			qDebug()<<"change right function to splitline in panel";
+		}
+	}
 }

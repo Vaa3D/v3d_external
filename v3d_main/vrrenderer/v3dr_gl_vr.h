@@ -121,7 +121,8 @@ public:
 	bool SetupTexturemaps();//load controller textures and setup properties
 	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
 	void SetupControllerTexture();//update texture coordinates according to controller's new location
-
+	void SetupControllerRay();
+	void AddrayVertex(float fl0, float fl1, float fl2, float fl3, float fl4,float fl5, std::vector<float> &vertdata);
 	void SetupMorphologyLine(int drawMode);
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
@@ -140,7 +141,7 @@ public:
 	void SetupCameras();
 	void SetupCamerasForMorphology();
 
-
+	void MenuFunctionChoose(glm::vec2 UV);
 
 	//undo redo
 	void UndoLastSketchedNT();
@@ -286,6 +287,9 @@ private: // OpenGL bookkeeping
 	GLint m_nCtrTexMatrixLocation;
 	unsigned int m_uiControllerTexIndexSize;
 	
+	//right controller shootingray VAO/VBO
+	GLuint m_iControllerRayVAO;
+	GLuint m_iControllerRayVBO;
 	// controller index , get them in HandleInput()
 	int	m_iControllerIDLeft;
 	int	m_iControllerIDRight;
@@ -335,7 +339,7 @@ private: // OpenGL bookkeeping
 	GLuint m_glControllerVertBuffer;
 	GLuint m_unControllerVAO;//note: axes for controller
 	unsigned int m_uiControllerVertcount;
-
+	unsigned int m_uiControllerRayVertcount;
 	Matrix4 m_mat4HMDPose;//note: m_rmat4DevicePose[hmd].invert()
 	Matrix4 m_mat4eyePosLeft;
 	Matrix4 m_mat4eyePosRight;
@@ -384,10 +388,11 @@ private: // OpenGL bookkeeping
 	GLuint m_unCompanionWindowProgramID;
 	GLuint m_unControllerTransformProgramID;
 	GLuint m_unRenderModelProgramID;
+	GLuint m_unControllerRayProgramID;
 
 	GLint m_nControllerMatrixLocation;
 	GLint m_nRenderModelMatrixLocation;
-
+	GLint m_nControllerRayMatrixLocation;
 	struct FramebufferDesc
 	{
 		GLuint m_nDepthBufferId;
@@ -450,6 +455,13 @@ private:
 	static float fContrast;
 
 	static float iLineWid;
+	public:
+	bool showshootingray;
+	glm::vec3  shootingraystartPos;
+	glm::vec3  shootingrayDir;
+	glm::vec3 shootingraycutPos;
+	glm::vec2 calculateshootingPadUV();
+
 };
 
 
