@@ -1021,7 +1021,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
     //NeuronSWC cur_node;
     if(event->type()==QEvent::MouseButtonDblClick)
     {
-        if(event->button()==Qt::LeftButton&&miniMapCurBox&&alreadyLoadSwc)
+        if(event->button()==Qt::LeftButton&&alreadyLoadSwc)
         {
             if(xRot%180==0&&yRot%180==0&&zRot%180==0)
             {
