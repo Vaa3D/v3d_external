@@ -2031,8 +2031,9 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
             insituZoomOut_z = (source->volD0 + source->volD1)/2;
 
             insituZoomOut_res = volResIndex;
+            float pow_x=2;
 
-            float ratio = pow(2, source->volResIndex - volResIndex);
+            float ratio = pow(pow_x, source->volResIndex - volResIndex);
 
             insituZoomOut_x /= ratio;
             insituZoomOut_y /= ratio;
