@@ -456,12 +456,12 @@ private:
 
 	static float iLineWid;
 	public:
-	bool showshootingray;
+	bool showshootingPad;
 	glm::vec3  shootingraystartPos;
 	glm::vec3  shootingrayDir;
 	glm::vec3 shootingraycutPos;
 	glm::vec2 calculateshootingPadUV();
-
+	bool showshootingray;
 };
 
 

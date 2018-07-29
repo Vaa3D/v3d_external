@@ -729,7 +729,8 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, _call_assemble_plugin(false)
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
-	,showshootingray(false)
+	, showshootingPad(false)
+	, showshootingray(false)
 	//, font_VR (NULL)
 
 {
@@ -1617,7 +1618,7 @@ bool CMainApplication::HandleInput()
 			}//
 			//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
 			if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
-				!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&!(showshootingray))
+				!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&!(showshootingPad))
 			{
 				float m_fTouchPosY;
 				float m_fTouchPosX;
@@ -2530,18 +2531,18 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		}	
 		qDebug("m_modeControlTouchPad_R=%d,m_translationMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_translationMode,m_rotateMode,m_zoomMode);
 	}
-		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&showshootingray)	//detect trigger when menu show
+		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&showshootingPad)	//detect trigger when menu show
 		{
-				glm::vec2 texturePos = calculateshootingPadUV();
-				MenuFunctionChoose(texturePos);
-				if(texturePos.x>=0&&texturePos.y >=0)
+				glm::vec2 ShootingPadUV = calculateshootingPadUV();
+				MenuFunctionChoose(ShootingPadUV);
+				if(ShootingPadUV.x>=0&&ShootingPadUV.y >=0)
 					{
-						qDebug()<<texturePos.x<<texturePos.y<<"\n";
+						qDebug()<<ShootingPadUV.x<<ShootingPadUV.y<<"\n";
 						qDebug()<<"shoot it!";
 					}
-				else if(texturePos.x==-1&&texturePos.y==-1)
+				else if(ShootingPadUV.x==-1&&ShootingPadUV.y==-1)
 					qDebug()<< "didn't shoot the Pad";
-				qDebug()<<showshootingray;
+				qDebug()<<showshootingPad;
 		}
 
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
@@ -3008,7 +3009,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
 				//call virtual Pad
-				showshootingray =! showshootingray;//show virtualPad
+				showshootingPad =! showshootingPad;//show virtualPad
 				//test trigger shooting ray func for now
 	}
 		////bool_ray = true;
@@ -3949,7 +3950,7 @@ void CMainApplication::SetupControllerTexture()
 		point_rightbottom = mat_L * point_rightbottom;
 
 
-		if(showshootingray)
+		if(showshootingPad)
 		{		AddVertex(point_lefttop.x,point_lefttop.y,point_lefttop.z,0.5,0.0f,vcVerts);
 				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
 				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
@@ -4105,9 +4106,9 @@ void CMainApplication::SetupControllerRay()
 
 
 	//update ray endpos if ray intersect the pad
-	glm::vec2 UV = calculateshootingPadUV();// update shootingraycutPos
-	float panelpos_x = UV.x;
-	float panelpos_y = UV.y;		
+	glm::vec2 ShootingPadUV = calculateshootingPadUV();// update shootingraycutPos
+	float panelpos_x = ShootingPadUV.x;
+	float panelpos_y = ShootingPadUV.y;		
 	Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
 	Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
 	Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
@@ -4118,7 +4119,11 @@ void CMainApplication::SetupControllerRay()
 	point_rightbottom = mat_L * point_rightbottom;
 	glm::vec3 Edge1 = glm::vec3(point_righttop.x - point_lefttop.x,point_righttop.y - point_lefttop.y,point_righttop.z - point_lefttop.z);
 	glm::vec3 Edge2 = glm::vec3(point_leftbottom.x - point_lefttop.x,point_leftbottom.y - point_lefttop.y,point_leftbottom.z - point_lefttop.z);
-	if(showshootingray&&(UV.x> 0)&&(UV.y>0))
+	if((ShootingPadUV.x> 0)&&(ShootingPadUV.y>0))
+	showshootingray = true;
+	else
+	showshootingray = false;
+	if(showshootingPad&&(ShootingPadUV.x> 0)&&(ShootingPadUV.y>0))
 	{
 		AddrayVertex(start.x,start.y,start.z,color.x,color.y,color.z,vertdataarray);
 		AddrayVertex(shootingraycutPos.x,shootingraycutPos.y,shootingraycutPos.z,color.x,color.y,color.z,vertdataarray);
@@ -4716,7 +4721,7 @@ void CMainApplication::RenderControllerAxes() //note: note render, actually setu
 		
 		//prepare the shooting ray
 		
-		// if(showshootingray && (unTrackedDevice ==vr::k_unTrackedDeviceIndex_Hmd + 3))  //only right controller render ray
+		// if(showshootingPad && (unTrackedDevice ==vr::k_unTrackedDeviceIndex_Hmd + 3))  //only right controller render ray
 		// {		Vector4 start = mat * Vector4( 0, 0, -0.02f, 1 );
 		// 		Vector4 end = mat * Vector4( 0, 0, -39.f, 1 );
 		// 		Vector3 color( .92f, .92f, .71f );
@@ -5396,6 +5401,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glLineWidth(6);
 		glDrawArrays( GL_LINES, 0, m_uiControllerRayVertcount );
 		glBindVertexArray( 0 );
+		glLineWidth(iLineWid);
 	}
 	//=================== Render Model rendering ======================
 	if (m_bControllerModelON) 
