@@ -75,7 +75,9 @@ float CMainApplication::fBrightness = 0.9;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
-
+ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
+ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
+bool CMainApplication::showshootingPad = false;
 #define dist_thres 0.01
 #define connection_rigourous 0.5
 #define default_radius 0.618
@@ -729,7 +731,6 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, _call_assemble_plugin(false)
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
-	, showshootingPad(false)
 	, showshootingray(false)
 	//, font_VR (NULL)
 
@@ -901,8 +902,8 @@ bool CMainApplication::BInit()
 	//m_globalMatrix = m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
 	m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
 
-	m_modeGrip_R = m_drawMode;
-	m_modeGrip_L = ModeControlSettings(m_modeControlGrip_L);
+	// m_modeGrip_R = global_padm_modeGrip_R;
+	// m_modeGrip_L = global_padm_modeGrip_L;
 	delName = "";
 	dragnodePOS="";
 
@@ -1084,6 +1085,10 @@ void CMainApplication::Shutdown()
 	float trans_y = 1.5 ;
 	float trans_z = 0.4 ;
 	
+	//remeber last Grip choice
+	// global_padm_modeGrip_L = m_modeGrip_L;
+	// global_padm_modeGrip_R = m_modeGrip_R;
+
 	//reverse the normalization (so that the next VR session can normalize correctly)
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z) ); 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1.0f/m_globalScale,1.0f/m_globalScale,1.0f/m_globalScale));
@@ -5415,6 +5420,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			continue;
 
 		const vr::TrackedDevicePose_t & pose = m_rTrackedDevicePose[ unTrackedDevice ];
+		
 		if( !pose.bPoseIsValid )
 			continue;
 

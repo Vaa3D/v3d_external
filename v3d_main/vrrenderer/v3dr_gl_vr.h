@@ -54,7 +54,8 @@ enum ModeControlSettings
 	_LineWidth,
 	_AutoRotate
 };
-
+// int global_padm_modeGrip_L = _donothing;//liqi
+// int global_padm_modeGrip_R = m_drawMode;
 typedef QList<NeuronTree> NTL;
 
 class Shader;
@@ -175,7 +176,7 @@ public:
 	NTL nonEditableLoadedNTL;
 	bool READY_TO_SEND;
 	bool isOnline;
-	ModelControlR  m_modeGrip_R;
+	static ModelControlR  m_modeGrip_R;
 	QString delName;
 	QString markerPOS;
 	QString delmarkerPOS;
@@ -249,7 +250,7 @@ private: // OpenGL bookkeeping
 	int m_modeControlGrip_R;
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
-	ModeControlSettings m_modeGrip_L;
+	static ModeControlSettings m_modeGrip_L;
 	bool m_translationMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
@@ -456,7 +457,7 @@ private:
 
 	static float iLineWid;
 	public:
-	bool showshootingPad;
+	static bool showshootingPad;
 	glm::vec3  shootingraystartPos;
 	glm::vec3  shootingrayDir;
 	glm::vec3 shootingraycutPos;
