@@ -1741,7 +1741,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 				hashNeuron.insert(S.n, listNeuron.size()-1);
             }
 		}
-		qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
+		//qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
 		if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
 		{
 			for (int i=0; i<listNeuronTree.size(); i++)
@@ -1753,7 +1753,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 				}
 			}
 		    updateNeuronBoundingBox();
-		    qDebug()<<"remove an empty neuron";
+		    //qDebug()<<"remove an empty neuron";
 			return; //////////////////////////////
 		}
 		NeuronTree SS;
