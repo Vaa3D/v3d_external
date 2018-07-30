@@ -2022,18 +2022,26 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         qDebug()<<"prev ? "<<volResIndex<<" == current ? "<<source->volResIndex;
 
         //
+        PMain* pMain = PMain::getInstance();
+
+        insituZoomOut_dx = round(pMain->Hdim_sbox->value()/2.0f);
+        insituZoomOut_dy = round(pMain->Vdim_sbox->value()/2.0f);
+        insituZoomOut_dz = round(pMain->Ddim_sbox->value()/2.0f);
+
+        //
         if(insituZoomOut && volResIndex>0 && source->volResIndex > volResIndex)
         {
-            int thresh = 5; // voxels
+            int thresh = 4; // voxels
 
+            // center
             insituZoomOut_x = (source->volH0 + source->volH1)/2;
             insituZoomOut_y = (source->volV0 + source->volV1)/2;
             insituZoomOut_z = (source->volD0 + source->volD1)/2;
 
             insituZoomOut_res = volResIndex;
-            float pow_x=2;
 
-            float ratio = pow(pow_x, source->volResIndex - volResIndex);
+            float pow_x = 2;
+            float ratio = pow(pow_x, float(source->volResIndex - volResIndex));
 
             insituZoomOut_x /= ratio;
             insituZoomOut_y /= ratio;
@@ -2043,9 +2051,18 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
             int centy = (volV0 + volV1)/2;
             int centz = (volD0 + volD1)/2;
 
-            //qDebug()<<"translate? ... ... "<<ratio<<abs(centx-insituZoomOut_x)<<abs(centy-insituZoomOut_y)<<abs(centz-insituZoomOut_z);
+            // block size
+            zoomOutSize_x = volH1 - volH0;
+            zoomOutSize_y = volV1 - volV0;
+            zoomOutSize_z = volD1 - volD0;
 
-            if(abs(centx-insituZoomOut_x)>thresh || abs(centy-insituZoomOut_y)>thresh || abs(centz-insituZoomOut_z)>thresh)
+            int curr_width = 2*insituZoomOut_dx;
+            int curr_height = 2*insituZoomOut_dy;
+            int curr_depth = 2*insituZoomOut_dz;
+
+            //
+            if(abs(centx-insituZoomOut_x)>thresh || abs(centy-insituZoomOut_y)>thresh || abs(centz-insituZoomOut_z)>thresh
+                    || abs(zoomOutSize_x - curr_width)>thresh || abs(zoomOutSize_y - curr_height)>thresh || abs(zoomOutSize_z - curr_depth)>thresh )
             {
                 isTranslate = true;
             }
@@ -2144,11 +2161,11 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         CViewer::current = this;
 
         //selecting the current resolution in the PMain GUI and disabling previous resolutions
-        PMain* pMain = PMain::getInstance();
+//        PMain* pMain = PMain::getInstance();
 
-        insituZoomOut_dx = round(pMain->Hdim_sbox->value()/2.0f);
-        insituZoomOut_dy = round(pMain->Vdim_sbox->value()/2.0f);
-        insituZoomOut_dz = round(pMain->Ddim_sbox->value()/2.0f);
+//        insituZoomOut_dx = round(pMain->Hdim_sbox->value()/2.0f);
+//        insituZoomOut_dy = round(pMain->Vdim_sbox->value()/2.0f);
+//        insituZoomOut_dz = round(pMain->Ddim_sbox->value()/2.0f);
 
         pMain->resolution_cbox->setCurrentIndex(volResIndex);
         for(int i=0; i<pMain->resolution_cbox->count(); i++)

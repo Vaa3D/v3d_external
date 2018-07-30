@@ -91,6 +91,7 @@ class terafly::CViewer : public QWidget
         int insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz;
         bool isTranslate;
         bool toRetrieveData;
+        int zoomOutSize_x, zoomOutSize_y, zoomOutSize_z;
 
         //CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
