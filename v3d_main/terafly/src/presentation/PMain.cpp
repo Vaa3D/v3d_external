@@ -600,6 +600,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomOutMethod->addItem("In Situ");
     zoomOutMethod->installEventFilter(this);
     zoomOutMethod->setCurrentIndex(CSettings::instance()->getZoomOutMethod());
+    annotationChanged = false;
 
     //"Volume Of Interest (VOI)" panel widgets
     /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
@@ -1598,6 +1599,7 @@ void PMain::loadAnnotations()
                 #endif
 
                 //
+                annotationChanged = true;
                 updateOverview();
             }
             else
@@ -2050,6 +2052,7 @@ void PMain::voxelSizeChanged(double)
     CSettings::instance()->setVoxelSizeZ(z_dsb->value());
 
     //
+    annotationChanged = true;
     updateOverview();
 }
 
@@ -2664,6 +2667,16 @@ void PMain::setOverview(bool enabled)
         return;
     }
 
+    if(annotationChanged)
+    {
+       annotationChanged = false;
+    }
+    else
+    {
+        qDebug()<<"No annotations changed!";
+        return;
+    }
+
     //
     CViewer *cur_win = CViewer::getCurrent();
     refSys->setFilled(!enabled);
@@ -2759,7 +2772,7 @@ void PMain::setOverview(bool enabled)
 */
 
         refSys->nt = PluginInterface::getSWC();
-        refSys->nt_init=PluginInterface::getSWC();
+        refSys->nt_init = PluginInterface::getSWC();
         refSys->markList = PluginInterface::getLandmark();
         refSys->setVoxelSize(CSettings::instance()->getVoxelSizeX(), CSettings::instance()->getVoxelSizeY(), CSettings::instance()->getVoxelSizeZ());
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
@@ -3100,8 +3113,10 @@ void PMain::annotationsChanged()
     }
 
     // update mini-map, realtime update is slow
+    annotationChanged = true;
     // updateOverview();
 
+    //
     #ifdef Q_OS_MAC
     if(tabs->count() < 4)
     {

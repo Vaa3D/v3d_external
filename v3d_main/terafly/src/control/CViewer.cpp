@@ -2386,7 +2386,18 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     // @ADDED by Alessandro on 2017-06-26: zoom-in around marker or ROI to the highest resolution
     else if(roi->ops_type == 0 && !forceZoomIn)
     {
-        newViewer(roi->xe, roi->ye, roi->ze, CImport::instance()->getResolutions()-1, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
+        // add intermediate resolutions for future zoom out, 07/30/18 YY
+        int zoomInRes = volResIndex + 1;
+        int highestRes = CImport::instance()->getResolutions()-1;
+
+//        while(zoomInRes<highestRes)
+//        {
+//            newViewer(roi->xe, roi->ye, roi->ze, zoomInRes++, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
+//            // update
+//        }
+
+        //
+        newViewer(roi->xe, roi->ye, roi->ze, highestRes, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
     }
 
     // zoom-in around marker or ROI to the higher resolution

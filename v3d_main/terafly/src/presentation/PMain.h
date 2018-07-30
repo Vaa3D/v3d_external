@@ -347,6 +347,7 @@ class terafly::PMain : public QWidget
 
 		bool resumeVR;
         bool isOverviewActive;
+        bool annotationChanged;
 
 
     public slots:
