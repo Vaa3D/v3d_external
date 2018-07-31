@@ -2772,8 +2772,8 @@ void PMain::setOverview(bool enabled)
 */
 
         refSys->nt = PluginInterface::getSWC();
-        refSys->nt_init = PluginInterface::getSWC();
-        refSys->markList = PluginInterface::getLandmark();
+        //refSys->nt_init = PluginInterface::getSWC();
+        //refSys->markList = PluginInterface::getLandmark();
         refSys->setVoxelSize(CSettings::instance()->getVoxelSizeX(), CSettings::instance()->getVoxelSizeY(), CSettings::instance()->getVoxelSizeZ());
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
 
