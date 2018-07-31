@@ -550,6 +550,7 @@ class terafly::PMain : public QWidget
 #endif
         void setOverview(bool enable);
         void updateOverview();
+        void updateAnnotationStatus();
 
     signals:
 

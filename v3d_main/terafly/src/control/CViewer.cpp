@@ -347,7 +347,10 @@ void CViewer::show()
             if(!PMain::getInstance()->isOverviewActive)
                 PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
             else
+            {
+                PMain::getInstance()->updateAnnotationStatus();
                 PMain::getInstance()->setOverview(true);
+            }
         }
         this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
         Vaa3D_rotationchanged(0);
@@ -387,8 +390,6 @@ void CViewer::show()
         PLog::instance()->appendOperation(new NewViewerOperation(QString("Opened view ").append(title.c_str()).toStdString(), tf::GPU, timer.elapsed()));
     else
         PLog::instance()->appendOperation(new ImportOperation( "Opened first viewer", tf::GPU, timer.elapsed()));
-
-    qDebug()<<"done CViewer show ... ...";
 }
 
 CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
@@ -833,9 +834,6 @@ void CViewer::receiveData(
                                         !data_c.empty() ? strprintf("%d,%d,%d,%d,%d", data_c[0], data_c[1], data_c[2], data_c[3], data_c[4]).c_str() : "",
                                         finished ? "true" : "false").c_str(), __itm__current__function__);
 
-    // view3DWidget->removeEventFilter(this);
-    qDebug()<<"newViewer: view3DWidget->removeEventFilter ... ... call receiveData ... ...";
-
     char message[1000];
     CVolume* cVolume = CVolume::instance();
 
@@ -957,9 +955,6 @@ void CViewer::receiveData(
         }
     }
 
-    qDebug()<<"newViewer: done receiveData ... ...";
-    // view3DWidget->installEventFilter(this);
-
 //    QMessageBox::information(0, "Stop", "Wait...");
     /**/tf::debug(tf::LEV3, "method terminated", __itm__current__function__);
 }
@@ -982,6 +977,27 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
+
+
+//    qDebug()<<"call newViewer ... ...";
+
+//    if(toBeClosed)
+//        qDebug()<<"toBeClosed is true";
+//    else
+//        qDebug()<<"toBeClosed is false";
+
+
+//    if(_isActive)
+//        qDebug()<<"_isActive is true";
+//    else
+//        qDebug()<<"_isActive is false";
+
+//    if(_isReady)
+//        qDebug()<<"_isReady is true";
+//    else
+//        qDebug()<<"_isReady is false";
+//    printf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
+//                                            titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID);
 
     // check precondition #1: active window
     if(!_isActive || toBeClosed)
@@ -1273,12 +1289,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         PMain::getInstance()->resetGUI();
     }
-
-    //
-//    if(isTranslate)
-//    {
-//        QTimer::singleShot(500, this, SLOT(inSituZoomOutTranslated()));
-//    }
 }
 
 //safely close this viewer
@@ -1493,8 +1503,6 @@ throw (tf::RuntimeException)
 
     return CImageUtils::mip(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset, img_count, dir, to_BGRA, alpha);
 }
-
-
 
 /**********************************************************************************
 * Makes the current view the last one by  deleting (and deallocting) its subsequent
@@ -2274,7 +2282,10 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
             if(!PMain::getInstance()->isOverviewActive)
                 PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
             else
+            {
+                PMain::getInstance()->updateAnnotationStatus();
                 PMain::getInstance()->setOverview(true);
+            }
         }
         // refresh annotation toolbar
         PAnoToolBar::instance()->refreshTools();
@@ -2390,10 +2401,37 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
         int zoomInRes = volResIndex + 1;
         int highestRes = CImport::instance()->getResolutions()-1;
 
+//        int centx = (volH1 - volH0)/2;
+//        int centy = (volV1 - volV0)/2;
+//        int centz = (volD1 - volD0)/2;
+
 //        while(zoomInRes<highestRes)
 //        {
-//            newViewer(roi->xe, roi->ye, roi->ze, zoomInRes++, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
-//            // update
+//            qDebug()<<"zoom in to res: #"<<zoomInRes<<centx<<centy<<centz<<roiCenterX<<roiCenterY<<roiCenterZ;
+//            newViewer(centx, centy, centz, zoomInRes++, volT0, volT1);
+
+//            qDebug()<<"after newViewer ... ...";
+
+//            if(toBeClosed)
+//                qDebug()<<"toBeClosed is true";
+//            else
+//                qDebug()<<"toBeClosed is false";
+
+
+//            if(_isActive)
+//                qDebug()<<"_isActive is true";
+//            else
+//                qDebug()<<"_isActive is false";
+
+//            if(_isReady)
+//                qDebug()<<"_isReady is true";
+//            else
+//                qDebug()<<"_isReady is false";
+
+
+////            toBeClosed = false;
+////            _isActive = true;
+////            _isReady = true;
 //        }
 
         //

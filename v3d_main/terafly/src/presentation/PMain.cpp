@@ -3517,4 +3517,7 @@ void PMain::updateOverview()
     setOverview(true);
 }
 
-
+void PMain::updateAnnotationStatus()
+{
+    annotationChanged = true;
+}
