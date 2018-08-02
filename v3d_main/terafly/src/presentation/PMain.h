@@ -269,6 +269,8 @@ class terafly::PMain : public QWidget
         //layout
         int marginLeft;                 //width of first column containing labels only
 
+        QString recentlyUsedPath;       // load and save annotations in most recently used folder
+
     public:
 
         /*********************************************************************************

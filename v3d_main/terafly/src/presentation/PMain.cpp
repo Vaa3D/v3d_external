@@ -375,6 +375,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     from16bitsdataMenu->addAction(from16bitsdataActionWidget);
     connect(from16bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from16bitsdataChanged(int)));
 
+    //
+    recentlyUsedPath = QString(CSettings::instance()->getRecentlyUsedPath().c_str());
 
     // "Utility" Menu
     utilityMenu = menuBar->addMenu("Utilities");
@@ -1546,8 +1548,19 @@ void PMain::loadAnnotations()
         if(cur_win)
         {
             //obtaining current volume's parent folder path
-            QDir dir(CImport::instance()->getPath().c_str());
-            dir.cdUp();
+            QDir dir;
+
+            if(recentlyUsedPath.isEmpty())
+            {
+                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+            }
+            else
+            {
+                dir = QFileInfo(recentlyUsedPath).dir();
+            }
+
+//            QDir dir(CImport::instance()->getPath().c_str());
+//            dir.cdUp();
 
             #ifdef _USE_QT_DIALOGS
             QString path = "";
@@ -1597,6 +1610,10 @@ void PMain::loadAnnotations()
                     tabs->insertTab(3, minimap_page, "Overview");
                 }
                 #endif
+
+                //
+                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                recentlyUsedPath = path;
 
                 //
                 annotationChanged = true;
@@ -1718,8 +1735,19 @@ void PMain::saveAnnotationsAs()
         if(cur_win)
         {
             //obtaining current volume's parent folder path
-            QDir dir(CImport::instance()->getPath().c_str());
-            dir.cdUp();
+//            QDir dir(CImport::instance()->getPath().c_str());
+//            dir.cdUp();
+
+            QDir dir;
+
+            if(recentlyUsedPath.isEmpty())
+            {
+                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+            }
+            else
+            {
+                dir = QFileInfo(recentlyUsedPath).dir();
+            }
 
             #ifdef _USE_QT_DIALOGS
             QString path = "";
@@ -1765,6 +1793,10 @@ void PMain::saveAnnotationsAs()
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(cursor);
+
+                //
+                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                recentlyUsedPath = path;
             }
             else
                 return;

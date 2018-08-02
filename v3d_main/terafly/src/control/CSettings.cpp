@@ -68,6 +68,7 @@ void CSettings::loadDefaultSettings()
     //TeraFly settings
     volumePathLRU = "";
     annotationPathLRU = "";
+    recentlyUsedPath = "";
     VOIdimV = VOIdimH = 256;
     VOIdimD = 256;
     VOIdimT = 1;
@@ -181,6 +182,8 @@ void CSettings::writeSettings()
     settings.setValue("volumeConverterStacksDepthLRU", volumeConverterStacksDepthLRU);
     settings.setValue("volumeConverterTimeSeries", volumeConverterTimeSeries);
 
+    settings.setValue("recentlyUsedPath", QString(recentlyUsedPath.c_str()));
+
     settings.setValue("verbosity", tf::DEBUG);
 }
 
@@ -267,7 +270,8 @@ void CSettings::readSettings()
         voxelsizeZ = settings.value("voxelsizeZ").toFloat();
     if(settings.contains("zoomOutMethod"))
         zoomOutMethod = settings.value("zoomOutMethod").toInt();
-
+    if(settings.contains("recentlyUsedPath"))
+        recentlyUsedPath = settings.value("recentlyUsedPath").toString().toStdString();
 
     int size = settings.beginReadArray("recentImages");
     recentImages.clear();
