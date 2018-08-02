@@ -2358,6 +2358,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+		case _ResetImage:
+			{
+				if(isOnline == false)
+				{
+					m_globalMatrix = glm::mat4();
+					SetupGlobalMatrix();
+				}
+			}
 		default:
 			break;
 		}
@@ -3626,6 +3634,7 @@ void CMainApplication::SetupControllerTexture()
 				break;
 			}
 		case _ColorChange:// display "ok"
+		case _ResetImage://display"ok
 		case _TeraShift:
 			{//_TeraShift
 				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.5f,vcVerts);
@@ -3832,6 +3841,15 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.625f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.5f,vcVerts);
 				break;
+			}
+		case _ResetImage:
+			{
+				AddVertex(point_M.x,point_M.y,point_M.z,0.085,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.17,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.085,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.085,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.17,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.17,0.625f,vcVerts);
 			}	
 		case _UndoRedo:
 		default:
@@ -6785,5 +6803,11 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		{
 			m_modeGrip_R = m_splitMode;
 		}
+		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
+		{
+			m_modeGrip_L = _ResetImage;
+		}
 	}
+
+
 }

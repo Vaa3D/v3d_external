@@ -38,7 +38,7 @@ enum ModelControlR
 	m_dragMode,
 	m_markMode,
     m_delmarkMode,
-	m_splitMode
+	m_splitMode,
 };
 enum ModeControlSettings
 {
@@ -52,7 +52,8 @@ enum ModeControlSettings
 	_VirtualFinger,	
 	_Freeze,
 	_LineWidth,
-	_AutoRotate
+	_AutoRotate,
+	_ResetImage
 };
 // int global_padm_modeGrip_L = _donothing;//liqi
 // int global_padm_modeGrip_R = m_drawMode;
