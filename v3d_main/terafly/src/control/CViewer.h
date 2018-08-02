@@ -416,6 +416,8 @@ class terafly::CViewer : public QWidget
 
         void inSituZoomOutTranslated();
 
+        void resetEvents();
+
     public:
 
         /**********************************************************************************

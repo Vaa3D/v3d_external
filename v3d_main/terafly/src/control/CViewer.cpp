@@ -601,13 +601,17 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         /******************** REDIRECTING MOUSE-WHEEL EVENTS *************************
         Mouse-wheel events are redirected to the customized wheelEvent handler
         ***************************************************************************/
-        if ((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
+        if((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
         {
             //qDebug()<<"CViewer: get a wheel event ... ...";
 
             QWheelEvent* wheelEvt = (QWheelEvent*)event;
             myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
             view3DWidget->removeEventFilter(this);
+
+            // fix no response issue after removeEventFilter and wait for a while, 8/1/2018 YY
+            QTimer::singleShot(500, this, SLOT(resetEvents()));
+
             return true;
         }
 
@@ -674,6 +678,16 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick)
         {
+
+//            if(current == this)
+//                qDebug()<<"current == this!";
+//            else if(current == prev)
+//                qDebug()<<"current == prev!";
+//            else if(current == next)
+//                qDebug()<<"current == next!";
+//            else
+//                qDebug()<<"current ?";
+
             if(PMain::getInstance()->isPRactive())
             {
                 QMessageBox::information(this->window3D, "Warning", "TeraFly is running in \"Proofreading\" mode. All TeraFly's' navigation features are disabled. "
@@ -978,26 +992,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
 
-
-//    qDebug()<<"call newViewer ... ...";
-
-//    if(toBeClosed)
-//        qDebug()<<"toBeClosed is true";
-//    else
-//        qDebug()<<"toBeClosed is false";
-
-
-//    if(_isActive)
-//        qDebug()<<"_isActive is true";
-//    else
-//        qDebug()<<"_isActive is false";
-
-//    if(_isReady)
-//        qDebug()<<"_isReady is true";
-//    else
-//        qDebug()<<"_isReady is false";
-//    printf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
-//                                            titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID);
+    qDebug()<<"call newViewer ... ... ";
 
     // check precondition #1: active window
     if(!_isActive || toBeClosed)
@@ -1166,7 +1161,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 
         // save the state of PMain GUI VOI's widgets
         saveSubvolSpinboxState();
-
 
         // disconnect current window from GUI's listeners and event filters
         disconnect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
@@ -1343,8 +1337,6 @@ throw (RuntimeException)
     for(uint8* img_p = img; img_p-img < img_dim; img_p++)
         *img_p=0;
 
-
-
     // compute actual VOI that can be copied, i.e. that intersects with the image currently displayed
     /**/tf::debug(tf::LEV3, "Compute intersection VOI", __itm__current__function__);
     QRect XRectDisplayed(QPoint(volH0, 0), QPoint(volH1, 1));
@@ -1431,7 +1423,6 @@ throw (RuntimeException)
             t1m = t1;
         }
     }
-
 
     // compute integer-ratio scaling
     uint scalx = static_cast<uint>(static_cast<float>(xDimInterp) / (x1-x0) +0.5f);
@@ -2171,10 +2162,6 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         //selecting the current resolution in the PMain GUI and disabling previous resolutions
 //        PMain* pMain = PMain::getInstance();
 
-//        insituZoomOut_dx = round(pMain->Hdim_sbox->value()/2.0f);
-//        insituZoomOut_dy = round(pMain->Vdim_sbox->value()/2.0f);
-//        insituZoomOut_dz = round(pMain->Ddim_sbox->value()/2.0f);
-
         pMain->resolution_cbox->setCurrentIndex(volResIndex);
         for(int i=0; i<pMain->resolution_cbox->count(); i++)
         {
@@ -2407,16 +2394,65 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
 //        while(zoomInRes<highestRes)
 //        {
-//            qDebug()<<"zoom in to res: #"<<zoomInRes<<centx<<centy<<centz<<roiCenterX<<roiCenterY<<roiCenterZ;
-//            newViewer(centx, centy, centz, zoomInRes++, volT0, volT1);
+//            qDebug()<<"zoom in to res: #"<<zoomInRes<<highestRes<<roiCenterX<<roiCenterY<<roiCenterZ<<view3DWidget->zoom();
 
-//            qDebug()<<"after newViewer ... ...";
+//            QApplication::sendEvent( this, new QMouseEvent( QEvent::MouseButtonDblClick, pos(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
+//            QApplication::processEvents();
+
+
+//            if(next)
+//            {
+//                qDebug()<<"next viewer ... ..."<<next->volH0;
+
+////                next->prev = prev;
+////                prev = next;
+
+//                if(next->toBeClosed)
+//                    qDebug()<<"toBeClosed is true";
+//                else
+//                    qDebug()<<"toBeClosed is false";
+
+//                if(next->_isActive)
+//                    qDebug()<<"_isActive is true";
+//                else
+//                    qDebug()<<"_isActive is false";
+
+//                if(next->_isReady)
+//                    qDebug()<<"_isReady is true";
+//                else
+//                    qDebug()<<"_isReady is false";
+
+
+//                if(current == this)
+//                    qDebug()<<"current == this!";
+//                else if(current == prev)
+//                    qDebug()<<"current == prev!";
+//                else if(current == next)
+//                    qDebug()<<"current == next!";
+//                else
+//                    qDebug()<<"current ?";
+
+
+
+////                setActive(true);
+////                _isReady = true;
+
+//                this = next;
+//                next = NULL;
+//            }
+//            else
+//            {
+//                zoomHistoryPushBack(view3DWidget->zoom());
+//                newViewer(roiCenterX, roiCenterY, roiCenterZ, zoomInRes++, volT0, volT1);
+//                V3dApplication::getInstance()->exec();
+//            }
+
+//            qDebug()<<"this viewer ... ...";
 
 //            if(toBeClosed)
 //                qDebug()<<"toBeClosed is true";
 //            else
 //                qDebug()<<"toBeClosed is false";
-
 
 //            if(_isActive)
 //                qDebug()<<"_isActive is true";
@@ -2429,9 +2465,11 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 //                qDebug()<<"_isReady is false";
 
 
-////            toBeClosed = false;
-////            _isActive = true;
-////            _isReady = true;
+
+
+//            toBeClosed = false;
+//            _isActive = true;
+//            _isReady = true;
 //        }
 
         //
@@ -3001,7 +3039,7 @@ void CViewer::setImage(int x, int y, int z) throw (tf::RuntimeException)
 
 void CViewer::translate()
 {
-    qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
+    // qDebug()<<"translating ..."<<insituZoomOut_x<<insituZoomOut_y<<insituZoomOut_z<<insituZoomOut_res;
 
     bool previewMode = CSettings::instance()->getPreviewMode();
     if(previewMode)
@@ -3016,8 +3054,6 @@ void CViewer::translate()
 
 void CViewer::zoomOutMethodChanged(int value)
 {
-    qDebug()<<"zoom out method "<<value;
-
     if(value == 0)
     {
         insituZoomOut = false;
@@ -3031,6 +3067,10 @@ void CViewer::zoomOutMethodChanged(int value)
 void CViewer::inSituZoomOutTranslated()
 {
     isTranslate = false;
-    // view3DWidget->installEventFilter(this);
 }
 
+void CViewer::resetEvents()
+{
+    if(view3DWidget)
+        view3DWidget->installEventFilter(this);
+}
