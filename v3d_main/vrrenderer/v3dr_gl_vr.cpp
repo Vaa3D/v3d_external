@@ -1694,7 +1694,7 @@ bool CMainApplication::HandleInput()
 	//inlcuding 
 	{
 		vr::VRControllerState_t state;
-		if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state) )&&(!showshootingray) )
+		if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state)))
 		{
 			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
 			{
@@ -2371,7 +2371,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		}
 	}
 
-    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(!showshootingray))
+    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
     {
 
             const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
@@ -4152,96 +4152,7 @@ void CMainApplication::SetupControllerRay()
 		AddrayVertex(shootingraycutPos.x,shootingraycutPos.y,shootingraycutPos.z,color.x,color.y,color.z,vertdataarray);
 		m_uiControllerRayVertcount += 2;
 
-	// if(panelpos_x <= 0.436)
-	// {
-	// 	if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
-	// 	{
-	// 		glm::vec3 V0,V1,V2,V3;
-	// 		V0 = point_lefttop + 0.1* Edge1 + 0.2 * Edge2
-	// 		AddrayVertex(,point_lefttop.y+0.1,point_lefttop.z+0.1,color.x,color.y,color.z,vertdataarray);
-	// 		AddrayVertex(point_lefttop.x+0.1,point_lefttop.y+0.1,point_lefttop.z+0.1,color.x,color.y,color.z,vertdataarray);
-	// 		qDebug()<<"show red box terashift in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
-	// 	{
 	
-	// 		qDebug()<<"change left function to terazoom in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
-	// 	{
-	
-	// 		qDebug()<<"change left function to undo/redo in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
-	// 	{
-	
-	// 		qDebug()<<"change left function to contrast in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
-	// 	{
-
-	// 		qDebug()<<"change left function to surface in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
-	// 	{
-	
-	// 		qDebug()<<"change left function to change color in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
-	// 	{
-	
-	// 		qDebug()<<"change left function to virtual in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
-	// 	{
-	
-	// 		qDebug()<<"change left function to freezee in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
-	// 	{
-	
-	// 		qDebug()<<"change left function to linewidth in panel";
-	// 	}
-	// 	else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
-	// 	{
-	
-	// 		qDebug()<<"change left function to autootate in panel";
-	// 	}
-	// }
-	//choose Right controllerFunction
-	// if(panelpos_x >= 0.657)
-	// {
-	// 	if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
-	// 	{
-	
-	// 		qDebug()<<"change right function to drawline in panel";
-	// 	}
-	// 	else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
-	// 	{
-	
-	// 		qDebug()<<"change right function to deleteline in panel";
-	// 	}
-	// 	if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
-	// 	{
-	
-	// 		qDebug()<<"change right function to drawmaker in panel";
-	// 	}
-	// 	else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
-	// 	{
-	
-	// 		qDebug()<<"change right function to deletemaker in panel";
-	// 	}
-	// 	if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
-	// 	{
-	
-	// 		qDebug()<<"change right function to drag in panel";
-	// 	}
-	// 	else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
-	// 	{
-	
-	// 		qDebug()<<"change right function to splitline in panel";
-	// 	}
-	// }
 	}
 	//update  red logo on where you choose
 
