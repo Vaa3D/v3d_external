@@ -2147,7 +2147,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// }
 	}
 
-	if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(!showshootingray))
+    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad))
 	{	
 		vr::VRControllerState_t state;	
 		m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state));
