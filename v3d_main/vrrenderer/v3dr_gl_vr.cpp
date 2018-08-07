@@ -2147,7 +2147,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// }
 	}
 
-    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad))
+    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(!showshootingray))
 	{	
 		vr::VRControllerState_t state;	
 		m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state));
@@ -2518,7 +2518,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	//	}
 	//}
 
-	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(!showshootingray))
+    if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)/*&&(!showshootingray)*/)
 	{		//use touchpad press to change the processing mode for touchpad, nothing or translate or rotate or zoom mode
 		m_modeControlTouchPad_R++;
 		m_modeControlTouchPad_R%=4;
