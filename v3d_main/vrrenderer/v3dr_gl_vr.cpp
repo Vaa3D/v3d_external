@@ -3023,6 +3023,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	{
 				//call virtual Pad
 				showshootingPad =! showshootingPad;//show virtualPad
+                if(!showshootingPad)
+                    showshootingray=false;
 				//test trigger shooting ray func for now
 	}
 		////bool_ray = true;
