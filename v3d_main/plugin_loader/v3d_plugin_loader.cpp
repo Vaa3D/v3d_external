@@ -1238,6 +1238,21 @@ void V3d_PluginLoader::resizeWindow(V3dR_MainWindow *w, int x, int y)
       w->resize(x,y);
     }
 }
+void V3d_PluginLoader::setHideDisplayControlButton(V3dR_MainWindow *w)
+{
+    if(v3d_mainwindow)
+    {
+        w->hideDisplayControls();
+    }
+}
+
+//void V3d_PluginLoader::setResizeEvent(V3dR_MainWindow *w, int x, int y)
+//{
+//    if(v3d_mainwindow)
+//    {
+//        w->resizeEvent((QResizeEvent *)QSize(x,y));
+//    }
+//}
 
 void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
 {
