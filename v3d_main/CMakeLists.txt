@@ -316,7 +316,7 @@ if (BUILD_QT_DEMO_LIBRARY)
   set(arthurwidgets_path "${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install")
   ExternalProject_Add(
       ARTHURWIDGETS
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/src_packages/qt_shared_demos.tgz
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/src_packages/qt_shared_demos.tar.gz
       SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/src
       INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install
       UPDATE_COMMAND ""

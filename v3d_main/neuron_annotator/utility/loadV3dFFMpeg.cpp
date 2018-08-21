@@ -186,7 +186,7 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* m
             std::vector<double> imin( proxy.sc, 0.0 );
             std::vector<double> irange2( proxy.sc, default_irange );
             // rescale if converting from 16 bit to 8 bit
-            if ( proxy.su > 1 )
+            if ( proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC )
             {
                 if ( img.p_vmin && img.p_vmax )
                     proxy.set_minmax( img.p_vmin, img.p_vmax );
@@ -197,7 +197,7 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* m
                 }
             }
 
-            FFMpegEncoder encoder( NULL, scaledWidth, scaledHeight,
+            FFMpegEncoder encoder( NULL, scaledWidth, scaledHeight, proxy.su,
                                    ( *imap )[c].first, ( *imap )[c].second );
             // If the image needs padding, fill the expanded border regions with black
             for ( int z = 0; z < proxy.sz; ++z )
@@ -213,11 +213,17 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* m
                             double val = proxy.value_at( x, y, z, ic );
                             val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
                             for ( int cc = 0; cc < 3; ++cc )
-                                encoder.setPixelIntensity( x, y, cc, ( int )val );
+                                if ( proxy.su == 1 || (proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC ))
+                                    encoder.setPixelIntensity( x, y, cc, ( uint8_t )val );
+                                else
+                                    encoder.setPixelIntensity16( x, y, cc, ( uint16_t )val );
                         }
                         else
                             for ( int cc = 0; cc < 3; ++cc )
-                                encoder.setPixelIntensity( x, y, cc, 0 );
+                                if ( proxy.su == 1 || (proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC ))
+                                    encoder.setPixelIntensity( x, y, cc, 0 );
+                                else
+                                    encoder.setPixelIntensity16( x, y, cc, 0 );
                     }
                 }
                 encoder.write_frame();
@@ -507,25 +513,28 @@ bool loadIndexedStackFFMpeg( QByteArray* buffer, Image4DSimple& img, int channel
         // cout << "Number of frames = " << sz << endl;
 
         if ( channel == 0 )
-            img.createBlankImage( width, height, sz, num_channels, 1 ); // 1 byte = 8 bits per value
+            img.createBlankImage( width, height, sz, num_channels, video.getBitDepth() ); // 1 byte = 8 bits per value
 
         Image4DProxy<Image4DSimple> proxy( &img );
 
         int frameCount = 0;
         for ( int z = 0; z < sz; ++z )
         {
-            video.fetchFrame( z );
-            // int z = frameCount;
-            frameCount++;
-            for ( int y = 0; y < height; ++y )
-            {
-                for ( int x = 0; x < width; ++x )
-                {
-                    proxy.put_at( x, y, z, channel,
-                                  video.getPixelIntensity( x, y, ( FFMpegVideo::Channel )0 )
-                                );
-                }
-            }
+           video.fetchFrame( z );
+           // int z = frameCount;
+           frameCount++;
+           for ( int y = 0; y < height; ++y )
+           {
+              for ( int x = 0; x < width; ++x )
+              {
+                 if ( video.getBitDepth() == 1 )
+                    proxy.put_at( x, y, z, channel, video.getPixelIntensity(
+                                                        x, y, (FFMpegVideo::Channel)0 ) );
+                 else
+                    proxy.put_at( x, y, z, channel, video.getPixelIntensity16(
+                                                        x, y, (FFMpegVideo::Channel)0 ) );
+              }
+           }
         }
         cout << "Number of frames found = " << frameCount << endl;
 

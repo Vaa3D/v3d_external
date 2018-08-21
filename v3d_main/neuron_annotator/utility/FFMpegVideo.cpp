@@ -113,7 +113,6 @@ public:
 
 AVPacketWrapper::AVPacketWrapper()
 {
-    packet.destruct = NULL;
 }
 
 /* virtual */
@@ -124,7 +123,7 @@ AVPacketWrapper::~AVPacketWrapper()
 
 void AVPacketWrapper::free()
 {
-    av_free_packet(&packet);
+    av_packet_unref(&packet);
 }
 
 
@@ -132,14 +131,14 @@ void AVPacketWrapper::free()
 // FFMpegVideo methods //
 /////////////////////////
 
-FFMpegVideo::FFMpegVideo(PixelFormat pixelFormat)
+FFMpegVideo::FFMpegVideo(AVPixelFormat pixelFormat)
     : isOpen(false)
 {
     initialize();
     format = pixelFormat;
 }
 
-FFMpegVideo::FFMpegVideo(QUrl url, PixelFormat pixelFormat)
+FFMpegVideo::FFMpegVideo(QUrl url, AVPixelFormat pixelFormat)
     : isOpen(false)
 {
     QMutexLocker lock(&FFMpegVideo::mutex);
@@ -148,7 +147,7 @@ FFMpegVideo::FFMpegVideo(QUrl url, PixelFormat pixelFormat)
     isOpen = open(url, pixelFormat);
 }
 
-FFMpegVideo::FFMpegVideo(QByteArray* buffer, PixelFormat pixelFormat)
+FFMpegVideo::FFMpegVideo(QByteArray* buffer, AVPixelFormat pixelFormat)
     : isOpen(false)
 {
     QMutexLocker lock(&FFMpegVideo::mutex);
@@ -213,7 +212,7 @@ FFMpegVideo::~FFMpegVideo()
     // Don't need to free pCodec?
 }
 
-bool FFMpegVideo::open(QUrl url, enum PixelFormat formatParam)
+bool FFMpegVideo::open(QUrl url, enum AVPixelFormat formatParam)
 {
     if (url.isEmpty())
         return false;
@@ -272,11 +271,11 @@ bool FFMpegVideo::open(QUrl url, enum PixelFormat formatParam)
     return result;
 }
 
-bool FFMpegVideo::open(QIODevice& fileStream, QString& fileName, enum PixelFormat formatParam)
+bool FFMpegVideo::open(QIODevice& fileStream, QString& fileName, enum AVPixelFormat formatParam)
 {
     // http://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
     // I think AVIOContext is the trick used to redivert the input stream
-    ioBuffer = (unsigned char *)av_malloc(ioBufferSize + FF_INPUT_BUFFER_PADDING_SIZE); // can get av_free()ed by libav
+    ioBuffer = (unsigned char *)av_malloc(ioBufferSize + AV_INPUT_BUFFER_PADDING_SIZE); // can get av_free()ed by libav
     avioContext = avio_alloc_context(ioBuffer, ioBufferSize, 0, (void*)(&fileStream), &readFunction, NULL, &seekFunction);
     container = avformat_alloc_context();
     container->pb = avioContext;
@@ -289,7 +288,7 @@ bool FFMpegVideo::open(QIODevice& fileStream, QString& fileName, enum PixelForma
 }
 
 // file name based method for historical continuity
-bool FFMpegVideo::open(QString& fileName, enum PixelFormat formatParam)
+bool FFMpegVideo::open(QString& fileName, enum AVPixelFormat formatParam)
 {
     // Open file, check usability
     std::string fileNameStd = fileName.toStdString();
@@ -299,7 +298,7 @@ bool FFMpegVideo::open(QString& fileName, enum PixelFormat formatParam)
 }
 
 
-bool FFMpegVideo::openUsingInitializedContainer(enum PixelFormat formatParam)
+bool FFMpegVideo::openUsingInitializedContainer(enum AVPixelFormat formatParam)
 {
     format = formatParam;
     sc = getNumberOfChannels();
@@ -325,13 +324,13 @@ bool FFMpegVideo::openUsingInitializedContainer(enum PixelFormat formatParam)
         numFrames = (int)(( container->duration / (double)AV_TIME_BASE ) * pCtx->time_base.den + 0.5);
 
     /* Get framebuffers */
-    if (! (pRaw = avcodec_alloc_frame()) )
+    if (! (pRaw = av_frame_alloc()) )
         throw std::runtime_error("");
-    if (! (pFrameRGB = avcodec_alloc_frame()) )
+    if (! (pFrameRGB = av_frame_alloc()) )
         throw std::runtime_error("");
 
     /* Create data buffer */
-    if ( format == PIX_FMT_NONE )
+    if ( format == AV_PIX_FMT_NONE )
     {
         numBytes = 0;
         buffer = NULL;
@@ -342,7 +341,7 @@ bool FFMpegVideo::openUsingInitializedContainer(enum PixelFormat formatParam)
     else
     {
         numBytes = avpicture_get_size( format, pCtx->width, pCtx->height ); // RGB24 format
-        if (! (buffer   = (uint8_t*)av_malloc(numBytes + FF_INPUT_BUFFER_PADDING_SIZE)) ) // RGB24 format
+        if (! (buffer   = (uint8_t*)av_malloc(numBytes + AV_INPUT_BUFFER_PADDING_SIZE)) ) // RGB24 format
             throw std::runtime_error("");
         if (! (blank    = (uint8_t*)av_mallocz(avpicture_get_size(pCtx->pix_fmt,width,height))) ) // native codec format
             throw std::runtime_error("");
@@ -417,7 +416,7 @@ bool FFMpegVideo::readNextFrame(int targetFrameIndex)
     AVPacket packet = {0};
     av_init_packet(&packet);
     bool result = readNextFrameWithPacket(targetFrameIndex, packet, pRaw);
-    av_free_packet(&packet);
+    av_packet_unref(&packet);
     return result;
 }
 
@@ -467,7 +466,7 @@ bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet
 
     av_free_packet(&packet);
 
-    if ( format != PIX_FMT_NONE )
+    if ( format != AV_PIX_FMT_NONE )
     {
         sws_scale(Sctx,              // sws context
                   pYuv->data,        // src slice
@@ -487,6 +486,12 @@ uint8_t FFMpegVideo::getPixelIntensity(int x, int y, Channel c) const
     return *(pFrameRGB->data[0] + y * pFrameRGB->linesize[0] + x * sc + c);
 }
 
+uint16_t FFMpegVideo::getPixelIntensity16(int x, int y, Channel c) const
+{
+    return *((uint16_t *)(pFrameRGB->data[0]) + y * pFrameRGB->linesize[0]/2 + x + c);
+}
+
+int FFMpegVideo::getBitDepth() const { return (pCtx == 0 ? 0 : pCtx->pix_fmt == AV_PIX_FMT_GRAY12LE ? 2 : 1); }
 int FFMpegVideo::getNumberOfFrames() const { return numFrames; }
 
 int FFMpegVideo::getWidth() const { return width; }
@@ -497,13 +502,16 @@ int FFMpegVideo::getNumberOfChannels() const
 {
     switch(format)
     {
-    case PIX_FMT_BGRA:
+    case AV_PIX_FMT_BGRA:
         return 4;
         break;
-    case PIX_FMT_RGB24:
+    case AV_PIX_FMT_RGB24:
         return 3;
         break;
-    case PIX_FMT_GRAY8:
+    case AV_PIX_FMT_GRAY16:
+        return 1;
+        break;
+    case AV_PIX_FMT_GRAY8:
         return 1;
         break;
     default:
@@ -523,7 +531,7 @@ void FFMpegVideo::initialize()
     buffer = NULL;
     blank = NULL;
     pCodec = NULL;
-    format = PIX_FMT_NONE;
+    format = AV_PIX_FMT_NONE;
     reply = NULL;
     ioBuffer = NULL;
     avioContext = NULL;
@@ -563,7 +571,7 @@ bool FFMpegVideo::b_is_one_time_inited = false;
 ///////////////////////////
 
 
-FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
+FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height, int bit_depth,
                               enum AVCodecID codec_id, std::string options )
     : picture_yuv(NULL)
     , picture_rgb(NULL)
@@ -634,20 +642,20 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
     pCtx->gop_size = 12; // emit one intra frame every twelve frames
     // pCtx->max_b_frames = 0;
     if (fmt->flags & AVFMT_GLOBALHEADER)
-        pCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        pCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     AVDictionary* codec_options( 0 );
+    _raw_format = AV_PIX_FMT_RGB24;
     switch ( pCtx->codec_id )
     {
         case AV_CODEC_ID_H264:
         {
            // http://stackoverflow.com/questions/3553003/encoding-h-264-with-libavcodec-x264
            pCtx->coder_type = 1;                  // coder = 1
-           pCtx->flags |= CODEC_FLAG_LOOP_FILTER; // flags=+loop
+           pCtx->flags |= AV_CODEC_FLAG_LOOP_FILTER; // flags=+loop
            pCtx->me_cmp |= 1;                     // cmp=+chroma, where CHROMA = 1
            // pCtx->partitions|=X264_PART_I8X8+X264_PART_I4X4+X264_PART_P8X8+X264_PART_B8X8;
            // // partitions=+parti8x8+parti4x4+partp8x8+partb8x8
-           pCtx->me_method = ME_HEX;         // me_method=hex
            pCtx->me_subpel_quality = 7;      // subq=7
            pCtx->me_range = 16;              // me_range=16
            pCtx->gop_size = 250;             // g=250
@@ -677,7 +685,13 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
            av_dict_set( &codec_options, "preset", "medium", 0 );
            av_dict_set( &codec_options, "x265-params", options.c_str(), 0 );
            pCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
-           pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
+           if ( bit_depth == 1 )
+              pCtx->pix_fmt = AV_PIX_FMT_YUV444P;
+           else
+           {
+              pCtx->pix_fmt = AV_PIX_FMT_GRAY12LE;
+              _raw_format = AV_PIX_FMT_GRAY16;
+           }
            break;
         }
         case AV_CODEC_ID_FFV1:
@@ -718,7 +732,7 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
                        pCtx->width, pCtx->height, pCtx->pix_fmt, 1) < 0 )
         throw std::runtime_error("Error allocating YUV frame buffer");
     if ( av_image_alloc(picture_rgb->data, picture_rgb->linesize,
-                   pCtx->width, pCtx->height, PIX_FMT_RGB24, 1) < 0 )
+                   pCtx->width, pCtx->height, _raw_format, 1) < 0 )
         throw std::runtime_error("Error allocating RGB frame buffer");
 
     // Fill in frame parameters
@@ -726,11 +740,15 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
     picture_yuv->width = pCtx->width;
     picture_yuv->height = pCtx->height;
 
+    picture_rgb->format = _raw_format;
+    picture_rgb->width = pCtx->width;
+    picture_rgb->height = pCtx->height;
+
     /* Init scale & convert */
     if (! (Sctx=sws_getContext(
             width,
             height,
-            PIX_FMT_RGB24,
+            _raw_format,
             pCtx->width,
             pCtx->height,
             pCtx->pix_fmt,
@@ -756,6 +774,12 @@ FFMpegEncoder::FFMpegEncoder( const char* file_name, int width, int height,
 void FFMpegEncoder::setPixelIntensity(int x, int y, int c, uint8_t value)
 {
     uint8_t * ptr = picture_rgb->data[0] + y * picture_rgb->linesize[0] + x * 3 + c;
+    *ptr = value;
+}
+
+void FFMpegEncoder::setPixelIntensity16(int x, int y, int c, uint16_t value)
+{
+    uint16_t * ptr = (uint16_t *)(picture_rgb->data[0]) + y * picture_rgb->linesize[0]/2 + x;
     *ptr = value;
 }
 
@@ -798,7 +822,7 @@ void FFMpegEncoder::encode( AVFrame* picture )
         packet.stream_index = video_st->index;
         
         int result = av_interleaved_write_frame(container, &packet);
-        av_destruct_packet(&packet);
+        av_packet_unref(&packet);
     }
 
     _frame_count++;
