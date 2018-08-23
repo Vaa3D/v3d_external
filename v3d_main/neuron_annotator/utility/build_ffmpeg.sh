@@ -50,10 +50,9 @@ cd $source_dir/../build/ffbuild
 $source_dir/configure --prefix=$install_dir \
             --x86asmexe=$cmake_current_binary_dir/yasm/install/bin/yasm \
             --pkg-config=$cmake_current_binary_dir/pkg-config/install/bin/pkg-config \
-            --pkg-config-flags=--static \
             --disable-iconv \
             --disable-libxcb \
-            #--disable-outdev=sdl \
+            --disable-static \
             --enable-shared \
             --enable-gpl \
             --enable-nonfree \

@@ -1,34 +1,72 @@
+diff -ruN x265-2.7/build/linux/multilib.sh src.new/build/linux/multilib.sh
 --- x265-2.7/build/linux/multilib.sh	2018-02-21 03:55:56.000000000 -0500
-+++ src/build/linux/multilib.sh	2018-06-26 12:57:34.000000000 -0400
-@@ -4,17 +4,17 @@
++++ src.new/build/linux/multilib.sh	2018-08-22 10:29:41.000000000 -0400
+@@ -3,39 +3,17 @@
+ mkdir -p 8bit 10bit 12bit
  
  cd 12bit
- cmake ../../../source -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DMAIN12=ON
+-cmake ../../../source -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DMAIN12=ON
 -make ${MAKEFLAGS}
++cmake ../../../source -DHIGH_BIT_DEPTH=ON -DENABLE_SHARED=ON -DENABLE_CLI=OFF -DMAIN12=ON -DCMAKE_INSTALL_PREFIX=../../../../install
 +make 
++make install
  
  cd ../10bit
- cmake ../../../source -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF
+-cmake ../../../source -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF
 -make ${MAKEFLAGS}
++cmake ../../../source -DHIGH_BIT_DEPTH=ON -DENABLE_SHARED=ON -DENABLE_CLI=OFF -DCMAKE_INSTALL_PREFIX=../../../../install
 +make 
++make install
  
  cd ../8bit
- ln -sf ../10bit/libx265.a libx265_main10.a
- ln -sf ../12bit/libx265.a libx265_main12.a
+-ln -sf ../10bit/libx265.a libx265_main10.a
+-ln -sf ../12bit/libx265.a libx265_main12.a
 -cmake ../../../source -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON
 -make ${MAKEFLAGS}
-+cmake ../../../source -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -DCMAKE_INSTALL_PREFIX=../../../../install -DENABLE_SHARED:bool=off
++cmake ../../../source -DENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=../../../../install
 +make 
++make install
  
- # rename the 8bit library, then combine all three into libx265.a
- mv libx265.a libx265_main.a
-@@ -36,6 +36,7 @@
- else
- 
- # Mac/BSD libtool
+-# rename the 8bit library, then combine all three into libx265.a
+-mv libx265.a libx265_main.a
+-
+-uname=`uname`
+-if [ "$uname" = "Linux" ]
+-then
+-
+-# On Linux, we use GNU ar to combine the static libraries together
+-ar -M <<EOF
+-CREATE libx265.a
+-ADDLIB libx265_main.a
+-ADDLIB libx265_main10.a
+-ADDLIB libx265_main12.a
+-SAVE
+-END
+-EOF
+-
+-else
+-
+-# Mac/BSD libtool
 -libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a 2>/dev/null
 -
-+ /usr/bin/libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a 2>/dev/null
- fi
-+
-+make install
+-fi
+diff -ruN x265-2.7/source/CMakeLists.txt src.new/source/CMakeLists.txt
+--- x265-2.7/source/CMakeLists.txt	2018-02-21 03:55:56.000000000 -0500
++++ src.new/source/CMakeLists.txt	2018-08-22 10:27:30.000000000 -0400
+@@ -601,7 +601,15 @@
+     if(MSVC)
+         set_target_properties(x265-shared PROPERTIES OUTPUT_NAME libx265)
+     else()
+-        set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265)
++        if(HIGH_BIT_DEPTH)
++            if(MAIN12)
++                set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265_main12)
++            else()
++                set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265_main10)
++            endif()
++        else(HIGH_BIT_DEPTH)
++                set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265_main)
++        endif(HIGH_BIT_DEPTH)
+     endif()
+     if(UNIX)
+         set_target_properties(x265-shared PROPERTIES VERSION ${X265_BUILD})

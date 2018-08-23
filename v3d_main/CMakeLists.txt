@@ -122,8 +122,7 @@ if(USE_FFMPEG)
         SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/src
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/install
         UPDATE_COMMAND ""
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure
-            --prefix=<INSTALL_DIR>
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
         BUILD_IN_SOURCE 1
     )
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
@@ -205,7 +204,7 @@ if(USE_FFMPEG)
       set(AVFILTER_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVCODEC_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(SWSCALE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswresample{CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswresample${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVUTIL_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
     else()
       set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avdevice.lib CACHE INTERNAL "path to a library")
