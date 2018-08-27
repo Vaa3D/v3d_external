@@ -2667,7 +2667,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 
 					// try to match end node
-					if (bNodeChanged == false)
+					if (1||bNodeChanged == false) //2018-08-27: try to connect both ends if possible
 					{
 						// qDebug()<<"start to find begin nearest node";
 						for(int i = 0; i<sketchedNTList.size();i++)
