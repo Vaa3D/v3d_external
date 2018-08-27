@@ -1623,7 +1623,7 @@ bool CMainApplication::HandleInput()
 			}//
 			//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
 			if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
-				!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&!(showshootingPad))
+				!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))//&&!(showshootingPad))
 			{
 				float m_fTouchPosY;
 				float m_fTouchPosX;
@@ -1646,7 +1646,7 @@ bool CMainApplication::HandleInput()
 				bRet = true;
 				return bRet;
 				}//*/
-				if(m_translationMode==true)//into translate mode
+				if(0&&m_translationMode==true)//into translate mode
 				{
 					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];
 					Vector4 direction(0,0,0,1);
@@ -1674,7 +1674,7 @@ bool CMainApplication::HandleInput()
 					//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
 					m_globalMatrix = temp_mat * m_globalMatrix;
 				}
-				else if(m_rotateMode==true)//into ratate mode
+				else if(0&&m_rotateMode==true)//into ratate mode
 				{
 					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
 					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/100,glm::vec3(1,0,0));
