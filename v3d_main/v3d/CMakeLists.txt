@@ -358,12 +358,20 @@ else(APPLE)
         #     libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
         message("installing ffmpeg libraries into ${V3D_BUILD_BINARY_DIR}")
         add_custom_command( TARGET v3d POST_BUILD
-                            COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib/lib*so*"
+                            COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*"
                             WORKING_DIRECTORY "${av_dir}/install")
         add_custom_command( TARGET v3d POST_BUILD
                             COMMAND ${CMAKE_COMMAND} -E tar xfz "${V3D_BUILD_BINARY_DIR}/libs.tgz"
                             COMMAND ${CMAKE_COMMAND} -E remove "${V3D_BUILD_BINARY_DIR}/libs.tgz"
                             WORKING_DIRECTORY "${V3D_BUILD_BINARY_DIR}")
+        add_custom_command( TARGET v3d POST_BUILD
+                            COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*"
+                            WORKING_DIRECTORY "${x265_dir}/install/lib"
+                            COMMENT "Inserting X265 libraries into v3d.app")
+        add_custom_command( TARGET v3d POST_BUILD
+                            COMMAND ${CMAKE_COMMAND} -E tar xfz "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                            COMMAND ${CMAKE_COMMAND} -E remove "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                            WORKING_DIRECTORY "${V3D_BUILD_BINARY_DIR}/lib")
     endif()
     # message("LIB_PATHS = ${LIB_PATHS}")
     foreach(SHLIB ${SHLIBS})
@@ -431,6 +439,9 @@ if (V3D_BUILD_BINARY_DIR)
 endif()
 
 target_link_libraries(v3d NeuronAnnotatorLib)
+if(USE_X265)
+  target_link_libraries(v3d ${X265_LIBRARY})
+endif(USE_X265)
 
 if(V3D_MAC_CREATE_BUNDLE)
     # Install Qt libraries into bundle
@@ -439,6 +450,14 @@ if(V3D_MAC_CREATE_BUNDLE)
         COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
         DEPENDS v3d
         COMMENT "Inserting Qt libraries into v3d.app")
+    add_custom_command( TARGET v3d POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib*dylib"
+                        WORKING_DIRECTORY "${x265_dir}/install/lib"
+                        COMMENT "Inserting X265 libraries into v3d.app")
+    add_custom_command( TARGET v3d POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E tar xfz "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                        COMMAND ${CMAKE_COMMAND} -E remove "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                        WORKING_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/Frameworks")
 endif()
 
 
