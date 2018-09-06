@@ -116,11 +116,10 @@ if(USE_FFMPEG)
         BUILD_IN_SOURCE 1
     )
     ExternalProject_Add(
-        Yasm-1-2-0
-        URL http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
-        URL_MD5 4cfc0686cf5350dd1305c4d905eb55a6
-        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/src
-        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/install
+        Nasm-2-13-03
+        URL http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.gz
+        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/src
+        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/install
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
         BUILD_IN_SOURCE 1
@@ -133,7 +132,7 @@ if(USE_FFMPEG)
       set(X265_FLAGS "--enable-libx265")
       ExternalProject_Add(
           X265-2.7
-          DEPENDS Yasm-1-2-0
+          DEPENDS Nasm-2-13-03
           URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265-2.7.tar.gz
           SOURCE_DIR ${x265_dir}/src
           BINARY_DIR ${x265_dir}/build
@@ -145,10 +144,12 @@ if(USE_FFMPEG)
       )
       ExternalProject_Add_Step(X265-2.7 multilib
         DEPENDEES           build
-        COMMAND           <SOURCE_DIR>/build/linux/multilib.sh
+        COMMAND           <SOURCE_DIR>/build/linux/multilib.sh ${CMAKE_CURRENT_BINARY_DIR}/nasm/install/bin/nasm${CMAKE_EXECUTABLE_SUFFIX}
         WORKING_DIRECTORY <SOURCE_DIR>/build/linux
       )
       ExternalProject_Add_StepTargets(X265-2.7 multilib)
+
+      set(X265_LIBRARY ${x265_dir}/install/lib/libx265_main${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
 
     endif()
     if(APPLE)
@@ -166,7 +167,7 @@ if(USE_FFMPEG)
 
     ExternalProject_Add(
         FFMPEG-4.0
-        DEPENDS Yasm-1-2-0 X265-2.7 PKG-CONFIG-0-28
+        DEPENDS Nasm-2-13-03 X265-2.7 PKG-CONFIG-0-28
         URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-4.0.tgz
         SOURCE_DIR ${av_dir}/src
         BINARY_DIR ${av_dir}/build
@@ -180,6 +181,7 @@ if(USE_FFMPEG)
                           --x265_flags=${X265_FLAGS} --extra_cflags=${extra_cflags}
                           --extra_ldflags=${extra_ldflags} --extra_libs=${extra_libs}
                           --pkg_config_path=${x265_dir}/install/lib/pkgconfig
+                          --asm_exe=${CMAKE_CURRENT_BINARY_DIR}/nasm/install/bin/nasm${CMAKE_EXECUTABLE_SUFFIX}
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
     set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")

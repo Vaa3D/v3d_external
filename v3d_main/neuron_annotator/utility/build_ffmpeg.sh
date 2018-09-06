@@ -6,6 +6,7 @@ extra_cflags=""
 extra_ldflags=""
 extra_libs=""
 pkg_config_path=""
+asm_exe=""
 
 while [ "$1" != "" ]; do
     PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -35,6 +36,9 @@ while [ "$1" != "" ]; do
         --pkg_config_path)
             pkg_config_path=$VALUE
             ;;
+        --asm_exe)
+            asm_exe=$VALUE
+            ;;
         *)
             echo "ERROR: unknown parameter \"$PARAM\""
             exit 1
@@ -48,7 +52,7 @@ export PKG_CONFIG_PATH=$pkg_config_path
 mkdir -p $source_dir/../build/ffbuild
 cd $source_dir/../build/ffbuild
 $source_dir/configure --prefix=$install_dir \
-            --x86asmexe=$cmake_current_binary_dir/yasm/install/bin/yasm \
+            --x86asmexe=$asm_exe \
             --pkg-config=$cmake_current_binary_dir/pkg-config/install/bin/pkg-config \
             --disable-iconv \
             --disable-libxcb \
