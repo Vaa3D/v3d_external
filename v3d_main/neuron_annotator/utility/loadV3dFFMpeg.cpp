@@ -179,15 +179,12 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* m
         for ( int c = 0; c < proxy.sc; ++c )
         {
             double default_irange = 1.0; // assumes data range is 0-255.0
-            if ( proxy.su > 1 )
-            {
-                default_irange = 1.0 / 16.0; // 0-4096, like our microscope images
-            }
             std::vector<double> imin( proxy.sc, 0.0 );
             std::vector<double> irange2( proxy.sc, default_irange );
             // rescale if converting from 16 bit to 8 bit
             if ( proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC )
             {
+                default_irange = 1.0 / 16.0;
                 if ( img.p_vmin && img.p_vmax )
                     proxy.set_minmax( img.p_vmin, img.p_vmax );
                 if ( proxy.has_minmax() )
@@ -211,19 +208,21 @@ bool saveStackHDF5( const char* fileName, const My4DImage& img, Codec_Mapping* m
                         {
                             int ic = c;
                             double val = proxy.value_at( x, y, z, ic );
-                            val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
-                            for ( int cc = 0; cc < 3; ++cc )
-                                if ( proxy.su == 1 || (proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC ))
-                                    encoder.setPixelIntensity( x, y, cc, ( uint8_t )val );
-                                else
-                                    encoder.setPixelIntensity16( x, y, cc, ( uint16_t )val );
+                            if ( proxy.su == 1 || (proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC ))
+                            {
+                                val = ( val - imin[ic] ) * irange2[ic]; // rescale to range 0-255
+                               for ( int cc = 0; cc < 3; ++cc )
+                                  encoder.setPixelIntensity( x, y, cc, (uint8_t)val );
+                            }
+                            else
+                               encoder.setPixelIntensity16( x, y, (uint16_t)(val*16) );
                         }
                         else
-                            for ( int cc = 0; cc < 3; ++cc )
-                                if ( proxy.su == 1 || (proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC ))
+                            if ( proxy.su == 1 || (proxy.su > 1 && ( *imap )[c].first != AV_CODEC_ID_HEVC ))
+                                for ( int cc = 0; cc < 3; ++cc )
                                     encoder.setPixelIntensity( x, y, cc, 0 );
-                                else
-                                    encoder.setPixelIntensity16( x, y, cc, 0 );
+                            else
+                                encoder.setPixelIntensity16( x, y, 0 );
                     }
                 }
                 encoder.write_frame();

@@ -73,7 +73,7 @@ bool MpegLoader::loadMpegFile(QUrl fileUrl)
     }
     bool bSucceeded = true; // start optimistic
     try {
-        FFMpegVideo video(fileUrl, (AVPixelFormat)pixelFormat);
+        FFMpegVideo video(fileUrl);
         {
             QWriteLocker locker(&lock);
             deleteData();
