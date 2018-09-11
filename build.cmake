@@ -57,14 +57,15 @@ case $ARCH in
         ARCH=x86_64
         ;;
 esac
-PLATFORM=$OS-$ARCH
-echo "Detected platform \"$PLATFORM\""
+
+PLATFORM_TMP=$OS-$ARCH
+echo "Detected platform \"$PLATFORM_TMP\""
 
 while [[ $# > 0 ]]; do
     case "$1" in
         -platform)
             shift
-            PLATFORM="$1"
+            PLATFORM_TMP="$1"
             ;;
         -h5j)
             CMAKE_ARGS+=" -DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON" 
@@ -101,6 +102,11 @@ while [[ $# > 0 ]]; do
     esac
     shift
 done
+
+PLATFORM=$PLATFORM_TMP
+PLATFORM+="_"
+PLATFORM+=$CMAKE_BUILD
+
 echo "Targeting platform \"$PLATFORM\""
 echo "Root directory \"$ROOT_DIR\""
 
