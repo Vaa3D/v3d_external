@@ -4144,7 +4144,7 @@ void CMainApplication::SetupControllerRay()
 	point_rightbottom = mat_L * point_rightbottom;
 	glm::vec3 Edge1 = glm::vec3(point_righttop.x - point_lefttop.x,point_righttop.y - point_lefttop.y,point_righttop.z - point_lefttop.z);
 	glm::vec3 Edge2 = glm::vec3(point_leftbottom.x - point_lefttop.x,point_leftbottom.y - point_lefttop.y,point_leftbottom.z - point_lefttop.z);
-	if((ShootingPadUV.x> 0)&&(ShootingPadUV.y>0))
+	if((ShootingPadUV.x> 0)&&(ShootingPadUV.y>0)&&showshootingPad)
 	showshootingray = true;
 	else
 	showshootingray = false;
