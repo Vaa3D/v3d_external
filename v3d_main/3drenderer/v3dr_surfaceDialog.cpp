@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define UPDATE_TABS()    {int i = getCurTab(); reCreateTables(glwidget); setCurTab(i);}
 ///////////////////////////////////////////////////////////
 
-
+//
 V3dr_surfaceDialog::V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent)
 	:SharedToolDialog(w, parent)
 {
@@ -1051,6 +1051,9 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	int col = qsl.size();
 
     QTableWidget* t = new QTableWidget(row,col, this);
+
+    t->insertRow(row);
+
 	t->setHorizontalHeaderLabels(qsl);
 
 	for (int i=0; i<row; i++)
@@ -1070,7 +1073,9 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
 		ADD_STRING( tr("%1").arg(curSeg.row.size()) );
 
-		ADD_STRING( tr("%1").arg(curSeg.row[1].type) );
+        //ADD_STRING( tr("%1").arg(curSeg.row[1].type) ); //
+        CustomTableWidgetItem *curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row[1].type));
+        t->setItem(i, j++, curCustomItem);
 		
 		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
 
@@ -1082,6 +1087,9 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
     }
 
     t->resizeColumnsToContents();
+
+    connect(t, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(sortNeuronSegmentByType(QTableWidgetItem*)));
+
 	return t;
 }
 
@@ -1642,6 +1650,14 @@ void V3dr_surfaceDialog::updateMarkerList(QList <ImageMarker> markers)
     for(int i=0; i<markers.size(); i++)
     {
         listMarker[i] = markers[i];
+    }
+}
+
+void V3dr_surfaceDialog::sortNeuronSegmentByType(QTableWidgetItem* item)
+{
+    if(item->column()==3) // sort type
+    {
+        item->tableWidget()->sortItems(3);
     }
 }
 

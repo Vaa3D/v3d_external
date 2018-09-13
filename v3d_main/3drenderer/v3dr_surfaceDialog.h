@@ -48,8 +48,32 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "qtr_widget.h"
 #include "ItemEditor.h"
 
+// design for sorting type column of neuron segment
+class CustomTableWidgetItem : public QTableWidgetItem
+{
+  //Q_OBJECT;
 
+public:
 
+    CustomTableWidgetItem(const QString txt = QString("0")) : QTableWidgetItem(txt)
+    {}
+
+    bool operator < (const QTableWidgetItem& other) const
+    {
+        if(other.column() == 2 || other.column() == 4)
+        {
+            return QTableWidgetItem::text().toInt() < other.text().toInt();
+        }
+        else if (other.column() == 3) // type
+        {
+            return QTableWidgetItem::text().toInt() < other.text().toInt();
+        }
+
+        return false;
+    }
+};
+
+//
 class V3dr_surfaceDialog: public SharedToolDialog
 {
     Q_OBJECT;
@@ -129,7 +153,10 @@ public slots:
     void updateMarkerList(QList <ImageMarker> markers); // sync object_manager with renderer
 
 	// -- MK, June, 2018
-	void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).  
+    void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).
+
+    //
+    void sortNeuronSegmentByType(QTableWidgetItem* item);
 
 protected:
 	void clearTables_fromTab();
