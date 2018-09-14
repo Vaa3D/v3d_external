@@ -1039,7 +1039,7 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
     V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
 
 	QStringList qsl;
-	qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file";
+    qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file"<<"index";
     int row;
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
@@ -1075,6 +1075,7 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
         //ADD_STRING( tr("%1").arg(curSeg.row[1].type) ); //
         CustomTableWidgetItem *curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row[1].type));
+        curCustomItem->setFlags(curCustomItem->flags() | Qt::ItemIsEditable);
         t->setItem(i, j++, curCustomItem);
 		
 		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
@@ -1082,6 +1083,9 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 		ADD_STRING( QString::fromUtf8(curSeg.comment.c_str()) );
 
 		ADD_STRING( QString::fromUtf8(curSeg.file.c_str()) );
+
+        curCustomItem = new CustomTableWidgetItem(tr("%1").arg(i));
+        t->setItem(i, j++, curCustomItem);
 
 		MESSAGE_ASSERT(j==col);
     }
@@ -1112,16 +1116,21 @@ void V3dr_surfaceDialog::pickNeuronSegment(int i, int j)
 	QTableWidget* t = table[stNeuronSegment];
 	QTableWidgetItem *curItem = t->item(i,j);
 
+    int index = t->itemAt(i,7)->text().toInt();
+
+    qDebug()<<"test ... "<<t->itemAt(i,7)->text()<<i;
+    qDebug()<<"... index ... "<<index;
+
 	switch(j)
 	{
 	case 0:
 		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
 		qDebug(CHECKED_TO_BOOL(curItem->checkState()) ? "true" : "false");
-		tracedNeuron->seg[i].on = CHECKED_TO_BOOL(curItem->checkState());//!tracedNeuron->seg[i].on;
+        tracedNeuron->seg[index].on = CHECKED_TO_BOOL(curItem->checkState());//!tracedNeuron->seg[i].on;
 		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
 		break;
 	case 1:
-		r->listCell[i].color = RGBA8V(curItem->data(0));
+        r->listCell[index].color = RGBA8V(curItem->data(0));
 		UPATE_ITEM_ICON(curItem);
 		break;
 	}
