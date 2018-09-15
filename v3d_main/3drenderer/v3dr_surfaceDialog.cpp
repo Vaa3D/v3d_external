@@ -1092,6 +1092,11 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
     t->resizeColumnsToContents();
 
+    if(sortNeuronSegmentType)
+    {
+        t->sortItems(3);
+    }
+
     connect(t, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(sortNeuronSegmentByType(QTableWidgetItem*)));
 
 	return t;
@@ -1116,17 +1121,14 @@ void V3dr_surfaceDialog::pickNeuronSegment(int i, int j)
 	QTableWidget* t = table[stNeuronSegment];
 	QTableWidgetItem *curItem = t->item(i,j);
 
-    int index = t->itemAt(i,7)->text().toInt();
-
-    qDebug()<<"test ... "<<t->itemAt(i,7)->text()<<i;
-    qDebug()<<"... index ... "<<index;
+    int index = t->item(i,7)->text().toInt();
 
 	switch(j)
 	{
 	case 0:
 		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
 		qDebug(CHECKED_TO_BOOL(curItem->checkState()) ? "true" : "false");
-        tracedNeuron->seg[index].on = CHECKED_TO_BOOL(curItem->checkState());//!tracedNeuron->seg[i].on;
+        tracedNeuron->seg[index].on = CHECKED_TO_BOOL(curItem->checkState()); // !tracedNeuron->seg[i].on;
 		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
 		break;
 	case 1:
@@ -1666,7 +1668,20 @@ void V3dr_surfaceDialog::sortNeuronSegmentByType(QTableWidgetItem* item)
 {
     if(item->column()==3) // sort type
     {
-        item->tableWidget()->sortItems(3);
+        // item->tableWidget()->sortItems(3);
+        sortNeuronSegmentType = true;
     }
+
+    updatedContent(item->tableWidget());
+
+    Renderer_gl1* r = renderer;
+    if (! r)  return;
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;
+    if (w) curImg = v3dr_getImage4d(r->_idep);
+
+    if (!isBatchOperation)
+    curImg->update_3drenderer_neuron_view(w, r);
 }
 

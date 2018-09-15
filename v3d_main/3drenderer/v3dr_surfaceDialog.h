@@ -90,6 +90,7 @@ protected:
 	QString title;
 	int last_marker; //updated in pressedClickHandler
 	bool isBatchOperation; //added by Y. Wang 20160525
+    bool sortNeuronSegmentType;
 
 	void setItemEditor();
 	void createFirst();
@@ -209,6 +210,7 @@ protected:
 		title = tr("Object Manager");  //Object Pick/Color Options")); //090423 RZC: changed
 		last_marker = -1;
 		isBatchOperation = false;
+        sortNeuronSegmentType = false;
 
 		okButton=cancelButton=undoButton=0;
 		selectAllButton=deselectAllButton=inverseSelectButton=
