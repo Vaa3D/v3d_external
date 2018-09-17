@@ -90,7 +90,7 @@ protected:
 	QString title;
 	int last_marker; //updated in pressedClickHandler
 	bool isBatchOperation; //added by Y. Wang 20160525
-    bool sortNeuronSegmentType;
+    int sortNeuronSegment;
 
 	void setItemEditor();
 	void createFirst();
@@ -138,6 +138,7 @@ public slots:
 	void pickMarker(int row, int col);
 
 	void editObjNameAndComments();
+    void editNeuronSegmentType();
 
 	void findNext();
 	void findPrev();
@@ -182,7 +183,7 @@ protected:
 	QPushButton *okButton, *cancelButton, *undoButton,
 				*selectAllButton, *deselectAllButton, *inverseSelectButton,
                 *onSelectButton, *offSelectButton, *colorSelectButton,
-                *editNameCommentButton, *markerLocalView,
+                *editNameCommentButton, *markerLocalView, *neuronSegmentType,
                 *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
 
 	QTabWidget *tabOptions;
@@ -210,12 +211,13 @@ protected:
 		title = tr("Object Manager");  //Object Pick/Color Options")); //090423 RZC: changed
 		last_marker = -1;
 		isBatchOperation = false;
-        sortNeuronSegmentType = false;
+        sortNeuronSegment = 0;
 
 		okButton=cancelButton=undoButton=0;
 		selectAllButton=deselectAllButton=inverseSelectButton=
 			onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=markerLocalView =0;
         objectSetDisplayModeButton = 0;
+        neuronSegmentType = 0;
 		for (int i=0; i<=6; i++)  table[i]=0; //by PHC, 090521 change to 5
 		tabOptions=0;
 		checkBox_accumulateLastHighlightHits = checkBox_attachedToCurrentView =0;//100809 RZC

@@ -284,13 +284,15 @@ void V3dr_surfaceDialog::createFirst()
     colorSelectButton = new QPushButton("Color >>");
     objectSetDisplayModeButton = new QPushButton("Display Mode >>"); //by PHC 20130926
     editNameCommentButton = new QPushButton("Name/Comments"); //by PHC, 090219
+    neuronSegmentType = new QPushButton("NeuronSegmentType");
     undoButton = new QPushButton("Undo");
     changeLayout->addWidget(onSelectButton,  		1+3,0, 1,1);
     changeLayout->addWidget(offSelectButton, 		1+3,1, 1,1);
     changeLayout->addWidget(colorSelectButton,		2+3,0, 1,2);
     changeLayout->addWidget(objectSetDisplayModeButton,		3+3,0, 1,2);
     changeLayout->addWidget(editNameCommentButton,	4+3,0, 1,2);
-    changeLayout->addWidget(undoButton,				5+3,0, 1,2);
+    changeLayout->addWidget(neuronSegmentType,      5+3,0, 1,2);
+    changeLayout->addWidget(undoButton,				6+3,0, 1,2);
 
 //    markerLocalView = new QPushButton("Local 3D View around Marker");
 
@@ -354,6 +356,7 @@ void V3dr_surfaceDialog::createFirst()
 	if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(doMenuOfColor()));
     if (objectSetDisplayModeButton) connect(objectSetDisplayModeButton, SIGNAL(clicked()),   this, SLOT(doMenuOfDisplayMode()));
 	if (editNameCommentButton) connect(editNameCommentButton, SIGNAL(clicked()),   this, SLOT(editObjNameAndComments()));
+    if (neuronSegmentType) connect(neuronSegmentType, SIGNAL(clicked()),   this, SLOT(editNeuronSegmentType()));
 
 	if (searchTextEdit && doSearchTextNext) connect(doSearchTextNext, SIGNAL(clicked()), this, SLOT(findNext()));
 	if (searchTextEdit && doSearchTextPrev) connect(doSearchTextPrev, SIGNAL(clicked()), this, SLOT(findPrev()));
@@ -1092,9 +1095,9 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
     t->resizeColumnsToContents();
 
-    if(sortNeuronSegmentType)
+    if(sortNeuronSegment)
     {
-        t->sortItems(3);
+        t->sortItems(sortNeuronSegment);
     }
 
     connect(t, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(sortNeuronSegmentByType(QTableWidgetItem*)));
@@ -1427,6 +1430,88 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 #endif
 }
 
+void V3dr_surfaceDialog::editNeuronSegmentType()
+{
+    //
+    QTableWidget* t = currentTableWidget();
+    if (! t) return;
+
+    Renderer_gl1* r = renderer;
+    if (! r)  return;
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;
+    if (w) curImg = v3dr_getImage4d(r->_idep);
+    V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+
+    int row;
+    bool flag = false;
+    for (int i=0; i<r->listNeuronTree.size();i++)
+        if (r->listNeuronTree[i].editable) flag = true;
+    if ((r->listNeuronTree.size() !=0 && !flag) || ! curImg)
+        row = 0;
+    else row =tracedNeuron->nsegs();
+
+    if(row<1)
+    {
+        cout<<"No segments"<<endl;
+        return;
+    }
+
+    //
+    int currentTypeValue = 1;
+    if(t==table[stNeuronSegment])
+    {
+        QList<QTableWidgetItem *> selected = t->selectedItems();
+
+        if(selected.size()<8)
+        {
+            cout<<"Invalid selection"<<endl;
+            return;
+        }
+
+        currentTypeValue = selected.at(3)->text().toInt();
+
+        bool ok;
+        int typeValue = QInputDialog::getInt(this, tr("Set Neuron Segment Type"), tr("Type:"), currentTypeValue, -1, 10000, 1, &ok);
+
+        if(ok)
+        {
+            cout<<"new type value: "<<typeValue<<endl;
+
+            QList <NeuronTree> *neurontrees = r->getHandleNeuronTrees();
+
+            cout<<"neuron segments "<<neurontrees->size()<<endl;
+
+            for(int i=0; i<selected.size(); i++)
+            {
+                // it's up to the definition of the neuron segment table
+                if(i%8==3)
+                {
+                    int index = selected.at(i+4)->text().toInt();
+
+                    cout<<"i "<<i<<" "<<selected.at(i)->text().toStdString()<<" "<<index<<endl;
+
+
+                    V_NeuronSWC curSeg = tracedNeuron->seg[index];
+
+                    cout<<"how many nodes' type need to be changed: "<<curSeg.nrows()<<endl;
+
+                    for(int j=0; j<curSeg.nrows(); j++)
+                    {
+                        curSeg.row[j].type = typeValue;
+                    }
+
+                }
+            }
+        }
+    }
+    else
+    {
+        cout<<"Not defined other than neuron segment table"<<endl;
+    }
+}
+
 
 void V3dr_surfaceDialog::findNext()
 {
@@ -1666,10 +1751,9 @@ void V3dr_surfaceDialog::updateMarkerList(QList <ImageMarker> markers)
 
 void V3dr_surfaceDialog::sortNeuronSegmentByType(QTableWidgetItem* item)
 {
-    if(item->column()==3) // sort type
+    if(item->column()==3 || item->column()==7) // sort type
     {
-        // item->tableWidget()->sortItems(3);
-        sortNeuronSegmentType = true;
+        sortNeuronSegment = item->column();
     }
 
     updatedContent(item->tableWidget());
