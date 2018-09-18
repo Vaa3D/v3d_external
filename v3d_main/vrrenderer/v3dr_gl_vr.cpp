@@ -77,6 +77,7 @@ int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
 ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
 ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
+RGBImageChannel CMainApplication::m_rgbChannel = channel_rgb;
 bool CMainApplication::showshootingPad = false;
 #define dist_thres 0.01
 #define connection_rigourous 0.5
@@ -2255,6 +2256,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					if (iLineWid<1)
 						iLineWid = 1;
 				}
+				
+
 				break;
 			}
 		case _AutoRotate: //actually for auto-rotation
@@ -2365,6 +2368,43 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					m_globalMatrix = glm::mat4();
 					SetupGlobalMatrix();
 				}
+			}
+		case _RGBImage: //line width
+			{
+				if(temp_x>0)
+				{
+					switch(m_rgbChannel)
+					{
+					case channel_rgb:
+						{m_rgbChannel = channel_r;
+						break;}
+					case channel_r:
+						{m_rgbChannel = channel_g;break;}
+					case channel_g:
+						{m_rgbChannel = channel_b;break;}
+					case channel_b:
+						{m_rgbChannel = channel_rgb;break;}
+					default:
+						break;
+					}
+				}
+				else
+				{
+					switch(m_rgbChannel)
+					{
+					case channel_rgb:
+						{m_rgbChannel = channel_b;
+						break;}
+					case channel_r:
+						{m_rgbChannel = channel_rgb;break;}
+					case channel_g:
+						{m_rgbChannel = channel_r;break;}
+					case channel_b:
+						{m_rgbChannel = channel_g;break;}
+					default:
+						break;}
+				}
+				break;
 			}
 		default:
 			break;
@@ -3672,6 +3712,7 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _TeraZoom:
 		case _LineWidth:
+		case _RGBImage:
 		case _Contrast:
 			{
 				AddVertex(point_E.x,point_E.y,point_E.z,0.25,0.125f,vcVerts);
@@ -3715,6 +3756,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.125f,vcVerts);
 				break;			
 			}
+
 		default:
 			break;
 		}
@@ -3852,7 +3894,16 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.085,0.75f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.17,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.17,0.625f,vcVerts);
-			}	
+			}
+		case _RGBImage:
+			{
+				AddVertex(point_M.x,point_M.y,point_M.z,0.17,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.25,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.625f,vcVerts);
+			}
 		case _UndoRedo:
 		default:
 			break;
@@ -6274,8 +6325,85 @@ GLuint CMainApplication::initVol3DTex()
     // pixel transfer happens here from client to OpenGL server
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	GL_ERROR();
+	switch(img4d->getDatatype())
+	{
+	case V3D_UINT8:
+		{
+		GLubyte * RData = img4d->getRawDataAtChannel(0);
+		GLubyte * GData = img4d->getRawDataAtChannel(1);
+		GLubyte * BData = img4d->getRawDataAtChannel(2);
+		GLubyte * RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel()*3];
+		cout<<"step 2"<<endl;
+		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+		{	
+			RBGData[i] = RData[i/3];
+			RBGData[i+1] = GData[i/3];
+			RBGData[i+2] = BData[i/3];
+			i+=3;
+		}
+		cout<<"step 3"<<endl;
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);
+		cout<<"data type is V3D_UINT8"<<endl;
+		}
+	break;
+	case V3D_UINT16:
+		{
+			GLushort * RData = (GLushort *)img4d->getRawDataAtChannel(0);
+		GLushort * GData = (GLushort *)img4d->getRawDataAtChannel(1);
+		GLushort * BData = (GLushort *)img4d->getRawDataAtChannel(2);
+		GLushort * RBGData = new GLushort[img4d->getTotalUnitNumberPerChannel()*3];
+		cout<<"step 2"<<endl;
+		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+		{	
+			RBGData[i] = RData[i/3];
+			RBGData[i+1] = GData[i/3];
+			RBGData[i+2] = BData[i/3];
+			i+=3;
+		}
+		cout<<"step 3"<<endl;
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_SHORT, (GLushort *)RBGData);
+		cout<<"data type is V3D_UINT16"<<endl;
+		}
+	break;
+	case V3D_FLOAT32:
+		{
+			GLuint * RData = (GLuint *)img4d->getRawDataAtChannel(0);
+		GLuint * GData = (GLuint *)img4d->getRawDataAtChannel(1);
+		GLuint * BData = (GLuint *)img4d->getRawDataAtChannel(2);
+		GLuint * RBGData = new GLuint[img4d->getTotalUnitNumberPerChannel()*3];
+		cout<<"step 2"<<endl;
+		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+		{	
+			RBGData[i] = RData[i/3];
+			RBGData[i+1] = GData[i/3];
+			RBGData[i+2] = BData[i/3];
+			i+=3;
+		}
+		cout<<"step 3"<<endl;
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_INT, (GLuint *)RBGData);
+		cout<<"data type is V3D_FLOAT32"<<endl;
+		}
+	break;
+	default:
+		break;
+	}
+
     //glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (GLvoid*)data); 
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLubyte *)img4d->getRawData());
+	/*GLubyte * RData = img4d->getRawDataAtChannel(0);
+	GLubyte * GData = img4d->getRawDataAtChannel(1);
+	GLubyte * BData = img4d->getRawDataAtChannel(2);
+	GLubyte * RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel()*3];
+	cout<<"step 2"<<endl;
+	for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+	{	
+		RBGData[i] = RData[i/3];
+		RBGData[i+1] = GData[i/3];
+		RBGData[i+2] = BData[i/3];
+		i+=3;
+	}
+	cout<<"step 3"<<endl;
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);*/
+
 	GL_ERROR();
     cout << "volume texture created" << endl;
     return g_volTexObj;
@@ -6399,6 +6527,15 @@ void CMainApplication::SetUinformsForRayCasting()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_3D, g_volTexObj);
 	raycastingShader->setInt("VolumeTex", 2);
+
+	if(img4d->getCDim()== 1 )//single channel image
+	// to do
+	raycastingShader->setInt("channel", 0);
+
+	else	
+		raycastingShader->setInt("channel", m_rgbChannel);
+		
+
 }
 
 
@@ -6414,6 +6551,7 @@ CGLRenderModel::CGLRenderModel( const std::string & sRenderModelName )//todo: se
 	m_glVertBuffer = 0;
 	m_glTexture = 0;
 }
+
 
 
 CGLRenderModel::~CGLRenderModel()
@@ -6688,6 +6826,9 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		{
 			m_modeGrip_L = _AutoRotate;
 		}
+
+
+
 	}
 	//choose Right controllerFunction
 	if(panelpos_x >= 0.657)
@@ -6716,9 +6857,14 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		{
 			m_modeGrip_R = m_splitMode;
 		}
+		//left function too much ,put new function right
 		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		{
 			m_modeGrip_L = _ResetImage;
+		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
+		{
+			m_modeGrip_L = _RGBImage;
 		}
 	}
 

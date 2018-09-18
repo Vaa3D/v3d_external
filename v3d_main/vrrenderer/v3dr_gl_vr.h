@@ -53,7 +53,16 @@ enum ModeControlSettings
 	_Freeze,
 	_LineWidth,
 	_AutoRotate,
-	_ResetImage
+	_ResetImage,
+	_RGBImage
+};
+enum RGBImageChannel
+{
+	channel_rgb = 1,
+	channel_r,
+	channel_g,
+	channel_b,
+
 };
 // int global_padm_modeGrip_L = _donothing;//liqi
 // int global_padm_modeGrip_R = m_drawMode;
@@ -252,6 +261,8 @@ private: // OpenGL bookkeeping
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
 	static ModeControlSettings m_modeGrip_L;
+	static RGBImageChannel m_rgbChannel;
+	bool singlechannel;
 	bool m_translationMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
@@ -452,7 +463,7 @@ private:
 	GLuint g_texWidth;
 	GLuint g_texHeight;
 	GLuint g_volTexObj;
-
+	GLuint g_volTexObj1;
 	static float fBrightness;
 	static float fContrast;
 
