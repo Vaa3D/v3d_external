@@ -1499,7 +1499,9 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
 
                     for(int j=0; j<curSeg.nrows(); j++)
                     {
-                        curSeg.row[j].type = typeValue;
+                        tracedNeuron->seg[index].row[j].type = typeValue;
+
+                        // cout<<"changed? "<<tracedNeuron->seg[index].row[j].type<<endl;
                     }
 
                 }
@@ -1510,6 +1512,12 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
     {
         cout<<"Not defined other than neuron segment table"<<endl;
     }
+
+    //
+    updatedContent(t);
+
+    if (!isBatchOperation)
+    curImg->update_3drenderer_neuron_view(w, r);
 }
 
 

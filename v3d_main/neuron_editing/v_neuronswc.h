@@ -108,6 +108,7 @@ struct V_NeuronSWC_unit
 	void set(double x1, double y1, double z1, double r1, double p1) {x=x1; y=y1;z=z1;r=r1;parent=p1;}
 	void set(double x1, double y1, double z1, double r1) {x=x1; y=y1;z=z1;r=r1;}
 	void set(double x1, double y1, double z1) {x=x1; y=y1;z=z1;}
+    void setType(double t) {type = t;}
 };
 
 inline double distL2square(const V_NeuronSWC_unit & a, const V_NeuronSWC_unit & b)
