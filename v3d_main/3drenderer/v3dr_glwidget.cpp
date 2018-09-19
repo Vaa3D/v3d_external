@@ -1134,12 +1134,32 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
           case Qt::Key_W:
 		    if (IS_ALT_MODIFIER)
 		    {
-                   setDragWinSize(+2);
-              }
-              else if(IS_SHIFT_MODIFIER)
-              {
-                   setDragWinSize(-2);
-              }
+				setDragWinSize(+2);
+            }
+            else if(IS_SHIFT_MODIFIER)
+            {
+                setDragWinSize(-2);
+            }
+			else
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->selectMode == Renderer::smShowSubtree)
+				{
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+					for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+					{
+						for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)
+							nodeIt->type = 0;
+
+						curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
+					}
+
+					curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+			}
 	  		break;
 
 #ifndef test_main_cpp
