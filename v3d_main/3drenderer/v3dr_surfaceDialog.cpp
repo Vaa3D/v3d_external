@@ -1074,10 +1074,12 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 		color.a = curSeg.color_uc[3];
 		ADD_QCOLOR(color);
 
-		ADD_STRING( tr("%1").arg(curSeg.row.size()) );
+        //ADD_STRING( tr("%1").arg(curSeg.row.size()) );
+        CustomTableWidgetItem *curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row.size()));
+        t->setItem(i, j++, curCustomItem);
 
         //ADD_STRING( tr("%1").arg(curSeg.row[1].type) ); //
-        CustomTableWidgetItem *curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row[1].type));
+        curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row[1].type));
         curCustomItem->setFlags(curCustomItem->flags() | Qt::ItemIsEditable);
         t->setItem(i, j++, curCustomItem);
 		
@@ -1093,13 +1095,19 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 		MESSAGE_ASSERT(j==col);
     }
 
+    //
+    t->setSortingEnabled(true);
+
+    //
     t->resizeColumnsToContents();
 
+    //
     if(sortNeuronSegment)
     {
         t->sortItems(sortNeuronSegment);
     }
 
+    //
     connect(t, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(sortNeuronSegmentByType(QTableWidgetItem*)));
 
 	return t;
@@ -1402,8 +1410,8 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 				}
 				else if (t==table[stNeuronSegment])
 				{
-					r->listCell[i].name = realobj_name;
-					r->listCell[i].comment = realobj_comment;
+//					r->listCell[i].name = realobj_name;
+//					r->listCell[i].comment = realobj_comment;
 				}
 				else if (t==table[stNeuronStructure])
 				{
@@ -1458,19 +1466,25 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
         return;
     }
 
+    cout<<"rows "<<row<<endl;
+
     //
     int currentTypeValue = 1;
     if(t==table[stNeuronSegment])
     {
         QList<QTableWidgetItem *> selected = t->selectedItems();
 
-        if(selected.size()<8)
+        if(selected.size()<8) // col = 8; at least one row is selected
         {
             cout<<"Invalid selection"<<endl;
             return;
         }
 
-        currentTypeValue = selected.at(3)->text().toInt();
+        // cout<<"selected qtablewidgetitems: "<<selected.size()<<endl;
+
+        int selectedrows = selected.size() / 8;
+
+        currentTypeValue = selected.at(3*selectedrows)->text().toInt();
 
         bool ok;
         int typeValue = QInputDialog::getInt(this, tr("Set Neuron Segment Type"), tr("Type:"), currentTypeValue, -1, 10000, 1, &ok);
@@ -1479,32 +1493,43 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
         {
             cout<<"new type value: "<<typeValue<<endl;
 
-            QList <NeuronTree> *neurontrees = r->getHandleNeuronTrees();
+            //QList <NeuronTree> *neurontrees = r->getHandleNeuronTrees();
 
-            cout<<"neuron segments "<<neurontrees->size()<<endl;
-
-            for(int i=0; i<selected.size(); i++)
+            for(int i=0; i<selectedrows; i++)
             {
                 // it's up to the definition of the neuron segment table
-                if(i%8==3)
+
+                int k = 3*selectedrows + i;
+                int index = selected.at(7*selectedrows + i)->text().toInt();
+
+                cout<<"i "<<i<<" "<<selected.at(k)->text().toStdString()<<" "<<index<<endl;
+
+                V_NeuronSWC curSeg = tracedNeuron->seg[index];
+
+                cout<<"how many nodes' type need to be changed: "<<curSeg.nrows()<<endl;
+
+                for(int j=0; j<curSeg.nrows(); j++)
                 {
-                    int index = selected.at(i+4)->text().toInt();
-
-                    cout<<"i "<<i<<" "<<selected.at(i)->text().toStdString()<<" "<<index<<endl;
-
-
-                    V_NeuronSWC curSeg = tracedNeuron->seg[index];
-
-                    cout<<"how many nodes' type need to be changed: "<<curSeg.nrows()<<endl;
-
-                    for(int j=0; j<curSeg.nrows(); j++)
-                    {
-                        tracedNeuron->seg[index].row[j].type = typeValue;
-
-                        // cout<<"changed? "<<tracedNeuron->seg[index].row[j].type<<endl;
-                    }
-
+                    tracedNeuron->seg[index].row[j].type = typeValue;
+                    // cout<<"changed? "<<tracedNeuron->seg[index].row[j].type<<endl;
                 }
+
+//                if(i%8==3)
+//                {
+//                    int index = selected.at(i+4)->text().toInt();
+
+//                    cout<<"i "<<i<<" "<<selected.at(i)->text().toStdString()<<" "<<index<<endl;
+
+//                    V_NeuronSWC curSeg = tracedNeuron->seg[index];
+
+//                    cout<<"how many nodes' type need to be changed: "<<curSeg.nrows()<<endl;
+
+//                    for(int j=0; j<curSeg.nrows(); j++)
+//                    {
+//                        tracedNeuron->seg[index].row[j].type = typeValue;
+//                        // cout<<"changed? "<<tracedNeuron->seg[index].row[j].type<<endl;
+//                    }
+//                }
             }
         }
     }
