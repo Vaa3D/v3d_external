@@ -1502,7 +1502,7 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
                 // it's up to the definition of the neuron segment table
 
                 int k = 2*selectedrows + i;
-                int index = selected.at(2*selectedrows + i)->text().toInt();
+                int index = selected.at(3*selectedrows + i)->text().toInt();
 
                 cout<<"i "<<i<<" "<<selected.at(k)->text().toStdString()<<" "<<index<<endl;
 
