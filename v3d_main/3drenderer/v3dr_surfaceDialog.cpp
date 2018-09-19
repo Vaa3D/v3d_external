@@ -1056,7 +1056,7 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
     QTableWidget* t = new QTableWidget(row,col, this);
 
-    t->insertRow(row);
+//    t->insertRow(row);
 
 	t->setHorizontalHeaderLabels(qsl);
 
@@ -1117,7 +1117,7 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
 void V3dr_surfaceDialog::pickNeuronSegment(int i, int j)
 {
-	qDebug("flag4");
+//	qDebug("flag4");
 	qDebug("	pickNeuronSegment( %d, %d )", i,j);
 	if (j == 1) return;
 	
@@ -1133,7 +1133,7 @@ void V3dr_surfaceDialog::pickNeuronSegment(int i, int j)
 	QTableWidget* t = table[stNeuronSegment];
 	QTableWidgetItem *curItem = t->item(i,j);
 
-    int index = t->item(i,7)->text().toInt();
+    int index = t->item(i,3)->text().toInt();
 
 	switch(j)
 	{
