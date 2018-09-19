@@ -1055,9 +1055,6 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 	int col = qsl.size();
 
     QTableWidget* t = new QTableWidget(row,col, this);
-
-//    t->insertRow(row);
-
 	t->setHorizontalHeaderLabels(qsl);
 
 	for (int i=0; i<row; i++)
@@ -1080,7 +1077,7 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
         t->setItem(i, j++, curCustomItem);
 
         //ADD_STRING( tr("%1").arg(curSeg.row[1].type) ); //
-        curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row[1].type));
+        curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row[0].type));
         curCustomItem->setFlags(curCustomItem->flags() | Qt::ItemIsEditable);
         t->setItem(i, j++, curCustomItem);
 		
@@ -1489,7 +1486,7 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
         currentTypeValue = selected.at(2*selectedrows)->text().toInt();
 
         bool ok;
-        int typeValue = QInputDialog::getInt(this, tr("Set Neuron Segment Type"), tr("Type:"), currentTypeValue, -1, 10000, 1, &ok);
+        double typeValue = QInputDialog::getDouble(this, tr("Set Neuron Segment Type"), tr("Type:"), currentTypeValue, -2147483647, 2147483647, 1, &ok);
 
         if(ok)
         {
@@ -1786,7 +1783,7 @@ void V3dr_surfaceDialog::updateMarkerList(QList <ImageMarker> markers)
 
 void V3dr_surfaceDialog::sortNeuronSegmentByType(QTableWidgetItem* item)
 {
-    if(item->column()==3 || item->column()==7) // sort type
+    if(item->column()==1 || item->column()==2 || item->column()==3) // sort count,type,index
     {
         sortNeuronSegment = item->column();
     }

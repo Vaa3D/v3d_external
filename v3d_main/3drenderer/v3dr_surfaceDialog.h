@@ -60,7 +60,7 @@ public:
 
     bool operator < (const QTableWidgetItem& other) const
     {
-        if(other.column() == 2 || other.column() == 3 || other.column() == 7) // 2 count 3 type 7 index
+        if(other.column() == 1 || other.column() == 2 || other.column() == 3) // 1 count 2 type 3 index
         {
             return QTableWidgetItem::text().toInt() < other.text().toInt();
         }
