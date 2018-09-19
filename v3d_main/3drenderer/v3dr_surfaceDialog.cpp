@@ -1042,7 +1042,8 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
     V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
 
 	QStringList qsl;
-    qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file"<<"index";
+    //qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file"<<"index";
+    qsl <<"on/off" << "count" << "type" << "index";
     int row;
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
@@ -1067,12 +1068,12 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
 		ADD_ONOFF(curSeg.on);
 
-		RGBA8 color;
-		color.r = curSeg.color_uc[0];
-		color.g = curSeg.color_uc[1];
-        color.b = curSeg.color_uc[2];
-		color.a = curSeg.color_uc[3];
-		ADD_QCOLOR(color);
+//		RGBA8 color;
+//		color.r = curSeg.color_uc[0];
+//		color.g = curSeg.color_uc[1];
+//      color.b = curSeg.color_uc[2];
+//		color.a = curSeg.color_uc[3];
+//		ADD_QCOLOR(color);
 
         //ADD_STRING( tr("%1").arg(curSeg.row.size()) );
         CustomTableWidgetItem *curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row.size()));
@@ -1083,11 +1084,11 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
         curCustomItem->setFlags(curCustomItem->flags() | Qt::ItemIsEditable);
         t->setItem(i, j++, curCustomItem);
 		
-		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
+//		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
 
-		ADD_STRING( QString::fromUtf8(curSeg.comment.c_str()) );
+//		ADD_STRING( QString::fromUtf8(curSeg.comment.c_str()) );
 
-		ADD_STRING( QString::fromUtf8(curSeg.file.c_str()) );
+//		ADD_STRING( QString::fromUtf8(curSeg.file.c_str()) );
 
         curCustomItem = new CustomTableWidgetItem(tr("%1").arg(i));
         t->setItem(i, j++, curCustomItem);
@@ -1452,7 +1453,8 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
     if (w) curImg = v3dr_getImage4d(r->_idep);
     V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
 
-    int row;
+    int row, col;
+    col = 4; // on/off count type index
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
         if (r->listNeuronTree[i].editable) flag = true;
@@ -1474,7 +1476,7 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
     {
         QList<QTableWidgetItem *> selected = t->selectedItems();
 
-        if(selected.size()<8) // col = 8; at least one row is selected
+        if(selected.size()<col) // at least one row is selected
         {
             cout<<"Invalid selection"<<endl;
             return;
@@ -1482,7 +1484,7 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
 
         // cout<<"selected qtablewidgetitems: "<<selected.size()<<endl;
 
-        int selectedrows = selected.size() / 8;
+        int selectedrows = selected.size() / col;
 
         currentTypeValue = selected.at(3*selectedrows)->text().toInt();
 
@@ -1499,8 +1501,8 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
             {
                 // it's up to the definition of the neuron segment table
 
-                int k = 3*selectedrows + i;
-                int index = selected.at(7*selectedrows + i)->text().toInt();
+                int k = 2*selectedrows + i;
+                int index = selected.at(3*selectedrows + i)->text().toInt();
 
                 cout<<"i "<<i<<" "<<selected.at(k)->text().toStdString()<<" "<<index<<endl;
 
