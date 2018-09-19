@@ -1486,7 +1486,7 @@ void V3dr_surfaceDialog::editNeuronSegmentType()
         currentTypeValue = selected.at(2*selectedrows)->text().toInt();
 
         bool ok;
-        double typeValue = QInputDialog::getDouble(this, tr("Set Neuron Segment Type"), tr("Type:"), currentTypeValue, -2147483647, 2147483647, 1, &ok);
+        int typeValue = QInputDialog::getInt(this, tr("Set Neuron Segment Type"), tr("Type:"), currentTypeValue, -2147483647, 2147483647, 1, &ok);
 
         if(ok)
         {
