@@ -1170,7 +1170,7 @@ void QGLRefSys::wheelEvent(QWheelEvent *event)
 
 void QGLRefSys::enterEvent(QEvent *event)
 {
-    emit reset();
+    // emit reset();
 }
 
 

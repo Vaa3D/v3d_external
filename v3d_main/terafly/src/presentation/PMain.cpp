@@ -991,6 +991,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     refSysContainerLayout2->addWidget(refSys, 1);
     #endif
     refSysContainerLayout2->addStretch();
+
+    QPushButton *updateStatistics = new QPushButton("update");
+    refSysContainerLayout2->addWidget(updateStatistics, 2);
+    connect(updateStatistics, SIGNAL(released()), this, SLOT(updateOverview()));
+    refSysContainerLayout2->addStretch();
+
     refSysContainer2->setLayout(refSysContainerLayout2);
     QGridLayout* Overview_layout = new QGridLayout();
     Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
