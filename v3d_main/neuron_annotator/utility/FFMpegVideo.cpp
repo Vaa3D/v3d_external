@@ -1,4 +1,5 @@
 #include "FFMpegVideo.h"
+#include "FFMpegVideo_utility.h"
 
 #ifdef USE_FFMPEG
 
@@ -27,106 +28,6 @@ using namespace std;
 // from ffmeg_adapt.c in whisk package by Nathan Clack, Mark Bolstadt, Michael Meeuwisse
 
 QMutex FFMpegVideo::mutex;
-
-// Avoid link error on some macs
-#ifdef __APPLE__
-extern "C" {
-#include <stdlib.h>
-#include <errno.h>
-// #include "compiler/compiler.h"
-
-/*
- * Darwin doesn't have posix_memalign(), provide a private
- * weak alternative
- */
-    /*
-int __weak posix_memalign(void **ptr, size_t align, size_t size)
-{
-       if (*ptr)
-               return 0;
-
-       return ENOMEM;
-}
-*/
-}
-#endif
-
-// Custom read function so FFMPEG does not need to read from a local file by name.
-// But rather from a stream derived from a URL or whatever.
-extern "C" {
-
-int readFunction(void* opaque, uint8_t* buf, int buf_size)
-{
-    QIODevice* stream = (QIODevice*)opaque;
-    int numBytes = stream->read((char*)buf, buf_size);
-    return numBytes;
-}
-
-// http://cdry.wordpress.com/2009/09/09/using-custom-io-callbacks-with-ffmpeg/
-int64_t seekFunction(void* opaque, int64_t offset, int whence)
-{
-    QIODevice* stream = (QIODevice*)opaque;
-    if (stream == NULL)
-        return -1;
-    else if (whence == AVSEEK_SIZE)
-        return -1; // "size of my handle in bytes"
-    else if (stream->isSequential())
-        return -1; // cannot seek a sequential stream
-        else if ( whence == SEEK_CUR ) // relative to start of file
-        {
-        if (! stream->seek(stream->pos() + offset) )
-            return -1;
-    }
-        else if ( whence == SEEK_END ) // relative to end of file
-        {
-        assert(offset < 0);
-        if (! stream->seek(stream->size() + offset) )
-            return -1;
-    }
-        else if ( whence == SEEK_SET ) // relative to start of file
-        {
-        if (! stream->seek(offset) )
-            return -1;
-    }
-        else
-        {
-        assert(false);
-    }
-    return stream->pos();
-}
-
-}
-
-
-/////////////////////////////
-// AVPacketWrapper methods //
-/////////////////////////////
-
-class AVPacketWrapper
-{
-public:
-    AVPacketWrapper();
-    virtual ~AVPacketWrapper();
-    void free();
-
-    AVPacket packet;
-};
-
-
-AVPacketWrapper::AVPacketWrapper()
-{
-}
-
-/* virtual */
-AVPacketWrapper::~AVPacketWrapper()
-{
-    free();
-}
-
-void AVPacketWrapper::free()
-{
-    av_packet_unref(&packet);
-}
 
 
 /////////////////////////
@@ -441,11 +342,11 @@ int FFMpegVideo::getNumberOfChannels() const
         return 4;
         break;
     case AV_PIX_FMT_RGB24:
+    case AV_PIX_FMT_YUV444P:
         return 3;
         break;
     case AV_PIX_FMT_GRAY16:
-        return 1;
-        break;
+    case AV_PIX_FMT_GRAY12:
     case AV_PIX_FMT_GRAY8:
         return 1;
         break;

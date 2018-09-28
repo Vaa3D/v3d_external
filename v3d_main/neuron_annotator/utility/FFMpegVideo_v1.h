@@ -1,14 +1,14 @@
-#ifndef FFMPEGVIDEO_H
-#define FFMPEGVIDEO_H
+#ifndef FFMPEGVIDEO_v1_H
+#define FFMPEGVIDEO_v1_H
 
 /*
- * FFMpegVideo.h
+ * FFMpegVideo_v1.h
  * May 2012 Christopher Bruns
- * The FFMpegVideo class is a C++ wrapper around the poorly documented
+ * The FFMpegVideo_v1 class is a C++ wrapper around the poorly documented
  * libavcodec movie API used by ffmpeg.  I made extensive use of Nathan
  * Clack's implemention in the whisk project.
  *
- * The FFMpegVideo.h and FFMpegVideo.cpp files depend only on the libavcodec
+ * The FFMpegVideo_v1.h and FFMpegVideo_v1.cpp files depend only on the libavcodec
  * and allied sets of libraries.  To compartmentalize and reduce dependencies
  * I placed the Vaa3d specific use of this class into a separate set of
  * source files: loadV3dFFMpeg.h/cpp
@@ -35,7 +35,7 @@ extern "C" {
 
 // Translated to C++ by Christopher Bruns May 2012
 // from ffmeg_adapt.c in whisk package by Nathan Clack, Mark Bolstadt, Michael Meeuwisse
-class FFMpegVideo
+class FFMpegVideo_v1
 {
 public:
     enum Channel {
@@ -50,17 +50,14 @@ public:
     static QMutex mutex;
     static void maybeInitFFMpegLib();
 
-    FFMpegVideo();
-    FFMpegVideo(QUrl url );
-    FFMpegVideo(QByteArray* buffer );
-    virtual ~FFMpegVideo();
-    bool open(QUrl url);
-    bool open(QIODevice& fileStream, QString& fileName);
-    AVPixelFormat getPixelFormat() const { return format; }
+    FFMpegVideo_v1(AVPixelFormat pixelFormat=AV_PIX_FMT_RGB24);
+    FFMpegVideo_v1(QUrl url, AVPixelFormat pixelFormat=AV_PIX_FMT_RGB24);
+    FFMpegVideo_v1(QByteArray* buffer, AVPixelFormat pixelFormat=AV_PIX_FMT_RGB24);
+    virtual ~FFMpegVideo_v1();
+    bool open(QUrl url, enum AVPixelFormat formatParam = AV_PIX_FMT_RGB24);
+    bool open(QIODevice& fileStream, QString& fileName, enum AVPixelFormat formatParam = AV_PIX_FMT_RGB24);
     uint8_t getPixelIntensity(int x, int y, Channel c = GRAY) const;
-    uint16_t getPixelIntensity16(int x, int y, Channel c = GRAY) const;
     bool fetchFrame(int targetFrameIndex = 0);
-    int getBitDepth() const;
     int getNumberOfFrames() const;
     int getWidth() const;
     int getHeight() const;
@@ -82,13 +79,13 @@ protected:
     static bool b_is_one_time_inited;
 
     void initialize();
-    bool open(QString& fileName);
-    bool openUsingInitializedContainer();
-    int open_codec_context( int *stream_idx, AVCodecContext **dec_ctx,
-                            AVFormatContext *fmt_ctx, enum AVMediaType type );
+    bool open(QString& fileName, enum AVPixelFormat formatParam);
+    bool openUsingInitializedContainer(enum AVPixelFormat formatParam);
     static bool avtry(int result, const std::string& msg);
 
     AVCodec *pCodec;
+    uint8_t *buffer,
+            *blank;
     struct SwsContext *Sctx;
     int width, height;
     AVPixelFormat format;
@@ -108,42 +105,6 @@ protected:
 };
 
 
-// TODO - finish refactoring based on
-// http://svn.gnumonks.org/trunk/21c3-video/ffmpeg/ffmpeg-0.4.9-pre1/output_example.c
-class FFMpegEncoder
-{
-public:
-    typedef FFMpegVideo::Channel Channel;
-
-    FFMpegEncoder(const char * file_name, int width, int height, int bit_depth,
-        enum AVCodecID codec_id = AV_CODEC_ID_MPEG4, std::string options = "" );
-    virtual ~FFMpegEncoder();
-    void setPixelIntensity(int x, int y, int c, uint8_t value);
-    void setPixelIntensity16(int x, int y, uint16_t value);
-    void write_frame();
-    void close();
-    size_t buffer_size() { return _buffer_size; }
-    uint8_t* buffer() { return _buffer; }
-    void free_buffer() { if (_buffer_size > 0 ) { _buffer_size = 0; av_free( _buffer ); } }
-    void encode( AVFrame* picture = NULL );
-    int encoded_frames() { return _encoded_frames; }
-
-protected:
-    AVFormatContext *container;
-    AVCodecContext *pCtx;
-    AVStream *video_st;
-    AVFrame *picture_yuv;
-    AVFrame *picture_rgb;
-    struct SwsContext *Sctx;
-    bool use_buffer;
-    size_t _buffer_size;
-    uint8_t* _buffer;
-    int _frame_count;
-    int _encoded_frames;
-    enum AVPixelFormat _raw_format;
-};
-
-
 #endif // USE_FFMPEG
 
-#endif // FFMPEGVIDEO_H
+#endif // FFMPEGVIDEO_v1_H

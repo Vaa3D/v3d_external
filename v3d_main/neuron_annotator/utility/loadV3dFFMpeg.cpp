@@ -15,6 +15,7 @@
 
 #include "loadV3dFFMpeg.h"
 #include "FFMpegVideo.h"
+#include "FFMpegVideo_v1.h"
 
 #ifdef USE_HDF5
 #include "hdf5_hl.h"
@@ -500,49 +501,88 @@ bool loadStackFFMpeg( QUrl url, Image4DSimple& img )
 bool loadIndexedStackFFMpeg( QByteArray* buffer, Image4DSimple& img, int channel, int num_channels,
                              long width, long height )
 {
-    try
-    {
-        FFMpegVideo video( buffer );
-        if ( ! video.isOpen )
+    int frameCount = 0;
+   try
+   {
+      FFMpegVideo video( buffer );
+      if ( !video.isOpen )
+         return false;
+      if ( video.getPixelFormat() != AV_PIX_FMT_YUV444P )
+      {
+         int sx = video.getWidth();
+         int sy = video.getHeight();
+         int sz = video.getNumberOfFrames();
+         int sc = video.getNumberOfChannels();
+         // cout << "Number of frames = " << sz << endl;
+
+         if ( channel == 0 )
+            img.createBlankImage( width, height, sz, num_channels,
+                                  video.getBitDepth() ); // 1 byte = 8 bits per value
+
+         Image4DProxy< Image4DSimple > proxy( &img );
+
+         for ( int z = 0; z < sz; ++z )
+         {
+            video.fetchFrame( z );
+            // int z = frameCount;
+            frameCount++;
+            for ( int y = 0; y < height; ++y )
+            {
+               for ( int x = 0; x < width; ++x )
+               {
+                  if ( video.getBitDepth() == 1 )
+                     proxy.put_at(
+                         x, y, z, channel,
+                         video.getPixelIntensity( x, y, (FFMpegVideo::Channel)0 ) );
+                  else
+                     proxy.put_at(
+                         x, y, z, channel,
+                         video.getPixelIntensity16( x, y, (FFMpegVideo::Channel)0 ) );
+               }
+            }
+         }
+      }
+      else
+      {
+         FFMpegVideo_v1 video_v1( buffer );
+         if ( !video_v1.isOpen )
             return false;
-        int sx = video.getWidth();
-        int sy = video.getHeight();
-        int sz = video.getNumberOfFrames();
-        int sc = video.getNumberOfChannels();
-        // cout << "Number of frames = " << sz << endl;
+         int sx = video_v1.getWidth();
+         int sy = video_v1.getHeight();
+         int sz = video_v1.getNumberOfFrames();
+         int sc = video_v1.getNumberOfChannels();
+         // cout << "Number of frames = " << sz << endl;
 
-        if ( channel == 0 )
-            img.createBlankImage( width, height, sz, num_channels, video.getBitDepth() ); // 1 byte = 8 bits per value
+         if ( channel == 0 )
+            img.createBlankImage( width, height, sz, num_channels,
+                                  1 ); // 1 byte = 8 bits per value
 
-        Image4DProxy<Image4DSimple> proxy( &img );
+         Image4DProxy< Image4DSimple > proxy( &img );
 
-        int frameCount = 0;
-        for ( int z = 0; z < sz; ++z )
-        {
-           video.fetchFrame( z );
-           // int z = frameCount;
-           frameCount++;
-           for ( int y = 0; y < height; ++y )
-           {
-              for ( int x = 0; x < width; ++x )
-              {
-                 if ( video.getBitDepth() == 1 )
-                    proxy.put_at( x, y, z, channel, video.getPixelIntensity(
-                                                        x, y, (FFMpegVideo::Channel)0 ) );
-                 else
-                    proxy.put_at( x, y, z, channel, video.getPixelIntensity16(
-                                                        x, y, (FFMpegVideo::Channel)0 ) );
-              }
-           }
-        }
-        cout << "Number of frames found = " << frameCount << endl;
+         for ( int z = 0; z < sz; ++z )
+         {
+            video_v1.fetchFrame( z );
+            // int z = frameCount;
+            frameCount++;
+            for ( int y = 0; y < height; ++y )
+            {
+               for ( int x = 0; x < width; ++x )
+               {
+                  proxy.put_at( x, y, z, channel, video_v1.getPixelIntensity(
+                                                      x, y, (FFMpegVideo_v1::Channel)0 ) );
+               }
+            }
+         }
+      }
+      cout << "Number of frames found = " << frameCount << endl;
 
-        return true;
+      return true;
+   }
+   catch ( ... )
+   {
+   }
 
-    }
-    catch ( ... ) {}
-
-    return false;
+   return false;
 }
 
 bool loadStackFFMpegAsGray( const char* fileName, Image4DSimple& img )
