@@ -2922,6 +2922,28 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->checkBox_OrthoView->setChecked(src->checkBox_OrthoView->isChecked());
 
     dst->checkBox_surfZLock->setChecked(src->checkBox_surfZLock->isChecked());
+
+    if(src->xcLock->isChecked())
+    {
+        dst->xcmaxSlider->setValue(src->xcmaxSlider->value());
+        dst->xcminSlider->setValue(src->xcminSlider->value());
+        dst->xcLock->setChecked(true);
+    }
+
+    if(src->ycLock->isChecked())
+    {
+        dst->ycmaxSlider->setValue(src->ycmaxSlider->value());
+        dst->ycminSlider->setValue(src->ycminSlider->value());
+        dst->ycLock->setChecked(true);
+    }
+
+    if(src->zcLock->isChecked())
+    {
+        dst->zcmaxSlider->setValue(src->zcmaxSlider->value());
+        dst->zcminSlider->setValue(src->zcminSlider->value());
+        dst->zcLock->setChecked(true);
+    }
+
     //propagating skeleton mode and line width
     dst->getGLWidget()->getRenderer()->lineType = src->getGLWidget()->getRenderer()->lineType;
     dst->getGLWidget()->getRenderer()->lineWidth = src->getGLWidget()->getRenderer()->lineWidth;
