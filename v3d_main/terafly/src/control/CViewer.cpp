@@ -704,13 +704,20 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
             if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
             {
-                qDebug()<<"using magnification lock ..."<<volResIndex;
-
                 XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
 
-                newViewer(point.x + (volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
-                          point.y + (volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
-                          point.z + (volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
+                float xsign = point.x - (volH1-volH0)/2;
+                xsign /= abs(xsign);
+
+                float ysign = point.y - (volV1-volV0)/2;
+                ysign /= abs(ysign);
+
+                float zsign = point.z - (volD1-volD0)/2;
+                zsign /= abs(zsign);
+
+                newViewer(point.x + xsign*(volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
+                          point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
+                          point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                           volResIndex, volT0, volT1);
             }
             else
