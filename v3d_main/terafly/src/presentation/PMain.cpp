@@ -819,6 +819,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 //    checkBox_overview = new QCheckBox("Overview");
 //    checkBox_overview->setChecked(isOverviewActive);
 
+    isMagnificationLocked = false;
+    lockMagnification = new QCheckBox("Lock Magnification");
+    lockMagnification->setChecked(isMagnificationLocked);
+
     /* -------------- put elements into 4x4 grid ----------------- */
     VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
     VOI_layout->addWidget(frameCoord,        3, 0, 1, 1);
@@ -831,6 +835,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
     VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
 //    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
+    VOI_layout->addWidget(lockMagnification, 4, 0, 1, 4);
+
 
     /* ------------- FINALIZATION -------------- */
     VOI_layout->setContentsMargins(10,5,10,5);
@@ -1101,6 +1107,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
 //    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
+    connect(lockMagnification, SIGNAL(toggled(bool)), this, SLOT(setLockMagnification(bool)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -3558,4 +3565,9 @@ void PMain::updateOverview()
 void PMain::updateAnnotationStatus()
 {
     annotationChanged = true;
+}
+
+void PMain::setLockMagnification(bool locked)
+{
+    isMagnificationLocked = locked;
 }

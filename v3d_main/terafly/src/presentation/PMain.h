@@ -265,6 +265,7 @@ class terafly::PMain : public QWidget
         QStatusBar* statusBar;          //status bar
 
         QCheckBox *checkBox_overview;  //added an overview checkbox by ZZ 04262018
+        QCheckBox *lockMagnification;
 
         //layout
         int marginLeft;                 //width of first column containing labels only
@@ -350,6 +351,7 @@ class terafly::PMain : public QWidget
 		bool resumeVR;
         bool isOverviewActive;
         bool annotationChanged;
+        bool isMagnificationLocked;
 
 
     public slots:
@@ -553,6 +555,9 @@ class terafly::PMain : public QWidget
         void setOverview(bool enable);
         void updateOverview();
         void updateAnnotationStatus();
+
+        void setLockMagnification(bool locked);
+
 
     signals:
 
