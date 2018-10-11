@@ -456,7 +456,7 @@ bool writeESWC_file(const QString& filename, const NeuronTree& nt)
 	fprintf(fp, "#name %s\n", qPrintable(nt.name.trimmed()));
 	fprintf(fp, "#comment %s\n", qPrintable(nt.comment.trimmed()));
     
-    fprintf(fp, "##n,type,x,y,z,radius,parent,seg_id,level,mode,timestamp\n");
+    fprintf(fp, "##n,type,x,y,z,radius,parent,seg_id,level,mode,timestamp,feature_value\n");
 	NeuronSWC * p_pt=0;
 	for (int i=0;i<nt.listNeuron.size(); i++)
 	{
