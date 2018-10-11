@@ -851,12 +851,12 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     double seconds;
 
     y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
-    y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in the current timezone
+    y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
 
     time(&timer2);  /* get current time; same as: timer = time(NULL)  */
 
-    seconds = difftime(timer2,mktime(&y2k)); //Timestamp LMG 27/9/2018 Incorrect timestamp
-    qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in the current timezone): %.0f", seconds);
+    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018 Incorrect timestamp
+    qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
 
     for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) if(cur_seg.row[k].timestamp == 0) cur_seg.row[k].timestamp = seconds;
     //qDebug("raw/cur_seg Timestamp: %.0f / %.0f", seconds, cur_seg.row[cur_seg.nrows()-1].timestamp);
