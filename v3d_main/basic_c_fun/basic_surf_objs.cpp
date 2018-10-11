@@ -462,7 +462,7 @@ bool writeESWC_file(const QString& filename, const NeuronTree& nt)
 	{
 		p_pt = (NeuronSWC *)(&(nt.listNeuron.at(i)));
         fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld %ld %ld %.0f %ld",
-                p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn, p_pt->seg_id, p_pt->level, p_pt->creatmode, p_pt->timestamp, p_pt->fea_val);
+                p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn, p_pt->seg_id, p_pt->level, p_pt->creatmode, p_pt->timestamp);
 		for (int j=0;j<p_pt->fea_val.size();j++)
             fprintf(fp, " %.5f", p_pt->fea_val.at(j));
 		fprintf(fp, "\n");
