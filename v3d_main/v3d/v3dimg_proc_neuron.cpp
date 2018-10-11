@@ -855,7 +855,7 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
 
     time(&timer2);  /* get current time; same as: timer = time(NULL)  */
 
-    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018 Incorrect timestamp
+    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
     qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
 
     for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) if(cur_seg.row[k].timestamp == 0) cur_seg.row[k].timestamp = seconds;
