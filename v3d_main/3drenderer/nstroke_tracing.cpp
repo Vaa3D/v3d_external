@@ -2623,7 +2623,7 @@ void  Renderer_gl1::vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
 	listNeuron.clear();
 	hashNeuron.clear();
 
-     int count = 0;
+    int count = 0;
 
      qDebug("-------------------------------------------------------");
      for (int k=0;k<loc_list.size();k++)
@@ -2651,6 +2651,7 @@ void  Renderer_gl1::vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
      cc.r=0; cc.g=20;cc.b=200;cc.a=0;
      SS.color = cc; //random_rgba8(255);//RGBA8(255, 0,0,0);
      SS.on = true;
+
      SS.listNeuron = listNeuron;
      SS.hashNeuron = hashNeuron;
 
