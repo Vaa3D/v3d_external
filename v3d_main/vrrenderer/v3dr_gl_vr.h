@@ -107,6 +107,8 @@ public:
 
 	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
     QString NT2QString(); // prepare the message to be sent from currentNT.
+	XYZ ConvertCurrentNTCoords(float x,float y,float z);
+	XYZ ConvertRecevieNTCoords(float x,float y,float z);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
 	bool HandleOneIteration();//used in collaboration mode 
 	QString getHMDPOSstr();//get current HMD position, and prepare the message to be sent to server
@@ -190,12 +192,13 @@ public:
 	QString delName;
 	QString markerPOS;
 	QString delmarkerPOS;
+	QString delcurvePOS;
 	QString dragnodePOS;
 	bool _call_assemble_plugin;
 	int postVRFunctionCallMode;
-	
 	XYZ teraflyPOS;
-
+	XYZ CmainVRVolumeStartPoint;
+	int CmainResIndex;
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;

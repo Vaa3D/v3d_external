@@ -944,7 +944,6 @@ bool CMainApplication::BInit()
 	ctrSphereColor[2] =  neuron_type_color[color_id][2] /255.0;
 
 	teraflyPOS = 0;
-
 	SDL_StartTextInput();
 	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
@@ -1980,10 +1979,13 @@ void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 			for (int j = 0; j < 4; j++)
 			{
 				mat_HMD[k][j]=curAgents.at(i).position[k*4+j];
+				//qDebug()<<"mat_HMD"<<k<<j<<mat_HMD[k][j]<<" ";
 			}
 		}
 		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
-		glm::vec3 agentsPos=glm::vec3(posss.x,posss.y,posss.z);
+		XYZ convertPOS = ConvertRecevieNTCoords(posss.x,posss.y,posss.z);
+		//qDebug()<<" get agent POS "<<convertPOS.x<<" "<<convertPOS.y<<" "<<convertPOS.z;
+		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
 		//agentsPos  means user's position in world, posss[3] will always be 1.
 		//later may need orientation information
 		Agents_spheresPos.push_back(agentsPos);
@@ -2591,11 +2593,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				if(ShootingPadUV.x>=0&&ShootingPadUV.y >=0)
 					{
 						qDebug()<<ShootingPadUV.x<<ShootingPadUV.y<<"\n";
-						qDebug()<<"shoot it!";
+						//qDebug()<<"shoot it!";
 					}
 				else if(ShootingPadUV.x==-1&&ShootingPadUV.y==-1)
 					qDebug()<< "didn't shoot the Pad";
-				qDebug()<<showshootingPad;
+				//qDebug()<<showshootingPad;
 		}
 
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
@@ -2794,6 +2796,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
 				delName = "";
+				delcurvePOS  ="";
+				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				if(isOnline==false)	
 				{
@@ -3028,6 +3032,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		//every time the trigger(right) is unpressd ,set the vertexcount to zero preparing for the next line
 		vertexcount=0;
 		READY_TO_SEND=true;
+		qDebug()<<"READY_TO_SEND=true;";
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_Grip)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
@@ -5600,6 +5605,11 @@ QString  CMainApplication::getHMDPOSstr()
 		}
 	}
 	mat=glm::inverse(m_globalMatrix) * mat;
+	//qDebug()<<" convertedHMD SEND POS  1 "<<mat[3][0]<<" "<<mat[3][1]<<" "<<mat[3][2];
+	XYZ convertPOS = ConvertCurrentNTCoords(mat[3][0],mat[3][1],mat[3][2]);
+	mat[3][0] = convertPOS.x;
+	mat[3][1] = convertPOS.y;
+	mat[3][2] = convertPOS.z;
 	QString positionStr;
 	/*for(int i=0;i<16;i++)
 	{
@@ -5614,7 +5624,7 @@ QString  CMainApplication::getHMDPOSstr()
 			positionStr+=" ";
 		}
 	}
-	//qDebug()<<positionStr;
+	//qDebug()<<"getHMDPOSstr"<<positionStr;
 	return positionStr;
 }
 
@@ -5641,7 +5651,8 @@ QString CMainApplication::NT2QString()
 		char packetbuff[300];
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
-		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,S_temp.x,S_temp.y,S_temp.z,S_temp.r,S_temp.pn);
+		XYZ tempconvertedxyz = ConvertCurrentNTCoords(S_temp.x,S_temp.y,S_temp.z);
+		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
 		messageBuff +=packetbuff;
 	}
 
@@ -5696,7 +5707,11 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 		else if (iy==6)
 		{
 			S_temp.pn = qsl[i].toInt();
-
+			//converted received NT XYZ coords
+			XYZ tempxyz = ConvertRecevieNTCoords(S_temp.x,S_temp.y,S_temp.z);
+			S_temp.x = tempxyz.x;
+			S_temp.y = tempxyz.y;
+			S_temp.z = tempxyz.z;
 			newTempNT.listNeuron.append(S_temp);
 			newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
 		}
@@ -6869,4 +6884,25 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 	}
 
 
+}
+XYZ CMainApplication::ConvertCurrentNTCoords(float x,float y,float z)//localtogolbal
+{
+	x+= CmainVRVolumeStartPoint.x;
+	y+= CmainVRVolumeStartPoint.y;
+	z+= CmainVRVolumeStartPoint.z;
+	x/=pow(2.0,CmainResIndex-1);
+	y/=pow(2.0,CmainResIndex-1);
+	z/=pow(2.0,CmainResIndex-1);
+	return XYZ(x,y,z);
+}
+XYZ CMainApplication::ConvertRecevieNTCoords(float x,float y,float z)
+{
+	x*=pow(2.0,CmainResIndex-1);;
+	y*=pow(2.0,CmainResIndex-1);;
+	z*=pow(2.0,CmainResIndex-1);;
+	x-= CmainVRVolumeStartPoint.x;
+	y-= CmainVRVolumeStartPoint.y;
+	z-= CmainVRVolumeStartPoint.z;
+
+	return XYZ(x,y,z);
 }

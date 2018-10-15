@@ -102,6 +102,8 @@ public:
 	VR_MainWindow * myvrwin;
 	V3dR_Communicator * myclient;
 	XYZ teraflyZoomInPOS;
+	int Resindex;
+	static bool resumeCollaborationVR;
 #endif
 //protected:
 	virtual void choiceRenderer();
@@ -554,6 +556,7 @@ public:
 		myvrwin = 0;
 		myclient = 0;
 		teraflyZoomInPOS = 0;
+		Resindex = 1;
 #endif
 	}
 };
