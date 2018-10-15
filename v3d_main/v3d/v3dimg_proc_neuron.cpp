@@ -53,8 +53,11 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 #include "../mozak/MozakUI.h"
 #endif
 
-#ifndef timegm
-#define timegm _mkgmtime //LMG Timestamp in Windows 15/10/2018
+//LMG for cross-platform UTC Timestamp 15/10/2018
+#if defined(Q_OS_WIN32)
+    #define timegm _mkgmtime
+#elif defined(Q_OS_WIN64)
+    #define timegm _mkgmtime
 #endif
 
 //------------------------------------------------------------------------------------------
