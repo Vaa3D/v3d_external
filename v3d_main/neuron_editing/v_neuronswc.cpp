@@ -34,6 +34,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //last update: 090430
 //last update 091127. add a new neuron_joining function
 
+// by MK
+// 181016: 1st attempt of v_neuronSWC decompose speed-up
+
 #include "v_neuronswc.h"
 
 #include "../basic_c_fun/v3d_message.h"
@@ -45,6 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <iostream>
 
+#include <algorithm>
 #include <ctime>
 
 using namespace std;
@@ -460,11 +464,11 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			V_NeuronSWC_unit& cur_node = in_swc.row[indices[i]];
 			Node_Link& nodelink = link_map[V3DLONG(cur_node.n)];
 
-			if (cur_node.nchild <= 0)
-			{	
-				cout << " -- processed node found, ID: " << cur_node.n << ", i = " << i << endl;
-				continue; //skip removed point
-			}
+			//if (cur_node.nchild <= 0)
+			//{	
+			//	cout << " -- processed node found, ID: " << cur_node.n << ", i = " << i << endl;
+			//	continue; //skip removed point
+			//}
 
 			n_left++; //left valid point
 			i_left = indices[i];
