@@ -966,6 +966,8 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
 #define ___trace_history_append___
 void My4DImage::proj_trace_history_append()
 {
+    proj_trace_history_append(tracedNeuron);
+
     // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
     // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
     tf::TeraFly::doaction("neuron edit");
