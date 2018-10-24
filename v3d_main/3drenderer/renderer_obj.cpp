@@ -1632,7 +1632,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 
             NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
             NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
-                                                                                          oldtree, 3);
+                                                                                          oldtree, 3);            
             listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
             curImg->update_3drenderer_neuron_view(w, this);
         }
@@ -1713,12 +1713,13 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 	QList <NeuronSWC> listNeuron;
 	QHash <int, int>  hashNeuron;
-	listNeuron.clear();
+
+    listNeuron.clear();
 	hashNeuron.clear();
-	try {
+    try {
 		int count = 0;
-		qDebug("-------------------------------------------------------");
-		for (int k=0;k<seg.row.size();k++)
+        qDebug("-------------------------------------------------------");
+        for (int k=0;k<seg.row.size();k++)
 		{
 			count++;
 			NeuronSWC S;
@@ -1734,6 +1735,9 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
 
             S.level = seg.row.at(k).level;
+            S.creatmode = seg.row.at(k).creatmode;
+            S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
+
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			//if (! listNeuron.contains(S)) // 081024
 			{

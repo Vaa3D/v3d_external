@@ -2647,7 +2647,10 @@ void PMain::doTeraflyVRView()
             this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
-            cur_win->view3DWidget->doimageVRView(false);
+            if(cur_win->view3DWidget->resumeCollaborationVR)
+			{cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;cur_win->view3DWidget->doimageVRView(true);}
+			else
+				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
             this->show();		
 
@@ -2671,7 +2674,7 @@ void PMain::doCollaborationVRView()
 			this->setWindowState(Qt::WindowMinimized);
 			//this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
-
+			cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
             //cur_win->storeAnnotations();
             //this->show();		

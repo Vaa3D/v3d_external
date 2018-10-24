@@ -78,6 +78,8 @@ void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
     p.z = node->z;
     p.r = node->r;
     p.level = node->level;
+    p.creatmode = node->creatmode; //for timestamping and quality control LMG 8/10/2018
+    p.timestamp = node->timestamp; //for timestamping and quality control LMG 8/10/2018
     p.pn = node->parent ? node->parent->ID : -1;
     // add node to list
     #ifdef terafly_enable_debug_annotations
@@ -1104,6 +1106,8 @@ void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf:
         ann->y = nt.listNeuron[i].y;
         ann->z = nt.listNeuron[i].z;
         ann->level = nt.listNeuron[i].level;
+        ann->creatmode = nt.listNeuron[i].creatmode; //for timestamping and quality control LMG 8/10/2018
+        ann->timestamp = nt.listNeuron[i].timestamp; //for timestamping and quality control LMG 8/10/2018
 
         #ifdef terafly_enable_debug_annotations
         tf::debug(tf::LEV_MAX, strprintf("inserting curve point %lld(%.1f,%.1f,%.1f), n=(%d), pn(%d)\n", ann->ID, ann->x, ann->y, ann->z, nt.listNeuron[i].n, nt.listNeuron[i].pn).c_str(), 0, true);
@@ -1274,11 +1278,11 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     f = fopen(QString(filepath).append(".eswc").toStdString().c_str(), "w");
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
-    fprintf(f, "#n type x y z radius parent\n");
+    fprintf(f, "#n type x y z radius parent level mode timestamp\n");
 	cout << "Annotation size: " << annotations.size() << endl;
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %lld %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
 
     //file closing
     fclose(f);
@@ -1353,6 +1357,8 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 ann->y = i->y;
                 ann->z = i->z;
                 ann->level = i->level;
+                ann->creatmode = i->creatmode;
+                ann ->timestamp = i->timestamp;
                 ann->vaa3d_n = i->n;
                 octree->insert(*ann);
                 annotationsMap[i->n] = ann;

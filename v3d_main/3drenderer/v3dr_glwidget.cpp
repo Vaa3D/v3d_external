@@ -59,7 +59,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
-
+#ifdef __ALLOW_VR_FUNCS__
+bool V3dR_GLWidget::resumeCollaborationVR=false;
+#endif
 
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
@@ -1745,9 +1747,11 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 
     this->getMainWindow()->hide();
     QMessageBox::StandardButton reply;
-	if(bCanCoMode)
+	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-	else 
+	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+		reply = QMessageBox::Yes;
+	else
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
@@ -1759,11 +1763,27 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			myvrwin = 0;
 			myvrwin = new VR_MainWindow();
 			myvrwin->setWindowTitle("VR MainWindow");
-			bool linkerror = myvrwin->SendLoginRequest();
+			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			VRClientON = linkerror;
+			if(!linkerror)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
-
-			myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror);
+			QString VRinfo = this->getDataTitle();
+			qDebug()<<"VR get data_title = "<<VRinfo;
+			resumeCollaborationVR = false;//reset resumeCollaborationVR
+			myvrwin->ResIndex = Resindex;
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS);
+			qDebug()<<"result is "<<_call_that_func;
+			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+			if (_call_that_func > 0) 
+			{
+				resumeCollaborationVR = true;
+				emit(signalCallTerafly(_call_that_func));
+			}
+			else if(_call_that_func == -1)
+			{
+				call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+			}
 		}
 		else
 		{

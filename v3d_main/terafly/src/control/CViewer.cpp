@@ -701,64 +701,114 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			
 			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-			if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
-			{
+
+            if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
+            {
                 XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
-				newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
-			}
-			// --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
-			else
-			{
-				XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
-				XYZ convertedSWC;
-				convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
-				QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
-				QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
-				float distSqr = 100; // <======= change distance threshold parameter here
-				float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
-				cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
+                if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
+                {
+                    float xsign = point.x - (volH1-volH0)/2;
+                    xsign /= abs(xsign);
 
-				long int count = 0;
-				for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
-				{
-					++count;
-					if (count % 1000 == 0) cout << ".";
-					float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
-					if (currDistSqr < distSqr)
-					{
-						//cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
-						//cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
-						distSqr = currDistSqr;
-						convertedSWC.x = it->x;
-						convertedSWC.y = it->y;
-						convertedSWC.z = it->z;
-						selectedSWCX = globalSWCIt->x;
-						selectedSWCY = globalSWCIt->y;
-						selectedSWCZ = globalSWCIt->z;
-					}
+                    float ysign = point.y - (volV1-volV0)/2;
+                    ysign /= abs(ysign);
 
-					++globalSWCIt;
-				}
-				cout << endl << "  SWC node examination done." << endl;
-				cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
-				cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
+                    float zsign = point.z - (volD1-volD0)/2;
+                    zsign /= abs(zsign);
 
-				if (distSqr >= 100)
-				{
-					cout << "out of nearest SWC search range" << endl;
-					XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
-					newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
-				}
-				else
-				{
-					cout << "using nearest SWC node:" << endl;
-					cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
-					XYZ loc;
-					loc.x = convertedSWC.x; loc.y = convertedSWC.y; loc.z = convertedSWC.z;
-					newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
-				}
-			}
-			// --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
+                    newViewer(point.x + xsign*(volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
+                              point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
+                              point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
+                              volResIndex, volT0, volT1);
+                }else
+                    newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+            }
+            // --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
+            else
+            {
+                XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+                XYZ convertedSWC;
+                convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
+                QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
+                QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
+                float distSqr = 100; // <======= change distance threshold parameter here
+                float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
+                cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
+
+                long int count = 0;
+                for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
+                {
+                    ++count;
+                    if (count % 1000 == 0) cout << ".";
+                    float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
+                    if (currDistSqr < distSqr)
+                    {
+                        //cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
+                        //cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
+                        distSqr = currDistSqr;
+                        convertedSWC.x = it->x;
+                        convertedSWC.y = it->y;
+                        convertedSWC.z = it->z;
+                        selectedSWCX = globalSWCIt->x;
+                        selectedSWCY = globalSWCIt->y;
+                        selectedSWCZ = globalSWCIt->z;
+                    }
+
+                    ++globalSWCIt;
+                }
+                cout << endl << "  SWC node examination done." << endl;
+                cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
+                cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
+
+                if (distSqr >= 100)
+                {
+                    cout << "out of nearest SWC search range" << endl;
+                    XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+                    if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
+                    {
+                        float xsign = point.x - (volH1-volH0)/2;
+                        xsign /= abs(xsign);
+
+                        float ysign = point.y - (volV1-volV0)/2;
+                        ysign /= abs(ysign);
+
+                        float zsign = point.z - (volD1-volD0)/2;
+                        zsign /= abs(zsign);
+
+                        newViewer(point.x + xsign*(volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
+                                  point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
+                                  point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
+                                  volResIndex, volT0, volT1);
+                    }else
+                        newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+                }
+                else
+                {
+                    cout << "using nearest SWC node:" << endl;
+                    cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
+                    XYZ loc;
+                    loc.x = convertedSWC.x; loc.y = convertedSWC.y; loc.z = convertedSWC.z;
+                    if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
+                    {
+                        float xsign = loc.x - (volH1-volH0)/2;
+                        xsign /= abs(xsign);
+
+                        float ysign = loc.y - (volV1-volV0)/2;
+                        ysign /= abs(ysign);
+
+                        float zsign = loc.z - (volD1-volD0)/2;
+                        zsign /= abs(zsign);
+
+                        newViewer(loc.x + xsign*(volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
+                                  loc.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
+                                  loc.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
+                                  volResIndex, volT0, volT1);
+                    }else
+                        newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
+                }
+            }
+            // --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
+
 
             return true;
         }
