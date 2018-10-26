@@ -2,6 +2,13 @@
 #include "../neuron_tracing/fastmarching_linker.h"
 
 
+//LMG for cross-platform UTC Timestamp 15/10/2018
+#if defined(Q_OS_WIN32)
+    #define timegm _mkgmtime
+#elif defined(Q_OS_WIN64)
+    #define timegm _mkgmtime
+#endif
+
 bool smooth_sketch_curve(std::vector<MyMarker *> & mCoord, int winsize)
 {
 	//std::cout<<" smooth_curve ";
