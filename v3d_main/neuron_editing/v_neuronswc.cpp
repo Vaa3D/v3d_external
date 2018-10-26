@@ -379,6 +379,7 @@ Link_Map get_link_map(const V_NeuronSWC & in_swc)
 			Node_Link & pnl = link_map[parent];
 			pnl.in_link.push_back(nid);
             pnl.nlink ++;
+			//cout << i << " " << nid << " " << parent << endl;
         }else
         {
             bool single_node = true;
@@ -425,6 +426,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		cur_node.nchild = nodelink.nlink;
 		//qDebug("#%d nlink = %d, in %d, out %d", V3DLONG(cur_node.n), nodelink.nlink, nodelink.in_link.size(), nodelink.out_link.size());
 	
+		if (cur_node.nchild >= 3) cout << cur_node.n << " " << i << endl;
 		indices.push_back(i);
 	}
 
@@ -433,6 +435,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 	int branchCount = 0;
 	int branchID = 0;
 	size_t removedCount = 0;
+	bool halted = false;
 	for (;;)
 	{
 		if (indices.empty()) break;
@@ -461,6 +464,12 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		clock_t searchStart = clock();
 		for (V3DLONG i = 0; i < indices.size(); i++)
 		{	
+			if (halted)
+			{
+				halted = false;
+				continue;
+			}
+
 			V_NeuronSWC_unit& cur_node = in_swc.row[indices[i]];
 			Node_Link& nodelink = link_map[V3DLONG(cur_node.n)];
 
@@ -490,6 +499,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			{
 				qDebug("split_V_NeuronSWC_segs cann't find start point (left %d points)", n_left);
 				istart = i_left;
+				cout << " -- " << istart << endl;
 			}
 			else
 			{
@@ -521,7 +531,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 
 			if(cur_node.parent < 0)    // root point ////////////////////////////
 			{
-				++rootCount;
+				/*++rootCount;
 				++branchID;
 				new_seg.branchingProfile.isBranch = true;
 				new_seg.branchingProfile.paID = -1;
@@ -530,10 +540,10 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				new_seg.branchingProfile.x = cur_node.x;
 				new_seg.branchingProfile.y = cur_node.y;
 				new_seg.branchingProfile.z = cur_node.z;
-				new_seg.branchingProfile.isBranch = true;
+				new_seg.branchingProfile.isBranch = true;*/
 				
 				//qDebug("decompose_V_NeuronSWC_segs: segment end at root #%d", V3DLONG(cur_node.n));
-				//cout << inext << " " << cur_node.nchild << " " << nodelink.in_link.size() << " " << nodelink.out_link.size() << endl;
+				//cout << cur_node.n << " " << cur_node.nchild << " " << nodelink.in_link.size() << " " << nodelink.out_link.size() << endl;
 				--cur_node.nchild;
 				if (cur_node.nchild == 0)
 				{
@@ -549,17 +559,17 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			}
 			else if (n>1 && nodelink.nlink >2)  // branch point (in link_map) ///////////
 			{
-				++branchCount;
+				/*++branchCount;
 				++branchID;
 				new_seg.branchingProfile.isBranch = true;
 				new_seg.branchingProfile.x = cur_node.x;
 				new_seg.branchingProfile.y = cur_node.y;
 				new_seg.branchingProfile.z = cur_node.z;
 				new_seg.branchingProfile.ID = branchID;
-				new_seg.branchingProfile.isBranch = true;
+				new_seg.branchingProfile.isBranch = true;*/
 
 				//qDebug("decompose_V_NeuronSWC_segs: segment end at branch #%d", V3DLONG(cur_node.n));
-				//cout << inext << " " << cur_node.nchild << " " << nodelink.in_link.size() << " " << nodelink.out_link.size() << endl;
+				//cout << cur_node.n << " " << cur_node.nchild << " " << nodelink.in_link.size() << " " << nodelink.out_link.size() << endl;
 				cur_node.nchild --;
 				if (cur_node.nchild == 0)
 				{
@@ -571,6 +581,11 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				{
 					++removedCount;
 					break; //over, a simple segment
+				}
+				else if (cur_node.nchild > 0)
+				{
+					halted = true;
+					break;
 				}
 			}
 			else if (n>1 && inext==istart)  // i_left point (a loop) ///////////
@@ -596,8 +611,11 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				//cout << inext << " " << cur_node.nchild << " " << nodelink.in_link.size() << " " << nodelink.out_link.size() << endl;		
 				cur_node.nchild = -1;  // label to remove	
 				//++removedCount;
+				//if (find(indices.begin(), indices.end(), inext) == indices.end()) cout << "missing inext: " << inext << endl;
+				//cout << "inext:" << inext << " ";
 				indices.erase(find(indices.begin(), indices.end(), inext));
 				V3DLONG parent = cur_node.parent;
+				//cout << "parent for inext:" << link_map[parent].i << endl;
 				inext = link_map[parent].i; //// next point in seg
 			}
 		}
@@ -617,7 +635,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 	duration = (clock() - timerStart) / double(CLOCKS_PER_SEC);
 	cout << "Decompose time elapsed: " << duration << endl;
 
-	int curHi = 1;
+	/*int curHi = 1;
 	bool allHiAssigned = false;
 	int hiCount = 0;
 	if (!out_swc_segs.empty())
@@ -659,7 +677,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				else allHiAssigned = true;
 			}
 		}
-	}
+	}*/
 
 	/*size_t nodeCount = 0;
 	for (vector<V_NeuronSWC>::iterator it = out_swc_segs.begin(); it != out_swc_segs.end(); ++it)

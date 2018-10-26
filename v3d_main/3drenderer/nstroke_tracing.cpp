@@ -3460,7 +3460,7 @@ void Renderer_gl1::simpleConnect()
 				}
 				cout << endl;
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
-					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
+					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << endl; //<< " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 				
 				if (segInfo.size() < 2) return;
 				/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
@@ -3475,6 +3475,10 @@ void Renderer_gl1::simpleConnect()
 				}
 				else
 				{
+					// ----------------- For debug purpose -----------------
+					//for (vector<V_NeuronSWC_unit>::iterator debugIt = curImg->tracedNeuron.seg[segInfo[1].segID].row.begin(); debugIt != curImg->tracedNeuron.seg[segInfo[1].segID].row.end(); ++debugIt)
+					//	cout << "ID:" << debugIt->n << " parent:" << debugIt->parent << endl;
+					// -----------------------------------------------------
 					if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted)
 					{
 						vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[1].segID]);
