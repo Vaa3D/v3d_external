@@ -380,13 +380,12 @@ Link_Map get_link_map(const V_NeuronSWC & in_swc)
 			pnl.in_link.push_back(nid);
             pnl.nlink ++;
 			//cout << i << " " << nid << " " << parent << endl;
-        }
-		else
+        }else
         {
             bool single_node = true;
             for (V3DLONG j=0; j<in_swc.row.size(); j++)
             {
-                if(in_swc.row.at(j).parent == nid) // Nothing is added to root link_map here. The only nlink count is added in [if (parent > 0)] block as a in_link from its child node.
+                if(in_swc.row.at(j).parent == nid)
                 {
                     single_node = false;
                     break;
@@ -409,8 +408,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 {
 	double duration;
 
-	vector<V3DLONG> indices; // This indices vector stores the location subscripts of the ONLY nodes need to visit in the following for (;;) loop.
-							 // This is for degment decomposition speed up purpose. MK, 2018, Oct.
+	vector<V3DLONG> indices;
 
 	// map swc's index --> vector's index & in/out link
 	Link_Map link_map = get_link_map(in_swc);
@@ -420,6 +418,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 	out_swc_segs.clear();
 
 	// nchild as processed counter
+	//V_NeuronSWC inputSWC(in_swc);
 	for (V3DLONG i = 0; i < in_swc.row.size(); i++)
 	{
 		V_NeuronSWC_unit& cur_node = in_swc.row[i];
@@ -427,6 +426,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		cur_node.nchild = nodelink.nlink;
 		//qDebug("#%d nlink = %d, in %d, out %d", V3DLONG(cur_node.n), nodelink.nlink, nodelink.in_link.size(), nodelink.out_link.size());
 	
+		if (cur_node.nchild >= 3) cout << cur_node.n << " " << i << endl;
 		indices.push_back(i);
 	}
 
@@ -434,6 +434,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 	int rootCount = 0;
 	int branchCount = 0;
 	int branchID = 0;
+	size_t removedCount = 0;
 	bool halted = false;
 	for (;;)
 	{
@@ -486,6 +487,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			 || (nodelink.nlink ==2 && nodelink.in_link.size()==0)) // pure-out point (root) <== MK: root or possible looping point??
 			{
 				istart = indices[i];
+				//cout << "starting index: " << istart << " nlink: " << nodelink.nlink << " in_link: " << nodelink.in_link.size() << " out_link: " << nodelink.out_link.size() << endl;
 				if (0)
                     qDebug("start from #%d", V3DLONG(cur_node.n));
 				break; //find a start point
@@ -495,7 +497,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		{
 			if (n_left)
 			{
-				qDebug("split_V_NeuronSWC_segs can't find start point (left %d points)", n_left);
+				qDebug("split_V_NeuronSWC_segs cann't find start point (left %d points)", n_left);
 				istart = i_left;
 				cout << " -- " << istart << endl;
 			}
@@ -545,10 +547,15 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				--cur_node.nchild;
 				if (cur_node.nchild == 0)
 				{
+					//++removedCount;
 					indices.erase(find(indices.begin(), indices.end(), inext));
 					break; //over, a simple segment
 				}
-				else if (cur_node.nchild < 0) break; //over, a simple segment
+				else if (cur_node.nchild < 0)
+				{
+					//++removedCount;
+					break; //over, a simple segment
+				}
 			}
 			else if (n>1 && nodelink.nlink >2)  // branch point (in link_map) ///////////
 			{
@@ -566,13 +573,17 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				cur_node.nchild --;
 				if (cur_node.nchild == 0)
 				{
+					//++removedCount;
 					indices.erase(find(indices.begin(), indices.end(), inext));
 					break; //over, a simple segment
 				}
-				else if (cur_node.nchild < 0) break; //over, a simple segment
+				else if (cur_node.nchild < 0)
+				{
+					++removedCount;
+					break; //over, a simple segment
+				}
 				else if (cur_node.nchild > 0)
 				{
-					// This is a 
 					halted = true;
 					break;
 				}
@@ -584,16 +595,22 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				cur_node.nchild --;
 				if (cur_node.nchild == 0)
 				{
+					//++removedCount;
 					indices.erase(find(indices.begin(), indices.end(), inext));
 					break; //over, a simple segment
 				}
-				else if (cur_node.nchild < 0) break; //over, a simple segment
+				else if (cur_node.nchild < 0)
+				{
+					//++removedCount;
+					break; //over, a simple segment
+				}
 			}
 			else  //(nodelink.nlink==2)   // path node ///////////////////////////////////////////////
 			{
 				//qDebug("decompose_V_NeuronSWC_segs: node #%d", j);
 				//cout << inext << " " << cur_node.nchild << " " << nodelink.in_link.size() << " " << nodelink.out_link.size() << endl;		
 				cur_node.nchild = -1;  // label to remove	
+				//++removedCount;
 				//if (find(indices.begin(), indices.end(), inext) == indices.end()) cout << "missing inext: " << inext << endl;
 				//cout << "inext:" << inext << " ";
 				indices.erase(find(indices.begin(), indices.end(), inext));
