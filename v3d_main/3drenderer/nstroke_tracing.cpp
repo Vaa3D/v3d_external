@@ -341,7 +341,7 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 #endif
      if (b_addthiscurve)
      {
-          addCurveSWC(loc_vec, chno);
+          addCurveSWC(loc_vec, chno, 5); //LMG 26/10/2018 solveCurveDirectionInter mode 5
           // used to convert loc_vec to NeuronTree and save SWC in testing
           vecToNeuronTree(testNeuronTree, loc_vec);
      }
@@ -1154,7 +1154,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 3); //LMG 26/10/2018 solveCurveFromMarkersFastMarching (GD tracing Ctrl+G) mode 3
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
@@ -2025,7 +2025,7 @@ if (0)
      {
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 2); //LMG 26/10/2018 solveCurveMarkerLists_fm (BBox/Draw Global tracing alt+B/alt+G) mode 2 <- BBox will be converted to 1 in addCurveSwc
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
 #ifdef DEBUG_RESAMPLING
@@ -2537,7 +2537,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
 
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 4); //LMG 26/10/2018 solveCurveFromMarkersGD mode 4
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }

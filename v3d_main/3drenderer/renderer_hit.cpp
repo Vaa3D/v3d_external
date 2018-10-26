@@ -3550,7 +3550,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 #ifndef test_main_cpp //140211
     if (b_addthiscurve)
 	{
-		addCurveSWC(loc_vec, chno);
+        addCurveSWC(loc_vec, chno, 8); //LMG 26/10/2018 solveCurveCenter mode 8
 		// used to convert loc_vec to NeuronTree and save SWC in testing
 		vecToNeuronTree(testNeuronTree, loc_vec);
 		//added by PHC, 120506
@@ -3845,7 +3845,7 @@ void Renderer_gl1::solveCurveViews()
 #ifndef test_main_cpp
     smooth_curve(loc_vec, 5);
 #endif
-    addCurveSWC(loc_vec, -1); //turn off post deform
+    addCurveSWC(loc_vec, -1, 9); //turn off post deform //LMG 26/10/2018 solveCurveViews mode 9
 }
 void Renderer_gl1::solveCurveFromMarkers()
 {

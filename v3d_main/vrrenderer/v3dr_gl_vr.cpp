@@ -6150,7 +6150,7 @@ void CMainApplication::RefineSketchCurve(int direction, NeuronTree &oldNTree, Ne
 	
 	VectorResampling(outswc_final_vec, outswc_final_vec_resampled, 0.5f);
 	reverse(outswc_final_vec_resampled.begin(),outswc_final_vec_resampled.end());
-	VectorToNeuronTree(newNTree,outswc_final_vec_resampled,m_curMarkerColorType);
+    VectorToNeuronTree(newNTree,outswc_final_vec_resampled,m_curMarkerColorType);
 	//can change current neurontree's color by using 
 	//VectorToNeuronTree(newNTree,outswc_final_vec_resampled,type);
 	outswc_final_vec.clear();

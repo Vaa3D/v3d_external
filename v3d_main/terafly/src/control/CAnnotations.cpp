@@ -1282,7 +1282,7 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
 	cout << "Annotation size: " << annotations.size() << endl;
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %lld %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, (*i)->level, (*i)->creatmode, (*i)->timestamp);
 
     //file closing
     fclose(f);

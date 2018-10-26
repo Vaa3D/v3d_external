@@ -134,13 +134,27 @@ void VectorResamplinger(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, 
 
 }
 
-void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list,int nttype)
+void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list,int nttype, double creatmode)
 {
 
 	QList <NeuronSWC> listNeuron;
 	QHash <int, int>  hashNeuron;
 	listNeuron.clear();
 	hashNeuron.clear();
+
+    // Add timestamp LMG 26/10/2018
+    // Get current timestamp
+    time_t timer2;
+    struct tm y2k = {0};
+    double seconds;
+
+    y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+    y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
+
+    time(&timer2);  /* get current time; same as: timer = time(NULL)  */
+
+    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
+    qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
 
      int count = 0;
 
@@ -157,6 +171,9 @@ void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list,int nttype)
           S.z 	= loc_list.at(k).z;
           S.r 	= 1;
           S.pn 	= (k==0)? -1 : k;
+
+          S.creatmode = creatmode; //LMG 26/10/2018 for tracking curve cration modes
+          if(S.timestamp == 0) S.timestamp = seconds; //LMG 26/10/2018 timestamp
 
           //qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
           {
