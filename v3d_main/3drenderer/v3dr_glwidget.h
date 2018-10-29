@@ -362,6 +362,8 @@ public slots:
     virtual void callCurveLineDetector(int option); // for quick curve line structure detection, by PHC, 20170531
     virtual void callLoadNewStack(); // for loading new stack, by ZZ, 02012018
     virtual void callAutoTracers(); // for calling different auto tracers in terafly, by ZZ, 05142018
+    virtual void callcheckmode();//for caalling check mode in terafly, by OY,26102018
+    virtual void returncheckmode();//for caalling check mode in terafly, by OY,26102018
 
      virtual void setDragWinSize(int csize); // ZJL 110927
 

@@ -893,6 +893,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	reloadData();
 			}
+            else
+            {
+                returncheckmode();
+            }
 	  		break;
 		case Qt::Key_U:
 			if (IS_CTRL_MODIFIER)
@@ -950,8 +954,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 toggleEditMode();
-            }/*else
-                confidenceDialog();*/
+            }
+            else
+            {
+                callcheckmode();
+            }
             break;
 
         case Qt::Key_T:
@@ -3289,6 +3296,28 @@ void V3dR_GLWidget::callAutoTracers()
         if (v3dr_getImage4d(_idep)->get_xy_view())
         {
             v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Auto Tracers"));
+            POST_updateGL();
+        }
+    }
+}
+void V3dR_GLWidget::callcheckmode()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Check Mode"));
+            POST_updateGL();
+        }
+    }
+}
+void V3dR_GLWidget::returncheckmode()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Return Check Mode"));
             POST_updateGL();
         }
     }
