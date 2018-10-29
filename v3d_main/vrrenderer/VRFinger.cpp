@@ -2,12 +2,8 @@
 #include "../neuron_tracing/fastmarching_linker.h"
 
 
-//LMG for cross-platform UTC Timestamp 15/10/2018
-#if defined(Q_OS_WIN32)
-    #define timegm _mkgmtime
-#elif defined(Q_OS_WIN64)
-    #define timegm _mkgmtime
-#endif
+//LMG for Windows UTC Timestamp 15/10/2018
+#define timegm _mkgmtime
 
 bool smooth_sketch_curve(std::vector<MyMarker *> & mCoord, int winsize)
 {
@@ -161,7 +157,7 @@ void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list,int nttype, double
     time(&timer2);  /* get current time; same as: timer = time(NULL)  */
 
     seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
-    qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
+    qDebug("Timestamp at VectorToNeuronTree (VR) (seconds since January 1, 2000 in UTC): %.0f", seconds);
 
      int count = 0;
 
