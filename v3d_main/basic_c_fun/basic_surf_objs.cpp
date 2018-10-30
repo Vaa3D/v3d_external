@@ -344,6 +344,8 @@ NeuronTree readSWC_file(const QString& filename)
             //the ESWC extension, by PHC, 20120217
         	else if (i==7) S.seg_id = qsl[i].toInt();
         	else if (i==8) S.level = qsl[i].toInt();
+            else if (i==9) S.creatmode = qsl[i].toInt();
+            else if (i==10) S.timestamp = qsl[i].toInt();
 	//change ESWC format to adapt to flexible feature number, by WYN, 20150602
         	else 
 		S.fea_val.append(qsl[i].toFloat());
@@ -461,7 +463,7 @@ bool writeESWC_file(const QString& filename, const NeuronTree& nt)
 	for (int i=0;i<nt.listNeuron.size(); i++)
 	{
 		p_pt = (NeuronSWC *)(&(nt.listNeuron.at(i)));
-        fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld %ld %ld %ld %.0f",
+        fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld %ld %ld %d %.0f",
                 p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn, p_pt->seg_id, p_pt->level, p_pt->creatmode, p_pt->timestamp);
 		for (int j=0;j<p_pt->fea_val.size();j++)
             fprintf(fp, " %.5f", p_pt->fea_val.at(j));

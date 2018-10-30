@@ -1278,11 +1278,11 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     f = fopen(QString(filepath).append(".eswc").toStdString().c_str(), "w");
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
-    fprintf(f, "#n type x y z radius parent level mode timestamp\n");
+    fprintf(f, "#n type x y z radius parent seg_id level mode timestamp\n");
 	cout << "Annotation size: " << annotations.size() << endl;
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, (*i)->level, (*i)->creatmode, (*i)->timestamp);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
 
     //file closing
     fclose(f);
@@ -1358,7 +1358,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 ann->z = i->z;
                 ann->level = i->level;
                 ann->creatmode = i->creatmode;
-                ann ->timestamp = i->timestamp;
+                ann->timestamp = i->timestamp;
                 ann->vaa3d_n = i->n;
                 octree->insert(*ann);
                 annotationsMap[i->n] = ann;

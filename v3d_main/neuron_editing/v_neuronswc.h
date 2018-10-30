@@ -302,7 +302,7 @@ void set_simple_path_unit (V_NeuronSWC_unit & v, V3DLONG base_n, vector<T> & mUn
 		v.x 	= mUnit[i].x;
 		v.y 	= mUnit[i].y;
 		v.z 	= mUnit[i].z;
-		v.r 	= r;
+        v.r 	= r;
         v.creatmode = creatmode;
         v.timestamp = default_timestamp; // LMG 11/10/2018
 	if (link_order) // same as index order
