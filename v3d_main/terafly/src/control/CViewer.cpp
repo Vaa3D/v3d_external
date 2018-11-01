@@ -774,7 +774,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				cout << " === converted SWC node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
 				cout << " === nearest distance to mouse click: " << distSqr << endl;*/
 		
-                if (dist >= 10)
+                if (dist > 100)
                 {
                     cout << "out of nearest SWC search range" << endl;
 					XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
