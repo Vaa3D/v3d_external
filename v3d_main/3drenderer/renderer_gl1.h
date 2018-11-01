@@ -786,7 +786,7 @@ public:
 	// neuron swc
 	QList <NeuronTree>         listNeuronTree;
     QList <NeuronTree>         listNeuronTree_old;
-    bool b_editDroppedNeuron;
+	bool b_editDroppedNeuron;
 
     GLuint glistTube, glistTubeEnd;
 	BoundingBox swcBB;

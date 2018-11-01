@@ -95,7 +95,7 @@ double total_etime; //added by PHC, 20120412, as a convenient way to know the to
 //}
 int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
-
+	
 	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
@@ -141,8 +141,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			LIST_SELECTED(listNeuronTree, names[2]-1, true);
 			if (listNeuronTree.at(names[2]-1).editable) qsName += " (editing)";
 			NeuronTree *p_tree = (NeuronTree *)&(listNeuronTree.at(names[2]-1));
-            double best_dist;
+            //this->teraflyTreePtr = p_tree;
+			double best_dist;
+			//V3DLONG index = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 			qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist), p_tree);
+			//cout << p_tree->listNeuron.at(index).x << " " << p_tree->listNeuron.at(index).y << " " << p_tree->listNeuron.at(index).z << endl;
 		}break;
 		case stPointCloud: {//apo
 			(qsName = QString("point cloud #%1 ... ").arg(names[2]) + listCell.at(names[2]-1).name);
@@ -3903,7 +3906,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
 	////////////////////////////////////////////////////////////////////////
 	XYZ loc0, loc1;
 	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-	// qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+	//qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 	XYZ loc;
 	if (chno>=0 && chno<dim4)
 	{
