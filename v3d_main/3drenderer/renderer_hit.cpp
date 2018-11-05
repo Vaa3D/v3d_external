@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
-
+//#include "../terafly/src/control/CImport.h"
 #include "v3d_application.h"
 
 #endif //test_main_cpp
@@ -95,7 +95,7 @@ double total_etime; //added by PHC, 20120412, as a convenient way to know the to
 //}
 int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
-
+	
 	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
@@ -141,8 +141,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			LIST_SELECTED(listNeuronTree, names[2]-1, true);
 			if (listNeuronTree.at(names[2]-1).editable) qsName += " (editing)";
 			NeuronTree *p_tree = (NeuronTree *)&(listNeuronTree.at(names[2]-1));
-            double best_dist;
+            //this->teraflyTreePtr = p_tree;
+			double best_dist;
+			//V3DLONG index = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 			qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist), p_tree);
+			//cout << p_tree->listNeuron.at(index).x << " " << p_tree->listNeuron.at(index).y << " " << p_tree->listNeuron.at(index).z << endl;
 		}break;
 		case stPointCloud: {//apo
 			(qsName = QString("point cloud #%1 ... ").arg(names[2]) + listCell.at(names[2]-1).name);
@@ -1388,9 +1391,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     		{
     			const ImageMarker & m = listMarker.at(tmpind);
     			XYZ p = XYZ(m);
-    			p.x = p.x*thicknessX -strat1;
-    			p.y = p.y*thicknessY -strat2;
-    			p.z = p.z*thicknessZ -strat3;
+    			p.x = p.x*thicknessX -start1;
+    			p.y = p.y*thicknessY -start2;
+    			p.z = p.z*thicknessZ -start3;
 
     			BoundingBox & BB = boundingBox;
     			float DX = BB.Dx();
@@ -3588,7 +3591,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 #ifndef test_main_cpp //140211
     if (b_addthiscurve)
 	{
-		addCurveSWC(loc_vec, chno);
+        addCurveSWC(loc_vec, chno, 8); //LMG 26/10/2018 solveCurveCenter mode 8
 		// used to convert loc_vec to NeuronTree and save SWC in testing
 		vecToNeuronTree(testNeuronTree, loc_vec);
 		//added by PHC, 120506
@@ -3629,12 +3632,7 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
-	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
-	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);    
-    //qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);\
-    //curImg->getXDim();
-    //qDebug("xxxx dim is %d and %d and %d",curImg->getXDim(),curImg->getYDim(),curImg->getZDim());
-    //qDebug("get xxx %d and %d and %d",curImg->getRezX(),curImg->getRezY(),curImg->getRezZ());
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 	if (w && curImg && curXWidget && loc_vec.size()>0)
 	{
 		double mx, Mx, my, My, mz, Mz;
@@ -3652,12 +3650,16 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			else if (curpos.z > Mz) Mz = curpos.z;
 		}
         qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
-        V3DLONG margin=5; //the default margin is small
-        if (loc_vec.size()==1) margin=61; //for marker then define a bigger margin
-        mx -= margin; Mx += margin; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
-        my -= margin; My += margin; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
-        mz -= margin; Mz += margin; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
-		//by PHC 101008
+        V3DLONG marginx,marginy,marginz; //the default margin is small
+        marginx=marginy=marginz=5;
+        if (loc_vec.size()==1)
+        {
+            marginx=marginy=marginz=61;
+        }
+        mx -= marginx; Mx += marginx; //if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
+        my -= marginy; My += marginy; //if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
+        mz -= marginz; Mz += marginz; //if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
+//        by PHC 101008
 		if (b_imaging && curXWidget)
 		{
 			b_imaging = false; //reset the status
@@ -3715,7 +3717,8 @@ bool Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type)
 			myimagingp.ze = Mz; //ending coordinates (in pixel space)
 			myimagingp.xrez = curImg->getRezX() / 2.0;
 			myimagingp.yrez = curImg->getRezY() / 2.0;
-			myimagingp.zrez = curImg->getRezZ() / 2.0;
+            myimagingp.zrez = curImg->getRezZ() / 2.0;
+            //qDebug("move to rexyz %f and %f and %f",myimagingp.xrez,myimagingp.yrez,myimagingp.zrez);
 			//do imaging
 			//bool v3d_imaging_return_value = v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 			//cout << "v3d_imaging_return_value:" << v3d_imaging_return_value << endl;
@@ -3883,7 +3886,7 @@ void Renderer_gl1::solveCurveViews()
 #ifndef test_main_cpp
     smooth_curve(loc_vec, 5);
 #endif
-    addCurveSWC(loc_vec, -1); //turn off post deform
+    addCurveSWC(loc_vec, -1, 9); //turn off post deform //LMG 26/10/2018 solveCurveViews mode 9
 }
 void Renderer_gl1::solveCurveFromMarkers()
 {
@@ -3931,7 +3934,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
     else
         chno = checkCurChannel();
 	////////////////////////////////////////////////////////////////////////
-	qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
+    //qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
 	////////////////////////////////////////////////////////////////////////
 	//100730 RZC, in View space, keep for dot(clip, pos)>=0
 	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
@@ -3941,7 +3944,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
 	////////////////////////////////////////////////////////////////////////
 	XYZ loc0, loc1;
 	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-	// qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+	//qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 	XYZ loc;
 	if (chno>=0 && chno<dim4)
 	{
@@ -5048,11 +5051,11 @@ void Renderer_gl1::addToListOfLoopingSegs(V3DLONG firstVisitSegId, V3DLONG secon
     loopVisitDict.clear();
     segsInFirstVisitNode.push_back(violatingSegId); // The violating segment will always be highlighted
     do {
-        qDebug() << "Pushed first " << firstVisitSegId;
+       // qDebug() << "Pushed first " << firstVisitSegId;
         segsInFirstVisitNode.push_back(firstVisitSegId);
         loopVisitDict.insert(firstVisitSegId, true);
         firstVisitSegId = segmentParentDict[firstVisitSegId];
-        qDebug() << "New firstVisitSegId: " << firstVisitSegId;
+      //  qDebug() << "New firstVisitSegId: " << firstVisitSegId;
     } while (segmentParentDict[firstVisitSegId] != firstVisitSegId &&
              !loopVisitDict.contains(firstVisitSegId));
 
@@ -5365,4 +5368,16 @@ bool Renderer_gl1::setColorAncestryInfo(){
 	*/
     //We're done.
     return true;
+}
+
+void Renderer_gl1::updateMarkerList(QList <ImageMarker> markers, int i)
+{
+    listMarker[i] = markers[i];
+
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d)
+    {
+        LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks[i]));
+        s->color = listMarker[i].color;
+    }
 }

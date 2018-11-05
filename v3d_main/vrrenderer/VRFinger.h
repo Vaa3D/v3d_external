@@ -14,7 +14,7 @@ struct Point
 };
 void VectorResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, float epsilon);
 void VectorResamplinger(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int start_i, int end_i, float epsilon);
-void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list, int nttype=3);
+void VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list, int nttype=3, double creatmode=10); //LMG 26/10/2017 VR creation mode 10
 bool smooth_sketch_curve(std::vector<MyMarker *> & mCoord, int winsize);
 
 #endif

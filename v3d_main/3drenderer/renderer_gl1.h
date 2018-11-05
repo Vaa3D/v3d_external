@@ -218,7 +218,6 @@ public:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
-	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
 	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
@@ -358,12 +357,7 @@ public:
 //static const 
 //int neuron_type_color_num;// = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
-
-
-
-
-
-
+    void updateMarkerList(QList <ImageMarker> markers, int i); // sync markers with object_manager
 
 	void initColorMaps();
     bool colorByAncestry;
@@ -511,7 +505,6 @@ public:
 
 	 bool isTera;
 	 map<size_t, size_t> branchSegIDmap;
-	 int loopCheck(vector<V_NeuronSWC>* curImgSegsPtr, vector<segInfoUnit>* involvedSegsInfoPtr);
 	 map<string, size_t> tail2segIDmap;
 	 multimap<size_t, string> segID2gridMap;
 
@@ -659,7 +652,7 @@ public:
 	}
 
 	// in renderer_obj.cpp
-	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
+    void addCurveSWC(vector<XYZ> &loc_list, int chno=0, double creatmode=0); //if no chno is specified, then assume to be the first channel //LMG 26/10/2018 if no creatmode specified set to 0
 
 	//for local view
     bool produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type=0);
@@ -793,7 +786,7 @@ public:
 	// neuron swc
 	QList <NeuronTree>         listNeuronTree;
     QList <NeuronTree>         listNeuronTree_old;
-    bool b_editDroppedNeuron;
+	bool b_editDroppedNeuron;
 
     GLuint glistTube, glistTubeEnd;
 	BoundingBox swcBB;

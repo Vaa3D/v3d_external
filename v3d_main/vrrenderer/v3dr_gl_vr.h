@@ -38,7 +38,7 @@ enum ModelControlR
 	m_dragMode,
 	m_markMode,
     m_delmarkMode,
-	m_splitMode
+	m_splitMode,
 };
 enum ModeControlSettings
 {
@@ -52,9 +52,20 @@ enum ModeControlSettings
 	_VirtualFinger,	
 	_Freeze,
 	_LineWidth,
-	_AutoRotate
+	_AutoRotate,
+	_ResetImage,
+	_RGBImage
 };
+enum RGBImageChannel
+{
+	channel_rgb = 1,
+	channel_r,
+	channel_g,
+	channel_b,
 
+};
+// int global_padm_modeGrip_L = _donothing;//liqi
+// int global_padm_modeGrip_R = m_drawMode;
 typedef QList<NeuronTree> NTL;
 
 class Shader;
@@ -96,6 +107,8 @@ public:
 
 	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
     QString NT2QString(); // prepare the message to be sent from currentNT.
+	XYZ ConvertCurrentNTCoords(float x,float y,float z);
+	XYZ ConvertRecevieNTCoords(float x,float y,float z);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
 	bool HandleOneIteration();//used in collaboration mode 
 	QString getHMDPOSstr();//get current HMD position, and prepare the message to be sent to server
@@ -121,7 +134,8 @@ public:
 	bool SetupTexturemaps();//load controller textures and setup properties
 	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
 	void SetupControllerTexture();//update texture coordinates according to controller's new location
-
+	void SetupControllerRay();
+	void AddrayVertex(float fl0, float fl1, float fl2, float fl3, float fl4,float fl5, std::vector<float> &vertdata);
 	void SetupMorphologyLine(int drawMode);
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
 	void SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos);
@@ -140,7 +154,7 @@ public:
 	void SetupCameras();
 	void SetupCamerasForMorphology();
 
-
+	void MenuFunctionChoose(glm::vec2 UV);
 
 	//undo redo
 	void UndoLastSketchedNT();
@@ -174,16 +188,17 @@ public:
 	NTL nonEditableLoadedNTL;
 	bool READY_TO_SEND;
 	bool isOnline;
-	ModelControlR  m_modeGrip_R;
+	static ModelControlR  m_modeGrip_R;
 	QString delName;
 	QString markerPOS;
 	QString delmarkerPOS;
+	QString delcurvePOS;
 	QString dragnodePOS;
 	bool _call_assemble_plugin;
 	int postVRFunctionCallMode;
-	
 	XYZ teraflyPOS;
-
+	XYZ CmainVRVolumeStartPoint;
+	int CmainResIndex;
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -248,7 +263,9 @@ private: // OpenGL bookkeeping
 	int m_modeControlGrip_R;
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
-	ModeControlSettings m_modeGrip_L;
+	static ModeControlSettings m_modeGrip_L;
+	static RGBImageChannel m_rgbChannel;
+	bool singlechannel;
 	bool m_translationMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
@@ -286,6 +303,9 @@ private: // OpenGL bookkeeping
 	GLint m_nCtrTexMatrixLocation;
 	unsigned int m_uiControllerTexIndexSize;
 	
+	//right controller shootingray VAO/VBO
+	GLuint m_iControllerRayVAO;
+	GLuint m_iControllerRayVBO;
 	// controller index , get them in HandleInput()
 	int	m_iControllerIDLeft;
 	int	m_iControllerIDRight;
@@ -335,7 +355,7 @@ private: // OpenGL bookkeeping
 	GLuint m_glControllerVertBuffer;
 	GLuint m_unControllerVAO;//note: axes for controller
 	unsigned int m_uiControllerVertcount;
-
+	unsigned int m_uiControllerRayVertcount;
 	Matrix4 m_mat4HMDPose;//note: m_rmat4DevicePose[hmd].invert()
 	Matrix4 m_mat4eyePosLeft;
 	Matrix4 m_mat4eyePosRight;
@@ -384,10 +404,11 @@ private: // OpenGL bookkeeping
 	GLuint m_unCompanionWindowProgramID;
 	GLuint m_unControllerTransformProgramID;
 	GLuint m_unRenderModelProgramID;
+	GLuint m_unControllerRayProgramID;
 
 	GLint m_nControllerMatrixLocation;
 	GLint m_nRenderModelMatrixLocation;
-
+	GLint m_nControllerRayMatrixLocation;
 	struct FramebufferDesc
 	{
 		GLuint m_nDepthBufferId;
@@ -445,11 +466,18 @@ private:
 	GLuint g_texWidth;
 	GLuint g_texHeight;
 	GLuint g_volTexObj;
-
+	GLuint g_volTexObj1;
 	static float fBrightness;
 	static float fContrast;
 
 	static float iLineWid;
+	public:
+	static bool showshootingPad;
+	glm::vec3  shootingraystartPos;
+	glm::vec3  shootingrayDir;
+	glm::vec3 shootingraycutPos;
+	glm::vec2 calculateshootingPadUV();
+	bool showshootingray;
 };
 
 

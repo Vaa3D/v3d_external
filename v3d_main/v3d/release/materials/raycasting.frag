@@ -10,6 +10,7 @@ uniform sampler3D VolumeTex;
 uniform sampler1D TransferFunc;  
 uniform float     StepSize;
 uniform vec2      ScreenSize;
+uniform int channel;
 uniform vec2      ImageSettings; // x = contrast, y= brightness
 layout (location = 0) out vec4 FragColor;
 
@@ -27,7 +28,7 @@ void main()
     vec3 voxelCoord = EntryPoint;
     vec4 colorAcum = vec4(0.0); // The dest color
     float alphaAcum = 0.0;                // The  dest alpha for blending
-    float intensity;
+    vec4 intensity;
     float lengthAcum = 0.0;
     vec4 colorSample; // The src color 
     float alphaSample; // The src alpha
@@ -36,9 +37,30 @@ void main()
  
     for(int i = 0; i < 1600; i++)
     {
-    	intensity =  texture(VolumeTex, voxelCoord).x;
-        if (colorAcum.r < intensity)
-            colorAcum = vec4(intensity);
+    	intensity=  texture(VolumeTex, voxelCoord);
+	if(channel == 0)
+	{
+	    if (colorAcum.r < intensity.x )		
+            	    colorAcum = vec4(intensity.x);
+	}
+ 	else if(channel == 1)
+	   {
+                    if (colorAcum.r < intensity.x )		
+            	    colorAcum = vec4(intensity.x,colorAcum.g,colorAcum.b,1.0);
+	if (colorAcum.g < intensity.y)
+	colorAcum = vec4(colorAcum.r,intensity.y,colorAcum.b,1.0);
+	if (colorAcum.b < intensity.z )
+	colorAcum = vec4(colorAcum.r,colorAcum.g,intensity.z,1.0);
+	 }
+	   else if(channel == 2)
+	   { if (colorAcum.r < intensity.x)
+                    colorAcum =vec4(intensity.x,0.0,0.0,1.0);}
+	   else if(channel == 3)
+	   { if (colorAcum.g < intensity.y)
+                    colorAcum =vec4(0.0, intensity.y,0.0,1.0);}
+	    else if(channel == 4)
+	   { if (colorAcum.b < intensity.z)
+                    colorAcum = vec4(0.0,0.0,intensity.z,1.0);}
     	voxelCoord += deltaDir;
     	lengthAcum += deltaDirLen;
     	if (lengthAcum >= len )

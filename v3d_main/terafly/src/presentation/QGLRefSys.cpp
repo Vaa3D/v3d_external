@@ -162,6 +162,11 @@ QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers),
     num_res=1;
     curRes=0;
 
+    lenVoxel = 0;
+    lenMicron = 0;
+    numSegments = 0;
+    vx = 0.2; vy = 0.2; vz = 1.0;
+
     setAttribute(Qt::WA_TranslucentBackground,true);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint );
     setWindowOpacity(0.5);
@@ -172,6 +177,10 @@ QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers),
 QGLRefSys::~QGLRefSys()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    lenVoxel = 0;
+    lenMicron = 0;
+    numSegments = 0;
 }
 
 QSize QGLRefSys::minimumSizeHint() const
@@ -244,6 +253,13 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
     }
 
     bool dimGlEnable[]={false,false,false};
+
+    //
+    lenVoxel = 0;
+    lenMicron = 0;
+    numSegments = 0;
+
+    //
     if(nt.listNeuron.size()>0)
     {
         alreadyLoadSwc=true;
@@ -292,8 +308,30 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             xDim=static_cast<float> (dimSm[0])/dimSm[2];
         }
 
+        //
+        double vx2 = vx*vx;
+        double vy2 = vy*vy;
+        double vz2 = vz*vz;
+
+//        NeuronTree ntc;
+//        ntc.deepCopy(nt);
+        nt_init.deepCopy(nt);
+
         for(int i=0; i<nt.listNeuron.size();i++)
         {
+            // length
+            NeuronSWC curr = nt_init.listNeuron.at(i);
+            if(curr.pn >= 0)
+            {
+                int parent = nt_init.hashNeuron.value(curr.pn);
+                NeuronSWC parentNode = nt_init.listNeuron.at(parent);
+                double l = sqrt((curr.x-parentNode.x)*(curr.x-parentNode.x)+(curr.y-parentNode.y)*(curr.y-parentNode.y)+(curr.z-parentNode.z)*(curr.z-parentNode.z));
+                double lr = sqrt((curr.x-parentNode.x)*(curr.x-parentNode.x)*vx2+(curr.y-parentNode.y)*(curr.y-parentNode.y)*vy2+(curr.z-parentNode.z)*(curr.z-parentNode.z)*vz2);
+                lenVoxel += l;
+                lenMicron += lr;
+            }
+
+            //
             nt.listNeuron[i].x=(nt.listNeuron[i].x-dimMin[0])/dimSm[0];
             nt.listNeuron[i].y=(dimMax[1]-nt.listNeuron[i].y)/dimSm[1];
             nt.listNeuron[i].z=(dimMax[2]-nt.listNeuron[i].z)/dimSm[2];
@@ -392,6 +430,10 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             miniROIyShift = ((-dimMin[1]+_ROIyShift)) / dimSm[1];
             miniROIzDim   = (_ROIzDim   ) / dimSm[2];
             miniROIzShift = ((-dimMin[2]+_ROIzShift)) / dimSm[2];
+
+            // calculate neuron stroks
+            V_NeuronSWC_list nt_decomposed = NeuronTree__2__V_NeuronSWC_list(nt);
+            numSegments = nt_decomposed.nsegs();
         }
         else
             miniMapCurBox=false;
@@ -411,7 +453,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             }
         }
     }*/
-    qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
+    //qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
     updateGL();
 }
 
@@ -915,7 +957,7 @@ void QGLRefSys::paintGL()
     }
     else
     {
-        float delta = 0.5;
+        float delta = 0.1;
         glLineWidth(4.0);
         //----------------Y-axis--------------//
         if(isEnabled())
@@ -944,11 +986,11 @@ void QGLRefSys::paintGL()
     }
     glEnd();
 
-
+    //
     if(nt.listNeuron.size()>0)
     {
         glDisable(GL_DEPTH_TEST);
-        for(int i=0; i<nt.listNeuron.size();i++)
+        for(int i=0; i<nt.listNeuron.size(); i++)
         {
             GLfloat ntr=neuron_type_color[(nt.listNeuron[i].type>=0&&nt.listNeuron[i].type<=neuron_type_color_num)? (nt.listNeuron[i].type):0][0];
             GLfloat ntg=neuron_type_color[(nt.listNeuron[i].type>=0&&nt.listNeuron[i].type<=neuron_type_color_num)? (nt.listNeuron[i].type):0][1];
@@ -961,6 +1003,10 @@ void QGLRefSys::paintGL()
         }
     }
 
+    // display total length of swc
+    char str[256];
+    sprintf(str, "total length: %0.2lf voxels / %0.2lf um \nnumber of segments: %d", lenVoxel, lenMicron, numSegments);
+    emit neuronInfoChanged(QString(str));
 }
 
 void QGLRefSys::mousePressEvent(QMouseEvent *event)
@@ -976,7 +1022,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
     //NeuronSWC cur_node;
     if(event->type()==QEvent::MouseButtonDblClick)
     {
-        if(event->button()==Qt::LeftButton&&miniMapCurBox&&alreadyLoadSwc)
+        if(event->button()==Qt::LeftButton&&alreadyLoadSwc)
         {
             if(xRot%180==0&&yRot%180==0&&zRot%180==0)
             {
@@ -1108,19 +1154,23 @@ void QGLRefSys::mouseMoveEvent(QMouseEvent *event)
     lastPos = event->pos();
 }
 
-
 void QGLRefSys::mouseReleaseEvent(QMouseEvent *event)
 {
     emit mouseReleased();
 }
 
-
 void QGLRefSys::wheelEvent(QWheelEvent *event)
 {
-
     zoom += event->delta() < 0 ? 1.0 : -1.0;
     zoom = std::max(zoom, -29.0);
     zoom = std::min(zoom, -zoomInit);
 //    printf("zoomFactor = %.0f\n", zoom);
     updateGL();
 }
+
+void QGLRefSys::enterEvent(QEvent *event)
+{
+    // emit reset();
+}
+
+

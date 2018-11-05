@@ -59,7 +59,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
-
+#ifdef __ALLOW_VR_FUNCS__
+bool V3dR_GLWidget::resumeCollaborationVR=false;
+#endif
 
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
@@ -524,10 +526,10 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 	if (event_tip && renderer)
 	{
-        qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
+        //qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
 
 		QPoint gpos = mapToGlobal(pos);
-        qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
+        //qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
 
 		tipBuf[0] = '\0';
 		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
@@ -735,6 +737,8 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 {
+    //qDebug()<<"V3dR_GLWidget::wheelEvent ... ...";
+
 	//20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 	//-1 : scrolldown zoomin
 	//+1 : scrollup zoomin
@@ -767,8 +771,6 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     else // default
     {
         (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
-
-
         setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
     }
 
@@ -929,6 +931,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	reloadData();
 			}
+            else
+            {
+                returncheckmode();
+            }
 	  		break;
 		case Qt::Key_U:
 			if (IS_CTRL_MODIFIER)
@@ -986,8 +992,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 toggleEditMode();
-            }else
-                confidenceDialog();
+            }
+            else
+            {
+                callcheckmode();
+            }
             break;
 
         case Qt::Key_T:
@@ -1059,15 +1068,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
-			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
-			{
-				callStrokeConnectMultiNeurons_loopSafe();
-            }
-			else
-            {
-                neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
-                updateColorMode(neuronColorMode);
-            }
+//			else
+//            {
+//                neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
+//                updateColorMode(neuronColorMode);
+//            }
 	  		break;
 		case Qt::Key_V:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
@@ -1176,12 +1181,32 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
           case Qt::Key_W:
 		    if (IS_ALT_MODIFIER)
 		    {
-                   setDragWinSize(+2);
-              }
-              else if(IS_SHIFT_MODIFIER)
-              {
-                   setDragWinSize(-2);
-              }
+				setDragWinSize(+2);
+            }
+            else if(IS_SHIFT_MODIFIER)
+            {
+                setDragWinSize(-2);
+            }
+			else
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->selectMode == Renderer::smShowSubtree)
+				{
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+					for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+					{
+						for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)
+							nodeIt->type = 0;
+
+						curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
+					}
+
+					curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+			}
 	  		break;
 
 #ifndef test_main_cpp
@@ -1622,6 +1647,7 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 	if (renderer) renderer->editSurfaceObjAnnotation(dc, st, i);
 }
 
+#define __VR_FUNCS_a__
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
@@ -1632,8 +1658,10 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 
     this->getMainWindow()->hide();
     QMessageBox::StandardButton reply;
-	if(bCanCoMode)
+	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+		reply = QMessageBox::Yes;
 	else
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
@@ -1646,11 +1674,27 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			myvrwin = 0;
 			myvrwin = new VR_MainWindow();
 			myvrwin->setWindowTitle("VR MainWindow");
-			bool linkerror = myvrwin->SendLoginRequest();
+			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			VRClientON = linkerror;
+			if(!linkerror)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
-
-			myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror);
+			QString VRinfo = this->getDataTitle();
+			qDebug()<<"VR get data_title = "<<VRinfo;
+			resumeCollaborationVR = false;//reset resumeCollaborationVR
+			myvrwin->ResIndex = Resindex;
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS);
+			qDebug()<<"result is "<<_call_that_func;
+			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+			if (_call_that_func > 0)
+			{
+				resumeCollaborationVR = true;
+				emit(signalCallTerafly(_call_that_func));
+			}
+			else if(_call_that_func == -1)
+			{
+				call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+			}
 		}
 		else
 		{
@@ -1731,7 +1775,6 @@ void V3dR_GLWidget::OnVRSocketDisConnected()
 	qDebug()<<"V3dR_GLWidget::OnVRSocketDisConnected()";
 	VRClientON=false;
 }
-
 
 
 #endif
@@ -1871,6 +1914,142 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
+#define __VR_FUNCS_b__
+/*//<<<<<<< HEAD
+//=======
+#ifdef __ALLOW_VR_FUNCS__
+void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
+{
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+
+	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+
+    this->getMainWindow()->hide();
+    QMessageBox::StandardButton reply;
+	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
+		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+		reply = QMessageBox::Yes;
+	else
+		reply = QMessageBox::No;
+	if (reply == QMessageBox::Yes)
+	{
+		if(VRClientON==false)
+		{
+			VRClientON = true;
+			if(myvrwin) 
+				delete myvrwin;
+			myvrwin = 0;
+			myvrwin = new VR_MainWindow();
+			myvrwin->setWindowTitle("VR MainWindow");
+			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
+			VRClientON = linkerror;
+			if(!linkerror)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";return;}
+			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
+			QString VRinfo = this->getDataTitle();
+			qDebug()<<"VR get data_title = "<<VRinfo;
+			resumeCollaborationVR = false;//reset resumeCollaborationVR
+			myvrwin->ResIndex = Resindex;
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS);
+			qDebug()<<"result is "<<_call_that_func;
+			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+			if (_call_that_func > 0) 
+			{
+				resumeCollaborationVR = true;
+				emit(signalCallTerafly(_call_that_func));
+			}
+			else if(_call_that_func == -1)
+			{
+				call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+			}
+		}
+		else
+		{
+			v3d_msg("The ** client is running.Failed to start VR client.");
+			this->getMainWindow()->show();
+		}
+	}
+	else
+	{
+		// bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+		int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
+		qDebug()<<"result is "<<_call_that_func;
+		qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+		updateWithTriView();
+		if (_call_that_func > 0) 
+		{
+			emit(signalCallTerafly(_call_that_func));
+		}
+		else if(_call_that_func == -1)
+		{
+			call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		}
+
+		//this->getMainWindow()->show();
+		// if(_Call_ZZ_Plugin)
+		// {
+		// 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		// 	emit(signalCallTerafly());
+		// }
+	}
+}
+void V3dR_GLWidget::doclientView(bool check_flag)
+{
+	
+	if(check_flag)
+	{
+		qDebug()<<"run true.";
+		if(VRClientON==false)
+		{
+			v3d_msg("Now start Collaboration.");
+			VRClientON = true;
+			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+			if(myclient) 
+				delete myclient;
+			myclient = 0;
+			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+			bool linkerror = myclient->SendLoginRequest();
+			if(!linkerror)
+			{
+				v3d_msg("Error!Cannot link to server!");
+				myclient = 0;
+				VRClientON = false;
+			}
+			else
+				v3d_msg("Successed linking to server! ");
+		}
+		else
+		{
+			v3d_msg("The VR client is running.Failed to start ** client.");
+		}
+	}
+	else
+	{
+		qDebug()<<"run false.";
+		if(myclient)
+		{
+			qDebug()<<"run disc.";
+			delete myclient;
+			myclient = 0;
+		}
+		VRClientON=false;
+	}
+}
+
+void V3dR_GLWidget::OnVRSocketDisConnected()
+{
+	qDebug()<<"V3dR_GLWidget::OnVRSocketDisConnected()";
+	VRClientON=false;
+}
+
+
+
+#endif
+//>>>>>>> e4f5898908f8eaf6199ffedab4924649e0925911
+*/
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {
@@ -3128,15 +3307,6 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
     }
 }
 
-void V3dR_GLWidget::callStrokeConnectMultiNeurons_loopSafe()
-{
-	if (renderer)
-	{
-		renderer->callStrokeConnectMultiNeurons_loopSafe();
-		POST_updateGL();
-	}
-}
-
 void V3dR_GLWidget::callShowSubtree()
 {
 	if (renderer)
@@ -3312,6 +3482,28 @@ void V3dR_GLWidget::callAutoTracers()
         if (v3dr_getImage4d(_idep)->get_xy_view())
         {
             v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Auto Tracers"));
+            POST_updateGL();
+        }
+    }
+}
+void V3dR_GLWidget::callcheckmode()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Check Mode"));
+            POST_updateGL();
+        }
+    }
+}
+void V3dR_GLWidget::returncheckmode()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Return Check Mode"));
             POST_updateGL();
         }
     }

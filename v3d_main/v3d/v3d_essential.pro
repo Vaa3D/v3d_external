@@ -360,7 +360,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../custom_toolbar/v3d_custom_toolbar.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
-    ../io/v3d_nrrd.cpp
+    ../io/v3d_nrrd.cpp \
+    ../3drenderer/glsl_r.cpp
 
 #    ./painting/shared/arthurstyle.cpp \
 #    ./painting/shared/arthurwidgets.cpp
@@ -433,7 +434,7 @@ unix:!macx {
   LIBS += -lv3dnewmat
 #unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
   LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
-  LIBS += -L../common_lib/lib_unix64 -lteem  -lbz2 -lz  #for nrrd support
+  LIBS += -L../common_lib/lib_unix64 -lteem  -lbz2 -lz  -lGLU #for nrrd support
 }
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP

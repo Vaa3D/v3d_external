@@ -102,6 +102,8 @@ public:
 	VR_MainWindow * myvrwin;
 	V3dR_Communicator * myclient;
 	XYZ teraflyZoomInPOS;
+	int Resindex;
+	static bool resumeCollaborationVR;
 #endif
 //protected:
 	virtual void choiceRenderer();
@@ -363,6 +365,8 @@ public slots:
     virtual void callCurveLineDetector(int option); // for quick curve line structure detection, by PHC, 20170531
     virtual void callLoadNewStack(); // for loading new stack, by ZZ, 02012018
     virtual void callAutoTracers(); // for calling different auto tracers in terafly, by ZZ, 05142018
+    virtual void callcheckmode();//for caalling check mode in terafly, by OY,26102018
+    virtual void returncheckmode();//for caalling check mode in terafly, by OY,26102018
 
      virtual void setDragWinSize(int csize); // ZJL 110927
 
@@ -389,7 +393,6 @@ public slots:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments splitting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
-	virtual void callStrokeConnectMultiNeurons_loopSafe(); // calls to multiple segments connection with loop detection, (developing). MK, May, 2018
 	virtual void callShowSubtree();
 	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
@@ -563,6 +566,7 @@ public:
 		myvrwin = 0;
 		myclient = 0;
 		teraflyZoomInPOS = 0;
+		Resindex = 1;
 #endif
 	}
 };
