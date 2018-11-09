@@ -426,7 +426,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 		cur_node.nchild = nodelink.nlink;
 		//qDebug("#%d nlink = %d, in %d, out %d", V3DLONG(cur_node.n), nodelink.nlink, nodelink.in_link.size(), nodelink.out_link.size());
 	
-		if (cur_node.nchild >= 3) cout << cur_node.n << " " << i << endl;
+		//if (cur_node.nchild >= 3) cout << cur_node.n << " " << i << endl;
 		indices.push_back(i);
 	}
 
