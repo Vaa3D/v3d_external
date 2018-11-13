@@ -6,8 +6,8 @@ copy /y libnewmat_VS2010.lib libnewmat.lib
 cd ..\..\..
   
 cd v3d_main\v3d
-call qmake -v
-call qmake  vaa3d_msvc.pro
+call ..\..\qmake -v
+call ..\..\qmake  vaa3d_msvc.pro
 nmake -f Makefile.Release
 
 cd release

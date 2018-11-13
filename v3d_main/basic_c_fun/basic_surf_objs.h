@@ -195,9 +195,9 @@ struct NeuronTree : public BasicSurfObj
             S.r = p.listNeuron[i].r;
             S.pn = p.listNeuron[i].pn;
             S.seg_id = p.listNeuron[i].seg_id;
-            S.fea_val = p.listNeuron[i].fea_val;
             S.creatmode = p.listNeuron[i].creatmode;  // Creation Mode LMG 8/10/2018
             S.timestamp = p.listNeuron[i].timestamp;  // Timestamp LMG 27/9/2018
+            S.fea_val = p.listNeuron[i].fea_val;
             listNeuron.append(S);
             hashNeuron.insert(S.n, listNeuron.size()-1);
         }
@@ -228,7 +228,7 @@ struct NeuronTree : public BasicSurfObj
 			p_tmp->x = p.listNeuron.at(i).x;
 			p_tmp->y = p.listNeuron.at(i).y;
 			p_tmp->z = p.listNeuron.at(i).z;
-			p_tmp->r = p.listNeuron.at(i).r;
+            p_tmp->r = p.listNeuron.at(i).r;
             p_tmp->creatmode = p.listNeuron.at(i).creatmode;    // Creation Mode LMG 8/10/2018
             p_tmp->timestamp = p.listNeuron.at(i).timestamp;    // Timestamp LMG 27/9/2018
 			//qDebug()<<"src:"<<p.listNeuron.at(i).x<<p.listNeuron.at(i).y<<p.listNeuron.at(i).z<<p.listNeuron.at(i).r;

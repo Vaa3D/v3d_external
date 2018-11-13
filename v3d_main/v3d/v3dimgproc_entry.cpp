@@ -961,6 +961,38 @@ void XFormView::popupImageProcessingDialog(QString item)
                     v3d_msg("Cannot locate the controlling widget for new stack loading,thus do nothing.");
                 }
             }
+            else if (item==tr(" -- Call Check Mode")) //by OY, 26102018
+            {
+                v3d_imaging_paras myimagingp;
+                myimagingp.OPS = "checked_to_mark";
+                myimagingp.imgp = (Image4DSimple *)imgData; //the image data for a plugin to call
+
+
+                if (imgData->getXWidget())
+                {
+                    v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
+                }
+                else
+                {
+                    v3d_msg("Cannot locate the controlling widget for new stack loading,thus do nothing.");
+                }
+            }
+            else if (item==tr(" -- Return Check Mode")) //by OY, 26102018
+            {
+                v3d_imaging_paras myimagingp;
+                myimagingp.OPS = "checked_return";
+                myimagingp.imgp = (Image4DSimple *)imgData; //the image data for a plugin to call
+
+
+                if (imgData->getXWidget())
+                {
+                    v3d_imaging(imgData->getXWidget()->getMainControlWindow(), myimagingp);
+                }
+                else
+                {
+                    v3d_msg("Cannot locate the controlling widget for new stack loading,thus do nothing.");
+                }
+            }
             else if (item==tr(" -- trace one marker to all others"))
 			{
 				if (imgData->proj_trace_deformablepath_one_point_to_allotherpoints(imgData->cur_hit_landmark))

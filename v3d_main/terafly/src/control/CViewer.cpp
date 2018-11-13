@@ -726,12 +726,22 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             // --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
             else
             {
-                XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+				// ----------------- The following is intended to solve erroneous zoomed-in block when mouse is clicked outside the image cube. ---------------------------
+				// ----------------- The original approach has been disabled. (Ln 739 - Ln 775), only used when double-click event is far from the nearest SWC node ------- 
+				// ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
+				NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
+				double dist;
+				V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+				cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
+				cout << " === distance: " << dist << endl;
+				// --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+                /*XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
                 XYZ convertedSWC;
                 convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
                 QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
                 QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
-                float distSqr = 100; // <======= change distance threshold parameter here
+                float distSqr = 100000000; // <======= change distance threshold parameter here
                 float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
                 cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
 
@@ -745,7 +755,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                     {
                         //cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
                         //cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
-                        distSqr = currDistSqr;
+                        
+						distSqr = currDistSqr;
                         convertedSWC.x = it->x;
                         convertedSWC.y = it->y;
                         convertedSWC.z = it->z;
@@ -757,13 +768,16 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                     ++globalSWCIt;
                 }
                 cout << endl << "  SWC node examination done." << endl;
+				cout << " === original mouse event x: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
                 cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
                 cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
-
-                if (distSqr >= 100)
+				cout << " === converted SWC node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
+				cout << " === nearest distance to mouse click: " << distSqr << endl;*/
+		
+                if (dist > 100)
                 {
                     cout << "out of nearest SWC search range" << endl;
-                    XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+					XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
                     if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                     {
                         float xsign = point.x - (volH1-volH0)/2;
@@ -779,15 +793,19 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                                   point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
                                   point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                                   volResIndex, volT0, volT1);
-                    }else
-                        newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+                    }
+					else
+					{
+						//cout << point.x << " " << point.y << " " << point.z << endl;
+						newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+					}
                 }
                 else
                 {
                     cout << "using nearest SWC node:" << endl;
-                    cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
+                    //cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
                     XYZ loc;
-                    loc.x = convertedSWC.x; loc.y = convertedSWC.y; loc.z = convertedSWC.z;
+					loc.x = treePtr->listNeuron.at(index).x; loc.y = treePtr->listNeuron.at(index).y; loc.z = treePtr->listNeuron.at(index).z;
                     if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                     {
                         float xsign = loc.x - (volH1-volH0)/2;
@@ -803,8 +821,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                                   loc.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
                                   loc.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                                   volResIndex, volT0, volT1);
-                    }else
-                        newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
+                    }
+					else newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
                 }
             }
             // --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
@@ -1192,10 +1210,10 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-            if(dx != -1 && dy != -1 && dz != -1)
-                cVolume->setVoi(0, resolution, y-dy, y+dy, x-dx, x+dx, z-dz, z+dz, t0, t1);
-            else
-                cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
+			if (dx != -1 && dy != -1 && dz != -1)
+				cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+			else
+				cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
         }
         catch(RuntimeException &ex)
         {
