@@ -81,7 +81,7 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 			userName,
 			true,//means this struct point to itself,no need to render
 			21,
-			0
+			0,
 		};
 		Agents.push_back(agent00);
 
@@ -158,6 +158,7 @@ void VR_MainWindow::onReadyRead() {
 	QRegExp markerRex("^/marker:(.*)$");
 	QRegExp delmarkerRex("^/del_marker:(.*)$");
 	QRegExp dragnodeRex("^/drag_node:(.*)$");
+	QRegExp creatorRex("^/creator:(.*)$");
     QRegExp messageRex("^(.*):(.*)$");
 	
 
@@ -187,6 +188,7 @@ void VR_MainWindow::onReadyRead() {
 						false,
 						21,
 						0
+						
 					};
 					Agents.push_back(agent00);
 				}
@@ -199,8 +201,7 @@ void VR_MainWindow::onReadyRead() {
 			if(sysMSGs.size()<2) return;
 			//Update Agents[] on user login/logout
 			QString user=sysMSGs.at(0);
-			QString Action=sysMSGs.at(1);
-
+			QString Action=sysMSGs.at(1);	
 			if((user!=userName)&&(Action=="joined"))
 			{
 				qDebug()<<"user: "<< user<<"joined";
@@ -209,7 +210,7 @@ void VR_MainWindow::onReadyRead() {
 					user,
 					false,
 					21,//colortypr
-					0 //POS
+					0, //POS
 				};
 				Agents.push_back(agent00);
 			}
@@ -238,6 +239,7 @@ void VR_MainWindow::onReadyRead() {
 
 			QString user=hmdMSGs.at(0);
 			if(user == userName) return;//the msg is the position of the current user,do nothing 
+			qDebug()<<"get user hmd pos info"<<"       "<<user;
 			for(int i=0;i<Agents.size();i++)
 			{		
 				if(user == Agents.at(i).name)// the msg is the position of user[i],update POS
@@ -269,6 +271,20 @@ void VR_MainWindow::onReadyRead() {
 				qDebug()<<"user:"<<user<<" receievedColorTYPE="<<Agents.at(i).colorType;
 				if(user == userName)
 					pMainApplication->SetupCurrentUserInformation(userName.toStdString(), Agents.at(i).colorType);
+			}
+		}
+		else if(creatorRex.indexIn(line) != -1) {
+			qDebug()<<"get creator message";
+			//QString colorFromServer = colorRex.cap(1);
+			//qDebug()<<"the color receieved is :"<<colorFromServer;
+			QStringList creatorMSGs = creatorRex.cap(1).split(" ");
+			QString user=creatorMSGs.at(0);
+			for(int i=0;i<Agents.size();i++)
+			{
+				qDebug()<<"creator name is "<<user;
+				if(Agents.at(i).name!=user) continue;
+				pMainApplication->collaboration_creator_name = user;
+				qDebug()<<"user:"<<user<<" receievedCreator"<<pMainApplication->collaboration_creator_name;
 			}
 		}
         else if (deletecurveRex.indexIn(line) != -1) {
@@ -433,7 +449,7 @@ void VR_MainWindow::onDisconnected() {
 
 
 
-int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, bool isLinkSuccess,QString ImageVolumeInfo,XYZ* zoomPOS) {
+int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, bool isLinkSuccess,QString ImageVolumeInfo,XYZ* zoomPOS,XYZ *CreatorPos) {
 
 	pMainApplication = new CMainApplication( 0, 0 );
 
@@ -489,7 +505,6 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		pMainApplication->img4d = i4d;
 		pMainApplication->m_bHasImage4D=true;
 	}
-
 	if (!pMainApplication->BInit())
 	{
 		pMainApplication->Shutdown();
@@ -502,9 +517,14 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		zoomPOS->x = pMainApplication->teraflyPOS.x;
 		zoomPOS->y = pMainApplication->teraflyPOS.y;
 		zoomPOS->z = pMainApplication->teraflyPOS.z;
-		
+		CreatorPos->x = pMainApplication->CollaborationCreatorPos.x;
+		CreatorPos->y = pMainApplication->CollaborationCreatorPos.y;
+		CreatorPos->z = pMainApplication->CollaborationCreatorPos.z;
+		qDebug()<<"call that function is"<<_call_that_function;
 		socket->disconnectFromHost();
+		qDebug()<<"didn't clear agent";
 		Agents.clear();
+		qDebug()<<"clear agent success";
 		delete pMainApplication;
 		pMainApplication=0;
 		return _call_that_function;

@@ -2711,6 +2711,17 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             }
         }       
     }
+	else if(_direction == 9)
+    {
+        // forcezoomin
+        if(view3DWidget)
+        {
+            PMain::getInstance()->resumeVR = true;
+			XYZ point = view3DWidget->CollaborationCreatorPos;
+            qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
+            newViewer(point.x, point.y, point.z, volResIndex, volT0, volT1);    
+        }    
+    }
 #endif
 }
 
