@@ -38,9 +38,6 @@
 #ifndef _countof
 #define _countof(x) (sizeof(x)/sizeof((x)[0]))
 #endif
-#ifndef NODESPACING
-#define NODESPACING 40
-#endif
 #define GL_ERROR() checkForOpenGLError(__FILE__, __LINE__)
 
 typedef vector<Point*> Segment;
@@ -840,7 +837,9 @@ bool CMainApplication::BInit()
 	int nWindowPosX = 100;
 	int nWindowPosY = 100;
 	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
-
+	/*m_flashtype = noflash;
+	m_Flashcolor = 0;
+	m_FlashCount = 0;*/
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
 	//SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY );
@@ -2924,6 +2923,24 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						break;
 					}
 				}
+				int switchinsertnode = 0;
+				NeuronTree NewNT;
+				int NewNTsize = nearestNT.listNeuron.size();
+				if(nearestNode==*nearestNT.listNeuron.begin())
+				{
+					switchinsertnode = 1;
+					NewNTsize += 1;
+				}
+				else if(nearestNode==nearestNT.listNeuron.back())
+				{
+					switchinsertnode = 2;
+					NewNTsize += 1;
+				}
+				else
+				{
+					switchinsertnode = 3;
+					NewNTsize += 2;
+				}
 				qDebug()<<"get  nt";
 				if(isOnline==false)	
 				{
@@ -2946,27 +2963,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					else
 						qDebug()<<"Cannot Find the Segment ";
 				}
-				NeuronTree NewNT;
-				int NewNTsize = nearestNT.listNeuron.size();
+
 				//set newNTsize after insert node
-				vector<int> distancebtnode;
-				for(int k=1;k<nearestNT.listNeuron.size();k++)
-				{
-					float distance =(nearestNT.listNeuron.at(k).x-nearestNT.listNeuron.at(k-1).x)*(nearestNT.listNeuron.at(k).x-nearestNT.listNeuron.at(k-1).x)
-									+(nearestNT.listNeuron.at(k).y-nearestNT.listNeuron.at(k-1).y)*(nearestNT.listNeuron.at(k).y-nearestNT.listNeuron.at(k-1).y)
-									+(nearestNT.listNeuron.at(k).z-nearestNT.listNeuron.at(k-1).z)*(nearestNT.listNeuron.at(k).z-nearestNT.listNeuron.at(k-1).z);
-					distance = sqrt(distance);
-					distancebtnode.push_back(distance);
-					qDebug()<<"distance between node"<<k-1<<"and"<<k<<"is "<<distance;
-					if(distance>NODESPACING)//if distance between node >30,insert node
-					{
-						NewNTsize += distance/NODESPACING-1;// if distance contain n*20 node,insert n-1 node
-					}
-					qDebug()<<"NewNTsize"<<NewNTsize;
-					qDebug()<<"DISTANCE  SIZE"<<distancebtnode.size();
-					qDebug()<<"nearestNT,size"<< nearestNT.listNeuron.size();
-					
-				}
 				//crete NewNT's topology
 				for(int k=0;k<NewNTsize;k++)
 				{
@@ -2997,35 +2995,103 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				//add data to New NT
 				for(int k=0,j=0;k<NewNT.listNeuron.size();j++,k++)
 				{
-					if(j<distancebtnode.size())
+					switch (switchinsertnode)
 					{
-						float thresholddistance = distancebtnode[j]/NODESPACING;
-						NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
-						NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
-						NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
-						NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
-						NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
-						qDebug()<<"liqiqqqqqqqqqqqqqqqq  insert node"<<k;
-						for(int i = 0;i<thresholddistance-1;i++)//insert node between origin node
+					case 1://insert node behind first
 						{
-							k++;//insert n node ,k+n
-							NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x + (nearestNT.listNeuron[j+1].x-nearestNT.listNeuron[j].x)/thresholddistance*(i+1);
-							NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y + (nearestNT.listNeuron[j+1].y-nearestNT.listNeuron[j].y)/thresholddistance*(i+1);
-							NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z + (nearestNT.listNeuron[j+1].z-nearestNT.listNeuron[j].z)/thresholddistance*(i+1);
-							NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
-							NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
-							qDebug()<<"liqiqqqqqqqqqqqqqqqq  insert node  after j"<<j<<"node "<<k;
+							int temp = j;
+							if(j+1<nearestNT.listNeuron.size())
+							temp = j+1;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n+1&& k<=j)
+							{
+								NewNT.listNeuron[k].x = 1.0/2 * nearestNT.listNeuron[j-1].x + 3.0/8*nearestNT.listNeuron[j].x+1.0/8*nearestNT.listNeuron[temp].x;
+								NewNT.listNeuron[k].y = 1.0/2 * nearestNT.listNeuron[j-1].y + 3.0/8*nearestNT.listNeuron[j].y+1.0/8*nearestNT.listNeuron[temp].y;
+								NewNT.listNeuron[k].z = 1.0/2 * nearestNT.listNeuron[j-1].z + 3.0/8*nearestNT.listNeuron[j].z+1.0/8*nearestNT.listNeuron[temp].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								j--;
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;							
+							}
 						}
-					}
-					if(k == NewNT.listNeuron.size()-1)
-					{
-						qDebug()<<"insert the last node";
-						NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
-						NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
-						NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
-						NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
-						NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
-						qDebug()<<"liqiqqqqqqqqqqqqqqqq  insert node"<<k;
+						break;
+					case 2://insert node before last
+						{
+							int temp = j;
+							if(j-1>0)
+							temp = j-2;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n&& k<=j)
+							{
+								
+								NewNT.listNeuron[k].x = 1.0/2 * nearestNT.listNeuron[j].x + 3.0/8*nearestNT.listNeuron[j-1].x+1.0/8*nearestNT.listNeuron[temp].x;
+								NewNT.listNeuron[k].y = 1.0/2 * nearestNT.listNeuron[j].y + 3.0/8*nearestNT.listNeuron[j-1].y+1.0/8*nearestNT.listNeuron[temp].y;
+								NewNT.listNeuron[k].z = 1.0/2 * nearestNT.listNeuron[j].z + 3.0/8*nearestNT.listNeuron[j-1].z+1.0/8*nearestNT.listNeuron[temp].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								j--;
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;						
+							}
+						}
+						break;
+					case 3://insert node in middle
+						{
+							int balancenode1 =j-1;
+							int balancenode2 =j-1;
+							int balancenode3 =j+1;
+							int balancenode4 =j+1;
+							if(j-1>0)
+								balancenode1 = j-2;
+							if(j+2<nearestNT.listNeuron.size())
+								balancenode4 = j+2;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n&& k<=j)
+							{
+								NewNT.listNeuron[k].x = 1.0/8 * nearestNT.listNeuron[balancenode1].x+ 3.0/8 * nearestNT.listNeuron[balancenode2].x + 3.0/8*nearestNT.listNeuron[j].x+1.0/8*nearestNT.listNeuron[balancenode3].x;
+								NewNT.listNeuron[k].y = 1.0/8*nearestNT.listNeuron[balancenode1].y+ 3.0/8 * nearestNT.listNeuron[balancenode2].y + 3.0/8*nearestNT.listNeuron[j].y+1.0/8*nearestNT.listNeuron[balancenode3].y;
+								NewNT.listNeuron[k].z = 1.0/8*nearestNT.listNeuron[balancenode1].z+ 3.0/8 * nearestNT.listNeuron[balancenode2].z + 3.0/8*nearestNT.listNeuron[j].z+1.0/8*nearestNT.listNeuron[balancenode3].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								k++;
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								k++;
+								NewNT.listNeuron[k].x =1.0/8*nearestNT.listNeuron[balancenode2].x+ 3.0/8 * nearestNT.listNeuron[j].x + 3.0/8*nearestNT.listNeuron[balancenode3].x+1.0/8*nearestNT.listNeuron[balancenode4].x;
+								NewNT.listNeuron[k].y = 1.0/8*nearestNT.listNeuron[balancenode2].y+ 3.0/8 * nearestNT.listNeuron[j].y + 3.0/8*nearestNT.listNeuron[balancenode3].y+1.0/8*nearestNT.listNeuron[balancenode4].y;
+								NewNT.listNeuron[k].z = 1.0/8*nearestNT.listNeuron[balancenode2].z+ 3.0/8 * nearestNT.listNeuron[j].z + 3.0/8*nearestNT.listNeuron[balancenode3].z+1.0/8*nearestNT.listNeuron[balancenode4].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;								
+							}
+
+						}
+						break;
+					default:
+						break;
+
+
 					}
 				}
 				qDebug()<<"insert node finished!";
@@ -3393,7 +3459,7 @@ void CMainApplication::RenderFrame()
 		SetupControllerTexture();
 		SetupControllerRay();
 		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
-
+		//FlashStuff(m_flashtype,FlashCoords);
 		//for all (synchronized) sketched strokes
 		//SetupMorphologySurface(currentNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
@@ -4808,7 +4874,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
-
+	
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3), (GLvoid*)0);
 		uintptr_t offset =  sizeof( glm::vec3 );
@@ -7083,3 +7149,55 @@ XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 
 	return XYZ(x,y,z);
 }
+//bool CMainApplication::FlashStuff(FlashType type,XYZ coords)
+//{
+//	switch (type)
+//	{
+//	case noflash:
+//		break;
+//	case line:
+//		{
+//			m_FlashCount++;
+//			if(m_FlashCount>=300)
+//				{m_FlashCount == 0;m_flashtype = noflash;}
+//			qDebug()<<"get into case line";
+//			delName = "";
+//			NeuronTree nearestNT;
+//			delName = FindNearestSegment(glm::vec3(coords.x,coords.y,coords.z));
+//			if (delName == "") return false; //segment not found
+//			for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
+//			{
+//				QString NTname="";
+//				NTname = sketchedNTList.at(i).name;
+//				if(NTname==delName)
+//				{
+//					nearestNT=sketchedNTList.at(i);
+//					break;
+//				}
+//			}
+//			if((m_FlashCount%100)==0 && (m_FlashCount/100)%2 == 0)
+//			{
+//				for(int i = 0;i<nearestNT.listNeuron.size();i++)
+//				{
+//					nearestNT.color.c[0] = 0;
+//					nearestNT.color.c[1] = 0;
+//					nearestNT.color.c[2] = 0;
+//					qDebug()<<"case even";
+//				}
+//			}
+//			if((m_FlashCount%100)==0 && (m_FlashCount/100)%2 == 1)			
+//			{
+//				for(int i = 0;i<nearestNT.listNeuron.size();i++)
+//				{
+//					qDebug()<<"case odd";
+//					nearestNT.listNeuron[i].type = m_Flashoricolor;
+//				}
+//			}
+//				
+//		}
+//		break;
+//	default:
+//		break;
+//	}
+//	return true;
+//}
