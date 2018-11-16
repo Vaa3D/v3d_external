@@ -38,7 +38,6 @@
 #ifndef _countof
 #define _countof(x) (sizeof(x)/sizeof((x)[0]))
 #endif
-
 #define GL_ERROR() checkForOpenGLError(__FILE__, __LINE__)
 
 typedef vector<Point*> Segment;
@@ -48,7 +47,6 @@ typedef vector<Point*> Tree;
 #ifndef MAX
 #define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
 #endif
-
 int checkForOpenGLError(const char* file, int line)
 {
     // return 1 if an OpenGL error occured, 0 otherwise.
@@ -839,7 +837,9 @@ bool CMainApplication::BInit()
 	int nWindowPosX = 100;
 	int nWindowPosY = 100;
 	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
-
+	/*m_flashtype = noflash;
+	m_Flashcolor = 0;
+	m_FlashCount = 0;*/
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
 	//SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY );
@@ -907,7 +907,6 @@ bool CMainApplication::BInit()
 	// m_modeGrip_L = global_padm_modeGrip_L;
 	delName = "";
 	dragnodePOS="";
-
 	loadedNTCenter = glm::vec3(0);
 	vertexcount = swccount = 0;
 	pick_node = 0;
@@ -944,6 +943,7 @@ bool CMainApplication::BInit()
 	ctrSphereColor[2] =  neuron_type_color[color_id][2] /255.0;
 
 	teraflyPOS = 0;
+	CollaborationCreatorPos = 0;
 	SDL_StartTextInput();
 	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
@@ -1983,11 +1983,17 @@ void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 			}
 		}
 		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
-		XYZ convertPOS = ConvertRecevieNTCoords(posss.x,posss.y,posss.z);
+		XYZ convertPOS = ConvertGlobaltoLocalCoords(posss.x,posss.y,posss.z);
 		//qDebug()<<" get agent POS "<<convertPOS.x<<" "<<convertPOS.y<<" "<<convertPOS.z;
 		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
 		//agentsPos  means user's position in world, posss[3] will always be 1.
 		//later may need orientation information
+			qDebug()<<collaboration_creator_name<<"converted pos";
+		if(curAgents[i].name == collaboration_creator_name)
+		{
+			qDebug()<<collaboration_creator_name<<"converted pos";
+			CollaborationCreatorPos = convertPOS;
+		}
 		Agents_spheresPos.push_back(agentsPos);
 	}
 
@@ -2365,11 +2371,26 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _ResetImage:
 			{
-				if(isOnline == false)
+				/*if(isOnline == false)
 				{
 					m_globalMatrix = glm::mat4();
 					SetupGlobalMatrix();
-				}
+				}*/
+				//  used to test collaboration move to creator/////////////////////////////////////
+				//if(isOnline == true)
+				//{
+				//	qDebug()<<"didn't get creator pos";
+				//	if(CollaborationCreatorPos.x!=0&&CollaborationCreatorPos.y!=0&&CollaborationCreatorPos.z!=0)
+				//	{
+				//	qDebug()<<"get creator pos";						
+				//		teraflyPOS = XYZ(CollaborationCreatorPos.x,CollaborationCreatorPos.y,CollaborationCreatorPos.z);//liqi
+				//		postVRFunctionCallMode = 9;
+				//	}
+
+				//}
+
+				
+				break;
 			}
 		case _RGBImage: //line width
 			{
@@ -2872,6 +2893,217 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+		case m_insertnodeMode:
+			{
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
+					}
+				}
+				mat=glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
+				delName = "";
+				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+				NeuronTree nearestNT;
+				NeuronSWC nearestNode;
+				if (delName == "") break; //segment not found
+
+				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
+				{
+					QString NTname="";
+					NTname = sketchedNTList.at(i).name;
+					if(NTname==delName)
+					{
+						nearestNT=sketchedNTList.at(i);
+						//nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+						break;
+					}
+				}
+				int switchinsertnode = 0;
+				NeuronTree NewNT;
+				int NewNTsize = nearestNT.listNeuron.size();
+				if(nearestNode==*nearestNT.listNeuron.begin())
+				{
+					switchinsertnode = 1;
+					NewNTsize += 1;
+				}
+				else if(nearestNode==nearestNT.listNeuron.back())
+				{
+					switchinsertnode = 2;
+					NewNTsize += 1;
+				}
+				else
+				{
+					switchinsertnode = 3;
+					NewNTsize += 2;
+				}
+				qDebug()<<"get  nt";
+				if(isOnline==false)	
+				{
+					NTL temp_NTL = sketchedNTList;
+					bool delerror = DeleteSegment(delName);
+					if(delerror==true)
+					{
+						bIsUndoEnable = true;
+						if(vUndoList.size()==MAX_UNDO_COUNT)
+						{
+							vUndoList.erase(vUndoList.begin());
+						}
+						vUndoList.push_back(temp_NTL);
+						if (vRedoList.size()> 0)
+							vRedoList.clear();
+						bIsRedoEnable = false;
+						vRedoList.clear();					
+						qDebug()<<"Segment Deleted.";
+					}
+					else
+						qDebug()<<"Cannot Find the Segment ";
+				}
+
+				//set newNTsize after insert node
+				//crete NewNT's topology
+				for(int k=0;k<NewNTsize;k++)
+				{
+
+					NeuronSWC tempSWC;
+					if(k==0)//insert first node
+						{
+							tempSWC.n=1;
+							tempSWC.pn=-1;
+							tempSWC.x=0;
+							tempSWC.y=0;
+							tempSWC.z=0;
+							tempSWC.type=2;
+							NewNT.listNeuron.append(tempSWC);
+        					NewNT.hashNeuron.insert(tempSWC.n, NewNT.listNeuron.size()-1);
+							continue;
+						}
+					tempSWC.n=k+1;
+					tempSWC.pn=NewNT.listNeuron.back().n;
+					tempSWC.x=0;
+					tempSWC.y=0;
+					tempSWC.z=0;
+					tempSWC.type=2;
+					NewNT.listNeuron.append(tempSWC);
+        			NewNT.hashNeuron.insert(tempSWC.n, NewNT.listNeuron.size()-1);
+				}
+					
+				//add data to New NT
+				for(int k=0,j=0;k<NewNT.listNeuron.size();j++,k++)
+				{
+					switch (switchinsertnode)
+					{
+					case 1://insert node behind first
+						{
+							int temp = j;
+							if(j+1<nearestNT.listNeuron.size())
+							temp = j+1;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n+1&& k<=j)
+							{
+								NewNT.listNeuron[k].x = 1.0/2 * nearestNT.listNeuron[j-1].x + 3.0/8*nearestNT.listNeuron[j].x+1.0/8*nearestNT.listNeuron[temp].x;
+								NewNT.listNeuron[k].y = 1.0/2 * nearestNT.listNeuron[j-1].y + 3.0/8*nearestNT.listNeuron[j].y+1.0/8*nearestNT.listNeuron[temp].y;
+								NewNT.listNeuron[k].z = 1.0/2 * nearestNT.listNeuron[j-1].z + 3.0/8*nearestNT.listNeuron[j].z+1.0/8*nearestNT.listNeuron[temp].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								j--;
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;							
+							}
+						}
+						break;
+					case 2://insert node before last
+						{
+							int temp = j;
+							if(j-1>0)
+							temp = j-2;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n&& k<=j)
+							{
+								
+								NewNT.listNeuron[k].x = 1.0/2 * nearestNT.listNeuron[j].x + 3.0/8*nearestNT.listNeuron[j-1].x+1.0/8*nearestNT.listNeuron[temp].x;
+								NewNT.listNeuron[k].y = 1.0/2 * nearestNT.listNeuron[j].y + 3.0/8*nearestNT.listNeuron[j-1].y+1.0/8*nearestNT.listNeuron[temp].y;
+								NewNT.listNeuron[k].z = 1.0/2 * nearestNT.listNeuron[j].z + 3.0/8*nearestNT.listNeuron[j-1].z+1.0/8*nearestNT.listNeuron[temp].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								j--;
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;						
+							}
+						}
+						break;
+					case 3://insert node in middle
+						{
+							int balancenode1 =j-1;
+							int balancenode2 =j-1;
+							int balancenode3 =j+1;
+							int balancenode4 =j+1;
+							if(j-1>0)
+								balancenode1 = j-2;
+							if(j+2<nearestNT.listNeuron.size())
+								balancenode4 = j+2;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n&& k<=j)
+							{
+								NewNT.listNeuron[k].x = 1.0/8 * nearestNT.listNeuron[balancenode1].x+ 3.0/8 * nearestNT.listNeuron[balancenode2].x + 3.0/8*nearestNT.listNeuron[j].x+1.0/8*nearestNT.listNeuron[balancenode3].x;
+								NewNT.listNeuron[k].y = 1.0/8*nearestNT.listNeuron[balancenode1].y+ 3.0/8 * nearestNT.listNeuron[balancenode2].y + 3.0/8*nearestNT.listNeuron[j].y+1.0/8*nearestNT.listNeuron[balancenode3].y;
+								NewNT.listNeuron[k].z = 1.0/8*nearestNT.listNeuron[balancenode1].z+ 3.0/8 * nearestNT.listNeuron[balancenode2].z + 3.0/8*nearestNT.listNeuron[j].z+1.0/8*nearestNT.listNeuron[balancenode3].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								k++;
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								k++;
+								NewNT.listNeuron[k].x =1.0/8*nearestNT.listNeuron[balancenode2].x+ 3.0/8 * nearestNT.listNeuron[j].x + 3.0/8*nearestNT.listNeuron[balancenode3].x+1.0/8*nearestNT.listNeuron[balancenode4].x;
+								NewNT.listNeuron[k].y = 1.0/8*nearestNT.listNeuron[balancenode2].y+ 3.0/8 * nearestNT.listNeuron[j].y + 3.0/8*nearestNT.listNeuron[balancenode3].y+1.0/8*nearestNT.listNeuron[balancenode4].y;
+								NewNT.listNeuron[k].z = 1.0/8*nearestNT.listNeuron[balancenode2].z+ 3.0/8 * nearestNT.listNeuron[j].z + 3.0/8*nearestNT.listNeuron[balancenode3].z+1.0/8*nearestNT.listNeuron[balancenode4].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;								
+							}
+
+						}
+						break;
+					default:
+						break;
+
+
+					}
+				}
+				qDebug()<<"insert node finished!";
+				//add the  new NT to NTList
+				NewNT.name = "sketch_"+QString("%1").arg(sketchNum++);
+				qDebug()<<NewNT.name;
+				sketchedNTList.push_back(NewNT);
+				int lIndex = sketchedNTList.size() - 1;
+				qDebug()<<"index = "<<lIndex;
+				SetupSingleMorphologyLine(lIndex,0);
+				break;
+			}
 		case m_splitMode:
 			{	
 
@@ -3227,7 +3459,7 @@ void CMainApplication::RenderFrame()
 		SetupControllerTexture();
 		SetupControllerRay();
 		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
-
+		//FlashStuff(m_flashtype,FlashCoords);
 		//for all (synchronized) sketched strokes
 		//SetupMorphologySurface(currentNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
@@ -4110,8 +4342,15 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.0,0.75f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.08,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.08,0.625f,vcVerts);
-
-
+			}
+		case m_insertnodeMode:
+			{//split line mode
+				AddVertex(point_M.x,point_M.y,point_M.z,0.25,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.335,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0.625f,vcVerts);
 			}
 		default:
 			break;
@@ -4635,7 +4874,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
-
+	
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3), (GLvoid*)0);
 		uintptr_t offset =  sizeof( glm::vec3 );
@@ -5606,7 +5845,7 @@ QString  CMainApplication::getHMDPOSstr()
 	}
 	mat=glm::inverse(m_globalMatrix) * mat;
 	//qDebug()<<" convertedHMD SEND POS  1 "<<mat[3][0]<<" "<<mat[3][1]<<" "<<mat[3][2];
-	XYZ convertPOS = ConvertCurrentNTCoords(mat[3][0],mat[3][1],mat[3][2]);
+	XYZ convertPOS = ConvertLocaltoGlobalCoords(mat[3][0],mat[3][1],mat[3][2]);
 	mat[3][0] = convertPOS.x;
 	mat[3][1] = convertPOS.y;
 	mat[3][2] = convertPOS.z;
@@ -5651,7 +5890,7 @@ QString CMainApplication::NT2QString()
 		char packetbuff[300];
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
-		XYZ tempconvertedxyz = ConvertCurrentNTCoords(S_temp.x,S_temp.y,S_temp.z);
+		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z);
 		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
 		messageBuff +=packetbuff;
 	}
@@ -5708,7 +5947,7 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 		{
 			S_temp.pn = qsl[i].toInt();
 			//converted received NT XYZ coords
-			XYZ tempxyz = ConvertRecevieNTCoords(S_temp.x,S_temp.y,S_temp.z);
+			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);
 			S_temp.x = tempxyz.x;
 			S_temp.y = tempxyz.y;
 			S_temp.z = tempxyz.z;
@@ -6150,7 +6389,7 @@ void CMainApplication::RefineSketchCurve(int direction, NeuronTree &oldNTree, Ne
 	
 	VectorResampling(outswc_final_vec, outswc_final_vec_resampled, 0.5f);
 	reverse(outswc_final_vec_resampled.begin(),outswc_final_vec_resampled.end());
-	VectorToNeuronTree(newNTree,outswc_final_vec_resampled,m_curMarkerColorType);
+    VectorToNeuronTree(newNTree,outswc_final_vec_resampled,m_curMarkerColorType);
 	//can change current neurontree's color by using 
 	//VectorToNeuronTree(newNTree,outswc_final_vec_resampled,type);
 	outswc_final_vec.clear();
@@ -6881,11 +7120,15 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		{
 			m_modeGrip_L = _RGBImage;
 		}
+		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
+		{
+			m_modeGrip_R = m_insertnodeMode;
+		}
 	}
 
 
 }
-XYZ CMainApplication::ConvertCurrentNTCoords(float x,float y,float z)//localtogolbal
+XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z)//localtogolbal
 {
 	x+= CmainVRVolumeStartPoint.x;
 	y+= CmainVRVolumeStartPoint.y;
@@ -6895,7 +7138,7 @@ XYZ CMainApplication::ConvertCurrentNTCoords(float x,float y,float z)//localtogo
 	z/=pow(2.0,CmainResIndex-1);
 	return XYZ(x,y,z);
 }
-XYZ CMainApplication::ConvertRecevieNTCoords(float x,float y,float z)
+XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 {
 	x*=pow(2.0,CmainResIndex-1);;
 	y*=pow(2.0,CmainResIndex-1);;
@@ -6906,3 +7149,55 @@ XYZ CMainApplication::ConvertRecevieNTCoords(float x,float y,float z)
 
 	return XYZ(x,y,z);
 }
+//bool CMainApplication::FlashStuff(FlashType type,XYZ coords)
+//{
+//	switch (type)
+//	{
+//	case noflash:
+//		break;
+//	case line:
+//		{
+//			m_FlashCount++;
+//			if(m_FlashCount>=300)
+//				{m_FlashCount == 0;m_flashtype = noflash;}
+//			qDebug()<<"get into case line";
+//			delName = "";
+//			NeuronTree nearestNT;
+//			delName = FindNearestSegment(glm::vec3(coords.x,coords.y,coords.z));
+//			if (delName == "") return false; //segment not found
+//			for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
+//			{
+//				QString NTname="";
+//				NTname = sketchedNTList.at(i).name;
+//				if(NTname==delName)
+//				{
+//					nearestNT=sketchedNTList.at(i);
+//					break;
+//				}
+//			}
+//			if((m_FlashCount%100)==0 && (m_FlashCount/100)%2 == 0)
+//			{
+//				for(int i = 0;i<nearestNT.listNeuron.size();i++)
+//				{
+//					nearestNT.color.c[0] = 0;
+//					nearestNT.color.c[1] = 0;
+//					nearestNT.color.c[2] = 0;
+//					qDebug()<<"case even";
+//				}
+//			}
+//			if((m_FlashCount%100)==0 && (m_FlashCount/100)%2 == 1)			
+//			{
+//				for(int i = 0;i<nearestNT.listNeuron.size();i++)
+//				{
+//					qDebug()<<"case odd";
+//					nearestNT.listNeuron[i].type = m_Flashoricolor;
+//				}
+//			}
+//				
+//		}
+//		break;
+//	default:
+//		break;
+//	}
+//	return true;
+//}

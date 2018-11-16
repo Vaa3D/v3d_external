@@ -826,7 +826,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                             change_type_in_seg_of_V_NeuronSWC_list(view3DWidget->getiDrawExternalParameter()->image4d->tracedNeuron, end_pt_existing.seg_id, new_type);
                             // TODO: recurse, any addional segments extending from this seg_id that have unknown type should be typed too
                         }
-                        curr_renderer->addCurveSWC(new_pts, 0);
+                        curr_renderer->addCurveSWC(new_pts, 0, 5);//LMG 26/10/2018 Mozak mode 5
                         curr_renderer->vecToNeuronTree(curr_renderer->testNeuronTree, new_pts);
                         curr_renderer->highlightedNodeType = prev_type;
 				        changeMode(Renderer::defaultSelectMode, true, true);

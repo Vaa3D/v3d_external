@@ -27,7 +27,6 @@ struct Agent {
 	bool isItSelf;
 	int colorType;
 	float position[16];
-
 };
 
 
@@ -39,6 +38,7 @@ enum ModelControlR
 	m_markMode,
     m_delmarkMode,
 	m_splitMode,
+	m_insertnodeMode
 };
 enum ModeControlSettings
 {
@@ -63,6 +63,11 @@ enum RGBImageChannel
 	channel_g,
 	channel_b,
 
+};
+enum FlashType
+{
+	noflash = 1,
+	line,
 };
 // int global_padm_modeGrip_L = _donothing;//liqi
 // int global_padm_modeGrip_R = m_drawMode;
@@ -107,13 +112,14 @@ public:
 
 	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
     QString NT2QString(); // prepare the message to be sent from currentNT.
-	XYZ ConvertCurrentNTCoords(float x,float y,float z);
-	XYZ ConvertRecevieNTCoords(float x,float y,float z);
+	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z);
+	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
+	//bool FlashStuff(FlashType type,XYZ coords);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
 	bool HandleOneIteration();//used in collaboration mode 
 	QString getHMDPOSstr();//get current HMD position, and prepare the message to be sent to server
 	void SetupCurrentUserInformation(string name, int typeNumber);
-	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users
+	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
 	bool DeleteSegment(QString segName);
@@ -199,6 +205,7 @@ public:
 	XYZ teraflyPOS;
 	XYZ CmainVRVolumeStartPoint;
 	int CmainResIndex;
+	XYZ CollaborationCreatorPos;
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -265,6 +272,11 @@ private: // OpenGL bookkeeping
 	static int m_modeControlGrip_L;
 	static ModeControlSettings m_modeGrip_L;
 	static RGBImageChannel m_rgbChannel;
+	/*FlashType m_flashtype;
+	XYZ FlashCoords;
+	long m_FlashCount;
+	int m_Flashcolor;
+	int m_Flashoricolor;*/
 	bool singlechannel;
 	bool m_translationMode;
 	bool m_rotateMode;
@@ -478,6 +490,7 @@ private:
 	glm::vec3 shootingraycutPos;
 	glm::vec2 calculateshootingPadUV();
 	bool showshootingray;
+	QString collaboration_creator_name;
 };
 
 

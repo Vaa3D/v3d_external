@@ -8,8 +8,8 @@ This folder contains all source codes for the V3D project, which is subject to t
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
 2. You agree to appropriately cite this work in your related studies and publications.
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,鈥� Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model, Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 4. Neither the name of the Howard Hughes Medical Institute, Janelia Farm Research Campus, nor Hanchuan Peng, may be used to endorse or promote products derived from this software without specific prior written permission.
 *************/
@@ -95,7 +95,7 @@ double total_etime; //added by PHC, 20120412, as a convenient way to know the to
 //}
 int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
-
+	
 	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
@@ -141,8 +141,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			LIST_SELECTED(listNeuronTree, names[2]-1, true);
 			if (listNeuronTree.at(names[2]-1).editable) qsName += " (editing)";
 			NeuronTree *p_tree = (NeuronTree *)&(listNeuronTree.at(names[2]-1));
-            double best_dist;
+            //this->teraflyTreePtr = p_tree;
+			double best_dist;
+			//V3DLONG index = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 			qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist), p_tree);
+			//cout << p_tree->listNeuron.at(index).x << " " << p_tree->listNeuron.at(index).y << " " << p_tree->listNeuron.at(index).z << endl;
 		}break;
 		case stPointCloud: {//apo
 			(qsName = QString("point cloud #%1 ... ").arg(names[2]) + listCell.at(names[2]-1).name);
@@ -220,8 +223,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actZoomin_currentviewport=0, //PHC, 130701
 
 			*actNeuronConnect = 0, *actPointCloudConnect = 0, *actMarkerConnect = 0, *actNeuronCut = 0, // MK, 2017 April
-			*simpleConnect = 0, *simpleConnect_loopSafe = 0 // MK, 2018, April
-            ;
+			*simpleConnect = 0, *simpleConnect_loopSafe = 0, // MK, 2018, April
+			*actMarkerAltRotationCenter=0 //RZC, 20180703
+			;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
 	if (qsName.size()>0)
@@ -563,6 +567,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #endif
 
                 listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
+                listAct.append(actMarkerAltRotationCenter = new QAction("alternate rotation center at this marker location (holding ALT key)", w));
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
@@ -1377,7 +1382,43 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 
 #define __actions_of_marker__ // dummy, just for easy locating
-	else if (act == actMarkerDelete)
+    else if (act == actMarkerAltRotationCenter)
+    {
+    	if (w && curImg)
+    	{
+    		int tmpind = names[2]-1;
+    		if (tmpind>=0 && tmpind<listMarker.size())
+    		{
+    			const ImageMarker & m = listMarker.at(tmpind);
+    			XYZ p = XYZ(m);
+    			p.x = p.x*thicknessX -start1;
+    			p.y = p.y*thicknessY -start2;
+    			p.z = p.z*thicknessZ -start3;
+
+    			BoundingBox & BB = boundingBox;
+    			float DX = BB.Dx();
+    			float DY = BB.Dy();
+    			float DZ = BB.Dz();
+    			float maxD = BB.Dmax();
+    			double s[3];
+    			s[0] = 1/maxD *2;
+    			s[1] = 1/maxD *2;
+    			s[2] = 1/maxD *2;
+    			double t[3];
+    			t[0] = -BB.x0 -DX /2;
+    			t[1] = -BB.y0 -DY /2;
+    			t[2] = -BB.z0 -DZ /2;
+
+    			p.x = s[0]*(p.x +t[0]);
+    			p.y = s[1]*(p.y +t[1]);
+    			p.z = s[2]*(p.z +t[2]);
+    			qDebug("normalized alt rotation center: (%f %f %f)", p.x, p.y, p.z);
+
+    			w->setAltCenter(p.x, p.y, p.z);
+    		}
+    	}
+    }
+    else if (act == actMarkerDelete)
 	{
 		if (w && curImg)
 		{
@@ -3550,7 +3591,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 #ifndef test_main_cpp //140211
     if (b_addthiscurve)
 	{
-		addCurveSWC(loc_vec, chno);
+        addCurveSWC(loc_vec, chno, 8); //LMG 26/10/2018 solveCurveCenter mode 8
 		// used to convert loc_vec to NeuronTree and save SWC in testing
 		vecToNeuronTree(testNeuronTree, loc_vec);
 		//added by PHC, 120506
@@ -3845,7 +3886,7 @@ void Renderer_gl1::solveCurveViews()
 #ifndef test_main_cpp
     smooth_curve(loc_vec, 5);
 #endif
-    addCurveSWC(loc_vec, -1); //turn off post deform
+    addCurveSWC(loc_vec, -1, 9); //turn off post deform //LMG 26/10/2018 solveCurveViews mode 9
 }
 void Renderer_gl1::solveCurveFromMarkers()
 {
@@ -3903,7 +3944,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
 	////////////////////////////////////////////////////////////////////////
 	XYZ loc0, loc1;
 	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-	// qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+	//qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 	XYZ loc;
 	if (chno>=0 && chno<dim4)
 	{

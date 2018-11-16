@@ -104,6 +104,22 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
                 return false;
             }
         }
+        else if (p.OPS == "checked_to_mark") //OY, 26102018
+        {
+            if (pluginsDir.cd("plugins/neuron_tracing/checked_mark")==false)
+            {
+                v3d_msg("Cannot find ./plugins/neuron_tracing/checked_mark!",0);
+                return false;
+            }
+        }
+        else if (p.OPS == "checked_return") //OY, 26102018
+        {
+            if (pluginsDir.cd("plugins/neuron_tracing/checked_mark")==false)
+            {
+                v3d_msg("Cannot find ./plugins/neuron_tracing/checked_mark!",0);
+                return false;
+            }
+        }
         else if (p.OPS == "Fetch Highrez Image Data from File")
         {
             // @FIXED by Alessandro on 2015-09-30.
