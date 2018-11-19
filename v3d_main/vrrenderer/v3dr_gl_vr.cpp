@@ -1485,6 +1485,7 @@ bool CMainApplication::HandleInput()
 						SL0.r = default_radius; //set default radius 1
 						SL0.type = m_curMarkerColorType;//set default type 11:ice
 						SL0.n = currentNT.listNeuron.size()+1;
+						SL0.creatmode = 618;
 						if((swccount==1)||(vertexcount == 0))
 						{
 							SL0.pn = -1;//for the first point of each lines , it's parent must be -1	
@@ -1988,10 +1989,9 @@ void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
 		//agentsPos  means user's position in world, posss[3] will always be 1.
 		//later may need orientation information
-			qDebug()<<collaboration_creator_name<<"converted pos";
 		if(curAgents[i].name == collaboration_creator_name)
 		{
-			qDebug()<<collaboration_creator_name<<"converted pos";
+			//qDebug()<<collaboration_creator_name<<"converted pos";
 			CollaborationCreatorPos = convertPOS;
 		}
 		Agents_spheresPos.push_back(agentsPos);
@@ -2371,26 +2371,25 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _ResetImage:
 			{
-				/*if(isOnline == false)
+				if(isOnline == false)
 				{
 					m_globalMatrix = glm::mat4();
 					SetupGlobalMatrix();
-				}*/
-				//  used to test collaboration move to creator/////////////////////////////////////
-				//if(isOnline == true)
-				//{
-				//	qDebug()<<"didn't get creator pos";
-				//	if(CollaborationCreatorPos.x!=0&&CollaborationCreatorPos.y!=0&&CollaborationCreatorPos.z!=0)
-				//	{
-				//	qDebug()<<"get creator pos";						
-				//		teraflyPOS = XYZ(CollaborationCreatorPos.x,CollaborationCreatorPos.y,CollaborationCreatorPos.z);//liqi
-				//		postVRFunctionCallMode = 9;
-				//	}
-
-				//}
-
-				
+				}
 				break;
+			}
+		case _MovetoCreator:
+			{
+				if(isOnline == true)
+				{
+					qDebug()<<"didn't get creator pos";
+					if(CollaborationCreatorPos.x!=0&&CollaborationCreatorPos.y!=0&&CollaborationCreatorPos.z!=0)
+					{
+					qDebug()<<"get creator pos";						
+						teraflyPOS = XYZ(CollaborationCreatorPos.x,CollaborationCreatorPos.y,CollaborationCreatorPos.z);//liqi
+						postVRFunctionCallMode = 9;
+					}
+				}
 			}
 		case _RGBImage: //line width
 			{
@@ -2676,6 +2675,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						for(int i=0;i<currentNT.listNeuron.size();i++)
 						{
 							currentNT.listNeuron[i].r = 0.666;
+							currentNT.listNeuron[i].creatmode = 666;
 						}
 					}
 				}
@@ -3914,6 +3914,7 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _ColorChange:// display "ok"
 		case _ResetImage://display"ok
+		case _MovetoCreator:
 		case _TeraShift:
 			{//_TeraShift
 				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.5f,vcVerts);
@@ -4131,6 +4132,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.085,0.75f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.17,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.17,0.625f,vcVerts);
+				break;
 			}
 		case _RGBImage:
 			{
@@ -4140,6 +4142,16 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.17,0.75f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.25,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.625f,vcVerts);
+				break;
+			}
+		case _MovetoCreator:
+			{
+				AddVertex(point_M.x,point_M.y,point_M.z,0.335,0.635f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.42,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
 			}
 		case _UndoRedo:
 		default:
@@ -4352,6 +4364,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_P.x,point_P.y,point_P.z,0.335,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0.625f,vcVerts);
 			}
+
 		default:
 			break;
 		}
@@ -4874,7 +4887,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
-	
+	 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3), (GLvoid*)0);
 		uintptr_t offset =  sizeof( glm::vec3 );
@@ -7124,6 +7137,10 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		{
 			m_modeGrip_R = m_insertnodeMode;
 		}
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
+		{
+			m_modeGrip_L = _MovetoCreator;
+		}
 	}
 
 
@@ -7180,7 +7197,7 @@ XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 //				for(int i = 0;i<nearestNT.listNeuron.size();i++)
 //				{
 //					nearestNT.color.c[0] = 0;
-//					nearestNT.color.c[1] = 0;
+//		nearestNT.color.c[1] = 0;
 //					nearestNT.color.c[2] = 0;
 //					qDebug()<<"case even";
 //				}
