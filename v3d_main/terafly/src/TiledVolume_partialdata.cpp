@@ -40,6 +40,7 @@
 */
 
 #include <iostream>
+#include <QString>
 #include <string>
 #include "TiledVolume.h"
 #include "imBlock.h"
@@ -1072,7 +1073,7 @@ iim::uint8* TiledVolume::loadSubvolume_to_UINT8(int V0,int V1, int H0, int H1, i
 
 							try
 					        {
-                                long sizesubvol = sbv_height * sbv_width * sbv_depth * sbv_channels * sbv_bytes_chan;
+                                iim:uint64 sizesubvol = sbv_height * sbv_width * sbv_depth * sbv_channels * sbv_bytes_chan;
                                 subvol = new iim::uint8[sizesubvol];
                                 memset(subvol, 0, sizesubvol); // init by zeros, YY 10/23/2018
 					            //if ( !subvol )
@@ -1134,7 +1135,11 @@ iim::uint8* TiledVolume::loadSubvolume_to_UINT8(int V0,int V1, int H0, int H1, i
 						//int bD1 = (D1<(int)(BLOCKS[row][col]->getBLOCK_ABS_D()[k]+BLOCKS[row][col]->getBLOCK_SIZE()[k])) ? (int)sbv_depth : (BLOCKS[row][col]->getBLOCK_ABS_D()[k]+BLOCKS[row][col]->getBLOCK_SIZE()[k] - D0); // unused
 
                         // support partial data, YY 10/23/2018
-                        if(string(slice_fullpath).find("NULL.tif") != string::npos)
+						QString skipBlock = "NULL.tif";
+						QString slicePath = QString::fromAscii(slice_fullpath);
+
+                        //if(string(slice_fullpath).find("NULL.tif") != string::npos)
+						if(slicePath.indexOf(skipBlock)!=-1)
                         {
                             continue;
                         }
