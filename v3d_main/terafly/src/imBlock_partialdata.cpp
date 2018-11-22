@@ -249,18 +249,13 @@ void Block::unBinarizeFrom(FILE* file) throw (IOException)
             throw IOException(strprintf("in Block[%d]::unBinarizeFrom(...): error while reading binary metadata file (str_size)", i).c_str());
         }
 
-        // fix string read's bug by YY 10/23/2018
 		FILENAMES[i] = new char[str_size];
-        string fileName = string(str_size, '\0');
-        // fread_return_val = fread(FILENAMES[i], str_size, 1, file);
-        fread_return_val = fread(&(fileName[0]), sizeof(char), str_size, file);
-        strcpy(FILENAMES[i], fileName.c_str());
-
-//		if(fread_return_val != 1)
-//        {
-//            fclose(file);
-//            throw IOException(strprintf("in Block[%d]::unBinarizeFrom(...): error while reading binary metadata file (FILENAMES)", i).c_str());
-//        }
+        fread_return_val = fread(FILENAMES[i], str_size, 1, file);
+		if(fread_return_val != 1)
+        {
+            fclose(file);
+            throw IOException(strprintf("in block[%d]::unbinarizefrom(...): error while reading binary metadata file (filenames)", i).c_str());
+        }
 	
 		fread_return_val = fread(BLOCK_SIZE+i, sizeof(uint32), 1, file);
 		if(fread_return_val != 1)

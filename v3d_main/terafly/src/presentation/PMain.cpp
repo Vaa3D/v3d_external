@@ -1938,11 +1938,12 @@ void PMain::saveAnnotationsAs()
             //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
+            QDateTime mytime = QDateTime::currentDateTime();
 
 
             if(!path.isEmpty())
             {
-                annotationsPathLRU = path.toStdString();
+                annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
                 if(annotationsPathLRU.find(".ano") == string::npos)
                     annotationsPathLRU.append(".ano");
 
