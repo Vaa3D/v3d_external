@@ -1933,7 +1933,19 @@ void PMain::saveAnnotationsAs()
 
             #else
             //tf::setWidgetOnTop(cur_win->window3D, false);
-            QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+            QString annotationsBasename = fileFullName;
+            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+            {
+//                cout<<"move into those"<<endl;
+                QStringList fileNameSplit=fileFullName.split("_stamp_");
+                if(!fileNameSplit.size())
+                    return;
+                annotationsBasename = fileNameSplit[0];
+            }
+
+            //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
+            //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
             QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
             //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
@@ -1944,7 +1956,15 @@ void PMain::saveAnnotationsAs()
             if(!path.isEmpty())
             {
                 //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+QFileInfo(path).baseName().toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+                string filebasename=QFileInfo(path).baseName().toStdString();
+                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+                {
+                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+                    if(!fileNameSplit.size())
+                        return;
+                    filebasename = fileNameSplit[0].toStdString();
+                }
+                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
                 if(annotationsPathLRU.find(".ano") == string::npos)
                     annotationsPathLRU.append(".ano");
 
