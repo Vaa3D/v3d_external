@@ -54,7 +54,8 @@ enum ModeControlSettings
 	_LineWidth,
 	_AutoRotate,
 	_ResetImage,
-	_RGBImage
+	_RGBImage,
+	_MovetoCreator
 };
 enum RGBImageChannel
 {

@@ -522,9 +522,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		CreatorPos->z = pMainApplication->CollaborationCreatorPos.z;
 		qDebug()<<"call that function is"<<_call_that_function;
 		socket->disconnectFromHost();
-		qDebug()<<"didn't clear agent";
 		Agents.clear();
-		qDebug()<<"clear agent success";
 		delete pMainApplication;
 		pMainApplication=0;
 		return _call_that_function;
