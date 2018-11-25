@@ -1527,15 +1527,15 @@ bool CMainApplication::HandleInput()
 								NeuronTree InputNT;
 								InputNT = tempNT;
 								int iter_number=1;
-								for(int i=0;i<iter_number;i++)
-								{
-									NeuronTree OutputNT;
-									RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
-									//convergent = CompareDist(InputNT, OutputNT);
-									InputNT.listNeuron.clear();
-									InputNT.hashNeuron.clear();
-									InputNT = OutputNT;
-								}
+								//for(int i=0;i<iter_number;i++)  // liqi  Find matching line segments more than once, resulting in inaccurate results
+								//{
+								//	NeuronTree OutputNT;
+								//	RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
+								//	//convergent = CompareDist(InputNT, OutputNT);
+								//	InputNT.listNeuron.clear();
+								//	InputNT.hashNeuron.clear();
+								//	InputNT = OutputNT;
+								//}
 								currentNT.listNeuron.clear();
 								currentNT.hashNeuron.clear();
 								currentNT = InputNT;
@@ -2654,7 +2654,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						// improve curve shape
 						NeuronTree InputNT;
 						InputNT = tempNT;
-						int iter_number=3;
+						int iter_number=1;
 						bool convergent = false;//todo:future may add this convergent func
 						for(int i=0;(convergent==false)&&(i<iter_number);i++)
 						{
