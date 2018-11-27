@@ -83,6 +83,11 @@ class terafly::CSettings
         int vpRefillStopCondition;
         bool vpCacheHighestRes;
         bool vpFreezeHighestRes;
+        double voxelsizeX, voxelsizeY, voxelsizeZ;
+        int bitsRemap;
+        int bitsConversion;
+        int zoomOutMethod;
+        std::string recentlyUsedPath;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -121,6 +126,9 @@ class terafly::CSettings
         int getTraslY(){return traslY;}
         int getTraslZ(){return traslZ;}
         int getTraslT(){return traslT;}
+        double getVoxelSizeX(){return voxelsizeX;}
+        double getVoxelSizeY(){return voxelsizeY;}
+        double getVoxelSizeZ(){return voxelsizeZ;}
         bool getAnnotationSpaceUnlimited(){return annotationSpaceUnlimited;}
         int getAnnotationCurvesDims(){return annotationCurvesDims;}
         bool getAnnotationCurvesAspectTube(){return annotationCurvesAspectTube;}
@@ -142,8 +150,10 @@ class terafly::CSettings
         int getVpRefillStopCondition(){return vpRefillStopCondition;}
         bool getVpCacheHighestRes(){return vpCacheHighestRes;}
         bool getVpFreezeHighestRes(){return vpFreezeHighestRes;}
-
-
+        int getBitsRemap(){return bitsRemap;}
+        int getBitsConversion(){return bitsConversion;}
+        int getZoomOutMethod(){return zoomOutMethod;}
+        std::string getRecentlyUsedPath() {return recentlyUsedPath;}
 
         void setVolumePathLRU(std::string _volumePathLRU)
         {
@@ -170,6 +180,9 @@ class terafly::CSettings
         void setVOIdimH(int _VOIdimH){VOIdimH = _VOIdimH; writeSettings();}
         void setVOIdimD(int _VOIdimD){VOIdimD = _VOIdimD; writeSettings();}
         void setVOIdimT(int _VOIdimT){VOIdimT = _VOIdimT; writeSettings();}
+        void setVoxelSizeX(double x){voxelsizeX = x; writeSettings();}
+        void setVoxelSizeY(double y){voxelsizeY = y; writeSettings();}
+        void setVoxelSizeZ(double z){voxelsizeZ = z; writeSettings();}
         void setTraslX(int _traslX){traslX = _traslX; writeSettings();}
         void setTraslY(int _traslY){traslY = _traslY; writeSettings();}
         void setTraslZ(int _traslZ){traslZ = _traslZ; writeSettings();}
@@ -195,7 +208,10 @@ class terafly::CSettings
         void setVpRefillStopCondition(int newval){vpRefillStopCondition = newval; writeSettings();}
         void setVpCacheHighestRes(bool newval){vpCacheHighestRes = newval; writeSettings();}
         void setVpFreezeHighestRes(bool newval){vpFreezeHighestRes = newval; writeSettings();}
-
+        void setBitsRemap(int newval){bitsRemap = newval; writeSettings();}
+        void setBitsConversion(int newval){bitsConversion = newval; writeSettings();}
+        void setZoomOutMethod(int method){zoomOutMethod = method; writeSettings();}
+        void setRecentlyUsedPath(std::string path){recentlyUsedPath = path; writeSettings();}
 
 
         //GET and SET methods for TeraConverter

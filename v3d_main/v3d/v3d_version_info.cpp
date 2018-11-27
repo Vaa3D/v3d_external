@@ -56,8 +56,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 namespace v3d {
     // Set current version here.
 
-
-    VersionInfo thisVersionOfV3D("3.551");
+    VersionInfo thisVersionOfV3D("3.584");
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -513,7 +512,7 @@ void V3DVersionChecker::createVersionXml(QString xmlFileName)
     populateLocalUpdateItems();
 
     QFile xmlFile(xmlFileName);
-    if (xmlFile.open(QIODevice::WriteOnly)) 
+    if (xmlFile.open(QIODevice::WriteOnly))
     {
         QTextStream xmlOut(&xmlFile);
         xmlOut << "<?xml version=\"1.0\"?>\n<v3d_version>\n";
@@ -698,7 +697,7 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
     if (b_showAllMessages) {
         if (checkingDialog) checkingDialog->close();
     }
-    
+
     processVersionXmlFile(versionDoc);
 }
 
@@ -1177,7 +1176,7 @@ UpdatesListDialog::UpdatesListDialog(QWidget* guiParent, V3DVersionChecker *chec
     checker->populateQTableWidget(*tableWidget);
 }
 
-UpdateOptionsDialog::UpdateOptionsDialog(QWidget* guiParent) 
+UpdateOptionsDialog::UpdateOptionsDialog(QWidget* guiParent)
     : QDialog(guiParent)
 {
     setupUi(this);

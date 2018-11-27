@@ -24,6 +24,8 @@ struct terafly::annotation
     int vaa3d_n;                    //Vaa3D's swc/apo index
     bool smart_delete;              // = true by default, enables "smart" deletion (see decontructor code)
     long level;
+    int creatmode;                  //for timestamping and quality control LMG 8/10/2018
+    double timestamp;               //for timestamping and quality control LMG 8/10/2018
     // constructor and deconstructor
     annotation() throw (tf::RuntimeException);
     annotation(const CellAPO & c)

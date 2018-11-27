@@ -68,6 +68,7 @@ void CSettings::loadDefaultSettings()
     //TeraFly settings
     volumePathLRU = "";
     annotationPathLRU = "";
+    recentlyUsedPath = "";
     VOIdimV = VOIdimH = 256;
     VOIdimD = 256;
     VOIdimT = 1;
@@ -94,6 +95,8 @@ void CSettings::loadDefaultSettings()
     vpRefillStopCondition = 0;
     vpCacheHighestRes = false;
     vpFreezeHighestRes = false;
+    bitsRemap = 0;
+    bitsConversion = 1;
 
     //TeraConverter settings
     volumeConverterInputPathLRU = "";
@@ -104,6 +107,12 @@ void CSettings::loadDefaultSettings()
     volumeConverterStacksHeightLRU = 256;
     volumeConverterStacksDepthLRU = 256;
     volumeConverterTimeSeries = false;
+
+    voxelsizeX = 0.2;
+    voxelsizeY = 0.2;
+    voxelsizeZ = 1.0;
+
+    zoomOutMethod = 0;
 }
 
 void CSettings::writeSettings()
@@ -157,7 +166,12 @@ void CSettings::writeSettings()
     settings.setValue("vpRefillStopCondition", vpRefillStopCondition);
     settings.setValue("vpCacheHighestRes", vpCacheHighestRes);
     settings.setValue("vpFreezeHighestRes", vpFreezeHighestRes);
-
+    settings.setValue("voxelsizeX", voxelsizeX);
+    settings.setValue("voxelsizeY", voxelsizeY);
+    settings.setValue("voxelsizeZ", voxelsizeZ);
+    settings.setValue("bitsRemap", bitsRemap);
+    settings.setValue("bitsConversion", bitsConversion);
+    settings.setValue("zoomOutMethod", zoomOutMethod);
 
     settings.setValue("volumeConverterInputPathLRU", QString(volumeConverterInputPathLRU.c_str()));
     settings.setValue("volumeConverterOutputPathLRU", QString(volumeConverterOutputPathLRU.c_str()));
@@ -168,7 +182,7 @@ void CSettings::writeSettings()
     settings.setValue("volumeConverterStacksDepthLRU", volumeConverterStacksDepthLRU);
     settings.setValue("volumeConverterTimeSeries", volumeConverterTimeSeries);
 
-
+    settings.setValue("recentlyUsedPath", QString(recentlyUsedPath.c_str()));
 
     settings.setValue("verbosity", tf::DEBUG);
 }
@@ -244,10 +258,20 @@ void CSettings::readSettings()
         vpCacheHighestRes = settings.value("vpCacheHighestRes").toBool();
     if(settings.contains("vpFreezeHighestRes"))
         vpFreezeHighestRes = settings.value("vpFreezeHighestRes").toBool();
-
-
-
-
+    if(settings.contains("bitsRemap"))
+        bitsRemap = settings.value("bitsRemap").toInt();
+    if(settings.contains("bitsConversion"))
+        bitsConversion = settings.value("bitsConversion").toInt();
+    if(settings.contains("voxelsizeX"))
+        voxelsizeX = settings.value("voxelsizeX").toFloat();
+    if(settings.contains("voxelsizeY"))
+        voxelsizeY = settings.value("voxelsizeY").toFloat();
+    if(settings.contains("voxelsizeZ"))
+        voxelsizeZ = settings.value("voxelsizeZ").toFloat();
+    if(settings.contains("zoomOutMethod"))
+        zoomOutMethod = settings.value("zoomOutMethod").toInt();
+    if(settings.contains("recentlyUsedPath"))
+        recentlyUsedPath = settings.value("recentlyUsedPath").toString().toStdString();
 
     int size = settings.beginReadArray("recentImages");
     recentImages.clear();

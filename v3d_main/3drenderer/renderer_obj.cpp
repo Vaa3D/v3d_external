@@ -1646,7 +1646,7 @@ void Renderer_gl1::updateNeuronBoundingBox()
 
 
 #define __add_curve_SWC_with_default_type___
-void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
+void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode)
 {
 #define CURVE_NAME "curve_segment"
 #define CURVE_FILE "curve_segment"
@@ -1661,28 +1661,35 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
         {
             v3d_msg("NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);");
 
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
+
             NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
             NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
-                                                                                          oldtree, 3);
+                                                                                          oldtree, 3, creatmode); //LMG 26/10/2018 Creation mode 0 by default, set in every usage of addCurveSwc
             listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
             curImg->update_3drenderer_neuron_view(w, this);
         }
         //// Mozak
         else if (ui3dviewMode == Mozak)
         {
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
             if (highlightedNodeType >= 0)
-                curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType);
+                curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType, 1, creatmode);
             else
-                curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType);
+                curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType, 1, creatmode);
             curImg->update_3drenderer_neuron_view(w, this);
         }
         //// Vaa3d || Terafly
         else
         {
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
             if(selectMode == smCurveCreate_MarkerCreate1_fm)
-                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd);
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd,creatmode);
             else
-                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
@@ -1744,12 +1751,13 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 	QList <NeuronSWC> listNeuron;
 	QHash <int, int>  hashNeuron;
-	listNeuron.clear();
+
+    listNeuron.clear();
 	hashNeuron.clear();
-	try {
+    try {
 		int count = 0;
-		qDebug("-------------------------------------------------------");
-		for (int k=0;k<seg.row.size();k++)
+        qDebug("-------------------------------------------------------");
+        for (int k=0;k<seg.row.size();k++)
 		{
 			count++;
 			NeuronSWC S;
@@ -1765,6 +1773,9 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
 
             S.level = seg.row.at(k).level;
+            S.creatmode = seg.row.at(k).creatmode;
+            S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
+
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			//if (! listNeuron.contains(S)) // 081024
 			{

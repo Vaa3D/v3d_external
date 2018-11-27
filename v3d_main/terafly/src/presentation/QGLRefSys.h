@@ -44,6 +44,7 @@ class terafly::QGLRefSys : public QGLWidget
         //for miniMap zoom (double click)
         double zoomNear;            //init zoom near
         double zoomFar;             //init zoom far
+        double vx, vy, vz;          // voxelsize
 
 
     public:
@@ -58,18 +59,21 @@ class terafly::QGLRefSys : public QGLWidget
         int getZRot(){return zRot;}
         void setDims(int dimX, int dimY, int dimZ, int _ROIxDim=0, int _ROIyDim=0, int _ROIzDim=0, int _ROIxShift=0, int _ROIyShift=0, int _ROIzShift=0);
         void setRender(Renderer_gl1* _gl1){renderer=_gl1;}
-        void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); markList.clear();updateGL();}
+        void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); /*markList.clear();*/updateGL();}
         void setZoom(double _zoom){zoom = _zoom;}
         void resetZoom(){zoom = -15.0; updateGL();}
+        void setVoxelSize(double x, double y, double z){vx = x; vy = y; vz = z;}
         Renderer_gl1 *renderer;
         NeuronTree nt,nt_init;
-        LandmarkList markList;
+        //LandmarkList markList;
         int dimXCenter;
         int dimYCenter;
         int dimZCenter;
         int curRes;
         int num_res;
         double zoomInit;
+        double lenVoxel, lenMicron;
+        int numSegments;
 
     public slots:
 
@@ -86,6 +90,8 @@ class terafly::QGLRefSys : public QGLWidget
         void zRotationChanged(int angle);
 
         void mouseReleased();
+        void neuronInfoChanged(QString str);
+        void reset();
 
     protected:
 
@@ -99,6 +105,7 @@ class terafly::QGLRefSys : public QGLWidget
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void wheelEvent(QWheelEvent *event);
+        void enterEvent(QEvent *event);
         //XYZ get3Dpoint(int x,int y);
 
 

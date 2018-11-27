@@ -203,6 +203,8 @@ public:
     virtual QString getWindowDataTitle(V3dR_MainWindow *w);
     virtual void moveWindow(V3dR_MainWindow *w, int x, int y);
     virtual void resizeWindow(V3dR_MainWindow *w, int x, int y);
+    virtual void setHideDisplayControlButton(V3dR_MainWindow *w);
+    //virtual void setResizeEvent(V3dR_MainWindow *w, int x, int y);
 
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false);

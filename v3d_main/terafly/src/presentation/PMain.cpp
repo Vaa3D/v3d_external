@@ -55,6 +55,7 @@
 #include "iomanager.config.h"
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
+# include <algorithm>
 
 using namespace terafly;
 using namespace iim;
@@ -159,6 +160,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tinyFont.setPointSize(9);
     #endif
 
+
     //initializing menu
     /**/tf::debug(tf::LEV3, "initializing menu", __itm__current__function__);
     menuBar = new QMenuBar(0);
@@ -170,6 +172,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     openUnconvertedVolumeFileAction = new QAction(QIcon(":/icons/open_image_file.png"), "Browse For File", this);
     openUnconvertedVolumeFolderAction = new QAction(QIcon(":/icons/open_image_folder.png"), "Browse For Folder", this);
     closeVolumeAction = new QAction(QIcon(":/icons/close.png"), "Close image", this);
+    saveandchangetype=new QAction(QIcon(":/icons/changetype.png"),"Change curren types",this);
+    returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
     loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
     saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
     saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
@@ -179,6 +183,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     openHDF5VolumeAction->setShortcut(QKeySequence("Ctrl+H"));
     closeVolumeAction->setShortcut(QKeySequence("Ctrl+C"));
     loadAnnotationsAction->setShortcut(QKeySequence("Ctrl+L"));
+    saveandchangetype->setShortcut(QKeySequence("Ctrl+W"));
+    returntochangedtype->setShortcut(QKeySequence("Ctrl+K"));
     saveAnnotationsAction->setShortcut(QKeySequence("Ctrl+S"));
     saveAnnotationsAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     clearAnnotationsAction->setShortcut(QKeySequence("Ctrl+Shift+C"));
@@ -191,6 +197,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(closeVolumeAction, SIGNAL(triggered()), this, SLOT(closeVolume()));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
     connect(loadAnnotationsAction, SIGNAL(triggered()), this, SLOT(loadAnnotations()));
+    connect(saveandchangetype, SIGNAL(triggered()), this, SLOT(changecurrentblocktype()));//fuction is needed to be added
+    connect(returntochangedtype, SIGNAL(triggered()), this, SLOT(return_to_the_changedtype()));//fuction is needed to be added
     connect(saveAnnotationsAction, SIGNAL(triggered()), this, SLOT(saveAnnotations()));
     connect(saveAnnotationsAsAction, SIGNAL(triggered()), this, SLOT(saveAnnotationsAs()));
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
@@ -206,6 +214,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(closeVolumeAction);
     fileMenu->addSeparator();
     fileMenu->addAction(loadAnnotationsAction);
+    fileMenu->addAction(saveandchangetype);
+    fileMenu->addAction(returntochangedtype);
     fileMenu->addAction(saveAnnotationsAction);
     fileMenu->addAction(saveAnnotationsAsAction);
     fileMenu->addAction(clearAnnotationsAction);
@@ -352,8 +362,31 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fdDirectAction->setChecked(!fdPreviewAction->isChecked());
     connect(fdPreviewAction, SIGNAL(changed()), this, SLOT(fetchAndDisplayChanged()));
     /**/
+    /* ------------------------- "Options" menu: Conversions ---------------------- */
+    conversionsMenu = optionsMenu->addMenu("Conversions");
+    /* ------------------------- "Options->Conversions" menu: "from 8 bits data" -- */
+    from8bitsdataMenu = conversionsMenu->addMenu("from 8 bits data");
+    from8bitsdataActionWidget = new QWidgetAction(from8bitsdataMenu);
+    from8bitsdataCBox = new QComboBox();
+    for (int i=0; i<iim::N_REMAP_ALGORITHMS; i++)
+        from8bitsdataCBox->addItem(iim::remap_algorithms_strings[i]);
+    from8bitsdataCBox->setCurrentIndex(CSettings::instance()->getBitsRemap());
+    from8bitsdataActionWidget->setDefaultWidget(from8bitsdataCBox);
+    from8bitsdataMenu->addAction(from8bitsdataActionWidget);
+    connect(from8bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from8bitsdataChanged(int)));
+    /* ------------------------- "Options->Conversions" menu: "from 16 bits data" - */
+    from16bitsdataMenu = conversionsMenu->addMenu("from 16 bits data");
+    from16bitsdataActionWidget = new QWidgetAction(from16bitsdataMenu);
+    from16bitsdataCBox = new QComboBox();
+    for (int i=0; i<iim::N_CONVERSION_ALGORITHMS; i++)
+        from16bitsdataCBox->addItem(std::string(iim::conversion_algorithms_strings[i]).c_str());
+    from16bitsdataCBox->setCurrentIndex(CSettings::instance()->getBitsConversion());
+    from16bitsdataActionWidget->setDefaultWidget(from16bitsdataCBox);
+    from16bitsdataMenu->addAction(from16bitsdataActionWidget);
+    connect(from16bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from16bitsdataChanged(int)));
 
-
+    //
+    recentlyUsedPath = QString(CSettings::instance()->getRecentlyUsedPath().c_str());
 
     // "Utility" Menu
     utilityMenu = menuBar->addMenu("Utilities");
@@ -574,6 +607,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomInMethod->addItem("Mean-shift of mean-shift (MSMS)");
     zoomInMethod->installEventFilter(this);
     zoomInMethod->setCurrentIndex(1);
+    zoomOutMethod = new QComboBox();
+    zoomOutMethod->addItem("By Default");
+    zoomOutMethod->addItem("In Situ");
+    zoomOutMethod->installEventFilter(this);
+    zoomOutMethod->setCurrentIndex(CSettings::instance()->getZoomOutMethod());
+    annotationChanged = false;
 
     //"Volume Of Interest (VOI)" panel widgets
     /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
@@ -650,9 +689,30 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     PR_spbox->installEventFilter(this);
     PR_spbox->setPrefix("Block ");
 
-    /* ------- overview panel widgets ------- */
-    Overview_panel = new QGroupBox("Overview");
+    VoxelSize = new QGroupBox("Raw Image Voxelsize");
+    x_dsb = new QDoubleSpinBox();
+    x_dsb->setAlignment(Qt::AlignCenter);
+    x_dsb->setValue(CSettings::instance()->getVoxelSizeX());
+    x_dsb->setSingleStep(0.1);
+    x_dsb->setPrefix("x: ");
+    x_dsb->setSuffix(" um");
+    x_dsb->installEventFilter(this);
 
+    y_dsb = new QDoubleSpinBox();
+    y_dsb->setAlignment(Qt::AlignCenter);
+    y_dsb->setValue(CSettings::instance()->getVoxelSizeY());
+    y_dsb->setSingleStep(0.1);
+    y_dsb->setPrefix("y: ");
+    y_dsb->setSuffix(" um");
+    y_dsb->installEventFilter(this);
+
+    z_dsb = new QDoubleSpinBox();
+    z_dsb->setAlignment(Qt::AlignCenter);
+    z_dsb->setValue(CSettings::instance()->getVoxelSizeZ());
+    z_dsb->setSingleStep(0.1);
+    z_dsb->setPrefix("z: ");
+    z_dsb->setSuffix(" um");
+    z_dsb->installEventFilter(this);
 
     //other widgets
     helpBox = new QHelpBox(this);
@@ -669,7 +729,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     QWidget* refSysContainer = new QWidget();
     refSysContainer->setFixedWidth(marginLeft);
     refSysContainer->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
-    QHBoxLayout* refSysContainerLayout = new QHBoxLayout();
+    refSysContainerLayout = new QHBoxLayout();
     refSysContainerLayout->setContentsMargins(1,1,1,1);
     refSysContainerLayout->addWidget(refSys, 1);
     refSysContainer->setLayout(refSysContainerLayout);
@@ -766,8 +826,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	rightBlockLayout->addLayout(tGlobalCoordLayout, 0);
 #endif
 
-    checkBox_overview = new QCheckBox("Overview");
-    checkBox_overview->setChecked(isOverviewActive);
+//    checkBox_overview = new QCheckBox("Overview");
+//    checkBox_overview->setChecked(isOverviewActive);
+
+    isMagnificationLocked = false;
+    lockMagnification = new QCheckBox("Lock Magnification");
+    lockMagnification->setChecked(isMagnificationLocked);
 
     /* -------------- put elements into 4x4 grid ----------------- */
     VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
@@ -780,13 +844,28 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_layout->addLayout(yGlobalCoordLayout,1, 2, 1, 2);
     VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
     VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
-    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
+//    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
+    VOI_layout->addWidget(lockMagnification, 4, 0, 1, 4);
+
 
     /* ------------- FINALIZATION -------------- */
     VOI_layout->setContentsMargins(10,5,10,5);
     VOI_panel->setLayout(VOI_layout);
     #ifdef Q_OS_LINUX
     VOI_panel->setStyle(new QWindowsStyle());
+    #endif
+
+    // Voxel Size
+    QGridLayout* voxelsize_layout = new QGridLayout();
+    voxelsize_layout->setVerticalSpacing(1);
+
+    voxelsize_layout->addWidget(x_dsb, 0,0);
+    voxelsize_layout->addWidget(y_dsb, 0,1);
+    voxelsize_layout->addWidget(z_dsb, 0,2);
+
+    VoxelSize->setLayout(voxelsize_layout);
+    #ifdef Q_OS_LINUX
+    VoxelSize->setStyle(new QWindowsStyle());
     #endif
 
     // "Proofreading" panel layout
@@ -799,20 +878,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #ifdef Q_OS_LINUX
     PR_panel->setStyle(new QWindowsStyle());
     #endif
-
-#ifndef Q_OS_MAC
-      // Overview panel layout
-    QWidget* refSysContainer2 = new QWidget();
-    refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
-    QHBoxLayout* refSysContainerLayout2 = new QHBoxLayout();
-    refSysContainerLayout2->setContentsMargins(1,1,1,1);
-    refSysContainerLayout2->addWidget(refSys, 1);
-    refSysContainer2->setLayout(refSysContainerLayout2);
-    QGridLayout* Overview_layout = new QGridLayout();
-    Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
-    Overview_layout->setContentsMargins(1,1,1,1);
-    Overview_panel->setLayout(Overview_layout);
-#endif
 
     //local viewer panel
     QVBoxLayout* localviewer_panel_layout= new QVBoxLayout();
@@ -908,13 +973,53 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomControls_layout->addLayout(zoomControls_col1_layout, 0);
     zoomControls_layout->addLayout(zoomControls_col2_layout, 1);
     zoomControls_layout->addWidget(controlsResetButton, 0);
+    /* -------------------- third row ----------------------- */
+    QHBoxLayout *zoomOutMethod_layout = new QHBoxLayout();
+    zoomOutMethod_layout->setContentsMargins(0,0,0,0);
+    QLabel *zoomOutMethodLabel = new QLabel("Z/o method:");
+    zoomOutMethodLabel->setFixedWidth(marginLeft);
+    zoomOutMethod_layout->addWidget(zoomOutMethodLabel, 0);
+    zoomOutMethod_layout->addWidget(zoomOutMethod, 1);
     /* -------------------- FINALIZATION -------------------- */
     zoomOptions_panel_layout->addLayout(zoomInMethod_layout, 0);
     zoomOptions_panel_layout->addLayout(zoomControls_layout, 0);
+    zoomOptions_panel_layout->addLayout(zoomOutMethod_layout, 0);
     zoomOptions_panel_layout->setContentsMargins(10,5,10,5);
     zoom_panel->setLayout(zoomOptions_panel_layout);
     #ifdef Q_OS_LINUX
     zoom_panel->setStyle(new QWindowsStyle());
+    #endif
+
+    /* ------- overview panel widgets ------- */
+    Overview_panel = new QGroupBox("Overview");
+
+    // Overview panel layout
+    QWidget* refSysContainer2 = new QWidget();
+    //refSysContainer2->setStyleSheet(" border-style: solid; border-width: 1px; border-color: rgb(150,150,150);");
+    refSysContainer2->setStyleSheet("border: 0px;");
+    QLabel* dispInfo = new QLabel();
+    dispInfo->setStyleSheet("border: 0px;");
+    // QVBoxLayout* refSysContainerLayout2 = new QVBoxLayout();
+    refSysContainerLayout2 = new QVBoxLayout();
+    refSysContainerLayout2->setContentsMargins(1,1,1,1);
+    refSysContainerLayout2->addWidget(dispInfo, 0);
+    #ifndef Q_OS_MAC
+    refSysContainerLayout2->addWidget(refSys, 1);
+    #endif
+    refSysContainerLayout2->addStretch();
+
+    QPushButton *updateStatistics = new QPushButton("update");
+    refSysContainerLayout2->addWidget(updateStatistics, 2);
+    connect(updateStatistics, SIGNAL(released()), this, SLOT(updateOverview()));
+    refSysContainerLayout2->addStretch();
+
+    refSysContainer2->setLayout(refSysContainerLayout2);
+    QGridLayout* Overview_layout = new QGridLayout();
+    Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
+    Overview_layout->setContentsMargins(1,1,1,1);
+    Overview_panel->setLayout(Overview_layout);
+    #ifdef Q_OS_LINUX
+    Overview_panel->setStyle(new QWindowsStyle());
     #endif
 
     // Page "Controls" layout
@@ -922,19 +1027,28 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     controlsLayout->addWidget(localViewer_panel, 0);
     controlsLayout->addWidget(zoom_panel, 0);
     controlsLayout->addWidget(VOI_panel, 0);
+    controlsLayout->addWidget(VoxelSize, 0);
     controlsLayout->addWidget(PR_panel, 0);
-    #ifndef Q_OS_MAC
+    #ifdef Q_OS_MAC
+    // minimap tab
+    minimap_page = new QWidget();
+    QVBoxLayout* minimapLayout = new QVBoxLayout(minimap_page);
+    minimapLayout->addWidget(Overview_panel, 0);
+    minimap_page->setLayout(minimapLayout);
+    #else
     controlsLayout->addWidget(Overview_panel, 0);
     #endif
     controlsLayout->addStretch(1);
-    #ifdef Q_OS_MAC
-    controlsLayout->setContentsMargins(10,0,10,10);
-    #endif
     controls_page->setLayout(controlsLayout);
+
+    connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Others");
+//    #ifdef Q_OS_MAC
+//    tabs->addTab(minimap_page, "Overview");
+//    #endif
 
     //overall
     QVBoxLayout* layout = new QVBoxLayout();
@@ -964,7 +1078,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
-
     // signals and slots
     /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);
     connect(CImport::instance(), SIGNAL(sendOperationOutcome(tf::RuntimeException*, qint64)), this, SLOT(importDone(tf::RuntimeException*, qint64)), Qt::QueuedConnection);
@@ -986,6 +1099,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(traslTpos, SIGNAL(clicked()), this, SLOT(traslTposClicked()));
     connect(traslTneg, SIGNAL(clicked()), this, SLOT(traslTnegClicked()));
     connect(controlsResetButton, SIGNAL(clicked()), this, SLOT(resetMultiresControls()));
+    connect(x_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(y_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(z_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
+    connect(refSys, SIGNAL(reset()), this, SLOT(updateOverview()));
+    connect(zoomOutMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged(int)));
+
 #ifdef __ALLOW_VR_FUNCS__
     if(teraflyVRView)
 	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
@@ -997,7 +1116,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
-    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
+//    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
+    connect(lockMagnification, SIGNAL(toggled(bool)), this, SLOT(setLockMagnification(bool)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -1013,8 +1133,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     // move to center(vertical)-right(horizontal)
     move(qApp->desktop()->availableGeometry().width() - width(), 0);
-
-
 
 
     // register this as event filter
@@ -1042,6 +1160,7 @@ void PMain::reset()
     importOptionsMenu->setEnabled(true);
     loadAnnotationsAction->setEnabled(false);
     saveAnnotationsAction->setEnabled(false);
+    //saveandchangetype->setEnabled(false);
     saveAnnotationsAsAction->setEnabled(false);
     clearAnnotationsAction->setEnabled(false);
     virtualSpaceSizeMenu->setEnabled(true);
@@ -1089,6 +1208,10 @@ void PMain::reset()
     gradientBar->setStep(0);
     resetMultiresControls();
 
+    x_dsb->setValue(CSettings::instance()->getVoxelSizeX());
+    y_dsb->setValue(CSettings::instance()->getVoxelSizeY());
+    z_dsb->setValue(CSettings::instance()->getVoxelSizeZ());
+
     //resetting subvol panel widgets
     VOI_panel->setEnabled(false);
     PR_panel->setEnabled(false);
@@ -1107,10 +1230,12 @@ void PMain::reset()
     refSys->setXRotation(200);
     refSys->setYRotation(50);
     refSys->setZRotation(0);
-    refSys->setDims(1,1,1);
     refSys->setFilled(true);
+    refSys->setDims(1,1,1);
     refSys->resetZoom();
     frameCoord->setPalette(VOI_panel->palette());
+
+    zoomOutMethod->setCurrentIndex(CSettings::instance()->getZoomOutMethod());
 
     //reset PR panel widgets
     PR_button->setText("Start");
@@ -1128,12 +1253,22 @@ void PMain::reset()
     helpBox->setText(HTwelcome);
 
     // @ADDED Vaa3D-controls-within-TeraFly feature.
+    #ifdef Q_OS_MAC
+    if(tabs->count() == 4)
+    {
+        int tab_selected = tabs->currentIndex();
+        tabs->removeTab(3);
+        tabs->removeTab(1);
+        tabs->setCurrentIndex(tab_selected);
+    }
+    #else
     if(tabs->count() == 3)
     {
         int tab_selected = tabs->currentIndex();
         tabs->removeTab(1);
         tabs->setCurrentIndex(tab_selected);
     }
+    #endif
 }
 
 
@@ -1437,8 +1572,19 @@ void PMain::loadAnnotations()
         if(cur_win)
         {
             //obtaining current volume's parent folder path
-            QDir dir(CImport::instance()->getPath().c_str());
-            dir.cdUp();
+            QDir dir;
+
+            if(recentlyUsedPath.isEmpty())
+            {
+                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+            }
+            else
+            {
+                dir = QFileInfo(recentlyUsedPath).dir();
+            }
+
+//            QDir dir(CImport::instance()->getPath().c_str());
+//            dir.cdUp();
 
             #ifdef _USE_QT_DIALOGS
             QString path = "";
@@ -1481,6 +1627,21 @@ void PMain::loadAnnotations()
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(cursor);
+
+                #ifdef Q_OS_MAC
+                if(tabs->count() < 4)
+                {
+                    tabs->insertTab(3, minimap_page, "Overview");
+                }
+                #endif
+
+                //
+                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                recentlyUsedPath = path;
+
+                //
+                annotationChanged = true;
+                updateOverview();
             }
             else
                 return;
@@ -1531,6 +1692,150 @@ void PMain::saveAnnotations()
             // disable save button
             saveAnnotationsAction->setEnabled(false);
         }
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+QList<NeuronSWC> backup;
+QList<NeuronSWC> backupelse;
+QList<NeuronSWC> backup_current_type0,current_block_all,current_block_all_else;
+void PMain::changecurrentblocktype()
+{
+    //backup.clear();
+    backupelse.clear();
+    current_block_all_else.clear();
+    current_block_all.clear();
+    tf::debug(tf::LEV1, 0, __itm__current__function__);
+    const Image4DSimple *curr_block=CViewer::getCurrent()->getImage();
+    //CViewer *temp=new CViewer();//there is nothing in the class
+    NeuronTree nt=V3D_env->getSWCTeraFly();
+    int swcnum=nt.listNeuron.size();
+    //v3d_msg(QString("There are totally [%1] swc nodes in your neuron!").arg(swcnum));
+    NeuronTree result;
+    QList<NeuronSWC> neuron = nt.listNeuron;
+    QList<NeuronSWC> tochange;
+    vector<V3DLONG> allnumofbackup;
+    if (!backup.empty())
+    {
+        for (int i=0;i<backup.size();i++)
+         {
+            allnumofbackup.push_back(backup.at(i).n);
+         }
+    }
+    vector<int>allx,ally,allz;
+    for (int i=0;i<neuron.size();i++)
+    {
+       allx.push_back(neuron.at(i).x);
+       ally.push_back(neuron.at(i).y);
+       allz.push_back(neuron.at(i).z);
+    }
+    try
+    {
+        if(curr_block)
+        {
+           double x_ie,y_ie,z_ie;
+           double x_ae,y_ae,z_ae,x_e,y_e,z_e;
+           int swc_num_of_block=0;
+           x_ie=curr_block->getOriginX();
+           x_e=curr_block->getRezX();
+           x_ae=x_e+x_ie-1;
+           y_ie=curr_block->getOriginY();
+           y_e=curr_block->getRezY();
+           y_ae=y_e+y_ie-1;
+           z_ie=curr_block->getOriginZ();
+           z_e=curr_block->getRezZ();
+           z_ae=x_e+z_ie-1;
+           //v3d_msg(QString("The origin x[%1],The origin y[%2],The origin z[%3],The rez x[%4],The rez y[%5],The rez z[%6]!").arg(x_ie).arg(y_ie).arg(z_ie).arg(x_ae).arg(y_ae).arg(z_ae));
+           for (int i=0;i<neuron.size();i++)
+           {
+               if((x_ie<=allx.at(i)) && (allx.at(i)<=x_ae) && (y_ie<=ally.at(i)) && (ally.at(i)<=y_ae) && (z_ie<=allz.at(i)) && (allz.at(i)<=z_ae))
+               {
+                   swc_num_of_block+=1;
+                   NeuronSWC s;
+                   s.x=neuron.at(i).x;
+                   s.y=neuron.at(i).y;
+                   s.z=neuron.at(i).z;
+                   s.type=neuron.at(i).type;
+                   s.radius=neuron.at(i).radius;
+                   s.pn=neuron.at(i).pn;
+                   s.n=neuron.at(i).n;
+                   current_block_all.append(s);
+                   if(s.type!=0) {backup.append(s);}
+                   else if (s.type==0) {backup_current_type0.append(s);}
+               }
+           //v3d_msg(QString("backup size[%1]!").arg(backup.size()));
+                else
+                {
+                       NeuronSWC s;
+                       s.x=neuron.at(i).x;
+                       s.y=neuron.at(i).y;
+                       s.z=neuron.at(i).z;
+                       s.type=neuron.at(i).type;
+                       s.radius=neuron.at(i).radius;
+                       s.pn=neuron.at(i).pn;
+                       s.n=neuron.at(i).n;
+                       current_block_all_else.append(s);
+                       if(s.type!=0) {backupelse.append(s);}
+                }
+           }
+           for (int i=0;i<current_block_all.size();i++)
+           {
+               NeuronSWC s;
+               s.x=current_block_all.at(i).x;
+               s.y=current_block_all.at(i).y;
+               s.z=current_block_all.at(i).z;
+               s.type=0;
+               s.radius=current_block_all.at(i).radius;
+               s.pn=current_block_all.at(i).pn;
+               s.n=current_block_all.at(i).n;
+               tochange.append(s);
+           }
+           for (int i=0;i<current_block_all_else.size();i++)
+           {
+               tochange.append(current_block_all_else.at(i));
+           }
+           QHash <int, int>  hashNeuron;
+           for(V3DLONG j=0; j<tochange.size();j++)
+           {
+              hashNeuron.insert(tochange[j].n, j);
+           }
+           //v3d_msg(QString("There are totally [%1] swc nodes in your neuron of current block!").arg(swc_num_of_block));
+           result.listNeuron=tochange;
+           //v3d_msg(QString("tochange size[%1]!").arg(tochange.size()));
+           result.hashNeuron=hashNeuron;
+           saveAnnotations();
+           V3D_env->setSWCTeraFly(result);
+           //v3d_msg("testing");
+        }
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
+
+void PMain::return_to_the_changedtype()
+{
+    tf::debug(tf::LEV1, 0, __itm__current__function__);
+    NeuronTree result;
+    for (int i=0;i<backup.size();i++)
+    {
+        backupelse.append(backup.at(i));
+    }
+    try
+    {
+        QHash <int, int>  hashNeuron;
+        for(V3DLONG j=0; j<backupelse.size();j++)
+        {
+           hashNeuron.insert(backupelse[j].n, j);
+        }
+        result.listNeuron=backupelse;
+        result.hashNeuron=hashNeuron;
+        V3D_env->setSWCTeraFly(result);
+        v3d_msg("All the rechanged type have been put back to terafly!");
     }
     catch(RuntimeException &ex)
     {
@@ -1598,8 +1903,19 @@ void PMain::saveAnnotationsAs()
         if(cur_win)
         {
             //obtaining current volume's parent folder path
-            QDir dir(CImport::instance()->getPath().c_str());
-            dir.cdUp();
+//            QDir dir(CImport::instance()->getPath().c_str());
+//            dir.cdUp();
+
+            QDir dir;
+
+            if(recentlyUsedPath.isEmpty())
+            {
+                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+            }
+            else
+            {
+                dir = QFileInfo(recentlyUsedPath).dir();
+            }
 
             #ifdef _USE_QT_DIALOGS
             QString path = "";
@@ -1617,16 +1933,38 @@ void PMain::saveAnnotationsAs()
 
             #else
             //tf::setWidgetOnTop(cur_win->window3D, false);
-            QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+            QString annotationsBasename = fileFullName;
+            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+            {
+//                cout<<"move into those"<<endl;
+                QStringList fileNameSplit=fileFullName.split("_stamp_");
+                if(!fileNameSplit.size())
+                    return;
+                annotationsBasename = fileNameSplit[0];
+            }
+
+            //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
+            //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
             QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
             //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
+            QDateTime mytime = QDateTime::currentDateTime();
 
 
             if(!path.isEmpty())
             {
-                annotationsPathLRU = path.toStdString();
+                //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+                string filebasename=QFileInfo(path).baseName().toStdString();
+                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+                {
+                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+                    if(!fileNameSplit.size())
+                        return;
+                    filebasename = fileNameSplit[0].toStdString();
+                }
+                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
                 if(annotationsPathLRU.find(".ano") == string::npos)
                     annotationsPathLRU.append(".ano");
 
@@ -1645,6 +1983,10 @@ void PMain::saveAnnotationsAs()
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(cursor);
+
+                //
+                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                recentlyUsedPath = path;
             }
             else
                 return;
@@ -1916,8 +2258,24 @@ void PMain::settingsChanged(int)
     CSettings::instance()->setTraslY(yShiftSBox->value());
     CSettings::instance()->setTraslZ(zShiftSBox->value());
     CSettings::instance()->setTraslT(tShiftSBox->value());
+
+    CSettings::instance()->setZoomOutMethod(zoomOutMethod->currentIndex());
+
     if(PDialogProofreading::isActive())
         PDialogProofreading::instance()->updateBlocks(0);
+}
+
+void PMain::voxelSizeChanged(double)
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    CSettings::instance()->setVoxelSizeX(x_dsb->value());
+    CSettings::instance()->setVoxelSizeY(y_dsb->value());
+    CSettings::instance()->setVoxelSizeZ(z_dsb->value());
+
+    //
+    annotationChanged = true;
+    updateOverview();
 }
 
 /**********************************************************************************
@@ -2311,7 +2669,10 @@ void PMain::doTeraflyVRView()
             this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
-            cur_win->view3DWidget->doimageVRView(false);
+            if(cur_win->view3DWidget->resumeCollaborationVR)
+			{cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;cur_win->view3DWidget->doimageVRView(true);}
+			else
+				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
             this->show();		
 
@@ -2335,7 +2696,7 @@ void PMain::doCollaborationVRView()
 			this->setWindowState(Qt::WindowMinimized);
 			//this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
-
+			cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
             //cur_win->storeAnnotations();
             //this->show();		
@@ -2468,6 +2829,26 @@ void PMain::fetchAndDisplayChanged()
     CSettings::instance()->setPreviewMode(fdPreviewAction->isChecked());
 }
 
+/**********************************************************************************
+* Called when bit conversion menu options have changed
+***********************************************************************************/
+void PMain::from8bitsdataChanged(int newval)
+{
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+    CSettings::instance()->setBitsRemap(newval);
+
+    CImport::instance()->setBitsRemap(newval);
+}
+void PMain::from16bitsdataChanged(int newval)
+{
+    /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+    CSettings::instance()->setBitsConversion(newval);
+
+    CImport::instance()->setBitsConversion(newval);
+}
+
 
 
 /**********************************************************************************
@@ -2505,6 +2886,23 @@ void PMain::PRbuttonClicked()
 
 void PMain::setOverview(bool enabled)
 {
+    if(CImport::instance()->volumes.size()<1)
+    {
+        qDebug()<<"No volume is loaded!";
+        return;
+    }
+
+    if(annotationChanged)
+    {
+       annotationChanged = false;
+    }
+    else
+    {
+        qDebug()<<"No annotations changed!";
+        return;
+    }
+
+    //
     CViewer *cur_win = CViewer::getCurrent();
     refSys->setFilled(!enabled);
     PR_button->setEnabled(!enabled);
@@ -2522,8 +2920,8 @@ void PMain::setOverview(bool enabled)
         int dimZ    = CImport::instance()->volumes[num_res-1]->getDIM_D();
         refSys->num_res=CImport::instance()->volumes.size();
         refSys->curRes=cur_win->getResIndex();
-        qDebug("num res is %d",num_res);
-        qDebug("reseltiton is %d.",cur_win->getResIndex());
+//        qDebug("num res is %d",num_res);
+//        qDebug("reseltiton is %d.",cur_win->getResIndex());
 
         CSettings::instance()->setVOIdimV(Vdim_sbox->value());
         CSettings::instance()->setVOIdimH(Hdim_sbox->value());
@@ -2532,6 +2930,11 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setTraslX(xShiftSBox->value());
         CSettings::instance()->setTraslY(yShiftSBox->value());
         CSettings::instance()->setTraslZ(zShiftSBox->value());
+        CSettings::instance()->setVoxelSizeX(x_dsb->value());
+        CSettings::instance()->setVoxelSizeY(y_dsb->value());
+        CSettings::instance()->setVoxelSizeZ(z_dsb->value());
+
+        CSettings::instance()->setZoomOutMethod(zoomOutMethod->currentIndex());
 
         int ROIxS   = H0_sbox->value();
         refSys->dimXCenter=ROIxS;
@@ -2592,10 +2995,13 @@ void PMain::setOverview(bool enabled)
             ROIzDim *= factorXYZ;
         }
 */
+
         refSys->nt = PluginInterface::getSWC();
-        refSys->nt_init=PluginInterface::getSWC();
-        refSys->markList = PluginInterface::getLandmark();        
+        //refSys->nt_init = PluginInterface::getSWC();
+        //refSys->markList = PluginInterface::getLandmark();
+        refSys->setVoxelSize(CSettings::instance()->getVoxelSizeX(), CSettings::instance()->getVoxelSizeY(), CSettings::instance()->getVoxelSizeZ());
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
+
         if(cur_win)
         {
             renderer=myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()));//static_cast<Renderer_gl1*>(cur_win->view3DWidget->getRenderer());
@@ -2606,9 +3012,9 @@ void PMain::setOverview(bool enabled)
         if(set_render_flag&&renderer)
             refSys->setRender(renderer);
 
-    }else
+    }
+    else
     {
-        qDebug("move to this");
         PRsetActive(false);
         refSys->nt.listNeuron.clear();
         isOverviewActive = false;
@@ -2636,6 +3042,7 @@ void PMain::PRsetActive(bool active)
     Tdim_sbox->setEnabled(!active);
     /* -------------------- "Zoom in/out" panel ---------------------- */
     zoom_panel->setEnabled(!active);
+    zoomOutMethod->setEnabled(!active);
     if(active)
     {
         zoomInSens->setValue(zoomInSens->maximum());
@@ -2926,7 +3333,21 @@ void PMain::markersSizeSpinBoxChanged(int value)
 void PMain::annotationsChanged()
 {
     if(!annotationsPathLRU.empty())
+    {
         saveAnnotationsAction->setEnabled(true);
+    }
+
+    // update mini-map, realtime update is slow
+    annotationChanged = true;
+    // updateOverview();
+
+    //
+    #ifdef Q_OS_MAC
+    if(tabs->count() < 4)
+    {
+        tabs->insertTab(3, minimap_page, "Overview");
+    }
+    #endif
 }
 
 void PMain::showDialogVtk2APO()
@@ -3300,4 +3721,33 @@ void PMain::showAnoOctree()
 void PMain::tabIndexChanged(int value)
 {
     helpBox->setVisible(value == 0);
+
+    #ifdef Q_OS_MAC
+    if(value==3)
+    {
+        refSysContainerLayout2->addWidget(refSys, 1);
+        refSysContainerLayout2->addStretch();
+        //setOverview(true);
+    }
+    else if(value==0)
+    {
+        refSysContainerLayout->addWidget(refSys, 1);
+        //setOverview(false);
+    }
+    #endif
+}
+
+void PMain::updateOverview()
+{
+    setOverview(true);
+}
+
+void PMain::updateAnnotationStatus()
+{
+    annotationChanged = true;
+}
+
+void PMain::setLockMagnification(bool locked)
+{
+    isMagnificationLocked = locked;
 }

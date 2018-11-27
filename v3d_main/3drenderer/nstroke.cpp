@@ -1144,7 +1144,7 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
 #endif
      if (b_addthiscurve && selectMode==smCurveRefineInit)
      {
-          addCurveSWC(loc_vec, chno);
+          addCurveSWC(loc_vec, chno, 6);//LMG 26/10/2018 solveCurveCenterV2 mode 6
           // for curve connection
           V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
           My4DImage* curImg = 0;
@@ -1384,25 +1384,6 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
             w->setCursor(QCursor(Qt::PointingHandCursor));
         }
     }
-}
-
-void Renderer_gl1::callStrokeConnectMultiNeurons_loopSafe()
-{
-	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
-
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (w && listNeuronTree.size() > 0)
-	{
-		w->setEditMode();
-		if (listNeuronTree.at(0).editable == true || listNeuronTree.at(listNeuronTree.size() - 1).editable == true)
-		{
-			editinput = 9;
-			selectMode = smSimpleConnectLoopSafe;
-			b_addthiscurve = false;
-			oldCursor = QCursor(Qt::ArrowCursor);
-			w->setCursor(QCursor(Qt::PointingHandCursor));
-		}
-	}
 }
 
 void Renderer_gl1::callShowSubtree()
