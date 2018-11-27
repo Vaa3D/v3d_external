@@ -75,8 +75,8 @@ class terafly::PMain : public QWidget
         QAction* openUnconvertedVolumeFolderAction;     //"Browse for dir..." action
         QAction* openUnstitchedImageAction;             //"Open unstitched image" menu
         QAction* closeVolumeAction;     //"Close volume" menu action
-        QAction* saveandchangetype;      //"Change current block types" mean action
-        QAction* returntochangedtype;
+        //QAction* saveandchangetype;      //"Change current block types" mean action
+        //QAction* returntochangedtype;
         QAction* loadAnnotationsAction; //"Load annotations" menu action
         QAction* saveAnnotationsAction; //"Save annotations" menu action
         QAction* saveAnnotationsAsAction; //"Save annotations as" menu action
@@ -392,8 +392,8 @@ class terafly::PMain : public QWidget
         void saveAnnotations();
         void saveAnnotationsAs();
         void autosaveAnnotations();
-        void changecurrentblocktype();
-        void return_to_the_changedtype();
+        //void changecurrentblocktype();
+        //void return_to_the_changedtype();
 
 
         /**********************************************************************************

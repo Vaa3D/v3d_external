@@ -23,8 +23,8 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     // add already existing buttons from the main GUI
     toolBar->addAction(PMain::getInstance()->loadAnnotationsAction);
     toolBar->addAction(PMain::getInstance()->saveAnnotationsAction);
-    toolBar->addAction(PMain::getInstance()->saveandchangetype);
-    toolBar->addAction(PMain::getInstance()->returntochangedtype);
+    //toolBar->addAction(PMain::getInstance()->saveandchangetype);
+    //toolBar->addAction(PMain::getInstance()->returntochangedtype);
     toolBar->addAction(PMain::getInstance()->saveAnnotationsAsAction);
     toolBar->addAction(PMain::getInstance()->clearAnnotationsAction);
     toolBar->addSeparator();

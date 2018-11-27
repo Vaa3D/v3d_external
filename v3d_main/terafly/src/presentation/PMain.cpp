@@ -172,8 +172,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     openUnconvertedVolumeFileAction = new QAction(QIcon(":/icons/open_image_file.png"), "Browse For File", this);
     openUnconvertedVolumeFolderAction = new QAction(QIcon(":/icons/open_image_folder.png"), "Browse For Folder", this);
     closeVolumeAction = new QAction(QIcon(":/icons/close.png"), "Close image", this);
-    saveandchangetype=new QAction(QIcon(":/icons/changetype.png"),"Change curren types",this);
-    returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
+    //saveandchangetype=new QAction(QIcon(":/icons/changetype.png"),"Change curren types",this);
+    //returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
     loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
     saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
     saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
@@ -183,8 +183,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     openHDF5VolumeAction->setShortcut(QKeySequence("Ctrl+H"));
     closeVolumeAction->setShortcut(QKeySequence("Ctrl+C"));
     loadAnnotationsAction->setShortcut(QKeySequence("Ctrl+L"));
-    saveandchangetype->setShortcut(QKeySequence("Ctrl+W"));
-    returntochangedtype->setShortcut(QKeySequence("Ctrl+K"));
+    //saveandchangetype->setShortcut(QKeySequence("Ctrl+W"));
+    //returntochangedtype->setShortcut(QKeySequence("Ctrl+K"));
     saveAnnotationsAction->setShortcut(QKeySequence("Ctrl+S"));
     saveAnnotationsAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     clearAnnotationsAction->setShortcut(QKeySequence("Ctrl+Shift+C"));
@@ -197,8 +197,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(closeVolumeAction, SIGNAL(triggered()), this, SLOT(closeVolume()));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
     connect(loadAnnotationsAction, SIGNAL(triggered()), this, SLOT(loadAnnotations()));
-    connect(saveandchangetype, SIGNAL(triggered()), this, SLOT(changecurrentblocktype()));//fuction is needed to be added
-    connect(returntochangedtype, SIGNAL(triggered()), this, SLOT(return_to_the_changedtype()));//fuction is needed to be added
+    //connect(saveandchangetype, SIGNAL(triggered()), this, SLOT(changecurrentblocktype()));//fuction is needed to be added
+    //connect(returntochangedtype, SIGNAL(triggered()), this, SLOT(return_to_the_changedtype()));//fuction is needed to be added
     connect(saveAnnotationsAction, SIGNAL(triggered()), this, SLOT(saveAnnotations()));
     connect(saveAnnotationsAsAction, SIGNAL(triggered()), this, SLOT(saveAnnotationsAs()));
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
@@ -214,8 +214,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(closeVolumeAction);
     fileMenu->addSeparator();
     fileMenu->addAction(loadAnnotationsAction);
-    fileMenu->addAction(saveandchangetype);
-    fileMenu->addAction(returntochangedtype);
+    //fileMenu->addAction(saveandchangetype);
+    //fileMenu->addAction(returntochangedtype);
     fileMenu->addAction(saveAnnotationsAction);
     fileMenu->addAction(saveAnnotationsAsAction);
     fileMenu->addAction(clearAnnotationsAction);
@@ -1692,150 +1692,6 @@ void PMain::saveAnnotations()
             // disable save button
             saveAnnotationsAction->setEnabled(false);
         }
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-    }
-}
-
-QList<NeuronSWC> backup;
-QList<NeuronSWC> backupelse;
-QList<NeuronSWC> backup_current_type0,current_block_all,current_block_all_else;
-void PMain::changecurrentblocktype()
-{
-    //backup.clear();
-    backupelse.clear();
-    current_block_all_else.clear();
-    current_block_all.clear();
-    tf::debug(tf::LEV1, 0, __itm__current__function__);
-    const Image4DSimple *curr_block=CViewer::getCurrent()->getImage();
-    //CViewer *temp=new CViewer();//there is nothing in the class
-    NeuronTree nt=V3D_env->getSWCTeraFly();
-    int swcnum=nt.listNeuron.size();
-    //v3d_msg(QString("There are totally [%1] swc nodes in your neuron!").arg(swcnum));
-    NeuronTree result;
-    QList<NeuronSWC> neuron = nt.listNeuron;
-    QList<NeuronSWC> tochange;
-    vector<V3DLONG> allnumofbackup;
-    if (!backup.empty())
-    {
-        for (int i=0;i<backup.size();i++)
-         {
-            allnumofbackup.push_back(backup.at(i).n);
-         }
-    }
-    vector<int>allx,ally,allz;
-    for (int i=0;i<neuron.size();i++)
-    {
-       allx.push_back(neuron.at(i).x);
-       ally.push_back(neuron.at(i).y);
-       allz.push_back(neuron.at(i).z);
-    }
-    try
-    {
-        if(curr_block)
-        {
-           double x_ie,y_ie,z_ie;
-           double x_ae,y_ae,z_ae,x_e,y_e,z_e;
-           int swc_num_of_block=0;
-           x_ie=curr_block->getOriginX();
-           x_e=curr_block->getRezX();
-           x_ae=x_e+x_ie-1;
-           y_ie=curr_block->getOriginY();
-           y_e=curr_block->getRezY();
-           y_ae=y_e+y_ie-1;
-           z_ie=curr_block->getOriginZ();
-           z_e=curr_block->getRezZ();
-           z_ae=x_e+z_ie-1;
-           //v3d_msg(QString("The origin x[%1],The origin y[%2],The origin z[%3],The rez x[%4],The rez y[%5],The rez z[%6]!").arg(x_ie).arg(y_ie).arg(z_ie).arg(x_ae).arg(y_ae).arg(z_ae));
-           for (int i=0;i<neuron.size();i++)
-           {
-               if((x_ie<=allx.at(i)) && (allx.at(i)<=x_ae) && (y_ie<=ally.at(i)) && (ally.at(i)<=y_ae) && (z_ie<=allz.at(i)) && (allz.at(i)<=z_ae))
-               {
-                   swc_num_of_block+=1;
-                   NeuronSWC s;
-                   s.x=neuron.at(i).x;
-                   s.y=neuron.at(i).y;
-                   s.z=neuron.at(i).z;
-                   s.type=neuron.at(i).type;
-                   s.radius=neuron.at(i).radius;
-                   s.pn=neuron.at(i).pn;
-                   s.n=neuron.at(i).n;
-                   current_block_all.append(s);
-                   if(s.type!=0) {backup.append(s);}
-                   else if (s.type==0) {backup_current_type0.append(s);}
-               }
-           //v3d_msg(QString("backup size[%1]!").arg(backup.size()));
-                else
-                {
-                       NeuronSWC s;
-                       s.x=neuron.at(i).x;
-                       s.y=neuron.at(i).y;
-                       s.z=neuron.at(i).z;
-                       s.type=neuron.at(i).type;
-                       s.radius=neuron.at(i).radius;
-                       s.pn=neuron.at(i).pn;
-                       s.n=neuron.at(i).n;
-                       current_block_all_else.append(s);
-                       if(s.type!=0) {backupelse.append(s);}
-                }
-           }
-           for (int i=0;i<current_block_all.size();i++)
-           {
-               NeuronSWC s;
-               s.x=current_block_all.at(i).x;
-               s.y=current_block_all.at(i).y;
-               s.z=current_block_all.at(i).z;
-               s.type=0;
-               s.radius=current_block_all.at(i).radius;
-               s.pn=current_block_all.at(i).pn;
-               s.n=current_block_all.at(i).n;
-               tochange.append(s);
-           }
-           for (int i=0;i<current_block_all_else.size();i++)
-           {
-               tochange.append(current_block_all_else.at(i));
-           }
-           QHash <int, int>  hashNeuron;
-           for(V3DLONG j=0; j<tochange.size();j++)
-           {
-              hashNeuron.insert(tochange[j].n, j);
-           }
-           //v3d_msg(QString("There are totally [%1] swc nodes in your neuron of current block!").arg(swc_num_of_block));
-           result.listNeuron=tochange;
-           //v3d_msg(QString("tochange size[%1]!").arg(tochange.size()));
-           result.hashNeuron=hashNeuron;
-           saveAnnotations();
-           V3D_env->setSWCTeraFly(result);
-           //v3d_msg("testing");
-        }
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-    }
-}
-
-void PMain::return_to_the_changedtype()
-{
-    tf::debug(tf::LEV1, 0, __itm__current__function__);
-    NeuronTree result;
-    for (int i=0;i<backup.size();i++)
-    {
-        backupelse.append(backup.at(i));
-    }
-    try
-    {
-        QHash <int, int>  hashNeuron;
-        for(V3DLONG j=0; j<backupelse.size();j++)
-        {
-           hashNeuron.insert(backupelse[j].n, j);
-        }
-        result.listNeuron=backupelse;
-        result.hashNeuron=hashNeuron;
-        V3D_env->setSWCTeraFly(result);
-        v3d_msg("All the rechanged type have been put back to terafly!");
     }
     catch(RuntimeException &ex)
     {
