@@ -2919,7 +2919,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					if(NTname==delName)
 					{
 						nearestNT=sketchedNTList.at(i);
-						//nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+						nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 						break;
 					}
 				}
@@ -2991,7 +2991,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					NewNT.listNeuron.append(tempSWC);
         			NewNT.hashNeuron.insert(tempSWC.n, NewNT.listNeuron.size()-1);
 				}
-					
 				//add data to New NT
 				for(int k=0,j=0;k<NewNT.listNeuron.size();j++,k++)
 				{
@@ -3017,7 +3016,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
 								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
 								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
-								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;							
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;	
 							}
 						}
 						break;
@@ -3042,7 +3041,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
 								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
 								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
-								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;						
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;	
 							}
 						}
 						break;
@@ -3083,7 +3082,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
 								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
 								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
-								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;								
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;	
 							}
 
 						}
