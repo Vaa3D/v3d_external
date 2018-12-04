@@ -83,6 +83,15 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     connect(buttonMarkerRoiView, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerRoiViewChecked(bool)));
     toolBar->insertWidget(0, buttonMarkerRoiView);
 
+	// Fragmented auto-tracing, MK, Dec 2018
+	/*toolBar->addSeparator();
+	buttonFragmentTrace = new QToolButton();
+	buttonFragmentTrace->setIcon(QIcon(":/icons/extend.png"));
+	buttonFragmentTrace->setCheckable(true);
+	buttonFragmentTrace->setToolTip("Fragmented auto-trace");
+	connect(buttonFragmentTrace, SIGNAL(toggled(bool)), this, SLOT(buttonFragmenTraceChecked(bool)));
+	toolBar->insertWidget(0, buttonFragmentTrace);*/
+
     /**/
     buttonOptions = new QToolButton();
     buttonOptions->setIcon(QIcon(":/icons/options.png"));
@@ -352,6 +361,11 @@ void PAnoToolBar::buttonMarkerRoiViewChecked(bool checked)
         expl->view3DWidget->updateTool();
         expl->view3DWidget->update();
     }
+}
+
+void PAnoToolBar::buttonFragmenTraceChecked(bool checked)
+{
+	// Not implemented yet at the moment due to limited space on the toolbar. May or may not procceed in tne future. MK, Dec 2018.
 }
 
 

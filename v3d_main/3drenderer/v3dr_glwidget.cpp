@@ -47,7 +47,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
 
-
 #include "../vrrenderer/VR_MainWindow.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
@@ -986,6 +985,15 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    if (IS_CTRL_MODIFIER)
 		    {
 		    	toggleTexFilter();
+			}
+			else if (IS_ALT_MODIFIER)
+			{
+				QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+				if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+
+				XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+				V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+				mypluginloader.runPlugin(loader, "about");
 			}
 	  		break;
          case Qt::Key_E:
