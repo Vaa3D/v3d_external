@@ -265,10 +265,11 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Save/load method
         **********************************************************************************/
-        void save(const char* filepath) throw (tf::RuntimeException);
+        void save(const char* filepath,bool removedupnode) throw (tf::RuntimeException);
         void load(const char* filepath) throw (tf::RuntimeException);
 
         void removeDuplicatedNode(QList<NeuronSWC> &saveSWC,QList<NeuronSWC> &result);
+        bool Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result);
 
         /*********************************************************************************
         * Removes all the annotations from the octree
