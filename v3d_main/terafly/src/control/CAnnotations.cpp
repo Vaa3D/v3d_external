@@ -3,6 +3,7 @@
 #include <list>
 #include "locale.h"
 #include <math.h>
+#include <algorithm>
 #include <set>
 #include <iostream>
 #include <algorithm>
@@ -1234,6 +1235,137 @@ void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t
 /*********************************************************************************
 * Save/load methods
 **********************************************************************************/
+//This function was added by shengdian to remove duplicated nodes (not include branch root nodes).2018-12-05
+void CAnnotations::removeDuplicatedNode(QList<NeuronSWC> &neuron,QList<NeuronSWC> &result)
+{
+    vector<long> parents0,rootnodes,tipnodes,duplicatednodes;
+    vector<long> ids0;
+    vector<long> parentschild;
+    //QList<NeuronSWC> neuron = neurons;
+
+    //Remove duplicated nodes
+    //get ids and reorder tree with ids following list
+    for(V3DLONG i=0;i<neuron.size();i++)
+    {
+        ids0.push_back(neuron.at(i).n);
+    }
+    for(V3DLONG i=0;i<neuron.size();i++)
+    {
+        V3DLONG parentid=neuron.at(i).parent;
+        neuron[i].n=i;
+        if(neuron.at(i).parent !=-1)
+        {
+            neuron[i].parent=find(ids0.begin(), ids0.end(),neuron.at(i).parent) - ids0.begin();
+            parents0.push_back(neuron.at(i).parent);
+        }
+    }
+//    cout<<"Neuron size is "<<neuron.size()<<endl;
+//    cout<<"parents size is "<<parents0.size()<<endl;
+    //QList<V3DLONG>  child_num0;//vector<bool> parentexist;
+    for(V3DLONG i=0;i<neuron.size();i++)// 0 or 1? check!
+    {
+        V3DLONG parentid=neuron.at(i).parent;
+        //parentexist.push_back(true);
+        //check root nodes,nodes' parent node is root and (no child) nodes
+        if(parentid!=-1)
+        {
+            if(neuron.at(parentid).parent==-1)
+            {
+                parentschild.push_back(neuron.at(i).n);
+            }
+            //nodes' parent node is root node
+
+        }//if root nodes
+        else
+        {
+            rootnodes.push_back(neuron.at(i).n);//cout<<"root node id is "<<neuron.at(i).n<<endl;
+        }//if tip nodes
+        if(std::count(parents0.begin(),parents0.end(),neuron.at(i).n)==0)
+        {
+            tipnodes.push_back(neuron.at(i).n);//cout<<"tip node id is "<<neuron.at(i).n<<endl;
+        }
+        //child_num0.push_back(count(parents0.begin(),parents0.end(),neuron.at(i).n));
+    }
+    cout<<"tip nodes size is "<<tipnodes.size()<<endl;
+    cout<<"root nodes size is "<<rootnodes.size()<<endl;
+    cout<<"parent child node is "<<parentschild.size()<<endl;
+
+    //
+    if(tipnodes.size()==0||rootnodes.size()==0||parentschild.size()==0)
+    {
+        cout<<"size worng"<<endl;
+    }
+    else
+    {
+        //remove duplicated root nodes
+//        for(V3DLONG r=0;r<rootnodes.size();r++)
+//        {
+//            for(V3DLONG r1=r+1;r1<rootnodes.size();r1++)
+//            {
+//                if(/*r!=r1&&*/neuron.at(rootnodes.at(r)).x==neuron.at(rootnodes.at(r1)).x
+//                        &&neuron.at(rootnodes.at(r)).y==neuron.at(rootnodes.at(r1)).y
+//                        &&neuron.at(rootnodes.at(r)).z==neuron.at(rootnodes.at(r1)).z)
+//                {
+//                    duplicatednodes.push_back(rootnodes.at(r1));
+//                    for(V3DLONG p=0;p<parentschild.size();p++)
+//                    {
+//                        if(rootnodes.at(r1)==neuron.at(parentschild.at(p)).parent)
+//                        {
+//                            neuron[parentschild.at(p)].parent=neuron.at(rootnodes.at(r)).n;
+//    //                        cout<<"change "<<parentschild.at(p)<<"'s parent id to "<<tipnodes.at(tip)<<"'s "<<neuron.at(tipnodes.at(tip)).n<<endl;
+//                            break;
+//                        }
+//                    }
+//                    break;
+//                }
+
+//            }
+//        }
+        for(V3DLONG tip=0;tip<tipnodes.size();tip++)
+        {
+            for(V3DLONG r=0;r<rootnodes.size();r++)
+            {
+                //if same position
+    //            cout<<"tip id is "<<tipnodes.at(tip)<<" and "<<neuron.at(tipnodes.at(tip)).n<<endl;
+    //            cout<<"root id is "<<rootnodes.at(r)<<" and "<<neuron.at(rootnodes.at(r)).n<<endl;
+                if(neuron.at(tipnodes.at(tip)).x==neuron.at(rootnodes.at(r)).x
+                        &&neuron.at(tipnodes.at(tip)).y==neuron.at(rootnodes.at(r)).y
+                        &&neuron.at(tipnodes.at(tip)).z==neuron.at(rootnodes.at(r)).z)
+                {
+                    //cout<<"duplicated id is "<<rootnodes.at(r)<<endl;
+                    duplicatednodes.push_back(rootnodes.at(r));
+                    for(V3DLONG p=0;p<parentschild.size();p++)
+                    {
+                        if(rootnodes.at(r)==neuron.at(parentschild.at(p)).parent)
+                        {
+                            neuron[parentschild.at(p)].parent=neuron.at(tipnodes.at(tip)).n;
+    //                        cout<<"change "<<parentschild.at(p)<<"'s parent id to "<<tipnodes.at(tip)<<"'s "<<neuron.at(tipnodes.at(tip)).n<<endl;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+        }
+    }
+    cout<<"duplicated node size is "<<duplicatednodes.size()<<endl;
+    for(V3DLONG i=0;i<neuron.size();i++)
+    {
+        bool needtoremove=false;
+        for(V3DLONG d=0;d<duplicatednodes.size();d++)
+        {
+            if(neuron.at(i).n==neuron.at(duplicatednodes.at(d)).n)
+            {
+                needtoremove=true;
+                break;
+            }
+        }
+        if(!needtoremove)
+            result.append(neuron.at(i));
+    }
+}
+
 void CAnnotations::save(const char* filepath) throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
@@ -1280,12 +1412,55 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     fprintf(f, "#comment terafly_annotations\n");
     fprintf(f, "#n type x y z radius parent seg_id level mode timestamp\n");
 	cout << "Annotation size: " << annotations.size() << endl;
-        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
-            if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
+    QList<NeuronSWC> nt,nt_sort;
+    long countNode=0;
+    for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+    {
+        if((*i)->type == 1) //selecting NeuronSWC
+        {
+            countNode++;
+            NeuronSWC temp;
+            temp.n=(*i)->ID;
+            temp.type=(*i)->subtype;
+            temp.x=(*i)->x;
+            temp.y=(*i)->y;
+            temp.z=(*i)->z;
+            temp.r=(*i)->r;
+            temp.parent=(*i)->parent ? (*i)->parent->ID : -1;
+            temp.seg_id=0;
+            temp.level=(*i)->level;
+            temp.creatmode=(*i)->creatmode;
+            temp.timestamp=(*i)->timestamp;
+            nt.append(temp);
+        }
+    }
+    removeDuplicatedNode(nt,nt_sort);
+    for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
+    {
+        fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
+                nt_sort.at(countNode).z, nt_sort.at(countNode).r, nt_sort.at(countNode).parent, 0, nt_sort.at(countNode).level, nt_sort.at(countNode).creatmode,
+                nt_sort.at(countNode).timestamp);
+    }
+//    for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+//    {
+//        if((*i)->type == 1) //selecting NeuronSWC
+//        {
+
+//            fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
+//                    nt_sort.at(countNode).z, nt_sort.at(countNode).r, nt_sort.at(countNode).parent, 0, nt_sort.at(countNode).level, nt_sort.at(countNode).creatmode,
+//                    nt_sort.at(countNode).timestamp);
+//            countNode++;
+//        }
+
+//    }
+//    cout<<"countNode is "<<countNode<<endl;
+//        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+//            if((*i)->type == 1) //selecting NeuronSWC
+//                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
 
     //file closing
     fclose(f);
+        //removeDuplicatedNode(nt,nt_sort);
 
 
     PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", tf::IO, timer.elapsed()));

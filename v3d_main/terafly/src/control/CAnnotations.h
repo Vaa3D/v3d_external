@@ -268,6 +268,8 @@ class terafly::CAnnotations
         void save(const char* filepath) throw (tf::RuntimeException);
         void load(const char* filepath) throw (tf::RuntimeException);
 
+        void removeDuplicatedNode(QList<NeuronSWC> &saveSWC,QList<NeuronSWC> &result);
+
         /*********************************************************************************
         * Removes all the annotations from the octree
         **********************************************************************************/
