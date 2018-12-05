@@ -77,7 +77,7 @@ ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
 ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
 RGBImageChannel CMainApplication::m_rgbChannel = channel_rgb;
 bool CMainApplication::showshootingPad = false;
-#define dist_thres 0.01
+#define dist_thres 0.1
 #define connection_rigourous 0.5
 #define default_radius 0.618
 #define drawing_step_size 5  //the larger, the fewer SWC nodes
@@ -2895,6 +2895,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case m_insertnodeMode:
 			{
+				if(isOnline == false)
+				{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -3102,11 +3104,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				qDebug()<<"index = "<<lIndex;
 				SetupSingleMorphologyLine(lIndex,0);
 				break;
+				}
 			}
 		case m_splitMode:
 			{	
 
-
+				if(isOnline == false)
+				{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -3255,6 +3259,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				SetupSingleMorphologyLine(lIndex,0);
 
 				break;
+			}
 			}
 		default :
 			break;

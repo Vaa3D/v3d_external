@@ -308,6 +308,7 @@ void VR_MainWindow::onReadyRead() {
 				pMainApplication->ClearCurrentNT();
 			}
 			QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
+			qDebug()<<"delete ID"<<delID;
 			bool delerror = pMainApplication->DeleteSegment(delID);
 			if(delerror==true)
 				qDebug()<<"Segment Deleted.";
@@ -333,6 +334,7 @@ void VR_MainWindow::onReadyRead() {
 			{
 				pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
+				qDebug()<<"get message CURRENT_DATA_IS_SENT=false;";
 				pMainApplication->ClearCurrentNT();
 			}
 			int colortype=3;
@@ -359,7 +361,6 @@ void VR_MainWindow::onReadyRead() {
 			float mz = delmarkerPOS.at(3).toFloat();
 			qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
 			XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
-			qDebug()<<"user, "<<user<<" Converted Receive del marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
 			if(user==userName)
 			{
 				pMainApplication->READY_TO_SEND=false;
@@ -393,7 +394,6 @@ void VR_MainWindow::onReadyRead() {
 			float mz = dragnodePOS.at(5).toFloat();
 			qDebug()<<"user, "<<user<<"drag node's num:"<<ntnum<<" "<<swcnum<<" new position: "<<mx<<" "<<my<<" "<<mz;
 			XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
-			qDebug()<<"user, "<<user<<" Converted Receive del marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
 			if(user==userName)
 			{
 				pMainApplication->READY_TO_SEND=false;
@@ -563,7 +563,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
 	{
 		if(pMainApplication->m_modeGrip_R==m_drawMode)
+		{
 			onReadySend(pMainApplication->NT2QString());
+			CURRENT_DATA_IS_SENT=true;
+			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
+		}
 		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
 
@@ -576,9 +580,10 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 				QString ConverteddelcurvePOS = ConvertsendCoords(pMainApplication->delcurvePOS);
 				qDebug()<<"Converted marker position = "<<ConverteddelcurvePOS;
 				socket->write(QString("/del_curve:" +  ConverteddelcurvePOS+ "\n").toUtf8());
+				CURRENT_DATA_IS_SENT=true;
 			}
 
-			if(pMainApplication->delName=="")
+			else if(pMainApplication->delName=="")
 			{
 				pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
@@ -591,6 +596,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
 			qDebug()<<"Converted marker position = "<<ConvertedmarkerPOS;
 			socket->write(QString("/marker:" + ConvertedmarkerPOS + "\n").toUtf8());
+			CURRENT_DATA_IS_SENT=true;
 		}
 		else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
 		{
@@ -598,6 +604,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			QString ConverteddelmarkerPOS = ConvertsendCoords(pMainApplication->delmarkerPOS);
 			qDebug()<<"Converted delete marker position = "<<ConverteddelmarkerPOS;
 			socket->write(QString("/del_marker:" + ConverteddelmarkerPOS + "\n").toUtf8());
+			CURRENT_DATA_IS_SENT=true;
 		}
 		else if(pMainApplication->m_modeGrip_R==m_dragMode)
 		{
@@ -605,9 +612,10 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			QString ConverteddragnodePOS = ConvertsendCoords(pMainApplication->dragnodePOS);
 			qDebug()<<"Converted delete marker position = "<<ConverteddragnodePOS;
 			socket->write(QString("/drag_node:" + ConverteddragnodePOS + "\n").toUtf8());
-		}
-		if(pMainApplication->READY_TO_SEND==true)
 			CURRENT_DATA_IS_SENT=true;
+		}
+		//if(pMainApplication->READY_TO_SEND==true)
+		//	CURRENT_DATA_IS_SENT=true;
 	}
 	sendHMDPOScout++;
 	if(sendHMDPOScout>100)
