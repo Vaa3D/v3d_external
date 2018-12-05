@@ -77,7 +77,7 @@ ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
 ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
 RGBImageChannel CMainApplication::m_rgbChannel = channel_rgb;
 bool CMainApplication::showshootingPad = false;
-#define dist_thres 0.1
+#define dist_thres 0.01
 #define connection_rigourous 0.5
 #define default_radius 0.618
 #define drawing_step_size 5  //the larger, the fewer SWC nodes
@@ -2943,7 +2943,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					switchinsertnode = 3;
 					NewNTsize += 2;
 				}
-				qDebug()<<"get  nt";
 				if(isOnline==false)	
 				{
 					NTL temp_NTL = sketchedNTList;
@@ -3000,6 +2999,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					{
 					case 1://insert node behind first
 						{
+							qDebug()<<"case 1";
 							int temp = j;
 							if(j+1<nearestNT.listNeuron.size())
 							temp = j+1;
@@ -3049,6 +3049,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						break;
 					case 3://insert node in middle
 						{
+							qDebug()<<"case 3";
 							int balancenode1 =j-1;
 							int balancenode2 =j-1;
 							int balancenode3 =j+1;
@@ -3084,7 +3085,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
 								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
 								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
-								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;	
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
 							}
 
 						}
