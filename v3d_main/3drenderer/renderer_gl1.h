@@ -471,6 +471,8 @@ public:
 	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 void showSubtree();
 	 void showConnectedSegs();
+
+	 bool fragmentTrace; // Fragment tracing mode switch, MK, Dec 2018
 	 
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();

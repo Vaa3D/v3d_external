@@ -2223,6 +2223,7 @@ void Renderer_gl1::endSelectMode()
 		}
 	}
 
+
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
     if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclickAutoZ || selectMode == smCurveCreate_MarkerCreate1)

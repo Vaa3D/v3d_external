@@ -988,14 +988,26 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 			else if (IS_ALT_MODIFIER)
 			{
-				QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-				if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-
-				XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-				V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-				mypluginloader.runPlugin(loader, "about");
+				callFragmentTracing();
 			}
 	  		break;
+
+		case Qt::Key_M:
+			if (renderer)
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->fragmentTrace)
+				{
+					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+					mypluginloader.runPlugin(loader, "about");
+				}
+			}
+			break;
+
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
             {
@@ -1020,7 +1032,16 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
 				//callShowSubtree(); // temporarily disabled, MK, July 2018
-            }else
+            }
+			else if (renderer)
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->fragmentTrace)
+				{
+					cout << "test" << endl;
+				}
+			}
+			else
                 callAutoTracers();
 	  		break;
         case Qt::Key_D:
@@ -3331,6 +3352,19 @@ void V3dR_GLWidget::callShowConnectedSegs()
 	{
 		renderer->callShowConnectedSegs();
 		POST_updateGL();
+	}
+}
+
+void V3dR_GLWidget::callFragmentTracing()
+{
+	if (renderer)
+	{
+		renderer->editinput = 12;
+		renderer->drawEditInfo();
+		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
+		rendererGL1->fragmentTrace = true;
+		//renderer->callFragmentTracing();
+		//POST_updateGL();
 	}
 }
 

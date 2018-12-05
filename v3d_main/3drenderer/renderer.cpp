@@ -670,6 +670,7 @@ void Renderer::drawEditInfo()
 		case 9:  editdisplay = "Connecting (Loop Safe)"; break;
 		case 10: editdisplay = "Highlight Subtree"; break;
 		case 11: editdisplay = "Highlight Connected Segments"; break;
+		case 12: editdisplay = "Fragment Tracing"; break;
 
         }
 

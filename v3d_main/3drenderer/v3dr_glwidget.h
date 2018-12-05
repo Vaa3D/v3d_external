@@ -401,6 +401,9 @@ public slots:
     virtual void callCreateMarkerNearestNode();
     virtual void callGDTracing();
 
+	// Fragmented tracing, MK, Dec 2018
+	virtual void callFragmentTracing();
+
     virtual void toggleEditMode();
     virtual void setEditMode();
     virtual void updateColorMode(int mode);
