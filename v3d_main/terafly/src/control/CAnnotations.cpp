@@ -1421,9 +1421,8 @@ double computeDist2(const NeuronSWC & s1, const NeuronSWC & s2, double xscale=1,
     return sqrt(xx*xx+yy*yy+zz*zz);
 }
 
-bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result)
+bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid)
 {
-    V3DLONG newrootid=1000000000;
     double thres=0;
     //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
     QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
@@ -1461,7 +1460,7 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
 
     //do a DFS for the the matrix and re-allocate ids for all the nodes
     V3DLONG root = 0;
-    if (newrootid==VOID)
+    if (newrootid==-1)
     {
         for (V3DLONG i=0;i<neurons.size();i++)
             if (neurons.at(i).pn==-1){
@@ -1661,6 +1660,8 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
     {
         QList<NeuronSWC> nt,nt_sort;
         long countNode=0;
+        long soma_ct = 0;
+        long soma_id = -1;
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
         {
             if((*i)->type == 1) //selecting NeuronSWC
@@ -1679,11 +1680,32 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
                 temp.level=(*i)->level;
                 temp.creatmode=(*i)->creatmode;
                 temp.timestamp=(*i)->timestamp;
+                if(temp.type==1)  // Use soma node as root, if any.
+                {
+                    soma_ct++;
+                    if(soma_ct==1)
+                    {
+                        soma_id = countNode - 1;
+                    }
+                    qDebug()<<temp.n<<temp.x<<temp.y<<temp.z<<temp.type;
+                }
                 nt.append(temp);
             }
         }
     //    removeDuplicatedNode(nt,nt_sort);
-        Sort_SWC(nt,nt_sort);
+        if(soma_ct==0){
+            printf("No soma found in swc file.\n");
+            Sort_SWC(nt,nt_sort);
+        }
+        else{
+            if(soma_ct>1)
+            {
+                printf("Warning: more than one soma node found!\n");
+            }
+            qDebug()<<soma_id<<nt.at(soma_id).x<<nt.at(soma_id).y<<nt.at(soma_id).z;
+//            Sort_SWC(nt,nt_sort, soma_id);
+            Sort_SWC(nt,nt_sort, nt.at(soma_id).n);
+        }
         for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
         {
             fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
