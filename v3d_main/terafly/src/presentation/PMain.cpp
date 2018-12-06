@@ -176,7 +176,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
     loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
     saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
-    saveAnnotationsAfterRemoveDupNodesAction=new QAction("Save after Remove dup nodes",this);
+    saveAnnotationsAfterRemoveDupNodesAction=new QAction("Remove dup nodes before saving annotations",this);
     saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
     clearAnnotationsAction = new QAction(QIcon(":/icons/clear.png"), "Clear annotations", this);
     exitAction = new QAction("Quit", this);
