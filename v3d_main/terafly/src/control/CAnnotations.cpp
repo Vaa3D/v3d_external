@@ -1562,6 +1562,10 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
         S.z = neurons.at(oripos).z;
         S.r = neurons.at(oripos).r;
         S.type = neurons.at(oripos).type;
+        S.seg_id = neurons.at(oripos).seg_id;
+        S.level = neurons.at(oripos).level;
+        S.creatmode = neurons.at(oripos).creatmode;
+        S.timestamp = neurons.at(oripos).timestamp;
         result.append(S);
         cnt++;
 
@@ -1580,6 +1584,10 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
                         S.z = neurons.at(oripos).z;
                         S.r = neurons.at(oripos).r;
                         S.type = neurons.at(oripos).type;
+                        S.seg_id = neurons.at(oripos).seg_id;
+                        S.level = neurons.at(oripos).level;
+                        S.creatmode = neurons.at(oripos).creatmode;
+                        S.timestamp = neurons.at(oripos).timestamp;
                         result.append(S);
                         cnt++;
 
