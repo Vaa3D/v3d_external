@@ -1715,6 +1715,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+			updateWithTriView();
 			if (_call_that_func > 0)
 			{
 				resumeCollaborationVR = true;
