@@ -500,6 +500,7 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 				qDebug("split_V_NeuronSWC_segs cann't find start point (left %d points)", n_left);
 				istart = i_left;
 				cout << " -- " << istart << endl;
+                continue;
 			}
 			else
 			{
