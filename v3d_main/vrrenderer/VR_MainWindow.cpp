@@ -511,7 +511,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		return 0;
 	}
 	RunVRMainloop(zoomPOS);
-
+	//pMainApplication->Shutdown();
 		qDebug()<<"Now quit VR";
 		int _call_that_function = pMainApplication->postVRFunctionCallMode;
 		zoomPOS->x = pMainApplication->teraflyPOS.x;
@@ -616,18 +616,20 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		}
 		//if(pMainApplication->READY_TO_SEND==true)
 		//	CURRENT_DATA_IS_SENT=true;
+		
 	}
 	sendHMDPOScout++;
-	if(sendHMDPOScout>100)
-	{SendHMDPosition();
+	if(sendHMDPOScout>30)
+	{
+		SendHMDPosition();
+		socket->write(QString("/ask:message \n").toUtf8());
+		qDebug()<<"ask message";
 		sendHMDPOScout = 0;}
-	//SendHMDPosition();
 	}
 
 	//QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
 	return ;
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: for standalone VR.
