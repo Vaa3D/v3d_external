@@ -176,6 +176,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
     loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
     saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
+    saveAnnotationsAfterRemoveDupNodesAction=new QAction("Remove dup nodes before saving annotations",this);
     saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
     clearAnnotationsAction = new QAction(QIcon(":/icons/clear.png"), "Clear annotations", this);
     exitAction = new QAction("Quit", this);
@@ -186,6 +187,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //saveandchangetype->setShortcut(QKeySequence("Ctrl+W"));
     //returntochangedtype->setShortcut(QKeySequence("Ctrl+K"));
     saveAnnotationsAction->setShortcut(QKeySequence("Ctrl+S"));
+    //saveAnnotationsAfterRemoveDupNodesAction->setShortcut(QKeySequence("Shift+S"));
     saveAnnotationsAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     clearAnnotationsAction->setShortcut(QKeySequence("Ctrl+Shift+C"));
     exitAction->setShortcut(QKeySequence("Ctrl+Q"));
@@ -202,6 +204,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(saveAnnotationsAction, SIGNAL(triggered()), this, SLOT(saveAnnotations()));
     connect(saveAnnotationsAsAction, SIGNAL(triggered()), this, SLOT(saveAnnotationsAs()));
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
+    connect(saveAnnotationsAfterRemoveDupNodesAction,SIGNAL(triggered()),this,SLOT(saveAnnotationsAfterRemoveDupNodes()));
     fileMenu->addAction(openTeraFlyVolumeAction);
     fileMenu->addAction(openHDF5VolumeAction);
     fileMenu->addAction(openUnstitchedImageAction);
@@ -218,6 +221,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //fileMenu->addAction(returntochangedtype);
     fileMenu->addAction(saveAnnotationsAction);
     fileMenu->addAction(saveAnnotationsAsAction);
+    fileMenu->addAction(saveAnnotationsAfterRemoveDupNodesAction);
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
@@ -1160,6 +1164,7 @@ void PMain::reset()
     importOptionsMenu->setEnabled(true);
     loadAnnotationsAction->setEnabled(false);
     saveAnnotationsAction->setEnabled(false);
+    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
     //saveandchangetype->setEnabled(false);
     saveAnnotationsAsAction->setEnabled(false);
     clearAnnotationsAction->setEnabled(false);
@@ -1620,6 +1625,7 @@ void PMain::loadAnnotations()
                 // load
                 cur_win->loadAnnotations();
                 saveAnnotationsAction->setEnabled(true);
+                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
                 virtualSpaceSizeMenu->setEnabled(false);
 				myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
 
@@ -1682,7 +1688,7 @@ void PMain::saveAnnotations()
 
             // save
             cur_win->storeAnnotations();
-            CAnnotations::getInstance()->save(annotationsPathLRU.c_str());
+            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false);
 
             // reset saved cursor
             CViewer::setCursor(cursor);
@@ -1699,6 +1705,50 @@ void PMain::saveAnnotations()
     }
 }
 
+/**********************************************************************************
+* Called when "Save annotations" or "Save annotations as" menu actions are triggered.
+* If required, opens QFileDialog to select annotation file path.
+***********************************************************************************/
+void PMain::saveAnnotationsAfterRemoveDupNodes()
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    CViewer *cur_win = CViewer::getCurrent();
+
+    try
+    {
+        if(cur_win)
+        {
+            if(annotationsPathLRU.compare("")==0)
+            {
+                saveAnnotationsAs();
+                return;
+            }
+
+            // save current cursor and set wait cursor
+            QCursor cursor = cur_win->view3DWidget->cursor();
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+            CViewer::setCursor(Qt::WaitCursor);
+
+            // save
+            cur_win->storeAnnotations();
+            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true);
+
+            // reset saved cursor
+            CViewer::setCursor(cursor);
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(cursor);
+
+            // disable save button
+            saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+        }
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
 
 void PMain::autosaveAnnotations()
 {
@@ -1734,7 +1784,7 @@ void PMain::autosaveAnnotations()
                 autosavePath = qappDirPath+"/autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             }
 
-            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str());
+            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str(),false);
 
             // reset saved cursor
             CViewer::setCursor(cursor);
@@ -1832,8 +1882,9 @@ void PMain::saveAnnotationsAs()
 
                 // save
                 cur_win->storeAnnotations();
-                CAnnotations::getInstance()->save(annotationsPathLRU.c_str());
+                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false);
                 saveAnnotationsAction->setEnabled(true);
+                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
 
                 // reset saved cursor
                 CViewer::setCursor(cursor);
@@ -3191,6 +3242,7 @@ void PMain::annotationsChanged()
     if(!annotationsPathLRU.empty())
     {
         saveAnnotationsAction->setEnabled(true);
+        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
     }
 
     // update mini-map, realtime update is slow

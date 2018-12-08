@@ -14,6 +14,8 @@
 #include "COperation.h"
 #include "CImageUtils.h"
 #include "../presentation/PLog.h"
+#include "renderer_gl1.h"
+#include "renderer.h"
 
 using namespace terafly;
 using namespace std;
@@ -1365,8 +1367,258 @@ void CAnnotations::removeDuplicatedNode(QList<NeuronSWC> &neuron,QList<NeuronSWC
             result.append(neuron.at(i));
     }
 }
+#define VOID 1000000000
 
-void CAnnotations::save(const char* filepath) throw (RuntimeException)
+QHash<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT)
+{
+    QHash<V3DLONG, V3DLONG> cp;
+    for (V3DLONG i=0;i<neurons.size(); i++)
+    {
+        if (neurons.at(i).pn==-1)
+            cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
+        else if(idlist.indexOf(LUT.value(neurons.at(i).pn)) == 0 && neurons.at(i).pn != neurons.at(0).n)
+            cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
+        else
+            cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), idlist.indexOf(LUT.value(neurons.at(i).pn)));
+    }
+        return cp;
+}
+
+QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
+{
+    QHash<V3DLONG,V3DLONG> LUT;
+
+    for (V3DLONG i=0;i<neurons.size();i++)
+    {
+        V3DLONG j;
+        for (j=0;j<i;j++)
+        {
+            if (neurons.at(i).x==neurons.at(j).x && neurons.at(i).y==neurons.at(j).y && neurons.at(i).z==neurons.at(j).z)	break;
+        }
+        LUT.insertMulti(neurons.at(i).n,j);
+    }
+    return (LUT);
+}
+
+void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG siz, int* numbered, int *group)
+{
+    if (!numbered[node]){
+        numbered[node] = *group;
+        neworder[*id] = node;
+        (*id)++;
+        for (V3DLONG v=0;v<siz;v++)
+            if (!numbered[v] && matrix[v][node])
+            {
+                DFS(matrix, neworder, v, id, siz,numbered,group);
+            }
+    }
+}
+double computeDist2(const NeuronSWC & s1, const NeuronSWC & s2, double xscale=1, double yscale=1, double zscale=1)
+{
+    double xx = (s1.x-s2.x)*xscale;
+    double yy = (s1.y-s2.y)*yscale;
+    double zz = (s1.z-s2.z)*zscale;
+    return sqrt(xx*xx+yy*yy+zz*zz);
+}
+
+bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid)
+{
+    double thres=0;
+    //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
+    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+
+    //create a new id list to give every different neuron a new id
+    QList<V3DLONG> idlist = ((QSet<V3DLONG>)LUT.values().toSet()).toList();
+
+    //create a child-parent table, both child and parent id refers to the index of idlist
+    QHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
+
+
+    V3DLONG siz = idlist.size();
+
+    bool** matrix = new bool*[siz];
+    for (V3DLONG i = 0;i<siz;i++)
+    {
+        matrix[i] = new bool[siz];
+        for (V3DLONG j = 0;j<siz;j++) matrix[i][j] = false;
+    }
+
+
+    //generate the adjacent matrix for undirected matrix
+    for (V3DLONG i = 0;i<siz;i++)
+    {
+        QList<V3DLONG> parentSet = cp.values(i); //id of the ith node's parents
+        for (V3DLONG j=0;j<parentSet.size();j++)
+        {
+            V3DLONG v2 = (V3DLONG) (parentSet.at(j));
+            if (v2==-1) continue;
+            matrix[i][v2] = true;
+            matrix[v2][i] = true;
+        }
+    }
+
+
+    //do a DFS for the the matrix and re-allocate ids for all the nodes
+    V3DLONG root = 0;
+    if (newrootid==-1)
+    {
+        for (V3DLONG i=0;i<neurons.size();i++)
+            if (neurons.at(i).pn==-1){
+                root = idlist.indexOf(LUT.value(neurons.at(i).n));
+                break;
+            }
+    }
+    else{
+        root = idlist.indexOf(LUT.value(newrootid));
+//        QList<V3DLONG> test = LUT.keys();
+//        for(int i=0; i<test.size();i++){
+//            qDebug()<<i<<test.at(i)<<test.indexOf(test.at(i));
+//        }
+//        qDebug()<<test.size()<<test.at(0)<<newrootid<<test.indexOf(newrootid);
+
+        if (LUT.keys().indexOf(newrootid)==-1)
+        {
+            v3d_msg("The new root id you have chosen does not exist in the SWC file.");
+            return(false);
+        }
+    }
+
+
+    V3DLONG* neworder = new V3DLONG[siz];
+    int* numbered = new int[siz];
+    for (V3DLONG i=0;i<siz;i++) numbered[i] = 0;
+
+    V3DLONG id[] = {0};
+
+    int group[] = {1};
+    DFS(matrix,neworder,root,id,siz,numbered,group);
+
+    while (*id<siz)
+    {
+        V3DLONG iter;
+        (*group)++;
+        for (iter=0;iter<siz;iter++)
+            if (numbered[iter]==0) break;
+        DFS(matrix,neworder,iter,id,siz,numbered,group);
+    }
+
+
+    //find the point in non-group 1 that is nearest to group 1,
+    //include the nearest point as well as its neighbors into group 1, until all the nodes are connected
+    while((*group)>1)
+    {
+        double min = VOID;
+        double dist2 = 0;
+        int mingroup = 1;
+        V3DLONG m1,m2;
+        for (V3DLONG ii=0;ii<siz;ii++){
+            if (numbered[ii]==1)
+                for (V3DLONG jj=0;jj<siz;jj++)
+                    if (numbered[jj]!=1)
+                    {
+                        dist2 = computeDist2(neurons.at(idlist.at(ii)),neurons.at(idlist.at(jj)));
+                        if (dist2<min)
+                        {
+                            min = dist2;
+                            mingroup = numbered[jj];
+                            m1 = ii;
+                            m2 = jj;
+                        }
+                    }
+        }
+        for (V3DLONG i=0;i<siz;i++)
+            if (numbered[i]==mingroup)
+                numbered[i] = 1;
+        if (min<=thres*thres)
+        {
+            matrix[m1][m2] = true;
+            matrix[m2][m1] = true;
+        }
+        (*group)--;
+    }
+
+    id[0] = 0;
+    for (int i=0;i<siz;i++)
+    {
+        numbered[i] = 0;
+        neworder[i]= VOID;
+    }
+
+    *group = 1;
+
+    V3DLONG new_root=root;
+    V3DLONG offset=0;
+    while (*id<siz)
+    {
+        V3DLONG cnt = 0;
+        DFS(matrix,neworder,new_root,id,siz,numbered,group);
+        (*group)++;
+        NeuronSWC S;
+        S.n = offset+1;
+        S.pn = -1;
+        V3DLONG oripos = idlist.at(new_root);
+        S.x = neurons.at(oripos).x;
+        S.y = neurons.at(oripos).y;
+        S.z = neurons.at(oripos).z;
+        S.r = neurons.at(oripos).r;
+        S.type = neurons.at(oripos).type;
+        S.seg_id = neurons.at(oripos).seg_id;
+        S.level = neurons.at(oripos).level;
+        S.creatmode = neurons.at(oripos).creatmode;
+        S.timestamp = neurons.at(oripos).timestamp;
+        result.append(S);
+        cnt++;
+
+        for (V3DLONG ii=offset+1;ii<(*id);ii++)
+        {
+            for (V3DLONG jj=offset;jj<ii;jj++) //after DFS the id of parent must be less than child's
+            {
+                if (neworder[ii]!=VOID && neworder[jj]!=VOID && matrix[neworder[ii]][neworder[jj]] )
+                {
+                        NeuronSWC S;
+                        S.n = ii+1;
+                        S.pn = jj+1;
+                        V3DLONG oripos = idlist.at(neworder[ii]);
+                        S.x = neurons.at(oripos).x;
+                        S.y = neurons.at(oripos).y;
+                        S.z = neurons.at(oripos).z;
+                        S.r = neurons.at(oripos).r;
+                        S.type = neurons.at(oripos).type;
+                        S.seg_id = neurons.at(oripos).seg_id;
+                        S.level = neurons.at(oripos).level;
+                        S.creatmode = neurons.at(oripos).creatmode;
+                        S.timestamp = neurons.at(oripos).timestamp;
+                        result.append(S);
+                        cnt++;
+
+                        break; //added by CHB to avoid problem caused by loops in swc, 20150313
+                }
+            }
+        }
+        for (new_root=0;new_root<siz;new_root++)
+            if (numbered[new_root]==0) break;
+        offset += cnt;
+    }
+
+    if ((*id)<siz) {
+        v3d_msg("Error!");
+        return false;
+    }
+
+    //free space by Yinan Wan 12-02-02
+    if (neworder) {delete []neworder; neworder=NULL;}
+    if (numbered) {delete []numbered; numbered=NULL;}
+    if (matrix){
+        for (V3DLONG i=0;i<siz;i++) {delete matrix[i]; matrix[i]=NULL;}
+        if (matrix) {delete []matrix; matrix=NULL;}
+    }
+
+
+    return(true);
+
+}
+
+void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
 
@@ -1412,56 +1664,74 @@ void CAnnotations::save(const char* filepath) throw (RuntimeException)
     fprintf(f, "#comment terafly_annotations\n");
     fprintf(f, "#n type x y z radius parent seg_id level mode timestamp\n");
 	cout << "Annotation size: " << annotations.size() << endl;
-    QList<NeuronSWC> nt,nt_sort;
-    long countNode=0;
-    for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+    if(removedupnode)
     {
-        if((*i)->type == 1) //selecting NeuronSWC
+        QList<NeuronSWC> nt,nt_sort;
+        long countNode=0;
+        long soma_ct = 0;
+        long soma_id = -1;
+        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
         {
-            countNode++;
-            NeuronSWC temp;
-            temp.n=(*i)->ID;
-            temp.type=(*i)->subtype;
-            temp.x=(*i)->x;
-            temp.y=(*i)->y;
-            temp.z=(*i)->z;
-            temp.r=(*i)->r;
-            temp.parent=(*i)->parent ? (*i)->parent->ID : -1;
-            temp.seg_id=0;
-            temp.level=(*i)->level;
-            temp.creatmode=(*i)->creatmode;
-            temp.timestamp=(*i)->timestamp;
-            nt.append(temp);
+            if((*i)->type == 1) //selecting NeuronSWC
+            {
+                countNode++;
+                NeuronSWC temp;
+                temp.n=(*i)->ID;
+                temp.type=(*i)->subtype;
+                temp.x=(*i)->x;
+                temp.y=(*i)->y;
+                temp.z=(*i)->z;
+                temp.r=(*i)->r;
+                temp.parent=(*i)->parent ? (*i)->parent->ID : -1;
+                temp.pn=(*i)->parent ? (*i)->parent->ID : -1;
+                temp.seg_id=0;
+                temp.level=(*i)->level;
+                temp.creatmode=(*i)->creatmode;
+                temp.timestamp=(*i)->timestamp;
+                if(temp.type==1)  // Use soma node as root, if any.
+                {
+                    soma_ct++;
+                    if(soma_ct==1)
+                    {
+                        soma_id = countNode - 1;
+                    }
+                    qDebug()<<temp.n<<temp.x<<temp.y<<temp.z<<temp.type;
+                }
+                nt.append(temp);
+            }
         }
+    //    removeDuplicatedNode(nt,nt_sort);
+        if(soma_ct==0){
+            printf("No soma found in swc file.\n");
+            Sort_SWC(nt,nt_sort);
+        }
+        else{
+            if(soma_ct>1)
+            {
+                printf("Warning: more than one soma node found!\n");
+            }
+            qDebug()<<soma_id<<nt.at(soma_id).x<<nt.at(soma_id).y<<nt.at(soma_id).z;
+//            Sort_SWC(nt,nt_sort, soma_id);
+            Sort_SWC(nt,nt_sort, nt.at(soma_id).n);
+        }
+        for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
+        {
+            fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
+                    nt_sort.at(countNode).z, nt_sort.at(countNode).r, nt_sort.at(countNode).parent, 0, nt_sort.at(countNode).level, nt_sort.at(countNode).creatmode,
+                    nt_sort.at(countNode).timestamp);
+        }
+
+    //    cout<<"countNode is "<<countNode<<endl;
+    //        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+    //            if((*i)->type == 1) //selecting NeuronSWC
+    //                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
     }
-    removeDuplicatedNode(nt,nt_sort);
-    for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
-    {
-        fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
-                nt_sort.at(countNode).z, nt_sort.at(countNode).r, nt_sort.at(countNode).parent, 0, nt_sort.at(countNode).level, nt_sort.at(countNode).creatmode,
-                nt_sort.at(countNode).timestamp);
-    }
-//    for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
-//    {
-//        if((*i)->type == 1) //selecting NeuronSWC
-//        {
-
-//            fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
-//                    nt_sort.at(countNode).z, nt_sort.at(countNode).r, nt_sort.at(countNode).parent, 0, nt_sort.at(countNode).level, nt_sort.at(countNode).creatmode,
-//                    nt_sort.at(countNode).timestamp);
-//            countNode++;
-//        }
-
-//    }
-//    cout<<"countNode is "<<countNode<<endl;
-//        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
-//            if((*i)->type == 1) //selecting NeuronSWC
-//                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r, (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
-
-    //file closing
-    fclose(f);
-        //removeDuplicatedNode(nt,nt_sort);
-
+    else
+        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+            if((*i)->type == 1) //selecting NeuronSWC
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r,
+                        (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
+    fclose(f);//file closing
 
     PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", tf::IO, timer.elapsed()));
 }

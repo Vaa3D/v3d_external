@@ -79,6 +79,7 @@ class terafly::PMain : public QWidget
         //QAction* returntochangedtype;
         QAction* loadAnnotationsAction; //"Load annotations" menu action
         QAction* saveAnnotationsAction; //"Save annotations" menu action
+        QAction* saveAnnotationsAfterRemoveDupNodesAction;//"save annotations after removing duplicated nodes
         QAction* saveAnnotationsAsAction; //"Save annotations as" menu action
         QAction* clearAnnotationsAction;//"Clear annotations" menu action
         QAction* exitAction;            //"Exit" menu action
@@ -392,6 +393,7 @@ class terafly::PMain : public QWidget
         void saveAnnotations();
         void saveAnnotationsAs();
         void autosaveAnnotations();
+        void saveAnnotationsAfterRemoveDupNodes();
         //void changecurrentblocktype();
         //void return_to_the_changedtype();
 
