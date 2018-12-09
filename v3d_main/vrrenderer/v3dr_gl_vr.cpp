@@ -1088,7 +1088,6 @@ void CMainApplication::Shutdown()
 	//remeber last Grip choice
 	// global_padm_modeGrip_L = m_modeGrip_L;
 	// global_padm_modeGrip_R = m_modeGrip_R;
-
 	//reverse the normalization (so that the next VR session can normalize correctly)
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z) ); 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1.0f/m_globalScale,1.0f/m_globalScale,1.0f/m_globalScale));
@@ -1134,8 +1133,7 @@ void CMainApplication::Shutdown()
 		// img4d->update_3drenderer_neuron_view();
 
 	}
-	if(drawnMarkerList.size()>0)
-	{
+	//if(drawnMarkerList.size()>0)//In all cases ,we should copy markerlist into img4d,liqi 2018_12_9
 		if (m_bHasImage4D)
 		{
 			img4d->listLandmarks.clear();
@@ -1146,9 +1144,7 @@ void CMainApplication::Shutdown()
 				S_tmp.color = mk.color;
 				img4d->listLandmarks.append(S_tmp);		
 			}
-			qDebug()<<"QUIT! NOW listLandmarks.size is "<<img4d->listLandmarks.size();
 		}
-	}
 
 	bIsUndoEnable = false;
 	bIsRedoEnable = false;

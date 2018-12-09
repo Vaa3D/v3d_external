@@ -398,7 +398,7 @@ void VR_MainWindow::onReadyRead() {
 			{
 				pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
-				pMainApplication->ClearCurrentNT();
+				//pMainApplication->ClearCurrentNT();
 			}
 			pMainApplication->UpdateDragNodeinNTList(ntnum,swcnum,converreceivexyz.x,converreceivexyz.y,converreceivexyz.z);
         }
@@ -413,7 +413,7 @@ void VR_MainWindow::onReadyRead() {
 				{
 					pMainApplication->READY_TO_SEND=false;
 					CURRENT_DATA_IS_SENT=false;
-					pMainApplication->ClearCurrentNT();
+					//pMainApplication->ClearCurrentNT();
 				}
 
 				int colortype;
@@ -623,7 +623,6 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	{
 		SendHMDPosition();
 		socket->write(QString("/ask:message \n").toUtf8());
-		qDebug()<<"ask message";
 		sendHMDPOScout = 0;}
 	}
 
@@ -701,7 +700,6 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	zoomPOS->x = pMainApplication->teraflyPOS.x;
 	zoomPOS->y = pMainApplication->teraflyPOS.y;
 	zoomPOS->z = pMainApplication->teraflyPOS.z;
-	
 	delete pMainApplication;
 	pMainApplication = NULL;
 
