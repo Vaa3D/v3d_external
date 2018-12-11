@@ -988,6 +988,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 			else if (IS_ALT_MODIFIER)
 			{
+				QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+				if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+				
 				callFragmentTracing();
 			}
 	  		break;
