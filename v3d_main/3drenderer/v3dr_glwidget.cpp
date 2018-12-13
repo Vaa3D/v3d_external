@@ -1105,11 +1105,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
-//			else
-//            {
-//                neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
-//                updateColorMode(neuronColorMode);
-//            }
+            else
+            {
+                neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
+                updateColorMode(neuronColorMode);
+            }
 	  		break;
 		case Qt::Key_V:
 		    if ( WITH_SHIFT_MODIFIER && //advanced
