@@ -619,13 +619,26 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		
 	}
 	sendHMDPOScout++;
-	if(sendHMDPOScout>30)
-	{
-		SendHMDPosition();
-		socket->write(QString("/ask:message \n").toUtf8());
-		sendHMDPOScout = 0;}
-	}
+	//if(sendHMDPOScout>30)
+	//{
+	//	SendHMDPosition();
+	//	socket->write(QString("/ask:message \n").toUtf8());
+	//	sendHMDPOScout = 0;}
+	//}
 
+	switch (sendHMDPOScout/20)
+	{
+	case 0:
+		socket->write(QString("/ask:message \n").toUtf8());
+		break;
+	case 3:
+		SendHMDPosition();
+		sendHMDPOScout = 0;
+		break;
+	default:
+		break;
+	}
+	}
 	//QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
 	return ;
 }

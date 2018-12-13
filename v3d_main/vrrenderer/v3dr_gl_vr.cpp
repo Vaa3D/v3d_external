@@ -81,7 +81,8 @@ bool CMainApplication::showshootingPad = false;
 #define connection_rigourous 0.5
 #define default_radius 0.618
 #define drawing_step_size 5  //the larger, the fewer SWC nodes
-
+//LMG for Windows UTC Timestamp 15/10/2018
+#define timegm _mkgmtime
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
 const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
@@ -2647,6 +2648,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 					if (tempNT.listNeuron.size()>0)
 					{
+						
 						// improve curve shape
 						NeuronTree InputNT;
 						InputNT = tempNT;
@@ -2679,6 +2681,18 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				// if one of the endpoints of the newly drawn curve are near some existing curve with the given threshold,
 				// change the endpoint position slightly so that the new curve connects with the existing curve.
 				int autoConnected = -1;
+				time_t timer2;// set timestamp to all segments created,with or without virtual finger on
+				struct tm y2k = { 0 };
+				double seconds;
+				y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+				y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
+				time(&timer2);  /* get current time; same as: timer = time(NULL)  */
+				seconds = difftime(timer2, timegm(&y2k)); //Timestamp LMG 27/9/2018
+				qDebug("Timestamp at m_drawMode (VR) (seconds since January 1, 2000 in UTC): %.0f", seconds);
+				for(int i=0;i<currentNT.listNeuron.size();i++)
+				{
+					if (currentNT.listNeuron[i].timestamp == 0) currentNT.listNeuron[i].timestamp = seconds;
+				}
 				if(currentNT.listNeuron.size()>0)
 				{
 					NeuronSWC* beginNode = &currentNT.listNeuron.first();
@@ -2974,7 +2988,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							tempSWC.x=0;
 							tempSWC.y=0;
 							tempSWC.z=0;
-							tempSWC.type=2;
+							tempSWC.type = 2;
+							tempSWC.creatmode = nearestNT.listNeuron[0].creatmode;
+							tempSWC.timestamp = nearestNT.listNeuron[0].timestamp;
 							NewNT.listNeuron.append(tempSWC);
         					NewNT.hashNeuron.insert(tempSWC.n, NewNT.listNeuron.size()-1);
 							continue;
@@ -2984,7 +3000,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					tempSWC.x=0;
 					tempSWC.y=0;
 					tempSWC.z=0;
-					tempSWC.type=2;
+					tempSWC.type = 2;
+					tempSWC.creatmode = nearestNT.listNeuron[0].creatmode;
+					tempSWC.timestamp = nearestNT.listNeuron[0].timestamp;
 					NewNT.listNeuron.append(tempSWC);
         			NewNT.hashNeuron.insert(tempSWC.n, NewNT.listNeuron.size()-1);
 				}
@@ -3123,7 +3141,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
-				if (delName == "") break; //segment not found
+				if (delName == "") break; //segment not found	
 
 				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
 				{
@@ -3194,7 +3212,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					 	}
 					 }
 				}
-
+					
 				//create NT2's Topology
 				for(int j=splitNT2beginindex,k=1;j<nearestNT.listNeuron.size();j++,k++)
 				{
@@ -3221,7 +3239,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
         			splitNT2.hashNeuron.insert(tempSWC.n, splitNT2.listNeuron.size()-1);
 					splitNT2size++;
 				}
-
+				time_t timer2;
+					struct tm y2k = { 0 };
+					double seconds;
+					y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+					y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
+					time(&timer2);  /* get current time; same as: timer = time(NULL)  */
+					seconds = difftime(timer2, timegm(&y2k)); //Timestamp LMG 27/9/2018
+					qDebug("Timestamp at m_drawMode (VR) (seconds since January 1, 2000 in UTC): %.0f", seconds);
 				//copy data from second half into NT2
 				for(int j=splitNT2beginindex,k=0;j<nearestNT.listNeuron.size();j++,k++)
 				{
@@ -3231,6 +3256,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						splitNT2.listNeuron[k].y=nearestNode.y - directionsplit.y;
 						splitNT2.listNeuron[k].z=nearestNode.z - directionsplit.z;
 						splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
+						splitNT2.listNeuron[k].creatmode = nearestNT.listNeuron[j].creatmode;
+						splitNT2.listNeuron[k].timestamp = seconds;
 						splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
 						continue;
 					}
@@ -3238,6 +3265,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					splitNT2.listNeuron[k].y=nearestNT.listNeuron[j].y;
 					splitNT2.listNeuron[k].z=nearestNT.listNeuron[j].z;
 					splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
+					splitNT2.listNeuron[k].creatmode = nearestNT.listNeuron[j].creatmode;
+					splitNT2.listNeuron[k].timestamp = seconds;
 					splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
 				}
 
