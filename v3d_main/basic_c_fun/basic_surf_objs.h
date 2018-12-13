@@ -143,8 +143,10 @@ struct NeuronSWC : public BasicSurfObj
     V3DLONG creatmode;      // creation mode LMG 8/10/2018
     double timestamp;		// timestamp  LMG 27/9/2018
 
+    double tfresindex;         // TeraFly resolution index LMG 13/12/2018
+
 	operator XYZ() const { return XYZ(x, y, z); }
-    NeuronSWC () {n=type=pn=0; x=y=z=r=0; seg_id=-1; nodeinseg_id=0; fea_val=QList<float>(); level=-1; creatmode=0; timestamp=0;}
+    NeuronSWC () {n=type=pn=0; x=y=z=r=0; seg_id=-1; nodeinseg_id=0; fea_val=QList<float>(); level=-1; creatmode=0; timestamp=0; tfresindex=0;}
 };
 
 // .v3ds label surfaces
@@ -197,6 +199,7 @@ struct NeuronTree : public BasicSurfObj
             S.seg_id = p.listNeuron[i].seg_id;
             S.creatmode = p.listNeuron[i].creatmode;  // Creation Mode LMG 8/10/2018
             S.timestamp = p.listNeuron[i].timestamp;  // Timestamp LMG 27/9/2018
+            S.tfresindex = p.listNeuron[i].tfresindex; // TeraFly resolution index LMG 13/12/2018
             S.fea_val = p.listNeuron[i].fea_val;
             listNeuron.append(S);
             hashNeuron.insert(S.n, listNeuron.size()-1);
@@ -231,6 +234,7 @@ struct NeuronTree : public BasicSurfObj
             p_tmp->r = p.listNeuron.at(i).r;
             p_tmp->creatmode = p.listNeuron.at(i).creatmode;    // Creation Mode LMG 8/10/2018
             p_tmp->timestamp = p.listNeuron.at(i).timestamp;    // Timestamp LMG 27/9/2018
+            p_tmp->tfresindex = p.listNeuron.at(i).tfresindex;  // TeraFly resolution index 13/12/2018
 			//qDebug()<<"src:"<<p.listNeuron.at(i).x<<p.listNeuron.at(i).y<<p.listNeuron.at(i).z<<p.listNeuron.at(i).r;
 			//qDebug()<<"after:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
 		}

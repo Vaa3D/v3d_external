@@ -69,6 +69,7 @@ NeuronTree V_NeuronSWC__2__NeuronTree(V_NeuronSWC & seg) // convert V_NeuronSWC 
             //for timestamping and quality control LMG 8/10/2018
             S.creatmode = seg.row.at(k).creatmode;
             S.timestamp = seg.row.at(k).timestamp;
+            S.tfresindex = seg.row.at(k).tfresindex;
 			
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			
@@ -125,6 +126,7 @@ V_NeuronSWC_list NeuronTree__2__V_NeuronSWC_list(NeuronTree * nt)           //co
         v.level = qlist[i].level;
         v.creatmode = qlist[i].creatmode; //for timestamping and quality control LMG 8/10/2018
         v.timestamp = qlist[i].timestamp; //for timestamping and quality control LMG 8/10/2018
+        v.tfresindex = qlist[i].tfresindex; //for TeraFly resolution index LMG 13/12/2018
 		
 		cur_seg.append(v);
         //qDebug("%d ", cur_seg.nnodes());

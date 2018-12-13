@@ -913,6 +913,9 @@ class terafly::PluginInterface
         // get currently displayed image (readonly)
         static const Image4DSimple* getImage();
 
+        // get currently displayed resolution LMG 13-12-2018 for keeping info in eswc
+        static int getRes();
+
         // get image metadata from the given image file/folder path
         static size_t getXDim(const std::string & path);
         static size_t getYDim(const std::string & path);

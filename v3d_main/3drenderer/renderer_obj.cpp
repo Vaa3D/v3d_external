@@ -1775,6 +1775,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
             S.level = seg.row.at(k).level;
             S.creatmode = seg.row.at(k).creatmode;
             S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
+            S.tfresindex = seg.row.at(k).tfresindex; //LMG 13/12/2018
 
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			//if (! listNeuron.contains(S)) // 081024

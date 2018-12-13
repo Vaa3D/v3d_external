@@ -83,6 +83,7 @@ void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
     p.level = node->level;
     p.creatmode = node->creatmode; //for timestamping and quality control LMG 8/10/2018
     p.timestamp = node->timestamp; //for timestamping and quality control LMG 8/10/2018
+    p.tfresindex = node->tfresindex; //for keepin TeraFly resolution index LMG 13/12/2018
     p.pn = node->parent ? node->parent->ID : -1;
     // add node to list
     #ifdef terafly_enable_debug_annotations
@@ -1111,6 +1112,7 @@ void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf:
         ann->level = nt.listNeuron[i].level;
         ann->creatmode = nt.listNeuron[i].creatmode; //for timestamping and quality control LMG 8/10/2018
         ann->timestamp = nt.listNeuron[i].timestamp; //for timestamping and quality control LMG 8/10/2018
+        ann->tfresindex = nt.listNeuron[i].tfresindex; //for TeraFly resolution index       LMG 13/12/2018
 
         #ifdef terafly_enable_debug_annotations
         tf::debug(tf::LEV_MAX, strprintf("inserting curve point %lld(%.1f,%.1f,%.1f), n=(%d), pn(%d)\n", ann->ID, ann->x, ann->y, ann->z, nt.listNeuron[i].n, nt.listNeuron[i].pn).c_str(), 0, true);
@@ -1566,6 +1568,7 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
         S.level = neurons.at(oripos).level;
         S.creatmode = neurons.at(oripos).creatmode;
         S.timestamp = neurons.at(oripos).timestamp;
+        S.tfresindex = neurons.at(oripos).tfresindex;
         result.append(S);
         cnt++;
 
@@ -1588,6 +1591,7 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
                         S.level = neurons.at(oripos).level;
                         S.creatmode = neurons.at(oripos).creatmode;
                         S.timestamp = neurons.at(oripos).timestamp;
+                        S.tfresindex = neurons.at(oripos).tfresindex;
                         result.append(S);
                         cnt++;
 
@@ -1662,7 +1666,7 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
     f = fopen(QString(filepath).append(".eswc").toStdString().c_str(), "w");
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
-    fprintf(f, "#n type x y z radius parent seg_id level mode timestamp\n");
+    fprintf(f, "#n type x y z radius parent seg_id level mode timestamp TFresindex\n");
 	cout << "Annotation size: " << annotations.size() << endl;
     if(removedupnode)
     {
@@ -1688,6 +1692,7 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
                 temp.level=(*i)->level;
                 temp.creatmode=(*i)->creatmode;
                 temp.timestamp=(*i)->timestamp;
+                temp.tfresindex=(*i)->tfresindex;
                 if(temp.type==1)  // Use soma node as root, if any.
                 {
                     soma_ct++;
@@ -1716,9 +1721,9 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
         }
         for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
         {
-            fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
+            fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
                     nt_sort.at(countNode).z, nt_sort.at(countNode).r, nt_sort.at(countNode).parent, 0, nt_sort.at(countNode).level, nt_sort.at(countNode).creatmode,
-                    nt_sort.at(countNode).timestamp);
+                    nt_sort.at(countNode).timestamp,nt_sort.at(countNode).tfresindex);
         }
 
     //    cout<<"countNode is "<<countNode<<endl;
@@ -1729,8 +1734,8 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
     else
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             if((*i)->type == 1) //selecting NeuronSWC
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r,
-                        (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r,
+                        (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp, (*i)->tfresindex);
     fclose(f);//file closing
 
     PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", tf::IO, timer.elapsed()));
@@ -1804,6 +1809,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 ann->level = i->level;
                 ann->creatmode = i->creatmode;
                 ann->timestamp = i->timestamp;
+                ann->tfresindex = i->tfresindex;
                 ann->vaa3d_n = i->n;
                 octree->insert(*ann);
                 annotationsMap[i->n] = ann;

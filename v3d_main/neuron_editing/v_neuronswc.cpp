@@ -204,6 +204,7 @@ V_NeuronSWC merge_V_NeuronSWC_list(V_NeuronSWC_list & in_swc_list)
             v.level = row[j].level;
             v.creatmode = row[j].creatmode;
             v.timestamp = row[j].timestamp;
+            v.tfresindex = row[j].tfresindex;
 			v.n = (n0+1) + row[j].n-min_ind;
 			for (i=1;i<=5;i++)	v.data[i] = row[j].data[i];
 			v.parent = (row[j].parent<0)? -1 : ((n0+1) + row[j].parent-min_ind); //change row[j].parent<=0 to row[j].parent<0, PHC 091123.

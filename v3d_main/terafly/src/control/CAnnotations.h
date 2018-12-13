@@ -26,6 +26,7 @@ struct terafly::annotation
     long level;
     int creatmode;                  //for timestamping and quality control LMG 8/10/2018
     double timestamp;               //for timestamping and quality control LMG 8/10/2018
+    int tfresindex;                 //for keeping TeraFly resolution index LMG 13/12/2018
     // constructor and deconstructor
     annotation() throw (tf::RuntimeException);
     annotation(const CellAPO & c)
