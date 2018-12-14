@@ -57,6 +57,8 @@
 #include "PDialogVirtualPyramid.h"
 # include <algorithm>
 
+#include "../../v3d/CustomDefine.h"
+
 using namespace terafly;
 using namespace iim;
 
@@ -1839,6 +1841,9 @@ void PMain::saveAnnotationsAs()
 
             #else
             //tf::setWidgetOnTop(cur_win->window3D, false);
+#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+			QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+#else
             QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
             QString annotationsBasename = fileFullName;
             if(fileFullName.toStdString().find("_stamp_")!=string::npos)
@@ -1849,6 +1854,7 @@ void PMain::saveAnnotationsAs()
                     return;
                 annotationsBasename = fileNameSplit[0];
             }
+#endif
 
             //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
             //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
@@ -1861,6 +1867,9 @@ void PMain::saveAnnotationsAs()
 
             if(!path.isEmpty())
             {
+#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+				annotationsPathLRU = path.toStdString();
+#else
                 //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
                 string filebasename=QFileInfo(path).baseName().toStdString();
                 if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
@@ -1871,7 +1880,8 @@ void PMain::saveAnnotationsAs()
                     filebasename = fileNameSplit[0].toStdString();
                 }
                 annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-                if(annotationsPathLRU.find(".ano") == string::npos)
+#endif
+				if(annotationsPathLRU.find(".ano") == string::npos)
                     annotationsPathLRU.append(".ano");
 
                 // save current cursor and set wait cursor
