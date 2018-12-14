@@ -915,6 +915,7 @@ class terafly::PluginInterface
 
         // get currently displayed resolution LMG 13-12-2018 for keeping info in eswc
         static int getRes();
+        static int getallRes();
 
         // get image metadata from the given image file/folder path
         static size_t getXDim(const std::string & path);

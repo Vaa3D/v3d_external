@@ -357,6 +357,24 @@ int tf::PluginInterface::getRes()
     }
     return CViewer::getCurrent()->getResIndex();
 }
+int tf::PluginInterface::getallRes()
+{
+    try
+    {
+        // check preconditions
+        if(CImport::instance() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // get and return resolution index
+        return CImport::instance()->getResolutions() -1;
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    return CImport::instance()->getResolutions() -1;
+}
+
 
 // get image metadata from the given image file/folder path
 size_t tf::PluginInterface::getXDim(const std::string & path)

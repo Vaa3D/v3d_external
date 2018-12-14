@@ -49,7 +49,6 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
 #include "../terafly/src/control/CPlugin.h"
-#include "../terafly/src/control/CImport.h"
 #ifdef __ALLOW_VR_FUNCS__
 #include "../mozak/MozakUI.h"
 #endif
@@ -872,8 +871,11 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     //LMG 13-12-2017 get current resolution and save in eswc
     tf::PluginInterface resinterface;
     int resindex = resinterface.getRes();
-    qDebug() << "Saving Tera-Fly resolution index " << resindex+1 << "in eswc";
-    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex+1;
+    int allresnum = resinterface.getallRes();
+    resindex = pow(2,allresnum-resindex);
+    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
+    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
+    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
@@ -941,8 +943,11 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
     //LMG 13-12-2017 get current resolution and save in eswc
     tf::PluginInterface resinterface;
     int resindex = resinterface.getRes();
-    qDebug() << "Saving Tera-Fly resolution index " << resindex+1 << "in eswc";
-    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex+1;
+    int allresnum = resinterface.getallRes();
+    resindex = pow(2,allresnum-resindex);
+    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
+    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
+    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
