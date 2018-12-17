@@ -872,7 +872,7 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     tf::PluginInterface resinterface;
     int resindex = resinterface.getRes();
     int allresnum = resinterface.getallRes();
-    resindex = pow(2,allresnum-resindex);
+    resindex = int(pow(2,double(allresnum-resindex)));
     if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
     else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
     for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
@@ -944,7 +944,7 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
     tf::PluginInterface resinterface;
     int resindex = resinterface.getRes();
     int allresnum = resinterface.getallRes();
-    resindex = pow(2,allresnum-resindex);
+    resindex = int(pow(2,double(allresnum-resindex)));
     if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
     else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
     for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
