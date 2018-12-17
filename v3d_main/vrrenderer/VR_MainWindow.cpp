@@ -295,21 +295,22 @@ void VR_MainWindow::onReadyRead() {
 					return;
 			}
             QString user = delMSGs.at(0);
-            float dx = delMSGs.at(1).toFloat();
+           /* float dx = delMSGs.at(1).toFloat();
 			float dy = delMSGs.at(2).toFloat();
-			float dz = delMSGs.at(3).toFloat();
-			qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
-			XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
-			qDebug()<<"user, "<<user<<" Converted Receive marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
+			float dz = delMSGs.at(3).toFloat();*/
+			QString deletename=delMSGs.at(1);
+			//qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
+			//XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
+			//qDebug()<<"user, "<<user<<" Converted Receive marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
 			if(user==userName)
 			{
 				pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
 				pMainApplication->ClearCurrentNT();
 			}
-			QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
-			qDebug()<<"delete ID"<<delID;
-			bool delerror = pMainApplication->DeleteSegment(delID);
+			//QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
+			qDebug()<<"delete ID"<<deletename;
+			bool delerror = pMainApplication->DeleteSegment(deletename);
 			if(delerror==true)
 				qDebug()<<"Segment Deleted.";
 			else
@@ -413,7 +414,7 @@ void VR_MainWindow::onReadyRead() {
 				{
 					pMainApplication->READY_TO_SEND=false;
 					CURRENT_DATA_IS_SENT=false;
-					//pMainApplication->ClearCurrentNT();
+					pMainApplication->ClearCurrentNT();
 				}
 
 				int colortype;
@@ -579,10 +580,9 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			{
 				QString ConverteddelcurvePOS = ConvertsendCoords(pMainApplication->delcurvePOS);
 				qDebug()<<"Converted marker position = "<<ConverteddelcurvePOS;
-				socket->write(QString("/del_curve:" +  ConverteddelcurvePOS+ "\n").toUtf8());
+				socket->write(QString("/del_curve:" +  pMainApplication->delName+ "\n").toUtf8());
 				CURRENT_DATA_IS_SENT=true;
 			}
-
 			else if(pMainApplication->delName=="")
 			{
 				pMainApplication->READY_TO_SEND=false;
