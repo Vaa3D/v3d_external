@@ -353,9 +353,9 @@ int tf::PluginInterface::getRes()
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
     }
-    return CViewer::getCurrent()->getResIndex();
+    return NULL;
 }
 int tf::PluginInterface::getallRes()
 {
@@ -370,9 +370,9 @@ int tf::PluginInterface::getallRes()
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
     }
-    return CImport::instance()->getResolutions() -1;
+    return NULL;
 }
 
 
