@@ -11,8 +11,10 @@
 //#endif
 
 #include "../basic_c_fun/v3d_interface.h"
-
-
+struct VRoutInfo
+{
+	std::vector<XYZ> deletedcurvespos;
+};
 class CMainApplication;
 class My4DImage;
 class MainWindow;
@@ -27,8 +29,9 @@ public:
 	bool SendLoginRequest(bool resume = false);
 	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,XYZ* zoomPOS = 0,XYZ *CreatorPos = 0);
 	XYZ VRVolumeStartPoint;
+	XYZ VRVolumeEndPoint;
 	int ResIndex;
-
+	VRoutInfo VROutinfo;
 public slots:
 	void RunVRMainloop(XYZ* zoomPOS = 0);
 	void SendHMDPosition();

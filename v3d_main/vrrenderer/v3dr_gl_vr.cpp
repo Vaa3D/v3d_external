@@ -1458,6 +1458,7 @@ bool CMainApplication::HandleInput()
 			{
 				if(m_modeGrip_R==m_drawMode)
 				{
+
 					//this part is for building a neuron tree to further save as SWC file
 					if (vertexcount%drawing_step_size ==0)//use vertexcount to control point counts in a single line 
 					//each #drawing_step_size frames render a SWC node
@@ -4295,8 +4296,8 @@ void CMainApplication::SetupControllerTexture()
 
 
 		//For NewPadtest
-		Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
-		Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
+		Vector4 point_lefttop(-0.2f,0.1f,-0.6f,1);
+		Vector4 point_righttop(0.2f,0.1f,-0.6f,1);
 		Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
 		Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
 		point_lefttop = mat_L * point_lefttop;
@@ -4308,9 +4309,9 @@ void CMainApplication::SetupControllerTexture()
 		if(showshootingPad)
 		{		AddVertex(point_lefttop.x,point_lefttop.y,point_lefttop.z,0.5,0.0f,vcVerts);
 				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
-				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
-				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
-				AddVertex(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z,1.0,0.5f,vcVerts);
+				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,1.0f,vcVerts);
+				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,1.0f,vcVerts);
+				AddVertex(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z,1.0,1.0f,vcVerts);
 				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
 		}
 
@@ -4472,8 +4473,8 @@ void CMainApplication::SetupControllerRay()
 	glm::vec2 ShootingPadUV = calculateshootingPadUV();// update shootingraycutPos
 	float panelpos_x = ShootingPadUV.x;
 	float panelpos_y = ShootingPadUV.y;		
-	Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
-	Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
+	Vector4 point_lefttop(-0.2f,0.1f,-0.6f,1);
+	Vector4 point_righttop(0.2f,0.1f,-0.6f,1);
 	Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
 	Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
 	point_lefttop = mat_L * point_lefttop;
@@ -7014,8 +7015,8 @@ glm::vec2 CMainApplication::calculateshootingPadUV()
 
 	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
 	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
-	Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
-	Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
+	Vector4 point_lefttop(-0.2f,0.1f,-0.6f,1);
+	Vector4 point_righttop(0.2f,0.1f,-0.6f,1);
 	Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
 	Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
 	point_lefttop = mat_L * point_lefttop;
@@ -7083,94 +7084,91 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 	if(panelpos_x <= 0.436)
 	{
 		qDebug()<<"1\n";
-		if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
+		if((panelpos_x <= 0.26) && (panelpos_y<= 0.125)&&(panelpos_y >= 0.0375)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _TeraShift;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.125)&&(panelpos_y >= 0.0375)&&(panelpos_x >= 0.26))
 		{
 			m_modeGrip_L = _TeraZoom;
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.22)&&(panelpos_y >= 0.125)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _UndoRedo;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.22)&&(panelpos_y >= 0.125)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _Contrast;
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.308)&&(panelpos_y >= 0.22)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _Surface;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.308)&&(panelpos_y >= 0.22)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _ColorChange;
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.4)&&(panelpos_y >= 0.308)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _VirtualFinger;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.4)&&(panelpos_y >= 0.308)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _Freeze;
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.5)&&(panelpos_y >= 0.4)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _LineWidth;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.5)&&(panelpos_y >= 0.4)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _AutoRotate;
 		}
-
-
-
+		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.59)&&(panelpos_y >= 0.5)&&(panelpos_x >= 0.1))
+		{
+			m_modeGrip_L = _ResetImage;
+		}
+		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.59)&&(panelpos_y >= 0.5)&&(panelpos_x >= 0.27))
+		{
+			m_modeGrip_L = _RGBImage;
+		}
+		// else if((panelpos_x <= 0.26) && (panelpos_y<= 0.68)&&(panelpos_y >= 0.59)&&(panelpos_x >= 0.1))
+		// {
+		// 	m_modeGrip_L = _MovetoCreator;
+		// }
 	}
 	//choose Right controllerFunction
 	if(panelpos_x >= 0.657)
 	{
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.035)&&(panelpos_y <= 0.125))
 		{
 			m_modeGrip_R = m_drawMode;
 		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.035)&&(panelpos_y <= 0.125))
 		{
 			m_modeGrip_R = m_deleteMode;
 		}
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.125)&&(panelpos_y <= 0.22))
 		{
 			m_modeGrip_R = m_markMode;
 		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.125)&&(panelpos_y <= 0.22))
 		{
 			m_modeGrip_R = m_delmarkMode;
 		}
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.22)&&(panelpos_y <= 0.308))
 		{
 			m_modeGrip_R = m_dragMode;
 		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.22)&&(panelpos_y <= 0.308))
 		{
 			m_modeGrip_R = m_splitMode;
 		}
-		//left function too much ,put new function right
-		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
-		{
-			m_modeGrip_L = _ResetImage;
-		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
-		{
-			m_modeGrip_L = _RGBImage;
-		}
-		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
+		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.308)&&(panelpos_y <= 0.4))
 		{
 			m_modeGrip_R = m_insertnodeMode;
 		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
-		{
-			m_modeGrip_L = _MovetoCreator;
-		}
+
 	}
 
 

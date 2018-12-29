@@ -300,7 +300,20 @@ void VR_MainWindow::onReadyRead() {
 			float dz = delMSGs.at(3).toFloat();
 			qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
 			XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
-			qDebug()<<"user, "<<user<<" Converted Receive marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
+			qDebug()<<"user, "<<user<<" Converted Receive curve: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
+			XYZ TeraflyglobalPos =XYZ(dx * pow(2.0f,ResIndex),dy*pow(2.0f,ResIndex),dz*pow(2.0f,ResIndex));
+			if(TeraflyglobalPos.x<VRVolumeStartPoint.x || 
+			TeraflyglobalPos.y<VRVolumeStartPoint.y||
+			TeraflyglobalPos.z<VRVolumeStartPoint.z||
+			TeraflyglobalPos.x>VRVolumeEndPoint.x||
+			TeraflyglobalPos.y>VRVolumeEndPoint.y||
+			TeraflyglobalPos.z>VRVolumeEndPoint.z
+			)
+			{
+				qDebug()<<"push_back test delete point ";
+				VROutinfo.deletedcurvespos.push_back(XYZ(dx * pow(2.0f,ResIndex),dy*pow(2.0f,ResIndex),dz*pow(2.0f,ResIndex)));
+			}
+			qDebug()<<"deletedcurvespos"<<dx * pow(2.0f,ResIndex)<<" "<<dy * pow(2.0f,ResIndex)<<" "<<dz * pow(2.0f,ResIndex)<<" ";
 			if(user==userName)
 			{
 				pMainApplication->READY_TO_SEND=false;
@@ -398,7 +411,7 @@ void VR_MainWindow::onReadyRead() {
 			{
 				pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
-				//pMainApplication->ClearCurrentNT();
+				pMainApplication->ClearCurrentNT();
 			}
 			pMainApplication->UpdateDragNodeinNTList(ntnum,swcnum,converreceivexyz.x,converreceivexyz.y,converreceivexyz.z);
         }
@@ -413,7 +426,7 @@ void VR_MainWindow::onReadyRead() {
 				{
 					pMainApplication->READY_TO_SEND=false;
 					CURRENT_DATA_IS_SENT=false;
-					//pMainApplication->ClearCurrentNT();
+					pMainApplication->ClearCurrentNT();
 				}
 
 				int colortype;
@@ -723,12 +736,14 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo)
 {
 	qDebug()<<"GetResindexandStartPointfromVRInfo........";
 	qDebug()<<VRinfo;
-	QRegExp rx("Res\\((\\d+)\\s.\\s\\d+\\s.\\s\\d+\\),Volume\\sX.\\[(\\d+),\\d+\\],\\sY.\\[(\\d+),\\d+\\],\\sZ.\\[(\\d+),\\d+\\]");   
+	QRegExp rx("Res\\((\\d+)\\s.\\s\\d+\\s.\\s\\d+\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
 	if (rx.indexIn(VRinfo) != -1) {
 		qDebug()<<"get  VRResindex and VRVolume Start point ";
-		VRVolumeStartPoint = XYZ(rx.cap(2).toInt(),rx.cap(3).toInt(),rx.cap(4).toInt());
+		VRVolumeStartPoint = XYZ(rx.cap(2).toInt(),rx.cap(4).toInt(),rx.cap(6).toInt());
+		VRVolumeEndPoint = XYZ(rx.cap(3).toInt(),rx.cap(5).toInt(),rx.cap(7).toInt());
 		qDebug()<<"get Resindex = "<<ResIndex;
 		qDebug()<<"Start X = "<<VRVolumeStartPoint.x<<"Start Y = "<<VRVolumeStartPoint.y<<"Start Z = "<<VRVolumeStartPoint.z;
+		qDebug()<<"End X = "<<VRVolumeEndPoint.x<<"End Y = "<<VRVolumeEndPoint.y<<"End Z = "<<VRVolumeEndPoint.z;
 	}
 	//pass Resindex and VRvolumeStartPoint to PMAIN  to  offer parameter to NT2QString
 	pMainApplication->CmainResIndex = ResIndex;
@@ -743,9 +758,9 @@ QString VR_MainWindow::ConvertsendCoords(QString coords)
 	x+=VRVolumeStartPoint.x;
 	y+=VRVolumeStartPoint.y;
 	z+=VRVolumeStartPoint.z;
-	x/=pow(2.0,ResIndex-1);
-	y/=pow(2.0,ResIndex-1);
-	z/=pow(2.0,ResIndex-1);
+	x/=pow(2.0,ResIndex);
+	y/=pow(2.0,ResIndex);
+	z/=pow(2.0,ResIndex);
 	return QString("%1 %2 %3").arg(x).arg(y).arg(z);;
 }
 XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
@@ -753,9 +768,9 @@ XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 	//QString str1 = coords.section(' ',0, 0);  // str == "bin/myapp"
 	//QString str2 = coords.section(' ',1, 1);  // str == "bin/myapp"
 	//QString str3 = coords.section(' ',2, 2);  // str == "bin/myapp"
-	x*=pow(2.0,ResIndex-1);
-	y*=pow(2.0,ResIndex-1);
-	z*=pow(2.0,ResIndex-1);
+	x*=pow(2.0,ResIndex);
+	y*=pow(2.0,ResIndex);
+	z*=pow(2.0,ResIndex);
 	x-=VRVolumeStartPoint.x;
 	y-=VRVolumeStartPoint.y;
 	z-=VRVolumeStartPoint.z;

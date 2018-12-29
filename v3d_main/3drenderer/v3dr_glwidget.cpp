@@ -47,7 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
 
-#include "../vrrenderer/VR_MainWindow.h"
+#include"../../terafly/src/control/CPlugin.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
@@ -56,6 +56,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "renderer_gl2.h"
 #include <QtGui>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
 #ifdef __ALLOW_VR_FUNCS__
@@ -1721,9 +1723,12 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
 			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
+
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+			UpdateVRcollaInfo();
 			updateWithTriView();
+
 			if (_call_that_func > 0)
 			{
 				resumeCollaborationVR = true;
@@ -3845,7 +3850,98 @@ void V3dR_GLWidget::cancelSelect()
 {
 	if (renderer) renderer->endSelectMode();
 }
+void V3dR_GLWidget::UpdateVRcollaInfo()
+{
+	if(myvrwin->VROutinfo.deletedcurvespos.size())
+	{
+		NeuronTree  nt = terafly::PluginInterface::getSWC();
+		std::vector<XYZ> deletedcurves = myvrwin->VROutinfo.deletedcurvespos;
+		std::vector<int> deletedcurvesindex;
+		int deleteindex = 0;
+		qDebug()<<"deletedcurves.size()"<<deletedcurves.size();
+		for(int i=0;i<deletedcurves.size();++i)//   get global delete curve  index
+		{
+			XYZ dPOS(deletedcurves.at(i).x,deletedcurves.at(i).y,deletedcurves.at(i).z);
+			for(int j=0;j < nt.listNeuron.size();++j)
+			{
+				NeuronSWC SS0;
+				SS0 = nt.listNeuron.at(j);
+				float dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+				qDebug()<<"SSO POS"<<SS0.x<<" "<<SS0.y<<" "<<SS0.z<<" ";
+				qDebug()<<"SSO n"<<SS0.n<<"   pn   "<<SS0.pn;
+				//call the dist between pos & current node'position, then compare with the threshold
+				if(dist <8.0)      //this function is copy from v3dr_gl_vr.h   2 is an experienced value   
+				{
+					int findrootindex = j;
+					qDebug()<<"findrootindex"<<findrootindex;
+					while(SS0.pn!=-1)
+					{
+						findrootindex-=1;
+						SS0 = nt.listNeuron[findrootindex];
+						qDebug()<<" nt.listNeuron[findrootindex].pn"<< nt.listNeuron[findrootindex].pn;
+						qDebug()<<"findrootindex"<<findrootindex;
+					}
+					deleteindex = findrootindex;
+					deletedcurvesindex.push_back(deleteindex);
+					qDebug()<<"deleteindex  liqiqqq"<<deleteindex;
+					break;
+				}
+				qDebug()<<dist<<"     test delete distance liqqqqq";
+			}
+			qDebug()<<"find  delete point done "<<i+1;
+		}
+		std::sort(deletedcurvesindex.begin(),deletedcurvesindex.end());//sort use default <
+		deletedcurvesindex.erase(unique(deletedcurvesindex.begin(),deletedcurvesindex.end()), deletedcurvesindex.end());
+		NeuronTree NewNT;
+		qDebug()<<"begin create new nt";
+		for(int indexinNewNT=0,deleteindex=0;deleteindex<deletedcurvesindex.size();)//  create new tree
+		{
 
+			if(indexinNewNT==deletedcurvesindex[deleteindex])
+			{
+				qDebug()<<"nt listNeuron index pn = "<<nt.listNeuron[indexinNewNT].pn;
+				if(nt.listNeuron[indexinNewNT].pn!=-1)
+					qDebug()<<"algorithm is wrong check ur code!!";
+				++indexinNewNT;
+				deleteindex++;
+				while(indexinNewNT<nt.listNeuron.size())
+				{
+					if(nt.listNeuron[indexinNewNT].pn!=-1)
+					++indexinNewNT;
+					else
+						break;
+					qDebug()<<"pos 1 indexinNewNt"<<indexinNewNT;
+				}
+				qDebug()<<"skip indexNewNT = "<<indexinNewNT;
+				qDebug()<<"skip deleteindex = "<<deleteindex;
+			}
+			else
+			{
+				qDebug()<<"NewNT.listNeuron.append"<<indexinNewNT;
+				NewNT.listNeuron.append(nt.listNeuron.at(indexinNewNT));
+        		NewNT.hashNeuron.insert(nt.listNeuron.at(indexinNewNT).n, nt.listNeuron.size()-1);
+				++indexinNewNT;
+			}
+			qDebug()<<"pos 2";
+			if(deleteindex>=deletedcurvesindex.size()&&indexinNewNT<nt.listNeuron.size())//process last delete point then copy rest SWC into NewNT
+			{
+				qDebug()<<"pos 3";
+				while(indexinNewNT<nt.listNeuron.size())
+				{
+				qDebug()<<"NewNT.listNeuron.append"<<indexinNewNT;
+				NewNT.listNeuron.append(nt.listNeuron.at(indexinNewNT));
+        		NewNT.hashNeuron.insert(nt.listNeuron.at(indexinNewNT).n, nt.listNeuron.size()-1);
+				++indexinNewNT;
+				}
+			}
+		}
+		if(NewNT.listNeuron.size())
+		terafly::PluginInterface::setSWC(NewNT);
+
+		qDebug()<<"update collaboration Infor done";
+	}
+
+}
 ///////////////////////////////////////////////////////////////////////////////////////////
 #define __end_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////
