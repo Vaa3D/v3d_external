@@ -1726,7 +1726,9 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+#ifdef __ALLOW_VR_FUNCS_
 			UpdateVRcollaInfo();
+#endif
 			updateWithTriView();
 
 			if (_call_that_func > 0)
@@ -3850,6 +3852,7 @@ void V3dR_GLWidget::cancelSelect()
 {
 	if (renderer) renderer->endSelectMode();
 }
+#ifdef __ALLOW_VR_FUNCS_
 void V3dR_GLWidget::UpdateVRcollaInfo()
 {
 	if(myvrwin->VROutinfo.deletedcurvespos.size())
@@ -3942,6 +3945,7 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 	}
 
 }
+#endif
 ///////////////////////////////////////////////////////////////////////////////////////////
 #define __end_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////
