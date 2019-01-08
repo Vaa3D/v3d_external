@@ -263,7 +263,7 @@ public:
 	double computeSurfaceVolume(int dataClass, int surfaceType, int index);
 	void showLineProfile(int marker1, int marker2);
 	QVector<int> getLineProfile(XYZ p1, XYZ p2, int chno=0);
-
+    void setDeleteKey(int key);
 
 #ifndef test_main_cpp
 
@@ -391,7 +391,7 @@ public:
 	void setBasicNeuronColors(NeuronSWC s);
     void setConfidenceLevelColors(NeuronSWC s); //confidence level mode by ZZ 06192018
 	bool childHighlightMode;
-
+    int deleteKey; // 1: key_i; 2: key_t
 
 
 
@@ -767,6 +767,7 @@ private:
         currentMarkerColor.r=255;
         currentMarkerColor.g=0;
         currentMarkerColor.b=0;
+        deleteKey = 0;
      }
 
 

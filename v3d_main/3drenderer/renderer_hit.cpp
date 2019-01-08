@@ -3624,6 +3624,10 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 
 }
 
+void Renderer_gl1::setDeleteKey(int key)
+{
+    deleteKey = key;
+}
 
 void simple_delay(V3DLONG n) //delay n seconds
 {
