@@ -53,6 +53,13 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 #include "../mozak/MozakUI.h"
 #endif
 
+//LMG for cross-platform UTC Timestamp 15/10/2018
+#if defined(Q_OS_WIN32)
+    #define timegm _mkgmtime
+#elif defined(Q_OS_WIN64)
+    #define timegm _mkgmtime
+#endif
+
 //------------------------------------------------------------------------------------------
 
 #define CATCH_TO_QString( type, msg ) \
@@ -834,7 +841,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 }
 
 #define ___trace_add_segment_default_type___
-bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/, double default_radius/*=1*/)
+bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/, double default_radius/*=1*/, double creatmode/*=0*/, double default_timestamp/*=0*/, double default_tfresindex/*=0*/)
 {
     if (mCoord.size()<=0)  return false;
 
@@ -842,7 +849,33 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     V3DLONG nexist = tracedNeuron.maxnoden();
 
     V_NeuronSWC cur_seg;
-    set_simple_path(cur_seg, nexist, mCoord, false, default_radius, default_type); //reverse link
+    set_simple_path(cur_seg, nexist, mCoord, false, default_radius, default_type, creatmode, default_timestamp, default_tfresindex); //reverse link
+
+    // Add timestamp LMG 10/10/2018
+    // Get current timestamp
+    time_t timer2;
+    struct tm y2k = {0};
+    double seconds;
+
+    y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+    y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
+
+    time(&timer2);  /* get current time; same as: timer = time(NULL)  */
+
+    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
+    qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
+
+    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) if(cur_seg.row[k].timestamp == 0) cur_seg.row[k].timestamp = seconds;
+    //qDebug("raw/cur_seg Timestamp: %.0f / %.0f", seconds, cur_seg.row[cur_seg.nrows()-1].timestamp);
+
+    //LMG 13-12-2017 get current resolution and save in eswc
+    tf::PluginInterface resinterface;
+    int resindex = resinterface.getRes();
+    int allresnum = resinterface.getallRes();
+    resindex = int(pow(2,double(allresnum-resindex)));
+    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
+    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
+    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
@@ -883,13 +916,38 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     return true;
 }
 
-NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type/*=3*/)
+NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type/*=3*/, double creatmode/*=0*/, double default_timestamp/*=0*/, double default_tfresindex/*=0*/)
 {
     NeuronTree newNeuronEdited;
     if (mCoord.size()<=0)  return newNeuronEdited;
 
     V_NeuronSWC cur_seg;
-    set_simple_path(cur_seg, 0, mCoord, false, default_type); //reverse link
+    set_simple_path(cur_seg, 0, mCoord, false, default_type, creatmode, default_timestamp, default_tfresindex); //reverse link
+
+    // Add timestamp LMG 26/10/2018
+    // Get current timestamp
+    time_t timer2;
+    struct tm y2k = {0};
+    double seconds;
+
+    y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+    y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
+
+    time(&timer2);  /* get current time; same as: timer = time(NULL)  */
+
+    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 26/10/2018
+    qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
+
+    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) if(cur_seg.row[k].timestamp == 0) cur_seg.row[k].timestamp = seconds;
+
+    //LMG 13-12-2017 get current resolution and save in eswc
+    tf::PluginInterface resinterface;
+    int resindex = resinterface.getRes();
+    int allresnum = resinterface.getallRes();
+    resindex = int(pow(2,double(allresnum-resindex)));
+    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
+    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
+    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
@@ -942,8 +1000,7 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
 #define ___trace_history_append___
 void My4DImage::proj_trace_history_append()
 {
-	proj_trace_history_append(tracedNeuron);
-
+    proj_trace_history_append(tracedNeuron);
 
     // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
     // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.

@@ -86,6 +86,8 @@ class terafly::CSettings
         double voxelsizeX, voxelsizeY, voxelsizeZ;
         int bitsRemap;
         int bitsConversion;
+        int zoomOutMethod;
+        std::string recentlyUsedPath;
 
         //TeraConverter members
         std::string volumeConverterInputPathLRU;
@@ -150,8 +152,8 @@ class terafly::CSettings
         bool getVpFreezeHighestRes(){return vpFreezeHighestRes;}
         int getBitsRemap(){return bitsRemap;}
         int getBitsConversion(){return bitsConversion;}
-
-
+        int getZoomOutMethod(){return zoomOutMethod;}
+        std::string getRecentlyUsedPath() {return recentlyUsedPath;}
 
         void setVolumePathLRU(std::string _volumePathLRU)
         {
@@ -208,6 +210,8 @@ class terafly::CSettings
         void setVpFreezeHighestRes(bool newval){vpFreezeHighestRes = newval; writeSettings();}
         void setBitsRemap(int newval){bitsRemap = newval; writeSettings();}
         void setBitsConversion(int newval){bitsConversion = newval; writeSettings();}
+        void setZoomOutMethod(int method){zoomOutMethod = method; writeSettings();}
+        void setRecentlyUsedPath(std::string path){recentlyUsedPath = path; writeSettings();}
 
 
         //GET and SET methods for TeraConverter

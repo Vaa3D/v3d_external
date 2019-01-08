@@ -75,8 +75,11 @@ class terafly::PMain : public QWidget
         QAction* openUnconvertedVolumeFolderAction;     //"Browse for dir..." action
         QAction* openUnstitchedImageAction;             //"Open unstitched image" menu
         QAction* closeVolumeAction;     //"Close volume" menu action
+        //QAction* saveandchangetype;      //"Change current block types" mean action
+        //QAction* returntochangedtype;
         QAction* loadAnnotationsAction; //"Load annotations" menu action
         QAction* saveAnnotationsAction; //"Save annotations" menu action
+        QAction* saveAnnotationsAfterRemoveDupNodesAction;//"save annotations after removing duplicated nodes
         QAction* saveAnnotationsAsAction; //"Save annotations as" menu action
         QAction* clearAnnotationsAction;//"Clear annotations" menu action
         QAction* exitAction;            //"Exit" menu action
@@ -265,9 +268,12 @@ class terafly::PMain : public QWidget
         QStatusBar* statusBar;          //status bar
 
         QCheckBox *checkBox_overview;  //added an overview checkbox by ZZ 04262018
+        QCheckBox *lockMagnification;
 
         //layout
         int marginLeft;                 //width of first column containing labels only
+
+        QString recentlyUsedPath;       // load and save annotations in most recently used folder
 
     public:
 
@@ -347,6 +353,8 @@ class terafly::PMain : public QWidget
 
 		bool resumeVR;
         bool isOverviewActive;
+        bool annotationChanged;
+        bool isMagnificationLocked;
 
 
     public slots:
@@ -385,6 +393,9 @@ class terafly::PMain : public QWidget
         void saveAnnotations();
         void saveAnnotationsAs();
         void autosaveAnnotations();
+        void saveAnnotationsAfterRemoveDupNodes();
+        //void changecurrentblocktype();
+        //void return_to_the_changedtype();
 
 
         /**********************************************************************************
@@ -549,6 +560,10 @@ class terafly::PMain : public QWidget
 #endif
         void setOverview(bool enable);
         void updateOverview();
+        void updateAnnotationStatus();
+
+        void setLockMagnification(bool locked);
+
 
     signals:
 

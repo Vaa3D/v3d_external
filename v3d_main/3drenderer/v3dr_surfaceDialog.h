@@ -48,8 +48,28 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "qtr_widget.h"
 #include "ItemEditor.h"
 
+// design for sorting type column of neuron segment
+class CustomTableWidgetItem : public QTableWidgetItem
+{
+  //Q_OBJECT;
 
+public:
 
+    CustomTableWidgetItem(const QString txt = QString("0")) : QTableWidgetItem(txt)
+    {}
+
+    bool operator < (const QTableWidgetItem& other) const
+    {
+        if(other.column() == 1 || other.column() == 2 || other.column() == 3) // 1 count 2 type 3 index
+        {
+            return QTableWidgetItem::text().toInt() < other.text().toInt();
+        }
+
+        return false;
+    }
+};
+
+//
 class V3dr_surfaceDialog: public SharedToolDialog
 {
     Q_OBJECT;
@@ -70,6 +90,7 @@ protected:
 	QString title;
 	int last_marker; //updated in pressedClickHandler
 	bool isBatchOperation; //added by Y. Wang 20160525
+    int sortNeuronSegment;
 
 	void setItemEditor();
 	void createFirst();
@@ -117,6 +138,7 @@ public slots:
 	void pickMarker(int row, int col);
 
 	void editObjNameAndComments();
+    void editNeuronSegmentType();
 
 	void findNext();
 	void findPrev();
@@ -129,7 +151,10 @@ public slots:
     void updateMarkerList(QList <ImageMarker> markers); // sync object_manager with renderer
 
 	// -- MK, June, 2018
-	void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).  
+    void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).
+
+    //
+    void sortNeuronSegmentByType(QTableWidgetItem* item);
 
 protected:
 	void clearTables_fromTab();
@@ -158,7 +183,7 @@ protected:
 	QPushButton *okButton, *cancelButton, *undoButton,
 				*selectAllButton, *deselectAllButton, *inverseSelectButton,
                 *onSelectButton, *offSelectButton, *colorSelectButton,
-                *editNameCommentButton, *markerLocalView,
+                *editNameCommentButton, *markerLocalView, *neuronSegmentType,
                 *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
 
 	QTabWidget *tabOptions;
@@ -186,11 +211,13 @@ protected:
 		title = tr("Object Manager");  //Object Pick/Color Options")); //090423 RZC: changed
 		last_marker = -1;
 		isBatchOperation = false;
+        sortNeuronSegment = 0;
 
 		okButton=cancelButton=undoButton=0;
 		selectAllButton=deselectAllButton=inverseSelectButton=
 			onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=markerLocalView =0;
         objectSetDisplayModeButton = 0;
+        neuronSegmentType = 0;
 		for (int i=0; i<=6; i++)  table[i]=0; //by PHC, 090521 change to 5
 		tabOptions=0;
 		checkBox_accumulateLastHighlightHits = checkBox_attachedToCurrentView =0;//100809 RZC

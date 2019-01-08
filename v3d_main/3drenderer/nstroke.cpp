@@ -1144,7 +1144,7 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
 #endif
      if (b_addthiscurve && selectMode==smCurveRefineInit)
      {
-          addCurveSWC(loc_vec, chno);
+          addCurveSWC(loc_vec, chno, 6);//LMG 26/10/2018 solveCurveCenterV2 mode 6
           // for curve connection
           V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
           My4DImage* curImg = 0;

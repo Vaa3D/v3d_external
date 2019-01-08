@@ -40,6 +40,7 @@
 #include "renderer_gl2.h"
 #include "CImport.h"
 #include "v3d_imaging_para.h"
+#include "V3Dsubclasses.h"
 
 class terafly::CViewer : public QWidget
 {
@@ -52,6 +53,7 @@ class terafly::CViewer : public QWidget
         v3dhandle window;               //generic (void *) handle of the tri-view image window
         XFormWidget* triViewWidget;     //the tri-view image window
         V3dR_GLWidget* view3DWidget;    //3D renderer widget associated to the image window
+        //myV3dR_GLWidget* view3DWidget;
         V3dR_MainWindow* window3D;      //the window enclosing <view3DWidget>
         CViewer *next, *prev;   //the next (higher resolution) and previous (lower resolution) <CExplorerWindow> objects
         int volResIndex;                //resolution index of the volume displayed in the current window (see member <volumes> of CImport)
@@ -88,6 +90,8 @@ class terafly::CViewer : public QWidget
         int insituZoomOut_x, insituZoomOut_y, insituZoomOut_z, insituZoomOut_res;
         int insituZoomOut_dx, insituZoomOut_dy, insituZoomOut_dz;
         bool isTranslate;
+        bool toRetrieveData;
+        int zoomOutSize_x, zoomOutSize_y, zoomOutSize_z;
 
         //CLASS members
         static CViewer *first;  //pointer to the first window of the multiresolution explorer windows chain
@@ -151,6 +155,7 @@ class terafly::CViewer : public QWidget
         int getResIndex(){return volResIndex;}
         V3dR_MainWindow* getWindow3D(){return window3D;}
         V3dR_GLWidget* getGLWidget(){return view3DWidget;}
+        //myV3dR_GLWidget* getGLWidget(){return view3DWidget;}
         bool isHighestRes(){return volResIndex == CImport::instance()->getResolutions() -1;}
         bool isWaitingForData(){return waitingForData;} // waiting state
         bool isReady(){return _isReady;}                // ready for user input
@@ -410,6 +415,8 @@ class terafly::CViewer : public QWidget
         void zoomOutMethodChanged(int value);
 
         void inSituZoomOutTranslated();
+
+        void resetEvents();
 
     public:
 

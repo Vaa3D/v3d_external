@@ -313,17 +313,18 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         double vy2 = vy*vy;
         double vz2 = vz*vz;
 
-        NeuronTree ntc;
-        ntc.deepCopy(nt);
+//        NeuronTree ntc;
+//        ntc.deepCopy(nt);
+        nt_init.deepCopy(nt);
 
         for(int i=0; i<nt.listNeuron.size();i++)
         {
             // length
-            NeuronSWC curr = ntc.listNeuron.at(i);
+            NeuronSWC curr = nt_init.listNeuron.at(i);
             if(curr.pn >= 0)
             {
-                int parent = ntc.hashNeuron.value(curr.pn);
-                NeuronSWC parentNode = ntc.listNeuron.at(parent);
+                int parent = nt_init.hashNeuron.value(curr.pn);
+                NeuronSWC parentNode = nt_init.listNeuron.at(parent);
                 double l = sqrt((curr.x-parentNode.x)*(curr.x-parentNode.x)+(curr.y-parentNode.y)*(curr.y-parentNode.y)+(curr.z-parentNode.z)*(curr.z-parentNode.z));
                 double lr = sqrt((curr.x-parentNode.x)*(curr.x-parentNode.x)*vx2+(curr.y-parentNode.y)*(curr.y-parentNode.y)*vy2+(curr.z-parentNode.z)*(curr.z-parentNode.z)*vz2);
                 lenVoxel += l;
@@ -452,7 +453,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
             }
         }
     }*/
-    qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
+    //qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
     updateGL();
 }
 
@@ -1021,7 +1022,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
     //NeuronSWC cur_node;
     if(event->type()==QEvent::MouseButtonDblClick)
     {
-        if(event->button()==Qt::LeftButton&&miniMapCurBox&&alreadyLoadSwc)
+        if(event->button()==Qt::LeftButton&&alreadyLoadSwc)
         {
             if(xRot%180==0&&yRot%180==0&&zRot%180==0)
             {
@@ -1169,7 +1170,7 @@ void QGLRefSys::wheelEvent(QWheelEvent *event)
 
 void QGLRefSys::enterEvent(QEvent *event)
 {
-    emit reset();
+    // emit reset();
 }
 
 

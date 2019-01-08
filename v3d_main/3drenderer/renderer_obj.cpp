@@ -8,8 +8,8 @@ This folder contains all source codes for the V3D project, which is subject to t
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
 2. You agree to appropriately cite this work in your related studies and publications.
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets, Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model, Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 4. Neither the name of the Howard Hughes Medical Institute, Janelia Farm Research Campus, nor Hanchuan Peng, may be used to endorse or promote products derived from this software without specific prior written permission.
 *************/
@@ -871,6 +871,37 @@ void Renderer_gl1::setMarkerSpace()
 	glTranslated(-start1,-start2,-start3); //090715
 	glScaled(thicknessX, thicknessY, thicknessZ);
 }
+void Renderer_gl1::MarkerSpaceToNormalizeSpace(XYZ & p)
+{
+
+	p.x = p.x*thicknessX -start1;
+	p.y = p.y*thicknessY -start2;
+	p.z = p.z*thicknessZ -start3;
+
+	///Renderer::setObjectSpace()-->setBoundingBoxSpace( boundingBox );
+	///glScaled(s[0], s[1], s[2]);
+	///glTranslated(t[0], t[1], t[2]);
+
+	BoundingBox & BB = boundingBox;
+	float DX = BB.Dx();
+	float DY = BB.Dy();
+	float DZ = BB.Dz();
+	float maxD = BB.Dmax();
+	double s[3];
+	s[0] = 1/maxD *2;
+	s[1] = 1/maxD *2;
+	s[2] = 1/maxD *2;
+	double t[3];
+	t[0] = -BB.x0 -DX /2;
+	t[1] = -BB.y0 -DY /2;
+	t[2] = -BB.z0 -DZ /2;
+
+	p.x = s[0]*(p.x +t[0]);
+	p.y = s[1]*(p.y +t[1]);
+	p.z = s[2]*(p.z +t[2]);
+
+}
+
 void Renderer_gl1::drawMarker()
 {
 	glPushName(stImageMarker);
@@ -1615,7 +1646,7 @@ void Renderer_gl1::updateNeuronBoundingBox()
 
 
 #define __add_curve_SWC_with_default_type___
-void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
+void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode)
 {
 #define CURVE_NAME "curve_segment"
 #define CURVE_FILE "curve_segment"
@@ -1630,28 +1661,35 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
         {
             v3d_msg("NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);");
 
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
+
             NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
             NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
-                                                                                          oldtree, 3);
+                                                                                          oldtree, 3, creatmode); //LMG 26/10/2018 Creation mode 0 by default, set in every usage of addCurveSwc
             listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
             curImg->update_3drenderer_neuron_view(w, this);
         }
         //// Mozak
         else if (ui3dviewMode == Mozak)
         {
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
             if (highlightedNodeType >= 0)
-                curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType);
+                curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType, 1, creatmode);
             else
-                curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType);
+                curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType, 1, creatmode);
             curImg->update_3drenderer_neuron_view(w, this);
         }
         //// Vaa3d || Terafly
         else
         {
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
             if(selectMode == smCurveCreate_MarkerCreate1_fm)
-                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd);
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd,creatmode);
             else
-                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType);
+                curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }
@@ -1713,12 +1751,13 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 	QList <NeuronSWC> listNeuron;
 	QHash <int, int>  hashNeuron;
-	listNeuron.clear();
+
+    listNeuron.clear();
 	hashNeuron.clear();
-	try {
+    try {
 		int count = 0;
-		qDebug("-------------------------------------------------------");
-		for (int k=0;k<seg.row.size();k++)
+        qDebug("-------------------------------------------------------");
+        for (int k=0;k<seg.row.size();k++)
 		{
 			count++;
 			NeuronSWC S;
@@ -1734,6 +1773,10 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
 
             S.level = seg.row.at(k).level;
+            S.creatmode = seg.row.at(k).creatmode;
+            S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
+            S.tfresindex = seg.row.at(k).tfresindex; //LMG 13/12/2018
+
 			//qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
 			//if (! listNeuron.contains(S)) // 081024
 			{

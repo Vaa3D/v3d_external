@@ -15,9 +15,9 @@ You will ***have to agree*** the following terms, *before* downloading/using/run
 
 2. You agree to appropriately cite this work in your related studies and publications.
 
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets, Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
 
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model, Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
 
 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 
@@ -47,8 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
 
-
-#include "../vrrenderer/VR_MainWindow.h"
+#include"../../terafly/src/control/CPlugin.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
@@ -57,9 +56,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer_gl2.h"
 #include <QtGui>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
-
+#ifdef __ALLOW_VR_FUNCS__
+bool V3dR_GLWidget::resumeCollaborationVR=false;
+#endif
 
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
@@ -367,37 +370,73 @@ void V3dR_GLWidget::paintGL()
 	//the following translation & rotation operations are carried out in view space
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	//the order is important
 
-	//absolute translation
+	//GET current rotation pose by GL matrix stack
+	glPushMatrix();
 	{
+		glLoadIdentity();
+		//last absolute rotation pose
+		glMultMatrixd(mRot);
+		//current relative small rotation, always around center of model
+		{
+			XYZ R(dxRot, dyRot, dzRot);  					//qDebug("R= %f %f %f", R.x, R.y, R.z);
+			dxRot=dyRot=dzRot=0;  // clear relative rotation step
 
+			double angle = norm(R)/(float)ANGLE_TICK;       //qDebug("angle=%f", angle);
+			if (angle)
+			{
+				normalize(R);          						//qDebug("R= %f %f %f", R.x, R.y, R.z);
+				glRotated( angle,  R.x, R.y, R.z);
+			}
+		}
+		//save current absolute rotation pose
+		glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
+		for (int i=0; i<3; i++)
+			mRot[i*4 +3]=mRot[3*4 +i]=0; mRot[3*4 +3]=1; // only reserve rotation, remove translation in mRot
+	}
+	glPopMatrix();
+
+	//SET translation
+	{
+		//absolute translation
 		XYZ T(_xShift, _yShift, _zShift);  				//qDebug("T= %f %f %f", T.x, T.y, T.z);
+		//XYZ T(_xShift, _yShift, 0); // force zShift=0
 		dxShift=dyShift=dzShift=0;  // clear relative shift step
 
 		double s = 1.4/(float)SHIFT_RANGE;  // 1.4 ~ sqrt(2);
 		T = T*s;
+
+//		// alternate rotation center is a fixed point
+//		if (alt_rotation)
+//		{
+//			// shift position as alternate rotation center
+//			//vAltC[0]=T.x; vAltC[1]=T.y; vAltC[2]=T.z;
+//			//vAltC[0]=-1; vAltC[1]=-1; vAltC[2]=-1;
+//
+//			double aR[4][4];
+//			for (int i=0; i<4; i++)
+//				for (int j=0; j<4; j++)
+//				{
+//					int k = i*4 +j;
+//					aR[i][j] = ((i==j)? 1-mRot[k] : -mRot[k]);
+//				}
+//			XYZ aT;
+//			aT.x = mAltC[0]*aR[0][0] + mAltC[1]*aR[1][0] + mAltC[2]*aR[2][0];
+//			aT.y = mAltC[0]*aR[0][1] + mAltC[1]*aR[1][1] + mAltC[2]*aR[2][1];
+//			aT.z = mAltC[0]*aR[0][2] + mAltC[1]*aR[1][2] + mAltC[2]*aR[2][2];
+//
+//			T = T + aT; //merge translation
+//		}
+
 		glTranslated( T.x, T.y, T.z );
 	}
 
-	//last absolute rotation pose
+	//SET current absolute rotation pose at alternate rotation center
+	if (alt_rotation)	glTranslated( mAltC[0]*flip_X, mAltC[1]*flip_Y, mAltC[2]*flip_Z );
 	glMultMatrixd(mRot);
+	if (alt_rotation)	glTranslated( -mAltC[0]*flip_X, -mAltC[1]*flip_Y, -mAltC[2]*flip_Z );
 
-	//current relative small rotation, always around center of model
-	{
-		XYZ R(dxRot, dyRot, dzRot);  					//qDebug("R= %f %f %f", R.x, R.y, R.z);
-		dxRot=dyRot=dzRot=0;  // clear relative rotation step
-
-		double angle = norm(R)/(float)ANGLE_TICK;       //qDebug("angle=%f", angle);
-		if (angle)
-		{
-			normalize(R);          						//qDebug("R= %f %f %f", R.x, R.y, R.z);
-			glRotated( angle,  R.x, R.y, R.z);
-		}
-	}
-
-	//save current absolute rotation pose
-	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
-	for (int i=0; i<3; i++)	mRot[i*4 +3]=mRot[3*4 +i]=0; mRot[3*4 +3]=1; // only reserve rotation, remove translation in mRot
 
 	glScaled(flip_X,flip_Y,flip_Z); // make y-axis downward conformed with image coordinate
 
@@ -488,10 +527,10 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 	if (event_tip && renderer)
 	{
-        qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
+        //qDebug()<<"cur_node.x="<<pos.x()<<" "<<"cur_node.y="<<pos.y();
 
 		QPoint gpos = mapToGlobal(pos);
-        qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
+        //qDebug()<<"gpos.x="<<gpos.x()<<" "<<"gpos.y="<<gpos.y();
 
 		tipBuf[0] = '\0';
 		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
@@ -595,8 +634,8 @@ void V3dR_GLWidget::stillPaint()
 
 #define IS_TRANSLATE_MODIFIER		IS_SHIFT_MODIFIER
 #define WITH_TRANSLATE_MODIFIER		WITH_SHIFT_MODIFIER
-#define IS_MODEL_MODIFIER			IS_ALT_MODIFIER
-#define WITH_MODEL_MODIFIER			WITH_ALT_MODIFIER
+#define IS_MODEL_MODIFIER			IS_CTRL_MODIFIER
+#define WITH_MODEL_MODIFIER			WITH_CTRL_MODIFIER
 
 #define MOUSE_SHIFT(dx, D)  (int(SHIFT_RANGE*2* float(dx)/D))
 #define MOUSE_ROT(dr, D)    (int(MOUSE_SENSITIVE*270* float(dr)/D) *ANGLE_TICK)
@@ -638,7 +677,6 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
     //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
 
 	mouse_held = 0;
-  //  v3d_msg("before mouseReleaseEvent _appendMarkerPos ",0);
 
 	if (event->button()==Qt::RightButton && renderer) //right-drag end
     {
@@ -678,15 +716,18 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 		int xShiftStep = MOUSE_SHIFT(dx, viewW);
 		int yShiftStep = MOUSE_SHIFT(dy, viewH);
 
+		alt_rotation = (IS_ALT_MODIFIER); // alt+mouse control alternate marker center rotation, 081104
+
 		// mouse control view space, transformed to model space, 081026
 		if (IS_TRANSLATE_MODIFIER) // shift+mouse control view space translation, 081104
 		{
 			setXShift(_xShift + xShiftStep);// move +view -model
 			setYShift(_yShift - yShiftStep);// move -view +model
 		}
-		else if (IS_MODEL_MODIFIER) // alt+mouse control model space rotation, 081104
+		else if (IS_MODEL_MODIFIER) // ctrl+mouse control model space rotation, 081104
 		{
-			modelRotation(yRotStep, xRotStep, 0); //swap y,x
+			//modelRotation(yRotStep, xRotStep, 0); //swap y,x
+			modelRotation(xRotStep, yRotStep, 0);
 		}
 		else // default mouse controls view space rotation
 		{
@@ -697,6 +738,8 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 {
+    //qDebug()<<"V3dR_GLWidget::wheelEvent ... ...";
+
 	//20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 	//-1 : scrolldown zoomin
 	//+1 : scrollup zoomin
@@ -729,8 +772,6 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     else // default
     {
         (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
-
-
         setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
     }
 
@@ -891,6 +932,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	reloadData();
 			}
+            else
+            {
+                returncheckmode();
+            }
 	  		break;
 		case Qt::Key_U:
 			if (IS_CTRL_MODIFIER)
@@ -943,13 +988,40 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	toggleTexFilter();
 			}
+			else if (IS_ALT_MODIFIER)
+			{
+				QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+				if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+				
+				callFragmentTracing();
+			}
 	  		break;
+
+		case Qt::Key_M:
+			if (renderer)
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->fragmentTrace)
+				{
+					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+				
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+					mypluginloader.runPlugin(loader, "settings");
+				}
+			}
+			break;
+
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
             {
                 toggleEditMode();
-            }else
-                confidenceDialog();
+            }
+            else
+            {
+                callcheckmode();
+            }
             break;
 
         case Qt::Key_T:
@@ -965,7 +1037,21 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
 				//callShowSubtree(); // temporarily disabled, MK, July 2018
-            }else
+            }
+			else if (renderer)
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->fragmentTrace)
+				{
+					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+					mypluginloader.runPlugin(loader, "start_tracing");
+				}	
+			}
+			else
                 callAutoTracers();
 	  		break;
         case Qt::Key_D:
@@ -1021,7 +1107,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
-			else
+            else
             {
                 neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
                 updateColorMode(neuronColorMode);
@@ -1134,12 +1220,32 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
           case Qt::Key_W:
 		    if (IS_ALT_MODIFIER)
 		    {
-                   setDragWinSize(+2);
-              }
-              else if(IS_SHIFT_MODIFIER)
-              {
-                   setDragWinSize(-2);
-              }
+				setDragWinSize(+2);
+            }
+            else if(IS_SHIFT_MODIFIER)
+            {
+                setDragWinSize(-2);
+            }
+			else
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (thisRenderer->selectMode == Renderer::smShowSubtree)
+				{
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+					for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+					{
+						for (vector<V_NeuronSWC_unit>::iterator nodeIt = thisRenderer->originalSegMap[*segIDit].begin(); nodeIt != thisRenderer->originalSegMap[*segIDit].end(); ++nodeIt)
+							nodeIt->type = 0;
+
+						curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
+					}
+
+					curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+			}
 	  		break;
 
 #ifndef test_main_cpp
@@ -1580,6 +1686,143 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 	if (renderer) renderer->editSurfaceObjAnnotation(dc, st, i);
 }
 
+#define __VR_FUNCS_a__
+#ifdef __ALLOW_VR_FUNCS__
+void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
+{
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+
+	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+
+    this->getMainWindow()->hide();
+    QMessageBox::StandardButton reply;
+	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
+		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+		reply = QMessageBox::Yes;
+	else
+		reply = QMessageBox::No;
+	if (reply == QMessageBox::Yes)
+	{
+		if(VRClientON==false)
+		{
+			VRClientON = true;
+			if(myvrwin)
+				delete myvrwin;
+			myvrwin = 0;
+			myvrwin = new VR_MainWindow();
+			myvrwin->setWindowTitle("VR MainWindow");
+			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
+			VRClientON = linkerror;
+			if(!linkerror)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";return;}
+			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
+			QString VRinfo = this->getDataTitle();
+			qDebug()<<"VR get data_title = "<<VRinfo;
+			resumeCollaborationVR = false;//reset resumeCollaborationVR
+			myvrwin->ResIndex = Resindex;
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
+
+			qDebug()<<"result is "<<_call_that_func;
+			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+#ifdef __ALLOW_VR_FUNCS_
+			UpdateVRcollaInfo();
+#endif
+			updateWithTriView();
+
+			if (_call_that_func > 0)
+			{
+				resumeCollaborationVR = true;
+				emit(signalCallTerafly(_call_that_func));
+			}
+			else if(_call_that_func == -1)
+			{
+				call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+			}
+		}
+		else
+		{
+			v3d_msg("The ** client is running.Failed to start VR client.");
+			this->getMainWindow()->show();
+		}
+	}
+	else
+	{
+		// bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+		int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
+		qDebug()<<"result is "<<_call_that_func;
+		qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+		updateWithTriView();
+		if (_call_that_func > 0)
+		{
+			emit(signalCallTerafly(_call_that_func));
+		}
+		else if(_call_that_func == -1)
+		{
+			call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		}
+
+		//this->getMainWindow()->show();
+		// if(_Call_ZZ_Plugin)
+		// {
+		// 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+		// 	emit(signalCallTerafly());
+		// }
+	}
+}
+void V3dR_GLWidget::doclientView(bool check_flag)
+{
+
+	if(check_flag)
+	{
+		qDebug()<<"run true.";
+		if(VRClientON==false)
+		{
+			v3d_msg("Now start Collaboration.");
+			VRClientON = true;
+			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+			if(myclient)
+				delete myclient;
+			myclient = 0;
+			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+			bool linkerror = myclient->SendLoginRequest();
+			if(!linkerror)
+			{
+				v3d_msg("Error!Cannot link to server!");
+				myclient = 0;
+				VRClientON = false;
+			}
+			else
+				v3d_msg("Successed linking to server! ");
+		}
+		else
+		{
+			v3d_msg("The VR client is running.Failed to start ** client.");
+		}
+	}
+	else
+	{
+		qDebug()<<"run false.";
+		if(myclient)
+		{
+			qDebug()<<"run disc.";
+			delete myclient;
+			myclient = 0;
+		}
+		VRClientON=false;
+	}
+}
+
+void V3dR_GLWidget::OnVRSocketDisConnected()
+{
+	qDebug()<<"V3dR_GLWidget::OnVRSocketDisConnected()";
+	VRClientON=false;
+}
+
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #define __interaction_controls__
@@ -1684,6 +1927,7 @@ void V3dR_GLWidget::resetRotation(bool b_emit)
 	for (int i=0; i<3; i++)
 		for (int j=0; j<3; j++)
 			mRot[i*4 +j] = ((i==j)? 1 : 0); // up-left 3x3 Identity matrix
+
 	dxRot=dyRot=dzRot= 0;
 	_xRot=_yRot=_zRot= 0;
 
@@ -1715,6 +1959,9 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
+#define __VR_FUNCS_b__
+/*//<<<<<<< HEAD
+//=======
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
@@ -1725,9 +1972,11 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 
     this->getMainWindow()->hide();
     QMessageBox::StandardButton reply;
-	if(bCanCoMode)
+	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-	else 
+	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+		reply = QMessageBox::Yes;
+	else
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
@@ -1739,11 +1988,28 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			myvrwin = 0;
 			myvrwin = new VR_MainWindow();
 			myvrwin->setWindowTitle("VR MainWindow");
-			bool linkerror = myvrwin->SendLoginRequest();
+			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			VRClientON = linkerror;
+			if(!linkerror)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
-
-			myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror);
+			QString VRinfo = this->getDataTitle();
+			qDebug()<<"VR get data_title = "<<VRinfo;
+			resumeCollaborationVR = false;//reset resumeCollaborationVR
+			myvrwin->ResIndex = Resindex;
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
+			qDebug()<<"result is "<<_call_that_func;
+			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<CollaborationCreatorPos.x<<CollaborationCreatorPos.y<<CollaborationCreatorPos.z;
+			if (_call_that_func > 0) 
+			{
+				resumeCollaborationVR = true;
+				emit(signalCallTerafly(_call_that_func));
+			}
+			else if(_call_that_func == -1)
+			{
+				call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+			}
 		}
 		else
 		{
@@ -1828,6 +2094,8 @@ void V3dR_GLWidget::OnVRSocketDisConnected()
 
 
 #endif
+//>>>>>>> e4f5898908f8eaf6199ffedab4924649e0925911
+*/
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {
@@ -1953,6 +2221,17 @@ void V3dR_GLWidget::lookAlong(float xLook, float yLook, float zLook) //100812 RZ
 	glPopMatrix();
 
 	absoluteRotPose();
+}
+
+void V3dR_GLWidget::resetAltCenter()
+{
+	for (int i=0; i<4; i++)
+			mAltC[i] = ((i==3)? 1 : 0);		// Original point
+}
+
+void V3dR_GLWidget::setAltCenter(float xC, float yC, float zC)
+{
+	mAltC[0] = xC; mAltC[1] = yC; mAltC[2] = zC; mAltC[3] = 1;
 }
 
 
@@ -3092,6 +3371,19 @@ void V3dR_GLWidget::callShowConnectedSegs()
 	}
 }
 
+void V3dR_GLWidget::callFragmentTracing()
+{
+	if (renderer)
+	{
+		renderer->editinput = 12;
+		renderer->drawEditInfo();
+		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
+		rendererGL1->fragmentTrace = true;
+		//renderer->callFragmentTracing();
+		//POST_updateGL();
+	}
+}
+
 void V3dR_GLWidget::subtreeHighlightModeMonitor()
 {
 	// This method fires signal to check if the renderer is in [highlighting subtree] mode every 50 ms.
@@ -3249,6 +3541,28 @@ void V3dR_GLWidget::callAutoTracers()
         if (v3dr_getImage4d(_idep)->get_xy_view())
         {
             v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Auto Tracers"));
+            POST_updateGL();
+        }
+    }
+}
+void V3dR_GLWidget::callcheckmode()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Call Check Mode"));
+            POST_updateGL();
+        }
+    }
+}
+void V3dR_GLWidget::returncheckmode()
+{
+    if (renderer && _idep && v3dr_getImage4d(_idep))
+    {
+        if (v3dr_getImage4d(_idep)->get_xy_view())
+        {
+            v3dr_getImage4d(_idep)->get_xy_view()->popupImageProcessingDialog(QString(" -- Return Check Mode"));
             POST_updateGL();
         }
     }
@@ -3538,7 +3852,100 @@ void V3dR_GLWidget::cancelSelect()
 {
 	if (renderer) renderer->endSelectMode();
 }
+#ifdef __ALLOW_VR_FUNCS_
+void V3dR_GLWidget::UpdateVRcollaInfo()
+{
+	if(myvrwin->VROutinfo.deletedcurvespos.size())
+	{
+		NeuronTree  nt = terafly::PluginInterface::getSWC();
+		std::vector<XYZ> deletedcurves = myvrwin->VROutinfo.deletedcurvespos;
+		std::vector<int> deletedcurvesindex;
+		int deleteindex = 0;
+		qDebug()<<"deletedcurves.size()"<<deletedcurves.size();
+		for(int i=0;i<deletedcurves.size();++i)//   get global delete curve  index
+		{
+			XYZ dPOS(deletedcurves.at(i).x,deletedcurves.at(i).y,deletedcurves.at(i).z);
+			for(int j=0;j < nt.listNeuron.size();++j)
+			{
+				NeuronSWC SS0;
+				SS0 = nt.listNeuron.at(j);
+				float dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+				qDebug()<<"SSO POS"<<SS0.x<<" "<<SS0.y<<" "<<SS0.z<<" ";
+				qDebug()<<"SSO n"<<SS0.n<<"   pn   "<<SS0.pn;
+				//call the dist between pos & current node'position, then compare with the threshold
+				if(dist <8.0)      //this function is copy from v3dr_gl_vr.h   2 is an experienced value   
+				{
+					int findrootindex = j;
+					qDebug()<<"findrootindex"<<findrootindex;
+					while(SS0.pn!=-1)
+					{
+						findrootindex-=1;
+						SS0 = nt.listNeuron[findrootindex];
+						qDebug()<<" nt.listNeuron[findrootindex].pn"<< nt.listNeuron[findrootindex].pn;
+						qDebug()<<"findrootindex"<<findrootindex;
+					}
+					deleteindex = findrootindex;
+					deletedcurvesindex.push_back(deleteindex);
+					qDebug()<<"deleteindex  liqiqqq"<<deleteindex;
+					break;
+				}
+				qDebug()<<dist<<"     test delete distance liqqqqq";
+			}
+			qDebug()<<"find  delete point done "<<i+1;
+		}
+		std::sort(deletedcurvesindex.begin(),deletedcurvesindex.end());//sort use default <
+		deletedcurvesindex.erase(unique(deletedcurvesindex.begin(),deletedcurvesindex.end()), deletedcurvesindex.end());
+		NeuronTree NewNT;
+		qDebug()<<"begin create new nt";
+		for(int indexinNewNT=0,deleteindex=0;deleteindex<deletedcurvesindex.size();)//  create new tree
+		{
 
+			if(indexinNewNT==deletedcurvesindex[deleteindex])
+			{
+				qDebug()<<"nt listNeuron index pn = "<<nt.listNeuron[indexinNewNT].pn;
+				if(nt.listNeuron[indexinNewNT].pn!=-1)
+					qDebug()<<"algorithm is wrong check ur code!!";
+				++indexinNewNT;
+				deleteindex++;
+				while(indexinNewNT<nt.listNeuron.size())
+				{
+					if(nt.listNeuron[indexinNewNT].pn!=-1)
+					++indexinNewNT;
+					else
+						break;
+					qDebug()<<"pos 1 indexinNewNt"<<indexinNewNT;
+				}
+				qDebug()<<"skip indexNewNT = "<<indexinNewNT;
+				qDebug()<<"skip deleteindex = "<<deleteindex;
+			}
+			else
+			{
+				qDebug()<<"NewNT.listNeuron.append"<<indexinNewNT;
+				NewNT.listNeuron.append(nt.listNeuron.at(indexinNewNT));
+        		NewNT.hashNeuron.insert(nt.listNeuron.at(indexinNewNT).n, nt.listNeuron.size()-1);
+				++indexinNewNT;
+			}
+			qDebug()<<"pos 2";
+			if(deleteindex>=deletedcurvesindex.size()&&indexinNewNT<nt.listNeuron.size())//process last delete point then copy rest SWC into NewNT
+			{
+				qDebug()<<"pos 3";
+				while(indexinNewNT<nt.listNeuron.size())
+				{
+				qDebug()<<"NewNT.listNeuron.append"<<indexinNewNT;
+				NewNT.listNeuron.append(nt.listNeuron.at(indexinNewNT));
+        		NewNT.hashNeuron.insert(nt.listNeuron.at(indexinNewNT).n, nt.listNeuron.size()-1);
+				++indexinNewNT;
+				}
+			}
+		}
+		if(NewNT.listNeuron.size())
+		terafly::PluginInterface::setSWC(NewNT);
+
+		qDebug()<<"update collaboration Infor done";
+	}
+
+}
+#endif
 ///////////////////////////////////////////////////////////////////////////////////////////
 #define __end_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////

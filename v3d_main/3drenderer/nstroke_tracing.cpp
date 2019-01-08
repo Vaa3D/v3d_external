@@ -341,7 +341,7 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 #endif
      if (b_addthiscurve)
      {
-          addCurveSWC(loc_vec, chno);
+          addCurveSWC(loc_vec, chno, 5); //LMG 26/10/2018 solveCurveDirectionInter mode 5
           // used to convert loc_vec to NeuronTree and save SWC in testing
           vecToNeuronTree(testNeuronTree, loc_vec);
      }
@@ -1154,7 +1154,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 3); //LMG 26/10/2018 solveCurveFromMarkersFastMarching (GD tracing Ctrl+G) mode 3
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
@@ -2025,7 +2025,7 @@ if (0)
      {
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 2); //LMG 26/10/2018 solveCurveMarkerLists_fm (BBox/Draw Global tracing alt+B/alt+G) mode 2 <- BBox will be converted to 1 in addCurveSwc
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
 #ifdef DEBUG_RESAMPLING
@@ -2537,7 +2537,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
 
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 4); //LMG 26/10/2018 solveCurveFromMarkersGD mode 4
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
@@ -2623,7 +2623,7 @@ void  Renderer_gl1::vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
 	listNeuron.clear();
 	hashNeuron.clear();
 
-     int count = 0;
+    int count = 0;
 
      qDebug("-------------------------------------------------------");
      for (int k=0;k<loc_list.size();k++)
@@ -2651,6 +2651,7 @@ void  Renderer_gl1::vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
      cc.r=0; cc.g=20;cc.b=200;cc.a=0;
      SS.color = cc; //random_rgba8(255);//RGBA8(255, 0,0,0);
      SS.on = true;
+
      SS.listNeuron = listNeuron;
      SS.hashNeuron = hashNeuron;
 
@@ -3459,7 +3460,7 @@ void Renderer_gl1::simpleConnect()
 				}
 				cout << endl;
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
-					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
+					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << endl; //<< " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 				
 				if (segInfo.size() < 2) return;
 				/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
@@ -3474,6 +3475,10 @@ void Renderer_gl1::simpleConnect()
 				}
 				else
 				{
+					// ----------------- For debug purpose -----------------
+					//for (vector<V_NeuronSWC_unit>::iterator debugIt = curImg->tracedNeuron.seg[segInfo[1].segID].row.begin(); debugIt != curImg->tracedNeuron.seg[segInfo[1].segID].row.end(); ++debugIt)
+					//	cout << "ID:" << debugIt->n << " parent:" << debugIt->parent << endl;
+					// -----------------------------------------------------
 					if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted)
 					{
 						vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[1].segID]);

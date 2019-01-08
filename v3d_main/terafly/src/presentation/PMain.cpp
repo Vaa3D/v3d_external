@@ -55,6 +55,9 @@
 #include "iomanager.config.h"
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
+# include <algorithm>
+
+#include "../../v3d/CustomDefine.h"
 
 using namespace terafly;
 using namespace iim;
@@ -159,6 +162,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tinyFont.setPointSize(9);
     #endif
 
+
     //initializing menu
     /**/tf::debug(tf::LEV3, "initializing menu", __itm__current__function__);
     menuBar = new QMenuBar(0);
@@ -170,8 +174,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     openUnconvertedVolumeFileAction = new QAction(QIcon(":/icons/open_image_file.png"), "Browse For File", this);
     openUnconvertedVolumeFolderAction = new QAction(QIcon(":/icons/open_image_folder.png"), "Browse For Folder", this);
     closeVolumeAction = new QAction(QIcon(":/icons/close.png"), "Close image", this);
+    //saveandchangetype=new QAction(QIcon(":/icons/changetype.png"),"Change curren types",this);
+    //returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
     loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
     saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
+    saveAnnotationsAfterRemoveDupNodesAction=new QAction("Remove dup nodes before saving annotations",this);
     saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
     clearAnnotationsAction = new QAction(QIcon(":/icons/clear.png"), "Clear annotations", this);
     exitAction = new QAction("Quit", this);
@@ -179,7 +186,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     openHDF5VolumeAction->setShortcut(QKeySequence("Ctrl+H"));
     closeVolumeAction->setShortcut(QKeySequence("Ctrl+C"));
     loadAnnotationsAction->setShortcut(QKeySequence("Ctrl+L"));
+    //saveandchangetype->setShortcut(QKeySequence("Ctrl+W"));
+    //returntochangedtype->setShortcut(QKeySequence("Ctrl+K"));
     saveAnnotationsAction->setShortcut(QKeySequence("Ctrl+S"));
+    //saveAnnotationsAfterRemoveDupNodesAction->setShortcut(QKeySequence("Shift+S"));
     saveAnnotationsAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     clearAnnotationsAction->setShortcut(QKeySequence("Ctrl+Shift+C"));
     exitAction->setShortcut(QKeySequence("Ctrl+Q"));
@@ -191,9 +201,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(closeVolumeAction, SIGNAL(triggered()), this, SLOT(closeVolume()));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
     connect(loadAnnotationsAction, SIGNAL(triggered()), this, SLOT(loadAnnotations()));
+    //connect(saveandchangetype, SIGNAL(triggered()), this, SLOT(changecurrentblocktype()));//fuction is needed to be added
+    //connect(returntochangedtype, SIGNAL(triggered()), this, SLOT(return_to_the_changedtype()));//fuction is needed to be added
     connect(saveAnnotationsAction, SIGNAL(triggered()), this, SLOT(saveAnnotations()));
     connect(saveAnnotationsAsAction, SIGNAL(triggered()), this, SLOT(saveAnnotationsAs()));
     connect(clearAnnotationsAction, SIGNAL(triggered()), this, SLOT(clearAnnotations()));
+    connect(saveAnnotationsAfterRemoveDupNodesAction,SIGNAL(triggered()),this,SLOT(saveAnnotationsAfterRemoveDupNodes()));
     fileMenu->addAction(openTeraFlyVolumeAction);
     fileMenu->addAction(openHDF5VolumeAction);
     fileMenu->addAction(openUnstitchedImageAction);
@@ -206,8 +219,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(closeVolumeAction);
     fileMenu->addSeparator();
     fileMenu->addAction(loadAnnotationsAction);
+    //fileMenu->addAction(saveandchangetype);
+    //fileMenu->addAction(returntochangedtype);
     fileMenu->addAction(saveAnnotationsAction);
     fileMenu->addAction(saveAnnotationsAsAction);
+    fileMenu->addAction(saveAnnotationsAfterRemoveDupNodesAction);
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
@@ -375,6 +391,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     from16bitsdataMenu->addAction(from16bitsdataActionWidget);
     connect(from16bitsdataCBox, SIGNAL(currentIndexChanged(int)), this, SLOT(from16bitsdataChanged(int)));
 
+    //
+    recentlyUsedPath = QString(CSettings::instance()->getRecentlyUsedPath().c_str());
 
     // "Utility" Menu
     utilityMenu = menuBar->addMenu("Utilities");
@@ -599,7 +617,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     zoomOutMethod->addItem("By Default");
     zoomOutMethod->addItem("In Situ");
     zoomOutMethod->installEventFilter(this);
-    zoomOutMethod->setCurrentIndex(0);
+    zoomOutMethod->setCurrentIndex(CSettings::instance()->getZoomOutMethod());
+    annotationChanged = false;
 
     //"Volume Of Interest (VOI)" panel widgets
     /**/tf::debug(tf::LEV3, "\"Volume Of Interest (VOI)'s coordinates\" panel", __itm__current__function__);
@@ -816,6 +835,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 //    checkBox_overview = new QCheckBox("Overview");
 //    checkBox_overview->setChecked(isOverviewActive);
 
+    isMagnificationLocked = false;
+    lockMagnification = new QCheckBox("Lock Magnification");
+    lockMagnification->setChecked(isMagnificationLocked);
+
     /* -------------- put elements into 4x4 grid ----------------- */
     VOI_layout->addWidget(refSysContainer,   0, 0, 3, 1);
     VOI_layout->addWidget(frameCoord,        3, 0, 1, 1);
@@ -828,6 +851,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VOI_layout->addLayout(zGlobalCoordLayout,2, 2, 1, 2);
     VOI_layout->addLayout(tGlobalCoordLayout,3, 2, 1, 2);
 //    VOI_layout->addWidget(checkBox_overview, 4, 0, 1, 1);
+    VOI_layout->addWidget(lockMagnification, 4, 0, 1, 4);
+
 
     /* ------------- FINALIZATION -------------- */
     VOI_layout->setContentsMargins(10,5,10,5);
@@ -988,6 +1013,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     refSysContainerLayout2->addWidget(refSys, 1);
     #endif
     refSysContainerLayout2->addStretch();
+
+    QPushButton *updateStatistics = new QPushButton("update");
+    refSysContainerLayout2->addWidget(updateStatistics, 2);
+    connect(updateStatistics, SIGNAL(released()), this, SLOT(updateOverview()));
+    refSysContainerLayout2->addStretch();
+
     refSysContainer2->setLayout(refSysContainerLayout2);
     QGridLayout* Overview_layout = new QGridLayout();
     Overview_layout->addWidget(refSysContainer2, 0, 0, 3, 1);
@@ -1078,6 +1109,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(y_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
     connect(z_dsb,SIGNAL(valueChanged(double)), this, SLOT(voxelSizeChanged(double)));
     connect(refSys, SIGNAL(reset()), this, SLOT(updateOverview()));
+    connect(zoomOutMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged(int)));
 
 #ifdef __ALLOW_VR_FUNCS__
     if(teraflyVRView)
@@ -1091,6 +1123,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 
 //    connect(checkBox_overview, SIGNAL(toggled(bool)), this, SLOT(setOverview(bool)));
+    connect(lockMagnification, SIGNAL(toggled(bool)), this, SLOT(setLockMagnification(bool)));
 
     // first resize to the desired size
     resize(380, CSettings::instance()->getViewerHeight());
@@ -1133,6 +1166,8 @@ void PMain::reset()
     importOptionsMenu->setEnabled(true);
     loadAnnotationsAction->setEnabled(false);
     saveAnnotationsAction->setEnabled(false);
+    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+    //saveandchangetype->setEnabled(false);
     saveAnnotationsAsAction->setEnabled(false);
     clearAnnotationsAction->setEnabled(false);
     virtualSpaceSizeMenu->setEnabled(true);
@@ -1206,6 +1241,8 @@ void PMain::reset()
     refSys->setDims(1,1,1);
     refSys->resetZoom();
     frameCoord->setPalette(VOI_panel->palette());
+
+    zoomOutMethod->setCurrentIndex(CSettings::instance()->getZoomOutMethod());
 
     //reset PR panel widgets
     PR_button->setText("Start");
@@ -1542,8 +1579,19 @@ void PMain::loadAnnotations()
         if(cur_win)
         {
             //obtaining current volume's parent folder path
-            QDir dir(CImport::instance()->getPath().c_str());
-            dir.cdUp();
+            QDir dir;
+
+            if(recentlyUsedPath.isEmpty())
+            {
+                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+            }
+            else
+            {
+                dir = QFileInfo(recentlyUsedPath).dir();
+            }
+
+//            QDir dir(CImport::instance()->getPath().c_str());
+//            dir.cdUp();
 
             #ifdef _USE_QT_DIALOGS
             QString path = "";
@@ -1579,6 +1627,7 @@ void PMain::loadAnnotations()
                 // load
                 cur_win->loadAnnotations();
                 saveAnnotationsAction->setEnabled(true);
+                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
                 virtualSpaceSizeMenu->setEnabled(false);
 				myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
 
@@ -1595,6 +1644,11 @@ void PMain::loadAnnotations()
                 #endif
 
                 //
+                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                recentlyUsedPath = path;
+
+                //
+                annotationChanged = true;
                 updateOverview();
             }
             else
@@ -1636,7 +1690,7 @@ void PMain::saveAnnotations()
 
             // save
             cur_win->storeAnnotations();
-            CAnnotations::getInstance()->save(annotationsPathLRU.c_str());
+            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false);
 
             // reset saved cursor
             CViewer::setCursor(cursor);
@@ -1653,6 +1707,50 @@ void PMain::saveAnnotations()
     }
 }
 
+/**********************************************************************************
+* Called when "Save annotations" or "Save annotations as" menu actions are triggered.
+* If required, opens QFileDialog to select annotation file path.
+***********************************************************************************/
+void PMain::saveAnnotationsAfterRemoveDupNodes()
+{
+    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    CViewer *cur_win = CViewer::getCurrent();
+
+    try
+    {
+        if(cur_win)
+        {
+            if(annotationsPathLRU.compare("")==0)
+            {
+                saveAnnotationsAs();
+                return;
+            }
+
+            // save current cursor and set wait cursor
+            QCursor cursor = cur_win->view3DWidget->cursor();
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+            CViewer::setCursor(Qt::WaitCursor);
+
+            // save
+            cur_win->storeAnnotations();
+            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true);
+
+            // reset saved cursor
+            CViewer::setCursor(cursor);
+            if(PAnoToolBar::isInstantiated())
+                PAnoToolBar::instance()->setCursor(cursor);
+
+            // disable save button
+            saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+        }
+    }
+    catch(RuntimeException &ex)
+    {
+        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+    }
+}
 
 void PMain::autosaveAnnotations()
 {
@@ -1688,7 +1786,7 @@ void PMain::autosaveAnnotations()
                 autosavePath = qappDirPath+"/autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             }
 
-            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str());
+            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str(),false);
 
             // reset saved cursor
             CViewer::setCursor(cursor);
@@ -1713,8 +1811,19 @@ void PMain::saveAnnotationsAs()
         if(cur_win)
         {
             //obtaining current volume's parent folder path
-            QDir dir(CImport::instance()->getPath().c_str());
-            dir.cdUp();
+//            QDir dir(CImport::instance()->getPath().c_str());
+//            dir.cdUp();
+
+            QDir dir;
+
+            if(recentlyUsedPath.isEmpty())
+            {
+                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+            }
+            else
+            {
+                dir = QFileInfo(recentlyUsedPath).dir();
+            }
 
             #ifdef _USE_QT_DIALOGS
             QString path = "";
@@ -1732,17 +1841,47 @@ void PMain::saveAnnotationsAs()
 
             #else
             //tf::setWidgetOnTop(cur_win->window3D, false);
-            QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+			QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+#else
+            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+            QString annotationsBasename = fileFullName;
+            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+            {
+//                cout<<"move into those"<<endl;
+                QStringList fileNameSplit=fileFullName.split("_stamp_");
+                if(!fileNameSplit.size())
+                    return;
+                annotationsBasename = fileNameSplit[0];
+            }
+#endif
+
+            //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
+            //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
             QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
             //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
+            QDateTime mytime = QDateTime::currentDateTime();
 
 
             if(!path.isEmpty())
             {
-                annotationsPathLRU = path.toStdString();
-                if(annotationsPathLRU.find(".ano") == string::npos)
+#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+				annotationsPathLRU = path.toStdString();
+#else
+                //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+                string filebasename=QFileInfo(path).baseName().toStdString();
+                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+                {
+                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+                    if(!fileNameSplit.size())
+                        return;
+                    filebasename = fileNameSplit[0].toStdString();
+                }
+                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+#endif
+				if(annotationsPathLRU.find(".ano") == string::npos)
                     annotationsPathLRU.append(".ano");
 
                 // save current cursor and set wait cursor
@@ -1753,13 +1892,18 @@ void PMain::saveAnnotationsAs()
 
                 // save
                 cur_win->storeAnnotations();
-                CAnnotations::getInstance()->save(annotationsPathLRU.c_str());
+                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false);
                 saveAnnotationsAction->setEnabled(true);
+                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
 
                 // reset saved cursor
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
                     PAnoToolBar::instance()->setCursor(cursor);
+
+                //
+                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                recentlyUsedPath = path;
             }
             else
                 return;
@@ -2032,6 +2176,8 @@ void PMain::settingsChanged(int)
     CSettings::instance()->setTraslZ(zShiftSBox->value());
     CSettings::instance()->setTraslT(tShiftSBox->value());
 
+    CSettings::instance()->setZoomOutMethod(zoomOutMethod->currentIndex());
+
     if(PDialogProofreading::isActive())
         PDialogProofreading::instance()->updateBlocks(0);
 }
@@ -2045,6 +2191,7 @@ void PMain::voxelSizeChanged(double)
     CSettings::instance()->setVoxelSizeZ(z_dsb->value());
 
     //
+    annotationChanged = true;
     updateOverview();
 }
 
@@ -2439,7 +2586,10 @@ void PMain::doTeraflyVRView()
             this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
-            cur_win->view3DWidget->doimageVRView(false);
+            if(cur_win->view3DWidget->resumeCollaborationVR)
+			{cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;cur_win->view3DWidget->doimageVRView(true);}
+			else
+				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
             this->show();		
 
@@ -2463,7 +2613,7 @@ void PMain::doCollaborationVRView()
 			this->setWindowState(Qt::WindowMinimized);
 			//this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
-
+			cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
             //cur_win->storeAnnotations();
             //this->show();		
@@ -2659,6 +2809,16 @@ void PMain::setOverview(bool enabled)
         return;
     }
 
+    if(annotationChanged)
+    {
+       annotationChanged = false;
+    }
+    else
+    {
+        qDebug()<<"No annotations changed!";
+        return;
+    }
+
     //
     CViewer *cur_win = CViewer::getCurrent();
     refSys->setFilled(!enabled);
@@ -2690,6 +2850,8 @@ void PMain::setOverview(bool enabled)
         CSettings::instance()->setVoxelSizeX(x_dsb->value());
         CSettings::instance()->setVoxelSizeY(y_dsb->value());
         CSettings::instance()->setVoxelSizeZ(z_dsb->value());
+
+        CSettings::instance()->setZoomOutMethod(zoomOutMethod->currentIndex());
 
         int ROIxS   = H0_sbox->value();
         refSys->dimXCenter=ROIxS;
@@ -2752,8 +2914,8 @@ void PMain::setOverview(bool enabled)
 */
 
         refSys->nt = PluginInterface::getSWC();
-        refSys->nt_init=PluginInterface::getSWC();
-        refSys->markList = PluginInterface::getLandmark();
+        //refSys->nt_init = PluginInterface::getSWC();
+        //refSys->markList = PluginInterface::getLandmark();
         refSys->setVoxelSize(CSettings::instance()->getVoxelSizeX(), CSettings::instance()->getVoxelSizeY(), CSettings::instance()->getVoxelSizeZ());
         refSys->setDims(dimX, dimY, dimZ, ROIxDim, ROIyDim, ROIzDim, ROIxS, ROIyS, ROIzS);
 
@@ -2797,6 +2959,7 @@ void PMain::PRsetActive(bool active)
     Tdim_sbox->setEnabled(!active);
     /* -------------------- "Zoom in/out" panel ---------------------- */
     zoom_panel->setEnabled(!active);
+    zoomOutMethod->setEnabled(!active);
     if(active)
     {
         zoomInSens->setValue(zoomInSens->maximum());
@@ -3089,11 +3252,14 @@ void PMain::annotationsChanged()
     if(!annotationsPathLRU.empty())
     {
         saveAnnotationsAction->setEnabled(true);
+        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
     }
 
     // update mini-map, realtime update is slow
+    annotationChanged = true;
     // updateOverview();
 
+    //
     #ifdef Q_OS_MAC
     if(tabs->count() < 4)
     {
@@ -3494,4 +3660,12 @@ void PMain::updateOverview()
     setOverview(true);
 }
 
+void PMain::updateAnnotationStatus()
+{
+    annotationChanged = true;
+}
 
+void PMain::setLockMagnification(bool locked)
+{
+    isMagnificationLocked = locked;
+}
