@@ -2195,11 +2195,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		case _Freeze: // now temporarily used for brightness supression
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
-				
+				//m_bFrozen is used to control texture
+				m_bFrozen = !m_bFrozen;
 				if (fBrightness > 0.5) fBrightness = 0.1;
 				else fBrightness = 0.9;
 				
-				//m_bFrozen = !m_bFrozen;
 				//if(m_bFrozen)
 				//	qDebug()<<"Freeze View ON";
 				//else
@@ -3901,21 +3901,22 @@ void CMainApplication::SetupControllerTexture()
 			{
 				if(m_bShowMorphologySurface)
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-				}
-				else
-				{
+
 					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
 					AddVertex(point_H.x,point_H.y,point_H.z,0.165f,0.5f,vcVerts);
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
+				}
+				else
+				{
+					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 
 				}
 				break;
@@ -3960,21 +3961,25 @@ void CMainApplication::SetupControllerTexture()
 			{
 				if(m_bFrozen)
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-				}
-				else
-				{
+
 					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
 					AddVertex(point_H.x,point_H.y,point_H.z,0.165f,0.5f,vcVerts);
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
+
+				}
+				else
+				{
+
+					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
+
 
 				}
 				break;
@@ -5491,12 +5496,14 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		const QHash <int, int> & loaded_hashNeuron = loadedNT_merged.hashNeuron;
 		NeuronSWC S0,S1;
 
-		if (!m_bFrozen) {
-			m_frozen_globalMatrix = m_globalMatrix;
-		} else 
-		{
-			m_globalMatrix = m_frozen_globalMatrix;
-		}
+		//freeze is used for brightness suppression
+		 //if (!m_bFrozen) {
+		 //	m_frozen_globalMatrix = m_globalMatrix;
+		 //}
+			//else 
+		// {
+		// 	m_globalMatrix = m_frozen_globalMatrix;
+		// }
 
 		int cy_count = 0;
 		for(int i = 0;i<loaded_spheres.size();i++)//loaded neuron tree
@@ -5854,7 +5861,8 @@ void CMainApplication::UpdateHMDMatrixPose()
 
 	if ( m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
 	{
-		if(!m_bFrozen) 
+		//freeze is used for brightness suppression
+		//if(!m_bFrozen) 
 		{
 			m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
 			m_mat4HMDPose.invert();
@@ -5868,11 +5876,12 @@ void CMainApplication::UpdateHMDMatrixPose()
 
 			m_frozen_mat4HMDPose = m_mat4HMDPose;
 			m_frozen_HMDTrans = m_HMDTrans;
-		} else
-		{
-			m_mat4HMDPose = m_frozen_mat4HMDPose;
-			m_HMDTrans = m_frozen_HMDTrans;
-		}
+		} 
+		// else
+		// {
+		// 	m_mat4HMDPose = m_frozen_mat4HMDPose;
+		// 	m_HMDTrans = m_frozen_HMDTrans;
+		// }
 	}
 }
 
