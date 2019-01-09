@@ -3209,7 +3209,6 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 // @ADDED by Alessandro on 2015-05-07.
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
-
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -3217,7 +3216,44 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	//v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
 	const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
 
-	// contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
+    if(deleteKey==1)
+    {
+        qDebug()<<"type i to delete isolated node(s)";
+        const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
+        for (V3DLONG s=0; s<nsegs; s++)
+        {
+            if(curImg->tracedNeuron.seg[s].row.size()==1)
+            {
+                curImg->tracedNeuron.seg[s].to_be_deleted = true;
+            }
+        }
+
+        curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+
+        return;
+    }
+
+    if(deleteKey==2)
+    {
+        qDebug()<<"type t to delete type is not 2 or 3";
+        const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
+        for (V3DLONG s=0; s<nsegs; s++)
+        {
+            double type = curImg->tracedNeuron.seg[s].row[0].type;
+            if(type!=2 && type!=3)
+            {
+                curImg->tracedNeuron.seg[s].to_be_deleted = true;
+            }
+        }
+
+        curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+
+        return;
+    }
+
+    // contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
     int contour_mode = 0;
     if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
         contour_mode = 1; //press "shift"

@@ -966,6 +966,15 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	showGLinfo();
 			}
+            else if (renderer)
+            {
+                Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+                if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
+                {
+                    thisRenderer->setDeleteKey(1);
+                    thisRenderer->deleteMultiNeuronsByStroke();
+                }
+            }
 	  		break;
 		case Qt::Key_G:
             if ( WITH_SHIFT_MODIFIER && //advanced
@@ -1049,7 +1058,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					mypluginloader.runPlugin(loader, "start_tracing");
-				}	
+                }
+                else if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
+                {
+                    thisRenderer->setDeleteKey(2);
+                    thisRenderer->deleteMultiNeuronsByStroke();
+                }
 			}
 			else
                 callAutoTracers();
