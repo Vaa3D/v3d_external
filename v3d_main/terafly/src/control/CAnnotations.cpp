@@ -1388,16 +1388,24 @@ QHash<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLO
 
 QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
 {
+    // Range of LUT values: [0, # deduplicated neuron list)
     QHash<V3DLONG,V3DLONG> LUT;
-
+    V3DLONG cur_id=0;
     for (V3DLONG i=0;i<neurons.size();i++)
     {
-        V3DLONG j;
-        for (j=0;j<i;j++)
+        V3DLONG j=0;
+        for (j=0;j<i;j++) // Check whether this node is a duplicated with the previous ones
         {
             if (neurons.at(i).x==neurons.at(j).x && neurons.at(i).y==neurons.at(j).y && neurons.at(i).z==neurons.at(j).z)	break;
         }
-        LUT.insertMulti(neurons.at(i).n,j);
+        if(i==j){  // not a duplicate of the previous ones
+            LUT.insertMulti(neurons.at(i).n, cur_id);
+            cur_id++;
+        }
+        else{
+            LUT.insertMulti(neurons.at(i).n, LUT.value(neurons.at(j).n));
+        }
+
     }
     return (LUT);
 }
@@ -1420,9 +1428,8 @@ double computeDist2(const NeuronSWC & s1, const NeuronSWC & s2, double xscale=1,
     double xx = (s1.x-s2.x)*xscale;
     double yy = (s1.y-s2.y)*yscale;
     double zz = (s1.z-s2.z)*zscale;
-    return sqrt(xx*xx+yy*yy+zz*zz);
+    return (xx*xx+yy*yy+zz*zz);
 }
-
 bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid)
 {
     double thres=0;
@@ -1621,7 +1628,318 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
     return(true);
 
 }
+QVector< QVector<V3DLONG> > get_neighbors(QList<NeuronSWC> &neurons, const QHash<V3DLONG,V3DLONG> & LUT)
+{
+    // generate neighbor lists for each node, using new ids.
+    // LUT (look-up table): old name -> new ids
+    // ids are the line numbers
+    // names are the node names (neurons.name)
+    QList<V3DLONG> idlist = ((QSet<V3DLONG>)LUT.values().toSet()).toList();
+    int siz = idlist.size();
+    QList<int> nlist;
+    for(V3DLONG i=0; i<neurons.size(); i++){nlist.append(neurons.at(i).n);}
 
+//    qDebug()<<"Before defining qvector";
+    QVector< QVector<V3DLONG> > neighbors = QVector< QVector<V3DLONG> >(siz, QVector<V3DLONG>() );
+//    qDebug()<<"After defining qvector";
+//    system("pause");
+    for (V3DLONG i=0;i<neurons.size();i++)
+    {
+        // Find parent node
+//        qDebug()<<i;
+        int pid_old = nlist.lastIndexOf(neurons.at(i).pn);
+        if(pid_old<0){
+            continue;  // Skip root nodes
+        }
+        else{
+            int pname_old = neurons.at(pid_old).n;
+            int cname_old = neurons.at(i).n;
+            int pid_new = LUT.value(pname_old);
+            int cid_new = LUT.value(cname_old);
+            if((pid_new>=siz) || (cid_new>=siz)){
+                v3d_msg(QString("Out of range [0, %1]: pid:%2; cid:%3").arg(siz).arg(pid_new).arg(cid_new));
+            }
+            // add a new neighbor for the child node
+            if(!neighbors.at(cid_new).contains(pid_new)){
+//                qDebug()<<QString("Adding edge between %1 and %2").arg(cid_new).arg(pid_new);
+                neighbors[cid_new].push_back(pid_new);
+            }
+            // add a new neighbor for the parent node
+            if(!neighbors.at(pid_new).contains(cid_new)){
+//                qDebug()<<QString("Adding edge between %1 and %2").arg(pid_new).arg(cid_new);
+                neighbors[pid_new].push_back(cid_new);
+            }
+        }
+    }
+    return neighbors;
+}
+QList<V3DLONG> DFS(QVector< QVector<V3DLONG> > neighbors, V3DLONG newrootid, V3DLONG siz)
+{
+    // siz: size of the whole neuronlist
+    // The neuronlist may include multiple components
+    // A component is a connected tree
+    // Sorted components: other components that have already been sorted.
+    // Current component: the component where newroot resides. We will sort it and append it to the sorted components
+
+    // sorted_size: size of sorted components
+    // neworder: new order of the sored components
+    // *group: id of the current component
+
+    QList<V3DLONG> neworder;
+
+    // DFS to sort current component;
+
+    // Initialization
+    QStack<int> pstack;
+    QList<int> visited;
+    for(int i=0;i<siz; i++){visited.append(0);}
+    visited[newrootid]=1;
+    pstack.push(newrootid);
+    neworder.append(newrootid);
+
+    // Tree traverse
+    bool is_push;
+    int pid;
+    while(!pstack.isEmpty()){
+        is_push = false;
+        pid = pstack.top();
+        // whether exist unvisited neighbors of pid
+        // if yes, push neighbor to stack;
+        QVector<V3DLONG>::iterator it;
+        QVector<V3DLONG> cur_neighbors = neighbors.at(pid);
+        for(it=cur_neighbors.begin(); it!=cur_neighbors.end(); ++it)
+        {
+            if(visited.at(*it)==0)
+            {
+                pstack.push(*it);
+                is_push=true;
+                visited[*it]=1;
+                neworder.append(*it);
+                break;
+            }
+        }
+        // else, pop pid
+        if(!is_push){
+            pstack.pop();
+        }
+    }
+    return neworder;
+}
+bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result,V3DLONG newrootid)
+{
+
+    newrootid=VOID;
+    double thres=VOID;
+    // node name list of
+    QList<V3DLONG> nlist;
+    for(int i=0; i<neurons.size(); i++){
+        nlist.append(neurons.at(i).n);
+    }
+
+    //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
+    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+
+    //create a new id list to give every different neuron a new id
+    QList<V3DLONG> idlist = ((QSet<V3DLONG>)LUT.values().toSet()).toList();
+    V3DLONG siz = idlist.size();
+
+    // create a vector to keep neighbors of each node
+    QVector< QVector<V3DLONG> > neighbors = get_neighbors(neurons, LUT);
+
+    // Find the new id of the new root
+    V3DLONG root = 0;
+    if (newrootid==VOID)  // If unspecified, use the 1st root as new root.
+    {
+        for (V3DLONG i=0;i<neurons.size();i++)
+            if (neurons.at(i).pn==-1){
+                root = idlist.indexOf(LUT.value(neurons.at(i).n));
+                break;
+            }
+    }
+    else{
+        root = idlist.indexOf(LUT.value(newrootid));
+        if (LUT.keys().indexOf(newrootid)==-1)
+        {
+            v3d_msg("The new root id you have chosen does not exist in the SWC file.");
+            return(false);
+        }
+    }
+
+    //Major steps
+    //do a DFS for the the matrix and re-allocate ids for all the nodes
+    QList<V3DLONG> neworder;
+    QList<V3DLONG> cur_neworder;
+    QList<V3DLONG> component_id;
+    V3DLONG sorted_size = 0;
+    int cur_group = 1;
+
+    // Begin with the new root node and
+    // generate the 1st sorted tree.
+    cur_neworder= DFS(neighbors, root, siz);
+    sorted_size += cur_neworder.size();
+    neworder.append(cur_neworder);
+    for(int i=0; i<cur_neworder.size(); i++){
+        component_id.append(cur_group);
+    }
+    cout<<"Done 1st DFS fr"<<endl;
+
+    // Continue to sort the rest of the tree
+    while (sorted_size <siz)
+    {
+        V3DLONG new_root;
+        cur_group++;
+        for (V3DLONG iter=0;iter<siz;iter++)
+        {
+            if (!neworder.contains(iter))
+            {
+                new_root = iter;
+                break;
+            }
+        }
+        cur_neworder= DFS(neighbors, new_root, siz);
+        sorted_size += cur_neworder.size();
+        neworder.append(cur_neworder);
+        for(int i=0; i<cur_neworder.size(); i++){
+            component_id.append(cur_group);
+        }
+    }
+    qDebug()<<"Number of components before making connections"<<cur_group;
+
+    QList<V3DLONG> output_newroot_list;
+    if((thres != 1000000000) && (thres>0)){  // If distance threshold > 1: make new connections
+        qDebug()<<"find the point in non-group 1 that is nearest to group 1";
+        //find the point in non-group 1 that is nearest to group 1,
+        //include the nearest point as well as its neighbors into group 1, until all the nodes are connected
+        output_newroot_list.append(root);
+        while(cur_group>1)
+        {
+            double min = VOID;
+            double dist2 = 0;
+            int mingroup = 1;
+
+            // Find the closest pair of nodes between group 1 and the rest.
+            V3DLONG m1,m2;
+            for (V3DLONG ii=0;ii<siz;ii++)
+            {
+                qDebug()<<QString("Distance check: %1").arg(ii);
+                if (component_id[ii]==1)
+                {
+                    for (V3DLONG jj=0;jj<siz;jj++)
+                        if (component_id[jj]!=1)
+                        {
+                            dist2 = computeDist2(neurons.at(nlist.indexOf(LUT.key(ii))),
+                                                 neurons.at(nlist.indexOf(LUT.key(jj))));
+                            if (dist2<min)
+                            {
+                                min = dist2;
+                                mingroup = component_id[jj];
+                                m1 = ii;
+                                m2 = jj;
+                            }
+                        }
+                }
+            }
+            for (V3DLONG i=0;i<siz;i++)
+                if (component_id[i]==mingroup)
+                    component_id[i] = 1;
+            if (min<=thres*thres)
+            {
+                qDebug()<<QString("New connection is made between %1 and %2").arg(m1).arg(m2);
+                if(!neighbors.at(m1).contains(m2)){neighbors[m1].push_back(m2);}
+                if(!neighbors.at(m2).contains(m1)){neighbors[m2].push_back(m1);}
+            }
+            else{  // set component the node closest to group 1 is root
+                output_newroot_list.append(m2);
+            }
+            cur_group--;
+        }
+        qDebug()<<"Number of components after making connections"<<output_newroot_list.size();
+    }
+    else{
+        int tp_group = 0;
+        for(int i=0; i<siz; i++){
+            if(component_id.at(i) != tp_group){
+                output_newroot_list.append(neworder.at(i));
+                tp_group = component_id.at(i);
+            }
+        }
+    }
+
+    // DFS sort of the neuronlist after new connections
+    for (int i=0;i<siz;i++)
+    {
+        component_id[i] = 0;
+        neworder[i]= VOID;
+    }
+    component_id.clear();
+    neworder.clear();
+    sorted_size = 0;
+    cur_group = 1;
+
+    V3DLONG offset=0;
+    for(V3DLONG i=0; i<output_newroot_list.size(); i++)
+    {
+        V3DLONG new_root = output_newroot_list.at(i);
+        qDebug()<<QString("Output component %1, root id is %2").arg(i).arg(new_root);
+        V3DLONG cnt = 0;
+        // Sort current component;
+        cur_neworder= DFS(neighbors, new_root, siz);
+        sorted_size += cur_neworder.size();
+        neworder.append(cur_neworder);
+        for(int i=0; i<cur_neworder.size(); i++){
+            component_id.append(cur_group);
+        }
+        NeuronSWC S;
+        S.n = offset+1;
+        S.pn = -1;
+        V3DLONG oriname = LUT.key(new_root);
+        V3DLONG oripos = nlist.indexOf(oriname);
+        S.x = neurons.at(oripos).x;
+        S.y = neurons.at(oripos).y;
+        S.z = neurons.at(oripos).z;
+        S.r = neurons.at(oripos).r;
+        S.type = neurons.at(oripos).type;
+        result.append(S);
+        cnt++;
+        qDebug()<<QString("New root %1:").arg(i)<<S.x<<S.y<<S.z;
+
+        for (V3DLONG ii=offset+1;ii<(sorted_size);ii++)
+        {
+            for (V3DLONG jj=offset;jj<ii;jj++) //after DFS the id of parent must be less than child's
+            {
+                V3DLONG cid = neworder[ii];
+                V3DLONG pid = neworder[jj];
+                // If there's an edge between the two nodes, then pid is the parent of cid
+                if (pid!=VOID && cid!=VOID && neighbors.at(pid).contains(cid))
+                {
+                        NeuronSWC S;
+                        S.n = ii+1;
+                        oriname = LUT.key(cid);
+                        oripos = nlist.indexOf(oriname);
+                        S.pn = jj+1;
+                        S.x = neurons.at(oripos).x;
+                        S.y = neurons.at(oripos).y;
+                        S.z = neurons.at(oripos).z;
+                        S.r = neurons.at(oripos).r;
+                        S.type = neurons.at(oripos).type;
+                        result.append(S);
+                        cnt++;
+                        break; //added by CHB to avoid problem caused by loops in swc, 20150313
+                }
+            }
+        }
+        offset += cnt;
+    }
+
+    if ((sorted_size)<siz) {
+        v3d_msg("Error!");
+        return false;
+    }
+
+    // free space.
+    neighbors.clear();
+    return(true);
+}
 void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
@@ -1705,20 +2023,23 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
                 nt.append(temp);
             }
         }
+        cout<<"nt size is "<<nt.size()<<endl;
+        Sort_SWC_NewVersion(nt,nt_sort,VOID);
+        cout<<"nt_sort size is "<<nt_sort.size()<<endl;
     //    removeDuplicatedNode(nt,nt_sort);
-        if(soma_ct==0){
-            printf("No soma found in swc file.\n");
-            Sort_SWC(nt,nt_sort);
-        }
-        else{
-            if(soma_ct>1)
-            {
-                printf("Warning: more than one soma node found!\n");
-            }
-            qDebug()<<soma_id<<nt.at(soma_id).x<<nt.at(soma_id).y<<nt.at(soma_id).z;
-//            Sort_SWC(nt,nt_sort, soma_id);
-            Sort_SWC(nt,nt_sort, nt.at(soma_id).n);
-        }
+//        if(soma_ct==0){
+//            printf("No soma found in swc file.\n");
+//            Sort_SWC_NewVersion(nt,nt_sort);
+//        }
+//        else{
+//            if(soma_ct>1)
+//            {
+//                printf("Warning: more than one soma node found!\n");
+//            }
+//            qDebug()<<soma_id<<nt.at(soma_id).x<<nt.at(soma_id).y<<nt.at(soma_id).z;
+////            Sort_SWC(nt,nt_sort, soma_id);
+//            Sort_SWC_NewVersion(nt,nt_sort, nt.at(soma_id).n);
+//        }
         for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
         {
             fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n", nt_sort.at(countNode).n, nt_sort.at(countNode).type, nt_sort.at(countNode).x, nt_sort.at(countNode).y,
