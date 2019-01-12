@@ -91,12 +91,7 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 		Agents.push_back(agent00);
 
 	}
-    else
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        //return SendLoginRequest();
-		return 0;
-    }
+
 	}
 	else
 	{
