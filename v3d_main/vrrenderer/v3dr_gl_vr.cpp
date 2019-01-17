@@ -73,6 +73,7 @@ float CMainApplication::fBrightness = 0.9;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
+My4DImage *CMainApplication::img4d_replace = nullptr;
 ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
 ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
 RGBImageChannel CMainApplication::m_rgbChannel = channel_rgb;
@@ -80,7 +81,7 @@ bool CMainApplication::showshootingPad = false;
 #define dist_thres 0.01
 #define connection_rigourous 0.5
 #define default_radius 0.618
-#define drawing_step_size 5  //the larger, the fewer SWC nodes
+#define drawing_step_size 2  //the larger, the fewer SWC nodes
 //LMG for Windows UTC Timestamp 15/10/2018
 #define timegm _mkgmtime
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
@@ -732,6 +733,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
 	, showshootingray(false)
+	, replacetexture(false)
 	//, font_VR (NULL)
 
 {
@@ -981,7 +983,6 @@ bool CMainApplication::BInitGL()
 		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	}
-	
 	if( !CreateAllShaders() )
 		return false;
 	loadedNT_merged.listNeuron.clear();
@@ -1039,6 +1040,7 @@ bool CMainApplication::BInitGL()
 
 	if (m_bHasImage4D) 
 	{
+
 		SetupVolumeRendering();
 
 		QList <LocationSimple> & listLoc = img4d->listLandmarks;
@@ -1303,6 +1305,8 @@ void CMainApplication::Shutdown()
 
 		if(ctrSphere)
 			delete ctrSphere;
+
+			
 		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
 		//for (int i=0;i<sketch_spheres.size();i++) delete sketch_spheres[i];
@@ -2152,6 +2156,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// default:
 		// 	break;
 		// }
+		if(isOnline == false)
+		{
+			m_globalMatrix = glm::mat4();
+			SetupGlobalMatrix();
+		}
 	}
 
     if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(!showshootingray))
@@ -2197,8 +2206,19 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				//m_bControllerModelON = !m_bControllerModelON;
 				//m_bFrozen is used to control texture
 				m_bFrozen = !m_bFrozen;
-				if (fBrightness > 0.5) fBrightness = 0.1;
-				else fBrightness = 0.9;
+
+				//this part is used to change image texture
+				/*if(!img4d_replace)
+				{
+					img4d_replace = new My4DImage;
+					img4d_replace->loadImage("C:/Users/SHU/Desktop/18454-1.v3draw");
+				}
+				else
+					replacetexture = !replacetexture;
+				
+				SetupVolumeRendering();*/
+				// if (fBrightness > 0.5) fBrightness = 0.1;
+				// else fBrightness = 0.9;
 				
 				//if(m_bFrozen)
 				//	qDebug()<<"Freeze View ON";
@@ -6618,9 +6638,12 @@ GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
 // init 3D texture to store the volume data used fo ray casting
 GLuint CMainApplication::initVol3DTex()
 {
-    GLuint w = img4d->getXDim(); GLuint h = img4d->getYDim(); GLuint d= img4d->getZDim();
+	if(!replacetexture)
+    {GLuint w = img4d->getXDim(); GLuint h = img4d->getYDim(); GLuint d= img4d->getZDim();
 	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
-
+	//minmaxOctree_step8 = new MinMaxOctree(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),8);
+	//minmaxOctree_step16 = new MinMaxOctree(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),16);
+	//minmaxOctree_step32 = new MinMaxOctree(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),32);
     glGenTextures(1, &g_volTexObj);
     // bind 3D texture target
     glBindTexture(GL_TEXTURE_3D, g_volTexObj);
@@ -6648,6 +6671,7 @@ GLuint CMainApplication::initVol3DTex()
 			RBGData[i+2] = BData[i/3];
 			i+=3;
 		}
+		RGBImageTexData = RBGData;
 		cout<<"step 3"<<endl;
 		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);
 		cout<<"data type is V3D_UINT8"<<endl;
@@ -6667,6 +6691,7 @@ GLuint CMainApplication::initVol3DTex()
 			RBGData[i+2] = BData[i/3];
 			i+=3;
 		}
+		RGBImageTexData = RBGData;
 		cout<<"step 3"<<endl;
 		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_SHORT, (GLushort *)RBGData);
 		cout<<"data type is V3D_UINT16"<<endl;
@@ -6674,7 +6699,7 @@ GLuint CMainApplication::initVol3DTex()
 	break;
 	case V3D_FLOAT32:
 		{
-			GLuint * RData = (GLuint *)img4d->getRawDataAtChannel(0);
+		GLuint * RData = (GLuint *)img4d->getRawDataAtChannel(0);
 		GLuint * GData = (GLuint *)img4d->getRawDataAtChannel(1);
 		GLuint * BData = (GLuint *)img4d->getRawDataAtChannel(2);
 		GLuint * RBGData = new GLuint[img4d->getTotalUnitNumberPerChannel()*3];
@@ -6686,6 +6711,7 @@ GLuint CMainApplication::initVol3DTex()
 			RBGData[i+2] = BData[i/3];
 			i+=3;
 		}
+		RGBImageTexData = RBGData;
 		cout<<"step 3"<<endl;
 		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_INT, (GLuint *)RBGData);
 		cout<<"data type is V3D_FLOAT32"<<endl;
@@ -6714,8 +6740,275 @@ GLuint CMainApplication::initVol3DTex()
 	GL_ERROR();
     cout << "volume texture created" << endl;
     return g_volTexObj;
-}
+	}
+	// else
+	// {
+	// GLuint w = img4d_replace->getXDim(); GLuint h = img4d_replace->getYDim(); GLuint d= img4d_replace->getZDim();
+	// cout << "(w,h,d) of image_replace =("<<w<<","<<h<<","<<d <<")"<< endl;
 
+    // glGenTextures(1, &g_volTexObj);
+    // // bind 3D texture target
+    // glBindTexture(GL_TEXTURE_3D, g_volTexObj);
+    // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    // // pixel transfer happens here from client to OpenGL server
+    // glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+	// GL_ERROR();
+	// switch(img4d_replace->getDatatype())
+	// {
+	// case V3D_UINT8:
+	// 	{
+	// 	GLubyte * RData = img4d_replace->getRawDataAtChannel(0);
+	// 	GLubyte * GData = img4d_replace->getRawDataAtChannel(1);
+	// 	GLubyte * BData = img4d_replace->getRawDataAtChannel(2);
+	// 	GLubyte * RBGData = new GLubyte[img4d_replace->getTotalUnitNumberPerChannel()*3];
+	// 	cout<<"image_replace step 2"<<endl;
+	// 	for(int i = 0;i<img4d_replace->getTotalUnitNumberPerChannel()*3;)
+	// 	{	
+	// 		RBGData[i] = RData[i/3];
+	// 		RBGData[i+1] = GData[i/3];
+	// 		RBGData[i+2] = BData[i/3];
+	// 		i+=3;
+	// 	}
+	// 	cout<<"step 3"<<endl;
+	// 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);
+	// 	cout<<"data type is V3D_UINT8"<<endl;
+	// 	}
+	// break;
+	// case V3D_UINT16:
+	// 	{
+	// 		GLushort * RData = (GLushort *)img4d_replace->getRawDataAtChannel(0);
+	// 	GLushort * GData = (GLushort *)img4d_replace->getRawDataAtChannel(1);
+	// 	GLushort * BData = (GLushort *)img4d_replace->getRawDataAtChannel(2);
+	// 	GLushort * RBGData = new GLushort[img4d_replace->getTotalUnitNumberPerChannel()*3];
+	// 	cout<<"step 2"<<endl;
+	// 	for(int i = 0;i<img4d_replace->getTotalUnitNumberPerChannel()*3;)
+	// 	{	
+	// 		RBGData[i] = RData[i/3];
+	// 		RBGData[i+1] = GData[i/3];
+	// 		RBGData[i+2] = BData[i/3];
+	// 		i+=3;
+	// 	}
+	// 	cout<<"step 3"<<endl;
+	// 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_SHORT, (GLushort *)RBGData);
+	// 	cout<<"data type is V3D_UINT16"<<endl;
+	// 	}
+	// break;
+	// case V3D_FLOAT32:
+	// 	{
+	// 		GLuint * RData = (GLuint *)img4d_replace->getRawDataAtChannel(0);
+	// 	GLuint * GData = (GLuint *)img4d_replace->getRawDataAtChannel(1);
+	// 	GLuint * BData = (GLuint *)img4d_replace->getRawDataAtChannel(2);
+	// 	GLuint * RBGData = new GLuint[img4d_replace->getTotalUnitNumberPerChannel()*3];
+	// 	cout<<"step 2"<<endl;
+	// 	for(int i = 0;i<img4d_replace->getTotalUnitNumberPerChannel()*3;)
+	// 	{	
+	// 		RBGData[i] = RData[i/3];
+	// 		RBGData[i+1] = GData[i/3];
+	// 		RBGData[i+2] = BData[i/3];
+	// 		i+=3;
+	// 	}
+	// 	cout<<"step 3"<<endl;
+	// 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_INT, (GLuint *)RBGData);
+	// 	cout<<"data type is V3D_FLOAT32"<<endl;
+	// 	}
+	// break;
+	// default:
+	// 	break;
+	// }
+
+    // //glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (GLvoid*)data); 
+	// /*GLubyte * RData = img4d->getRawDataAtChannel(0);
+	// GLubyte * GData = img4d->getRawDataAtChannel(1);
+	// GLubyte * BData = img4d->getRawDataAtChannel(2);
+	// GLubyte * RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel()*3];
+	// cout<<"step 2"<<endl;
+	// for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+	// {	
+	// 	RBGData[i] = RData[i/3];
+	// 	RBGData[i+1] = GData[i/3];
+	// 	RBGData[i+2] = BData[i/3];
+	// 	i+=3;
+	// }
+	// cout<<"step 3"<<endl;
+    // glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);*/
+
+	// GL_ERROR();
+    // cout << "volume texture created" << endl;
+    // return g_volTexObj;
+	// }
+}
+GLuint CMainApplication：：initVolOctree3DTex(int step)
+{
+//if(!replacetexture)
+//    {
+//		GLuint w = img4d->getXDim(); GLuint h = img4d->getYDim(); GLuint d= img4d->getZDim();
+//	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
+//	switch (step)
+//	{
+//		case 8:
+//		{
+//		minmaxOctree_step8 = new MinMaxOctree(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),8);
+//		 glGenTextures(1, &g_volTexObj_octree_8);
+//    	// bind 3D texture target
+//    	glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_8);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+//   	 	// pixel transfer happens here from client to OpenGL server
+//    	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+//		GL_ERROR();
+//		switch(img4d->getDatatype())
+//		{
+//			case V3D_UINT8:
+//			{
+//				minmaxOctree_step8 = new MinMaxOctree<GLubyte>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),8);
+//				minmaxOctree_step8->build((GLubyte*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)minmaxOctree_step8->GetData());
+//			}break;
+//			case V3D_UINT16:
+//			{
+//				minmaxOctree_step8 = new MinMaxOctree<GLubyte>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),8);
+//				minmaxOctree_step8->build((V3D_UINT16*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (V3D_UINT16 *)minmaxOctree_step8->GetData());
+//			}break;
+//			case V3D_FLOAT32:
+//			{
+//				minmaxOctree_step8 = new MinMaxOctree<V3D_FLOAT32>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),8);
+//				minmaxOctree_step8->build((V3D_FLOAT32*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (V3D_FLOAT32 *)minmaxOctree_step8->GetData());
+//			}break;
+//			default:
+//			break;
+//		}
+//			GL_ERROR();
+//    		cout << "volume octree texture created" << endl;
+//   			return g_volTexObj_octree_8;
+//		}
+//		break;
+//		case 16:
+//		{
+//		minmaxOctree_step16 = new MinMaxOctree(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),16);
+//		glGenTextures(1, &g_volTexObj_octree_16);
+//    	// bind 3D texture target
+//    	glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_16);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+//   	 // pixel transfer happens here from client to OpenGL server
+//    	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+//		GL_ERROR();
+//
+//		switch(img4d->getDatatype())
+//		{
+//			case V3D_UINT8:
+//			{
+//				minmaxOctree_step16 = new MinMaxOctree<GLubyte>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),16);
+//				minmaxOctree_step16->build((GLubyte*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)minmaxOctree_step8->GetData());
+//			}break;
+//			case V3D_UINT16:
+//			{
+//				minmaxOctree_step16 = new MinMaxOctree<GLubyte>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),16);
+//				minmaxOctree_step16->build((V3D_UINT16*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (V3D_UINT16 *)minmaxOctree_step8->GetData());
+//			}break;
+//			case V3D_FLOAT32:
+//			{
+//				minmaxOctree_step16 = new MinMaxOctree<V3D_FLOAT32>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),16);
+//				minmaxOctree_step16->build((V3D_FLOAT32*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (V3D_FLOAT32 *)minmaxOctree_step8->GetData());
+//			}break;
+//			default:
+//			break;
+//		}
+//			GL_ERROR();
+//    		cout << "volume octree texture created" << endl;
+//   			return g_volTexObj_octree_16;
+//
+//
+//		}
+//		break;
+//		case 32:
+//		{
+//		minmaxOctree_step32 = new MinMaxOctree(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),32);
+//		glGenTextures(1, &g_volTexObj_octree_32);
+//    	// bind 3D texture target
+//    	glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_32);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//    	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+//   	 	// pixel transfer happens here from client to OpenGL server
+//    	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+//		GL_ERROR();
+//
+//		switch(img4d->getDatatype())
+//		{
+//			case V3D_UINT8:
+//			{
+//				minmaxOctree_step32 = new MinMaxOctree<GLubyte>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),32);
+//				minmaxOctree_step32->build((GLubyte*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)minmaxOctree_step8->GetData());
+//			}break;
+//			case V3D_UINT16:
+//			{
+//				minmaxOctree_step32 = new MinMaxOctree<GLubyte>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),32);
+//				minmaxOctree_step32->build((V3D_UINT16*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (V3D_UINT16 *)minmaxOctree_step8->GetData());
+//			}break;
+//			case V3D_FLOAT32:
+//			{
+//				minmaxOctree_step32 = new MinMaxOctree<V3D_FLOAT32>(img4d->getXDim();h = img4d->getYDim();img4d->getZDim(),32);
+//				minmaxOctree_step32->build((V3D_FLOAT32*)RGBImageTexData,img4d->getXDim(),h = img4d->getYDim(),img4d->getZDim());
+//				glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (V3D_FLOAT32 *)minmaxOctree_step8->GetData());
+//			}break;
+//			default:
+//			break;
+//		}
+//			GL_ERROR();
+//    		cout << "volume octree texture created" << endl;
+//   			return g_volTexObj_octree_32;
+//
+//
+//		}
+//
+//		break;
+//		default:
+//		{cout<<"u should not see this ,check minmaxoctree texure";}
+//		break;
+//	}
+//
+    //glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (GLvoid*)data); 
+	/*GLubyte * RData = img4d->getRawDataAtChannel(0);
+	GLubyte * GData = img4d->getRawDataAtChannel(1);
+	GLubyte * BData = img4d->getRawDataAtChannel(2);
+	GLubyte * RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel()*3];
+	cout<<"step 2"<<endl;
+	for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+	{	
+		RBGData[i] = RData[i/3];
+		RBGData[i+1] = GData[i/3];
+		RBGData[i+2] = BData[i/3];
+		i+=3;
+	}
+	cout<<"step 3"<<endl;
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);*/
+
+	// GL_ERROR();
+    // cout << "volume texture created" << endl;
+    // return g_volTexObj;
+	//}
+	return 0;
+}
 void CMainApplication::initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight)
 {
 	//qDebug("initFrameBufferForVolumeRendering() is called.");
@@ -6747,7 +7040,7 @@ void CMainApplication::initFrameBufferForVolumeRendering(GLuint texObj, GLuint t
 void CMainApplication::SetupVolumeRendering()
 {
 	//qDebug("SetupVolumeRendering() is called.");
-	
+
 	g_texWidth = g_winWidth = m_nRenderWidth;
     g_texHeight = g_winHeight = m_nRenderHeight;
 
@@ -6819,6 +7112,9 @@ void CMainApplication::SetUinformsForRayCasting()
 	
 	raycastingShader->setVec2("ScreenSize",(float)g_winWidth, (float)g_winHeight);
 	raycastingShader->setFloat("StepSize",0.001f);
+	raycastingShader->setFloat("Stepsizeoctree8",0.008f);
+	raycastingShader->setFloat("Stepsizeoctree16",0.016f);
+	raycastingShader->setFloat("Stepsizeoctree32",0.032f);
 	raycastingShader->setVec2("ImageSettings",fContrast, fBrightness);
 	//raycastingShader->setFloat("contrast ",fContrast);
 	//raycastingShader->setFloat("brightness ",fBrightness);
@@ -6834,6 +7130,18 @@ void CMainApplication::SetUinformsForRayCasting()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_3D, g_volTexObj);
 	raycastingShader->setInt("VolumeTex", 2);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_8);
+	raycastingShader->setInt("VolumeTexoctree8", 3);
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_16);
+	raycastingShader->setInt("VolumeTexoctree16", 4);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_32);
+	raycastingShader->setInt("VolumeTexoctree32", 5);
+	
 
 	if(img4d->getCDim()== 1 )//single channel image
 	// to do
@@ -7258,3 +7566,57 @@ XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 //	}
 //	return true;
 //}
+template<class T>
+MinMaxOctree<T>::MinMaxOctree(int width, int height, int depth,int step) {
+
+	this->width = width/step;
+	this->width += width%step;
+	this->height = height/step;
+	this->height  +=height%step;
+	this->depth = depth/step;
+	this->depth +=depth%step;
+	this->step = step;
+	data = (unsigned char*)malloc(this->width * this->height * this->depth); 
+
+	for(int voxel = 0; voxel < this->width * this->height * this->depth;) {
+		data[voxel] = 255;
+		data[voxel+ 1] = 0;
+		data[voxel+ 2] = 0;
+		voxel+=3;
+	}
+
+}
+template<class T>
+MinMaxOctree<T>::~MinMaxOctree() {
+	delete [] data;
+}
+template<class T>
+void MinMaxOctree<T>::build(T* volumeData, int volumeWidth, int volumeHeight, int volumeDepth) {
+	
+	int octreeIndex, volumeIndex;
+	for(int w = 0; w < this->width; w++) {
+		for(int h = 0; h < this->height; h++) {
+			for(int d = 0; d < this->depth; d++) {
+				
+				for(int vw = 0; vw < step; vw++) {
+					for(int vh = 0; vh < step; vh++) {
+						for(int vd = 0; vd < step; vd++) {
+							volumeIndex = (d * step + vd) * volumeHeight * volumeWidth + (h * step + vh) * volumeWidth + (w * step + vw);
+							octreeIndex = d * height * width + h * width + w;
+							// if(volumeData[volumeIndex *3] < data[octreeIndex * 4 + 0])
+							// 	data[octreeIndex * 4 + 0] = volumeData[volumeIndex * 4];
+							if(volumeData[volumeIndex * 3] > data[octreeIndex * 3])
+								data[octreeIndex * 3] = volumeData[volumeIndex * 3];
+							if(volumeData[volumeIndex * 3+1] > data[octreeIndex * 3+1])
+								data[octreeIndex * 3+1] = volumeData[volumeIndex * 3+1];
+							if(volumeData[volumeIndex * 3+2] > data[octreeIndex * 3+2])
+								data[octreeIndex * 3+2] = volumeData[volumeIndex * 3+2];	
+						}
+					}
+				}
+
+			}
+		}
+	}
+
+}

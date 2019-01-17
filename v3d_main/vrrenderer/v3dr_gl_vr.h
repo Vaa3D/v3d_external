@@ -98,6 +98,25 @@ private:
 	GLsizei m_unVertexCount;
 	std::string m_sModelName;
 };
+template<class T>
+class MinMaxOctree
+{
+public:
+	MinMaxOctree(int width, int height, int depth,int step);
+	~MinMaxOctree();
+	void build(T *volumeData, int volumeWidth, int volumeHeight, int volumeDepth);
+	int getWidth() { return width; }
+	int getHeight() { return height; }
+	int getDepth() { return depth; }
+	T* getData() { return data; }
+private:
+	T *data;
+	int width;
+	int height;
+	int depth;
+	int step;
+};
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
@@ -190,6 +209,8 @@ public:
 
 	MainWindow *mainwindow;
 	My4DImage *img4d;
+	static My4DImage *img4d_replace;
+	bool replacetexture;
 	QList<NeuronTree> *loadedNTList; // neuron trees brought to the VR view from the 3D view.	
 	NTL editableLoadedNTL;
 	NTL nonEditableLoadedNTL;
@@ -316,6 +337,10 @@ private: // OpenGL bookkeeping
 	GLint m_nCtrTexMatrixLocation;
 	unsigned int m_uiControllerTexIndexSize;
 	
+	//volume rendering
+	//MinMaxOctree* minmaxOctree_step8;
+	//MinMaxOctree* minmaxOctree_step16;
+	//MinMaxOctree* minmaxOctree_step32;
 	//right controller shootingray VAO/VBO
 	GLuint m_iControllerRayVAO;
 	GLuint m_iControllerRayVBO;
@@ -455,6 +480,7 @@ public:
 	GLuint initTFF1DTex(const char* filename);
 	GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
 	GLuint initVol3DTex();
+	GLuint initVolOctree3DTex(int step);
 	void initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight);
 	void SetupVolumeRendering();
 	bool CreateVolumeRenderingShaders();
@@ -465,6 +491,7 @@ public:
 	bool m_bHasImage4D;
 private:
 	
+	void * RGBImageTexData;
 	GLuint m_clipPatchVAO;
 	GLuint m_VolumeImageVAO;
 	Shader* backfaceShader;//back face, first pass
@@ -479,7 +506,9 @@ private:
 	GLuint g_texWidth;
 	GLuint g_texHeight;
 	GLuint g_volTexObj;
-	GLuint g_volTexObj1;
+	GLuint g_volTexObj_octree_8;
+	GLuint g_volTexObj_octree_16;
+	GLuint g_volTexObj_octree_32;	
 	static float fBrightness;
 	static float fContrast;
 
