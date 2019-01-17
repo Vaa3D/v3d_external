@@ -197,6 +197,7 @@ struct NeuronTree : public BasicSurfObj
             S.r = p.listNeuron[i].r;
             S.pn = p.listNeuron[i].pn;
             S.seg_id = p.listNeuron[i].seg_id;
+            S.level = p.listNeuron[i].level;
             S.creatmode = p.listNeuron[i].creatmode;  // Creation Mode LMG 8/10/2018
             S.timestamp = p.listNeuron[i].timestamp;  // Timestamp LMG 27/9/2018
             S.tfresindex = p.listNeuron[i].tfresindex; // TeraFly resolution index LMG 13/12/2018
