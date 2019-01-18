@@ -2217,8 +2217,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					replacetexture = !replacetexture;
 				
 				SetupVolumeRendering();*/
-				// if (fBrightness > 0.5) fBrightness = 0.1;
-				// else fBrightness = 0.9;
+				if (fBrightness > 0.5) fBrightness = 0.1;
+				else fBrightness = 0.9;
 				
 				//if(m_bFrozen)
 				//	qDebug()<<"Freeze View ON";
@@ -3346,6 +3346,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// 	break;
 		// }	
 		// qDebug("m_modeGrip_R=%d",m_modeGrip_R);
+		//grip right button is used to control linewidth for now
+		iLineWid+=2;
+		if(iLineWid>9){iLineWid = 1;}
+				
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{

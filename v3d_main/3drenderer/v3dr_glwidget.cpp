@@ -1730,7 +1730,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			VRClientON = linkerror;
 			if(!linkerror)  // there is error with linking ,linkerror = 0
-			{qDebug()<<"can't connect to server .unknown wrong ";return;}
+			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;
