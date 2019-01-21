@@ -2282,6 +2282,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					if (iLineWid<1)
 						iLineWid = 1;
 				}
+			
 				
 
 				break;
@@ -5430,6 +5431,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 		// draw a sphere on right controller center
 		{
+			glLineWidth(1);
 			glm::mat4 model;
 			model = glm::translate(glm::mat4(), ctrSpherePos);
 
@@ -5689,14 +5691,14 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	}
 	//=================== draw the controller axis lines ======================
 	bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
-	if( !bIsInputCapturedByAnotherProcess )
-	{
-		glUseProgram( m_unControllerTransformProgramID );
-		glUniformMatrix4fv( m_nControllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
-		glBindVertexArray( m_unControllerVAO );
-		glDrawArrays( GL_LINES, 0, m_uiControllerVertcount );
-		glBindVertexArray( 0 );
-	}
+	// if( !bIsInputCapturedByAnotherProcess )
+	// {
+	// 	glUseProgram( m_unControllerTransformProgramID );
+	// 	glUniformMatrix4fv( m_nControllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+	// 	glBindVertexArray( m_unControllerVAO );
+	// 	glDrawArrays( GL_LINES, 0, m_uWiControllerVertcount );
+	// 	glBindVertexArray( 0 );
+	// }
 	//=================== draw the controller shooting ray ======================
 	if( !bIsInputCapturedByAnotherProcess )
 	{
