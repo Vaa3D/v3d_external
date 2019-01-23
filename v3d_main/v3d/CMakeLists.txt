@@ -109,6 +109,7 @@ if(Qt5Core_FOUND)
       ${arthurwidgets_path}/arthurstyle.cpp
       ${arthurwidgets_path}/hoverpoints.cpp
   )
+  set_source_files_properties( ${ARTHUR_SRCS} PROPERTIES GENERATED TRUE )
 endif()
 
 if(NOT Qt5Core_FOUND)
@@ -137,8 +138,10 @@ include_directories( BEFORE
   )
 
 if(Qt5Core_FOUND)
-add_library(arthurwidgets ${ARTHUR_MOC_SRCS} ${ARTHUR_SRCS} )
+  add_library(arthurwidgets ${ARTHUR_MOC_SRCS} ${ARTHUR_SRCS} )
+  add_dependencies(arthurwidgets qt_demos)
 endif()
+
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
@@ -447,7 +450,7 @@ if(V3D_MAC_CREATE_BUNDLE)
     # Install Qt libraries into bundle
     find_program(MAC_DEPLOY_QT macdeployqt)
     add_custom_command(TARGET v3d POST_BUILD
-        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
+        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}" 
         DEPENDS v3d
         COMMENT "Inserting Qt libraries into v3d.app")
     add_custom_command( TARGET v3d POST_BUILD

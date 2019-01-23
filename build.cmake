@@ -26,6 +26,7 @@ CMAKE_BUILD="Release"
 CMAKE_EXE=""
 BUILD_DIR=`pwd`
 ROOT_DIR=`pwd`
+DESIRED_QT_VERSION=4
 NO_STOP_ON_ERROR="-i"
 
 set -eu
@@ -76,7 +77,8 @@ while [[ $# > 0 ]]; do
             CMAKE_ARGS+=" -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE "
             ;;
         -qt5)
-            CMAKE_ARGS+=" -DFORCE_QT4:BOOL=OFF "
+            DESIRED_QT_VERSION=5
+            CMAKE_ARGS+=" -DCMAKE_CXX_FLAGS=\"-std=c++11\" "
             ;;
         -dev)
             NO_STOP_ON_ERROR=""
@@ -102,6 +104,8 @@ while [[ $# > 0 ]]; do
     esac
     shift
 done
+
+CMAKE_ARGS+=" -DDESIRED_QT_VERSION=$DESIRED_QT_VERSION "
 
 PLATFORM=$PLATFORM_ARCH
 PLATFORM+="_"

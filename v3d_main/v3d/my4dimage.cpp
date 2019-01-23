@@ -1097,7 +1097,7 @@ bool My4DImage::saveVANO_data()
 
 	bool ok1;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 	int ch_ind = QInputDialog::getInt(0, "channel index", "which channel you want to collect statitics and annotate?", 1, 1, getCDim(), 1, &ok1) - 1;
 #else
 	int ch_ind = QInputDialog::getInteger(0, "channel index", "which channel you want to collect statitics and annotate?", 1, 1, getCDim(), 1, &ok1) - 1;
@@ -3756,7 +3756,7 @@ void My4DImage::exportLandmarkToPointCloudAPOFile()
 
 	bool ok1;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 	int channo = QInputDialog::getInt(0, "select number of color channel", "which color channel you want to collect statistics?", 1, 1, getCDim(), 1, &ok1);
 #else
 	int channo = QInputDialog::getInteger(0, "select number of color channel", "which color channel you want to collect statistics?", 1, 1, getCDim(), 1, &ok1);
@@ -4741,7 +4741,7 @@ bool My4DImage::proj_general_hist_display()
 	if(QMessageBox::Yes == QMessageBox::question (0, "", "Do you want to specify a range of pixel intensity to compute the histogram?", QMessageBox::Yes, QMessageBox::No))
 	{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 		dmin = QInputDialog::getInt(0, QString("histogram range"), QString("min intensity of the histogram range"), 0, 0, 65535, 10, &ok1);
 #else
 		dmin = QInputDialog::getInteger(0, QString("histogram range"), QString("min intensity of the histogram range"), 0, 0, 65535, 10, &ok1);
@@ -4749,7 +4749,7 @@ bool My4DImage::proj_general_hist_display()
 		if (ok1)
 		{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 			dmax = QInputDialog::getInt(0, QString("histogram range"), QString("max intensity of the histogram range (max(8bits data)=255, max(16bit data)=65535)"), 255, 0, 65535, 10, &ok1);
 #else
 			dmax = QInputDialog::getInteger(0, QString("histogram range"), QString("max intensity of the histogram range (max(8bits data)=255, max(16bit data)=65535)"), 255, 0, 65535, 10, &ok1);

@@ -1114,7 +1114,7 @@ bool My4DImage::proj_trace_changeNeuronSegType(V3DLONG node_id, NeuronTree *p_tr
 	bool ok;
 	int node_type = p_tree->listNeuron.at(node_id).type;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 	node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
 							  QObject::tr("SWC type: "
 										"\n 0 -- undefined (white)"
@@ -1167,7 +1167,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 			if (this->getCDim()!=1) //only ask channel no if it is not 1
 			{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 				channo = QInputDialog::getInt(0, qtitle,
 					  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
 #else
@@ -1177,7 +1177,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 				if (! ok)  return false;
 			}
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 			int win_sz = QInputDialog::getInt(0, qtitle,
 					  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
 #else
@@ -1197,7 +1197,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 			if (this->getCDim()!=1) //only ask channel no if it is not 1
 			{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 				channo = QInputDialog::getInt(0, qtitle,
 												  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
 #else
@@ -1207,7 +1207,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 				if (! ok)  return false;
 			}
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 			int win_sz = QInputDialog::getInt(0, qtitle,
 												  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
 #else

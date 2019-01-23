@@ -100,7 +100,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX //added by PHC, 2010-05-20 to overcome VC min max macro
 	#include <windows.h>
-	#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+	#if defined(USE_Qt5)
 		#include <GL\glew.h>
 	#else
 		#include <GL/gl.h>

@@ -33,7 +33,7 @@
 #include "IM_config.h"
 
 //////// Added by MK, 11/27/2016, for Qt5/VS2015 environment 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 #include <QtWidgets>
 #endif
 //////////////////////////////////////////////////////////////

@@ -382,7 +382,7 @@ int V3dR_MainWindow::getAnimateRotTimePoints(QString qtitle, bool* ok, int v)
 	{
 		timepoints = v;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 		timepoints = QInputDialog::getInt(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
 #else
 		timepoints = QInputDialog::getInteger(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
@@ -416,7 +416,7 @@ void V3dR_MainWindow::setAnimateRotSpeedSec()
 
 	bool ok;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 	int time_sec = QInputDialog::getInt(0, QObject::tr("Animation"),
 									QObject::tr("Seconds per rotation of speed:"), rotationSpeedSec, 0, 1000, 1, &ok);
 #else
@@ -551,7 +551,7 @@ void V3dR_MainWindow::saveMovie()
 		// frames of rotation
 		{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 			rotation_frames = QInputDialog::getInt(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
 #else
 			rotation_frames = QInputDialog::getInteger(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);

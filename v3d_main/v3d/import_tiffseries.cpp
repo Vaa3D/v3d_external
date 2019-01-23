@@ -510,7 +510,7 @@ bool XFormWidget::importLeicaData()
 			if (!b_continue_use_user_specified_ch[i%ncolors])
 			{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 				user_specified_ch[i%ncolors] = QInputDialog::getInt(0, tr("Specify a channel"),
 																	QString("The current file [%1] has [%2] colors which do not match the presumed number of colors/channels [=%3]. <br><br>Please specify a channel of this image you want to import data (start from 0):").arg(tmpstr).arg(cur_sz[3]).arg(ncolors),
 																	int(i%ncolors), 0, cur_sz[3]-1, 1, &ok);
@@ -522,7 +522,7 @@ bool XFormWidget::importLeicaData()
 				if (ok)
 				{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 					b_continue_use_user_specified_ch[i%ncolors] = QInputDialog::getInt(0, tr("Question"),
 																						QString("Do you want to continue using the channel just specified for <br>importing for all remaining images in this series that have conflict? (0 for No, 1 for Yes)"),
 																						1, 0, 1, 1, &ok);

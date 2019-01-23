@@ -3,6 +3,11 @@
 #include "../utility/url_tools.h"
 #include "../utility/FooDebug.h"
 #include <iostream>
+
+#if defined(USE_Qt5)
+    #include <QtConcurrent>
+#endif 
+
 #include <QFuture>
 #include <QUrl>
 

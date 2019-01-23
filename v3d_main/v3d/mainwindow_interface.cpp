@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../3drenderer/renderer_gl1.h" //for finishEditingNeuronTree
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -66,7 +66,7 @@ QList<void*> MainWindow::allWindowList()
 {
 	QList<void*> list;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 	foreach (QWidget* w, workspace->subWindowList()) list << w;
 #else
 	foreach (QWidget* w, workspace->windowList()) list << w;
