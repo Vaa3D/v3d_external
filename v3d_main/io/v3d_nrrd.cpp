@@ -78,7 +78,7 @@ bool read_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char *& data1d, V3D
         // Figure out what kind of data we have
         // Set the number of image dimensions and bail if needed
         unsigned int domainAxisNum, domainAxisIdx[NRRD_DIM_MAX],
-        rangeAxisNum, rangeAxisIdx[NRRD_DIM_MAX]={-1},
+        rangeAxisNum, rangeAxisIdx[NRRD_DIM_MAX]={static_cast<unsigned int>(-1)},
           spaceAxisNum, spaceAxisIdx[NRRD_DIM_MAX];
         
         // domain should be space-time axes
@@ -336,7 +336,8 @@ bool write_nrrd_with_pxinfo(const char imgSrcFile[], unsigned char * data1d, V3D
     try
     {
         // nb no way to check for 5d data at present
-        size_t nsize[NRRD_DIM_MAX] = {sz[0], sz[1], sz[2], sz[3]};
+        size_t nsize[NRRD_DIM_MAX] = {static_cast<size_t>(sz[0]), static_cast<size_t>(sz[1]),
+                                      static_cast<size_t>(sz[2]), static_cast<size_t>(sz[3])};
         const unsigned int ndim = sz[3]>1 ? 4 : 3;
 
         // wrap incoming data into nrrd struct

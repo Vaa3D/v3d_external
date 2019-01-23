@@ -47,7 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
 
-#include"../../terafly/src/control/CPlugin.h"
+#include "../terafly/src/control/CPlugin.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
@@ -56,11 +56,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "renderer_gl2.h"
 #include <QtGui>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
 #ifdef __ALLOW_VR_FUNCS__
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 bool V3dR_GLWidget::resumeCollaborationVR=false;
 #endif
 
