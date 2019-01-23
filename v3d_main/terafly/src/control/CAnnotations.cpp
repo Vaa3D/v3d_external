@@ -2138,6 +2138,12 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
             }
             for(std::map<int, annotation*>::iterator i = annotationsMap.begin(); i!= annotationsMap.end(); i++)
             {
+				if(i->second == NULL)
+				{
+					qDebug()<<"i->second is NULL";
+					continue;
+				}
+
                 i->second->parent = swcMap[i->first]->pn == -1 ? 0 : annotationsMap[swcMap[i->first]->pn];
                 if(i->second->parent)
                 {
