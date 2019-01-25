@@ -4026,11 +4026,17 @@ void XFormWidget::createGUI()
 	if (bExistGUI)
 		return;
 
+#if defined(USE_Qt5)
+	QWidget* self = new QWidget(); // The internal widget of the MdiSubWindow
+#else
+	QWidget* self = this;
+#endif
+
 	bLinkFocusViews = true;
 	bDisplayFocusCross = true;
 
      /* Set up the data related GUI */
-     dataGroup = new QGroupBox(this);
+     dataGroup = new QGroupBox(self);
      dataGroup->setTitle("Image data");
 
      viewGroup = new QGroupBox(dataGroup);
@@ -4079,7 +4085,7 @@ void XFormWidget::createGUI()
 
     // setup the control panel
 
-    mainGroup = new QGroupBox(this);
+    mainGroup = new QGroupBox(self);
     mainGroup->setFixedWidth(300);
     mainGroup->setTitle("Options");
 
@@ -4289,7 +4295,7 @@ void XFormWidget::createGUI()
 
 
 	//110719 RZC for spacing between buttons, because setSpacing(0) between GroupBox
-	QWidget* btnArea = new QWidget(this);
+	QWidget* btnArea = new QWidget(self);
 	QVBoxLayout* btnLayout = new QVBoxLayout(btnArea);
 	//btnLayout->setContentsMargins(0,0,0,0); //remove margins
     btnLayout->addWidget(landmarkManagerButton);
@@ -4325,13 +4331,18 @@ void XFormWidget::createGUI()
     allLayout->addWidget(hideDisplayControlsButton);
     allLayout->addWidget(mainGroup);
 
-	  setLayout(allLayout);
+	  self->setLayout(allLayout);
 
 	// set the flag
 	bExistGUI = true;
 
 	setFocusPolicy(Qt::StrongFocus);
-	this->setFocus();
+	self->setFocus();
+
+#if defined(USE_Qt5)
+	setWidget( self );
+#endif
+
 	//QTimer::singleShot(500, this, SLOT(Focus()));
 }
 
