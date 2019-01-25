@@ -17,6 +17,17 @@
 #include "renderer_gl1.h"
 #include "renderer.h"
 
+double SOMA_X = -1.1;
+double SOMA_Y = -1.1;
+double SOMA_Z = -1.1;
+//#endif
+//#ifndef SOMA_Y
+//#define SOMA_Y -1.1
+//#endif
+//#ifndef SOMA_Z
+//#define SOMA_Z -1.1
+//#endif
+
 using namespace terafly;
 using namespace std;
 
@@ -1728,7 +1739,7 @@ QList<V3DLONG> DFS(QVector< QVector<V3DLONG> > neighbors, V3DLONG newrootid, V3D
 bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result,V3DLONG newrootid)
 {
 
-    newrootid=VOID;
+//    newrootid=VOID;
     double thres=VOID;
     // node name list of
     QList<V3DLONG> nlist;
@@ -1953,14 +1964,15 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
     if(octree)
         octree->find(interval_t(0, octree->DIM_V), interval_t(0, octree->DIM_H), interval_t(0, octree->DIM_D), annotations);
 
+    FILE* f;
     //saving ano file
-    QDir anoFile(filepath);
-    FILE* f = fopen(filepath, "w");
-    if(!f)
-        throw RuntimeException(strprintf("in CAnnotations::save(): cannot save to path \"%s\"", filepath));
-    fprintf(f, "APOFILE=%s\n",anoFile.dirName().toStdString().append(".apo").c_str());
-    fprintf(f, "SWCFILE=%s\n",anoFile.dirName().toStdString().append(".eswc").c_str());
-    fclose(f);
+//    QDir anoFile(filepath);
+//    f = fopen(filepath, "w");
+//    if(!f)
+//        throw RuntimeException(strprintf("in CAnnotations::save(): cannot save to path \"%s\"", filepath));
+//    fprintf(f, "APOFILE=%s\n",anoFile.dirName().toStdString().append(".apo").c_str());
+//    fprintf(f, "SWCFILE=%s\n",anoFile.dirName().toStdString().append(".eswc").c_str());
+//    fclose(f);
 
     //saving apo (point cloud) file
     QList<CellAPO> points;
@@ -1981,6 +1993,9 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
     writeAPO_file(QString(filepath).append(".apo"), points);
 
     //saving SWC file
+    v3d_msg(QString("Test_1.1\n"
+                    "About to remove dup and save.\n"
+                    "Currnt soma location is %1 %2 %3").arg(SOMA_X).arg(SOMA_Y).arg(SOMA_Z));
     f = fopen(QString(filepath).append(".eswc").toStdString().c_str(), "w");
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
@@ -1991,7 +2006,7 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
         QList<NeuronSWC> nt,nt_sort;
         long countNode=0;
         long soma_ct = 0;
-        long soma_id = -1;
+        long soma_name = -1;
         for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
         {
             if((*i)->type == 1) //selecting NeuronSWC
@@ -2011,20 +2026,32 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
                 temp.creatmode=(*i)->creatmode;
                 temp.timestamp=(*i)->timestamp;
                 temp.tfresindex=(*i)->tfresindex;
-                if(temp.type==1)  // Use soma node as root, if any.
+                if((temp.x == SOMA_X) && (temp.y == SOMA_Y) && (temp.z == SOMA_Z))  // Use soma node as root, if any.
                 {
                     soma_ct++;
                     if(soma_ct==1)
                     {
-                        soma_id = countNode - 1;
+                        soma_name = (*i)->ID;
                     }
-                    qDebug()<<temp.n<<temp.x<<temp.y<<temp.z<<temp.type;
+                    qDebug()<<"soma found at:"<<temp.n<<temp.x<<temp.y<<temp.z<<temp.type;
                 }
                 nt.append(temp);
             }
         }
         cout<<"nt size is "<<nt.size()<<endl;
-        Sort_SWC_NewVersion(nt,nt_sort,VOID);
+        NeuronTree tp;
+        tp.listNeuron = nt;
+        writeSWC_file("/fmost/fmost-data/Peng/Zhi_0124/temp.swc", tp);
+
+        if(soma_name == -1){
+            v3d_msg("No soma detected in the input swc.\n"
+                    "Root of saved swc may not be the soma.");
+            Sort_SWC_NewVersion(nt,nt_sort,VOID);
+        }
+        else{
+            v3d_msg(QString("Soma detected at with name %1").arg(soma_name));
+            Sort_SWC_NewVersion(nt,nt_sort,soma_name);
+        }
         cout<<"nt_sort size is "<<nt_sort.size()<<endl;
     //    removeDuplicatedNode(nt,nt_sort);
 //        if(soma_ct==0){
@@ -2112,14 +2139,23 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         else if(tokens[0].compare("SWCFILE") == 0)
         {
             NeuronTree nt = readSWC_file(dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str()));
-			
+            v3d_msg(QString("Test_1.1. Input swc is: %1").arg(dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str())));
             std::map<int, annotation*> annotationsMap;
             std::map<int, NeuronSWC*> swcMap;
+            bool soma_found = 0;
             for(QList <NeuronSWC>::iterator i = nt.listNeuron.begin(); i!= nt.listNeuron.end(); i++)
             {
                 annotation* ann = new annotation();
                 ann->type = 1;
                 ann->name = nt.name.toStdString();
+                // Peng Xie added, 2019-01-24
+                if((!soma_found) && (i->pn == -1) && (i->type == 1)){
+                    v3d_msg(QString("Soma found: %1 %2 %3 %4").arg(i->n).arg(i->x).arg(i->y).arg(i->z));
+                    SOMA_X = i->x;
+                    SOMA_Y = i->y;
+                    SOMA_Z = i->z;
+                    soma_found = 1;
+                }
                 ann->comment = nt.comment.toStdString();
                 ann->color = nt.color;
                 ann->subtype = i->type;
@@ -2136,6 +2172,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                 annotationsMap[i->n] = ann;
                 swcMap[i->n] = &(*i);
             }
+            v3d_msg("SWC loaded. If no soma found so far, Something is wrong.");
             for(std::map<int, annotation*>::iterator i = annotationsMap.begin(); i!= annotationsMap.end(); i++)
             {
 				if(i->second == NULL)
