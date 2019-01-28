@@ -1966,17 +1966,31 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
         octree->find(interval_t(0, octree->DIM_V), interval_t(0, octree->DIM_H), interval_t(0, octree->DIM_D), annotations);
 
     FILE* f;
-    //saving ano file   
-    QDir anoFile(filepath);
-//    QString fileprefix = anoFile.dirName();
-//    QString fileprefix = anoFile.filePath(anoFile.dirName());
-    QString fileprefix(filepath);
-    fileprefix.remove(fileprefix.lastIndexOf(".ano"), fileprefix.size());
-    qDebug()<<fileprefix;
 
-    QString output_ano = fileprefix;
-    QString output_apo = fileprefix;
-    QString output_swc = fileprefix;
+    //saving ano file
+//    v3d_msg(QString(filepath));
+    QString filename = QString(filepath);
+    if(filename.indexOf("/") != (-1)){
+        filename.remove(0, filename.lastIndexOf("/")+1);
+    }
+    if(filename.endsWith(".ano")){
+        filename.remove(filename.lastIndexOf(".ano"), filename.size());
+    }
+    else{
+        v3d_msg("Input is not an ano file.");
+        return;
+    }
+//    v3d_msg(QString("filename: %1").arg(filename));
+
+    QString fileprefix(filepath);
+    if(fileprefix.indexOf("/") != -1){
+        fileprefix.remove(fileprefix.lastIndexOf("/")+1, fileprefix.size());
+    }
+//    v3d_msg(QString("fileprefix: %1").arg(fileprefix));
+
+    QString output_ano = filename;
+    QString output_apo = filename;
+    QString output_swc = filename;
     if(removedupnode){
         output_ano.append(".final.ano");
         output_apo.append(".final.apo");
@@ -1987,14 +2001,14 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
         output_apo.append(".apo");
         output_swc.append(".swc");
     }
-    cout<<"output_ano: "<<qPrintable(output_ano)<<endl;
-    cout<<"output_apo: "<<qPrintable(output_apo)<<endl;
-    cout<<"output_swc: "<<qPrintable(output_swc)<<endl;
+    cout<<endl<<"output_ano: "<<qPrintable(fileprefix + output_ano)<<endl;
+    cout<<"output_apo: "<<qPrintable(fileprefix + output_apo)<<endl;
+    cout<<"output_swc: "<<qPrintable(fileprefix + output_swc)<<endl;
 
-    f = fopen(qPrintable(output_ano), "w");
+    f = fopen(qPrintable(fileprefix + output_ano), "w");
     if(!f)
     {
-        throw RuntimeException(strprintf("in CAnnotations::save(): cannot save to path \"%s\"", qPrintable(output_ano)));
+        throw RuntimeException(strprintf("in CAnnotations::save(): cannot save to path \"%s\"", qPrintable(fileprefix + output_ano)));
     }
     else{
         fprintf(f, "APOFILE=%s\n", qPrintable(output_apo));
@@ -2018,10 +2032,10 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
             cell.color = (*i)->color;
             points.push_back(cell);
         }
-    writeAPO_file(output_apo, points);
+    writeAPO_file(fileprefix + output_apo, points);
 
     //saving SWC file
-    f = fopen(qPrintable(output_swc), "w");
+    f = fopen(qPrintable(fileprefix + output_swc), "w");
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
 
