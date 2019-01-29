@@ -2124,6 +2124,7 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
 }
 void CAnnotations::load(const char* filepath) throw (RuntimeException)
 {
+    SOMA_FOUND = 0;
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
 
     //precondition checks
