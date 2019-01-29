@@ -13,6 +13,9 @@ message(CONFIG=$$unique(CONFIG))
 CONFIG += warn_off  # should turn off later to view all warning during compilation
 CONFIG += CONSOLE   # make a console application instead of a windows GUI only application
 
+QMAKE_CXXFLAGS += /MP
+QMAKE_LFLAGS   += /STACK:104857600
+
 include(vaa3d.pro)
 
 win32 { 
