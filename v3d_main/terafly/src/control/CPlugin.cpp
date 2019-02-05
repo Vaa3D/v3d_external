@@ -539,3 +539,9 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 }
+
+void tf::PluginInterface::drawEditInfo(int editNum)
+{
+	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
+	CViewer::getCurrent()->getGLWidget()->renderer->drawEditInfo();
+}

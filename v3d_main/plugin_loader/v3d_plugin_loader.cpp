@@ -1687,6 +1687,11 @@ bool V3d_PluginLoader::setImageTeraFly(size_t x, size_t y, size_t z)
     return terafly::PluginInterface::setImage(x,y,z);
 }
 
+void V3d_PluginLoader::redrawEditInfo(int editInputNum)
+{
+	terafly::PluginInterface::drawEditInfo(editInputNum);
+}
+
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {
