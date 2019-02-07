@@ -941,7 +941,7 @@ void Renderer_gl1::toggleTex2D3D()
 	tryTex3D = !tryTex3D;
 	//qDebug( "	tryTex3D = %d", tryTex3D);
 	try	{
-		PROGRESS_DIALOG( QObject::tr((tryTex3D)? "Try Texture 3D Format": "Try Texture 2D Format"), widget);
+		PROGRESS_DIALOG( ((tryTex3D)? "Try Texture 3D Format": "Try Texture 2D Format"), widget);
 		PROGRESS_PERCENT(30);
 
 		loadVol();
@@ -955,7 +955,7 @@ void Renderer_gl1::toggleTexCompression()
 	tryTexCompress = !tryTexCompress;
 	//qDebug( "	tryTexCompress = %d", tryTex3D);
 	try	{
-		PROGRESS_DIALOG( QObject::tr((tryTexCompress)? "Try Texture Compression Format": "Try Texture UnCompression Format"), widget);
+		PROGRESS_DIALOG( ((tryTexCompress)? "Try Texture Compression Format": "Try Texture UnCompression Format"), widget);
 		PROGRESS_PERCENT(30);
 
 		loadVol();

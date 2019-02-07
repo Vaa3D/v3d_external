@@ -225,10 +225,10 @@ void V3dR_GLWidget::choiceRenderer()
 	{
 		qDebug("   *** You OpenGL version (%s) is under 1.3, switch to Cross-Section type.", glversion);
 
-		PROGRESS_DIALOG( tr("Preparing 3D View"), NULL);
+		PROGRESS_DIALOG( "Preparing 3D View", NULL);
 		PROGRESS_TEXT( tr("Preparing 3D View\n\n"
 				"Warning: You OpenGL version (%1) is under 1.3, NO enough graphics hardware support!\n\n"
-				"Now switch to Cross-Section display type, other display type will be very slow.").arg(QString(glversion)));
+				"Now switch to Cross-Section display type, other display type will be very slow.").arg(QString(glversion)).toStdString());
 		PROGRESS_PERCENT(1); // 090730: this MUST be here for displaying since Qt 4.5
 		SLEEP(5000);
 	}
@@ -292,7 +292,7 @@ void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 ex
 	if (_isSoftwareGL) setRenderMode_Cs3d(true); //090724 set renderer mode before paint
 
 	//=============================================================================
-	PROGRESS_DIALOG( tr("Preparing 3D View"), NULL);
+	PROGRESS_DIALOG( "Preparing 3D View", NULL);
     if(this->show_progress_bar)
     {
         PROGRESS_PERCENT(10);
@@ -3208,7 +3208,7 @@ void V3dR_GLWidget::changeVolShadingOption()
 		{
 
 			//=============================================================================
-			PROGRESS_DIALOG( tr("Update Volume Shading Option"), NULL);
+			PROGRESS_DIALOG( "Update Volume Shading Option", NULL);
 			PROGRESS_PERCENT(10);
 			{
 
@@ -3771,7 +3771,7 @@ void V3dR_GLWidget::updateImageData()
 	qDebug("V3dR_GLWidget::updateImageData -----------------------------------------");
 
 
-    PROGRESS_DIALOG( QObject::tr("Updating image"), this);
+    PROGRESS_DIALOG( "Updating image", this);
     if(this->show_progress_bar)
     {
         PROGRESS_PERCENT(10);
@@ -3832,7 +3832,7 @@ void V3dR_GLWidget::reloadData()
 
 	//makeCurrent(); //ensure right context when concurrent animation, 081025 //090705 delete
 
-	PROGRESS_DIALOG( QObject::tr("Reloading"), this);
+	PROGRESS_DIALOG( "Reloading", this);
     if(this->show_progress_bar)
     {
         PROGRESS_PERCENT(10);

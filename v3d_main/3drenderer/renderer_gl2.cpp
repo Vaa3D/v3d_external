@@ -795,7 +795,7 @@ void Renderer_gl2::toggleTexStream()
 	tryTexStream = !(tryTexStream >0); // -1--resident, 0--off, 1--mixed, 2--force
 	//qDebug( "	tryTexStream = %d", tryTexStream);
 	try	{
-		PROGRESS_DIALOG( QObject::tr((tryTexStream >0)? "Try Texture Stream": "No Texture Stream"), widget);
+		PROGRESS_DIALOG( ((tryTexStream >0)? "Try Texture Stream": "No Texture Stream"), widget);
 		PROGRESS_PERCENT(30);
 
 		if (tryTexStream<=0)

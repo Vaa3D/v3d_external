@@ -1559,7 +1559,7 @@ void Renderer_gl1::loadNeuronTree(const QString& filename)
         asc_to_swc::readASC_file(SS, (char *)(qPrintable(filename)));
 
 #endif
-    PROGRESS_DIALOG("Loading Neuron structure "+filename, widget);
+    PROGRESS_DIALOG(("Loading Neuron structure "+filename).toStdString(), widget);
     PROGRESS_PERCENT(50); // 0 or 100 not be displayed. 081102
      // add to neuron_tree set
     if (contained && idx>=0 && idx<listNeuronTree.size())

@@ -340,7 +340,7 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 		{
             for (V3DLONG z=0; z<lf_sz2; z++)
 			{
-				PROGRESS_TEXT( QObject::tr("Counting label: %1 labels").arg(count));
+				PROGRESS_TEXT( QObject::tr("Counting label: %1 labels").arg(count).toStdString());
 				PROGRESS_PERCENT(z*99/lf_sz2);
 
                 for(V3DLONG y=0; y<lf_sz1; y++)
@@ -411,7 +411,7 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
     for (i=0; i<num_surf; i++)
 	{
         V3DLONG t_num = 0;
-		PROGRESS_TEXT( QObject::tr("Creating geometric group/label %1 of %2").arg(i+1).arg(num_surf) );
+		PROGRESS_TEXT( QObject::tr("Creating geometric group/label %1 of %2").arg(i+1).arg(num_surf).toStdString() );
 		PROGRESS_PERCENT((i+1)*90/num_surf);
 		{
 
@@ -772,7 +772,7 @@ void Renderer_gl1::loadWavefrontOBJ(const QString& filename)
 			case 'g':
 			{
 				g_num++;
-				PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 ").arg(g_num) );
+				PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 ").arg(g_num).toStdString() );
 				PROGRESS_PERCENT((g_num) %90);
 
 				S.n = g_num;
@@ -824,7 +824,7 @@ void Renderer_gl1::loadWavefrontOBJ(const QString& filename)
 			{
 				if (g_num<=1 && f_num%10000==0) // only one group
 				{
-					PROGRESS_TEXT( QObject::tr("Loading geometric face %1 ").arg(f_num) );
+					PROGRESS_TEXT( QObject::tr("Loading geometric face %1 ").arg(f_num).toStdString() );
 					PROGRESS_PERCENT(f_num/10000 %90);
 				}
 
@@ -1062,7 +1062,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
 		for (i=0; i<g_num; i++)		// each group/label
 		{
 
-       		PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 of %2").arg(i+1).arg(g_num) );
+       		PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 of %2").arg(i+1).arg(g_num).toStdString() );
     		PROGRESS_PERCENT(90*(i+1)/g_num);
 
     		LabelSurf S;
