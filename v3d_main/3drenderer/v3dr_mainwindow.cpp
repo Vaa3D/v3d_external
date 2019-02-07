@@ -212,7 +212,11 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
     //////////////////////////////////////////////////////////////////
     glWidget = 0;
     glWidget = new V3dR_GLWidget(_idep, this, data_title); // 'this' pointer for glWidget calling back
+#if defined(USE_Qt5)
+    if ( !glWidget ) //Under Qt5, the GL Widget is not valid until after it's shown
+#else
     if (!glWidget || !(glWidget->isValid()))
+#endif
     {
     	MESSAGE("ERROR: Failed to create OpenGL Widget or Context!!! \n");
     }
@@ -479,7 +483,11 @@ void V3dR_MainWindow::doSaveMovie(QString& loop_script, int rotation_frames, int
 
 bool V3dR_GLWidget::screenShot(QString filename)
 {
+#if defined(USE_Qt5)
+	QImage image1 = this->grabFramebuffer();
+#else
 	QImage image1 = this->grabFrameBuffer();
+#endif        
 
         const char* format = SAVE_IMG_FORMAT;
 	QString curfile = filename + "." + format;
@@ -504,7 +512,11 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 		return;
 	}
 
+#if defined(USE_Qt5)
+	QImage image1 = glWidget->grabFramebuffer();
+#else
 	QImage image1 = glWidget->grabFrameBuffer();
+#endif        
 
         const char* format = SAVE_IMG_FORMAT;
 	QString curfile = QString("%1/a%2.%3").arg(outputDir).arg(i).arg(format);

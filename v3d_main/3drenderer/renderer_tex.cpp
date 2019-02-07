@@ -2329,7 +2329,11 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
         listAct.append(actClearAllSelections = new QAction("clear all selections", w));
         listAct.append(actClearAllNeurons = new QAction("clear all contents", w));
 
+#if defined(USE_Qt5)
+        if (w) w->update(); //for highlight object
+#else
         if (w) w->updateGL(); //for highlight object
+#endif        
 
         QMenu menu;
         foreach (QAction* a, listAct) {  menu.addAction(a); }
@@ -2529,7 +2533,11 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 
             }
 
+#if defined(USE_Qt5)
+            if (w) w->update(); //for highlight object
+#else
             if (w) w->updateGL(); //for highlight object
+#endif            
 
             QMenu menu;
             foreach (QAction* a, listAct) {  menu.addAction(a); }

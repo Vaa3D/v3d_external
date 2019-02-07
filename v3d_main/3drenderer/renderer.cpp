@@ -85,16 +85,22 @@ void Renderer::drawString(float x, float y, float z, const char* text, int shado
 			// CMB MSVC debugger with Qt 4.7 triggers assert if font weight > 99
 			// QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(f.weight()+200);
 			QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(99);
-			((QGLWidget*)widget)->renderText(x,y,z, QString(text), f);
+#if defined(USE_Qt5)
+#else
+			((QOpenGLWidget_proxy*)widget)->renderText(x,y,z, QString(text), f);
+#endif
 		glPopAttrib();
 		glDepthFunc(GL_LEQUAL);
 	}
 
     QFont f1;  f1.setPointSize((fontsize>0)?fontsize:30); f1.setWeight(99);
     if (fontsize>0)
-        ((QGLWidget*)widget)->renderText(x,y,z, QString(text), f1);
+#if defined(USE_Qt5)
+#else
+        ((QOpenGLWidget_proxy*)widget)->renderText(x,y,z, QString(text), f1);
     else
-        ((QGLWidget*)widget)->renderText(x,y,z, QString(text));
+        ((QOpenGLWidget_proxy*)widget)->renderText(x,y,z, QString(text));
+#endif
 
 
 	if (shadow)

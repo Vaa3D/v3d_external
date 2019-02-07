@@ -785,7 +785,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				//listAct.append(actComputeSurfVolume = new QAction("compute surface volume", w));
 			}
 		}
+#if defined(USE_Qt5)
+		if (w) w->update(); //for highlight object
+#else
 		if (w) w->updateGL(); //for highlight object
+#endif
 		//###############################################################
 		// do menu
 		//###############################################################

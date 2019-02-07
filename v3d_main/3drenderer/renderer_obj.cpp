@@ -1311,7 +1311,10 @@ void Renderer_gl1::drawMarkerList()
 			if (! S.on)	continue;
 			glPushMatrix();
 			glTranslated(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
+#if defined(USE_Qt5)
+#else
 			((QGLWidget*)widget)->renderText(0., 0., 0., QString("%1").arg(i+1));
+#endif            
 			//char sbuf[20];	sprintf(sbuf, "%d", i+1);	drawString(0, 0, 0, sbuf);
 			glPopMatrix();
 		}
@@ -1347,8 +1350,14 @@ void Renderer_gl1::drawMarkerList()
 					mystr = QString("%1").arg(i+1);
 				}
 			}
+#if defined(USE_Qt5)
+#else
 			((QGLWidget*)widget)->renderText(0., 0., 0., (mystr)); //do not use font for now. by PHC, 110426
+#endif            
+#if defined(USE_Qt5)
+#else
 			//((QGLWidget*)widget)->renderText(0., 0., 0., (mystr), font);
+#endif            
 			glPopMatrix();
 		}
 		glPopAttrib();
@@ -1459,8 +1468,14 @@ void Renderer_gl1::drawCellList()
 			glPushMatrix();
 			glTranslatef(S.x, S.y, S.z);
 			//qDebug()<<" cellName = "<<S.name <<"\n";
+#if defined(USE_Qt5)
+#else
 			((QGLWidget*)widget)->renderText(0., 0., 0., (S.name));
+#endif            
+#if defined(USE_Qt5)
+#else
 			//((QGLWidget*)widget)->renderText(0., 0., 0., QString("%1").arg(i+1));
+#endif            
 			glPopMatrix();
 		}
 		glPopAttrib();
@@ -2670,7 +2685,10 @@ void Renderer_gl1::drawNeuronTree(int index)
      //      // move to the label position
      //      glPushMatrix();
      //      glTranslated(label_loc.x+index*5, label_loc.y+index*5, label_loc.z+index*5);
+#if defined(USE_Qt5)
+#else
      //      ((QGLWidget*)widget)->renderText(0., 0., 0., QString("%1").arg(index));
+#endif    
      //      //char sbuf[20];	sprintf(sbuf, "%d", i+1);	drawString(0, 0, 0, sbuf);
      //      glPopMatrix();
 	// 	glPopAttrib();

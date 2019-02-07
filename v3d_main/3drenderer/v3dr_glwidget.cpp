@@ -41,6 +41,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 ** Last update: 090221, PHC add the surface obj geo dialog
 ****************************************************************************/
 
+#if defined(USE_Qt5)
+#include <QGLFormat>
+#else
+#endif        
 
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
@@ -69,8 +73,13 @@ V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
 V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-#define POST_updateGL update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
-#define DO_updateGL	updateGL  // macro to control direct updateGL or post update, by RZC 081007
+#if defined(USE_Qt5)
+ #define POST_updateGL update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
+ #define DO_updateGL	update  // macro to control direct updateGL or post update, by RZC 081007
+#else
+ #define POST_updateGL update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
+ #define DO_updateGL	updateGL  // macro to control direct updateGL or post update, by RZC 081007
+#endif
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool _isMultipleSampleSupported()
@@ -116,7 +125,7 @@ V3dR_GLWidget::~V3dR_GLWidget()
 }
 
 V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, QString title)
-   // : QGLWidget(mainWindow) //090705
+   // : QOpenGLWidget_proxy(mainWindow) //090705
 {
 	qDebug("V3dR_GLWidget::V3dR_GLWidget ========================================");
 
@@ -141,8 +150,15 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 		isGLinfoDetected = 1;
 	}
 
-
-	//dynamic choice GLFormat
+#if defined(USE_Qt5)
+	QSurfaceFormat f; // = QGLFormat::defaultFormat();
+				//= format();
+	{
+		// Just set what we want. Qt5 will determine whether or not the system 
+		// supports multi-sampling
+		f.setSamples( 4 ); // (1,2,4), For ATI must force samples, by RZC 081001
+	}
+#else
 	QGLFormat f; // = QGLFormat::defaultFormat();
 				//= format();
 	{
@@ -165,6 +181,10 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 		//f.setAccumBufferSize(16);
 		//f.setStereo(true);    // 081126, for glDrawBuffers, QGLFormat do NOT support AUX_BUFFER !!!, will cause system DEAD
 	}
+#endif        
+
+
+	//dynamic choice GLFormat
     if (!skipFormat)
 	    setFormat(f);
 
@@ -182,7 +202,6 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 	//qDebug("V3dR_GLWidget::V3dR_GLWidget ----- end");
 	currentPluginState = -1; // May 29, 2012 by Hang
 }
-
 
 //////////////////////////////////////////////////////
 void V3dR_GLWidget::deleteRenderer() {makeCurrent(); DELETE_AND_ZERO(renderer);} //090710 RZC: to delete renderer before ~V3dR_GLWidget()
@@ -336,6 +355,12 @@ void V3dR_GLWidget::initializeGL()
 
 	// Qt OpenGL context format detection
 #if (QT_VERSION > 0x040200)
+#if defined(USE_Qt5)
+	initializeOpenGLFunctions();
+	// Set this here as it initializes things under the hood, and GL code can't be called before
+	// this routine
+	bool dummy = _isMultipleSampleSupported();
+#else
 		QGLFormat f = format();
 		qDebug("   GLformat: (version = 0x%x) (samples double-buffer stereo plane overlay = %d %d %d %d %d)",
 				int(QGLFormat::openGLVersionFlags()),
@@ -343,6 +368,7 @@ void V3dR_GLWidget::initializeGL()
 		qDebug("   GLformat: (r g b a = %d %d %d %d) + (depth stencil accum = %d %d %d)",
 				f.redBufferSize(), f.greenBufferSize(), f.blueBufferSize(), f.alphaBufferSize(),
 				f.depthBufferSize(), f.stencilBufferSize(), f.accumBufferSize());
+#endif
 #endif
 
 	//choice renderer according to OpenGl version
@@ -546,7 +572,7 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 		qDebug() << "++++++++++++ customEvent: " << i;
 	}
 
-	return QGLWidget::event(e);
+	return QOpenGLWidget_proxy::event(e);
 }
 
 void V3dR_GLWidget::enterEvent(QEvent*)
@@ -577,17 +603,17 @@ void V3dR_GLWidget::focusOutEvent(QFocusEvent*)
 
 void V3dR_GLWidget::paintEvent(QPaintEvent *event)
 {
-	//QGLWidget::paintEvent(event);
+	//QOpenGLWidget_proxy::paintEvent(event);
 //	if (! mouse_in_view) //TODO:  use change of viewing matrix
 //	{
 //		_still = true;
-//		QGLWidget::paintEvent(event);
+//		QOpenGLWidget_proxy::paintEvent(event);
 //		_still = false;
 //	}
 //	else
 	{
 		_still = false;
-		QGLWidget::paintEvent(event);
+		QOpenGLWidget_proxy::paintEvent(event);
 
 		if (needStillPaint()) //pending
 		{
@@ -1285,7 +1311,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 #endif
 	  		//////////////////////////////////////////////////////////////////////////////
 		default:
-			QGLWidget::keyPressEvent(e);
+			QOpenGLWidget_proxy::keyPressEvent(e);
 			break;
 	}
 	update(); //091030: must be here for correct MarkerPos's view matrix
@@ -1307,7 +1333,7 @@ void V3dR_GLWidget::handleKeyReleaseEvent(QKeyEvent * e)  //090428 RZC: make pub
 		case Qt::Key_9:		_holding_num[9] = false; 	break;
 
 		default:
-			QGLWidget::keyReleaseEvent(e);
+			QOpenGLWidget_proxy::keyReleaseEvent(e);
 			break;
 	}
 	update(); //091030: must be here for correct MarkerPos's view matrix
@@ -3682,6 +3708,8 @@ void V3dR_GLWidget::showGLinfo()
 	//qDebug()<< qinfo; //090730: seems qDebug()<< cannot handle very large string
 
 	// Qt OpenGL context format detection
+#if defined(USE_Qt5)
+#else
 #if (QT_VERSION > 0x040200)
 		QGLFormat f = format();
 		char buf[1024];
@@ -3693,6 +3721,7 @@ void V3dR_GLWidget::showGLinfo()
 				f.redBufferSize(), f.greenBufferSize(), f.blueBufferSize(), f.alphaBufferSize(),
 				f.depthBufferSize(), f.stencilBufferSize(), f.accumBufferSize());
 		qinfo += buf;
+#endif
 #endif
 
 	//QLabel *p = new QLabel(qinfo);
