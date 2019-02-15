@@ -1,3 +1,8 @@
+#if defined(USE_Qt5)
+    #include <QtConcurrent>
+#endif 
+
+
 #include "ScreenPatternAnnotator.h"
 #include "../utility/ImageLoader.h"
 #include "../../v3d/histogramsimple.h"

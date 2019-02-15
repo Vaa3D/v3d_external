@@ -128,7 +128,7 @@
 #include <QPainterPath>
 //#include <QTextEdit>
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -2963,7 +2963,7 @@ void XFormView::dispHistogram()
 
 #define _______XFormWidget_functions________
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 XFormWidget::XFormWidget(QWidget *parent) : QMdiSubWindow(parent)
 #else
 XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
@@ -2975,7 +2975,7 @@ XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
 	updateDataRelatedGUI();
 }
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QMdiSubWindow(parent) //added on 080814: this function is for future use. Not really get called now
 #else
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QWidget(parent) //added on 080814: this function is for future use. Not really get called now
@@ -3338,7 +3338,12 @@ void XFormWidget::hideEvent(QHideEvent* e)
 {
 	if (channelTabGlass)  channelTabGlass->hide();
 }
-void XFormWidget::onActivated(QWidget* aw)
+
+#if defined(USE_Qt5)
+	void XFormWidget::onActivated(QMdiSubWindow* aw)
+#else
+	void XFormWidget::onActivated(QWidget* aw)
+#endif
 {
 	//qDebug() <<"XFormWidget::onActivated" <<aw <<"this="<<this <<windowTitle();
 	if (aw == this)
@@ -4021,11 +4026,17 @@ void XFormWidget::createGUI()
 	if (bExistGUI)
 		return;
 
+#if defined(USE_Qt5)
+	QWidget* self = new QWidget(); // The internal widget of the MdiSubWindow
+#else
+	QWidget* self = this;
+#endif
+
 	bLinkFocusViews = true;
 	bDisplayFocusCross = true;
 
      /* Set up the data related GUI */
-     dataGroup = new QGroupBox(this);
+     dataGroup = new QGroupBox(self);
      dataGroup->setTitle("Image data");
 
      viewGroup = new QGroupBox(dataGroup);
@@ -4074,7 +4085,7 @@ void XFormWidget::createGUI()
 
     // setup the control panel
 
-    mainGroup = new QGroupBox(this);
+    mainGroup = new QGroupBox(self);
     mainGroup->setFixedWidth(300);
     mainGroup->setTitle("Options");
 
@@ -4284,7 +4295,7 @@ void XFormWidget::createGUI()
 
 
 	//110719 RZC for spacing between buttons, because setSpacing(0) between GroupBox
-	QWidget* btnArea = new QWidget(this);
+	QWidget* btnArea = new QWidget(self);
 	QVBoxLayout* btnLayout = new QVBoxLayout(btnArea);
 	//btnLayout->setContentsMargins(0,0,0,0); //remove margins
     btnLayout->addWidget(landmarkManagerButton);
@@ -4315,17 +4326,23 @@ void XFormWidget::createGUI()
     //hideDisplayControlsButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     connect(hideDisplayControlsButton, SIGNAL(clicked()), this, SLOT(hideDisplayControls()));
 
-    allLayout = new QHBoxLayout(this);
+    allLayout = new QHBoxLayout();
     allLayout->addWidget(dataGroup, 1);
     allLayout->addWidget(hideDisplayControlsButton);
     allLayout->addWidget(mainGroup);
-//	setLayout(allLayout);
+
+	  self->setLayout(allLayout);
 
 	// set the flag
 	bExistGUI = true;
 
 	setFocusPolicy(Qt::StrongFocus);
-	this->setFocus();
+	self->setFocus();
+
+#if defined(USE_Qt5)
+	setWidget( self );
+#endif
+
 	//QTimer::singleShot(500, this, SLOT(Focus()));
 }
 
@@ -5890,7 +5907,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 			//then select the channel of this image
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 			curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
 #else
 			curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
@@ -5899,7 +5916,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 			//then select RGB info
 			int rgbVal;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 			rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
 			curInfo.rr = rgbVal/255.0;
 			rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
@@ -5930,7 +5947,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 				//then select the channel of this image
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 				curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
 #else
 				curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
@@ -5939,7 +5956,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 				//then select RGB info
 				int rgbVal;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 				rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.rr = rgbVal/255.0;
 				rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);

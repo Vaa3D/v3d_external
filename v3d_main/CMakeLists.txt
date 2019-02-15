@@ -30,6 +30,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(CTest)
 
+if(APPLE)
+  if(DARWIN_MAJOR_VERSION GREATER_EQUAL 18)
+    #message("Mac OS Version = Mojave")
+    add_definitions(-DGL_SILENCE_DEPRECATION)
+  endif()
+endif()
+
 find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" ON )
@@ -117,13 +124,17 @@ if(USE_FFMPEG)
     )
     ExternalProject_Add(
         Nasm-2-13-03
-        URL http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.gz
+        GIT_REPOSITORY https://repo.or.cz/nasm.git
+        GIT_TAG nasm-2.13.03
         SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/src
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/install
         UPDATE_COMMAND ""
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+        CONFIGURE_COMMAND "<SOURCE_DIR>/autogen.sh"
+        COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+        BUILD_COMMAND make
         BUILD_IN_SOURCE 1
     )
+
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
     set(x265_dir "${CMAKE_CURRENT_BINARY_DIR}/X265")
     set(extra_cflags "")
@@ -255,38 +266,33 @@ if(USE_HDF5)
     include_directories(${HDF5_INCLUDE_DIR})
 endif()
 
-# search for Qt4
-if (NOT FORCE_QT4)
-   find_package(Qt5Core CONFIG QUIET)
-   if (Qt5Core_FOUND)
-       message(STATUS "Using qt5")
-       # go on with other packages
-       find_package(Qt5 CONFIG REQUIRED Widgets Xml Network OpenGL Concurrent)
+# search for Qt
+IF (DESIRED_QT_VERSION MATCHES 5)
+  find_package(Qt5 COMPONENTS Core Widgets Xml Network OpenGL Concurrent REQUIRED)
 
-       macro(qt_use_modules)
-            qt5_use_modules(${ARGN})
-       endmacro()
+   macro(qt_use_modules)
+        qt5_use_modules(${ARGN})
+   endmacro()
 
-       macro(qt_wrap_ui)
-           qt5_wrap_ui(${ARGN})
-       endmacro()
+   macro(qt_wrap_ui)
+       qt5_wrap_ui(${ARGN})
+   endmacro()
 
-       macro(qt_add_resources)
-           qt5_add_resources(${ARGN})
-       endmacro()
+   macro(qt_add_resources)
+       qt5_add_resources(${ARGN})
+   endmacro()
 
-       macro(qt_add_translation)
-           qt5_add_translation(${ARGN})
-       endmacro()
+   macro(qt_add_translation)
+       qt5_add_translation(${ARGN})
+   endmacro()
 
-       add_definitions(-DUSE_Qt5)
-       include_directories( ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Network_INCLUDE_DIRS}
-                            ${Qt5Xml_INCLUDE_DIRS} ${Qt5OpenGL_INCLUDE_DIRS}
-                            ${Qt5Concurrent_INCLUDE_DIRS})
-  endif()
+   add_definitions(-DUSE_Qt5)
+   include_directories( ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Network_INCLUDE_DIRS}
+                        ${Qt5Xml_INCLUDE_DIRS} ${Qt5OpenGL_INCLUDE_DIRS}
+                        ${Qt5Concurrent_INCLUDE_DIRS})
 endif()
 
-if(FORCE_QT4 OR NOT Qt5Core_FOUND)
+if(DESIRED_QT_VERSION MATCHES 4 OR NOT Qt5Core_FOUND)
   find_package(Qt4 REQUIRED)
   set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
   set(QT_USE_XML TRUE) # Oct-22-2010 CMB
@@ -315,9 +321,17 @@ set(BUILD_QT_DEMO_LIBRARY ON CACHE BOOL "Build rather than search for the qt sha
 
 if (BUILD_QT_DEMO_LIBRARY)
   set(arthurwidgets_path "${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install")
+
+  if (Qt5Core_FOUND)
+    set( QT_DEMO_LIBRARY_SOURCE "qt5_shared_demos.tar.gz")
+  else()
+    set( QT_DEMO_LIBRARY_SOURCE "qt_shared_demos.tar.gz")
+  endif()
+
+  find_program(QT_QMAKE_EXECUTABLE qmake)
   ExternalProject_Add(
       ARTHURWIDGETS
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/src_packages/qt_shared_demos.tar.gz
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/src_packages/${QT_DEMO_LIBRARY_SOURCE}
       SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/src
       INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install
       UPDATE_COMMAND ""
@@ -382,6 +396,8 @@ else()
   else()
     set(arthurwidgets_path "${QT_DEMOS_INCLUDE_DIR}/")
   endif()
+
+  add_custom_target( qt_demos DEPENDS ${QT4_DEMOS_LIBRARY} )
 
   message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
 

@@ -41,7 +41,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_common.h"
 #include "renderer.h"
 #include "../basic_c_fun/basic_view3d.h"
+#if defined(USE_Qt5)
+#include <QOpenGLWidget>
+using QOpenGLWidget_proxy = QOpenGLWidget;
+#else
 #include <QGLWidget>
+typedef QGLWidget QOpenGLWidget_proxy;
+#endif
 #include "../vrrenderer/VR_MainWindow.h"
 
 class Renderer;
@@ -53,9 +59,13 @@ class V3dR_Communicator;
 	class VR_MainWindow;
 #endif
 //class SurfaceObjGeometryDialog;
-typedef void(*PluginMouseFunc)(QGLWidget*); // May 29, 2012 by Hang
 
-class V3dR_GLWidget : public QGLWidget, public View3DControl
+typedef void(*PluginMouseFunc)(QOpenGLWidget_proxy*); // May 29, 2012 by Hang
+#if defined(USE_Qt5)
+class V3dR_GLWidget : public QOpenGLWidget_proxy, public View3DControl, protected QOpenGLFunctions
+#else
+class V3dR_GLWidget : public QOpenGLWidget_proxy, public View3DControl
+#endif
 {
     Q_OBJECT;
 //	friend class V3dR_MainWindow; //090710 RZC: to delete renderer before ~V3dR_GLWidget()
@@ -65,7 +75,7 @@ class V3dR_GLWidget : public QGLWidget, public View3DControl
 public:
     V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow=0, QString title="");
     ~V3dR_GLWidget();
-    //void makeCurrent() {if (!_in_destructor) QGLWidget::makeCurrent();} //090605 RZC: to override invalid access in qgl_x11.cpp
+    //void makeCurrent() {if (!_in_destructor) qt5idget::makeCurrent();} //090605 RZC: to override invalid access in qgl_x11.cpp
     virtual void deleteRenderer();  //090710 RZC: to delete renderer before ~V3dR_GLWidget()
     virtual void createRenderer();  //090710 RZC: to create renderer at any time
 

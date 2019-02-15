@@ -712,7 +712,11 @@ void NaMainWindow::on_actionMeasure_Frame_Rate_triggered()
         currentRotation = dRot * currentRotation;
         sharedCameraModel.setRotation(currentRotation);
         QCoreApplication::processEvents();
+#if defined(USE_Qt5)
+        ui->v3dr_glwidget->update();
+#else
         ui->v3dr_glwidget->updateGL();
+#endif
         QCoreApplication::processEvents();
     }
     qint64 msTime = timer.elapsed();
@@ -862,7 +866,11 @@ void NaMainWindow::on_actionSave_movie_frames_triggered() {
     int savedCount = 0;
     while (currentMovie.hasMoreFrames()) {
         animateToFrame(currentMovie.getNextFrame());
+#if defined(USE_Qt5)
+        QImage grabbedFrame = ui->v3dr_glwidget->grabFramebuffer(); 
+#else
         QImage grabbedFrame = ui->v3dr_glwidget->grabFrameBuffer(true); // true->with alpha
+#endif
         frameIndex += 1;
         QString fileName;
         fileName.sprintf("frame_%05d.png", frameIndex);
@@ -1931,7 +1939,11 @@ void NaMainWindow::on_actionX_Rotation_Movie_triggered()
         sharedCameraModel.setRotation(currentRotation);
         ui->v3dr_glwidget->repaint();
         QCoreApplication::processEvents();
+#if defined(USE_Qt5)
+        QImage frameImage = ui->v3dr_glwidget->grabFramebuffer();
+#else
         QImage frameImage = ui->v3dr_glwidget->grabFrameBuffer();
+#endif
         frameImage.save(fName, NULL, 95);
     }
 }

@@ -716,6 +716,7 @@ void FFMpegEncoder::encode( AVFrame* picture )
                 packet->pts = _encoded_frames;
             
             packet->stream_index = video_st->index;
+            packet->duration = 1;
             av_packet_rescale_ts(packet, pCtx->time_base, video_st->time_base);
         }
         

@@ -352,7 +352,11 @@ void CViewer::show()
                 PMain::getInstance()->setOverview(true);
             }
         }
+#if defined(USE_Qt5)
+        this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+#else
         this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+#endif
         Vaa3D_rotationchanged(0);
 
         // saving subvol spinboxes state ---- Alessandro 2013-04-23: not sure if this is really needed
@@ -936,11 +940,11 @@ void CViewer::receiveData(
 
                 // copy loaded data into Vaa3D viewer
                 timer.start();
-                uint32 img_dims[5]       = {volH1-volH0,        volV1-volV0,        volD1-volD0,        nchannels,  volT1-volT0+1};
-                uint32 img_offset[5]     = {data_s[0]-volH0,    data_s[1]-volV0,    data_s[2]-volD0,    0,          data_s[4]-volT0 };
-                uint32 new_img_dims[5]   = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
-                uint32 new_img_offset[5] = {0,                  0,                  0,                  0,          0               };
-                uint32 new_img_count[5]  = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
+                uint32 img_dims[5]       = {static_cast<uint32>(volH1-volH0),        static_cast<uint32>(volV1-volV0),        static_cast<uint32>(volD1-volD0),        static_cast<uint32>(nchannels),  static_cast<uint32>(volT1-volT0+1)   };
+                uint32 img_offset[5]     = {static_cast<uint32>(data_s[0]-volH0),    static_cast<uint32>(data_s[1]-volV0),    static_cast<uint32>(data_s[2]-volD0),    static_cast<uint32>(0),          static_cast<uint32>(data_s[4]-volT0) };
+                uint32 new_img_dims[5]   = {static_cast<uint32>(data_c[0]),          static_cast<uint32>(data_c[1]),          static_cast<uint32>(data_c[2]),          static_cast<uint32>(data_c[3]),  static_cast<uint32>(data_c[4])       };
+                uint32 new_img_offset[5] = {static_cast<uint32>(0),                  static_cast<uint32>(0),                  static_cast<uint32>(0),                  static_cast<uint32>(0),          static_cast<uint32>(0)               };
+                uint32 new_img_count[5]  = {static_cast<uint32>(data_c[0]),          static_cast<uint32>(data_c[1]),          static_cast<uint32>(data_c[2]),          static_cast<uint32>(data_c[3]),  static_cast<uint32>(data_c[4])       };
                 CImageUtils::upscaleVOI(data, new_img_dims, new_img_offset, new_img_count,
                         view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset);
                 qint64 elapsedTime = timer.elapsed();
@@ -1515,11 +1519,11 @@ throw (RuntimeException)
             scalx = scaly = scalz = scaling;
         }
 
-        uint32 buf_data_dims[5]   = {volH1-volH0, volV1-volV0, volD1-volD0, nchannels, volT1-volT0+1};
-        uint32 img_dims[5]        = {xDimInterp,  yDimInterp,  zDimInterp,  nchannels, t1-t0+1};
-        uint32 buf_data_offset[5] = {x0a-volH0,   y0a-volV0,   z0a-volD0,   0,         t0a-volT0};
-        uint32 img_offset[5]      = {x0a-x0,      y0a-y0,      z0a-z0,      0,         t0a-t0};
-        uint32 buf_data_count[5]  = {x1a-x0a,     y1a-y0a,     z1a-z0a,     0,         t1a-t0a+1};
+        uint32 buf_data_dims[5]   = {static_cast<uint32>(volH1-volH0), static_cast<uint32>(volV1-volV0), static_cast<uint32>(volD1-volD0), static_cast<uint32>(nchannels), static_cast<uint32>(volT1-volT0+1)};
+        uint32 img_dims[5]        = {static_cast<uint32>(xDimInterp),  static_cast<uint32>(yDimInterp),  static_cast<uint32>(zDimInterp),  static_cast<uint32>(nchannels), static_cast<uint32>(t1-t0+1)};
+        uint32 buf_data_offset[5] = {static_cast<uint32>(x0a-volH0),   static_cast<uint32>(y0a-volV0),   static_cast<uint32>(z0a-volD0),   static_cast<uint32>(0),         static_cast<uint32>(t0a-volT0)};
+        uint32 img_offset[5]      = {static_cast<uint32>(x0a-x0),      static_cast<uint32>(y0a-y0),      static_cast<uint32>(z0a-z0),      static_cast<uint32>(0),         static_cast<uint32>(t0a-t0)};
+        uint32 buf_data_count[5]  = {static_cast<uint32>(x1a-x0a),     static_cast<uint32>(y1a-y0a),     static_cast<uint32>(z1a-z0a),     static_cast<uint32>(0),         static_cast<uint32>(t1a-t0a+1)};
 
         CImageUtils::upscaleVOI(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), buf_data_dims, buf_data_offset, buf_data_count, img, img_dims, img_offset, tf::xyz<int>(scalx, scaly, scalz));
     }
@@ -1556,9 +1560,9 @@ throw (tf::RuntimeException)
     if(t1 == -1)
         t1 = volT1;
 
-    uint32 img_dims[5]   = {volH1-volH0, volV1-volV0, volD1-volD0, nchannels, volT1-volT0+1};
-    uint32 img_offset[5] = {x0   -volH0, y0   -volV0, z0   -volD0, 0,         t0-volT0};
-    uint32 img_count[5]  = {x1   -x0,    y1   -y0,    z1   -z0,    0,         t1-t0+1};
+    uint32 img_dims[5]   = {static_cast<uint32>(volH1-volH0), static_cast<uint32>(volV1-volV0), static_cast<uint32>(volD1-volD0), static_cast<uint32>(nchannels), static_cast<uint32>(volT1-volT0+1)};
+    uint32 img_offset[5] = {static_cast<uint32>(x0   -volH0), static_cast<uint32>(y0   -volV0), static_cast<uint32>(z0   -volD0), static_cast<uint32>(0),         static_cast<uint32>(t0-volT0)};
+    uint32 img_count[5]  = {static_cast<uint32>(x1   -x0),    static_cast<uint32>(y1   -y0),    static_cast<uint32>(z1   -z0),    static_cast<uint32>(0),         static_cast<uint32>(t1-t0+1)};
 
     return CImageUtils::mip(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset, img_count, dir, to_BGRA, alpha);
 }

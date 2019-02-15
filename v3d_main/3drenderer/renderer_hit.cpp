@@ -785,7 +785,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				//listAct.append(actComputeSurfVolume = new QAction("compute surface volume", w));
 			}
 		}
+#if defined(USE_Qt5)
+		if (w) w->update(); //for highlight object
+#else
 		if (w) w->updateGL(); //for highlight object
+#endif
 		//###############################################################
 		// do menu
 		//###############################################################
@@ -1316,7 +1320,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			bool ok1=true;
 			V3DLONG chno=1;
 			if (curImg->getCDim()>1)
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 				chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
 #else
 				chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);

@@ -154,7 +154,7 @@ void Renderer_gl1::loadLabelfieldSurf(const QString& filename, int ch)
     {
     	qtitle = QObject::tr("Creating Range Surface");
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     	mesh_iso0 = QInputDialog::getInt(0, qtitle,
 										qchannel+ QObject::tr("Range from: "),
     									0, 0, 0xffff, 1, &ok);					// 0--2^16
@@ -165,7 +165,7 @@ void Renderer_gl1::loadLabelfieldSurf(const QString& filename, int ch)
 #endif
     	if (! ok) return;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     	mesh_iso1 = QInputDialog::getInt(0, qtitle,
 										qchannel+  QObject::tr("Range from %1 to: ").arg(mesh_iso0),
     									mesh_iso0, mesh_iso0, 0xffff, 1, &ok);		// 0--2^16
@@ -186,7 +186,7 @@ void Renderer_gl1::loadLabelfieldSurf(const QString& filename, int ch)
 		if (! ok) return;
 		mesh_method = items.indexOf(item);
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 		mesh_density = QInputDialog::getInt(0, qtitle,
 										qchannel+ QObject::tr("Creating Mesh density:"), 100, 0, 1000, 1, &ok);
 #else
@@ -340,7 +340,7 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 		{
             for (V3DLONG z=0; z<lf_sz2; z++)
 			{
-				PROGRESS_TEXT( QObject::tr("Counting label: %1 labels").arg(count));
+				PROGRESS_TEXT( QObject::tr("Counting label: %1 labels").arg(count).toStdString());
 				PROGRESS_PERCENT(z*99/lf_sz2);
 
                 for(V3DLONG y=0; y<lf_sz1; y++)
@@ -411,7 +411,7 @@ void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
     for (i=0; i<num_surf; i++)
 	{
         V3DLONG t_num = 0;
-		PROGRESS_TEXT( QObject::tr("Creating geometric group/label %1 of %2").arg(i+1).arg(num_surf) );
+		PROGRESS_TEXT( QObject::tr("Creating geometric group/label %1 of %2").arg(i+1).arg(num_surf).toStdString() );
 		PROGRESS_PERCENT((i+1)*90/num_surf);
 		{
 
@@ -772,7 +772,7 @@ void Renderer_gl1::loadWavefrontOBJ(const QString& filename)
 			case 'g':
 			{
 				g_num++;
-				PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 ").arg(g_num) );
+				PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 ").arg(g_num).toStdString() );
 				PROGRESS_PERCENT((g_num) %90);
 
 				S.n = g_num;
@@ -824,7 +824,7 @@ void Renderer_gl1::loadWavefrontOBJ(const QString& filename)
 			{
 				if (g_num<=1 && f_num%10000==0) // only one group
 				{
-					PROGRESS_TEXT( QObject::tr("Loading geometric face %1 ").arg(f_num) );
+					PROGRESS_TEXT( QObject::tr("Loading geometric face %1 ").arg(f_num).toStdString() );
 					PROGRESS_PERCENT(f_num/10000 %90);
 				}
 
@@ -993,7 +993,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
 	int myoffset;
 	bool ok1;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 	myoffset = QInputDialog::getInt((QWidget*)widget, "z offset", "z offset:", 0, -1000, 1000, 1, &ok1);
 #else
 	myoffset = QInputDialog::getInteger((QWidget*)widget, "z offset", "z offset:", 0, -1000, 1000, 1, &ok1);
@@ -1062,7 +1062,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
 		for (i=0; i<g_num; i++)		// each group/label
 		{
 
-       		PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 of %2").arg(i+1).arg(g_num) );
+       		PROGRESS_TEXT( QObject::tr("Loading geometric group/label %1 of %2").arg(i+1).arg(g_num).toStdString() );
     		PROGRESS_PERCENT(90*(i+1)/g_num);
 
     		LabelSurf S;

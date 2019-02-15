@@ -29,7 +29,7 @@
 #ifndef CIMPORT_H
 #define CIMPORT_H
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 #include <QtCore>
 #endif
 #include <QThread>

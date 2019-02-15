@@ -117,6 +117,9 @@ Implementation
 6) the results reported
 
 *********************/
+#if defined(USE_Qt5)
+    #include <QtConcurrent>
+#endif 
 
 #include "MaskChan.h"
 #include "SleepThread.h"
