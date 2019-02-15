@@ -261,6 +261,7 @@ if(APPLE)
         # file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
         file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
                             "${BUNDLE_BUILD_DIR}/Contents"
+                            "${BUNDLE_BUILD_DIR}/Contents/Frameworks"
                             "${BUNDLE_BUILD_DIR}/Contents/MacOS"
                             "${BUNDLE_BUILD_DIR}/Contents/Resources"
         )

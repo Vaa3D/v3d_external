@@ -124,13 +124,17 @@ if(USE_FFMPEG)
     )
     ExternalProject_Add(
         Nasm-2-13-03
-        URL http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.gz
+        GIT_REPOSITORY https://repo.or.cz/nasm.git
+        GIT_TAG nasm-2.13.03
         SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/src
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/install
         UPDATE_COMMAND ""
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+        CONFIGURE_COMMAND "<SOURCE_DIR>/autogen.sh"
+        COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+        BUILD_COMMAND make
         BUILD_IN_SOURCE 1
     )
+
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
     set(x265_dir "${CMAKE_CURRENT_BINARY_DIR}/X265")
     set(extra_cflags "")
