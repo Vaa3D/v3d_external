@@ -1744,6 +1744,7 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
 
             // disable save button
             saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+            saveAnnotationsAction->setEnabled(false);
         }
     }
     catch(RuntimeException &ex)

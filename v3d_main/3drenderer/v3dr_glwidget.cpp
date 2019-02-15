@@ -966,6 +966,15 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	showGLinfo();
 			}
+            else if (renderer)
+            {
+                Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+                if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
+                {
+                    thisRenderer->setDeleteKey(1);
+                    thisRenderer->deleteMultiNeuronsByStroke();
+                }
+            }
 	  		break;
 		case Qt::Key_G:
             if ( WITH_SHIFT_MODIFIER && //advanced
@@ -990,8 +999,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 			else if (IS_ALT_MODIFIER)
 			{
-				QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-				if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+				//QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 				
 				callFragmentTracing();
 			}
@@ -1049,7 +1058,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					mypluginloader.runPlugin(loader, "start_tracing");
-				}	
+                }
+                else if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
+                {
+                    thisRenderer->setDeleteKey(2);
+                    thisRenderer->deleteMultiNeuronsByStroke();
+                }
 			}
 			else
                 callAutoTracers();
@@ -1083,7 +1097,25 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
-            }else
+            }
+			else if (IS_SHIFT_MODIFIER)
+			{
+				if (this->getRenderer())
+				{
+					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+					{
+						if (segIt->row.begin()->type == 7) segIt->to_be_deleted = true;
+					}
+
+					curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+			}
+			else
             {
                 if(_idep && _idep->window3D)
                 {
@@ -1105,6 +1137,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	toggleTexCompression();
             }else if (IS_ALT_MODIFIER)
             {
+
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else
@@ -1716,7 +1749,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			VRClientON = linkerror;
 			if(!linkerror)  // there is error with linking ,linkerror = 0
-			{qDebug()<<"can't connect to server .unknown wrong ";return;}
+			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;

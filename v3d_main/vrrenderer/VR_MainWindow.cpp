@@ -38,8 +38,13 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 	{serverName = QInputDialog::getText(0, "Server Address",
 		"Please enter the server address:", QLineEdit::Normal,
 		serverNameDefault, &ok1);
-
-	if(ok1 && !serverName.isEmpty())
+	if(!ok1 || serverName.isEmpty())
+		{
+			qDebug()<<"WRONG!EMPTY! ";
+			//return SendLoginRequest();
+			return 0;
+	}
+	else
 	{
 		settings.setValue("vr_serverName", serverName);
 		QString PortDefault = "";
@@ -86,12 +91,7 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 		Agents.push_back(agent00);
 
 	}
-    else
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        //return SendLoginRequest();
-		return 0;
-    }
+
 	}
 	else
 	{

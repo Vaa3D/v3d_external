@@ -271,7 +271,7 @@ class terafly::CAnnotations
 
         void removeDuplicatedNode(QList<NeuronSWC> &saveSWC,QList<NeuronSWC> &result);
         bool Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid=-1);
-
+        bool Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result,V3DLONG newrootid=-1);
         /*********************************************************************************
         * Removes all the annotations from the octree
         **********************************************************************************/

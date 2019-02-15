@@ -935,6 +935,8 @@ class terafly::PluginInterface
         static std::string version(){ return "1.1.0"; }
         static bool setImage(size_t x, size_t y, size_t z);
 
+		static void drawEditInfo(int editNum);
+
 };
 
 #endif

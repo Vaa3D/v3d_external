@@ -3624,6 +3624,10 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 
 }
 
+void Renderer_gl1::setDeleteKey(int key)
+{
+    deleteKey = key;
+}
 
 void simple_delay(V3DLONG n) //delay n seconds
 {
@@ -5238,11 +5242,29 @@ bool Renderer_gl1::setColorAncestryInfo(){
 
         //QHash<QString, SamePointList*>::iterator s;
 
+		//qDebug()<<"size: "<<f.size();
+
         //cout << "Processing fringe" << endl;
         FringeNode tvs = f.takeFirst();
-        //cout << "Taking node from seg: " << tvs.node->seg_id << "with x: " << tvs.node->position.x << " y: "
+
+		if(&tvs == NULL)
+		{
+			qDebug()<<"found a null fringenode assigned";
+			continue;
+		}
+
+		if(tvs.node == NULL)
+		{
+			qDebug()<<" ... ... found a null node assigned";
+			continue;
+		}
+
+        //cout << "Taking node from seg: " << tvs.node->seg_id << " with x: " << tvs.node->position.x << " y: "
         //     << tvs.node->position.y << " z: " << tvs.node->position.z << endl;
         QList<DoublyLinkedNeuronNode*> l;
+
+		//qDebug()<<XYZtoQString(tvs.node->position)<<pch.hash.size();
+
         if(!(pch.hash.value(XYZtoQString(tvs.node->position))->hasVisited())){
             l = ((pch.hash.value(XYZtoQString(tvs.node->position)))->markAsVisitedAndGetConnections(tvs.node->seg_id));
         }else{
