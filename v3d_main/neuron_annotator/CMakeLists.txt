@@ -135,6 +135,10 @@ if(USE_FFMPEG)
         ${CMAKE_THREAD_LIBS_INIT}
     )
 
+    if(USE_X265)
+      target_link_libraries(NeuronAnnotatorLib ${X265_LIBRARY})
+    endif(USE_X265)
+
     if(USE_HDF5)
         SET(Boost_ADDITIONAL_VERSIONS "1.57.0" "1.56.1" "1.56.0" "1.54" "1.54.0")
         find_package(Boost 1.54.0 COMPONENTS system regex)

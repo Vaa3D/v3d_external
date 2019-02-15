@@ -57,14 +57,15 @@ case $ARCH in
         ARCH=x86_64
         ;;
 esac
-PLATFORM=$OS-$ARCH
-echo "Detected platform \"$PLATFORM\""
+
+PLATFORM_ARCH=$OS-$ARCH
+echo "Detected platform \"$PLATFORM_ARCH\""
 
 while [[ $# > 0 ]]; do
     case "$1" in
         -platform)
             shift
-            PLATFORM="$1"
+            PLATFORM_ARCH="$1"
             ;;
         -h5j)
             CMAKE_ARGS+=" -DUSE_FFMPEG:BOOL=ON -DUSE_X265:BOOL=ON -DUSE_HDF5:BOOL=ON" 
@@ -101,6 +102,11 @@ while [[ $# > 0 ]]; do
     esac
     shift
 done
+
+PLATFORM=$PLATFORM_ARCH
+PLATFORM+="_"
+PLATFORM+=$CMAKE_BUILD
+
 echo "Targeting platform \"$PLATFORM\""
 echo "Root directory \"$ROOT_DIR\""
 
@@ -117,13 +123,13 @@ fi
 
 boost_prefix=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib
 CMAKE_PLATFORM_ARGS="-DBOOST_ROOT:PATH=$boost_prefix "
-if [ $PLATFORM = "windows-x86_64" ]; then
+if [ $PLATFORM_ARCH = "windows-x86_64" ]; then
     CMAKE_PLATFORM_ARGS+="-DTIFF_INCLUDE_DIR:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/include "
     CMAKE_PLATFORM_ARGS+="-DTIFF_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/winlib64/libtiff.lib "
     CMAKE_PLATFORM_ARGS+="-DZLIB:FILEPATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/winlib64/libzlib.lib "
     CMAKE_PLATFORM_ARGS+="-DFFTW_INCLUDE_DIR:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64 "
     CMAKE_PLATFORM_ARGS+="-DFFTW_LIBRARY:PATH=$BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/fftw-3.3.4-dll64/libfftw3f-3.lib"
-elif [ $PLATFORM = "linux-x86_64" ]; then
+elif [ $PLATFORM_ARCH = "linux-x86_64" ]; then
     CMAKE_PLATFORM_ARGS+="-DCMAKE_EXE_LINKER_FLAGS:STRING=-Wl,-rpath,'\$ORIGIN/lib'"
 fi
 
@@ -186,7 +192,7 @@ case $OPERATION in
 
         echo $boost_prefix
         boost_include_prefix=$boost_prefix/include
-        if [ $PLATFORM = "windows-x86_64" ]; then
+        if [ $PLATFORM_ARCH = "windows-x86_64" ]; then
             boost_include_prefix=$boost_include_prefix/boost-$BOOST_MAJOR_VERSION
         else
             boost_include_prefix=$boost_include_prefix/boost
@@ -195,7 +201,7 @@ case $OPERATION in
         if [[ ! -e $boost_include_prefix ]]; then
             echo "Unpacking Boost"
             cd $boost_prefix
-            if [ $PLATFORM = "windows-x86_64" ]; then
+            if [ $PLATFORM_ARCH = "windows-x86_64" ]; then
                 if [[ ! -e boost_$BOOST_VERSION ]]; then
                     /c/Program\ Files/7-Zip/7z x -y $ROOT_DIR/v3d_main/common_lib/src_packages/boost_$BOOST_VERSION.tar.gz
                     /c/Program\ Files/7-Zip/7z x -y boost_$BOOST_VERSION.tar
@@ -212,7 +218,7 @@ case $OPERATION in
             cd ../../../../
         fi
 
-        if [ $PLATFORM = "windows-x86_64" ]; then
+        if [ $PLATFORM_ARCH = "windows-x86_64" ]; then
           if [[ ! -e $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/include/tiff.h ]]; then
               echo "Configuring TIFF headers"
               cd $BUILD_DIR/build_$PLATFORM/v3d_main/common_lib/build
@@ -244,7 +250,7 @@ case $OPERATION in
         echo $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS $ROOT_DIR
 		eval $CMAKE_EXE -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD $CMAKE_ARGS $CMAKE_PLATFORM_ARGS $ROOT_DIR
 
-        if [ $PLATFORM = "windows-x86_64" ]; then
+        if [ $PLATFORM_ARCH = "windows-x86_64" ]; then
             if [ $BUILD_HDF5 = 1 ]; then
                 echo "Building HDF5"
                 devenv Vaa3D.sln -project HDF5 -build $CMAKE_BUILD -out hdf5.txt

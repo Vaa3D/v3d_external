@@ -37,9 +37,9 @@ v3d_main/v3d/vaa3d64.app/
 v3d_main/v3d/vaa3d
 
 #ignore cmake build directories
-build_linux-x86_64/
-build_macosx-x86_64/
-build_windows-x86_64/
+build_linux-*/
+build_macosx-*/
+build_windows-*/
 v3d_main/v3d/release/autosave/166_stamp2018_12_23_11_11.ano
 v3d_main/v3d/release/autosave/166_stamp2018_12_23_11_11.ano.apo
 v3d_main/v3d/release/autosave/166_stamp2018_12_23_11_11.ano.eswc
