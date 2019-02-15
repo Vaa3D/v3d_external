@@ -50,6 +50,10 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     org_field->setAlignment(Qt::AlignLeft);
     org_field->setReadOnly(true);
     org_field->setFont(tinyFont);
+    vol_path = new QLineEdit();
+    vol_path->setAlignment(Qt::AlignLeft);
+    vol_path->setReadOnly(true);
+    vol_path->setFont(tinyFont);
 
     // virtual pyramid panel
     vp_panel = new QGroupBox("Info", this);
@@ -183,6 +187,8 @@ tf::PTabVolumeInfo::PTabVolumeInfo(QWidget *parent) : QWidget(parent)
     info_panel_layout->addWidget(vxl_field,                     4,2,1,1);
     info_panel_layout->addWidget(new QLabel("Origin (mm):"),    5,0,1,1);
     info_panel_layout->addWidget(org_field,                     5,2,1,1);
+    info_panel_layout->addWidget(new QLabel("Volume path:"),    6,0,1,1);
+    info_panel_layout->addWidget(vol_path,                      6,2,1,1);
     info_panel->setLayout(info_panel_layout);
     /* ----------- virtual pyramid panel ------------- */
     QGridLayout* vp_layout = new QGridLayout();
@@ -321,6 +327,7 @@ void tf::PTabVolumeInfo::reset()
     vol_dims_vxl_field->setText("");
     vxl_field->setText("");
     org_field->setText("");
+    vol_path->setText("");
     vp_path->setText("");
     vp_size->setText("");
     vp_subsampling->setText("");
@@ -426,7 +433,7 @@ void tf::PTabVolumeInfo::init()
     vol_format_field->setText(QString("  ") + volume->getPrintableFormat().c_str());
     vxl_field->setText(tf::strprintf("  %.3f(x) x %.3f(y) x %.3f(z)", volume->getVXL_H(), volume->getVXL_V(), volume->getVXL_D()).c_str());
     org_field->setText(tf::strprintf("  {%.3f(x), %.3f(y), %.3f(z)}", volume->getORG_H(), volume->getORG_V(), volume->getORG_D()).c_str());
-
+    vol_path->setText(QString("  ") + volume->getROOT_DIR());
     // Virtual Pyramid info (do nothing if no virtual pyramid is found)
     tf::VirtualPyramid *virtualPyramid = CImport::instance()->getVirtualPyramid();
     if(!virtualPyramid)

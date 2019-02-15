@@ -58,6 +58,7 @@ class terafly::PTabVolumeInfo : public QWidget
         QLabel* voxel_dims_label;
         QLineEdit* vxl_field;
         QLineEdit* org_field;
+        QLineEdit* vol_path;
 
         // virtual pyramid info panel
         QGroupBox* vp_panel;
