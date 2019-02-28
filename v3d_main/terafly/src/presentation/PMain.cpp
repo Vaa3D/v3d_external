@@ -1735,6 +1735,8 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
 
             // save
             cur_win->storeAnnotations();
+
+            // Choose saving format. Peng Xie: 2019-02-28
             QStringList items;
             items << tr("swc") << tr("eswc");
 
