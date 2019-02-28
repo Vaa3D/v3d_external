@@ -1690,7 +1690,7 @@ void PMain::saveAnnotations()
 
             // save
             cur_win->storeAnnotations();
-            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false);
+            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false, false);
 
             // reset saved cursor
             CViewer::setCursor(cursor);
@@ -1735,7 +1735,18 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
 
             // save
             cur_win->storeAnnotations();
-            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true);
+            QStringList items;
+            items << tr("swc") << tr("eswc");
+
+            bool ok;
+            QString item = QInputDialog::getItem(this, tr("Choose saving format:"),
+                                                 tr("Format:"), items, 0, false, &ok);
+            bool as_swc=false;
+            if (ok && !item.isEmpty()){
+                as_swc = (item=="swc") ? true:false;
+            }
+
+            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true, as_swc);
 
             // reset saved cursor
             CViewer::setCursor(cursor);
@@ -1787,7 +1798,7 @@ void PMain::autosaveAnnotations()
                 autosavePath = qappDirPath+"/autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             }
 
-            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str(),false);
+            CAnnotations::getInstance()->save(autosavePath.toStdString().c_str(),false, false);
 
             // reset saved cursor
             CViewer::setCursor(cursor);
@@ -1893,7 +1904,7 @@ void PMain::saveAnnotationsAs()
 
                 // save
                 cur_win->storeAnnotations();
-                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false);
+                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false,false);
                 saveAnnotationsAction->setEnabled(true);
                 saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
 
