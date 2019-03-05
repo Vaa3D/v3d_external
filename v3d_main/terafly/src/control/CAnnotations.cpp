@@ -2165,6 +2165,42 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
 
     PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", tf::IO, timer.elapsed()));
 }
+void CAnnotations::deleteOldAnnotations(const char *filepath)throw (RuntimeException)
+{
+    /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
+    std::ifstream f(filepath);
+    if(!f.is_open())
+        throw RuntimeException(strprintf("in CAnnotations::load(): cannot load file \"%s\"", filepath));
+
+    // read line by line
+    for (std::string line; std::getline(f, line); )
+    {
+        std::vector < std::string > tokens;
+        terafly::split(line, "=", tokens);
+        if(tokens.size() != 2)
+            throw RuntimeException(strprintf("in CAnnotations::load(const char* filepath = \"%s\"): cannot parse line \"%s\"",filepath,line.c_str()));
+
+        QDir dir(filepath);
+        dir.cdUp();
+        if(tokens[0].compare("APOFILE") == 0)
+        {
+            QString apofilepath=dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str());
+            std::remove(apofilepath.toStdString().c_str());
+            //cout<<"test apo file path "<<apofilepath.toStdString()<<endl;
+        }
+        else if(tokens[0].compare("SWCFILE") == 0)
+        {
+            QString swcfilepath=dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str());
+            std::remove(swcfilepath.toStdString().c_str());
+            //cout<<"test swc file path "<<swcfilepath.toStdString()<<endl;
+        }
+        else
+            throw RuntimeException(strprintf("in CAnnotations::load(const char* filepath = \"%s\"): unable to recognize file type \"%s\"", filepath, tokens[0].c_str()));
+    }
+    f.close();
+    std::remove(filepath);
+}
+
 void CAnnotations::load(const char* filepath) throw (RuntimeException)
 {
     SOMA_FOUND = 0;

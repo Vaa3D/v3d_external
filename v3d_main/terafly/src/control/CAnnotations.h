@@ -268,6 +268,7 @@ class terafly::CAnnotations
         **********************************************************************************/
         void save(const char* filepath,bool removedupnode, bool as_swc) throw (tf::RuntimeException);
         void load(const char* filepath) throw (tf::RuntimeException);
+        void deleteOldAnnotations(const char* filepath) throw (tf::RuntimeException);
 
         void removeDuplicatedNode(QList<NeuronSWC> &saveSWC,QList<NeuronSWC> &result);
         bool Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid=-1);

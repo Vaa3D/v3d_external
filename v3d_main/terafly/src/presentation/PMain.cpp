@@ -1690,8 +1690,32 @@ void PMain::saveAnnotations()
 
             // save
             cur_win->storeAnnotations();
+            QDateTime mytime = QDateTime::currentDateTime();
+
+            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).completeBaseName();
+            string preannotationsPathLRU=annotationsPathLRU;
+
+            QString annotationsBasename = fileFullName;
+            //cout<<"annotationsPathLRU is "<<annotationsPathLRU<<endl;
+            //cout<<"annotationbase name is "<<annotationsBasename.toStdString()<<endl;
+            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+            {
+                QStringList fileNameSplit=fileFullName.split("_stamp_");
+                if(!fileNameSplit.size())
+                    return;
+                annotationsBasename = fileNameSplit[0];
+                //cout<<"annotationbase name is "<<annotationsBasename.toStdString()<<endl;
+            }
+
+            annotationsPathLRU =QFileInfo(QString(annotationsPathLRU.c_str())).path().toStdString()+"/"+annotationsBasename.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+            if(annotationsPathLRU.find(".ano") == string::npos)
+                annotationsPathLRU.append(".ano");
+            //cout<<"annotationsPathLRU is "<<annotationsPathLRU<<endl;
             CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false, false);
 
+            //delete old file
+
+            CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
             // reset saved cursor
             CViewer::setCursor(cursor);
             if(PAnoToolBar::isInstantiated())
@@ -1862,7 +1886,6 @@ void PMain::saveAnnotationsAs()
             QString annotationsBasename = fileFullName;
             if(fileFullName.toStdString().find("_stamp_")!=string::npos)
             {
-//                cout<<"move into those"<<endl;
                 QStringList fileNameSplit=fileFullName.split("_stamp_");
                 if(!fileNameSplit.size())
                     return;
