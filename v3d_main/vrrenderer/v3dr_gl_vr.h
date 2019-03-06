@@ -41,6 +41,7 @@ enum ModelControlR
 };
 enum ModeControlSettings
 {
+	
 	_donothing = 0,
 	_TeraShift,
 	_TeraZoom,
@@ -300,7 +301,7 @@ private: // OpenGL bookkeeping
 	int m_Flashcolor;
 	int m_Flashoricolor;*/
 	bool singlechannel;
-	bool m_translationMode;
+	bool m_contrastMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
 	bool m_autoRotateON;

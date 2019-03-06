@@ -709,7 +709,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_bControllerModelON(true)
 	, m_modeControlTouchPad_R(0)
 	, m_modeControlGrip_R(0)
-	, m_translationMode (false)
+	, m_contrastMode (false)
 	, m_rotateMode (false)
 	, m_zoomMode (false)
 	, m_autoRotateON (false)
@@ -1661,33 +1661,29 @@ bool CMainApplication::HandleInput()
 				bRet = true;
 				return bRet;
 				}//*/
-				if(0&&m_translationMode==true)//into translate mode
+				if(m_contrastMode==true)//into translate mode
 				{
-					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];
-					Vector4 direction(0,0,0,1);
+				if(m_fTouchPosY>0)
+				{
+					fContrast+=1;
+					if (fContrast>50)
+						fContrast = 50;
+					//fBrightness+= 0.01f;
+					//if(fBrightness>0.8f)
+					//	fBrightness = 0.8f;
+				}
+				else
+				{
+					fContrast-=1;
+					if (fContrast<1)
+						fContrast = 1;
+					//fBrightness-= 0.01f;
+					//if(fBrightness<0)
+					//	fBrightness = 0;
+				}
+				qDebug()<<"Constrast is "<<fContrast;
 
-					Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
-					Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
-					Vector4 direction_Y = end_Y - start_Y;
 
-					Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
-					Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
-					Vector4 direction_X = end_X - start_X;
-
-					if(fabs(m_fTouchPosX) > fabs(m_fTouchPosY)) //move across axis
-					{
-						if(m_fTouchPosX<0) direction = direction_X * -1;
-						else direction = direction_X;
-					} else //move along axis
-					{
-						if(m_fTouchPosY<0) direction = direction_Y * -1;
-						else direction = direction_Y;
-					}
-					direction = direction.normalize() * 0.01;
-
-					glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
-					//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
-					m_globalMatrix = temp_mat * m_globalMatrix;
 				}
 				else if(0&&m_rotateMode==true)//into ratate mode
 				{
@@ -2242,26 +2238,26 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				break;
 			}
-		case _Contrast:
+		case _Contrast://contrast func is moved to right controller touch pad , grip button+/-
 			{
-				if(temp_x>0)
-				{
-					fContrast+=1;
-					if (fContrast>50)
-						fContrast = 50;
-					//fBrightness+= 0.01f;
-					//if(fBrightness>0.8f)
-					//	fBrightness = 0.8f;
-				}
-				else
-				{
-					fContrast-=1;
-					if (fContrast<1)
-						fContrast = 1;
-					//fBrightness-= 0.01f;
-					//if(fBrightness<0)
-					//	fBrightness = 0;
-				}
+				// if(temp_x>0)
+				// {
+				// 	fContrast+=1;
+				// 	if (fContrast>50)
+				// 		fContrast = 50;
+				// 	//fBrightness+= 0.01f;
+				// 	//if(fBrightness>0.8f)
+				// 	//	fBrightness = 0.8f;
+				// }
+				// else
+				// {
+				// 	fContrast-=1;
+				// 	if (fContrast<1)
+				// 		fContrast = 1;
+				// 	//fBrightness-= 0.01f;
+				// 	//if(fBrightness<0)
+				// 	//	fBrightness = 0;
+				// }
 				qDebug()<<"Constrast is "<<fContrast;
 				break;
 			}
@@ -2619,24 +2615,24 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		switch(m_modeControlTouchPad_R)
 		{
 		case 0:
-			m_translationMode=m_rotateMode=m_zoomMode = false;
+			m_contrastMode=m_rotateMode=m_zoomMode = false;
 			break;
 		case 1:
-			m_translationMode = true;
+			m_contrastMode = true;
 			m_rotateMode=m_zoomMode = false;
 			break;
 		case 2:
 			m_rotateMode = true;
-			m_translationMode=m_zoomMode = false;
+			m_contrastMode=m_zoomMode = false;
 			break;
 		case 3:
 			m_zoomMode = true;
-			m_translationMode=m_rotateMode = false;
+			m_contrastMode=m_rotateMode = false;
 			break;
 		default:
 			break;
 		}	
-		qDebug("m_modeControlTouchPad_R=%d,m_translationMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_translationMode,m_rotateMode,m_zoomMode);
+		qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
 	}
 		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&showshootingPad)	//detect trigger when menu show
 		{
@@ -3363,6 +3359,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		//grip right button is used to control linewidth for now
 		iLineWid+=2;
 		if(iLineWid>9){iLineWid = 1;}
+
 				
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
@@ -7225,7 +7222,8 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
 		{
-			m_modeGrip_L = _Contrast;
+			m_modeGrip_L = _AutoRotate;
+
 		}
 		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
 		{
@@ -7250,7 +7248,8 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
 		{
-			m_modeGrip_L = _AutoRotate;
+			//m_modeGrip_L = _Contrast;
+			m_modeGrip_L = _LineWidth;
 		}
 		// else if((panelpos_x <= 0.26) && (panelpos_y<= 0.59)&&(panelpos_y >= 0.5)&&(panelpos_x >= 0.1))
 		// {
