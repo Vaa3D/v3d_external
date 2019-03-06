@@ -1772,7 +1772,7 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
 //                as_swc = (item=="swc") ? true:false;
 //            }
 
-            bool as_swc = False; // Format option is blocked for simplicity.
+            bool as_swc = false; // Format option is blocked for simplicity.
             CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true, as_swc);
 
             // reset saved cursor
