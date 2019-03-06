@@ -1714,8 +1714,8 @@ void PMain::saveAnnotations()
             CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false, false);
 
             //delete old file
-
-            CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
+            if(preannotationsPathLRU.compare(annotationsPathLRU))
+                CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
             // reset saved cursor
             CViewer::setCursor(cursor);
             if(PAnoToolBar::isInstantiated())
