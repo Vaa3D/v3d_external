@@ -21,7 +21,6 @@
 
 #include "mainwindow.h"
 
-
 struct Agent {
 	QString name;
 	bool isItSelf;
@@ -108,7 +107,7 @@ public:
 	int getWidth() { return width; }
 	int getHeight() { return height; }
 	int getDepth() { return depth; }
-	T* getData() { return data; }
+	T* GetData() { return data; }
 private:
 	T *data;
 	int width;
@@ -239,6 +238,7 @@ private:
 	bool m_bShowMorphologyLine;
 	bool m_bShowMorphologySurface;
 	bool m_bControllerModelON;
+	bool m_bShowMorphologyMarker;
 
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
@@ -480,7 +480,7 @@ public:
 	GLuint initTFF1DTex(const char* filename);
 	GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
 	GLuint initVol3DTex();
-	GLuint initVolOctree3DTex(int step);
+	GLuint initVolOctree3DTex(int step,GLuint octreestep);
 	void initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight);
 	void SetupVolumeRendering();
 	bool CreateVolumeRenderingShaders();
@@ -509,8 +509,23 @@ private:
 	GLuint g_volTexObj_octree_8;
 	GLuint g_volTexObj_octree_16;
 	GLuint g_volTexObj_octree_32;	
+	GLuint g_volTexObj_octree_64;
+	GLuint g_volTexObj_octree_128;			
 	static float fBrightness;
 	static float fContrast;
+
+	double countsPerSecond;
+	__int64 CounterStart;
+
+	int frameCount;
+	int fps;
+
+	__int64 frameTimeOld;
+	double frameTime;
+
+	void StartTimer();
+	double GetTime();
+	double GetFrameTime();
 
 	static float iLineWid;
 	public:
@@ -519,9 +534,15 @@ private:
 	glm::vec3  shootingrayDir;
 	glm::vec3 shootingraycutPos;
 	glm::vec2 calculateshootingPadUV();
+	
 	bool showshootingray;
 	QString collaboration_creator_name;
+	template<typename T>
+	void HelpFunc_createOctreetexture(int step);
+	void bindTexturePara();
 };
+
+//Help Function
 
 
 #endif
