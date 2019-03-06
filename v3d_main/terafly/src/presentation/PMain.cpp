@@ -1761,17 +1761,18 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
             cur_win->storeAnnotations();
 
             // Choose saving format. Peng Xie: 2019-02-28
-            QStringList items;
-            items << tr("swc") << tr("eswc");
+//            QStringList items;
+//            items << tr("swc") << tr("eswc");
 
-            bool ok;
-            QString item = QInputDialog::getItem(this, tr("Choose saving format:"),
-                                                 tr("Format:"), items, 0, false, &ok);
-            bool as_swc=false;
-            if (ok && !item.isEmpty()){
-                as_swc = (item=="swc") ? true:false;
-            }
+//            bool ok;
+//            QString item = QInputDialog::getItem(this, tr("Choose saving format:"),
+//                                                 tr("Format:"), items, 0, false, &ok);
+//            bool as_swc=false;
+//            if (ok && !item.isEmpty()){
+//                as_swc = (item=="swc") ? true:false;
+//            }
 
+            bool as_swc = False; // Format option is blocked for simplicity.
             CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true, as_swc);
 
             // reset saved cursor

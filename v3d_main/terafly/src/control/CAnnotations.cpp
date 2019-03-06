@@ -1979,36 +1979,40 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
 
     //saving ano file
 //    v3d_msg(QString(filepath));
-    QString filename = QString(filepath);
-    if(filename.indexOf("/") != (-1)){
-        filename.remove(0, filename.lastIndexOf("/")+1);
+    QString input_ano = QString(filepath);
+    if(input_ano.indexOf("/") != (-1)){
+        input_ano.remove(0, input_ano.lastIndexOf("/")+1);
     }
-    if(filename.endsWith(".ano")){
-        filename.remove(filename.lastIndexOf(".ano"), filename.size());
-    }
-    else{
-        v3d_msg("Input is not an ano file.");
-        return;
-    }
-//    v3d_msg(QString("filename: %1").arg(filename));
 
+    QString output_ano = input_ano;
+    QString output_apo = output_ano + ".apo";
+    QString output_swc = as_swc? output_ano+".swc":output_ano+".eswc";
+
+//    if(filename.endsWith(".ano")){
+//        filename.remove(filename.lastIndexOf(".ano"), filename.size());
+//    }
+//    else{
+//        v3d_msg("Input is not an ano file.");
+//        return;
+//    }
+
+////    v3d_msg(QString("fileprefix: %1").arg(fileprefix));
+
+//    QString output_ano = filename;
+//    QString output_apo = filename;
+//    QString output_swc = filename;
+//    output_ano.append(".ano");
+//    output_apo.append(".apo");
+
+//    if(as_swc){
+//        output_swc.append(".swc");
+//    }
+//    else{
+//        output_swc.append(".eswc");
+//    }
     QString fileprefix(filepath);
     if(fileprefix.indexOf("/") != -1){
         fileprefix.remove(fileprefix.lastIndexOf("/")+1, fileprefix.size());
-    }
-//    v3d_msg(QString("fileprefix: %1").arg(fileprefix));
-
-    QString output_ano = filename;
-    QString output_apo = filename;
-    QString output_swc = filename;
-    output_ano.append(".ano");
-    output_apo.append(".apo");
-
-    if(as_swc){
-        output_swc.append(".swc");
-    }
-    else{
-        output_swc.append(".eswc");
     }
     cout<<endl<<"output_ano: "<<qPrintable(fileprefix + output_ano)<<endl;
     cout<<"output_apo: "<<qPrintable(fileprefix + output_apo)<<endl;
