@@ -1693,8 +1693,9 @@ void PMain::saveAnnotations()
             QDateTime mytime = QDateTime::currentDateTime();
 
             QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).completeBaseName();
-            string preannotationsPathLRU=annotationsPathLRU;
-
+#ifdef _YUN_
+			string preannotationsPathLRU=annotationsPathLRU;
+#else
             QString annotationsBasename = fileFullName;
             //cout<<"annotationsPathLRU is "<<annotationsPathLRU<<endl;
             //cout<<"annotationbase name is "<<annotationsBasename.toStdString()<<endl;
@@ -1710,6 +1711,7 @@ void PMain::saveAnnotations()
             annotationsPathLRU =QFileInfo(QString(annotationsPathLRU.c_str())).path().toStdString()+"/"+annotationsBasename.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
             if(annotationsPathLRU.find(".ano") == string::npos)
                 annotationsPathLRU.append(".ano");
+#endif
             //cout<<"annotationsPathLRU is "<<annotationsPathLRU<<endl;
             CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false, false);
 
