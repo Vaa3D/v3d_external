@@ -1693,6 +1693,8 @@ void PMain::saveAnnotations()
             QDateTime mytime = QDateTime::currentDateTime();
 
             QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).completeBaseName();
+			string preannotationsPathLRU = annotationsPathLRU;
+
 #ifdef _YUN_
 			string preannotationsPathLRU=annotationsPathLRU;
 #else
