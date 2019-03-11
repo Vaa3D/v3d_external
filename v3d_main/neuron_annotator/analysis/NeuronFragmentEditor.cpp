@@ -1,3 +1,8 @@
+#if defined(USE_Qt5)
+    #include <QtConcurrent>
+#endif 
+
+
 #include "NeuronFragmentEditor.h"
 #include "../utility/ImageLoader.h"
 #include "AnalysisTools.h"

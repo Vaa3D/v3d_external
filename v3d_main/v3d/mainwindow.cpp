@@ -41,7 +41,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 **
 ****************************************************************************/
 #include "../3drenderer/v3dr_common.h"
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -228,15 +228,17 @@ MainWindow::MainWindow()
     setAcceptDrops(true); //080827
     //
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     workspace = new QMdiArea;
+    setCentralWidget(workspace);
+    connect(workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)),  this, SLOT(updateMenus()));
 #else
     workspace = new QWorkspace;
-#endif
     setCentralWidget(workspace);
     connect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus()));
     windowMapper = new QSignalMapper(this);
     connect(windowMapper, SIGNAL(mapped(QWidget *)),  workspace, SLOT(setActiveWindow(QWidget *)));
+#endif
     createActions();
     createMenus();
     createToolBars();
@@ -524,7 +526,7 @@ void MainWindow::handleCoordinatedCloseEvent_real() {
     }
     //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     workspace->closeAllSubWindows();
 #else
     workspace->closeAllWindows();
@@ -813,7 +815,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         if (existing_imgwin)
         {
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
             workspace->setActiveSubWindow(existing_imgwin);
 #else
             workspace->setActiveWindow(existing_imgwin);
@@ -862,7 +864,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
                             child_rawimg->show();
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
@@ -890,7 +892,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             statusBar()->showMessage(tr("File loaded [%1]").arg(cc.labelfield_image_file_list.at(i)), 2000);
                             child_maskimg->show();
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
@@ -1055,7 +1057,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     statusBar()->showMessage(tr("File loaded [%1]").arg(cur_atlas_list[kk].imgfile), 2000);
                     child->show();
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
                     workspace->cascadeSubWindows();
 #else
                     workspace->cascade();
@@ -1529,7 +1531,7 @@ void MainWindow::import_GeneralImageFile()
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
             workspace->setActiveSubWindow(existing);
 #else
             workspace->setActiveWindow(existing);
@@ -1561,7 +1563,7 @@ void MainWindow::import_Leica()
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
             workspace->setActiveSubWindow(existing);
 #else
             workspace->setActiveWindow(existing);
@@ -2005,7 +2007,7 @@ void MainWindow::updateWindowMenu()
     windowMenu->addAction(previousAct);
     windowMenu->addAction(separator_ImgWindows_Act);
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     QList<QMdiSubWindow *> windows = workspace->subWindowList();
 #else
     QList<QWidget *> windows = workspace->windowList();
@@ -2025,8 +2027,12 @@ void MainWindow::updateWindowMenu()
         QAction *action  = windowMenu->addAction(text);
         action->setCheckable(true);
         action ->setChecked(child == activeMdiChild());
+#if defined(USE_Qt5)
+        connect(action, &QAction::triggered, [=]() { workspace->setActiveSubWindow( child ); });
+#else
         connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
         windowMapper->setMapping(action, child);
+#endif
     }
     //now add the 3D viewer list
     if (list_3Dview_win.size()>0)
@@ -2329,8 +2335,13 @@ void MainWindow::createActions()
     closeAct = new QAction(tr("Cl&ose"), this);
     closeAct->setShortcut(tr("Ctrl+F4"));
     closeAct->setStatusTip(tr("Close the active window"));
+#if defined(USE_Qt5)
+    connect(closeAct, SIGNAL(triggered()),
+            workspace, SLOT(closeActiveSubWindow()));
+#else
     connect(closeAct, SIGNAL(triggered()),
             workspace, SLOT(closeActiveWindow()));
+#endif
     closeAllAct = new QAction(tr("Close &All"), this);
     closeAllAct->setStatusTip(tr("Close all the windows"));
 
@@ -2341,24 +2352,45 @@ void MainWindow::createActions()
 
     tileAct = new QAction(tr("&Tile"), this);
     tileAct->setStatusTip(tr("Tile the windows"));
+#if defined(USE_Qt5)
+    connect(tileAct, SIGNAL(triggered()), workspace, SLOT(tileSubWindows()));
+#else
     connect(tileAct, SIGNAL(triggered()), workspace, SLOT(tile()));
+#endif
     cascadeAct = new QAction(tr("&Cascade"), this);
     cascadeAct->setStatusTip(tr("Cascade the windows"));
+#if defined(USE_Qt5)
+    connect(cascadeAct, SIGNAL(triggered()), workspace, SLOT(cascadeSubWindows()));
+#else
     connect(cascadeAct, SIGNAL(triggered()), workspace, SLOT(cascade()));
+#endif
     arrangeAct = new QAction(tr("Arrange &icons"), this);
     arrangeAct->setStatusTip(tr("Arrange the icons"));
+#if defined(USE_Qt5)
+#else
     connect(arrangeAct, SIGNAL(triggered()), workspace, SLOT(arrangeIcons()));
+#endif
     nextAct = new QAction(tr("Ne&xt"), this);
     nextAct->setShortcut(tr("Ctrl+F6"));
     nextAct->setStatusTip(tr("Move the focus to the next window"));
+#if defined(USE_Qt5)
+    connect(nextAct, SIGNAL(triggered()),
+            workspace, SLOT(activateNextSubWindow()));
+#else
     connect(nextAct, SIGNAL(triggered()),
             workspace, SLOT(activateNextWindow()));
+#endif
     previousAct = new QAction(tr("Pre&vious"), this);
     previousAct->setShortcut(tr("Ctrl+Shift+F6"));
     previousAct->setStatusTip(tr("Move the focus to the previous "
                                  "window"));
+#if defined(USE_Qt5)
+    connect(previousAct, SIGNAL(triggered()),
+            workspace, SLOT(activatePreviousSubWindow()));
+#else
     connect(previousAct, SIGNAL(triggered()),
             workspace, SLOT(activatePreviousWindow()));
+#endif
     separator_ImgWindows_Act = new QAction(this);
     separator_ImgWindows_Act->setSeparator(true);
     checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);
@@ -2682,23 +2714,24 @@ XFormWidget *MainWindow::createMdiChild()
     //																	//080814: important fix to assure the destructor function will be called.
     XFormWidget *child = new XFormWidget((QWidget *)0);
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     workspace->addSubWindow(child);  //child is wrapped in his parentWidget()
 #else
     workspace->addWindow(child);  //child is wrapped in his parentWidget()
 #endif
     //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help to update the workspace->windowList()
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->subWindowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
+    connect(workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)),  child, SLOT(onActivated(QMdiSubWindow *))); //110802 RZC
 #else
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
-#endif
     connect(workspace, SIGNAL(windowActivated(QWidget *)),  child, SLOT(onActivated(QWidget *))); //110802 RZC
+#endif
     //workspace->setActiveWindow(child);
     //to enable coomunication of child windows
     child->setMainControlWindow(this);
-    //child->adjustSize();
+    child->adjustSize();
     QSize tmpsz = child->size();
     QSize oldszhint = child->sizeHint();
     printf("size hint=%d %d min size hint=%d %d\n", oldszhint.width(), oldszhint.height(), child->minimumSizeHint().width(), child->minimumSizeHint().height());
@@ -2713,7 +2746,7 @@ XFormWidget *MainWindow::createMdiChild()
 XFormWidget *MainWindow::activeMdiChild()
 {
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     return qobject_cast<XFormWidget *>(workspace->activeSubWindow());
 #else
     return qobject_cast<XFormWidget *>(workspace->activeWindow());
@@ -2726,7 +2759,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //090818 RZC 20110427 YuY
     XFormWidget *mdiChildFind;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2748,7 +2781,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     {
         // try find image name contains the input string from the end
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
         foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
         foreach (QWidget *window, workspace->windowList()) {
@@ -2781,7 +2814,7 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
 {
     nchild=0;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2793,7 +2826,7 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
     XFormWidget ** plist = new XFormWidget * [nchild];
     int i=0;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
 #else
     foreach (QWidget *window, workspace->windowList()) {
@@ -2806,7 +2839,7 @@ bool MainWindow::setCurHiddenSelectedWindow( XFormWidget* a) //by PHC, 101009
 {
     bool b_found=false;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     foreach (QMdiSubWindow *window, workspace->subWindowList()) //ensure the value is valid (especially the window has not been closed)
 #else
     foreach (QWidget *window, workspace->windowList()) //ensure the value is valid (especially the window has not been closed)
@@ -3037,7 +3070,7 @@ void MainWindow::func_procPC_Atlas_view_atlas_computeVanoObjStat()
     //ask which channel to compute info
     bool ok1;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
     int ch_ind = QInputDialog::getInt(this, tr("channel"),
                                           tr("The selected directory contains %1 .ano files. <br><br> which image channel to compute the image objects statistics?").arg(listRecompute.size()),
                                           1, 1, 3, 1, &ok1) - 1;

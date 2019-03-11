@@ -73,7 +73,7 @@ bool MpegLoader::loadMpegFile(QUrl fileUrl)
     }
     bool bSucceeded = true; // start optimistic
     try {
-        FFMpegVideo video(fileUrl, (PixelFormat)pixelFormat);
+        FFMpegVideo video(fileUrl);
         {
             QWriteLocker locker(&lock);
             deleteData();
@@ -82,7 +82,7 @@ bool MpegLoader::loadMpegFile(QUrl fileUrl)
             depth = video.getNumberOfFrames();
             emit headerLoaded(width, height, depth);
             // How much memory does each stored frame occupy?
-            frameBytes = avpicture_get_size(PIX_FMT_YUV420P, width, height);
+            frameBytes = avpicture_get_size(AV_PIX_FMT_YUV420P, width, height);
             // Allocated frame memory for all frames in (fast?) YUV format
             size_t size = (size_t)depth * (size_t)frameBytes;
             // qDebug() << "size =" << size << __FILE__ << __LINE__;
@@ -97,7 +97,7 @@ bool MpegLoader::loadMpegFile(QUrl fileUrl)
                 // Initialize persistent frame storage
                 frames[z] = av_frame_alloc();
                 avpicture_fill((AVPicture*) frames[z], frame_data + z * frameBytes,
-                               PIX_FMT_YUV420P, width, height);
+                               AV_PIX_FMT_YUV420P, width, height);
                 // Load frame from disk
                 AVPacket packet = {0};
                 av_init_packet(&packet);
@@ -155,14 +155,14 @@ void BlockScaler::setup(int firstFrameParam, int finalFrameParam,
 
     pFrameBgra = av_frame_alloc();
     sliceBytesOut = height * width * 4;
-    PixelFormat pixelFormat = PIX_FMT_BGRA;
+    AVPixelFormat pixelFormat = AV_PIX_FMT_BGRA;
     /*
     if (channel != CHANNEL_RGB) {
-        pixelFormat = PIX_FMT_GRAY8;
+        pixelFormat = AV_PIX_FMT_GRAY8;
     }
      */
     size_t size = avpicture_get_size(pixelFormat, width, height)
-                  + FF_INPUT_BUFFER_PADDING_SIZE;
+                  + AV_INPUT_BUFFER_PADDING_SIZE;
     // qDebug() << "size =" << size << __FILE__ << __LINE__;
     buffer = (uint8_t*)av_malloc(size);
     avpicture_fill( (AVPicture * ) pFrameBgra, buffer, pixelFormat,
@@ -173,7 +173,7 @@ void BlockScaler::setup(int firstFrameParam, int finalFrameParam,
     Sctx = sws_getContext(
             width,
             height,
-            PIX_FMT_YUV420P,
+            AV_PIX_FMT_YUV420P,
             width,
             height,
             pixelFormat,
@@ -220,7 +220,7 @@ void BlockScaler::load()
         if (channel == CHANNEL_RGB) {
             // Copy the entire frame (alpha will be overwritten)
             // memcpy(slice_out, pFrameBgra->data[0], sliceBytesOut);
-            // PIX_FMT_BGRA0 fails to zero alpha channel, so I will
+            // AV_PIX_FMT_BGRA0 fails to zero alpha channel, so I will
             for (int y = 0; y < height; ++y)
             {
                 // convert pointers to do four bytes at a time
@@ -262,7 +262,7 @@ Fast3DTexture::Fast3DTexture()
     , width(0)
     , height(0)
     , depth(0)
-    , mpegLoader(PIX_FMT_YUV420P) // Use internal format for fast first pass of rescaling
+    , mpegLoader(AV_PIX_FMT_YUV420P) // Use internal format for fast first pass of rescaling
 {
     FFMpegVideo::maybeInitFFMpegLib();
     connect(this, SIGNAL(loadRequested(QUrl)),

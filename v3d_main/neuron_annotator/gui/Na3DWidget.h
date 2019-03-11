@@ -206,7 +206,7 @@ protected:
     virtual void preparingRenderer();
     void updateDefaultScale();
     // v3dr_glwidget::event() can cause crash
-    virtual bool event(QEvent* e) {return QGLWidget::event(e);}
+    virtual bool event(QEvent* e) {return QOpenGLWidget_proxy::event(e);}
 
     // BrightnessCalibrator<unsigned char> brightnessCalibrator;
     const DataColorModel * incrementalDataColorModel;

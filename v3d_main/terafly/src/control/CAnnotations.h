@@ -24,6 +24,9 @@ struct terafly::annotation
     int vaa3d_n;                    //Vaa3D's swc/apo index
     bool smart_delete;              // = true by default, enables "smart" deletion (see decontructor code)
     long level;
+    int creatmode;                  //for timestamping and quality control LMG 8/10/2018
+    double timestamp;               //for timestamping and quality control LMG 8/10/2018
+    int tfresindex;                 //for keeping TeraFly resolution index LMG 13/12/2018
     // constructor and deconstructor
     annotation() throw (tf::RuntimeException);
     annotation(const CellAPO & c)
@@ -263,9 +266,13 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Save/load method
         **********************************************************************************/
-        void save(const char* filepath) throw (tf::RuntimeException);
+        void save(const char* filepath,bool removedupnode, bool as_swc) throw (tf::RuntimeException);
         void load(const char* filepath) throw (tf::RuntimeException);
+        void deleteOldAnnotations(const char* filepath) throw (tf::RuntimeException);
 
+        void removeDuplicatedNode(QList<NeuronSWC> &saveSWC,QList<NeuronSWC> &result);
+        bool Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid=-1);
+        bool Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result,V3DLONG newrootid=-1);
         /*********************************************************************************
         * Removes all the annotations from the octree
         **********************************************************************************/

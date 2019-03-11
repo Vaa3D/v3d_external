@@ -50,14 +50,17 @@ public:
     static QMutex mutex;
     static void maybeInitFFMpegLib();
 
-    FFMpegVideo(PixelFormat pixelFormat=PIX_FMT_RGB24);
-    FFMpegVideo(QUrl url, PixelFormat pixelFormat=PIX_FMT_RGB24);
-    FFMpegVideo(QByteArray* buffer, PixelFormat pixelFormat=PIX_FMT_RGB24);
+    FFMpegVideo();
+    FFMpegVideo(QUrl url );
+    FFMpegVideo(QByteArray* buffer );
     virtual ~FFMpegVideo();
-    bool open(QUrl url, enum PixelFormat formatParam = PIX_FMT_RGB24);
-    bool open(QIODevice& fileStream, QString& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);
+    bool open(QUrl url);
+    bool open(QIODevice& fileStream, QString& fileName);
+    AVPixelFormat getPixelFormat() const { return format; }
     uint8_t getPixelIntensity(int x, int y, Channel c = GRAY) const;
+    uint16_t getPixelIntensity16(int x, int y, Channel c = GRAY) const;
     bool fetchFrame(int targetFrameIndex = 0);
+    int getBitDepth() const;
     int getNumberOfFrames() const;
     int getWidth() const;
     int getHeight() const;
@@ -79,16 +82,16 @@ protected:
     static bool b_is_one_time_inited;
 
     void initialize();
-    bool open(QString& fileName, enum PixelFormat formatParam);
-    bool openUsingInitializedContainer(enum PixelFormat formatParam);
+    bool open(QString& fileName);
+    bool openUsingInitializedContainer();
+    int open_codec_context( int *stream_idx, AVCodecContext **dec_ctx,
+                            AVFormatContext *fmt_ctx, enum AVMediaType type );
     static bool avtry(int result, const std::string& msg);
 
     AVCodec *pCodec;
-    uint8_t *buffer,
-            *blank;
     struct SwsContext *Sctx;
     int width, height;
-    PixelFormat format;
+    AVPixelFormat format;
     size_t numBytes;
     int numFrames;
     int sc; // number of color channels
@@ -112,10 +115,11 @@ class FFMpegEncoder
 public:
     typedef FFMpegVideo::Channel Channel;
 
-    FFMpegEncoder(const char * file_name, int width, int height,
+    FFMpegEncoder(const char * file_name, int width, int height, int bit_depth,
         enum AVCodecID codec_id = AV_CODEC_ID_MPEG4, std::string options = "" );
     virtual ~FFMpegEncoder();
     void setPixelIntensity(int x, int y, int c, uint8_t value);
+    void setPixelIntensity16(int x, int y, uint16_t value);
     void write_frame();
     void close();
     size_t buffer_size() { return _buffer_size; }
@@ -127,6 +131,7 @@ public:
 protected:
     AVFormatContext *container;
     AVCodecContext *pCtx;
+    AVStream *video_st;
     AVFrame *picture_yuv;
     AVFrame *picture_rgb;
     struct SwsContext *Sctx;
@@ -135,6 +140,7 @@ protected:
     uint8_t* _buffer;
     int _frame_count;
     int _encoded_frames;
+    enum AVPixelFormat _raw_format;
 };
 
 

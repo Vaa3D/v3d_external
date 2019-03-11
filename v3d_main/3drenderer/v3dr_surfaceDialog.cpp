@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define UPDATE_TABS()    {int i = getCurTab(); reCreateTables(glwidget); setCurTab(i);}
 ///////////////////////////////////////////////////////////
 
-
+//
 V3dr_surfaceDialog::V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent)
 	:SharedToolDialog(w, parent)
 {
@@ -284,13 +284,15 @@ void V3dr_surfaceDialog::createFirst()
     colorSelectButton = new QPushButton("Color >>");
     objectSetDisplayModeButton = new QPushButton("Display Mode >>"); //by PHC 20130926
     editNameCommentButton = new QPushButton("Name/Comments"); //by PHC, 090219
+    neuronSegmentType = new QPushButton("NeuronSegmentType");
     undoButton = new QPushButton("Undo");
     changeLayout->addWidget(onSelectButton,  		1+3,0, 1,1);
     changeLayout->addWidget(offSelectButton, 		1+3,1, 1,1);
     changeLayout->addWidget(colorSelectButton,		2+3,0, 1,2);
     changeLayout->addWidget(objectSetDisplayModeButton,		3+3,0, 1,2);
     changeLayout->addWidget(editNameCommentButton,	4+3,0, 1,2);
-    changeLayout->addWidget(undoButton,				5+3,0, 1,2);
+    changeLayout->addWidget(neuronSegmentType,      5+3,0, 1,2);
+    changeLayout->addWidget(undoButton,				6+3,0, 1,2);
 
 //    markerLocalView = new QPushButton("Local 3D View around Marker");
 
@@ -354,6 +356,7 @@ void V3dr_surfaceDialog::createFirst()
 	if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(doMenuOfColor()));
     if (objectSetDisplayModeButton) connect(objectSetDisplayModeButton, SIGNAL(clicked()),   this, SLOT(doMenuOfDisplayMode()));
 	if (editNameCommentButton) connect(editNameCommentButton, SIGNAL(clicked()),   this, SLOT(editObjNameAndComments()));
+    if (neuronSegmentType) connect(neuronSegmentType, SIGNAL(clicked()),   this, SLOT(editNeuronSegmentType()));
 
 	if (searchTextEdit && doSearchTextNext) connect(doSearchTextNext, SIGNAL(clicked()), this, SLOT(findNext()));
 	if (searchTextEdit && doSearchTextPrev) connect(doSearchTextPrev, SIGNAL(clicked()), this, SLOT(findPrev()));
@@ -1039,7 +1042,8 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
     V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
 
 	QStringList qsl;
-	qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file";
+    //qsl <<"on/off" << "color" << "count" << "type" << "name" << "comment" <<"in file"<<"index";
+    qsl <<"on/off" << "count" << "type" << "index";
     int row;
     bool flag = false;
     for (int i=0; i<r->listNeuronTree.size();i++)
@@ -1061,34 +1065,56 @@ QTableWidget* V3dr_surfaceDialog::createTableNeuronSegment()
 
 		ADD_ONOFF(curSeg.on);
 
-		RGBA8 color;
-		color.r = curSeg.color_uc[0];
-		color.g = curSeg.color_uc[1];
-        color.b = curSeg.color_uc[2];
-		color.a = curSeg.color_uc[3];
-		ADD_QCOLOR(color);
+//		RGBA8 color;
+//		color.r = curSeg.color_uc[0];
+//		color.g = curSeg.color_uc[1];
+//      color.b = curSeg.color_uc[2];
+//		color.a = curSeg.color_uc[3];
+//		ADD_QCOLOR(color);
 
-		ADD_STRING( tr("%1").arg(curSeg.row.size()) );
+        //ADD_STRING( tr("%1").arg(curSeg.row.size()) );
+        CustomTableWidgetItem *curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row.size()));
+        t->setItem(i, j++, curCustomItem);
 
-		ADD_STRING( tr("%1").arg(curSeg.row[1].type) );
+        //ADD_STRING( tr("%1").arg(curSeg.row[1].type) ); //
+        curCustomItem = new CustomTableWidgetItem(tr("%1").arg(curSeg.row[0].type));
+        curCustomItem->setFlags(curCustomItem->flags() | Qt::ItemIsEditable);
+        t->setItem(i, j++, curCustomItem);
 		
-		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
+//		ADD_STRING( QString::fromUtf8(curSeg.name.c_str()));
 
-		ADD_STRING( QString::fromUtf8(curSeg.comment.c_str()) );
+//		ADD_STRING( QString::fromUtf8(curSeg.comment.c_str()) );
 
-		ADD_STRING( QString::fromUtf8(curSeg.file.c_str()) );
+//		ADD_STRING( QString::fromUtf8(curSeg.file.c_str()) );
+
+        curCustomItem = new CustomTableWidgetItem(tr("%1").arg(i));
+        t->setItem(i, j++, curCustomItem);
 
 		MESSAGE_ASSERT(j==col);
     }
 
+    //
+    t->setSortingEnabled(true);
+
+    //
     t->resizeColumnsToContents();
+
+    //
+    if(sortNeuronSegment)
+    {
+        t->sortItems(sortNeuronSegment);
+    }
+
+    //
+    connect(t, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(sortNeuronSegmentByType(QTableWidgetItem*)));
+
 	return t;
 }
 
 
 void V3dr_surfaceDialog::pickNeuronSegment(int i, int j)
 {
-	qDebug("flag4");
+//	qDebug("flag4");
 	qDebug("	pickNeuronSegment( %d, %d )", i,j);
 	if (j == 1) return;
 	
@@ -1104,16 +1130,18 @@ void V3dr_surfaceDialog::pickNeuronSegment(int i, int j)
 	QTableWidget* t = table[stNeuronSegment];
 	QTableWidgetItem *curItem = t->item(i,j);
 
+    int index = t->item(i,3)->text().toInt();
+
 	switch(j)
 	{
 	case 0:
 		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
 		qDebug(CHECKED_TO_BOOL(curItem->checkState()) ? "true" : "false");
-		tracedNeuron->seg[i].on = CHECKED_TO_BOOL(curItem->checkState());//!tracedNeuron->seg[i].on;
+        tracedNeuron->seg[index].on = CHECKED_TO_BOOL(curItem->checkState()); // !tracedNeuron->seg[i].on;
 		qDebug(tracedNeuron->seg[i].on ? "on" : "off");
 		break;
 	case 1:
-		r->listCell[i].color = RGBA8V(curItem->data(0));
+        r->listCell[index].color = RGBA8V(curItem->data(0));
 		UPATE_ITEM_ICON(curItem);
 		break;
 	}
@@ -1380,8 +1408,8 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 				}
 				else if (t==table[stNeuronSegment])
 				{
-					r->listCell[i].name = realobj_name;
-					r->listCell[i].comment = realobj_comment;
+//					r->listCell[i].name = realobj_name;
+//					r->listCell[i].comment = realobj_comment;
 				}
 				else if (t==table[stNeuronStructure])
 				{
@@ -1406,6 +1434,114 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 	bMod = true;
 	undoButton->setEnabled(bCanUndo && bMod);
 #endif
+}
+
+void V3dr_surfaceDialog::editNeuronSegmentType()
+{
+    //
+    QTableWidget* t = currentTableWidget();
+    if (! t) return;
+
+    Renderer_gl1* r = renderer;
+    if (! r)  return;
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;
+    if (w) curImg = v3dr_getImage4d(r->_idep);
+    V_NeuronSWC_list* tracedNeuron = &(curImg->tracedNeuron);
+
+    int row, col;
+    col = 4; // on/off count type index
+    bool flag = false;
+    for (int i=0; i<r->listNeuronTree.size();i++)
+        if (r->listNeuronTree[i].editable) flag = true;
+    if ((r->listNeuronTree.size() !=0 && !flag) || ! curImg)
+        row = 0;
+    else row =tracedNeuron->nsegs();
+
+    if(row<1)
+    {
+        cout<<"No segments"<<endl;
+        return;
+    }
+
+    cout<<"rows "<<row<<endl;
+
+    //
+    int currentTypeValue = 1;
+    if(t==table[stNeuronSegment])
+    {
+        QList<QTableWidgetItem *> selected = t->selectedItems();
+
+        if(selected.size()<col) // at least one row is selected
+        {
+            cout<<"Invalid selection"<<endl;
+            return;
+        }
+
+        // cout<<"selected qtablewidgetitems: "<<selected.size()<<endl;
+
+        int selectedrows = selected.size() / col;
+
+        currentTypeValue = selected.at(2*selectedrows)->text().toInt();
+
+        bool ok;
+        int typeValue = QInputDialog::getInt(this, tr("Set Neuron Segment Type"), tr("Type:"), currentTypeValue, -2147483647, 2147483647, 1, &ok);
+
+        if(ok)
+        {
+            cout<<"new type value: "<<typeValue<<endl;
+
+            //QList <NeuronTree> *neurontrees = r->getHandleNeuronTrees();
+
+            for(int i=0; i<selectedrows; i++)
+            {
+                // it's up to the definition of the neuron segment table
+
+                int k = 2*selectedrows + i;
+                int index = selected.at(3*selectedrows + i)->text().toInt();
+
+                cout<<"i "<<i<<" "<<selected.at(k)->text().toStdString()<<" "<<index<<endl;
+
+                V_NeuronSWC curSeg = tracedNeuron->seg[index];
+
+                cout<<"how many nodes' type need to be changed: "<<curSeg.nrows()<<endl;
+
+                for(int j=0; j<curSeg.nrows(); j++)
+                {
+                    tracedNeuron->seg[index].row[j].type = typeValue;
+                    // cout<<"changed? "<<tracedNeuron->seg[index].row[j].type<<endl;
+                }
+
+//                if(i%8==3)
+//                {
+//                    int index = selected.at(i+4)->text().toInt();
+
+//                    cout<<"i "<<i<<" "<<selected.at(i)->text().toStdString()<<" "<<index<<endl;
+
+//                    V_NeuronSWC curSeg = tracedNeuron->seg[index];
+
+//                    cout<<"how many nodes' type need to be changed: "<<curSeg.nrows()<<endl;
+
+//                    for(int j=0; j<curSeg.nrows(); j++)
+//                    {
+//                        tracedNeuron->seg[index].row[j].type = typeValue;
+//                        // cout<<"changed? "<<tracedNeuron->seg[index].row[j].type<<endl;
+//                    }
+//                }
+            }
+        }
+    }
+    else
+    {
+        cout<<"Not defined other than neuron segment table"<<endl;
+    }
+
+    //
+    updatedContent(t);
+
+    if (!isBatchOperation)
+    curImg->update_3drenderer_neuron_view(w, r);
 }
 
 
@@ -1643,5 +1779,25 @@ void V3dr_surfaceDialog::updateMarkerList(QList <ImageMarker> markers)
     {
         listMarker[i] = markers[i];
     }
+}
+
+void V3dr_surfaceDialog::sortNeuronSegmentByType(QTableWidgetItem* item)
+{
+    if(item->column()==1 || item->column()==2 || item->column()==3) // sort count,type,index
+    {
+        sortNeuronSegment = item->column();
+    }
+
+    updatedContent(item->tableWidget());
+
+    Renderer_gl1* r = renderer;
+    if (! r)  return;
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg = 0;
+    if (w) curImg = v3dr_getImage4d(r->_idep);
+
+    if (!isBatchOperation)
+    curImg->update_3drenderer_neuron_view(w, r);
 }
 

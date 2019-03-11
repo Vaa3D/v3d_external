@@ -11,8 +11,10 @@
 //#endif
 
 #include "../basic_c_fun/v3d_interface.h"
-
-
+struct VRoutInfo
+{
+	std::vector<XYZ> deletedcurvespos;
+};
 class CMainApplication;
 class My4DImage;
 class MainWindow;
@@ -24,12 +26,14 @@ public:
     explicit VR_MainWindow();
     ~VR_MainWindow();
 	void onReadySend(QString &send_MSG);
-	bool SendLoginRequest();
-	void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
-
-
+	bool SendLoginRequest(bool resume = false);
+	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,XYZ* zoomPOS = 0,XYZ *CreatorPos = 0);
+	XYZ VRVolumeStartPoint;
+	XYZ VRVolumeEndPoint;
+	int ResIndex;
+	VRoutInfo VROutinfo;
 public slots:
-	void RunVRMainloop();
+	void RunVRMainloop(XYZ* zoomPOS = 0);
 	void SendHMDPosition();
 private slots:
 
@@ -46,7 +50,10 @@ private:
 	QString userName;
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
-
+public:
+	void GetResindexandStartPointfromVRInfo(QString VRinfo);
+	QString ConvertsendCoords(QString coords);
+	XYZ ConvertreceiveCoords(float x,float y,float z);
 };
 
 // bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);

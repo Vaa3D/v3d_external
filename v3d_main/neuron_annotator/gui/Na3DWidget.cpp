@@ -68,7 +68,12 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     bHasQuadStereo = true;
     if (! context()->format().stereo())
         bHasQuadStereo = false;
+
+#if defined(USE_Qt5)
+    if ( format().swapBehavior() != QSurfaceFormat::SwapBehavior::DoubleBuffer)
+#else
     if (! context()->format().doubleBuffer())
+#endif
         bHasQuadStereo = false;
     if(bHasQuadStereo) {
         // qDebug() << "Quad buffer stereo 3D is supported";
@@ -1059,7 +1064,7 @@ void Na3DWidget::keyPressEvent(QKeyEvent *e)
         V3dR_GLWidget::keyPressEvent(e);
         break;
     default:
-        QGLWidget::keyPressEvent(e);
+        QOpenGLWidget_proxy::keyPressEvent(e);
     }
 }
 
@@ -1837,7 +1842,11 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 void Na3DWidget::paintEvent(QPaintEvent *event)
 {
     // 3D rendering
+#if defined(USE_Qt5)
+    update();
+#else
     updateGL();
+#endif
 
     // 2D rendering overlay
     QPainter painter(this);
@@ -2257,7 +2266,11 @@ void Na3DWidget::resetVolumeCutRange()
 
 bool Na3DWidget::screenShot(QString filename)
 {
+#if defined(USE_Qt5)
+    QImage image = this->grabFramebuffer();
+#else
     QImage image = this->grabFrameBuffer();
+#endif
 
     if (image.save(filename, 0, 100)) //uncompressed
     {

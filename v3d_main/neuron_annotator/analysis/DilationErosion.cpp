@@ -1,3 +1,7 @@
+#if defined(USE_Qt5)
+    #include <QtConcurrent>
+#endif 
+
 #include "DilationErosion.h"
 #include "SleepThread.h"
 

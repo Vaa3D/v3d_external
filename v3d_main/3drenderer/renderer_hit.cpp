@@ -8,8 +8,8 @@ This folder contains all source codes for the V3D project, which is subject to t
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
 2. You agree to appropriately cite this work in your related studies and publications.
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,鈥� Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model, Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 4. Neither the name of the Howard Hughes Medical Institute, Janelia Farm Research Campus, nor Hanchuan Peng, may be used to endorse or promote products derived from this software without specific prior written permission.
 *************/
@@ -95,7 +95,7 @@ double total_etime; //added by PHC, 20120412, as a convenient way to know the to
 //}
 int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
-
+	
 	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
@@ -141,8 +141,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			LIST_SELECTED(listNeuronTree, names[2]-1, true);
 			if (listNeuronTree.at(names[2]-1).editable) qsName += " (editing)";
 			NeuronTree *p_tree = (NeuronTree *)&(listNeuronTree.at(names[2]-1));
-            double best_dist;
+            //this->teraflyTreePtr = p_tree;
+			double best_dist;
+			//V3DLONG index = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 			qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist), p_tree);
+			//cout << p_tree->listNeuron.at(index).x << " " << p_tree->listNeuron.at(index).y << " " << p_tree->listNeuron.at(index).z << endl;
 		}break;
 		case stPointCloud: {//apo
 			(qsName = QString("point cloud #%1 ... ").arg(names[2]) + listCell.at(names[2]-1).name);
@@ -220,8 +223,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actZoomin_currentviewport=0, //PHC, 130701
 
 			*actNeuronConnect = 0, *actPointCloudConnect = 0, *actMarkerConnect = 0, *actNeuronCut = 0, // MK, 2017 April
-			*simpleConnect = 0, *simpleConnect_loopSafe = 0 // MK, 2018, April
-            ;
+			*simpleConnect = 0, *simpleConnect_loopSafe = 0, // MK, 2018, April
+			*actMarkerAltRotationCenter=0 //RZC, 20180703
+			;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
 	if (qsName.size()>0)
@@ -563,6 +567,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #endif
 
                 listAct.append(actMarkerZoomin3D_terafly = new QAction("Zoom-in to this select marker location", w));
+                listAct.append(actMarkerAltRotationCenter = new QAction("alternate rotation center at this marker location (holding ALT key)", w));
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				//listAct.append(actMarkerRefineLocal = new QAction("refine marker to local center", w));
 				listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
@@ -780,7 +785,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				//listAct.append(actComputeSurfVolume = new QAction("compute surface volume", w));
 			}
 		}
+#if defined(USE_Qt5)
+		if (w) w->update(); //for highlight object
+#else
 		if (w) w->updateGL(); //for highlight object
+#endif
 		//###############################################################
 		// do menu
 		//###############################################################
@@ -1311,7 +1320,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			bool ok1=true;
 			V3DLONG chno=1;
 			if (curImg->getCDim()>1)
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 				chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
 #else
 				chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
@@ -1377,7 +1386,47 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 
 #define __actions_of_marker__ // dummy, just for easy locating
-	else if (act == actMarkerDelete)
+    else if (act == actMarkerAltRotationCenter)
+    {
+    	if (w && curImg)
+    	{
+    		int tmpind = names[2]-1;
+    		if (tmpind>=0 && tmpind<listMarker.size())
+    		{
+    			const ImageMarker & m = listMarker.at(tmpind);
+    			XYZ p = XYZ(m);
+//<<<<<<< HEAD
+//    			MarkerSpaceToNormalizeSpace(p);
+//=======
+    			p.x = p.x*thicknessX -start1;
+    			p.y = p.y*thicknessY -start2;
+    			p.z = p.z*thicknessZ -start3;
+
+    			BoundingBox & BB = boundingBox;
+    			float DX = BB.Dx();
+    			float DY = BB.Dy();
+    			float DZ = BB.Dz();
+    			float maxD = BB.Dmax();
+    			double s[3];
+    			s[0] = 1/maxD *2;
+    			s[1] = 1/maxD *2;
+    			s[2] = 1/maxD *2;
+    			double t[3];
+    			t[0] = -BB.x0 -DX /2;
+    			t[1] = -BB.y0 -DY /2;
+    			t[2] = -BB.z0 -DZ /2;
+
+    			p.x = s[0]*(p.x +t[0]);
+    			p.y = s[1]*(p.y +t[1]);
+    			p.z = s[2]*(p.z +t[2]);
+//>>>>>>> de6b711e02a658efa8704f8bffd841b27a8873ba
+    			qDebug("normalized alt rotation center: (%f %f %f)", p.x, p.y, p.z);
+
+    			w->setAltCenter(p.x, p.y, p.z);
+    		}
+    	}
+    }
+    else if (act == actMarkerDelete)
 	{
 		if (w && curImg)
 		{
@@ -2177,6 +2226,7 @@ void Renderer_gl1::endSelectMode()
 			return;
 		}
 	}
+
 
 	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
     total_etime = 0;
@@ -3550,7 +3600,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 #ifndef test_main_cpp //140211
     if (b_addthiscurve)
 	{
-		addCurveSWC(loc_vec, chno);
+        addCurveSWC(loc_vec, chno, 8); //LMG 26/10/2018 solveCurveCenter mode 8
 		// used to convert loc_vec to NeuronTree and save SWC in testing
 		vecToNeuronTree(testNeuronTree, loc_vec);
 		//added by PHC, 120506
@@ -3578,6 +3628,10 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 
 }
 
+void Renderer_gl1::setDeleteKey(int key)
+{
+    deleteKey = key;
+}
 
 void simple_delay(V3DLONG n) //delay n seconds
 {
@@ -3845,7 +3899,7 @@ void Renderer_gl1::solveCurveViews()
 #ifndef test_main_cpp
     smooth_curve(loc_vec, 5);
 #endif
-    addCurveSWC(loc_vec, -1); //turn off post deform
+    addCurveSWC(loc_vec, -1, 9); //turn off post deform //LMG 26/10/2018 solveCurveViews mode 9
 }
 void Renderer_gl1::solveCurveFromMarkers()
 {
@@ -3903,7 +3957,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
 	////////////////////////////////////////////////////////////////////////
 	XYZ loc0, loc1;
 	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-	// qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+	//qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 	XYZ loc;
 	if (chno>=0 && chno<dim4)
 	{
@@ -4232,6 +4286,7 @@ void Renderer_gl1::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, 
 	loc0 = XYZ(Z0(1), Z0(2), Z0(3));
 	loc1 = XYZ(Z1(1), Z1(2), Z1(3));
 }
+
 double Renderer_gl1::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
 {
 	XYZ Y1, Y2;
@@ -4265,6 +4320,7 @@ double Renderer_gl1::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos
 	//	double dist = fabs(x0*L.x + y0*L.y + L.z)/sqrt(L.x*L.x + L.y*L.y);
 	//	return dist;
 }
+
 XYZ Renderer_gl1::getLocationOfListMarkerPos()
 {
 	int N = listMarkerPos.size();
@@ -4301,6 +4357,7 @@ XYZ Renderer_gl1::getLocationOfListMarkerPos()
 	XYZ loc(X(1), X(2), X(3));
 	return loc;
 }
+
 XYZ Renderer_gl1::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 {
 	//         A*N + d
@@ -4311,6 +4368,7 @@ XYZ Renderer_gl1::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 	XYZ loc = P1 + t*(P2-P1);
 	return loc;
 }
+
 // in Image space (model space)
 XYZ Renderer_gl1::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
 {
@@ -4321,47 +4379,48 @@ XYZ Renderer_gl1::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
 	loc = getPointOnPlane(P1,P2, plane); \
 	if (dist_L2(loc,P2) > dist_L2(P,P2) && dataViewProcBox.isInner(loc, 0.5)) \
 	P = loc; \
-}
-	//qDebug("  P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
-if (bXSlice)
-{
-	plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);
-	REPLACE_NEAR( plane );
-	//qDebug("  X-(%g %g %g)", loc.x,loc.y,loc.z);
-}
-if (bYSlice)
-{
-	plane[0] = 0; plane[1] = -1; plane[2] = 0; plane[3] = start2+ VOL_Y0*(size2-1);
-	REPLACE_NEAR( plane );
-	//qDebug("  Y-(%g %g %g)", loc.x,loc.y,loc.z);
-}
-if (bZSlice)
-{
-	plane[0] = 0; plane[1] = 0; plane[2] = -1; plane[3] = start3+ VOL_Z0*(size3-1);
-	REPLACE_NEAR( plane );
-	//qDebug("  Z-(%g %g %g)", loc.x,loc.y,loc.z);
-}
-if (bFSlice)
-{
-	if (F_plane)
-		for (int i=0; i<4; i++) plane[i] = F_plane[i];
-	else
-	{
-		////////////////////////////////////////////////////////////////////////
-		//100730 RZC, in View space, keep for dot(clip, pos)>=0
-		double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-		clipplane[3] = viewClip;
-		ViewPlaneToModel(markerViewMatrix, clipplane);
-		//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-		////////////////////////////////////////////////////////////////////////
-		for (int i=0; i<4; i++) plane[i] = clipplane[i];
 	}
-	REPLACE_NEAR( plane );
-	//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
+	//qDebug("  P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
+	if (bXSlice)
+	{
+		plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);
+		REPLACE_NEAR( plane );
+		//qDebug("  X-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	if (bYSlice)
+	{
+		plane[0] = 0; plane[1] = -1; plane[2] = 0; plane[3] = start2+ VOL_Y0*(size2-1);
+		REPLACE_NEAR( plane );
+		//qDebug("  Y-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	if (bZSlice)
+	{
+		plane[0] = 0; plane[1] = 0; plane[2] = -1; plane[3] = start3+ VOL_Z0*(size3-1);
+		REPLACE_NEAR( plane );
+		//qDebug("  Z-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	if (bFSlice)
+	{
+		if (F_plane)
+			for (int i=0; i<4; i++) plane[i] = F_plane[i];
+		else
+		{
+			////////////////////////////////////////////////////////////////////////
+			//100730 RZC, in View space, keep for dot(clip, pos)>=0
+			double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+			clipplane[3] = viewClip;
+			ViewPlaneToModel(markerViewMatrix, clipplane);
+			//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+			////////////////////////////////////////////////////////////////////////
+			for (int i=0; i<4; i++) plane[i] = clipplane[i];
+		}
+		REPLACE_NEAR( plane );
+		//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
+	}
+	//qDebug("  P(%g %g %g)", P.x,P.y,P.z);
+	return P;
 }
-//qDebug("  P(%g %g %g)", P.x,P.y,P.z);
-return P;
-}
+
 // in Image space (model space)
 XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
 		double clipplane[4],	//clipplane==0 means no clip plane
@@ -4514,6 +4573,7 @@ int Renderer_gl1::getVolumeXsectPosOfMarkerLine(XYZ & locA, XYZ & locB, const Ma
 
     return 1;
 }
+
 // in Image space (model space), by PHC 20130425
 int Renderer_gl1::getVolumeXsectPosOfMarkerLine(XYZ P1, XYZ P2,
         double clipplane[4],	//clipplane==0 means no clip plane
@@ -5186,11 +5246,29 @@ bool Renderer_gl1::setColorAncestryInfo(){
 
         //QHash<QString, SamePointList*>::iterator s;
 
+		//qDebug()<<"size: "<<f.size();
+
         //cout << "Processing fringe" << endl;
         FringeNode tvs = f.takeFirst();
-        //cout << "Taking node from seg: " << tvs.node->seg_id << "with x: " << tvs.node->position.x << " y: "
+
+		if(&tvs == NULL)
+		{
+			qDebug()<<"found a null fringenode assigned";
+			continue;
+		}
+
+		if(tvs.node == NULL)
+		{
+			qDebug()<<" ... ... found a null node assigned";
+			continue;
+		}
+
+        //cout << "Taking node from seg: " << tvs.node->seg_id << " with x: " << tvs.node->position.x << " y: "
         //     << tvs.node->position.y << " z: " << tvs.node->position.z << endl;
         QList<DoublyLinkedNeuronNode*> l;
+
+		//qDebug()<<XYZtoQString(tvs.node->position)<<pch.hash.size();
+
         if(!(pch.hash.value(XYZtoQString(tvs.node->position))->hasVisited())){
             l = ((pch.hash.value(XYZtoQString(tvs.node->position)))->markAsVisitedAndGetConnections(tvs.node->seg_id));
         }else{

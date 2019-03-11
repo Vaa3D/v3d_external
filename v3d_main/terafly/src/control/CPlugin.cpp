@@ -339,6 +339,43 @@ const Image4DSimple* tf::PluginInterface::getImage()
 
 }
 
+// get currently displayed resolution LMG 13-12-2018 To get Resolution index for eswc
+int tf::PluginInterface::getRes()
+{
+    try
+    {
+        // check preconditions
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // get and return resolution index
+        return CViewer::getCurrent()->getResIndex();
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
+    }
+    return NULL;
+}
+int tf::PluginInterface::getallRes()
+{
+    try
+    {
+        // check preconditions
+        if(CImport::instance() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+
+        // get and return resolution index
+        return CImport::instance()->getResolutions() -1;
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
+    }
+    return NULL;
+}
+
+
 // get image metadata from the given image file/folder path
 size_t tf::PluginInterface::getXDim(const std::string & path)
 {
@@ -501,4 +538,10 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+}
+
+void tf::PluginInterface::drawEditInfo(int editNum)
+{
+	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
+	CViewer::getCurrent()->getGLWidget()->renderer->drawEditInfo();
 }

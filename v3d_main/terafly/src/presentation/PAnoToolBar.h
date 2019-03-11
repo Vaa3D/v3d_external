@@ -17,6 +17,7 @@ class terafly::PAnoToolBar : public QWidget
         QToolButton *buttonMarkerDelete;        //button2
         QToolButton *buttonMarkerRoiDelete;     //button3
         QToolButton *buttonMarkerRoiView;       //button4
+		QToolButton* buttonFragmentTrace;       //button5 --> new button added for fragmented auto-tracing feature, MK, Dec 2018
 
         QToolButton *buttonUndo;                //undo button
         QToolButton *buttonRedo;                //redo button
@@ -90,6 +91,7 @@ class terafly::PAnoToolBar : public QWidget
         void buttonMarkerDeleteChecked(bool checked);
         void buttonMarkerRoiDeleteChecked(bool checked);
         void buttonMarkerRoiViewChecked(bool checked);
+		void buttonFragmenTraceChecked(bool checked); // MK, Dec 2018
         void buttonUndoClicked();
         void buttonRedoClicked();
 

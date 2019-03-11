@@ -102,11 +102,14 @@ if(Qt5Core_FOUND)
   set(ARTHUR_MOC_HEADERS
       ${arthurwidgets_path}/arthurwidgets.h
       ${arthurwidgets_path}/arthurstyle.h
+      ${arthurwidgets_path}/hoverpoints.h
   )
   set(ARTHUR_SRCS
       ${arthurwidgets_path}/arthurwidgets.cpp
       ${arthurwidgets_path}/arthurstyle.cpp
+      ${arthurwidgets_path}/hoverpoints.cpp
   )
+  set_source_files_properties( ${ARTHUR_SRCS} PROPERTIES GENERATED TRUE )
 endif()
 
 if(NOT Qt5Core_FOUND)
@@ -130,13 +133,15 @@ include_directories( BEFORE
   ../neuron_annotator
   ../mozak/terafly/src/core/imagemanager
   ../mozak/terafly/src/presentation
-  ../\mozak/m_terafly/src/control
+  ../mozak/m_terafly/src/control
   "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
 if(Qt5Core_FOUND)
   add_library(arthurwidgets ${ARTHUR_MOC_SRCS} ${ARTHUR_SRCS} )
+  add_dependencies(arthurwidgets qt_demos)
 endif()
+
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
@@ -256,6 +261,7 @@ if(APPLE)
         # file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
         file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
                             "${BUNDLE_BUILD_DIR}/Contents"
+                            "${BUNDLE_BUILD_DIR}/Contents/Frameworks"
                             "${BUNDLE_BUILD_DIR}/Contents/MacOS"
                             "${BUNDLE_BUILD_DIR}/Contents/Resources"
         )
@@ -356,12 +362,20 @@ else(APPLE)
         #     libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
         message("installing ffmpeg libraries into ${V3D_BUILD_BINARY_DIR}")
         add_custom_command( TARGET v3d POST_BUILD
-                            COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib/lib*so*"
+                            COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*"
                             WORKING_DIRECTORY "${av_dir}/install")
         add_custom_command( TARGET v3d POST_BUILD
                             COMMAND ${CMAKE_COMMAND} -E tar xfz "${V3D_BUILD_BINARY_DIR}/libs.tgz"
                             COMMAND ${CMAKE_COMMAND} -E remove "${V3D_BUILD_BINARY_DIR}/libs.tgz"
                             WORKING_DIRECTORY "${V3D_BUILD_BINARY_DIR}")
+        add_custom_command( TARGET v3d POST_BUILD
+                            COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*"
+                            WORKING_DIRECTORY "${x265_dir}/install/lib"
+                            COMMENT "Inserting X265 libraries into v3d.app")
+        add_custom_command( TARGET v3d POST_BUILD
+                            COMMAND ${CMAKE_COMMAND} -E tar xfz "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                            COMMAND ${CMAKE_COMMAND} -E remove "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                            WORKING_DIRECTORY "${V3D_BUILD_BINARY_DIR}/lib")
     endif()
     # message("LIB_PATHS = ${LIB_PATHS}")
     foreach(SHLIB ${SHLIBS})
@@ -429,14 +443,25 @@ if (V3D_BUILD_BINARY_DIR)
 endif()
 
 target_link_libraries(v3d NeuronAnnotatorLib)
+if(USE_X265)
+  target_link_libraries(v3d ${X265_LIBRARY})
+endif(USE_X265)
 
 if(V3D_MAC_CREATE_BUNDLE)
     # Install Qt libraries into bundle
     find_program(MAC_DEPLOY_QT macdeployqt)
     add_custom_command(TARGET v3d POST_BUILD
-        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
+        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}" 
         DEPENDS v3d
         COMMENT "Inserting Qt libraries into v3d.app")
+    add_custom_command( TARGET v3d POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E tar cfz "${V3D_BUILD_BINARY_DIR}/libs.tgz" "lib*dylib"
+                        WORKING_DIRECTORY "${x265_dir}/install/lib"
+                        COMMENT "Inserting X265 libraries into v3d.app")
+    add_custom_command( TARGET v3d POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E tar xfz "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                        COMMAND ${CMAKE_COMMAND} -E remove "${V3D_BUILD_BINARY_DIR}/libs.tgz"
+                        WORKING_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/Frameworks")
 endif()
 
 

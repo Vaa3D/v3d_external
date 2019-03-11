@@ -98,7 +98,7 @@ struct V_NeuronSWC_unit
 			double n, type, x, y, z, r, parent,
 			nchild,
             seg_id, nodeinseg_id,
-            level;
+            level, creatmode, timestamp, tfresindex;
 		};
 	};
         V_NeuronSWC_unit() {for (V3DLONG i=0;i<V3DLONG(sizeof(data)/sizeof(double));i++) data[i]=0; r=0.5;}
@@ -108,6 +108,7 @@ struct V_NeuronSWC_unit
 	void set(double x1, double y1, double z1, double r1, double p1) {x=x1; y=y1;z=z1;r=r1;parent=p1;}
 	void set(double x1, double y1, double z1, double r1) {x=x1; y=y1;z=z1;r=r1;}
 	void set(double x1, double y1, double z1) {x=x1; y=y1;z=z1;}
+    void setType(double t) {type = t;}
 };
 
 inline double distL2square(const V_NeuronSWC_unit & a, const V_NeuronSWC_unit & b)
@@ -294,14 +295,17 @@ bool simplify_V_NeuronSWC_nodeindex(V_NeuronSWC & my_swc); //map the node index 
 
 
 template <class T> //should be a struct at least included members (x,y,z)
-void set_simple_path_unit (V_NeuronSWC_unit & v, V3DLONG base_n, vector<T> & mUnit, V3DLONG i, bool link_order, double r=1, double default_type=3)
+void set_simple_path_unit (V_NeuronSWC_unit & v, V3DLONG base_n, vector<T> & mUnit, V3DLONG i, bool link_order, double r=1, double default_type=3, double creatmode=0, double default_timestamp=10, double default_tfresindex = 0)
 {
 	V3DLONG N = mUnit.size();
 		v.type	= default_type;
 		v.x 	= mUnit[i].x;
 		v.y 	= mUnit[i].y;
 		v.z 	= mUnit[i].z;
-		v.r 	= r;
+        v.r 	= r;
+        v.creatmode = creatmode;
+        v.timestamp = default_timestamp; // LMG 11/10/2018
+        v.tfresindex = default_tfresindex; // LMG 13/12/2018
 	if (link_order) // same as index order
 	{
 		v.n		= base_n +1+i;
@@ -314,13 +318,13 @@ void set_simple_path_unit (V_NeuronSWC_unit & v, V3DLONG base_n, vector<T> & mUn
 	}
 }
 template <class T> //should be a struct at least included members (x,y,z)
-void set_simple_path (V_NeuronSWC & cur_seg, V3DLONG base_n, vector<T> & mUnit, bool link_order, double r=1, double default_type=3)
+void set_simple_path (V_NeuronSWC & cur_seg, V3DLONG base_n, vector<T> & mUnit, bool link_order, double r=1, double default_type=3, double creatmode=0, double default_timestamp=0, double default_tfresindex = 0)
 {
 	cur_seg.clear();
 	for (V3DLONG i=0;i<mUnit.size();i++)
 	{
 		V_NeuronSWC_unit v;
-        set_simple_path_unit(v, base_n, mUnit, i, link_order, r, default_type);
+        set_simple_path_unit(v, base_n, mUnit, i, link_order, r, default_type, creatmode, default_timestamp, default_tfresindex); //LMG 11/10/2018
 		cur_seg.append(v);
 		//qDebug("%d ", cur_seg.nnodes());
 	}

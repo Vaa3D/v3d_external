@@ -212,7 +212,11 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
     //////////////////////////////////////////////////////////////////
     glWidget = 0;
     glWidget = new V3dR_GLWidget(_idep, this, data_title); // 'this' pointer for glWidget calling back
+#if defined(USE_Qt5)
+    if ( !glWidget ) //Under Qt5, the GL Widget is not valid until after it's shown
+#else
     if (!glWidget || !(glWidget->isValid()))
+#endif
     {
     	MESSAGE("ERROR: Failed to create OpenGL Widget or Context!!! \n");
     }
@@ -382,7 +386,7 @@ int V3dR_MainWindow::getAnimateRotTimePoints(QString qtitle, bool* ok, int v)
 	{
 		timepoints = v;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 		timepoints = QInputDialog::getInt(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
 #else
 		timepoints = QInputDialog::getInteger(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
@@ -416,7 +420,7 @@ void V3dR_MainWindow::setAnimateRotSpeedSec()
 
 	bool ok;
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 	int time_sec = QInputDialog::getInt(0, QObject::tr("Animation"),
 									QObject::tr("Seconds per rotation of speed:"), rotationSpeedSec, 0, 1000, 1, &ok);
 #else
@@ -479,7 +483,11 @@ void V3dR_MainWindow::doSaveMovie(QString& loop_script, int rotation_frames, int
 
 bool V3dR_GLWidget::screenShot(QString filename)
 {
+#if defined(USE_Qt5)
+	QImage image1 = this->grabFramebuffer();
+#else
 	QImage image1 = this->grabFrameBuffer();
+#endif        
 
         const char* format = SAVE_IMG_FORMAT;
 	QString curfile = filename + "." + format;
@@ -504,7 +512,11 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 		return;
 	}
 
+#if defined(USE_Qt5)
+	QImage image1 = glWidget->grabFramebuffer();
+#else
 	QImage image1 = glWidget->grabFrameBuffer();
+#endif        
 
         const char* format = SAVE_IMG_FORMAT;
 	QString curfile = QString("%1/a%2.%3").arg(outputDir).arg(i).arg(format);
@@ -551,7 +563,7 @@ void V3dR_MainWindow::saveMovie()
 		// frames of rotation
 		{
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 			rotation_frames = QInputDialog::getInt(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
 #else
 			rotation_frames = QInputDialog::getInteger(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);

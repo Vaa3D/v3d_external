@@ -1,4 +1,4 @@
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 #include <QtCore>
 #include <QtGui>
 #endif
@@ -1170,7 +1170,7 @@ void QGLRefSys::wheelEvent(QWheelEvent *event)
 
 void QGLRefSys::enterEvent(QEvent *event)
 {
-    emit reset();
+    // emit reset();
 }
 
 

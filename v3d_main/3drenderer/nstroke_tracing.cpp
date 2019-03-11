@@ -341,7 +341,7 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 #endif
      if (b_addthiscurve)
      {
-          addCurveSWC(loc_vec, chno);
+          addCurveSWC(loc_vec, chno, 5); //LMG 26/10/2018 solveCurveDirectionInter mode 5
           // used to convert loc_vec to NeuronTree and save SWC in testing
           vecToNeuronTree(testNeuronTree, loc_vec);
      }
@@ -1154,7 +1154,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 3); //LMG 26/10/2018 solveCurveFromMarkersFastMarching (GD tracing Ctrl+G) mode 3
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
@@ -2025,7 +2025,7 @@ if (0)
      {
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 2); //LMG 26/10/2018 solveCurveMarkerLists_fm (BBox/Draw Global tracing alt+B/alt+G) mode 2 <- BBox will be converted to 1 in addCurveSwc
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
 #ifdef DEBUG_RESAMPLING
@@ -2537,7 +2537,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
 
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec_resampled, chno);
+               addCurveSWC(loc_vec_resampled, chno, 4); //LMG 26/10/2018 solveCurveFromMarkersGD mode 4
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
@@ -2623,7 +2623,7 @@ void  Renderer_gl1::vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
 	listNeuron.clear();
 	hashNeuron.clear();
 
-     int count = 0;
+    int count = 0;
 
      qDebug("-------------------------------------------------------");
      for (int k=0;k<loc_list.size();k++)
@@ -2651,6 +2651,7 @@ void  Renderer_gl1::vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
      cc.r=0; cc.g=20;cc.b=200;cc.a=0;
      SS.color = cc; //random_rgba8(255);//RGBA8(255, 0,0,0);
      SS.on = true;
+
      SS.listNeuron = listNeuron;
      SS.hashNeuron = hashNeuron;
 
@@ -3208,7 +3209,6 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 // @ADDED by Alessandro on 2015-05-07.
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
-
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -3216,7 +3216,44 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	//v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
 	const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
 
-	// contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
+    if(deleteKey==1)
+    {
+        qDebug()<<"type i to delete isolated node(s)";
+        const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
+        for (V3DLONG s=0; s<nsegs; s++)
+        {
+            if(curImg->tracedNeuron.seg[s].row.size()==1)
+            {
+                curImg->tracedNeuron.seg[s].to_be_deleted = true;
+            }
+        }
+
+        curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+
+        return;
+    }
+
+    if(deleteKey==2)
+    {
+        qDebug()<<"type t to delete type is not 2 or 3";
+        const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
+        for (V3DLONG s=0; s<nsegs; s++)
+        {
+            double type = curImg->tracedNeuron.seg[s].row[0].type;
+            if(type!=2 && type!=3)
+            {
+                curImg->tracedNeuron.seg[s].to_be_deleted = true;
+            }
+        }
+
+        curImg->update_3drenderer_neuron_view(w, this);
+        curImg->proj_trace_history_append();
+
+        return;
+    }
+
+    // contour mode := Qt::Key_Shift pressed := delete all segments within the contour, otherwise delete segments intersecting the line
     int contour_mode = 0;
     if(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
         contour_mode = 1; //press "shift"
@@ -3459,7 +3496,7 @@ void Renderer_gl1::simpleConnect()
 				}
 				cout << endl;
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
-					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
+					cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << endl; //<< " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 				
 				if (segInfo.size() < 2) return;
 				/* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
@@ -3474,6 +3511,10 @@ void Renderer_gl1::simpleConnect()
 				}
 				else
 				{
+					// ----------------- For debug purpose -----------------
+					//for (vector<V_NeuronSWC_unit>::iterator debugIt = curImg->tracedNeuron.seg[segInfo[1].segID].row.begin(); debugIt != curImg->tracedNeuron.seg[segInfo[1].segID].row.end(); ++debugIt)
+					//	cout << "ID:" << debugIt->n << " parent:" << debugIt->parent << endl;
+					// -----------------------------------------------------
 					if (curImg->tracedNeuron.seg[segInfo[0].segID].to_be_deleted)
 					{
 						vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(curImg->tracedNeuron.seg[segInfo[1].segID]);
@@ -5839,7 +5880,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             //                                            "\n else -- custom \n"),
             //                                          node_type, 0, 100, 1, &ok);
             ////=======
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
             node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
                                              QObject::tr("SWC type: "
                                                          "\n 0 -- undefined (white)"

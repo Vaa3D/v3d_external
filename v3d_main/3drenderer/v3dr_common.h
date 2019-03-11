@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
 // Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
 #include "../v3d/version_control.h"
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
   #include <QtWidgets>
 #else
   #include <QtGui>
@@ -195,13 +195,20 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
 	}
 
 
+extern QProgressDialog progress;
+#if 0
 #define PROGRESS_DIALOG(text, widget)  	QProgressDialog progress( QString(text), 0, 0, 100, (QWidget*)widget, Qt::Tool | Qt::WindowStaysOnTopHint \
 										| Qt::CustomizeWindowHint | Qt::WindowTitleHint ); //only title bar, disable buttons on title bar
-extern QProgressDialog progress;
 #define PROGRESS_PARENT(widget)   progress.setParent( (QWidget*)widget ); //Qt::WShowModal
 #define PROGRESS_TEXT(text)   { QApplication::setActiveWindow(&progress);  progress.setLabelText( QString(text) );  progress.repaint();}
 #define PROGRESS_PERCENT(i)	  { QApplication::setActiveWindow(&progress);  progress.setValue(i);  progress.repaint(); \
 								QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);} //exclude user input is more safe
+#else
+#define PROGRESS_DIALOG(text, widget)  	std::cout << text << std::endl; //only title bar, disable buttons on title bar
+#define PROGRESS_PARENT(widget)   {}; //Qt::WShowModal
+#define PROGRESS_TEXT(text)   {std::cout << text << std::endl; } 
+#define PROGRESS_PERCENT(i)	  { std::cout << i << std::endl;} //exclude user input is more safe
+#endif								
 //It is impossible to create progress bar in new thread because widget classes can not be used in thread.
 //The only solution is to put work in new thread and feed back progress bar in main thread.
 
@@ -268,7 +275,7 @@ inline RGBA8 RGBA8FromQColor(QColor qc)
 #define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
 #define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 #define QCOLORV(var)    (var.value<QColor>( ))
 #define RGBA8V(var)     RGBA8FromQColor(var.value<QColor>( ))
 #else

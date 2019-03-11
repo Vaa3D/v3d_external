@@ -30,6 +30,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(CTest)
 
+if(APPLE)
+  if(DARWIN_MAJOR_VERSION GREATER_EQUAL 18)
+    #message("Mac OS Version = Mojave")
+    add_definitions(-DGL_SILENCE_DEPRECATION)
+  endif()
+endif()
+
 find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" ON )
@@ -40,11 +47,6 @@ set(USE_FFMPEG OFF CACHE BOOL "Whether to load 3D volumes from movies using liba
 if(USE_FFMPEG)
     add_definitions(-DUSE_FFMPEG)
     set(USE_X265 OFF CACHE BOOL "Whether to build FFMeg with x265 codec")
-endif()
-
-set(HIGH_BIT_DEPTH OFF CACHE BOOL "Whether to build X265 with 16-bit pixel depth")
-if(HIGH_BIT_DEPTH)
-  add_definitions(-DHIGH_BIT_DEPTH)
 endif()
 
 # HDF5
@@ -121,98 +123,76 @@ if(USE_FFMPEG)
         BUILD_IN_SOURCE 1
     )
     ExternalProject_Add(
-        Yasm-1-2-0
-        URL http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
-        URL_MD5 4cfc0686cf5350dd1305c4d905eb55a6
-        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/src
-        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/install
+        Nasm-2-13-03
+        GIT_REPOSITORY https://repo.or.cz/nasm.git
+        GIT_TAG nasm-2.13.03
+        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/src
+        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/nasm/install
         UPDATE_COMMAND ""
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure
-            --prefix=<INSTALL_DIR>
+        CONFIGURE_COMMAND "<SOURCE_DIR>/autogen.sh"
+        COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+        BUILD_COMMAND make
         BUILD_IN_SOURCE 1
     )
+
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
     set(x265_dir "${CMAKE_CURRENT_BINARY_DIR}/X265")
     set(extra_cflags "")
     set(extra_ldflags "")
     if(USE_X265)
-      set(bit_depth_flag "")
       set(X265_FLAGS "--enable-libx265")
-      if(HIGH_BIT_DEPTH)
-        set(bit_depth_flag "-DHIGH_BIT_DEPTH:BOOL=ON")
-      endif()
-      message("bit_depth_flag = ${bit_depth_flag}")
       ExternalProject_Add(
-          X265-1.7-extract
-          DEPENDS Yasm-1-2-0
-          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.7.tar.gz
+          X265-2.7
+          DEPENDS Nasm-2-13-03
+          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265-2.7.tar.gz
           SOURCE_DIR ${x265_dir}/src
           BINARY_DIR ${x265_dir}/build
           INSTALL_DIR ${x265_dir}/install
           UPDATE_COMMAND ""
-          BUILD_COMMAND ""
+          PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265.patch
           CONFIGURE_COMMAND ""
-          INSTALL_COMMAND ""
+          BUILD_COMMAND ""
       )
-      ExternalProject_Add(
-          X265-1.7
-          DEPENDS X265-1.7-extract
-          URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/x265_1.7.tar.gz
-          SOURCE_DIR ${x265_dir}/src/source
-          BINARY_DIR ${x265_dir}/build
-          INSTALL_DIR ${x265_dir}/install
-          CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_SHARED:BOOL=OFF ${bit_depth_flag} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR} -DYASM_EXECUTABLE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm${CMAKE_EXECUTABLE_SUFFIX}
-          UPDATE_COMMAND ""
-          DOWNLOAD_COMMAND ""
+      ExternalProject_Add_Step(X265-2.7 multilib
+        DEPENDEES           build
+        COMMAND           <SOURCE_DIR>/build/linux/multilib.sh ${CMAKE_CURRENT_BINARY_DIR}/nasm/install/bin/nasm${CMAKE_EXECUTABLE_SUFFIX}
+        WORKING_DIRECTORY <SOURCE_DIR>/build/linux
       )
+      ExternalProject_Add_StepTargets(X265-2.7 multilib)
+
+      set(X265_LIBRARY ${x265_dir}/install/lib/libx265_main${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
+
     endif()
     if(APPLE)
-        # trying to avoid weird _posix_memalign link errors
-        set(AV_CONFIG_FLAGS --enable-memalign-hack)
         # Avoid ___sincos_stret link error on Mac
-        set(extra_cflags "-D__STDC_CONSTANT_MACROS -mmacosx-version-min=10.8")
+        set(extra_cflags "-D__STDC_CONSTANT_MACROS")
       	set(extra_ldflags "-Wl,-headerpad_max_install_names ")
     endif()
     set(extra_ldflags "")
-    set(FFMPEG_PATCH_FILE "ffmpeg-2.5.1.patch")
+    set(FFMPEG_PATCH_FILE "ffmpeg-4.0.patch")
     if(NOT WIN32)
       set(extra_libs "-lstdc++ -ldl")
     else()
       set(FFMPEG_PATCH_FILE "ffmpeg-2.5.4-windows.patch")
     endif()
 
-    set(PKG_CONFIG_PATH "${x265_dir}/install/lib/pkgconfig")
     ExternalProject_Add(
-        FFMPEG-2.8
-        DEPENDS Yasm-1-2-0 X265-1.7 PKG-CONFIG-0-28
-        # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
-        # Use the exact distribution I developed against
-        #URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-HEAD-cab15f9.tar.gz
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-2.8.tgz
+        FFMPEG-4.0
+        DEPENDS Nasm-2-13-03 X265-2.7 PKG-CONFIG-0-28
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/ffmpeg-4.0.tgz
         SOURCE_DIR ${av_dir}/src
         BINARY_DIR ${av_dir}/build
         INSTALL_DIR ${av_dir}/install
         UPDATE_COMMAND ""
-        PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/${FFMPEG_PATCH_FILE}
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure
-            --prefix=<INSTALL_DIR>
-            --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
-            --pkg-config=${CMAKE_CURRENT_BINARY_DIR}/pkg-config/install/bin/pkg-config
-            --pkg-config-flags=--static
-            --disable-vda
-            --disable-iconv
-            --disable-libxcb
-            --disable-outdev=sdl
-            --enable-shared
-            --enable-gpl
-            --enable-nonfree
-            --enable-version3
-            --enable-runtime-cpudetect
-            ${X265_FLAGS}
-            --extra-cflags=${extra_cflags}
-            --extra-ldflags=${extra_ldflags}
-            --extra-libs=${extra_libs}
-            ${AV_CONFIG_FLAGS}
+        #PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/${FFMPEG_PATCH_FILE}
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/neuron_annotator/utility/build_ffmpeg.sh"
+                          --source_dir=<SOURCE_DIR> --install_dir=<INSTALL_DIR>
+                          --cmake_current_binary_dir=${CMAKE_CURRENT_BINARY_DIR}
+                          --x265_flags=${X265_FLAGS} --extra_cflags=${extra_cflags}
+                          --extra_ldflags=${extra_ldflags} --extra_libs=${extra_libs}
+                          --pkg_config_path=${x265_dir}/install/lib/pkgconfig
+                          --asm_exe=${CMAKE_CURRENT_BINARY_DIR}/nasm/install/bin/nasm${CMAKE_EXECUTABLE_SUFFIX}
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
     set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE INTERNAL "path to a library")
@@ -237,7 +217,7 @@ if(USE_FFMPEG)
       set(AVFILTER_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavfilter${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVCODEC_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavcodec${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(SWSCALE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswscale${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
-      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswresample{CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
+      set(SWRESAMPLE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libswresample${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
       set(AVUTIL_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win32/lib/libavutil${CMAKE_SHARED_LIBRARY_SUFFIX}.a CACHE INTERNAL "path to a library")
     else()
       set(AVDEVICE_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/common_lib/ffmpeg-2.5.2-win64/lib/avdevice.lib CACHE INTERNAL "path to a library")
@@ -286,38 +266,33 @@ if(USE_HDF5)
     include_directories(${HDF5_INCLUDE_DIR})
 endif()
 
-# search for Qt4
-if (NOT FORCE_QT4)
-   find_package(Qt5Core CONFIG QUIET)
-   if (Qt5Core_FOUND)
-       message(STATUS "Using qt5")
-       # go on with other packages
-       find_package(Qt5 CONFIG REQUIRED Widgets Xml Network OpenGL Concurrent)
+# search for Qt
+IF (DESIRED_QT_VERSION MATCHES 5)
+  find_package(Qt5 COMPONENTS Core Widgets Xml Network OpenGL Concurrent REQUIRED)
 
-       macro(qt_use_modules)
-            qt5_use_modules(${ARGN})
-       endmacro()
+   macro(qt_use_modules)
+        qt5_use_modules(${ARGN})
+   endmacro()
 
-       macro(qt_wrap_ui)
-           qt5_wrap_ui(${ARGN})
-       endmacro()
+   macro(qt_wrap_ui)
+       qt5_wrap_ui(${ARGN})
+   endmacro()
 
-       macro(qt_add_resources)
-           qt5_add_resources(${ARGN})
-       endmacro()
+   macro(qt_add_resources)
+       qt5_add_resources(${ARGN})
+   endmacro()
 
-       macro(qt_add_translation)
-           qt5_add_translation(${ARGN})
-       endmacro()
+   macro(qt_add_translation)
+       qt5_add_translation(${ARGN})
+   endmacro()
 
-       add_definitions(-DUSE_Qt5)
-       include_directories( ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Network_INCLUDE_DIRS}
-                            ${Qt5Xml_INCLUDE_DIRS} ${Qt5OpenGL_INCLUDE_DIRS}
-                            ${Qt5Concurrent_INCLUDE_DIRS})
-  endif()
+   add_definitions(-DUSE_Qt5)
+   include_directories( ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Network_INCLUDE_DIRS}
+                        ${Qt5Xml_INCLUDE_DIRS} ${Qt5OpenGL_INCLUDE_DIRS}
+                        ${Qt5Concurrent_INCLUDE_DIRS})
 endif()
 
-if(FORCE_QT4 OR NOT Qt5Core_FOUND)
+if(DESIRED_QT_VERSION MATCHES 4 OR NOT Qt5Core_FOUND)
   find_package(Qt4 REQUIRED)
   set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
   set(QT_USE_XML TRUE) # Oct-22-2010 CMB
@@ -342,68 +317,95 @@ if(FORCE_QT4 OR NOT Qt5Core_FOUND)
   include_directories( ${QT_INCLUDES} )
 endif()
 
-find_program(QT_QMAKE_EXECUTABLE qmake)
-execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
-                 OUTPUT_VARIABLE QT_DEMO_PREFIX
-                 OUTPUT_STRIP_TRAILING_WHITESPACE )
-if (Qt5Core_FOUND)
-  message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
-else()
-  message("QTVERSION = ${QTVERSION}")
-endif()
-message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
+set(BUILD_QT_DEMO_LIBRARY ON CACHE BOOL "Build rather than search for the qt shared demo library")
 
-find_path(QT_DEMOS_INCLUDE_DIR
-  arthurwidgets.h
-  PATHS
-        ${QT_DEMO_PREFIX}
-  PATH_SUFFIXES
-      	shared
-      	widgets/painting/shared
-  )
+if (BUILD_QT_DEMO_LIBRARY)
+  set(arthurwidgets_path "${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install")
 
-if(NOT Qt5Core_FOUND)
-  find_library(QT4_DEMOS_LIBRARY_RELEASE
-    demo_shared
-    HINTS
-          ${QT_LIBRARY_DIR}/..
-          /Developer/Examples/Qt
-    /usr/lib/qt4
-    /usr/local/Trolltech/Qt-${QTVERSION}
-    "C:/Qt/${QTVERSION}"
-    PATH_SUFFIXES
-    demos/shared
-    Demos/shared
-    demos/shared/release # Windows
-    )
-  find_library(QT4_DEMOS_LIBRARY_DEBUG
-    demo_shared
-    HINTS
-          ${QT_LIBRARY_DIR}/..
-          /Developer/Examples/Qt
-    /usr/lib/qt4
-    /usr/local/Trolltech/Qt-${QTVERSION}
-    "C:/Qt/${QTVERSION}"
-    PATH_SUFFIXES
-    demos/shared
-    Demos/shared
-    demos/shared/debug # Windows
-    )
-
-  set(QT4_DEMOS_LIBRARY "${QT4_DEMOS_LIBRARY_RELEASE}" CACHE PATH "")
-  if (MSVC AND QT4_DEMOS_LIBRARY_RELEASE AND QT4_DEMOS_LIBRARY_DEBUG)
-    set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
+  if (Qt5Core_FOUND)
+    set( QT_DEMO_LIBRARY_SOURCE "qt5_shared_demos.tar.gz")
+  else()
+    set( QT_DEMO_LIBRARY_SOURCE "qt_shared_demos.tar.gz")
   endif()
-else()
-  set(arthurwidgets_path "${QT_DEMOS_INCLUDE_DIR}/")
-endif()
 
-message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
-
-if(NOT QT_DEMOS_INCLUDE_DIR)
-  message(FATAL "You need to install the Qt demo files")
+  find_program(QT_QMAKE_EXECUTABLE qmake)
+  ExternalProject_Add(
+      ARTHURWIDGETS
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/common_lib/src_packages/${QT_DEMO_LIBRARY_SOURCE}
+      SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/src
+      INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/qt_shared/install
+      UPDATE_COMMAND ""
+      CONFIGURE_COMMAND ${QT_QMAKE_EXECUTABLE}
+      BUILD_IN_SOURCE 1
+  )
+  include_directories(${arthurwidgets_path})
+  set(QT4_DEMOS_LIBRARY ${arthurwidgets_path}/libdemo_shared${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE INTERNAL "path")
 else()
-  include_directories(${QT_DEMOS_INCLUDE_DIR} ${QT_DEMO_PREFIX})
+  find_program(QT_QMAKE_EXECUTABLE qmake)
+  execute_process( COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_DEMOS
+                   OUTPUT_VARIABLE QT_DEMO_PREFIX
+                   OUTPUT_STRIP_TRAILING_WHITESPACE )
+  if (Qt5Core_FOUND)
+    message("QTVERSION = ${Qt5_VERSION_MAJOR}.${Qt5_VERSION_MINOR}")
+  else()
+    message("QTVERSION = ${QTVERSION}")
+  endif()
+  message("QT_DEMO_PREFIX = ${QT_DEMO_PREFIX}")
+
+  find_path(QT_DEMOS_INCLUDE_DIR
+    arthurwidgets.h
+    PATHS
+          ${QT_DEMO_PREFIX}
+    PATH_SUFFIXES
+        	shared
+        	widgets/painting/shared
+    )
+
+  if(NOT Qt5Core_FOUND)
+    find_library(QT4_DEMOS_LIBRARY_RELEASE
+      demo_shared
+      HINTS
+            ${QT_LIBRARY_DIR}/..
+            /Developer/Examples/Qt
+      /usr/lib/qt4
+      /usr/local/Trolltech/Qt-${QTVERSION}
+      "C:/Qt/${QTVERSION}"
+      PATH_SUFFIXES
+      demos/shared
+      Demos/shared
+      demos/shared/release # Windows
+      )
+    find_library(QT4_DEMOS_LIBRARY_DEBUG
+      demo_shared
+      HINTS
+            ${QT_LIBRARY_DIR}/..
+            /Developer/Examples/Qt
+      /usr/lib/qt4
+      /usr/local/Trolltech/Qt-${QTVERSION}
+      "C:/Qt/${QTVERSION}"
+      PATH_SUFFIXES
+      demos/shared
+      Demos/shared
+      demos/shared/debug # Windows
+      )
+
+    set(QT4_DEMOS_LIBRARY "${QT4_DEMOS_LIBRARY_RELEASE}" CACHE PATH "")
+    if (MSVC AND QT4_DEMOS_LIBRARY_RELEASE AND QT4_DEMOS_LIBRARY_DEBUG)
+      set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
+    endif()
+  else()
+    set(arthurwidgets_path "${QT_DEMOS_INCLUDE_DIR}/")
+  endif()
+
+  add_custom_target( qt_demos DEPENDS ${QT4_DEMOS_LIBRARY} )
+
+  message("QT_DEMOS_INCLUDE_DIR = ${QT_DEMOS_INCLUDE_DIR}")
+
+  if(NOT QT_DEMOS_INCLUDE_DIR)
+    message(FATAL "You need to install the Qt demo files")
+  else()
+    include_directories(${QT_DEMOS_INCLUDE_DIR} ${QT_DEMO_PREFIX})
+  endif()
 endif()
 
 # Define __NAWEBSERVICE__ symbol -D__NAWEBSERVICE__

@@ -21,13 +21,11 @@
 
 #include "mainwindow.h"
 
-
 struct Agent {
 	QString name;
 	bool isItSelf;
 	int colorType;
 	float position[16];
-
 };
 
 
@@ -39,9 +37,11 @@ enum ModelControlR
 	m_markMode,
     m_delmarkMode,
 	m_splitMode,
+	m_insertnodeMode
 };
 enum ModeControlSettings
 {
+	
 	_donothing = 0,
 	_TeraShift,
 	_TeraZoom,
@@ -53,7 +53,22 @@ enum ModeControlSettings
 	_Freeze,
 	_LineWidth,
 	_AutoRotate,
-	_ResetImage
+	_ResetImage,
+	_RGBImage,
+	_MovetoCreator
+};
+enum RGBImageChannel
+{
+	channel_rgb = 1,
+	channel_r,
+	channel_g,
+	channel_b,
+
+};
+enum FlashType
+{
+	noflash = 1,
+	line,
 };
 // int global_padm_modeGrip_L = _donothing;//liqi
 // int global_padm_modeGrip_R = m_drawMode;
@@ -83,6 +98,25 @@ private:
 	GLsizei m_unVertexCount;
 	std::string m_sModelName;
 };
+template<class T>
+class MinMaxOctree
+{
+public:
+	MinMaxOctree(int width, int height, int depth,int step);
+	~MinMaxOctree();
+	void build(T *volumeData, int volumeWidth, int volumeHeight, int volumeDepth);
+	int getWidth() { return width; }
+	int getHeight() { return height; }
+	int getDepth() { return depth; }
+	T* GetData() { return data; }
+private:
+	T *data;
+	int width;
+	int height;
+	int depth;
+	int step;
+};
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
@@ -98,11 +132,14 @@ public:
 
 	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
     QString NT2QString(); // prepare the message to be sent from currentNT.
+	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z);
+	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
+	//bool FlashStuff(FlashType type,XYZ coords);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
 	bool HandleOneIteration();//used in collaboration mode 
 	QString getHMDPOSstr();//get current HMD position, and prepare the message to be sent to server
 	void SetupCurrentUserInformation(string name, int typeNumber);
-	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users
+	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
 	bool DeleteSegment(QString segName);
@@ -172,6 +209,8 @@ public:
 
 	MainWindow *mainwindow;
 	My4DImage *img4d;
+	static My4DImage *img4d_replace;
+	bool replacetexture;
 	QList<NeuronTree> *loadedNTList; // neuron trees brought to the VR view from the 3D view.	
 	NTL editableLoadedNTL;
 	NTL nonEditableLoadedNTL;
@@ -181,12 +220,14 @@ public:
 	QString delName;
 	QString markerPOS;
 	QString delmarkerPOS;
+	QString delcurvePOS;
 	QString dragnodePOS;
 	bool _call_assemble_plugin;
 	int postVRFunctionCallMode;
-	
 	XYZ teraflyPOS;
-
+	XYZ CmainVRVolumeStartPoint;
+	int CmainResIndex;
+	XYZ CollaborationCreatorPos;
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -198,6 +239,7 @@ private:
 	bool m_bShowMorphologyLine;
 	bool m_bShowMorphologySurface;
 	bool m_bControllerModelON;
+	bool m_bShowMorphologyMarker;
 
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
@@ -252,7 +294,14 @@ private: // OpenGL bookkeeping
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
 	static ModeControlSettings m_modeGrip_L;
-	bool m_translationMode;
+	static RGBImageChannel m_rgbChannel;
+	/*FlashType m_flashtype;
+	XYZ FlashCoords;
+	long m_FlashCount;
+	int m_Flashcolor;
+	int m_Flashoricolor;*/
+	bool singlechannel;
+	bool m_contrastMode;
 	bool m_rotateMode;
 	bool m_zoomMode;
 	bool m_autoRotateON;
@@ -289,6 +338,10 @@ private: // OpenGL bookkeeping
 	GLint m_nCtrTexMatrixLocation;
 	unsigned int m_uiControllerTexIndexSize;
 	
+	//volume rendering
+	//MinMaxOctree* minmaxOctree_step8;
+	//MinMaxOctree* minmaxOctree_step16;
+	//MinMaxOctree* minmaxOctree_step32;
 	//right controller shootingray VAO/VBO
 	GLuint m_iControllerRayVAO;
 	GLuint m_iControllerRayVBO;
@@ -428,6 +481,7 @@ public:
 	GLuint initTFF1DTex(const char* filename);
 	GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
 	GLuint initVol3DTex();
+	GLuint initVolOctree3DTex(int step,GLuint octreestep);
 	void initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight);
 	void SetupVolumeRendering();
 	bool CreateVolumeRenderingShaders();
@@ -438,6 +492,7 @@ public:
 	bool m_bHasImage4D;
 private:
 	
+	void * RGBImageTexData;
 	GLuint m_clipPatchVAO;
 	GLuint m_VolumeImageVAO;
 	Shader* backfaceShader;//back face, first pass
@@ -452,9 +507,26 @@ private:
 	GLuint g_texWidth;
 	GLuint g_texHeight;
 	GLuint g_volTexObj;
-
+	GLuint g_volTexObj_octree_8;
+	GLuint g_volTexObj_octree_16;
+	GLuint g_volTexObj_octree_32;	
+	GLuint g_volTexObj_octree_64;
+	GLuint g_volTexObj_octree_128;			
 	static float fBrightness;
 	static float fContrast;
+
+	double countsPerSecond;
+	__int64 CounterStart;
+
+	int frameCount;
+	int fps;
+
+	__int64 frameTimeOld;
+	double frameTime;
+
+	void StartTimer();
+	double GetTime();
+	double GetFrameTime();
 
 	static float iLineWid;
 	public:
@@ -463,8 +535,15 @@ private:
 	glm::vec3  shootingrayDir;
 	glm::vec3 shootingraycutPos;
 	glm::vec2 calculateshootingPadUV();
+	
 	bool showshootingray;
+	QString collaboration_creator_name;
+	template<typename T>
+	void HelpFunc_createOctreetexture(int step);
+	void bindTexturePara();
 };
+
+//Help Function
 
 
 #endif

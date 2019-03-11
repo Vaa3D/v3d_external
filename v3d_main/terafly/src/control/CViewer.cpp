@@ -352,7 +352,11 @@ void CViewer::show()
                 PMain::getInstance()->setOverview(true);
             }
         }
+#if defined(USE_Qt5)
+        this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+#else
         this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+#endif
         Vaa3D_rotationchanged(0);
 
         // saving subvol spinboxes state ---- Alessandro 2013-04-23: not sure if this is really needed
@@ -701,64 +705,132 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
 			
 			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-			if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
-			{
+
+            if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
+            {
                 XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
-				newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
-			}
-			// --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
-			else
-			{
-				XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
-				XYZ convertedSWC;
-				convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
-				QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
-				QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
-				float distSqr = 100; // <======= change distance threshold parameter here
-				float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
-				cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
+                if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
+                {
+                    float xsign = point.x - (volH1-volH0)/2;
+                    xsign /= abs(xsign);
 
-				long int count = 0;
-				for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
-				{
-					++count;
-					if (count % 1000 == 0) cout << ".";
-					float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
-					if (currDistSqr < distSqr)
-					{
-						//cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
-						//cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
+                    float ysign = point.y - (volV1-volV0)/2;
+                    ysign /= abs(ysign);
+
+                    float zsign = point.z - (volD1-volD0)/2;
+                    zsign /= abs(zsign);
+
+                    newViewer(point.x + xsign*(volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
+                              point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
+                              point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
+                              volResIndex, volT0, volT1);
+                }else
+                    newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+            }
+            // --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
+            else
+            {
+				// ----------------- The following is intended to solve erroneous zoomed-in block when mouse is clicked outside the image cube. ---------------------------
+				// ----------------- The original approach has been disabled. (Ln 739 - Ln 775), only used when double-click event is far from the nearest SWC node ------- 
+				// ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
+				NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
+				double dist;
+				V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+				cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
+				cout << " === distance: " << dist << endl;
+				// --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+                /*XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+                XYZ convertedSWC;
+                convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
+                QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
+                QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
+                float distSqr = 100000000; // <======= change distance threshold parameter here
+                float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
+                cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
+
+                long int count = 0;
+                for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
+                {
+                    ++count;
+                    if (count % 1000 == 0) cout << ".";
+                    float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
+                    if (currDistSqr < distSqr)
+                    {
+                        //cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
+                        //cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
+                        
 						distSqr = currDistSqr;
-						convertedSWC.x = it->x;
-						convertedSWC.y = it->y;
-						convertedSWC.z = it->z;
-						selectedSWCX = globalSWCIt->x;
-						selectedSWCY = globalSWCIt->y;
-						selectedSWCZ = globalSWCIt->z;
+                        convertedSWC.x = it->x;
+                        convertedSWC.y = it->y;
+                        convertedSWC.z = it->z;
+                        selectedSWCX = globalSWCIt->x;
+                        selectedSWCY = globalSWCIt->y;
+                        selectedSWCZ = globalSWCIt->z;
+                    }
+
+                    ++globalSWCIt;
+                }
+                cout << endl << "  SWC node examination done." << endl;
+				cout << " === original mouse event x: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
+                cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
+                cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
+				cout << " === converted SWC node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
+				cout << " === nearest distance to mouse click: " << distSqr << endl;*/
+		
+                if (dist > 100)
+                {
+                    cout << "out of nearest SWC search range" << endl;
+					XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+                    if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
+                    {
+                        float xsign = point.x - (volH1-volH0)/2;
+                        xsign /= abs(xsign);
+
+                        float ysign = point.y - (volV1-volV0)/2;
+                        ysign /= abs(ysign);
+
+                        float zsign = point.z - (volD1-volD0)/2;
+                        zsign /= abs(zsign);
+
+                        newViewer(point.x + xsign*(volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
+                                  point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
+                                  point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
+                                  volResIndex, volT0, volT1);
+                    }
+					else
+					{
+						//cout << point.x << " " << point.y << " " << point.z << endl;
+						newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
 					}
+                }
+                else
+                {
+                    cout << "using nearest SWC node:" << endl;
+                    //cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
+                    XYZ loc;
+					loc.x = treePtr->listNeuron.at(index).x; loc.y = treePtr->listNeuron.at(index).y; loc.z = treePtr->listNeuron.at(index).z;
+                    if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
+                    {
+                        float xsign = loc.x - (volH1-volH0)/2;
+                        xsign /= abs(xsign);
 
-					++globalSWCIt;
-				}
-				cout << endl << "  SWC node examination done." << endl;
-				cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
-				cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
+                        float ysign = loc.y - (volV1-volV0)/2;
+                        ysign /= abs(ysign);
 
-				if (distSqr >= 100)
-				{
-					cout << "out of nearest SWC search range" << endl;
-					XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
-					newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
-				}
-				else
-				{
-					cout << "using nearest SWC node:" << endl;
-					cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
-					XYZ loc;
-					loc.x = convertedSWC.x; loc.y = convertedSWC.y; loc.z = convertedSWC.z;
-					newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
-				}
-			}
-			// --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
+                        float zsign = loc.z - (volD1-volD0)/2;
+                        zsign /= abs(zsign);
+
+                        newViewer(loc.x + xsign*(volH1-volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
+                                  loc.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
+                                  loc.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
+                                  volResIndex, volT0, volT1);
+                    }
+					else newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
+                }
+            }
+            // --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
+
 
             return true;
         }
@@ -868,11 +940,11 @@ void CViewer::receiveData(
 
                 // copy loaded data into Vaa3D viewer
                 timer.start();
-                uint32 img_dims[5]       = {volH1-volH0,        volV1-volV0,        volD1-volD0,        nchannels,  volT1-volT0+1};
-                uint32 img_offset[5]     = {data_s[0]-volH0,    data_s[1]-volV0,    data_s[2]-volD0,    0,          data_s[4]-volT0 };
-                uint32 new_img_dims[5]   = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
-                uint32 new_img_offset[5] = {0,                  0,                  0,                  0,          0               };
-                uint32 new_img_count[5]  = {data_c[0],          data_c[1],          data_c[2],          data_c[3],  data_c[4]       };
+                uint32 img_dims[5]       = {static_cast<uint32>(volH1-volH0),        static_cast<uint32>(volV1-volV0),        static_cast<uint32>(volD1-volD0),        static_cast<uint32>(nchannels),  static_cast<uint32>(volT1-volT0+1)   };
+                uint32 img_offset[5]     = {static_cast<uint32>(data_s[0]-volH0),    static_cast<uint32>(data_s[1]-volV0),    static_cast<uint32>(data_s[2]-volD0),    static_cast<uint32>(0),          static_cast<uint32>(data_s[4]-volT0) };
+                uint32 new_img_dims[5]   = {static_cast<uint32>(data_c[0]),          static_cast<uint32>(data_c[1]),          static_cast<uint32>(data_c[2]),          static_cast<uint32>(data_c[3]),  static_cast<uint32>(data_c[4])       };
+                uint32 new_img_offset[5] = {static_cast<uint32>(0),                  static_cast<uint32>(0),                  static_cast<uint32>(0),                  static_cast<uint32>(0),          static_cast<uint32>(0)               };
+                uint32 new_img_count[5]  = {static_cast<uint32>(data_c[0]),          static_cast<uint32>(data_c[1]),          static_cast<uint32>(data_c[2]),          static_cast<uint32>(data_c[3]),  static_cast<uint32>(data_c[4])       };
                 CImageUtils::upscaleVOI(data, new_img_dims, new_img_offset, new_img_count,
                         view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset);
                 qint64 elapsedTime = timer.elapsed();
@@ -1142,10 +1214,10 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-            if(dx != -1 && dy != -1 && dz != -1)
-                cVolume->setVoi(0, resolution, y-dy, y+dy, x-dx, x+dx, z-dz, z+dz, t0, t1);
-            else
-                cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
+			if (dx != -1 && dy != -1 && dz != -1)
+				cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+			else
+				cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
         }
         catch(RuntimeException &ex)
         {
@@ -1447,11 +1519,11 @@ throw (RuntimeException)
             scalx = scaly = scalz = scaling;
         }
 
-        uint32 buf_data_dims[5]   = {volH1-volH0, volV1-volV0, volD1-volD0, nchannels, volT1-volT0+1};
-        uint32 img_dims[5]        = {xDimInterp,  yDimInterp,  zDimInterp,  nchannels, t1-t0+1};
-        uint32 buf_data_offset[5] = {x0a-volH0,   y0a-volV0,   z0a-volD0,   0,         t0a-volT0};
-        uint32 img_offset[5]      = {x0a-x0,      y0a-y0,      z0a-z0,      0,         t0a-t0};
-        uint32 buf_data_count[5]  = {x1a-x0a,     y1a-y0a,     z1a-z0a,     0,         t1a-t0a+1};
+        uint32 buf_data_dims[5]   = {static_cast<uint32>(volH1-volH0), static_cast<uint32>(volV1-volV0), static_cast<uint32>(volD1-volD0), static_cast<uint32>(nchannels), static_cast<uint32>(volT1-volT0+1)};
+        uint32 img_dims[5]        = {static_cast<uint32>(xDimInterp),  static_cast<uint32>(yDimInterp),  static_cast<uint32>(zDimInterp),  static_cast<uint32>(nchannels), static_cast<uint32>(t1-t0+1)};
+        uint32 buf_data_offset[5] = {static_cast<uint32>(x0a-volH0),   static_cast<uint32>(y0a-volV0),   static_cast<uint32>(z0a-volD0),   static_cast<uint32>(0),         static_cast<uint32>(t0a-volT0)};
+        uint32 img_offset[5]      = {static_cast<uint32>(x0a-x0),      static_cast<uint32>(y0a-y0),      static_cast<uint32>(z0a-z0),      static_cast<uint32>(0),         static_cast<uint32>(t0a-t0)};
+        uint32 buf_data_count[5]  = {static_cast<uint32>(x1a-x0a),     static_cast<uint32>(y1a-y0a),     static_cast<uint32>(z1a-z0a),     static_cast<uint32>(0),         static_cast<uint32>(t1a-t0a+1)};
 
         CImageUtils::upscaleVOI(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), buf_data_dims, buf_data_offset, buf_data_count, img, img_dims, img_offset, tf::xyz<int>(scalx, scaly, scalz));
     }
@@ -1488,9 +1560,9 @@ throw (tf::RuntimeException)
     if(t1 == -1)
         t1 = volT1;
 
-    uint32 img_dims[5]   = {volH1-volH0, volV1-volV0, volD1-volD0, nchannels, volT1-volT0+1};
-    uint32 img_offset[5] = {x0   -volH0, y0   -volV0, z0   -volD0, 0,         t0-volT0};
-    uint32 img_count[5]  = {x1   -x0,    y1   -y0,    z1   -z0,    0,         t1-t0+1};
+    uint32 img_dims[5]   = {static_cast<uint32>(volH1-volH0), static_cast<uint32>(volV1-volV0), static_cast<uint32>(volD1-volD0), static_cast<uint32>(nchannels), static_cast<uint32>(volT1-volT0+1)};
+    uint32 img_offset[5] = {static_cast<uint32>(x0   -volH0), static_cast<uint32>(y0   -volV0), static_cast<uint32>(z0   -volD0), static_cast<uint32>(0),         static_cast<uint32>(t0-volT0)};
+    uint32 img_count[5]  = {static_cast<uint32>(x1   -x0),    static_cast<uint32>(y1   -y0),    static_cast<uint32>(z1   -z0),    static_cast<uint32>(0),         static_cast<uint32>(t1-t0+1)};
 
     return CImageUtils::mip(view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset, img_count, dir, to_BGRA, alpha);
 }
@@ -2661,6 +2733,17 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             }
         }       
     }
+	else if(_direction == 9)
+    {
+        // forcezoomin
+        if(view3DWidget)
+        {
+            PMain::getInstance()->resumeVR = true;
+			XYZ point = view3DWidget->CollaborationCreatorPos;
+            qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
+            newViewer(point.x, point.y, point.z, volResIndex, volT0, volT1);    
+        }    
+    }
 #endif
 }
 
@@ -2922,6 +3005,28 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->checkBox_OrthoView->setChecked(src->checkBox_OrthoView->isChecked());
 
     dst->checkBox_surfZLock->setChecked(src->checkBox_surfZLock->isChecked());
+
+    if(src->xcLock->isChecked())
+    {
+        dst->xcmaxSlider->setValue(src->xcmaxSlider->value());
+        dst->xcminSlider->setValue(src->xcminSlider->value());
+        dst->xcLock->setChecked(true);
+    }
+
+    if(src->ycLock->isChecked())
+    {
+        dst->ycmaxSlider->setValue(src->ycmaxSlider->value());
+        dst->ycminSlider->setValue(src->ycminSlider->value());
+        dst->ycLock->setChecked(true);
+    }
+
+    if(src->zcLock->isChecked())
+    {
+        dst->zcmaxSlider->setValue(src->zcmaxSlider->value());
+        dst->zcminSlider->setValue(src->zcminSlider->value());
+        dst->zcLock->setChecked(true);
+    }
+
     //propagating skeleton mode and line width
     dst->getGLWidget()->getRenderer()->lineType = src->getGLWidget()->getRenderer()->lineType;
     dst->getGLWidget()->getRenderer()->lineWidth = src->getGLWidget()->getRenderer()->lineWidth;

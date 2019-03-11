@@ -94,6 +94,7 @@ Renderer_gl1::Renderer_gl1(void* widget)
 	this->isTera = false; // added by MK, 2018 May, for arranging segments before entering Rnderer_gla::loopCheck
 	this->isLoadFromFile = false;
 	this->pressedShowSubTree = false;
+	this->fragmentTrace = false;
 
 	qDebug("  Renderer_gl1::Renderer_gl1");
 	init_members();
@@ -940,7 +941,7 @@ void Renderer_gl1::toggleTex2D3D()
 	tryTex3D = !tryTex3D;
 	//qDebug( "	tryTex3D = %d", tryTex3D);
 	try	{
-		PROGRESS_DIALOG( QObject::tr((tryTex3D)? "Try Texture 3D Format": "Try Texture 2D Format"), widget);
+		PROGRESS_DIALOG( ((tryTex3D)? "Try Texture 3D Format": "Try Texture 2D Format"), widget);
 		PROGRESS_PERCENT(30);
 
 		loadVol();
@@ -954,7 +955,7 @@ void Renderer_gl1::toggleTexCompression()
 	tryTexCompress = !tryTexCompress;
 	//qDebug( "	tryTexCompress = %d", tryTex3D);
 	try	{
-		PROGRESS_DIALOG( QObject::tr((tryTexCompress)? "Try Texture Compression Format": "Try Texture UnCompression Format"), widget);
+		PROGRESS_DIALOG( ((tryTexCompress)? "Try Texture Compression Format": "Try Texture UnCompression Format"), widget);
 		PROGRESS_PERCENT(30);
 
 		loadVol();
@@ -2328,7 +2329,11 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
         listAct.append(actClearAllSelections = new QAction("clear all selections", w));
         listAct.append(actClearAllNeurons = new QAction("clear all contents", w));
 
+#if defined(USE_Qt5)
+        if (w) w->update(); //for highlight object
+#else
         if (w) w->updateGL(); //for highlight object
+#endif        
 
         QMenu menu;
         foreach (QAction* a, listAct) {  menu.addAction(a); }
@@ -2528,7 +2533,11 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 
             }
 
+#if defined(USE_Qt5)
+            if (w) w->update(); //for highlight object
+#else
             if (w) w->updateGL(); //for highlight object
+#endif            
 
             QMenu menu;
             foreach (QAction* a, listAct) {  menu.addAction(a); }

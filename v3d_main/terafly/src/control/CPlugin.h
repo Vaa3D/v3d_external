@@ -33,7 +33,7 @@
 #define __TERAFLY_C_PLUGIN_H__
 
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 #include <QWidget>
 #else
 #include <QtGui>
@@ -913,6 +913,10 @@ class terafly::PluginInterface
         // get currently displayed image (readonly)
         static const Image4DSimple* getImage();
 
+        // get currently displayed resolution LMG 13-12-2018 for keeping info in eswc
+        static int getRes();
+        static int getallRes();
+
         // get image metadata from the given image file/folder path
         static size_t getXDim(const std::string & path);
         static size_t getYDim(const std::string & path);
@@ -930,6 +934,8 @@ class terafly::PluginInterface
 
         static std::string version(){ return "1.1.0"; }
         static bool setImage(size_t x, size_t y, size_t z);
+
+		static void drawEditInfo(int editNum);
 
 };
 

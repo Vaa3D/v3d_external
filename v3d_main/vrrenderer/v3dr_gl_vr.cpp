@@ -38,7 +38,6 @@
 #ifndef _countof
 #define _countof(x) (sizeof(x)/sizeof((x)[0]))
 #endif
-
 #define GL_ERROR() checkForOpenGLError(__FILE__, __LINE__)
 
 typedef vector<Point*> Segment;
@@ -48,7 +47,6 @@ typedef vector<Point*> Tree;
 #ifndef MAX
 #define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
 #endif
-
 int checkForOpenGLError(const char* file, int line)
 {
     // return 1 if an OpenGL error occured, 0 otherwise.
@@ -75,14 +73,17 @@ float CMainApplication::fBrightness = 0.9;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
+My4DImage *CMainApplication::img4d_replace = nullptr;
 ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
 ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
+RGBImageChannel CMainApplication::m_rgbChannel = channel_rgb;
 bool CMainApplication::showshootingPad = false;
 #define dist_thres 0.01
 #define connection_rigourous 0.5
 #define default_radius 0.618
-#define drawing_step_size 5  //the larger, the fewer SWC nodes
-
+#define drawing_step_size 2  //the larger, the fewer SWC nodes
+//LMG for Windows UTC Timestamp 15/10/2018
+#define timegm _mkgmtime
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
 const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
@@ -704,10 +705,11 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_strPoseClasses("")
 	, m_bShowMorphologyLine(true)
 	, m_bShowMorphologySurface(false)
+	, m_bShowMorphologyMarker(true)
 	, m_bControllerModelON(true)
 	, m_modeControlTouchPad_R(0)
 	, m_modeControlGrip_R(0)
-	, m_translationMode (false)
+	, m_contrastMode (false)
 	, m_rotateMode (false)
 	, m_zoomMode (false)
 	, m_autoRotateON (false)
@@ -732,6 +734,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
 	, showshootingray(false)
+	, replacetexture(false)
 	//, font_VR (NULL)
 
 {
@@ -837,8 +840,20 @@ bool CMainApplication::BInit()
 
 	int nWindowPosX = 100;
 	int nWindowPosY = 100;
-	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	//fps test liqi
+	 countsPerSecond = 0.0;
+	 CounterStart = 0;
 
+	 frameCount = 0;
+	 fps = 0;
+
+	 frameTimeOld = 0;
+	 frameTime;
+
+	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	/*m_flashtype = noflash;
+	m_Flashcolor = 0;
+	m_FlashCount = 0;*/
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
 	//SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY );
@@ -854,7 +869,7 @@ bool CMainApplication::BInit()
 
 
 
-	m_pCompanionWindow = SDL_CreateWindow( "Vaa3D VR", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
+	m_pCompanionWindow = SDL_CreateWindow( "TeraVR", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
 	if (m_pCompanionWindow == NULL)
 	{
 		printf( "%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
@@ -890,7 +905,7 @@ bool CMainApplication::BInit()
 	m_strDisplay = GetTrackedDeviceString( m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String );
 
 	//std::string strWindowTitle = "Vaa3D VR - " + m_strDriver + " " + m_strDisplay;
-	std::string strWindowTitle = "Vaa3D VR - Initializing";
+	std::string strWindowTitle = "TeraVR - Initializing";
 	SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 
 	
@@ -906,7 +921,6 @@ bool CMainApplication::BInit()
 	// m_modeGrip_L = global_padm_modeGrip_L;
 	delName = "";
 	dragnodePOS="";
-
 	loadedNTCenter = glm::vec3(0);
 	vertexcount = swccount = 0;
 	pick_node = 0;
@@ -943,7 +957,7 @@ bool CMainApplication::BInit()
 	ctrSphereColor[2] =  neuron_type_color[color_id][2] /255.0;
 
 	teraflyPOS = 0;
-
+	CollaborationCreatorPos = 0;
 	SDL_StartTextInput();
 	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
@@ -980,7 +994,6 @@ bool CMainApplication::BInitGL()
 		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	}
-	
 	if( !CreateAllShaders() )
 		return false;
 	loadedNT_merged.listNeuron.clear();
@@ -1038,6 +1051,7 @@ bool CMainApplication::BInitGL()
 
 	if (m_bHasImage4D) 
 	{
+
 		SetupVolumeRendering();
 
 		QList <LocationSimple> & listLoc = img4d->listLandmarks;
@@ -1088,7 +1102,6 @@ void CMainApplication::Shutdown()
 	//remeber last Grip choice
 	// global_padm_modeGrip_L = m_modeGrip_L;
 	// global_padm_modeGrip_R = m_modeGrip_R;
-
 	//reverse the normalization (so that the next VR session can normalize correctly)
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z) ); 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1.0f/m_globalScale,1.0f/m_globalScale,1.0f/m_globalScale));
@@ -1134,8 +1147,7 @@ void CMainApplication::Shutdown()
 		// img4d->update_3drenderer_neuron_view();
 
 	}
-	if(drawnMarkerList.size()>0)
-	{
+	//if(drawnMarkerList.size()>0)//In all cases ,we should copy markerlist into img4d,liqi 2018_12_9
 		if (m_bHasImage4D)
 		{
 			img4d->listLandmarks.clear();
@@ -1146,9 +1158,7 @@ void CMainApplication::Shutdown()
 				S_tmp.color = mk.color;
 				img4d->listLandmarks.append(S_tmp);		
 			}
-			qDebug()<<"QUIT! NOW listLandmarks.size is "<<img4d->listLandmarks.size();
 		}
-	}
 
 	bIsUndoEnable = false;
 	bIsRedoEnable = false;
@@ -1306,6 +1316,8 @@ void CMainApplication::Shutdown()
 
 		if(ctrSphere)
 			delete ctrSphere;
+
+			
 		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
 		//for (int i=0;i<sketch_spheres.size();i++) delete sketch_spheres[i];
@@ -1419,6 +1431,7 @@ bool CMainApplication::HandleInput()
 			{
 				m_bShowMorphologyLine = !m_bShowMorphologyLine;
 				m_bShowMorphologySurface = !m_bShowMorphologySurface;
+				m_bShowMorphologyMarker = !m_bShowMorphologyMarker;
 			}
 		}
 	}//*/
@@ -1461,6 +1474,7 @@ bool CMainApplication::HandleInput()
 			{
 				if(m_modeGrip_R==m_drawMode)
 				{
+
 					//this part is for building a neuron tree to further save as SWC file
 					if (vertexcount%drawing_step_size ==0)//use vertexcount to control point counts in a single line 
 					//each #drawing_step_size frames render a SWC node
@@ -1485,6 +1499,7 @@ bool CMainApplication::HandleInput()
 						SL0.r = default_radius; //set default radius 1
 						SL0.type = m_curMarkerColorType;//set default type 11:ice
 						SL0.n = currentNT.listNeuron.size()+1;
+						SL0.creatmode = 618;
 						if((swccount==1)||(vertexcount == 0))
 						{
 							SL0.pn = -1;//for the first point of each lines , it's parent must be -1	
@@ -1526,15 +1541,15 @@ bool CMainApplication::HandleInput()
 								NeuronTree InputNT;
 								InputNT = tempNT;
 								int iter_number=1;
-								for(int i=0;i<iter_number;i++)
-								{
-									NeuronTree OutputNT;
-									RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
-									//convergent = CompareDist(InputNT, OutputNT);
-									InputNT.listNeuron.clear();
-									InputNT.hashNeuron.clear();
-									InputNT = OutputNT;
-								}
+								//for(int i=0;i<iter_number;i++)  // liqi  Find matching line segments more than once, resulting in inaccurate results
+								//{
+								//	NeuronTree OutputNT;
+								//	RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
+								//	//convergent = CompareDist(InputNT, OutputNT);
+								//	InputNT.listNeuron.clear();
+								//	InputNT.hashNeuron.clear();
+								//	InputNT = OutputNT;
+								//}
 								currentNT.listNeuron.clear();
 								currentNT.hashNeuron.clear();
 								currentNT = InputNT;
@@ -1646,33 +1661,29 @@ bool CMainApplication::HandleInput()
 				bRet = true;
 				return bRet;
 				}//*/
-				if(0&&m_translationMode==true)//into translate mode
+				if(m_contrastMode==true)//into translate mode
 				{
-					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];
-					Vector4 direction(0,0,0,1);
+				if(m_fTouchPosY>0)
+				{
+					fContrast+=1;
+					if (fContrast>50)
+						fContrast = 50;
+					//fBrightness+= 0.01f;
+					//if(fBrightness>0.8f)
+					//	fBrightness = 0.8f;
+				}
+				else
+				{
+					fContrast-=1;
+					if (fContrast<1)
+						fContrast = 1;
+					//fBrightness-= 0.01f;
+					//if(fBrightness<0)
+					//	fBrightness = 0;
+				}
+				qDebug()<<"Constrast is "<<fContrast;
 
-					Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
-					Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
-					Vector4 direction_Y = end_Y - start_Y;
 
-					Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
-					Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
-					Vector4 direction_X = end_X - start_X;
-
-					if(fabs(m_fTouchPosX) > fabs(m_fTouchPosY)) //move across axis
-					{
-						if(m_fTouchPosX<0) direction = direction_X * -1;
-						else direction = direction_X;
-					} else //move along axis
-					{
-						if(m_fTouchPosY<0) direction = direction_Y * -1;
-						else direction = direction_Y;
-					}
-					direction = direction.normalize() * 0.01;
-
-					glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
-					//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
-					m_globalMatrix = temp_mat * m_globalMatrix;
 				}
 				else if(0&&m_rotateMode==true)//into ratate mode
 				{
@@ -1979,12 +1990,20 @@ void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 			for (int j = 0; j < 4; j++)
 			{
 				mat_HMD[k][j]=curAgents.at(i).position[k*4+j];
+				//qDebug()<<"mat_HMD"<<k<<j<<mat_HMD[k][j]<<" ";
 			}
 		}
 		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
-		glm::vec3 agentsPos=glm::vec3(posss.x,posss.y,posss.z);
+		XYZ convertPOS = ConvertGlobaltoLocalCoords(posss.x,posss.y,posss.z);
+		//qDebug()<<" get agent POS "<<convertPOS.x<<" "<<convertPOS.y<<" "<<convertPOS.z;
+		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
 		//agentsPos  means user's position in world, posss[3] will always be 1.
 		//later may need orientation information
+		if(curAgents[i].name == collaboration_creator_name)
+		{
+			//qDebug()<<collaboration_creator_name<<"converted pos";
+			CollaborationCreatorPos = convertPOS;
+		}
 		Agents_spheresPos.push_back(agentsPos);
 	}
 
@@ -2145,6 +2164,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// default:
 		// 	break;
 		// }
+		if(isOnline == false)
+		{
+			m_globalMatrix = glm::mat4();
+			SetupGlobalMatrix();
+		}
 	}
 
     if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(!showshootingray))
@@ -2169,6 +2193,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				m_bShowMorphologySurface = !m_bShowMorphologySurface;
 				m_bShowMorphologyLine = !m_bShowMorphologyLine;
+				m_bShowMorphologyMarker = !m_bShowMorphologyMarker;
 				if(m_bShowMorphologySurface)
 					qDebug()<<"m_bShowMorphologySurface ON";
 				else
@@ -2188,11 +2213,22 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		case _Freeze: // now temporarily used for brightness supression
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
+				//m_bFrozen is used to control texture
+				m_bFrozen = !m_bFrozen;
+
+				//this part is used to change image texture
+				/*if(!img4d_replace)
+				{
+					img4d_replace = new My4DImage;
+					img4d_replace->loadImage("C:/Users/SHU/Desktop/18454-1.v3draw");
+				}
+				else
+					replacetexture = !replacetexture;
 				
+				SetupVolumeRendering();*/
 				if (fBrightness > 0.5) fBrightness = 0.1;
 				else fBrightness = 0.9;
 				
-				//m_bFrozen = !m_bFrozen;
 				//if(m_bFrozen)
 				//	qDebug()<<"Freeze View ON";
 				//else
@@ -2202,26 +2238,26 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				break;
 			}
-		case _Contrast:
+		case _Contrast://contrast func is moved to right controller touch pad , grip button+/-
 			{
-				if(temp_x>0)
-				{
-					fContrast+=1;
-					if (fContrast>50)
-						fContrast = 50;
-					//fBrightness+= 0.01f;
-					//if(fBrightness>0.8f)
-					//	fBrightness = 0.8f;
-				}
-				else
-				{
-					fContrast-=1;
-					if (fContrast<1)
-						fContrast = 1;
-					//fBrightness-= 0.01f;
-					//if(fBrightness<0)
-					//	fBrightness = 0;
-				}
+				// if(temp_x>0)
+				// {
+				// 	fContrast+=1;
+				// 	if (fContrast>50)
+				// 		fContrast = 50;
+				// 	//fBrightness+= 0.01f;
+				// 	//if(fBrightness>0.8f)
+				// 	//	fBrightness = 0.8f;
+				// }
+				// else
+				// {
+				// 	fContrast-=1;
+				// 	if (fContrast<1)
+				// 		fContrast = 1;
+				// 	//fBrightness-= 0.01f;
+				// 	//if(fBrightness<0)
+				// 	//	fBrightness = 0;
+				// }
 				qDebug()<<"Constrast is "<<fContrast;
 				break;
 			}
@@ -2255,6 +2291,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					if (iLineWid<1)
 						iLineWid = 1;
 				}
+			
+				
+
 				break;
 			}
 		case _AutoRotate: //actually for auto-rotation
@@ -2365,6 +2404,57 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					m_globalMatrix = glm::mat4();
 					SetupGlobalMatrix();
 				}
+				break;
+			}
+		case _MovetoCreator:
+			{
+				if(isOnline == true)
+				{
+					qDebug()<<"didn't get creator pos";
+					if(CollaborationCreatorPos.x!=0&&CollaborationCreatorPos.y!=0&&CollaborationCreatorPos.z!=0)
+					{
+					qDebug()<<"get creator pos";						
+						teraflyPOS = XYZ(CollaborationCreatorPos.x,CollaborationCreatorPos.y,CollaborationCreatorPos.z);//liqi
+						postVRFunctionCallMode = 9;
+					}
+				}
+			}
+		case _RGBImage: //line width
+			{
+				if(temp_x>0)
+				{
+					switch(m_rgbChannel)
+					{
+					case channel_rgb:
+						{m_rgbChannel = channel_r;
+						break;}
+					case channel_r:
+						{m_rgbChannel = channel_g;break;}
+					case channel_g:
+						{m_rgbChannel = channel_b;break;}
+					case channel_b:
+						{m_rgbChannel = channel_rgb;break;}
+					default:
+						break;
+					}
+				}
+				else
+				{
+					switch(m_rgbChannel)
+					{
+					case channel_rgb:
+						{m_rgbChannel = channel_b;
+						break;}
+					case channel_r:
+						{m_rgbChannel = channel_rgb;break;}
+					case channel_g:
+						{m_rgbChannel = channel_r;break;}
+					case channel_b:
+						{m_rgbChannel = channel_g;break;}
+					default:
+						break;}
+				}
+				break;
 			}
 		default:
 			break;
@@ -2525,24 +2615,24 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		switch(m_modeControlTouchPad_R)
 		{
 		case 0:
-			m_translationMode=m_rotateMode=m_zoomMode = false;
+			m_contrastMode=m_rotateMode=m_zoomMode = false;
 			break;
 		case 1:
-			m_translationMode = true;
+			m_contrastMode = true;
 			m_rotateMode=m_zoomMode = false;
 			break;
 		case 2:
 			m_rotateMode = true;
-			m_translationMode=m_zoomMode = false;
+			m_contrastMode=m_zoomMode = false;
 			break;
 		case 3:
 			m_zoomMode = true;
-			m_translationMode=m_rotateMode = false;
+			m_contrastMode=m_rotateMode = false;
 			break;
 		default:
 			break;
 		}	
-		qDebug("m_modeControlTouchPad_R=%d,m_translationMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_translationMode,m_rotateMode,m_zoomMode);
+		qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
 	}
 		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&showshootingPad)	//detect trigger when menu show
 		{
@@ -2551,11 +2641,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				if(ShootingPadUV.x>=0&&ShootingPadUV.y >=0)
 					{
 						qDebug()<<ShootingPadUV.x<<ShootingPadUV.y<<"\n";
-						qDebug()<<"shoot it!";
+						//qDebug()<<"shoot it!";
 					}
 				else if(ShootingPadUV.x==-1&&ShootingPadUV.y==-1)
 					qDebug()<< "didn't shoot the Pad";
-				qDebug()<<showshootingPad;
+				//qDebug()<<showshootingPad;
 		}
 
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
@@ -2589,10 +2679,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 					if (tempNT.listNeuron.size()>0)
 					{
+						
 						// improve curve shape
 						NeuronTree InputNT;
 						InputNT = tempNT;
-						int iter_number=3;
+						int iter_number=1;
 						bool convergent = false;//todo:future may add this convergent func
 						for(int i=0;(convergent==false)&&(i<iter_number);i++)
 						{
@@ -2613,6 +2704,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						for(int i=0;i<currentNT.listNeuron.size();i++)
 						{
 							currentNT.listNeuron[i].r = 0.666;
+							currentNT.listNeuron[i].creatmode = 666;
 						}
 					}
 				}
@@ -2620,6 +2712,18 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				// if one of the endpoints of the newly drawn curve are near some existing curve with the given threshold,
 				// change the endpoint position slightly so that the new curve connects with the existing curve.
 				int autoConnected = -1;
+				time_t timer2;// set timestamp to all segments created,with or without virtual finger on
+				struct tm y2k = { 0 };
+				double seconds;
+				y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+				y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
+				time(&timer2);  /* get current time; same as: timer = time(NULL)  */
+				seconds = difftime(timer2, timegm(&y2k)); //Timestamp LMG 27/9/2018
+				qDebug("Timestamp at m_drawMode (VR) (seconds since January 1, 2000 in UTC): %.0f", seconds);
+				for(int i=0;i<currentNT.listNeuron.size();i++)
+				{
+					if (currentNT.listNeuron[i].timestamp == 0) currentNT.listNeuron[i].timestamp = seconds;
+				}
 				if(currentNT.listNeuron.size()>0)
 				{
 					NeuronSWC* beginNode = &currentNT.listNeuron.first();
@@ -2754,6 +2858,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
 				delName = "";
+				delcurvePOS  ="";
+				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				if(isOnline==false)	
 				{
@@ -2828,10 +2934,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
-		case m_splitMode:
-			{	
-
-
+		case m_insertnodeMode:
+			{
+				if(isOnline == false)
+				{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -2848,6 +2954,225 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
 				if (delName == "") break; //segment not found
+
+				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
+				{
+					QString NTname="";
+					NTname = sketchedNTList.at(i).name;
+					if(NTname==delName)
+					{
+						nearestNT=sketchedNTList.at(i);
+						nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+						break;
+					}
+				}
+				int switchinsertnode = 0;
+				NeuronTree NewNT;
+				int NewNTsize = nearestNT.listNeuron.size();
+				if(nearestNode==*nearestNT.listNeuron.begin())
+				{
+					switchinsertnode = 1;
+					NewNTsize += 1;
+				}
+				else if(nearestNode==nearestNT.listNeuron.back())
+				{
+					switchinsertnode = 2;
+					NewNTsize += 1;
+				}
+				else
+				{
+					switchinsertnode = 3;
+					NewNTsize += 2;
+				}
+				if(isOnline==false)	
+				{
+					NTL temp_NTL = sketchedNTList;
+					bool delerror = DeleteSegment(delName);
+					if(delerror==true)
+					{
+						bIsUndoEnable = true;
+						if(vUndoList.size()==MAX_UNDO_COUNT)
+						{
+							vUndoList.erase(vUndoList.begin());
+						}
+						vUndoList.push_back(temp_NTL);
+						if (vRedoList.size()> 0)
+							vRedoList.clear();
+						bIsRedoEnable = false;
+						vRedoList.clear();					
+						qDebug()<<"Segment Deleted.";
+					}
+					else
+						qDebug()<<"Cannot Find the Segment ";
+				}
+
+				//set newNTsize after insert node
+				//crete NewNT's topology
+				for(int k=0;k<NewNTsize;k++)
+				{
+
+					NeuronSWC tempSWC;
+					if(k==0)//insert first node
+						{
+							tempSWC.n=1;
+							tempSWC.pn=-1;
+							tempSWC.x=0;
+							tempSWC.y=0;
+							tempSWC.z=0;
+							tempSWC.type = 2;
+							tempSWC.creatmode = nearestNT.listNeuron[0].creatmode;
+							tempSWC.timestamp = nearestNT.listNeuron[0].timestamp;
+							NewNT.listNeuron.append(tempSWC);
+        					NewNT.hashNeuron.insert(tempSWC.n, NewNT.listNeuron.size()-1);
+							continue;
+						}
+					tempSWC.n=k+1;
+					tempSWC.pn=NewNT.listNeuron.back().n;
+					tempSWC.x=0;
+					tempSWC.y=0;
+					tempSWC.z=0;
+					tempSWC.type = 2;
+					tempSWC.creatmode = nearestNT.listNeuron[0].creatmode;
+					tempSWC.timestamp = nearestNT.listNeuron[0].timestamp;
+					NewNT.listNeuron.append(tempSWC);
+        			NewNT.hashNeuron.insert(tempSWC.n, NewNT.listNeuron.size()-1);
+				}
+				//add data to New NT
+				for(int k=0,j=0;k<NewNT.listNeuron.size();j++,k++)
+				{
+					switch (switchinsertnode)
+					{
+					case 1://insert node behind first
+						{
+							qDebug()<<"case 1";
+							int temp = j;
+							if(j+1<nearestNT.listNeuron.size())
+							temp = j+1;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n+1&& k<=j)
+							{
+								NewNT.listNeuron[k].x = 1.0/2 * nearestNT.listNeuron[j-1].x + 3.0/8*nearestNT.listNeuron[j].x+1.0/8*nearestNT.listNeuron[temp].x;
+								NewNT.listNeuron[k].y = 1.0/2 * nearestNT.listNeuron[j-1].y + 3.0/8*nearestNT.listNeuron[j].y+1.0/8*nearestNT.listNeuron[temp].y;
+								NewNT.listNeuron[k].z = 1.0/2 * nearestNT.listNeuron[j-1].z + 3.0/8*nearestNT.listNeuron[j].z+1.0/8*nearestNT.listNeuron[temp].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								j--;
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;	
+							}
+						}
+						break;
+					case 2://insert node before last
+						{
+							int temp = j;
+							if(j-1>0)
+							temp = j-2;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n&& k<=j)
+							{
+								
+								NewNT.listNeuron[k].x = 1.0/2 * nearestNT.listNeuron[j].x + 3.0/8*nearestNT.listNeuron[j-1].x+1.0/8*nearestNT.listNeuron[temp].x;
+								NewNT.listNeuron[k].y = 1.0/2 * nearestNT.listNeuron[j].y + 3.0/8*nearestNT.listNeuron[j-1].y+1.0/8*nearestNT.listNeuron[temp].y;
+								NewNT.listNeuron[k].z = 1.0/2 * nearestNT.listNeuron[j].z + 3.0/8*nearestNT.listNeuron[j-1].z+1.0/8*nearestNT.listNeuron[temp].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								j--;
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;	
+							}
+						}
+						break;
+					case 3://insert node in middle
+						{
+							qDebug()<<"case 3";
+							int balancenode1 =j-1;
+							int balancenode2 =j-1;
+							int balancenode3 =j+1;
+							int balancenode4 =j+1;
+							if(j-1>0)
+								balancenode1 = j-2;
+							if(j+2<nearestNT.listNeuron.size())
+								balancenode4 = j+2;
+							if( nearestNT.listNeuron[j].n ==nearestNode.n&& k<=j)
+							{
+								NewNT.listNeuron[k].x = 1.0/8 * nearestNT.listNeuron[balancenode1].x+ 3.0/8 * nearestNT.listNeuron[balancenode2].x + 3.0/8*nearestNT.listNeuron[j].x+1.0/8*nearestNT.listNeuron[balancenode3].x;
+								NewNT.listNeuron[k].y = 1.0/8*nearestNT.listNeuron[balancenode1].y+ 3.0/8 * nearestNT.listNeuron[balancenode2].y + 3.0/8*nearestNT.listNeuron[j].y+1.0/8*nearestNT.listNeuron[balancenode3].y;
+								NewNT.listNeuron[k].z = 1.0/8*nearestNT.listNeuron[balancenode1].z+ 3.0/8 * nearestNT.listNeuron[balancenode2].z + 3.0/8*nearestNT.listNeuron[j].z+1.0/8*nearestNT.listNeuron[balancenode3].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								k++;
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+								k++;
+								NewNT.listNeuron[k].x =1.0/8*nearestNT.listNeuron[balancenode2].x+ 3.0/8 * nearestNT.listNeuron[j].x + 3.0/8*nearestNT.listNeuron[balancenode3].x+1.0/8*nearestNT.listNeuron[balancenode4].x;
+								NewNT.listNeuron[k].y = 1.0/8*nearestNT.listNeuron[balancenode2].y+ 3.0/8 * nearestNT.listNeuron[j].y + 3.0/8*nearestNT.listNeuron[balancenode3].y+1.0/8*nearestNT.listNeuron[balancenode4].y;
+								NewNT.listNeuron[k].z = 1.0/8*nearestNT.listNeuron[balancenode2].z+ 3.0/8 * nearestNT.listNeuron[j].z + 3.0/8*nearestNT.listNeuron[balancenode3].z+1.0/8*nearestNT.listNeuron[balancenode4].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+
+							}
+							else
+							{
+								NewNT.listNeuron[k].x = nearestNT.listNeuron[j].x;
+								NewNT.listNeuron[k].y = nearestNT.listNeuron[j].y;
+								NewNT.listNeuron[k].z = nearestNT.listNeuron[j].z;
+								NewNT.listNeuron[k].r = nearestNT.listNeuron[j].r;
+								NewNT.listNeuron[k].type = nearestNT.listNeuron[j].type;
+							}
+
+						}
+						break;
+					default:
+						break;
+
+
+					}
+				}
+				qDebug()<<"insert node finished!";
+				//add the  new NT to NTList
+				NewNT.name = "sketch_"+QString("%1").arg(sketchNum++);
+				qDebug()<<NewNT.name;
+				sketchedNTList.push_back(NewNT);
+				int lIndex = sketchedNTList.size() - 1;
+				qDebug()<<"index = "<<lIndex;
+				SetupSingleMorphologyLine(lIndex,0);
+				break;
+				}
+			}
+		case m_splitMode:
+			{	
+
+				if(isOnline == false)
+				{
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
+					}
+				}
+				mat=glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
+				delName = "";
+				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+				NeuronTree nearestNT;
+				NeuronSWC nearestNode;
+				if (delName == "") break; //segment not found	
 
 				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
 				{
@@ -2918,7 +3243,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					 	}
 					 }
 				}
-
+					
 				//create NT2's Topology
 				for(int j=splitNT2beginindex,k=1;j<nearestNT.listNeuron.size();j++,k++)
 				{
@@ -2945,7 +3270,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
         			splitNT2.hashNeuron.insert(tempSWC.n, splitNT2.listNeuron.size()-1);
 					splitNT2size++;
 				}
-
+				time_t timer2;
+					struct tm y2k = { 0 };
+					double seconds;
+					y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+					y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1; // seconds since January 1, 2000 in UTC
+					time(&timer2);  /* get current time; same as: timer = time(NULL)  */
+					seconds = difftime(timer2, timegm(&y2k)); //Timestamp LMG 27/9/2018
+					qDebug("Timestamp at m_drawMode (VR) (seconds since January 1, 2000 in UTC): %.0f", seconds);
 				//copy data from second half into NT2
 				for(int j=splitNT2beginindex,k=0;j<nearestNT.listNeuron.size();j++,k++)
 				{
@@ -2955,6 +3287,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						splitNT2.listNeuron[k].y=nearestNode.y - directionsplit.y;
 						splitNT2.listNeuron[k].z=nearestNode.z - directionsplit.z;
 						splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
+						splitNT2.listNeuron[k].creatmode = nearestNT.listNeuron[j].creatmode;
+						splitNT2.listNeuron[k].timestamp = seconds;
 						splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
 						continue;
 					}
@@ -2962,6 +3296,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					splitNT2.listNeuron[k].y=nearestNT.listNeuron[j].y;
 					splitNT2.listNeuron[k].z=nearestNT.listNeuron[j].z;
 					splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
+					splitNT2.listNeuron[k].creatmode = nearestNT.listNeuron[j].creatmode;
+					splitNT2.listNeuron[k].timestamp = seconds;
 					splitNT2.listNeuron[k].type=nearestNT.listNeuron[j].type;
 				}
 
@@ -2981,6 +3317,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				break;
 			}
+			}
 		default :
 			break;
 		}
@@ -2988,6 +3325,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		//every time the trigger(right) is unpressd ,set the vertexcount to zero preparing for the next line
 		vertexcount=0;
 		READY_TO_SEND=true;
+		qDebug()<<"READY_TO_SEND=true;";
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_Grip)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
@@ -3018,6 +3356,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// 	break;
 		// }	
 		// qDebug("m_modeGrip_R=%d",m_modeGrip_R);
+		//grip right button is used to control linewidth for now
+		iLineWid+=2;
+		if(iLineWid>9){iLineWid = 1;}
+
+				
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
@@ -3175,14 +3518,14 @@ void CMainApplication::RenderFrame()
 	if ( m_pHMD )
 	{
 		QString AgentsNum = QString("%1").arg(Agents_spheres.size()+1);
-		std::string strWindowTitle = "Vaa3D VR [Username: "+current_agent_name+
+		std::string strWindowTitle = "TeraVR [Username: "+current_agent_name+
 			"][Color: "+current_agent_color+"][#Online users: "+AgentsNum.toStdString() + "]";
 		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();
 		SetupControllerTexture();
 		SetupControllerRay();
 		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
-
+		//FlashStuff(m_flashtype,FlashCoords);
 		//for all (synchronized) sketched strokes
 		//SetupMorphologySurface(currentNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
@@ -3593,21 +3936,22 @@ void CMainApplication::SetupControllerTexture()
 			{
 				if(m_bShowMorphologySurface)
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-				}
-				else
-				{
+
 					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
 					AddVertex(point_H.x,point_H.y,point_H.z,0.165f,0.5f,vcVerts);
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
+				}
+				else
+				{
+					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
 
 				}
 				break;
@@ -3637,6 +3981,7 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _ColorChange:// display "ok"
 		case _ResetImage://display"ok
+		case _MovetoCreator:
 		case _TeraShift:
 			{//_TeraShift
 				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.5f,vcVerts);
@@ -3651,15 +3996,7 @@ void CMainApplication::SetupControllerTexture()
 			{
 				if(m_bFrozen)
 				{
-					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
-					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
-					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
-				}
-				else
-				{
+
 					AddVertex(point_E.x,point_E.y,point_E.z,0.085f,0.375f,vcVerts);
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 					AddVertex(point_G.x,point_G.y,point_G.z,0.085f,0.5f,vcVerts);
@@ -3668,10 +4005,23 @@ void CMainApplication::SetupControllerTexture()
 					AddVertex(point_F.x,point_F.y,point_F.z,0.165f,0.375f,vcVerts);
 
 				}
+				else
+				{
+
+					AddVertex(point_E.x,point_E.y,point_E.z,0,0.375f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_G.x,point_G.y,point_G.z,0,0.5f,vcVerts);
+					AddVertex(point_H.x,point_H.y,point_H.z,0.085f,0.5f,vcVerts);
+					AddVertex(point_F.x,point_F.y,point_F.z,0.085f,0.375f,vcVerts);
+
+
+				}
 				break;
 			}
 		case _TeraZoom:
 		case _LineWidth:
+		case _RGBImage:
 		case _Contrast:
 			{
 				AddVertex(point_E.x,point_E.y,point_E.z,0.25,0.125f,vcVerts);
@@ -3715,6 +4065,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.125f,vcVerts);
 				break;			
 			}
+
 		default:
 			break;
 		}
@@ -3852,7 +4203,27 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.085,0.75f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.17,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.17,0.625f,vcVerts);
-			}	
+				break;
+			}
+		case _RGBImage:
+			{
+				AddVertex(point_M.x,point_M.y,point_M.z,0.17,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.17,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.25,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.625f,vcVerts);
+				break;
+			}
+		case _MovetoCreator:
+			{
+				AddVertex(point_M.x,point_M.y,point_M.z,0.335,0.635f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.42,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
+			}
 		case _UndoRedo:
 		default:
 			break;
@@ -4054,9 +4425,17 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.0,0.75f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.08,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.08,0.625f,vcVerts);
-
-
 			}
+		case m_insertnodeMode:
+			{//split line mode
+				AddVertex(point_M.x,point_M.y,point_M.z,0.25,0.625f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0.625f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25,0.75f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.25,0.75f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.335,0.75f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0.625f,vcVerts);
+			}
+
 		default:
 			break;
 		}
@@ -4144,7 +4523,7 @@ void CMainApplication::SetupControllerRay()
 	point_rightbottom = mat_L * point_rightbottom;
 	glm::vec3 Edge1 = glm::vec3(point_righttop.x - point_lefttop.x,point_righttop.y - point_lefttop.y,point_righttop.z - point_lefttop.z);
 	glm::vec3 Edge2 = glm::vec3(point_leftbottom.x - point_lefttop.x,point_leftbottom.y - point_lefttop.y,point_leftbottom.z - point_lefttop.z);
-	if((ShootingPadUV.x> 0)&&(ShootingPadUV.y>0))
+	if((ShootingPadUV.x> 0)&&(ShootingPadUV.y>0)&&showshootingPad)
 	showshootingray = true;
 	else
 	showshootingray = false;
@@ -4579,7 +4958,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 
 		glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
-
+	 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3), (GLvoid*)0);
 		uintptr_t offset =  sizeof( glm::vec3 );
@@ -4920,6 +5299,17 @@ void CMainApplication::RenderStereoTargets()
 	// Left Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId ); //render scene to m_nRenderFramebufferId
  	glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
+		frameCount++;
+	if(GetTime() > 1.0f)
+	{
+		fps = frameCount;
+		frameCount = 0;
+		StartTimer();
+		//cout<<fps<<endl;
+		//used for fps tess liqi
+	}	
+
+	frameTime = GetFrameTime();
  	RenderScene( vr::Eye_Left );
  	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDisable( GL_MULTISAMPLE );
@@ -5062,6 +5452,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 		// draw a sphere on right controller center
 		{
+			glLineWidth(1);
 			glm::mat4 model;
 			model = glm::translate(glm::mat4(), ctrSpherePos);
 
@@ -5076,6 +5467,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 	}
 	//=================== draw markers with sphere ====================
+	if(m_bShowMorphologyMarker)
 	{
 		morphologyShader->use();
 		
@@ -5152,12 +5544,14 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		const QHash <int, int> & loaded_hashNeuron = loadedNT_merged.hashNeuron;
 		NeuronSWC S0,S1;
 
-		if (!m_bFrozen) {
-			m_frozen_globalMatrix = m_globalMatrix;
-		} else 
-		{
-			m_globalMatrix = m_frozen_globalMatrix;
-		}
+		//freeze is used for brightness suppression
+		 //if (!m_bFrozen) {
+		 //	m_frozen_globalMatrix = m_globalMatrix;
+		 //}
+			//else 
+		// {
+		// 	m_globalMatrix = m_frozen_globalMatrix;
+		// }
 
 		int cy_count = 0;
 		for(int i = 0;i<loaded_spheres.size();i++)//loaded neuron tree
@@ -5319,14 +5713,14 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	}
 	//=================== draw the controller axis lines ======================
 	bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
-	if( !bIsInputCapturedByAnotherProcess )
-	{
-		glUseProgram( m_unControllerTransformProgramID );
-		glUniformMatrix4fv( m_nControllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
-		glBindVertexArray( m_unControllerVAO );
-		glDrawArrays( GL_LINES, 0, m_uiControllerVertcount );
-		glBindVertexArray( 0 );
-	}
+	// if( !bIsInputCapturedByAnotherProcess )
+	// {
+	// 	glUseProgram( m_unControllerTransformProgramID );
+	// 	glUniformMatrix4fv( m_nControllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+	// 	glBindVertexArray( m_unControllerVAO );
+	// 	glDrawArrays( GL_LINES, 0, m_uWiControllerVertcount );
+	// 	glBindVertexArray( 0 );
+	// }
 	//=================== draw the controller shooting ray ======================
 	if( !bIsInputCapturedByAnotherProcess )
 	{
@@ -5515,7 +5909,8 @@ void CMainApplication::UpdateHMDMatrixPose()
 
 	if ( m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid )
 	{
-		if(!m_bFrozen) 
+		//freeze is used for brightness suppression
+		//if(!m_bFrozen) 
 		{
 			m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
 			m_mat4HMDPose.invert();
@@ -5529,11 +5924,12 @@ void CMainApplication::UpdateHMDMatrixPose()
 
 			m_frozen_mat4HMDPose = m_mat4HMDPose;
 			m_frozen_HMDTrans = m_HMDTrans;
-		} else
-		{
-			m_mat4HMDPose = m_frozen_mat4HMDPose;
-			m_HMDTrans = m_frozen_HMDTrans;
-		}
+		} 
+		// else
+		// {
+		// 	m_mat4HMDPose = m_frozen_mat4HMDPose;
+		// 	m_HMDTrans = m_frozen_HMDTrans;
+		// }
 	}
 }
 
@@ -5549,6 +5945,11 @@ QString  CMainApplication::getHMDPOSstr()
 		}
 	}
 	mat=glm::inverse(m_globalMatrix) * mat;
+	//qDebug()<<" convertedHMD SEND POS  1 "<<mat[3][0]<<" "<<mat[3][1]<<" "<<mat[3][2];
+	XYZ convertPOS = ConvertLocaltoGlobalCoords(mat[3][0],mat[3][1],mat[3][2]);
+	mat[3][0] = convertPOS.x;
+	mat[3][1] = convertPOS.y;
+	mat[3][2] = convertPOS.z;
 	QString positionStr;
 	/*for(int i=0;i<16;i++)
 	{
@@ -5563,7 +5964,7 @@ QString  CMainApplication::getHMDPOSstr()
 			positionStr+=" ";
 		}
 	}
-	//qDebug()<<positionStr;
+	//qDebug()<<"getHMDPOSstr"<<positionStr;
 	return positionStr;
 }
 
@@ -5590,7 +5991,8 @@ QString CMainApplication::NT2QString()
 		char packetbuff[300];
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
-		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,S_temp.x,S_temp.y,S_temp.z,S_temp.r,S_temp.pn);
+		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z);
+		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
 		messageBuff +=packetbuff;
 	}
 
@@ -5645,7 +6047,11 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 		else if (iy==6)
 		{
 			S_temp.pn = qsl[i].toInt();
-
+			//converted received NT XYZ coords
+			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);
+			S_temp.x = tempxyz.x;
+			S_temp.y = tempxyz.y;
+			S_temp.z = tempxyz.z;
 			newTempNT.listNeuron.append(S_temp);
 			newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
 		}
@@ -6084,7 +6490,7 @@ void CMainApplication::RefineSketchCurve(int direction, NeuronTree &oldNTree, Ne
 	
 	VectorResampling(outswc_final_vec, outswc_final_vec_resampled, 0.5f);
 	reverse(outswc_final_vec_resampled.begin(),outswc_final_vec_resampled.end());
-	VectorToNeuronTree(newNTree,outswc_final_vec_resampled,m_curMarkerColorType);
+    VectorToNeuronTree(newNTree,outswc_final_vec_resampled,m_curMarkerColorType);
 	//can change current neurontree's color by using 
 	//VectorToNeuronTree(newNTree,outswc_final_vec_resampled,type);
 	outswc_final_vec.clear();
@@ -6260,9 +6666,10 @@ GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
 // init 3D texture to store the volume data used fo ray casting
 GLuint CMainApplication::initVol3DTex()
 {
-    GLuint w = img4d->getXDim(); GLuint h = img4d->getYDim(); GLuint d= img4d->getZDim();
-	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
 
+    {GLuint w = img4d->getXDim(); GLuint h = img4d->getYDim(); GLuint d= img4d->getZDim();
+	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
+	
     glGenTextures(1, &g_volTexObj);
     // bind 3D texture target
     glBindTexture(GL_TEXTURE_3D, g_volTexObj);
@@ -6274,13 +6681,134 @@ GLuint CMainApplication::initVol3DTex()
     // pixel transfer happens here from client to OpenGL server
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	GL_ERROR();
+	switch(img4d->getDatatype())
+	{
+	case V3D_UINT8:
+		{
+		GLubyte * RData = img4d->getRawDataAtChannel(0);
+		GLubyte * GData = img4d->getRawDataAtChannel(1);
+		GLubyte * BData = img4d->getRawDataAtChannel(2);
+		GLubyte * RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel()*3];
+		cout<<"step 2"<<endl;
+		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+		{	
+			RBGData[i] = RData[i/3];
+			RBGData[i+1] = GData[i/3];
+			RBGData[i+2] = BData[i/3];
+			i+=3;
+		}
+	//	RGBImageTexData = RBGData;
+		
+		cout<<"step 3"<<endl;
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);
+		cout<<"data type is V3D_UINT8"<<endl;
+		}
+	break;
+	case V3D_UINT16:
+		{
+			GLushort * RData = (GLushort *)img4d->getRawDataAtChannel(0);
+		GLushort * GData = (GLushort *)img4d->getRawDataAtChannel(1);
+		GLushort * BData = (GLushort *)img4d->getRawDataAtChannel(2);
+		GLushort * RBGData = new GLushort[img4d->getTotalUnitNumberPerChannel()*3];
+		cout<<"step 2"<<endl;
+		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+		{	
+			RBGData[i] = RData[i/3];
+			RBGData[i+1] = GData[i/3];
+			RBGData[i+2] = BData[i/3];
+			i+=3;
+		}
+		//RGBImageTexData = RBGData;//used to create octree tex data
+		cout<<"step 3"<<endl;
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_SHORT, (GLushort *)RBGData);
+		cout<<"data type is V3D_UINT16"<<endl;
+		}
+	break;
+	case V3D_FLOAT32:
+		{
+		GLuint * RData = (GLuint *)img4d->getRawDataAtChannel(0);
+		GLuint * GData = (GLuint *)img4d->getRawDataAtChannel(1);
+		GLuint * BData = (GLuint *)img4d->getRawDataAtChannel(2);
+		GLuint * RBGData = new GLuint[img4d->getTotalUnitNumberPerChannel()*3];
+		cout<<"step 2"<<endl;
+		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+		{	
+			RBGData[i] = RData[i/3];
+			RBGData[i+1] = GData[i/3];
+			RBGData[i+2] = BData[i/3];
+			i+=3;
+		}
+	//	RGBImageTexData = RBGData;
+		cout<<"step 3"<<endl;
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_INT, (GLuint *)RBGData);
+		cout<<"data type is V3D_FLOAT32"<<endl;
+		}
+	break;
+	default:
+		break;
+	}
+
     //glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, (GLvoid*)data); 
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLubyte *)img4d->getRawData());
+	/*GLubyte * RData = img4d->getRawDataAtChannel(0);
+	GLubyte * GData = img4d->getRawDataAtChannel(1);
+	GLubyte * BData = img4d->getRawDataAtChannel(2);
+	GLubyte * RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel()*3];
+	cout<<"step 2"<<endl;
+	for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
+	{	
+		RBGData[i] = RData[i/3];
+		RBGData[i+1] = GData[i/3];
+		RBGData[i+2] = BData[i/3];
+		i+=3;
+	}
+	cout<<"step 3"<<endl;
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);*/
+
 	GL_ERROR();
     cout << "volume texture created" << endl;
     return g_volTexObj;
+	}
+
 }
 
+GLuint CMainApplication::initVolOctree3DTex(int step,GLuint g_volTexObj_octree)
+{
+if(!replacetexture)
+    {
+		GLuint w = img4d->getXDim(); GLuint h = img4d->getYDim(); GLuint d= img4d->getZDim();
+	cout << "(w,h,d) of image =("<<w<<","<<h<<","<<d <<")"<< endl;
+		glGenTextures(1, &g_volTexObj_octree);
+    	glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree);
+    	bindTexturePara();
+    	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+		GL_ERROR();
+		switch(img4d->getDatatype())
+		{
+			case V3D_UINT8:
+			{
+				HelpFunc_createOctreetexture<GLubyte>(step);
+			}break;
+			case V3D_UINT16:
+			{
+				HelpFunc_createOctreetexture<GLushort>(step);
+				
+			}break;
+			case V3D_FLOAT32:
+			{
+
+				HelpFunc_createOctreetexture<GLuint>(step);
+			}break;
+			default:
+			break;
+		}	
+	}
+	
+	 GL_ERROR();
+     cout << "volume octree texture created" << endl;
+     return g_volTexObj_octree;
+	
+
+}
 void CMainApplication::initFrameBufferForVolumeRendering(GLuint texObj, GLuint texWidth, GLuint texHeight)
 {
 	//qDebug("initFrameBufferForVolumeRendering() is called.");
@@ -6312,7 +6840,7 @@ void CMainApplication::initFrameBufferForVolumeRendering(GLuint texObj, GLuint t
 void CMainApplication::SetupVolumeRendering()
 {
 	//qDebug("SetupVolumeRendering() is called.");
-	
+
 	g_texWidth = g_winWidth = m_nRenderWidth;
     g_texHeight = g_winHeight = m_nRenderHeight;
 
@@ -6323,7 +6851,10 @@ void CMainApplication::SetupVolumeRendering()
     //g_tffTexObj = initTFF1DTex("tff.dat");
     g_bfTexObj = initFace2DTex(g_texWidth, g_texHeight);
     g_volTexObj = initVol3DTex();
-
+	//g_volTexObj_octree_8 = initVolOctree3DTex(8);
+	//g_volTexObj_octree_16 = initVolOctree3DTex(16,g_volTexObj_octree_16);
+	//g_volTexObj_octree_64 = initVolOctree3DTex(64,g_volTexObj_octree_64);	
+	//g_volTexObj_octree_32 = initVolOctree3DTex(32);
     initFrameBufferForVolumeRendering(g_bfTexObj, g_texWidth, g_texHeight);
 }
 
@@ -6384,6 +6915,10 @@ void CMainApplication::SetUinformsForRayCasting()
 	
 	raycastingShader->setVec2("ScreenSize",(float)g_winWidth, (float)g_winHeight);
 	raycastingShader->setFloat("StepSize",0.001f);
+	//raycastingShader->setFloat("Stepsizeoctree8",0.01f);
+	//raycastingShader->setFloat("Stepsizeoctree16",0.02f);
+	//raycastingShader->setFloat("Stepsizeoctree32",0.04f);
+	//raycastingShader->setFloat("Stepsizeoctree64",0.08f);
 	raycastingShader->setVec2("ImageSettings",fContrast, fBrightness);
 	//raycastingShader->setFloat("contrast ",fContrast);
 	//raycastingShader->setFloat("brightness ",fBrightness);
@@ -6399,6 +6934,30 @@ void CMainApplication::SetUinformsForRayCasting()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_3D, g_volTexObj);
 	raycastingShader->setInt("VolumeTex", 2);
+
+	// glActiveTexture(GL_TEXTURE3);
+	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_8);
+	// raycastingShader->setInt("VolumeTexoctree8", 3);
+
+	// glActiveTexture(GL_TEXTURE4);
+	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_16);
+	// raycastingShader->setInt("VolumeTexoctree16", 4);
+	// glActiveTexture(GL_TEXTURE5);
+	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_32);
+	// raycastingShader->setInt("VolumeTexoctree32", 5);
+	
+	// glActiveTexture(GL_TEXTURE6);
+	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_64);
+	// raycastingShader->setInt("VolumeTexoctree64", 6);
+
+	if(img4d->getCDim()== 1 )//single channel image
+	// to do
+	raycastingShader->setInt("channel", 0);
+
+	else	
+		raycastingShader->setInt("channel", m_rgbChannel);
+		
+
 }
 
 
@@ -6414,6 +6973,7 @@ CGLRenderModel::CGLRenderModel( const std::string & sRenderModelName )//todo: se
 	m_glVertBuffer = 0;
 	m_glTexture = 0;
 }
+
 
 
 CGLRenderModel::~CGLRenderModel()
@@ -6662,7 +7222,8 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
 		{
-			m_modeGrip_L = _Contrast;
+			m_modeGrip_L = _AutoRotate;
+
 		}
 		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
 		{
@@ -6682,12 +7243,28 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		else if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
 		{
-			m_modeGrip_L = _LineWidth;
+			m_modeGrip_L = _RGBImage;
+			//m_modeGrip_L = _LineWidth;
 		}
 		else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
 		{
-			m_modeGrip_L = _AutoRotate;
+			//m_modeGrip_L = _Contrast;
+			m_modeGrip_L = _LineWidth;
 		}
+		// else if((panelpos_x <= 0.26) && (panelpos_y<= 0.59)&&(panelpos_y >= 0.5)&&(panelpos_x >= 0.1))
+		// {
+		// 	m_modeGrip_L = _ResetImage;
+		// }
+		// else if((panelpos_x <= 0.436) && (panelpos_y<= 0.59)&&(panelpos_y >= 0.5)&&(panelpos_x >= 0.27))
+		// {
+			//m_modeGrip_L = _LineWidth;
+		// }
+		// else if((panelpos_x <= 0.26) && (panelpos_y<= 0.68)&&(panelpos_y >= 0.59)&&(panelpos_x >= 0.1))
+		// {
+		// 	m_modeGrip_L = _MovetoCreator;
+		// }
+		//
+		//these function may be added in the future
 	}
 	//choose Right controllerFunction
 	if(panelpos_x >= 0.657)
@@ -6718,9 +7295,211 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		{
-			m_modeGrip_L = _ResetImage;
+			m_modeGrip_R = m_insertnodeMode;
 		}
+
 	}
 
 
+}
+XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z)//localtogolbal
+{
+	x+= CmainVRVolumeStartPoint.x;
+	y+= CmainVRVolumeStartPoint.y;
+	z+= CmainVRVolumeStartPoint.z;
+	x/=pow(2.0,CmainResIndex-1);
+	y/=pow(2.0,CmainResIndex-1);
+	z/=pow(2.0,CmainResIndex-1);
+	return XYZ(x,y,z);
+}
+XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
+{
+	x*=pow(2.0,CmainResIndex-1);;
+	y*=pow(2.0,CmainResIndex-1);;
+	z*=pow(2.0,CmainResIndex-1);;
+	x-= CmainVRVolumeStartPoint.x;
+	y-= CmainVRVolumeStartPoint.y;
+	z-= CmainVRVolumeStartPoint.z;
+
+	return XYZ(x,y,z);
+}
+//bool CMainApplication::FlashStuff(FlashType type,XYZ coords)
+//{
+//	switch (type)
+//	{
+//	case noflash:
+//		break;
+//	case line:
+//		{
+//			m_FlashCount++;
+//			if(m_FlashCount>=300)
+//				{m_FlashCount == 0;m_flashtype = noflash;}
+//			qDebug()<<"get into case line";
+//			delName = "";
+//			NeuronTree nearestNT;
+//			delName = FindNearestSegment(glm::vec3(coords.x,coords.y,coords.z));
+//			if (delName == "") return false; //segment not found
+//			for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
+//			{
+//				QString NTname="";
+//				NTname = sketchedNTList.at(i).name;
+//				if(NTname==delName)
+//				{
+//					nearestNT=sketchedNTList.at(i);
+//					break;
+//				}
+//			}
+//			if((m_FlashCount%100)==0 && (m_FlashCount/100)%2 == 0)
+//			{
+//				for(int i = 0;i<nearestNT.listNeuron.size();i++)
+//				{
+//					nearestNT.color.c[0] = 0;
+//		nearestNT.color.c[1] = 0;
+//					nearestNT.color.c[2] = 0;
+//					qDebug()<<"case even";
+//				}
+//			}
+//			if((m_FlashCount%100)==0 && (m_FlashCount/100)%2 == 1)			
+//			{
+//				for(int i = 0;i<nearestNT.listNeuron.size();i++)
+//				{
+//					qDebug()<<"case odd";
+//					nearestNT.listNeuron[i].type = m_Flashoricolor;
+//				}
+//			}
+//				
+//		}
+//		break;
+//	default:
+//		break;
+//	}
+//	return true;
+//}
+template<class T>
+MinMaxOctree<T>::MinMaxOctree(int width, int height, int depth,int step) {
+
+	this->width = width/step;
+	if(!width%step) this->width+=1;
+	this->height = height/step;
+	if(!height%step) this->height+=1;
+	this->depth = depth/step;
+	if(!depth%step) this->depth+=1;
+	this->step = step;
+	data = (T*)malloc(this->width * this->height * this->depth*3); 
+
+	for(int voxel = 0; voxel < this->width * this->height * this->depth*3;) {
+		data[voxel] = 0;
+		data[voxel+ 1] = 0;
+		data[voxel+ 2] = 0;
+		voxel+=3;
+	}
+
+}
+template<class T>
+MinMaxOctree<T>::~MinMaxOctree() {
+	delete [] data;
+}
+template<class T>
+void MinMaxOctree<T>::build(T* volumeData, int volumeWidth, int volumeHeight, int volumeDepth) {
+	cout<<"octree width height depth = "<<this->width<<" "<<this->height<<" "<<this->depth<<" end"<<endl;
+	int octreeIndex, volumeIndex;
+
+
+	//v3d image data  stored order : width , height ,depth .see m3dimage.cpp row 273
+	for(int w = 0; w < this->width; w++) {
+		for(int h = 0; h < this->height; h++) {
+			for(int d = 0; d < this->depth; d++) {
+				//cout<<"row   "<<w<<"column   "<<h<<"depth "<<d<<endl;
+				int volumeindexDep,volumeindexWid,volumeindexHeight;
+				for(int vw = 0; vw < step; vw++) {
+					volumeindexWid = (w * step + vw)>=volumeWidth?(volumeWidth-1):(w * step + vw);
+					if(volumeindexWid==volumeWidth-1)break;
+					for(int vh = 0; vh < step; vh++) {
+						volumeindexHeight = (h * step + vh)>=volumeHeight?(volumeHeight-1):(h * step + vh);
+						if(volumeindexHeight==volumeHeight-1)break;
+						for(int vd = 0; vd < step; vd++) {
+							//cout<<"volume row   "<<w+vw<<"column   "<<h+vh<<"depth "<<d+vd<<endl;
+							volumeindexDep = (d * step + vd)>=volumeDepth?(volumeDepth-1):(d * step + vd);
+							if(volumeindexDep==volumeDepth-1)break;
+							
+							volumeIndex = volumeindexDep * volumeHeight * volumeWidth + volumeindexHeight * volumeWidth + volumeindexWid;
+							octreeIndex = d * height * width + h * width + w;
+							// if(volumeData[volumeIndex *3] < data[octreeIndex * 4 + 0])
+							// 	data[octreeIndex * 4 + 0] = volumeData[volumeIndex * 4];
+							if(volumeData[volumeIndex * 3] > data[octreeIndex * 3])
+								{
+									data[octreeIndex * 3] = volumeData[volumeIndex * 3];
+								}
+								
+							if(volumeData[volumeIndex * 3+1] > data[octreeIndex * 3+1])
+								data[octreeIndex * 3+1] = volumeData[volumeIndex * 3+1];
+							if(volumeData[volumeIndex * 3+2] > data[octreeIndex * 3+2])
+								data[octreeIndex * 3+2] = volumeData[volumeIndex * 3+2];	
+						}
+					}
+				}
+
+			}
+		}
+	}
+	int datasize=0;
+	for(int w = 0; w <  this->width; w++) {
+		for(int h = 0; h < this->height; h++) {
+			for(int d = 0; d < this->depth; d++) {
+				int index = d * height * width + h * width + w;
+
+			if((int)data[index*3]>1)datasize++;
+			}}}
+			cout<<datasize<<endl;
+	cout<<"BUILD DONE"<<endl;
+
+}
+template<class T>
+void CMainApplication::HelpFunc_createOctreetexture(int step)
+{
+	MinMaxOctree<T>* minmaxOctree = new MinMaxOctree<T>(img4d->getXDim(),img4d->getYDim(),img4d->getZDim(),step);
+	minmaxOctree->build((T*)RGBImageTexData,img4d->getXDim(),img4d->getYDim(),img4d->getZDim());
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, minmaxOctree->getWidth(), minmaxOctree->getHeight(), minmaxOctree->getDepth(), 0, GL_RGB, GL_UNSIGNED_BYTE, (T *)minmaxOctree->GetData());
+
+}
+void CMainApplication::StartTimer()
+{
+	LARGE_INTEGER frequencyCount;
+	QueryPerformanceFrequency(&frequencyCount);
+
+	countsPerSecond = double(frequencyCount.QuadPart);
+
+
+	QueryPerformanceCounter(&frequencyCount);
+	CounterStart = frequencyCount.QuadPart;
+}
+
+double CMainApplication::GetTime()
+{
+	LARGE_INTEGER currentTime;
+	QueryPerformanceCounter(&currentTime);
+	return double(currentTime.QuadPart-CounterStart)/countsPerSecond;
+}
+
+double CMainApplication::GetFrameTime()
+{
+	LARGE_INTEGER currentTime;
+	__int64 tickCount;
+	QueryPerformanceCounter(&currentTime);
+
+	tickCount = currentTime.QuadPart-frameTimeOld;
+	frameTimeOld = currentTime.QuadPart;
+
+	if(tickCount < 0.0f)
+		tickCount = 0.0f;
+
+	return float(tickCount)/countsPerSecond;
+}
+void CMainApplication::bindTexturePara()
+{
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 }

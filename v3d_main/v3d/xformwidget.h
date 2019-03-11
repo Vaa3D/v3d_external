@@ -124,7 +124,7 @@ struct iDrawExternalParameter
 };
 
 
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+#if defined(USE_Qt5)
 class XFormWidget : public QMdiSubWindow, public TriviewControl //class XFormWidget : public QMainWindow
 #else
 class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
@@ -323,7 +323,11 @@ public slots:
 	void mixChannelColorPlaneY(const QPixmap& pxm, bool bGlass) {zx_view->setPixmap(pxm, bGlass);}
 	void mixChannelColorPlaneZ(const QPixmap& pxm, bool bGlass) {xy_view->setPixmap(pxm, bGlass);}
 //110802 RZC, for show/hide channelTabGlass
+#if defined(USE_Qt5)
+	void onActivated(QMdiSubWindow* );
+#else
 	void onActivated(QWidget* );
+#endif
 //110803 RZC, for sync multiple ChannelTabWidget
 	void syncChannelTabWidgets(ChannelTabWidget* sender);
 
