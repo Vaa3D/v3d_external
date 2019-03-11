@@ -76,8 +76,10 @@ glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
 My4DImage *CMainApplication::img4d_replace = nullptr;
 ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
 ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
+SecondeMenu CMainApplication::m_secondMenu = _nothing;
 RGBImageChannel CMainApplication::m_rgbChannel = channel_rgb;
 bool CMainApplication::showshootingPad = false;
+
 #define dist_thres 0.01
 #define connection_rigourous 0.5
 #define default_radius 0.618
@@ -2385,16 +2387,16 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _ColorChange:
 			{
-				if(isOnline == false)
-				{
-					// range 0 ~ 6  
-					m_curMarkerColorType = (++m_curMarkerColorType)%7;
-					int color_id = (m_curMarkerColorType>=0 && m_curMarkerColorType<neuron_type_color_num)? m_curMarkerColorType : 0;
-					ctrSphereColor[0] =  neuron_type_color[color_id][0] /255.0;
-					ctrSphereColor[1] =  neuron_type_color[color_id][1] /255.0;
-					ctrSphereColor[2] =  neuron_type_color[color_id][2] /255.0;
-
-				}
+				// if(isOnline == false)
+				// {
+				// 	// range 0 ~ 7  neuron_type_color_num=276 
+				// 	m_curMarkerColorType = (++m_curMarkerColorType)%8;
+				// 	int color_id = (m_curMarkerColorType>=0 && m_curMarkerColorType<neuron_type_color_num)? m_curMarkerColorType : 0;
+				// 	ctrSphereColor[0] =  neuron_type_color[color_id][0] /255.0;
+				// 	ctrSphereColor[1] =  neuron_type_color[color_id][1] /255.0;
+				// 	ctrSphereColor[2] =  neuron_type_color[color_id][2] /255.0;
+				// 	cout<<"neuron_type_color_num"<<neuron_type_color_num<<endl;
+				// }
 				break;
 			}
 		case _ResetImage:
@@ -2634,19 +2636,19 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		}	
 		qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
 	}
-		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&showshootingPad)	//detect trigger when menu show
+		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))	//detect trigger when menu show
 		{
 				glm::vec2 ShootingPadUV = calculateshootingPadUV();
+				if(showshootingPad)
 				MenuFunctionChoose(ShootingPadUV);
-				if(ShootingPadUV.x>=0&&ShootingPadUV.y >=0)
-					{
-						qDebug()<<ShootingPadUV.x<<ShootingPadUV.y<<"\n";
-						//qDebug()<<"shoot it!";
-					}
-				else if(ShootingPadUV.x==-1&&ShootingPadUV.y==-1)
-					qDebug()<< "didn't shoot the Pad";
+				else if(m_secondMenu!=_nothing&&(isOnline == false))
+				{
+					//todo liqi
+					ColorMenuChoose(ShootingPadUV);
+				}
 				//qDebug()<<showshootingPad;
 		}
+
 
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
 	{	
@@ -3364,13 +3366,16 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
-				//call virtual Pad
+				//this func can 1.call top menu
+				//2.return to top menu from second menu and hide second menu meantime
+				//3.hide top menu
+				//4.when no menu show ,hide ray
 				showshootingPad =! showshootingPad;//show virtualPad
-                if(!showshootingPad)
+				if(showshootingPad) m_secondMenu=_nothing;
+                if(!showshootingPad&&m_secondMenu==_nothing)  //when top menu and second menu dont show ,then hide ray
                     showshootingray=false;
-				//test trigger shooting ray func for now
+				
 	}
-		////bool_ray = true;
 
 		//save swc
 		//if(sketchedNTList.size()>0)
@@ -4345,14 +4350,40 @@ void CMainApplication::SetupControllerTexture()
 		point_leftbottom = mat_L * point_leftbottom;
 		point_rightbottom = mat_L * point_rightbottom;
 
+		Vector4 colormenu_point_lefttop(-0.1f,0.05f,-0.05f,1);
+		Vector4 colormenu_point_righttop(0.1f,0.05f,-0.05f,1);
+		Vector4 colormenu_point_leftbottom(-0.1f,0.02f,0.03f,1);
+		Vector4 colormenu_point_rightbottom(0.1f,0.02f,0.03f,1);
 
+		colormenu_point_lefttop = mat_L * colormenu_point_lefttop;
+		colormenu_point_righttop = mat_L * colormenu_point_righttop;
+		colormenu_point_leftbottom = mat_L * colormenu_point_leftbottom;
+		colormenu_point_rightbottom = mat_L * colormenu_point_rightbottom;
 		if(showshootingPad)
-		{		AddVertex(point_lefttop.x,point_lefttop.y,point_lefttop.z,0.5,0.0f,vcVerts);
+		{
+				AddVertex(point_lefttop.x,point_lefttop.y,point_lefttop.z,0.5,0.0f,vcVerts);
 				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
 				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
 				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
 				AddVertex(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z,1.0,0.5f,vcVerts);
 				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
+		}
+		//add vertex
+		//1------2/6
+		// |    /|
+		// |   / |
+		// |  /  |
+		// | /   |
+		// -------
+		// 3/4   5
+		else if(m_secondMenu==_colorPad)
+		{
+				AddVertex(colormenu_point_lefttop.x,colormenu_point_lefttop.y,colormenu_point_lefttop.z,0.5518f,0.5487f,vcVerts);
+				AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174f,0.5487f,vcVerts);
+				AddVertex(colormenu_point_leftbottom.x,colormenu_point_leftbottom.y,colormenu_point_leftbottom.z,0.5518f,0.6458f,vcVerts);
+				AddVertex(colormenu_point_leftbottom.x,colormenu_point_leftbottom.y,colormenu_point_leftbottom.z,0.5518f,0.6458f,vcVerts);
+				AddVertex(colormenu_point_rightbottom.x,colormenu_point_rightbottom.y,colormenu_point_rightbottom.z,0.7174,0.6458f,vcVerts);
+				AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174,0.5487f,vcVerts);
 		}
 
 		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
@@ -4511,29 +4542,24 @@ void CMainApplication::SetupControllerRay()
 
 	//update ray endpos if ray intersect the pad
 	glm::vec2 ShootingPadUV = calculateshootingPadUV();// update shootingraycutPos
-	float panelpos_x = ShootingPadUV.x;
-	float panelpos_y = ShootingPadUV.y;		
-	Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
-	Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
-	Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
-	Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
-	point_lefttop = mat_L * point_lefttop;
-	point_righttop = mat_L * point_righttop;
-	point_leftbottom = mat_L * point_leftbottom;
-	point_rightbottom = mat_L * point_rightbottom;
-	glm::vec3 Edge1 = glm::vec3(point_righttop.x - point_lefttop.x,point_righttop.y - point_lefttop.y,point_righttop.z - point_lefttop.z);
-	glm::vec3 Edge2 = glm::vec3(point_leftbottom.x - point_lefttop.x,point_leftbottom.y - point_lefttop.y,point_leftbottom.z - point_lefttop.z);
-	if((ShootingPadUV.x> 0)&&(ShootingPadUV.y>0)&&showshootingPad)
+	// Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
+	// Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
+	// Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
+	// Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
+	// point_lefttop = mat_L * point_lefttop;
+	// point_righttop = mat_L * point_righttop;
+	// point_leftbottom = mat_L * point_leftbottom;
+	// point_rightbottom = mat_L * point_rightbottom;
+
+	if((ShootingPadUV.x> 0)&&(ShootingPadUV.y>0)&&(showshootingPad||(m_secondMenu!=_nothing)))
 	showshootingray = true;
 	else
 	showshootingray = false;
-	if(showshootingPad&&(ShootingPadUV.x> 0)&&(ShootingPadUV.y>0))
+	if(((m_secondMenu!=_nothing)||showshootingPad)&&(ShootingPadUV.x> 0)&&(ShootingPadUV.y>0))
 	{
 		AddrayVertex(start.x,start.y,start.z,color.x,color.y,color.z,vertdataarray);
 		AddrayVertex(shootingraycutPos.x,shootingraycutPos.y,shootingraycutPos.z,color.x,color.y,color.z,vertdataarray);
 		m_uiControllerRayVertcount += 2;
-
-	
 	}
 	//update  red logo on where you choose
 
@@ -7139,10 +7165,25 @@ glm::vec2 CMainApplication::calculateshootingPadUV()
 
 	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
 	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
-	Vector4 point_lefttop(-0.2f,0.1f,-0.3f,1);
-	Vector4 point_righttop(0.2f,0.1f,-0.3f,1);
-	Vector4 point_leftbottom(-0.2f,0.02f,0.03f,1);
-	Vector4 point_rightbottom(0.2f,0.02f,0.03f,1);
+
+	Vector4 point_lefttop ;
+	Vector4 point_righttop;
+	Vector4 point_leftbottom;
+	Vector4 point_rightbottom;
+	if(showshootingPad)
+	{
+		point_lefttop = Vector4(-0.2f,0.1f,-0.3f,1);
+		point_righttop = Vector4(0.2f,0.1f,-0.3f,1);
+		point_leftbottom = Vector4(-0.2f,0.02f,0.03f,1);
+		point_rightbottom = Vector4(0.2f,0.02f,0.03f,1);
+	}
+	else if(m_secondMenu==_colorPad)
+	{
+		point_lefttop = Vector4(-0.1f,0.05f,-0.05f,1);
+		point_righttop = Vector4(0.1f,0.05f,-0.05f,1);
+		point_leftbottom = Vector4(-0.1f,0.02f,0.03f,1);
+		point_rightbottom = Vector4(0.1f,0.02f,0.03f,1);
+	}
 	point_lefttop = mat_L * point_lefttop;
 	point_righttop = mat_L * point_righttop;
 	point_leftbottom = mat_L * point_leftbottom;
@@ -7197,56 +7238,126 @@ glm::vec2 CMainApplication::calculateshootingPadUV()
 	shootingraycutPos = FuncPadPosV0+u*E1 +v* E2;
 	return glm::vec2(v,1-u);
 }
+void CMainApplication::ColorMenuChoose(glm::vec2 UV)
+{
+	float panelpos_x=UV.x;
+	float panelpos_y=UV.y;
 
+
+	if(panelpos_y>0&&panelpos_y<0.5)
+	{
+		if(panelpos_x>0&&panelpos_x <= 0.2)
+		{
+			m_curMarkerColorType = 0;//white
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;
+		}
+		if(panelpos_x<=0.4&&panelpos_x >= 0.2)
+		{
+			m_curMarkerColorType = 1;//black
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;
+		}
+		if(panelpos_x<=0.6&&panelpos_x>=0.4)
+		{
+			m_curMarkerColorType = 2;//red
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;			
+		}
+		if(panelpos_x<=0.8&&panelpos_x>=0.6)
+		{
+			m_curMarkerColorType = 3;//blue
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;
+		}
+		if(panelpos_x<=1&&panelpos_x>=0.8)
+		{
+			m_curMarkerColorType = 4;//purple
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;
+		}
+	}
+	else if(panelpos_y>=0.5&&panelpos_y<=1)
+	{
+		if(panelpos_x>0&&panelpos_x <= 0.2)
+		{
+			m_curMarkerColorType =5;//cyan
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;
+		}
+		if(panelpos_x<=0.4&&panelpos_x >= 0.2)
+		{
+			m_curMarkerColorType = 6;//yellow
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;
+		}
+		if(panelpos_x<=0.6&&panelpos_x>=0.4)
+		{
+			m_curMarkerColorType = 7;//green
+			ctrSphereColor[0] =  neuron_type_color[m_curMarkerColorType][0] /255.0;
+			ctrSphereColor[1] =  neuron_type_color[m_curMarkerColorType][1] /255.0;
+			ctrSphereColor[2] =  neuron_type_color[m_curMarkerColorType][2] /255.0;
+		}
+	}
+}
 void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 {
 	float panelpos_x=UV.x;
 	float panelpos_y=UV.y;
-	qDebug()<<"0\n";
+
 
 //choose left controllerFunction
 	if(panelpos_x <= 0.436)
 	{
-		qDebug()<<"1\n";
 		if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _TeraShift;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
+		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
 		{
 			m_modeGrip_L = _TeraZoom;
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
+		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _UndoRedo;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
+		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _AutoRotate;
 
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
+		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _Surface;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
+		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _ColorChange;
+			m_secondMenu = _colorPad;
+			showshootingPad = false;
+			//hide top menu,show color menu
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
+		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _VirtualFinger;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
+		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
 		{
 			m_modeGrip_L = _Freeze;
 		}
-		else if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
+		 if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
 		{
 			m_modeGrip_L = _RGBImage;
 			//m_modeGrip_L = _LineWidth;
 		}
-		else if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
+		 if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
 		{
 			//m_modeGrip_L = _Contrast;
 			m_modeGrip_L = _LineWidth;

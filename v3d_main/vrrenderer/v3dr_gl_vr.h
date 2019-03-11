@@ -65,6 +65,11 @@ enum RGBImageChannel
 	channel_b,
 
 };
+enum SecondeMenu
+{
+	_nothing = 0,
+	_colorPad = 1
+};
 enum FlashType
 {
 	noflash = 1,
@@ -181,7 +186,7 @@ public:
 	void SetupCamerasForMorphology();
 
 	void MenuFunctionChoose(glm::vec2 UV);
-
+	void ColorMenuChoose(glm::vec2 UV);
 	//undo redo
 	void UndoLastSketchedNT();
 	void RedoLastSketchedNT();
@@ -294,6 +299,7 @@ private: // OpenGL bookkeeping
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
 	static ModeControlSettings m_modeGrip_L;
+	static SecondeMenu m_secondMenu;
 	static RGBImageChannel m_rgbChannel;
 	/*FlashType m_flashtype;
 	XYZ FlashCoords;
@@ -531,6 +537,7 @@ private:
 	static float iLineWid;
 	public:
 	static bool showshootingPad;
+
 	glm::vec3  shootingraystartPos;
 	glm::vec3  shootingrayDir;
 	glm::vec3 shootingraycutPos;
