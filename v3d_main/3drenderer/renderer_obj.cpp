@@ -30,7 +30,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "freeglut_geometry_r.c"
 
 #include "../io/asc_to_swc.h"
-#include "../io/sswc_to_swc.h"
+//#include "../io/sswc_to_swc.h"
 //#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
 
 
@@ -718,13 +718,13 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
                 ep->swc_file_list << filename;
         }
 		// if sswc
-		else if (filename.endsWith(".sswc", Qt::CaseInsensitive)) //KLS, 20180408
+		/*else if (filename.endsWith(".sswc", Qt::CaseInsensitive)) //KLS, 20180408
 		{
 			type = stNeuronStructure;
 			loadNeuronTree(filename);
             if (!(ep->swc_file_list.contains(filename)))
                 ep->swc_file_list << filename;
-        }
+        }*/
         // if asc
         else if (filename.endsWith(".asc", Qt::CaseInsensitive)) //PHC, 20150506
         {
@@ -1564,10 +1564,10 @@ void Renderer_gl1::loadNeuronTree(const QString& filename)
 //            }
 //        }
     }
-	else if (filename.endsWith(".sswc", Qt::CaseInsensitive))
-	{
-		SS = sswc_to_swc::readSSWC_file(filename);
-	}
+	//else if (filename.endsWith(".sswc", Qt::CaseInsensitive))
+	//{
+	//	SS = sswc_to_swc::readSSWC_file(filename);
+	//}
     else if (filename.endsWith(".asc", Qt::CaseInsensitive))
         asc_to_swc::readASC_file(SS, (char *)(qPrintable(filename)));
 
