@@ -5860,6 +5860,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 
     bool ok;
     bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+    bool node_mode = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier);
 
     if(neuronColorMode==0)
     {
@@ -5978,10 +5979,42 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                             if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
                             {
                                 if(neuronColorMode==0)
-                                    change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                                {
+                                    if(node_mode)
+                                    {
+                                        GLdouble spx, spy, spz;
+                                        vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
+                                        int best_dist;
+                                        int best_id;
+                                        for (V3DLONG j=0;j<row.size();j++)
+                                        {
+
+                                            gluProject(row[j].x, row[j].y, row[j].z, markerViewMatrix, projectionMatrix, viewport, &spx, &spy, &spz);
+                                            spy =  viewport[3]-spy;
+
+                                            double dist = (spx-p2.x())*(spx-p2.x()) + (spy-p2.y())*(spy-p2.y());
+                                            if(j==0)
+                                            {
+                                                best_dist = dist;
+                                                best_id = 0;
+                                            }
+                                            else if(best_dist>dist)
+                                            {
+                                                best_dist = dist;
+                                                best_id = j;
+                                            }
+                                        }
+                                        row[best_id].type = node_type;
+                                    }
+                                    else
+                                        change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+
+                                }
                                 else
+                                {
                                     change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
 
+                                }
                                 break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
                         }
@@ -5989,7 +6022,15 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                 }
             }
             curImg->update_3drenderer_neuron_view(w, this);
+            int soma_cnt=0;
             curImg->proj_trace_history_append();
+            for (V3DLONG i=0;i<p_listneuron->size();i++)
+            {
+                if(p_listneuron->at(i).type == 1 && (i==0 || (p_listneuron->at(i).x != p_listneuron->at(i-1).x && p_listneuron->at(i).y != p_listneuron->at(i-1).y &&
+                                                              p_listneuron->at(i).z != p_listneuron->at(i-1).z)))
+                    soma_cnt++;
+            }
+            if(soma_cnt>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt));
         }
     }
 }
