@@ -473,6 +473,7 @@ public:
 	 void showConnectedSegs();
 
 	 bool fragmentTrace; // Fragment tracing mode switch, MK, Dec 2018
+	 void connectSameTypeSegs(map<int, vector<V_NeuronSWC>>& inputSegMap);
 	 
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();

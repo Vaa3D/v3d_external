@@ -3736,6 +3736,11 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 
 	return;
 }
+
+void Renderer_gl1::connectSameTypeSegs(map<int, vector<V_NeuronSWC>>& inputSegMap)
+{
+
+}
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
 // --------- Highlight the selected segment with its downstream subtree, MK, June, 2018 ---------

@@ -938,6 +938,7 @@ class terafly::PluginInterface
 		static void drawEditInfo(int editNum);
 		static bool checkFragTraceStatus();
 		static void changeFragTraceStatus(bool newStatus);
+		static map<string, float> fragTraceParams;
 };
 
 #endif
