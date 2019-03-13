@@ -936,7 +936,8 @@ class terafly::PluginInterface
         static bool setImage(size_t x, size_t y, size_t z);
 
 		static void drawEditInfo(int editNum);
-
+		static bool checkFragTraceStatus();
+		static void changeFragTraceStatus(bool newStatus);
 };
 
 #endif

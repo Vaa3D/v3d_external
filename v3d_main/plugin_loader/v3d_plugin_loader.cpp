@@ -1692,6 +1692,16 @@ void V3d_PluginLoader::redrawEditInfo(int editInputNum)
 	terafly::PluginInterface::drawEditInfo(editInputNum);
 }
 
+bool V3d_PluginLoader::checkFragTraceStatus()
+{
+	return terafly::PluginInterface::checkFragTraceStatus();
+}
+
+void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
+{
+	terafly::PluginInterface::changeFragTraceStatus(newStatus);
+}
+
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {

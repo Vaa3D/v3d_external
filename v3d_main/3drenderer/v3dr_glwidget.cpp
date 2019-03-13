@@ -1132,13 +1132,27 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
 
-					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+					if (thisRenderer->fragmentTrace)
 					{
-						if (segIt->row.begin()->type == 7) segIt->to_be_deleted = true;
-					}
+						map<int, vector<V_NeuronSWC>> labeledSegs;
+						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+						{
+							if (segIt->row.begin()->type == 7) segIt->to_be_deleted = true;
+							else
+							{
+								if (labeledSegs.find(segIt->row.begin()->type) == labeledSegs.end())
+								{
+									vector<V_NeuronSWC> pickedSegs;
+									pickedSegs.push_back(*segIt);
+									labeledSegs.insert({ segIt->row.begin()->type, pickedSegs });
+								}
+								else labeledSegs.at(segIt->row.begin()->type).push_back(*segIt);
+							}
+						}
 
-					curImg->update_3drenderer_neuron_view(this, thisRenderer);
-					curImg->proj_trace_history_append();
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+						curImg->proj_trace_history_append();
+					}
 				}
 			}
 			else

@@ -227,7 +227,8 @@ public:
     virtual bool setImageTeraFly(size_t x, size_t y, size_t z);
 
 	virtual void redrawEditInfo(int editInputNum);
-
+	virtual bool checkFragTraceStatus();
+	virtual void changeFragTraceStatus(bool newStatus);
 };
 
 #endif

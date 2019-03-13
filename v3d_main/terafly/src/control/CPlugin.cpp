@@ -545,3 +545,15 @@ void tf::PluginInterface::drawEditInfo(int editNum)
 	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
 	CViewer::getCurrent()->getGLWidget()->renderer->drawEditInfo();
 }
+
+bool tf::PluginInterface::checkFragTraceStatus()
+{
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	return thisRenderer->fragmentTrace;
+}
+
+void tf::PluginInterface::changeFragTraceStatus(bool newStatus)
+{
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	thisRenderer->fragmentTrace = newStatus;
+}

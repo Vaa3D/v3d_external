@@ -244,7 +244,8 @@ public:
     virtual bool setImageTeraFly(size_t x, size_t y, size_t z) = 0;
 
 	virtual void redrawEditInfo(int editInputNum) = 0;
-
+	virtual bool checkFragTraceStatus() = 0;
+	virtual void changeFragTraceStatus(bool newStatus) = 0;
 
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
