@@ -1134,7 +1134,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 					if (thisRenderer->fragmentTrace)
 					{
-						map<int, vector<V_NeuronSWC>> labeledSegs;
+						map<int, vector<V_NeuronSWC> > labeledSegs;
 						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
 						{
 							if (segIt->row.begin()->type == 7) segIt->to_be_deleted = true;
@@ -1144,7 +1144,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 								{
 									vector<V_NeuronSWC> pickedSegs;
 									pickedSegs.push_back(*segIt);
-									labeledSegs.insert({ segIt->row.begin()->type, pickedSegs });
+									labeledSegs.insert(pair<int, vector<V_NeuronSWC> >(segIt->row.begin()->type, pickedSegs));
 								}
 								else labeledSegs.at(segIt->row.begin()->type).push_back(*segIt);
 							}
