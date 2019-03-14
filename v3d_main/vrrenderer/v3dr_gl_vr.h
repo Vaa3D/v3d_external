@@ -55,7 +55,8 @@ enum ModeControlSettings
 	_AutoRotate,
 	_ResetImage,
 	_RGBImage,
-	_MovetoCreator
+	_MovetoCreator,
+	_StretchImage
 };
 enum RGBImageChannel
 {
@@ -535,6 +536,7 @@ private:
 	double GetFrameTime();
 
 	static float iLineWid;
+	static float iscaleZ;
 	public:
 	static bool showshootingPad;
 

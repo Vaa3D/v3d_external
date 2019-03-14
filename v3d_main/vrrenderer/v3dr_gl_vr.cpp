@@ -69,6 +69,7 @@ float CMainApplication::fContrast = 1;
 bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
+float CMainApplication::iscaleZ =1;
 float CMainApplication::fBrightness = 0.9;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
@@ -711,7 +712,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_bControllerModelON(true)
 	, m_modeControlTouchPad_R(0)
 	, m_modeControlGrip_R(0)
-	, m_contrastMode (false)
+	, m_contrastMode (true)//right touch_pad only control contrast
 	, m_rotateMode (false)
 	, m_zoomMode (false)
 	, m_autoRotateON (false)
@@ -1667,7 +1668,7 @@ bool CMainApplication::HandleInput()
 				{
 				if(m_fTouchPosY>0)
 				{
-					fContrast+=1;
+					fContrast+=0.5;
 					if (fContrast>50)
 						fContrast = 50;
 					//fBrightness+= 0.01f;
@@ -1676,14 +1677,13 @@ bool CMainApplication::HandleInput()
 				}
 				else
 				{
-					fContrast-=1;
+					fContrast-=0.5;
 					if (fContrast<1)
 						fContrast = 1;
 					//fBrightness-= 0.01f;
 					//if(fBrightness<0)
 					//	fBrightness = 0;
-				}
-				qDebug()<<"Constrast is "<<fContrast;
+				}	
 
 
 				}
@@ -1694,7 +1694,7 @@ bool CMainApplication::HandleInput()
 					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/100,glm::vec3(0,1,0));
 					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
 				}
-				else if(m_zoomMode==true)//into zoom mode
+				else if(0&&m_zoomMode==true)//into zoom mode
 				{
 					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
 					m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/15));
@@ -2260,7 +2260,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				// 	//if(fBrightness<0)
 				// 	//	fBrightness = 0;
 				// }
-				qDebug()<<"Constrast is "<<fContrast;
 				break;
 			}
 		case _UndoRedo:
@@ -2458,6 +2457,24 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+			break;
+		case _StretchImage:
+			{
+				if(temp_x>0&&iscaleZ<=5)
+				{				
+				iscaleZ++;
+				m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+				m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,5.0/4.0));
+				m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+				}
+				else if(temp_x<0&&iscaleZ>1)
+				{
+				iscaleZ--;
+				m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+				m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,4.0/5.0));
+				m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+				}
+			}
 		default:
 			break;
 		}
@@ -2611,30 +2628,31 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	//}
 
     if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)/*&&(!showshootingray)*/)
-	{		//use touchpad press to change the processing mode for touchpad, nothing or translate or rotate or zoom mode
-		m_modeControlTouchPad_R++;
-		m_modeControlTouchPad_R%=4;
-		switch(m_modeControlTouchPad_R)
-		{
-		case 0:
-			m_contrastMode=m_rotateMode=m_zoomMode = false;
-			break;
-		case 1:
-			m_contrastMode = true;
-			m_rotateMode=m_zoomMode = false;
-			break;
-		case 2:
-			m_rotateMode = true;
-			m_contrastMode=m_zoomMode = false;
-			break;
-		case 3:
-			m_zoomMode = true;
-			m_contrastMode=m_rotateMode = false;
-			break;
-		default:
-			break;
-		}	
-		qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
+	{		//use touchpad press to change the processing mode for touchpad, only contrast now
+		// m_modeControlTouchPad_R++;
+		// m_modeControlTouchPad_R%=4;
+
+		// switch(m_modeControlTouchPad_R)
+		// {
+		// case 0:
+		// 	m_contrastMode=m_rotateMode=m_zoomMode = false;
+		// 	break;
+		// case 1:
+		// 	m_contrastMode = true;
+		// 	m_rotateMode=m_zoomMode = false;
+		// 	break;
+		// case 2:
+		// 	m_rotateMode = true;
+		// 	m_contrastMode=m_zoomMode = false;
+		// 	break;
+		// case 3:
+		// 	m_zoomMode = true;
+		// 	m_contrastMode=m_rotateMode = false;
+		// 	break;
+		// default:
+		// 	break;
+		// }	
+		//qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
 	}
 		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))	//detect trigger when menu show
 		{
@@ -3046,7 +3064,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					{
 					case 1://insert node behind first
 						{
-							qDebug()<<"case 1";
 							int temp = j;
 							if(j+1<nearestNT.listNeuron.size())
 							temp = j+1;
@@ -3096,7 +3113,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						break;
 					case 3://insert node in middle
 						{
-							qDebug()<<"case 3";
 							int balancenode1 =j-1;
 							int balancenode2 =j-1;
 							int balancenode3 =j+1;
@@ -3187,7 +3203,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						break;
 					}
 				}
-				qDebug()<<"get node and nt";
 				//special situation for splitnode in head or end
 				if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2))
 				{
@@ -3534,7 +3549,7 @@ void CMainApplication::RenderFrame()
 		//for all (synchronized) sketched strokes
 		//SetupMorphologySurface(currentNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
 		//SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
-
+		 
 		if (m_autoRotateON) //auto rotation is on
 		{
 			m_globalMatrix = glm::translate(m_globalMatrix,autoRotationCenter);
@@ -4026,6 +4041,7 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _TeraZoom:
 		case _LineWidth:
+		case _StretchImage:
 		case _RGBImage:
 		case _Contrast:
 			{
@@ -4160,6 +4176,17 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0,vcVerts);
 				break;
 			}
+		case _StretchImage:
+		{
+				AddVertex(point_M.x,point_M.y,point_M.z,0.335f,0.375f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.375f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.5f,vcVerts);
+				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.5f,vcVerts);
+				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.5f,vcVerts);
+				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.375f,vcVerts);
+
+			break;
+		}
 		case _AutoRotate:
 			{
 				AddVertex(point_M.x,point_M.y,point_M.z,0.42f,0,vcVerts);
@@ -4277,51 +4304,50 @@ void CMainApplication::SetupControllerTexture()
 		point_F = mat_R * point_F;
 		point_G = mat_R * point_G;
 		point_H = mat_R * point_H;
-		switch (m_modeControlTouchPad_R)
-		{
-		case 0://nothing
-			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.42f,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.42f,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.42f,0.5f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.5f,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.375f,vcVerts);
-				break;
-			}
-		case 1://translate
-			{
+		// switch (m_modeControlTouchPad_R)
+		// {
+		// case 0://nothing
+		// 	{
+		// 		AddVertex(point_E.x,point_E.y,point_E.z,0.42f,0.375f,vcVerts);
+		// 		AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.375f,vcVerts);
+		// 		AddVertex(point_G.x,point_G.y,point_G.z,0.42f,0.5f,vcVerts);
+		// 		AddVertex(point_G.x,point_G.y,point_G.z,0.42f,0.5f,vcVerts);
+		// 		AddVertex(point_H.x,point_H.y,point_H.z,0.5f,0.5f,vcVerts);
+		// 		AddVertex(point_F.x,point_F.y,point_F.z,0.5f,0.375f,vcVerts);
+		// 		break;
+		// 	}
+		//case 1://translate
+		//contrast texture only
 				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
 				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.375f,vcVerts);
 				AddVertex(point_G.x,point_G.y,point_G.z,0.17,0.5f,vcVerts);
 				AddVertex(point_G.x,point_G.y,point_G.z,0.17,0.5f,vcVerts);
 				AddVertex(point_H.x,point_H.y,point_H.z,0.25f,0.5f,vcVerts);
 				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.375f,vcVerts);
-				break;
-			}
-		case 2://rotate
-			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.25f,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.25f,0.5f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.335f,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.375f,vcVerts);
-				break;
-			}
-		case 3://scale
-			{
-				AddVertex(point_E.x,point_E.y,point_E.z,0.335f,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.42f,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.335f,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.335f,0.5f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.42f,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.42f,0.375f,vcVerts);
-				break;
-			}
-		default:
-			break;
-		}
+				//break;
+		// case 2://rotate
+		// 	{
+		// 		AddVertex(point_E.x,point_E.y,point_E.z,0.25f,0.375f,vcVerts);
+		// 		AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.375f,vcVerts);
+		// 		AddVertex(point_G.x,point_G.y,point_G.z,0.25f,0.5f,vcVerts);
+		// 		AddVertex(point_G.x,point_G.y,point_G.z,0.25f,0.5f,vcVerts);
+		// 		AddVertex(point_H.x,point_H.y,point_H.z,0.335f,0.5f,vcVerts);
+		// 		AddVertex(point_F.x,point_F.y,point_F.z,0.335f,0.375f,vcVerts);
+		// 		break;
+		// 	}
+		// case 3://scale
+		// 	{
+		// 		AddVertex(point_E.x,point_E.y,point_E.z,0.335f,0.375f,vcVerts);
+		// 		AddVertex(point_F.x,point_F.y,point_F.z,0.42f,0.375f,vcVerts);
+		// 		AddVertex(point_G.x,point_G.y,point_G.z,0.335f,0.5f,vcVerts);
+		// 		AddVertex(point_G.x,point_G.y,point_G.z,0.335f,0.5f,vcVerts);
+		// 		AddVertex(point_H.x,point_H.y,point_H.z,0.42f,0.5f,vcVerts);
+		// 		AddVertex(point_F.x,point_F.y,point_F.z,0.42f,0.375f,vcVerts);
+		// 		break;
+		// 	}
+		// default:
+		// 	break;
+		// }
 
 
 		Vector4 point_I(-0.01f,0.01f,0.01f,1);//for the menu button dispaly "SAVE"
@@ -5325,17 +5351,17 @@ void CMainApplication::RenderStereoTargets()
 	// Left Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId ); //render scene to m_nRenderFramebufferId
  	glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
-		frameCount++;
-	if(GetTime() > 1.0f)
-	{
-		fps = frameCount;
-		frameCount = 0;
-		StartTimer();
-		//cout<<fps<<endl;
-		//used for fps tess liqi
-	}	
+	// frameCount++;
+	// if(GetTime() > 1.0f)
+	// {
+	// 	fps = frameCount;
+	// 	frameCount = 0;
+	// 	StartTimer();
+	// 	cout<<fps<<endl;
+	// 	//used for fps tess liqi
+	// }	
 
-	frameTime = GetFrameTime();
+	// frameTime = GetFrameTime();
  	RenderScene( vr::Eye_Left );
  	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDisable( GL_MULTISAMPLE );
@@ -6704,72 +6730,35 @@ GLuint CMainApplication::initVol3DTex()
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-    // pixel transfer happens here from client to OpenGL server
-    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+	// pixel transfer happens here from client to OpenGL server
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	GL_ERROR();
-	switch(img4d->getDatatype())
+	cout << "img4d->getCDim()=" << img4d->getCDim() << endl;
+	switch (img4d->getCDim())
 	{
-	case V3D_UINT8:
+	case 1:
+	{
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLubyte *)img4d->getRawData());
+	}
+	break;
+	case 3:
+	{
+		GLubyte *RData = img4d->getRawDataAtChannel(0);
+		GLubyte *GData = img4d->getRawDataAtChannel(1);
+		GLubyte *BData = img4d->getRawDataAtChannel(2);
+		GLubyte *RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel() * 3];
+		for (int i = 0; i < img4d->getTotalUnitNumberPerChannel() * 3;)
 		{
-		GLubyte * RData = img4d->getRawDataAtChannel(0);
-		GLubyte * GData = img4d->getRawDataAtChannel(1);
-		GLubyte * BData = img4d->getRawDataAtChannel(2);
-		GLubyte * RBGData = new GLubyte[img4d->getTotalUnitNumberPerChannel()*3];
-		cout<<"step 2"<<endl;
-		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
-		{	
-			RBGData[i] = RData[i/3];
-			RBGData[i+1] = GData[i/3];
-			RBGData[i+2] = BData[i/3];
-			i+=3;
+			RBGData[i] = RData[i / 3];
+			RBGData[i + 1] = GData[i / 3];
+			RBGData[i + 2] = BData[i / 3];
+			i += 3;
 		}
-	//	RGBImageTexData = RBGData;
-		
-		cout<<"step 3"<<endl;
+		//	RGBImageTexData = RBGData;
 		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLubyte *)RBGData);
-		cout<<"data type is V3D_UINT8"<<endl;
-		}
+	}
 	break;
-	case V3D_UINT16:
-		{
-			GLushort * RData = (GLushort *)img4d->getRawDataAtChannel(0);
-		GLushort * GData = (GLushort *)img4d->getRawDataAtChannel(1);
-		GLushort * BData = (GLushort *)img4d->getRawDataAtChannel(2);
-		GLushort * RBGData = new GLushort[img4d->getTotalUnitNumberPerChannel()*3];
-		cout<<"step 2"<<endl;
-		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
-		{	
-			RBGData[i] = RData[i/3];
-			RBGData[i+1] = GData[i/3];
-			RBGData[i+2] = BData[i/3];
-			i+=3;
-		}
-		//RGBImageTexData = RBGData;//used to create octree tex data
-		cout<<"step 3"<<endl;
-		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_SHORT, (GLushort *)RBGData);
-		cout<<"data type is V3D_UINT16"<<endl;
-		}
-	break;
-	case V3D_FLOAT32:
-		{
-		GLuint * RData = (GLuint *)img4d->getRawDataAtChannel(0);
-		GLuint * GData = (GLuint *)img4d->getRawDataAtChannel(1);
-		GLuint * BData = (GLuint *)img4d->getRawDataAtChannel(2);
-		GLuint * RBGData = new GLuint[img4d->getTotalUnitNumberPerChannel()*3];
-		cout<<"step 2"<<endl;
-		for(int i = 0;i<img4d->getTotalUnitNumberPerChannel()*3;)
-		{	
-			RBGData[i] = RData[i/3];
-			RBGData[i+1] = GData[i/3];
-			RBGData[i+2] = BData[i/3];
-			i+=3;
-		}
-	//	RGBImageTexData = RBGData;
-		cout<<"step 3"<<endl;
-		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, h, d, 0, GL_RGB, GL_UNSIGNED_INT, (GLuint *)RBGData);
-		cout<<"data type is V3D_FLOAT32"<<endl;
-		}
-	break;
+
 	default:
 		break;
 	}
@@ -7360,7 +7349,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		 if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
 		{
 			//m_modeGrip_L = _Contrast;
-			m_modeGrip_L = _LineWidth;
+			m_modeGrip_L = _StretchImage;
 		}
 		// else if((panelpos_x <= 0.26) && (panelpos_y<= 0.59)&&(panelpos_y >= 0.5)&&(panelpos_x >= 0.1))
 		// {

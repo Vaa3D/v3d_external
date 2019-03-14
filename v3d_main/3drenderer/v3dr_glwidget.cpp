@@ -50,7 +50,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
-
+#include "mozak\Mozak3DView.h"
+#include "mozak\MozakUI.h"
 #include "../terafly/src/control/CPlugin.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
@@ -1764,6 +1765,13 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 
 #define __VR_FUNCS_a__
 #ifdef __ALLOW_VR_FUNCS__
+void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
+{
+	//cout<<"step liqi"<<endl;
+	//mozak::Mozak3DView::HideAll3DView();
+	doimageVRView(bCanCoMode);
+
+}
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
 	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;

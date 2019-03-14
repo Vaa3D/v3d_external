@@ -273,7 +273,8 @@ public slots:
 	virtual void annotationDialog(int dataClass, int surfaceType, int index);
 
 #ifdef __ALLOW_VR_FUNCS__
-    virtual void doimageVRView(bool bCanCoMode = true);
+	virtual void doimage3DVRView(bool bCanCoMode = false);
+    virtual void doimageVRView(bool bCanCoMode = false);
 	virtual void doclientView(bool check_flag=false);
 	virtual void OnVRSocketDisConnected();
 #endif

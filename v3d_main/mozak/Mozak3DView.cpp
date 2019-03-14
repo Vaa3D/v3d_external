@@ -1497,7 +1497,20 @@ void Mozak3DView::setZSurfaceLimitValues(int ignore){
 		curr_renderer->setBBZ((float) window3D->zcminSlider->value()-zLockLayerSB->value(), (float) window3D->zcmaxSlider->value()+zLockLayerSB->value());
 	}
 }
-
+void Mozak3DView::HideAll3DView()
+{
+	cout<<"come in";
+	MozakUI* moz = MozakUI::getMozakInstance();
+	cout<<"getMozakInstance";
+	if(!moz->V3D_env) cout<<"V3D_env is nullptr"<<endl;
+	QList<V3dR_MainWindow*> windowList =moz->V3D_env->getListAll3DViewers();
+	cout<<"windowListsize"<<windowList.length();
+	for (V3DLONG i=0;i<windowList.length();i++)
+    {
+		cout<<"step"<<i<<endl;
+		windowList[i]->hide();
+    }
+}
 void Mozak3DView::overviewMonitorButtonClicked(bool checked){
 	// test mozak autosave path:
 
