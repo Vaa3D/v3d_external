@@ -1134,24 +1134,29 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 					if (thisRenderer->fragmentTrace)
 					{
-						map<int, vector<V_NeuronSWC> > labeledSegs;
+						map<int, vector<int> > labeledSegs;
 						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
 						{
-							if (segIt->row.begin()->type == 7) segIt->to_be_deleted = true;
+							if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
 							else
 							{
 								if (labeledSegs.find(segIt->row.begin()->type) == labeledSegs.end())
 								{
-									vector<V_NeuronSWC> pickedSegs;
-									pickedSegs.push_back(*segIt);
-									labeledSegs.insert(pair<int, vector<V_NeuronSWC> >(segIt->row.begin()->type, pickedSegs));
+									vector<int> pickedSegs;
+									pickedSegs.push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
+									labeledSegs.insert(pair<int, vector<int> >(segIt->row.begin()->type, pickedSegs));
 								}
-								else labeledSegs.at(segIt->row.begin()->type).push_back(*segIt);
+								else labeledSegs.at(segIt->row.begin()->type).push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
 							}
 						}
+						for (map<int, vector<int> >::iterator typeIt = labeledSegs.begin(); typeIt != labeledSegs.end(); ++typeIt)
+						{
+							cout << typeIt->first << ": ";
+							for (vector<int>::iterator segIt = typeIt->second.begin(); segIt != typeIt->second.end(); ++segIt) cout << *segIt << " ";
+							cout << endl;
+						}
 
-						thisRenderer->connectSameTypeSegs(labeledSegs);
-
+						thisRenderer->connectSameTypeSegs(labeledSegs, curImg);					
 
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();

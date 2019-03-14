@@ -1702,6 +1702,11 @@ void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
 	terafly::PluginInterface::changeFragTraceStatus(newStatus);
 }
 
+void V3d_PluginLoader::getParamsFromFragTraceUI()
+{
+	terafly::PluginInterface::getParamsFromFragTraceUI();
+}
+
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {
