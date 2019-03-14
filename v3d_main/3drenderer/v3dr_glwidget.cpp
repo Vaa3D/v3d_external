@@ -1149,12 +1149,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 								else labeledSegs.at(segIt->row.begin()->type).push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
 							}
 						}
-						for (map<int, vector<int> >::iterator typeIt = labeledSegs.begin(); typeIt != labeledSegs.end(); ++typeIt)
+						/*for (map<int, vector<int> >::iterator typeIt = labeledSegs.begin(); typeIt != labeledSegs.end(); ++typeIt)
 						{
 							cout << typeIt->first << ": ";
 							for (vector<int>::iterator segIt = typeIt->second.begin(); segIt != typeIt->second.end(); ++segIt) cout << *segIt << " ";
 							cout << endl;
-						}
+						}*/
 
 						thisRenderer->connectSameTypeSegs(labeledSegs, curImg);					
 

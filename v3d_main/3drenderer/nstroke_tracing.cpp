@@ -3739,11 +3739,13 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 
 void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage* curImgPtr)
 {
-	int oldSegCount = 0, newSegCount = 0;
-	for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt) oldSegCount = oldSegCount + segCountIt->second.size();
-
-	while (oldSegCount != newSegCount)
+	int oldSegCount, newSegCount;
+	while (1)
 	{ 
+		oldSegCount = 0; newSegCount = 0;
+		for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt) 
+			oldSegCount = oldSegCount + segCountIt->second.size();
+
 		for (map<int, vector<int> >::iterator segTypeIt = inputSegMap.begin(); segTypeIt != inputSegMap.end(); ++segTypeIt)
 		{
 			cout << segTypeIt->first << ": " << segTypeIt->second.size() << endl;
@@ -3830,10 +3832,15 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 			segs2beConn.push_back(seg1);
 			segs2beConn.push_back(seg2);
 			if (dist < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, segs2beConn);
-			if (find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2.segID) != segTypeIt->second.end()) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2.segID));
-
-			for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt) newSegCount = newSegCount + segCountIt->second.size();
+			
+			if (curImgPtr->tracedNeuron.seg.at(seg1.segID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1.segID));
+			else if (curImgPtr->tracedNeuron.seg.at(seg2.segID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2.segID));
 		}
+
+		for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt)
+			newSegCount = newSegCount + segCountIt->second.size();
+
+		if (oldSegCount == newSegCount) break;
 	}
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
