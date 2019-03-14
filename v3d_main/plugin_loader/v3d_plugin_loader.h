@@ -229,6 +229,7 @@ public:
 	virtual void redrawEditInfo(int editInputNum);
 	virtual bool checkFragTraceStatus();
 	virtual void changeFragTraceStatus(bool newStatus);
+	virtual void getParamsFromFragTraceUI();
 };
 
 #endif

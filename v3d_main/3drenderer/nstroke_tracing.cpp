@@ -3737,9 +3737,111 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 	return;
 }
 
-void Renderer_gl1::connectSameTypeSegs(map<int, vector<V_NeuronSWC>>& inputSegMap)
+void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage* curImgPtr)
 {
+	int oldSegCount, newSegCount;
+	while (1)
+	{ 
+		oldSegCount = 0; newSegCount = 0;
+		for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt) 
+			oldSegCount = oldSegCount + segCountIt->second.size();
 
+		for (map<int, vector<int> >::iterator segTypeIt = inputSegMap.begin(); segTypeIt != inputSegMap.end(); ++segTypeIt)
+		{
+			cout << segTypeIt->first << ": " << segTypeIt->second.size() << endl;
+			if (segTypeIt->second.size() == 1) continue;
+
+			float minDist = 10000, dist;
+			bool head = false, tail = false;
+			segInfoUnit seg1, seg2;
+			float seg1HeadX, seg1HeadY, seg1HeadZ, seg1TailX, seg1TailY, seg1TailZ, seg2HeadX, seg2HeadY, seg2HeadZ, seg2TailX, seg2TailY, seg2TailZ;
+			for (vector<int>::iterator clusterSegIt1 = segTypeIt->second.begin(); clusterSegIt1 != segTypeIt->second.end() - 1; ++clusterSegIt1)
+			{
+				for (vector<int>::iterator clusterSegIt2 = segTypeIt->second.begin() + 1; clusterSegIt2 != segTypeIt->second.end(); ++clusterSegIt2)
+				{
+					seg1.segID = *clusterSegIt1;
+					seg2.segID = *clusterSegIt2;
+
+					seg1HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->x;
+					seg2HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->x;
+					seg1HeadY = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->y;
+					seg2HeadY = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->y;
+					seg1HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->z;
+					seg2HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->z;
+					dist = sqrt((seg1HeadX - seg2HeadX) * (seg1HeadX - seg2HeadX) + (seg1HeadY - seg2HeadY) * (seg1HeadY - seg2HeadY) + (seg1HeadZ - seg2HeadZ) * (seg1HeadZ - seg2HeadZ));
+					if (dist < minDist)
+					{
+						seg1.head_tail = -1;
+						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+						seg2.head_tail = -1;
+						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
+						minDist = dist;
+					}
+
+					seg1HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->x;
+					seg2TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->x;
+					seg1HeadY = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->y;
+					seg2TailY = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->y;
+					seg1HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->z;
+					seg2TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->z;
+					dist = sqrt((seg1HeadX - seg2TailX) * (seg1HeadX - seg2TailX) + (seg1HeadY - seg2TailY) * (seg1HeadY - seg2TailY) + (seg1HeadZ - seg2TailZ) * (seg1HeadZ - seg2TailZ));
+					if (dist < minDist)
+					{
+						seg1.head_tail = -1;
+						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+						seg2.head_tail = 2;
+						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
+						minDist = dist;
+					}
+
+					seg1TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->x;
+					seg2HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->x;
+					seg1TailY = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->y;
+					seg2HeadY = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->y;
+					seg1TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->z;
+					seg2HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->z;
+					dist = sqrt((seg1TailX - seg2HeadX) * (seg1TailX - seg2HeadX) + (seg1TailY - seg2HeadY) * (seg1TailY - seg2HeadY) + (seg1TailZ - seg2HeadZ) * (seg1TailZ - seg2HeadZ));
+					if (dist < minDist)
+					{
+						seg1.head_tail = 2;
+						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+						seg2.head_tail = -1;
+						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
+						minDist = dist;
+					}
+
+					seg1TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->x;
+					seg2TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->x;
+					seg1TailY = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->y;
+					seg2TailY = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->y;
+					seg1TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->z;
+					seg2TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->z;
+					dist = sqrt((seg1TailX - seg2TailX) * (seg1TailX - seg2TailX) + (seg1TailY - seg2TailY) * (seg1TailY - seg2TailY) + (seg1TailZ - seg2TailZ) * (seg1TailZ - seg2TailZ));
+					if (dist < minDist)
+					{
+						seg1.head_tail = 2;
+						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+						seg2.head_tail = 2;
+						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
+						minDist = dist;
+					}
+				}
+			}
+
+			vector<segInfoUnit> segs2beConn;
+			segs2beConn.push_back(seg1);
+			segs2beConn.push_back(seg2);
+			if (dist < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, segs2beConn);
+			
+			if (curImgPtr->tracedNeuron.seg.at(seg1.segID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1.segID));
+			else if (curImgPtr->tracedNeuron.seg.at(seg2.segID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2.segID));
+		}
+
+		for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt)
+			newSegCount = newSegCount + segCountIt->second.size();
+
+		if (oldSegCount == newSegCount) break;
+	}
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
