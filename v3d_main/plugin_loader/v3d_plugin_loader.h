@@ -229,7 +229,7 @@ public:
 	virtual void redrawEditInfo(int editInputNum);
 	virtual bool checkFragTraceStatus();
 	virtual void changeFragTraceStatus(bool newStatus);
-	virtual void getParamsFromFragTraceUI();
+	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 };
 
 #endif

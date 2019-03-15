@@ -558,8 +558,8 @@ void tf::PluginInterface::changeFragTraceStatus(bool newStatus)
 	thisRenderer->fragmentTrace = newStatus;
 }
 
-void tf::PluginInterface::getParamsFromFragTraceUI()
+void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const float& value)
 {
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
-	thisRenderer->fragTraceParams.insert(pair<string, float>("labeledDistThreshold", 100));
+	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
 }
