@@ -3757,6 +3757,7 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 		for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt) 
 			oldSegCount = oldSegCount + segCountIt->second.size();
 
+		map<float, vector<segInfoUnit> > dist2segsMap;
 		for (map<int, vector<int> >::iterator segTypeIt = inputSegMap.begin(); segTypeIt != inputSegMap.end(); ++segTypeIt)
 		{
 			cout << segTypeIt->first << ": ";
@@ -3840,18 +3841,24 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
 						minDist = dist;
 					}
+
+					vector<segInfoUnit> segPair(2);
+					segPair[0] = seg1;
+					segPair[1] = seg2;
+					dist2segsMap.insert(pair<float, vector<segInfoUnit> >(dist, segPair));
 				}
 			}
 
-			vector<segInfoUnit> segs2beConn;
-			segs2beConn.push_back(seg1);
-			segs2beConn.push_back(seg2);
-			cout << " -- post elongation distance measured: " << dist << " " << seg1.segID << "_" << seg1.head_tail << " " << seg2.segID << "_" << seg2.head_tail << endl;
-			if (dist < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, segs2beConn);
+			int seg1ID = dist2segsMap.begin()->second.begin()->segID;
+			int seg2ID = (dist2segsMap.begin()->second.begin() + 1)->segID;
+			cout << " -- post elongation distance measured: " << dist << " " << seg1ID << "_" << dist2segsMap.begin()->second.begin()->head_tail << " " << seg2ID << "_" << (dist2segsMap.begin()->second.begin() + 1)->head_tail << endl;
+			if (dist < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
 			cout << endl;
-			
-			if (curImgPtr->tracedNeuron.seg.at(seg1.segID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1.segID));
-			else if (curImgPtr->tracedNeuron.seg.at(seg2.segID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2.segID));
+
+			if (curImgPtr->tracedNeuron.seg.at(seg1ID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1ID));
+			else if (curImgPtr->tracedNeuron.seg.at(seg2ID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2ID));
+		
+			dist2segsMap.clear();
 		}
 
 		for (map<int, vector<int> >::iterator segCountIt = inputSegMap.begin(); segCountIt != inputSegMap.end(); ++segCountIt)
