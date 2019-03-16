@@ -3740,11 +3740,11 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage*& curImgPtr)
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	My4DImage* curImg = 0;       
+	if (w) curImg = v3dr_getImage4d(_idep);
 
-
-	float fMOSTxyResSquare = this->fragTraceParams.at("xyResRatio") * this->fragTraceParams.at("xyResRatio");
-	float fMOSTzResSquare = this->fragTraceParams.at("zResRatio") * this->fragTraceParams.at("zResRatio");
+	float fMOSTxyResSquare = 1;// this->fragTraceParams.at("xyResRatio") * this->fragTraceParams.at("xyResRatio");
+	float fMOSTzResSquare = 1;// this->fragTraceParams.at("zResRatio") * this->fragTraceParams.at("zResRatio");
 
 	cout << " -- post elongation threshold: " << this->fragTraceParams.at("labeledDistThreshold") << endl;
 	cout << " ---- xy resolution ratio: " << this->fragTraceParams.at("xyResRatio") << endl;
@@ -3758,6 +3758,10 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 			oldSegCount = oldSegCount + segCountIt->second.size();
 
 		map<float, vector<segInfoUnit> > dist2segsMap;
+		vector<segInfoUnit> segPair(2);
+		segInfoUnit seg1, seg2;
+		segPair[0] = seg1;
+		segPair[1] = seg2;
 		for (map<int, vector<int> >::iterator segTypeIt = inputSegMap.begin(); segTypeIt != inputSegMap.end(); ++segTypeIt)
 		{
 			cout << segTypeIt->first << ": ";
@@ -3767,16 +3771,15 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 
 			if (segTypeIt->second.size() == 1) continue;
 
-			float minDist = 10000, dist;
-			bool head = false, tail = false;
-			segInfoUnit seg1, seg2;
-			float seg1HeadX, seg1HeadY, seg1HeadZ, seg1TailX, seg1TailY, seg1TailZ, seg2HeadX, seg2HeadY, seg2HeadZ, seg2TailX, seg2TailY, seg2TailZ;
 			for (vector<int>::iterator clusterSegIt1 = segTypeIt->second.begin(); clusterSegIt1 != segTypeIt->second.end() - 1; ++clusterSegIt1)
 			{
+				float minDist = 10000, dist;
+				
+				float seg1HeadX, seg1HeadY, seg1HeadZ, seg1TailX, seg1TailY, seg1TailZ, seg2HeadX, seg2HeadY, seg2HeadZ, seg2TailX, seg2TailY, seg2TailZ;
 				for (vector<int>::iterator clusterSegIt2 = clusterSegIt1 + 1; clusterSegIt2 != segTypeIt->second.end(); ++clusterSegIt2)
 				{
-					seg1.segID = *clusterSegIt1;
-					seg2.segID = *clusterSegIt2;
+					segPair[0].segID = *clusterSegIt1;
+					segPair[1].segID = *clusterSegIt2;
 
 					seg1HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->x;
 					seg2HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->x;
@@ -3784,15 +3787,13 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 					seg2HeadY = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->y;
 					seg1HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->z;
 					seg2HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->z;
-					dist = sqrt((seg1HeadX - seg2HeadX) * (seg1HeadX - seg2HeadX) * fMOSTxyResSquare + (seg1HeadY - seg2HeadY) * (seg1HeadY - seg2HeadY) * fMOSTxyResSquare + (seg1HeadZ - seg2HeadZ) * (seg1HeadZ - seg2HeadZ)) * fMOSTzResSquare;
-					if (dist < minDist)
-					{
-						seg1.head_tail = -1;
-						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
-						seg2.head_tail = -1;
-						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
-						minDist = dist;
-					}
+					dist = sqrt((seg1HeadX - seg2HeadX) * (seg1HeadX - seg2HeadX) + 
+						(seg1HeadY - seg2HeadY) * (seg1HeadY - seg2HeadY) + (seg1HeadZ - seg2HeadZ) * (seg1HeadZ - seg2HeadZ));
+					segPair[0].head_tail = -1;
+					segPair[0].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+					segPair[1].head_tail = -1;
+					segPair[1].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
+					dist2segsMap.insert(pair<float, vector<segInfoUnit> >(dist, segPair));
 
 					seg1HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->x;
 					seg2TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->x;
@@ -3800,15 +3801,13 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 					seg2TailY = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->y;
 					seg1HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.end() - 1)->z;
 					seg2TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->z;
-					dist = sqrt((seg1HeadX - seg2TailX) * (seg1HeadX - seg2TailX) * fMOSTxyResSquare + (seg1HeadY - seg2TailY) * (seg1HeadY - seg2TailY) * fMOSTxyResSquare + (seg1HeadZ - seg2TailZ) * (seg1HeadZ - seg2TailZ)) * fMOSTzResSquare;
-					if (dist < minDist)
-					{
-						seg1.head_tail = -1;
-						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
-						seg2.head_tail = 2;
-						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
-						minDist = dist;
-					}
+					dist = sqrt((seg1HeadX - seg2TailX) * (seg1HeadX - seg2TailX) + 
+						(seg1HeadY - seg2TailY) * (seg1HeadY - seg2TailY) + (seg1HeadZ - seg2TailZ) * (seg1HeadZ - seg2TailZ));
+					segPair[0].head_tail = -1;
+					segPair[0].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+					segPair[1].head_tail = 2;
+					segPair[1].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
+					dist2segsMap.insert(pair<float, vector<segInfoUnit> >(dist, segPair));
 
 					seg1TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->x;
 					seg2HeadX = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->x;
@@ -3816,15 +3815,13 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 					seg2HeadY = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->y;
 					seg1TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->z;
 					seg2HeadZ = (curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.end() - 1)->z;
-					dist = sqrt((seg1TailX - seg2HeadX) * (seg1TailX - seg2HeadX) * fMOSTxyResSquare + (seg1TailY - seg2HeadY) * (seg1TailY - seg2HeadY) * fMOSTxyResSquare + (seg1TailZ - seg2HeadZ) * (seg1TailZ - seg2HeadZ)) * fMOSTzResSquare;
-					if (dist < minDist)
-					{
-						seg1.head_tail = 2;
-						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
-						seg2.head_tail = -1;
-						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
-						minDist = dist;
-					}
+					dist = sqrt((seg1TailX - seg2HeadX) * (seg1TailX - seg2HeadX) + 
+						(seg1TailY - seg2HeadY) * (seg1TailY - seg2HeadY) + (seg1TailZ - seg2HeadZ) * (seg1TailZ - seg2HeadZ));
+					segPair[0].head_tail = 2;
+					segPair[0].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+					segPair[1].head_tail = -1;
+					segPair[1].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
+					dist2segsMap.insert(pair<float, vector<segInfoUnit> >(dist, segPair));
 
 					seg1TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->x;
 					seg2TailX = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->x;
@@ -3832,32 +3829,30 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 					seg2TailY = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->y;
 					seg1TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.begin()->z;
 					seg2TailZ = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.begin()->z;
-					dist = sqrt((seg1TailX - seg2TailX) * (seg1TailX - seg2TailX) * fMOSTxyResSquare + (seg1TailY - seg2TailY) * (seg1TailY - seg2TailY) * fMOSTxyResSquare + (seg1TailZ - seg2TailZ) * (seg1TailZ - seg2TailZ)) * fMOSTzResSquare;
-					if (dist < minDist)
-					{
-						seg1.head_tail = 2;
-						seg1.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
-						seg2.head_tail = 2;
-						seg2.nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
-						minDist = dist;
-					}
-
-					vector<segInfoUnit> segPair(2);
-					segPair[0] = seg1;
-					segPair[1] = seg2;
+					dist = sqrt((seg1TailX - seg2TailX) * (seg1TailX - seg2TailX) + 
+						(seg1TailY - seg2TailY) * (seg1TailY - seg2TailY) + (seg1TailZ - seg2TailZ) * (seg1TailZ - seg2TailZ));
+					segPair[0].head_tail = 2;
+					segPair[0].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt1).row.size();
+					segPair[1].head_tail = 2;
+					segPair[1].nodeCount = curImgPtr->tracedNeuron.seg.at(*clusterSegIt2).row.size();
 					dist2segsMap.insert(pair<float, vector<segInfoUnit> >(dist, segPair));
 				}
 			}
 
+			//for (map<float, vector<segInfoUnit> >::iterator pairIt = dist2segsMap.begin(); pairIt != dist2segsMap.end(); ++pairIt) cout << pairIt->first << " ";
+			//cout << endl;
 			int seg1ID = dist2segsMap.begin()->second.begin()->segID;
 			int seg2ID = (dist2segsMap.begin()->second.begin() + 1)->segID;
-			cout << " -- post elongation distance measured: " << dist << " " << seg1ID << "_" << dist2segsMap.begin()->second.begin()->head_tail << " " << seg2ID << "_" << (dist2segsMap.begin()->second.begin() + 1)->head_tail << endl;
-			if (dist < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
-			cout << endl;
+			cout << " -- post elongation distance measured: " << dist2segsMap.begin()->first << " " << seg1ID << "_" << dist2segsMap.begin()->second.begin()->head_tail << " " << seg2ID << "_" << (dist2segsMap.begin()->second.begin() + 1)->head_tail << endl;
+			//cout << "  -- seg1 head: " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->x << " " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->y << " " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->z << endl;
+			//cout << "  -- seg1 tail: " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->x << " " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->y << " " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->z << endl;
+			//cout << "  -- seg2 head: " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->x << " " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->y << " " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->z << endl;
+			//cout << "  -- seg2 tail: " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->x << " " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->y << " " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->z << endl;
+			if (dist2segsMap.begin()->first < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
+			//cout << endl;
 
 			if (curImgPtr->tracedNeuron.seg.at(seg1ID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1ID));
 			else if (curImgPtr->tracedNeuron.seg.at(seg2ID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2ID));
-		
 			dist2segsMap.clear();
 		}
 
