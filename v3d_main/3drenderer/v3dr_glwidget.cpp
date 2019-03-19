@@ -50,8 +50,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
-#include "mozak\Mozak3DView.h"
-#include "mozak\MozakUI.h"
 #include "../terafly/src/control/CPlugin.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
@@ -1773,8 +1771,37 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 {
 	//cout<<"step liqi"<<endl;
-	//mozak::Mozak3DView::HideAll3DView();
+
 	doimageVRView(bCanCoMode);
+
+}
+void V3dR_GLWidget::process3Dwindow(bool show)
+{
+	XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+	V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+	QList<V3dR_MainWindow*> windowList = mypluginloader.getListAll3DViewers();
+	static QVector<int> visibility;
+	if(show)
+	{
+
+		for(int i=0;i<visibility.size();++i)
+		{
+
+			windowList[visibility[i]]->show();
+		}
+	}
+	else
+	{
+		visibility.clear();
+		for(int i=0;i<windowList.size();++i)
+		{
+			if(windowList[i]->isVisible())
+				{
+					visibility.push_back(i);
+					windowList[i]->hide();
+				}
+		}
+	}
 
 }
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
@@ -1785,6 +1812,8 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
 
     this->getMainWindow()->hide();
+	process3Dwindow(false);
+
     QMessageBox::StandardButton reply;
 	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
@@ -1859,6 +1888,8 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		// 	emit(signalCallTerafly());
 		// }
 	}
+		process3Dwindow(true);
+
 }
 void V3dR_GLWidget::doclientView(bool check_flag)
 {

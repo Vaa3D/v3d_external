@@ -274,6 +274,8 @@ public slots:
 
 #ifdef __ALLOW_VR_FUNCS__
 	virtual void doimage3DVRView(bool bCanCoMode = false);
+	void process3Dwindow(bool show);
+	
     virtual void doimageVRView(bool bCanCoMode = false);
 	virtual void doclientView(bool check_flag=false);
 	virtual void OnVRSocketDisConnected();
