@@ -1702,9 +1702,9 @@ void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
 	terafly::PluginInterface::changeFragTraceStatus(newStatus);
 }
 
-void V3d_PluginLoader::getParamsFromFragTraceUI()
+void V3d_PluginLoader::getParamsFromFragTraceUI(const string& keyName, const float& value)
 {
-	terafly::PluginInterface::getParamsFromFragTraceUI();
+	terafly::PluginInterface::getParamsFromFragTraceUI(keyName, value);
 }
 
 #ifdef __ALLOW_VR_FUNCS__

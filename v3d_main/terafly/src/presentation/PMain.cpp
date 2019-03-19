@@ -1826,7 +1826,7 @@ void PMain::autosaveAnnotations()
             else
             {
                 QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-                autosavePath = qappDirPath+"/autosave/"+annotationsBasename+"_stamp" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
+                autosavePath = qappDirPath+"/autosave/"+annotationsBasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             }
 
             CAnnotations::getInstance()->save(autosavePath.toStdString().c_str(),false, false);

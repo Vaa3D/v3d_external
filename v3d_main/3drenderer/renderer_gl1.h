@@ -474,7 +474,7 @@ public:
 
 	 bool fragmentTrace; // Fragment tracing mode switch, MK, Dec 2018
 	 map<string, float> fragTraceParams;
-	 void connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage* curImgPtr);
+	 void connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage*& curImgPtr);
 	 
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
