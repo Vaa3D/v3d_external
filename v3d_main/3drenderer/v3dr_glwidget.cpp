@@ -1162,6 +1162,22 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					}
 				}
 			}
+			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				if (thisRenderer->fragmentTrace)
+				{
+					map<int, vector<int> > labeledSegs;
+					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+						if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
+
+					curImg->update_3drenderer_neuron_view(this, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+			}
 			else
             {
                 if(_idep && _idep->window3D)

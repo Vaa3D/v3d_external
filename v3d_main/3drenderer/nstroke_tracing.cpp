@@ -4383,7 +4383,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 							cout << "  Loop from 3 way detected ----> (" << *it << ") ";
 							for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
 								cout << *thisLoopIt << " ";
-							cout << endl;
+							cout << endl << endl;
 							return;
 						}
 					}
@@ -4411,7 +4411,34 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 					cout << "  Loop detected ----> (" << *it << ") ";
 					for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
 						cout << *thisLoopIt << " ";
-					cout << endl;
+					cout << endl << endl;
+
+					while (1)
+					{
+						for (set<set<size_t> >::iterator setCheckIt1 = this->finalizedLoopsSet.begin(); setCheckIt1 != this->finalizedLoopsSet.end(); ++setCheckIt1)
+						{
+							for (set<set<size_t> >::iterator setCheckIt2 = this->finalizedLoopsSet.begin(); setCheckIt2 != this->finalizedLoopsSet.end(); ++setCheckIt2)
+							{
+								if (setCheckIt1 == setCheckIt2) continue;
+								else
+								{
+									int segNum = 0;
+									for (set<size_t>::iterator segCheck1 = setCheckIt1->begin(); segCheck1 != setCheckIt1->end(); ++segCheck1)
+										if (setCheckIt2->find(*segCheck1) != setCheckIt2->end()) ++segNum;
+
+									if (segNum == setCheckIt1->size())
+									{
+										this->finalizedLoopsSet.erase(setCheckIt1);
+										goto SET_ERASED;
+									}
+								}
+							}
+						}
+						break;
+
+					SET_ERASED:
+						continue;
+					}
 				}
 			}
 			else return;
